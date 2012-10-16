@@ -12,6 +12,7 @@ Ecology
 Environment
 Earth
 Exo
+Ecto
 
 Potential new names for the KNB site/service
 ---------------------------------------------
