@@ -13,6 +13,8 @@ Environment
 Earth
 Exo
 Ecto
+Reproducible
+Living
 
 Potential new names for the KNB site/service
 ---------------------------------------------
