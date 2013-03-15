@@ -1,25 +1,34 @@
 Words to consider in name
 -------------------------
+Bank
 Data
 Curate
+Crypt
+Dew
 Information
 Analysis
 Results
 Open
 Science
 Open Data
+Exchange
 Ecology
 Environment
 Earth
 Exo
 Ecto
-Reproducible
+Fund
 Living
+Nectar
+Pan
+Reproducible
+Share
 
 Potential new names for the KNB site/service
 ---------------------------------------------
 Data Depot
 Data Drop
+EarthBank
 Eco Data Depot
 EcoData.org
 Earth Data Repository
@@ -27,3 +36,6 @@ Data Keeper
 EcoRepo
 ExoData
 OpenEcology
+Network for Open Data Exchange (Node)
+DataStow
+
