@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Data Depot</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap-responsive.min.css" rel="stylesheet">
+	<link href="./css/metacatui.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-114-precomposed.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-72-precomposed.png">
+                    <link rel="apple-touch-icon-precomposed" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-57-precomposed.png">
+                                   <link rel="shortcut icon" href="http://twitter.github.com/bootstrap/assets/ico/favicon.png">
+</head>
+<body>
+
+    <!-- NAVBAR
+    ================================================== -->
+    <div class="navbar-wrapper">
+      <!-- Wrap the .navbar in .container to center it within the absolutely positioned parent. -->
+      <div class="container">
+
+        <div class="navbar navbar-inverse">
+          <div class="navbar-inner">
+            <!-- Responsive Navbar Part 1: Button for triggering responsive navbar (not covered in tutorial). Include responsive CSS to utilize. -->
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="brand" href="#">Data Depot</a>
+            <!-- Responsive Navbar Part 2: Place all navbar contents you want collapsed withing .navbar-collapse.collapse. -->
+            <div class="nav-collapse collapse">
+              <ul class="nav">
+                <li class="active"><a href="#about">About</a></li>
+                <li><a href="#tools">Tools</a></li>
+                <!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plans <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#">About data plans</a></li>
+                    <li class="divider"></li>
+                    <li class="nav-header">Specific plans</li>
+                    <li><a href="#">Basic (free)</a></li>
+                    <li><a href="#">Annual Data</a></li>
+                    <li><a href="#">Big Data</a></li>
+
+                  </ul>
+                </li>
+                <li><a href="#share">Share</a></li>
+                <li><div class="nav">
+            	<form class="form-search">
+            		<input type="text" class="input-medium search-query" placeholder="Search">
+            		<button type="submit" class="btn-small btn-primary"><i class="icon-search icon-white"></i></button>
+            	</form>
+            	</div></li>
+              </ul>
+            <ul class="nav pull-right">
+                <li><a href="#user">Matt Jones</a></li>
+			</ul>
+
+            </div><!--/.nav-collapse -->
+            
+          </div><!-- /.navbar-inner -->
+        </div><!-- /.navbar -->
+
+      </div> <!-- /.container -->
+    </div><!-- /.navbar-wrapper -->
+    
+    <!-- Javascript at the end of the document to load pages faster -->
+    <script src="./js/jquery.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+
+</body>
+</html>
