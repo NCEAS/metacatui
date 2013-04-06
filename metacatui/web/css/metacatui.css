@@ -93,16 +93,23 @@
     }
 
     .carousel-caption {
-      background-color: transparent;
+      background: rgba(0,0,0,0.3);
       position: static;
-      max-width: 550px;
-      padding: 0 20px;
-      margin-top: 200px;
-    }
-    .carousel-caption h1,
-    .carousel-caption .lead {
+      max-width: 800px;
+      padding: 10px 10px 10px 10px;
+      margin-top: 250px;
+      margin-left: 600px;
+	}
+    .carousel-caption h1 {
       margin: 0;
       line-height: 1.25;
+      font-size: 28pt;
+      color: #fff;
+      text-shadow: 0 1px 1px rgba(0,0,0,.4);
+    }
+    .carousel-caption .lead {
+      margin: 0;
+      line-height: 1;
       color: #fff;
       text-shadow: 0 1px 1px rgba(0,0,0,.4);
     }
