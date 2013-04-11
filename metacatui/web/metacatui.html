@@ -4,8 +4,8 @@
 	<title>Data Depot</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="Template file for DataDepot Layout">
+    <meta name="author" content="Matt Jones">
 
     <!-- Stylesheets -->
     <link href="./css/bootstrap.min.css" rel="stylesheet">
@@ -28,7 +28,7 @@
 <body>
 
     <!-- NAVBAR
-    ================================================== -->
+    ======================================================================= -->
     <div class="navbar-wrapper">
       <!-- Wrap the .navbar in .container to center it within the absolutely positioned parent. -->
       <div class="container">
@@ -119,13 +119,45 @@
       <a class="left carousel-control" href="#myCarousel" data-slide="prev">‹</a>
       <a class="right carousel-control" href="#myCarousel" data-slide="next">›</a>
     </div>
-    
+
+    <!-- MAIN BODY SECTION (SIDEBAR AND CONTENT)
+    ======================================================================= -->    
+    <div class="container-fluid">
+  		<div class="row-fluid">
+    		<div class="span3">
+      			<!--Sidebar content-->
+      			<p>Sidebar HERE.</p>
+    		</div>
+    		<div class="span9">
+    			<!--Body content-->
+    			<p>Body HERE.</p>
+    		</div>
+  		</div>
+	</div>
+
     <!-- FOOTER SECTION
     ======================================================================= -->
-    <footer class="footer"> 
-		<a class="brand" href="#"><img alt="DataDepot" src="holder.js/100x100/grey" /></a>
-    </footer><!-- /.footer -->
-        
+    <div class="row footer">
+    	<div class="span2 offset1">
+				<a class="brand" href="#"><img alt="DataDepot" src="holder.js/100x100/grey" /></a>
+    	</div>
+    	<div class="span2 offset1">
+    		<p>About</p>
+    		<p>Contact</p>
+    		<p>API</p>
+    	</div>
+    	<div class="span2">
+    		<p>Tools</p>
+    		<p>Plans</p>
+    	</div>
+    	<div class="span2">
+				<a class="brand" href="#"><img alt="NCEAS" src="holder.js/100x100/grey" /></a>
+    	</div>
+    	<div class="span2">
+				<a class="brand" href="#"><img alt="DataONE" src="holder.js/50x50/grey" /></a>
+				<a class="brand" href="#"><img alt="Metacat" src="holder.js/50x50/grey" /></a>
+    	</div>    	
+    </div>
     
     <!-- Javascript at the end of the document to load pages faster 
     ======================================================================= -->
