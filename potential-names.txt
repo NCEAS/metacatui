@@ -1,5 +1,5 @@
-Words to consider in name (loosely)
-----------------------------------
+Words to consider in name 
+-------------------------
 Bank
 Data
 Curate
