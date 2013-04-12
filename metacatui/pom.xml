@@ -2,6 +2,18 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.ucsb.nceas</groupId>
   <artifactId>metacatui</artifactId>
+  <packaging>war</packaging>
   <version>0.0.1-SNAPSHOT</version>
   <name>Metacat UI</name>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>metacatui</finalName>
+  </build>
 </project>
