@@ -38,4 +38,3 @@ ExoData
 OpenEcology
 Network for Open Data Exchange (Node)
 DataStow
-Metacat UI
