@@ -208,8 +208,16 @@
     .sidebar-item {
       color: #666666;
       font-weight: bold;
+      padding: 5px;
+      border-radius: 5px;
+  	  -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      line-height: 25px;
     }
-
+    
+    .sidebar-item-selected {
+      background-color: #AAAAAA;
+    }
 
 	/* FOOTER CSS
 	-------------------------------------------------- */
