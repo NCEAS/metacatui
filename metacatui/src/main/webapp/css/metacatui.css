@@ -194,6 +194,10 @@
 
 	/* SIDEBAR CSS
 	-------------------------------------------------- */
+    #sidebar {
+    	min-height: 400px;
+    }
+    
     .sidebar-subhead {
       color: #666666;
       font-weight: bold;
