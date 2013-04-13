@@ -33,13 +33,25 @@
     }
 
     /* Downsize the brand/project name a bit */
+    .navbar .brand{
+      display:block;
+      height:30px;
+      float:left;
+      max-height:80px;
+      overflow:visible;
+      font-size: 16px;
+      font-weight: bold;
+      text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+      
+    }
+/*
     .navbar .brand {
       padding: 14px 20px 16px; /* Increase vertical padding to match navbar links */
       font-size: 16px;
       font-weight: bold;
       text-shadow: 0 -1px 0 rgba(0,0,0,.5);
     }
-
+*/
     /* Navbar links: increase padding for taller navbar */
     .navbar .nav > li > a {
       padding: 15px 20px;
@@ -272,3 +284,4 @@
       }
 
     }
+    
