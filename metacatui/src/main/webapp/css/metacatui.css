@@ -93,7 +93,14 @@
 
     .carousel .item {
       height: 400px;
-      background-color: #54787D;
+      background-color: #615145; /* Fallback to solid color if the gradient fails */
+      background-image: -webkit-gradient(
+	     linear,
+	     left bottom,
+	     left top,
+	     color-stop(0.9, #8F7D70),
+	     color-stop(0.3, #615145)
+      );
     }
     .carousel img {
       position: absolute;
