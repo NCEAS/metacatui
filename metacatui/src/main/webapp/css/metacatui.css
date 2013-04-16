@@ -3,7 +3,6 @@
     -------------------------------------------------- */
     /* Padding below the footer and lighter body text */
     body {
-      padding-bottom: 40px;
       color: #5a5a5a;
     }
 
@@ -163,18 +162,17 @@
     
     .sidebar-item-selected {
       background-color: #AAAAAA;
+      color: #fff;
     }
 
 	/* RESULT CSS
 	-------------------------------------------------- */
     .result-header {
-    	display: block;
     	font-weight: bold;
     	border-bottom: thin solid;
     }
     
     .result-header-count {
-    	display: inline;
     	font-style: italic;
     }
     

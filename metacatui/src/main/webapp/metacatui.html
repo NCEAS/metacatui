@@ -38,7 +38,7 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="brand" href="#"><img alt="DataDepot" src="holder.js/75x75/social" /></a>
+            <a class="brand" href="#"><img alt="DataDepot" data-src="holder.js/75x75/grey" /></a>
             <div class="nav-collapse collapse">
               <ul class="nav">
                 <li class="active"><a href="#about">About</a></li>
@@ -78,7 +78,7 @@
     
     <!-- FEATURED DATA SECTION
     ======================================================================= -->
-    <div id="myCarousel" class="carousel slide">
+    <div id="mainPageSlides" class="carousel slide" data-interval="3000">
       <div class="carousel-inner">
         <div class="item">
           <img src="./img/slide_01.jpg" alt="">
@@ -104,7 +104,7 @@
           <div class="container">
             <div class="row">
     			<div class="span2 offset1">
-	            	<img class="static" alt="DataDepotLogo" src="holder.js/200x200/grey" />
+	            	<img class="static" alt="DataDepotLogo" data-src="holder.js/200x200/grey" />
 	            </div>
                 <div class="carousel-caption span4 offset5">
               		<h1>Share your data.</h1>
@@ -129,7 +129,7 @@
           <div class="container">
             <div class="row">
     			<div class="span2 offset1">
-	            	<img class="static" alt="DataDepotLogo" src="holder.js/200x200/grey" />
+	            	<img class="static" alt="DataDepotLogo" data-src="holder.js/200x200/grey" />
 	            </div>
                 <div class="carousel-caption span4 offset5">
               		<h1>Discover research.</h1>
@@ -141,8 +141,8 @@
           </div>
         </div>          
       </div>
-      <a class="left carousel-control" href="#myCarousel" data-slide="prev">‹</a>
-      <a class="right carousel-control" href="#myCarousel" data-slide="next">›</a>
+      <a class="left carousel-control" href="#mainPageSlides" data-slide="prev">‹</a>
+      <a class="right carousel-control" href="#mainPageSlides" data-slide="next">›</a>
     </div>
 
     <!-- MAIN BODY SECTION (SIDEBAR AND CONTENT)
@@ -173,39 +173,52 @@
     		<!--CONTENT AREA-->
     		<div id="content" class="span9">
     			<div class=search-results">
-    				<h2>Most Accessed Data</h2>
-    				<div class="result-header">
-    					<div class="result-header-menu span1">Menu</div>
+    				<h2 class="row">Most Accessed Data</h2>
+    				<div class="result-header row">
+    					<div class="result-header-menu span1">
+							<div class="dropdown">
+                  				<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-plus"></i> <b class="caret"></b></a>
+                  				<ul class="dropdown-menu">
+                    				<li><a href="#">Add to collection...</a></li>
+                    				<li><a href="#">Download</a></li>
+								</ul>
+							</div>
+    					</div>
     					<div class="result-header-count span8">1 to 15 of 582</div>
-    					<div class="result-header-menu span1 offset2">Menu</div>&nbsp;
+    					<div class="result-header-stats span2"></div>
+    					<div class="result-header-menu span1">
+							<div class="dropdown">
+                  				<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> <b class="caret"></b></a>
+                  				<ul class="dropdown-menu">
+                    				<li><a href="#">Settings...</a></li>
+								</ul>
+							</div>    					
+    					</div>
     				</div>
-    				<div class="result-row">
+    				<div class="result-row row">
     					<div class="result-selection span1"><input type="checkbox" value=""></div>
     					<div class="result-citation span8">
     					       <span class="result-author">Clemens, M. and S. Dorner.</span><span class="result-pubdate"> 2012.</span><span class="result-title"> Grazing impacts on sedges in Eastern Sierra Meadows.</span><span class="result-id">doi:10.xxxx/AA/mclem.23.1</span>
     					</div>
-    					<div class="result-stats span2">Stats
-    					</div>
+    					<div class="result-stats span2"><span class="badge badge-success">05</span><span class="badge badge-warning">04</span></div>
     					<div class="result-dropdown span1">Dropdown
     					</div>
     				</div>
-    				<div class="result-row">
+    				<div class="result-row row">
     					<div class="result-selection span1"><input type="checkbox" value=""></div>
     					<div class="result-citation span8">
     					       <span class="result-author">Clemens, M. and S. Dorner.</span><span class="result-pubdate"> 2012.</span><span class="result-title"> Grazing impacts on sedges in Eastern Sierra Meadows.</span><span class="result-id">doi:10.xxxx/AA/mclem.23.1</span>
     					</div>
-    					<div class="result-stats span2">Stats
-    					</div>
+						<div class="result-stats span2"><span class="badge badge-success">96</span><span class="badge badge-warning">21</span></div>
     					<div class="result-dropdown span1">Dropdown
     					</div>
     				</div>
-    				<div class="result-row">
+    				<div class="result-row row">
     					<div class="result-selection span1"><input type="checkbox" value=""></div>
     					<div class="result-citation span8">
     					       <span class="result-author">Clemens, M. and S. Dorner.</span><span class="result-pubdate"> 2012.</span><span class="result-title"> Grazing impacts on sedges in Eastern Sierra Meadows.</span><span class="result-id">doi:10.xxxx/AA/mclem.23.1</span>
     					</div>
-    					<div class="result-stats span2">Stats
-    					</div>
+    					<div class="result-stats span2"><span class="badge badge-success">01</span><span class="badge badge-warning">09</span></div>
     					<div class="result-dropdown span1">Dropdown
     					</div>
     				</div>
@@ -219,7 +232,7 @@
     ======================================================================= -->
     <div class="row footer">
     	<div class="span2 offset1">
-				<a class="brand" href="#"><img alt="DataDepot" src="holder.js/100x100/grey" /></a>
+				<a class="brand" href="#"><img alt="DataDepot" data-src="holder.js/100x100/grey" /></a>
     	</div>
     	<div class="span2 offset1">
     		<p>About</p>
@@ -231,11 +244,11 @@
     		<p>Plans</p>
     	</div>
     	<div class="span2">
-				<a class="brand" href="#"><img alt="NCEAS" src="holder.js/100x100/grey" /></a>
+				<a class="brand" href="#"><img alt="NCEAS" data-src="holder.js/100x100/grey" /></a>
     	</div>
     	<div class="span2">
-				<a class="brand" href="#"><img alt="DataONE" src="holder.js/50x50/grey" /></a>
-				<a class="brand" href="#"><img alt="Metacat" src="holder.js/50x50/grey" /></a>
+				<a class="brand" href="#"><img alt="DataONE" data-src="holder.js/50x50/grey" /></a>
+				<a class="brand" href="#"><img alt="Metacat" data-src="holder.js/50x50/grey" /></a>
     	</div>    	
     </div>
     
@@ -244,6 +257,13 @@
     <script src="./js/jquery.js"></script>
     <script src="./js/holder.js"></script>
     <script src="./js/bootstrap.min.js"></script>
-
+    <script>
+      !function ($) {
+        $(function(){
+          $('#mainPageSlides').carousel()
+        })
+      }(window.jQuery)
+    </script>
+	
 </body>
 </html>
