@@ -1,7 +1,7 @@
-    /* GLOBAL STYLES
+
+/* Body CSS
     -------------------------------------------------- */
     /* Padding below the footer and lighter body text */
-
     body {
       padding-bottom: 40px;
       color: #5a5a5a;
@@ -21,7 +21,6 @@
       margin-bottom: -90px; /* Negative margin to pull up carousel. 90px is roughly margins and height of navbar. */
     }
     .navbar-wrapper .navbar {
-
     }
 
     /* Remove border and change up box shadow for more contrast */
@@ -44,15 +43,8 @@
       text-shadow: 0 -1px 0 rgba(0,0,0,.5);
       
     }
-/*
-    .navbar .brand {
-      padding: 14px 20px 16px; /* Increase vertical padding to match navbar links */
-      font-size: 16px;
-      font-weight: bold;
-      text-shadow: 0 -1px 0 rgba(0,0,0,.5);
-    }
-*/
-    /* Navbar links: increase padding for taller navbar */
+
+	/* Navbar links: increase padding for taller navbar */
     .navbar .nav > li > a {
       padding: 15px 20px;
     }
@@ -68,7 +60,7 @@
     }
 
 
-    /* CUSTOMIZE THE CAROUSEL
+    /* CAROUSEL CSS
     -------------------------------------------------- */
 
     /* Carousel base class */
@@ -146,52 +138,6 @@
 	}
 
 
-    /* MARKETING CONTENT
-    -------------------------------------------------- */
-
-    /* Center align the text within the three columns below the carousel */
-    .marketing .span4 {
-      text-align: center;
-    }
-    .marketing h2 {
-      font-weight: normal;
-    }
-    .marketing .span4 p {
-      margin-left: 10px;
-      margin-right: 10px;
-    }
-
-
-    /* Featurettes
-    ------------------------- */
-
-    .featurette-divider {
-      margin: 80px 0; /* Space out the Bootstrap <hr> more */
-    }
-    .featurette {
-      padding-top: 120px; /* Vertically center images part 1: add padding above and below text. */
-      overflow: hidden; /* Vertically center images part 2: clear their floats. */
-    }
-    .featurette-image {
-      margin-top: -120px; /* Vertically center images part 3: negative margin up the image the same amount of the padding to center it. */
-    }
-
-    /* Give some space on the sides of the floated elements so text doesn't run right into it. */
-    .featurette-image.pull-left {
-      margin-right: 40px;
-    }
-    .featurette-image.pull-right {
-      margin-left: 40px;
-    }
-
-    /* Thin out the marketing headings */
-    .featurette-heading {
-      font-size: 50px;
-      font-weight: 300;
-      line-height: 1;
-      letter-spacing: -1px;
-    }
-
 	/* SIDEBAR CSS
 	-------------------------------------------------- */
     #sidebar {
@@ -217,6 +163,29 @@
     
     .sidebar-item-selected {
       background-color: #AAAAAA;
+    }
+
+	/* RESULT CSS
+	-------------------------------------------------- */
+    .result-header {
+    	display: block;
+    	font-weight: bold;
+    	border-bottom: thin solid;
+    }
+    
+    .result-header-count {
+    	display: inline;
+    	font-style: italic;
+    }
+    
+    .result-row {
+    	display: inline-block;
+        border-bottom: thin solid;
+        padding: 5px;
+    }
+    
+    .result-author {
+    	font-weight: bold;
     }
 
 	/* FOOTER CSS
