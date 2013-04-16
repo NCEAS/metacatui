@@ -163,6 +163,8 @@
     .sidebar-item-selected {
       background-color: #AAAAAA;
       color: #fff;
+      padding-top: 3px;
+      padding-bottom: 3px;
     }
 
 	/* RESULT CSS
