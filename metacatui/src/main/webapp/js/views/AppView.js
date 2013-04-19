@@ -45,10 +45,10 @@ var app = app || {};
 		render: function () {
 
 			if (app.SearchResults.length) {
-				this.$mostaccessed.show();
+				this.$mostaccessed.hide();
 				
 			} else {
-				this.$mostaccessed.hide();
+				this.$mostaccessed.show();
 			}
 		},
 

@@ -12,8 +12,10 @@ var app = app || {};
 		// Reference to this collection's model.
 		model: app.SearchResult,
 
+		  url: "https://cn.dataone.org/cn/v1/query/solr/?fl=id,author,title,&q=formatType:METADATA+-obsoletedBy:*&rows=5&start=0&wt=json",
+
 		// Save all of the result items under the `"metacatui"` namespace.
-		localStorage: new Backbone.LocalStorage('metacatui-backbone'),
+		//localStorage: new Backbone.LocalStorage('metacatui-backbone'),
 
 		// Filter down the list of all result items that are selected.
 		selected: function () {
