@@ -5,8 +5,7 @@
   version="2.5">
   <display-name>Archetype Created Web Application</display-name>
   <servlet>
-  	<display-name>DataONEProxy</display-name>
-  	<description></description>
+    <servlet-name>DataONEProxy</servlet-name>
   	<servlet-class>edu.ucsb.nceas.metacatui.proxy.DataONEProxy</servlet-class>
   </servlet>
   <servlet-mapping>
