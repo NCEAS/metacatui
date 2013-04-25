@@ -24,6 +24,7 @@ Nectar
 Pan
 Reproducible
 Share
+Sync
 
 Potential new names for the KNB site/service
 ---------------------------------------------
@@ -44,3 +45,4 @@ OpenEcology
 Squirrel
 SquirrelIT (get it? Squirrel IT away =))
 Understory
+SciSync
