@@ -1,14 +1,13 @@
 package edu.ucsb.nceas.metacatui.proxy;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,7 +17,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 
 /**
- * Servlet implementation class DataONEProxy
+ * A proxy class that passes requests from the client through to the appropriate DataONE
+ * service endpoint. This class is used to provide a single point of communication
+ * for clients even when a client may want to communicate with multiple service providers
+ * but is prevented from doing so due to the single origin policy for web clients.
  */
 public class DataONEProxy extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -68,6 +70,7 @@ public class DataONEProxy extends HttpServlet {
 
 	private String proxyQuery(String baseURI) {
 	    String result="";
+	    /*
 	    InputStream is = null;
 	    try {
             URI query = new URI("https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,abstract,keywords&q=formatType:METADATA+-obsoletedBy:*&rows=5&start=0&wt=json");
@@ -88,7 +91,19 @@ public class DataONEProxy extends HttpServlet {
                 e.printStackTrace();
             }
         }
-	    
-	    return result;
+        return result;
+	    */
+	    return simulateSearchResults();
+	}
+	
+	private String simulateSearchResults() {
+	    String simData = "";
+	    InputStream is = this.getClass().getResourceAsStream("/simulated-data.json");
+	    try {
+            simData = IOUtils.toString(is, Charset.forName("UTF-8"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+	    return simData;
 	}
 }
