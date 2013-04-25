@@ -27,8 +27,11 @@ Share
 
 Potential new names for the KNB site/service
 ---------------------------------------------
+Badger
 Data Depot
 Data Drop
+Data Happy
+DataStow
 EarthBank
 Eco Data Depot
 EcoData.org
@@ -36,6 +39,7 @@ Earth Data Repository
 Data Keeper
 EcoRepo
 ExoData
-OpenEcology
 Network for Open Data Exchange (Node)
-DataStow
+OpenEcology
+Squirrel
+SquirrelIT (get it? Squirrel IT away =))
