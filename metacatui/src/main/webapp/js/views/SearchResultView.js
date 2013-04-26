@@ -11,7 +11,7 @@ var app = app || {};
 	app.SearchResultView = Backbone.View.extend({
 		//... is a list tag.
 		tagName:  'div',
-		className: 'result-row row',
+		className: 'row-fluid result-row',
 
 		// Cache the template function for a single item.
 		template: _.template($('#result-template').html()),
