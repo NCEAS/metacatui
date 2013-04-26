@@ -31,8 +31,8 @@ var app = app || {};
 			//this.$footer = this.$('#footer');
 			this.$mostaccessed = this.$('#mostaccessed');
 
-			//this.listenTo(app.SearchResults, 'add', this.addOne);
-			//this.listenTo(app.SearchResults, 'reset', this.addAll);
+			this.listenTo(app.SearchResults, 'add', this.addOne);
+			this.listenTo(app.SearchResults, 'reset', this.addAll);
 			//this.listenTo(app.SearchResults, 'change:completed', this.filterOne);
 			//this.listenTo(app.SearchResults, 'filter', this.filterAll);
 			this.listenTo(app.SearchResults, 'all', this.render);
@@ -46,59 +46,22 @@ var app = app || {};
 
 			if (app.SearchResults.length) {
 				this.$mostaccessed.show();
-				
 			} else {
-				this.$mostaccessed.hide();
+				this.$mostaccessed.show();
 			}
 		},
 
-		// Add a single todo item to the list by creating a view for it, and
+		// Add a single SearchResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
-//		addOne: function (todo) {
-//			var view = new app.TodoView({ model: todo });
-//			$('#todo-list').append(view.render().el);
-//		},
+		addOne: function (result) {
+			var view = new app.SearchResultView({ model: result });
+			this.$mostaccessed.append(view.render().el);
+		},
 
-		// Add all items in the **Todos** collection at once.
+		// Add all items in the **SearchResults** collection at once.
 		addAll: function () {
-			this.$('#todo-list').html('');
+			//this.$('#todo-list').html('');
 			app.SearchResults.each(this.addOne, this);
-		},
-
-		// Generate the attributes for a new SearchResults item.
-		newAttributes: function () {
-			return {
-				title: this.$input.val().trim(),
-				order: app.Todos.nextOrder(),
-				selected: false
-			};
-		},
-
-		// If you hit return in the main input field, create new **Todo** model,
-		// persisting it to *localStorage*.
-		createOnEnter: function (e) {
-			if (e.which !== ENTER_KEY || !this.$input.val().trim()) {
-				return;
-			}
-
-			app.Todos.create(this.newAttributes());
-			this.$input.val('');
-		},
-
-		// Clear all completed todo items, destroying their models.
-		clearCompleted: function () {
-			_.invoke(app.Todos.completed(), 'destroy');
-			return false;
-		},
-
-		toggleAllComplete: function () {
-			var completed = this.allCheckbox.checked;
-
-			app.Todos.each(function (todo) {
-				todo.save({
-					'completed': completed
-				});
-			});
 		}
 	});
 })(jQuery);
