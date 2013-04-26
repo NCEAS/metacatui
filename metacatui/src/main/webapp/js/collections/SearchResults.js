@@ -12,7 +12,7 @@ var app = app || {};
 		// Reference to this collection's model.
 		model: app.SearchResult,
 
-		  url: "/metacatui/d1proxy",
+		url: "/metacatui/d1proxy",
 
 		// Filter down the list of all result items that are selected.
 		selected: function () {
