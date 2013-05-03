@@ -59,7 +59,7 @@ var app = app || {};
 			}
 		},
 
-		// Add a single SearchResult item to the list by creating a view for it, and
+		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
 			var view = new app.SearchResultView({ model: result });
