@@ -31,24 +31,24 @@ var app = app || {};
 			//this.$footer = this.$('#footer');
 			this.$mostaccessed = this.$('#mostaccessed');
 
-			this.listenTo(app.SearchResults, 'add', this.addOne);
-			this.listenTo(app.SearchResults, 'reset', this.addAll);
-			//this.listenTo(app.SearchResults, 'change:completed', this.filterOne);
-			//this.listenTo(app.SearchResults, 'filter', this.filterAll);
-			this.listenTo(app.SearchResults, 'all', this.render);
+			this.listenTo(app.SolrResults, 'add', this.addOne);
+			this.listenTo(app.SolrResults, 'reset', this.addAll);
+			//this.listenTo(app.SolrResults, 'change:completed', this.filterOne);
+			//this.listenTo(app.SolrResults, 'filter', this.filterAll);
+			this.listenTo(app.SolrResults, 'all', this.render);
 
-			app.SearchResults.fetch();
+			app.SolrResults.fetch();
 		},
 
 		// Re-rendering the App just means refreshing the statistics -- the rest
 		// of the app doesn't change.
 		render: function () {
-
+			/*
 			if (app.SearchResults.length) {
 				this.$mostaccessed.show();
 			} else {
 				this.$mostaccessed.show();
-			}
+			} */
 		},
 
 		// Add a single SearchResult item to the list by creating a view for it, and
@@ -61,7 +61,7 @@ var app = app || {};
 		// Add all items in the **SearchResults** collection at once.
 		addAll: function () {
 			//this.$('#todo-list').html('');
-			app.SearchResults.each(this.addOne, this);
+			app.SolrResults.each(this.addOne, this);
 		}
 	});
 })(jQuery);

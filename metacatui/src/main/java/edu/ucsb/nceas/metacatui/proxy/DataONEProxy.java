@@ -98,7 +98,8 @@ public class DataONEProxy extends HttpServlet {
 	
 	private String simulateSearchResults() {
 	    String simData = "";
-	    InputStream is = this.getClass().getResourceAsStream("/simulated-data.json");
+	    //InputStream is = this.getClass().getResourceAsStream("/simulated-data.json");
+	    InputStream is = this.getClass().getResourceAsStream("/solr-data.json");
 	    try {
             simData = IOUtils.toString(is, Charset.forName("UTF-8"));
         } catch (IOException e) {

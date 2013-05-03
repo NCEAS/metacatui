@@ -226,9 +226,9 @@
     <script type="text/template" id="result-template">
     		<div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div>
     		<div class="result-citation span8">
-   		       <span class="result-author"><%- authors %>.</span><span class="result-pubdate"> <%- pubdate %>.</span><span class="result-title"> <%- title %></span><span class="result-id"> <%- identifier %></span>
+   		       <span class="result-author"><%- authors %>.</span><span class="result-pubdate"> <%- pubdate %>.</span><span class="result-title"> <%- title %>.</span><span class="result-id"> <%- id %></span>
     		</div>
-    		<div class="result-stats span2"><span class="badge badge-success">01</span><span class="badge badge-warning">09</span></div>
+    		<div class="result-stats span2"><span class="badge badge-info">01</span><span class="badge badge-success">09</span></div>
     		<div class="result-dropdown span1">
 				<div class="dropdown">
             		<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-plus"></i> <b class="caret"></b></a>
@@ -252,7 +252,9 @@
     <script src="components/json2.js"></script>    
 	<script src="components/backbone.js"></script>
     <script src="js/models/SearchResult.js"></script>
+    <script src="js/models/SolrResult.js"></script>
     <script src="js/collections/SearchResults.js"></script>
+    <script src="js/collections/SolrResults.js"></script>
     <script src="js/views/SearchResultView.js"></script>    
     <script src="js/views/AppView.js"></script>    
 	<script src="js/app.js"></script>
