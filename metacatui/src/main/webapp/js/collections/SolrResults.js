@@ -7,8 +7,6 @@ var app = app || {};
 	// SolrResults Collection
 	// ------------------------
 	
-	// See http://stackoverflow.com/questions/14851557/custom-rest-api-response-in-backbone-js
-
 	// The collection of SolrResult
 	var SolrResultList = Backbone.Collection.extend({
 		// Reference to this collection's model.
@@ -17,7 +15,9 @@ var app = app || {};
 		url: "/metacatui/d1proxy",
 
 		parse: function(solr) {
-			// TODO: process response.SolrHeader here
+			this.header = new app.SolrHeader(solr.responseHeader);
+			this.header.set({"numFound" : solr.response.numFound});
+			this.header.set({"start" : solr.response.start});
 			return solr.response.docs;
 		}
 	});

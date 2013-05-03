@@ -15,6 +15,8 @@ var app = app || {};
 		// the App already present in the HTML.
 		el: '#metacatui-app',
 
+		statsTemplate: _.template($('#statcounts-template').html()),
+
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 			//'keypress #new-todo': 'createOnEnter',
@@ -30,6 +32,7 @@ var app = app || {};
 			//this.$input = this.$('#new-todo');
 			//this.$footer = this.$('#footer');
 			this.$mostaccessed = this.$('#mostaccessed');
+			this.$statcounts = this.$('#statcounts');
 
 			this.listenTo(app.SolrResults, 'add', this.addOne);
 			this.listenTo(app.SolrResults, 'reset', this.addAll);
@@ -43,12 +46,17 @@ var app = app || {};
 		// Re-rendering the App just means refreshing the statistics -- the rest
 		// of the app doesn't change.
 		render: function () {
-			/*
-			if (app.SearchResults.length) {
+			if (app.SolrResults.length) {
 				this.$mostaccessed.show();
+				this.$statcounts.html(this.statsTemplate({
+					start: app.SolrResults.header.get("start")+1,
+					end: app.SolrResults.header.get("start") + app.SolrResults.length,
+					numFound: app.SolrResults.header.get("numFound")
+				}));
+				
 			} else {
-				this.$mostaccessed.show();
-			} */
+				this.$mostaccessed.hide();
+			}
 		},
 
 		// Add a single SearchResult item to the list by creating a view for it, and

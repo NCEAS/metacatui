@@ -181,7 +181,7 @@
 								</ul>
 							</div>
     					</div>
-    					<div class="result-header-count span8">1 to 15 of 582</div>
+    					<div class="result-header-count span8" id="statcounts">1 to 15 of 582</div>
     					<div class="result-header-stats span2"></div>
     					<div class="result-header-menu span1">
 							<div class="dropdown">
@@ -241,6 +241,9 @@
 				</div>
     		</div>
 	</script>
+	<script type="text/template" id="statcounts-template">
+		<div class="result-header-count span8" id="countstats"><%- start %> to <%- end %> of <%- numFound %></div>
+	</script>
     
     
     <!-- Javascript at the end of the document to load pages faster 
@@ -252,6 +255,7 @@
     <script src="components/json2.js"></script>    
 	<script src="components/backbone.js"></script>
     <script src="js/models/SearchResult.js"></script>
+    <script src="js/models/SolrHeader.js"></script>
     <script src="js/models/SolrResult.js"></script>
     <script src="js/collections/SearchResults.js"></script>
     <script src="js/collections/SolrResults.js"></script>

@@ -73,7 +73,7 @@ public class DataONEProxy extends HttpServlet {
 	    
 	    InputStream is = null;
 	    try {
-            URI query = new URI("https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&rows=15&start=0&wt=json");
+            URI query = new URI("https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&rows=15&start=30&wt=json");
             URL url = query.toURL();
             is = url.openStream();
             result = IOUtils.toString(is, Charset.forName("UTF-8"));
