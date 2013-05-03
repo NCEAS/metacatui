@@ -70,10 +70,10 @@ public class DataONEProxy extends HttpServlet {
 
 	private String proxyQuery(String baseURI) {
 	    String result="";
-	    /*
+	    
 	    InputStream is = null;
 	    try {
-            URI query = new URI("https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,abstract,keywords&q=formatType:METADATA+-obsoletedBy:*&rows=5&start=0&wt=json");
+            URI query = new URI("https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&rows=15&start=0&wt=json");
             URL url = query.toURL();
             is = url.openStream();
             result = IOUtils.toString(is, Charset.forName("UTF-8"));
@@ -92,8 +92,8 @@ public class DataONEProxy extends HttpServlet {
             }
         }
         return result;
-	    */
-	    return simulateSearchResults();
+	    
+	    //return simulateSearchResults();
 	}
 	
 	private String simulateSearchResults() {
