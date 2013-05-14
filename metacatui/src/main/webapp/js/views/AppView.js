@@ -56,7 +56,7 @@ var app = app || {};
 		
 		// Switch the results view to the most recent data query 
 		showRecent: function () {
-			this.expandSlides();
+			this.collapseSlides();
 			this.$pagehead.html('<p>Most Recent</p>');
 			this.$results.show();		
 		},
@@ -91,15 +91,13 @@ var app = app || {};
 		
 		// Collapse the top slide carousel to display full page
 		collapseSlides: function () {
-			// TODO: make this a smooth transition
 			// TODO: provide padding for the header so the results aren't obscured
-			$('#mainPageSlides').hide();
+			$('#mainPageSlides').collapse("hide");
 		},
 		
 		// Expand the top slide carousel to display partial page
 		expandSlides: function () {
-			// TODO: make this a smooth transition
-			$('#mainPageSlides').show();
+			$('#mainPageSlides').collapse("show");
 		}
 		
 	});	
