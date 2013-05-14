@@ -44,8 +44,11 @@ var app = app || {};
 		
 		// Switch the results view to the most accessed data query
 		showMostAccessed: function () {
-			this.expandSlides();
+			//this.expandSlides();
 			this.$pagehead.html('Most Accessed');
+			this.$("#results_link").removeClass("sidebar-item-selected");
+			this.$("#recent_link").removeClass("sidebar-item-selected");
+			this.$("#mostaccessed_link").addClass("sidebar-item-selected");
 			this.$results.show();
 			this.$statcounts.html(this.statsTemplate({
 				start: app.SearchResults.header.get("start")+1,
@@ -56,15 +59,21 @@ var app = app || {};
 		
 		// Switch the results view to the most recent data query 
 		showRecent: function () {
-			this.collapseSlides();
-			this.$pagehead.html('<p>Most Recent</p>');
+			//this.collapseSlides();
+			this.$pagehead.html('Most Recent');
+			this.$("#results_link").removeClass("sidebar-item-selected");
+			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
+			this.$("#recent_link").addClass("sidebar-item-selected");
 			this.$results.show();		
 		},
 		
 		// Switch the results view to the search results query
 		showResults: function () {
-			this.collapseSlides();
-			this.$pagehead.html('<p>Search Results</p>');
+			//this.collapseSlides();
+			this.$pagehead.html('Search Results');
+			this.$("#recent_link").removeClass("sidebar-item-selected");
+			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
+			this.$("#results_link").addClass("sidebar-item-selected");
 			this.$results.show();	
 		},
 		
