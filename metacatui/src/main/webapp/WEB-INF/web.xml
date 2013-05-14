@@ -10,6 +10,6 @@
   </servlet>
   <servlet-mapping>
   	<servlet-name>DataONEProxy</servlet-name>
-  	<url-pattern>/d1proxy</url-pattern>
+  	<url-pattern>/d1proxy/*</url-pattern>
   </servlet-mapping>
 </web-app>

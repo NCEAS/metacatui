@@ -43,6 +43,7 @@ public class DataONEProxy extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	    System.out.println(request.getRequestURI());
 		response.setContentType("application/json");
 	    response.getWriter().write(proxyQuery(""));
 	}
@@ -73,7 +74,7 @@ public class DataONEProxy extends HttpServlet {
 	    /*
 	    InputStream is = null;
 	    try {
-            URI query = new URI("https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&rows=15&start=30&wt=json");
+            URI query = new URI("https://cn.dataone.org/cn/v1/query/solr/fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&rows=15&start=30&wt=json");
             URL url = query.toURL();
             is = url.openStream();
             result = IOUtils.toString(is, Charset.forName("UTF-8"));

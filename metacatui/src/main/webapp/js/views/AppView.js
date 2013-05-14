@@ -50,11 +50,7 @@ var app = app || {};
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").addClass("sidebar-item-selected");
 			this.$results.show();
-			this.$statcounts.html(this.statsTemplate({
-				start: app.SearchResults.header.get("start")+1,
-				end: app.SearchResults.header.get("start") + app.SearchResults.length,
-				numFound: app.SearchResults.header.get("numFound")
-			}));			
+			this.updateStats();
 		},
 		
 		// Switch the results view to the most recent data query 
@@ -64,7 +60,8 @@ var app = app || {};
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").addClass("sidebar-item-selected");
-			this.$results.show();		
+			this.$results.show();
+			this.updateStats();
 		},
 		
 		// Switch the results view to the search results query
@@ -74,7 +71,16 @@ var app = app || {};
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#results_link").addClass("sidebar-item-selected");
-			this.$results.show();	
+			this.$results.show();
+			this.updateStats();
+		},
+		
+		updateStats: function () {
+			this.$statcounts.html(this.statsTemplate({
+				start: app.SearchResults.header.get("start")+1,
+				end: app.SearchResults.header.get("start") + app.SearchResults.length,
+				numFound: app.SearchResults.header.get("numFound")
+			}));
 		},
 		
 		// Re-rendering the App includes refreshing the statistics
