@@ -12,6 +12,7 @@ var app = app || {};
 		// Reference to this collection's model.
 		model: app.SolrResult,
 
+		// TODO: this needs to be overridden to send params to the actual search endpoints
 		url: "/metacatui/d1proxy",
 
 		parse: function(solr) {
@@ -23,5 +24,9 @@ var app = app || {};
 	});
 
 	// Create our global collection of **SolrResults**.
-	app.SolrResults = new SolrResultList();
+	app.SearchResults = new SolrResultList();
+	app.MostAccessed = new SolrResultList();
+	app.MostRecent = new SolrResultList();
+	app.Featured = new SolrResultList();
+
 })();

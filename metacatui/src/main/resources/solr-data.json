@@ -11,7 +11,7 @@
 		}
 	},
 	"response":{
-		"numFound":46366,
+		"numFound":820,
 		"start":0,
 		"docs":[
 			{"origin": "Matt Jones","pubDate": "2012","downloads":23,"citations":11,"id":"doi:10.6073/AA/knb-lter-bnz.180.10","abstract":"The pyranometers measure the energy flux density of global sun plus sky radiation across a broad band from 280 to 2800 nm. The sensor consists of a silicon photodiode which does not have an equal spectral response across the band. However, this does not cause serious error for measurements of solar radiation, provided the spectral distribution is not altered, such as within plant canopies. Winter measurements may be inaccurate due to snow cover.","title":"Bonanza Creek Experimental Forest: PYR measurements: hourly (1988 - Present)"},
