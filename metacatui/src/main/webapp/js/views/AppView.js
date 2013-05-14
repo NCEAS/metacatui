@@ -22,6 +22,9 @@ var app = app || {};
 			//'keypress #new-todo': 'createOnEnter',
 			//'click #clear-completed': 'clearCompleted',
 			//'click #toggle-all': 'toggleAllComplete'
+			'click #mostaccessed_link': 'showMostAccessed',
+			'click #results_link': 'showResults',
+			'click #recent_link': 'showRecent',
 		},
 
 		// At initialization we bind to the relevant events on the `SearchResults`
@@ -31,7 +34,8 @@ var app = app || {};
 			//this.allCheckbox = this.$('#toggle-all')[0];
 			//this.$input = this.$('#new-todo');
 			//this.$footer = this.$('#footer');
-			this.$mostaccessed = this.$('#mostaccessed');
+			this.$results = this.$('#results');
+			this.$pagehead = this.$('#pagehead');
 			this.$statcounts = this.$('#statcounts');
 
 			this.listenTo(app.SolrResults, 'add', this.addOne);
@@ -41,29 +45,46 @@ var app = app || {};
 			this.listenTo(app.SolrResults, 'all', this.render);
 
 			app.SolrResults.fetch();
-		},
 
-		// Re-rendering the App just means refreshing the statistics -- the rest
-		// of the app doesn't change.
+		},
+		
+		// 
+		showMostAccessed: function () {
+			this.$pagehead.html('Most Accessed');
+			this.$results.show();
+			this.$statcounts.html(this.statsTemplate({
+				start: app.SolrResults.header.get("start")+1,
+				end: app.SolrResults.header.get("start") + app.SolrResults.length,
+				numFound: app.SolrResults.header.get("numFound")
+			}));			
+		},
+		
+		// 
+		showRecent: function () {
+			this.$pagehead.html('<p>Most Recent</p>');
+			this.$results.show();		
+		},
+		
+		//
+		showResults: function () {
+			this.$pagehead.html('<p>Search Results</p>');
+			this.$results.show();	
+		},
+		
+		// Re-rendering the App includes refreshing the statistics
 		render: function () {
 			if (app.SolrResults.length) {
-				this.$mostaccessed.show();
-				this.$statcounts.html(this.statsTemplate({
-					start: app.SolrResults.header.get("start")+1,
-					end: app.SolrResults.header.get("start") + app.SolrResults.length,
-					numFound: app.SolrResults.header.get("numFound")
-				}));
-				
+				//this.showMostAccessed();			
 			} else {
-				this.$mostaccessed.hide();
+				this.$results.hide();
 			}
 		},
-
+		
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
 			var view = new app.SearchResultView({ model: result });
-			this.$mostaccessed.append(view.render().el);
+			this.$results.append(view.render().el);
 		},
 
 		// Add all items in the **SearchResults** collection at once.

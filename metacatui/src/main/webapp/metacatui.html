@@ -154,13 +154,13 @@
     			
       			<div class="sidebar-subhead">Browse</div>
       			<ul class="unstyled">
-      				<li><a class="sidebar-item" href="#"><i class="icon-search icon-large"></i> Search Results</a></li>
-      				<li><a class="sidebar-item" href="#"><i class="icon-calendar icon-large"></i> Most Recent</a></li>
-      				<li><a class="sidebar-item sidebar-item-selected" href="#"><i class="icon-signal icon-large"></i> Most Accessed</a></li>
+      				<li><a class="sidebar-item" id="results_link" href="#"><i class="icon-search icon-large"></i> Search Results</a></li>
+      				<li><a class="sidebar-item" id="recent_link" href="#"><i class="icon-calendar icon-large"></i> Most Recent</a></li>
+      				<li><a class="sidebar-item sidebar-item-selected" id="mostaccessed_link" href="#"><i class="icon-signal icon-large"></i> Most Accessed</a></li>
       			</ul>
       			<div class="sidebar-subhead">Your Collections</div>
       			<ul class="unstyled">
-      				<li><a class="sidebar-item" href="#"><i class="icon-folder-close icon-large"></i> Your Data</a></li>
+      				<li><a class="sidebar-item" id="yourdata_link" href="#"><i class="icon-folder-close icon-large"></i> Your Data</a></li>
       				<li><a class="sidebar-item" href="#"><i class="icon-folder-close icon-large"></i> Sierra Grazing Study</a></li>
       				<li><a class="sidebar-item" href="#"><i class="icon-folder-close icon-large"></i> Rockies Grazing Study</a></li>    			
       				<li><a class="sidebar-item" href="#"><i class="icon-folder-close icon-large"></i> Colorado Ungulate Study</a></li>
@@ -169,8 +169,8 @@
     	
     		<!--CONTENT AREA-->
     		<div id="content" class="span9">
-    			<div id="mostaccessed" class="container-fluid search-results">
-    				<h2 class="row">Most Accessed Data</h2>
+    			<div id="results" class="container-fluid search-results">
+    				<h2 id="pagehead" class="row">Most Accessed Data</h2>
     				<div class="row-fluid result-header">
     					<div class="result-header-menu span1">
 							<div class="dropdown">
@@ -258,6 +258,7 @@
     <script src="js/models/SolrHeader.js"></script>
     <script src="js/models/SolrResult.js"></script>
     <script src="js/collections/SolrResults.js"></script>
+    <script src="js/routers/router.js"></script>
     <script src="js/views/SearchResultView.js"></script>
     <script src="js/views/AppView.js"></script>    
 	<script src="js/app.js"></script>
