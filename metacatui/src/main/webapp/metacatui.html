@@ -148,7 +148,7 @@
   		<div class="row-fluid">
   		
       		<!--SIDEBAR AREA-->
-    		<div id="sidebar" class="span3">
+    		<div id="sidebar" class="span2">
     			<div class="sidebar-subhead">Contribute</div>
     			<a class="btn btn-primary" href="#share"><i class="icon-upload icon-white icon-large"></i> Submit data</a>
     			
@@ -168,9 +168,9 @@
     		</div>
     	
     		<!--CONTENT AREA-->
-    		<div id="content" class="span9">
+    		<div id="content" class="span10">
     			<div id="results" class="container-fluid search-results">
-    				<h2 id="pagehead" class="row">Most Accessed Data</h2>
+    				<h2 id="pagehead" class="row-fluid">Most Accessed Data</h2>
     				<div id="results-header" class="row-fluid result-header">
     					<div class="result-header-menu span1">
 							<div class="dropdown">
@@ -181,8 +181,18 @@
 								</ul>
 							</div>
     					</div>
-    					<div class="result-header-count span8" id="statcounts">1 to 15 of 582</div>
-    					<div class="result-header-stats span2"></div>
+    					<div class="result-header-count span7" id="statcounts">1 to 15 of 582</div>
+    					<div class="result-header-pager span3 pagination" id="resultspager">
+							<ul>
+								<li><a id="results_prev" href="#">Prev</a></li>
+								<!--
+								<li><a href="#">1</a></li>
+								<li><a href="#">2</a></li>
+								<li><a href="#">3</a></li>
+								-->
+								<li><a id="results_next" href="#">Next</a></li>
+							</ul>
+						</div>
     					<div class="result-header-menu span1">
 							<div class="dropdown">
                   				<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> <b class="caret"></b></a>
@@ -192,7 +202,19 @@
 							</div>    					
     					</div>
     				</div>
-
+    				<!-- 
+					<div id="resultspager" class="row-fluid pagination">
+						<ul>
+							<li><a href="#">Prev</a></li>
+							<li><a href="#">1</a></li>
+							<li><a href="#">2</a></li>
+							<li><a href="#">3</a></li>
+							<li><a href="#">4</a></li>
+							<li><a href="#">5</a></li>
+							<li><a href="#">Next</a></li>
+						</ul>
+					</div>
+					-->
     			</div>
     		</div>
   		</div>

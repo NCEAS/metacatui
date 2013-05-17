@@ -187,6 +187,10 @@
     .result-author {
     	font-weight: bold;
     }
+    
+    .pagination {
+    	margin: auto;
+    }
 
 	/* FOOTER CSS
 	-------------------------------------------------- */

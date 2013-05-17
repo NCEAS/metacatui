@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 
 import javax.servlet.Servlet;
@@ -45,7 +46,7 @@ public class DataONEProxy extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	    System.out.println(request.getRequestURI());
 		response.setContentType("application/json");
-	    response.getWriter().write(proxyQuery(""));
+	    response.getWriter().write(proxyQuery(request.getParameter("start")));
 	}
 
 	/**
@@ -69,7 +70,7 @@ public class DataONEProxy extends HttpServlet {
 		// TODO Auto-generated method stub
 	}
 
-	private String proxyQuery(String baseURI) {
+	private String proxyQuery(String start) {
 	    String result="";
 	    /*
 	    InputStream is = null;
@@ -94,18 +95,22 @@ public class DataONEProxy extends HttpServlet {
         }
         return result;
 	    */
-	    return simulateSearchResults();
+	    return simulateSearchResults(start);
 	}
 	
-	private String simulateSearchResults() {
-	    String simData = "";
+	private String simulateSearchResults(String start) {
+	    String updatedSimData = "";
 	    //InputStream is = this.getClass().getResourceAsStream("/simulated-data.json");
 	    InputStream is = this.getClass().getResourceAsStream("/solr-data.json");
 	    try {
-            simData = IOUtils.toString(is, Charset.forName("UTF-8"));
+	        String updatedYear = 2012 + start;
+            String simData = IOUtils.toString(is, Charset.forName("UTF-8"));
+            // change the result start record number
+            System.out.println("Start is: " + start);
+            updatedSimData = simData.replaceAll("\"start\":\"0\"", "\"start\":\"" + start + "\"").replaceAll("\"start\":0", "\"start\":" + start).replaceAll("2012", updatedYear);
         } catch (IOException e) {
             e.printStackTrace();
         }
-	    return simData;
+	    return updatedSimData;
 	}
 }

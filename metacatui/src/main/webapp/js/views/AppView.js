@@ -25,6 +25,8 @@ var app = app || {};
 			'click #mostaccessed_link': 'showMostAccessed',
 			'click #results_link': 'showResults',
 			'click #recent_link': 'showRecent',
+			'click #results_prev': 'prevpage',
+			'click #results_next': 'nextpage',
 		},
 
 		// At initialization we bind to the relevant events on the `SearchResults`
@@ -39,7 +41,7 @@ var app = app || {};
 			this.listenTo(app.SearchResults, 'all', this.render);
 
 			// TODO: this should not be done at init, rather when requested
-			app.SearchResults.fetch();
+			app.SearchResults.fetch({data: {start: 0}});
 		},
 		
 		// Switch the results view to the most accessed data query
@@ -81,6 +83,18 @@ var app = app || {};
 				end: app.SearchResults.header.get("start") + app.SearchResults.length,
 				numFound: app.SearchResults.header.get("numFound")
 			}));
+		},
+		
+		// Next page of results
+		nextpage: function () {
+			app.SearchResults.nextpage();
+			this.updateStats();
+		},
+		
+		// Previous page of results
+		prevpage: function () {
+			app.SearchResults.prevpage();
+			this.updateStats();
 		},
 		
 		// Re-rendering the App includes refreshing the statistics
