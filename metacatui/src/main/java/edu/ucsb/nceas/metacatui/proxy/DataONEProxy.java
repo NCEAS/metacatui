@@ -46,7 +46,8 @@ public class DataONEProxy extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	    System.out.println(request.getRequestURI());
 		response.setContentType("application/json");
-	    response.getWriter().write(proxyQuery(request.getParameter("start")));
+		String rows = request.getParameter("rows");
+	    response.getWriter().write(proxyQuery(request.getParameter("start"), request.getParameter("rows")));
 	}
 
 	/**
@@ -70,7 +71,7 @@ public class DataONEProxy extends HttpServlet {
 		// TODO Auto-generated method stub
 	}
 
-	private String proxyQuery(String start) {
+	private String proxyQuery(String start, String rows) {
 	    String result="";
 	    /*
 	    InputStream is = null;
@@ -95,18 +96,21 @@ public class DataONEProxy extends HttpServlet {
         }
         return result;
 	    */
-	    return simulateSearchResults(start);
+	    return simulateSearchResults(start, rows);
 	}
 	
-	private String simulateSearchResults(String start) {
+	private String simulateSearchResults(String start, String rows) {
 	    String updatedSimData = "";
 	    //InputStream is = this.getClass().getResourceAsStream("/simulated-data.json");
-	    InputStream is = this.getClass().getResourceAsStream("/solr-data.json");
+	    String resname =  "/solr-data-" + rows + ".json";
+	    //String resname =  "/solr-data.json";
+	    InputStream is = this.getClass().getResourceAsStream(resname);
 	    try {
 	        String updatedYear = 2012 + start;
             String simData = IOUtils.toString(is, Charset.forName("UTF-8"));
             // change the result start record number
             System.out.println("Start is: " + start);
+            System.out.println(" Rows is: " + rows);
             updatedSimData = simData.replaceAll("\"start\":\"0\"", "\"start\":\"" + start + "\"").replaceAll("\"start\":0", "\"start\":" + start).replaceAll("2012", updatedYear);
         } catch (IOException e) {
             e.printStackTrace();

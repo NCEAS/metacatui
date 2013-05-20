@@ -32,7 +32,7 @@ var app = app || {};
 		// At initialization we bind to the relevant events on the `SearchResults`
 		// collection, when items are added or changed.
 		initialize: function () {
-			this.$results = this.$('#results');
+			this.$results = this.$('#results-view');
 			this.$pagehead = this.$('#pagehead');
 			this.$statcounts = this.$('#statcounts');
 
@@ -47,6 +47,8 @@ var app = app || {};
 		// Switch the results view to the most accessed data query
 		showMostAccessed: function () {
 			//this.expandSlides();
+			app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
+			//app.SearchResults.setrows(10);
 			this.$pagehead.html('Most Accessed');
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").removeClass("sidebar-item-selected");
@@ -57,7 +59,9 @@ var app = app || {};
 		
 		// Switch the results view to the most recent data query 
 		showRecent: function () {
-			//this.collapseSlides();
+			//this.expandSlides();
+			app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
+			//app.SearchResults.setrows(10);
 			this.$pagehead.html('Most Recent');
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
@@ -69,6 +73,8 @@ var app = app || {};
 		// Switch the results view to the search results query
 		showResults: function () {
 			//this.collapseSlides();
+			app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 25, start: 0 });
+			//app.SearchResults.setrows(25);
 			this.$pagehead.html('Search Results');
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
