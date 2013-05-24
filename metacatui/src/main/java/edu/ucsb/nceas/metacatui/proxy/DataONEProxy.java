@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
 import javax.servlet.Servlet;
@@ -47,7 +48,7 @@ public class DataONEProxy extends HttpServlet {
 	    System.out.println(request.getRequestURI());
 		response.setContentType("application/json");
 		String rows = request.getParameter("rows");
-	    response.getWriter().write(proxyQuery(request.getParameter("start"), request.getParameter("rows")));
+	    response.getWriter().write(proxyQuery(request.getParameter("fl"), request.getParameter("q"), request.getParameter("start"), request.getParameter("rows")));
 	}
 
 	/**
@@ -71,35 +72,40 @@ public class DataONEProxy extends HttpServlet {
 		// TODO Auto-generated method stub
 	}
 
-	private String proxyQuery(String start, String rows) {
+	private String proxyQuery(String fields, String query, String start, String rows) {
+	    return search(fields, query, start, rows);
+	    //return simulateSearch(start, rows);
+	}
+
+	private String search(String fields, String queryString, String start, String rows) {
 	    String result="";
-	    /*
 	    InputStream is = null;
-	    try {
-            URI query = new URI("https://cn.dataone.org/cn/v1/query/solr/fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&rows=15&start=30&wt=json");
-            URL url = query.toURL();
-            is = url.openStream();
-            result = IOUtils.toString(is, Charset.forName("UTF-8"));
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        return result;
-	    */
-	    return simulateSearchResults(start, rows);
+	        try {
+	            //String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&wt=json" + "&rows=" + rows + "&start=" + start;
+	            String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl="+ URLEncoder.encode(fields) + "&q="+ URLEncoder.encode(queryString) + "&wt=json" + "&rows=" + URLEncoder.encode(rows) + "&start=" + URLEncoder.encode(start);
+	            System.out.println("Query URL: " + uri);
+	            URI query = new URI(uri);
+	            URL url = query.toURL();
+	            is = url.openStream();
+	            result = IOUtils.toString(is, Charset.forName("UTF-8"));
+	        } catch (URISyntaxException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	        } catch (IOException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	        } finally {
+	            try {
+	                is.close();
+	            } catch (IOException e) {
+	                // TODO Auto-generated catch block
+	                e.printStackTrace();
+	            }
+	        }
+	        return result;
 	}
 	
-	private String simulateSearchResults(String start, String rows) {
+	private String simulateSearch(String start, String rows) {
 	    String updatedSimData = "";
 	    //InputStream is = this.getClass().getResourceAsStream("/simulated-data.json");
 	    String resname =  "/solr-data-" + rows + ".json";
@@ -112,8 +118,18 @@ public class DataONEProxy extends HttpServlet {
             System.out.println("Start is: " + start);
             System.out.println(" Rows is: " + rows);
             updatedSimData = simData.replaceAll("\"start\":\"0\"", "\"start\":\"" + start + "\"").replaceAll("\"start\":0", "\"start\":" + start).replaceAll("2012", updatedYear);
+            is.close();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
         }
 	    return updatedSimData;
 	}

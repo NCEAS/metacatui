@@ -9,7 +9,6 @@ var app = app || {};
 
 	// The DOM element for a SearchResult item...
 	app.SearchResultView = Backbone.View.extend({
-		//... is a list tag.
 		tagName:  'div',
 		className: 'row-fluid result-row',
 

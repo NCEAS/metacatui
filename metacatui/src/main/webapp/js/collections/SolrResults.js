@@ -34,7 +34,7 @@ var app = app || {};
 			this.start += this.rows;
 			//this.reset();
 			this.header.set({"start" : this.start});
-			this.fetch({data: {start: this.start}});
+			this.fetch({data: {start: this.start}, reset: true});
 		},
 		
 		prevpage: function() {
@@ -44,7 +44,7 @@ var app = app || {};
 			}
 			//this.reset();
 			this.header.set({"start" : this.start});
-			this.fetch({data: {start: this.start}});
+			this.fetch({data: {start: this.start}, reset: true});
 		},
 		
 		setrows: function(numrows) {
