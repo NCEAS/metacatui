@@ -96,6 +96,7 @@ var app = app || {};
 		
 		// Next page of results
 		nextpage: function () {
+			this.removeAll();
 			app.SearchResults.nextpage();
 			this.$resultsview.show();
 			this.updateStats();
@@ -103,6 +104,7 @@ var app = app || {};
 		
 		// Previous page of results
 		prevpage: function () {
+			this.removeAll();
 			app.SearchResults.prevpage();
 			this.$resultsview.show();
 			this.updateStats();
@@ -130,16 +132,9 @@ var app = app || {};
 			app.SearchResults.each(this.addOne, this);
 		},
 		
-		// Remove a single SolrResult item from the list by removing the view for it, and
-		// removing its element from the `<ul>`.
-		removeOne: function (result) {
-			var view = new app.SearchResultView({ model: result });
-			this.$results.append(view.render().el);
-		},
-
-		// Remove all items in the **SearchResults** collection at once.
+		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
-			app.SearchResults.each(this.removeOne, this);
+			this.$results.html('');
 		},
 		
 		// Collapse the top slide carousel to display full page

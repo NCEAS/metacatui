@@ -73,8 +73,8 @@ public class DataONEProxy extends HttpServlet {
 	}
 
 	private String proxyQuery(String fields, String query, String start, String rows) {
-	    //return search(fields, query, start, rows);
-	    return simulateSearch(start, rows);
+	    return search(fields, query, start, rows);
+	    //return simulateSearch(start, rows);
 	}
 
 	private String search(String fields, String queryString, String start, String rows) {
