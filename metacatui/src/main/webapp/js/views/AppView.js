@@ -28,6 +28,7 @@ var app = app || {};
 			'click #featureddata_link': 'showFeatured',
 			'click #results_prev': 'prevpage',
 			'click #results_next': 'nextpage',
+			'click #search_btn': 'showResults',
 		},
 
 		// At initialization we bind to the relevant events on the `SearchResults`
@@ -82,10 +83,11 @@ var app = app || {};
 		// Switch the results view to the search results query
 		showResults: function () {
 			//this.collapseSlides();
+			var search = this.$("#search_txt").val();
 			this.removeAll();
 			this.$pagehead.html('Search Results');
 			app.SearchResults.setrows(25);
-			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+soils");
+			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+" + search);
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#results_link").addClass("sidebar-item-selected");
