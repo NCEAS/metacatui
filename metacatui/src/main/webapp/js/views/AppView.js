@@ -70,7 +70,7 @@ var app = app || {};
 			this.removeAll();
 			this.$pagehead.html('Most Recent');
 			app.SearchResults.setrows(10);
-			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+recent");
+			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*&sort=dateUploaded+desc");
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").addClass("sidebar-item-selected");
