@@ -17,5 +17,11 @@ var app = app || {};
 			citations: 0,
 			selected: false
 		},
+		
+		// Toggle the `selected` state of the result
+		toggle: function () {
+			this.selected = !this.get('selected');
+		}
+		
 	});
 })();

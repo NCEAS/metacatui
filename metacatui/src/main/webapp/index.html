@@ -252,7 +252,26 @@
     <script type="text/template" id="result-template">
     		<div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div>
     		<div class="result-citation span7">
-   		       <span class="result-author"><%- origin %>.</span><span class="result-pubdate"> <%- pubDate %>.</span><span class="result-title"> <%- title %>.</span><span class="result-id"> <%- id %></span>
+   		       <span class="result-author"><% var count=0; _.each(origin, function(author) {
+                   count++;
+                   if (count > 1) {
+                       print(", ")
+  				   }
+                   if (count > 1 && count == origin.length) {
+                       print("and ")
+  				   }
+                   print(author)
+                   if (count == origin.length) {
+                       print(". ")
+  				   }
+               }) %></span>
+               <span class="result-pubdate"> <% if(pubDate) { 
+                   print(moment(pubDate).format('YYYY'), '. ')
+               } else {
+                   print(moment(dateUploaded).format('YYYY'), '. ')
+               } %></span>
+               <span class="result-title"> <% if (title) { print(title, '. '); } %></span>
+               <span class="result-id"> <%- id %></span>
     		</div>
     		<div class="result-stats span2"><span class="badge badge-info"><%- downloads %></span> <span class="badge badge-success"><%- citations %></span></div>
     		
@@ -281,6 +300,7 @@
     <script src="components/underscore.js"></script>
     <script src="components/json2.js"></script>    
 	<script src="components/backbone.js"></script>
+	<script src="components/moment.js"></script>
     <script src="js/models/SolrHeader.js"></script>
     <script src="js/models/SolrResult.js"></script>
     <script src="js/collections/SolrResults.js"></script>

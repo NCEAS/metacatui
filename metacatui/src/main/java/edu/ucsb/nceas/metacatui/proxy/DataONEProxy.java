@@ -47,7 +47,7 @@ public class DataONEProxy extends HttpServlet {
 	    System.out.println(request.getRequestURI());
 		response.setContentType("application/json");
 		String rows = request.getParameter("rows");
-	    response.getWriter().write(proxyQuery(request.getParameter("fl"), request.getParameter("q"), request.getParameter("start"), request.getParameter("rows")));
+	    response.getWriter().write(proxyQuery(request.getParameter("fl"), request.getParameter("q"), request.getParameter("sort"), request.getParameter("start"), request.getParameter("rows")));
 	}
 
 	/**
@@ -71,17 +71,17 @@ public class DataONEProxy extends HttpServlet {
 		// TODO Auto-generated method stub
 	}
 
-	private String proxyQuery(String fields, String query, String start, String rows) {
-	    return search(fields, query, start, rows);
+	private String proxyQuery(String fields, String query, String sort, String start, String rows) {
+	    return search(fields, query, sort, start, rows);
 	    //return simulateSearch(start, rows);
 	}
 
-	private String search(String fields, String queryString, String start, String rows) {
+	private String search(String fields, String queryString, String sort, String start, String rows) {
 	    String result="";
 	    InputStream is = null;
 	        try {
 	            //String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&wt=json" + "&rows=" + rows + "&start=" + start;
-	            String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl="+ URLEncoder.encode(fields) + "&q="+ URLEncoder.encode(queryString) + "&wt=json" + "&rows=" + URLEncoder.encode(rows) + "&start=" + URLEncoder.encode(start);
+	            String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl="+ URLEncoder.encode(fields) + "&q="+ URLEncoder.encode(queryString) + "&sort=" + URLEncoder.encode(sort) + "&wt=json" + "&rows=" + URLEncoder.encode(rows) + "&start=" + URLEncoder.encode(start);
 	            System.out.println("Query URL: " + uri);
 	            URI query = new URI(uri);
 	            URL url = query.toURL();

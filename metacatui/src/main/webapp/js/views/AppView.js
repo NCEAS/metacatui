@@ -43,10 +43,8 @@ var app = app || {};
 			this.listenTo(app.SearchResults, 'reset', this.addAll);
 			this.listenTo(app.SearchResults, 'all', this.render);
 
-			app.SearchResults.setfields("id,title,origin,pubDate,abstract");
+			app.SearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract");
 
-			// TODO: this should not be done at init, rather when requested
-			//app.SearchResults.fetch({data: {start: 0}});
 			this.render();
 		},
 		
@@ -56,6 +54,7 @@ var app = app || {};
 			this.removeAll();
 			this.$pagehead.html('Most Accessed');
 			app.SearchResults.setrows(10);
+			app.SearchResults.setSort("dateUploaded+asc");
 			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+most");
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").removeClass("sidebar-item-selected");
@@ -71,7 +70,8 @@ var app = app || {};
 			this.removeAll();
 			this.$pagehead.html('Most Recent');
 			app.SearchResults.setrows(10);
-			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*&sort=dateUploaded+desc");
+			app.SearchResults.setSort("dateUploaded+desc");
+			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*");
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").addClass("sidebar-item-selected");
@@ -87,6 +87,7 @@ var app = app || {};
 			this.removeAll();
 			this.$pagehead.html('Search Results');
 			app.SearchResults.setrows(25);
+			app.SearchResults.setSort("title+desc");
 			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+" + search);
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
@@ -102,6 +103,7 @@ var app = app || {};
 			this.removeAll();
 			this.$pagehead.html('Featured Data');
 			app.SearchResults.setrows(10);
+			app.SearchResults.setSort("dateUploaded+desc");
 			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+jones");
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");

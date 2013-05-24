@@ -18,10 +18,11 @@ var app = app || {};
 		    this.fields = options.fields || "id,title";
 		    this.rows = options.rows || 10;
 		    this.start = options.start || 0;
+		    this.sort = options.sort || 'id';
 		},
 		
 		url: function() {
-			return this.service + "fl=" + this.fields + "&q=" + this.currentquery + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			return this.service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
 		},
 		  
 		parse: function(solr) {
@@ -67,6 +68,10 @@ var app = app || {};
 		
 		setfields: function(newfields) {
 				this.fields = newfields;
+		},
+		
+		setSort: function(newsort) {
+			this.sort = newsort;
 		}
 		
 	});
