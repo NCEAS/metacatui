@@ -42,16 +42,19 @@ var app = app || {};
 			this.listenTo(app.SearchResults, 'reset', this.addAll);
 			this.listenTo(app.SearchResults, 'all', this.render);
 
+			app.SearchResults.setfields("id,title,origin,pubDate,abstract");
+
 			// TODO: this should not be done at init, rather when requested
-			app.SearchResults.fetch({data: {start: 0}});
+			//app.SearchResults.fetch({data: {start: 0}});
+			this.render();
 		},
 		
 		// Switch the results view to the most accessed data query
 		showMostAccessed: function () {
 			//this.expandSlides();
-			//app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
-			//app.SearchResults.setrows(10);
+			this.removeAll();
 			this.$pagehead.html('Most Accessed');
+			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+most");
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").addClass("sidebar-item-selected");
@@ -63,9 +66,9 @@ var app = app || {};
 		// Switch the results view to the most recent data query 
 		showRecent: function () {
 			//this.expandSlides();
-			//app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
-			//app.SearchResults.setrows(10);
+			this.removeAll();
 			this.$pagehead.html('Most Recent');
+			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+recent");
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").addClass("sidebar-item-selected");
@@ -77,12 +80,9 @@ var app = app || {};
 		// Switch the results view to the search results query
 		showResults: function () {
 			//this.collapseSlides();
-			//app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 25, start: 0 });
-			//app.SearchResults.setrows(25);
 			this.removeAll();
 			this.$pagehead.html('Search Results');
-			//app.SearchResults.setfields("id,title,origin,pubDate,abstract");
-			app.SearchResults.setquery("formatType:METADATA+-obsoletedBy:*+soils");
+			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+soils");
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#results_link").addClass("sidebar-item-selected");
@@ -94,9 +94,9 @@ var app = app || {};
 		// Switch the results view to the featured data query
 		showFeatured: function () {
 			//this.collapseSlides();
-			//app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 25, start: 0 });
-			//app.SearchResults.setrows(25);
+			this.removeAll();
 			this.$pagehead.html('Featured Data');
+			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+jones");
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#results_link").removeClass("sidebar-item-selected");
@@ -134,10 +134,10 @@ var app = app || {};
 		// Re-rendering the App includes refreshing the statistics
 		render: function () {
 			if (app.SearchResults.length) {
-				this.$results.show();
+				this.$resultsview.show();
 				this.updateStats();
 			} else {
-				this.$results.hide();
+				this.$resultsview.hide();
 			}
 		},
 		
