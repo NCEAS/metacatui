@@ -73,8 +73,8 @@ public class DataONEProxy extends HttpServlet {
 	}
 
 	private String proxyQuery(String fields, String query, String start, String rows) {
-	    return search(fields, query, start, rows);
-	    //return simulateSearch(start, rows);
+	    //return search(fields, query, start, rows);
+	    return simulateSearch(start, rows);
 	}
 
 	private String search(String fields, String queryString, String start, String rows) {
@@ -117,7 +117,7 @@ public class DataONEProxy extends HttpServlet {
             // change the result start record number
             System.out.println("Start is: " + start);
             System.out.println(" Rows is: " + rows);
-            updatedSimData = simData.replaceAll("\"start\":\"0\"", "\"start\":\"" + start + "\"").replaceAll("\"start\":0", "\"start\":" + start).replaceAll("2012", updatedYear);
+            updatedSimData = simData.replaceAll("\"start\":\"0\"", "\"start\":\"" + start + "\"").replaceAll("\"start\":0", "\"start\":" + start).replaceAll("2012", updatedYear).replaceAll("AA", start);
             is.close();
         } catch (IOException e) {
             e.printStackTrace();
