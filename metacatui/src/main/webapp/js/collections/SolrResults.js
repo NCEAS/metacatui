@@ -13,14 +13,15 @@ var app = app || {};
 		model: app.SolrResult,
 
 		initialize: function(models, options) {
-			this.base = options.base || '/metacatui/d1proxy/';
+			this.base = options.base || '/metacatui/d1proxy/?';
 		    this.query = options.query || '*:*';
+		    this.fields = options.fields || "id,title";
 		    this.rows = options.rows || 10;
 		    this.start = options.start || 0;
 		},
 		
 		url: function() {
-			return this.base + this.query + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			return this.base + "fl=" + this.fields + "&q=" + this.query + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
 		},
 		  
 		parse: function(solr) {
@@ -57,11 +58,28 @@ var app = app || {};
 			//this.reset();
 			this.header.set({"rows" : this.rows});
 			this.fetch({data: {start: this.start, rows: this.rows}});
+		},
+		
+		setquery: function(newquery) {
+			if (this.query != newquery) {
+				this.query = newquery;
+				this.start = 0;
+				this.fetch({data: {start: this.start}, reset: true});
+			}
+		},
+		
+		setfields: function(newfields) {
+			if (this.fields != newfields) {
+				this.fields = newfields;
+				this.start = 0;
+				this.fetch({data: {start: this.start}, reset: true});
+			}
 		}
+		
 	});
 
 	// Create our global collection of **SolrResults**.
-	app.SearchResults = new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
+	app.SearchResults = new SolrResultList([], { query: "formatType:METADATA+-obsoletedBy:*", fields: "id,title,origin,pubDate,abstract", rows: 10, start: 0 });
 	//app.MostAccessed = new SolrResultList();
 	//app.MostRecent = new SolrResultList();
 	//app.Featured = new SolrResultList();
