@@ -33,8 +33,10 @@ var app = app || {};
 		nextpage: function() {
 			this.start += this.rows;
 			//this.reset();
-			this.header.set({"start" : this.start});
-			this.fetch({data: {start: this.start}, reset: true});
+			if (this.header != null) {
+				this.header.set({"start" : this.start});
+			}
+			this.fetch({data: {start: this.start}});
 		},
 		
 		prevpage: function() {
@@ -43,8 +45,10 @@ var app = app || {};
 				this.start = 0;
 			}
 			//this.reset();
-			this.header.set({"start" : this.start});
-			this.fetch({data: {start: this.start}, reset: true});
+			if (this.header != null) {
+				this.header.set({"start" : this.start});
+			}
+			this.fetch({data: {start: this.start}});
 		},
 		
 		setrows: function(numrows) {

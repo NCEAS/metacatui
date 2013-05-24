@@ -32,7 +32,8 @@ var app = app || {};
 		// At initialization we bind to the relevant events on the `SearchResults`
 		// collection, when items are added or changed.
 		initialize: function () {
-			this.$results = this.$('#results-view');
+			this.$resultsview = this.$('#results-view');
+			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
 			this.$statcounts = this.$('#statcounts');
 
@@ -47,66 +48,71 @@ var app = app || {};
 		// Switch the results view to the most accessed data query
 		showMostAccessed: function () {
 			//this.expandSlides();
-			app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
+			//app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
 			//app.SearchResults.setrows(10);
 			this.$pagehead.html('Most Accessed');
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").addClass("sidebar-item-selected");
-			this.$results.show();
+			this.$resultsview.show();
 			this.updateStats();
 		},
 		
 		// Switch the results view to the most recent data query 
 		showRecent: function () {
 			//this.expandSlides();
-			app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
+			//app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 10, start: 0 });
 			//app.SearchResults.setrows(10);
 			this.$pagehead.html('Most Recent');
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").addClass("sidebar-item-selected");
-			this.$results.show();
+			this.$resultsview.show();
 			this.updateStats();
 		},
 		
 		// Switch the results view to the search results query
 		showResults: function () {
 			//this.collapseSlides();
-			app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 25, start: 0 });
+			//app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 25, start: 0 });
 			//app.SearchResults.setrows(25);
 			this.$pagehead.html('Search Results');
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#results_link").addClass("sidebar-item-selected");
-			this.$results.show();
+			this.$resultsview.show();
 			this.updateStats();
 		},
 		
 		updateStats: function () {
-			this.$statcounts.html(this.statsTemplate({
-				start: app.SearchResults.header.get("start")+1,
-				end: app.SearchResults.header.get("start") + app.SearchResults.length,
-				numFound: app.SearchResults.header.get("numFound")
-			}));
+			if (app.SearchResults.header != null) {
+				this.$statcounts.html(this.statsTemplate({
+					start: app.SearchResults.header.get("start")+1,
+					end: app.SearchResults.header.get("start") + app.SearchResults.length,
+					numFound: app.SearchResults.header.get("numFound")
+				}));
+			}
 		},
 		
 		// Next page of results
 		nextpage: function () {
 			app.SearchResults.nextpage();
+			this.$resultsview.show();
 			this.updateStats();
 		},
 		
 		// Previous page of results
 		prevpage: function () {
 			app.SearchResults.prevpage();
+			this.$resultsview.show();
 			this.updateStats();
 		},
 		
 		// Re-rendering the App includes refreshing the statistics
 		render: function () {
 			if (app.SearchResults.length) {
-				//this.showMostAccessed();			
+				this.$results.show();
+				this.updateStats();
 			} else {
 				this.$results.hide();
 			}
@@ -122,6 +128,18 @@ var app = app || {};
 		// Add all items in the **SearchResults** collection at once.
 		addAll: function () {
 			app.SearchResults.each(this.addOne, this);
+		},
+		
+		// Remove a single SolrResult item from the list by removing the view for it, and
+		// removing its element from the `<ul>`.
+		removeOne: function (result) {
+			var view = new app.SearchResultView({ model: result });
+			this.$results.append(view.render().el);
+		},
+
+		// Remove all items in the **SearchResults** collection at once.
+		removeAll: function () {
+			app.SearchResults.each(this.removeOne, this);
 		},
 		
 		// Collapse the top slide carousel to display full page
