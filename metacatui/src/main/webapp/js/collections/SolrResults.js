@@ -31,12 +31,14 @@ var app = app || {};
 		},
 		
 		nextpage: function() {
-			this.start += this.rows;
-			//this.reset();
+			// Only increment the page if the current page is not the last page
+			if (this.start + this.rows < this.header.get("numFound")) {
+				this.start += this.rows;
+			}
 			if (this.header != null) {
 				this.header.set({"start" : this.start});
 			}
-			this.fetch({data: {start: this.start}});
+			this.fetch({data: {start: this.start}, reset: true});
 		},
 		
 		prevpage: function() {
@@ -44,11 +46,10 @@ var app = app || {};
 			if (this.start < 0) {
 				this.start = 0;
 			}
-			//this.reset();
 			if (this.header != null) {
 				this.header.set({"start" : this.start});
 			}
-			this.fetch({data: {start: this.start}});
+			this.fetch({data: {start: this.start}, reset: true});
 		},
 		
 		setrows: function(numrows) {
