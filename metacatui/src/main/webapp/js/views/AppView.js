@@ -25,6 +25,7 @@ var app = app || {};
 			'click #mostaccessed_link': 'showMostAccessed',
 			'click #results_link': 'showResults',
 			'click #recent_link': 'showRecent',
+			'click #featureddata_link': 'showFeatured',
 			'click #results_prev': 'prevpage',
 			'click #results_next': 'nextpage',
 		},
@@ -54,6 +55,7 @@ var app = app || {};
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").addClass("sidebar-item-selected");
+			this.$("#featureddata_link").removeClass("sidebar-item-selected");
 			this.$resultsview.show();
 			this.updateStats();
 		},
@@ -67,6 +69,7 @@ var app = app || {};
 			this.$("#results_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#recent_link").addClass("sidebar-item-selected");
+			this.$("#featureddata_link").removeClass("sidebar-item-selected");
 			this.$resultsview.show();
 			this.updateStats();
 		},
@@ -80,6 +83,21 @@ var app = app || {};
 			this.$("#recent_link").removeClass("sidebar-item-selected");
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#results_link").addClass("sidebar-item-selected");
+			this.$("#featureddata_link").removeClass("sidebar-item-selected");
+			this.$resultsview.show();
+			this.updateStats();
+		},
+	
+		// Switch the results view to the featured data query
+		showFeatured: function () {
+			//this.collapseSlides();
+			//app.SearchResults = app.SearchResults || new SolrResultList([], { query: "?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*", rows: 25, start: 0 });
+			//app.SearchResults.setrows(25);
+			this.$pagehead.html('Featured Data');
+			this.$("#recent_link").removeClass("sidebar-item-selected");
+			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
+			this.$("#results_link").removeClass("sidebar-item-selected");
+			this.$("#featureddata_link").addClass("sidebar-item-selected");
 			this.$resultsview.show();
 			this.updateStats();
 		},
