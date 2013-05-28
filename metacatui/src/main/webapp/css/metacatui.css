@@ -136,6 +136,12 @@
       margin-top: 150px;
 	}
 
+	/* MAIN BODY CSS
+	-------------------------------------------------- */
+	/* Main body containing sidebar and content */
+    .main-body-padded {
+      padding-top: 60px;
+    }
 
 	/* SIDEBAR CSS
 	-------------------------------------------------- */

@@ -50,7 +50,7 @@ var app = app || {};
 		
 		// Switch the results view to the most accessed data query
 		showMostAccessed: function () {
-			//this.expandSlides();
+			//this.collapseSlides();
 			this.removeAll();
 			this.$pagehead.html('Most Accessed');
 			app.SearchResults.setrows(10);
@@ -66,7 +66,7 @@ var app = app || {};
 		
 		// Switch the results view to the most recent data query 
 		showRecent: function () {
-			//this.expandSlides();
+			//this.collapseSlides();
 			this.removeAll();
 			this.$pagehead.html('Most Recent');
 			app.SearchResults.setrows(10);
@@ -82,7 +82,7 @@ var app = app || {};
 		
 		// Switch the results view to the search results query
 		showResults: function () {
-			//this.collapseSlides();
+			this.collapseSlides();
 			var search = this.$("#search_txt").val();
 			this.removeAll();
 			this.$pagehead.html('Search Results');
@@ -99,7 +99,7 @@ var app = app || {};
 	
 		// Switch the results view to the featured data query
 		showFeatured: function () {
-			//this.collapseSlides();
+			this.expandSlides();
 			this.removeAll();
 			this.$pagehead.html('Featured Data');
 			app.SearchResults.setrows(10);
@@ -168,12 +168,13 @@ var app = app || {};
 		
 		// Collapse the top slide carousel to display full page
 		collapseSlides: function () {
-			// TODO: provide padding for the header so the results aren't obscured
+			this.$("#main_body").addClass("main-body-padded");
 			$('#mainPageSlides').collapse("hide");
 		},
 		
 		// Expand the top slide carousel to display partial page
 		expandSlides: function () {
+			this.$("#main_body").removeClass("main-body-padded");
 			$('#mainPageSlides').collapse("show");
 		}
 		
