@@ -34,10 +34,13 @@ var app = app || {};
 		// At initialization we bind to the relevant events on the `SearchResults`
 		// collection, when items are added or changed.
 		initialize: function () {
+			//this.$baseurl = "http://localhost/knb/metacat/d1/mn/";
+			this.$baseurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
 			this.$resultsview = this.$('#results-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
 			this.$statcounts = this.$('#statcounts');
+			this.$isCollapsed = false;
 
 			this.listenTo(app.SearchResults, 'add', this.addOne);
 			this.listenTo(app.SearchResults, 'reset', this.addAll);
@@ -152,6 +155,7 @@ var app = app || {};
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
+			result.set( {baseurl: this.$baseurl+'d1proxy/view/'} );
 			var view = new app.SearchResultView({ model: result });
 			this.$results.append(view.render().el);
 		},
@@ -170,12 +174,16 @@ var app = app || {};
 		collapseSlides: function () {
 			this.$("#main_body").addClass("main-body-padded");
 			$('#mainPageSlides').collapse("hide");
+			this.$isCollapsed = true;
 		},
 		
 		// Expand the top slide carousel to display partial page
 		expandSlides: function () {
-			this.$("#main_body").removeClass("main-body-padded");
-			$('#mainPageSlides').collapse("show");
+			if (this.$isCollapsed) {
+				this.$("#main_body").removeClass("main-body-padded");
+				$('#mainPageSlides').collapse("show");
+				this.$isCollapsed = false;
+			}
 		}
 		
 	});	

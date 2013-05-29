@@ -190,6 +190,10 @@
         padding: 5px;
     }
     
+    .result-row:hover { 
+		background-color: #eee;
+	}
+
     .result-author {
     	font-weight: bold;
     }

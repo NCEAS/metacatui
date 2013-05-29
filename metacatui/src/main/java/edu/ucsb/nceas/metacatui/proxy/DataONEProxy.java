@@ -2,6 +2,7 @@ package edu.ucsb.nceas.metacatui.proxy;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,10 +45,34 @@ public class DataONEProxy extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	    System.out.println(request.getRequestURI());
-		response.setContentType("application/json");
-		String rows = request.getParameter("rows");
-	    response.getWriter().write(proxyQuery(request.getParameter("fl"), request.getParameter("q"), request.getParameter("sort"), request.getParameter("start"), request.getParameter("rows")));
+        System.out.println(request.getRequestURI());
+	    String resource = request.getPathInfo();
+	    System.out.println(resource);
+        resource = resource.substring(resource.indexOf("/") + 1);
+        System.out.println(resource);
+        Writer w = null;
+        
+        // default to node info
+        if (resource.equals("")) {
+            resource = "query";
+        }
+          
+        if (resource != null) {
+            if (resource.startsWith("view")) {
+                // TODO: handle a View request
+                resource = resource.substring(resource.indexOf("/") + 1);
+                response.setContentType("text/html");
+                w = response.getWriter();
+                w.write("<h1>View document: " + resource + "</h1>\n");
+                w.close();
+            } else {
+                response.setContentType("application/json");
+                String rows = request.getParameter("rows");
+                w = response.getWriter();
+                w.write(proxyQuery(request.getParameter("fl"), request.getParameter("q"), request.getParameter("sort"), request.getParameter("start"), request.getParameter("rows")));
+                w.close();
+            }
+        }	    
 	}
 
 	/**
