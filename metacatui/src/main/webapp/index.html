@@ -270,7 +270,7 @@
                } else {
                    print(moment(dateUploaded).format('YYYY'), '. ')
                } %></span>
-               <span class="result-title"> <% if (title) { print(title, '. '); } %></span>
+               <span class="result-title"> <% if (title) { print('<a href=\"', baseurl, id, '\">', title, '.</a> '); } %></span>
                <span class="result-id"> <%- id %></span>
     		</div>
     		<div class="result-stats span2"><span class="badge badge-info"><%- downloads %></span> <span class="badge badge-success"><%- citations %></span></div>
