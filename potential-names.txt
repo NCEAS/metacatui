@@ -3,6 +3,7 @@ Words to consider in name
 Badger
 Bank
 Data
+Collaborate
 Curate
 Crypt
 Dew
@@ -20,29 +21,50 @@ Exo
 Ecto
 Fund
 Living
+Mine
 Nectar
 Pan
 Reproducible
 Share
+Store
 Sync
 
 Potential new names for the KNB site/service
 ---------------------------------------------
-Badger
+Artemis
+Badger  -- databadger.org is available
 Data Depot
 Data Drop
 Data Happy
 DataStow
+DataStore
+DataKeep
+DataKeeper
+DataSync
+DSync
+DeKeep
 EarthBank
+Earth Data Repository
 Eco Data Depot
 EcoData.org
-Earth Data Repository
-Data Keeper
+EcoStore
 EcoRepo
 ExoData
+MetaKeep
+MetaPub
+MetaStore
 Network for Open Data Exchange (Node)
+OpenDataStore
 OpenEcology
+ReproData -- reprodata.org is available
+ReproSci -- reprosci.{com,org,net,...} are available
 Squirrel
 SquirrelIT (get it? Squirrel IT away =))
+SciKeep -- scikeep.{com,org,net,...} are available
+SciStore -- scistore.org is available
+ScienceStore
+SciSync  -- scisync.{com,org,net,...} are available
+ScienceSync
+SciPub -- scipub.info is available
 Understory
-SciSync
+
