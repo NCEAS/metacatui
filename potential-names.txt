@@ -62,6 +62,8 @@ Squirrel
 SquirrelIT (get it? Squirrel IT away =))
 SciKeep -- scikeep.{com,org,net,...} are available
 SciStore -- scistore.org is available
+ScienceData.is -- sciencedata.is is available
+ScienceData.pro -- seems available
 ScienceStore
 SciSync  -- scisync.{com,org,net,...} are available
 ScienceSync
