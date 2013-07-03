@@ -3,49 +3,80 @@
     -------------------------------------------------- */
     /* Padding below the footer and lighter body text */
     body {
-      color: #5a5a5a;
+      color: #A1A1A1;
+      background-color: #FDFDFD;
     }
 
     /* CUSTOMIZE THE NAVBAR
     -------------------------------------------------- */
-
-    /* Special class on .container surrounding .navbar, used for positioning it into place. */
-    .navbar-wrapper {
+    
+    .center {
+      float: none;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .navbar {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 20px;
+      min-width: 940px;
+      float: right;
+      border: none;
+      z-index: 9;
+    
+    }
+
+    .navbar-inner {
+      position: relative;
+      border: none;
       z-index: 10;
-      margin-top: 20px;
-      margin-bottom: -90px; /* Negative margin to pull up carousel. 90px is roughly margins and height of navbar. */
     }
-    .navbar-wrapper .navbar {
-    }
-
-    /* Remove border and change up box shadow for more contrast */
-    .navbar .navbar-inner {
-      border: 0;
-      -webkit-box-shadow: 0 2px 10px rgba(0,0,0,.25);
-         -moz-box-shadow: 0 2px 10px rgba(0,0,0,.25);
-              box-shadow: 0 2px 10px rgba(0,0,0,.25);
-    }
-
-    /* Downsize the brand/project name a bit */
-    .navbar .brand{
-      display:block;
-      height:30px;
-      float:left;
-      max-height:80px;
-      overflow:visible;
-      font-size: 16px;
-      font-weight: bold;
-      text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+    .navbar .brand {
+      font-size: 48px;
+      font-weight: 300;
+      font-family: "Lato";
+      color: #992222;
+      letter-spacing: -3px;
       
     }
+	
+    .navbar .nav > li > * {
+      margin: 10px 10px 10px 10px;
+    }
 
-	/* Navbar links: increase padding for taller navbar */
     .navbar .nav > li > a {
-      padding: 15px 20px;
+      color: #555555;
+      font-size: 18px;
+      font-family: "Lato";
+      font-weight: 400;
+      text-transform: uppercase;
+    }
+
+    .navbar .nav > li > a:focus,
+    .navbar .nav > li > a:hover {
+      color: #555555;
+      font-weight: 400;
+      background-color: #E5E5E5;
+      text-decoration: none;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      /*background-color: transparent;*/
+    }
+    
+    .navbar .nav > .active > a,
+    .navbar .nav > .active > a:hover,
+    .navbar .nav > .active > a:focus {
+      color: #555555;
+      font-weight: 400;
+      text-decoration: none;
+      background-color: #E5E5E5;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      -webkit-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
+         -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
+              box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
 
     /* Offset the responsive button for proper vertical alignment */
@@ -64,11 +95,16 @@
 
     /* Carousel base class */
     .carousel {
+      position: relative;
+      top: 0px;
       margin-bottom: 30px;
+      height: 50%;
+      
     }
 
     .carousel .container {
       position: relative;
+      min-height: 400px;
       z-index: 9;
     }
 
@@ -81,9 +117,13 @@
       border: 0;
       z-index: 10;
     }
-
+        
+    .carousel .active.left {left:0;opacity:0;z-index:2;}
+    
+    .carousel .next {left:0;opacity:1;z-index:1;}
+    
     .carousel .item {
-      height: 400px;
+      min-height: 400px;
       background-color: #615145; /* Fallback to solid color if the gradient fails */
       background-image: -webkit-gradient(
 	     linear,
@@ -93,12 +133,21 @@
 	     color-stop(0.3, #615145)
       );
     }
+    
+    .carousel .item {
+       -webkit-transition: opacity 3s; 
+       -moz-transition: opacity 3s; 
+       -ms-transition: opacity 3s; 
+       -o-transition: opacity 3s; 
+       transition: opacity 3s;}
+    
     .carousel img {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 0px;
+      /*
       min-width: 100%;
-      height: 400px;
+      min-height: 100%;
+      */
     }
 
     .carousel .static {
@@ -110,24 +159,30 @@
     
     .carousel-caption {
       background: rgba(0,0,0,0.3);
-      position: static;
-      max-width: 800px;
+      position: relative  ;
+      top: 150px;
+      max-width: 400px;
       padding: 10px 10px 10px 10px;
-      margin-top: 150px;
-      margin-left: 600px;
+      -webkit-border-radius: 6px;
+         -moz-border-radius: 6px;
+              border-radius: 6px;
+      
 	}
     .carousel-caption h1 {
       margin: 0;
       line-height: 1.25;
-      font-size: 28pt;
-      color: #C6CCA5;
-      text-shadow: 0 1px 1px rgba(0,0,0,.4);
+      font-family: Lato;
+      font-weight: 400;
+      font-size: 36px;
+      color: #FDFDFD;
     }
     .carousel-caption .lead {
       margin: 0;
       line-height: 1;
-      color: #C6CCA5;
-      text-shadow: 0 1px 1px rgba(0,0,0,.4);
+      font-family: Lato;
+      font-weight: 300;
+      font-size: 24px;
+      color: #FDFDFD;
     }
     .carousel-caption .btn {
       margin-top: 10px;
