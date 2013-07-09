@@ -5,8 +5,56 @@
     body {
       color: #A1A1A1;
       background-color: #FDFDFD;
+      font-family: Lato;
+      font-weight: 400;
     }
 
+    article, aside, figure, footer, header, hgroup, menu, nav, section { 
+      display:block; 
+      
+    }
+    section, footer {
+      min-height: 400px;
+      margin: none;
+    }
+    
+    footer {
+      position: relative;
+      bottom: 0px;
+    }
+    
+    #Slides {
+      position: relative;
+      top: 0px;
+      z-index: 50;
+    }
+    
+    #Features {
+      position: relative;
+      top: 0px;
+      background-color: #899CA6;
+    }
+    
+    #FeaturedData {
+      position: relative;
+      background-color: #B0A691;
+    }
+    
+    .btn, .btn-primary {
+      background-color: #992222;
+      color: #FFFFFF;
+      background-image: none;
+      background-repeat: none;
+    }
+    
+    .btn:hover {
+      background-color: #882222;
+      color: #FDFDFD;
+      background-image: none;
+      background-repeat: none;
+      
+    }
+    
     /* CUSTOMIZE THE NAVBAR
     -------------------------------------------------- */
     
@@ -19,29 +67,31 @@
     .navbar {
       position: absolute;
       top: 20px;
-      min-width: 940px;
-      float: right;
       border: none;
-      z-index: 9;
+      z-index: 100;
+      min-height: 55px;
     
     }
 
     .navbar-inner {
       position: relative;
       border: none;
-      z-index: 10;
+      z-index: 140;
     }
+    
     .navbar .brand {
       font-size: 48px;
       font-weight: 300;
       font-family: "Lato";
       color: #992222;
       letter-spacing: -3px;
+      margin: 7px 5px 7px 5px;
+      float: left;
       
     }
 	
     .navbar .nav > li > * {
-      margin: 10px 10px 10px 10px;
+      margin: 7px 5px 7px 5px;
     }
 
     .navbar .nav > li > a {
@@ -85,28 +135,26 @@
     }
 
     /* Offset the search div for proper vertical alignment */
-    .navbar .form-search {
-      margin: 10px 0px 0px 0px;
+    .navbar .input-append {
+      margin: 5px 0px 0px 0px;
+      z-index: 150;
     }
 
+    #SignIn {
+      float: right;
+    }
 
     /* CAROUSEL CSS
     -------------------------------------------------- */
 
     /* Carousel base class */
     .carousel {
-      position: relative;
-      top: 0px;
-      margin-bottom: 30px;
-      height: 50%;
+      width: 100%;
+      margin-bottom: 0px;
+      max-height: 400px;
       
     }
 
-    .carousel .container {
-      position: relative;
-      min-height: 400px;
-      z-index: 9;
-    }
 
     .carousel-control {
       height: 80px;
@@ -115,53 +163,46 @@
       text-shadow: 0 1px 1px rgba(0,0,0,.4);
       background-color: transparent;
       border: 0;
-      z-index: 10;
+      z-index: 230;
     }
         
-    .carousel .active.left {left:0;opacity:0;z-index:2;}
+    .carousel .active .left {
+      left:0;
+      opacity:0;
+      z-index:240;
+    }
     
-    .carousel .next {left:0;opacity:1;z-index:1;}
+    .carousel .next {
+      left:0;
+      opacity:1;
+      z-index:241;
+    }
     
     .carousel .item {
-      min-height: 400px;
-      background-color: #615145; /* Fallback to solid color if the gradient fails */
+      background-color: #FDFDFD; /* Fallback to solid color if the gradient fails */
       background-image: -webkit-gradient(
 	     linear,
 	     left bottom,
 	     left top,
-	     color-stop(0.9, #8F7D70),
-	     color-stop(0.3, #615145)
+	     color-stop(0.9, #FFFFFF),
+	     color-stop(0.3, #FDFDFD)
       );
-    }
-    
-    .carousel .item {
-       -webkit-transition: opacity 3s; 
-       -moz-transition: opacity 3s; 
-       -ms-transition: opacity 3s; 
-       -o-transition: opacity 3s; 
-       transition: opacity 3s;}
-    
-    .carousel img {
-      position: absolute;
-      top: 0px;
-      /*
-      min-width: 100%;
-      min-height: 100%;
-      */
-    }
-
-    .carousel .static {
-      position: absolute;
-      top: 125px;
-      left: 175px;
-      min-width: 0%;
+      z-index: 185;
+      -webkit-transition: opacity 4s; 
+      -moz-transition: opacity 4s; 
+      -ms-transition: opacity 4s; 
+      -o-transition: opacity 4s; 
+      transition: opacity 4s;
+      
     }
     
     .carousel-caption {
       background: rgba(0,0,0,0.3);
-      position: relative  ;
-      top: 150px;
-      max-width: 400px;
+      position: absolute;
+      top: 30%;
+      bottom: 40%;
+      max-width: 50%;
+      z-index: 200;
       padding: 10px 10px 10px 10px;
       -webkit-border-radius: 6px;
          -moz-border-radius: 6px;
@@ -169,7 +210,7 @@
       
 	}
     .carousel-caption h1 {
-      margin: 0;
+      margin: 0px;
       line-height: 1.25;
       font-family: Lato;
       font-weight: 400;
@@ -187,9 +228,6 @@
     .carousel-caption .btn {
       margin-top: 10px;
     }
-    .carousel-logo {
-      margin-top: 150px;
-	}
 
 	/* MAIN BODY CSS
 	-------------------------------------------------- */
@@ -260,11 +298,12 @@
 	/* FOOTER CSS
 	-------------------------------------------------- */
     .footer {
+      position: relative;
+      bottom: 0px;
       padding-top: 30px;
       padding-bottom: 30px;
-      margin-top: 30px;
-      color: #5a5a5a;
-      background-color: black;
+      color: #FDFDFD;
+      background-color: #3F3F3F;
     }
 
 	.footer .brand {
@@ -278,20 +317,16 @@
 
     /* RESPONSIVE CSS
     -------------------------------------------------- */
-
+    
     @media (max-width: 979px) {
 
-      .container.navbar-wrapper {
-        margin-bottom: 0;
-        width: auto;
-      }
       .navbar-inner {
         border-radius: 0;
         margin: -20px 0;
       }
 
       .carousel .item {
-        height: 500px;
+        height: 100%;
       }
       .carousel img {
         width: auto;
@@ -312,6 +347,7 @@
     }
 
 
+    /*
     @media (max-width: 767px) {
 
       .navbar-inner {
@@ -357,4 +393,4 @@
       }
 
     }
-    
+    */

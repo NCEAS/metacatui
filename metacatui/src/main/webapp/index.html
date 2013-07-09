@@ -21,20 +21,19 @@
     <!-- TODO: Fav and touch icons -->
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-144-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-114-precomposed.png">
-      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-72-precomposed.png">
-                    <link rel="apple-touch-icon-precomposed" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-57-precomposed.png">
-                                   <link rel="shortcut icon" href="http://twitter.github.com/bootstrap/assets/ico/favicon.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="http://twitter.github.com/bootstrap/assets/ico/favicon.png">
 </head>
 <body id="metacatui-app">
 
     <!-- NAVBAR
     ======================================================================= -->
-    <!-- <div class="navbar-wrapper"> -->
-    <div class="container center">
+    <nav id="Navbar" class="container">
       <div class="navbar">
         <div class="navbar-inner">
-          <a class="brand" href="#">knb</a>
           <div class="nav-collapse collapse">
+            <a class="brand" href="#">knb</a>
             <ul class="nav">
               <li><a href="#about">About</a></li>
               <li><a href="#tools">Tools</a></li>
@@ -50,50 +49,79 @@
       
                 </ul>
               </li>
-              <li><div class="nav">
-            <form class="navbar-search pull-right">
-              <input type="text" class="input-large search-query" placeholder="Search" id="search_txt">
-              <!--
-              <button type="submit" class="btn-small btn-primary" id="search_btn"><i class="icon-search icon-white icon-large"></i></button>
-               -->
-            </form>
-            </div></li>
-              <li><a href="#user">Sign In</a></li>
+              <li>
+                <div class="nav">
+                  <div class="input-append">
+                    <input type="text" class="span4" placeholder="Search for data" id="search_txt">
+                    <button type="button" class="btn" id="search_btn"><i class="icon-search icon-white icon-large"></i></button>
+                  </div>
+                </div>
+              </li>
+              <li id="SignIn"><a href="#user">Sign In</a></li>
             </ul>
           </div><!--/.nav-collapse -->     
         </div><!-- /.navbar-inner -->
       </div><!-- /.navbar -->
-    </div><!-- /.container -->
+    </nav><!-- /mainNavbar -->
     
-    <!-- KNB FEATURES SECTION
+    <!-- SLIDE IMAGES SECTION
     ======================================================================= -->
-    <div id="mainPageSlides" class="carousel slide">
+    <section id="Slides" class="carousel slide" data-interval="10000">
       <div class="carousel-inner">
-        <ol class="carousel-indicators">
-          <li data-target="#mainPageSlides" data-slide-to="0" class="active"></li>
-          <li data-target="#mainPageSlides" data-slide-to="1"></li>
-          <li data-target="#mainPageSlides" data-slide-to="2"></li>
-        </ol>
         <div class="active item">
-          <img src="./img/slide_03.jpg" alt="">
+          <img src="./img/slide_06.jpg" alt="" />
           <div class="container">
             <div class="carousel-caption center">
-              <h1>Store. Share. Collaborate.</h1>
-              <p class="lead">Team up by sharing research data through the knb repository.</p>
+              <h1>Store, share, and collaborate.</h1>
+              <p class="lead">Team up by sharing research data through the KNB repository.</p>
             </div>
           </div>
         </div>
+        <div class="item">
+          <img src="./img/slide_05.jpg" alt="" />
+          <div class="container">
+            <div class="carousel-caption center">
+              <h1>Find and repurpose.</h1>
+              <p class="lead">Drive your next meta analysis with data and partners through the KNB.</p>
+            </div>
+          </div>
+        </div>
+        <div class="item">
+          <img src="./img/slide_03.jpg" alt="" />
+          <div class="container">
+            <div class="carousel-caption center">
+              <h1>Run your own repository.</h1>
+              <p class="lead">KNB software is free and open source.</p>
+            </div>
+          </div>
+        </div>
+      </div>     
       <a class="left carousel-control" href="#mainPageSlides" data-slide="prev">‹</a>
       <a class="right carousel-control" href="#mainPageSlides" data-slide="next">›</a>
-    </div>
-
-    <!-- MAIN BODY SECTION (SIDEBAR AND CONTENT)
+    </section>
+    
+    <!-- FEATURES SECTION
     ======================================================================= -->    
-    <div class="container-fluid" id="main_body">
-      <div class="row-fluid">
-      
+    <section id="Features">
+    </section>
+
+    <!-- FEATURED DATA SECTION
+    ======================================================================= -->    
+
+    <section id="FeaturedData">
+    </section>
+
+    <!-- SEARCH APP SECTION
+    ======================================================================= -->    
+
+    <!-- Comment out on main page - add in after search -->
+    <!--
+    <section id="mainBody" class="container-fluid" >
+      <section class="row">
+    -->
           <!--SIDEBAR AREA-->
-        <div id="sidebar" class="span2">
+      <!--
+      <aside id="sidebar" class="span2">
           <div class="sidebar-subhead">Contribute</div>
           <a class="btn btn-primary" href="#share"><i class="icon-upload icon-white icon-large"></i> Submit data</a>
           
@@ -111,9 +139,11 @@
               <li><a class="sidebar-item" href="#"><i class="icon-folder-close icon-large"></i> Rockies Grazing Study</a></li>          
               <li><a class="sidebar-item" href="#"><i class="icon-folder-close icon-large"></i> Colorado Ungulate Study</a></li>
             </ul>
-        </div>
+        </aside>
+      -->
       
         <!--CONTENT AREA-->
+        <!--
         <div id="content" class="span10">
           <div id="results-view" class="container-fluid">
             <h2 id="pagehead" class="row-fluid">Featured Data</h2>
@@ -131,12 +161,10 @@
               <div class="result-header-pager span3 pagination" id="resultspager">
               <ul>
                 <li><a id="results_prev" href="#">Prev</a></li>
-                <!--
                 <li><a href="#">1</a></li>
                 <li><a href="#">2</a></li>
                 <li><a href="#">3</a></li>
-                -->
-                <li><a id="results_next" href="#">Next</a></li>
+          <li><a id="results_next" href="#">Next</a></li>
               </ul>
             </div>
               <div class="result-header-menu span1">
@@ -150,7 +178,6 @@
             </div>
           <div id="results" class="search-results">
             </div>
-            <!-- 
           <div id="resultspager" class="row-fluid pagination">
             <ul>
               <li><a href="#">Prev</a></li>
@@ -162,36 +189,17 @@
               <li><a href="#">Next</a></li>
             </ul>
           </div>
-          -->
-          </div>
         </div>
-      </div>
-  </div>
+        </div>
+      </section>
+      
+    </section>
+    -->
 
     <!-- FOOTER SECTION
     ======================================================================= -->
-    <div class="row footer">
-      <div class="span2 offset1">
-        <a class="brand" href="#"><img alt="DataDepot" data-src="holder.js/100x100/grey" /></a>
-      </div>
-      <div class="span2 offset1">
-        <p>About</p>
-        <p>Contact</p>
-        <p>API</p>
-      </div>
-      <div class="span2">
-        <p>Tools</p>
-        <p>Plans</p>
-      </div>
-      <div class="span2">
-        <a class="brand" href="#"><img alt="NCEAS" data-src="holder.js/100x100/grey" /></a>
-      </div>
-      <div class="span2">
-        <a class="brand" href="#"><img alt="DataONE" data-src="holder.js/50x50/grey" /></a>
-        <a class="brand" href="#"><img alt="Metacat" data-src="holder.js/50x50/grey" /></a>
-      </div>      
-    </div>
-    
+    <footer class="row footer">
+    </footer>
     <!-- Templates used for rendering data from the models
     ======================================================================= -->
     <script type="text/template" id="result-template">
@@ -257,7 +265,7 @@
     <script>
       !function ($) {
         $(function(){
-          $('#mainPageSlides').carousel()
+          $('.carousel').carousel()
         })
       }(window.jQuery)
     </script>
