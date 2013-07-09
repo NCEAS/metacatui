@@ -193,7 +193,12 @@
       -ms-transition: opacity 4s; 
       -o-transition: opacity 4s; 
       transition: opacity 4s;
-      
+      max-height: 400px;
+      overflow: hidden;
+    }
+    
+    div.item > img {
+      height: auto;
     }
     
     .carousel-caption {
