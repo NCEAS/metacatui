@@ -1,11 +1,14 @@
 
+/* Import font families */
+@import url(http://fonts.googleapis.com/css?family=Lato);
+
 /* Body CSS
     -------------------------------------------------- */
     /* Padding below the footer and lighter body text */
     body {
       color: #A1A1A1;
       background-color: #FDFDFD;
-      font-family: Lato;
+      font-family: Lato, "Helvetica Nueue", Helvetica, "sans serif";
       font-weight: 400;
     }
 
@@ -23,6 +26,38 @@
       bottom: 0px;
     }
     
+    
+    .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
+      font-weight: 300;
+      background-image: none;
+      background-repeat: none;
+    }
+    
+    .btn-primary {
+      background-color: #992222;
+      color: #FFFFFF;
+      
+    }
+    .btn:hover {
+      background-color: #882222;
+      color: #FDFDFD;
+      background-image: none;
+      background-repeat: none;
+      
+    }
+    
+    #search_btn.btn {
+      background-color: #992222;
+      color: #FFFFFF;
+      
+    }
+    
+    #search_btn.btn:hover {
+      background-color: #882222;
+      color: #FFFFFF;
+      
+    }
+    
     #Slides {
       position: relative;
       top: 0px;
@@ -31,28 +66,35 @@
     
     #Features {
       position: relative;
-      top: 0px;
       background-color: #899CA6;
+      padding-top: 20px;
+      color: #FDFDFD;
+    }
+
+    section#Features h4 {
+      font-size: 160%;
+      font-weight: 300;
+    }
+
+    section#Features p {
+      font-size: 110%;
+      font-weight: 300;
+      line-height: 1.75;
+      margin-bottom: 30px;
+    }
+    
+    section#Features button {
+      background-color: #6C94A4;
+      color: #FFFFFF;
+      border: none;
+      text-shadow: none;
     }
     
     #FeaturedData {
       position: relative;
       background-color: #B0A691;
-    }
-    
-    .btn, .btn-primary {
-      background-color: #992222;
-      color: #FFFFFF;
-      background-image: none;
-      background-repeat: none;
-    }
-    
-    .btn:hover {
-      background-color: #882222;
-      color: #FDFDFD;
-      background-image: none;
-      background-repeat: none;
-      
+      padding-top: 20px;
+      color: #FDFDFD;      
     }
     
     /* CUSTOMIZE THE NAVBAR
