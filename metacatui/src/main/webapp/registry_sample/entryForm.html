@@ -1,0 +1,834 @@
+  <!--
+    '$RCSfile$'
+    Copyright: 2001 Regents of the University of California and the
+               National Center for Ecological Analysis and Synthesis
+     '$Author: walbridge $'
+       '$Date: 2008-09-26 17:47:01 +0000 (Fri, 26 Sep 2008) $'
+   '$Revision: 4396 $'
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+     
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+<!--____________________________max_width_____________________________________-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>KNB Data Repository</title>
+  <link rel="stylesheet" type="text/css" 
+        href="http://knb.ecoinformatics.org/knb/style/skins/knb/knb.css">
+  <script language="JavaScript" type="text/JavaScript"
+          src="http://knb.ecoinformatics.org/knb/style/skins/knb/knb.js"></script>
+  <script language="JavaScript" type="text/JavaScript"
+          src="http://knb.ecoinformatics.org/knb/style/common/branding.js"></script>
+</head>
+<body>
+      <script language="JavaScript" type="text/javascript">
+          insertTemplateOpening("http://knb.ecoinformatics.org/knb");
+      </script>
+
+  <script language="JavaScript">
+	    var contextUrl = 'http://knb.ecoinformatics.org/knb';
+	</script>
+  <script language="JavaScript" type="text/javascript" src="http://knb.ecoinformatics.org/knb/style/common/templates/entryForm.js">
+  </script>
+
+            
+      
+      <table class="intro" cellpadding="3" cellspacing="0">
+      
+      <tr><td align="left"><span class="emphasis">Repository Form</span></td></tr>
+      <tr><td align="left"><span class="regtext">Use this form to submit a new data set description for
+         inclusion in the repository.</span>
+          </td></tr>
+      <tr><td></td></tr>
+      <tr><td align="left"><span class="regtext">Please have a look at the 
+      <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide" target="guide">
+        <span class="boldlink">Guide for Completing the Data Repository Form</span></a> 
+        before you start filling in this form. Also, use your browser's 
+        Reload/Refresh function to make sure you see the latest version of this 
+        page.</span></td></tr>
+      <tr><td></td></tr>
+    
+        
+      <tr><td align="left"><span class="regtext">If you have any questions, comments or problems 
+      regarding this form, please contact the repository administrator at 
+      <a href="mailto:help@nceas.ucsb.edu"><span class="boldlink">help@nceas.ucsb.edu</span></a></span>.      
+      </td></tr><tr><td></td></tr>
+            
+      
+      <tr><td align="left"><span class="label">*Denotes a required field.</span></td></tr>
+      <tr><td></td></tr>
+      
+      <tr><td></td></tr>
+      
+      </table>
+
+
+<form action="/knb/cgi-bin/register-dataset.cgi" enctype="multipart/form-data" method="post">
+  <input type="hidden" name="cfg" value="knb">
+  <input type="hidden" name="docid" value="">
+  <input type="hidden" name="stage" value="insert">
+  
+        <table class="tables" cellpadding="5" cellspacing="0">
+        <tr class="sectheader">
+          <td colspan="5" align="left">
+            <span class="label">NAME OF SUBMITTER</span> 
+            <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#Submitter" target="guide" class="smalltext">(What's this?)</a>
+          </td>
+          <td class="rightCol"><span><a onClick="submitterBit=swap(event, 'submitterTable', submitterBit)" style="cursor:pointer">Hide</a></span></td>
+        </tr>
+  </table>
+        
+        <table class="tables" cellpadding="5" cellspacing="0" id="submitterTable">
+        <tr class="sectbody" id="firstName"><td class="rightCol"><span class="label">*First Name</span><td colspan="5"><input type="TEXT" name="providerGivenName" class="shortwidth" value="">
+        </td></tr>
+  <tr class="sectbody" id="lastName"><td class="rightCol"><span class="label">*Last Name</span><td colspan="5"><input type="TEXT" name="providerSurName" class="shortwidth" value="">
+        </td></tr>
+  </table>
+  
+  
+        <table class="tables" cellpadding="5" cellspacing="0">
+        <tr class="sectheader">
+          <td colspan="5" align="left">
+            <span class="label">BASIC INFORMATION</span>
+            <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#BasicInformation" target="guide" class="smalltext">(What's this?)</a>
+          </td>
+          <td class="rightCol"><span><a onClick="basicInfoBit=swap(event, 'basicInfoTable', basicInfoBit)" style="cursor:pointer">Hide</a></span></td>
+        </tr>
+  </table>
+        
+        <table class="tables" cellpadding="5" cellspacing="0" id="basicInfoTable">
+  <tr class="sectbody" id="title"><td class="rightCol"><span class="label">*Data Set Title</span></td><td colspan="5"><input type="TEXT" name="title" value="" class="longwidth">
+        </td></tr>
+    
+          
+          <tr class="sectbody"><td class="rightCol"><span class="label">*Organization Name</span></td>
+            <td colspan="5"><input type="TEXT" name="site" class="longwidth" value="station"></td></tr>
+    </table>
+       
+    <table class="tables" cellpadding="5" cellspacing="0">
+        <tr class="sectheader">
+          <td colspan="5" align="left">
+            <span class="label">PRINCIPAL DATA SET OWNER</span>
+            <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#DataSetOriginator" 
+  target="guide" class="smalltext">(What's this?)</a>
+          </td>
+          <td class="rightCol"><span><a onClick="dsoBit=swap(event, 'dsoTable', dsoBit)" style="cursor:pointer">Hide</a></span></td>
+        </tr>
+    </table>
+
+    <table class="tables" cellpadding="5" cellspacing="0" id="dsoTable">    
+    <tr class="sectbody"><td class="rightCol"><span class="label">*First Name</span></td>
+        <td colspan="5"><input type="TEXT" name="origNamefirst0" class="shortwidth" id="origNameFirst" value=""></td></tr>
+    <tr class="sectbody"><td class="rightCol"><span class="label">*Last Name</span></td>
+        <td colspan="5"><input type="TEXT" name="origNamelast0" class="shortwidth" id="origNameLast" value=""></td></tr>
+    <tr class="sectbody"><td class="rightCol"><span class="label">Organization Name</span></td>
+        <td colspan="5"><input type="TEXT" name="origNameOrg" class="longwidth" id="origNameOrg" value=""></td></tr>
+    <tr class="sectbody"><td class="rightCol"><span class="label">E-Mail</span></td>
+         <td colspan="5"><input type="TEXT" name="origEmail" class="shortwidth" id="origEmail" value=""></td></tr>
+    <tr class="sectbody"><td class="rightCol"><span class="label">Phone</span></td>
+        <td colspan="5"><input type="TEXT" name="origPhone" class="shortwidth" id="origPhone" value=""></td></tr>
+    <tr class="sectbody"><td class="rightCol"><span class="label">FAX</span></td>
+        <td colspan="5"><input type="TEXT" name="origFAX" class="shortwidth" id="origFAX" value=""></td></tr>
+  
+   <tr class="sectbody"><td valign="top" align="right"><span class="label">Street<br>Information</td> 
+        <td colspan="5"><textarea id="origDelivery" name="origDelivery" class="longwidth"></textarea><br><span class="smalltext">(number, street, unit, etc.; comma-separated)</span>
+        </td></tr>
+    
+    <tr class="sectbody"><td class="rightCol"><span class="label">City</span></td>
+        <td colspan="5"><input type="TEXT" name="origCity" id="origCity" value="" class="shortwidth"></td></tr>
+    <tr class="sectbody"><td class="rightCol"><span class="label">U.S. State or Territory</span></td>
+        <td colspan="5"><select name="origState" id="origState" class="shortwidth">
+          <option>Select state or territory here.</option>
+                  <option>Alabama</option>
+            <option>Alaska</option>
+            <option>American Samoa</option>
+            <option>Arizona</option>
+            <option>Arkansas</option>
+            <option>California</option>
+            <option>Colorado</option>
+            <option>Connecticut</option>
+            <option>Delaware</option>
+            <option>District of Columbia</option>
+            <option>Florida</option>
+            <option>Georgia</option>
+            <option>Guam</option>
+            <option>Hawaii</option>
+            <option>Idaho</option>
+            <option>Illinois</option>
+            <option>Indiana</option>
+            <option>Iowa</option>
+            <option>Kansas</option>
+            <option>Kentucky</option>
+            <option>Louisiana</option>
+            <option>Maine</option>
+            <option>Maryland</option>
+            <option>Massachusetts</option>
+            <option>Michigan</option>
+            <option>Minnesota</option>
+            <option>Mississippi</option>
+            <option>Missouri</option>
+            <option>Montana</option>
+            <option>Nebraska</option>
+            <option>Nevada</option>
+            <option>New Hampshire</option>
+            <option>New Jersey</option>
+            <option>New Mexico</option>
+            <option>New York</option>
+            <option>North Carolina</option>
+            <option>North Dakota</option>
+            <option>Northern Mariana Islands</option>
+            <option>Ohio</option>
+            <option>Oklahoma</option>
+            <option>Oregon</option>
+            <option>Pennsylvania</option>
+            <option>Puerto Rico</option>
+            <option>Rhode Island</option>
+            <option>South Carolina</option>
+            <option>South Dakota</option>
+            <option>Tennessee</option>
+            <option>Texas</option>
+            <option>Utah</option>
+            <option>Vermont</option>
+            <option>Virgin Islands</option>
+            <option>Virginia</option>
+            <option>Washington</option>
+            <option>West Virginia</option>
+            <option>Wisconsin</option>
+            <option>Wyoming</option>
+      </select></td></tr>
+   
+    <tr class="sectbody"><td class="rightCol"><span class="label">Other State/Province</span></td>
+          <td colspan="5"><input type="TEXT" name="origStateOther" class="shortwidth" id="origStateOther" value=""></td></tr>
+    <tr class="sectbody"><td class="rightCol"><span class="label">Postal Code</span></td>
+        <td colspan="5"><input type="TEXT" name="origZIP" id="origZip" value="" class="shortwidth"></td></tr>
+    <tr class="sectbody"><td class="rightCol"><span class="label">Country</span></td>
+        <td colspan="5"><input type="TEXT" name="origCountry" class="shortwidth" id="origCountry" value=""></td></tr>
+    </table>
+   
+    <table class="tables" cellpadding="5" cellspacing="0">
+      <tr class="sectheader">
+      <td colspan="5" align="left">
+        <span class="label">ASSOCIATED PARTIES</span>
+        <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#AdditionalOriginators" target="guide" class="smalltext">(What's this?)</a>
+      </td>
+      <td class="rightCol"><span><a onClick="apBit=swap(event, 'apTable', apBit)" style="cursor:pointer">Hide</a></span></td>
+    </tr>
+    </table>
+
+    <table class="tables" cellpadding="5" cellspacing="0" id="apTable">    
+    <tr class="sectbody"><td class="rightCol"><span class="label">First Name</span></td>
+        <td colspan="5">
+        <input name="aoFirstName" id="AONameFirst" class="shortwidth"></td></tr>
+            
+    <tr class="sectbody"><td class="rightCol"><span class="label">Last Name</span></td>
+        <td colspan="5">
+        <input name="aoLastName" id="AONameLast" class="shortwidth"></td></tr>
+                   
+    <tr class="sectbody"><td class="rightCol"><span class="label">Role</span></td>
+        <td colspan="5"> 
+        <select id="AORole" name="aoRole" class="shortwidth">
+            <option>Co-owner</option>
+            <option>Custodian/Steward</option>
+            <option>Metadata Provider</option>
+      <option>User</option>
+        </select>
+        </td>
+    </tr>
+  
+   <tr id="addAssociatedParty" class="sectbody"> 
+            <td></td>
+            <td colspan="5"> <input type="button" value="Add Associated Party" id="addaobutton1"
+                    onClick="addAssociatedParty()"></td></tr>
+       
+                    <input type="hidden" name="aoCount" value="0" id="aoCount">
+    <tr class="sectbody" id="addaorow"><td colspan=6 /></tr>
+    </table>
+   
+    <table class="tables" cellpadding="5" cellspacing="0">          
+      <tr class="sectheader">
+        <td colspan="5" align="left">
+          <span class="label">DATA SET ABSTRACT</span>
+          <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#DataSetAbstract" target="guide" class="smalltext">(What's this?)</a>
+        </td>
+        <td class="rightCol"><span><a onClick="abstractBit=swap(event, 'abstractTable', abstractBit)" style="cursor:pointer">Hide</a></span></td>
+  </tr>  
+    </table>
+   
+    <table class="tables" cellpadding="5" cellspacing="0" id="abstractTable">  
+    <tr class="sectbody"><td class="rightCol" valign="top"><span class="label">*Data Set Abstract</span><br><span class="regtext">(max. 350 words)</span></td>
+        <td colspan="5"><textarea rows="6" cols="60" name="abstract"></textarea></td></tr>
+    </table>
+      <table class="tables" cellpadding="5" cellspacing="0">
+      <tr class="sectheader">
+        <td colspan="5" align="left">
+          <span class="label">KEYWORD INFORMATION</span>
+          <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#KeywordInformation" target="guide" class="smalltext">(What's this?)</a>
+        </td>
+        <td class="rightCol"><span><a onClick="keywordBit=swap(event, 'keywordTable', keywordBit)" style="cursor:pointer">Hide</a></span></td>
+        </tr>
+    </table>
+   
+    <table class="tables" cellpadding="5" cellspacing="0" id="keywordTable">     
+     <tr class="sectbody"><td><td colspan="5" align="left"><span class="regtext">For samples, see <a href=
+"http://gcmd.nasa.gov/Resources/valids/gcmd_parameters.html" target="nasa"><span class=
+"boldlink">NASA Global Change Master Directory (GCMD)</a>.</span>
+     
+      <tr class="sectbody">
+        <td class="rightCol"><span class="label">Keyword</span></td>
+      <td colspan="5">
+            <input name="keyword" id="keyword" class="shortwidth"></td></tr>
+
+
+     <tr class="sectbody"><td class="rightCol"><span class="label">Keyword Type</span></td>
+     <td colspan="5">
+            <select name="keywordType" id="keywordType" class="shortwidth">
+      <option>None</option>
+            <option>Theme</option>
+            <option>Place</option>
+            <option>Stratum</option>
+            <option>Temporal</option>
+            <option>Taxonomic</option>
+            </select>
+        </td></tr>
+      
+        <tr id="keyThRow" class="sectbody"><td class="rightCol"><span class="label">Keyword Thesaurus</span></td>
+          <td colspan="5">
+            
+            <select name="keywordTh" id="keywordTh" class="shortwidth">
+          <option>None</option>
+             <option>GCMD</option>
+            </select>
+      
+      </td></tr>
+            
+    <tr id="addKeyword" class="sectbody">
+          <td></td>
+          <td colspan="5" align="left">
+                   <input type="button" value="Add Keyword" onClick="addKeyword()"></td></tr>
+        
+        
+   <input type="hidden" name="keyCount" value="0" 
+            id="keyCount">
+   
+                      <tr class="sectbody" id="addkeyrow"><td colspan=6 /></tr>
+       </table>
+    
+     
+  <table class="tables" cellpadding="5" cellspacing="0">   
+    <tr class="sectheader">
+      <td colspan="5" align="left">
+        <span class="label">TEMPORAL COVERAGE OF DATA</span>
+        <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#TemporalCoverageOfData" target="guide" class="smalltext">(What's this?)</a>
+      </td>
+      <td class="rightCol"><span><a onClick="temporalBit=swap(event, 'temporalTable', temporalBit)" style="cursor:pointer">Hide</a></span></td>
+   </tr>
+   </table>
+   
+   <table class="tables" cellpadding="5" cellspacing="0" id="temporalTable">  
+   <tr class="sectbody">
+      <td/>
+      <td align="left"><span class="label">Start Date</span></td>
+      <td/>
+      <td align="left"><span class="label">Stop Date</span></td>
+      <td colspan="2"></td>
+      </tr>
+     
+      <tr class="sectbody"> 
+        <td class="rightCol"> 
+                      <span class="label">*Year (yyyy)</span>
+          </td>
+    <td align="left" style="width:15%"><input type="TEXT" name="beginningYear" value="" size="8" maxlength="4"></td>
+          <td class="rightCol"><span class="label">Year (yyyy)</span></td>
+    <td align="left"><input type="TEXT" name="endingYear" value="" size="8" maxlength="4"></td>
+          <td colspan="3"></td>
+      </tr>
+          
+    
+  <tr class="sectbody">
+    <td class="rightCol">
+    <span class="label">Month</span>
+          </td>
+    <td align="left"><select name="beginningMonth">
+                  <option>MM</option>            <option>01</option>            <option>02</option>            <option>03</option>
+            <option>04</option>            <option>05</option>            <option>06</option>            <option>07</option>
+            <option>08</option>            <option>09</option>            <option>10</option>            <option>11</option>
+            <option>12</option>
+          </select></td>
+      
+         <td class="rightCol"><span class="label">Month</span></td>
+   <td align="left"> <select name="endingMonth">
+                  <option>MM</option>            <option>01</option>            <option>02</option>            <option>03</option>
+            <option>04</option>            <option>05</option>            <option>06</option>            <option>07</option>
+            <option>08</option>            <option>09</option>            <option>10</option>            <option>11</option>
+            <option>12</option>
+          </select></td>  <td colspan="2"></td></tr>
+       
+   <tr class="sectbody">
+    <td class="rightCol"> 
+            <span class="label">Day</span>
+    </td>
+    
+    <td align="left"><select name="beginningDay">
+                  <option>DD</option>            <option>01</option>            <option>02</option>            <option>03</option>
+            <option>04</option>            <option>05</option>            <option>06</option>            <option>07</option>
+            <option>08</option>            <option>09</option>            <option>10</option>            <option>11</option>
+            <option>12</option>            <option>13</option>            <option>14</option>            <option>15</option>
+            <option>16</option>            <option>17</option>            <option>18</option>            <option>19</option>
+            <option>20</option>            <option>21</option>            <option>22</option>            <option>23</option>
+            <option>24</option>            <option>25</option>            <option>26</option>            <option>27</option>
+            <option>28</option>            <option>29</option>            <option>30</option>            <option>31</option>
+          </select></td>
+      
+          <td class="rightCol"><span class="label">Day</span></td>
+    <td align="left"><select name="endingDay">
+                  <option>DD</option>            <option>01</option>            <option>02</option>            <option>03</option>
+            <option>04</option>            <option>05</option>            <option>06</option>            <option>07</option>
+            <option>08</option>            <option>09</option>            <option>10</option>            <option>11</option>
+            <option>12</option>            <option>13</option>            <option>14</option>            <option>15</option>
+            <option>16</option>            <option>17</option>            <option>18</option>            <option>19</option>
+            <option>20</option>            <option>21</option>            <option>22</option>            <option>23</option>
+            <option>24</option>            <option>25</option>            <option>26</option>            <option>27</option>
+            <option>28</option>            <option>29</option>            <option>30</option>            <option>31</option>
+          </select></td>
+          <td colspan="2"></td></tr>
+  <tr class="sectbody"> 
+      <td></td><td align="left" colspan="5"> 
+       <span class="label">Note: </span><span class="regtext">Leave "Stop Date" blank if your data set is open-ended.</span>
+     </td></tr>
+     </table>
+    
+
+  <table class="tables" cellpadding="5" cellspacing="0">  
+
+    <tr class="sectheader">
+      <td colspan="5" align="left">
+        <span class="label">SPATIAL COVERAGE OF DATA</span>
+        <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#SpatialCoverageOfData" target="guide" class="smalltext">(What's this?)</a>
+      </td>
+      <td class="rightCol"><span><a onClick="spatialBit=swap(event, 'spatialTable', spatialBit)" style="cursor:pointer">Hide</a></span></td>
+    </tr>
+  </table>
+   
+   <table class="tables" cellpadding="5" cellspacing="0" id="spatialTable">  
+   
+    <tr class="sectbody">
+                 <td align="right" valign="top"><span class="label">Geographic Description</span></td>
+              <td align="left" colspan="5"><textarea rows="3" cols="60" name="geogdesc"></textarea></td></tr>
+    <tr class="sectbody"><td><td colspan="4"><span class="regtext">General description of the geographic area in which the data were collected. 
+    It can be a simple place name (e.g., Santa Barbara) or a fuller description.</span></td><td>
+    </td></tr>
+    <tr class="sectbody"><td class="topbottom" align="center" colspan="6"><span class="label">COORDINATES</span></td></tr>
+        
+     
+      
+    <tr class="sectbody">
+      <td width="190"></td><td width="100" align="left"><span class="label">Degrees</span></td>
+      <td width="110" align="left"><span class="label">Minutes</span></td>
+      <td width="70" align="left"><span class="label">Seconds</span></td>
+      <td width="200"></td><td width="90"</td>
+   </tr>
+      
+   <tr class="sectbody">
+     <td class="rightCol">
+              <span class="label">Latitude</span>
+      </td> 
+     <td> 
+          <input type="TEXT" name="latDeg1" value="" size="3" maxlength="3"></td>
+      <td> <input type="TEXT" name="latMin1" value="" size="2" maxlength="2"></td>
+      <td>  <input type="TEXT" name="latSec1" value="" size="2" maxlength="2"></td>
+      
+      <td Align="left" colspan="2"> 
+              <input type="radio"  name="hemisphLat1" value="N"><span class="regtext">North&nbsp;&nbsp;</span>
+                    <input type="radio"  name="hemisphLat1" value="S"><span class="regtext">South&nbsp;&nbsp;</span>
+            </td>
+    </tr>
+
+    <tr class="sectbody">
+      <td class="rightCol"> 
+              <span class="label">Longitude</span>
+      </td>
+     
+      <td> <input type="TEXT" name="longDeg1" value="" size="3" maxlength="3"></td>
+      <td> <input type="TEXT" name="longMin1" value="" size="2" maxlength="2"></td>
+      <td> <input type="TEXT" name="longSec1" value="" size="2" maxlength="2"></td>
+      
+      
+      <td align="left" colspan="2"> 
+          <input type="radio"  name="hemisphLong1" value="W"><span class="regtext">West&nbsp;&nbsp;</span>
+              <input type="radio"  name="hemisphLong1" value="E"><span class="regtext">East&nbsp;&nbsp;</span>
+          </td>
+    </tr>
+      
+      
+    <tr class="sectbody"><td><td colspan="4" align="left"><span class="regtext">If only this first lat/long pair is entered, this indicates a point location. If both lat/long pairs are entered, then this first pair represents the northwest corner of a bounding box.</span>
+      </td><td></td></tr>
+      
+    <tr class="sectbody"> 
+      <td class="rightCol"><span class="label">Latitude</span></td>
+  <td ><input type="TEXT" name="latDeg2" value="" size="3" maxlength="3"></td>
+      <td><input type="TEXT" name="latMin2" value="" size="2" maxlength="2"></td>
+      <td><input type="TEXT" name="latSec2" value="" size="2" maxlength="2"></td>
+        
+      <td align="left" colspan="2"> 
+              <input type="radio"  name="hemisphLat2" value="N"><span class="regtext">North&nbsp;&nbsp;</span>
+                    <input type="radio"  name="hemisphLat2" value="S"><span class="regtext">South&nbsp;&nbsp;</span>
+            </td>
+    </tr>
+    
+    <tr class="sectbody"><td class="rightCol"><span class="label">Longitude</span></td>
+       <td> <input type="TEXT" name="longDeg2" value="" size="3" maxlength="3"></td>
+       <td> <input type="TEXT" name="longMin2" value="" size="2" maxlength="2"></td>
+       <td> <input type="TEXT" name="longSec2" value="" size="2" maxlength="2"></td>
+       <td align="left" colspan="2">
+       
+              <input type="radio"  name="hemisphLong2" value="W"><span class="regtext">West&nbsp;&nbsp;</span>
+                    <input type="radio"  name="hemisphLong2" value="E"><span class="regtext">East&nbsp;&nbsp;</span>
+            </td>
+    </tr>
+    <tr class="sectbody"><td></td>
+       <td align="left" colspan="4"><span class="regtext">
+        If entered, this lat/long pair represents the southeast corner of a bounding box.</span>
+      </td><td></td>
+    </tr>
+  </table>    
+   
+      
+  <table class="tables" cellpadding="5" cellspacing="0">  
+
+    <tr class="sectheader">
+      <td colspan="5" align="left">
+        <span class="label">TAXONOMIC COVERAGE OF DATA</span>
+        <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#TaxonomicCoverage" target="guide" class="smalltext">(What's this?)</a>
+      </td>
+      <td class="rightCol"><span><a onClick="taxonomicBit=swap(event, 'taxonomicTable', taxonomicBit)" style="cursor:pointer">Hide</a></span></td>
+    </tr>
+  </table>
+   
+    <table class="tables" cellpadding="5" cellspacing="0" id="taxonomicTable">  
+        <tr class="sectbody"><td></td>
+        <td colspan="5" align="left"><span class="regtext">See the <a href=
+        "http://darwin.zoology.gla.ac.uk/~rpage/MyToL/www/index.php" target="_blank">Glasgow Taxonomic Name Server</a> or the <a href=
+        "http://www.itis.gov/" target="_blank">Integrated Taxonomic Information System</a> for correct spelling of taxonomic names.</td></tr>
+  
+        <tr class="sectbody"> 
+            <td class="rightCol"><span class="label">Taxonomic Rank</span></td>
+            <td align="left" colspan="5">
+                <input name="taxonRank" id="taxonRank" class="shortwidth">&nbsp;&nbsp;<span class="label"><span class="regtext">(e.g., Species)</span>
+            </td>
+        </tr>
+
+        <tr class="sectbody"> 
+            <td class="rightCol"><span class="label">Taxonomic Name</span></td>
+            <td align="left" colspan="5">
+                <input name="taxonName" id="taxonName" class="shortwidth">&nbsp;&nbsp;<span class="label"><span class="regtext">(e.g., <i>Ursus arctos</i>)</span>
+            </td>
+        </tr>
+
+        <tr id="addTaxon" class="sectbody"> 
+            <td></td>
+            <td colspan="5" align="left"> <input type="button" value="Add Taxon"
+                    onClick="addTaxon()">
+            </td>
+        </tr>
+
+                        <input type="hidden" name="taxaCount" value="0" id="taxaCount">
+    
+                
+     <tr class="sectbody" id="addtaxarow"> 
+        <td class="bordertop" valign="top" align="right" ><span class="label">Taxonomic Reference</span></td>
+        <td class="bordertop" align="left" colspan="5"><textarea rows="3" cols="30" name="taxaAuth"></textarea></td>
+        </tr>
+     <tr class="sectbody">
+     <td></td>
+     <td colspan="5"><span class="regtext">List the source(s) used for identifying and naming taxa (e.g., name of a <br>field guide, key, or
+     nomenclature revision).</span></td>
+     </tr>   
+   </table>
+    
+    <table class="tables" cellpadding="5" cellspacing="0">  
+    <tr class="sectheader">
+      <td colspan="5" align="left">
+        <span class="label">DATA COLLECTION METHODS</span>
+        <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#Methods" target="guide" class="smalltext">(What's this?)</a>
+      </td>
+      <td class="rightCol"><span><a onClick="methodBit=swap(event, 'methodTable', methodBit)" style="cursor:pointer">Hide</a></span></td>
+    </tr>
+  </table>
+ 
+   <table class="tables" cellpadding="5" cellspacing="0" id="methodTable">  
+
+    <tr class="sectbody"> 
+      <td class="rightCol"><span class="label">Method Title</span></td>
+      <td colspan="5" align="left"><input type="text" name="methodTitle" value="" class="longwidth"></td></tr>
+
+       <tr class="sectbody"><td valign="top" class="rightCol"><span class="label">Method Description</span>      
+        <td colspan="5" align="left">
+                  <textarea rows="6" cols="60" name="methodPara"></textarea>
+                        </td></tr>
+        
+    <tr class="sectbody" id="addparabutton1">
+    <td ></td>
+    <td colspan="5" align="left">
+          <input type="button" value="Add Paragraph to Method Description" 
+                 onClick="addParagraph()"></td></tr>
+   
+     
+    <tr class="sectbody">
+      <td valign="top" align="right" class="bordertop">
+       <span class="label">Extent of Study Description</span>
+       </td>
+        <td colspan="5" align="left" class="bordertop"><textarea rows="6" cols="60" name="studyExtentDescription"></textarea></td>
+    </tr>
+  
+   <tr class="sectbody">
+    <td>
+    </td>
+    <td colspan="5"><span class="regtext">
+        Describe the temporal, spatial and taxonomic extent of the study,<br>
+        supplementing the information on coverage provided above.  <br>
+        For example, if the temporal coverage of the data is 1990-2000, you<br>
+        might provide details about any years that were missed or the months<br>
+        in which sampling occurred.</span>
+    </td>
+    </tr>
+          
+    <tr class="sectbody"><td class="bordertop" valign="top" align="right"><span class="label">Sampling Description</span></td>
+        <td colspan="5" align="left" class="bordertop" ><textarea rows="6" cols="60" name="samplingDescription"></textarea></td></tr>
+  
+   <tr class="sectbody"><td><td colspan="5"><span class="regtext">
+        Describe the sampling design of the study.  For example, you might <br> 
+        describe the way in which treatments were assigned to sampling units.</span></td></tr>
+      
+    </table>     
+   
+  <table class="tables" cellpadding="5" cellspacing="0">    
+    <tr class="sectheader">
+      <td colspan="5" align="left">
+        <span class="label">DATA SET CONTACT</span>
+        <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#DataSetContactAddress" target="guide" class="smalltext">(What's this?)</a>
+      </td>
+      <td class="rightCol"><span><a onClick="dscBit=swap(event, 'dscTable', dscBit)" style="cursor:pointer">Hide</a></span></td>
+    </tr>
+  </table>
+
+   <table class="tables" cellpadding="5" cellspacing="0" id="dscTable">  
+  <tr class="sectbody"><td valign="top" align="left" colspan="6">
+        <input type="CHECKBOX" name="useOrigAddress" onClick="copyContact()" id="copyCheckBox" >
+        <span class="regtext">Use the same name and address as the <span class="label">PRINCIPAL DATA SET OWNER</span> above.</span></td></tr> 
+   <tr class="sectbody">
+      <td class="rightCol"><span class="label">*First Name</span></td>
+      <td colspan="5"><input type="TEXT" name="origNamefirstContact" id="contactNameFirst" value="" class="shortwidth"></td></tr>
+    <tr class="sectbody">
+      <td class="rightCol"><span class="label">*Last Name</span>
+      <td colspan="5"><input type="TEXT" name="origNamelastContact" id="contactNameLast" value="" class="shortwidth"></td></tr>
+    <tr class="sectbody">
+      <td class="rightCol"><span class="label">Organization Name</span>
+      <td colspan="5"><input type="TEXT" name="origNameOrgContact" id="contactNameOrg" value="" class="longwidth"></td></tr>
+    <tr class="sectbody">      
+              <td class="rightCol"><span class="label">E-Mail</span>
+            <td colspan="5"><input type="TEXT" name="origEmailContact" id="contactEmail" value="" class="shortwidth"></td></tr>
+    <tr class="sectbody">
+      <td class="rightCol"><span class="label">Phone</span>
+      <td colspan="5"><input type="TEXT" name="origPhoneContact" id="contactPhone" value="" class="shortwidth"></td></tr>
+    <tr class="sectbody"> 
+      <td class="rightCol"><span class="label">FAX</span>
+      <td colspan="5"><input type="TEXT" name="origFAXContact" id="contactFAX" value="" class="shortwidth"></td></tr>
+    <tr class="sectbody"><td valign="top" align="right"><span class="label">Street<br>Information</td>
+      <td colspan="5"><textarea rows="3" cols="30" name="origDeliveryContact" id="contactDelivery"></textarea><br><span class="smalltext">(number, street, unit, etc.; comma-separated)</span></td></tr>
+    <tr class="sectbody">    
+      <td class="rightCol"><span class="label">City</span>
+      <td colspan="5"><input type="TEXT" name="origCityContact" id="contactCity" value="" class="shortwidth"></td></tr>
+    <tr class="sectbody">
+      <td class="rightCol"><span class="label">U.S. State or Territory</span>
+      <td colspan="5"><select id="contactState" name="origStateContact" class="shortwidth">
+                      <option>Select state or territory here.</option>
+                      <option>Alabama</option>
+            <option>Alaska</option>
+            <option>American Samoa</option>
+            <option>Arizona</option>
+            <option>Arkansas</option>
+            <option>California</option>
+            <option>Colorado</option>
+            <option>Connecticut</option>
+            <option>Delaware</option>
+            <option>District of Columbia</option>
+            <option>Florida</option>
+            <option>Georgia</option>
+            <option>Guam</option>
+            <option>Hawaii</option>
+            <option>Idaho</option>
+            <option>Illinois</option>
+            <option>Indiana</option>
+            <option>Iowa</option>
+            <option>Kansas</option>
+            <option>Kentucky</option>
+            <option>Louisiana</option>
+            <option>Maine</option>
+            <option>Maryland</option>
+            <option>Massachusetts</option>
+            <option>Michigan</option>
+            <option>Minnesota</option>
+            <option>Mississippi</option>
+            <option>Missouri</option>
+            <option>Montana</option>
+            <option>Nebraska</option>
+            <option>Nevada</option>
+            <option>New Hampshire</option>
+            <option>New Jersey</option>
+            <option>New Mexico</option>
+            <option>New York</option>
+            <option>North Carolina</option>
+            <option>North Dakota</option>
+            <option>Northern Mariana Islands</option>
+            <option>Ohio</option>
+            <option>Oklahoma</option>
+            <option>Oregon</option>
+            <option>Pennsylvania</option>
+            <option>Puerto Rico</option>
+            <option>Rhode Island</option>
+            <option>South Carolina</option>
+            <option>South Dakota</option>
+            <option>Tennessee</option>
+            <option>Texas</option>
+            <option>Utah</option>
+            <option>Vermont</option>
+            <option>Virgin Islands</option>
+            <option>Virginia</option>
+            <option>Washington</option>
+            <option>West Virginia</option>
+            <option>Wisconsin</option>
+            <option>Wyoming</option>
+          </select></td></tr>
+     <tr class="sectbody">
+        <td class="rightCol"><span class="label">Other State/Province</span>
+  <td colspan="5"><input type="TEXT" name="origStateOtherContact" id="contactStateOther" value="" class="shortwidth"></td></tr>
+     <tr class="sectbody">     
+        <td class="rightCol"><span class="label">Postal Code</span>
+  <td colspan="5"><input type="TEXT" name="origZIPContact" class="shortwidth" id="contactZip" value=""></td></tr>
+     <tr class="sectbody">
+        <td class="rightCol"><span class="label">Country</span>
+        <td colspan="5"><input type="TEXT" name="origCountryContact" id="contactCountry" value="" class="shortwidth"></td></tr>
+     </table>
+   
+  <table class="tables" cellpadding="5" cellspacing="0">  
+    <tr class="sectheader">
+      <td colspan="5" align="left">
+        <span class="label">DISTRIBUTION INFORMATION</span>
+        <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#DistributionIinformation" target="guide" class="smalltext">(What's this?)</a>
+      </td>
+      <td class="rightCol"><span><a onClick="distBit=swap(event, 'distTable', distBit)" style="cursor:pointer">Hide</a></span></td>
+    </tr>
+  </table>
+
+   <table class="tables" cellpadding="5" cellspacing="0" id="distTable">  
+  <tr class="sectbody"><td class="rightCol"><span class="label">Data Set Identifier</span></td>
+  <td colspan="5"><input type="TEXT" name="identifier" value="" class="longwidth"></td></tr>
+  <tr class="sectbody"><td valign="top" align="right"><span class="label">Note:</span></td>
+     <td colspan="4" align="left"><span class="regtext">
+     If available, please enter a name or number that uniquely identifies and<br>
+     describes concisely the data set. Alternatively, provide other pertinent<br>
+     information that can identify and locate the data set within your site's<br>
+     data management system.</span></td><td></td></tr>
+  
+    <tr class="sectbody">
+        <td class="rightCol"><span class="label">*Data Medium</span></td>
+  
+        <td colspan="5" align="left">
+                    <input type="radio"  name="dataMedium" onClick="handleOther(0, 'otherDM')" value="digital">
+            <span class="regtext">Digital&nbsp;&nbsp;</span></input>
+                           <input type="radio"  name="dataMedium" onClick="handleOther(0, 'otherDM')" value="hardcopy">
+           <span class="regtext">Hardcopy&nbsp;&nbsp;</span></input>
+                           <input type="radio"  name="dataMedium" onClick="handleOther(1, 'otherDM')" value="other">
+           <span class="regtext">Other&nbsp;</span></input>
+        
+  <input type="TEXT" name="dataMediumOther" value="" id="otherDM" class="shortwidth"></input>
+        </td>
+    </tr>  
+  
+  <tr class="sectbody"><td class="rightCol"><span class="label">*Usage Rights</span></td>
+      <td colspan="5" align="left">
+      
+                      <input type="radio"  name="useConstraints" onClick="handleOther(0, 'otherUC')" value="no restrictions">
+            <span class="regtext">No restrictions&nbsp;&nbsp;</span>
+                                <input type="radio"  name="useConstraints" onClick="handleOther(0, 'otherUC')" value="Obtain permission from data set owner(s)">
+            <span class="regtext">Obtain permission from data set owner(s)&nbsp;&nbsp;</span>
+                    </td></tr>
+    
+
+   
+   <tr class="sectbody"><td></td><td colspan="5" align="left">
+ 
+          <input type="radio"  name="useConstraints" onClick="handleOther(1, 'otherUC')" value="other">
+      <span class="regtext">Other&nbsp;</span>
+       <input type="TEXT" name="useConstraintsOther" id="otherUC" value="" size="49"></td</tr>
+   
+   
+   <tr class="sectbody"><td class="rightCol"><span class="label">URL</span></td>
+   <td colspan="5" align="left"><input type="TEXT" name="url" value="" class="longwidth"></td></tr>
+   
+   <tr class="sectbody"><td valign="top" align="right"><span class="label">Additional Information</span>
+   <td colspan="5" align="left"><textarea rows="6" cols="60" name="addComments"></textarea></td></tr>
+   
+   </table>
+   
+  
+  <!-- Associated Data -->
+  <table class="tables" cellpadding="5" cellspacing="0">
+  <tr class="sectheader">
+    <td colspan="5" align="left">
+      <span class="label">UPLOAD DATA</span>
+      <a href="/knb/cgi-bin/register-dataset.cgi?cfg=knb&amp;stage=guide#XXX" target="guide" class="smalltext">(What's this?)</a>
+    </td>
+    <td class="rightCol"><span><a onClick="uploadBit=swap(event, 'uploadTable', uploadBit)" style="cursor:pointer">Hide</a></span></td>
+  </tr>
+   </table>
+  <table class="tables" cellpadding="5" cellspacing="0" id="uploadTable">
+  <tr class="sectbody">
+    <td class="rightCol"><span class="label">Upload Data File:</span></td>
+    <td colspan="5">
+        <input type="file" id="file_element" name="file_1" class="longwidth">
+
+        
+        <input type="hidden" id="fileCount" name="fileCount" value=""></td>
+  </tr>
+  <tr class="sectbody">
+    <td class="rightCol" valign="top"><span class="label">Attached Files:</span></td>
+    <td colspan="5" class="regtext">
+            <div id="file_comment">
+            (<i>None currently attached</i>)
+        </div>
+        <div id="files_list"></div></td>
+  </tr>
+  </table>
+  
+  <script language="JavaScript" type="text/JavaScript">
+    var multi_selector = new MultiSelector( document.getElementById( 'files_list' ), 10);
+    multi_selector.addElement( document.getElementById( 'file_element' ) );
+  </script>
+     <table class="tables" cellpadding="5" cellspacing="0">    
+   <tr class="sectheader"><td colspan="6" align="left"></td></tr>
+   <tr class="sectheader"><td colspan="6" align="center" class="borderbottom"><input type="SUBMIT" onClick="sortInputTags()" value="Submit Data Set Description" name="SUBMIT">
+              
+    </table>
+    <p></p>
+   
+</form>
+
+<script language="JavaScript" type="text/javascript">
+    insertTemplateClosing("http://knb.ecoinformatics.org/knb");
+</script>
+</body>
+</html>
