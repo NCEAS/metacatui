@@ -1,29 +1,105 @@
 
 /* Import font families */
 @import url(http://fonts.googleapis.com/css?family=Lato);
+/* Lato weights:
+Ultra-Light 100
+Ultra-Light 100 Italic
+Book 300
+Book 300 Italic
+Normal 400
+Normal 400 Italic
+Bold 700
+Bold 700 Italic
+Ultra-Bold 900
+Ultra-Bold 900 Italic
+*/
+@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+/* Open Sans weights:
+Book 300 
+Book 300 Italic
+Normal 400
+Normal 400 Italic
+Semi-Bold 600
+Semi-Bold 600 Italic
+Bold 700
+Bold 700 Italic
+Extra-Bold 800
+Extra-Bold 800 Italic
+*/
+@import url(http://fonts.googleapis.com/css?family=Gentium+Book+Basic);
+/* Gentium Book Basic weights:
+Normal 400
+Normal 400 Italic
+Bold 700
+Bold 700 Italic
+*/
 
 /* Body CSS
-    -------------------------------------------------- */
+-------------------------------------------------- */
     /* Padding below the footer and lighter body text */
     body {
       color: #A1A1A1;
       background-color: #FDFDFD;
       font-family: Lato, "Helvetica Nueue", Helvetica, "sans serif";
-      font-weight: 400;
     }
 
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block; 
       
     }
-    section, footer {
+    
+    body > section, footer {
       min-height: 400px;
       margin: none;
+    }
+    
+    body > header {
+      height: 95px;
+      margin-bottom: 35px;
+      
+    }
+    
+    body > article {
+      min-height: 800px;
+      margin: none;
+      font-weight: 300;
+      font-size: 110%;
+      line-height: 1.5;
+      
     }
     
     footer {
       position: relative;
       bottom: 0px;
+      padding-top: 30px;
+      padding-bottom: 30px;
+      color: #FDFDFD;
+      background-color: #3F3F3F;
+    }
+    
+    #Header {
+      position: relative;
+      top: 0px;
+      z-index: 50;
+      background-color: #FDFDFD;
+      overflow: hidden;
+      opacity: 1.0;
+    }
+    
+    header#Header img {
+      opacity: 80%;
+      clip: 200px 0px 0px 0px;
+    }
+    
+    footer#Footer h3 {
+      font-family: "Open Sans";
+      font-weight: 800;
+    }
+
+    footer#Footer h3 > span {
+      font-family: "Gentium Book Basic";
+      font-weight: 700;
+      font-style: italic;
     }
     
     
@@ -97,8 +173,8 @@
       color: #FDFDFD;      
     }
     
-    /* CUSTOMIZE THE NAVBAR
-    -------------------------------------------------- */
+/* CUSTOMIZE THE NAVBAR
+-------------------------------------------------- */
     
     .center {
       float: none;
@@ -131,7 +207,7 @@
       float: left;
       
     }
-	
+  
     .navbar .nav > li > * {
       margin: 7px 5px 7px 5px;
     }
@@ -223,11 +299,11 @@
     .carousel .item {
       background-color: #FDFDFD; /* Fallback to solid color if the gradient fails */
       background-image: -webkit-gradient(
-	     linear,
-	     left bottom,
-	     left top,
-	     color-stop(0.9, #FFFFFF),
-	     color-stop(0.3, #FDFDFD)
+       linear,
+       left bottom,
+       left top,
+       color-stop(0.9, #FFFFFF),
+       color-stop(0.3, #FDFDFD)
       );
       z-index: 185;
       -webkit-transition: opacity 4s; 
@@ -255,7 +331,7 @@
          -moz-border-radius: 6px;
               border-radius: 6px;
       
-	}
+  }
     .carousel-caption h1 {
       margin: 0px;
       line-height: 1.25;
@@ -276,17 +352,17 @@
       margin-top: 10px;
     }
 
-	/* MAIN BODY CSS
-	-------------------------------------------------- */
-	/* Main body containing sidebar and content */
+  /* MAIN BODY CSS
+  -------------------------------------------------- */
+  /* Main body containing sidebar and content */
     .main-body-padded {
       padding-top: 90px;
     }
 
-	/* SIDEBAR CSS
-	-------------------------------------------------- */
+  /* SIDEBAR CSS
+  -------------------------------------------------- */
     #sidebar {
-    	min-height: 400px;
+      min-height: 400px;
     }
     
     .sidebar-subhead {
@@ -301,7 +377,7 @@
       font-weight: bold;
       padding: 5px;
       border-radius: 5px;
-  	  -webkit-border-radius: 5px;
+      -webkit-border-radius: 5px;
       -moz-border-radius: 5px;
       line-height: 25px;
     }
@@ -313,47 +389,39 @@
       padding-bottom: 3px;
     }
 
-	/* RESULT CSS
-	-------------------------------------------------- */
+/* RESULT CSS
+-------------------------------------------------- */
     .result-header {
-    	font-weight: bold;
-    	border-bottom: thin solid;
+      font-weight: bold;
+      border-bottom: thin solid;
     }
     
     .result-header-count {
-    	font-style: italic;
+      font-style: italic;
     }
     
     .result-row {
-    	display: inline-block;
+      display: inline-block;
         border-bottom: thin solid;
         padding: 5px;
     }
     
     .result-row:hover { 
-		background-color: #eee;
-	}
+    background-color: #eee;
+  }
 
     .result-author {
-    	font-weight: bold;
+      font-weight: bold;
     }
     
     .pagination {
-    	margin: auto;
+      margin: auto;
     }
 
-	/* FOOTER CSS
-	-------------------------------------------------- */
-    .footer {
-      position: relative;
-      bottom: 0px;
-      padding-top: 30px;
-      padding-bottom: 30px;
-      color: #FDFDFD;
-      background-color: #3F3F3F;
-    }
+/* FOOTER CSS
+-------------------------------------------------- */
 
-	.footer .brand {
+  .footer .brand {
       /* padding: 14px 20px 16px; Increase vertical padding to match navbar links */
       margin-left: 20px;
       font-size: 16px;
@@ -362,8 +430,8 @@
     }
 
 
-    /* RESPONSIVE CSS
-    -------------------------------------------------- */
+/* RESPONSIVE CSS
+-------------------------------------------------- */
     
     @media (max-width: 979px) {
 
