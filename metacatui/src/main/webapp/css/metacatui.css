@@ -173,6 +173,13 @@ Bold 700 Italic
       color: #FDFDFD;      
     }
     
+/* CUSTOMIZE THE ACCORDIAN 
+-------------------------------------------------- */
+
+	.accordion-heading a.accordion-toggle {
+		display: inline-block; 
+	}    
+    
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
     
