@@ -86,22 +86,37 @@ Bold 700 Italic
       opacity: 1.0;
     }
     
-    header#Header img {
-      opacity: 80%;
-      clip: 200px 0px 0px 0px;
+    footer#Footer div:first-child {
+      max-width: 650px;
     }
     
     footer#Footer h3 {
-      font-family: "Open Sans";
-      font-weight: 800;
+      font: 800 30px/30px "Open Sans";
+      text-align: center;
+      padding: 0px 0px 20px 0px;
+      margin-bottom: -25px;
+      border-bottom: 1px solid #FDFDFD;
+      
     }
 
     footer#Footer h3 > span {
-      font-family: "Gentium Book Basic";
-      font-weight: 700;
+      font: 400 30px/30px "Gentium Book Basic";
       font-style: italic;
     }
     
+    footer#Footer h4 {
+      vertical-align: baseline;
+      padding: 0;
+      text-align: center;
+    }
+    
+    footer#Footer h4 > span {
+      font: 400 30px/30px "Gentium Book Basic";
+      font-style: italic;
+      text-transform: uppercase;
+      background-color: #3F3F3F;
+      padding: 0px 15px 0px 15px;
+    }
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 300;
@@ -164,8 +179,13 @@ Bold 700 Italic
       color: #FFFFFF;
       border: none;
       text-shadow: none;
+      box-shadow: none;
     }
+
+    section#Features button:hover {
+      background-color: #5C7F8C;
     
+    }    
     #FeaturedData {
       position: relative;
       background-color: #B0A691;
