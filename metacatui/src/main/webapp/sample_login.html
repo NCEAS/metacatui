@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>KNB | About</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Template file for DataDepot Layout">
+<meta name="author" content="Matt Jones">
+
+<!-- Stylesheets -->
+<link href="./css/bootstrap.min.css" rel="stylesheet">
+<link href="./css/font-awesome.min.css" rel="stylesheet">
+<link href="./css/bootstrap-responsive.min.css" rel="stylesheet">
+<link href="./css/metacatui.css" rel="stylesheet">
+
+<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+<!-- TODO: Fav and touch icons -->
+<link rel="apple-touch-icon-precomposed" sizes="144x144"
+	href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114"
+	href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72"
+	href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed"
+	href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-57-precomposed.png">
+<link rel="shortcut icon"
+	href="http://twitter.github.com/bootstrap/assets/ico/favicon.png">
+</head>
+<body id="metacatui-app">
+
+	<!-- NAVBAR
+    ======================================================================= -->
+	<nav id="Navbar" class="container">
+		<div class="navbar">
+			<div class="navbar-inner">
+				<div class="nav-collapse collapse">
+					<a class="brand" href="#">knb</a>
+					<ul class="nav">
+						<li class="active"><a href="#about">About</a></li>
+						<li><a href="#tools">Tools</a></li>
+						<!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown">Plans <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="#">About data plans</a></li>
+								<li class="divider"></li>
+								<li><a href="#">Basic (free)</a></li>
+								<li><a href="#">Annual Data</a></li>
+								<li><a href="#">Big Data</a></li>
+
+							</ul></li>
+						<li>
+							<div class="nav">
+								<div class="input-append">
+									<input type="text" class="span4" placeholder="Search for data"
+										id="search_txt">
+									<button type="button" class="btn" id="search_btn">
+										<i class="icon-search icon-white icon-large"></i>
+									</button>
+								</div>
+							</div>
+						</li>
+						<li id="SignIn"><a href="#user">Sign In</a></li>
+					</ul>
+				</div>
+				<!--/.nav-collapse -->
+			</div>
+			<!-- /.navbar-inner -->
+		</div>
+		<!-- /.navbar -->
+	</nav>
+	<!-- /mainNavbar -->
+
+	<!-- HEADER SECTION 
+    ======================================================================= -->
+	<header id="Header" class="row">
+		<img alt="Waxflower image" src="./img/slide_06.jpg">
+	</header>
+	<!-- /Header -->
+
+	<!-- CONTENT SECTION
+    ======================================================================= -->
+	<article id="Login">
+		<div class="container">
+			<div class="row-fluid">
+				<div class="span6 pagination-left">
+					<h2>Login</h2>
+					<form method="post" action="/knb/cgi-bin/register-dataset.cgi" onsubmit="return submitform(this);">
+						<input type="hidden" name="stage" value="login"> 
+						<input type="hidden" name="username" value=""> 
+						<input type="hidden" name="cfg" value="knb">
+
+						<div>
+							<div class="row-fluid">
+								<div class="span2 text-left">Username</div>
+								<div class="span4 text-left"><input name="uid" type="text" value=""></div>
+							</div>
+							<div class="row-fluid">
+								<div class="span2 text-left">Organization</div>
+								<div class="span4 text-left"><select name="organization">
+										<option value="" selected>&#8212; choose one &#8212;</option>
+										<option value="NCEAS">NCEAS</option>
+										<option value="LTER">LTER</option>
+										<option value="KU">KU</option>
+										<option value="OBFS">OBFS</option>
+										<option value="OSUSB">OSUSB</option>
+										<option value="PARC">PARC</option>
+										<option value="PISCO">PISCO</option>
+										<option value="SAEON">SAEON</option>
+										<option value="SANParks">SANParks</option>
+										<option value="SDSC">SDSC</option>
+										<option value="UCNRS">UCNRS</option>
+										<option value="unaffiliated">unaffiliated</option>
+								</select></div>
+							</div>
+							<div class="row-fluid">
+								<div class="span2 text-left">Password</div>
+								<div class="span4 text-left"><input name="password" type="password" maxlength="50"
+									value=""></div>
+							</div>
+							<div class="row-fluid">
+								<div class="offset2 span4 text-left">
+									<input type="submit" name="loginAction" value="Login">
+								</div>
+							</div>
+						</div>
+						
+					</form>
+				</div>
+				
+				<div class="span6 pagination-left">
+					<p class="lead">You must login to register your dataset.</p>
+					
+					<div class="row-fluid">
+						<div class="span6 text-left">
+							<p>Don't have an account yet?</p>
+						</div>
+						<div class="span6 text-left">
+							<a href="/knb/cgi-bin/ldapweb.cgi?cfg=knb">
+								<i class="icon-user"></i>
+								Create a new account
+							</a>
+						</div>
+					</div>	
+					<div class="row-fluid">
+						
+						<div class="span6 text-left">
+							<p>Forgot your password?</p>
+						</div>
+						<div class="span6 text-left">							
+							<a href="/knb/cgi-bin/ldapweb.cgi?cfg=knb&amp;stage=resetpass">
+								<i class="icon-key"></i>
+								Reset your password
+							</a>
+						</div>
+					</div>		
+				</div>
+				
+			</div>
+		</div>
+	</article>
+
+	<!-- FOOTER SECTION
+    ======================================================================= -->
+	<footer id="Footer" class="footer">
+		<div class="container">
+			<div class="row-fluid pagination-centered">
+				<h3>
+					<span>The</span> Knowledge Network <span>for</span> Biocomplexity
+				</h3>
+			</div>
+		</div>
+	</footer>
+	<!-- Templates used for rendering data from the models
+    ======================================================================= -->
+	<script type="text/template" id="result-template">
+        <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div>
+        <div class="result-citation span7">
+              <span class="result-author"><% var count=0; _.each(origin, function(author) {
+                   count++;
+                   if (count > 1) {
+                       print(", ")
+             }
+                   if (count > 1 && count == origin.length) {
+                       print("and ")
+             }
+                   print(author)
+                   if (count == origin.length) {
+                       print(". ")
+             }
+               }) %></span>
+               <span class="result-pubdate"> <% if(pubDate) { 
+                   print(moment(pubDate).format('YYYY'), '. ')
+               } else {
+                   print(moment(dateUploaded).format('YYYY'), '. ')
+               } %></span>
+               <span class="result-title"> <% if (title) { print('<a href=\"', baseurl, id, '\">', title, '.</a> '); } %></span>
+               <span class="result-id"> <%- id %></span>
+        </div>
+        <div class="result-stats span2"><span class="badge badge-info"><%- downloads %></span> <span class="badge badge-success"><%- citations %></span></div>
+        
+      <div class="btn-group span1">
+        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+          Download
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Add to collection...</a></li>
+          <li class="divider"></li>
+          <li><a href="#">Share...</a></li>
+        </ul>
+      </div>
+  </script>
+	<script type="text/template" id="statcounts-template">
+    <div class="result-header-count span8" id="countstats"><%- start %> to <%- end %> of <%- numFound %></div>
+  </script>
+
+
+	<!-- Javascript at the end of the document to load pages faster 
+    ======================================================================= -->
+	<script src="components/jquery.js"></script>
+	<script src="components/holder.js"></script>
+	<script src="components/bootstrap.min.js"></script>
+	<script src="components/underscore.js"></script>
+	<script src="components/json2.js"></script>
+	<script src="components/backbone.js"></script>
+	<script src="components/moment.js"></script>
+	<script src="js/models/SolrHeader.js"></script>
+	<script src="js/models/SolrResult.js"></script>
+	<script src="js/collections/SolrResults.js"></script>
+	<script src="js/routers/router.js"></script>
+	<script src="js/views/SearchResultView.js"></script>
+	<script src="js/views/AppView.js"></script>
+	<script src="js/app.js"></script>
+
+	<script>
+		!function($) {
+			$(function() {
+				$('.carousel').carousel()
+			})
+		}(window.jQuery)
+	</script>
+
+</body>
+</html>
