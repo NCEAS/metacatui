@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>KNB | Search</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Template file for DataDepot Layout">
+    <meta name="author" content="Matt Jones">
+
+    <!-- Stylesheets -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/font-awesome.min.css" rel="stylesheet">
+    <link href="./css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="./css/metacatui.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- TODO: Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="http://twitter.github.com/bootstrap/assets/ico/favicon.png">
+</head>
+<body id="metacatui-app">
+
+    <!-- NAVBAR
+    ======================================================================= -->
+    <nav id="Navbar" class="container">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="nav-collapse collapse">
+            <a class="brand" href="#">knb</a>
+            <ul class="nav">
+              <li class="active"><a href="#about">About</a></li>
+              <li><a href="#tools">Tools</a></li>
+              <!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plans <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">About data plans</a></li>
+                  <li class="divider"></li>
+                  <li><a href="#">Basic (free)</a></li>
+                  <li><a href="#">Annual Data</a></li>
+                  <li><a href="#">Big Data</a></li>
+      
+                </ul>
+              </li>
+              <li>
+                <div class="nav">
+                  <div class="input-append">
+                    <input type="text" class="span4" placeholder="Search for data" id="search_txt">
+                    <button type="button" class="btn" id="search_btn"><i class="icon-search icon-white icon-large"></i></button>
+                  </div>
+                </div>
+              </li>
+              <li id="SignIn"><a href="#user">Sign In</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->     
+        </div><!-- /.navbar-inner -->
+      </div><!-- /.navbar -->
+    </nav><!-- /mainNavbar -->
+    
+    <!-- HEADER SECTION 
+    ======================================================================= -->
+    <header id="Header" class="row">
+      <img alt="Waxflower image" src="./img/slide_06.jpg">
+    </header><!-- /Header -->
+    
+    <!-- CONTENT SECTION
+    ======================================================================= -->
+	<article id="Search">
+		<section id="mainBody" class="container-fluid">
+			<section class="row">
+				<!--SIDEBAR AREA-->
+				<aside id="sidebar" class="span2">
+					<div class="sidebar-subhead">Contribute</div>
+					<a class="btn btn-primary" href="#share"><i
+						class="icon-upload icon-white icon-large"></i> Submit data</a>
+
+					<div class="sidebar-subhead">Browse</div>
+					<ul class="unstyled">
+						<li><a class="sidebar-item" id="results_link" href="#"><i
+								class="icon-search icon-large"></i> Search Results</a></li>
+						<li><a class="sidebar-item" id="featureddata_link" href="#"><i
+								class="icon-flag icon-large"></i> Featured Data</a></li>
+						<li><a class="sidebar-item" id="recent_link" href="#"><i
+								class="icon-calendar icon-large"></i> Most Recent</a></li>
+						<li><a class="sidebar-item" id="mostaccessed_link" href="#"><i
+								class="icon-signal icon-large"></i> Most Accessed</a></li>
+					</ul>
+					<div class="sidebar-subhead">Your Collections</div>
+					<ul class="unstyled">
+						<li><a class="sidebar-item" id="yourdata_link" href="#"><i
+								class="icon-folder-close icon-large"></i> Your Data</a></li>
+						<li><a class="sidebar-item" href="#"><i
+								class="icon-folder-close icon-large"></i> Sierra Grazing Study</a></li>
+						<li><a class="sidebar-item" href="#"><i
+								class="icon-folder-close icon-large"></i> Rockies Grazing Study</a></li>
+						<li><a class="sidebar-item" href="#"><i
+								class="icon-folder-close icon-large"></i> Colorado Ungulate
+								Study</a></li>
+					</ul>
+				</aside>
+
+				<!--CONTENT AREA-->
+				<div id="content" class="span10">
+					<div id="results-view" class="container-fluid">
+						<h2 id="pagehead" class="row-fluid">Featured Data</h2>
+						<div id="results-header" class="row-fluid result-header">
+							<div class="result-header-menu span1">
+								<div class="dropdown">
+									<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
+										class="icon-plus"></i> <b class="caret"></b></a>
+									<ul class="dropdown-menu">
+										<li><a href="#">Add to collection...</a></li>
+										<li><a href="#">Download</a></li>
+									</ul>
+								</div>
+							</div>
+							<div class="result-header-count span7" id="statcounts">0 to
+								0 of 0</div>
+							<div class="result-header-pager span3 pagination"
+								id="resultspager">
+								<ul>
+									<li><a id="results_prev" href="#">Prev</a></li>
+									<li><a href="#">1</a></li>
+									<li><a href="#">2</a></li>
+									<li><a href="#">3</a></li>
+									<li><a id="results_next" href="#">Next</a></li>
+								</ul>
+							</div>
+							<div class="result-header-menu span1">
+								<div class="dropdown">
+									<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
+										class="icon-cog"></i> <b class="caret"></b></a>
+									<ul class="dropdown-menu">
+										<li><a href="#">Settings...</a></li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						<div id="results" class="search-results"></div>
+						<div id="resultspager" class="row-fluid pagination">
+							<ul>
+								<li><a href="#">Prev</a></li>
+								<li><a href="#">1</a></li>
+								<li><a href="#">2</a></li>
+								<li><a href="#">3</a></li>
+								<li><a href="#">4</a></li>
+								<li><a href="#">5</a></li>
+								<li><a href="#">Next</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</section>
+
+		</section>
+	</article>
+
+	<!-- FOOTER SECTION
+    ======================================================================= -->
+    <footer id="Footer" class="footer">
+      <div class="container">
+        <div class="row-fluid pagination-centered">
+          <h3><span>The</span> Knowledge Network <span>for</span> Biocomplexity</h3>
+        </div>
+      </div>
+    </footer>
+    <!-- Templates used for rendering data from the models
+    ======================================================================= -->
+    <script type="text/template" id="result-template">
+        <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div>
+        <div class="result-citation span7">
+              <span class="result-author"><% var count=0; _.each(origin, function(author) {
+                   count++;
+                   if (count > 1) {
+                       print(", ")
+             }
+                   if (count > 1 && count == origin.length) {
+                       print("and ")
+             }
+                   print(author)
+                   if (count == origin.length) {
+                       print(". ")
+             }
+               }) %></span>
+               <span class="result-pubdate"> <% if(pubDate) { 
+                   print(moment(pubDate).format('YYYY'), '. ')
+               } else {
+                   print(moment(dateUploaded).format('YYYY'), '. ')
+               } %></span>
+               <span class="result-title"> <% if (title) { print('<a href=\"', baseurl, id, '\">', title, '.</a> '); } %></span>
+               <span class="result-id"> <%- id %></span>
+        </div>
+        <div class="result-stats span2"><span class="badge badge-info"><%- downloads %></span> <span class="badge badge-success"><%- citations %></span></div>
+        
+      <div class="btn-group span1">
+        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+          Download
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Add to collection...</a></li>
+          <li class="divider"></li>
+          <li><a href="#">Share...</a></li>
+        </ul>
+      </div>
+  </script>
+  <script type="text/template" id="statcounts-template">
+    <div class="result-header-count span8" id="countstats"><%- start %> to <%- end %> of <%- numFound %></div>
+  </script>
+    
+    
+    <!-- Javascript at the end of the document to load pages faster 
+    ======================================================================= -->
+    <script src="components/jquery.js"></script>
+    <script src="components/holder.js"></script>
+    <script src="components/bootstrap.min.js"></script>
+    <script src="components/underscore.js"></script>
+    <script src="components/json2.js"></script>    
+  <script src="components/backbone.js"></script>
+  <script src="components/moment.js"></script>
+    <script src="js/models/SolrHeader.js"></script>
+    <script src="js/models/SolrResult.js"></script>
+    <script src="js/collections/SolrResults.js"></script>
+    <script src="js/routers/router.js"></script>
+    <script src="js/views/SearchResultView.js"></script>
+    <script src="js/views/AppView.js"></script>    
+  <script src="js/app.js"></script>
+    
+    <script>
+      !function ($) {
+        $(function(){
+          $('.carousel').carousel()
+        })
+      }(window.jQuery)
+    </script>
+  
+</body>
+</html>
