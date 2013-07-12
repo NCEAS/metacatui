@@ -36,7 +36,6 @@ Bold 700 Italic
 
 /* Body CSS
 -------------------------------------------------- */
-    /* Padding below the footer and lighter body text */
     body {
       color: #A1A1A1;
       background-color: #FDFDFD;
@@ -61,7 +60,7 @@ Bold 700 Italic
     
     body > article {
       min-height: 800px;
-      margin: none;
+      margin: 135px auto auto auto;
       font-weight: 300;
       font-size: 110%;
       line-height: 1.5;
@@ -76,20 +75,32 @@ Bold 700 Italic
       color: #FDFDFD;
       background-color: #3F3F3F;
     }
-    
+
+/* HEADER CSS
+-------------------------------------------------- */    
     #Header {
-      position: relative;
+      position: fixed;
       top: 0px;
       z-index: 50;
       background-color: #FDFDFD;
       overflow: hidden;
       opacity: 1.0;
     }
+
+/* FOOTER CSS
+-------------------------------------------------- */    
     
     footer#Footer div:first-child {
       max-width: 650px;
     }
-    
+
+    footer#Footer h2 {
+      font: 400 30px/30px "Lato";
+      vertical-align: baseline;
+      padding: 0;
+      text-align: center;
+    }
+        
     footer#Footer h3 {
       font: 800 30px/30px "Open Sans";
       text-align: center;
@@ -154,6 +165,9 @@ Bold 700 Italic
       top: 0px;
       z-index: 50;
     }
+
+/* FEATURES CSS
+-------------------------------------------------- */    
     
     #Features {
       position: relative;
@@ -185,7 +199,11 @@ Bold 700 Italic
     section#Features button:hover {
       background-color: #5C7F8C;
     
-    }    
+    } 
+    
+/* FEATURES CSS
+-------------------------------------------------- */    
+
     #FeaturedData {
       position: relative;
       background-color: #B0A691;
@@ -210,7 +228,7 @@ Bold 700 Italic
     }
     
     .navbar {
-      position: absolute;
+      position: fixed;
       top: 20px;
       border: none;
       z-index: 100;
@@ -444,18 +462,6 @@ Bold 700 Italic
     .pagination {
       margin: auto;
     }
-
-/* FOOTER CSS
--------------------------------------------------- */
-
-  .footer .brand {
-      /* padding: 14px 20px 16px; Increase vertical padding to match navbar links */
-      margin-left: 20px;
-      font-size: 16px;
-      font-weight: bold;
-      text-shadow: 0 -1px 0 rgba(0,0,0,.5);
-    }
-
 
 /* RESPONSIVE CSS
 -------------------------------------------------- */
