@@ -74,11 +74,13 @@ Bold 700 Italic
       
     }
     
-    h2 > a[name] {
+    h1 > a[name], h2 > a[name], h3 > a[name],
+    h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
       padding-top: 115px;
       text-decoration: none;
     }
+    
     body > header#mainHeader + section {
       margin: 400px auto auto auto;
       
