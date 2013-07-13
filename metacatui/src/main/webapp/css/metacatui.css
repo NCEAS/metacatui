@@ -56,7 +56,6 @@ Bold 700 Italic
     body > header#Header {
       position: fixed;
       height: 95px;
-      margin-bottom: 35px;
       
     }
     
@@ -75,6 +74,11 @@ Bold 700 Italic
       
     }
     
+    h2 > a[name] {
+      color: #555555;
+      padding-top: 115px;
+      text-decoration: none;
+    }
     body > header#mainHeader + section {
       margin: 400px auto auto auto;
       
@@ -86,6 +90,10 @@ Bold 700 Italic
       padding-bottom: 30px;
       color: #FDFDFD;
       background-color: #3F3F3F;
+    }
+    
+    div.row-fluid > a[name] {
+      margin: 35px auto auto auto;
     }
 
 /* HEADER CSS
