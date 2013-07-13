@@ -106,6 +106,7 @@ public class DataONEProxy extends HttpServlet {
 	    InputStream is = null;
 	        try {
 	            //String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&wt=json" + "&rows=" + rows + "&start=" + start;
+	            //              https://cn.dataone.org/cn/v1/query/solr/?fl=id%2Ctitle%2Corigin%2CpubDate%2CdateUploaded%2Cabstract&q=formatType%3AMETADATA+-obsoletedBy%3A*+jones&sort=dateUploaded+desc&wt=json&rows=10&start=0
 	            String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl="+ URLEncoder.encode(fields) + "&q="+ URLEncoder.encode(queryString) + "&sort=" + URLEncoder.encode(sort) + "&wt=json" + "&rows=" + URLEncoder.encode(rows) + "&start=" + URLEncoder.encode(start);
 	            System.out.println("Query URL: " + uri);
 	            URI query = new URI(uri);
@@ -131,10 +132,9 @@ public class DataONEProxy extends HttpServlet {
 	
 	private String simulateSearch(String start, String rows) {
 	    String updatedSimData = "";
-	    //InputStream is = this.getClass().getResourceAsStream("/simulated-data.json");
-	    String resname =  "/solr-data-" + rows + ".json";
-	    //String resname =  "/solr-data.json";
-	    InputStream is = this.getClass().getResourceAsStream(resname);
+	    InputStream is = this.getClass().getResourceAsStream("/solr-data-CN.json");
+	    //String resname =  "/solr-data-" + rows + ".json";
+	    //InputStream is = this.getClass().getResourceAsStream(resname);
 	    try {
 	        String updatedYear = 2012 + start;
             String simData = IOUtils.toString(is, Charset.forName("UTF-8"));
