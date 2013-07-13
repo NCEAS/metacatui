@@ -50,12 +50,20 @@ Bold 700 Italic
     body > section, footer {
       min-height: 400px;
       margin: none;
+      z-index: 10;
     }
     
-    body > header {
+    body > header#Header {
+      position: fixed;
       height: 95px;
       margin-bottom: 35px;
       
+    }
+    
+    body > header#mainHeader {
+      z-index: 190;
+      position: fixed;
+      min-height: 400px;      
     }
     
     body > article {
@@ -67,6 +75,10 @@ Bold 700 Italic
       
     }
     
+    body > header#mainHeader + section {
+      margin: 400px auto auto auto;
+      
+    }
     footer {
       position: relative;
       bottom: 0px;
@@ -231,7 +243,7 @@ Bold 700 Italic
       position: fixed;
       top: 20px;
       border: none;
-      z-index: 100;
+      z-index: 200;
       min-height: 55px;
     
     }
