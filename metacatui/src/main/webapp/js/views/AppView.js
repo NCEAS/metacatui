@@ -35,7 +35,7 @@ var app = app || {};
 		// collection, when items are added or changed.
 		initialize: function () {
 			//this.$baseurl = "http://localhost/knb/metacat/d1/mn/";
-			this.$baseurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+			this.$baseurl = window.location.protocol + '//' + window.location.host + ":" + window.location.port + window.location.pathname;
 			this.$resultsview = this.$('#results-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
