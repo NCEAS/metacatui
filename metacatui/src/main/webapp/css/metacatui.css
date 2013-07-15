@@ -97,6 +97,15 @@ Bold 700 Italic
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
+    
+/* FORM/INPUT CUSTOMIZATIONS
+-------------------------------------------------- */ 
+.controls-well {
+    border: 1px solid #E3E3E3;
+    border-radius: 4px 4px 4px 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+    padding: 4px;
+}       
 
 /* HEADER CSS
 -------------------------------------------------- */    
