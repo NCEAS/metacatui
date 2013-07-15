@@ -107,7 +107,8 @@ public class DataONEProxy extends HttpServlet {
 	        try {
 	            //String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl=id,title,origin,pubDate,abstract&q=formatType:METADATA+-obsoletedBy:*&wt=json" + "&rows=" + rows + "&start=" + start;
 	            //              https://cn.dataone.org/cn/v1/query/solr/?fl=id%2Ctitle%2Corigin%2CpubDate%2CdateUploaded%2Cabstract&q=formatType%3AMETADATA+-obsoletedBy%3A*+jones&sort=dateUploaded+desc&wt=json&rows=10&start=0
-	            String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl="+ URLEncoder.encode(fields) + "&q="+ URLEncoder.encode(queryString) + "&sort=" + URLEncoder.encode(sort) + "&wt=json" + "&rows=" + URLEncoder.encode(rows) + "&start=" + URLEncoder.encode(start);
+                //String uri = "https://cn.dataone.org/cn/v1/query/solr/?fl="+ URLEncoder.encode(fields) + "&q="+ URLEncoder.encode(queryString) + "&sort=" + URLEncoder.encode(sort) + "&wt=json" + "&rows=" + URLEncoder.encode(rows) + "&start=" + URLEncoder.encode(start);
+	            String uri = "http://localhost:8080/knb/d1/mn/v1/query/solr/fl="+ URLEncoder.encode(fields) + "&q="+ URLEncoder.encode(queryString) + "&sort=" + URLEncoder.encode(sort) + "&wt=json" + "&rows=" + URLEncoder.encode(rows) + "&start=" + URLEncoder.encode(start);
 	            System.out.println("Query URL: " + uri);
 	            URI query = new URI(uri);
 	            URL url = query.toURL();

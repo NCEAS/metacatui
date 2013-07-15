@@ -22,7 +22,8 @@ var app = app || {};
 		},
 		
 		url: function() {
-			return this.service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			//return this.service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			return 'http://localhost:8080/knb/d1/mn/v1/query/solr/' + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
 		},
 		  
 		parse: function(solr) {
