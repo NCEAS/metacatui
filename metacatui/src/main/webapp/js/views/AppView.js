@@ -41,7 +41,7 @@ var app = app || {};
 			this.$pagehead = this.$('#pagehead');
 			this.$statcounts = this.$('#statcounts');
 			this.$isCollapsed = false;
-
+			
 			this.listenTo(app.SearchResults, 'add', this.addOne);
 			this.listenTo(app.SearchResults, 'reset', this.addAll);
 			this.listenTo(app.SearchResults, 'all', this.render);

@@ -75,6 +75,10 @@ var app = app || {};
 		
 		setSort: function(newsort) {
 			this.sort = newsort;
+		},
+		
+		setQueryService: function(service_path) {
+			this.query_service = service_path;
 		}
 		
 	});
