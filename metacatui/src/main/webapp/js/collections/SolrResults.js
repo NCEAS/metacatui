@@ -14,8 +14,8 @@ var app = app || {};
 
 		initialize: function(models, options) {
 			this.$baseurl = window.location.origin;
-			//this.service = options.service || '/metacatui/d1proxy/?';
-			this.service = options.service || '/knb/d1/mn/v1/query/solr/';
+			//this.query_service = options.query_service || '/metacatui/d1proxy/?';
+			this.query_service = options.query_service || '/knb/d1/mn/v1/query/solr/';
 		    this.currentquery = options.query || '*:*';
 		    this.fields = options.fields || "id,title";
 		    this.rows = options.rows || 10;
@@ -24,8 +24,8 @@ var app = app || {};
 		},
 		
 		url: function() {
-			//return this.service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
-			return this.$baseurl + this.service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			//return this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			return this.$baseurl + this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
 		},
 		  
 		parse: function(solr) {
