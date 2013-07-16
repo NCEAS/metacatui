@@ -74,11 +74,13 @@ Bold 700 Italic
       
     }
     
-    h2 > a[name] {
+    h1 > a[name], h2 > a[name], h3 > a[name],
+    h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
       padding-top: 115px;
       text-decoration: none;
     }
+    
     body > header#mainHeader + section {
       margin: 400px auto auto auto;
       
@@ -95,6 +97,15 @@ Bold 700 Italic
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
+    
+/* FORM/INPUT CUSTOMIZATIONS
+-------------------------------------------------- */ 
+.controls-well {
+    border: 1px solid #E3E3E3;
+    border-radius: 4px 4px 4px 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+    padding: 4px;
+}       
 
 /* HEADER CSS
 -------------------------------------------------- */    
