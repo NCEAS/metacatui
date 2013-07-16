@@ -66,8 +66,9 @@ var app = app || {};
 			if (this.currentquery != newquery) {
 				this.currentquery = newquery;
 				this.start = 0;
-				this.fetch({data: {start: this.start}, reset: true});
+				
 			}
+			this.fetch({data: {start: this.start}, reset: true});
 		},
 		
 		setfields: function(newfields) {
