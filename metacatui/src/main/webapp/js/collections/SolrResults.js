@@ -25,7 +25,8 @@ var app = app || {};
 		
 		url: function() {
 			//return this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
-			return this.$baseurl + this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			var endpoint = this.$baseurl + this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			return endpoint;
 		},
 		  
 		parse: function(solr) {
