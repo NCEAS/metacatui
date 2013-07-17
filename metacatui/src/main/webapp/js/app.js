@@ -1,11 +1,38 @@
-/*global $ */
+/*global require */
 /*jshint unused:false */
-var app = app || {};
-var ENTER_KEY = 13;
+'use strict';
 
-$(function () {
-	'use strict';
-
-	// kick things off by creating the `App`
-	new app.AppView();
+/* Configure the app to use requirejs, and map dependency aliases to their
+   directory location (.js is ommitted). Shim libraries that don't natively 
+   support requirejs. */
+require.config({
+  baseUrl: 'js',
+  paths: {
+    jquery: '../components/jquery',
+    underscore: '../components/underscore',
+    backbone: '../components/backbone',
+    text: '../components/require-text'
+  },
+  shim: { /* used for libraries without native AMD support */
+    underscore: {
+      exports: '_'
+    },
+    backbone: {
+      deps: ['underscore', 'jquery'],
+      exports: 'Backbone'
+    }
+  }
 });
+
+/* require libraries that are needed  */
+require(['backbone', 'views/AppView', 'routers/router'],
+  function(Backbone, AppView, UIRouter) {
+      'use strict';  
+    	// Initialize routing and start Backbone.history()
+      new UIRouter();
+      Backbone.history.start();   
+    	
+      // Initialize the application view
+      new AppView();
+  }
+);
