@@ -1,21 +1,35 @@
-/*global Backbone, _, $, ENTER_KEY, */
-/*jshint unused:false */
-var app = app || {};
+/*global define */
+'use strict';
 
-(function ($) {
-	'use strict';
+define(['jquery',
+				'underscore', 
+				'backbone',
+				'collections/SolrResults',
+				'views/SearchResultsView', 
+				'text!templates/statCounts.html',
+				'text!templates/navbar.html',
+				'text!templates/secondaryHeader.html',
+				'text!templates/footer.html'], 				
+	function($, _, Backbone, SolrResultList, SearchResultsView, 
+		statCountsTemplate, mainNavbarTemplate, secondaryHeaderTemplate, mainFooterTemplate) {
 
 	// The Application
 	// ---------------
 
 	// Our overall **AppView** is the top-level piece of UI.
-	app.AppView = Backbone.View.extend({
+	var AppView = Backbone.View.extend({
 
 		// Instead of generating a new element, bind to the existing skeleton of
 		// the App already present in the HTML.
 		el: '#metacatui-app',
 		
-		statsTemplate: _.template($('#statcounts-template').html()),
+		statsTemplate: _.template(statCountsTemplate),
+		
+		navbarTemplate: _.template(mainNavbarTemplate),
+
+		headerTemplate: _.template(secondaryHeaderTemplate),
+		
+		footerTemplate: _.template(mainFooterTemplate),
 
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -186,5 +200,6 @@ var app = app || {};
 			}
 		}
 		
-	});	
-})(jQuery);
+	});
+	return AppView;		
+});
