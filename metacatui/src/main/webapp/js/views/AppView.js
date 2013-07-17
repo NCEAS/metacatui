@@ -48,14 +48,14 @@ define(['jquery',
 		// At initialization we bind to the relevant events on the `SearchResults`
 		// collection, when items are added or changed.
 		initialize: function () {
-			//this.$baseurl = "http://localhost/knb/metacat/d1/mn/";
-			this.$baseurl = window.location.protocol + '//' + window.location.host + ":" + window.location.port + window.location.pathname;
+			this.$baseurl = window.location.origin;
+			this.$view_service = this.$baseurl + window.location.pathname + '/d1proxy/view/';
 			this.$resultsview = this.$('#results-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
 			this.$statcounts = this.$('#statcounts');
 			this.$isCollapsed = false;
-
+			
 			this.listenTo(app.SearchResults, 'add', this.addOne);
 			this.listenTo(app.SearchResults, 'reset', this.addAll);
 			this.listenTo(app.SearchResults, 'all', this.render);
@@ -169,7 +169,7 @@ define(['jquery',
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
-			result.set( {baseurl: this.$baseurl+'d1proxy/view/'} );
+			result.set( {baseurl: this.$view_service} );
 			var view = new app.SearchResultView({ model: result });
 			this.$results.append(view.render().el);
 		},

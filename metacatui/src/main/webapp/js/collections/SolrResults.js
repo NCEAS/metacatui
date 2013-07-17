@@ -13,7 +13,9 @@ var app = app || {};
 		model: app.SolrResult,
 
 		initialize: function(models, options) {
-			this.service = options.service || '/metacatui/d1proxy/?';
+			this.$baseurl = window.location.origin;
+			//this.query_service = options.query_service || '/metacatui/d1proxy/?';
+			this.query_service = options.query_service || '/knb/d1/mn/v1/query/solr/';
 		    this.currentquery = options.query || '*:*';
 		    this.fields = options.fields || "id,title";
 		    this.rows = options.rows || 10;
@@ -22,8 +24,9 @@ var app = app || {};
 		},
 		
 		url: function() {
-			//return this.service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
-			return 'http://localhost:8080/knb/d1/mn/v1/query/solr/' + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			//return this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			var endpoint = this.$baseurl + this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			return endpoint;
 		},
 		  
 		parse: function(solr) {
@@ -73,6 +76,10 @@ var app = app || {};
 		
 		setSort: function(newsort) {
 			this.sort = newsort;
+		},
+		
+		setQueryService: function(service_path) {
+			this.query_service = service_path;
 		}
 		
 	});
