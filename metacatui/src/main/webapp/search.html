@@ -115,7 +115,7 @@
 					<div id="results-view" class="container-fluid">
 						<h2 id="pagehead" class="row-fluid">Featured Data</h2>
 						<div id="results-header" class="row-fluid result-header">
-							<div class="result-header-menu span1">
+							<!-- <div class="result-header-menu span1">
 								<div class="dropdown">
 									<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
 										class="icon-plus"></i> <b class="caret"></b></a>
@@ -125,7 +125,8 @@
 									</ul>
 								</div>
 							</div>
-							<div class="result-header-count span7" id="statcounts">0 to
+							-->
+							<div class="result-header-count span8" id="statcounts">0 to
 								0 of 0</div>
 							<div class="result-header-pager span3 pagination"
 								id="resultspager">
@@ -182,8 +183,8 @@
     <!-- Templates used for rendering data from the models
     ======================================================================= -->
     <script type="text/template" id="result-template">
-        <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div>
-        <div class="result-citation span7">
+        <!-- <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div> -->
+        <div class="result-citation span8">
               <span class="result-author"><% var count=0; _.each(origin, function(author) {
                    count++;
                    if (count > 1) {
