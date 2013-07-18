@@ -28,6 +28,8 @@ var app = app || {};
 			'click #featureddata_link': 'showFeatured',
 			'click #results_prev': 'prevpage',
 			'click #results_next': 'nextpage',
+			'click #results_prev_bottom': 'prevpage',
+			'click #results_next_bottom': 'nextpage',
 			'click #search_btn': 'showResults',
 		},
 
