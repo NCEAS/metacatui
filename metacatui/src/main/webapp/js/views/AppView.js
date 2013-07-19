@@ -3,12 +3,12 @@ define(['jquery',
 				'underscore', 
 				'backbone',
 				'views/NavbarView',
-				'views/MainHeaderView'
-				//'views/features',
+				'views/MainHeaderView',
+				'views/FeaturesView'
 				//'views/featuredData',
 				//'views/footer'
 				], 				
-	function($, _, Backbone, NavbarView, MainHeaderView) {
+	function($, _, Backbone, NavbarView, MainHeaderView, FeaturesView) {
 	'use strict';
 	
 	// Our overall **AppView** is the top-level piece of UI.
@@ -26,13 +26,15 @@ define(['jquery',
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
 		render: function () {
-			console.log('Rendering subviews here.');
+			console.log('Rendering subviews within the AppView');
 			this.navbarView = new NavbarView();
 			this.navbarView.setElement(this.$('#Navbar')).render();
 			
 			this.mainHeaderView = new MainHeaderView();
 			this.mainHeaderView.setElement(this.$('#mainHeader')).render();
 			
+			this.featuresView = new FeaturesView();
+			this.featuresView.setElement(this.$('#Features')).render();
 			return this;
 		}	
 				
