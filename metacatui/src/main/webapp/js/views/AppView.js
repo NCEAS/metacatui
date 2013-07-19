@@ -40,11 +40,11 @@ define(['jquery',
 			this.featuresView = new FeaturesView();
 			this.featuresView.setElement(this.$('#Features')).render();
 			
-			this.featuredDataView = new FeaturedDataView();
-			this.featuredDataView.setElement(this.$('#FeaturedData')).render();
+			//this.featuredDataView = new FeaturedDataView();
+			//this.featuredDataView.setElement(this.$('#FeaturedData')).render();
 			
 			return this;
-		}	
+		}		
 				
 	});
 	return AppView;		
