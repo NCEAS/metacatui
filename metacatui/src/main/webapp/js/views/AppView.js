@@ -37,7 +37,8 @@ var app = app || {};
 		// collection, when items are added or changed.
 		initialize: function () {
 			this.$baseurl = window.location.origin;
-			this.$view_service = this.$baseurl + window.location.pathname + '/d1proxy/view/';
+			this.$view_service = this.$baseurl + '/knb/d1/mn/v1/views/metacatui/';
+			this.$package_service = this.$baseurl + '/knb/d1/mn/v1/package/';
 			this.$resultsview = this.$('#results-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
@@ -157,7 +158,7 @@ var app = app || {};
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
-			result.set( {baseurl: this.$view_service} );
+			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
 			var view = new app.SearchResultView({ model: result });
 			this.$results.append(view.render().el);
 		},
