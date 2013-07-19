@@ -5,7 +5,7 @@ define(['jquery',
 				'views/NavbarView',
 				'views/MainHeaderView',
 				'views/FeaturesView',
-				'views/FeaturedData'
+				'views/FeaturedDataView'
 				//'views/footer'
 				], 				
 	function($, _, Backbone, NavbarView, MainHeaderView, FeaturesView, FeaturedData) {
