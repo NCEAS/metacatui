@@ -1,30 +1,38 @@
 /*global Backbone */
-var app = app || {};
+'use strict';
 
-(function () {
-	'use strict';
+define(['jquery',	'underscore', 'backbone', 'views/AppView'], 				
+function ($, _, Backbone, AppView) {
 
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			'*mostaccessed': 'showMostAccessed',
-			'*about': 'showAbout'
+			''      : 'renderIndex',  // the default route
+			'*about': 'renderAbout',  // about page
+			'*plans': 'renderPlans',  // plans page
+			'*tools': 'renderTools'   // tools page
 
 		},
 
-		showMostAccessed: function (param) {
-			//app.TodoFilter = param || '';
-
-			// Trigger a switch of search views
-			//app.Todos.trigger('filter');
+		renderIndex: function (param) {
+			console.log('Called UIRouter.renderIndex()');
+			this.appView = new AppView();
+			this.appView.render();
 		},
 		
-		showAbout: function (param) {
-			app.AppView.$mostaccessed.html("<p>About this site... :)</p>");
+		renderAbout: function (param) {
+			console.log('Called UIRouter.renderAbout()');
+		},
+		
+		renderPlans: function (param) {
+			console.log('Called UIRouter.renderPlans()');
+		},
+		
+		renderTools: function (param) {
+			console.log('Called UIRouter.renderTools()');
 		}
 	});
 
-	app.UIRouter = new UIRouter();
-	Backbone.history.start();
-})();
+	return UIRouter;
+});
