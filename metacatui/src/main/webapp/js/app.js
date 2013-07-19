@@ -24,13 +24,19 @@ require.config({
   }
 });
 
+var app = app || {};
+var appView = appView || {};
+var uiRouter = uiRouter || {};
+
 /* require libraries that are needed  */
-require(['backbone', 'routers/router'],
-function(Backbone, UIRouter) {
+require(['backbone', 'routers/router', 'views/AppView'],
+function(Backbone, UIRouter, AppView) {
       'use strict';  
-    	
+    				
+			appView = new AppView();
+			
 			// Initialize routing and start Backbone.history()
-      new UIRouter();
+      uiRouter = new UIRouter();
       Backbone.history.start();   
     	
   }

@@ -8,6 +8,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/features.html'],
 
 		el: '#Features',
 		
+		tagName: 'section',
+		
 		template: _.template(FeaturesTemplate),
 		
 		initialize: function () {
@@ -15,8 +17,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/features.html'],
 				
 		render: function () {
 			console.log('Rendering the features section');
+			
 			this.$el.html(this.template());
 			
+			return this;
 		}	
 				
 	});

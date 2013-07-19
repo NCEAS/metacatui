@@ -4,12 +4,12 @@ define(['jquery',
 				'backbone',
 				'views/NavbarView',
 				'views/MainHeaderView',
-				'views/FeaturesView',
-				'views/FeaturedDataView',
 				'views/FooterView'
 				], 				
-	function($, _, Backbone, NavbarView, MainHeaderView, FeaturesView, FeaturedDataView, FooterView) {
+	function($, _, Backbone, NavbarView, MainHeaderView, FooterView) {
 	'use strict';
+	
+	var app = app || {};
 	
 	// Our overall **AppView** is the top-level piece of UI.
 	var AppView = Backbone.View.extend({
@@ -20,11 +20,14 @@ define(['jquery',
 		
 		initialize: function () {
 			console.log('Rendering fixed subviews within the AppView');
-			this.navbarView = new NavbarView();
-			this.navbarView.setElement(this.$('#Navbar')).render();
+			app.navbarView = new NavbarView();
+			app.navbarView.setElement($('#Navbar')).render();
 
-			this.footerView = new FooterView();
-			this.footerView.setElement(this.$('#Footer')).render();
+			app.mainHeaderView = new MainHeaderView();
+			app.mainHeaderView.setElement($('#mainHeader')).render();
+
+			app.footerView = new FooterView();
+			app.footerView.setElement($('#Footer')).render();
 
 		},
 				
@@ -33,18 +36,14 @@ define(['jquery',
 		// and event handling to sub views
 		render: function () {
 			console.log('Rendering dynamic subviews within the AppView');
-			
-			this.mainHeaderView = new MainHeaderView();
-			this.mainHeaderView.setElement(this.$('#mainHeader')).render();
-			
-			this.featuresView = new FeaturesView();
-			this.featuresView.setElement(this.$('#Features')).render();
-			
-			//this.featuredDataView = new FeaturedDataView();
-			//this.featuredDataView.setElement(this.$('#FeaturedData')).render();
-			
+									
 			return this;
-		}	
+		},
+		
+		// Our view switcher for the whole app
+		showView: function(view) {
+			view.render();
+		}
 				
 	});
 	return AppView;		

@@ -1,9 +1,13 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/AppView'], 				
-function ($, _, Backbone, AppView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView'], 				
+function ($, _, Backbone, IndexView, AboutView) {
 
+  var app = app || {};
+	var indexView = new IndexView();
+	var aboutView = new AboutView();
+	
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
@@ -17,12 +21,13 @@ function ($, _, Backbone, AppView) {
 
 		renderIndex: function (param) {
 			console.log('Called UIRouter.renderIndex()');
-			this.appView = new AppView();
-			this.appView.render();
+			appView.showView(indexView);
 		},
 		
 		renderAbout: function (param) {
 			console.log('Called UIRouter.renderAbout()');
+			appView.showView(aboutView);
+			
 		},
 		
 		renderPlans: function (param) {
