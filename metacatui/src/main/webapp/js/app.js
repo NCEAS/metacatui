@@ -25,10 +25,11 @@ require.config({
 });
 
 /* require libraries that are needed  */
-require(['backbone', 'views/AppView', 'routers/router'],
-function(Backbone, AppView, UIRouter) {
+require(['backbone', 'routers/router'],
+function(Backbone, UIRouter) {
       'use strict';  
-    	// Initialize routing and start Backbone.history()
+    	
+			// Initialize routing and start Backbone.history()
       new UIRouter();
       Backbone.history.start();   
     	
