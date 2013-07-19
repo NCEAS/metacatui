@@ -31,14 +31,17 @@ var app = app || {};
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
 			'click #search_btn': 'showResults',
+			'click #view_link': 'showMetadata',
 		},
 
 		// At initialization we bind to the relevant events on the `SearchResults`
 		// collection, when items are added or changed.
 		initialize: function () {
 			this.$baseurl = window.location.origin;
-			this.$view_service = this.$baseurl + '/knb/d1/mn/v1/views/metacatui/';
+			//this.$view_service = '/#view/';
+			this.$view_service = '/knb/d1/mn/v1/views/metacatui/';
 			this.$package_service = this.$baseurl + '/knb/d1/mn/v1/package/';
+			this.$searchview = this.$('#Search');
 			this.$resultsview = this.$('#results-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
@@ -86,9 +89,7 @@ var app = app || {};
 			this.updateStats();
 		},
 		
-		// Switch the results view to the search results query
 		showResults: function () {
-			this.collapseSlides();
 			var search = this.$("#search_txt").val();
 			this.removeAll();
 			this.$pagehead.html('Search Results');
@@ -99,8 +100,11 @@ var app = app || {};
 			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#results_link").addClass("sidebar-item-selected");
 			this.$("#featureddata_link").removeClass("sidebar-item-selected");
+			$('#metadata-view').fadeOut();
 			this.$resultsview.show();
 			this.updateStats();
+			//var content = $('#content');
+			//content.children().html(this.$resultsview);
 		},
 	
 		// Switch the results view to the featured data query
@@ -187,6 +191,23 @@ var app = app || {};
 				$('#mainPageSlides').collapse("show");
 				this.$isCollapsed = false;
 			}
+		},
+		
+		// Switch the view to the Metadata view, which is built from an AJAX call
+		// to retrieve the metadata view from the server for the given ID
+		showMetadata: function (event) {
+			
+			// Look up the pid from the clicked link element
+			var pid = event.target.getAttribute("pid");
+			
+			// Get the view of the document from the server and load it
+			//var endpoint = '/knb/d1/mn/v1/views/metacatui/' + pid + ' #Metadata';
+			var endpoint = this.$view_service + pid + ' #Metadata';
+			$('#metadata-view').load(endpoint);
+			
+			// Hide the existing results listing, and show the metadata
+			this.$resultsview.fadeOut();
+			$('#metadata-view').fadeIn();
 		}
 		
 	});	

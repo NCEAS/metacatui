@@ -72,7 +72,7 @@
     
     <!-- CONTENT SECTION
     ======================================================================= -->
-	<article id="Search">
+	<article id="Main">
 		<section id="mainBody" class="container-fluid">
 			<section class="row">
 				<!--SIDEBAR AREA-->
@@ -167,6 +167,7 @@
 							</ul>
 						</div>
 					</div>
+					<div id="metadata-view" class="container-fluid"></div>
 				</div>
 			</section>
 
@@ -205,7 +206,7 @@
                } else {
                    print(moment(dateUploaded).format('YYYY'), '. ')
                } %></span>
-               <span class="result-title"> <% if (title) { print('<a href=\"', view_service, id, '\">', title, '.</a> '); } %></span>
+               <span class="result-title"> <% if (title) { print('<a id=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
                <span class="result-id"> <%- id %></span>
         </div>
         <div class="result-stats span2"><span class="badge badge-info"><%- downloads %></span> <span class="badge badge-success"><%- citations %></span></div>
