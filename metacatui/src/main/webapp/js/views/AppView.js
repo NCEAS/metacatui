@@ -5,10 +5,10 @@ define(['jquery',
 				'views/NavbarView',
 				'views/MainHeaderView',
 				'views/FeaturesView',
-				'views/FeaturedDataView'
-				//'views/footer'
+				'views/FeaturedDataView',
+				'views/FooterView'
 				], 				
-	function($, _, Backbone, NavbarView, MainHeaderView, FeaturesView, FeaturedData) {
+	function($, _, Backbone, NavbarView, MainHeaderView, FeaturesView, FeaturedDataView, FooterView) {
 	'use strict';
 	
 	// Our overall **AppView** is the top-level piece of UI.
@@ -19,6 +19,12 @@ define(['jquery',
 		el: '#metacatui-app',
 		
 		initialize: function () {
+			console.log('Rendering fixed subviews within the AppView');
+			this.navbarView = new NavbarView();
+			this.navbarView.setElement(this.$('#Navbar')).render();
+
+			this.footerView = new FooterView();
+			this.footerView.setElement(this.$('#Footer')).render();
 
 		},
 				
@@ -26,9 +32,7 @@ define(['jquery',
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
 		render: function () {
-			console.log('Rendering subviews within the AppView');
-			this.navbarView = new NavbarView();
-			this.navbarView.setElement(this.$('#Navbar')).render();
+			console.log('Rendering dynamic subviews within the AppView');
 			
 			this.mainHeaderView = new MainHeaderView();
 			this.mainHeaderView.setElement(this.$('#mainHeader')).render();
