@@ -6,7 +6,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/about.html'],
 	// Build the main header view of the application
 	var AboutView = Backbone.View.extend({
 
-		el: '#mainHeader',
+		el: '#About',
 		
 		template: _.template(AboutTemplate),
 		
