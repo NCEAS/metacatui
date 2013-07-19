@@ -4,11 +4,11 @@ define(['jquery',
 				'backbone',
 				'views/NavbarView',
 				'views/MainHeaderView',
-				'views/FeaturesView'
-				//'views/featuredData',
+				'views/FeaturesView',
+				'views/FeaturedData'
 				//'views/footer'
 				], 				
-	function($, _, Backbone, NavbarView, MainHeaderView, FeaturesView) {
+	function($, _, Backbone, NavbarView, MainHeaderView, FeaturesView, FeaturedData) {
 	'use strict';
 	
 	// Our overall **AppView** is the top-level piece of UI.
@@ -35,6 +35,10 @@ define(['jquery',
 			
 			this.featuresView = new FeaturesView();
 			this.featuresView.setElement(this.$('#Features')).render();
+			
+			this.featuredDataView = new FeaturedDataView();
+			this.featuredDataView.setElement(this.$('#FeaturedData')).render();
+			
 			return this;
 		}	
 				
