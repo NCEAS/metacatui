@@ -2,16 +2,14 @@
 define(['jquery',
 				'underscore', 
 				'backbone',
+				'views/SearchResultView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
 				'text!templates/resultsItem.html'
 				], 				
-	function($, _, Backbone, CatalogTemplate, CountTemplate, ResultItemTemplate) {
+	function($, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, ResultItemTemplate) {
 	'use strict';
 	
-	var app = app || {};
-	
-	// Our overall **AppView** is the top-level piece of UI.
 	var DataCatalogView = Backbone.View.extend({
 
 		el: '#Content',
@@ -49,9 +47,9 @@ define(['jquery',
 			this.$pagehead = this.$('#pagehead');
 			this.$isCollapsed = false;
 */			
-//			this.listenTo(appSearchResults, 'add', this.addOne);
-//			this.listenTo(appSearchResults, 'reset', this.addAll);
-//			this.listenTo(appSearchResults, 'all', this.render);
+			this.listenTo(appSearchResults, 'add', this.addOne);
+			this.listenTo(appSearchResults, 'reset', this.addAll);
+			this.listenTo(appSearchResults, 'all', this.render);
 //
 //			app.SearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract");
 /*
@@ -128,7 +126,7 @@ define(['jquery',
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
-			var view = new app.SearchResultView({ model: result });
+			var view = new SearchResultView({ model: result });
 			this.$results.append(view.render().el);
 		},
 

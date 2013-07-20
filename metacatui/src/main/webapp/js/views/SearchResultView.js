@@ -1,19 +1,20 @@
-/*global Backbone _ $ ENTER_KEY */
-var app = app || {};
-
-(function ($) {
+/*global define */
+define(['jquery', 'underscore', 'backbone', 'text!templates/resultsItem.html'], 				
+	function($, _, Backbone, ResultItemTemplate) {
+	
 	'use strict';
 
 	// SearchResult View
 	// --------------
 
 	// The DOM element for a SearchResult item...
-	app.SearchResultView = Backbone.View.extend({
+	var SearchResultView = Backbone.View.extend({
 		tagName:  'div',
 		className: 'row-fluid result-row',
 
 		// Cache the template function for a single item.
-		template: _.template($('#result-template').html()),
+		//template: _.template($('#result-template').html()),
+		template: _.template(ResultItemTemplate),
 
 		// The DOM events specific to an item.
 		events: {
@@ -34,9 +35,10 @@ var app = app || {};
 			//this.listenTo(this.model, 'visible', this.toggleVisible);
 		},
 
-		// Re-render the titles of the todo item.
+		// Re-render the titles of the result item.
 		render: function () {
-			this.$el.html(this.template(this.model.toJSON()));
+			var ri = this.template(this.model.toJSON());
+			this.$el.html(ri);
 			//this.$el.toggleClass('selected', this.model.get('selected'));
 			//this.toggleVisible();
 			//this.$input = this.$('.edit');
@@ -53,4 +55,5 @@ var app = app || {};
 			this.model.destroy();
 		}
 	});
-})(jQuery);
+	return SearchResultView;
+});
