@@ -38,23 +38,6 @@ define(['jquery',
 			this.$baseurl = window.location.origin;
 			this.$view_service = '/knb/d1/mn/v1/views/metacatui/';
 			this.$package_service = this.$baseurl + '/knb/d1/mn/v1/package/';
-
-			/*
-			this.$searchview = this.$('#Search');
-			this.$resultsview = this.$('#results-view');
-			this.$metadataview = this.$('#metadata-view');
-			this.$results = this.$('#results');
-			this.$pagehead = this.$('#pagehead');
-			this.$isCollapsed = false;
-*/			
-			this.listenTo(appSearchResults, 'add', this.addOne);
-			this.listenTo(appSearchResults, 'reset', this.addAll);
-			this.listenTo(appSearchResults, 'all', this.render);
-//
-//			app.SearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract");
-/*
-			this.render();
-*/
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -62,22 +45,29 @@ define(['jquery',
 		// and event handling to sub views
 		render: function () {
 
-			//this.$el.html('<section id="Catalog"><p>Hi!</p></section>');
 			console.log('Rendering the DataCatlog view');
 			appModel.set('headerType', 'default');
 			var cel = this.template();
 			this.$el.html(cel);
 			this.updateStats();
 			
-			return this;
-		},
+			// Register listeners; this is done here in render because the HTML
+			// needs to be bound before the listenTo call can be made
+			this.listenTo(appSearchResults, 'add', this.addOne);
+			this.listenTo(appSearchResults, 'reset', this.addAll);
+			this.listenTo(appSearchResults, 'all', this.render);
 
-		showResults: function () {
+			// Store some references to key views that we use repeatedly
 			this.$searchview = this.$('#Search');
 			this.$resultsview = this.$('#results-view');
 			this.$metadataview = this.$('#metadata-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
+
+			return this;
+		},
+
+		showResults: function () {
 
 			var search = this.$("#search_txt").val();
 			this.removeAll();
