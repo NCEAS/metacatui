@@ -11,7 +11,8 @@ require.config({
     jquery: '../components/jquery',
     underscore: '../components/underscore',
     backbone: '../components/backbone',
-    text: '../components/require-text'
+    text: '../components/require-text',
+    moment: '../components/moment'
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {

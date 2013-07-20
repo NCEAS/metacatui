@@ -58,7 +58,7 @@ define(['jquery',
 			this.listenTo(appSearchResults, 'all', this.render);
 
 			// Store some references to key views that we use repeatedly
-			this.$searchview = this.$('#Search');
+			//this.$searchview = this.$('#Search');
 			this.$resultsview = this.$('#results-view');
 			this.$metadataview = this.$('#metadata-view');
 			this.$results = this.$('#results');
@@ -69,7 +69,7 @@ define(['jquery',
 
 		showResults: function () {
 
-			var search = this.$("#search_txt").val();
+			var search = $("#search_txt").val();
 			this.removeAll();
 			this.$pagehead.html('Search Results');
 			appSearchResults.setrows(25);

@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/resultsItem.html'], 				
-	function($, _, Backbone, ResultItemTemplate) {
+define(['jquery', 'underscore', 'backbone', 'moment', 'text!templates/resultsItem.html'], 				
+	function($, _, Backbone, moment, ResultItemTemplate) {
 	
 	'use strict';
 
@@ -37,7 +37,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/resultsItem.html'],
 
 		// Re-render the titles of the result item.
 		render: function () {
-			var ri = this.template(this.model.toJSON());
+			var json = this.model.toJSON();
+			var ri = this.template(json);
 			this.$el.html(ri);
 			//this.$el.toggleClass('selected', this.model.get('selected'));
 			//this.toggleVisible();
