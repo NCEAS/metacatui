@@ -1,12 +1,11 @@
-/*global Backbone */
-var app = app || {};
-
-(function () {
+/*global define */
+define(['jquery', 'underscore', 'backbone'], 				
+	function($, _, Backbone) {
 	'use strict';
 
 	// SolrResult Model
 	// ------------------
-	app.SolrResult = Backbone.Model.extend({
+	var SolrResult = Backbone.Model.extend({
 		// This model contains all of the attributes found in the SOLR 'docs' field inside of the SOLR response element
 		defaults: {
 			origin: '',
@@ -24,4 +23,5 @@ var app = app || {};
 		}
 		
 	});
-})();
+	return SolrResult;
+});

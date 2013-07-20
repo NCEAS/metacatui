@@ -3,9 +3,10 @@ define(['jquery',
 				'underscore', 
 				'backbone',
 				'text!templates/search.html',
-				'text!templates/statCounts.html'
+				'text!templates/statCounts.html',
+				'text!templates/resultsItem.html'
 				], 				
-	function($, _, Backbone, CatalogTemplate, CountTemplate) {
+	function($, _, Backbone, CatalogTemplate, CountTemplate, ResultItemTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -18,6 +19,8 @@ define(['jquery',
 		template: _.template(CatalogTemplate),
 		
 		statsTemplate: _.template(CountTemplate),
+
+		resultTemplate: _.template(ResultItemTemplate),
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -34,27 +37,24 @@ define(['jquery',
 		},
 		
 		initialize: function () {
-			this.$statcounts = this.$('#statcounts');
-            console.log(this.$statcounts);
-
-			/*
 			this.$baseurl = window.location.origin;
-			//this.$view_service = '/#view/';
 			this.$view_service = '/knb/d1/mn/v1/views/metacatui/';
 			this.$package_service = this.$baseurl + '/knb/d1/mn/v1/package/';
+
+			/*
 			this.$searchview = this.$('#Search');
 			this.$resultsview = this.$('#results-view');
 			this.$metadataview = this.$('#metadata-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
 			this.$isCollapsed = false;
-			
-//			this.listenTo(app.SearchResults, 'add', this.addOne);
-//			this.listenTo(app.SearchResults, 'reset', this.addAll);
-//			this.listenTo(app.SearchResults, 'all', this.render);
+*/			
+//			this.listenTo(appSearchResults, 'add', this.addOne);
+//			this.listenTo(appSearchResults, 'reset', this.addAll);
+//			this.listenTo(appSearchResults, 'all', this.render);
 //
 //			app.SearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract");
-
+/*
 			this.render();
 */
 		},
@@ -71,50 +71,47 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();
 			
-			//var featuresView = new FeaturesView();
-			//featuresView.setElement($('#Features')).render();
-			
-			//this.featuredDataView = new FeaturedDataView();
-			//this.featuredDataView.setElement(this.$('#FeaturedData')).render();
-			
 			return this;
 		},
 
-/*	
 		showResults: function () {
+			this.$searchview = this.$('#Search');
+			this.$resultsview = this.$('#results-view');
+			this.$metadataview = this.$('#metadata-view');
+			this.$results = this.$('#results');
+			this.$pagehead = this.$('#pagehead');
+
 			var search = this.$("#search_txt").val();
 			this.removeAll();
 			this.$pagehead.html('Search Results');
-			app.SearchResults.setrows(25);
-			app.SearchResults.setSort("title+desc");
-			app.SearchResults.query("formatType:METADATA+-obsoletedBy:*+" + search);
-			this.$("#recent_link").removeClass("sidebar-item-selected");
-			this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
+			appSearchResults.setrows(25);
+			appSearchResults.setSort("title+desc");
+			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract");
+			appSearchResults.query("formatType:METADATA+-obsoletedBy:*+" + search);
+			//this.$("#recent_link").removeClass("sidebar-item-selected");
+			//this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			this.$("#results_link").addClass("sidebar-item-selected");
-			this.$("#featureddata_link").removeClass("sidebar-item-selected");
+			//this.$("#featureddata_link").removeClass("sidebar-item-selected");
 			this.$metadataview.fadeOut();
 			this.$resultsview.fadeIn();
 			this.updateStats();
 		},
-*/
+
 		updateStats : function() {
-//			if (app.SearchResults.header != null) {
+			if (appSearchResults.header != null) {
 			this.$statcounts = this.$('#statcounts');
 				this.$statcounts.html(this.statsTemplate({
-//					start : app.SearchResults.header.get("start") + 1,
-//					end : app.SearchResults.header.get("start") + app.SearchResults.length,
-//					numFound : app.SearchResults.header.get("numFound")
-					start : 1,
-					end : 25,
-					numFound : 83
+					start : appSearchResults.header.get("start") + 1,
+					end : appSearchResults.header.get("start") + appSearchResults.length,
+					numFound : appSearchResults.header.get("numFound")
 				}));
-//			}
+			}
 		},
-/*	
+
 		// Next page of results
 		nextpage: function () {
 			this.removeAll();
-			app.SearchResults.nextpage();
+			appSearchResults.nextpage();
 			this.$resultsview.show();
 			this.updateStats();
 		},
@@ -122,7 +119,7 @@ define(['jquery',
 		// Previous page of results
 		prevpage: function () {
 			this.removeAll();
-			app.SearchResults.prevpage();
+			appSearchResults.prevpage();
 			this.$resultsview.show();
 			this.updateStats();
 		},
@@ -137,7 +134,7 @@ define(['jquery',
 
 		// Add all items in the **SearchResults** collection at once.
 		addAll: function () {
-			app.SearchResults.each(this.addOne, this);
+			appSearchResults.each(this.addOne, this);
 		},
 		
 		// Remove all html for items in the **SearchResults** collection at once.
@@ -160,8 +157,7 @@ define(['jquery',
 			// Hide the existing results listing, and show the metadata
 			this.$resultsview.fadeOut();
 			this.$metadataview.fadeIn();
-		}
-*/
+		},
 		
 		onClose: function () {			
 			console.log('Closing the data view');

@@ -28,14 +28,16 @@ var app = app || {};
 var appView = appView || {};
 var uiRouter = uiRouter || {};
 var appModel = appModel || {};
+var appSearchResults = appSearchResults || {};
 
 /* require libraries that are needed  */
-require(['backbone', 'routers/router', 'views/AppView', 'models/AppModel'],
-function(Backbone, UIRouter, AppView, AppModel) {
+require(['backbone', 'routers/router', 'views/AppView', 'models/AppModel', 'collections/SolrResults'],
+function(Backbone, UIRouter, AppView, AppModel, SolrResultList) {
 	'use strict';  
     		
 	appModel = new AppModel();
 	appView = new AppView();
+	appSearchResults = new SolrResultList([], {});
 			
 	// Initialize routing and start Backbone.history()
 	uiRouter = new UIRouter();

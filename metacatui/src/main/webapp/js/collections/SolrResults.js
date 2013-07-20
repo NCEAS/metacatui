@@ -1,7 +1,6 @@
-/*global Backbone */
-var app = app || {};
-
-(function () {
+/*global define */
+define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrResult'], 				
+	function($, _, Backbone, SolrHeader, SolrResult) {
 	'use strict';
 
 	// SolrResults Collection
@@ -10,7 +9,7 @@ var app = app || {};
 	// The collection of SolrResult
 	var SolrResultList = Backbone.Collection.extend({
 		// Reference to this collection's model.
-		model: app.SolrResult,
+		model: SolrResult,
 
 		initialize: function(models, options) {
 			this.$baseurl = window.location.origin;
@@ -30,7 +29,7 @@ var app = app || {};
 		},
 		  
 		parse: function(solr) {
-			this.header = new app.SolrHeader(solr.responseHeader);
+			this.header = new SolrHeader(solr.responseHeader);
 			this.header.set({"numFound" : solr.response.numFound});
 			this.header.set({"start" : solr.response.start});
 			return solr.response.docs;
@@ -85,7 +84,5 @@ var app = app || {};
 		
 	});
 
-	// Create our global collection of **SolrResults** with a default set of fields
-	app.SearchResults = new SolrResultList([], {});
-	//app.SearchResults = new SolrResultList([], { query: "formatType:METADATA+-obsoletedBy:*", fields: "id,title,origin,pubDate,abstract", rows: 10, start: 0 });
-})();
+	return SolrResultList;		
+});

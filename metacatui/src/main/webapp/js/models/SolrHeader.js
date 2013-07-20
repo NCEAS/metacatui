@@ -1,12 +1,12 @@
-/*global Backbone */
-var app = app || {};
-
-(function () {
+/*global define */
+define(['jquery', 'underscore', 'backbone'], 				
+	function($, _, Backbone) {
 	'use strict';
 
 	// SolrHeader Model
 	// ------------------
-	app.SolrHeader = Backbone.Model.extend({
+	var SolrHeader = Backbone.Model.extend({
 		// attributes: status, QTime, params
 	});
-})();
+	return SolrHeader;
+});
