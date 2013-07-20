@@ -16,6 +16,8 @@ define(['jquery',
 		
 		template: _.template(CatalogTemplate),
 		
+		//statsTemplate: _.template($('#statcounts-template').html()),
+		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 //			'click #mostaccessed_link': 'showMostAccessed',
@@ -62,7 +64,14 @@ define(['jquery',
 						
 			//this.$el.html('<section id="Catalog"><p>Hi!</p></section>');
 			console.log('Rendering the DataCatlog view');
-			var cel = this.template();
+			var cel = this.template({
+//				start: app.SearchResults.header.get("start")+1,
+//				end: app.SearchResults.header.get("start") + app.SearchResults.length,
+//				numFound: app.SearchResults.header.get("numFound")
+				start: 1,
+				end: 25,
+				numFound: 388
+				});
 			this.$el.html(cel);
 
 			//var featuresView = new FeaturesView();
