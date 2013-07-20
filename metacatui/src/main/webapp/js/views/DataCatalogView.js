@@ -62,10 +62,10 @@ define(['jquery',
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
 		render: function () {
-			console.log('Rendering dynamic subviews within the DataCatalogView');
-						
+
 			//this.$el.html('<section id="Catalog"><p>Hi!</p></section>');
 			console.log('Rendering the DataCatlog view');
+			appModel.set('headerType', 'default');
 			var cel = this.template();
 			this.$el.html(cel);
 
@@ -77,6 +77,7 @@ define(['jquery',
 			
 			return this;
 		},
+
 /*	
 		showResults: function () {
 			var search = this.$("#search_txt").val();
@@ -105,7 +106,7 @@ define(['jquery',
 					numFound : 83
 				}));
 //			}
-		}
+		},
 /*	
 		// Next page of results
 		nextpage: function () {
@@ -158,6 +159,10 @@ define(['jquery',
 			this.$metadataview.fadeIn();
 		}
 */
+		
+		onClose: function () {			
+			console.log('Closing the data view');
+		}				
 	});
 	return DataCatalogView;		
 });

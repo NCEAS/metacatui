@@ -23,6 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainHeader.html', 't
 			var headerType = appModel.get('headerType');
 			
 			// then render it
+			this.$el.hide();
 			if (headerType == "main") {
 				console.log('Rendering the main header');
 				this.$el.html(this.template());
@@ -30,6 +31,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainHeader.html', 't
 				console.log('Rendering the default header');
 				this.$el.html(this.defaultTemplate());
 			}
+			this.$el.fadeIn('slow');
 			
 			return this;
 		}

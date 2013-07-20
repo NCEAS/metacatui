@@ -22,7 +22,11 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/about.html'],
 			console.log('Rendering the about view');
 			this.$el.html(this.template());
 			return this;
-		}	
+		},
+		
+		onClose: function () {			
+			console.log('Closing the about view');
+		}
 				
 	});
 	return AboutView;		
