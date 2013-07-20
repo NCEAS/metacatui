@@ -65,6 +65,12 @@ Bold 700 Italic
       min-height: 400px;      
     }
     
+		body > #Content {
+			position: relative;
+			margin: 0px 0px auto 0px;
+			min-height: 400px;  			
+		}
+		
     body > article {
       min-height: 800px;
       /*margin: 135px auto auto auto;*/
@@ -216,6 +222,8 @@ Bold 700 Italic
       background-color: #899CA6;
       padding-top: 20px;
       color: #FDFDFD;
+			min-height: 400px;
+			margin: 400px auto auto auto;
     }
 
     section#Features h4 {
@@ -450,15 +458,16 @@ Bold 700 Italic
   -------------------------------------------------- */
     #About {
       margin-top: 110px;
+			min-height: 800px;
     }
     
   /* Data Catalog CSS
   -------------------------------------------------- */
-    #Content {
-      margin-top: 110px;
-      margin-left: 20px;
-    }
-    
+	#mainBody {
+		margin: 135px 20px auto 20px;
+		min-height: 800px;
+	}
+
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
