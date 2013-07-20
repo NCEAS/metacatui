@@ -39,7 +39,7 @@ Bold 700 Italic
     body {
       color: #A1A1A1;
       background-color: #FDFDFD;
-      font-family: Lato, "Helvetica Nueue", Helvetica, "sans serif";
+      font-family: "Lato", "Helvetica Nueue", "Helvetica", "sans serif";
     }
 
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
@@ -251,15 +251,20 @@ Bold 700 Italic
     
     } 
     
-/* FEATURES CSS
+/* FEATURED DATA CSS
 -------------------------------------------------- */    
 
     #FeaturedData {
       position: relative;
       background-color: #B0A691;
       padding-top: 20px;
-      color: #FDFDFD;      
+      color: #FDFDFD;
+			min-height: 400px;			      
     }
+		
+		#FeaturedData h2 {
+			font-weight: 100;
+		}
     
 /* CUSTOMIZE THE ACCORDIAN 
 -------------------------------------------------- */

@@ -27,13 +27,14 @@ define(['jquery',
 			
 			appModel.set('headerType', 'main');
 			
-			this.$el.html('<section id="Features"></section>');
-			
+			// Add in the Features section
+			this.$el.html('<section id="Features" /><section id="FeaturedData" />');			
 			var featuresView = new FeaturesView();
 			featuresView.setElement($('#Features')).render();
 			
-			//this.featuredDataView = new FeaturedDataView();
-			//this.featuredDataView.setElement(this.$('#FeaturedData')).render();
+			// Add in the FeaturedData section
+			this.featuredDataView = new FeaturedDataView();
+			this.featuredDataView.setElement(this.$('#FeaturedData')).render();
 			
 			return this;
 		}	
