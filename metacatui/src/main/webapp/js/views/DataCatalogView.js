@@ -1,9 +1,10 @@
 /*global define */
 define(['jquery',
 				'underscore', 
-				'backbone'
+				'backbone',
+				'text!templates/search.html'
 				], 				
-	function($, _, Backbone) {
+	function($, _, Backbone, CatalogTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -12,6 +13,8 @@ define(['jquery',
 	var DataCatalogView = Backbone.View.extend({
 
 		el: '#Content',
+		
+		template: _.template(CatalogTemplate),
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -28,6 +31,7 @@ define(['jquery',
 		},
 		
 		initialize: function () {
+			/*
 			this.$baseurl = window.location.origin;
 			//this.$view_service = '/#view/';
 			this.$view_service = '/knb/d1/mn/v1/views/metacatui/';
@@ -47,7 +51,7 @@ define(['jquery',
 //			app.SearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract");
 
 			this.render();
-
+*/
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -56,8 +60,11 @@ define(['jquery',
 		render: function () {
 			console.log('Rendering dynamic subviews within the DataCatalogView');
 						
-			this.$el.html('<section id="Catalog"><p>Hi!</p></section>');
-			
+			//this.$el.html('<section id="Catalog"><p>Hi!</p></section>');
+			console.log('Rendering the DataCatlog view');
+			var cel = this.template();
+			this.$el.html(cel);
+
 			//var featuresView = new FeaturesView();
 			//featuresView.setElement($('#Features')).render();
 			
