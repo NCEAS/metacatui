@@ -35,6 +35,7 @@ define(['jquery',
 		
 		initialize: function () {
 			this.$statcounts = this.$('#statcounts');
+            console.log(this.$statcounts);
 
 			/*
 			this.$baseurl = window.location.origin;
@@ -68,7 +69,8 @@ define(['jquery',
 			appModel.set('headerType', 'default');
 			var cel = this.template();
 			this.$el.html(cel);
-
+			this.updateStats();
+			
 			//var featuresView = new FeaturesView();
 			//featuresView.setElement($('#Features')).render();
 			
@@ -97,6 +99,7 @@ define(['jquery',
 */
 		updateStats : function() {
 //			if (app.SearchResults.header != null) {
+			this.$statcounts = this.$('#statcounts');
 				this.$statcounts.html(this.statsTemplate({
 //					start : app.SearchResults.header.get("start") + 1,
 //					end : app.SearchResults.header.get("start") + app.SearchResults.length,
