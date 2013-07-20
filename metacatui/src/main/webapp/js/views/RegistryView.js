@@ -21,7 +21,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			console.log('Calling the registry to display');
 			var baseurl = window.location.origin;
-			var fragment = "#container";
+			var fragment = "article";
 			var registryUrl = baseurl + "/knb/cgi-bin/register-dataset.cgi?cfg=metacatui";
 			console.log('Calling the registry URL: ' + registryUrl);
 			this.$el.load(registryUrl + " " + fragment);
