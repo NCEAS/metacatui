@@ -23,6 +23,8 @@ define(['jquery',
 		render: function () {
 			console.log('Rendering dynamic subviews within the DataCatalogView');
 						
+			appModel.set('headerType', 'default');
+			
 			this.$el.html('<section id="Catalog"><p>Hi!</p></section>');
 			
 			//var featuresView = new FeaturesView();
@@ -32,7 +34,11 @@ define(['jquery',
 			//this.featuredDataView.setElement(this.$('#FeaturedData')).render();
 			
 			return this;
-		}	
+		},
+		
+		onClose: function () {			
+			console.log('Closing the data view');
+		}
 				
 	});
 	return DataCatalogView;		
