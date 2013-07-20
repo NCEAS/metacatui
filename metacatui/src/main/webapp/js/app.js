@@ -27,17 +27,19 @@ require.config({
 var app = app || {};
 var appView = appView || {};
 var uiRouter = uiRouter || {};
+var appModel = appModel || {};
 
 /* require libraries that are needed  */
-require(['backbone', 'routers/router', 'views/AppView'],
-function(Backbone, UIRouter, AppView) {
-      'use strict';  
-    				
-			appView = new AppView();
+require(['backbone', 'routers/router', 'views/AppView', 'models/AppModel'],
+function(Backbone, UIRouter, AppView, AppModel) {
+	'use strict';  
+    		
+	appModel = new AppModel();
+	appView = new AppView();
 			
-			// Initialize routing and start Backbone.history()
-      uiRouter = new UIRouter();
-      Backbone.history.start();   
+	// Initialize routing and start Backbone.history()
+	uiRouter = new UIRouter();
+	Backbone.history.start();   
     	
   }
 );

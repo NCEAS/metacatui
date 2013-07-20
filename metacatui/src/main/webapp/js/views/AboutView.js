@@ -15,6 +15,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/about.html'],
 		},
 				
 		render: function () {
+			
+			// request a smaller header
+			appModel.set('headerType', 'default');
+			
 			console.log('Rendering the about view');
 			this.$el.html(this.template());
 			return this;

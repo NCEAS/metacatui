@@ -1,23 +1,39 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/mainHeader.html'], 				
-	function($, _, Backbone, MainHeaderTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/mainHeader.html', 'text!templates/defaultHeader.html'], 				
+	function($, _, Backbone, MainHeaderTemplate, DefaultHeaderTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
 	var MainHeaderView = Backbone.View.extend({
 
-		el: '#mainHeader',
+		el: '#HeaderContainer',
 		
 		template: _.template(MainHeaderTemplate),
 		
+		defaultTemplate: _.template(DefaultHeaderTemplate),
+		
 		initialize: function () {
+			// listen for changes in the [header] app model
+			this.listenTo(appModel, "change:headerType", this.render);
 		},
 				
 		render: function () {
-			console.log('Rendering the main header');
-			this.$el.html(this.template());
 			
-		}	
+			// figure out which header to render
+			var headerType = appModel.get('headerType');
+			
+			// then render it
+			if (headerType == "main") {
+				console.log('Rendering the main header');
+				this.$el.html(this.template());
+			} else {
+				console.log('Rendering the default header');
+				this.$el.html(this.defaultTemplate());
+			}
+			
+			return this;
+		}
+		
 				
 	});
 	return MainHeaderView;		

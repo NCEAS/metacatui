@@ -25,6 +25,8 @@ define(['jquery',
 		render: function () {
 			console.log('Rendering dynamic subviews within the IndexView');
 			
+			appModel.set('headerType', 'main');
+			
 			this.$el.html('<section id="Features"></section>');
 			
 			var featuresView = new FeaturesView();

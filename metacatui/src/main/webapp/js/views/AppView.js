@@ -24,7 +24,7 @@ define(['jquery',
 			app.navbarView.setElement($('#Navbar')).render();
 
 			app.mainHeaderView = new MainHeaderView();
-			app.mainHeaderView.setElement($('#mainHeader')).render();
+			app.mainHeaderView.setElement($('#HeaderContainer')).render();
 
 			app.footerView = new FooterView();
 			app.footerView.setElement($('#Footer')).render();

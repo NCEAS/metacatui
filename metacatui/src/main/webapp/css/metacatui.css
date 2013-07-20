@@ -53,13 +53,13 @@ Bold 700 Italic
       z-index: 10;
     }
     
-    body > header#Header {
+    body > header > header#Header {
       position: fixed;
       height: 95px;
       
     }
     
-    body > header#mainHeader {
+    body > header > header#mainHeader {
       z-index: 190;
       position: fixed;
       min-height: 400px;      
@@ -67,7 +67,7 @@ Bold 700 Italic
     
     body > article {
       min-height: 800px;
-      margin: 135px auto auto auto;
+      /*margin: 135px auto auto auto;*/
       font-weight: 300;
       font-size: 110%;
       line-height: 1.5;
@@ -81,7 +81,7 @@ Bold 700 Italic
       text-decoration: none;
     }
     
-    body > header#mainHeader + section {
+    body > header > header#mainHeader + section {
       margin: 400px auto auto auto;
       
     }
