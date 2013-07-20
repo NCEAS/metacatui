@@ -2,9 +2,10 @@
 define(['jquery',
 				'underscore', 
 				'backbone',
-				'text!templates/search.html'
+				'text!templates/search.html',
+				'text!templates/statCounts.html'
 				], 				
-	function($, _, Backbone, CatalogTemplate) {
+	function($, _, Backbone, CatalogTemplate, CountTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -16,7 +17,7 @@ define(['jquery',
 		
 		template: _.template(CatalogTemplate),
 		
-		//statsTemplate: _.template($('#statcounts-template').html()),
+		statsTemplate: _.template(CountTemplate),
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -33,6 +34,8 @@ define(['jquery',
 		},
 		
 		initialize: function () {
+			this.$statcounts = this.$('#statcounts');
+
 			/*
 			this.$baseurl = window.location.origin;
 			//this.$view_service = '/#view/';
@@ -43,7 +46,6 @@ define(['jquery',
 			this.$metadataview = this.$('#metadata-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
-			this.$statcounts = this.$('#statcounts');
 			this.$isCollapsed = false;
 			
 //			this.listenTo(app.SearchResults, 'add', this.addOne);
@@ -64,14 +66,7 @@ define(['jquery',
 						
 			//this.$el.html('<section id="Catalog"><p>Hi!</p></section>');
 			console.log('Rendering the DataCatlog view');
-			var cel = this.template({
-//				start: app.SearchResults.header.get("start")+1,
-//				end: app.SearchResults.header.get("start") + app.SearchResults.length,
-//				numFound: app.SearchResults.header.get("numFound")
-				start: 1,
-				end: 25,
-				numFound: 388
-				});
+			var cel = this.template();
 			this.$el.html(cel);
 
 			//var featuresView = new FeaturesView();
@@ -81,7 +76,7 @@ define(['jquery',
 			//this.featuredDataView.setElement(this.$('#FeaturedData')).render();
 			
 			return this;
-		}
+		},
 /*	
 		showResults: function () {
 			var search = this.$("#search_txt").val();
@@ -98,17 +93,20 @@ define(['jquery',
 			this.$resultsview.fadeIn();
 			this.updateStats();
 		},
-	
-		updateStats: function () {
-			if (app.SearchResults.header != null) {
+*/
+		updateStats : function() {
+//			if (app.SearchResults.header != null) {
 				this.$statcounts.html(this.statsTemplate({
-					start: app.SearchResults.header.get("start")+1,
-					end: app.SearchResults.header.get("start") + app.SearchResults.length,
-					numFound: app.SearchResults.header.get("numFound")
+//					start : app.SearchResults.header.get("start") + 1,
+//					end : app.SearchResults.header.get("start") + app.SearchResults.length,
+//					numFound : app.SearchResults.header.get("numFound")
+					start : 1,
+					end : 25,
+					numFound : 83
 				}));
-			}
-		},
-		
+//			}
+		}
+/*	
 		// Next page of results
 		nextpage: function () {
 			this.removeAll();
