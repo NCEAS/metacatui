@@ -26,7 +26,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'text!templates/resultsIte
 		},
 
 		// The SearchResultView listens for changes to its model, re-rendering. Since there's
-		// a one-to-one correspondence between a **SearchResult** and a **SearchResultView** in this
+		// a one-to-one correspondence between a **SolrResult** and a **SearchResultView** in this
 		// app, we set a direct reference on the model for convenience.
 		initialize: function () {
 			this.listenTo(this.model, 'change', this.render);
