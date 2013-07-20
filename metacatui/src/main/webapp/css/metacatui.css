@@ -90,6 +90,7 @@ Bold 700 Italic
       bottom: 0px;
       padding-top: 30px;
       padding-bottom: 30px;
+      margin-top: none;
       color: #FDFDFD;
       background-color: #3F3F3F;
     }
@@ -445,6 +446,19 @@ Bold 700 Italic
       padding-top: 90px;
     }
 
+  /* About CSS
+  -------------------------------------------------- */
+    #About {
+      margin-top: 110px;
+    }
+    
+  /* Data Catalog CSS
+  -------------------------------------------------- */
+    #Catalog {
+      margin-top: 110px;
+      margin-left: 20px;
+    }
+    
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
