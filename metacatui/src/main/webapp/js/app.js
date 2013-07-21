@@ -12,7 +12,8 @@ require.config({
     underscore: '../components/underscore',
     backbone: '../components/backbone',
     text: '../components/require-text',
-    moment: '../components/moment'
+    moment: '../components/moment',
+    registry: '/knb/style/common/templates/metacatui/entryForm'
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
@@ -21,6 +22,9 @@ require.config({
     backbone: {
       deps: ['underscore', 'jquery'],
       exports: 'Backbone'
+    },
+    registry: {
+    	exports: 'Registry'
     }
   }
 });
