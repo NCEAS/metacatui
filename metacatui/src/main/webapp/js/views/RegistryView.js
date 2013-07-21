@@ -40,11 +40,22 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		},
 		
 		events: {
-			"click #entryFormSubmit"   : "submitEntryForm"
+			"click #entryFormSubmit"   : "submitEntryForm",
+			"click #entryReturnSubmit"   : "submitReturnForm",
+			"click #confirmYesSubmit"   : "submitConfirmForm",
+			"click #confirmNoSubmit"   : "submitConfirmForm"
 		},
 		
 		submitEntryForm: function() {
 			this.submitForm('entryForm');
+		},
+		
+		submitReturnForm: function() {
+			this.submitForm('editForm');
+		},
+		
+		submitConfirmForm: function() {
+			this.submitForm('confirmForm');
 		},
 		
 		submitForm: function(formId) {
