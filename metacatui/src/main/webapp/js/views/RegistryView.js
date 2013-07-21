@@ -42,8 +42,8 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		events: {
 			"click #entryFormSubmit"   : "submitEntryForm",
 			"click #entryReturnSubmit"   : "submitReturnForm",
-			"click #confirmYesSubmit"   : "submitConfirmYesForm",
-			"click #confirmNoSubmit"   : "submitConfirmNoForm"
+			"click #dataCorrect"  		 : "submitConfirmYesForm",
+			"click #dataWrong"   		: "submitConfirmNoForm"
 		},
 		
 		submitEntryForm: function() {
@@ -60,7 +60,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		
 		submitConfirmNoForm: function() {
 			// set the form param to indicate such - VERY specific string!
-			$('#confirmForm').dataWrong.value = "No, go back to editing";
+			$('#dataWrong').val("No, go back to editing");
 			this.submitForm('confirmForm');
 		},
 		
