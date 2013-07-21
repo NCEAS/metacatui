@@ -462,9 +462,20 @@ Bold 700 Italic
   /* About CSS
   -------------------------------------------------- */
     #About {
-      margin-top: 110px;
-			min-height: 800px;
+		margin-top: 110px;
+		min-height: 800px;
     }
+    
+	/* Registry CSS
+	-------------------------------------------------- */
+    #RegistryEntryForm, 
+    #RegistryLogin, 
+    #RegistryResponse, 
+    #RegistryEntryReview, 
+    #RegistryGuide {
+		margin-top: 110px;
+		min-height: 800px;
+    }    
     
   /* Data Catalog CSS
   -------------------------------------------------- */
