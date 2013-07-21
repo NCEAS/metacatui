@@ -12,7 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		
 		baseUrl: window.location.origin,
 		
-		registryUrl: this.baseUrl + "/knb/cgi-bin/register-dataset.cgi";
+		registryUrl: this.baseUrl + "/knb/cgi-bin/register-dataset.cgi",
 
 		initialize: function () {
 			
