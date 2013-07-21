@@ -49,11 +49,12 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		
 		submitForm: function(formId) {
 			// ajax call to submit the given form and then render the results in the content area
+			var contentArea = this.$el;
 			$.post(
 					this.registryUrl,
 					$("#" + formId).serialize(),
 					function(data, textStatus, jqXHR) {
-						this.$el.html(data);
+						contentArea.html(data);
 					}
 			);
 			
