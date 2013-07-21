@@ -47,7 +47,29 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		},
 		
 		submitEntryForm: function() {
-			this.submitForm('entryForm');
+			// handle the multi-part file upload
+//			var data = new FormData();
+//			jQuery.each($('input[type="file"]')[0].files, function(i, file) {
+//			    data.append('file_'+i, file);
+//			});
+			
+			// use FormData for the file upload to work
+			var data = new FormData($('#entryForm'));
+			
+			var contentArea = this.$el;
+			$.ajax({
+			    url: this.registryUrl,
+			    data: data,
+			    cache: false,
+			    contentType: false,
+			    processData: false,
+			    type: 'POST',
+			    success: function(data, textStatus, jqXHR) {
+					contentArea.html(data);
+				}
+			});
+			
+			
 		},
 		
 		submitReturnForm: function() {
