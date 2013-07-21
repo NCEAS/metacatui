@@ -47,12 +47,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		},
 		
 		submitEntryForm: function() {
-			// handle the multi-part file upload
-//			var data = new FormData();
-//			jQuery.each($('input[type="file"]')[0].files, function(i, file) {
-//			    data.append('file_'+i, file);
-//			});
-			
+
 			// use FormData for the file upload to work
 			var data = new FormData($('#entryForm')[0]);
 			
