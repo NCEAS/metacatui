@@ -54,7 +54,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 //			});
 			
 			// use FormData for the file upload to work
-			var data = new FormData($('#entryForm'));
+			var data = new FormData($('#entryForm')[0]);
 			
 			var contentArea = this.$el;
 			$.ajax({
