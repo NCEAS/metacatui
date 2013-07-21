@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			"click #entryFormSubmit"   : "submitEntryForm",
 			"click #entryReturnSubmit"   : "submitReturnForm",
 			"click #dataCorrect"  		 : "submitConfirmYesForm",
-			"click #dataWrong"   		: "submitConfirmNoForm"
+			"click #dataWrongButton"   	: "submitConfirmNoForm"
 		},
 		
 		submitEntryForm: function() {
