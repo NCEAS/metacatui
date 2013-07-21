@@ -27,10 +27,10 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			console.log('Calling the registry to display');
 			var fragment = "article";
 			var registryQueryString =  "?cfg=metacatui";
-			console.log('Calling the registry URL: ' + registryUrl);
+			console.log('Calling the registry URL: ' + this.registryUrl);
 			//this.$el.load(registryUrl + " " + fragment);
 			// just load it all so all the js can run in what gets loaded
-			this.$el.load(registryUrl + registryQueryString);
+			this.$el.load(this.registryUrl + registryQueryString);
 			
 			return this;
 		},
