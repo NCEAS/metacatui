@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		},
 		
 		events: {
-			"click #entryFormSubmit"   : "submitEntryForm",
+			"click #entryFormSubmit"   : "submitEntryForm"
 		},
 		
 		submitEntryForm: function() {
@@ -54,8 +54,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 					$("#" + formId).serialize(),
 					function(data, textStatus, jqXHR) {
 						this.$el.html(data);
-					},
-					'html'
+					}
 			);
 			
 		}
