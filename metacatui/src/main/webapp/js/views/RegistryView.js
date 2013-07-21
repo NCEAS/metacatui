@@ -42,8 +42,8 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		events: {
 			"click #entryFormSubmit"   : "submitEntryForm",
 			"click #entryReturnSubmit"   : "submitReturnForm",
-			"click #confirmYesSubmit"   : "submitConfirmForm",
-			"click #confirmNoSubmit"   : "submitConfirmForm"
+			"click #confirmYesSubmit"   : "submitConfirmYesForm",
+			"click #confirmNoSubmit"   : "submitConfirmNoForm"
 		},
 		
 		submitEntryForm: function() {
@@ -54,7 +54,13 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			this.submitForm('editForm');
 		},
 		
-		submitConfirmForm: function() {
+		submitConfirmYesForm: function() {
+			this.submitForm('confirmForm');
+		},
+		
+		submitConfirmNoForm: function() {
+			// set the form param to indicate such - VERY specific string!
+			$('#confirmForm').dataWrong.value = "No, go back to editing";
 			this.submitForm('confirmForm');
 		},
 		
