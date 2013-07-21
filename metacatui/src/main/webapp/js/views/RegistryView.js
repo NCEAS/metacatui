@@ -39,6 +39,14 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			console.log('Closing the registry view');
 		},
 		
+		events: {
+			"click #entryFormSubmit"   : "submitEntryForm",
+		},
+		
+		submitEntryForm: function() {
+			this.submitForm('entryForm');
+		},
+		
 		submitForm: function(formId) {
 			// ajax call to submit the given form and then render the results in the content area
 			$.post(
