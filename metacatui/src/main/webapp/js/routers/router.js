@@ -1,14 +1,16 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/DataCatalogView', 'views/RegistryView'], 				
-function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView'], 				
+function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, MetadataView) {
 
   var app = app || {};
 	var indexView = new IndexView();
 	var aboutView = new AboutView();
 	var dataCatalogView = new DataCatalogView();
 	var registryView = new RegistryView();
+	var metadataView = new MetadataView();
+
 	
 	// MetacatUI Router
 	// ----------------
@@ -19,6 +21,7 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView) {
 			'plans': 'renderPlans',  // plans page
 			'tools': 'renderTools',  // tools page
 			'data' : 'renderData',    // data page
+			'view/:pid' : 'renderMetadata',    // metadata page
 			'share' : 'renderRegistry'    // registry page
 		},
 
@@ -45,6 +48,13 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView) {
 			console.log('Called UIRouter.renderData()');
 			appView.showView(dataCatalogView);
 		},
+		
+		renderMetadata: function (pid) {
+			console.log('Called UIRouter.renderMetadata()');
+			appModel.set('pid', pid);
+			appView.showView(metadataView);
+		},
+		
 		renderRegistry: function (param) {
 			console.log('Called UIRouter.renderRegistry()');
 			appView.showView(registryView);
