@@ -28,6 +28,8 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			
 			console.log('Calling the registry to display');
 			console.log('Calling the registry URL: ' + this.registryUrl);
+			// show the progress bar
+			this.showProgressBar();
 			// just load it all so all the js can run in what gets loaded
 			this.$el.load(this.registryUrl + this.registryQueryString);
 			
@@ -49,6 +51,9 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		
 		submitEntryForm: function() {
 
+			// show the progress bar
+			this.showProgressBar();
+			
 			// use FormData for the file upload to work
 			var data = new FormData($('#entryForm')[0]);
 			
@@ -83,6 +88,9 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		},
 		
 		submitForm: function(formId) {
+			// show the progress bar
+			this.showProgressBar();
+			
 			// ajax call to submit the given form and then render the results in the content area
 			var contentArea = this.$el;
 			$.post(
@@ -128,17 +136,18 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 					+ formObj.elements["organization"].value
 					+ ",dc=ecoinformatics,dc=org";
 			
+			// show the progress bar
+			this.showProgressBar();
 			
-			// submit the login form
-			//this.submitForm(formId);
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
 			$.post(
 				this.registryUrl,
 				$("#loginForm").serialize(),
 				function(data, textStatus, jqXHR) {
-					// check for success, then load the registry url again.
+					// TODO: check for success
 					
+					// then load the registry url again, now that we are logged in
 					viewRef.render();
 				}
 			);
@@ -148,6 +157,10 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 
 		trimString: function (stringToTrim) {
 			return stringToTrim.replace(/^\s*/, '').replace(/\s*$/, '');
+		},
+		
+		showProgressBar: function() {
+			this.$el.html('<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div>');
 		}
 				
 	});
