@@ -1,5 +1,5 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry'], 				
+define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'], 				
 	function($, _, Backbone, Registry) {
 	'use strict';
 	
