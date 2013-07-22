@@ -26,7 +26,7 @@ require.config({
     },
     bootstrap: { 
     	deps: ['jquery'],
-    	exports: '$.fn.modal'
+    	exports: 'Bootstrap'
     },
     registry: {
     	exports: 'Registry'

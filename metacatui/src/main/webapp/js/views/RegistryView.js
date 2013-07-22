@@ -1,6 +1,6 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'], 				
-	function($, _, Backbone, Registry) {
+	function($, _, Backbone, Registry, BootStrap) {
 	'use strict';
 	
 	// Build the main header view of the application
