@@ -99,12 +99,12 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		submitLoginForm: function () {
 
 			var formObj = $("#loginForm")[0];
-			if (trim(formObj.elements["loginAction"].value) != "Login")
+			if (this.trimString(formObj.elements["loginAction"].value) != "Login")
 				return true;
 			// trim username & passwd:
-			var username = trim(formObj.elements["uid"].value);
-			var organization = trim(formObj.elements["organization"].value);
-			var password = trim(formObj.elements["password"].value);
+			var username = this.trimString(formObj.elements["uid"].value);
+			var organization = this.trimString(formObj.elements["organization"].value);
+			var password = this.trimString(formObj.elements["password"].value);
 
 			if (username == "") {
 				alert("You must type a username. \n" + popupMsg);
@@ -146,7 +146,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			return true;
 		},
 
-		trim: function (stringToTrim) {
+		trimString: function (stringToTrim) {
 			return stringToTrim.replace(/^\s*/, '').replace(/\s*$/, '');
 		}
 				
