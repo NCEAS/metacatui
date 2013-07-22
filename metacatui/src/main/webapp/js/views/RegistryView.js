@@ -135,7 +135,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			var viewRef = this;
 			$.post(
 				this.registryUrl,
-				$("#" + formId).serialize(),
+				$("#loginForm").serialize(),
 				function(data, textStatus, jqXHR) {
 					// check for success, then load the registry url again.
 					
