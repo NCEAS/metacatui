@@ -465,6 +465,13 @@ Bold 700 Italic
 		margin-top: 110px;
 		min-height: 800px;
     }
+
+  /* Metadata rendering CSS
+  -------------------------------------------------- */
+    #Metadata {
+		margin-top: 110px;
+		min-height: 800px;
+    }
     
 	/* Registry CSS
 	-------------------------------------------------- */
