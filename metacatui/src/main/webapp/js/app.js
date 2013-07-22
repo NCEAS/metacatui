@@ -11,6 +11,7 @@ require.config({
     jquery: '../components/jquery',
     underscore: '../components/underscore',
     backbone: '../components/backbone',
+    bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
     moment: '../components/moment',
     registry: '/knb/style/common/templates/metacatui/entryForm'
