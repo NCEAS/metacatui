@@ -473,7 +473,7 @@ Bold 700 Italic
     #RegistryResponse, 
     #RegistryEntryReview, 
     #RegistryGuide {
-		margin-top: 110px;
+		/*margin-top: 110px;*/
 		min-height: 800px;
     }    
     
