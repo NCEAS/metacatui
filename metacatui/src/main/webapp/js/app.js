@@ -25,12 +25,14 @@ require.config({
       exports: 'Backbone'
     },
     bootstrap: { 
-    	deps: ['jquery']
+    	deps: ['jquery'],
+    	exports: "$.fn.modal"
     },
     registry: {
     	exports: 'Registry'
     }
-  }
+  },
+  enforceDefine: true
 });
 
 var app = app || {};
