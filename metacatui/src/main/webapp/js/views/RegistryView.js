@@ -167,7 +167,13 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		},
 		
 		showProgressBar: function() {
+			this.scrollToTop();
 			this.$el.html('<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div>');
+		},
+		
+		scrollToTop: function() {
+			$("html, body").animate({ scrollTop: 0 }, "slow");
+				return false;
 		}
 				
 	});
