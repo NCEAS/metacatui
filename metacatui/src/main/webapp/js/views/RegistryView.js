@@ -45,7 +45,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			"click #entryReturnSubmit"   : "submitReturnForm",
 			"click #dataCorrect"  		 : "submitConfirmYesForm",
 			"click #dataWrongButton"   	: "submitConfirmNoForm",
-			"click #loginButton"   	: "submitLoginForm"
+			"click #loginButton"   	: "submitLoginForm",
+			"click #registerAnotherPackage" : "registerAnotherPackage"
 
 		},
 		
@@ -160,6 +161,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			);
 			
 			return true;
+		},
+		
+		registerAnotherPackage: function() {
+			// just render the view from the beginning 
+			this.render();
 		},
 
 		trimString: function (stringToTrim) {
