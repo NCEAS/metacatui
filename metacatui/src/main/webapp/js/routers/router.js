@@ -19,7 +19,7 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView) {
 			'plans': 'renderPlans',  // plans page
 			'tools': 'renderTools',  // tools page
 			'data' : 'renderData',    // data page
-			'upload' : 'renderRegistry'    // registry page
+			'share' : 'renderRegistry'    // registry page
 		},
 
 		renderIndex: function (param) {
