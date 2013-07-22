@@ -13,6 +13,8 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		baseUrl: null,
 		
 		registryUrl: null,
+		
+		registryQueryString:  "?cfg=metacatui",
 
 		initialize: function () {
 			this.baseUrl = window.location.origin;
@@ -25,12 +27,9 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			appModel.set('headerType', 'default');
 			
 			console.log('Calling the registry to display');
-			var fragment = "article";
-			var registryQueryString =  "?cfg=metacatui";
 			console.log('Calling the registry URL: ' + this.registryUrl);
-			//this.$el.load(registryUrl + " " + fragment);
 			// just load it all so all the js can run in what gets loaded
-			this.$el.load(this.registryUrl + registryQueryString);
+			this.$el.load(this.registryUrl + this.registryQueryString);
 			
 			return this;
 		},
@@ -43,7 +42,9 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			"click #entryFormSubmit"   : "submitEntryForm",
 			"click #entryReturnSubmit"   : "submitReturnForm",
 			"click #dataCorrect"  		 : "submitConfirmYesForm",
-			"click #dataWrongButton"   	: "submitConfirmNoForm"
+			"click #dataWrongButton"   	: "submitConfirmNoForm",
+			"click #loginButton"   	: "submitLoginForm"
+
 		},
 		
 		submitEntryForm: function() {
@@ -92,6 +93,61 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 					}
 			);
 			
+		},
+		
+		// ported the login.js to this view
+		submitLoginForm: function () {
+
+			var formObj = $("#loginForm")[0];
+			if (trim(formObj.elements["loginAction"].value) != "Login")
+				return true;
+			// trim username & passwd:
+			var username = trim(formObj.elements["uid"].value);
+			var organization = trim(formObj.elements["organization"].value);
+			var password = trim(formObj.elements["password"].value);
+
+			if (username == "") {
+				alert("You must type a username. \n" + popupMsg);
+				formObj.elements["uid"].focus();
+				return false;
+			}
+
+			if (organization == "") {
+				alert("You must select an organization. \n" + popupMsg);
+				formObj.elements["organization"].focus();
+				return false;
+			}
+
+			if (password == "") {
+				alert("You must type a password. \n" + popupMsg);
+				formObj.elements["password"].focus();
+				return false;
+			}
+
+			formObj.username.value = "uid=" + formObj.elements["uid"].value + ",o="
+					+ formObj.elements["organization"].value
+					+ ",dc=ecoinformatics,dc=org";
+			
+			
+			// submit the login form
+			//this.submitForm(formId);
+			// ajax call to submit the given form and then render the results in the content area
+			var viewRef = this;
+			$.post(
+				this.registryUrl,
+				$("#" + formId).serialize(),
+				function(data, textStatus, jqXHR) {
+					// check for success, then load the registry url again.
+					
+					viewRef.render();
+				}
+			);
+			
+			return true;
+		},
+
+		trim: function (stringToTrim) {
+			return stringToTrim.replace(/^\s*/, '').replace(/\s*$/, '');
 		}
 				
 	});
