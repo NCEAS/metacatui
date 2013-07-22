@@ -51,11 +51,11 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		
 		submitEntryForm: function() {
 
-			// show the progress bar
-			this.showProgressBar();
-			
 			// use FormData for the file upload to work
 			var data = new FormData($('#entryForm')[0]);
+			
+			// show the progress bar
+			this.showProgressBar();
 			
 			var contentArea = this.$el;
 			$.ajax({
@@ -88,6 +88,10 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 		},
 		
 		submitForm: function(formId) {
+			
+			// get the form data before replacing everything with the progressbar!
+			var formData = $("#" + formId).serialize()
+			
 			// show the progress bar
 			this.showProgressBar();
 			
@@ -95,7 +99,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			var contentArea = this.$el;
 			$.post(
 					this.registryUrl,
-					$("#" + formId).serialize(),
+					formData,
 					function(data, textStatus, jqXHR) {
 						contentArea.html(data);
 					}
@@ -136,6 +140,9 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 					+ formObj.elements["organization"].value
 					+ ",dc=ecoinformatics,dc=org";
 			
+			// get the form data before replacing everything with the progressbar!
+			var formData = $("#loginForm").serialize();
+			
 			// show the progress bar
 			this.showProgressBar();
 			
@@ -143,7 +150,7 @@ define(['jquery', 'underscore', 'backbone', 'registry'],
 			var viewRef = this;
 			$.post(
 				this.registryUrl,
-				$("#loginForm").serialize(),
+				formData,
 				function(data, textStatus, jqXHR) {
 					// TODO: check for success
 					
