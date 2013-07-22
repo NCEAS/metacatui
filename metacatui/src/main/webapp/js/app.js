@@ -26,13 +26,12 @@ require.config({
     },
     bootstrap: { 
     	deps: ['jquery'],
-    	exports: "$.fn.modal"
+    	exports: '$.fn.modal'
     },
     registry: {
     	exports: 'Registry'
     }
-  },
-  enforceDefine: true
+  }
 });
 
 var app = app || {};
