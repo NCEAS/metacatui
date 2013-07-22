@@ -30,8 +30,15 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			console.log('Calling the registry URL: ' + this.registryUrl);
 			// show the progress bar
 			this.showProgressBar();
-			// just load it all so all the js can run in what gets loaded
-			this.$el.load(this.registryUrl + this.registryQueryString);
+			
+			// load all the registry content so all the js can run in what gets loaded
+			var viewRef = this;
+			this.$el.load(
+					this.registryUrl + this.registryQueryString,
+					function() {
+						viewRef.$el.hide();
+						viewRef.$el.fadeIn('slow');
+					});
 			
 			return this;
 		},
