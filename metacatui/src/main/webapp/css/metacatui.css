@@ -475,7 +475,13 @@ Bold 700 Italic
     #RegistryGuide {
 		/*margin-top: 110px;*/
 		min-height: 800px;
-    }    
+    }
+    
+    /* Larger modal for guide content */
+    .modal-large {
+    	width: 80%;
+    	margin-left: -40%;
+    }
     
   /* Data Catalog CSS
   -------------------------------------------------- */
