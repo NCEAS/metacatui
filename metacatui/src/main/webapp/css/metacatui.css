@@ -478,7 +478,7 @@ Bold 700 Italic
     }
     
     /* Larger modal for guide content */
-    .modal-large {
+    .modal.large {
     	width: 80%;
     	margin-left: -40%;
     }
