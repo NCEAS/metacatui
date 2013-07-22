@@ -65,11 +65,11 @@ Bold 700 Italic
       min-height: 400px;      
     }
     
-		body > #Content {
-			position: relative;
-			margin: 0px 0px auto 0px;
-			min-height: 400px;  			
-		}
+	body > #Content {
+		position: relative;
+		margin: 110px 0px auto 0px;
+		min-height: 400px;  			
+	}
 		
     body > article {
       min-height: 800px;
