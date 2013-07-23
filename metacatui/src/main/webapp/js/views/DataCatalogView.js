@@ -53,7 +53,8 @@ define(['jquery',
 			// needs to be bound before the listenTo call can be made
 			this.listenTo(appSearchResults, 'add', this.addOne);
 			this.listenTo(appSearchResults, 'reset', this.addAll);
-			this.listenTo(appSearchResults, 'all', this.render);
+			// BRL - this was causing a loop that prevented results from showing
+			//this.listenTo(appSearchResults, 'all', this.render);
 
 			// Store some references to key views that we use repeatedly
 			//this.$searchview = this.$('#Search');
