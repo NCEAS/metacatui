@@ -2,6 +2,7 @@ package edu.ucsb.nceas.metacatui.proxy;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,6 +52,7 @@ public class DataONEProxy extends HttpServlet {
         resource = resource.substring(resource.indexOf("/") + 1);
         System.out.println(resource);
         Writer w = null;
+        String encoding = "UTF-8";
         
         // default to node info
         if (resource.equals("")) {
@@ -62,13 +64,13 @@ public class DataONEProxy extends HttpServlet {
                 // TODO: handle a View request
                 resource = resource.substring(resource.indexOf("/") + 1);
                 response.setContentType("text/html");
-                w = response.getWriter();
+    			w = new OutputStreamWriter(response.getOutputStream(), encoding);
                 w.write("<h1>View document: " + resource + "</h1>\n");
                 w.close();
             } else {
                 response.setContentType("application/json");
                 String rows = request.getParameter("rows");
-                w = response.getWriter();
+    			w = new OutputStreamWriter(response.getOutputStream(), encoding);
                 w.write(proxyQuery(request.getParameter("fl"), request.getParameter("q"), request.getParameter("sort"), request.getParameter("start"), request.getParameter("rows")));
                 w.close();
             }
