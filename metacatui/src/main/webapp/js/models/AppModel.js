@@ -9,7 +9,11 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes for the Application
 		defaults: {
 			headerType: 'default',
-			pid: null
+			pid: null,
+			baseUrl: window.location.origin,
+			serviceUrl: '/knb/d1/mn/v1',
+			viewService: '/views/metacatui/',
+			packageService: '/package/'
 		}
 		
 	});
