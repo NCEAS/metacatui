@@ -1,5 +1,5 @@
         <!-- <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div> -->
-        <div class="result-citation span8">
+        <div class="result-citation span10">
               <span class="result-author"><% var count=0; _.each(origin, function(author) {
                    count++;
                    if (count > 1) {
@@ -18,12 +18,18 @@
                } else {
                    print(moment(dateUploaded).format('YYYY'), '. ')
                } %></span>
-               <span class="result-title"> <% if (title) { print('<a id=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
+               <span class="result-title"> <% if (title) { print('<a class=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
                <span class="result-id"> <%- id %></span>
         </div>
-        <div class="result-stats span2"><span class="badge badge-info"><%- downloads %></span> <span class="badge badge-success"><%- citations %></span></div>
         
-      <div class="btn-group span1">
+        <!-- TODO: show stats when we have them in the index -->
+        <!--
+        <div class="result-stats span2">	 
+        	<span class="badge badge-info"><%- downloads %></span> <span class="badge badge-success"><%- citations %></span>
+        </div>
+		-->
+		        
+      <div class="btn-group span2 pagination-right">
 		<% print('<a class=\"btn\" href=\"', package_service, id, '\"><i class="icon-arrow-down"></i> Download</a>'); %>
 <!--
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
