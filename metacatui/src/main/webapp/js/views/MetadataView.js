@@ -31,11 +31,7 @@ define(['jquery',
 			var pid = appModel.get('pid');
 			
 			// load the document view from the server
-			var endpoint = 
-				appModel.get('baseUrl') 
-				+ appModel.get('serviceUrl') 
-				+ appModel.get('viewService') 
-				+ pid + ' #Metadata';
+			var endpoint = appModel.get('viewServiceUrl') + pid + ' #Metadata';
 			console.log('calling view endpoint: ' + endpoint);
 
 			var viewRef = this;
