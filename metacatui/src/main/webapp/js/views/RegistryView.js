@@ -15,11 +15,13 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		registryQueryString:  "?cfg=metacatui",
 
 		initialize: function () {
-			// look up the url from the main application model
-			this.registryUrl = appModel.get('registryServiceUrl');
+			
 		},
 				
 		render: function () {
+			
+			// look up the url from the main application model
+			this.registryUrl = appModel.get('registryServiceUrl');
 			
 			// request a smaller header
 			appModel.set('headerType', 'default');

@@ -35,8 +35,7 @@ define(['jquery',
 		},
 		
 		initialize: function () {
-			this.$view_service = appModel.get('viewServiceUrl');
-			this.$package_service = appModel.get('packageServiceUrl');
+			
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -114,6 +113,8 @@ define(['jquery',
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
+			this.$view_service = appModel.get('viewServiceUrl');
+			this.$package_service = appModel.get('packageServiceUrl');
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
 			var view = new SearchResultView({ model: result });
 			this.$results.append(view.render().el);
@@ -137,7 +138,8 @@ define(['jquery',
 			var pid = event.target.getAttribute("pid");
 			
 			// Get the view of the document from the server and load it
-			//var endpoint = '/knb/d1/mn/v1/views/metacatui/' + pid + ' #Metadata';
+			this.$view_service = appModel.get('viewServiceUrl');
+			this.$package_service = appModel.get('packageServiceUrl');
 			var endpoint = this.$view_service + pid + ' #Metadata';
 			$('#metadata-view').load(endpoint);
 			

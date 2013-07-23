@@ -4,7 +4,7 @@
 define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView'], 				
 function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, MetadataView) {
 
-  var app = app || {};
+	var app = app || {};
 	var indexView = new IndexView();
 	var aboutView = new AboutView();
 	var dataCatalogView = new DataCatalogView();
