@@ -16,15 +16,17 @@ define(['jquery', 'underscore', 'backbone'],
 			d1Service: '/d1/mn/v1',
 			viewServiceUrl: null,
 			packageServiceUrl: null,
+			queryServiceUrl: null,
 			registryServiceUrl: null
 
 		},
 		
 		initialize: function() {
-			// these are pretty standard, but can be customized
+			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
-			this.set('.packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
-			this.set('.registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
+			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
+			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 		}
 	
 		

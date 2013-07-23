@@ -12,9 +12,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		model: SolrResult,
 
 		initialize: function(models, options) {
-			this.$baseurl = window.location.origin;
-			//this.query_service = options.query_service || '/metacatui/d1proxy/?';
-			this.query_service = options.query_service || '/knb/d1/mn/v1/query/solr/';
 		    this.currentquery = options.query || '*:*';
 		    this.fields = options.fields || "id,title";
 		    this.rows = options.rows || 10;
@@ -23,8 +20,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		},
 		
 		url: function() {
-			//return this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
-			var endpoint = this.$baseurl + this.query_service + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			var endpoint = appModel.get('queryServiceUrl') + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
 			return endpoint;
 		},
 		  
@@ -77,10 +73,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		setSort: function(newsort) {
 			this.sort = newsort;
 		},
-		
-		setQueryService: function(service_path) {
-			this.query_service = service_path;
-		}
 		
 	});
 

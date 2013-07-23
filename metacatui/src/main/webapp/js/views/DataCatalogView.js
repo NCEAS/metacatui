@@ -35,9 +35,8 @@ define(['jquery',
 		},
 		
 		initialize: function () {
-			this.$baseurl = window.location.origin;
-			this.$view_service = '/knb/d1/mn/v1/views/metacatui/';
-			this.$package_service = this.$baseurl + '/knb/d1/mn/v1/package/';
+			this.$view_service = appModel.get('viewServiceUrl');
+			this.$package_service = appModel.get('packageServiceUrl');
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
