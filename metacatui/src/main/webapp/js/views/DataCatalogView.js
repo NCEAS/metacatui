@@ -29,8 +29,8 @@ define(['jquery',
 			'click #results_next': 'nextpage',
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
-			'click #results_link': 'showResults',
-			'click .view_link': 'showMetadata'
+			'click #results_link': 'showResults'
+			//'click .view_link': 'showMetadata'
 		},
 		
 		initialize: function () {
@@ -139,6 +139,7 @@ define(['jquery',
 		// Switch the view to the Metadata view, which is built from an AJAX call
 		// to retrieve the metadata view from the server for the given ID
 		showMetadata: function (event) {
+			console.log('Showing Metadata in the data view');
 			
 			// Look up the pid from the clicked link element
 			var pid = event.target.getAttribute("pid");
@@ -156,6 +157,8 @@ define(['jquery',
 		
 		onClose: function () {			
 			console.log('Closing the data view');
+			// remove everything so we don't get a flicker
+			this.$el.html('')
 		}				
 	});
 	return DataCatalogView;		

@@ -37,6 +37,7 @@ define(['jquery',
 			var viewRef = this;
 			this.$el.load(endpoint,
 					function() {
+						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
 					});
 			
