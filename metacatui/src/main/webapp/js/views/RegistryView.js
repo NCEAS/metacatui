@@ -9,16 +9,14 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		el: '#Content',
 		
 		template: null,
-		
-		baseUrl: null,
-		
+				
 		registryUrl: null,
 		
 		registryQueryString:  "?cfg=metacatui",
 
 		initialize: function () {
-			this.baseUrl = window.location.origin;
-			this.registryUrl = this.baseUrl + "/knb/cgi-bin/register-dataset.cgi";
+			// look up the url from the main application model
+			this.registryUrl = appModel.get('registryServiceUrl');
 		},
 				
 		render: function () {
