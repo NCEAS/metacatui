@@ -30,8 +30,7 @@ define(['jquery',
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
 			'click #results_link': 'showResults',
-			'click #search_btn': 'showResults',
-			'click #view_link': 'showMetadata',
+			'click .view_link': 'showMetadata'
 		},
 		
 		initialize: function () {
@@ -53,15 +52,18 @@ define(['jquery',
 			// needs to be bound before the listenTo call can be made
 			this.listenTo(appSearchResults, 'add', this.addOne);
 			this.listenTo(appSearchResults, 'reset', this.addAll);
-			// BRL - this was causing a loop that prevented results from showing
-			//this.listenTo(appSearchResults, 'all', this.render);
+			
+			// listen to the appModel for the search trigger
+			this.listenTo(appModel, 'search', this.showResults);
 
 			// Store some references to key views that we use repeatedly
-			//this.$searchview = this.$('#Search');
 			this.$resultsview = this.$('#results-view');
 			this.$metadataview = this.$('#metadata-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
+			
+			// show the results by default
+			this.showResults();
 
 			return this;
 		},
@@ -86,12 +88,14 @@ define(['jquery',
 
 		updateStats : function() {
 			if (appSearchResults.header != null) {
-			this.$statcounts = this.$('#statcounts');
-				this.$statcounts.html(this.statsTemplate({
-					start : appSearchResults.header.get("start") + 1,
-					end : appSearchResults.header.get("start") + appSearchResults.length,
-					numFound : appSearchResults.header.get("numFound")
-				}));
+				this.$statcounts = this.$('#statcounts');
+				this.$statcounts.html(
+					this.statsTemplate({
+						start : appSearchResults.header.get("start") + 1,
+						end : appSearchResults.header.get("start") + appSearchResults.length,
+						numFound : appSearchResults.header.get("numFound")
+					})
+				);
 			}
 		},
 
@@ -124,6 +128,7 @@ define(['jquery',
 		// Add all items in the **SearchResults** collection at once.
 		addAll: function () {
 			appSearchResults.each(this.addOne, this);
+			this.updateStats();
 		},
 		
 		// Remove all html for items in the **SearchResults** collection at once.

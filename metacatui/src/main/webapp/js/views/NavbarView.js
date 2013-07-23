@@ -11,14 +11,22 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		
 		template: _.template(NavbarTemplate),
 		
+		events: {
+			'click #search_btn': 'triggerSearch'
+		},
+		
 		initialize: function () {
 		},
 				
 		render: function () {
 			console.log('Rendering the navbar');
 			this.$el.html(this.template());
-			
-		}	
+		},
+		
+		triggerSearch: function() {
+			// alert the model that a search should be performed
+			appModel.trigger('search');
+		}
 				
 	});
 	return NavbarView;		
