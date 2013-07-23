@@ -553,7 +553,8 @@ Bold 700 Italic
     }
     
     .pagination {
-      margin: auto;
+    	cursor: pointer;
+    	margin: auto;
     }
 
 /* RESPONSIVE CSS
