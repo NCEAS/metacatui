@@ -156,11 +156,29 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
-			$.post(
-				this.registryUrl,
+			this.$el.load(
+				this.registryUrl + " form",
 				formData,
-				function(data, textStatus, jqXHR) {
-					// TODO: check for success
+				function(data, textStatus, xhr) {
+					// TODO: check for success from Perl
+					
+					// the Metacat login form is now in the main content for us to work with
+					var loginForm = viewRef.$("form")[0];
+					var metacatUrl = viewRef.$("form").attr("action");
+					
+					// submit the Metacat API login form
+					var loginFormData = viewRef.$("form").serialize();
+					$.post(metacatUrl,
+							loginFormData,
+							function(data1, textStatus1, xhr1) {
+								// extract the JSESSIONID cookie
+								var allHeaders = xhr1.getAllResponseHeaders();
+								console.log("Got headers: " + allHeaders);
+								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
+								console.log("Got cookie header: " + cookieHeader);
+								// don't really do anything with this - browser has the JSESSIONID cookie now
+							}
+						);
 					
 					// then load the registry url again, now that we are logged in
 					viewRef.render();
