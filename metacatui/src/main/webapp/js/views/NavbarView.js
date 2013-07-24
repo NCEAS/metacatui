@@ -18,6 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		initialize: function () {
 			// listen to the appModel for changes in username
 			this.listenTo(appModel, 'change:username', this.render);
+			this.listenTo(appModel, 'change:searchTerm', this.render);
 		},
 				
 		render: function () {
@@ -26,13 +27,18 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// set the username in the template (can be null if not logged in)
 			this.$el.html(
 					this.template( 
-							{username: appModel.get('username')} 
+							{
+								username: appModel.get('username'),
+								searchTerm: appModel.get('searchTerm')
+							} 
 					)
 			);
 		},
 		
 		triggerSearch: function() {
 			// alert the model that a search should be performed
+			var searchTerm = $("#search_txt").val();
+			appModel.set('searchTerm', searchTerm);
 			appModel.trigger('search');
 		}
 				

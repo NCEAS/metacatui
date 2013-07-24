@@ -29,12 +29,18 @@ define(['jquery',
 			'click #results_next': 'nextpage',
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
-			'click #results_link': 'showResults'
-			//'click .view_link': 'showMetadata'
+			'click #search_btn_side': 'triggerSearch'
 		},
 		
 		initialize: function () {
 			
+		},
+		
+		triggerSearch: function() {
+			// alert the model that a search should be performed
+			var searchTerm = $("#search_txt_side").val();
+			appModel.set('searchTerm', searchTerm);
+			appModel.trigger('search');
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -44,7 +50,11 @@ define(['jquery',
 
 			console.log('Rendering the DataCatlog view');
 			appModel.set('headerType', 'default');
-			var cel = this.template();
+			var cel = this.template(
+					{
+						searchTerm: appModel.get('searchTerm')
+					}
+			);
 			this.$el.html(cel);
 			this.updateStats();
 			
@@ -71,7 +81,8 @@ define(['jquery',
 
 		showResults: function () {
 
-			var search = $("#search_txt").val();
+			var search = appModel.get('searchTerm');
+
 			this.removeAll();
 			this.$pagehead.html('Search Results');
 			appSearchResults.setrows(25);
@@ -85,6 +96,7 @@ define(['jquery',
 			this.$metadataview.fadeOut();
 			this.$resultsview.fadeIn();
 			this.updateStats();
+			this.updateSearchBox();
 		},
 
 		updateStats : function() {
@@ -98,6 +110,12 @@ define(['jquery',
 					})
 				);
 			}
+		},
+		
+		updateSearchBox: function() {
+			// look up from the model to ensure we display the side box correctly
+			var search = appModel.get('searchTerm');
+			this.$("#search_txt_side").val(search);
 		},
 
 		// Next page of results
