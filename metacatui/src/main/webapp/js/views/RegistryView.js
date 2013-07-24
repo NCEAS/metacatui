@@ -177,10 +177,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 							loginFormData,
 							function(data1, textStatus1, xhr1) {
 								// don't really do anything with this - browser has the JSESSIONID cookie
-								var allHeaders = xhr1.getAllResponseHeaders();
-								console.log("Got headers: " + allHeaders);
-								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
-								console.log("Got cookie header: " + cookieHeader);
+//								var allHeaders = xhr1.getAllResponseHeaders();
+//								console.log("Got headers: " + allHeaders);
+//								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
+//								console.log("Got cookie header: " + cookieHeader);
 								
 								// set the username in the appModel
 								appModel.set("username", username);
@@ -231,10 +231,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 							logoutFormData,
 							function(data1, textStatus1, xhr1) {
 								// don't really do anything with this - browser has the JSESSIONID cookie now
-								var allHeaders = xhr1.getAllResponseHeaders();
-								console.log("Got headers: " + allHeaders);
-								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
-								console.log("Got cookie header: " + cookieHeader);
+//								var allHeaders = xhr1.getAllResponseHeaders();
+//								console.log("Got headers: " + allHeaders);
+//								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
+//								console.log("Got cookie header: " + cookieHeader);
 								
 								// set the username to null in the appModel
 								appModel.set("username", null);
