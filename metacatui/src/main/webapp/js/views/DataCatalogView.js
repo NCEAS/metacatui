@@ -54,6 +54,7 @@ define(['jquery',
 			this.listenTo(appSearchResults, 'reset', this.addAll);
 			
 			// listen to the appModel for the search trigger
+			this.stopListening(appModel);
 			this.listenTo(appModel, 'search', this.showResults);
 
 			// Store some references to key views that we use repeatedly
