@@ -64,7 +64,7 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 		logout: function (param) {
 			console.log('Called UIRouter.logout()');
 			registryView.logout();
-			//appView.showView(indexView);
+			appView.showView(indexView);
 		}
 		
 	});

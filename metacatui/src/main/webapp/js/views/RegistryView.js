@@ -160,18 +160,17 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 				this.registryUrl + " form",
 				formData,
 				function(data, textStatus, xhr) {
-					// TODO: check for success from Perl
 					
 					// the Metacat login form is now in the main content for us to work with
-					var loginForm = viewRef.$("form")[0];
 					var metacatUrl = viewRef.$("form").attr("action");
 					
-					// submit the Metacat API login form
-					var loginFormData = viewRef.$("form").serialize();
-					$.post(metacatUrl,
+					// success from Perl?
+					if (metacatUrl) {
+						// submit the Metacat API login form
+						var loginFormData = viewRef.$("form").serialize();
+						$.post(metacatUrl,
 							loginFormData,
 							function(data1, textStatus1, xhr1) {
-								// extract the JSESSIONID cookie
 								// don't really do anything with this - browser has the JSESSIONID cookie
 								var allHeaders = xhr1.getAllResponseHeaders();
 								console.log("Got headers: " + allHeaders);
@@ -182,6 +181,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 								appModel.set("username", username);
 							}
 						);
+					}
 					
 					// then load the registry url again, now that we are logged in
 					viewRef.render();
@@ -211,12 +211,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 				this.registryUrl + this.registryQueryString + "&stage=logout form",
 				null, // it is in the URL
 				function(data, textStatus, xhr) {
-					// TODO: check for success from Perl
 					
 					// the Metacat logout form is now in the main content for us to work with
-					var loginForm = viewRef.$("form")[0];
 					var metacatUrl = viewRef.$("form").attr("action");
 					
+					// Success?
 					if (metacatUrl) {
 						// submit the Metacat API login form
 						var logoutFormData = viewRef.$("form").serialize();
@@ -240,7 +239,6 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 					
 					// do we want to load the registry, or just let other controller decide the next view?
 					//viewRef.render();
-					uiRouter.navigate("");
 
 				}
 			);
