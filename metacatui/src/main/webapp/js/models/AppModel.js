@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes for the Application
 		defaults: {
 			headerType: 'default',
+			username: null,
 			pid: null,
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context

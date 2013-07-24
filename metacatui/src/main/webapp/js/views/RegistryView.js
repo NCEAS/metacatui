@@ -172,15 +172,60 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 							loginFormData,
 							function(data1, textStatus1, xhr1) {
 								// extract the JSESSIONID cookie
+								// don't really do anything with this - browser has the JSESSIONID cookie
 								var allHeaders = xhr1.getAllResponseHeaders();
 								console.log("Got headers: " + allHeaders);
 								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
 								console.log("Got cookie header: " + cookieHeader);
-								// don't really do anything with this - browser has the JSESSIONID cookie now
+								
+								// set the username in the appModel
+								appModel.set("username", username);
 							}
 						);
 					
 					// then load the registry url again, now that we are logged in
+					viewRef.render();
+				}
+			);
+			
+			return true;
+		},
+		
+		// this logout hits both the perl registry and the Metacat API
+		logout: function () {
+			
+			// show the progress bar
+			this.showProgressBar();
+			
+			// ajax call to logout
+			var viewRef = this;
+			this.$el.load(
+				this.registryUrl + this.registryQueryString + "&stage=logout",
+				null,
+				function(data, textStatus, xhr) {
+					// TODO: check for success from Perl
+					
+					// the Metacat logout form is now in the main content for us to work with
+					var loginForm = viewRef.$("form")[0];
+					var metacatUrl = viewRef.$("form").attr("action");
+					
+					// submit the Metacat API login form
+					var logoutFormData = viewRef.$("form").serialize();
+					$.post(metacatUrl,
+							logoutFormData,
+							function(data1, textStatus1, xhr1) {
+								// extract the JSESSIONID cookie
+								// don't really do anything with this - browser has the JSESSIONID cookie now
+								var allHeaders = xhr1.getAllResponseHeaders();
+								console.log("Got headers: " + allHeaders);
+								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
+								console.log("Got cookie header: " + cookieHeader);
+								// set the username to null in the appModel
+								appModel.set("username", null);
+							}
+						);
+					
+					// then load the registry url again, now that we are logged out
 					viewRef.render();
 				}
 			);

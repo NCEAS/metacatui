@@ -22,6 +22,7 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 			'tools': 'renderTools',  // tools page
 			'data' : 'renderData',    // data page
 			'view/:pid' : 'renderMetadata',    // metadata page
+			'logout' : 'logout',    // logout the user
 			'share' : 'renderRegistry'    // registry page
 		},
 
@@ -58,6 +59,12 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 		renderRegistry: function (param) {
 			console.log('Called UIRouter.renderRegistry()');
 			appView.showView(registryView);
+		},
+		
+		logout: function (param) {
+			console.log('Called UIRouter.logout()');
+			registryView.logout();
+			appView.showView(indexView);
 		}
 		
 	});
