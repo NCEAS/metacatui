@@ -153,10 +153,15 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			
 			// show the progress bar
 			this.showProgressBar();
+
+			// reference to this view for callback functions
+			var viewRef = this;
+
+			// create an area for temporarily stashing returned form
+			viewRef.$el.append("<div id='tempMetacatContainer' />");
 			
 			// ajax call to submit the given form and then render the results in the content area
-			var viewRef = this;
-			this.$el.load(
+			this.$('#tempMetacatContainer').load(
 				this.registryUrl + " form",
 				formData,
 				function(data, textStatus, xhr) {
@@ -182,6 +187,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 							}
 						);
 					}
+					
+					// clean up the temp area
+					viewRef.$('#tempMetacatContainer').remove();
 					
 					// then load the registry url again, now that we are logged in
 					viewRef.render();
@@ -238,7 +246,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 					viewRef.$('#tempMetacatContainer').remove();
 					
 					// do we want to load the registry, or just let other controller decide the next view?
-					//viewRef.render();
+					viewRef.render();
 
 				}
 			);
