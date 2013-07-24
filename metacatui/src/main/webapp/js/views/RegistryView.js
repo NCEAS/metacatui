@@ -200,11 +200,16 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			// show the progress bar
 			this.showProgressBar();
 			
-			// ajax call to logout, only want the form object
+			// reference to this view for callback functions
 			var viewRef = this;
-			this.$el.load(
+			
+			// create an area for temporarily stashing returned form
+			viewRef.$el.append("<div id='tempMetacatContainer' />");
+			
+			// ajax call to logout, only want the form object
+			this.$('#tempMetacatContainer').load(
 				this.registryUrl + this.registryQueryString + "&stage=logout form",
-				null,
+				null, // it is in the URL
 				function(data, textStatus, xhr) {
 					// TODO: check for success from Perl
 					
@@ -212,24 +217,31 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 					var loginForm = viewRef.$("form")[0];
 					var metacatUrl = viewRef.$("form").attr("action");
 					
-					// submit the Metacat API login form
-					var logoutFormData = viewRef.$("form").serialize();
-					$.post(metacatUrl,
+					if (metacatUrl) {
+						// submit the Metacat API login form
+						var logoutFormData = viewRef.$("form").serialize();
+						$.post(metacatUrl,
 							logoutFormData,
 							function(data1, textStatus1, xhr1) {
-								// extract the JSESSIONID cookie
 								// don't really do anything with this - browser has the JSESSIONID cookie now
 								var allHeaders = xhr1.getAllResponseHeaders();
 								console.log("Got headers: " + allHeaders);
 								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
 								console.log("Got cookie header: " + cookieHeader);
+								
 								// set the username to null in the appModel
 								appModel.set("username", null);
 							}
 						);
+					}
+					
+					// clean up the temp area
+					viewRef.$('#tempMetacatContainer').remove();
 					
 					// do we want to load the registry, or just let other controller decide the next view?
-					viewRef.render();
+					//viewRef.render();
+					uiRouter.navigate("");
+
 				}
 			);
 			
