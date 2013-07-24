@@ -176,11 +176,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 						$.post(metacatUrl,
 							loginFormData,
 							function(data1, textStatus1, xhr1) {
-								// don't really do anything with this - browser has the JSESSIONID cookie
-//								var allHeaders = xhr1.getAllResponseHeaders();
-//								console.log("Got headers: " + allHeaders);
-//								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
-//								console.log("Got cookie header: " + cookieHeader);
+								// browser has the JSESSIONID cookie now
+								//var allHeaders = xhr1.getAllResponseHeaders();
+								console.log("Got headers, JSESSIONID cookie");
 								
 								// set the username in the appModel
 								appModel.set("username", username);
@@ -217,7 +215,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			// ajax call to logout, only want the form object
 			this.$('#tempMetacatContainer').load(
 				this.registryUrl + this.registryQueryString + "&stage=logout form",
-				null, // it is in the URL
+				null, // params are in the URL
 				function(data, textStatus, xhr) {
 					
 					// the Metacat logout form is now in the main content for us to work with
@@ -231,10 +229,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 							logoutFormData,
 							function(data1, textStatus1, xhr1) {
 								// don't really do anything with this - browser has the JSESSIONID cookie now
-//								var allHeaders = xhr1.getAllResponseHeaders();
-//								console.log("Got headers: " + allHeaders);
-//								var cookieHeader = xhr1.getResponseHeader('Set-Cookie');
-//								console.log("Got cookie header: " + cookieHeader);
+								console.log("Logged out, this JSESSIONID cookie is invalid now");
 								
 								// set the username to null in the appModel
 								appModel.set("username", null);
