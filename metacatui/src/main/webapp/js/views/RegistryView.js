@@ -200,10 +200,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			// show the progress bar
 			this.showProgressBar();
 			
-			// ajax call to logout
+			// ajax call to logout, only want the form object
 			var viewRef = this;
 			this.$el.load(
-				this.registryUrl + this.registryQueryString + "&stage=logout",
+				this.registryUrl + this.registryQueryString + "&stage=logout form",
 				null,
 				function(data, textStatus, xhr) {
 					// TODO: check for success from Perl
@@ -228,8 +228,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 							}
 						);
 					
-					// then load the registry url again, now that we are logged out
-					viewRef.render();
+					// do we want to load the registry, or just let other controller decide the next view?
+					//viewRef.render();
 				}
 			);
 			
