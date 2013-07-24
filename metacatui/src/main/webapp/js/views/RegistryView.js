@@ -229,7 +229,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 						);
 					
 					// do we want to load the registry, or just let other controller decide the next view?
-					//viewRef.render();
+					viewRef.render();
 				}
 			);
 			
