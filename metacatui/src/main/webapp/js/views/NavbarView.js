@@ -16,13 +16,12 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		},
 		
 		initialize: function () {
+			// listen to the appModel for changes in username
+			this.listenTo(appModel, 'change:username', this.render);
 		},
 				
 		render: function () {
 			console.log('Rendering the navbar');
-			
-			// listen to the appModel for changes in username
-			this.listenTo(appModel, 'change:username', this.render);
 			
 			// set the username in the template (can be null if not logged in)
 			this.$el.html(
