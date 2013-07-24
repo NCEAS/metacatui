@@ -194,6 +194,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		// this logout hits both the perl registry and the Metacat API
 		logout: function () {
 			
+			// look up the url from the main application model
+			this.registryUrl = appModel.get('registryServiceUrl');
+			
 			// show the progress bar
 			this.showProgressBar();
 			
