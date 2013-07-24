@@ -40,6 +40,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			var searchTerm = $("#search_txt").val();
 			appModel.set('searchTerm', searchTerm);
 			appModel.trigger('search');
+			
+			// make sure the browser knows where we are
+			uiRouter.navigate("data");
+			
+			// ...but don't want to follow links
+			return false;
+			
 		}
 				
 	});
