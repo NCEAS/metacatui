@@ -55,7 +55,7 @@ Bold 700 Italic
         
     body > #Content {
     	position: relative;
-    	margin: 95px 0px auto 0px;
+    	margin: 0px 0px auto 0px;
     	min-height: 400px;  			
     }
 		
@@ -75,11 +75,6 @@ Bold 700 Italic
       text-decoration: none;
     }
     
-    body > header > header#mainHeader + section {
-      margin: 400px auto auto auto;
-      
-    }
-
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
@@ -116,7 +111,7 @@ Bold 700 Italic
   }
   
   header#mainHeader {
-    position: fixed;
+    position: relative;
     top: 0px;
     z-index: 100;
     min-height: 400px;      
@@ -184,20 +179,23 @@ Bold 700 Italic
     footer#Footer ul.helpitems li {
       font: 100 20px/20px "Lato";
       vertical-align: baseline;
-      margin: 15px 0px 0px 0px;
-                 
+      margin: 15px 0px 0px 0px;                 
     }
     
     ul.helpitems a {
       color: #FDFDFD;
-      text-decoration: none;
-      
+      text-decoration: none;      
+    }
+    
+    footer#Footer a:hover {
+      color: #FFFFFF;
+      font-weight: 300;
+      text-decoration: none;      
     }
     
     footer#Footer .disclaimer {
       color: #FDFDFD;
-      font: 100 14px/14px "Lato";
-      
+      font: 100 14px/14px "Lato";      
     }
     
     footer#Footer .logo {
@@ -211,15 +209,17 @@ Bold 700 Italic
     footer#Footer .acknowledgements {
       margin-top: 40px;
     }
+
+    footer#Footer img {
+      opacity: .75;
+    }
+
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 300;
       background-image: none;
       background-repeat: none;
     }
     
-    footer#Footer img {
-      opacity: .75;
-    }
     .btn-primary {
       background-color: #992222;
       color: #FFFFFF;
@@ -254,7 +254,6 @@ Bold 700 Italic
       padding-top: 20px;
       color: #FDFDFD;
 			min-height: 400px;
-			margin: 400px auto auto auto;
     }
 
     section#Features h4 {
