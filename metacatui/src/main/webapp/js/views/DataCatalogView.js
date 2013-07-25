@@ -23,18 +23,30 @@ define(['jquery',
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 //			'click #mostaccessed_link': 'showMostAccessed',
-//			'click #recent_link': 'showRecent',
+			'click #recent_link': 'showRecent',
 //			'click #featureddata_link': 'showFeatured',
 			'click #results_prev': 'prevpage',
 			'click #results_next': 'nextpage',
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
-			'click #results_link': 'showResults'
-			//'click .view_link': 'showMetadata'
+			'click #search_btn_side': 'triggerSearch'
 		},
 		
 		initialize: function () {
 			
+		},
+		
+		triggerSearch: function() {
+			// alert the model that a search should be performed
+			var searchTerm = $("#search_txt_side").val();
+			appModel.set('searchTerm', searchTerm);
+			appModel.trigger('search');
+			
+			// make sure the browser knows where we are
+			uiRouter.navigate("data");
+			
+			// ...but don't want to follow links
+			return false;
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -44,21 +56,26 @@ define(['jquery',
 
 			console.log('Rendering the DataCatlog view');
 			appModel.set('headerType', 'default');
-			var cel = this.template();
+			var cel = this.template(
+					{
+						searchTerm: appModel.get('searchTerm')
+					}
+			);
 			this.$el.html(cel);
 			this.updateStats();
 			
 			// Register listeners; this is done here in render because the HTML
 			// needs to be bound before the listenTo call can be made
+			this.stopListening(appSearchResults);
 			this.listenTo(appSearchResults, 'add', this.addOne);
 			this.listenTo(appSearchResults, 'reset', this.addAll);
 			
 			// listen to the appModel for the search trigger
+			this.stopListening(appModel);
 			this.listenTo(appModel, 'search', this.showResults);
 
 			// Store some references to key views that we use repeatedly
 			this.$resultsview = this.$('#results-view');
-			this.$metadataview = this.$('#metadata-view');
 			this.$results = this.$('#results');
 			this.$pagehead = this.$('#pagehead');
 			
@@ -70,20 +87,57 @@ define(['jquery',
 
 		showResults: function () {
 
-			var search = $("#search_txt").val();
+			var search = appModel.get('searchTerm');
+
+			var resultTitle = 'Search Results';
+			if (search) {
+				resultTitle += ' - ' + search; 
+			}
 			this.removeAll();
-			this.$pagehead.html('Search Results');
+			this.$pagehead.html(resultTitle);
 			appSearchResults.setrows(25);
 			appSearchResults.setSort("title+desc");
-			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract");
+			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
 			appSearchResults.query("formatType:METADATA+-obsoletedBy:*+" + search);
-			//this.$("#recent_link").removeClass("sidebar-item-selected");
-			//this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
-			this.$("#results_link").addClass("sidebar-item-selected");
-			//this.$("#featureddata_link").removeClass("sidebar-item-selected");
-			this.$metadataview.fadeOut();
 			this.$resultsview.fadeIn();
 			this.updateStats();
+			this.updateSearchBox();
+			// update links
+			this.$(".popular-search-link").removeClass("sidebar-item-selected");
+			this.$("#popular-search-" + search).addClass("sidebar-item-selected");
+			//this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
+			//this.$("#featureddata_link").removeClass("sidebar-item-selected");
+			
+			// don't want to follow links
+			return false;
+		},
+		
+		showRecent: function () {
+
+			// clear the search term
+			var currentSearchTerm = appModel.get('searchTerm');
+			appModel.set('searchTerm', '');
+			
+			// search last month
+			var dateQuery = "dateUploaded: [NOW-1MONTH/DAY TO *]";
+
+			this.removeAll();
+			this.$pagehead.html('Most Recent');
+			appSearchResults.setrows(25);
+			appSearchResults.setSort("dateUploaded+desc");
+			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
+			appSearchResults.query("formatType:METADATA+-obsoletedBy:*+" + dateQuery);
+			this.$resultsview.fadeIn();
+			this.updateStats();
+			this.updateSearchBox();
+			
+			// update links
+			this.$(".popular-search-link").removeClass("sidebar-item-selected");
+			this.$("#recent_link").addClass("sidebar-item-selected");
+			
+			// don't want the link to be followed
+			return false;
+			
 		},
 
 		updateStats : function() {
@@ -97,6 +151,12 @@ define(['jquery',
 					})
 				);
 			}
+		},
+		
+		updateSearchBox: function() {
+			// look up from the model to ensure we display the side box correctly
+			var search = appModel.get('searchTerm');
+			this.$("#search_txt_side").val(search);
 		},
 
 		// Next page of results
@@ -134,25 +194,6 @@ define(['jquery',
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
 			this.$results.html('');
-		},
-		
-		// Switch the view to the Metadata view, which is built from an AJAX call
-		// to retrieve the metadata view from the server for the given ID
-		showMetadata: function (event) {
-			console.log('Showing Metadata in the data view');
-			
-			// Look up the pid from the clicked link element
-			var pid = event.target.getAttribute("pid");
-			
-			// Get the view of the document from the server and load it
-			this.$view_service = appModel.get('viewServiceUrl');
-			this.$package_service = appModel.get('packageServiceUrl');
-			var endpoint = this.$view_service + pid + ' #Metadata';
-			$('#metadata-view').load(endpoint);
-			
-			// Hide the existing results listing, and show the metadata
-			this.$resultsview.fadeOut();
-			this.$metadataview.fadeIn();
 		},
 		
 		onClose: function () {			

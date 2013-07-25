@@ -7,33 +7,49 @@
 			<a class="btn btn-primary" href="#share"><i
 				class="icon-upload icon-white icon-large"></i> Share Your Data</a>
 
-			<div class="sidebar-subhead">Browse</div>
+			<div class="sidebar-subhead">Refine</div>
 			<ul class="unstyled">
-				<li><a class="sidebar-item" id="results_link" href="#data"><i
-						class="icon-search icon-large"></i> Search Results</a></li>
+				<li>
+					<div class="input-append">
+						<input type="text" placeholder="Refine Search" id="search_txt_side" value="<%= searchTerm  %>" >
+						<a href="#data" type="button" class="btn" id="search_btn_side"><i class="icon-search"></i></a>
+		            </div>
+				</li>
+				
 				<!--
-						<li><a class="sidebar-item" id="featureddata_link" href="#"><i
-								class="icon-flag icon-large"></i> Featured Data</a></li>
-						<li><a class="sidebar-item" id="recent_link" href="#"><i
-								class="icon-calendar icon-large"></i> Most Recent</a></li>
-						<li><a class="sidebar-item" id="mostaccessed_link" href="#"><i
-								class="icon-signal icon-large"></i> Most Accessed</a></li>
--->
+				<li><a class="sidebar-item" id="featureddata_link" href="#"><i
+						class="icon-flag icon-large"></i> Featured Data</a></li>
+				<li><a class="sidebar-item" id="mostaccessed_link" href="#"><i
+						class="icon-signal icon-large"></i> Most Accessed</a></li>
+				-->
+				
 			</ul>
+			<div class="sidebar-subhead">Popular Searches</div>
+			<ul class="unstyled">
+				<li><a class="sidebar-item" id="recent_link" href="#data"><i
+						class="icon-calendar"></i> Most Recent</a></li>
+				<li><a class="sidebar-item popular-search-link" id="popular-search-Soil" href="#data/search/Soil"><i
+						class="icon-thumbs-up"></i> Soil</a></li>
+				<li><a class="sidebar-item popular-search-link" id="popular-search-Biodiversity" href="#data/search/Biodiversity"><i
+						class="icon-thumbs-up"></i> Biodiversity</a></li>
+				<li><a class="sidebar-item popular-search-link" id="popular-search-Phenology" href="#data/search/Phenology"><i
+						class="icon-thumbs-up"></i> Phenology</a></li>		
+			</ul>
+			
 			<!--
-					<div class="sidebar-subhead">Your Collections</div>
-					<ul class="unstyled">
-						<li><a class="sidebar-item" id="yourdata_link" href="#"><i
-								class="icon-folder-close icon-large"></i> Your Data</a></li>
-						<li><a class="sidebar-item" href="#"><i
-								class="icon-folder-close icon-large"></i> Sierra Grazing Study</a></li>
-						<li><a class="sidebar-item" href="#"><i
-								class="icon-folder-close icon-large"></i> Rockies Grazing Study</a></li>
-						<li><a class="sidebar-item" href="#"><i
-								class="icon-folder-close icon-large"></i> Colorado Ungulate
-								Study</a></li>
-					</ul>
- -->
+			<div class="sidebar-subhead">Your Collections</div>
+			<ul class="unstyled">
+				<li><a class="sidebar-item" id="yourdata_link" href="#"><i
+						class="icon-folder-close icon-large"></i> Your Data</a></li>
+				<li><a class="sidebar-item" href="#"><i
+						class="icon-folder-close icon-large"></i> Sierra Grazing Study</a></li>
+				<li><a class="sidebar-item" href="#"><i
+						class="icon-folder-close icon-large"></i> Rockies Grazing Study</a></li>
+				<li><a class="sidebar-item" href="#"><i
+						class="icon-folder-close icon-large"></i> Colorado Ungulate
+						Study</a></li>
+			</ul>
+ 			-->
 		</aside>
 
 		<!--CONTENT AREA-->

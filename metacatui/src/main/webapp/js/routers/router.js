@@ -20,7 +20,7 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 			'about': 'renderAbout',  // about page
 			'plans': 'renderPlans',  // plans page
 			'tools': 'renderTools',  // tools page
-			'data' : 'renderData',    // data page
+			'data(/search/:searchTerm)' : 'renderData',    // data search page
 			'view/:pid' : 'renderMetadata',    // metadata page
 			'logout' : 'logout',    // logout the user
 			'share' : 'renderRegistry'    // registry page
@@ -45,8 +45,11 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 			console.log('Called UIRouter.renderTools()');
 		},
 		
-		renderData: function (param) {
+		renderData: function (searchTerm) {
 			console.log('Called UIRouter.renderData()');
+			if (searchTerm) {
+				appModel.set('searchTerm', searchTerm);
+			}
 			appView.showView(dataCatalogView);
 		},
 		
