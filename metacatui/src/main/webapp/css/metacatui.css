@@ -138,15 +138,15 @@ Bold 700 Italic
 /* FOOTER CSS
 -------------------------------------------------- */    
     
-    footer#Footer div:first-child {
+    footer#Footer div#FooterHeading {
       max-width: 650px;
     }
 
     footer#Footer h2 {
-      font: 400 30px/30px "Lato";
-      vertical-align: baseline;
+      font: 300 25px/25px "Lato";
+      vertical-align: middle;
       padding: 0;
-      text-align: center;
+      line-height: 48px;
     }
         
     footer#Footer h3 {
@@ -163,13 +163,14 @@ Bold 700 Italic
       font-style: italic;
     }
     
-    footer#Footer h4 {
+    footer#Footer h4.subheading {
       vertical-align: baseline;
       padding: 0;
       text-align: center;
+      margin-bottom: 40px;
     }
     
-    footer#Footer h4 > span {
+    footer#Footer h4.subheading > span {
       font: 400 30px/30px "Gentium Book Basic";
       font-style: italic;
       text-transform: uppercase;
@@ -177,12 +178,51 @@ Bold 700 Italic
       padding: 0px 15px 0px 15px;
     }
     
+    footer#Footer ul.helpitems {
+      list-style: none;
+      list-style-position: inside;
+      margin: 0px 0px 40px 0px;
+    }
+    
+    footer#Footer ul.helpitems li {
+      font: 100 20px/20px "Lato";
+      vertical-align: baseline;
+      margin: 15px 0px 0px 0px;
+                 
+    }
+    
+    ul.helpitems a {
+      color: #FDFDFD;
+      text-decoration: none;
+      
+    }
+    
+    footer#Footer .disclaimer {
+      color: #FDFDFD;
+      font: 100 14px/14px "Lato";
+      
+    }
+    
+    footer#Footer .logo {
+      color: #D9D9D9;
+      font: 300 48px "Lato";
+      letter-spacing: -3px;
+      margin: 0px 0px 40px 0px;
+      text-align: center;
+    }
+    
+    footer#Footer .acknowledgements {
+      margin-top: 40px;
+    }
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 300;
       background-image: none;
       background-repeat: none;
     }
     
+    footer#Footer img {
+      opacity: .75;
+    }
     .btn-primary {
       background-color: #992222;
       color: #FFFFFF;
@@ -278,8 +318,7 @@ Bold 700 Italic
     
     .center {
       float: none;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 0 auto;
     }
     
     .navbar {
