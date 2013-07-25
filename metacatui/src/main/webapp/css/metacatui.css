@@ -49,27 +49,15 @@ Bold 700 Italic
     
     body > section, footer {
       min-height: 400px;
-      margin: none;
+      margin: 0;
       z-index: 10;
     }
-    
-    body > header > header#Header {
-      position: fixed;
-      height: 95px;
-      
+        
+    body > #Content {
+    	position: relative;
+    	margin: 95px 0px auto 0px;
+    	min-height: 400px;  			
     }
-    
-    body > header > header#mainHeader {
-      z-index: 190;
-      position: fixed;
-      min-height: 400px;      
-    }
-    
-	body > #Content {
-		position: relative;
-		margin: 95px 0px auto 0px;
-		min-height: 400px;  			
-	}
 		
     body > article {
       min-height: 800px;
@@ -91,16 +79,7 @@ Bold 700 Italic
       margin: 400px auto auto auto;
       
     }
-    footer {
-      position: relative;
-      bottom: 0px;
-      padding-top: 30px;
-      padding-bottom: 30px;
-      margin-top: none;
-      color: #FDFDFD;
-      background-color: #3F3F3F;
-    }
-    
+
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
@@ -126,18 +105,36 @@ Bold 700 Italic
 
 /* HEADER CSS
 -------------------------------------------------- */    
-    #Header {
-      position: fixed;
-      top: 0px;
-      z-index: 50;
-      background-color: #FDFDFD;
-      overflow: hidden;
-      opacity: 1.0;
-    }
-
+  header#Header {
+    position: fixed;
+    top: 0px;
+    z-index: 100;
+    height: 95px;
+    background-color: #FDFDFD;
+    overflow: hidden;
+    opacity: 1.0;    
+  }
+  
+  header#mainHeader {
+    position: fixed;
+    top: 0px;
+    z-index: 100;
+    min-height: 400px;      
+  }
+  
 /* FOOTER CSS
 -------------------------------------------------- */    
-    
+
+    footer#Footer {
+      position: relative;
+      bottom: 0px;
+      padding-top: 30px;
+      padding-bottom: 30px;
+      margin-top: none;
+      color: #FDFDFD;
+      background-color: #3F3F3F;
+    }
+        
     footer#Footer div#FooterHeading {
       max-width: 650px;
     }
@@ -248,12 +245,6 @@ Bold 700 Italic
       
     }
     
-    #Slides {
-      position: relative;
-      top: 0px;
-      z-index: 50;
-    }
-
 /* FEATURES CSS
 -------------------------------------------------- */    
     
@@ -321,19 +312,28 @@ Bold 700 Italic
       margin: 0 auto;
     }
     
-    .navbar {
+    nav#Navbar {
       position: fixed;
+      top: 0px;
+      z-index: 200;
+      left: 50%;
+      width: 960px;
+      margin: 0px 0px 0px -480px;
+      float: none;
+      
+    }
+    
+    .navbar {
+      position: relative;
       top: 20px;
       border: none;
-      z-index: 200;
-      min-height: 55px;
-    
+      z-index: 210;
+      height: 55px;    
     }
 
     .navbar-inner {
-      position: relative;
       border: none;
-      z-index: 140;
+      z-index: 220;
     }
     
     .navbar .brand {
@@ -343,6 +343,7 @@ Bold 700 Italic
       color: #992222;
       letter-spacing: -3px;
       margin: 7px 5px 7px 5px;
+      padding: 10px 40px 10px 0px;
       float: left;
       
     }
@@ -394,7 +395,7 @@ Bold 700 Italic
     /* Offset the search div for proper vertical alignment */
     .navbar .input-append {
       margin: 5px 0px 0px 0px;
-      z-index: 150;
+      z-index: 290;
     }
 
     #SignIn {
@@ -404,6 +405,12 @@ Bold 700 Italic
     /* CAROUSEL CSS
     -------------------------------------------------- */
 
+    #Slides {
+      position: relative;
+      top: 0px;
+      z-index: 110;
+    }
+
     /* Carousel base class */
     .carousel {
       width: 100%;
@@ -412,7 +419,6 @@ Bold 700 Italic
       
     }
 
-
     .carousel-control {
       height: 80px;
       margin-top: 0;
@@ -420,19 +426,19 @@ Bold 700 Italic
       text-shadow: 0 1px 1px rgba(0,0,0,.4);
       background-color: transparent;
       border: 0;
-      z-index: 230;
+      z-index: 189;
     }
         
     .carousel .active .left {
       left:0;
       opacity:0;
-      z-index:240;
+      z-index: 190;
     }
     
     .carousel .next {
       left:0;
       opacity:1;
-      z-index:241;
+      z-index: 191;
     }
     
     .carousel .item {
@@ -444,7 +450,7 @@ Bold 700 Italic
        color-stop(0.9, #FFFFFF),
        color-stop(0.3, #FDFDFD)
       );
-      z-index: 185;
+      z-index: 170;
       -webkit-transition: opacity 4s; 
       -moz-transition: opacity 4s; 
       -ms-transition: opacity 4s; 
