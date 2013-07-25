@@ -180,8 +180,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 								//var allHeaders = xhr1.getAllResponseHeaders();
 								console.log("Got headers, JSESSIONID cookie");
 								
-								// set the username in the appModel
+								// set the username in the appModel, that's all we have
 								appModel.set("username", username);
+								
+								// trigger the check for logged in user
+								appView.checkUserStatus();
 							}
 						);
 					}
@@ -233,6 +236,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 								
 								// set the username to null in the appModel
 								appModel.set("username", null);
+								
+								// trigger the check for logged in user
+								appView.checkUserStatus();
 							}
 						);
 					}

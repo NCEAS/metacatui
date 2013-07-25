@@ -17,7 +17,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		
 		initialize: function () {
 			// listen to the appModel for changes in username
-			this.listenTo(appModel, 'change:username', this.render);
+			//this.listenTo(appModel, 'change:username', this.render);
+			this.listenTo(appModel, 'change:fullName', this.render);
 			this.listenTo(appModel, 'change:searchTerm', this.render);
 		},
 				
@@ -29,6 +30,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 					this.template( 
 							{
 								username: appModel.get('username'),
+								fullName: appModel.get('fullName'),
 								searchTerm: appModel.get('searchTerm')
 							} 
 					)

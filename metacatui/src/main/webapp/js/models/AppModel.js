@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			headerType: 'default',
 			username: null,
+			fullName: null,
 			searchTerm: '',
 			pid: null,
 			baseUrl: window.location.origin,
@@ -19,7 +20,9 @@ define(['jquery', 'underscore', 'backbone'],
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			queryServiceUrl: null,
-			registryServiceUrl: null
+			registryServiceUrl: null,
+			metacatServiceUrl: null
+
 
 		},
 		
@@ -29,6 +32,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
+			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 		}
 	
 		
