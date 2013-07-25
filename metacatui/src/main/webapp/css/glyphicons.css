@@ -1302,7 +1302,7 @@ html .halflings {
   height: 48px;
   line-height: 48px;
   vertical-align: text-top;
-  background-image: url(../images/glyphicons.png);
+  background-image: url(../img/glyphicons.png);
   background-position: 0 0;
   background-repeat: no-repeat;
   vertical-align: top;
@@ -1311,13 +1311,13 @@ html .halflings {
   *margin-right: .3em;
 }
 .no-inlinesvg .glyphicons-icon {
-  background-image: url(../images/glyphicons.png);
+  background-image: url(../img/glyphicons.png);
 }
 .glyphicons-icon.white {
-  background-image: url(../images/glyphicons-white.svg);
+  background-image: url(../img/glyphicons-white.svg);
 }
 .no-inlinesvg .glyphicons-icon.white {
-  background-image: url(../images/glyphicons-white.png);
+  background-image: url(../img/glyphicons-white.png);
 }
 .glyphicons-icon.glass {
   background-position: 4px 11px;
