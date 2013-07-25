@@ -12,6 +12,7 @@ define(['jquery', 'underscore', 'backbone'],
 			title: '',
 			pubDate: '',
 			id: '',
+			resourceMap: null,
 			downloads: 0,
 			citations: 0,
 			selected: false
