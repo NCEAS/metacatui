@@ -20,6 +20,11 @@ define(['jquery',
 		
 		initialize: function () {
 			console.log('Rendering fixed subviews within the AppView');
+			
+			// check the user status whenever we render the main application
+			this.checkUserStatus();
+			
+			// render the nav
 			app.navbarView = new NavbarView();
 			app.navbarView.setElement($('#Navbar')).render();
 
@@ -38,6 +43,35 @@ define(['jquery',
 			console.log('Rendering dynamic subviews within the AppView');
 									
 			return this;
+		},
+		
+		// call Metacat to validate the session and tell us the user's name
+		checkUserStatus: function() {
+			
+			// look up the URL
+			var metacatUrl = appModel.get('metacatServiceUrl');
+			
+			console.log('Checking user status in AppView');
+
+			// ajax call to validate the session/get the user info
+			$.post(
+				metacatUrl,
+				{ action: "validatesession" },
+				function(data, textStatus, xhr) {
+					
+					// the Metacat (XML) response should have a fullName element
+					var fullName = $(data).find("fullName").text();
+					var username = $(data).find("name").text();
+					console.log('fullName: ' + fullName);
+					console.log('username: ' + username);
+					// set in the model
+					appModel.set('fullName', fullName);
+					appModel.set('username', username);
+					
+				}
+			);
+			
+			return false;
 		},
 		
 		// the currently rendered view
