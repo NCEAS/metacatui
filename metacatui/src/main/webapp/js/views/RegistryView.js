@@ -266,7 +266,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		
 		showProgressBar: function() {
 			this.scrollToTop();
-			this.$el.html('<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div>');
+			this.$el.html('<section id="Notification"><div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>');
 		},
 		
 		scrollToTop: function() {
