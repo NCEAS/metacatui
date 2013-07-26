@@ -36,12 +36,21 @@ define(['jquery',
 
 			var viewRef = this;
 			this.$el.load(endpoint,
-					function() {
+					function(response, status, xhr) {
+				
+						if (status == "error") {
+							viewRef.showMessage(response);
+						} 
 						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
+						
 					});
 			
 			return this;
+		},
+		
+		showMessage: function(msg) {
+			this.$el.html('<section id="Notification"><div class="alert"><h4>Oops!</h4>' + msg + '</div></section>');
 		},
 		
 		onClose: function () {			
