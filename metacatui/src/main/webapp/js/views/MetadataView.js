@@ -40,13 +40,46 @@ define(['jquery',
 				
 						if (status == "error") {
 							viewRef.showMessage(response);
-						} 
+						} else {
+							viewRef.insertResourceMapLink(pid);
+						}
 						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
 						
 					});
 			
 			return this;
+		},
+		
+		// this will insert the ORE package download link if available
+		insertResourceMapLink: function(pid) {
+			var resourceMapId = null;
+			// look up the resourceMapId[s]
+			var queryServiceUrl = appModel.get('queryServiceUrl');
+			var packageServiceUrl = appModel.get('packageServiceUrl');
+
+			var query = 'fl=id,resourceMap&wt=xml&q=formatType:METADATA+-obsoletedBy:*+resourceMap:*+id:' + pid;
+			$.get(
+					queryServiceUrl + query,
+					function(data, textStatus, xhr) {
+						
+						// the response should have a resourceMap element
+						resourceMapId = $(data).find("arr[name='resourceMap'] str").text();
+						console.log('resourceMapId: ' + resourceMapId);
+						
+						if (resourceMapId) {
+														
+							$("#downloadPackage").html(
+								'<a class="btn" href="' 
+									+ packageServiceUrl + resourceMapId + '">' 
+									+ 'Download Package <i class="icon-arrow-down"></i>'
+								+ '</a>'
+							);
+						}
+						
+					}
+				);
+				
 		},
 		
 		showMessage: function(msg) {
