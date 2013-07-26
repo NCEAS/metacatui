@@ -3,36 +3,68 @@
     <h2>The KNB repository helps you preserve and share your data.</h2>
   </div>
   <div class="row-fluid pagination-centered">
-    <div id="featured_image" class="span6">
-      <img class="featured" src="./img/slide_01.jpg">
+  
+    <div class="tab-content span6">
+    	<div id="featured_01" class="tab-pane active">
+	      <img class="featured" src="./img/featured_01.jpg">
+	    </div>
+	    <div id="featured_02" class="tab-pane">
+	      <img class="featured" src="./img/featured_02.jpg">
+	    </div>
+	    <div id="featured_03" class="tab-pane">
+	      <img class="featured" src="./img/featured_03.jpg">
+	    </div>
     </div>
+    
     <div class="span6">
+    
+    	<!-- Candidates
+    	NCEAS 12574: Cook: Forecasting phenology: Integrating ecology, climatology, and phylogeny to understand plant responses to climate change, 
+    	National Center for Ecological Analysis and Synthesis, and Cook B. 2012.
+		Divergent responses to spring and winter warming drive community level flowering trends
+		docid=nceas.997.2
+		
+    	California State University Northridge and Edmunds P. 2013.
+		Virgin Islands National Park: Coral Reef: Decadal-scale changes in community structure from 1987 to 2011 
+    	docid=autogen.2013071915432447802.1
+    	pid=doi:10.5063/AA/knb-csun-usvi.10700
+    	
+		
+		NCEAS 10241: Zilov: The 60-year data set of plankton dynamics in Lake Baikal, National Center for Ecological Analysis and Synthesis, and Izmest'eva L. 2006.
+		Lake Baikal Plankton 
+    	docid=nceas.290.8
+    	
+    	
+    	 -->
       <ul id="featured_list" class="nav nav-list">
         <li class="active">
-          <a href="#">
+          <a href="#featured_01" data-toggle="tab" >
             <i class="glyphicons-icon white chevron-left"></i>
-            Arachnid prey selection.
+            Divergent responses to spring and winter warming drive community level flowering trends.
             <span class="citation">
-              Silkey, P. and F. Mulder. 2013. doi:10.xxxx/AA/FGT6TW
+				Cook, B. 2012.
             </span>
+            <button class="btn btn-link featuredButton" href="#view/nceas.997.2">nceas.997.2</button>
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="#featured_02" data-toggle="tab" >
             <i class="glyphicons-icon white chevron-left"></i>
-            Biomechanical stress in beach habitats.
+            USVI Coral Reef: Decadal-scale changes in community structure from 1987 to 2011.
             <span class="citation">
-              Blanchette, C. et al. 2001. doi:10.xxxx/AA/QGT6HW
+				CSU Northridge and Edmunds, P. 2013.
             </span>
+            <button class="btn btn-link featuredButton" href="#view/autogen.2013071915432447802.1">doi:10.5063/AA/knb-csun-usvi.10700</button>
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="#featured_03" data-toggle="tab" >
             <i class="glyphicons-icon white chevron-left"></i>
-            Landscape change over time.
+            Lake Baikal Plankton Dynamics, 60-year data set.
             <span class="citation">
-              Davis, F. and D. Stoms. 2013. doi:10.xxxx/AA/XGA6HQ
+				Izmest'eva, L. 2006.
             </span>
+            <button class="btn btn-link featuredButton" href="#view/nceas.290.8">nceas.290.8</button>
           </a>
         </li>
       </ul>
