@@ -45,7 +45,6 @@ Bold 700 Italic
     body p {
       font-weight: 300;
       line-height: 1.5;
-      font-size: 20px;
     }
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block; 
@@ -61,7 +60,7 @@ Bold 700 Italic
     body > #Content {
     	position: relative;
     	margin: 0px 0px auto 0px;
-    	min-height: 400px;  			
+    	min-height: 400px;
     }
 		
     body > section > article {
@@ -71,6 +70,7 @@ Bold 700 Italic
       font-size: 110%;
       line-height: 1.5;
       margin: 175px auto auto auto;
+      padding: auto auto 40px auto;  			
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
