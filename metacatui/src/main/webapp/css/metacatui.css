@@ -308,13 +308,68 @@ Bold 700 Italic
       background-color: #B0A691;
       padding-top: 20px;
       color: #FDFDFD;
-			min-height: 400px;			      
+			min-height: 400px;
+      height: 450px;
+      padding: auto auto 20px auto;			      
     }
 		
 		#FeaturedData h2 {
 			font-weight: 300;
+      margin: 20px auto 40px auto;
 		}
     
+    .featured {
+      border-radius: 6px 6px 6px 6px;
+    }
+    
+    #featured_list {
+      margin: auto auto auto 20px;
+      border-radius: 6px 6px 6px 6px;
+      background-color: #D9D9D9;
+    }
+
+    #featured_list > li.active > a {
+      background-color: #9A8D72;
+      color: #FDFDFD;
+      font-size: 18px;
+      font-weight: 400;
+      float: left;
+    }
+    
+    #featured_list > li > a {
+      height: 60px;
+      width: 100%;
+      padding: 10px 20px 10px 20px;
+      color: #9A8D72;
+      background-color: #D9D9D9;
+      font-size: 18px;
+      font-weight: 400;
+      float: left;
+      padding: 20px 10px 10px 10px;
+    }
+
+    #featured_list > li > a > span.citation {
+      font-weight: 300;
+    }
+
+    #featured_list > li > a:hover {
+      background-color: #F3F3F3;
+    }
+        
+    #featured_list > li.active > a:hover {
+      background-color: #9A8D72;
+    }
+    #featured_list > li:first-child > a {
+      border-radius: 6px 6px 0px 0px;
+    }
+    
+    #featured_list > li:last-child > a {
+      border-radius: 0px 0px 6px 6px;
+    }
+    
+    #featured_list .chevron-left {
+      float: left;
+    }
 /* CUSTOMIZE THE ACCORDIAN 
 -------------------------------------------------- */
 
@@ -337,8 +392,7 @@ Bold 700 Italic
       left: 50%;
       width: 960px;
       margin: 0px 0px 0px -480px;
-      float: none;
-      
+      float: none;      
     }
     
     .navbar {
