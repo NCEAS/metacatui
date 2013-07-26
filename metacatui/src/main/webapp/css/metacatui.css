@@ -37,11 +37,16 @@ Bold 700 Italic
 /* Body CSS
 -------------------------------------------------- */
     body {
-      color: #A1A1A1;
+      color: #555555;
       background-color: #FDFDFD;
       font-family: "Lato", "Helvetica Nueue", "Helvetica", "sans serif";
     }
 
+    body p {
+      font-weight: 300;
+      line-height: 1.5;
+      font-size: 20px;
+    }
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block; 
       
@@ -59,13 +64,13 @@ Bold 700 Italic
     	min-height: 400px;  			
     }
 		
-    body > article {
+    body > section > article {
       min-height: 800px;
       /*margin: 135px auto auto auto;*/
       font-weight: 300;
       font-size: 110%;
       line-height: 1.5;
-      
+      margin: 175px auto auto auto;
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -116,6 +121,19 @@ Bold 700 Italic
     z-index: 100;
     min-height: 400px;      
   }
+
+/* NOTIFICATION AREA CSS
+ * -------------------------------------------------- */    
+  section#Notification {
+    position: fixed;
+    top: 95px;
+    height: 40px;
+    width: 100%;
+    max-height: 40px;
+    min-height: 40px;
+    background-color: #FDFDFD;
+  }
+
   
 /* FOOTER CSS
 -------------------------------------------------- */    
@@ -201,8 +219,9 @@ Bold 700 Italic
     footer#Footer .logo {
       color: #D9D9D9;
       font: 300 48px "Lato";
+      line-height: 1.0;
       letter-spacing: -3px;
-      margin: 0px 0px 40px 0px;
+      margin: 0px 0px 15px 0px;
       text-align: center;
     }
     
@@ -506,14 +525,12 @@ Bold 700 Italic
   /* About CSS
   -------------------------------------------------- */
     #About {
-		margin-top: 110px;
 		min-height: 800px;
     }
 
   /* Metadata rendering CSS
   -------------------------------------------------- */
     #Metadata {
-		margin-top: 110px;
 		min-height: 800px;
     }
     
@@ -537,7 +554,6 @@ Bold 700 Italic
   /* Data Catalog CSS
   -------------------------------------------------- */
 	#mainBody {
-		margin: 135px 20px auto 20px;
 		min-height: 800px;
 	}
 
@@ -631,7 +647,6 @@ Bold 700 Italic
         margin: 0 auto 20px;
       }
     }
-
 
     /*
     @media (max-width: 767px) {
