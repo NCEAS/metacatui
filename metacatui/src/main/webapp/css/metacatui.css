@@ -308,19 +308,19 @@ Bold 700 Italic
       background-color: #B0A691;
       padding-top: 20px;
       color: #FDFDFD;
-			min-height: 400px;
+      min-height: 400px;
       height: 450px;
     }
 		
-		#FeaturedData h2 {
-			font-weight: 300;
-      margin: 20px auto 40px auto;
-		}
+	  #FeaturedData h2 {
+	  	font-weight: 300;
+	  	margin: 20px auto 40px auto;
+	  }
     
     .featured {
       border-radius: 6px 6px 6px 6px;
-      max-width: 460px;
       margin-right: 20px;
+      max-height: 300px;
     }
     
     #featured_list {
