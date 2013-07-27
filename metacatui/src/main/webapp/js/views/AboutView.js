@@ -21,13 +21,14 @@ define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates
 			console.log('Rendering the about view');
 			this.$el.html(this.template());
 			
+			return this;
+		},
+		
+		postRender: function() {
 			var anchorId = aboutModel.get('anchorId');
-			
 			if ( anchorId ) {
 				this.scrollToAnchor(anchorId);
 			}
-			
-			return this;
 		},
 		
 		onClose: function () {			
@@ -36,8 +37,9 @@ define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates
 		
 		// scroll to the anchor given to the render function
 		scrollToAnchor: function(anchorId) {
-			console.log('Scrolling to anchorId: ' + anchorId)
+			console.log('Scrolling to anchorId: ' + anchorId);
 			var anchorTag = $("a[name='" + anchorId + "']" );
+			console.log('Scrolling to offset.top: ' + anchorTag.offset().top);
 			$('html,body').animate({scrollTop: anchorTag.offset().top}, 'slow');
 		}
 	});

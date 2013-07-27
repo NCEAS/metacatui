@@ -97,7 +97,12 @@ define(['jquery',
 					// render the new view
 					view.$el.hide();
 					view.render();
-					view.$el.fadeIn('slow');
+					view.$el.fadeIn('slow', function() {
+						// after fade in, do postRender()
+						if (view.postRender) {
+							view.postRender();
+						}
+					});
 				});
 			} else {
 				// just show the view without transition
