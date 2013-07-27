@@ -1,17 +1,16 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/about.html'], 				
-	function($, _, Backbone, AboutTemplate) {
+define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates/about.html'], 				
+	function($, _, Backbone, AboutModel, AboutTemplate) {
 	'use strict';
-	
+		
 	// Build the main header view of the application
 	var AboutView = Backbone.View.extend({
 
 		el: '#Content',
 		
 		template: _.template(AboutTemplate),
-		
+				
 		initialize: function () {
-			
 		},
 				
 		render: function () {
@@ -21,13 +20,26 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/about.html'],
 			
 			console.log('Rendering the about view');
 			this.$el.html(this.template());
+			
+			var anchorId = aboutModel.get('anchorId');
+			
+			if ( anchorId ) {
+				this.scrollToAnchor(anchorId);
+			}
+			
 			return this;
 		},
 		
 		onClose: function () {			
 			console.log('Closing the about view');
+		},
+		
+		// scroll to the anchor given to the render function
+		scrollToAnchor: function(anchorId) {
+			console.log('Scrolling to anchorId: ' + anchorId)
+			var anchorTag = $("a[name='" + anchorId + "']" );
+			$('html,body').animate({scrollTop: anchorTag.offset().top}, 'slow');
 		}
-				
 	});
 	return AboutView;		
 });

@@ -6,7 +6,7 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 
 	var app = app || {};
 	var indexView = new IndexView();
-	var aboutView = new AboutView();
+	var aboutView = aboutView || new AboutView();
 	var dataCatalogView = new DataCatalogView();
 	var registryView = new RegistryView();
 	var metadataView = new MetadataView();
@@ -16,14 +16,15 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''      : 'renderIndex', // the default route
-			'about': 'renderAbout',  // about page
-			'plans': 'renderPlans',  // plans page
-			'tools': 'renderTools',  // tools page
+			''                          : 'renderIndex', // the default route
+			'about'                     : 'renderAbout',  // about page
+			'about(/:anchorId)'          : 'renderAbout',  // about page anchors
+			'plans'                     : 'renderPlans',  // plans page
+			'tools'                     : 'renderTools',  // tools page
 			'data(/search/:searchTerm)' : 'renderData',    // data search page
-			'view/:pid' : 'renderMetadata',    // metadata page
-			'logout' : 'logout',    // logout the user
-			'share' : 'renderRegistry'    // registry page
+			'view/:pid'                 : 'renderMetadata',    // metadata page
+			'logout'                    : 'logout',    // logout the user
+			'share'                     : 'renderRegistry'    // registry page
 		},
 
 		renderIndex: function (param) {
@@ -31,8 +32,11 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 			appView.showView(indexView);
 		},
 		
-		renderAbout: function (param) {
+		renderAbout: function (anchorId) {
 			console.log('Called UIRouter.renderAbout()');
+			if (anchorId) {
+				aboutModel.set('anchorId', anchorId);
+			}
 			appView.showView(aboutView);
 			
 		},
