@@ -70,7 +70,7 @@ Bold 700 Italic
       font-size: 110%;
       line-height: 1.5;
       margin: 175px auto auto auto;
-      padding: auto auto 40px auto;  			
+      padding-bottom: 40px;  			
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -143,7 +143,7 @@ Bold 700 Italic
       bottom: 0px;
       padding-top: 30px;
       padding-bottom: 30px;
-      margin-top: none;
+      margin-top: 0px;
       color: #FDFDFD;
       background-color: #3F3F3F;
     }
@@ -310,7 +310,6 @@ Bold 700 Italic
       color: #FDFDFD;
 			min-height: 400px;
       height: 450px;
-      padding: auto auto 20px auto;			      
     }
 		
 		#FeaturedData h2 {
@@ -320,12 +319,25 @@ Bold 700 Italic
     
     .featured {
       border-radius: 6px 6px 6px 6px;
+      max-width: 460px;
+      margin-right: 20px;
     }
     
     #featured_list {
       margin: auto auto auto 20px;
       border-radius: 6px 6px 6px 6px;
-      background-color: #D9D9D9;
+      /*background-color: #D9D9D9;*/
+    }
+    
+    
+    #featured_list > li.nav-header {
+      height: 30px;
+      color: #9A8D72;
+      background-color: #E8E7DA;
+      font-size: 18px;
+      font-weight: 400;
+      padding-top: 15px;
+      border-radius: 6px 6px 0px 0px;
     }
 
     #featured_list > li.active > a {
@@ -341,7 +353,7 @@ Bold 700 Italic
       width: 100%;
       padding: 10px 20px 10px 20px;
       color: #9A8D72;
-      background-color: #D9D9D9;
+      background-color: #E8E7DA;
       font-size: 18px;
       font-weight: 400;
       float: left;
@@ -359,6 +371,7 @@ Bold 700 Italic
     #featured_list > li.active > a:hover {
       background-color: #9A8D72;
     }
+    
     #featured_list > li:first-child > a {
       border-radius: 6px 6px 0px 0px;
     }
@@ -541,7 +554,8 @@ Bold 700 Italic
       position: absolute;
       top: 30%;
       bottom: 40%;
-      max-width: 50%;
+      max-width: 480px;
+      max-height: 200px;
       z-index: 200;
       padding: 10px 10px 10px 10px;
       -webkit-border-radius: 6px;
