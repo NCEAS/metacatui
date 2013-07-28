@@ -1,12 +1,13 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView'], 				
-function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, MetadataView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView) {
 
 	var app = app || {};
 	var indexView = new IndexView();
 	var aboutView = aboutView || new AboutView();
+	var toolsView = toolsView || new ToolsView();
 	var dataCatalogView = new DataCatalogView();
 	var registryView = new RegistryView();
 	var metadataView = new MetadataView();
@@ -18,9 +19,9 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 		routes: {
 			''                          : 'renderIndex', // the default route
 			'about'                     : 'renderAbout',  // about page
-			'about(/:anchorId)'          : 'renderAbout',  // about page anchors
+			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
-			'tools'                     : 'renderTools',  // tools page
+			'tools(/:anchorId)'         : 'renderTools',  // tools page
 			'data(/search/:searchTerm)' : 'renderData',    // data search page
 			'view/:pid'                 : 'renderMetadata',    // metadata page
 			'logout'                    : 'logout',    // logout the user
@@ -34,19 +35,18 @@ function ($, _, Backbone, IndexView, AboutView, DataCatalogView, RegistryView, M
 		
 		renderAbout: function (anchorId) {
 			console.log('Called UIRouter.renderAbout()');
-			if (anchorId) {
-				aboutModel.set('anchorId', anchorId);
-			}
+			aboutModel.set('anchorId', anchorId);
 			appView.showView(aboutView);
-			
 		},
 		
 		renderPlans: function (param) {
 			console.log('Called UIRouter.renderPlans()');
 		},
 		
-		renderTools: function (param) {
+		renderTools: function (anchorId) {
 			console.log('Called UIRouter.renderTools()');
+			toolsModel.set('anchorId', anchorId);
+			appView.showView(toolsView);
 		},
 		
 		renderData: function (searchTerm) {

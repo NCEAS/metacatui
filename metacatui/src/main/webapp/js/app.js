@@ -39,15 +39,17 @@ var appView = appView || {};
 var uiRouter = uiRouter || {};
 var appModel = appModel || {};
 var aboutModel = aboutModel || {};
+var toolsModel = toolsModel || {};
 var appSearchResults = appSearchResults || {};
 
 /* require libraries that are needed  */
-require(['backbone', 'routers/router', 'views/AppView', 'models/AppModel', 'models/AboutModel', 'collections/SolrResults'],
-function(Backbone, UIRouter, AppView, AppModel, AboutModel, SolrResultList) {
+require(['backbone', 'routers/router', 'views/AppView', 'models/AppModel', 'models/AboutModel', 'models/ToolsModel', 'collections/SolrResults'],
+function(Backbone, UIRouter, AppView, AppModel, AboutModel, ToolsModel, SolrResultList) {
 	'use strict';  
     		
 	appModel = new AppModel();
 	aboutModel = new AboutModel();
+	toolsModel = new ToolsModel();
 	appView = new AppView();
 	appSearchResults = new SolrResultList([], {});
 			

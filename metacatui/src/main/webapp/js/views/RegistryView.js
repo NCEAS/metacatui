@@ -272,7 +272,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		
 		scrollToTop: function() {
 			$("html, body").animate({ scrollTop: 0 }, "slow");
-				return false;
+			return false;
 		}
 				
 	});

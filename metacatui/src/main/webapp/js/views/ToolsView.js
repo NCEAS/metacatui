@@ -1,14 +1,14 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates/about.html'], 				
-	function($, _, Backbone, AboutModel, AboutTemplate) {
+define(['jquery', 'underscore', 'backbone', 'models/ToolsModel', 'text!templates/tools.html'], 				
+	function($, _, Backbone, ToolsModel, ToolsTemplate) {
 	'use strict';
 		
-	// Build the main header view of the application
-	var AboutView = Backbone.View.extend({
+	// Build the tools view of the application
+	var ToolsView = Backbone.View.extend({
 
 		el: '#Content',
 		
-		template: _.template(AboutTemplate),
+		template: _.template(ToolsTemplate),
 				
 		initialize: function () {
 		},
@@ -19,14 +19,14 @@ define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates
 			appModel.set('headerType', 'default');
 			appModel.set('navbarPosition', 'fixed');		
 			
-			console.log('Rendering the about view');
+			console.log('Rendering the tools view');
 			this.$el.html(this.template());
 			
 			return this;
 		},
 		
 		onClose: function () {			
-			console.log('Closing the about view');
+			console.log('Closing the tools view');
 		},
 		
 		postRender: function() {
@@ -52,5 +52,5 @@ define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates
 		}
 		
 	});
-	return AboutView;		
+	return ToolsView;		
 });
