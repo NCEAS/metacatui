@@ -30,7 +30,7 @@ define(['jquery', 'underscore', 'backbone', 'models/ToolsModel', 'text!templates
 		},
 		
 		postRender: function() {
-			var anchorId = aboutModel.get('anchorId');
+			var anchorId = toolsModel.get('anchorId');
 			if (anchorId) {
 				this.scrollToAnchor(anchorId);
 			} else {
