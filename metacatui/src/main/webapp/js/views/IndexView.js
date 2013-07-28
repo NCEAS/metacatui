@@ -26,7 +26,8 @@ define(['jquery',
 			console.log('Rendering dynamic subviews within the IndexView');
 			
 			appModel.set('headerType', 'main');
-			
+			appModel.set('navbarPosition', 'absolute');		
+				
 			// Add in the Features section
 			this.$el.html('<section id="Features" /><section id="FeaturedData" />');			
 			var featuresView = new FeaturesView();

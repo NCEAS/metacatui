@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			
 			// request a smaller header
 			appModel.set('headerType', 'default');
+			appModel.set('navbarPosition', 'fixed');		
 			
 			console.log('Calling the registry to display');
 			console.log('Calling the registry URL: ' + this.registryUrl);
