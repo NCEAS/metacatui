@@ -20,11 +20,15 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/featuredData.html'],
 				
 		render: function () {
 			console.log('Rendering the featured data section');
-			this.$el.html(this.template());
+			this.$el.html(this.template());	
+					
+		},
+		
+		postRender: function() {
 			$('#collapse01').collapse('hide');
 			$('#collapse02').collapse('hide');
 			$('#collapse03').collapse('hide');
-			
+						
 		},
 		
 		showFeaturedData: function(event) {
