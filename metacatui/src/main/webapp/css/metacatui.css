@@ -1,6 +1,6 @@
 
 /* Import font families */
-@import url(http://fonts.googleapis.com/css?family=Lato);
+@import url(https://fonts.googleapis.com/css?family=Lato);
 /* Lato weights:
 Ultra-Light 100
 Ultra-Light 100 Italic
@@ -13,7 +13,7 @@ Bold 700 Italic
 Ultra-Bold 900
 Ultra-Bold 900 Italic
 */
-@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans);
 /* Open Sans weights:
 Book 300 
 Book 300 Italic
@@ -26,7 +26,7 @@ Bold 700 Italic
 Extra-Bold 800
 Extra-Bold 800 Italic
 */
-@import url(http://fonts.googleapis.com/css?family=Gentium+Book+Basic);
+@import url(https://fonts.googleapis.com/css?family=Gentium+Book+Basic);
 /* Gentium Book Basic weights:
 Normal 400
 Normal 400 Italic
@@ -238,6 +238,11 @@ Bold 700 Italic
       background-image: none;
       background-repeat: none;
     }
+
+    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
+      color: #FFFFFF; 
+      text-decoration:none;     
+    }
     
     .btn-primary {
       background-color: #992222;
@@ -249,7 +254,7 @@ Bold 700 Italic
       text-decoration: none;
     }
         
-    .btn:hover {
+    .btn-primary:hover {
       background-color: #882222;
       color: #FDFDFD;
       background-image: none;
@@ -339,6 +344,20 @@ Bold 700 Italic
       text-decoration: none;      
     }
 
+    #FeaturedData .accordion-inner {
+      border-top: 0px;
+      padding-bottom: 40px;
+      margin: 20px 10px 20px 10px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 6px 6px 6px 6px;
+    }
+    
+    #FeaturedData .collapse {
+      position: absolute;
+      left: 80px;
+      width: 80%;
+    }
+
     #featured01 {
       position: relative;
       top: 0px;
@@ -347,6 +366,12 @@ Bold 700 Italic
     #featured02 {
       position: relative;
       top: 0px;
+    }
+    
+    #FeaturedData .collapse { /* Needs collapse to be pushed left */
+      position: absolute;
+      left: -600px;
+      width: 200%;
     }
     
     #featured03 {
@@ -372,12 +397,6 @@ Bold 700 Italic
       left: 80px;
     }
 
-    #FeaturedData .accordion-inner {
-      border-top: 0px;
-      margin: 20px 10px 20px 10px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 6px 6px 6px 6px;
-    }
     /* Commenting these out for now. May not need them:
         
     .featured {
@@ -570,22 +589,22 @@ Bold 700 Italic
       height: 80px;
       margin-top: 0;
       font-size: 120px;
+      font-weight: 300;
       text-shadow: 0 1px 1px rgba(0,0,0,.4);
       background-color: transparent;
       border: 0;
       z-index: 189;
     }
 
-/*        
-    .carousel .active .left {
-      left: 20px;
-      opacity: 0;
+    .carousel .left {
+      left: 30px;
+      right: auto;
       z-index: 190;
     }
-*/    
-    .carousel .next {
-      left:0;
-      opacity:1;
+    
+    .carousel .right {
+      right: 30px;
+      left: auto;
       z-index: 191;
     }
 
@@ -619,7 +638,7 @@ Bold 700 Italic
       left: 50%;
       margin: 0px 0px 0px -250px;
       width: 500px;
-      max-height: 150px;
+      max-height: 130px;
       z-index: 200;
       padding: 10px 20px 10px 20px;
       -webkit-border-radius: 6px;
