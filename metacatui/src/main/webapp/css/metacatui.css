@@ -264,6 +264,14 @@ Bold 700 Italic
       
     }
     
+    i.glyphicons-icon {
+      opacity: .8;
+    }
+
+    i.glyphicons-icon.white {
+      opacity: 1;
+    }
+    
 /* FEATURES CSS
 -------------------------------------------------- */    
     
