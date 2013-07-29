@@ -305,30 +305,78 @@ Bold 700 Italic
 
     #FeaturedData {
       position: relative;
-      background-color: #B0A691;
-      padding-top: 20px;
+      background-color: #878787;
       color: #FDFDFD;
-      min-height: 400px;
-      height: 450px;
+      /*min-height: 1200px;*/
+    }
+
+    #FeaturedData > section {
+      border-top: 1px solid #878787;
     }
 		
 	  #FeaturedData h2 {
 	  	font-weight: 300;
-	  	margin: 20px auto 40px auto;
+      color: #FDFDFD;
+      text-decoration: none;
+      width: 400px;
 	  }
+        
+    #FeaturedData h2 a {
+      color: #FDFDFD;
+      text-decoration: none;      
+    }
+
+    #featured01 {
+      position: relative;
+      top: 0px;
+    }
     
+    #featured02 {
+      position: relative;
+      top: 0px;
+    }
+    
+    #featured03 {
+      position: relative;
+      top: 0px;
+    }
+    
+    #featured01_info {
+      position: absolute;
+      top: 40px;
+      left: 80px;
+    }
+    
+    #featured02_info {
+      position: absolute;
+      top: 40px;
+      left: 60%;
+    }
+    
+    #featured03_info {
+      position: absolute;
+      top: 40px;
+      left: 80px;
+    }
+
+    #FeaturedData .accordion-inner {
+      border-top: 0px;
+      margin: 20px 10px 20px 10px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 6px 6px 6px 6px;
+    }
+    /* Commenting these out for now. May not need them:
+        
     .featured {
       border-radius: 6px 6px 6px 6px;
       margin-right: 20px;
       max-height: 300px;
     }
-    
+
     #featured_list {
       margin: auto auto auto 20px;
       border-radius: 6px 6px 6px 6px;
-      /*background-color: #D9D9D9;*/
-    }
-    
+    }    
     
     #featured_list > li.nav-header {
       height: 30px;
@@ -383,6 +431,7 @@ Bold 700 Italic
     #featured_list .chevron-left {
       float: left;
     }
+    */
 /* CUSTOMIZE THE ACCORDIAN 
 -------------------------------------------------- */
 
@@ -513,19 +562,20 @@ Bold 700 Italic
       border: 0;
       z-index: 189;
     }
-        
+
+/*        
     .carousel .active .left {
-      left:0;
-      opacity:0;
+      left: 20px;
+      opacity: 0;
       z-index: 190;
     }
-    
+*/    
     .carousel .next {
       left:0;
       opacity:1;
       z-index: 191;
     }
-    
+
     .carousel .item {
       background-color: #FDFDFD; /* Fallback to solid color if the gradient fails */
       background-image: -webkit-gradient(
@@ -558,7 +608,7 @@ Bold 700 Italic
       width: 500px;
       height: 120px;
       z-index: 200;
-      padding: 10px 10px 10px 10px;
+      padding: 10px 20px 10px 20px;
       -webkit-border-radius: 6px;
          -moz-border-radius: 6px;
               border-radius: 6px;
@@ -688,7 +738,7 @@ Bold 700 Italic
 
 /* RESPONSIVE CSS
 -------------------------------------------------- */
-    
+/*    
     @media (max-width: 979px) {
 
       .navbar-inner {
@@ -716,7 +766,7 @@ Bold 700 Italic
         margin: 0 auto 20px;
       }
     }
-
+*/
     /*
     @media (max-width: 767px) {
 
