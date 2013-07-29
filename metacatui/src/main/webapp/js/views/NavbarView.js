@@ -55,7 +55,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			appModel.trigger('search');
 			
 			// make sure the browser knows where we are
-			uiRouter.navigate("data");
+			uiRouter.navigate("data", {trigger: true});
 			
 			// ...but don't want to follow links
 			return false;
