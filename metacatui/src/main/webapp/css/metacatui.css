@@ -244,6 +244,11 @@ Bold 700 Italic
       color: #FFFFFF;
       
     }
+    button.btn-primary a {
+      color: #FFFFFF;
+      text-decoration: none;
+    }
+        
     .btn:hover {
       background-color: #882222;
       color: #FDFDFD;
@@ -614,7 +619,7 @@ Bold 700 Italic
       left: 50%;
       margin: 0px 0px 0px -250px;
       width: 500px;
-      height: 120px;
+      max-height: 150px;
       z-index: 200;
       padding: 10px 20px 10px 20px;
       -webkit-border-radius: 6px;
