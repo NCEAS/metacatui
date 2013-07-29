@@ -352,12 +352,6 @@ Bold 700 Italic
       border-radius: 6px 6px 6px 6px;
     }
     
-    #FeaturedData .collapse {
-      position: absolute;
-      left: 80px;
-      width: 80%;
-    }
-
     #featured01 {
       position: relative;
       top: 0px;
@@ -366,12 +360,6 @@ Bold 700 Italic
     #featured02 {
       position: relative;
       top: 0px;
-    }
-    
-    #FeaturedData .collapse { /* Needs collapse to be pushed left */
-      position: absolute;
-      left: -600px;
-      width: 200%;
     }
     
     #featured03 {
@@ -383,6 +371,7 @@ Bold 700 Italic
       position: absolute;
       top: 40px;
       left: 80px;
+      width: 75%;
     }
     
     #featured02_info {
@@ -395,8 +384,26 @@ Bold 700 Italic
       position: absolute;
       top: 40px;
       left: 80px;
+      width: 75%;
     }
 
+    #FeaturedData .collapse {
+      position: absolute;
+      top: 0px;
+    }
+
+    #collapse01, #collapse03 {
+      position: absolute;
+      left: 420px;
+      max-width: 600px;
+    }
+    
+    #collapse02 {
+      position: absolute;
+      left: -600px;
+      max-width: 600px;
+    }
+    
     /* Commenting these out for now. May not need them:
         
     .featured {
