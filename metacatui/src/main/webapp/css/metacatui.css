@@ -624,11 +624,18 @@ Bold 700 Italic
        color-stop(0.3, #FDFDFD)
       );
       z-index: 170;
+      /*
       -webkit-transition: opacity 4s; 
       -moz-transition: opacity 4s; 
       -ms-transition: opacity 4s; 
       -o-transition: opacity 4s; 
       transition: opacity 4s;
+      */
+    	-webkit-transition:0.6s ease-in-out left;
+    	-moz-transition:0.6s ease-in-out left;
+    	-ms-transition:0.6s ease-in-out left;
+    	-o-transition:0.6s ease-in-out left;
+    	transition:0.6s ease-in-out left;
       max-height: 400px;
       overflow: hidden;
     }
@@ -647,7 +654,8 @@ Bold 700 Italic
          -moz-border-radius: 6px;
               border-radius: 6px;
       
-  }
+    }
+    
     .carousel-caption h1 {
       margin: 0px;
       line-height: 1.25;
@@ -656,6 +664,7 @@ Bold 700 Italic
       font-size: 36px;
       color: #FDFDFD;
     }
+    
     .carousel-caption .lead {
       margin: 0;
       line-height: 1;
@@ -664,8 +673,10 @@ Bold 700 Italic
       font-size: 24px;
       color: #FDFDFD;
     }
-    .carousel-caption .btn {
-      margin-top: 10px;
+    .carousel-caption .btn-primary {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
     }
 
   /* MAIN BODY CSS
