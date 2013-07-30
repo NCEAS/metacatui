@@ -234,7 +234,7 @@ Bold 700 Italic
     }
 
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
-      font-weight: 300;
+      font-weight: 400;
       background-image: none;
       background-repeat: none;
     }
@@ -274,7 +274,7 @@ Bold 700 Italic
       
     }
     
-    i.glyphicons-icon {
+    i.glyphicons-icon, i.halflings-icon {
       opacity: .8;
     }
 
@@ -684,6 +684,34 @@ Bold 700 Italic
   /* Main body containing sidebar and content */
     .main-body-padded {
       padding-top: 90px;
+    }
+
+    #sidebar .nav-list {
+      margin: 20px auto auto auto;
+    }
+    
+    #sidebar .nav-list .nav-header {
+      font: 400 18px/18px "Lato";
+      margin: 0px auto 10px auto;
+      padding: 3px 0px 3px 0px;
+      color: #555555;      
+    }
+    
+    ul#refine .nav-list .input-append {
+      max-width: 200px;
+    }
+    
+    ul#browse a i {
+      margin-right: 10px;
+    }
+    
+    ul#browse a {
+      font: 300 16px/16px "Lato";
+      color: #555555;
+    }
+
+    ul#browse a:hover, ul#browse a:focus  {
+      color: #3F3F3F;
     }
 
   /* About CSS
