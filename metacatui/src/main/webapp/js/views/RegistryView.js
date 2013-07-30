@@ -274,8 +274,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		},
 		
 		resetPassword: function() {
-			// just route to the signup view
-			uiRouter.navigate("signup/reset", {trigger: true});
+			// just route to the password reset view
+			uiRouter.navigate("signup/resetpass", {trigger: true});
 			
 			// prevent click-through
 			return false;
