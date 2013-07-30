@@ -19,7 +19,7 @@ define(['jquery',
 		initialize: function () {
 
 		},
-				
+		
 		// Render the main view and/or re-render subviews. Don't call .html() here
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
@@ -28,13 +28,6 @@ define(['jquery',
 			
 			appModel.set('headerType', 'main');
 			appModel.set('navbarPosition', 'absolute');		
-			
-			// enable the Carousel
-			var carouselOptions = {
-				interval: 10000,
-				pause: 'hover'
-			}
-			$('.carousel').carousel(carouselOptions);
 			
 			// Add in the Features section
 			this.$el.html('<section id="Features" /><section id="FeaturedData" />');			

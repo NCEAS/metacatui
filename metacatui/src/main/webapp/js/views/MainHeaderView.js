@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainHeader.html', 't
 			// listen for changes in the [header] app model
 			this.listenTo(appModel, "change:headerType", this.render);
 		},
-				
+		
 		render: function () {
 			
 			// figure out which header to render
@@ -32,6 +32,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainHeader.html', 't
 				this.$el.html(this.defaultTemplate());
 			}
 			this.$el.fadeIn('slow');
+
+			// enable the Carousel
+			var carouselOptions = {
+				interval: 10000,
+				pause: 'hover'
+			}
+			$('.carousel').carousel(carouselOptions);
 			
 			return this;
 		}
