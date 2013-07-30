@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ExternalView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ExternalView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ExternalView, LdapView) {
 
 	var app = app || {};
 	var indexView = new IndexView();
@@ -12,7 +12,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var registryView = new RegistryView();
 	var metadataView = new MetadataView();
 	var externalView = new ExternalView();
-
+	var ldapView = new LdapView();
 
 	
 	// MetacatUI Router
@@ -28,6 +28,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'view/:pid'                 : 'renderMetadata',    // metadata page
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
 			'logout'                    : 'logout',    // logout the user
+			'signup'                    : 'renderLdap',    // use ldapweb
 			'share'                     : 'renderRegistry'    // registry page
 		},
 
@@ -69,6 +70,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		renderRegistry: function (param) {
 			console.log('Called UIRouter.renderRegistry()');
 			appView.showView(registryView);
+		},
+		
+		renderLdap: function (param) {
+			console.log('Called UIRouter.renderLdap()');
+			appView.showView(ldapView);
 		},
 		
 		logout: function (param) {

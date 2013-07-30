@@ -22,6 +22,7 @@ define(['jquery', 'underscore', 'backbone'],
 			packageServiceUrl: null,
 			queryServiceUrl: null,
 			registryServiceUrl: null,
+			ldapwebServiceUrl: null,
 			metacatServiceUrl: null
 
 
@@ -33,6 +34,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
+			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 		}
 	
