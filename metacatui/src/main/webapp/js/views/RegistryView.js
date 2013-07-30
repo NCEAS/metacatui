@@ -54,7 +54,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			"click #dataCorrect"  		 : "submitConfirmYesForm",
 			"click #dataWrongButton"   	: "submitConfirmNoForm",
 			"click #loginButton"   	: "submitLoginForm",
-			"click #registerAnotherPackage" : "registerAnotherPackage"
+			"click #registerAnotherPackage" : "registerAnotherPackage",
+			"click #createAccount" : "createAccount",
+			"click #resetPassword" : "resetPassword"
+
+
 
 		},
 		
@@ -259,6 +263,22 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		registerAnotherPackage: function() {
 			// just render the view from the beginning 
 			this.render();
+		},
+		
+		createAccount: function() {
+			// just route to the signup view
+			uiRouter.navigate("signup", {trigger: true});
+			
+			// prevent click-through
+			return false;
+		},
+		
+		resetPassword: function() {
+			// just route to the signup view
+			uiRouter.navigate("signup/reset", {trigger: true});
+			
+			// prevent click-through
+			return false;
 		},
 
 		trimString: function (stringToTrim) {

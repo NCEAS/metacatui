@@ -15,6 +15,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 		ldapwebUrl: null,
 		
 		ldapwebQueryString:  "?cfg=metacatui",
+		
+		stage:  null,
 
 		initialize: function () {
 			
@@ -30,16 +32,22 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 			appModel.set('navbarPosition', 'fixed');		
 			
 			console.log('Calling the ldapweb to display');
-			console.log('Calling the ldapweb URL: ' + this.ldapwebUrl);
 			// show the progress bar
 			this.showProgressBar();
+			
+			// do we have a specific stage?
+			var completeUrl = this.ldapwebUrl + this.ldapwebQueryString;
+			if (this.stage) {
+				completeUrl += stage;
+			}
+			console.log('Calling the ldapweb URL: ' + completeUrl);
 			
 			// load all the ldapweb content so all the js can run in what gets loaded
 			var viewRef = this;
 			this.$el.html(viewRef.containerTemplate);
 			var contentArea = this.$("#DynamicContent");
 			contentArea.load(
-					this.ldapwebUrl + this.ldapwebQueryString,
+					completeUrl,
 					function() {
 						viewRef.cleanStyles();
 						viewRef.$el.hide();
