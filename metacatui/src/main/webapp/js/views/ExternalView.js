@@ -16,10 +16,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		anchorId: null,
 				
-		events: {
-			// catch all link clicks so we navigate within the UI
-			"click a"	:	"handleAnchor"
-		},
+		events: null,
 		
 		handleAnchor: function(event) {
 			var href = $(event.target).attr("href");
@@ -44,6 +41,10 @@ define(['jquery', 'underscore', 'backbone'],
 			// request a smaller header
 			appModel.set('headerType', 'default');
 			appModel.set('navbarPosition', 'fixed');
+			
+			// catch all link clicks so we navigate within the UI - careful when calling this!
+			this.undelegateEvents();
+			this.delegateEvents({"click a":	"handleAnchor"});
 			
 			// track the lastUrl if there isn't one
 			if (!this.lastUrl) {
@@ -103,6 +104,8 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		onClose: function () {			
 			console.log('Closing the external view');
+			// stop listening to the click events
+			this.undelegateEvents();
 		},
 		
 		postRender: function() {
