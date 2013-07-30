@@ -76,12 +76,15 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 			this.showProgressBar();
 			
 			// ajax call to submit the given form and then render the results in the content area
-			var contentArea = this.$el;
+			var viewRef = this;
 			$.post(
 					this.ldapwebUrl,
 					formData,
 					function(data, textStatus, jqXHR) {
-						contentArea.html(data);
+						viewRef.$el.hide();
+						viewRef.$el.html(data);
+						viewRef.cleanStyles();
+						viewRef.$el.fadeIn('slow');
 					}
 			);
 			
