@@ -88,7 +88,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			// use this for rendering "external" content pulled in dynamically
 			console.log('Called UIRouter.renderExternal()');
 			externalView.url = url;
-			externalView.render();
+			appView.showView(externalView);
 		}
 		
 	});
