@@ -9,6 +9,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 		el: '#Content',
 		
 		template: null,
+		
+		containerTemplate: '<article><div class="container"><div class="row-fluid"><div id="DynamicContent" class="text-left"></div></div></div></article>',
 				
 		ldapwebUrl: null,
 		
@@ -34,7 +36,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 			
 			// load all the ldapweb content so all the js can run in what gets loaded
 			var viewRef = this;
-			this.$el.html('<article id="DynamicContent"/>');
+			this.$el.html(viewRef.containerTemplate);
 			var contentArea = this.$("#DynamicContent");
 			contentArea.load(
 					this.ldapwebUrl + this.ldapwebQueryString,
@@ -86,7 +88,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 					function(data, textStatus, jqXHR) {
 						viewRef.$el.hide();
 						
-						viewRef.$el.html('<article id="DynamicContent"/>');
+						viewRef.$el.html(viewRef.containerTemplate);
 						var contentArea = viewRef.$("#DynamicContent");
 						contentArea.html(data);
 						
