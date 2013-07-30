@@ -18,7 +18,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'renderIndex', // the default route
-			'slides(/:action)'          : 'updatesSlides', // the carousel on the main page
 			'about'                     : 'renderAbout',  // about page
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
