@@ -34,7 +34,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 			
 			// load all the ldapweb content so all the js can run in what gets loaded
 			var viewRef = this;
-			this.$el.load(
+			this.$el.html('<article id="DynamicContent"/>');
+			var contentArea = this.$el("#DynamicContent");
+			contentArea.load(
 					this.ldapwebUrl + this.ldapwebQueryString,
 					function() {
 						viewRef.cleanStyles();
@@ -77,12 +79,17 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 			
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
+			
 			$.post(
 					this.ldapwebUrl,
 					formData,
 					function(data, textStatus, jqXHR) {
 						viewRef.$el.hide();
-						viewRef.$el.html(data);
+						
+						viewRef.$el.html('<article id="DynamicContent"/>');
+						var contentArea = viewRef.$el("#DynamicContent");
+						contentArea.html(data);
+						
 						viewRef.cleanStyles();
 						viewRef.$el.fadeIn('slow');
 					}
