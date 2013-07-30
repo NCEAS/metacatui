@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 			// load all the ldapweb content so all the js can run in what gets loaded
 			var viewRef = this;
 			this.$el.html('<article id="DynamicContent"/>');
-			var contentArea = this.$el("#DynamicContent");
+			var contentArea = this.$("#DynamicContent");
 			contentArea.load(
 					this.ldapwebUrl + this.ldapwebQueryString,
 					function() {
@@ -87,7 +87,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 						viewRef.$el.hide();
 						
 						viewRef.$el.html('<article id="DynamicContent"/>');
-						var contentArea = viewRef.$el("#DynamicContent");
+						var contentArea = viewRef.$("#DynamicContent");
 						contentArea.html(data);
 						
 						viewRef.cleanStyles();
