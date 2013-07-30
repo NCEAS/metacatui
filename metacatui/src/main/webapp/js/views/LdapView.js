@@ -37,11 +37,19 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 			this.$el.load(
 					this.ldapwebUrl + this.ldapwebQueryString,
 					function() {
+						viewRef.cleanStyles();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow');
 					});
 			
 			return this;
+		},
+		
+		cleanStyles: function() {
+			// modify the classes to enhance the l+f without changing the ldapweb.cgi source
+			this.$(".label").removeClass("label");
+			this.$(":submit").addClass("btn");
+
 		},
 		
 		onClose: function () {			
