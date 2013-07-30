@@ -605,14 +605,12 @@ Bold 700 Italic
     }
 
     .carousel .left {
-      left: 30px;
-      right: auto;
+      left: 50px;
       z-index: 190;
     }
     
     .carousel .right {
       right: 30px;
-      left: auto;
       z-index: 191;
     }
 
@@ -635,14 +633,10 @@ Bold 700 Italic
       overflow: hidden;
     }
     
-    div.item > img {
-      height: auto;
-    }
-    
     .carousel-caption {
       background: rgba(0,0,0,0.3);
       position: absolute;
-      top: 175px;
+      top: 150px;
       left: 50%;
       margin: 0px 0px 0px -250px;
       width: 500px;
