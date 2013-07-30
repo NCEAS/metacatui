@@ -2,18 +2,19 @@
 <article id="mainBody" class="container-fluid">
 	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
-		<aside id="sidebar" class="span2">
+		<aside id="sidebar" class="span3">
 			<!-- <div class="sidebar-subhead">Contribute</div> -->
-			<a class="btn btn-primary" href="#share"><i
-				class="icon-upload icon-white icon-large"></i> Share Your Data</a>
+			<a class="btn btn-primary" href="#share">
+        <i class="icon-upload icon-white icon-large"></i>Share Your Data
+      </a>
 
-			<div class="sidebar-subhead">Refine</div>
-			<ul class="unstyled">
+			<ul id="refine" class="nav nav-list">
+  			<li class="nav-header">Refine</li>
 				<li>
 					<div class="input-append">
-						<input type="text" placeholder="Refine Search" id="search_txt_side" value="<%= searchTerm  %>" >
+						<input class="span10" type="text" placeholder="Refine Search" id="search_txt_side" value="<%= searchTerm  %>" >
 						<a href="#data" type="button" class="btn" id="search_btn_side"><i class="icon-search"></i></a>
-		            </div>
+		      </div>
 				</li>
 				
 				<!--
@@ -24,16 +25,12 @@
 				-->
 				
 			</ul>
-			<div class="sidebar-subhead">Popular Searches</div>
-			<ul class="unstyled">
-				<li><a class="sidebar-item" id="recent_link" href="#data"><i
-						class="icon-calendar"></i> Most Recent</a></li>
-				<li><a class="sidebar-item popular-search-link" id="popular-search-Soil" href="#data/search/Soil"><i
-						class="icon-thumbs-up"></i> Soil</a></li>
-				<li><a class="sidebar-item popular-search-link" id="popular-search-Biodiversity" href="#data/search/Biodiversity"><i
-						class="icon-thumbs-up"></i> Biodiversity</a></li>
-				<li><a class="sidebar-item popular-search-link" id="popular-search-Phenology" href="#data/search/Phenology"><i
-						class="icon-thumbs-up"></i> Phenology</a></li>		
+			<ul id="browse" class="nav nav-list">
+  			<li class="nav-header">Browse</li>
+				<li><a href="#data"><i class="halflings-icon calendar"></i> Most Recent</a></li>
+				<li><a id="popular-search-Soil" href="#data/search/Soil"><i class="halflings-icon thumbs-up"></i>Soil</a></li>
+				<li><a id="popular-search-Biodiversity" href="#data/search/Biodiversity"><i class="halflings-icon thumbs-up"></i>Biodiversity</a></li>
+				<li><a id="popular-search-Phenology" href="#data/search/Phenology"><i class="halflings-icon thumbs-up"></i>Phenology</a></li>		
 			</ul>
 			
 			<!--
@@ -53,7 +50,7 @@
 		</aside>
 
 		<!--CONTENT AREA-->
-		<div id="content" class="span10">
+		<div id="content" class="span9">
 			<div id="results-view" class="container-fluid">
 				<h2 id="pagehead" class="row-fluid">Data</h2>
 				<div id="results-header" class="row-fluid result-header">
