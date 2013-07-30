@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ExternalView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ExternalView) {
 
 	var app = app || {};
 	var indexView = new IndexView();
@@ -11,6 +11,8 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var dataCatalogView = new DataCatalogView();
 	var registryView = new RegistryView();
 	var metadataView = new MetadataView();
+	var externalView = new ExternalView();
+
 
 	
 	// MetacatUI Router
@@ -24,6 +26,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'tools(/:anchorId)'         : 'renderTools',  // tools page
 			'data(/search/:searchTerm)' : 'renderData',    // data search page
 			'view/:pid'                 : 'renderMetadata',    // metadata page
+			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
 			'logout'                    : 'logout',    // logout the user
 			'share'                     : 'renderRegistry'    // registry page
 		},
@@ -72,6 +75,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			console.log('Called UIRouter.logout()');
 			registryView.logout();
 			//appView.showView(indexView);
+		},
+		
+		renderExternal: function(url) {
+			// use this for rendering "external" content pulled in dynamically
+			console.log('Called UIRouter.renderExternal()');
+			externalView.url = url;
+			externalView.render();
 		}
 		
 	});
