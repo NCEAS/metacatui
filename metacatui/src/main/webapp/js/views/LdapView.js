@@ -38,7 +38,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 			// do we have a specific stage?
 			var completeUrl = this.ldapwebUrl + this.ldapwebQueryString;
 			if (this.stage) {
-				completeUrl += "&stage=" this.stage;
+				completeUrl += "&stage=" + this.stage;
 			}
 			console.log('Calling the ldapweb URL: ' + completeUrl);
 			
