@@ -59,7 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap'],
 		submitForm: function(formId) {
 			
 			// which form?
-			var form = $(event.target).parent();
+			var form = $(event.target).parents("form");
 			
 			// get the form data before replacing everything with the progressbar!
 			var formData = $(form).serialize()
