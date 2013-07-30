@@ -28,7 +28,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'view/:pid'                 : 'renderMetadata',    // metadata page
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
 			'logout'                    : 'logout',    // logout the user
-			'signup'                    : 'renderLdap',    // use ldapweb
+			'signup(/:stage)'           : 'renderLdap',    // use ldapweb
 			'share'                     : 'renderRegistry'    // registry page
 		},
 
@@ -72,8 +72,9 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(registryView);
 		},
 		
-		renderLdap: function (param) {
+		renderLdap: function (stage) {
 			console.log('Called UIRouter.renderLdap()');
+			ldapView.stage = stage;
 			appView.showView(ldapView);
 		},
 		
@@ -87,7 +88,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			// use this for rendering "external" content pulled in dynamically
 			console.log('Called UIRouter.renderExternal()');
 			externalView.url = url;
-			externalView.render();
+			appView.showView(externalView);
 		}
 		
 	});
