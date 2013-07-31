@@ -124,15 +124,13 @@ define(['jquery', 'underscore', 'backbone'],
 			// figure out the URL to load
 			var computedUrl = this.url;
 			
-			// handle anchor-only URL (will be within lastUrl)
+			// handle anchor-only URL (will be within lastUrl) or relative
 			if (this.url.indexOf("#") == 0) {
 				// this is just an anchor on the same page
 				this.anchorId = this.url.substring(this.url.lastIndexOf("#") + 1, this.url.length);
 				computedUrl = this.lastUrl + this.url ;
-			}
-			
-			// handle relative url to the lastUrl base
-			if (this.url.indexOf(".") == 0 || !(this.url.lastIndexOf("/", 0) == 0) ) {
+			} else if (this.url.indexOf(".") == 0 || !(this.url.lastIndexOf("/", 0) == 0) ) {
+				// handle relative url to the lastUrl base
 				var baseUrl = this.lastUrl.substring(0, this.lastUrl.lastIndexOf("/"));
 				computedUrl = baseUrl + "/" + this.url ;
 			}
