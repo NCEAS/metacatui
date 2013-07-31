@@ -9,6 +9,8 @@ define(['jquery', 'underscore', 'backbone'],
 		el: '#Content',
 		
 		template: null,
+		
+		containerTemplate: '<article><div class="container"><div class="row-fluid"><div id="DynamicContent" class="text-left"></div></div></div></article>',
 				
 		lastUrl: null,
 		
@@ -17,6 +19,10 @@ define(['jquery', 'underscore', 'backbone'],
 		anchorId: null,
 				
 		events: null,
+		
+		powerfulEvents: {
+			"click a":	"handleAnchor"
+		},
 		
 		handleAnchor: function(event) {
 			var href = $(event.target).attr("href");
@@ -44,7 +50,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			// catch all link clicks so we navigate within the UI - careful when calling this!
 			this.undelegateEvents();
-			this.delegateEvents({"click a":	"handleAnchor"});
+			this.delegateEvents(this.powerfulEvents);
 			
 			// track the lastUrl if there isn't one
 			if (!this.lastUrl) {
@@ -85,12 +91,14 @@ define(['jquery', 'underscore', 'backbone'],
 			// load the URL
 			console.log('Loading the external URL: ' + computedUrl);
 			var viewRef = this;
-			this.$el.load(
+			this.$el.html(viewRef.containerTemplate);
+			var contentArea = this.$("#DynamicContent");
+			contentArea.load(
 					computedUrl, 
 					function() {
 						// make sure to re-bind to the new DOM objects
 						viewRef.undelegateEvents();
-						viewRef.delegateEvents();
+						viewRef.delegateEvents(viewRef.powerfulEvents);
 						// make sure we scroll
 						viewRef.postRender();
 						// make sure our browser history has it
