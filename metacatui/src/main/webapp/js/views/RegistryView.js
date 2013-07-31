@@ -13,6 +13,19 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		registryUrl: null,
 		
 		registryQueryString:  "?cfg=metacatui",
+		
+		events: {
+			"click #entryFormSubmit"   : "submitEntryForm",
+			"click #entryReturnSubmit"   : "submitReturnForm",
+			"click #dataCorrect"  		 : "submitConfirmYesForm",
+			"click #dataWrongButton"   	: "submitConfirmNoForm",
+			"click #loginButton"   	: "submitLoginForm",
+			"click #registerAnotherPackage" : "registerAnotherPackage",
+			"click #createAccount" : "createAccount",
+			"click #resetPassword" : "resetPassword",
+			"click #changePassword" : "changePassword"
+
+		},
 
 		initialize: function () {
 			
@@ -46,20 +59,6 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		
 		onClose: function () {			
 			console.log('Closing the registry view');
-		},
-		
-		events: {
-			"click #entryFormSubmit"   : "submitEntryForm",
-			"click #entryReturnSubmit"   : "submitReturnForm",
-			"click #dataCorrect"  		 : "submitConfirmYesForm",
-			"click #dataWrongButton"   	: "submitConfirmNoForm",
-			"click #loginButton"   	: "submitLoginForm",
-			"click #registerAnotherPackage" : "registerAnotherPackage",
-			"click #createAccount" : "createAccount",
-			"click #resetPassword" : "resetPassword"
-
-
-
 		},
 		
 		submitEntryForm: function() {
@@ -275,7 +274,15 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		
 		resetPassword: function() {
 			// just route to the password reset view
-			uiRouter.navigate("signup/resetpass", {trigger: true});
+			uiRouter.navigate("account/resetpass", {trigger: true});
+			
+			// prevent click-through
+			return false;
+		},
+		
+		changePassword: function() {
+			// just route to the password change view
+			uiRouter.navigate("account/changepass", {trigger: true});
 			
 			// prevent click-through
 			return false;

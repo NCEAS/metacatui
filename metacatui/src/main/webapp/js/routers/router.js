@@ -28,7 +28,8 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'view/:pid'                 : 'renderMetadata',    // metadata page
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
 			'logout'                    : 'logout',    // logout the user
-			'signup(/:stage)'           : 'renderLdap',    // use ldapweb
+			'signup'          			: 'renderLdap',    // use ldapweb for registration
+			'account(/:stage)'          : 'renderLdap',    // use ldapweb for different stages
 			'share'                     : 'renderRegistry'    // registry page
 		},
 
