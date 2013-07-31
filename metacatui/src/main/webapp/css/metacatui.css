@@ -78,6 +78,7 @@ Bold 700 Italic
       color: #555555;
       padding-top: 115px;
       text-decoration: none;
+      z-index: 20; /*keeps hidden anchor tags from blocking content*/
     }
     
     div.row-fluid > a[name] {
