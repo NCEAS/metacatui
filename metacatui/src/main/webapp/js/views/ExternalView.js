@@ -21,7 +21,9 @@ define(['jquery', 'underscore', 'backbone'],
 		events: null,
 		
 		powerfulEvents: {
-			"click a":	"handleAnchor"
+			"click a"						:	"handleAnchor",
+			"click input[type='submit']"	:	"submitForm"
+
 		},
 		
 		handleAnchor: function(event) {
@@ -33,6 +35,60 @@ define(['jquery', 'underscore', 'backbone'],
 				console.log('Loading href: ' + href)
 				this.url = href;
 				this.render();
+			}
+			
+			return false;
+			
+		},
+		
+		submitForm: function(event) {
+			
+			// which form?
+			var form = $(event.target).parents("form");
+			
+			// get the form url
+			var formUrl = $(form).attr("action");
+			
+			//enctype="multipart/form-data"
+			var formType = $(form).attr("enctype");
+
+			// ajax call to submit the given form and then render the results in the content area
+			var viewRef = this;
+			var complete = 
+			    function(data, textStatus, jqXHR) {
+					viewRef.$el.hide();
+					
+					viewRef.$el.html(viewRef.containerTemplate);
+					var contentArea = viewRef.$("#DynamicContent");
+					contentArea.html(data);
+					
+					viewRef.$el.fadeIn('slow');
+			};
+			
+			// determine form type
+			var formData = null;
+			
+			// use the correct form
+			if (formType == "multipart/form-data") {
+				// get the form data for multipart compatibility
+				formData = new FormData($(form)[0]);
+				$.ajax({
+				    url: formUrl,
+				    data: formData,
+				    cache: false,
+				    contentType: false,
+				    processData: false,
+				    type: 'POST',
+				    success: complete
+				});
+			} else {
+				// simple form
+				formData = $(form).serialize();
+				$.post(
+					formUrl,
+					formData,
+					complete
+				);
 			}
 			
 			return false;
