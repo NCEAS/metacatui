@@ -81,6 +81,12 @@ Bold 700 Italic
       z-index: 20; /*keeps hidden anchor tags from blocking content*/
     }
     
+    /* make sure the anchors render with padding-top */
+    h1 > a[name]:before, h2 > a[name]:before, h3 > a[name]:before,
+    h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
+		content: "";
+    }
+    
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
