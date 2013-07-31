@@ -41,6 +41,11 @@ define(['jquery', 'underscore', 'backbone'],
 			
 		},
 		
+		// of course: http://stackoverflow.com/questions/280634/endswith-in-javascript
+		endsWith: function (str, suffix) {
+		    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+		},
+		
 		submitForm: function(event) {
 			
 			// which form?
@@ -143,6 +148,13 @@ define(['jquery', 'underscore', 'backbone'],
 				this.lastUrl = computedUrl;
 			}
 			
+			// handle images
+			if (this.endsWith(computedUrl, ".png")
+					|| this.endsWith(computedUrl, ".jpg")
+					|| this.endsWith(computedUrl, ".gif")) {
+				window.location = computedUrl;
+				return this;
+			} 
 			
 			// load the URL
 			console.log('Loading the external URL: ' + computedUrl);
