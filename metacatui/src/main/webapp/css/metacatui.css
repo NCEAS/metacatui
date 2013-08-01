@@ -76,7 +76,6 @@ Bold 700 Italic
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
-      padding-top: 115px;
       text-decoration: none;
       z-index: 20; /*keeps hidden anchor tags from blocking content*/
     }
@@ -85,6 +84,11 @@ Bold 700 Italic
     h1 > a[name]:before, h2 > a[name]:before, h3 > a[name]:before,
     h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
 		content: "";
+    padding-top: 115px;
+    }
+    
+    a {
+      color: #115E95; /*blue from the earthtones pallette */
     }
     
     div.row-fluid > a[name] {
