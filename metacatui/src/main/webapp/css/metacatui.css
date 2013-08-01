@@ -583,6 +583,10 @@ Bold 700 Italic
       z-index: 290;
     }
 
+    #Navbar form {
+      margin: 0px 0px 0px 0px;
+      padding: 0px 0px 0px 0px;
+    }
     #Navbar i .user {
       opacity: .6;
     }
@@ -703,20 +707,29 @@ Bold 700 Italic
     .main-body-padded {
       padding-top: 90px;
     }
-
-    #sidebar .nav-list {
-      margin: 20px auto auto auto;
+    
+    #sidebar_share {
+      margin: 20px 10px 10px 15px;
     }
     
-    #sidebar .nav-list .nav-header {
+    h2.nav-header {
       font: 400 18px/18px "Lato";
-      margin: 0px auto 10px auto;
+      margin: 20px 10px 10px 15px;
       padding: 3px 0px 3px 0px;
       color: #555555;      
+    }
+
+    #refine .nav-list {
+      margin: 20px auto auto auto;
     }
     
     ul#refine .nav-list .input-append {
       max-width: 200px;
+    }
+
+    #browse .nav-list {
+      margin: 20px auto auto auto;
+      border: 1px solid #CCCCCC;
     }
     
     ul#browse a i {

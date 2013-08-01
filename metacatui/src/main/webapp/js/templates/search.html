@@ -4,12 +4,11 @@
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
 			<!-- <div class="sidebar-subhead">Contribute</div> -->
-			<a class="btn btn-primary" href="#share">
-        		<i class="icon-upload icon-white icon-large"></i> Share Your Data
-        	</a>
-
+			<a id="sidebar_share" class="btn btn-primary" href="#share">
+        <i class="icon-upload icon-white icon-large"></i>  Share Your Data
+      </a>
+    	<h2 class="nav-header">Refine</h2>
 			<ul id="refine" class="nav nav-list">
-  			<li class="nav-header">Refine</li>
 				<li>
 					<div class="input-append">
 						<input class="span10" type="text" placeholder="Refine Search" id="search_txt_side" value="<%= searchTerm  %>" >
@@ -25,12 +24,80 @@
 				-->
 				
 			</ul>
-			<ul id="browse" class="nav nav-list">
-  			<li class="nav-header">Browse</li>
+			<h2 class="nav-header">Browse</h2>
+			<ul id="browse" class="nav nav-list" style="height: 200px; overflow-y: scroll">
+  			<li class="nav-header">Popular</li>
 				<li><a id="recent_link" href="#data"><i class="halflings-icon calendar"></i> Most Recent</a></li>
-				<li><a class="popular-search-link" id="popular-search-Soil" href="#data/search/Soil"><i class="halflings-icon thumbs-up"></i>Soil</a></li>
-				<li><a class="popular-search-link" id="popular-search-Biodiversity" href="#data/search/Biodiversity"><i class="halflings-icon thumbs-up"></i>Biodiversity</a></li>
-				<li><a class="popular-search-link" id="popular-search-Phenology" href="#data/search/Phenology"><i class="halflings-icon thumbs-up"></i>Phenology</a></li>		
+  			<li class="nav-header">Taxonomy</li>
+				<li><a class="popular-search-link" id="popular-search-Amphibian" href="#data/search/Amphibian"><i class="halflings-icon search"></i>Amphibian</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Bird" href="#data/search/Bird"><i class="halflings-icon search"></i>Bird</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Fish" href="#data/search/Fish"><i class="halflings-icon search"></i>Fish</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Fungus" href="#data/search/Fungus"><i class="halflings-icon search"></i>Fungus</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Invertebrate" href="#data/search/Invertebrate"><i class="halflings-icon search"></i>Invertebrate</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Mammal" href="#data/search/Mammal"><i class="halflings-icon search"></i>Mammal</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Microbe" href="#data/search/Microbe"><i class="halflings-icon search"></i>Microbe</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Plant" href="#data/search/Plant"><i class="halflings-icon search"></i>Plant</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Reptile" href="#data/search/Reptile"><i class="halflings-icon search"></i>Reptile</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Virus" href="#data/search/Virus"><i class="halflings-icon search"></i>Virus</a></li>		
+  			<li class="nav-header">Level of Organization</li>
+				<li><a class="popular-search-link" id="popular-search-Molecule" href="#data/search/Molecule"><i class="halflings-icon search"></i>Molecule</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Cell" href="#data/search/Cell"><i class="halflings-icon search"></i>Cell</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Organism" href="#data/search/Organism"><i class="halflings-icon search"></i>Organism</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Population" href="#data/search/Population"><i class="halflings-icon search"></i>Population</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Community" href="#data/search/Community"><i class="halflings-icon search"></i>Community</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Landscape" href="#data/search/Landscape"><i class="halflings-icon search"></i>Landscape</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Ecosystem" href="#data/search/Ecosystem"><i class="halflings-icon search"></i>Ecosystem</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Global" href="#data/search/Global"><i class="halflings-icon search"></i>Global</a></li>		
+  			<li class="nav-header">Ecology</li>
+				<li><a class="popular-search-link" id="popular-search-Biodiversity" href="#data/search/Biodiversity"><i class="halflings-icon search"></i>Biodiversity</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Competition" href="#data/search/Competition"><i class="halflings-icon search"></i>Competition</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Decomposition" href="#data/search/Decomposition"><i class="halflings-icon search"></i>Decomposition</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Disturbance" href="#data/search/Disturbance"><i class="halflings-icon search"></i>Disturbance</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Endangered Species" href="#data/search/Endangered Species"><i class="halflings-icon search"></i>Endangered Species</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Herbivory" href="#data/search/Herbivory"><i class="halflings-icon search"></i>Herbivory</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Invasive Species" href="#data/search/Invasive Species"><i class="halflings-icon search"></i>Invasive Species</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Nutrient Cycling" href="#data/search/Nutrient Cycling"><i class="halflings-icon search"></i>Nutrient Cycling</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Parasitism" href="#data/search/Parasitism"><i class="halflings-icon search"></i>Parasitism</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Population Dynamics" href="#data/search/Population Dynamics"><i class="halflings-icon search"></i>Population Dynamics</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Predation" href="#data/search/Predation"><i class="halflings-icon search"></i>Predation</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Productivity" href="#data/search/Productivity"><i class="halflings-icon search"></i>Productivity</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Succession" href="#data/search/Succession"><i class="halflings-icon search"></i>Succession</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Symbiosis" href="#data/search/Symbiosis"><i class="halflings-icon search"></i>Symbiosis</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Trophic Dynamics" href="#data/search/Trophic Dynamics"><i class="halflings-icon search"></i>Trophic Dynamics</a></li>		
+  			<li class="nav-header">Measurements</li>
+				<li><a class="popular-search-link" id="popular-search-Biomass" href="#data/search/Biomass"><i class="halflings-icon search"></i>Biomass</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Carbon" href="#data/search/Carbon"><i class="halflings-icon search"></i>Carbon</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Chlorophyll" href="#data/search/Chlorophyll"><i class="halflings-icon search"></i>Chlorophyll</a></li>		
+				<li><a class="popular-search-link" id="popular-search-GIS" href="#data/search/GIS"><i class="halflings-icon search"></i>GIS</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Nitrate" href="#data/search/Nitrate"><i class="halflings-icon search"></i>Nitrate</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Nutrients" href="#data/search/Nutrients"><i class="halflings-icon search"></i>Nutrients</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Precipitation" href="#data/search/Precipitation"><i class="halflings-icon search"></i>Precipitation</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Temperature" href="#data/search/Temperature"><i class="halflings-icon search"></i>Temperature</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Radiation" href="#data/search/Radiation"><i class="halflings-icon search"></i>Radiation</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Weather" href="#data/search/Weather"><i class="halflings-icon search"></i>Weather</a></li>		
+  			<li class="nav-header">Evolution</li>
+				<li><a class="popular-search-link" id="popular-search-Adaptation" href="#data/search/Adaptation"><i class="halflings-icon search"></i>Adaptation</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Evolution" href="#data/search/Evolution"><i class="halflings-icon search"></i>Evolution</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Extinction" href="#data/search/Extinction"><i class="halflings-icon search"></i>Extinction</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Genetics" href="#data/search/Genetics"><i class="halflings-icon search"></i>Genetics</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Mutation" href="#data/search/Mutation"><i class="halflings-icon search"></i>Mutation</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Selection" href="#data/search/Selection"><i class="halflings-icon search"></i>Selection</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Speciation" href="#data/search/Speciation"><i class="halflings-icon search"></i>Speciation</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Survival" href="#data/search/Survival"><i class="halflings-icon search"></i>Survival</a></li>		
+  			<li class="nav-header">Habitat</li>
+				<li><a class="popular-search-link" id="popular-search-Alpine" href="#data/search/Alpine"><i class="halflings-icon search"></i>Alpine</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Freshwater" href="#data/search/Freshwater"><i class="halflings-icon search"></i>Freshwater</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Benthic" href="#data/search/Benthic"><i class="halflings-icon search"></i>Benthic</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Desert" href="#data/search/Desert"><i class="halflings-icon search"></i>Desert</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Estuary" href="#data/search/Estuary"><i class="halflings-icon search"></i>Estuary</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Forest" href="#data/search/Forest"><i class="halflings-icon search"></i>Forest</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Grassland" href="#data/search/Grassland"><i class="halflings-icon search"></i>Grassland</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Marine" href="#data/search/Marine"><i class="halflings-icon search"></i>Marine</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Montane" href="#data/search/Montane"><i class="halflings-icon search"></i>Montane</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Terrestrial" href="#data/search/Terrestrial"><i class="halflings-icon search"></i>Terrestrial</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Tundra" href="#data/search/Tundra"><i class="halflings-icon search"></i>Tundra</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Urban" href="#data/search/Urban"><i class="halflings-icon search"></i>Urban</a></li>		
+				<li><a class="popular-search-link" id="popular-search-Wetland" href="#data/search/Wetland"><i class="halflings-icon search"></i>Wetland</a></li>		
 			</ul>
 			
 			<!--
