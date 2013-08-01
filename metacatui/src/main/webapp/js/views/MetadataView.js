@@ -26,6 +26,7 @@ define(['jquery',
 
 			console.log('Rendering the Metadata view');
 			appModel.set('headerType', 'default');
+			appModel.set('navbarPosition', 'fixed');
 			
 			// get the pid to render
 			var pid = appModel.get('pid');
