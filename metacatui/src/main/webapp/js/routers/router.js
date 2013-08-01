@@ -25,7 +25,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'plans'                     : 'renderPlans',  // plans page
 			'tools(/:anchorId)'         : 'renderTools',  // tools page
 			'data(/search/:searchTerm)' : 'renderData',    // data search page
-			'view/:pid'                 : 'renderMetadata',    // metadata page
+			'view/*pid'                 : 'renderMetadata',    // metadata page
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
 			'logout'                    : 'logout',    // logout the user
 			'signup'          			: 'renderLdap',    // use ldapweb for registration
