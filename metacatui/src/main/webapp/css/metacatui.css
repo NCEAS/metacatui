@@ -579,7 +579,7 @@ Bold 700 Italic
       z-index: 290;
     }
 
-    #Navbar i {
+    #Navbar i .user {
       opacity: .6;
     }
     
