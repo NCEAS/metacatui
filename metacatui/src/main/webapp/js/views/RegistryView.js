@@ -68,7 +68,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			var registryEntryForm = $("#RegistryEntryForm");
 			
 			// if we have the registry form but it doesn't look like we are logged in, force a logout
-			if (registryEntryForm && !appModel.get('username')) {
+			if (registryEntryForm.length && !appModel.get('username')) {
 				uiRouter.navigate("logout", {trigger: true});
 			}
 		},
