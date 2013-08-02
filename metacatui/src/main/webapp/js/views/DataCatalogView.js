@@ -98,7 +98,7 @@ define(['jquery',
 			this.removeAll();
 			this.$pagehead.html(resultTitle);
 			appSearchResults.setrows(25);
-			appSearchResults.setSort("title+desc");
+			appSearchResults.setSort("dateUploaded+desc");
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
 			appSearchResults.query("formatType:METADATA+-obsoletedBy:*+" + search);
 			this.$resultsview.fadeIn();
