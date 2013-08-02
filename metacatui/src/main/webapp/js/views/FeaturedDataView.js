@@ -25,9 +25,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/featuredData.html'],
 		},
 		
 		postRender: function() {
-			$('#collapse01').collapse('hide');
-			$('#collapse02').collapse('hide');
-			$('#collapse03').collapse('hide');
+//			$('#collapse01').collapse('hide');
+//			$('#collapse02').collapse('hide');
+//			$('#collapse03').collapse('hide');
 						
 		},
 		
@@ -36,7 +36,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/featuredData.html'],
 			console.log('Routing to featured data: ' + href);
 			uiRouter.navigate(href, {trigger: true});
 			
-		}
+		},
+		
+		onClose: function () {			
+			console.log('Closing the featured view');
+			// remove everything so we don't get a flicker
+			//this.undelegateEvents();
+		}	
 				
 	});
 	return FeaturedDataView;		

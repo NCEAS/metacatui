@@ -16,7 +16,10 @@ define(['jquery',
 
 		el: '#Content',
 		
+		featuredDataView: null,
+		
 		initialize: function () {
+			this.featuredDataView = new FeaturedDataView();
 
 		},
 		
@@ -38,13 +41,19 @@ define(['jquery',
 			}
 			
 			// Add in the FeaturedData section
-			var featuredDataView = new FeaturedDataView();
-			featuredDataView.setElement(this.$('#FeaturedData')).render();
-			if ( featuredDataView.postRender ) {
-				featuredDataView.postRender();
+			this.featuredDataView.setElement(this.$('#FeaturedData')).render();
+			if ( this.featuredDataView.postRender ) {
+				this.featuredDataView.postRender();
 			}
 			
 			return this;
+		},
+		
+		onClose: function () {			
+			console.log('Closing the index view');
+			if (this.featuredDataView.onClose) {
+				this.featuredDataView.onClose();
+			}
 		}	
 				
 	});
