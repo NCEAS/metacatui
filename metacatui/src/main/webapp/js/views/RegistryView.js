@@ -201,6 +201,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 								
 								// trigger the check for logged in user
 								appView.checkUserStatus();
+								
+								// then load the registry url again, now that we are logged in
+								viewRef.render();
 							}
 						);
 					}
@@ -208,8 +211,6 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 					// clean up the temp area
 					viewRef.$('#tempMetacatContainer').remove();
 					
-					// then load the registry url again, now that we are logged in
-					viewRef.render();
 				}
 			);
 			
