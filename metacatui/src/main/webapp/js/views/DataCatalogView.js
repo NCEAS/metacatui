@@ -100,7 +100,7 @@ define(['jquery',
 			appSearchResults.setrows(25);
 			appSearchResults.setSort("dateUploaded+desc");
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
-			appSearchResults.query("formatType:METADATA+-obsoletedBy:*+" + search);
+			appSearchResults.query('formatType:METADATA+-obsoletedBy:*+' + search);
 			this.$resultsview.fadeIn();
 			this.updateStats();
 			this.updateSearchBox();
