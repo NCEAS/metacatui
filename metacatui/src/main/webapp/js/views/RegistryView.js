@@ -42,6 +42,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			
 			console.log('Calling the registry to display');
 			console.log('Calling the registry URL: ' + this.registryUrl);
+			
 			// show the progress bar
 			this.showProgressBar();
 			
@@ -50,6 +51,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			this.$el.load(
 					this.registryUrl + this.registryQueryString,
 					function() {
+						viewRef.verifyLoginStatus();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow');
 					});
@@ -59,6 +61,16 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		
 		onClose: function () {			
 			console.log('Closing the registry view');
+		},
+		
+		verifyLoginStatus: function() {
+			// CGI can be logged in, but JSESSIONID has expired
+			var registryEntryForm = $("#RegistryEntryForm");
+			
+			// if we have the registry form but it doesn't look like we are logged in, force a logout
+			if (registryEntryForm && !appModel.get('username')) {
+				uiRouter.navigate("logout", {trigger: true});
+			}
 		},
 		
 		submitEntryForm: function() {
