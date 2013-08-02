@@ -59,7 +59,8 @@ define(['jquery',
 			var queryServiceUrl = appModel.get('queryServiceUrl');
 			var packageServiceUrl = appModel.get('packageServiceUrl');
 
-			var query = 'fl=id,resourceMap&wt=xml&q=formatType:METADATA+-obsoletedBy:*+resourceMap:*+id:' + pid;
+			// surround pid value in "" so that doi characters do not affect solr query
+			var query = 'fl=id,resourceMap&wt=xml&q=formatType:METADATA+-obsoletedBy:*+resourceMap:*+id:"' + pid + '"';
 			$.get(
 					queryServiceUrl + query,
 					function(data, textStatus, xhr) {
