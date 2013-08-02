@@ -244,6 +244,14 @@ Bold 700 Italic
       opacity: .75;
     }
 
+    #footer_signup {
+      position: relative;
+      left: 50%;
+      /*bottom: 0px;*/
+      width: 188px;
+      margin: 20px auto 20px -94px;
+    }
+    
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 400;
       background-image: none;
