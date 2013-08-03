@@ -324,15 +324,15 @@ Bold 700 Italic
       margin-bottom: 30px;
     }
     
-    section#Features button {
+    section#Features a.btn-info {
       background-color: #6C94A4;
       color: #FFFFFF;
-      border: none;
+      /*border: none;
       text-shadow: none;
-      box-shadow: none;
+      box-shadow: none;*/
     }
 
-    section#Features button:hover {
+    section#Features a.btn-info:hover {
       background-color: #5C7F8C;
     
     } 
