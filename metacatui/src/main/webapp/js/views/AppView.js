@@ -79,6 +79,10 @@ define(['jquery',
 		
 		// Our view switcher for the whole app
 		showView: function(view) {
+			
+			//reference to appView
+			var thisAppViewRef = this;
+			
 			// close the current view
 			if (this.currentView){
 				//TODO: implement Backbone.View.protoype.close as:
@@ -101,6 +105,9 @@ define(['jquery',
 						// after fade in, do postRender()
 						if (view.postRender) {
 							view.postRender();
+						} else {
+							// force scroll to top if no custom scrolling is implemented
+							thisAppViewRef.scrollToTop();
 						}
 					});
 				});
@@ -111,6 +118,12 @@ define(['jquery',
 			
 			// track the current view
 			this.currentView = view;
+		},
+		
+		// scroll to top of page
+		scrollToTop: function() {
+			$("html, body").animate({ scrollTop: 0 }, "slow");
+			return false;
 		}
 				
 	});
