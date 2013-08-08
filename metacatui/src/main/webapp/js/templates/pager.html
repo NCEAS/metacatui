@@ -1,0 +1,17 @@
+<!-- pager for showing pages -->
+<ul>
+	<li><a id="results_prev_bottom">Prev</a></li>
+	<%
+	for (var i = 0; i < pages.length; i++) {
+		var pageClass = '';
+		if (i == currentPage) {
+			pageClass = 'active';
+		}
+		print('<li class="', pageClass ,'"><a class="pagerLink" page="', i, '">', i+1, '</a></li>'); 
+	}
+	%>
+	<li><a id="results_next_bottom">Next</a></li>
+</ul>
+
+
+</div>

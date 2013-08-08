@@ -83,14 +83,9 @@
 							<option <% if (sortOrder == "author+asc") { print('selected="selected"'); } %> value="author+asc">Author (a-z)</option>
 						</select>
 					</div>
-					<div class="result-header-pager span3 pagination pagination-right" id="resultspager">
+					<div class="result-header-pager span3 pagination pagination-right" id="resultspager_top">
 						<ul>
 							<li><a id="results_prev">Prev</a></li>
-							<!--
-							<li><a href="#">1</a></li>
-							<li><a href="#">2</a></li>
-							<li><a href="#">3</a></li>
-							-->
 							<li><a id="results_next">Next</a></li>
 						</ul>
 					</div>
@@ -109,16 +104,10 @@
 					
 				</div>
 				<div id="results" class="search-results"></div>
+				<!-- pager for showing pages -->
 				<div id="resultspager" class="row-fluid pagination">
 					<ul>
 						<li><a id="results_prev_bottom">Prev</a></li>
-						<!--
-						<li><a href="#">1</a></li>
-						<li><a href="#">2</a></li>
-						<li><a href="#">3</a></li>
-						<li><a href="#">4</a></li>
-						<li><a href="#">5</a></li>
-						 -->
 						<li><a id="results_next_bottom">Next</a></li>
 					</ul>
 				</div>

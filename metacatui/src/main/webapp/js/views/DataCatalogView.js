@@ -5,9 +5,10 @@ define(['jquery',
 				'views/SearchResultView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
+				'text!templates/pager.html',
 				'text!templates/resultsItem.html'
 				], 				
-	function($, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, ResultItemTemplate) {
+	function($, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -17,6 +18,8 @@ define(['jquery',
 		template: _.template(CatalogTemplate),
 		
 		statsTemplate: _.template(CountTemplate),
+		
+		pagerTemplate: _.template(PagerTemplate),
 
 		resultTemplate: _.template(ResultItemTemplate),
 		
@@ -29,6 +32,7 @@ define(['jquery',
 			'click #results_next': 'nextpage',
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
+			'click .pagerLink': 'navigateToPage',
 			'click #search_btn_side': 'triggerSearch',
 			'keypress #search_txt_side': 'triggerOnEnter',
 			'change #sortOrder': 'triggerSearch'
@@ -168,6 +172,31 @@ define(['jquery',
 					})
 				);
 			}
+			
+			// piggy back here
+			this.updatePager();
+
+		},
+		
+		updatePager : function() {
+			if (appSearchResults.header != null) {
+				var pageCount = Math.ceil(appSearchResults.header.get("numFound") / appSearchResults.header.get("rows"));
+				var pages = new Array(pageCount);
+				// mark current page correctly, avoid NaN
+				var currentPage = -1;
+				try {
+					currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
+				} catch (ex) {
+					console.log(ex.message);
+				}
+				this.$resultspager = this.$('#resultspager');
+				this.$resultspager.html(
+					this.pagerTemplate({
+						pages: pages,
+						currentPage: currentPage
+					})
+				);
+			}
 		},
 		
 		updateSearchBox: function() {
@@ -188,6 +217,14 @@ define(['jquery',
 		prevpage: function () {
 			this.removeAll();
 			appSearchResults.prevpage();
+			this.$resultsview.show();
+			this.updateStats();
+		},
+		
+		navigateToPage: function(event) {
+			var page = $(event.target).attr("page");
+			this.removeAll();
+			appSearchResults.toPage(page);
 			this.$resultsview.show();
 			this.updateStats();
 		},

@@ -28,6 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			this.header = new SolrHeader(solr.responseHeader);
 			this.header.set({"numFound" : solr.response.numFound});
 			this.header.set({"start" : solr.response.start});
+			this.header.set({"rows" : solr.responseHeader.params.rows});
 			return solr.response.docs;
 		},
 		
@@ -46,6 +47,18 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			this.start -= this.rows;
 			if (this.start < 0) {
 				this.start = 0;
+			}
+			if (this.header != null) {
+				this.header.set({"start" : this.start});
+			}
+			this.fetch({data: {start: this.start}, reset: true});
+		},
+		
+		toPage: function(page) {
+			// go to the requested page
+			var requestedStart = this.rows * page;
+			if (requestedStart < this.header.get("numFound")) {
+				this.start = requestedStart;
 			}
 			if (this.header != null) {
 				this.header.set({"start" : this.start});
