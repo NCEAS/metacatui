@@ -106,7 +106,12 @@ define(['jquery',
 			this.updateSearchBox();
 			// update links
 			this.$(".popular-search-link").removeClass("sidebar-item-selected");
-			this.$("#popular-search-" + search).addClass("sidebar-item-selected");
+			try {
+				this.$("#popular-search-" + search).addClass("sidebar-item-selected");
+			} catch (ex) {
+				// syntax in search term is probably to blame
+				console.log(ex.message + " - could not set selected state for: " + "#popular-search-" + search);
+			}
 			//this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
 			//this.$("#featureddata_link").removeClass("sidebar-item-selected");
 			
