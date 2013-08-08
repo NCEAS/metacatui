@@ -27,7 +27,7 @@
 			<h2 class="nav-header">Browse</h2>
 			<ul id="browse" class="nav nav-list">
   			<li class="nav-header">Popular</li>
-				<li><a id="recent_link" href="#data"><i class="halflings-icon calendar"></i> Most Recent</a></li>
+				<li><a class="popular-search-link" id="recent_link" href="#data"><i class="halflings-icon calendar"></i> Most Recent</a></li>
   			<li class="nav-header">Example Searches</li>
 				<li><a class="popular-search-link" id="popular-search-Climate" href="#data/search/Climate"><i class="halflings-icon search"></i>Climate</a></li>		
 				<li><a class="popular-search-link" id="popular-search-Virus" href="#data/search/Virus"><i class="halflings-icon search"></i>Virus</a></li>		
@@ -74,8 +74,16 @@
 						</div>
 					</div>
 					-->
-					<div class="result-header-count span8" id="statcounts">0 to 0 of 0</div>
-					<div class="result-header-pager span4 pagination pagination-right" id="resultspager">
+					<div class="result-header-count span6" id="statcounts">0 to 0 of 0</div>
+					<div class="span3">
+						<select id=sortOrder>
+							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
+							<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
+							<option <% if (sortOrder == "title+asc") { print('selected="selected"'); } %> value="title+asc">Title (a-z)</option>
+							<option <% if (sortOrder == "author+asc") { print('selected="selected"'); } %> value="author+asc">Author (a-z)</option>
+						</select>
+					</div>
+					<div class="result-header-pager span3 pagination pagination-right" id="resultspager">
 						<ul>
 							<li><a id="results_prev">Prev</a></li>
 							<!--

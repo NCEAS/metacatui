@@ -13,6 +13,7 @@ define(['jquery', 'underscore', 'backbone'],
 			username: null,
 			fullName: null,
 			searchTerm: '',
+			sortOrder: 'dateUploaded+desc',
 			pid: null,
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context

@@ -30,7 +30,8 @@ define(['jquery',
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
 			'click #search_btn_side': 'triggerSearch',
-			'keypress #search_txt_side': 'triggerOnEnter'
+			'keypress #search_txt_side': 'triggerOnEnter',
+			'change #sortOrder': 'triggerSearch'
 		},
 		
 		initialize: function () {
@@ -41,6 +42,11 @@ define(['jquery',
 			// alert the model that a search should be performed
 			var searchTerm = $("#search_txt_side").val();
 			appModel.set('searchTerm', searchTerm);
+			
+			var sortOrder = $("#sortOrder").val();
+			appModel.set('sortOrder', sortOrder);
+			
+			// trigger the search
 			appModel.trigger('search');
 			
 			// make sure the browser knows where we are
@@ -66,7 +72,8 @@ define(['jquery',
 			
 			var cel = this.template(
 					{
-						searchTerm: appModel.get('searchTerm')
+						searchTerm: appModel.get('searchTerm'),
+						sortOrder: appModel.get('sortOrder')
 					}
 			);
 			this.$el.html(cel);
@@ -96,7 +103,8 @@ define(['jquery',
 		showResults: function () {
 
 			var search = appModel.get('searchTerm');
-
+			var sortOrder = appModel.get('sortOrder');
+			
 			var resultTitle = 'Search Results';
 			if (search) {
 				resultTitle += ' - ' + search; 
@@ -104,7 +112,7 @@ define(['jquery',
 			this.removeAll();
 			this.$pagehead.html(resultTitle);
 			appSearchResults.setrows(25);
-			appSearchResults.setSort("dateUploaded+desc");
+			appSearchResults.setSort(sortOrder);
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
 			appSearchResults.query('formatType:METADATA+-obsoletedBy:*+' + search);
 			this.$resultsview.fadeIn();
@@ -125,24 +133,20 @@ define(['jquery',
 			return false;
 		},
 		
+		// TODO: handle compound searches like most recent+keyword (and others in the future)
 		showRecent: function () {
 
-			// clear the search term
+			// get the current search term (TODO: anyhting with it?)
 			var currentSearchTerm = appModel.get('searchTerm');
-			appModel.set('searchTerm', '');
 			
 			// search last month
 			var dateQuery = "dateUploaded: [NOW-1MONTH/DAY TO *]";
-
-			this.removeAll();
-			this.$pagehead.html('Most Recent');
-			appSearchResults.setrows(25);
-			appSearchResults.setSort("dateUploaded+desc");
-			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
-			appSearchResults.query("formatType:METADATA+-obsoletedBy:*+" + dateQuery);
-			this.$resultsview.fadeIn();
-			this.updateStats();
-			this.updateSearchBox();
+			
+			// replace current search term with date query
+			appModel.set('searchTerm', dateQuery);
+			
+			// show the results
+			this.showResults();
 			
 			// update links
 			this.$(".popular-search-link").removeClass("sidebar-item-selected");

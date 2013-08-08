@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.fields = options.fields || "id,title";
 		    this.rows = options.rows || 10;
 		    this.start = options.start || 0;
-		    this.sort = options.sort || 'id';
+		    this.sort = options.sort || 'dateUploaded+desc';
 		},
 		
 		url: function() {
