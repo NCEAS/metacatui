@@ -12,7 +12,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		template: _.template(NavbarTemplate),
 		
 		events: {
-			'click #search_btn': 'triggerSearch'
+			'click #search_btn': 'triggerSearch',
+			'keypress #search_txt': 'triggerOnEnter'
 		},
 		
 		initialize: function () {
@@ -60,7 +61,12 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// ...but don't want to follow links
 			return false;
 			
-		}
+		},
+		
+		triggerOnEnter: function(e) {
+			if (e.keyCode != 13) return;
+			this.triggerSearch();
+		},
 				
 	});
 	return NavbarView;		

@@ -29,7 +29,8 @@ define(['jquery',
 			'click #results_next': 'nextpage',
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
-			'click #search_btn_side': 'triggerSearch'
+			'click #search_btn_side': 'triggerSearch',
+			'keypress #search_txt_side': 'triggerOnEnter'
 		},
 		
 		initialize: function () {
@@ -47,6 +48,11 @@ define(['jquery',
 			
 			// ...but don't want to follow links
 			return false;
+		},
+		
+		triggerOnEnter: function(e) {
+			if (e.keyCode != 13) return;
+			this.triggerSearch();
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
