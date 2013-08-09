@@ -2,12 +2,19 @@
 <ul>
 	<li><a id="results_prev_bottom">Prev</a></li>
 	<%
+	var range = 5;
+	var printMid = true;
 	for (var i = 0; i < pages.length; i++) {
 		var pageClass = '';
 		if (i == currentPage) {
 			pageClass = 'active';
 		}
-		print('<li class="', pageClass ,'"><a class="pagerLink" page="', i, '">', i+1, '</a></li>'); 
+		if (i < range || (pages.length - i) <= range) {
+			print('<li class="', pageClass ,'"><a class="pagerLink" page="', i, '">', i+1, '</a></li>');
+		} else if (printMid) {
+			print('<li class="disabled"><a>...</a></li>');
+			printMid = false;
+		}
 	}
 	%>
 	<li><a id="results_next_bottom">Next</a></li>
