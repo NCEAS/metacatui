@@ -1,7 +1,7 @@
 MetacatUI
 =========
 
-MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.  Currently, it is used as the basis for the KNB Data Repository.
+MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.  Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org).
 
 * Contributors: Matthew Jones, Chris Jones, Ben Leinfelder
 * Developed at: [National Center for Ecological Analysis and Synthesis](http://www.nceas.ucsb.edu/ecoinfo)
