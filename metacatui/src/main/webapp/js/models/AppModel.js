@@ -21,7 +21,9 @@ define(['jquery', 'underscore', 'backbone'],
 			d1Service: '/d1/mn/v1',
 			viewServiceUrl: null,
 			packageServiceUrl: null,
+			publishServiceUrl: null,
 			queryServiceUrl: null,
+			metaServiceUrl: null,
 			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null
@@ -33,7 +35,9 @@ define(['jquery', 'underscore', 'backbone'],
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+			this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
+			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
