@@ -143,6 +143,9 @@ define(['jquery',
 			var pid = $(event.target).attr("pid");
 			var ret = confirm("Are you sure you want to publish " + pid + " with a DOI?");
 			
+			// show the progressbar
+			this.showProgressBar();
+			
 			if (ret) {
 				var identifier = null;
 				var viewRef = this;
@@ -154,14 +157,25 @@ define(['jquery',
 							identifier = $(data).find("identifier").text();
 							console.log('identifier: ' + identifier);
 							if (identifier) {
-								alert("Published package: " + identifier);	
-								// navigate to the new view
-								uiRouter.navigate("view/" + identifier, {trigger: true})
+								
+								var msg = "Published package '" + identifier + "'";
+								viewRef.showMessage(msg, false, "alert-success");
+								
+								// navigate to the new view after a few seconds
+								setTimeout(
+										function() {
+											// avoid a double fade out/in
+											viewRef.$el.html('');
+											viewRef.showProgressBar();
+											uiRouter.navigate("view/" + identifier, {trigger: true})
+										}, 
+										3000);
 							}
 						},
 						error: function(xhr, textStatus, errorThrown) {
+							// show the error message, but stay on the same page
 							var msg = $(xhr.responseText).find("description").text();
-							viewRef.showMessage(msg, true);
+							viewRef.showMessage(msg, true, "alert-error");
 						}
 					}
 				);
@@ -169,13 +183,34 @@ define(['jquery',
 			}
 		},
 		
-		showMessage: function(msg, prepend) {
+		showMessage: function(msg, prepend, alertType) {
+			this.hideProgressBar();
+			var alertClass = "alert";
+			if (alertType) {
+				alertClass += " " + alertType;
+			}
+			var content = '<section id="Notification"><div class="' + alertClass + '"><h4>' + msg + '</h4></div></section>';
 			if (prepend) {
-				this.$el.prepend('<section id="Notification"><div class="alert"><h4>Oops!</h4>' + msg + '</div></section>');
+				this.$el.prepend(content);
 			} else {
-				this.$el.html('<section id="Notification"><div class="alert"><h4>Oops!</h4>' + msg + '</div></section>');
+				this.$el.html(content);
 			}
 
+		},
+		
+		showProgressBar: function() {
+			this.hideProgressBar();
+			this.scrollToTop();
+			this.$el.prepend('<section id="Notification"><div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>');
+		},
+		
+		hideProgressBar: function() {
+			$("#Notification").remove();
+		},
+		
+		scrollToTop: function() {
+			$("html, body").animate({ scrollTop: 0 }, "slow");
+			return false;
 		},
 		
 		onClose: function () {			
