@@ -1,6 +1,9 @@
 <aside class="span3">
-	<button id="publish" class="btn btn-primary" pid="<%= identifier %>"> <i class="icon-share icon-white icon-large"></i> Publish with DOI</button>
-	
+	<button id="publish" <% if (!isAuthorized) {print(' disabled="disabled" '); } %> class="btn btn-primary" pid="<%= identifier %>"> <i class="icon-share icon-white icon-large"></i> Publish with DOI</button>
+	<% if (!isAuthorized) {
+		print('<p>*Must <a href="#share">sign in</a> as owner</p>');
+	}
+	%>
 	<!-- TODO: include these details -->
 	<!-- 		
 	<h2 class="nav-header">Object information</h2>

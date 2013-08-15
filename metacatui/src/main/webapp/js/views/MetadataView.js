@@ -90,6 +90,10 @@ define(['jquery',
 		
 		// this will insert the DOI publish button
 		insertSideBar: function(pid) {
+			
+			// see if the user is authorized to update this object
+			var authServiceUrl = appModel.get('authServiceUrl');
+
 			// look up the SystemMetadata
 			var metaServiceUrl = appModel.get('metaServiceUrl');
 
@@ -105,34 +109,52 @@ define(['jquery',
 			
 			// get the /meta for the pid
 			$.get(
-					metaServiceUrl + pid,
-					function(data, textStatus, xhr) {
-						
-						// the response should have all the elements we want
-						identifier = $(data).find("identifier").text();
-						console.log('identifier: ' + identifier);
-						formatId = $(data).find("formatId").text();
-						size = $(data).find("size").text();
-						checksum = $(data).find("checksum").text();
-						rightsHolder = $(data).find("rightsHolder").text();
-						submitter = $(data).find("submitter").text();
+				metaServiceUrl + pid,
+				function(data, textStatus, xhr) {
+					
+					// the response should have all the elements we want
+					identifier = $(data).find("identifier").text();
+					console.log('identifier: ' + identifier);
+					formatId = $(data).find("formatId").text();
+					size = $(data).find("size").text();
+					checksum = $(data).find("checksum").text();
+					rightsHolder = $(data).find("rightsHolder").text();
+					submitter = $(data).find("submitter").text();
 
-						if (identifier) {
+					if (identifier) {
+						
+						var populateTemplate = function(auth) {
 							// TODO: include SystemMetadata details
 							viewRef.$el.find("#Metadata").prepend(
-									viewRef.sideTemplate({
-										identifier: identifier,
-										formatId: formatId,
-										size: size,
-										checksum: checksum,
-										rightsHolder: rightsHolder,
-										submitter: submitter
-									})
-								);
-						}
+								viewRef.sideTemplate({
+									isAuthorized: auth,
+									identifier: identifier,
+									formatId: formatId,
+									size: size,
+									checksum: checksum,
+									rightsHolder: rightsHolder,
+									submitter: submitter
+								})
+							);
+						};
 						
+						// are we authorized to publish?
+						$.ajax(
+								{
+									url: authServiceUrl + pid + "?action=changePermission",
+									success: function(data, textStatus, xhr) {
+										populateTemplate(true);
+									},
+									error: function(xhr, textStatus, errorThrown) {
+										populateTemplate(false);
+									}
+							
+								}
+							);
 					}
-				);
+					
+				}
+			);
 				
 		},
 		

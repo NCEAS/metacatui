@@ -22,6 +22,7 @@ define(['jquery', 'underscore', 'backbone'],
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
+			authServiceUrl: null,
 			queryServiceUrl: null,
 			metaServiceUrl: null,
 			registryServiceUrl: null,
@@ -36,6 +37,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
+			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
