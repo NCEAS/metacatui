@@ -19,7 +19,7 @@ function loadSkin(skin) {
     }
 }
 function loadCss(skin) {
-	var url = "./themes/" + skin + "/css/" + skin + ".css";
+	var url = "./themes/" + skin + "/css/metacatui.css";
     var link = document.createElement("link");
     link.type = "text/css";
     link.rel = "stylesheet";
@@ -27,7 +27,7 @@ function loadCss(skin) {
     document.getElementsByTagName("head")[0].appendChild(link);
 }
 function loadIcons(skin) {
-	var url = "./themes/" + skin + "/img/" + skin + "-favicon-32.png";
+	var url = "./themes/" + skin + "/img/favicon-32.png";
     var link = document.createElement("link");
     link.type = "image/png";
     link.rel = "shortcut icon";
