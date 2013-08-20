@@ -1,0 +1,56 @@
+<div class="navbar">
+  <div class="navbar-inner">
+      <a class="brand" href="#">AOOS</a>
+      <ul class="nav">
+        <li><a href="#about">About</a></li>
+        <li><a href="#data">Data</a></li>
+        <li><a href="#share">Share</a></li>
+        <!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
+        <!-- comment out for now until we have plans -->
+        <!-- 
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plans <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">About data plans</a></li>
+            <li class="divider"></li>
+            <li><a href="#">Basic (free)</a></li>
+            <li><a href="#">Annual Data</a></li>
+            <li><a href="#">Big Data</a></li>
+
+          </ul>
+        </li>
+        -->
+        <li>
+          <div class="nav">
+            <div class="input-append">
+              <input type="text" class="span3" placeholder="Search for data" id="search_txt" value="<%= searchTerm  %>" >
+              <a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-white icon-large"></i></a>
+            </div>
+          </div>
+        </li>
+        
+        <% if (fullName) { 
+        	print(
+        	'<li class="dropdown">',
+				'<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
+					'<i class="halflings-icon user"></i><b class="caret"></b>',
+				'</a>',
+				'<ul class="dropdown-menu">',
+					'<li><a>', fullName, '</a></li>',
+					'<li class="divider"></li>',  
+					'<li><a href="#share">register data</a></li>',
+					//'<li><a href="#">my account</a></li>',
+					'<li class="divider"></li>',
+					'<li><a href="#logout">logout</a></li>',
+				'</ul>',
+			'</li>'
+        	);
+        } else {
+        	print(
+        		'<li id="SignIn"><a href="#share">Sign In</a></li>'
+        	);
+        } %>
+        	
+      </ul>
+  </div><!-- /.navbar-inner -->
+</div><!-- /.navbar -->
