@@ -13,7 +13,6 @@
     <link href="./css/glyphicons.css" rel="stylesheet">
     <link href="./css/halflings.css" rel="stylesheet">
     <!--link href="./css/bootstrap-responsive.min.css" rel="stylesheet"-->
-    <link href="./themes/default/css/default.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -35,8 +34,37 @@
   <section id="Content"></section>
   <footer id="Footer"></footer>
   
-  <!-- Use Require.js to manage dependencies -->
-  <script data-main="themes/default/app.js" src="components/require.js"></script>
+  <!-- Pull in correct skin configuration, then use Require.js to manage dependencies -->
+  <script type="text/javascript">
+  
+	function loadCss(skin) {
+		var url = "./themes/" + skin + "/css/" + skin + ".css";
+	    var link = document.createElement("link");
+	    link.type = "text/css";
+	    link.rel = "stylesheet";
+	    link.href = url;
+	    document.getElementsByTagName("head")[0].appendChild(link);
+	}
+	function initSkin(skin) {
+	    var script = document.createElement("script");
+	    script.setAttribute("type", "text/javascript");
+	    script.setAttribute("src", "themes/" + skin + "/config.js");
+	    document.getElementsByTagName("body")[0].appendChild(script);
+	}
+	function initApp(skin) {
+	    var script = document.createElement("script");
+	    //script.setAttribute("data-main", "themes/" + skin + "/app.js");
+	    script.setAttribute("data-main", "themes/app.js");
+	    script.src = "components/require.js";
+	    document.getElementsByTagName("body")[0].appendChild(script);
+	}
+	
+	var skin = "default";
+	loadCss(skin);
+	initSkin(skin);
+	initApp(skin);
+  
+  </script>
  
 </body>
 </html>

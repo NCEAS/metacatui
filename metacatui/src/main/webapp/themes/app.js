@@ -5,22 +5,17 @@
 // NOTE: change this to your skin name and then update the "map" config below
 // to include your overrides
 // NOTE 2: update the index.html file to use your CSS (TODO)
-var skin = 'aoos';
+//var skin = 'aoos';
+
+console.log("Using skin: " + skin);
+console.log("Using skinMap: " + skinMap);
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
 require.config({
   baseUrl: 'themes/default/',
-  map: {
-      '*': {
-    	  // example overrides are provided here
-    	  //'models/AboutModel' : '/themes/' + skin + '/models/AboutModel.js',
-    	  //'views/AboutView' : '/themes/' + skin + '/views/AboutView.js',
-    	  'templates/navbar.html' : '/themes/' + skin + '/templates/navbar.html'
-
-      }
-  },
+  map: skinMap,
   paths: {
     jquery: '../../components/jquery',
     underscore: '../../components/underscore',
