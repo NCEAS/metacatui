@@ -1,40 +1,40 @@
 // Step 1: Choose the theme here
-var skin = "default";
-var title = skin.toUpperCase() + " | Data Catalog";
+var theme = "default";
+var title = theme.toUpperCase() + " | Data Catalog";
 
 // Step 2: let everything else be taken care of by the app
-loadSkin(skin);
-loadCss(skin);
-loadIcons(skin);
-initApp(skin);
+loadTheme(theme);
+loadCss(theme);
+loadIcons(theme);
+initApp(theme);
 
-function loadSkin(skin) {
+function loadTheme(theme) {
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", "themes/" + skin + "/config.js");
+    script.setAttribute("src", "themes/" + theme + "/config.js");
     document.getElementsByTagName("body")[0].appendChild(script);
     // the title
     if (title) {
 	    document.getElementsByTagName("title")[0].innerHTML=title;
     }
 }
-function loadCss(skin) {
-	var url = "./themes/" + skin + "/css/metacatui.css";
+function loadCss(theme) {
+	var url = "./themes/" + theme + "/css/metacatui.css";
     var link = document.createElement("link");
     link.type = "text/css";
     link.rel = "stylesheet";
     link.href = url;
     document.getElementsByTagName("head")[0].appendChild(link);
 }
-function loadIcons(skin) {
-	var url = "./themes/" + skin + "/img/favicon-32.png";
+function loadIcons(theme) {
+	var url = "./themes/" + theme + "/img/favicon-32.png";
     var link = document.createElement("link");
     link.type = "image/png";
     link.rel = "shortcut icon";
     link.href = url;
     document.getElementsByTagName("head")[0].appendChild(link);
 }
-function initApp(skin) {
+function initApp(theme) {
     var script = document.createElement("script");
     script.setAttribute("data-main", "themes/app.js");
     script.src = "components/require.js";

@@ -1,12 +1,12 @@
-var skin = skin || "knb";
-var skinMap = 
+var theme = theme || "knb";
+var themeMap = 
 {
 	'*': {
 		// overrides are provided here
-		//'models/AboutModel' : '/themes/' + skin + '/models/AboutModel.js',
-		//'views/AboutView' : '/themes/' + skin + '/views/AboutView.js',
-		'routers/router' : 'themes/' + skin + '/routers/router.js',
-		'templates/navbar.html' : 'themes/' + skin + '/templates/navbar.html',
-		'templates/footer.html' : 'themes/' + skin + '/templates/footer.html'
+		//'models/AboutModel' : '/themes/' + theme + '/models/AboutModel.js',
+		//'views/AboutView' : '/themes/' + theme + '/views/AboutView.js',
+		'routers/router' : 'themes/' + theme + '/routers/router.js',
+		'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',
+		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html'
 		}
 };

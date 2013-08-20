@@ -2,17 +2,17 @@
 /*jshint unused:false */
 'use strict';
 
-/** NOTE: The skin name and skinMap are specified in the loader.js file
+/** NOTE: The theme name and themeMap are specified in the loader.js file
 
-console.log("Using skin: " + skin);
-console.log("Using skinMap: " + skinMap);
+console.log("Using theme: " + theme);
+console.log("Using themeMap: " + themeMap);
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
 require.config({
   baseUrl: 'themes/default/',
-  map: skinMap,
+  map: themeMap,
   paths: {
     jquery: '../../components/jquery',
     underscore: '../../components/underscore',
@@ -48,7 +48,7 @@ var aboutModel = aboutModel || {};
 var toolsModel = toolsModel || {};
 var appSearchResults = appSearchResults || {};
 
-//this function allows us to override modules for a skin, but fall back to the default when no override is present
+//this function allows us to override modules for a theme, but fall back to the default when no override is present
 var loader = function(err) {    
 	if (err.requireModules) {
 		for(var i = 0; i < err.requireModules.length; i++) {
@@ -56,7 +56,7 @@ var loader = function(err) {
 			console.log("1. Could not find: " + module);
 			requirejs.undef(module);
 //			requirejs.config({
-//				baseUrl: 'js/skins/'
+//				baseUrl: 'themes/'
 //			});
 			// find the module manually
 			if (module.indexOf("/") == 0) {

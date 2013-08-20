@@ -1,10 +1,10 @@
-var skin = skin || "default";
-var skinMap = 
+var theme = theme || "default";
+var themeMap = 
 {
 	'*': {
 		// example overrides are provided here
-		//'models/AboutModel' : 'themes/' + skin + '/models/AboutModel.js',
-		//'views/AboutView' : 'themes/' + skin + '/views/AboutView.js',
-		//'templates/navbar.html' : 'themes/' + skin + '/templates/navbar.html'
+		//'models/AboutModel' : 'themes/' + theme + '/models/AboutModel.js',
+		//'views/AboutView' : 'themes/' + theme + '/views/AboutView.js',
+		//'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html'
 		}
 };
