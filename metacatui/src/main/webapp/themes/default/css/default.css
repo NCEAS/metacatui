@@ -1,0 +1,935 @@
+
+/* Import font families */
+@import url(https://fonts.googleapis.com/css?family=Lato);
+/* Lato weights:
+Ultra-Light 100
+Ultra-Light 100 Italic
+Book 300
+Book 300 Italic
+Normal 400
+Normal 400 Italic
+Bold 700
+Bold 700 Italic
+Ultra-Bold 900
+Ultra-Bold 900 Italic
+*/
+@import url(https://fonts.googleapis.com/css?family=Open+Sans);
+/* Open Sans weights:
+Book 300 
+Book 300 Italic
+Normal 400
+Normal 400 Italic
+Semi-Bold 600
+Semi-Bold 600 Italic
+Bold 700
+Bold 700 Italic
+Extra-Bold 800
+Extra-Bold 800 Italic
+*/
+@import url(https://fonts.googleapis.com/css?family=Gentium+Book+Basic);
+/* Gentium Book Basic weights:
+Normal 400
+Normal 400 Italic
+Bold 700
+Bold 700 Italic
+*/
+
+/* Body CSS
+-------------------------------------------------- */
+    body {
+      color: #555555;
+      background-color: #FDFDFD;
+      font-family: "Lato", "Helvetica Nueue", "Helvetica", "sans serif";
+    }
+
+    body p {
+      font-weight: 300;
+      line-height: 1.5;
+    }
+    article, aside, figure, footer, header, hgroup, menu, nav, section { 
+      display:block; 
+      
+    }
+    
+    body > section, footer {
+      min-height: 400px;
+      margin: 0;
+      z-index: 10;
+    }
+        
+    body > #Content {
+    	position: relative;
+    	margin: 0px 0px auto 0px;
+    	min-height: 400px;
+    }
+		
+    body > section > article {
+      min-height: 800px;
+      /*margin: 135px auto auto auto;*/
+      font-weight: 300;
+      font-size: 110%;
+      line-height: 1.5;
+      margin: 175px auto auto auto;
+      padding-bottom: 40px;  			
+    }
+    
+    h1 > a[name], h2 > a[name], h3 > a[name],
+    h4 > a[name], h5 > a[name], h6 > a[name] {
+      color: #555555;
+      text-decoration: none;
+      z-index: 20; /*keeps hidden anchor tags from blocking content*/
+    }
+    
+    /* make sure the anchors render with padding-top */
+    h1 > a[name]:before, h2 > a[name]:before, h3 > a[name]:before,
+    h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
+		content: "";
+    padding-top: 115px;
+    }
+    
+    a {
+      color: #115E95; /*blue from the earthtones pallette */
+    }
+    
+    div.row-fluid > a[name] {
+      margin: 35px auto auto auto;
+    }
+    
+/* FORM/INPUT CUSTOMIZATIONS
+-------------------------------------------------- */ 
+	.controls-well {
+	    border: 1px solid #E3E3E3;
+	    border-radius: 4px 4px 4px 4px;
+	    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+	    padding: 4px;
+	}
+	.control-label {
+		cursor: default;
+	}
+
+/* EML CUSTOMIZATIONS
+-------------------------------------------------- */
+	#Eml h4, .well, .control-label {
+		color: #555555;
+	}
+
+
+/* HEADER CSS
+-------------------------------------------------- */    
+  header#Header {
+    position: fixed;
+    top: 0px;
+    z-index: 100;
+    height: 95px;
+    background-color: #FDFDFD;
+    overflow: hidden;
+    opacity: 1.0;    
+  }
+  
+  header#mainHeader {
+    position: relative;
+    top: 0px;
+    z-index: 100;
+    min-height: 400px;      
+  }
+
+/* NOTIFICATION AREA CSS
+ * -------------------------------------------------- */    
+  section#Notification {
+    position: fixed;
+    top: 95px;
+    height: 40px;
+    width: 100%;
+    max-height: 40px;
+    min-height: 40px;
+    background-color: #FDFDFD;
+  }
+
+  
+/* FOOTER CSS
+-------------------------------------------------- */    
+
+    footer#Footer {
+      position: relative;
+      bottom: 0px;
+      padding-top: 30px;
+      padding-bottom: 30px;
+      margin-top: 0px;
+      color: #FDFDFD;
+      background-color: #3F3F3F;
+    }
+        
+    footer#Footer div#FooterHeading {
+      max-width: 650px;
+    }
+
+    footer#Footer h2 {
+      font: 300 25px/25px "Lato";
+      vertical-align: middle;
+      padding: 0;
+      line-height: 48px;
+    }
+        
+    footer#Footer h3 {
+      font: 800 30px/30px "Open Sans";
+      text-align: center;
+      padding: 0px 0px 20px 0px;
+      margin-bottom: -25px;
+      border-bottom: 1px solid #FDFDFD;
+      
+    }
+
+    footer#Footer h3 > span {
+      font: 400 30px/30px "Gentium Book Basic";
+      font-style: italic;
+    }
+    
+    footer#Footer h4.subheading {
+      vertical-align: baseline;
+      padding: 0;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    footer#Footer h4.subheading > span {
+      font: 400 30px/30px "Gentium Book Basic";
+      font-style: italic;
+      text-transform: uppercase;
+      background-color: #3F3F3F;
+      padding: 0px 15px 0px 15px;
+    }
+    
+    footer#Footer ul.helpitems {
+      list-style: none;
+      list-style-position: inside;
+      margin: 0px 0px 40px 0px;
+    }
+    
+    footer#Footer ul.helpitems li {
+      font: 100 20px/20px "Lato";
+      vertical-align: baseline;
+      margin: 15px 0px 0px 0px;                 
+    }
+    
+    ul.helpitems a {
+      color: #FDFDFD;
+      text-decoration: none;      
+    }
+    
+    footer#Footer a:hover {
+      color: #FFFFFF;
+      font-weight: 300;
+      text-decoration: none;      
+    }
+    
+    footer#Footer .disclaimer {
+      color: #FDFDFD;
+      font: 100 14px/14px "Lato";      
+    }
+    
+    footer#Footer .logo {
+      color: #D9D9D9;
+      font: 300 48px "Lato";
+      line-height: 1.0;
+      letter-spacing: -3px;
+      margin: 0px 0px 15px 0px;
+      text-align: center;
+    }
+    
+    footer#Footer .acknowledgements {
+      margin-top: 40px;
+    }
+
+    footer#Footer img {
+      opacity: .75;
+    }
+
+    #footer_signup {
+      position: relative;
+      left: 50%;
+      /*bottom: 0px;*/
+      width: 188px;
+      margin: 20px auto 20px -94px;
+    }
+    
+    .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
+      font-weight: 400;
+      background-image: none;
+      background-repeat: none;
+    }
+
+    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
+      color: #FFFFFF; 
+      text-decoration:none;     
+    }
+    
+    .btn-primary {
+      background-color: #992222;
+      color: #FFFFFF;
+      
+    }
+    
+    .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
+		background-color: #f5f5f5;
+		color: #555555;
+		text-shadow: none;
+    }
+    
+    button.btn-primary a {
+      color: #FFFFFF;
+      text-decoration: none;
+    }
+        
+    .btn-primary:hover {
+      background-color: #882222;
+      color: #FDFDFD;
+      background-image: none;
+      background-repeat: none;
+      
+    }
+    
+    #search_btn.btn {
+      background-color: #992222;
+      color: #FFFFFF;
+      
+    }
+    
+    #search_btn.btn:hover {
+      background-color: #882222;
+      color: #FFFFFF;
+      
+    }
+    
+    i.glyphicons-icon, i.halflings-icon {
+      opacity: .8;
+    }
+
+    i.glyphicons-icon.white {
+      opacity: 1;
+    }
+    
+/* FEATURES CSS
+-------------------------------------------------- */    
+    
+    #Features {
+      position: relative;
+      background-color: #899CA6;
+      padding-top: 20px;
+      color: #FDFDFD;
+			min-height: 400px;
+    }
+
+    section#Features h4 {
+      font-size: 160%;
+      font-weight: 300;
+    }
+
+    section#Features p {
+      font-size: 110%;
+      font-weight: 300;
+      line-height: 1.75;
+      margin-bottom: 30px;
+    }
+    
+    section#Features a.btn-info {
+      background-color: #6C94A4;
+      color: #FFFFFF;
+      /*border: none;
+      text-shadow: none;
+      box-shadow: none;*/
+    }
+
+    section#Features a.btn-info:hover {
+      background-color: #5C7F8C;
+    
+    } 
+    
+/* FEATURED DATA CSS
+-------------------------------------------------- */    
+
+    #FeaturedData {
+      position: relative;
+      background-color: #878787;
+      color: #FDFDFD;
+      /*min-height: 1200px;*/
+    }
+
+    #FeaturedData > section {
+      border-top: 1px solid #878787;
+    }
+		
+	  #FeaturedData h2 {
+	  	font-weight: 300;
+      color: #FDFDFD;
+      text-decoration: none;
+      width: 450px;
+	  }
+        
+    #FeaturedData h2 a {
+      color: #FDFDFD;
+      text-decoration: none;      
+    }
+
+    #FeaturedData .accordion-inner {
+      border-top: 0px;
+      padding-bottom: 40px;
+      margin: 20px 10px 20px 10px;
+      background: rgba(0,0,0,0.6);
+      color: #FFFFFF;
+      border-radius: 6px 6px 6px 6px;
+    }
+    
+    #featured01 {
+      position: relative;
+      top: 0px;
+    }
+    
+    #featured02 {
+      position: relative;
+      top: 0px;
+    }
+    
+    #featured03 {
+      position: relative;
+      top: 0px;
+    }
+    
+    #featured01_info {
+      position: absolute;
+      top: 40px;
+      left: 80px;
+      width: 75%;
+    }
+    
+    #featured02_info {
+      position: absolute;
+      top: 40px;
+      left: 60%;
+    }
+    
+    #featured03_info {
+      position: absolute;
+      top: 40px;
+      left: 80px;
+      width: 75%;
+    }
+
+    #FeaturedData .collapse {
+      position: absolute;
+      top: 0px;
+    }
+
+    #collapse01, #collapse03 {
+      position: absolute;
+      left: 420px;
+      max-width: 600px;
+    }
+    
+    #collapse02 {
+      position: absolute;
+      left: -600px;
+      max-width: 600px;
+    }
+    
+    /* Commenting these out for now. May not need them:
+        
+    .featured {
+      border-radius: 6px 6px 6px 6px;
+      margin-right: 20px;
+      max-height: 300px;
+    }
+
+    #featured_list {
+      margin: auto auto auto 20px;
+      border-radius: 6px 6px 6px 6px;
+    }    
+    
+    #featured_list > li.nav-header {
+      height: 30px;
+      color: #9A8D72;
+      background-color: #E8E7DA;
+      font-size: 18px;
+      font-weight: 400;
+      padding-top: 15px;
+      border-radius: 6px 6px 0px 0px;
+    }
+
+    #featured_list > li.active > a {
+      background-color: #9A8D72;
+      color: #FDFDFD;
+      font-size: 18px;
+      font-weight: 400;
+      float: left;
+    }
+    
+    #featured_list > li > a {
+      height: 60px;
+      width: 100%;
+      padding: 10px 20px 10px 20px;
+      color: #9A8D72;
+      background-color: #E8E7DA;
+      font-size: 18px;
+      font-weight: 400;
+      float: left;
+      padding: 20px 10px 10px 10px;
+    }
+
+    #featured_list > li > a > span.citation {
+      font-weight: 300;
+    }
+
+    #featured_list > li > a:hover {
+      background-color: #F3F3F3;
+    }
+        
+    #featured_list > li.active > a:hover {
+      background-color: #9A8D72;
+    }
+    
+    #featured_list > li:first-child > a {
+      border-radius: 6px 6px 0px 0px;
+    }
+    
+    #featured_list > li:last-child > a {
+      border-radius: 0px 0px 6px 6px;
+    }
+    
+    #featured_list .chevron-left {
+      float: left;
+    }
+    */
+/* CUSTOMIZE THE ACCORDIAN 
+-------------------------------------------------- */
+
+	.accordion-heading a.accordion-toggle {
+		display: inline-block; 
+	}    
+    
+/* CUSTOMIZE THE NAVBAR
+-------------------------------------------------- */
+    
+    .center {
+      float: none;
+      margin: 0 auto;
+    }
+    
+    nav#Navbar {
+      position: fixed;
+      top: 0px;
+      z-index: 200;
+      left: 50%;
+      width: 960px;
+      margin: 0px 0px 0px -480px;
+      float: none;      
+    }
+    
+    .navbar {
+      position: relative;
+      top: 20px;
+      border: none;
+      z-index: 210;
+      height: 55px;    
+    }
+
+    .navbar-inner {
+      border: none;
+      z-index: 220;
+    }
+    
+    .navbar .brand {
+      font-size: 48px;
+      font-weight: 300;
+      font-family: "Lato";
+      color: #992222;
+      letter-spacing: -3px;
+      margin: 7px 5px 7px 5px;
+      padding: 10px 40px 10px 0px;
+      float: left;
+      
+    }
+  
+    .navbar .nav > li > * {
+      margin: 7px 5px 7px 5px;
+    }
+
+    .navbar .nav > li > a {
+      color: #555555;
+      font-size: 18px;
+      font-family: "Lato";
+      font-weight: 400;
+      text-transform: uppercase;
+    }
+
+    .navbar .nav > li > a:focus,
+    .navbar .nav > li > a:hover {
+      color: #555555;
+      font-weight: 400;
+      background-color: #E5E5E5;
+      text-decoration: none;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      /*background-color: transparent;*/
+    }
+    
+    .navbar .nav > .active > a,
+    .navbar .nav > .active > a:hover,
+    .navbar .nav > .active > a:focus {
+      color: #555555;
+      font-weight: 400;
+      text-decoration: none;
+      background-color: #E5E5E5;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      -webkit-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
+         -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
+              box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
+    }
+
+    /* Offset the responsive button for proper vertical alignment */
+    .navbar .btn-navbar {
+      margin-top: 10px;
+    }
+
+    /* Offset the search div for proper vertical alignment */
+    .navbar .input-append {
+      margin: 5px 0px 0px 0px;
+      z-index: 290;
+    }
+
+    #Navbar form {
+      margin: 0px 0px 0px 0px;
+      padding: 0px 0px 0px 0px;
+    }
+    #Navbar i .user {
+      opacity: .6;
+    }
+    
+    ul.nav {
+      width: 85%;
+    }
+    #SignIn {
+      float: right;
+    }
+
+    /* CAROUSEL CSS
+    -------------------------------------------------- */
+
+    #Slides {
+      position: relative;
+      top: 0px;
+      z-index: 110;
+    }
+
+    /* Carousel base class */
+    .carousel {
+      width: 100%;
+      margin-bottom: 0px;
+      max-height: 400px;
+      
+    }
+
+    .carousel-control {
+      height: 80px;
+      margin-top: 0;
+      font-size: 120px;
+      font-weight: 300;
+      text-shadow: 0 1px 1px rgba(0,0,0,.4);
+      background-color: transparent;
+      border: 0;
+      z-index: 189;
+    }
+
+    .carousel .left {
+      left: 50px;
+      z-index: 190;
+    }
+    
+    .carousel .right {
+      right: 30px;
+      z-index: 191;
+    }
+
+    .carousel .item {
+      background-color: #FDFDFD; /* Fallback to solid color if the gradient fails */
+      background-image: -webkit-gradient(
+       linear,
+       left bottom,
+       left top,
+       color-stop(0.9, #FFFFFF),
+       color-stop(0.3, #FDFDFD)
+      );
+      z-index: 170;
+      /*
+      -webkit-transition: opacity 4s; 
+      -moz-transition: opacity 4s; 
+      -ms-transition: opacity 4s; 
+      -o-transition: opacity 4s; 
+      transition: opacity 4s;
+      */
+    	-webkit-transition:0.6s ease-in-out left;
+    	-moz-transition:0.6s ease-in-out left;
+    	-ms-transition:0.6s ease-in-out left;
+    	-o-transition:0.6s ease-in-out left;
+    	transition:0.6s ease-in-out left;
+      max-height: 400px;
+      overflow: hidden;
+    }
+    
+    .carousel-caption {
+      background: rgba(0,0,0,0.3);
+      position: absolute;
+      top: 150px;
+      left: 50%;
+      margin: 0px 0px 0px -250px;
+      width: 500px;
+      max-height: 130px;
+      z-index: 200;
+      padding: 10px 20px 10px 20px;
+      -webkit-border-radius: 6px;
+         -moz-border-radius: 6px;
+              border-radius: 6px;
+      
+    }
+    
+    .carousel-caption h1 {
+      margin: 0px;
+      line-height: 1.25;
+      font-family: "Lato";
+      font-weight: 400;
+      font-size: 36px;
+      color: #FDFDFD;
+    }
+    
+    .carousel-caption .lead {
+      margin: 0;
+      line-height: 1;
+      font-family: "Lato";
+      font-weight: 300;
+      font-size: 24px;
+      color: #FDFDFD;
+    }
+    .carousel-caption .btn-primary {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+    }
+
+  /* MAIN BODY CSS
+  -------------------------------------------------- */
+  /* Main body containing sidebar and content */
+    .main-body-padded {
+      padding-top: 90px;
+    }
+    
+    #sidebar_share {
+      margin: 20px 10px 10px 15px;
+    }
+    
+    h2.nav-header {
+      font: 400 18px/18px "Lato";
+      margin: 20px 10px 10px 15px;
+      padding: 3px 0px 3px 0px;
+      color: #555555;      
+    }
+
+    #refine .nav-list {
+      margin: 20px auto auto auto;
+    }
+    
+    ul#refine .nav-list .input-append {
+      max-width: 200px;
+    }
+
+    #browse .nav-list {
+      margin: 20px auto auto auto;
+      border: 1px solid #CCCCCC;
+    }
+    
+    ul#browse a i {
+      margin-right: 10px;
+    }
+    
+    ul#browse a {
+      font: 300 16px/16px "Lato";
+      color: #555555;
+    }
+
+    ul#browse a:hover, ul#browse a:focus  {
+      color: #3F3F3F;
+    }
+
+  /* About CSS
+  -------------------------------------------------- */
+    #About {
+		min-height: 800px;
+    }
+
+  /* Metadata rendering CSS
+  -------------------------------------------------- */
+    #Metadata {
+		min-height: 800px;
+    }
+    
+	/* Registry CSS
+	-------------------------------------------------- */
+    #RegistryEntryForm, 
+    #RegistryLogin, 
+    #RegistryResponse, 
+    #RegistryEntryReview, 
+    #RegistryGuide {
+		/*margin-top: 110px;*/
+		min-height: 800px;
+    }
+    
+    /* Larger modal for guide content */
+    .modal.large {
+    	width: 80%;
+    	margin-left: -40%;
+    }
+    
+  /* Data Catalog CSS
+  -------------------------------------------------- */
+	#mainBody {
+		min-height: 800px;
+	}
+
+  /* SIDEBAR CSS
+  -------------------------------------------------- */
+    #sidebar {
+      min-height: 400px;
+    }
+    
+    .sidebar-subhead {
+      color: #666666;
+      font-weight: bold;
+      text-transform:uppercase;
+      padding: 20px 0 10px 0;
+    }
+    
+    .sidebar-item {
+      color: #666666;
+      font-weight: bold;
+      padding: 5px;
+      border-radius: 5px;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      line-height: 25px;
+    }
+    
+    .sidebar-item-selected {
+      background-color: #AAAAAA;
+      color: #fff;
+      padding-top: 3px;
+      padding-bottom: 3px;
+    }
+
+/* RESULT CSS
+-------------------------------------------------- */
+    .result-header {
+      font-weight: bold;
+      border-bottom: thin solid;
+    }
+    
+    .result-header-count {
+      font-style: italic;
+    }
+    
+    .result-row {
+      display: inline-block;
+        border-bottom: thin solid;
+        padding: 5px;
+    }
+    
+    .result-row:hover { 
+    background-color: #eee;
+  }
+
+    .result-author {
+      font-weight: bold;
+    }
+    
+    .pagination {
+    	cursor: pointer;
+    	margin: auto;
+    }
+
+/* RESPONSIVE CSS
+-------------------------------------------------- */
+/*    
+    @media (max-width: 979px) {
+
+      .navbar-inner {
+        border-radius: 0;
+        margin: -20px 0;
+      }
+
+      .carousel .item {
+        height: 100%;
+      }
+      .carousel img {
+        width: auto;
+        height: 500px;
+      }
+
+      .featurette {
+        height: auto;
+        padding: 0;
+      }
+      .featurette-image.pull-left,
+      .featurette-image.pull-right {
+        display: block;
+        float: none;
+        max-width: 40%;
+        margin: 0 auto 20px;
+      }
+    }
+*/
+    /*
+    @media (max-width: 767px) {
+
+      .navbar-inner {
+        margin: -20px;
+      }
+
+      .carousel {
+        margin-left: -20px;
+        margin-right: -20px;
+      }
+      .carousel .container {
+
+      }
+      .carousel .item {
+        height: 300px;
+      }
+      .carousel img {
+        height: 300px;
+      }
+      .carousel-caption {
+        width: 65%;
+        padding: 0 70px;
+        margin-top: 100px;
+      }
+      .carousel-caption h1 {
+        font-size: 30px;
+      }
+      .carousel-caption .lead,
+      .carousel-caption .btn {
+        font-size: 18px;
+      }
+
+      .marketing .span4 + .span4 {
+        margin-top: 40px;
+      }
+
+      .featurette-heading {
+        font-size: 30px;
+      }
+      .featurette .lead {
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+    }
+    */
