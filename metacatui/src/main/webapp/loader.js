@@ -1,5 +1,5 @@
 // Step 1: Choose the theme here
-var skin = "knb";
+var skin = "default";
 var title = skin.toUpperCase() + " | Data Catalog";
 
 // Step 2: let everything else be taken care of by the app

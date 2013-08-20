@@ -2,10 +2,7 @@
 /*jshint unused:false */
 'use strict';
 
-// NOTE: change this to your skin name and then update the "map" config below
-// to include your overrides
-// NOTE 2: update the index.html file to use your CSS (TODO)
-//var skin = 'aoos';
+/** NOTE: The skin name and skinMap are specified in the loader.js file
 
 console.log("Using skin: " + skin);
 console.log("Using skinMap: " + skinMap);
