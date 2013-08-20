@@ -20,11 +20,12 @@
     <![endif]-->
 
     <!-- Fav and touch icons -->
+    <!-- TODO: include in separate themes -->
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="./img/knb-144.png">
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="./img/knb-114.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="./img/knb-72.png">
     <link rel="apple-touch-icon-precomposed" href="./img/knb-57.png">
-    <link rel="shortcut icon" href="./img/knb-favicon-32.png">
+
 </head>
 <body id="metacatui-app">
 
@@ -37,6 +38,25 @@
   <!-- Pull in correct skin configuration, then use Require.js to manage dependencies -->
   <script type="text/javascript">
   
+  	// Choose the theme here
+	var skin = "knb";
+	var title = skin.toUpperCase() + " | Data Catalog";
+	
+	loadSkin(skin);
+	loadCss(skin);
+	loadIcons(skin);
+	initApp(skin);
+	
+	function loadSkin(skin) {
+	    var script = document.createElement("script");
+	    script.setAttribute("type", "text/javascript");
+	    script.setAttribute("src", "themes/" + skin + "/config.js");
+	    document.getElementsByTagName("body")[0].appendChild(script);
+	    // the title
+	    if (title) {
+		    document.getElementsByTagName("title")[0].innerHTML=title;
+	    }
+	}
 	function loadCss(skin) {
 		var url = "./themes/" + skin + "/css/" + skin + ".css";
 	    var link = document.createElement("link");
@@ -45,11 +65,13 @@
 	    link.href = url;
 	    document.getElementsByTagName("head")[0].appendChild(link);
 	}
-	function initSkin(skin) {
-	    var script = document.createElement("script");
-	    script.setAttribute("type", "text/javascript");
-	    script.setAttribute("src", "themes/" + skin + "/config.js");
-	    document.getElementsByTagName("body")[0].appendChild(script);
+	function loadIcons(skin) {
+		var url = "./themes/" + skin + "/img/" + skin + "-favicon-32.png";
+	    var link = document.createElement("link");
+	    link.type = "image/png";
+	    link.rel = "shortcut icon";
+	    link.href = url;
+	    document.getElementsByTagName("head")[0].appendChild(link);
 	}
 	function initApp(skin) {
 	    var script = document.createElement("script");
@@ -57,12 +79,6 @@
 	    script.src = "components/require.js";
 	    document.getElementsByTagName("body")[0].appendChild(script);
 	}
-	
-	var skin = "default";
-	loadCss(skin);
-	initSkin(skin);
-	initApp(skin);
-  
   </script>
  
 </body>
