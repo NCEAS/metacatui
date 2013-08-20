@@ -11,23 +11,23 @@ var skin = 'aoos';
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
 require.config({
-  baseUrl: 'js/skins/default/',
+  baseUrl: 'themes/default/',
   map: {
       '*': {
     	  // example overrides are provided here
-    	  //'models/AboutModel' : '/js/skins/' + skin + '/models/AboutModel.js',
-    	  //'views/AboutView' : '/js/skins/' + skin + '/views/AboutView.js',
-    	  'templates/navbar.html' : '/js/skins/' + skin + '/templates/navbar.html'
+    	  //'models/AboutModel' : '/themes/' + skin + '/models/AboutModel.js',
+    	  //'views/AboutView' : '/themes/' + skin + '/views/AboutView.js',
+    	  'templates/navbar.html' : '/themes/' + skin + '/templates/navbar.html'
 
       }
   },
   paths: {
-    jquery: '../../../components/jquery',
-    underscore: '../../../components/underscore',
-    backbone: '../../../components/backbone',
-    bootstrap: '../../../components/bootstrap.min',
-    text: '../../../components/require-text',
-    moment: '../../../components/moment',
+    jquery: '../../components/jquery',
+    underscore: '../../components/underscore',
+    backbone: '../../components/backbone',
+    bootstrap: '../../components/bootstrap.min',
+    text: '../../components/require-text',
+    moment: '../../components/moment',
     registry: '/knb/style/common/templates/metacatui/entryForm'
   },
   shim: { /* used for libraries without native AMD support */
@@ -72,10 +72,10 @@ var loader = function(err) {
 			}
 			var modulePath = null;
 			if (module.indexOf("!") < 0) {
-				modulePath = "/js/skins/default/" + module + ".js";
+				modulePath = "/themes/default/" + module + ".js";
 			} else {
 				var parts = module.split("!");
-				modulePath = parts[0] + "!" + "../js/skins/default/" + parts[1];
+				modulePath = parts[0] + "!" + "../themes/default/" + parts[1];
 			}
 			
 			console.log("2. Loading default from: " + modulePath);
