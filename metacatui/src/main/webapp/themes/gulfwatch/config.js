@@ -1,4 +1,4 @@
-var skin = skin || "aoos";
+var skin = skin || "gulfwatch";
 var skinMap = 
 {
 	'*': {
