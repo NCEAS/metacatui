@@ -1,0 +1,32 @@
+MetacatUI Themes
+-----------------
+The "default" theme is included in the '/themes/' directory and provides all the 
+models, collections, views, routers, and templates required to run a default 
+Metacat UI.
+
+Additional themes (e.g., "knb") provide alternative resources for 
+items that will override the default theme. Each theme is a subdirectory named to 
+match the name of the theme and mimics the structure of the default theme.
+
+To switch themes:
+-Edit the top-level '/loader.js' file and specify the name of the theme to use.
+That's it!
+
+Required items for a theme:
+	'/themes/<skin>/config.js'
+	'/themes/<skin>/css/<skin>.css'
+	'/themes/<skin>/img/<skin>-favicon-32.png'
+
+About CSS:
+Each theme uses a '/themes/<skin>/css/<skin>.css' file that is pulled in during the initial
+application loading. A copy of the default can be used and modified as needed.
+
+To override html templates (or any other resource, like a Model or View):
+-Copy the resource into the same child location, but in the new theme subdirectory.
+-Edit that resource as needed.
+-Add an entry to the theme's config.js file specifying that new resource.
+
+Example (using navbar):
+-Copy '/themes/default/templates/navbar.html' to '/themes/<skin>/templates/navbar.html'
+-Edit '/themes/<skin>/config.js' to include:
+	'templates/navbar.html' : '/themes/' + skin + '/templates/navbar.html',
