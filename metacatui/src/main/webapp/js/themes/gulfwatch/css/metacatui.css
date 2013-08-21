@@ -74,12 +74,10 @@ Normal 400
 		
     body > section > article {
       min-height: 800px;
-      /*margin: 135px auto auto auto;*/
       font-weight: 400;
       font-size: 110%;
       line-height: 1.5;
-      margin: 150px auto auto auto;
-      padding-bottom: 40px;  			
+      padding: 60px 0px 40px 0px;  			
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
