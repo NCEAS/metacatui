@@ -1,24 +1,25 @@
 MetacatUI Themes
 -----------------
-The "default" theme is included in the 'themes/' directory and provides all the 
-models, collections, views, routers, and templates required to run a default 
-Metacat UI.
+All the default models, collections, views, routers, and templates required to run a default 
+Metacat UI are in the 'js/' directory.
+The "default" theme is included in the 'js/themes/' directory and is used to style the default 
+resources with CSS and images.
 
 Additional themes (e.g., "knb") provide alternative resources for 
-items that will override the default theme. Each theme is a subdirectory named to 
-match the name of the theme and mimics the structure of the default theme.
+items that will override the default theme. Each theme is a subdirectory in 'js/themes'
+named to match the theme name and mimics the structure of the default resources in 'js/'.
 
 To switch themes:
 -Edit the top-level 'loader.js' file and specify the name of the theme to use.
 That's it!
 
 Required items for a theme:
-	'themes/<theme>/config.js'
-	'themes/<theme>/css/metacatui.css'
-	'themes/<theme>/img/favicon-32.png'
+	'js/themes/<theme>/config.js'
+	'js/themes/<theme>/css/metacatui.css'
+	'js/themes/<theme>/img/favicon-32.png'
 
 About CSS:
-Each theme uses a 'themes/<theme>/css/metacatui.css' file that is pulled in during the initial
+Each theme uses a 'js/themes/<theme>/css/metacatui.css' file that is pulled in during the initial
 application loading. A copy of the default can be used and modified as needed.
 
 To override html templates (or any other resource, like a Model or View):
@@ -27,6 +28,8 @@ To override html templates (or any other resource, like a Model or View):
 -Add an entry to the theme's config.js file specifying that new resource.
 
 Example (using navbar):
--Copy 'themes/default/templates/navbar.html' to 'themes/<theme>/templates/navbar.html'
--Edit 'themes/<theme>/config.js' to include:
+-Copy 'js/templates/navbar.html' to 'js/themes/<theme>/templates/navbar.html'
+-Edit 'js/themes/<theme>/config.js' to include:
 	'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',
+	
+	

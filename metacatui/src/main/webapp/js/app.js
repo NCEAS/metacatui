@@ -11,15 +11,15 @@ console.log("Using themeMap: " + themeMap);
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
 require.config({
-  baseUrl: 'themes/default/',
+  baseUrl: 'js/',
   map: themeMap,
   paths: {
-    jquery: '../../components/jquery',
-    underscore: '../../components/underscore',
-    backbone: '../../components/backbone',
-    bootstrap: '../../components/bootstrap.min',
-    text: '../../components/require-text',
-    moment: '../../components/moment',
+    jquery: '../components/jquery',
+    underscore: '../components/underscore',
+    backbone: '../components/backbone',
+    bootstrap: '../components/bootstrap.min',
+    text: '../components/require-text',
+    moment: '../components/moment',
     registry: '/knb/style/common/templates/metacatui/entryForm'
   },
   shim: { /* used for libraries without native AMD support */

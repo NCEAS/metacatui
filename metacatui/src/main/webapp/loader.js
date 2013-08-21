@@ -1,5 +1,5 @@
 // Step 1: Choose the theme here
-var theme = "default";
+var theme = "gulfwatch";
 var title = theme.toUpperCase() + " | Data Catalog";
 
 // Step 2: let everything else be taken care of by the app
@@ -11,7 +11,7 @@ initApp(theme);
 function loadTheme(theme) {
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", "themes/" + theme + "/config.js");
+    script.setAttribute("src", "js/themes/" + theme + "/config.js");
     document.getElementsByTagName("body")[0].appendChild(script);
     // the title
     if (title) {
@@ -19,7 +19,7 @@ function loadTheme(theme) {
     }
 }
 function loadCss(theme) {
-	var url = "./themes/" + theme + "/css/metacatui.css";
+	var url = "./js/themes/" + theme + "/css/metacatui.css";
     var link = document.createElement("link");
     link.type = "text/css";
     link.rel = "stylesheet";
@@ -27,7 +27,7 @@ function loadCss(theme) {
     document.getElementsByTagName("head")[0].appendChild(link);
 }
 function loadIcons(theme) {
-	var url = "./themes/" + theme + "/img/favicon-32.png";
+	var url = "./js/themes/" + theme + "/img/favicon-32.png";
     var link = document.createElement("link");
     link.type = "image/png";
     link.rel = "shortcut icon";
@@ -36,7 +36,7 @@ function loadIcons(theme) {
 }
 function initApp(theme) {
     var script = document.createElement("script");
-    script.setAttribute("data-main", "themes/app.js");
+    script.setAttribute("data-main", "js/app.js");
     script.src = "components/require.js";
     document.getElementsByTagName("body")[0].appendChild(script);
 }
