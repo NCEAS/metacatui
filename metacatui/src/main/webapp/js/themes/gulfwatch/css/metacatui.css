@@ -33,17 +33,26 @@ Normal 400 Italic
 Bold 700
 Bold 700 Italic
 */
+@import url(http://fonts.googleapis.com/css?family=Muli:400,400italic);
+/* Muli weights:
+Normal 400
+Normal italic 400
+*/
+@import url(http://fonts.googleapis.com/css?family=Cinzel);
+/* Cinzel weights:
+Normal 400
+*/
 
 /* Body CSS
 -------------------------------------------------- */
     body {
       color: #555555;
-      background-color: #FDFDFD;
-      font-family: "Lato", "Helvetica Nueue", "Helvetica", "sans serif";
+      background-color: #E9E9E1;
+      font-family: "Muli", "Helvetica Nueue", "Helvetica", "sans serif";
     }
 
     body p {
-      font-weight: 300;
+      font-weight: 400;
       line-height: 1.5;
     }
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
@@ -60,16 +69,17 @@ Bold 700 Italic
     body > #Content {
     	position: relative;
     	margin: 0px 0px auto 0px;
-    	min-height: 400px;
+    	min-height: 600px;
+    	padding-top: 60px;
     }
 		
     body > section > article {
       min-height: 800px;
       /*margin: 135px auto auto auto;*/
-      font-weight: 300;
+      font-weight: 400;
       font-size: 110%;
       line-height: 1.5;
-      margin: 175px auto auto auto;
+      margin: 150px auto auto auto;
       padding-bottom: 40px;  			
     }
     
@@ -88,7 +98,7 @@ Bold 700 Italic
     }
     
     a {
-      color: #115E95; /*blue from the earthtones pallette */
+      color: #00b3ed; 
     }
     
     div.row-fluid > a[name] {
@@ -112,18 +122,27 @@ Bold 700 Italic
 	#Eml h4, .well, .control-label {
 		color: #555555;
 	}
+	
+	.well > div > div.span10 {
+	  width: 72%;
+	}
+	
+	.well > div > div.span2 {
+	  width: 12%;
+	}
 
 
 /* HEADER CSS
 -------------------------------------------------- */    
   header#Header {
-    position: fixed;
+    position: absolute;
     top: 0px;
     z-index: 100;
-    height: 95px;
-    background-color: #FDFDFD;
+    height: 175px;
+    background-color: #009999;
     overflow: hidden;
-    opacity: 1.0;    
+    opacity: 1.0;
+    width:100%;    
   }
   
   header#mainHeader {
@@ -156,7 +175,7 @@ Bold 700 Italic
       padding-bottom: 30px;
       margin-top: 0px;
       color: #FDFDFD;
-      background-color: #3F3F3F;
+      background-color: #5A5758;
     }
         
     footer#Footer div#FooterHeading {
@@ -164,14 +183,14 @@ Bold 700 Italic
     }
 
     footer#Footer h2 {
-      font: 300 25px/25px "Lato";
+      font: 700 14px/14px "Muli";
       vertical-align: middle;
       padding: 0;
-      line-height: 48px;
+      line-height: 16px;
     }
         
     footer#Footer h3 {
-      font: 800 30px/30px "Open Sans";
+      font: 700 30px/30px "Muli";
       text-align: center;
       padding: 0px 0px 20px 0px;
       margin-bottom: -25px;
@@ -180,7 +199,7 @@ Bold 700 Italic
     }
 
     footer#Footer h3 > span {
-      font: 400 30px/30px "Gentium Book Basic";
+      font: 400 30px/30px "Muli";
       font-style: italic;
     }
     
@@ -192,7 +211,7 @@ Bold 700 Italic
     }
     
     footer#Footer h4.subheading > span {
-      font: 400 30px/30px "Gentium Book Basic";
+      font: 400 30px/30px "Muli";
       font-style: italic;
       text-transform: uppercase;
       background-color: #3F3F3F;
@@ -206,7 +225,7 @@ Bold 700 Italic
     }
     
     footer#Footer ul.helpitems li {
-      font: 100 20px/20px "Lato";
+      font: 400 14px/14px "Muli";
       vertical-align: baseline;
       margin: 15px 0px 0px 0px;                 
     }
@@ -216,20 +235,18 @@ Bold 700 Italic
       text-decoration: none;      
     }
     
-    footer#Footer a:hover {
-      color: #FFFFFF;
-      font-weight: 300;
-      text-decoration: none;      
+    ul.helpitems a:hover {
+       text-decoration: underline;
     }
     
     footer#Footer .disclaimer {
       color: #FDFDFD;
-      font: 100 14px/14px "Lato";      
+      font: 100 14px/14px "Muli";      
     }
     
     footer#Footer .logo {
       color: #D9D9D9;
-      font: 300 48px "Lato";
+      font: 400 48px "Muli";
       line-height: 1.0;
       letter-spacing: -3px;
       margin: 0px 0px 15px 0px;
@@ -252,6 +269,20 @@ Bold 700 Italic
       margin: 20px auto 20px -94px;
     }
     
+    .subfooter ul{
+      float:right;
+      list-style:none;
+    }
+    
+    .subfooter ul li{
+      float: left;
+      padding: 0px 5px;
+    }
+    
+    .subfooter ul li:nth-child(n+2){
+      border-left: 1px solid #FFFFFF;
+    }
+    
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 400;
       background-image: none;
@@ -264,24 +295,17 @@ Bold 700 Italic
     }
     
     .btn-primary {
-      background-color: #992222;
+      background-color: #009999;
       color: #FFFFFF;
       
     }
-    
-    .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
-		background-color: #f5f5f5;
-		color: #555555;
-		text-shadow: none;
-    }
-    
     button.btn-primary a {
       color: #FFFFFF;
       text-decoration: none;
     }
         
     .btn-primary:hover {
-      background-color: #882222;
+      background-color: #008585;
       color: #FDFDFD;
       background-image: none;
       background-repeat: none;
@@ -316,17 +340,17 @@ Bold 700 Italic
       background-color: #899CA6;
       padding-top: 20px;
       color: #FDFDFD;
-			min-height: 400px;
+	  min-height: 400px;
     }
 
     section#Features h4 {
       font-size: 160%;
-      font-weight: 300;
+      font-weight: 400;
     }
 
     section#Features p {
       font-size: 110%;
-      font-weight: 300;
+      font-weight: 400;
       line-height: 1.75;
       margin-bottom: 30px;
     }
@@ -359,10 +383,10 @@ Bold 700 Italic
     }
 		
 	  #FeaturedData h2 {
-	  	font-weight: 300;
-      color: #FDFDFD;
-      text-decoration: none;
-      width: 450px;
+	  	font-weight: 400;
+        color: #FDFDFD;
+        text-decoration: none;
+        width: 450px;
 	  }
         
     #FeaturedData h2 a {
@@ -455,7 +479,7 @@ Bold 700 Italic
     }
 
     #featured_list > li.active > a {
-      background-color: #9A8D72;
+      background-color: #009999;
       color: #FDFDFD;
       font-size: 18px;
       font-weight: 400;
@@ -475,7 +499,7 @@ Bold 700 Italic
     }
 
     #featured_list > li > a > span.citation {
-      font-weight: 300;
+      font-weight: 400;
     }
 
     #featured_list > li > a:hover {
@@ -514,7 +538,7 @@ Bold 700 Italic
     }
     
     nav#Navbar {
-      position: fixed;
+      position: relative;
       top: 0px;
       z-index: 200;
       left: 50%;
@@ -534,18 +558,23 @@ Bold 700 Italic
     .navbar-inner {
       border: none;
       z-index: 220;
+      padding: 0px;
+      background: none;
+      border: 0px;
+      box-shadow: none;
+      -moz-box-shadow: none;
+      
     }
     
-    .navbar .brand {
-      font-size: 48px;
-      font-weight: 300;
-      font-family: "Lato";
-      color: #992222;
-      letter-spacing: -3px;
-      margin: 7px 5px 7px 5px;
-      padding: 10px 40px 10px 0px;
+    .navbar .nav {
+      float:right;
+      width:780px;
+    }
+    
+    
+    .navbar #logo {
+      width: 160px;
       float: left;
-      
     }
   
     .navbar .nav > li > * {
@@ -553,23 +582,22 @@ Bold 700 Italic
     }
 
     .navbar .nav > li > a {
-      color: #555555;
-      font-size: 18px;
-      font-family: "Lato";
+      color: #FFFFFF;
+      font-size: 16px;
+      font-family: "Muli";
       font-weight: 400;
-      text-transform: uppercase;
+      padding: 5px 10px;
     }
 
     .navbar .nav > li > a:focus,
     .navbar .nav > li > a:hover {
-      color: #555555;
-      font-weight: 400;
-      background-color: #E5E5E5;
-      text-decoration: none;
+      color: #FFFFFF;
+      font-size: 16px;
+      background-color: #008585;
+      border-radius: 5px;
       -webkit-border-radius: 5px;
       -moz-border-radius: 5px;
-      border-radius: 5px;
-      /*background-color: transparent;*/
+      text-decoration: none;
     }
     
     .navbar .nav > .active > a,
@@ -609,10 +637,22 @@ Bold 700 Italic
     ul.nav {
       width: 85%;
     }
-    #SignIn {
-      float: right;
-    }
 
+
+	.pagetitle {
+	  text-transform: uppercase;
+	  font-size: 50px;
+	  font-family: "Cinzel", serif;
+	  font-weight:700;
+	  margin: 55px 0 20px 10px;
+	  width: 775px;
+	  float: right;
+	}
+	
+	.pagetitle span{
+	  font-size: 60px;
+	}
+	
     /* CAROUSEL CSS
     -------------------------------------------------- */
 
@@ -634,7 +674,7 @@ Bold 700 Italic
       height: 80px;
       margin-top: 0;
       font-size: 120px;
-      font-weight: 300;
+      font-weight: 400;
       text-shadow: 0 1px 1px rgba(0,0,0,.4);
       background-color: transparent;
       border: 0;
@@ -696,7 +736,7 @@ Bold 700 Italic
     .carousel-caption h1 {
       margin: 0px;
       line-height: 1.25;
-      font-family: "Lato";
+      font-family: "Muli";
       font-weight: 400;
       font-size: 36px;
       color: #FDFDFD;
@@ -705,8 +745,8 @@ Bold 700 Italic
     .carousel-caption .lead {
       margin: 0;
       line-height: 1;
-      font-family: "Lato";
-      font-weight: 300;
+      font-family: "Muli";
+      font-weight: 400;
       font-size: 24px;
       color: #FDFDFD;
     }
@@ -723,20 +763,50 @@ Bold 700 Italic
       padding-top: 90px;
     }
     
+    a {
+       color: #00b3ed;
+    }
+    
+    a:hover {
+       color: #00b3ed;
+       text-decoration: underline;
+    }
     #sidebar_share {
       margin: 20px 10px 10px 15px;
     }
     
+    #search_txt_side{
+      width: 70%;
+    }
+    
     h2.nav-header {
-      font: 400 18px/18px "Lato";
+      font: 700 18px/18px "Muli";
       margin: 20px 10px 10px 15px;
       padding: 3px 0px 3px 0px;
       color: #555555;      
     }
 
+	.nav-list > .active > a {
+	  background-color:#009999;
+	}
+	
+	.nav-list > .active > a:hover {
+	   background-color: #009999;
+	}
+	
+	.nav-list > .active > a:active {
+	   background-color: #009999;
+	}
+	
+	.nav-list > li > a:hover {
+	   background-color: #009999;
+	   color: #FFFFFF;
+	}
+	   
     #refine .nav-list {
       margin: 20px auto auto auto;
     }
+    
     
     ul#refine .nav-list .input-append {
       max-width: 200px;
@@ -752,12 +822,16 @@ Bold 700 Italic
     }
     
     ul#browse a {
-      font: 300 16px/16px "Lato";
+      font: 400 16px/16px "Muli";
       color: #555555;
     }
 
     ul#browse a:hover, ul#browse a:focus  {
       color: #3F3F3F;
+    }
+    
+    .result-citation{
+       width: 82%;
     }
 
   /* About CSS
@@ -772,6 +846,17 @@ Bold 700 Italic
 		min-height: 800px;
     }
     
+    #Metadata > .container {
+      background-color: #FFFFFF;
+	  box-shadow: 0 0 0 10px #FFFFFF;
+	  border: 1px solid #D1D3D4;
+	  padding: 20px;
+    }
+    
+    #publish {
+      background-color: #009999;
+    }
+    
 	/* Registry CSS
 	-------------------------------------------------- */
     #RegistryEntryForm, 
@@ -783,6 +868,14 @@ Bold 700 Italic
 		min-height: 800px;
     }
     
+    #RegistryLogin > .container,
+    #RegistryEntryForm > .container {
+        background-color: #FFFFFF;
+	    box-shadow: 0 0 0 10px #FFFFFF;
+		border: 1px solid #D1D3D4;
+		padding: 20px;
+    }
+    
     /* Larger modal for guide content */
     .modal.large {
     	width: 80%;
@@ -792,13 +885,33 @@ Bold 700 Italic
   /* Data Catalog CSS
   -------------------------------------------------- */
 	#mainBody {
-		min-height: 800px;
+		min-height: 500px;
+		display:table;
+		width: 960px;
+	}
+	 
+	#mainBody .span9 {
+	    width: 72.46808510638297%;
+	    background-color: #FFFFFF;
+	    box-shadow: 0 0 0 10px #FFFFFF;
+		border: 1px solid #D1D3D4;
+	}
+	
+	#mainBody .span3 {
+		width: 21.404255319148934%;
+		background-color: #FFFFFF;
+	    box-shadow: 0 0 0 10px #FFFFFF;
+		border: 1px solid #D1D3D4;
+		margin-left: 4.127659574468085%;
 	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
       min-height: 400px;
+      background-color:#FFFFFF;
+      box-shadow: 0 0 0 10px #FFFFFF;
+      border:1px solid #D1D3D4;
     }
     
     .sidebar-subhead {
@@ -823,6 +936,14 @@ Bold 700 Italic
       color: #fff;
       padding-top: 3px;
       padding-bottom: 3px;
+    }
+    
+    .btn {
+       padding: 4px 5px;
+    }
+    
+    #search-txt-side {
+      width: 70%;
     }
 
 /* RESULT CSS
@@ -854,6 +975,7 @@ Bold 700 Italic
     	cursor: pointer;
     	margin: auto;
     }
+    
 
 /* RESPONSIVE CSS
 -------------------------------------------------- */
