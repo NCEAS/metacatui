@@ -17,7 +17,6 @@ define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates
 			
 			// request a smaller header
 			appModel.set('headerType', 'default');
-			appModel.set('navbarPosition', 'fixed');		
 			
 			console.log('Rendering the about view');
 			this.$el.html(this.template());

@@ -21,20 +21,17 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			//this.listenTo(appModel, 'change:username', this.render);
 			this.listenTo(appModel, 'change:fullName', this.render);
 			this.listenTo(appModel, 'change:searchTerm', this.render);
-			this.listenTo(appModel, 'change:navbarPosition', this.render);
+			this.listenTo(appModel, 'change:headerType', this.render);
 		},
 				
 		render: function () {
 			console.log('Rendering the navbar');
 			
-			// set the davbar positioning based on what the page requested
-			var navbarPosition = appModel.get('navbarPosition');
-			if ( navbarPosition ) {
-				$(this.$el).css('position', navbarPosition);
-				
-			} else {
-				$(this.$el).css('position', 'fixed'); // default to fixed
-				
+			// set the navbar [positioning] class based on what the page requested
+			var headerType = appModel.get('headerType');
+			$(this.$el).attr('class', '');
+			if (headerType) {
+				$(this.$el).addClass(headerType);
 			}
 			
 			// set the username in the template (can be null if not logged in)

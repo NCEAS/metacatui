@@ -72,7 +72,6 @@ define(['jquery',
 
 			console.log('Rendering the DataCatlog view');
 			appModel.set('headerType', 'default');
-			appModel.set('navbarPosition', 'fixed');
 			
 			var cel = this.template(
 					{

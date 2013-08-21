@@ -523,6 +523,14 @@ Bold 700 Italic
       float: none;      
     }
     
+    /* Depending on the headerType, these classes apply */
+    nav#Navbar.main {
+      position: absolute;
+    }
+    nav#Navbar.default {
+      position: fixed;
+    }
+    
     .navbar {
       position: relative;
       top: 20px;

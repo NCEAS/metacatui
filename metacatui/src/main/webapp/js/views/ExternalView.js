@@ -107,7 +107,6 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			// request a smaller header
 			appModel.set('headerType', 'default');
-			appModel.set('navbarPosition', 'fixed');
 			
 			// catch all link clicks so we navigate within the UI - careful when calling this!
 			this.undelegateEvents();
