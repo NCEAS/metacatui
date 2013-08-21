@@ -48,19 +48,30 @@ var aboutModel = aboutModel || {};
 var toolsModel = toolsModel || {};
 var appSearchResults = appSearchResults || {};
 
-/* require libraries that are needed  */
-require(['backbone', 'routers/router', 'views/AppView', 'models/AppModel', 'models/AboutModel', 'models/ToolsModel', 'collections/SolrResults'],
-function(Backbone, UIRouter, AppView, AppModel, AboutModel, ToolsModel, SolrResultList) {
+
+/* Setup the application scaffolding first  */
+require(['bootstrap', 'views/AppView', 'models/AppModel'],
+function(Bootstrap, AppView, AppModel) {
 	'use strict';  
     		
+	// initialize the application to get the index.html scaffolding in place
 	appModel = new AppModel();
-	aboutModel = new AboutModel();
-	toolsModel = new ToolsModel();
 	appView = new AppView();
-	appSearchResults = new SolrResultList([], {});
-			
-	// Initialize routing and start Backbone.history()
-	uiRouter = new UIRouter();
-	Backbone.history.start();   
+	
+	/* Now require the rest of the libraries for the application */
+	require(['backbone', 'routers/router', 'models/AboutModel', 'models/ToolsModel', 'collections/SolrResults'],
+	function(Backbone, UIRouter, AboutModel, ToolsModel, SolrResultList) {
+		'use strict';  
+	    		
+		aboutModel = new AboutModel();
+		toolsModel = new ToolsModel();
+		appSearchResults = new SolrResultList([], {});
+				
+		// Initialize routing and start Backbone.history()
+		uiRouter = new UIRouter();
+		Backbone.history.start();   
+	    	
+	});
     	
 });
+

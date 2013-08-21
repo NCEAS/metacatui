@@ -4,9 +4,10 @@ define(['jquery',
 				'backbone',
 				'views/NavbarView',
 				'views/MainHeaderView',
-				'views/FooterView'
+				'views/FooterView',
+				'text!templates/app.html'
 				], 				
-	function($, _, Backbone, NavbarView, MainHeaderView, FooterView) {
+	function($, _, Backbone, NavbarView, MainHeaderView, FooterView, AppTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -18,8 +19,14 @@ define(['jquery',
 		// the App already present in the HTML.
 		el: '#metacatui-app',
 		
+		template: _.template(AppTemplate),
+		
 		initialize: function () {
 			console.log('Rendering fixed subviews within the AppView');
+			
+			// set up the body
+			console.log("Setting up app body");
+			this.$el.append(this.template());
 			
 			// check the user status whenever we render the main application
 			this.checkUserStatus();

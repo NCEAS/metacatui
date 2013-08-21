@@ -32,6 +32,8 @@ define(['jquery',
 			appModel.set('headerType', 'main');
 			
 			// Add in the Features section
+			console.log("el: " + this.el);
+						
 			this.$el.html('<section id="Features" /><section id="FeaturedData" />');			
 			var featuresView = new FeaturesView();
 			featuresView.setElement($('#Features')).render();
