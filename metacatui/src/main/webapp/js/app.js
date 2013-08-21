@@ -44,8 +44,6 @@ var app = app || {};
 var appView = appView || {};
 var uiRouter = uiRouter || {};
 var appModel = appModel || {};
-var aboutModel = aboutModel || {};
-var toolsModel = toolsModel || {};
 var appSearchResults = appSearchResults || {};
 
 
@@ -59,12 +57,10 @@ function(Bootstrap, AppView, AppModel) {
 	appView = new AppView();
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 'routers/router', 'models/AboutModel', 'models/ToolsModel', 'collections/SolrResults'],
-	function(Backbone, UIRouter, AboutModel, ToolsModel, SolrResultList) {
+	require(['backbone', 'routers/router', 'collections/SolrResults'],
+	function(Backbone, UIRouter, SolrResultList) {
 		'use strict';  
 	    		
-		aboutModel = new AboutModel();
-		toolsModel = new ToolsModel();
 		appSearchResults = new SolrResultList([], {});
 				
 		// Initialize routing and start Backbone.history()

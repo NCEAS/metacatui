@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/ToolsModel', 'text!templates/tools.html'], 				
-	function($, _, Backbone, ToolsModel, ToolsTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/tools.html'], 				
+	function($, _, Backbone, ToolsTemplate) {
 	'use strict';
 		
 	// Build the tools view of the application
@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/ToolsModel', 'text!templates
 		},
 		
 		postRender: function() {
-			var anchorId = toolsModel.get('anchorId');
+			var anchorId = appModel.get('anchorId');
 			if (anchorId) {
 				this.scrollToAnchor(anchorId);
 			} else {

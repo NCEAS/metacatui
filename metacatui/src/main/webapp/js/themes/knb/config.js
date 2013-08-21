@@ -5,7 +5,6 @@ var themeMap =
 		// Template overrides are provided here
 		
 		// Resources (js) omit extension
-		//'models/AboutModel' : 'themes/' + theme + '/models/AboutModel',
 		//'views/AboutView' : 'themes/' + theme + '/views/AboutView',
 		'routers/router' : 'themes/' + theme + '/routers/router',
 		

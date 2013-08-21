@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates/about.html'], 				
-	function($, _, Backbone, AboutModel, AboutTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/about.html'], 				
+	function($, _, Backbone, AboutTemplate) {
 	'use strict';
 		
 	// Build the main header view of the application
@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/AboutModel', 'text!templates
 		},
 		
 		postRender: function() {
-			var anchorId = aboutModel.get('anchorId');
+			var anchorId = appModel.get('anchorId');
 			if (anchorId) {
 				this.scrollToAnchor(anchorId);
 			} else {

@@ -40,7 +40,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		
 		renderAbout: function (anchorId) {
 			console.log('Called UIRouter.renderAbout()');
-			aboutModel.set('anchorId', anchorId);
+			appModel.set('anchorId', anchorId);
 			appView.showView(aboutView);
 		},
 		
@@ -50,7 +50,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		
 		renderTools: function (anchorId) {
 			console.log('Called UIRouter.renderTools()');
-			toolsModel.set('anchorId', anchorId);
+			appModel.set('anchorId', anchorId);
 			appView.showView(toolsView);
 		},
 		
