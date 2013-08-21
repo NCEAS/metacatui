@@ -48,55 +48,6 @@ var aboutModel = aboutModel || {};
 var toolsModel = toolsModel || {};
 var appSearchResults = appSearchResults || {};
 
-//this function allows us to override modules for a theme, but fall back to the default when no override is present
-var loader = function(err) {    
-	if (err.requireModules) {
-		for(var i = 0; i < err.requireModules.length; i++) {
-			var module = err.requireModules[i];
-			console.log("1. Could not find: " + module);
-			requirejs.undef(module);
-//			requirejs.config({
-//				baseUrl: 'themes/'
-//			});
-			// find the module manually
-			if (module.indexOf("/") == 0) {
-				throw err;
-			}
-			var modulePath = null;
-			if (module.indexOf("!") < 0) {
-				modulePath = "/themes/default/" + module + ".js";
-			} else {
-				var parts = module.split("!");
-				modulePath = parts[0] + "!" + "../themes/default/" + parts[1];
-			}
-			
-			console.log("2. Loading default from: " + modulePath);
-			var errBack = function(err) {
-				console.log("Err: " + err.message);
-				loader(err);
-			};
-			require(
-					[modulePath], 
-					function() {
-						console.log("Callback loaded: " + modulePath);
-					},
-					errBack);
-			
-			// map to the new source to the same module
-			// PRIVATE API
-			var originalMap = requirejs.s.contexts._.config.map;
-			originalMap['*'][module] = modulePath;
-			requirejs.config(originalMap);
-		}
-	} else {
-		console.log("0. " + err.requireType + " - " + err.message);
-		throw err;
-	}
-};
-
-// set it to handle global errors
-//requirejs.onError = loader;
-
 /* require libraries that are needed  */
 require(['backbone', 'routers/router', 'views/AppView', 'models/AppModel', 'models/AboutModel', 'models/ToolsModel', 'collections/SolrResults'],
 function(Backbone, UIRouter, AppView, AppModel, AboutModel, ToolsModel, SolrResultList) {
