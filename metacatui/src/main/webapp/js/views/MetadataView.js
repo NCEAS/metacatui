@@ -2,9 +2,9 @@
 define(['jquery',
 		'underscore', 
 		'backbone',
-		'text!templates/sideBar.html'
+		'text!templates/publishDOI.html'
 		], 				
-	function($, _, Backbone, SideBarTemplate) {
+	function($, _, Backbone, PublishDoiTemplate) {
 	'use strict';
 	
 	var MetadataView = Backbone.View.extend({
@@ -13,7 +13,7 @@ define(['jquery',
 		
 		template: null,
 		
-		sideTemplate: _.template(SideBarTemplate),
+		doiTemplate: _.template(PublishDoiTemplate),
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -45,7 +45,7 @@ define(['jquery',
 							viewRef.showMessage(response);
 						} else {
 							viewRef.insertResourceMapLink(pid);
-							viewRef.insertSideBar(pid);
+							viewRef.insertDoiButton(pid);
 						}
 						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
@@ -88,7 +88,7 @@ define(['jquery',
 		},
 		
 		// this will insert the DOI publish button
-		insertSideBar: function(pid) {
+		insertDoiButton: function(pid) {
 			
 			// see if the user is authorized to update this object
 			var authServiceUrl = appModel.get('authServiceUrl');
@@ -125,7 +125,7 @@ define(['jquery',
 						var populateTemplate = function(auth) {
 							// TODO: include SystemMetadata details
 							viewRef.$el.find("#Metadata").prepend(
-								viewRef.sideTemplate({
+								viewRef.doiTemplate({
 									isAuthorized: auth,
 									identifier: identifier,
 									formatId: formatId,
