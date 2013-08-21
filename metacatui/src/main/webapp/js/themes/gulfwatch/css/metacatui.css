@@ -70,7 +70,6 @@ Normal 400
     	position: relative;
     	margin: 0px 0px auto 0px;
     	min-height: 600px;
-    	padding-top: 60px;
     }
 		
     body > section > article {
@@ -244,21 +243,13 @@ Normal 400
       font: 100 14px/14px "Muli";      
     }
     
-    footer#Footer .logo {
-      color: #D9D9D9;
-      font: 400 48px "Muli";
-      line-height: 1.0;
-      letter-spacing: -3px;
-      margin: 0px 0px 15px 0px;
-      text-align: center;
-    }
-    
     footer#Footer .acknowledgements {
       margin-top: 40px;
     }
 
-    footer#Footer img {
-      opacity: .75;
+    footer#Footer img:first-of-type {
+      width: 110px;
+      margin: 0px 0px 20px 0px;
     }
 
     #footer_signup {
@@ -274,8 +265,9 @@ Normal 400
       list-style:none;
     }
     
-    .subfooter ul li{
+    .subfooter > ul > li{
       float: left;
+      display: inline;
       padding: 0px 5px;
     }
     
@@ -310,6 +302,10 @@ Normal 400
       background-image: none;
       background-repeat: none;
       
+    }
+    
+    .btn-primary[disabled] {
+      background-color: #649999;
     }
     
     #search_btn.btn {
@@ -852,10 +848,7 @@ Normal 400
 	  border: 1px solid #D1D3D4;
 	  padding: 20px;
     }
-    
-    #publish {
-      background-color: #009999;
-    }
+   
     
 	/* Registry CSS
 	-------------------------------------------------- */
