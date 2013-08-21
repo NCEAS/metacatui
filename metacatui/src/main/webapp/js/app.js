@@ -40,12 +40,10 @@ require.config({
   }
 });
 
-var app = app || {};
+var appModel = appModel || {};
 var appView = appView || {};
 var uiRouter = uiRouter || {};
-var appModel = appModel || {};
 var appSearchResults = appSearchResults || {};
-
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],

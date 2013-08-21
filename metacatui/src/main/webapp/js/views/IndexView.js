@@ -8,9 +8,7 @@ define(['jquery',
 				], 				
 	function($, _, Backbone, Bootstrap, FeaturesView, FeaturedDataView) {
 	'use strict';
-	
-	var app = app || {};
-	
+		
 	// Our overall **AppView** is the top-level piece of UI.
 	var IndexView = Backbone.View.extend({
 
