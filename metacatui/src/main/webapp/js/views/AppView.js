@@ -5,9 +5,10 @@ define(['jquery',
 				'views/NavbarView',
 				'views/MainHeaderView',
 				'views/FooterView',
+				'text!templates/appHead.html',
 				'text!templates/app.html'
 				], 				
-	function($, _, Backbone, NavbarView, MainHeaderView, FooterView, AppTemplate) {
+	function($, _, Backbone, NavbarView, MainHeaderView, FooterView, AppHeadTemplate, AppTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -21,8 +22,14 @@ define(['jquery',
 		
 		template: _.template(AppTemplate),
 		
+		appHeadTemplate: _.template(AppHeadTemplate),
+		
 		initialize: function () {
 			console.log('Rendering fixed subviews within the AppView');
+			
+			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
+			console.log("Setting up app head");
+			$("head").prepend(this.appHeadTemplate());
 			
 			// set up the body
 			console.log("Setting up app body");

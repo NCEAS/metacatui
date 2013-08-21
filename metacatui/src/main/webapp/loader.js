@@ -1,9 +1,5 @@
 // Step 1: Find the data-theme specified in the script include
 var theme = document.getElementById("loader").getAttribute("data-theme");
-var title = document.getElementById("loader").getAttribute("data-title");
-if (!title) {
-	title = theme.toUpperCase() + " | Data Catalog";
-}
 
 // Step 2: let everything else be taken care of by the app
 loadTheme(theme);
@@ -16,10 +12,6 @@ function loadTheme(theme) {
     script.setAttribute("type", "text/javascript");
     script.setAttribute("src", "js/themes/" + theme + "/config.js");
     document.getElementsByTagName("body")[0].appendChild(script);
-    // the title
-    if (title) {
-	    document.getElementsByTagName("title")[0].innerHTML=title;
-    }
 }
 function loadCss(theme) {
 	var url = "./js/themes/" + theme + "/css/metacatui.css";
