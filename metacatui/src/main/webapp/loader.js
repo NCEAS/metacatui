@@ -1,6 +1,9 @@
-// Step 1: Choose the theme here
-var theme = "gulfwatch";
-var title = theme.toUpperCase() + " | Data Catalog";
+// Step 1: Find the data-theme specified in the script include
+var theme = document.getElementById("loader").getAttribute("data-theme");
+var title = document.getElementById("loader").getAttribute("data-title");
+if (!title) {
+	title = theme.toUpperCase() + " | Data Catalog";
+}
 
 // Step 2: let everything else be taken care of by the app
 loadTheme(theme);
