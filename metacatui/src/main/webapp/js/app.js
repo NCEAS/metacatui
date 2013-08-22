@@ -2,10 +2,11 @@
 /*jshint unused:false */
 'use strict';
 
-/** NOTE: The theme name and themeMap are specified in the loader.js file
+/** NOTE: The theme name and themeMap are specified in the loader.js file **/
 
 console.log("Using theme: " + theme);
 console.log("Using themeMap: " + themeMap);
+console.log("Using metacatContext: " + metacatContext);
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
@@ -22,7 +23,7 @@ require.config({
     moment: '../components/moment',
     registry: [ 
                // use the path fallback in case there is no metacat installed here
-               '/knb/style/common/templates/metacatui/entryForm',
+               '/' + metacatContext + '/style/common/templates/metacatui/entryForm',
                // fallback to local version
                'scripts/entryForm'
                 ]
@@ -56,7 +57,7 @@ function(Bootstrap, AppView, AppModel) {
 	'use strict';  
     		
 	// initialize the application to get the index.html scaffolding in place
-	appModel = new AppModel();
+	appModel = new AppModel({context: '/' + metacatContext});
 	appView = new AppView();
 	
 	/* Now require the rest of the libraries for the application */
