@@ -20,7 +20,12 @@ require.config({
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
     moment: '../components/moment',
-    registry: 'scripts/entryForm'
+    registry: [ 
+               // use the path fallback in case there is no metacat installed here
+               '/knb/style/common/templates/metacatui/entryForm',
+               // fallback to local version
+               'scripts/entryForm'
+                ]
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
