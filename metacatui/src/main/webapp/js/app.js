@@ -20,7 +20,7 @@ require.config({
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
     moment: '../components/moment',
-    registry: '/knb/style/common/templates/metacatui/entryForm'
+    registry: 'scripts/entryForm'
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
