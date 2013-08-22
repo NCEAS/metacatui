@@ -632,7 +632,7 @@ Normal 400
     }
     
     ul.nav {
-      width: 85%;
+      width: 87%;
     }
 
 
@@ -782,6 +782,10 @@ Normal 400
       padding: 3px 0px 3px 0px;
       color: #555555;      
     }
+    
+    .nav-list{
+    	width: 100%;
+    }
 
 	.nav-list > .active > a {
 	  background-color:#009999;
@@ -796,7 +800,6 @@ Normal 400
 	}
 	
 	.nav-list > li > a:hover {
-	   background-color: #009999;
 	   color: #FFFFFF;
 	}
 	   
@@ -815,11 +818,11 @@ Normal 400
     }
     
     ul#browse a i {
-      margin-right: 10px;
+      margin-right: 7px;
     }
     
     ul#browse a {
-      font: 400 16px/16px "Muli";
+      font: 400 15px/15px "Muli";
       color: #555555;
     }
 
