@@ -8,6 +8,7 @@ var themeMap =
 		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
 		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
-		'routers/router' : 'themes/' + theme + '/routers/router'
+		'routers/router' : 'themes/' + theme + '/routers/router',
+		'templates/appHead.html' : 'themes/' + theme + '/templates/appHead.html'
 		}
 };
