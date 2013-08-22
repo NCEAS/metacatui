@@ -52,9 +52,10 @@ Normal 400
     }
 
     body p {
-      font-weight: 400;
+      font-weight: 400;"metacatui/src/main/webapp/index.html"
       line-height: 1.5;
     }
+
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block; 
       
@@ -95,9 +96,6 @@ Normal 400
     padding-top: 115px;
     }
     
-    a {
-      color: #00b3ed; 
-    }
     
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
@@ -160,6 +158,10 @@ Normal 400
     max-height: 40px;
     min-height: 40px;
     background-color: #FDFDFD;
+  }
+  
+  .progress .bar{
+  	background-color: #00b3ed;
   }
 
   
@@ -759,11 +761,11 @@ Normal 400
     }
     
     a {
-       color: #00b3ed;
+       color: #1388b7;
     }
     
     a:hover {
-       color: #00b3ed;
+       color: #1388b7;
        text-decoration: underline;
     }
     #sidebar_share {
@@ -951,7 +953,7 @@ Normal 400
     }
     
     .result-row {
-      display: inline-block;
+      display: block;
         border-bottom: thin solid;
         padding: 5px;
     }
