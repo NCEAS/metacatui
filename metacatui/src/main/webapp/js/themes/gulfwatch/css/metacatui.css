@@ -152,7 +152,7 @@ Normal 400
  * -------------------------------------------------- */    
   section#Notification {
     position: fixed;
-    top: 95px;
+    top: 175px;
     height: 40px;
     width: 100%;
     max-height: 40px;
