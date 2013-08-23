@@ -867,7 +867,7 @@ Normal 400
     
     #RegistryLogin > .container,
     #RegistryEntryForm > .container,
-    #RegistryResponse > .container
+    #RegistryResponse > .container,
     #RegsitryEntryReview > .container,
     #RegistryGuide > .container {
         background-color: #FFFFFF;
