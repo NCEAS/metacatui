@@ -73,6 +73,13 @@ Normal 400
     	min-height: 600px;
     	padding-top: 130px;
     }
+    
+    #Content .container{
+    	background-color: #FFFFFF;
+	    box-shadow: 0 0 0 10px #FFFFFF;
+		border: 1px solid #D1D3D4;
+		padding: 20px;
+    }
 		
     body > section > article {
       min-height: 800px;
