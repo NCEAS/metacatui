@@ -912,6 +912,14 @@ Normal 400
 		border: 1px solid #D1D3D4;
 		margin-left: 4.127659574468085%;
 	}
+	
+	#attributeTabs li > a{
+		word-wrap: break-word;
+	}
+	
+	#attributeTabs li > a:hover{
+		color: #1388b7;
+	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
