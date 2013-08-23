@@ -866,7 +866,10 @@ Normal 400
     }
     
     #RegistryLogin > .container,
-    #RegistryEntryForm > .container {
+    #RegistryEntryForm > .container,
+    #RegistryResponse > .container
+    #RegsitryEntryReview > .container,
+    #RegistryGuide > .container {
         background-color: #FFFFFF;
 	    box-shadow: 0 0 0 10px #FFFFFF;
 		border: 1px solid #D1D3D4;
