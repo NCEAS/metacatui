@@ -54,7 +54,12 @@ define(['jquery',
 			appModel.trigger('search');
 			
 			// make sure the browser knows where we are
-			uiRouter.navigate("data");
+			var route = Backbone.history.fragment;
+			if (route.indexOf("data") < 0) {
+				uiRouter.navigate("data");
+			} else {
+				uiRouter.navigate(route);
+			}
 			
 			// ...but don't want to follow links
 			return false;
@@ -98,13 +103,21 @@ define(['jquery',
 			this.$pagehead = this.$('#pagehead');
 			
 			// show the results by default
+			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
+			
+			// and go to a certain page if we have it
 			this.showResults();
 
 			return this;
 		},
 
-		showResults: function () {
+		showResults: function (page) {
 
+			var page = appModel.get("page");
+			if (page == null) {
+				page = 0;
+			}
+			
 			var search = appModel.get('searchTerm');
 			var sortOrder = appModel.get('sortOrder');
 			
@@ -114,13 +127,20 @@ define(['jquery',
 			}
 			this.removeAll();
 			this.$pagehead.html(resultTitle);
-			appSearchResults.setrows(25);
+			
+			appSearchResults.setrows(2);
 			appSearchResults.setSort(sortOrder);
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
-			appSearchResults.query('formatType:METADATA+-obsoletedBy:*+' + search);
-			this.$resultsview.fadeIn();
-			this.updateStats();
+			appSearchResults.setQuery('formatType:METADATA+-obsoletedBy:*+' + search);
+			
+			// go to the page
+			this.showPage(page);
+
+			//this.$resultsview.fadeIn();
+			
+			// update the search box
 			this.updateSearchBox();
+			
 			// update links
 			this.$(".popular-search-link").removeClass("sidebar-item-selected");
 			try {
@@ -129,8 +149,6 @@ define(['jquery',
 				// syntax in search term is probably to blame
 				console.log(ex.message + " - could not set selected state for: " + "#popular-search-" + search);
 			}
-			//this.$("#mostaccessed_link").removeClass("sidebar-item-selected");
-			//this.$("#featureddata_link").removeClass("sidebar-item-selected");
 			
 			// don't want to follow links
 			return false;
@@ -148,7 +166,7 @@ define(['jquery',
 			// replace current search term with date query
 			appModel.set('searchTerm', dateQuery);
 			
-			// show the results
+			// show the results, at the start page
 			this.showResults();
 			
 			// update links
@@ -203,6 +221,19 @@ define(['jquery',
 			var search = appModel.get('searchTerm');
 			this.$("#search_txt_side").val(search);
 		},
+		
+		updatePageNumber: function(page) {
+			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
+			var route = Backbone.history.fragment;
+			if (route.indexOf("/page/") > 0) {
+				//replace the last number with the new one
+				route = route.replace(/\d+$/, page);
+			} else {
+				route += "/page/" + page;
+			}
+			appModel.set("page", page);
+			uiRouter.navigate(route);
+		},
 
 		// Next page of results
 		nextpage: function () {
@@ -210,6 +241,10 @@ define(['jquery',
 			appSearchResults.nextpage();
 			this.$resultsview.show();
 			this.updateStats();
+			
+			var page = appModel.get("page");
+			page++;
+			this.updatePageNumber(page);
 		},
 		
 		// Previous page of results
@@ -218,14 +253,25 @@ define(['jquery',
 			appSearchResults.prevpage();
 			this.$resultsview.show();
 			this.updateStats();
+			
+			var page = appModel.get("page");
+			page--;
+			this.updatePageNumber(page);
 		},
 		
 		navigateToPage: function(event) {
 			var page = $(event.target).attr("page");
+			this.showPage(page);
+		},
+		
+		showPage: function(page) {
 			this.removeAll();
 			appSearchResults.toPage(page);
 			this.$resultsview.show();
 			this.updateStats();
+			
+			this.updatePageNumber(page);
+
 		},
 		
 		// Add a single SolrResult item to the list by creating a view for it, and

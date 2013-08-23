@@ -57,10 +57,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		toPage: function(page) {
 			// go to the requested page
 			var requestedStart = this.rows * page;
-			if (requestedStart < this.header.get("numFound")) {
-				this.start = requestedStart;
-			}
 			if (this.header != null) {
+				if (requestedStart < this.header.get("numFound")) {
+					this.start = requestedStart;
+				}
 				this.header.set({"start" : this.start});
 			}
 			this.fetch({data: {start: this.start}, reset: true});
@@ -77,6 +77,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				
 			}
 			this.fetch({data: {start: this.start}, reset: true});
+		},
+		
+		setQuery: function(newquery) {
+			if (this.currentquery != newquery) {
+				this.currentquery = newquery;
+				this.start = 0;
+				
+			}
 		},
 		
 		setfields: function(newfields) {
