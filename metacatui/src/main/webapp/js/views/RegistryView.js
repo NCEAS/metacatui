@@ -205,6 +205,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 								viewRef.render();
 							}
 						);
+					} else {
+						// just show what was returned (error message)
+						viewRef.$el.html(data);
 					}
 					
 					// clean up the temp area
@@ -257,6 +260,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 								appView.checkUserStatus();
 							}
 						);
+					} else {
+						// just show what was returned (error message)
+						viewRef.$el.html(data);
 					}
 					
 					// clean up the temp area
