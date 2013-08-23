@@ -225,7 +225,7 @@ define(['jquery',
 		updatePageNumber: function(page) {
 			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
 			var route = Backbone.history.fragment;
-			if (route.indexOf("/page/") > 0) {
+			if (route.indexOf("/page/") >= 0) {
 				//replace the last number with the new one
 				route = route.replace(/\d+$/, page);
 			} else {
