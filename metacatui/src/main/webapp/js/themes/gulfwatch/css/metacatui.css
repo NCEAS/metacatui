@@ -860,6 +860,18 @@ Normal 400
 	  padding: 20px;
     }
    
+   .attributeList div.span2{
+   		width: 23.404255319148934%; /*Effectively make it span3 */
+   	}
+   	
+   	.attributeList div.span2 li>a{
+   		text-overflow: ellipsis;
+   		overflow: hidden;
+   	}
+   	
+   	.attributeList div.span10{
+   		width: 74.46808510638297%; /*Effectively make it span 9 */
+   	}
     
 	/* Registry CSS
 	-------------------------------------------------- */
