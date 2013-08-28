@@ -124,7 +124,7 @@ define(['jquery',
 						
 						var populateTemplate = function(auth) {
 							// TODO: include SystemMetadata details
-							viewRef.$el.find("#Metadata").prepend(
+							viewRef.$el.find("#downloadPackage").parent().append(
 								viewRef.doiTemplate({
 									isAuthorized: auth,
 									identifier: identifier,

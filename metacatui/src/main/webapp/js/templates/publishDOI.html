@@ -1,7 +1,7 @@
-<aside class="span3">
+<div class="btn_holder">
 	<button id="publish" <% if (!isAuthorized) {print(' disabled="disabled" '); } %> class="btn btn-primary" pid="<%= identifier %>"> <i class="icon-share icon-white icon-large"></i> Publish with DOI</button>
 	<% if (!isAuthorized) {
-		print('<p>*Must <a href="#share">sign in</a> as owner</p>');
+		print('<p class="footnote">*Must <a href="#share">sign in</a> as owner</p>');
 	}
 	%>
 	<!-- TODO: include these details -->
@@ -52,4 +52,4 @@
 		</li>
 	</ul>
 	-->
-</aside>
+</div>

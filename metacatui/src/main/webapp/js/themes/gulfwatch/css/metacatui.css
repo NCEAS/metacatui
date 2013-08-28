@@ -49,6 +49,7 @@ Normal 400
       color: #555555;
       background-color: #E9E9E1;
       font-family: "Muli", "Helvetica Nueue", "Helvetica", "sans serif";
+      text-shadow: none;
     }
 
     body p {
@@ -108,6 +109,10 @@ Normal 400
       margin: 35px auto auto auto;
     }
     
+     .footnote {
+    	font-size: 0.85em;
+     }
+    
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 
 	.controls-well {
@@ -127,12 +132,9 @@ Normal 400
 	}
 	
 	.well > div > div.span10 {
-	  width: 72%;
+	  width: 100%;
 	}
 	
-	.well > div > div.span2 {
-	  width: 12%;
-	}
 
 
 /* HEADER CSS
@@ -901,6 +903,36 @@ Normal 400
     	margin-left: -40%;
     }
     
+    /* Publish DOI button */
+     #publish {
+     	text-shadow: none;
+     	width:100%;
+     }
+     
+     /* Download button */
+     #downloadPackage > a.btn{
+    	background-color: #649999;
+    	color: #FFFFFF;
+    	text-shadow: none;
+    	width: 100%;
+    }
+    
+    #downloadPackage, .btn_holder {
+    	margin-top: 10px;
+    	width:18%;
+    	float:left;
+    	margin-right: 20px;
+    	margin-left: 0px;
+    }
+    
+    .well{
+    	padding-bottom: 0px;
+    }
+    
+    #downloadPackage{
+    	margin-left: 30%;
+    }
+    
   /* Data Catalog CSS
   -------------------------------------------------- */
 	#mainBody {
@@ -927,6 +959,10 @@ Normal 400
 	
 	#attributeTabs li > a:hover{
 		color: #1388b7;
+	}
+	
+	#attributeTabs li.active > a:hover{
+		color: #FFFFFF;
 	}
 
   /* SIDEBAR CSS
