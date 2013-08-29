@@ -975,10 +975,6 @@ Normal 400
       font-style: italic;
     }
     
-    #pagehead{
-    	display:none;
-    }
-    
     #results-view{
     	margin-top: 10px;
     }
