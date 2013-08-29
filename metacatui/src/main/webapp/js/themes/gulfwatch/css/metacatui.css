@@ -49,7 +49,7 @@ Normal 400
     body {
       color: #555555;
       background-color: #E9E9E1;
-      font-family: "Muli", "Helvetica Nueue", "Helvetica", "sans serif";
+      font-family: ProximaNova-Semibold, Arial, san-serif;
       text-shadow: none;
     }
 
@@ -195,20 +195,25 @@ Normal 400
       color: #FDFDFD;
       background-color: #5A5758;
     }
+    
+    #Footer > div.container{
+    	width: 1170px;
+    }
         
     footer#Footer div#FooterHeading {
       max-width: 650px;
     }
 
     footer#Footer h2 {
-      font: 700 14px/14px "Muli";
+      font-weight: 700;
+      font-size: 14px;
       vertical-align: middle;
       padding: 0;
       line-height: 16px;
     }
         
     footer#Footer h3 {
-      font: 700 30px/30px "Muli";
+      font: 700 30px/30px;
       text-align: center;
       padding: 0px 0px 20px 0px;
       margin-bottom: -25px;
@@ -217,7 +222,7 @@ Normal 400
     }
 
     footer#Footer h3 > span {
-      font: 400 30px/30px "Muli";
+      font: 400 30px/30px;
       font-style: italic;
     }
     
@@ -229,7 +234,7 @@ Normal 400
     }
     
     footer#Footer h4.subheading > span {
-      font: 400 30px/30px "Muli";
+      font: 400 30px/30px;
       font-style: italic;
       text-transform: uppercase;
       background-color: #3F3F3F;
@@ -240,12 +245,11 @@ Normal 400
       list-style: none;
       list-style-position: inside;
       margin: 0px 0px 40px 0px;
+      font-size: 12px;
     }
     
     footer#Footer ul.helpitems li {
-      font: 400 14px/14px "Muli";
-      vertical-align: baseline;
-      margin: 15px 0px 0px 0px;                 
+      vertical-align: baseline;                 
     }
     
     ul.helpitems a {
@@ -259,7 +263,7 @@ Normal 400
     
     footer#Footer .disclaimer {
       color: #FDFDFD;
-      font: 100 14px/14px "Muli";      
+      font: 100 14px/14px;      
     }
     
     footer#Footer .acknowledgements {
@@ -557,10 +561,7 @@ Normal 400
       position: relative;
       top: 0px;
       z-index: 200;
-      left: 50%;
-      width: 960px;
-      margin: 0px 0px 0px -480px;
-      float: none;      
+      margin: 0 auto;
     }
     
     .navbar {
@@ -641,7 +642,7 @@ Normal 400
 
 
 	.pagetitle {
-	  margin-top: 55px;
+	  margin: 55px 0px 10px 0px;
 	}
 	
 	.pagetitle span{
@@ -731,7 +732,6 @@ Normal 400
     .carousel-caption h1 {
       margin: 0px;
       line-height: 1.25;
-      font-family: "Muli";
       font-weight: 400;
       font-size: 36px;
       color: #FDFDFD;
@@ -740,7 +740,6 @@ Normal 400
     .carousel-caption .lead {
       margin: 0;
       line-height: 1;
-      font-family: "Muli";
       font-weight: 400;
       font-size: 24px;
       color: #FDFDFD;
@@ -760,7 +759,6 @@ Normal 400
     
     a {
        color: #009999;
-       text-decoration: underline;
     }
     
     a:hover {
@@ -776,7 +774,7 @@ Normal 400
     }
     
     h2.nav-header {
-      font: 700 18px/18px "Muli";
+      font: 700 18px/18px;
       margin: 20px 10px 10px 15px;
       padding: 3px 0px 3px 0px;
       color: #555555;      
@@ -805,7 +803,7 @@ Normal 400
     }
     
     ul#browse a {
-      font: 400 15px/15px "Muli";
+      font: 400 15px/15px;
       color: #555555;
     }
 
@@ -834,6 +832,7 @@ Normal 400
 	  box-shadow: 0 0 0 10px #FFFFFF;
 	  border: 1px solid #D1D3D4;
 	  padding: 20px;
+	  width: 1170px;
     }
    
    .attributeList div.span2{
@@ -958,6 +957,7 @@ Normal 400
     
     .btn {
        padding: 4px 5px;
+       text-decoration: none;
     }
     
     #search-txt-side {
@@ -991,7 +991,7 @@ Normal 400
     
     .pagination {
     	cursor: pointer;
-    	margin: auto;
+    	margin: 10px auto;
     }
     
 
