@@ -100,7 +100,6 @@ define(['jquery',
 			// Store some references to key views that we use repeatedly
 			this.$resultsview = this.$('#results-view');
 			this.$results = this.$('#results');
-			this.$pagehead = this.$('#pagehead');
 			
 			// show the results by default
 			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
@@ -121,12 +120,7 @@ define(['jquery',
 			var search = appModel.get('searchTerm');
 			var sortOrder = appModel.get('sortOrder');
 			
-			var resultTitle = 'Search Results';
-			if (search) {
-				resultTitle += ' - ' + search; 
-			}
 			this.removeAll();
-			this.$pagehead.html(resultTitle);
 			
 			appSearchResults.setrows(25);
 			appSearchResults.setSort(sortOrder);
