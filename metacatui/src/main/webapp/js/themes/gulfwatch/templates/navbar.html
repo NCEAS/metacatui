@@ -1,60 +1,63 @@
 <div class="navbar">
   <div class="navbar-inner">
-      <img id="logo" src="./js/themes/gulfwatch/img/logo.png" />
-      <div class="pagetitle"><span>G</span>ulf<span>W</span>atch <span>A</span>laska</div>
-      <ul class="nav">
-        <li><a href="">Monitoring Program</a></li>
-        <li><a href="">People</a></li>
-        <li><a href="#data">Data</a></li>
-        <li><a href="">Resources</a></li>
-        <li><a href="">Reports</a></li>
-        <li><a href="">Calendar</a></li>
-        <!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
-        <!-- comment out for now until we have plans -->
-        <!-- 
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plans <b class="caret"></b></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">About data plans</a></li>
-            <li class="divider"></li>
-            <li><a href="#">Basic (free)</a></li>
-            <li><a href="#">Annual Data</a></li>
-            <li><a href="#">Big Data</a></li>
-
-          </ul>
-        </li>
-        -->
-        <!--<li>
-          <div class="nav">
-            <div class="input-append">
-              <input type="text" class="span3" placeholder="Search for data" id="search_txt" value="<%= searchTerm  %>" >
-              <a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-white icon-large"></i></a>
-            </div>
-          </div>
-        </li>-->
-        
-        <% if (fullName) { 
-        	print(
-        	'<li class="dropdown">',
-				'<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
-					'<i class="halflings-icon user"></i><b class="caret"></b>',
-				'</a>',
-				'<ul class="dropdown-menu">',
-					'<li><a>', fullName, '</a></li>',
-					'<li class="divider"></li>',  
-					'<li><a href="#share">register data</a></li>',
-					//'<li><a href="#">my account</a></li>',
-					'<li class="divider"></li>',
-					'<li><a href="#logout">logout</a></li>',
-				'</ul>',
-			'</li>'
-        	);
-        } else {
-        	print(
-        		'<li id="SignIn"><a href="#share">Sign In</a></li>'
-        	);
-        } %>
-        	
-      </ul>
+      <div class="span3">
+      	<img id="logo" src="./js/themes/gulfwatch/img/logo.png" />
+      </div>
+      <div class="span9">
+	      <div class="pagetitle"><img src="js/themes/gulfwatch/img/gw_banner.gif" /></div>
+	      <ul class="nav">
+	        <li><a href="">Monitoring Program</a></li>
+	        <li><a href="">Calendar</a></li>
+	        <li><a href="#data">Reports</a></li>
+	        <li><a href="">People</a></li>
+	        <li><a href="">Data</a></li>
+	        <!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
+	        <!-- comment out for now until we have plans -->
+	        <!-- 
+	        <li class="dropdown">
+	          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plans <b class="caret"></b></a>
+	          <ul class="dropdown-menu">
+	            <li><a href="#">About data plans</a></li>
+	            <li class="divider"></li>
+	            <li><a href="#">Basic (free)</a></li>
+	            <li><a href="#">Annual Data</a></li>
+	            <li><a href="#">Big Data</a></li>
+	
+	          </ul>
+	        </li>
+	        -->
+	        <!--<li>
+	          <div class="nav">
+	            <div class="input-append">
+	              <input type="text" class="span3" placeholder="Search for data" id="search_txt" value="<%= searchTerm  %>" >
+	              <a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-white icon-large"></i></a>
+	            </div>
+	          </div>
+	        </li>-->
+	       <!--  
+	        <% if (fullName) { 
+	        	print(
+	        	'<li class="dropdown">',
+					'<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
+						'<i class="halflings-icon user"></i><b class="caret"></b>',
+					'</a>',
+					'<ul class="dropdown-menu">',
+						'<li><a>', fullName, '</a></li>',
+						'<li class="divider"></li>',  
+						'<li><a href="#share">register data</a></li>',
+						//'<li><a href="#">my account</a></li>',
+						'<li class="divider"></li>',
+						'<li><a href="#logout">logout</a></li>',
+					'</ul>',
+				'</li>'
+	        	);
+	        } else {
+	        	print(
+	        		'<li id="SignIn"><a href="#share">Sign In</a></li>'
+	        	);
+	        } %>
+	        	->
+	      </ul>
+	  </div>
   </div><!-- /.navbar-inner -->
 </div><!-- /.navbar -->

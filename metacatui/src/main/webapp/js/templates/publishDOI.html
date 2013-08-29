@@ -1,9 +1,8 @@
-<div class="btn_holder">
-	<button id="publish" <% if (!isAuthorized) {print(' disabled="disabled" '); } %> class="btn btn-primary" pid="<%= identifier %>"> <i class="icon-share icon-white icon-large"></i> Publish with DOI</button>
-	<% if (!isAuthorized) {
-		print('<p class="footnote">*Must <a href="#share">sign in</a> as owner</p>');
-	}
-	%>
+<a id="publish" <% if (!isAuthorized) {print(' disabled="disabled" '); } %> <% if (!isAuthorized) {print(' rel="popover" data-placement="right" data-trigger="hover" data-content="Sign in to publish with DOI" '); } %> class="btn btn-primary" pid="<%= identifier %>">Publish <i class="icon-share icon-white icon-large"></i></a>
+	
+	<script>
+		$('#publish').popover();
+	</script>
 	<!-- TODO: include these details -->
 	<!-- 		
 	<h2 class="nav-header">Object information</h2>
@@ -52,4 +51,3 @@
 		</li>
 	</ul>
 	-->
-</div>

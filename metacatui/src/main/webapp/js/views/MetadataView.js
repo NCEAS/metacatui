@@ -6,6 +6,7 @@ define(['jquery',
 		], 				
 	function($, _, Backbone, PublishDoiTemplate) {
 	'use strict';
+
 	
 	var MetadataView = Backbone.View.extend({
 
@@ -61,6 +62,7 @@ define(['jquery',
 			// look up the resourceMapId[s]
 			var queryServiceUrl = appModel.get('queryServiceUrl');
 			var packageServiceUrl = appModel.get('packageServiceUrl');
+			
 
 			// surround pid value in "" so that doi characters do not affect solr query
 			var query = 'fl=id,resourceMap&wt=xml&q=formatType:METADATA+-obsoletedBy:*+resourceMap:*+id:"' + pid + '"';
@@ -77,10 +79,13 @@ define(['jquery',
 							$("#downloadPackage").html(
 								'<a class="btn" href="' 
 									+ packageServiceUrl + resourceMapId + '">' 
-									+ 'Download Package <i class="icon-arrow-down"></i>'
+									+ '<i class="icon-arrow-down"></i> Download Package'
 								+ '</a>'
 							);
+
+
 						}
+
 						
 					}
 				);
@@ -123,8 +128,8 @@ define(['jquery',
 					if (identifier) {
 						
 						var populateTemplate = function(auth) {
-							// TODO: include SystemMetadata details
-							viewRef.$el.find("#downloadPackage").parent().append(
+							// TODO: include SystemMetadata details						
+							viewRef.$el.find("#downloadPackage").append(
 								viewRef.doiTemplate({
 									isAuthorized: auth,
 									identifier: identifier,

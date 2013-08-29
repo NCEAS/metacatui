@@ -116,10 +116,6 @@ Bold 700 Italic
 	#Eml h4, .well, .control-label {
 		color: #555555;
 	}
-	
-	.well > div > div.span10 {
-	  width: 100%;
-	}
 
 
 /* HEADER CSS
@@ -805,30 +801,14 @@ Bold 700 Italic
     	margin-left: -40%;
     }
     
-    /* Publish DOI and Download buttons */
-     #publish {
-     	text-shadow: none;
-     	width: 100%;
-     }
+     /* Download  and Publish buttons */
+     #downloadPackage > a.btn{
+    	text-shadow: none;
+    	width: 100px;
+    } 
     
-    #downloadPackage, .btn_holder {
-    	margin-top: 10px;
-    	width:18%;
-    	float:left;
-    	margin-right: 20px;
-    	margin-left: 0px;
-    }
-    
-    #downloadPackage > a.btn{
-    	width: 100%;
-    }
-    
-    .well{
-    	padding-bottom: 0px;
-    }
-    
-    #downloadPackage{
-    	margin-left: 30%;
+    #downloadPackage > a.btn:first-child{
+    	margin-bottom: 8px;
     }
     
   /* Data Catalog CSS
