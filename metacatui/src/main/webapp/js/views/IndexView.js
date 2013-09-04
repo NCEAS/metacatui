@@ -3,10 +3,10 @@ define(['jquery',
 				'underscore', 
 				'backbone',
 				'bootstrap',
-				'views/mainContentView',
+				'views/MainContentView',
 				'views/FeaturedDataView'
 				], 				
-	function($, _, Backbone, Bootstrap, mainContentView, FeaturedDataView) {
+	function($, _, Backbone, Bootstrap, MainContentView, FeaturedDataView) {
 	'use strict';
 		
 	// Our overall **AppView** is the top-level piece of UI.
@@ -33,7 +33,7 @@ define(['jquery',
 			console.log("el: " + this.el);
 						
 			this.$el.html('<section id="mainContent" /><section id="FeaturedData" />');			
-			var maincontentView = new mainContentView();
+			var maincontentView = new MainContentView();
 			maincontentView.setElement($('#mainContent')).render();
 			if ( maincontentView.postRender ) {
 				maincontentView.postRender();
