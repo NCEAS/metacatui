@@ -17,9 +17,17 @@ Bold 700
 
 /* Body CSS
 -------------------------------------------------- */
+    html {
+    	margin: 0;
+    	padding: 0;
+    	height: 100%;
+    }
+    
     body {
       color: #333333;
       font: 400 15px/15px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
+      min-height: 100%;
+      position: relative;
     }
 
     
@@ -32,7 +40,7 @@ Bold 700
     	position: relative;
     	margin: 40px auto auto auto;
     	width: 1170px;
-    	min-height: 800px;
+    	padding-bottom: 360px; /* height + vertical padding + vertical margins of footer */
     }
 		
     body > section > article {
@@ -101,6 +109,7 @@ Bold 700
 	    margin-left: -512px;   /* 50% */
 	  }
 	}
+
     
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 
@@ -134,12 +143,19 @@ Bold 700
  * -------------------------------------------------- */    
   section#Notification {
     position: fixed;
-    top: 95px;
+    top: 105px;
     height: 40px;
-    width: 100%;
+    width: inherit;
     max-height: 40px;
     min-height: 40px;
-    background-color: #FDFDFD;
+  }
+  
+  .progress-striped{
+  	border-radius: 0px;
+  }
+  
+  .progress-striped .bar{
+  	background-color: #166194;
   }
 
   
@@ -147,11 +163,13 @@ Bold 700
 -------------------------------------------------- */    
 
     footer#Footer {
-      position: relative;
+      position: absolute;
       bottom: 0px;
       margin-top: 40px;
       background: rgba(0, 0, 0, 0.8);
       padding: 20px 0px;
+      height: 280px;
+      width: 100%;
     }
     
     footer#Footer > .logos{
