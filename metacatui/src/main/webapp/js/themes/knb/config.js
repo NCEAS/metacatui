@@ -9,10 +9,16 @@ var themeMap =
 		//'routers/router' : 'themes/' + theme + '/routers/router',
 		
 		// Templates include extension
+		'templates/app.html' : 'themes/' + theme + '/templates/app.html',
 		'templates/appHead.html' : 'themes/' + theme + '/templates/appHead.html',
 		'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',
 		'templates/featuredData.html' : 'themes/' + theme + '/templates/featuredData.html',
-		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html'
-		
+		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
+		'templates/mainContent.html' : 'themes/' + theme + '/templates/mainContent.html',
+		'templates/mainHeader.html' : 'themes/' + theme + '/templates/mainHeader.html',
+		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
+		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
+		'templates/tools.html' : 'themes/' + theme + '/templates/tools.html',
+		'templates/about.html' : 'themes/' + theme + '/templates/about.html'
 		}
 };

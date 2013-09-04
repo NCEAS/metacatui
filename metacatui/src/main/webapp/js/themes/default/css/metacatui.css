@@ -1,76 +1,49 @@
 
 /* Import font families */
-@import url(https://fonts.googleapis.com/css?family=Lato);
-/* Lato weights:
-Ultra-Light 100
-Ultra-Light 100 Italic
-Book 300
-Book 300 Italic
+@import url(http://fonts.googleapis.com/css?family=Oswald:400,300,700);
+/* Oswald weights:
+Light 300
 Normal 400
-Normal 400 Italic
 Bold 700
-Bold 700 Italic
-Ultra-Bold 900
-Ultra-Bold 900 Italic
 */
-@import url(https://fonts.googleapis.com/css?family=Open+Sans);
-/* Open Sans weights:
-Book 300 
-Book 300 Italic
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic);
+/* Source Sans Pro weights:
+Light 300
 Normal 400
-Normal 400 Italic
-Semi-Bold 600
-Semi-Bold 600 Italic
+Normal italic 400
+Semi-bold 600
 Bold 700
-Bold 700 Italic
-Extra-Bold 800
-Extra-Bold 800 Italic
-*/
-@import url(https://fonts.googleapis.com/css?family=Gentium+Book+Basic);
-/* Gentium Book Basic weights:
-Normal 400
-Normal 400 Italic
-Bold 700
-Bold 700 Italic
 */
 
 /* Body CSS
 -------------------------------------------------- */
     body {
-      color: #555555;
-      background-color: #FDFDFD;
-      font-family: "Lato", "Helvetica Nueue", "Helvetica", "sans serif";
+      color: #333333;
+      font: 400 15px/15px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
     }
 
-    body p {
-      font-weight: 300;
-      line-height: 1.5;
-    }
-    article, aside, figure, footer, header, hgroup, menu, nav, section { 
-      display:block; 
-      
-    }
     
-    body > section, footer {
-      min-height: 400px;
-      margin: 0;
-      z-index: 10;
+    article, aside, figure, footer, header, hgroup, menu, nav, section { 
+      display:block;   
     }
+
         
     body > #Content {
     	position: relative;
-    	margin: 0px 0px auto 0px;
-    	min-height: 400px;
+    	margin: 40px auto auto auto;
+    	width: 1170px;
+    	min-height: 800px;
     }
 		
     body > section > article {
-      min-height: 800px;
-      /*margin: 135px auto auto auto;*/
-      font-weight: 300;
-      font-size: 110%;
-      line-height: 1.5;
-      margin: 175px auto auto auto;
-      padding-bottom: 40px;  			
+      background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 20px;			
+    }
+    
+     .container{
+    	width: 100%;
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -88,54 +61,74 @@ Bold 700 Italic
     }
     
     a {
-      color: #115E95; /*blue from the earthtones pallette */
+      color: #166194;
     }
+    
+    a:hover{
+    	color: #3399CC;
+    	text-decoration: none;
+    }
+    
+    ul, ol{
+    	margin: 0px;
+    }
+    
     
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
     
-    .footnote {
-    	font-size: 0.85em;
-     }
+    h2#pagehead{
+    	font: 400 31px/31px "Oswald" Arial sans-serif;
+    }
+     
+    /* For full-screen background image */
+	img.bg{
+		min-height: 100%;
+		min-width: 1024px;
+		width: 100%;
+		height: auto;
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: -1; /* So that right-clicking on background image will behave like right-clicking on background */
+		
+	}
+	
+	@media screen and (max-width: 1024px) {
+	  img.bg {
+	    left: 50%;
+	    margin-left: -512px;   /* 50% */
+	  }
+	}
     
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 
 	.controls-well {
-	    border: 1px solid #E3E3E3;
-	    border-radius: 4px 4px 4px 4px;
-	    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
 	    padding: 4px;
+	    background: rgba(255, 255, 255, 0.3);
 	}
 	.control-label {
 		cursor: default;
 	}
-
-/* EML CUSTOMIZATIONS
--------------------------------------------------- */
-	#Eml h4, .well, .control-label {
-		color: #555555;
+	
+	select{
+    	font: 300 16px/16px "Oswald" Arial sans-serif;
+    }
+	
+	
+	#results-header select{
+		border: 0;
+		border-radius: 0;
+		-webkit-appearance: none;
+		background: none;
+		width: 120px;
 	}
-
-
-/* HEADER CSS
--------------------------------------------------- */    
-  header#Header {
-    position: fixed;
-    top: 0px;
-    z-index: 100;
-    height: 95px;
-    background-color: #FDFDFD;
-    overflow: hidden;
-    opacity: 1.0;    
-  }
-  
-  header#mainHeader {
-    position: relative;
-    top: 0px;
-    z-index: 100;
-    min-height: 400px;      
-  }
+	
+	#results-header .select > i{
+		margin-right: -110px;
+	}
+	
 
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
@@ -156,110 +149,74 @@ Bold 700 Italic
     footer#Footer {
       position: relative;
       bottom: 0px;
-      padding-top: 30px;
-      padding-bottom: 30px;
-      margin-top: 0px;
-      color: #FDFDFD;
-      background-color: #3F3F3F;
+      margin-top: 40px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px 0px;
     }
-        
-    footer#Footer div#FooterHeading {
-      max-width: 650px;
+    
+    footer#Footer > .logos{
+    	width: 350px;
+    	margin-top: 20px;
     }
+    
+    footer#Footer > .logos > div{
+    	height: 100px; 	
+    }
+    
+    footer#Footer > .logos > div > a{
+    	line-height: 100px; 	
+    }
+	
+	footer#Footer > div:last-child{
+		text-align: center;
+		color: #999999;
+	}
 
     footer#Footer h2 {
-      font: 300 25px/25px "Lato";
-      vertical-align: middle;
+      font: 300 25px/25px "Oswald", Arial, sans-serif;
+      color: #FDFDFD;
       padding: 0;
       line-height: 48px;
-    }
-        
-    footer#Footer h3 {
-      font: 800 30px/30px "Open Sans";
-      text-align: center;
-      padding: 0px 0px 20px 0px;
-      margin-bottom: -25px;
-      border-bottom: 1px solid #FDFDFD;
-      
-    }
-
-    footer#Footer h3 > span {
-      font: 400 30px/30px "Gentium Book Basic";
-      font-style: italic;
-    }
-    
-    footer#Footer h4.subheading {
-      vertical-align: baseline;
-      padding: 0;
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    
-    footer#Footer h4.subheading > span {
-      font: 400 30px/30px "Gentium Book Basic";
-      font-style: italic;
-      text-transform: uppercase;
-      background-color: #3F3F3F;
-      padding: 0px 15px 0px 15px;
     }
     
     footer#Footer ul.helpitems {
       list-style: none;
-      list-style-position: inside;
-      margin: 0px 0px 40px 0px;
     }
     
     footer#Footer ul.helpitems li {
-      font: 100 20px/20px "Lato";
+      font: 400 15px/15px "Source Sans Pro", Arial, sans-serif;
       vertical-align: baseline;
       margin: 15px 0px 0px 0px;                 
     }
     
     ul.helpitems a {
-      color: #FDFDFD;
-      text-decoration: none;      
+      color: #FDFDFD;     
     }
     
-    footer#Footer a:hover {
-      color: #FFFFFF;
-      font-weight: 300;
-      text-decoration: none;      
+    ul.helpitems a:hover{
+    	color: #3399CC;
+    	text-decoration: none; 
     }
     
-    footer#Footer .disclaimer {
-      color: #FDFDFD;
-      font: 100 14px/14px "Lato";      
-    }
-    
-    footer#Footer .logo {
-      color: #D9D9D9;
-      font: 300 48px "Lato";
-      line-height: 1.0;
-      letter-spacing: -3px;
-      margin: 0px 0px 15px 0px;
-      text-align: center;
-    }
-    
-    footer#Footer .acknowledgements {
-      margin-top: 40px;
-    }
 
     footer#Footer img {
       opacity: .75;
     }
-
-    #footer_signup {
-      position: relative;
-      left: 50%;
-      /*bottom: 0px;*/
-      width: 188px;
-      margin: 20px auto 20px -94px;
-    }
+    
+ /* BUTTONS CSS
+-------------------------------------------------- */   
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
-      font-weight: 400;
       background-image: none;
       background-repeat: none;
+      background-color: #166194;
+      box-shadow: none;
+      -moz-box-shadow: none;
+      border: none;
+      filter: none;
+      font: 400 20px/20px "Oswald" Arial, sans-serif;
+      text-shadow: none;
+      color: #FFFFFF;
     }
 
     .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
@@ -268,28 +225,21 @@ Bold 700 Italic
     }
     
     .btn-primary {
-      background-color: #992222;
+      background-color: #166194;
       color: #FFFFFF;
       
     }
     
     .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
-		background-color: #f5f5f5;
-		color: #555555;
+		background-color: #999999;
+		color: #FFFFFF;
 		text-shadow: none;
-    }
-    
-    button.btn-primary a {
-      color: #FFFFFF;
-      text-decoration: none;
+		border: none;
     }
         
-    .btn-primary:hover {
-      background-color: #882222;
-      color: #FDFDFD;
-      background-image: none;
-      background-repeat: none;
-      
+    .btn:hover, .btn-primary:hover, .btn-large:hover, .btn-small:hover, .btn-mini:hover{
+      color: #166194;
+      background: rgba(22, 97, 148, 0.2);
     }
     
     #search_btn.btn {
@@ -303,6 +253,16 @@ Bold 700 Italic
       color: #FFFFFF;
       
     }
+     /* Download  and Publish buttons */
+     #downloadPackage > a.btn{
+    	width: 100px;
+    } 
+    
+    #downloadPackage > a.btn:first-child{
+    	margin-bottom: 8px;
+    }    
+/* ICONS CSS
+-------------------------------------------------- */
     
     i.glyphicons-icon, i.halflings-icon {
       opacity: .8;
@@ -311,203 +271,7 @@ Bold 700 Italic
     i.glyphicons-icon.white {
       opacity: 1;
     }
-    
-/* FEATURES CSS
--------------------------------------------------- */    
-    
-    #Features {
-      position: relative;
-      background-color: #899CA6;
-      padding-top: 20px;
-      color: #FDFDFD;
-			min-height: 400px;
-    }
-
-    section#Features h4 {
-      font-size: 160%;
-      font-weight: 300;
-    }
-
-    section#Features p {
-      font-size: 110%;
-      font-weight: 300;
-      line-height: 1.75;
-      margin-bottom: 30px;
-    }
-    
-    section#Features a.btn-info {
-      background-color: #6C94A4;
-      color: #FFFFFF;
-      /*border: none;
-      text-shadow: none;
-      box-shadow: none;*/
-    }
-
-    section#Features a.btn-info:hover {
-      background-color: #5C7F8C;
-    
-    } 
-    
-/* FEATURED DATA CSS
--------------------------------------------------- */    
-
-    #FeaturedData {
-      position: relative;
-      background-color: #878787;
-      color: #FDFDFD;
-      /*min-height: 1200px;*/
-    }
-
-    #FeaturedData > section {
-      border-top: 1px solid #878787;
-    }
-		
-	  #FeaturedData h2 {
-	  	font-weight: 300;
-      color: #FDFDFD;
-      text-decoration: none;
-      width: 450px;
-	  }
-        
-    #FeaturedData h2 a {
-      color: #FDFDFD;
-      text-decoration: none;      
-    }
-
-    #FeaturedData .accordion-inner {
-      border-top: 0px;
-      padding-bottom: 40px;
-      margin: 20px 10px 20px 10px;
-      background: rgba(0,0,0,0.6);
-      color: #FFFFFF;
-      border-radius: 6px 6px 6px 6px;
-    }
-    
-    #featured01 {
-      position: relative;
-      top: 0px;
-    }
-    
-    #featured02 {
-      position: relative;
-      top: 0px;
-    }
-    
-    #featured03 {
-      position: relative;
-      top: 0px;
-    }
-    
-    #featured01_info {
-      position: absolute;
-      top: 40px;
-      left: 80px;
-      width: 75%;
-    }
-    
-    #featured02_info {
-      position: absolute;
-      top: 40px;
-      left: 60%;
-    }
-    
-    #featured03_info {
-      position: absolute;
-      top: 40px;
-      left: 80px;
-      width: 75%;
-    }
-
-    #FeaturedData .collapse {
-      position: absolute;
-      top: 0px;
-    }
-
-    #collapse01, #collapse03 {
-      position: absolute;
-      left: 420px;
-      max-width: 600px;
-    }
-    
-    #collapse02 {
-      position: absolute;
-      left: -600px;
-      max-width: 600px;
-    }
-    
-    /* Commenting these out for now. May not need them:
-        
-    .featured {
-      border-radius: 6px 6px 6px 6px;
-      margin-right: 20px;
-      max-height: 300px;
-    }
-
-    #featured_list {
-      margin: auto auto auto 20px;
-      border-radius: 6px 6px 6px 6px;
-    }    
-    
-    #featured_list > li.nav-header {
-      height: 30px;
-      color: #9A8D72;
-      background-color: #E8E7DA;
-      font-size: 18px;
-      font-weight: 400;
-      padding-top: 15px;
-      border-radius: 6px 6px 0px 0px;
-    }
-
-    #featured_list > li.active > a {
-      background-color: #9A8D72;
-      color: #FDFDFD;
-      font-size: 18px;
-      font-weight: 400;
-      float: left;
-    }
-    
-    #featured_list > li > a {
-      height: 60px;
-      width: 100%;
-      padding: 10px 20px 10px 20px;
-      color: #9A8D72;
-      background-color: #E8E7DA;
-      font-size: 18px;
-      font-weight: 400;
-      float: left;
-      padding: 20px 10px 10px 10px;
-    }
-
-    #featured_list > li > a > span.citation {
-      font-weight: 300;
-    }
-
-    #featured_list > li > a:hover {
-      background-color: #F3F3F3;
-    }
-        
-    #featured_list > li.active > a:hover {
-      background-color: #9A8D72;
-    }
-    
-    #featured_list > li:first-child > a {
-      border-radius: 6px 6px 0px 0px;
-    }
-    
-    #featured_list > li:last-child > a {
-      border-radius: 0px 0px 6px 6px;
-    }
-    
-    #featured_list .chevron-left {
-      float: left;
-    }
-    */
-/* CUSTOMIZE THE ACCORDIAN 
--------------------------------------------------- */
-
-	.accordion-heading a.accordion-toggle {
-		display: inline-block; 
-	}    
+   
     
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
@@ -518,70 +282,49 @@ Bold 700 Italic
     }
     
     nav#Navbar {
-      position: fixed;
       top: 0px;
-      z-index: 200;
-      left: 50%;
-      width: 960px;
-      margin: 0px 0px 0px -480px;
+      width: 100%;
       float: none;      
     }
     
     /* Depending on the headerType, these classes apply */
-    nav#Navbar.main {
-      position: absolute;
-    }
-    nav#Navbar.default {
-      position: fixed;
-    }
-    
+
     .navbar {
       position: relative;
-      top: 20px;
-      border: none;
-      z-index: 210;
-      height: 55px;    
+      border: none;  
+      margin: 0px;  
+    }
+    
+    .navbar .nav{
+    	float: right;
+    	margin: 0px;
     }
 
     .navbar-inner {
       border: none;
-      z-index: 220;
-    }
+      background: none;
+      min-height: 0px;
+      box-shadow: none;
+    } 
     
-    .navbar .brand {
-      font-size: 48px;
-      font-weight: 300;
-      font-family: "Lato";
-      color: #992222;
-      letter-spacing: -3px;
-      margin: 7px 5px 7px 5px;
-      padding: 10px 40px 10px 0px;
-      float: left;
-      
-    }
-  
-    .navbar .nav > li > * {
-      margin: 7px 5px 7px 5px;
+    .navbar-inner > ul{
+    	margin: 0px;
     }
 
+	.navbar-inner > ul > li img{
+		height: 45px;
+	}
     .navbar .nav > li > a {
-      color: #555555;
-      font-size: 18px;
-      font-family: "Lato";
-      font-weight: 400;
+      color: #FFFFFF;
+      font: normal normal 400 35px/35px "Oswald", Arial, sans-serif;
       text-transform: uppercase;
     }
 
     .navbar .nav > li > a:focus,
     .navbar .nav > li > a:hover {
-      color: #555555;
-      font-weight: 400;
-      background-color: #E5E5E5;
+      color: #FFFFFF;
       text-decoration: none;
-      -webkit-border-radius: 5px;
-      -moz-border-radius: 5px;
-      border-radius: 5px;
-      /*background-color: transparent;*/
+      opacity: 0.7;
     }
     
     .navbar .nav > .active > a,
@@ -618,174 +361,51 @@ Bold 700 Italic
       opacity: .6;
     }
     
-    ul.nav {
-      width: 85%;
-    }
     #SignIn {
       float: right;
     }
 
-    /* CAROUSEL CSS
-    -------------------------------------------------- */
-
-    #Slides {
-      position: relative;
-      top: 0px;
-      z-index: 110;
-    }
-
-    /* Carousel base class */
-    .carousel {
-      width: 100%;
-      margin-bottom: 0px;
-      max-height: 400px;
-      
-    }
-
-    .carousel-control {
-      height: 80px;
-      margin-top: 0;
-      font-size: 120px;
-      font-weight: 300;
-      text-shadow: 0 1px 1px rgba(0,0,0,.4);
-      background-color: transparent;
-      border: 0;
-      z-index: 189;
-    }
-
-    .carousel .left {
-      left: 50px;
-      z-index: 190;
-    }
     
-    .carousel .right {
-      right: 30px;
-      z-index: 191;
-    }
 
-    .carousel .item {
-      background-color: #FDFDFD; /* Fallback to solid color if the gradient fails */
-      background-image: -webkit-gradient(
-       linear,
-       left bottom,
-       left top,
-       color-stop(0.9, #FFFFFF),
-       color-stop(0.3, #FDFDFD)
-      );
-      z-index: 170;
-      /*
-      -webkit-transition: opacity 4s; 
-      -moz-transition: opacity 4s; 
-      -ms-transition: opacity 4s; 
-      -o-transition: opacity 4s; 
-      transition: opacity 4s;
-      */
-    	-webkit-transition:0.6s ease-in-out left;
-    	-moz-transition:0.6s ease-in-out left;
-    	-ms-transition:0.6s ease-in-out left;
-    	-o-transition:0.6s ease-in-out left;
-    	transition:0.6s ease-in-out left;
-      max-height: 400px;
-      overflow: hidden;
-    }
+/* METADATA VIEW CSS
+-------------------------------------------------- */
+	label.control-label{
+		font: 400 15px/15px "Oswald";
+	}
+	
+	#Metadata .well{
+		font: 300 21px/22px Oswald;
+		border: 1px solid #CCCCCC;
+		box-shadow: none;
+		-moz-box-shadow: none;
+		
+	}
+	
+	#Metadata .well strong{
+		font-weight: 400;
+	}
+	
+	#Metadata h4{
+		font: 300 16px/16px "Oswald" Arial sans-serif;
+		color: #555555;
+	}
+	
+	#Metadata .nav-header{
+		text-transform: none;
+	}
+	
+	#Metadata .nav-list > .active > a{
+		font-weight: 700;
+		background-color: #166194;
+		text-shadow: none;
+	}
+	
+	#Metadata .nav > li > a:hover{
+		text-shadow: none;
+	}
     
-    .carousel-caption {
-      background: rgba(0,0,0,0.3);
-      position: absolute;
-      top: 150px;
-      left: 50%;
-      margin: 0px 0px 0px -250px;
-      width: 500px;
-      max-height: 130px;
-      z-index: 200;
-      padding: 10px 20px 10px 20px;
-      -webkit-border-radius: 6px;
-         -moz-border-radius: 6px;
-              border-radius: 6px;
-      
-    }
-    
-    .carousel-caption h1 {
-      margin: 0px;
-      line-height: 1.25;
-      font-family: "Lato";
-      font-weight: 400;
-      font-size: 36px;
-      color: #FDFDFD;
-    }
-    
-    .carousel-caption .lead {
-      margin: 0;
-      line-height: 1;
-      font-family: "Lato";
-      font-weight: 300;
-      font-size: 24px;
-      color: #FDFDFD;
-    }
-    .carousel-caption .btn-primary {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-    }
-
-  /* MAIN BODY CSS
-  -------------------------------------------------- */
-  /* Main body containing sidebar and content */
-    .main-body-padded {
-      padding-top: 90px;
-    }
-    
-    #sidebar_share {
-      margin: 20px 10px 10px 15px;
-    }
-    
-    h2.nav-header {
-      font: 400 18px/18px "Lato";
-      margin: 20px 10px 10px 15px;
-      padding: 3px 0px 3px 0px;
-      color: #555555;      
-    }
-
-    #refine .nav-list {
-      margin: 20px auto auto auto;
-    }
-    
-    ul#refine .nav-list .input-append {
-      max-width: 200px;
-    }
-
-    #browse .nav-list {
-      margin: 20px auto auto auto;
-      border: 1px solid #CCCCCC;
-    }
-    
-    ul#browse a i {
-      margin-right: 10px;
-    }
-    
-    ul#browse a {
-      font: 300 16px/16px "Lato";
-      color: #555555;
-    }
-
-    ul#browse a:hover, ul#browse a:focus  {
-      color: #3F3F3F;
-    }
-
-  /* About CSS
-  -------------------------------------------------- */
-    #About {
-		min-height: 800px;
-    }
-
-  /* Metadata rendering CSS
-  -------------------------------------------------- */
-    #Metadata {
-		min-height: 800px;
-    }
-    
-	/* Registry CSS
-	-------------------------------------------------- */
+/* Registry CSS
+-------------------------------------------------- */
     #RegistryEntryForm, 
     #RegistryLogin, 
     #RegistryResponse, 
@@ -801,26 +421,26 @@ Bold 700 Italic
     	margin-left: -40%;
     }
     
-     /* Download  and Publish buttons */
-     #downloadPackage > a.btn{
-    	text-shadow: none;
-    	width: 100px;
-    } 
     
-    #downloadPackage > a.btn:first-child{
-    	margin-bottom: 8px;
-    }
-    
-  /* Data Catalog CSS
-  -------------------------------------------------- */
-	#mainBody {
-		min-height: 800px;
-	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
       min-height: 400px;
+    } 
+        
+    #sidebar_share {
+      margin: 20px 10px 10px 15px;
+      padding: 8px;
+    }
+    
+    
+    #refine .nav-list {
+      margin: 20px auto auto auto;
+    }
+    
+    ul#refine .nav-list .input-append {
+      max-width: 200px;
     }
     
     .sidebar-subhead {
@@ -839,13 +459,44 @@ Bold 700 Italic
       -moz-border-radius: 5px;
       line-height: 25px;
     }
+
+    .nav-list .popular-search-link{
+      font: 400 16px/16px "Source Sans Pro";
+      color: #555555;
+      margin-right: 10px;
+      text-shadow: none;
+    }
     
-    .sidebar-item-selected {
-      background-color: #AAAAAA;
-      color: #fff;
+    .nav-list .popular-search-link:hover{
+      color: #166194;
+      background: none;
+    }
+    
+    .popular-search-link > .halflings-icon{
+    	margin-right: 5px;
+    }
+    
+    .nav-list .sidebar-item-selected {
+      background-color: #166194;
       padding-top: 3px;
       padding-bottom: 3px;
+      color: #FFFFFF;
     }
+    
+    h2.nav-header {
+      font: 400 18px/18px "Oswald" Arial sans-serif;
+      margin: 20px 10px 10px 15px;
+      padding: 3px 0px 3px 0px;
+      color: #555555;    
+      text-transform: none;  
+    }
+    
+    li.nav-header{
+    	text-transform: none;
+		font: 600 13px/13px "Source Sans Pro";
+		color: #7F7F7F;
+    }
+    
 
 /* RESULT CSS
 -------------------------------------------------- */
@@ -855,7 +506,7 @@ Bold 700 Italic
     }
     
     .result-header-count {
-      font-style: italic;
+      font: 300 18px/18px "Oswald" Arial sans-serif;
     }
     
     .result-row {
@@ -865,7 +516,7 @@ Bold 700 Italic
     }
     
     .result-row:hover { 
-    background-color: #eee;
+    background-color: #FDFDFD;
   }
 
     .result-author {
@@ -877,81 +528,58 @@ Bold 700 Italic
     	margin: auto;
     }
 
-/* RESPONSIVE CSS
--------------------------------------------------- */
-/*    
-    @media (max-width: 979px) {
+	.pagination ul{
+		border: none;
+		margin-top: 10px;
+	}
+	
+	.pagination ul > li > a{
+		font: 400 16px/16px "Oswald" sans-serif;
+		border: none;
+	}
+	
+/* MAIN CONTENT 
+--------------------------------- */
+#mainContent{
+	height: 600px;
+}
 
-      .navbar-inner {
-        border-radius: 0;
-        margin: -20px 0;
-      }
+#mainContent h1{
+	font: 400 60px/60px "Oswald" Arial sans-serif;
+	color: #FFFFFF;
+	text-transform: uppercase;
+	width: 300px;
+}
 
-      .carousel .item {
-        height: 100%;
-      }
-      .carousel img {
-        width: auto;
-        height: 500px;
-      }
+#mainContent input{
+	height: 90px;
+	border-radius: 20px;
+	font: 300 30px/30px Oswald;
+	border: none; 
+	padding-left: 20px;
+	float: left;
+}
 
-      .featurette {
-        height: auto;
-        padding: 0;
-      }
-      .featurette-image.pull-left,
-      .featurette-image.pull-right {
-        display: block;
-        float: none;
-        max-width: 40%;
-        margin: 0 auto 20px;
-      }
-    }
-*/
-    /*
-    @media (max-width: 767px) {
+#mainContent input::-webkit-input-placeholder{
+	padding-top: 7px;
+}
+#mainContent input:-moz-placeholder{ /* Firefox 18- */
+	padding-top: 7px;
+}
+#mainContent input::-moz-placeholder{ /* Firefox 19+ */
+	padding-top: 7px;
+}
+#mainContent input:-ms-input-placeholder{
+	padding-top: 7px;
+}
 
-      .navbar-inner {
-        margin: -20px;
-      }
+#search_btn_main{
+	float:left;
+	height:59px;
+	margin-left: -20px;
+	border-radius: 0 15px 15px 0;
+	background-color: #FFFFFF;
+	padding-top: 35px;
+	color: #999999;
+}
 
-      .carousel {
-        margin-left: -20px;
-        margin-right: -20px;
-      }
-      .carousel .container {
-
-      }
-      .carousel .item {
-        height: 300px;
-      }
-      .carousel img {
-        height: 300px;
-      }
-      .carousel-caption {
-        width: 65%;
-        padding: 0 70px;
-        margin-top: 100px;
-      }
-      .carousel-caption h1 {
-        font-size: 30px;
-      }
-      .carousel-caption .lead,
-      .carousel-caption .btn {
-        font-size: 18px;
-      }
-
-      .marketing .span4 + .span4 {
-        margin-top: 40px;
-      }
-
-      .featurette-heading {
-        font-size: 30px;
-      }
-      .featurette .lead {
-        font-size: 18px;
-        line-height: 1.5;
-      }
-
-    }
-    */

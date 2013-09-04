@@ -1,9 +1,9 @@
 <div class="navbar">
   <div class="navbar-inner">
-      <a class="brand" href="#">m</a>
       <ul class="nav">
+      	<li> <a href="."><img alt="Metacat" src="./img/metacat_logo.png"></a></li>
         <li><a href="#data">Data</a></li>
-        <li><a href="#share">Share</a></li>
+        <li><a href="#about">About</a></li>
         <!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
         <!-- comment out for now until we have plans -->
         <!-- 
@@ -19,14 +19,6 @@
           </ul>
         </li>
         -->
-        <li>
-          <div class="nav">
-            <div class="input-append">
-              <input type="text" class="span3" placeholder="Search for data" id="search_txt" value="<%= searchTerm  %>" >
-              <a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-white icon-large"></i></a>
-            </div>
-          </div>
-        </li>
         
         <% if (fullName) { 
         	print(

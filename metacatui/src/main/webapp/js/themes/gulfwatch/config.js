@@ -4,6 +4,7 @@ var themeMap =
 	'*': {
 		// example overrides are provided here
 		//'views/AboutView' : 'themes/' + theme + '/views/AboutView.js',
+		'templates/app.html' : 'themes/' + theme + '/templates/app.html',
 		'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',
 		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
 		'templates/search.html' : 'themes/' + theme + '/templates/search.html',

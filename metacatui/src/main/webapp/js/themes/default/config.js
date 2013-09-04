@@ -1,4 +1,4 @@
-var theme = theme || "default";
+var theme = theme || "new_default";
 var themeMap = 
 {
 	'*': {

@@ -97,6 +97,16 @@ define(['jquery',
 			//reference to appView
 			var thisAppViewRef = this;
 			
+			// Change the background image if there is one
+			if($('#bg_image').length > 0){
+				$('#bg_image').fadeOut('fast', function(){
+					//Randomly choose the next background image
+					var bgNum = Math.ceil(Math.random() * 10);
+					$('#bg_image').attr('src', './img/backgrounds/bg' + bgNum + '.jpg');	
+				});
+				$('#bg_image').fadeIn('slow');
+			}
+			
 			// close the current view
 			if (this.currentView){
 				//TODO: implement Backbone.View.protoype.close as:
@@ -106,16 +116,19 @@ define(['jquery',
 
 				// need reference to the old/current view for the callback method
 				var oldView = this.currentView;
+				
 				this.currentView.$el.fadeOut('slow', function() {
 					console.log('complete with fadeout');
 					// clean up old view
 					if (oldView.onClose){
 						oldView.onClose();
-					}
+					}	
+					
 					// render the new view
 					view.$el.hide();
 					view.render();
 					view.$el.fadeIn('slow', function() {
+						
 						// after fade in, do postRender()
 						if (view.postRender) {
 							view.postRender();
@@ -126,8 +139,10 @@ define(['jquery',
 					});
 				});
 			} else {
+				
 				// just show the view without transition
 				view.render();
+				
 			}
 			
 			// track the current view

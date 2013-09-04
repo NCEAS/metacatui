@@ -308,10 +308,10 @@ Bold 700 Italic
       opacity: 1;
     }
     
-/* FEATURES CSS
+/* FEATURES CSS 
 -------------------------------------------------- */    
     
-    #Features {
+    #mainContent {
       position: relative;
       background-color: #899CA6;
       padding-top: 20px;
@@ -319,19 +319,19 @@ Bold 700 Italic
 			min-height: 400px;
     }
 
-    section#Features h4 {
+    section#mainContent h4 {
       font-size: 160%;
       font-weight: 300;
     }
 
-    section#Features p {
+    section#mainContent p {
       font-size: 110%;
       font-weight: 300;
       line-height: 1.75;
       margin-bottom: 30px;
     }
     
-    section#Features a.btn-info {
+    section#mainContent a.btn-info {
       background-color: #6C94A4;
       color: #FFFFFF;
       /*border: none;
@@ -339,7 +339,7 @@ Bold 700 Italic
       box-shadow: none;*/
     }
 
-    section#Features a.btn-info:hover {
+    section#mainContent a.btn-info:hover {
       background-color: #5C7F8C;
     
     } 

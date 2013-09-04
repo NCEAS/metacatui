@@ -6,7 +6,8 @@ define(['jquery',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
 				'text!templates/pager.html',
-				'text!templates/resultsItem.html'
+				'text!templates/resultsItem.html',
+				'text!templates/mainContent.html'
 				], 				
 	function($, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate) {
 	'use strict';
@@ -44,7 +45,7 @@ define(['jquery',
 		
 		triggerSearch: function() {
 			// alert the model that a search should be performed
-			var searchTerm = $("#search_txt_side").val();
+			var searchTerm = $("#search_txt_side").val();		
 			appModel.set('searchTerm', searchTerm);
 			
 			var sortOrder = $("#sortOrder").val();
