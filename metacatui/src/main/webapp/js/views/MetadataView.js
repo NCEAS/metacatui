@@ -169,10 +169,11 @@ define(['jquery',
 			var pid = $(event.target).attr("pid");
 			var ret = confirm("Are you sure you want to publish " + pid + " with a DOI?");
 			
-			// show the progressbar
-			this.showProgressBar();
-			
 			if (ret) {
+				
+				// show the progressbar
+				this.showProgressBar();
+				
 				var identifier = null;
 				var viewRef = this;
 				$.ajax({
