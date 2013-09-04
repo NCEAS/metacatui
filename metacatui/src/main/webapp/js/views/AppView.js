@@ -99,9 +99,10 @@ define(['jquery',
 			
 			// Change the background image if there is one
 			if($('#bg_image').length > 0){
+				var imgCnt = $('#bg_image').attr('data-image-count');
 				$('#bg_image').fadeOut('fast', function(){
 					//Randomly choose the next background image
-					var bgNum = Math.ceil(Math.random() * 10);
+					var bgNum = Math.ceil(Math.random() * imgCnt);
 					$('#bg_image').attr('src', './img/backgrounds/bg' + bgNum + '.jpg');	
 				});
 				$('#bg_image').fadeIn('slow');
