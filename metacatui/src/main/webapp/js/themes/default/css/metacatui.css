@@ -260,19 +260,8 @@ Bold 700
       background: rgba(22, 97, 148, 0.2);
     }
     
-    #search_btn.btn {
-      background-color: #992222;
-      color: #FFFFFF;
-      
-    }
-    
-    #search_btn.btn:hover {
-      background-color: #882222;
-      color: #FFFFFF;
-      
-    }
      /* Download  and Publish buttons */
-     #downloadPackage > a.btn{
+     #downloadPackage  a.btn, #downloadPackage > div.share-feature{
     	width: 100px;
     } 
     
@@ -360,17 +349,6 @@ Bold 700
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
 
-    /* Offset the responsive button for proper vertical alignment */
-    .navbar .btn-navbar {
-      margin-top: 10px;
-    }
-
-    /* Offset the search div for proper vertical alignment */
-    .navbar .input-append {
-      margin: 5px 0px 0px 0px;
-      z-index: 290;
-    }
-
     #Navbar form {
       margin: 0px 0px 0px 0px;
       padding: 0px 0px 0px 0px;
@@ -381,6 +359,41 @@ Bold 700
     
     #SignIn {
       float: right;
+    }
+    
+    #Navbar input, #Navbar .btn{
+    	margin-top: 15px;
+    	float: left;
+    	border: none;
+    }
+    
+    #search_txt{
+    	border-radius: 5px 0px 0px 5px;
+    }
+    
+    #search_btn{
+    	margin-top: 0px;
+    	height: 14px;
+    	width: auto;
+    	background: #FFFFFF;
+    	border-radius: 0px 5px 5px 0px;
+    	padding: 7px;
+    }
+    
+    #search_btn > i{
+    	font-size: 13px;
+    	color: #999999;
+    	text-shadow: none;
+    	float: left;
+    }
+    
+    #search_btn:hover {
+      background-color: #166194;
+      opacity: 1.0;
+    }
+    
+    #search_btn:hover > i{
+    	color: #FFFFFF;
     }
 
     
