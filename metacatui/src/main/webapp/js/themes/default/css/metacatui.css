@@ -139,6 +139,13 @@ Bold 700
 	}
 	
 
+/* SHARE/UPLOAD, AND LOGIN FEATURES 
+* Choose to hide these features
+* -----------------------------------------------------*/
+.share-feature{
+	/* display: none; */ 
+}
+
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
   section#Notification {
