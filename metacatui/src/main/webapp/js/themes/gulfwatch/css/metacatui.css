@@ -189,7 +189,6 @@ Normal 400
       position: relative;
       bottom: 0px;
       padding-top: 30px;
-      padding-bottom: 30px;
       margin-top: 0px;
       color: #FDFDFD;
       background-color: #5A5758;
@@ -295,6 +294,26 @@ Normal 400
     
     .subfooter ul li:nth-child(n+2){
       border-left: 1px solid #FFFFFF;
+    }
+    
+    footer#Footer .alert{
+    	border-radius: 0;
+    	background-color: #CCCCCC;
+    	border-color: #CCCCCC;
+    	color: #555555;
+    	width: 100%;
+    	margin-bottom: 0;
+    }
+    
+    footer#Footer .alert > img{
+    	height: 45px;
+    	width: auto;
+    	float: left;
+    	margin-right: 10px;
+    }
+    
+    footer#Footer .alert a{
+    	text-shadow: none;
     }
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
@@ -567,24 +586,6 @@ Normal 400
       border: none;
       z-index: 210;   
       background-color: #009999;
-    }
-    
-    .navbar > .alert{
-    	border-radius: 0;
-    	background-color: #99d6d6;
-    	border-color: #99d6d6;
-    	color: #555555;
-    }
-    
-    .navbar > .alert > img{
-    	height: 45px;
-    	width: auto;
-    	float: left;
-    	margin-right: 10px;
-    }
-    
-    .navbar > .alert > p > a{
-    	
     }
 
     .navbar-inner {
