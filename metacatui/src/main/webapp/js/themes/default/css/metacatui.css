@@ -25,11 +25,19 @@ Bold 700
     
     body {
       color: #333333;
-      font: 400 15px/15px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
+      font: 400 15px/18px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
       min-height: 100%;
       position: relative;
     }
-
+    
+	h3 {
+		font: 400 24.5px/40px "Source Sans Pro" sans-serif;
+	}
+	
+	h2{
+		font: 400 27.5px/40px "Oswald" sans-serif;
+	}
+	
     
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block;   
@@ -180,8 +188,8 @@ Bold 700
     }
     
     footer#Footer > .logos{
-    	width: 350px;
-    	margin-top: 20px;
+    	width: 450px;
+    	margin: 20px auto;
     }
     
     footer#Footer > .logos > div{
@@ -191,6 +199,26 @@ Bold 700
     footer#Footer > .logos > div > a{
     	line-height: 100px; 	
     }
+    
+    footer#Footer > .logos > div > a > img{
+    	float:right;
+    }
+    
+    footer#Footer > .logos img.small-logo{
+    	height: 25%;
+    	width: auto;
+    }
+    
+    footer#Footer > .logos img.small-logo:last-child{
+    	float:left;
+    }
+    
+    
+    footer#Footer > .logos img.short-logo{
+    	margin-top: 20%;
+    }
+    
+    footer#Footer > .logos 
 	
 	footer#Footer > div:last-child{
 		text-align: center;
@@ -227,6 +255,7 @@ Bold 700
     footer#Footer img {
       opacity: .75;
     }
+    
     
  /* BUTTONS CSS
 -------------------------------------------------- */   
@@ -360,8 +389,29 @@ Bold 700
       margin: 0px 0px 0px 0px;
       padding: 0px 0px 0px 0px;
     }
+    
+    /* Logged-in view and user controls in navbar */
     #Navbar i .user {
       opacity: .6;
+    }
+    
+    #Navbar .dropdown-toggle > .icon-sort-down{
+    	font-size: 15px;
+    	width: 5px;
+    }
+    
+    #Navbar .dropdown-menu{
+    	left: -90px;
+    }
+    
+    #Navbar .dropdown-menu:before,
+    #Navbar .dropdown-menu:after{
+    	left: 80%;
+    }
+    
+    #Navbar .dropdown-menu > li > a:hover{
+    	background-color: #166194;
+    	background-image: none;
     }
     
     #SignIn {
@@ -373,6 +423,8 @@ Bold 700
     	float: left;
     	border: none;
     }
+    
+    /* Search bar in nav bar */
     
     #search_txt{
     	border-radius: 5px 0px 0px 5px;
@@ -408,7 +460,7 @@ Bold 700
 /* METADATA VIEW CSS
 -------------------------------------------------- */
 	label.control-label{
-		font: 400 15px/15px "Oswald";
+		font: 600 15px/18px "Source Sans Pro";
 	}
 	
 	#Metadata .well{
@@ -424,8 +476,7 @@ Bold 700
 	}
 	
 	#Metadata h4{
-		font: 300 16px/16px "Oswald" Arial sans-serif;
-		color: #555555;
+		font-weight: 600;
 	}
 	
 	#Metadata .nav-header{
