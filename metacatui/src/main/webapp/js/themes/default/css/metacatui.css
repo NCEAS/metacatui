@@ -25,7 +25,7 @@ Bold 700
     
     body {
       color: #333333;
-      font: 400 15px/18px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
+      font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
       min-height: 100%;
       position: relative;
     }
@@ -460,11 +460,11 @@ Bold 700
 /* METADATA VIEW CSS
 -------------------------------------------------- */
 	label.control-label{
-		font: 600 15px/18px "Source Sans Pro";
+		font: 400 15px/18px "Source Sans Pro";
 	}
 	
 	#Metadata .well{
-		font: 300 21px/22px Oswald;
+		font: 300 21px/30px Oswald;
 		border: 1px solid #CCCCCC;
 		box-shadow: none;
 		-moz-box-shadow: none;
@@ -599,7 +599,7 @@ Bold 700
     }
     
     .result-row {
-      display: inline-block;
+      display: block;
         border-bottom: thin solid;
         padding: 5px;
     }
