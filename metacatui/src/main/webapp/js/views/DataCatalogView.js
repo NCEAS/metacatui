@@ -276,6 +276,8 @@ define(['jquery',
 			this.$package_service = appModel.get('packageServiceUrl');
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
 			var view = new SearchResultView({ model: result });
+			// Initialize the tooltip for the has data icon
+			$(".has-data").tooltip();
 			this.$results.append(view.render().el);
 		},
 

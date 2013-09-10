@@ -306,6 +306,13 @@ Bold 700 Italic
       
     }
     
+    .btn-group > .dropdown-toggle{
+		-webkit-border-top-right-radius: 4px;
+		border-top-right-radius: 4px;
+		-webkit-border-bottom-right-radius: 4px;
+		border-radius: 4px;
+	}
+    
     i.glyphicons-icon, i.halflings-icon {
       opacity: .8;
     }
@@ -855,6 +862,18 @@ Bold 700 Italic
         border-bottom: thin solid;
         padding: 5px;
     }
+    
+    .result-row .btn-group .has-data{
+    	color: #555555;
+    	font-size: 18px;
+    	position: relative;
+    	left: -15px;
+    }
+    
+    .result-row .btn > .icon-caret-down {
+    	margin-left: 5px;
+    	font-size: 16px;
+    } 
     
     .result-row:hover { 
     background-color: #eee;
