@@ -2,10 +2,11 @@
 define(['jquery',
 		'underscore', 
 		'backbone',
+		'text!templates/package.html',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html'
 		], 				
-	function($, _, Backbone, PublishDoiTemplate, VersionTemplate) {
+	function($, _, Backbone, PackageTemplate, PublishDoiTemplate, VersionTemplate) {
 	'use strict';
 
 	
@@ -14,7 +15,9 @@ define(['jquery',
 		el: '#Content',
 		
 		template: null,
-		
+				
+		packageTemplate: _.template(PackageTemplate),
+
 		doiTemplate: _.template(PublishDoiTemplate),
 		
 		versionTemplate: _.template(VersionTemplate),
@@ -61,7 +64,7 @@ define(['jquery',
 		
 		// this will insert the ORE package download link if available
 		insertResourceMapLink: function(pid) {
-			var resourceMapId = null;
+			var resourceMap = [];
 			// look up the resourceMapId[s]
 			var queryServiceUrl = appModel.get('queryServiceUrl');
 			var packageServiceUrl = appModel.get('packageServiceUrl');
@@ -75,15 +78,19 @@ define(['jquery',
 					function(data, textStatus, xhr) {
 						
 						// the response should have a resourceMap element
-						resourceMapId = $(data).find("arr[name='resourceMap'] str").text();
-						console.log('resourceMapId: ' + resourceMapId);
+						$(data).find("arr[name='resourceMap'] str").each(function(index, element) {
+							var resourceMapId = $(this).text();
+							resourceMap.push(resourceMapId);
+							console.log('resourceMapId: ' + resourceMapId);
+						}
+						);
 						
-						if (resourceMapId) {														
+						if (resourceMap.length > 0) {														
 							$("#downloadPackage").html(
-								'<a class="btn" href="' 
-									+ packageServiceUrl + resourceMapId + '">' 
-									+ 'Download Package <i class="icon-arrow-down"></i>'
-								+ '</a>'
+								viewRef.packageTemplate({
+									package_service: packageServiceUrl,
+									resourceMap: resourceMap
+								})
 							);
 
 						}

@@ -1,0 +1,19 @@
+<div class="btn-group">
+
+<% if (resourceMap) {
+		// handle multiple resourceMaps
+		print('<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">Download <span class="icon-caret-down"></span></a>');
+        print('<ul class="dropdown-menu">');
+        var cnt = 1;
+        _.each(resourceMap, function(resourceMapId) {
+			print('<li>');
+			print('<a class="" href="', package_service, resourceMapId, '" title="', resourceMapId ,'" >', 'Package ', cnt, '</a>');
+			print('</li>'); 
+			 
+		})
+        print('</ul>');
+	} else {
+		print('<a class=\"btn\" href=\"', package_service, id, '\">Download <i class="icon-arrow-down"></i></a>'); 
+	}
+%>
+</div>
