@@ -175,9 +175,13 @@ define(['jquery',
 		
 		publish: function(event) {
 			
+			// target may not actually prevent click events, so double check
+			var disabled = $(event.target).closest("a").attr("disabled");
+			if (disabled) {
+				return false;
+			}
 			var publishServiceUrl = appModel.get('publishServiceUrl');
-
-			var pid = $(event.target).attr("pid");
+			var pid = $(event.target).closest("a").attr("pid");
 			var ret = confirm("Are you sure you want to publish " + pid + " with a DOI?");
 			
 			if (ret) {
