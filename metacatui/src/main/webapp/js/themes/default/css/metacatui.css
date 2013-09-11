@@ -304,11 +304,8 @@ Bold 700
 	}
     
      /* Download  and Publish buttons */
-     #downloadPackage  a.btn, #downloadPackage > div.share-feature{
+     #downloadPackage a.btn {
     	width: 100px;
-    } 
-    
-    #downloadPackage > a.btn:first-child{
     	margin-bottom: 8px;
     } 
     

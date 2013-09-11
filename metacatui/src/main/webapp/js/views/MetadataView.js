@@ -2,9 +2,10 @@
 define(['jquery',
 		'underscore', 
 		'backbone',
-		'text!templates/publishDOI.html'
+		'text!templates/publishDOI.html',
+		'text!templates/newerVersion.html'
 		], 				
-	function($, _, Backbone, PublishDoiTemplate) {
+	function($, _, Backbone, PublishDoiTemplate, VersionTemplate) {
 	'use strict';
 
 	
@@ -15,6 +16,8 @@ define(['jquery',
 		template: null,
 		
 		doiTemplate: _.template(PublishDoiTemplate),
+		
+		versionTemplate: _.template(VersionTemplate),
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -46,7 +49,7 @@ define(['jquery',
 							viewRef.showMessage(response);
 						} else {
 							viewRef.insertResourceMapLink(pid);
-							viewRef.insertDoiButton(pid);
+							viewRef.showLatestVersion(pid);
 						}
 						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
@@ -63,6 +66,7 @@ define(['jquery',
 			var queryServiceUrl = appModel.get('queryServiceUrl');
 			var packageServiceUrl = appModel.get('packageServiceUrl');
 			
+			var viewRef = this;
 
 			// surround pid value in "" so that doi characters do not affect solr query
 			var query = 'fl=id,resourceMap&wt=xml&q=formatType:METADATA+-obsoletedBy:*+resourceMap:*+id:"' + pid + '"';
@@ -74,18 +78,18 @@ define(['jquery',
 						resourceMapId = $(data).find("arr[name='resourceMap'] str").text();
 						console.log('resourceMapId: ' + resourceMapId);
 						
-						if (resourceMapId) {
-														
+						if (resourceMapId) {														
 							$("#downloadPackage").html(
 								'<a class="btn" href="' 
 									+ packageServiceUrl + resourceMapId + '">' 
-									+ '<i class="icon-arrow-down"></i> Download Package'
+									+ 'Download Package <i class="icon-arrow-down"></i>'
 								+ '</a>'
 							);
 
-
 						}
-
+						
+						// fetch the other parts to this section
+						viewRef.insertDoiButton(pid);
 						
 					}
 				);
@@ -208,6 +212,38 @@ define(['jquery',
 				);
 				
 			}
+		},
+		
+		// this will lookup the latest version of the PID
+		showLatestVersion: function(pid, traversing) {
+			var obsoletedBy = null;
+			// look up the metadata
+			var metaServiceUrl = appModel.get('metaServiceUrl');			
+
+			// look up the meta
+			var viewRef = this;
+			$.get(
+					metaServiceUrl + pid,
+					function(data, textStatus, xhr) {
+						
+						// the response should have a resourceMap element
+						obsoletedBy = $(data).find("obsoletedBy").text();
+						console.log('obsoletedBy: ' + obsoletedBy);
+						
+						if (obsoletedBy) {						
+							viewRef.showLatestVersion(obsoletedBy, true);
+						} else {
+							if (traversing) {
+								viewRef.$el.find("#Metadata > .container").prepend(
+										viewRef.versionTemplate({pid: pid})
+										);
+								
+							}
+							
+						}
+					}
+				);
+				
 		},
 		
 		showMessage: function(msg, prepend, alertType) {

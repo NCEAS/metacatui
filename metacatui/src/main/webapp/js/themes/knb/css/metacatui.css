@@ -793,6 +793,12 @@ Bold 700 Italic
 		min-height: 800px;
     }
     
+    /* Download  and Publish buttons */
+     #downloadPackage a.btn {
+    	width: 100px;
+    	margin-bottom: 8px;
+    } 
+    
 	/* Registry CSS
 	-------------------------------------------------- */
     #RegistryEntryForm, 

@@ -907,17 +907,16 @@ Normal 400
     	width: 80%;
     	margin-left: -40%;
     }
+    
+    /* Download  and Publish buttons */
      
      /* Download  and Publish buttons */
-     #downloadPackage > a.btn{
+     #downloadPackage a.btn {
     	background-color: #009999;
     	color: #FFFFFF;
     	text-shadow: none;
     	text-decoration: none;
     	width: 100px;
-    } 
-    
-    #downloadPackage > a.btn:first-child{
     	margin-bottom: 8px;
     }
     
