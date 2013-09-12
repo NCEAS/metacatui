@@ -55,7 +55,10 @@ Bold 700
       background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
       background-color: rgba(255, 255, 255, 0.8);
       padding: 20px;
-      border-radius: 20px;			
+      border-radius: 20px;
+      border-radius: 20px;		
+      -webkit-border-radius: 20px;
+	  -moz-border-radius: 20px;			
     }
     
      .container{
@@ -137,6 +140,8 @@ Bold 700
 	#results-header select{
 		border: 0;
 		border-radius: 0;
+		-webkit-border-radius: 0px;
+		-moz-border-radius: 0px;
 		-webkit-appearance: none;
 		background: none;
 		width: 120px;
@@ -167,6 +172,8 @@ Bold 700
   
   .progress-striped{
   	border-radius: 0px;
+  	-webkit-border-radius: 0px;
+	-moz-border-radius: 0px;
   }
   
   .progress-striped .bar{
@@ -298,8 +305,10 @@ Bold 700
     
     .btn-group > .dropdown-toggle {
 		-webkit-border-top-right-radius: 4px;
+		-moz-border-top-right-radius: 4px;
 		border-top-right-radius: 4px;
 		-webkit-border-bottom-right-radius: 4px;
+		-moz-border-bottom-right-radius: 4px;
 		border-radius: 4px;
 	}
 	
@@ -447,6 +456,8 @@ Bold 700
     
     #search_txt{
     	border-radius: 5px 0px 0px 5px;
+    	-webkit-border-radius: 5px 0px 0px 5px;
+		-moz-border-radius: 5px 0px 0px 5px;
     }
     
     #search_btn{
@@ -455,6 +466,8 @@ Bold 700
     	width: auto;
     	background: #FFFFFF;
     	border-radius: 0px 5px 5px 0px;
+    	-webkit-border-radius: 0px 5px 5px 0px;
+		-moz-border-radius: 0px 5px 5px 0px;
     	padding: 7px;
     }
     
@@ -675,6 +688,8 @@ Bold 700
 #mainContent input{
 	height: 90px;
 	border-radius: 20px;
+	-webkit-border-radius: 20px;
+	-moz-border-radius: 20px;
 	font: 300 30px/30px Oswald;
 	border: none; 
 	padding-left: 20px;
@@ -699,6 +714,8 @@ Bold 700
 	height:59px;
 	margin-left: -20px;
 	border-radius: 0 15px 15px 0;
+	-webkit-border-radius: 0 15px 15px 0;
+	-moz-border-radius: 0 15px 15px 0;
 	background-color: #FFFFFF;
 	padding-top: 35px;
 	color: #999999;

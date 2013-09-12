@@ -130,7 +130,14 @@ define(['jquery', 'underscore', 'backbone'],
 				computedUrl = this.lastUrl + this.url ;
 			} else if (this.url.indexOf(".") == 0 || !(this.url.lastIndexOf("/", 0) == 0) ) {
 				// handle relative url to the lastUrl base
-				var baseUrl = this.lastUrl.substring(0, this.lastUrl.lastIndexOf("/"));
+				var lastSlashIndex = this.lastUrl.lastIndexOf("/");
+				var baseUrl = this.lastUrl;
+				if (this.lastUrl.lastIndexOf('.') > lastSlashIndex){
+					baseUrl = this.lastUrl.substring(0, lastSlashIndex); 
+				}
+				if (baseUrl.lastIndexOf("/") == (baseUrl.length-1)){
+					baseUrl = baseUrl.substring(0, baseUrl.length-1);
+				}
 				computedUrl = baseUrl + "/" + this.url ;
 			}
 			
