@@ -73,6 +73,10 @@ Bold 700 Italic
       padding-bottom: 40px;  			
     }
     
+    a {
+		color: #115E95; /*blue from the earthtones pallette */
+    }
+    
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
@@ -84,18 +88,15 @@ Bold 700 Italic
     h1 > a[name]:before, h2 > a[name]:before, h3 > a[name]:before,
     h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
 		content: "";
-    padding-top: 115px;
+    	padding-top: 115px;
     }
     
-    a {
-      color: #115E95; /*blue from the earthtones pallette */
-    }
-    
-    a.anchor{	/* Offsets the anchor links by the same height as the fixed header */
-    	position:relative;
-    	top: -95px;
-    	display: block;
-    }
+	/* Offsets the anchor links by the same height as the fixed header */
+	a[name] {	
+		position:relative;
+		top: -95px;
+		display: block;
+	}
     
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
