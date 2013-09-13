@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		template: null,
 		
-		containerTemplate: '<article><div class="container"><div class="row-fluid"><div id="DynamicContent" class="text-left"></div></div></div></article>',
+		containerTemplate: '<article id="external"><div class="container"><div class="row-fluid"><div id="DynamicContent" class="text-left"></div></div></div></article>',
 				
 		lastUrl: null,
 		
@@ -23,7 +23,6 @@ define(['jquery', 'underscore', 'backbone'],
 		powerfulEvents: {
 			"click a"						:	"handleAnchor",
 			"click input[type='submit']"	:	"submitForm"
-
 		},
 		
 		handleAnchor: function(event) {
@@ -132,9 +131,11 @@ define(['jquery', 'underscore', 'backbone'],
 				// handle relative url to the lastUrl base
 				var lastSlashIndex = this.lastUrl.lastIndexOf("/");
 				var baseUrl = this.lastUrl;
+				// For "dir/file.ext"
 				if (this.lastUrl.lastIndexOf('.') > lastSlashIndex){
 					baseUrl = this.lastUrl.substring(0, lastSlashIndex); 
 				}
+				// For "dir/" 
 				if (baseUrl.lastIndexOf("/") == (baseUrl.length-1)){
 					baseUrl = baseUrl.substring(0, baseUrl.length-1);
 				}
@@ -152,7 +153,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.lastUrl = computedUrl;
 			}
 			
-			// handle images
+			// handle image URLs
 			if (this.endsWith(computedUrl, ".png")
 					|| this.endsWith(computedUrl, ".jpg")
 					|| this.endsWith(computedUrl, ".gif")) {
@@ -173,10 +174,12 @@ define(['jquery', 'underscore', 'backbone'],
 						viewRef.delegateEvents(viewRef.powerfulEvents);
 						// make sure we scroll
 						viewRef.postRender();
+						viewRef.loadImages(computedUrl);
 						// make sure our browser history has it
 						uiRouter.navigate("external/" + computedUrl);
 						
 					});
+			
 			
 			
 			return this;
@@ -194,6 +197,7 @@ define(['jquery', 'underscore', 'backbone'],
 			} else {
 				this.scrollToTop();
 			}
+			
 		},
 		
 		// scroll to the anchor given to the render function
@@ -207,6 +211,37 @@ define(['jquery', 'underscore', 'backbone'],
 		scrollToTop: function() {
 			$("html, body").animate({ scrollTop: 0 }, "slow");
 			return false;
+		},
+		
+		// Change the src of all images so they'll load
+		loadImages: function(computedUrl){	
+			console.log(computedUrl);
+			var newSrc = null;
+			
+			this.$el.find('img').each( function(){
+				var src = $(this).attr('src');
+				var beginningChars = src.substring(0, 4);
+				var newSrc = null;
+				
+				//Only change relative paths
+				if ((src.indexOf("/") == 0) || (src.indexOf("http") == 0) || (src.indexOf("www") == 0)){
+					return;
+				}
+				else{
+					if (computedUrl.lastIndexOf(".") > computedUrl.lastIndexOf("/")) {
+						newSrc = computedUrl.substring(0, computedUrl.lastIndexOf('/')) + '/' + src;
+					}
+					else{
+						newSrc = computedUrl + '/' + src;
+					}
+					//change the img src
+					$(this).attr('src', newSrc)
+				}
+			});
+			
+			/*$('link[rel="stylesheet"').each( function(){
+				$(this).attr('href', computedUrl + $(this).attr('href'));
+			});*/
 		}
 		
 	});
