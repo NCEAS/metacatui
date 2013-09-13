@@ -973,3 +973,419 @@ Bold 700 Italic
 
     }
     */
+    
+/*-------------- DOCUMENTATION CSS -----------------------------*/
+/* ---------------------------------------------------- */
+
+/* BANNER/HEADER CSS
+---------------------------------------------------- */
+#metacatDocs > .banner{
+	width: 100%;
+	height: 70px;
+	background-image: linear-gradient(to bottom, #3F3F3F, #555555);
+	background-repeat: repeat-x;
+	margin-bottom: 95px;
+}
+
+#metacatDocs > .banner > img{
+	float: left;
+	width: auto;
+	margin: 10px;
+	height: 50px;
+}
+
+#metacatDocs > .banner > .title{
+	font: 400 18px/18px Lato;
+	color: #FFFFFF;
+	float: left;
+	margin: 25px 10px;
+}
+
+/* RELATED/NAVIGATION CSS
+---------------------------------------------------- */
+#metacatDocs > .related{
+	width: 100%;
+	position: relative;
+	top: -145px;
+}
+
+#metacatDocs .related > h3{
+	display: none;
+}
+
+ #metacatDocs .related > ul {
+	list-style: none;
+	float: right;
+}
+
+#metacatDocs .related > ul > li.right > a{
+	color: #FFFFFF;
+	font: 400 30px/30px Lato;	
+	text-decoration: none;
+	text-transform: capitalize;	
+}
+
+#metacatDocs .related > ul > li.right{
+	margin-right: 20px;
+	float: right;
+}
+
+
+#metacatDocs .related > ul > li > a:hover,
+#metacatDocs .related > ul > li > a:focus{
+      color: #FFFFFF;
+      text-decoration: none;
+      opacity: 0.7;
+}
+
+#metacatDocs .related > ul input[type="submit"]{	/*"Go" button on navigation search bar */
+	position: relative;
+	left: -10px;
+	top: -5px;
+	height: 32px;
+	border-radius: 0 4px 4px 0;
+	-webkit-border-radius: 0 4px 4px 0;
+	-moz-border-radius: 0 4px 4px 0;
+	border-left: 1px solid #CCCCCC;
+	font: 300 16px/16px "Lato", sans-serif;
+	background-color: #992222;
+	color: #FFFFFF;
+}
+
+#metacatDocs .related > ul input[type="submit"]:hover{	/*"Go" button on navigation search bar */
+	background-color: #882222;
+	color: #FFFFFF;
+	cursor: pointer;
+}
+
+#metacatDocs .related > ul > li > span#searchbox{
+	display: block;
+	margin-right: 0px;
+}
+
+#metacatDocs .related > ul > li > span#searchbox > form{
+	display: inline;
+	vertical-align: top;
+}
+
+
+#metacatDocs .related .breadcrumb{
+	float: left;
+	clear: none;
+	background: none;
+}
+
+#metacatDocs .related .breadcrumb,
+#metacatDocs .related .breadcrumb > a{
+	font: 300 16px/16px Lato;
+	color: #FFFFFF;
+}
+
+#metacatDocs .related .breadcrumb.first{
+	clear: left;
+}
+
+#metacatDocs .footerNav > .related li.right{
+
+	
+}
+
+#metacatDocs .footerNav > .related li.breadcrumb:last-child{
+	margin-right: 20px;
+}
+
+
+
+
+
+/* DOCUMENT / MAIN CONTENT AREA
+------------------------------------------------------*/
+#metacatDocs > .document{
+	margin: 20px auto;
+	padding: 20px 2%;
+	width: 96%;
+}
+
+/* Permalink icons */
+#metacatDocs > .document .headerlink{
+	display: none;
+	margin-left: 10px;
+}
+
+#metacatDocs > .document h1:hover > .headerlink,
+#metacatDocs > .document h2:hover > .headerlink,
+#metacatDocs > .document h3:hover > .headerlink{
+	display: inline;
+	color: #166194;
+}
+
+
+/* SIDEBAR
+---------------------------------------------------- */
+#metacatDocs .sidebar{
+	float: right;
+	margin: 20px 0px 30px 20px;
+	background: #E2E2E2;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	padding: 20px;
+	max-width:60%;
+}
+
+#metacatDocs .sidebar .sidebar-title{
+	font: 300 24px/24px Lato;
+	margin-top: 0;
+}
+
+#metacatDocs .sidebar img{
+	margin: 0;
+}
+
+/* FOOTER
+---------------------------------------------------- */
+#metacatDocs > .footer{
+	color: #333333;
+	bottom: 0;
+	width: 100%;
+	margin: 50px auto 0 auto;
+}
+
+#metacatDocs > .footer > .small-print{
+	width: 550px;
+	display: block;
+	float: none;
+	clear: both;
+	margin: 20px auto 0 auto;
+	color: #333333;
+	font: 300 14px/14px Source Sans Pro;
+}
+
+#metacatDocs > .footer > .footerNav{
+	width: 100%;
+	display: block;
+	height: 40px;
+	margin-bottom: 10px;
+}
+
+#metacatDocs > .footer > .footerNav > .related > ul > li > a{
+	color: #115E95;
+}
+
+    
+/* TABLES 
+ -----------------------------------------------*/
+ #metacatDocs table, 
+ #metacatDocs tr,
+ #metacatDocs th,
+ #metacatDocs td,
+ #metacatDocs thead,
+ #metacatDocs tbody{
+    	border: 0px;
+    	border-collapse: collapse;
+    	padding: 8px;
+    }
+    
+#metacatDocs table{
+    	background: rgba(255,255,255, 0.8);
+    	margin: 40px auto;
+    	
+    }
+    
+#metacatDocs thead,
+#metacatDocs th{
+    	background-color: #555555;
+    	color: #FFFFFF;
+    	font: 300 16px/20px Source Sans Pro;
+    }
+    
+#metacatDocs td{
+    	font: 400 15px/20px Source Sans Pro;
+    }
+    
+#metacatDocs tr.row-odd{
+    	background: rgba(103, 184, 229, 0.2);
+    }
+
+
+/* HIGHLIGHTING
+ -----------------------------------------------*/
+ #metacatDocs .highlight{
+ 	padding-left: 10px;
+ 	padding-right: 10px;
+ 	word-wrap: break-word;
+ 	color: #FFFFFF;
+ 	background: none;
+ 	clear: right;
+ }
+ 
+#metacatDocs .highlight-python{
+ 	word-wrap: break-word;
+ 	color: #FFFFFF;
+ 	clear: right;
+ }
+ 
+ pre{
+	 padding: 10px;
+	background: rgba(22,97,148,0.7);
+	color: #FFFFFF;
+	font-size: 15px;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	margin: 20px auto;
+ }
+ 
+ #metacatDocs  #license pre{
+ 	width: 700px;
+ 	margin: 0 auto;
+ }
+ 
+ /* FIGURES 
+ ----------------------------------------------- */
+  
+ .figure{
+ 	max-width: 50%;
+ 	background-color: #FFFFFF;
+ 	padding: 10px;
+ 	display: block;
+ 	border: 1px solid #666666;
+ 	margin: 20px auto;
+ }
+ 
+ .figure > img{
+ 	max-width: 90%;
+ 	margin: 10px auto;
+ 	display: block;
+ }
+ 
+ .figure > .caption{
+	 margin-bottom: 0px;
+	text-align: center;
+	font: 400 14px/14px Source Sans Pro;
+	color: #666;
+	padding-top: 10px;
+ }
+ 
+    
+ /* MISC
+ -----------------------------------------------*/
+ #external > .container{
+ 	width: 100%;
+ }
+ .align-center{
+ 	margin-left: auto;
+ 	margin-right: auto;
+ }
+
+ 
+#metacatDocs .topic{
+ 	background: rgba(255,255,255,0.5);
+ 	padding: 20px;
+ 	border-radius: 20px;
+ 	-webkit-border-radius: 20px;
+ 	-moz-border-radius: 20px;
+ }
+ 
+ #metacatDocs .topic > ul{
+ 	margin-left: 20px;
+ }
+ 
+ #metacatDocs .topic-title{
+ 	font: 300 24px/24px Lato;
+	margin-top: 0;
+ }
+ 
+ 
+ #installing-the-registry .sidebar{
+ 	max-width: 100%;
+ }
+ 
+    dt{
+   		font: 300 18px/40px Lato;
+   }
+   
+   #metacatDocs input {
+		-webkit-appearance: none;
+		background-color: white;
+		border-radius: 4px;
+		height: 25px;
+		width: 200px;
+		box-shadow: none;
+		border: 0;
+    }
+    
+    #metacatDocs input[type="submit"]{
+    	width: auto;
+    }
+    
+    #metacatDocs h3 {
+		font: 400 24.5px/40px "Source Sans Pro" sans-serif;
+	}
+	
+	#metacatDocs h2{
+		font: 400 27.5px/40px "Lato" sans-serif;
+	}
+		
+	#metacatDocs h1{
+		font: 400 32px/40px "Lato" sans-serif;
+	}
+	
+	#metacatDocs h1 > a, 
+	#metacatDocs h2 > a,
+	#metacatDocs h3 > a,
+	#metacatDocs h4 > a{
+		color: #333333;
+	}
+	
+	#metacatDocs ul ul{
+		margin-left:20px;
+	}
+	
+	#metacatDocs .note{
+		 margin-left: 20px;
+		 color: #555555;
+	}
+	
+	#metacatDocs blockquote p{
+		font-size: inherit;
+		font-weight: inherit;
+	}
+ 
+ 	#metacatDocs #contents{
+ 		background: rgba(255, 255, 255, 0.5);
+		border-radius: 20px;
+		-moz-border-radius: 20px;
+		-webkit-border-radius: 20px;
+		margin: 20px auto;
+		clear: both;
+		padding: 10px 10px 10px 40px;
+ 	}
+ 	
+ 	#metacatDocs .section{
+ 		margin-top: 0px;
+ 	}
+ 	
+ 	#metacatDocs .section {
+      color: #555555;
+      text-decoration: none;
+    }
+    
+    /* make sure the anchors render with padding-top */
+    .section:before, .section:before, .section:before,
+    .section:before, .section:before, .section:before {
+		content: "";
+    	padding-top: 115px;
+    }
+    
+	/* Offsets the anchor links by the same height as the fixed header */
+	.section {	
+		position:relative;
+		top: -95px;
+		padding-top: 95px;
+		display: block;
+	}
+    
+    div.row-fluid > .section {
+      margin: 35px auto auto auto;
+    }

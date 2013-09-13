@@ -1,38 +1,5 @@
 
 /* Import font families */
-@import url(https://fonts.googleapis.com/css?family=Lato);
-/* Lato weights:
-Ultra-Light 100
-Ultra-Light 100 Italic
-Book 300
-Book 300 Italic
-Normal 400
-Normal 400 Italic
-Bold 700
-Bold 700 Italic
-Ultra-Bold 900
-Ultra-Bold 900 Italic
-*/
-@import url(https://fonts.googleapis.com/css?family=Open+Sans);
-/* Open Sans weights:
-Book 300 
-Book 300 Italic
-Normal 400
-Normal 400 Italic
-Semi-Bold 600
-Semi-Bold 600 Italic
-Bold 700
-Bold 700 Italic
-Extra-Bold 800
-Extra-Bold 800 Italic
-*/
-@import url(https://fonts.googleapis.com/css?family=Gentium+Book+Basic);
-/* Gentium Book Basic weights:
-Normal 400
-Normal 400 Italic
-Bold 700
-Bold 700 Italic
-*/
 @import url(http://fonts.googleapis.com/css?family=Muli:400,400italic);
 /* Muli weights:
 Normal 400
@@ -49,12 +16,12 @@ Normal 400
     body {
       color: #555555;
       background-color: #E9E9E1;
-      font-family: ProximaNova-Semibold, Arial, san-serif;
+      font-family: Muli, Arial, san-serif;
       text-shadow: none;
     }
 
     body p {
-      font-weight: 400;"metacatui/src/main/webapp/index.html"
+      font-weight: 400;
       line-height: 1.5;
     }
 
@@ -505,73 +472,7 @@ Normal 400
       max-width: 600px;
     }
     
-    /* Commenting these out for now. May not need them:
-        
-    .featured {
-      border-radius: 6px 6px 6px 6px;
-      margin-right: 20px;
-      max-height: 300px;
-    }
-
-    #featured_list {
-      margin: auto auto auto 20px;
-      border-radius: 6px 6px 6px 6px;
-    }    
-    
-    #featured_list > li.nav-header {
-      height: 30px;
-      color: #9A8D72;
-      background-color: #E8E7DA;
-      font-size: 18px;
-      font-weight: 400;
-      padding-top: 15px;
-      border-radius: 6px 6px 0px 0px;
-    }
-
-    #featured_list > li.active > a {
-      background-color: #009999;
-      color: #FDFDFD;
-      font-size: 18px;
-      font-weight: 400;
-      float: left;
-    }
-    
-    #featured_list > li > a {
-      height: 60px;
-      width: 100%;
-      padding: 10px 20px 10px 20px;
-      color: #9A8D72;
-      background-color: #E8E7DA;
-      font-size: 18px;
-      font-weight: 400;
-      float: left;
-      padding: 20px 10px 10px 10px;
-    }
-
-    #featured_list > li > a > span.citation {
-      font-weight: 400;
-    }
-
-    #featured_list > li > a:hover {
-      background-color: #F3F3F3;
-    }
-        
-    #featured_list > li.active > a:hover {
-      background-color: #9A8D72;
-    }
-    
-    #featured_list > li:first-child > a {
-      border-radius: 6px 6px 0px 0px;
-    }
-    
-    #featured_list > li:last-child > a {
-      border-radius: 0px 0px 6px 6px;
-    }
-    
-    #featured_list .chevron-left {
-      float: left;
-    }
-    */
+ 
 /* CUSTOMIZE THE ACCORDIAN 
 -------------------------------------------------- */
 
@@ -621,7 +522,7 @@ Normal 400
     .navbar .nav > li > a {
       color: #FFFFFF;
       font-size: 16px;
-      font-family: ProximaNova-Semibold, Arial, san-serif;
+      font-family: Muli, Arial, san-serif;
       font-weight: 400;
       padding: 5px 20px;
     }
@@ -1040,82 +941,377 @@ Normal 400
     	margin: 10px auto;
     }
     
+    
+    
+    /*-------------- DOCUMENTATION CSS -----------------------------*/
+/* ---------------------------------------------------- */
 
-/* RESPONSIVE CSS
--------------------------------------------------- */
-/*    
-    @media (max-width: 979px) {
+/* BANNER/HEADER CSS
+---------------------------------------------------- */
+#metacatDocs > .banner{
+	width: 100%;
+	height: 100px;
+	background-color: #999999;
+}
 
-      .navbar-inner {
-        border-radius: 0;
-        margin: -20px 0;
-      }
+#metacatDocs > .banner > img{
+	float: left;
+	width: auto;
+	margin: 20px 10px;
+	height: 70px;
+}
 
-      .carousel .item {
-        height: 100%;
-      }
-      .carousel img {
-        width: auto;
-        height: 500px;
-      }
+#metacatDocs > .banner > .title{
+	font: 400 18px/18px Muli, Arial;
+	color: #FFFFFF;
+	float: left;
+	margin: 38px 10px;
+}
 
-      .featurette {
-        height: auto;
-        padding: 0;
-      }
-      .featurette-image.pull-left,
-      .featurette-image.pull-right {
-        display: block;
-        float: none;
-        max-width: 40%;
-        margin: 0 auto 20px;
-      }
+/* RELATED/NAVIGATION CSS
+---------------------------------------------------- */
+#metacatDocs > .related{
+	width: 100%;
+	position: relative;
+	top: -10px;
+	min-height: 50px;
+	background-color: #999999;
+}
+
+#metacatDocs .related > h3{
+	display: none;
+}
+
+ #metacatDocs .related > ul {
+	list-style: none;
+}
+
+#metacatDocs .related > ul > li.right > a{
+	color: #FFFFFF;
+	font: 400 20px/30px Muli, Arial;	
+	text-decoration: none;	
+	text-transform: capitalize;
+}
+
+#metacatDocs .related > ul > li.right{
+	margin-right: 20px;
+	float: right;
+}
+
+
+#metacatDocs .related > ul > li > a:hover,
+#metacatDocs .related > ul > li > a:focus{
+      color: #FFFFFF;
+      text-decoration: underline;
+}
+
+#metacatDocs .related > ul input[type="submit"]{	/*"Go" button on navigation search bar */
+	position: relative;
+	left: -10px;
+	top: -6px;
+	height: 34px;
+	border-radius: 0 4px 4px 0;
+	-webkit-border-radius: 0 4px 4px 0;
+	-moz-border-radius: 0 4px 4px 0;
+	border-left: 1px solid #CCCCCC;
+	font: 400 16px/16px "Muli", Arial, sans-serif;
+}
+
+#metacatDocs .related > ul input[type="submit"]:hover{	/*"Go" button on navigation search bar */
+	background-color: #005580;
+	color: #FFFFFF;
+	cursor: pointer;
+}
+
+#metacatDocs .related > ul > li > span#searchbox{
+	display: block;
+	margin-right: 0px;
+}
+
+#metacatDocs .related > ul > li > span#searchbox > form{
+	display: inline;
+	vertical-align: top;
+}
+
+
+#metacatDocs .related .breadcrumb{
+	float: left;
+	clear: none;
+	top: 60px;
+	left: -25px;
+	position: relative;
+	background-color: #E2E2E2;
+}
+
+#metacatDocs .related .breadcrumb,
+#metacatDocs .related .breadcrumb > a{
+	font: 300 16px/16px Muli, Arial;
+}
+
+#metacatDocs .related .breadcrumb.first{
+	clear: left;
+}
+
+#metacatDocs .footerNav > .related li.breadcrumb:last-child{
+	margin-right: 20px;
+}
+
+
+/* DOCUMENT / MAIN CONTENT AREA
+------------------------------------------------------*/
+#metacatDocs > .document{
+	margin: 40px auto;
+	padding: 20px 2%;
+	width: 96%;
+}
+
+/* Permalink icons */
+#metacatDocs > .document .headerlink{
+	display: none;
+	margin-left: 10px;
+}
+
+#metacatDocs > .document h1:hover > .headerlink,
+#metacatDocs > .document h2:hover > .headerlink,
+#metacatDocs > .document h3:hover > .headerlink{
+	display: inline;
+	color: #166194;
+}
+
+
+/* SIDEBAR
+---------------------------------------------------- */
+#metacatDocs .sidebar{
+	float: right;
+	margin: 20px 0px 30px 20px;
+	padding: 20px;
+	border: 1px solid #D1D3D4;
+	max-width:60%;
+}
+
+#metacatDocs .sidebar .sidebar-title{
+	font: 300 24px/24px Muli, Arial;
+	margin-top: 0;
+}
+
+#metacatDocs .sidebar img{
+	margin: 0;
+}
+
+/* FOOTER
+---------------------------------------------------- */
+#metacatDocs > .footer{
+	color: #fdfdfd;
+	bottom: 0;
+	width: 96%;
+	margin: 50px auto 0 auto;
+	background: #999999;
+	padding: 10px;
+}
+
+#metacatDocs > .footer > .small-print{
+	width: 70%;
+	display: block;
+	float: none;
+	clear: both;
+	margin: 20px auto 0 auto;
+	color: #FFFFFF;
+	font: 300 14px/14px Muli, Arial;
+}
+
+#metacatDocs > .footer > .footerNav{
+	width: 100%;
+	display: block;
+	height: 40px;
+	margin-bottom: 10px;
+}
+
+#metacatDocs > .footer > .footerNav > .related .breadcrumb{
+	position: relative;
+	top: -60px;
+	left: -35px;
+	color: #333333;
+}
+
+    
+/* TABLES 
+ -----------------------------------------------*/
+ #metacatDocs table, 
+ #metacatDocs tr,
+ #metacatDocs th,
+ #metacatDocs td,
+ #metacatDocs thead,
+ #metacatDocs tbody{
+    	border: 0px;
+    	border-collapse: collapse;
+    	padding: 8px;
     }
-*/
-    /*
-    @media (max-width: 767px) {
-
-      .navbar-inner {
-        margin: -20px;
-      }
-
-      .carousel {
-        margin-left: -20px;
-        margin-right: -20px;
-      }
-      .carousel .container {
-
-      }
-      .carousel .item {
-        height: 300px;
-      }
-      .carousel img {
-        height: 300px;
-      }
-      .carousel-caption {
-        width: 65%;
-        padding: 0 70px;
-        margin-top: 100px;
-      }
-      .carousel-caption h1 {
-        font-size: 30px;
-      }
-      .carousel-caption .lead,
-      .carousel-caption .btn {
-        font-size: 18px;
-      }
-
-      .marketing .span4 + .span4 {
-        margin-top: 40px;
-      }
-
-      .featurette-heading {
-        font-size: 30px;
-      }
-      .featurette .lead {
-        font-size: 18px;
-        line-height: 1.5;
-      }
-
+    
+#metacatDocs table{
+    	background: rgba(255,255,255, 0.8);
+    	margin: 40px auto;
+    	
     }
-    */
+    
+#metacatDocs thead,
+#metacatDocs th{
+    	background-color: #555555;
+    	color: #FFFFFF;
+    	font: 300 16px/20px Muli, Arial;
+    }
+    
+#metacatDocs td{
+    	font: 400 15px/20px Muli, Arial;
+    }
+    
+#metacatDocs tr.row-odd{
+    	background: rgba(103, 184, 229, 0.2);
+    }
+
+
+/* HIGHLIGHTING
+ -----------------------------------------------*/
+ #metacatDocs .highlight{
+ 	padding-left: 10px;
+ 	padding-right: 10px;
+ 	word-wrap: break-word;
+ 	color: #FFFFFF;
+ 	background: none;
+ 	clear: right;
+ }
+ 
+#metacatDocs .highlight-python{
+ 	word-wrap: break-word;
+ 	color: #FFFFFF;
+ 	clear: right;
+ }
+ 
+ pre{
+	 padding: 10px;
+	background: rgba(0, 153, 153, 0.6);
+	color: #FFFFFF;
+	font-size: 15px;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	margin: 20px auto;
+ }
+ 
+    
+ /* MISC
+ -----------------------------------------------*/
+ .align-center{
+ 	margin-left: auto;
+ 	margin-right: auto;
+ }
+ 
+ .figure{
+ 	max-width: 80%;
+ 	background-color: #FFFFFF;
+ 	padding: 10px;
+ 	display: block;
+ 	border: 1px solid #666666;
+ 	margin: 20px auto;
+ }
+ 
+ .figure > img{
+ 	max-width: 90%;
+ 	margin: 10px auto;
+ 	display: block;
+ }
+ 
+ .figure > .caption{
+	 margin-bottom: 0px;
+	text-align: center;
+	font: 400 14px/14px Muli, Arial;
+	color: #666;
+	padding-top: 10px;
+ }
+ 
+ 
+#metacatDocs .topic{
+ 	background: rgba(255,255,255,0.5);
+ 	padding: 20px;
+ 	border-radius: 20px;
+ 	-webkit-border-radius: 20px;
+ 	-moz-border-radius: 20px;
+ }
+ 
+ #metacatDocs .topic > ul{
+ 	margin-left: 20px;
+ }
+ 
+ #metacatDocs .topic-title{
+ 	font: 300 24px/24px Muli, Arial;
+	margin-top: 0;
+ }
+ 
+#metacatDocs  #license pre{
+ 	width: 700px;
+ 	margin: 0 auto;
+ }
+ 
+ #installing-the-registry .sidebar{
+ 	max-width: 100%;
+ }
+ 
+    dt{
+   		font: 300 18px/40px Muli, Arial;
+   }
+   
+   #metacatDocs input {
+		-webkit-appearance: none;
+		background-color: white;
+		border-radius: 4px;
+		height: 25px;
+		width: 200px;
+		box-shadow: none;
+		border: 0;
+    }
+    
+    #metacatDocs input[type="submit"]{
+    	width: auto;
+    }
+    
+    #metacatDocs h3 {
+		font: 400 24.5px/40px "Muli", Arial, sans-serif;
+	}
+	
+	#metacatDocs h2{
+		font: 400 27.5px/40px "Muli", Arial, sans-serif;
+	}
+		
+	#metacatDocs h1{
+		font: 400 32px/40px "Muli", Arial, sans-serif;
+	}
+	
+	#metacatDocs h1 > a, 
+	#metacatDocs h2 > a,
+	#metacatDocs h3 > a,
+	#metacatDocs h4 > a{
+		color: #333333;
+	}
+	
+	#metacatDocs ul ul{
+		margin-left:20px;
+	}
+	
+	#metacatDocs .note{
+		 margin-left: 20px;
+		 color: #555555;
+	}
+	
+	#metacatDocs blockquote p{
+		font-size: inherit;
+		font-weight: inherit;
+	}
+ 
+ 	#metacatDocs #contents{
+ 		background: rgba(255, 255, 255, 0.5);
+		border-radius: 20px;
+		-moz-border-radius: 20px;
+		-webkit-border-radius: 20px;
+		margin: 20px auto;
+		clear: both;
+		padding: 10px 10px 10px 40px;
+ 	}

@@ -172,9 +172,10 @@ define(['jquery', 'underscore', 'backbone'],
 						// make sure to re-bind to the new DOM objects
 						viewRef.undelegateEvents();
 						viewRef.delegateEvents(viewRef.powerfulEvents);
+						//load images in
+						viewRef.loadImages(computedUrl);
 						// make sure we scroll
 						viewRef.postRender();
-						viewRef.loadImages(computedUrl);
 						// make sure our browser history has it
 						uiRouter.navigate("external/" + computedUrl);
 						
@@ -202,7 +203,13 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		// scroll to the anchor given to the render function
 		scrollToAnchor: function(anchorId) {
+			// Anchor tag may be in the name or id attribute. Sphinx creates anchors with id rather than name
+			//First search by name
 			var anchorTag = $("a[name='" + anchorId + "']" );
+			// If that doesn't exist, then search for it in the id
+			if (anchorTag.length == 0){
+				anchorTag = $("div[id='" + anchorId + "']" );
+			}
 			console.log('Scrolling ' + anchorId + ' to offset.top: ' + anchorTag.offset().top);
 			$('html,body').animate({scrollTop: anchorTag.offset().top}, 'slow');
 		},
@@ -215,7 +222,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		// Change the src of all images so they'll load
 		loadImages: function(computedUrl){	
-			console.log(computedUrl);
+			console.log("Loading images...");
 			var newSrc = null;
 			
 			this.$el.find('img').each( function(){
