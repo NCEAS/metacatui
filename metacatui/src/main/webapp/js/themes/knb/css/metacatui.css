@@ -1362,6 +1362,9 @@ Bold 700 Italic
 		padding: 10px 10px 10px 40px;
  	}
  	
+ 	#metacatDocs p{
+ 		font-weight: 400;
+ 	}
  	#metacatDocs .section{
  		margin-top: 0px;
  	}
