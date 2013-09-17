@@ -1302,7 +1302,7 @@ Bold 700 Italic
  }
  
     dt{
-   		font: 300 18px/40px Lato;
+   		font: 300 18px/24px Lato;
    }
    
    #metacatDocs input {
@@ -1392,3 +1392,590 @@ Bold 700 Italic
     div.row-fluid > .section {
       margin: 35px auto auto auto;
     }
+    
+ 
+
+
+/* -----  CSS FOR emlparser -----
+------------------------------------------------ */
+
+ *	  Color Scheme:
+ *    dark blue:                  #003366
+ *    aqua blue:                  #0066CC
+ *    aqua green:                 #006666
+ *    white:                      #FFFFFF
+ *    dark tan(kelp color):       #666600
+ *    light tan:                  #CCCC99
+ */
+
+
+/*
+*  import eml css:
+*/
+
+#content_wrapper {
+	margin:                     0px 10px 10px 10px;
+}
+                                                               
+
+
+/* these classes to be children of div "content" */
+
+
+/* for the skip-to box */
+
+ div.skipto-box {
+      vertical-align:	  middle;
+      text-align:         center;
+      color:              #003366;
+      background-color:   #CCCC99;
+      /* turned off float, placed with a table cell */
+      /*float:              left; */
+      padding:            6px;
+      /* set border for NN4 only change in advanced.css */
+      border:             0.1px solid #006666;
+      margin:             8px;
+      /* width: 		  50%; */
+      width:              300px; 
+     /* height:             20px; */
+      font-size:          12px;
+  }
+
+div.r-box {
+      vertical-align:     middle;
+      text-align:         center;
+      color:              #003366;
+      background-color:   #CCCC99;
+      float:              right;
+      padding:            6px 6px;
+      /* set border for NN4 only change in advanced.css */
+      border:             0.1px solid #006666;
+      margin:             0px;
+      width:              50%;
+   /*   height:             auto; */
+      font-size:          12px;
+   /*   clear:              both; */
+  }
+
+
+div.content-area {
+       /* for padding area within parent area */
+    background-color:   #FFFFFF;
+    color:              #003366;
+    text-align:         left;
+   padding:            30px 40px 15px 40px; 
+   /*padding:            0px 0px 0px 0px; */
+
+}
+
+div.content-area-dense {
+       /* for padding area within parent area */
+    background-color:   #FFFFFF;
+    color:              #003366;
+    text-align:         left;
+  /*  padding:            30px 40px 15px 40px; */
+   padding:            0px 0px 0px 0px; 
+
+}
+
+
+
+div.hanging-paragraph {
+	margin-left:	20px;
+	text-indent:	-20px;
+
+}
+
+div.smaller-font {
+    	font-size:		smaller;
+}
+
+div.bottom-padding {
+/*	padding:		0px 0px 10px 0px; */
+	padding-bottom:		10px;
+}
+
+div.left-padding {
+	padding-left:		10px;
+}
+
+#search-box { 
+  /* background and text style set by table .group */
+  position:           relative;
+  margin-left:        50%;
+  /* top: 110px; */
+ }
+
+
+#search-box_right {
+    text-align:     right;
+    }
+
+#loginbox {
+    border:                     0px;
+    position:                   absolute;
+    top:                        55px;
+    right:                      65px;
+    }
+
+#footer {
+    position:                   absolute;
+    right:                      10px;
+    bottom:                     0;
+    left:                       167px;
+    margin:                     0px 10px 10px 177px;
+    }
+
+#debug {
+    position:                   absolute;
+    right:                      20px;
+    bottom:                     0;
+    left:                       167px;
+    margin:                     0px 10px 10px 177px;
+    }
+
+p,ul,ol,dl,li,dt {
+    color:                      #555555;
+    font-style:                 normal;
+    font-weight:                normal;
+    text-decoration:            none;
+  }
+  
+p ol,p ul, p dl, ol ul {
+    color:                      #555555;
+    font-style:                 normal;
+    font-weight:                normal;
+    text-decoration:            none; 
+  } 
+
+ul,ol {
+    padding:                    0px;
+    /* margin:                     0px 0px 0px 15px; */
+    }
+
+
+
+.ol-lower-alpha { 
+    list-style-type: lower-alpha;
+    margin-top:       2px;
+
+  }
+
+
+.ul-bulleted-list { 
+    list-style-type:  disc;
+    margin-top:       2px;
+    margin-bottom:    10px;
+    margin-left:      15px;
+  }
+
+
+
+/* to emphasize words, use it inline with a <span> class*/ 
+big {
+    font-size:                  larger;
+  }
+
+/* to shrink words, use it inline with a <span> class*/
+small {
+    font-size:                  smaller;
+  }  
+
+/* New horizontal rule. Netscape 4.x should render this fine.
+ * apply this class to a <div> tag for the desired effect.
+ * the rule is 1px wide, blue with a slight margin on the left and right.
+ */
+.rule {
+    border-top-width:           2px;
+    border-top-style:           solid;
+    border-color:               #003366; 
+    margin:                     4px 4px
+  }
+                                                            
+
+img.vtop {  
+    vertical-align:             top;
+  }
+
+/* Add a blue border around an image */
+
+img.border {
+    border:                     medium;
+    border-style:               solid;
+    border-color:               #003366;
+    padding:                    0px;
+  }
+
+/* Format the headshot images in the who section */
+
+img.headshot {
+    margin-right:               20px;
+    margin-bottom:              40px;
+  }
+
+/* Format the headshot images in the who section 
+ * that have alot of text aligned to the right */
+img.headshot_long {
+    margin-right:               20px;
+    margin-bottom:              80px;
+  }
+  
+/* Format inline images justified to the left in the text*/
+
+img.inlineleft {
+    border:                     medium;
+    border-style:               solid;
+    border-color:               #003366;
+    margin-right:               8px;
+    margin-top:                 8px;
+    margin-bottom:              8px;
+  }
+
+/* Format inline images justified to the right in the text*/
+
+img.inlineright {
+    border:                     medium;
+    border-style:               solid;
+    border-color:               #003366;
+    margin-left:                8px;
+    margin-top:                 8px;
+    margin-bottom:              8px;
+  }
+
+
+/* Additions for the data catalog pages */
+
+/* Define a border for groups of elements.  This uses the 
+   -moz-border-radius (Mozilla, Netscape, Opera only) 
+   attribute for the time being.  Once
+   browsers support the CSS3 border-radius attribute, this 
+   should be switched.*/
+.group {
+    padding:                    0;
+    color:                      #003366;
+    min-width:                  800px;
+    voice-family:               "\"}\""; /* begin ie5win hack */
+    voice-family:               inherit;
+    -moz-border-radius:         10px; /* end ie5win hack */
+    }
+/* Children of the group get some padding */
+.group * {
+    padding:                    2px;
+    }
+ 
+.group_border {
+    /* aqua-green border */
+    border:                     #006666 solid 1px;
+    }
+
+.subGroup {
+    padding:                    3px;
+    color:                      #003366;
+    voice-family:               "\"}\""; /* begin ie5win hack */
+    voice-family:               inherit;
+    -moz-border-radius:         10px; /* end ie5win hack */
+    }
+ 
+.subGroup_border {
+    /* blue-ish border */
+    border:                     #94c1d4 solid 1px;
+    }
+
+/* This selector causes the 'section' tables to indent under the overarching div
+ * tags */
+div>table.subGroup {
+    padding-left:               15px;
+    padding-right:              15px;
+    }
+
+div.left {
+    position:                   absolute;
+    left:                       20px;
+    clear:                      right;
+    }
+
+div.right {
+    position:                   absolute;
+    right:                      20px;
+    clear:                      left;
+    }
+
+table.left {
+    position:                   absolute;
+    left:                       20px;
+    }
+
+table.right {
+    float:                      right;
+    margin-right:               10px;
+    clear:                      left;
+    }
+
+th {
+    border-bottom:              #006666 solid 1px;
+    color:                      #003366;
+    padding:                    0;
+    margin:                     0;
+    text-align:                 left;
+    font-style:                 normal;
+    font-weight:                700;
+}
+
+th.rowheader {
+    background:                 #f1f8f8;
+    border-right:               #94c1d4 solid 1px;
+    }
+
+.rowodd {
+    border-bottom:              #94c1d4 dotted 1px;
+    border-top:                 #94c1d4 dotted 1px;
+    background-color:           #f1f8f8;
+    padding:                    0;
+    margin:                     0;
+} 
+
+.roweven {
+    padding:                    0;
+    margin:                     0;
+} 
+
+.coleven {
+    border-left:                #94c1d4 dotted 1px;
+    border-right:               #94c1d4 dotted 1px;
+    background-color:           #f1f8f8;
+    padding-left:               2px;
+    padding-right:              2px;
+    text-align: left;
+}
+
+.colodd {
+    padding-left:               2px;
+    padding-right:              2px;
+    text-align:                 left;
+}
+
+.innercolodd {
+    border:                     solid #94c1d4 1px;
+    font-size:                  .75em;
+    padding-left:               2px;
+    padding-right:              2px;
+    text-align:                 left;
+}
+
+.innercoleven {
+    border:                     solid #94c1d4 1px;
+    background-color:           #f1f8f8;
+    font-size:                  .75em;
+    padding-left:               2px;
+    padding-right:              2px;
+    text-align:                 left;
+}    
+
+.onehundred_percent {
+    width:                      100%;
+    }
+
+.eighty_percent {
+    width:                      80%;
+    }
+
+
+.seventyfive_percent {
+    width:                      75%;
+    }
+
+.seventy_percent {
+    width:                      70%;
+    }
+
+.fifty_percent {
+    width:                      50%;
+    }
+
+.fortyfive_percent {
+    width:                      45%;
+    }
+
+.forty_percent {
+    width:                      40%;
+    }
+
+.twentyfive_percent {
+    width:                      25%;
+    }
+
+
+.twenty_percent {
+    width:                      20%;
+    }
+
+
+.fifteen_percent {
+    width:                      15%;
+    }
+
+input.view.data-button{
+ /*  color:		#666600; */
+   font-size:		1.25em;
+ /*  font-weight:		bold; */
+   text-decoration:		underline;
+   background:		#ffffff;
+
+}
+
+/***
+iframe classes
+****/
+.iframeheaderclass {
+    height:   85px; 
+    width:    100%;
+    border:   0px;
+    /*margin-bottom:   10px;*/
+    margin: 10px;
+}
+
+.iframesearchboxclass {
+    height:   450px; 
+    width:    100%;
+    border:   0px;
+    margin:   0px;
+}
+
+.iframeadvancedsearchboxclass {
+    height:   1250px; 
+    width:    100%;
+    border:   0px;
+    margin:   0px;
+}
+
+.iframemapclass {
+    height:   570px; 
+    width:    100%;
+    border:   0px;
+    margin:   0px;
+}
+
+.iframeloginboxclass {
+    height:   305px; 
+    width:    100%;
+    border:   0px;
+    margin:   0px;
+}
+
+.iframeleftcolclass  { /* not used */ }
+.iframerightcolclass { /* not used */ }
+.iframefooterclass   { /* not used */ }
+
+/**
+ *  set the size and alignment etc of the top-level layout table
+ */  
+.templatetableclass {
+    width:   100%; 
+    border:   0px;
+    padding:  0px;
+    margin:   0px;
+}
+
+/**
+ *  set the style of the main content area and its contents
+ */ 
+.templatecontentareaclass {
+    border:   0px;
+    padding:  0px;
+    margin:   0px;
+}
+
+/**
+ *  set the correct <td> sizes to accomodate the 
+ *  header, footer, left and right iframes.
+ *  NOTE: these styles apply only to each 
+ *  container frame, *NOT* to the document in
+ *  the iframe within it!
+ */  
+.templateheaderrowclass {
+    height:   80px; 
+    /*
+      no width allowed - uses same width as table class
+    */
+    border:   0px;
+    padding:  0px;
+    margin:   0px;
+}
+
+.templateleftcolclass {
+    height:   100%; 
+    width:    0px;
+    border:   0px;
+    padding:  0px;
+    margin:   0px;
+}
+
+.templaterightcolclass {
+    height:   100%; 
+    width:    0px;
+    border:   0px;
+    padding:  0px;
+    margin:   0px;
+}
+
+.templatefooterrowclass {
+    height:   0px; 
+    /*
+      no width allowed - uses same width as
+      table class
+    */
+    border:   0px;
+    padding:  0px;
+    margin:   0px;
+}
+
+.searchresultsdivider {
+	height:	10px;
+}
+.highlight {
+    border-bottom:              #94c1d4 dotted 1px;
+    border-top:                 #94c1d4 dotted 1px;
+    background-color:           #f1f8f8;
+    padding:                    0;
+    margin:                     0;
+}
+.tablehead {
+    border-bottom:              #006666 solid 1px;
+    color:                      #003366;
+    padding:                    0;
+    margin:                     0;
+    text-align:                 left;
+    font-style:                 normal;
+    font-weight:                700;
+    padding-top: 10px;
+    font-size: 1.1em;
+}
+
+/**
+* For EML spec styling
+**/
+div.book {
+	margin: 20px;	
+}
+
+div.title {
+    color:                      #003366;
+    background-color:           #ffffff;
+    padding:                    0;
+    font-size:                  16pt;
+    font-style:                 normal;
+    font-weight:                bold;
+    text-decoration:            none;
+}
+
+div.sectiontitle {
+    color:                      #003366;
+    background-color:           #ffffff;
+    padding:                    0;
+    font-size:                  14pt;
+    font-style:                 normal;
+    font-weight:                700;
+    text-decoration:            none;
+}
+
+    

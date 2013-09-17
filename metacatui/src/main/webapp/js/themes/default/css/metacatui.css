@@ -1042,7 +1042,7 @@ Bold 700
  }
  
     dt{
-   		font: 300 18px/40px Oswald;
+   		font: 300 18px/24px Oswald;
    }
    
    #metacatDocs input {
@@ -1101,4 +1101,11 @@ Bold 700
 		clear: both;
 		padding: 10px 10px 10px 40px;
  	}
+ 	
+ /* CSS for emplparser ------
+ ------------------------------------ */
+ .tablehead{
+ 	padding-top: 10px;
+ 	border-bottom: 1px solid #CCCCCC;
+ }
 

@@ -1188,7 +1188,7 @@ Normal 400
  
  pre{
 	 padding: 10px;
-	background: rgba(0, 153, 153, 0.6);
+	background: rgba(0, 153, 153, 0.8);
 	color: #FFFFFF;
 	font-size: 15px;
 	border-radius: 5px;
@@ -1256,7 +1256,7 @@ Normal 400
  }
  
     dt{
-   		font: 300 18px/40px Muli, Arial;
+   		font: 300 18px/24px Muli, Arial;
    }
    
    #metacatDocs input {
@@ -1315,3 +1315,10 @@ Normal 400
 		clear: both;
 		padding: 10px 10px 10px 40px;
  	}
+ 	
+ /* CSS for emlparser -------
+ ----------------------------- */
+ .tablehead{
+ 	padding-top: 10px;
+ 	border-bottom: 1px solid #CCCCCC;
+ }
