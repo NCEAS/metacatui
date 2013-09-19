@@ -22,6 +22,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			"click #loginButton"   	: "submitLoginForm",
 			"click #registerAnotherPackage" : "registerAnotherPackage",
 			"click #createAccount" : "createAccount",
+			"click #lookupAccount" : "lookupAccount",
 			"click #resetPassword" : "resetPassword",
 			"click #changePassword" : "changePassword"
 
@@ -301,6 +302,14 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 		changePassword: function() {
 			// just route to the password change view
 			uiRouter.navigate("account/changepass", {trigger: true});
+			
+			// prevent click-through
+			return false;
+		},
+		
+		lookupAccount: function() {
+			// just route to the lookupname view
+			uiRouter.navigate("account/lookupname", {trigger: true});
 			
 			// prevent click-through
 			return false;
