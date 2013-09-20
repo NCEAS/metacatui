@@ -92,6 +92,15 @@ Bold 700
     	margin: 0px;
     }
     
+    ul.indent > li{
+    	margin-left: 15px;
+    }
+    
+    ul.plain-list > li{
+    	line-height: 25px;
+    	list-style: none;
+    }
+    
     
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
@@ -198,6 +207,7 @@ Bold 700
       padding: 20px 0px;
       height: 280px;
       width: 100%;
+      color: #FFFFFF;
     }
     
     footer#Footer > .logos{
