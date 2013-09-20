@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'bootstrap'], 				
-	function($, _, Backbone, BootStrap) {
+define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha'], 				
+	function($, _, Backbone, BootStrap, Recaptcha) {
 	'use strict';
 	
 	// Build the main header view of the application

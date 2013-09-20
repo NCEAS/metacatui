@@ -21,6 +21,7 @@ require.config({
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
     moment: '../components/moment',
+    recaptcha: 'http://www.google.com/recaptcha/api/js/recaptcha_ajax',
     registry: [ 
                // use the path fallback in case there is no metacat installed here
                '/' + metacatContext + '/style/common/templates/metacatui/entryForm',
