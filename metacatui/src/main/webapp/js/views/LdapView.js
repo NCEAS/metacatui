@@ -58,7 +58,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha'],
 		
 		cleanStyles: function() {
 			// modify the classes to enhance the l+f without changing the ldapweb.cgi source
-			this.$(".label").removeClass("label");
+			//this.$(".label").removeClass("label");
 			this.$(":submit").addClass("btn");
 
 		},

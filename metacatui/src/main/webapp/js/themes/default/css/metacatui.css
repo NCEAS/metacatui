@@ -548,6 +548,21 @@ Bold 700
     	margin-left: -40%;
     }
     
+/* Inherit for these registry labels */
+.label {
+  display: inherit;
+  padding: inherit;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  white-space: inherit;
+  vertical-align: inherit;
+  background-color: inherit;
+  -webkit-border-radius: inherit;
+     -moz-border-radius: inherit;
+          border-radius: inherit;
+}    
+    
     
 
   /* SIDEBAR CSS
