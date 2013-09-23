@@ -514,7 +514,10 @@ Normal 400
       
     }
     
-  
+  	.navbar .nav{
+    	width: 100%;
+    }
+    
     .navbar .nav > li > * {
       margin: 7px 5px 7px 5px;
     }
