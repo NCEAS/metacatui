@@ -540,6 +540,11 @@ Bold 700
 	#Metadata .nav > li > a:hover{
 		text-shadow: none;
 	}
+	
+	.search-results a.btn{
+		font: 700 14px/14px "Source Sans Pro";
+	}
+
     
 /* Registry CSS
 -------------------------------------------------- */
