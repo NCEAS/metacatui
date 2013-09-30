@@ -783,6 +783,10 @@ Normal 400
    	.attributeList div.span10{
    		width: 74.46808510638297%; /*Effectively make it span 9 */
    	}
+   	
+   	.result-pubdate{
+   		color: #888888;
+   	}
     
 	/* Registry CSS
 	-------------------------------------------------- */
