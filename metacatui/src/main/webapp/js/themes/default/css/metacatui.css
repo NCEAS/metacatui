@@ -31,11 +31,11 @@ Bold 700
     }
     
 	h3 {
-		font: 400 24.5px/40px "Source Sans Pro" sans-serif;
+		font: 400 24.5px/40px "Source Sans Pro", sans-serif;
 	}
 	
 	h2{
-		font: 400 27.5px/40px "Oswald" sans-serif;
+		font: 400 27.5px/40px "Oswald", sans-serif;
 	}
 	
     
@@ -142,7 +142,7 @@ Bold 700
 	}
 	
 	select{
-    	font: 300 16px/16px "Oswald" Arial sans-serif;
+    	font: 300 16px/16px "Oswald", Arial, sans-serif;
     }
 	
 	
@@ -154,6 +154,11 @@ Bold 700
 		-webkit-appearance: none;
 		background: none;
 		width: 120px;
+		-moz-appearance: none;
+		appearance: none;
+		/*To hide the drop-down arrow in Firefox */
+		text-indent: 0.01px;
+		text-overflow: '';
 	}
 	
 	#results-header .select > i{
@@ -291,7 +296,7 @@ Bold 700
       -moz-box-shadow: none;
       border: none;
       filter: none;
-      font: 400 20px/20px "Oswald" Arial, sans-serif;
+      font: 400 20px/20px "Oswald", Arial, sans-serif;
       text-shadow: none;
       color: #FFFFFF;
     }
@@ -335,7 +340,7 @@ Bold 700
     } 
     
     #downloadPackage .dropdown-toggle {
-		font: 400 20px/20px "Oswald" Arial, sans-serif;
+		font: 400 20px/20px "Oswald", Arial, sans-serif;
 	 }
     
     .btn-group.open .btn.dropdown-toggle{
@@ -345,7 +350,7 @@ Bold 700
     
     .dropdown-menu > li > a.btn{
     	background-color: #FFFFFF;
-    	font: 300 18px/18px Oswald;
+    	font: 300 18px/18px "Oswald", Arial, sans-serif;
     }
     
 /* ICONS CSS
@@ -508,11 +513,11 @@ Bold 700
 /* METADATA VIEW CSS
 -------------------------------------------------- */
 	label.control-label{
-		font: 400 15px/18px "Source Sans Pro";
+		font: 400 15px/18px "Source Sans Pro", Arial, sans-serif;
 	}
 	
 	#Metadata .well{
-		font: 300 21px/30px Oswald;
+		font: 300 21px/30px "Oswald", Arial, sans-serif;
 		border: 1px solid #CCCCCC;
 		box-shadow: none;
 		-moz-box-shadow: none;
@@ -542,7 +547,7 @@ Bold 700
 	}
 	
 	.search-results a.btn{
-		font: 700 14px/14px "Source Sans Pro";
+		font: 700 14px/14px "Source Sans Pro", Arial, sans-serif;
 	}
 
     
@@ -616,7 +621,7 @@ Bold 700
     }
 
     .nav-list .popular-search-link{
-      font: 400 16px/16px "Source Sans Pro";
+      font: 400 16px/16px "Source Sans Pro", Arial, sans-serif;
       color: #555555;
       margin-right: 10px;
       text-shadow: none;
@@ -639,16 +644,17 @@ Bold 700
     }
     
     h2.nav-header {
-      font: 400 18px/18px "Oswald" Arial sans-serif;
+      font: 400 19px/19px "Oswald", Arial, sans-serif;
+      letter-spacing: 0.05em;
       margin: 20px 10px 10px 15px;
       padding: 3px 0px 3px 0px;
       color: #555555;    
-      text-transform: none;  
+      text-transform: uppercase;  
     }
     
     li.nav-header{
     	text-transform: none;
-		font: 600 13px/13px "Source Sans Pro";
+		font: 600 13px/13px "Source Sans Pro", "Arial", sans-serif;
 		color: #7F7F7F;
     }
     
@@ -661,7 +667,7 @@ Bold 700
     }
     
     .result-header-count {
-      font: 300 18px/18px "Oswald" Arial sans-serif;
+      font: 300 18px/18px "Oswald", Arial, sans-serif;
     }
     
     .result-row {
@@ -702,7 +708,7 @@ Bold 700
 	}
 	
 	.pagination ul > li > a{
-		font: 400 16px/16px "Oswald" sans-serif;
+		font: 400 16px/16px "Oswald", sans-serif;
 		border: none;
 	}
 	
@@ -713,7 +719,7 @@ Bold 700
 }
 
 #mainContent h1{
-	font: 400 60px/60px "Oswald" Arial sans-serif;
+	font: 400 60px/60px "Oswald", Arial, sans-serif;
 	color: #FFFFFF;
 	text-transform: uppercase;
 	width: 300px;
@@ -724,7 +730,7 @@ Bold 700
 	border-radius: 20px;
 	-webkit-border-radius: 20px;
 	-moz-border-radius: 20px;
-	font: 300 30px/30px Oswald;
+	font: 300 30px/30px "Oswald", Arial, sans-serif;
 	border: none; 
 	padding-left: 20px;
 	float: left;
@@ -778,7 +784,7 @@ Bold 700
 }
 
 #metacatDocs > .banner > .title{
-	font: 400 18px/18px Oswald;
+	font: 400 18px/18px "Oswald", Arial, sans-serif;
 	color: #FFFFFF;
 	float: left;
 	margin: 38px 10px;
@@ -804,7 +810,7 @@ Bold 700
 
 #metacatDocs .related > ul > li.right > a{
 	color: #FFFFFF;
-	font: 400 30px/30px Oswald;	
+	font: 400 30px/30px "Oswald", sans-serif;	
 	text-decoration: none;
 	text-transform: uppercase;	
 }
@@ -859,7 +865,7 @@ Bold 700
 
 #metacatDocs .related .breadcrumb,
 #metacatDocs .related .breadcrumb > a{
-	font: 300 16px/16px Oswald;
+	font: 300 16px/16px "Oswald", Arial, sans-serif;
 	color: #FFFFFF;
 }
 
@@ -914,7 +920,7 @@ Bold 700
 }
 
 #metacatDocs .sidebar .sidebar-title{
-	font: 300 24px/24px Oswald;
+	font: 300 24px/24px "Oswald", Arial, sans-serif;
 	margin-top: 0;
 }
 
@@ -943,7 +949,7 @@ Bold 700
 	clear: both;
 	margin: 20px auto 0 auto;
 	color: #CCCCCC;
-	font: 300 14px/14px Source Sans Pro;
+	font: 300 14px/14px "Source Sans Pro", Arial, sans-serif;
 }
 
 #metacatDocs > .footer > .footerNav{
@@ -977,11 +983,11 @@ Bold 700
 #metacatDocs th{
     	background-color: #555555;
     	color: #FFFFFF;
-    	font: 300 16px/20px Source Sans Pro;
+    	font: 300 16px/20px "Source Sans Pro", Arial, sans-serif;
     }
     
 #metacatDocs td{
-    	font: 400 15px/20px Source Sans Pro;
+    	font: 400 15px/20px "Source Sans Pro", Arial, sans-serif;
     }
     
 #metacatDocs tr.row-odd{
@@ -1043,7 +1049,7 @@ Bold 700
  .figure > .caption{
 	 margin-bottom: 0px;
 	text-align: center;
-	font: 400 14px/14px Source Sans Pro;
+	font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
 	color: #666;
 	padding-top: 10px;
  }
@@ -1062,7 +1068,7 @@ Bold 700
  }
  
  #metacatDocs .topic-title{
- 	font: 300 24px/24px Oswald;
+ 	font: 300 24px/24px "Oswald", sans-serif;
 	margin-top: 0;
  }
  
@@ -1076,7 +1082,7 @@ Bold 700
  }
  
     dt{
-   		font: 300 18px/24px Oswald;
+   		font: 300 18px/24px "Oswald", sans-serif;
    }
    
    #metacatDocs input {
@@ -1094,15 +1100,15 @@ Bold 700
     }
     
     #metacatDocs h3 {
-		font: 400 24.5px/40px "Source Sans Pro" sans-serif;
+		font: 400 24.5px/40px "Source Sans Pro", sans-serif;
 	}
 	
 	#metacatDocs h2{
-		font: 400 27.5px/40px "Oswald" sans-serif;
+		font: 400 27.5px/40px "Oswald", sans-serif;
 	}
 		
 	#metacatDocs h1{
-		font: 400 32px/40px "Oswald" sans-serif;
+		font: 400 32px/40px "Oswald", sans-serif;
 	}
 	
 	#metacatDocs h1 > a, 
