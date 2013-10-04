@@ -177,11 +177,15 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			viewRef.$el.append("<div id='tempMetacatContainer' />");
 			
 			// ajax call to submit the given form and then render the results in the content area
-			this.$('#tempMetacatContainer').load(
-				this.registryUrl + " form",
+			// use post to prevent passwords in the URL
+			$.post(
+				this.registryUrl,
 				formData,
 				function(data, textStatus, xhr) {
 					
+					// stash the form content
+					viewRef.$('#tempMetacatContainer').html(data);
+							
 					// the Metacat login form is now in the main content for us to work with
 					var metacatUrl = viewRef.$("form").attr("action");
 					
