@@ -34,6 +34,14 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		initialize: function() {
+			
+			//For IE
+			if (!window.location.origin) {
+				var baseUrl = window.location.protocol + "//" + window.location.host;
+				
+				this.set('baseUrl', baseUrl);
+			}
+
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
