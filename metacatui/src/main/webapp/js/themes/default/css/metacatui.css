@@ -394,7 +394,11 @@ Bold 700
 
     .navbar-inner {
       border: none;
-      background: none;
+      background:rgb(0,0,0);
+      background:transparent\9;
+      background:rgba(0,0,0,0);
+      filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#00000000,endColorstr=#00000000);
+      zoom: 1;
       min-height: 0px;
       box-shadow: none;
     } 
