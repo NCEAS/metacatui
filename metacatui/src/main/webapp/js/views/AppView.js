@@ -29,7 +29,7 @@ define(['jquery',
 			
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
 			console.log("Setting up app head");
-			$("head").prepend(this.appHeadTemplate());
+			$("head").prepend(this.appHeadTemplate({theme: theme}));
 			
 			// set up the body
 			console.log("Setting up app body");

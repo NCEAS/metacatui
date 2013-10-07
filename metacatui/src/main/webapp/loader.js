@@ -4,7 +4,6 @@ var metacatContext = document.getElementById("loader").getAttribute("data-metaca
 
 // Step 2: let everything else be taken care of by the app
 loadTheme(theme);
-loadCss(theme);
 loadIcons(theme);
 initApp(theme);
 
@@ -13,14 +12,6 @@ function loadTheme(theme) {
     script.setAttribute("type", "text/javascript");
     script.setAttribute("src", "js/themes/" + theme + "/config.js");
     document.getElementsByTagName("body")[0].appendChild(script);
-}
-function loadCss(theme) {
-	var url = "./js/themes/" + theme + "/css/metacatui.css";
-    var link = document.createElement("link");
-    link.type = "text/css";
-    link.rel = "stylesheet";
-    link.href = url;
-    document.getElementsByTagName("head")[0].appendChild(link);
 }
 function loadIcons(theme) {
 	var url = "./js/themes/" + theme + "/img/favicon-32.png";
