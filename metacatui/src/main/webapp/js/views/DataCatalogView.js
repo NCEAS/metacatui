@@ -1,5 +1,6 @@
 /*global define */
 define(['jquery',
+				'jqueryui', 
 				'underscore', 
 				'backbone',
 				'views/SearchResultView',
@@ -7,9 +8,10 @@ define(['jquery',
 				'text!templates/statCounts.html',
 				'text!templates/pager.html',
 				'text!templates/resultsItem.html',
-				'text!templates/mainContent.html'
+				'text!templates/mainContent.html',
+				'text!templates/currentFilter.html'
 				], 				
-	function($, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate) {
+	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate, MainContentTemplate, CurrentFilterTemplate) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -24,34 +26,41 @@ define(['jquery',
 
 		resultTemplate: _.template(ResultItemTemplate),
 		
+		mainContentTemplate: _.template(MainContentTemplate),
+		
+		currentFilterTemplate: _.template(CurrentFilterTemplate),
+		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
-//			'click #mostaccessed_link': 'showMostAccessed',
-			'click #recent_link': 'showRecent',
-//			'click #featureddata_link': 'showFeatured',
 			'click #results_prev': 'prevpage',
 			'click #results_next': 'nextpage',
 			'click #results_prev_bottom': 'prevpage',
 			'click #results_next_bottom': 'nextpage',
 			'click .pagerLink': 'navigateToPage',
-			'click #search_btn_side': 'triggerSearch',
-			'keypress #search_txt_side': 'triggerOnEnter',
-			'change #sortOrder': 'triggerSearch'
+			'click .filter.btn': 'updateTextFilters',
+			'keypress input.filter' : 'triggerOnEnter',
+			'change #sortOrder': 'triggerSearch',
+			'change #min_year' : 'updateYearRange',
+			'change #max_year' : 'updateYearRange',
+			'click #publish_year'  : 'updateYearRange',
+			'click #data_year' : 'updateYearRange', 
+			'click .remove-filter' : 'removeFilter',
+			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
+			'click #clear-all' : 'resetFilters'
 		},
 		
 		initialize: function () {
 			
 		},
 		
-		triggerSearch: function() {
-			// alert the model that a search should be performed
-			var searchTerm = $("#search_txt_side").val();		
-			appModel.set('searchTerm', searchTerm);
+		triggerSearch: function() {	
+			console.log('Search triggered');			
 			
+			//Set the sort order 
 			var sortOrder = $("#sortOrder").val();
-			appModel.set('sortOrder', sortOrder);
+			searchModel.set('sortOrder', sortOrder);
 			
-			// trigger the search
+			//Trigger a search to load the results
 			appModel.trigger('search');
 			
 			// make sure the browser knows where we are
@@ -68,7 +77,9 @@ define(['jquery',
 		
 		triggerOnEnter: function(e) {
 			if (e.keyCode != 13) return;
-			this.triggerSearch();
+			
+			//Update the filters
+			this.updateTextFilters(e);
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -76,23 +87,37 @@ define(['jquery',
 		// and event handling to sub views
 		render: function () {
 
-			console.log('Rendering the DataCatlog view');
+			console.log('Rendering the DataCatalog view');
 			appModel.set('headerType', 'default');
 			
+			//Populate the search template with some model attributes
 			var cel = this.template(
 					{
 						searchTerm: appModel.get('searchTerm'),
-						sortOrder: appModel.get('sortOrder')
+						sortOrder: searchModel.get('sortOrder'),
+						yearMin: searchModel.get('yearMin'),
+						yearMax: searchModel.get('yearMax'),
+						pubYear: searchModel.get('pubYear'),
+						dataYear: searchModel.get('dataYear'),
+						resourceMap: searchModel.get('resourceMap')
 					}
 			);
 			this.$el.html(cel);
 			this.updateStats();
+			this.updateYearRange(); 
+			
+			//Initialize the year type label tooltips
+			$('.year-tooltip').tooltip();
 			
 			// Register listeners; this is done here in render because the HTML
 			// needs to be bound before the listenTo call can be made
 			this.stopListening(appSearchResults);
 			this.listenTo(appSearchResults, 'add', this.addOne);
 			this.listenTo(appSearchResults, 'reset', this.addAll);
+			
+			//Listen to changes in the searchModel
+			this.stopListening(searchModel);
+			this.listenTo(searchModel, 'change', this.triggerSearch);
 			
 			// listen to the appModel for the search trigger
 			this.stopListening(appModel);
@@ -112,46 +137,122 @@ define(['jquery',
 		},
 
 		showResults: function (page) {
-
+			console.log('showing results');
+			
 			var page = appModel.get("page");
 			if (page == null) {
 				page = 0;
 			}
 			
-			var search = appModel.get('searchTerm');
-			var sortOrder = appModel.get('sortOrder');
+			//Get all the search model attributes
+			//Start with the 'all' category
+			var search = searchModel.get('all');
+			var sortOrder = searchModel.get('sortOrder');
 			
 			this.removeAll();
 			
 			appSearchResults.setrows(25);
 			appSearchResults.setSort(sortOrder);
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
-			appSearchResults.setQuery('formatType:METADATA+-obsoletedBy:*+' + search);
+			//appSearchResults.setQuery('formatType:METADATA+-obsoletedBy:*+' + search);
+			
+			//Create the filter terms from the search model and create the query
+			var query = "formatType:METADATA+-obsoletedBy:*";
+			
+			//resourceMap
+			var resourceMap = searchModel.get('resourceMap');
+			if(resourceMap){
+				query += '+resourceMap:resourceMap*';
+			}
+			
+			//All
+			var thisAll = null;
+			var all = searchModel.get('all');
+			for(var i=0; i < all.length; i++){
+				//Trim the spaces off
+				thisAll = all[i].trim();
+				
+				//Is this a phrase?
+				if(this.phrase(thisAll)){
+					thisAll = thisAll.replace(" ", "%20");
+					query += "+*%22" + thisAll + "%22*";
+				}
+				else{
+					query += "+" + thisAll;
+				}
+			}
+			
+			//Creator
+			var thisCreator = null;
+			var creator = searchModel.get('creator');
+			for(var i=0; i < creator.length; i++){
+				//Trim the spaces off
+				thisCreator = creator[i].trim();
+				
+				//Is this a phrase?
+				if(this.phrase(thisCreator)){
+					thisCreator = thisCreator.replace(" ", "%20");
+					query += "+origin:*%22" + thisCreator + "%22*";
+				}
+				else{
+					query += "+origin:*" + thisCreator + "*";
+				}
+			}
+			
+			//Taxon - just searching the default text field for now until we index taxon
+			var taxon = searchModel.get('taxon');
+			for(var i=0; i < taxon.length; i++){
+				query += "*" + taxon[i].trim() + "*";
+			}
+			
+			//Year
+			//Get the types of year to be searched first
+			var pubYear = searchModel.get('pubYear');
+			var dataYear = searchModel.get('dataYear');
+			//Get the minimum and maximum years chosen
+			var yearMin = searchModel.get('yearMin');
+			var yearMax = searchModel.get('yearMax');
+			//Add to the query if we are searching data coverage year
+			if(dataYear){
+				query += "+beginDate:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20NOW%5D+endDate:%5B*%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";
+			}
+			//Add to the query if we are searching publication year
+			if(pubYear){
+				query += "+dateUploaded:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";				
+			}
+			
+			console.log('query: ' + query);
+			
+			appSearchResults.setQuery(query);
 			
 			// go to the page
 			this.showPage(page);
-
-			//this.$resultsview.fadeIn();
 			
 			// update the search box
 			this.updateSearchBox();
-			
-			// update links
-			this.$(".popular-search-link").removeClass("sidebar-item-selected");
-			try {
-				this.$("#popular-search-" + search).addClass("sidebar-item-selected");
-			} catch (ex) {
-				// syntax in search term is probably to blame
-				console.log(ex.message + " - could not set selected state for: " + "#popular-search-" + search);
-			}
 			
 			// don't want to follow links
 			return false;
 		},
 		
+		//Checks for spaces in a given string
+		phrase: function(entry){
+			var space = null;
+			space = entry.indexOf(" ");
+			
+			if(space < 0){
+				return false;
+			}
+			else{
+				return true;
+			}
+
+		},
+		
 		// TODO: handle compound searches like most recent+keyword (and others in the future)
 		showRecent: function () {
-
+			console.log('showing recent');
+			
 			// get the current search term (TODO: anyhting with it?)
 			var currentSearchTerm = appModel.get('searchTerm');
 			
@@ -171,6 +272,214 @@ define(['jquery',
 			// don't want the link to be followed
 			return false;
 			
+		},
+		
+		updateTextFilters : function(e){
+			//Get the search/filter category
+			var category = $(e.target).attr('data-category');
+			
+			//Try the parent elements if not found
+			if(!category){
+				var parents = $(e.target).parents().each(function(){
+					category = $(this).attr('data-category');
+					if (category){
+						return false;
+					}
+				});
+			}
+			
+			if(!category){ return false; }
+			
+			//Get the value of the associated input
+			var input = this.$el.find($('#' + category + '_input'));
+			var term = input.val();
+			
+			//Now clear that input
+			input.val('');
+				
+			//Get the current searchModel array
+			var filtersArray = _.clone(searchModel.get(category));
+				
+			//Check if this entry is a duplicate
+			var duplicate = (function(){
+				for(var i=0; i < filtersArray.length; i++){
+					if(filtersArray[i] === term){ return true; }
+				}
+			})();
+			
+			if(duplicate){ return false; }
+				
+			//Add the new entry to the array of current filters
+			filtersArray.push(term);
+			
+			//Replace the current array with the new one in the search model
+			searchModel.set(category, filtersArray);
+				
+			//Show the UI filter
+			this.showFilter(category, term);
+		},
+		
+		updateBooleanFilters : function(e){
+			//Get the category
+			var category = $(e.target).attr('data-category');
+			
+			//Get the check state
+			var state = $(e.target).prop('checked');
+
+			//Update the model
+			searchModel.set(category, state);
+		},
+		
+		//Update the UI year slider and input values
+		//Also update the model
+		updateYearRange : function(e) {
+			
+			// Get the minimum and maximum values from the input fields
+			var minVal = $('#min_year').val();
+			var maxVal = $('#max_year').val();
+			console.log(minVal, maxVal);
+			
+			//Also update the search model
+		    searchModel.set('yearMin', minVal);
+		    searchModel.set('yearMax', maxVal);
+			
+			//Get the minimum and maximum values from the metacat results
+			var minResultsVal = searchModel.get('resultsYearMin');
+			var maxResultsVal = searchModel.get('resultsYearMax');
+						
+			
+			//jQueryUI slider 
+			$('#year-range').slider({
+			    range: true,
+			    disabled: true,
+			    min: minResultsVal,			//sets the minimum on the UI slider on initialization
+			    max: maxResultsVal, 		//sets the maximum on the UI slider on initialization
+			    values: [ minVal, maxVal ], //where the left and right slider handles are
+			    slide: function( event, ui ) {
+			      // When the slider is changed, update the input values
+			      $('#min_year').val(ui.values[0]);
+			      $('#max_year').val(ui.values[1]);
+			      
+			      //Also update the search model
+			      searchModel.set('yearMin', $('#min_year').val());
+			      searchModel.set('yearMax', $('#max_year').val());
+			    }
+			  });
+			
+			//Check checkbox values for type of year
+			//All the slider elements this will affect
+			var sliderEls = [$('#year-range'), $('#min_year'), $('#max_year')];
+			//If either data year or publication year is checked,
+			if($('#data_year').prop("checked") || ($('#publish_year').prop("checked"))){
+				//Then enable the jQueryUI slider
+				$('#year-range').slider("option", "disabled", false);
+				
+				//And enable all elements and remove disabled class
+				for(var i=0; i<sliderEls.length; i++){
+					sliderEls[i].removeClass('disabled');
+					sliderEls[i].prop("disabled", false);
+				}
+			}
+			//If neither are checked
+			else if(!$('#data_year').prop("checked") && (!$('#publish_year').prop("checked"))){
+				//Disable the jQueryUI slider
+				$('#year-range').slider("option", "disabled", true);
+				
+				//And disbale all elements and add disabled class
+				for(var i=0; i<sliderEls.length; i++){
+					sliderEls[i].addClass('disabled');
+					sliderEls[i].prop("disabled", true);
+				}
+			}
+
+		},
+		
+		//Removes a specific filter term from the searchModel
+		removeFilter : function(e){			
+			//Get the parent element that stores the filter term
+			var filterNode = $(e.target).parent();
+			
+			//Get the filter term
+			var term = $(filterNode).attr('data-term');
+			console.log('removing '+ term);
+			
+			//Find this element's category in the data-category attribute of it's parent
+			var category = filterNode.parent().attr('data-category');
+			
+			//Remove this filter term from the searchModel
+			if(category){
+				//Get the current filter terms array
+				var currentTerms = searchModel.get(category);
+				//Remove this filter term from the array
+				var newTerms = _.without(currentTerms, term);
+				//Set the new value
+				searchModel.set(category, newTerms);				
+			}
+			
+			this.removeFromModel(category, term);
+			
+			this.hideFilter(filterNode);
+
+		},
+		
+		//Clear all the currently applied filters
+		resetFilters : function(e){			
+			var viewRef = this;
+			
+			//Clear all the filters in the UI
+			this.$el.find('.current-filter').each(function(){
+				viewRef.hideFilter(this);
+			});
+			
+			//Then reset the model which will trigger a new search
+			searchModel.clear().set(searchModel.defaults);		
+			
+			//Reset the year slider handles
+			$("#year-range").slider("values", [searchModel.get('yearMin'), searchModel.get('yearMax')])
+			//and the year inputs
+			$("#min_year").val(searchModel.get('yearMin'));
+			$("#max_year").val(searchModel.get('yearMax'));
+
+			//Reset the checkboxes
+			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
+			$("#data_year").prop("checked", searchModel.get("pubYear"));
+			$("#publish_year").prop("checked", searchModel.get("dataYear"));
+		},
+		
+		//Removes a specified filter node from the DOM
+		hideFilter : function(filterNode){
+			//Remove the filter node from the DOM
+			$(filterNode).fadeOut("slow", function(){
+				filterNode.remove();
+			});	
+		},
+		
+		//Removes a specified filter from the search model
+		removeFromModel : function(category, term){			
+			//Remove this filter term from the searchModel
+			if(category){
+				//Get the current filter terms array
+				var currentTerms = searchModel.get(category);
+				//Remove this filter term from the array
+				var newTerms = _.without(currentTerms, term);
+				//Set the new value
+				searchModel.set(category, newTerms);				
+			}
+		},
+		
+		//Adds a specified filter node to the DOM
+		showFilter : function(category, term){
+			
+			var viewRef = this;
+			
+			//Get the element to add the UI filter node to 
+			//The pattern is #current-<category>-filters
+			var e = this.$el.find('#current-' + category + '-filters');
+							
+			//Add a filter node to the DOM
+			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));
+				
+			return;
 		},
 
 		updateStats : function() {
@@ -214,7 +523,7 @@ define(['jquery',
 		updateSearchBox: function() {
 			// look up from the model to ensure we display the side box correctly
 			var search = appModel.get('searchTerm');
-			this.$("#search_txt_side").val(search);
+			this.$("#all_input").val(search);
 		},
 		
 		updatePageNumber: function(page) {

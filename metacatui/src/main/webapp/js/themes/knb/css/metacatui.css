@@ -842,30 +842,237 @@ Bold 700 Italic
   -------------------------------------------------- */
     #sidebar {
       min-height: 400px;
+    } 
+    
+    .filter-contain{
+   	  margin-bottom: 25px;
+   	  width: 100%;
+   }
+    
+    /*-- Search buttons next to text inputs --*/
+    .filter.btn{
+    	background-color: #ffffff;
+    	color: #555555;
+    	border-radius: 0px 5px 5px 0px;
+    	-moz-border-radius: 0px 5px 5px 0px;
+    	-webkit-border-radius: 0px 5px 5px 0px;
+    	border: 1px solid #AAAAAA;
+    	border-left: 0px;
+    	height: 30px;
+    	display: inline-block;
     }
     
-    .sidebar-subhead {
-      color: #666666;
-      font-weight: bold;
-      text-transform:uppercase;
-      padding: 20px 0 10px 0;
+    .filter.btn > i{
+    	margin-bottom: 2px;
+    	display: block;
     }
     
-    .sidebar-item {
-      color: #666666;
-      font-weight: bold;
-      padding: 5px;
-      border-radius: 5px;
-      -webkit-border-radius: 5px;
-      -moz-border-radius: 5px;
-      line-height: 25px;
+    .filter.btn > i:hover{
+    	color: #3399CC;
     }
     
-    .sidebar-item-selected {
-      background-color: #AAAAAA;
-      color: #fff;
-      padding-top: 3px;
-      padding-bottom: 3px;
+    /*-- Inputs for search filters --*/
+    .clear{
+    	clear: both;
+    }
+    
+    input.filter{
+    	border-radius: 5px 0px 0px 5px;
+    	-webkit-border-radius: 5px 0px 0px 5px;
+    	-moz-border-radius: 5px 0px 0px 5px;
+    	border: 1px solid #AAAAAA;
+    	border-right: 0px;
+    	height: 20px;
+    	font-family: "Lato", Arial, sans-serif;
+    	width: 84%;
+    }
+
+	/*-- The 'Year' filter elements --*/
+    #filter-year label{
+   		min-height: 18px;
+   		margin-bottom: 0px;
+   		line-height: 16px;
+   		width: auto;
+   		font-family: "Lato", Arial, sans-serif;
+    }
+   
+    #filter-year > input[type="number"]{
+   		color: #115E95;
+   		background: none;
+   		border: 0px;
+   		text-align: right;
+   		min-height: 2em;
+   		-webkit-appearance: none;
+   		box-shadow: none;
+   		top: -5px;
+   		position: relative;
+   		margin-bottom: 0px;
+   		font-family: "Lato", Arial, sans-serif;
+    }
+    
+    #filter-year > input[type="number"]:focus{
+    	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
+    }
+    
+    #max_year{
+    	float: right;
+    }
+    
+    #min_year{
+    	float: left;
+    }
+    
+    #year-range{
+    	min-height: 15px;
+    	border-radius: 4px;
+    	border: 1px solid #AAAAAA;
+    	background: #FFFFFF;
+    	position: relative;
+    	margin-bottom: 5px;
+    	width: 95%;
+    }
+    
+    #year-range.disabled,
+    #min_year.disabled,
+    #max_year.disabled{
+    	opacity: 0.6;
+    }
+    
+    .ui-slider-range{
+    	top: 0;
+    	height: 100%;
+    	position: absolute;
+    	z-index: 1;
+    	display: block;
+    	border: 0;
+    	background: #115E95;
+    }
+    
+    .ui-slider-handle{
+    	border: 1px solid #115E95;
+    	background-color: #EFEFEF;
+    	top: -0.2em;
+    	position: absolute;
+    	z-index: 2;
+    	width: 0.5em;
+    	height: 1.2em;
+    	cursor: default;
+    	border-radius: 4px;
+    	-moz-border-radius: 4px;
+    	-webkit-border-radius: 4px;
+    }
+
+	/*-- Currently applied filters --*/
+	.current-filters,
+	.current-filters[class*="span"]{
+		list-style: none;
+		color: #FFFFFF;
+		font: 400 14px/14px "Lato", Arial, sans-serif;
+		margin-left: 0px;
+		min-height: 0px;
+	}
+	
+	.current-filters > li,
+	.current-filters > li[class*="span"]{
+		background-color: rgba(17, 94, 149, .8);
+		padding-left: 10px;
+		margin-top: 3px;
+		width: 99%;
+		border-radius: 2px;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
+		min-height: 1em;
+		margin-left: 0px;
+		color: #FFFFFF;
+	}
+	
+	.current-filters > li > i{
+		float: right;
+		margin-top: 2px;
+		color: #FFFFFF;
+	}
+	
+	.current-filters > li > i:hover{
+		font-size: 18px;
+    	position: relative;
+    	top: -2px;
+    	cursor: pointer;
+	}
+    
+	
+    /*-- Headers in sidebar --*/
+    h2.nav-header {
+      font: 400 20px/25px "Oswald" Arial sans-serif;
+      color: #555555;    
+      text-transform: uppercase;  
+      display: block;
+      padding: 0px;
+      margin: 0px;
+      min-height: 25px;
+    }
+    
+    h3.nav-header{
+    	font: 300 20px/25px "Lato" Arial sans-serif;
+    	margin: 20px 0px 5px 0px;
+    	color: #555555;
+    	text-transform: none;
+    	display: block;
+    	padding: 0px;
+    }
+    
+    h3.nav-header > label{
+    	display: inline-block;
+    	font: 300 20px/25px "Lato" Arial sans-serif;
+    }
+    
+    h3.nav-header > input{
+    	height: 20px;
+    }
+    
+    .nav-header > i{
+    	margin-right: 5px;
+    	font-size: 23px;
+    }
+    
+    li.nav-header{
+    	text-transform: none;
+		font: 600 13px/13px "Lato";
+		color: #7F7F7F;
+    }
+    
+    /*-- Your Collections area --*/
+    ul.collections{
+    	margin-left: 0px;
+    	list-style: none;
+    }
+    
+    a.collections {
+    	color: #555555;
+    }
+    
+    a.collections:hover{
+    	color: #3399CC;
+    }
+    
+    a.collections > i{
+    	margin-right: 5px;
+    }
+    
+   input[class*="span"].left,
+   .row-fluid input[class*="span"].left{
+   		float: left;
+   }
+
+	/*-- Share Your Data button --*/
+	#sidebar_share {
+      margin: 20px 10px 30px 15px;
+      padding: 8px;
+    }
+    
+    #clear-all{
+    	text-align: right;
+    	float: right;
+    	cursor: pointer;
     }
 
 /* RESULT CSS

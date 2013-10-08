@@ -3,58 +3,74 @@
 	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
-			<!-- <div class="sidebar-subhead">Contribute</div> -->
-			<a id="sidebar_share" class="btn btn-primary" href="#share">
-        <i class="icon-upload icon-white icon-large share-feature"></i>  Share Your Data
-      </a>
-    	<h2 class="nav-header">Refine</h2>
-			<ul id="refine" class="nav nav-list">
-				<li>
-					<div class="input-append">
-						<input class="span10" type="text" placeholder="Refine Search" id="search_txt_side" value="<%= searchTerm  %>" >
-						<a href="#data" type="button" class="btn" id="search_btn_side"><i class="icon-search"></i></a>
-		      </div>
-				</li>
+			<a id="sidebar_share" class="btn btn-primary" href="#share"> <i class="icon-upload icon-white icon-large share-feature"></i>  Share Your Data </a>
+    		<div class="filter-contain">
+	    		<h2 class="nav-header span6">Filter</h2>
+	    		<a class="span4" id="clear-all">Clear all <i class="icon-remove"></i></a>
 				
-				<!--
-				<li><a class="sidebar-item" id="featureddata_link" href="#"><i
-						class="icon-flag icon-large"></i> Featured Data</a></li>
-				<li><a class="sidebar-item" id="mostaccessed_link" href="#"><i
-						class="icon-signal icon-large"></i> Most Accessed</a></li>
-				-->
+				<div class="input-append filter-contain">
+					<input class="span10 filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
+					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
+			    	<ul id="current-all-filters" class="current-filters" data-category="all">
+			    	</ul>
+			    </div>
 				
-			</ul>
-			<h2 class="nav-header">Browse</h2>
-			<ul id="browse" class="nav nav-list">
-  			<li class="nav-header">Popular</li>
-				<li><a class="popular-search-link" id="recent_link" href="#data"><i class="halflings-icon calendar"></i> Most Recent</a></li>
-  			<li class="nav-header">Example Searches</li>
-				<li><a class="popular-search-link" id="popular-search-Climate" href="#data/search/Climate"><i class="halflings-icon search"></i>Climate</a></li>		
-				<li><a class="popular-search-link" id="popular-search-Virus" href="#data/search/Virus"><i class="halflings-icon search"></i>Virus</a></li>		
-				<li><a class="popular-search-link" id="popular-search-Estuary" href="#data/search/Estuary"><i class="halflings-icon search"></i>Estuary</a></li>		
-				<li><a class="popular-search-link" id="popular-search-Landscape" href="#data/search/Landscape"><i class="halflings-icon search"></i>Landscape</a></li>			
-				<li><a class="popular-search-link" id="popular-search-Productivity" href="#data/search/Productivity"><i class="halflings-icon search"></i>Productivity</a></li>			
-				<li><a class="popular-search-link" id="popular-search-Precipitation" href="#data/search/Precipitation"><i class="halflings-icon search"></i>Precipitation</a></li>		
-				<li><a class="popular-search-link" id="popular-search-Adaptation" href="#data/search/Adaptation"><i class="halflings-icon search"></i>Adaptation</a></li>		
-				<li><a class="popular-search-link" id="popular-search-Montane" href="#data/search/Montane"><i class="halflings-icon search"></i>Montane</a></li>		
-				<li><a class="popular-search-link" id="popular-search-Conductivity" href="#data/search/Conductivity"><i class="halflings-icon search"></i>Conductivity</a></li>		
-				<li><a class="popular-search-link" id="popular-search-Ocean" href="#data/search/Ocean"><i class="halflings-icon search"></i>Ocean</a></li>		
-			</ul>
+				<div class="filter-contain">
+					<h3 class="nav-header"><i class="icon-folder-open"></i>
+						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
+						<label for="includes_data">Includes data package</label>
+					</h3>
+				</div>
+				
+				<div class="input-append filter-contain">
+					<h3 class="nav-header"><i class="icon-user"></i>Created by</h3>
+					<input class="span10 filter" type="text" placeholder="First or last name" id="creator_input" data-category="creator">
+					<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
+			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
+			    	</ul>
+			    </div>
+	
+				
+				<div id="filter-year" class="filter-contain" data-category="year">
+					<h3 class="nav-header"><i class="icon-calendar"></i>Year</h3>
+					<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
+					<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="right">Data covers</label>					
+					<div class="clear"></div>
+					<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
+					<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="right" >Published between</label>
+					<div class="clear"></div>
+					<input class="span3"  type="number" id="min_year" pattern="{4}" value=<% print('"' + yearMin + '"'); %> />
+					<input class="span3"  type="number" id="max_year" pattern="{4}" value=<% print('"' + yearMax + '"'); %>/>
+					<div class="clear"></div>
+					<div id="year-range"></div>
+					<div class="clear"></div>
+				</div>
+				
+				<div class="input-append filter-contain">
+					<h3 class="nav-header"><i class="icon-sitemap"></i>Taxon</h3>
+					<input class="span10 filter" type="text" placeholder="Phylum, class, order..." id="taxon_input" data-category="taxon">
+					<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
+					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
+					</ul>
+				</div>
+			<!--  Coming in next release
+				<div class="input-append filter-contain">
+					<h3 class="nav-header"><i class="icon-map-marker"></i>Location</h3>
+					<input class="span10 filter" type="text" placeholder="Name or coordinates" id="location_input" data-category="location" >
+					<button class="filter btn" id="location_btn" data-category="location"><i class="icon-search"></i></button>
+					<ul id="current-location-filters" class="current-filters" data-category="location">
+					</ul>
+				</div>
 			
-			<!--
-			<div class="sidebar-subhead">Your Collections</div>
-			<ul class="unstyled">
-				<li><a class="sidebar-item" id="yourdata_link" href="#"><i
-						class="icon-folder-close icon-large"></i> Your Data</a></li>
-				<li><a class="sidebar-item" href="#"><i
-						class="icon-folder-close icon-large"></i> Sierra Grazing Study</a></li>
-				<li><a class="sidebar-item" href="#"><i
-						class="icon-folder-close icon-large"></i> Rockies Grazing Study</a></li>
-				<li><a class="sidebar-item" href="#"><i
-						class="icon-folder-close icon-large"></i> Colorado Ungulate
-						Study</a></li>
+			
+			<h2 class="nav-header">Your Collections</h2>
+			<ul class="collections">
+				<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Your Data</a></li>		
+				<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Study</a></li>		
+				<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Collection</a></li>		
 			</ul>
- 			-->
+			-->
+			</div>
 		</aside>
 
 		<!--CONTENT AREA-->

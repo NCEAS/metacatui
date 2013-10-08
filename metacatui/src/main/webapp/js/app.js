@@ -16,6 +16,7 @@ require.config({
   map: themeMap,
   paths: {
     jquery: '../components/jquery',
+    jqueryui: '../components/jquery-ui-1.10.3.custom.min',
     underscore: '../components/underscore',
     backbone: '../components/backbone',
     bootstrap: '../components/bootstrap.min',
@@ -51,6 +52,7 @@ var appModel = appModel || {};
 var appView = appView || {};
 var uiRouter = uiRouter || {};
 var appSearchResults = appSearchResults || {};
+var searchModel = searchModel || {};
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
@@ -62,11 +64,13 @@ function(Bootstrap, AppView, AppModel) {
 	appView = new AppView();
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 'routers/router', 'collections/SolrResults'],
-	function(Backbone, UIRouter, SolrResultList) {
+	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search'],
+	function(Backbone, UIRouter, SolrResultList, Search) {
 		'use strict';  
 	    		
 		appSearchResults = new SolrResultList([], {});
+		
+		searchModel = new Search();
 				
 		// Initialize routing and start Backbone.history()
 		uiRouter = new UIRouter();

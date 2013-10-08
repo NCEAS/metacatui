@@ -90,6 +90,10 @@ Normal 400
      	color: #FFFFFF;
      	text-decoration: underline;
      }
+     
+     .clear{
+     	clear:both;
+     }
 
     
 /* FORM/INPUT CUSTOMIZATIONS
@@ -697,7 +701,7 @@ Normal 400
     }
     
     a:hover {
-       color: ##005580;
+       color: #005580;
        text-decoration: underline;
     }
     #sidebar_share {
@@ -906,13 +910,242 @@ Normal 400
       padding-bottom: 3px;
     }
     
-    .btn {
-       padding: 4px 5px;
-       text-decoration: none;
+        #sidebar {
+      min-height: 400px;
+      padding: 20px;
+    } 
+    
+    #sidebar ul{
+    	list-style: none;
+    	padding: 0px;
+    	margin: 0px;
     }
     
-    #search-txt-side {
-      width: 70%;
+    #sidebar ul li a > i{
+    	margin-right: 5px;
+    }
+    
+    .filter-contain{
+   	  margin-bottom: 25px;
+   	  width: 100%;
+   }
+    
+    /*-- Search buttons next to text inputs --*/
+    .filter.btn{
+    	background-color: #ffffff;
+    	color: #555555;
+    	border-radius: 0px 5px 5px 0px;
+    	-moz-border-radius: 0px 5px 5px 0px;
+    	-webkit-border-radius: 0px 5px 5px 0px;
+    	border: 1px solid #AAAAAA;
+    	border-left: 0px;
+    	height: 30px;
+    	display: inline-block;
+    }
+    
+    .filter.btn > i{
+    	margin-bottom: 2px;
+    	display: block;
+    }
+    
+    .filter.btn > i:hover{
+    	color: #3399CC;
+    }
+    
+    /*-- Inputs for search filters --*/
+    input.filter{
+    	border-radius: 5px 0px 0px 5px;
+    	-webkit-border-radius: 5px 0px 0px 5px;
+    	-moz-border-radius: 5px 0px 0px 5px;
+    	border: 1px solid #AAAAAA;
+    	border-right: 0px;
+    	height: 20px;
+    }
+
+	/*-- The 'Year' filter elements --*/
+    #filter-year label{
+   		min-height: 18px;
+   		margin-bottom: 0px;
+   		line-height: 27px;
+   		width: auto;
+    }
+   
+    #filter-year > input[type="number"]{
+   		color: #009999;
+   		background: none;
+   		border: 0px;
+   		text-align: right;
+   		min-height: 2em;
+   		-webkit-appearance: none;
+   		box-shadow: none;
+   		top: -5px;
+   		position: relative;
+   		margin-bottom: 0px;
+   		font-family: "Muli", Arial, sans-serif;
+    }
+    
+    #filter-year > input[type="number"]:focus{
+    	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
+    }
+    
+    #max_year{
+    	float: right;
+    }
+    
+    #min_year{
+    	float: left;
+    }
+    
+    #year-range{
+    	min-height: 15px;
+    	border-radius: 4px;
+    	border: 1px solid #AAAAAA;
+    	background: #FFFFFF;
+    	position: relative;
+    	margin-bottom: 5px;
+    	width: 95%;
+    }
+    
+    #year-range.disabled,
+    #min_year.disabled,
+    #max_year.disabled{
+    	opacity: 0.6;
+    }
+    
+    .ui-slider-range{
+    	top: 0;
+    	height: 100%;
+    	position: absolute;
+    	z-index: 1;
+    	display: block;
+    	border: 0;
+    	background: #009999;
+    }
+    
+    .ui-slider-handle{
+    	border: 1px solid #009999;
+    	background-color: #EFEFEF;
+    	top: -0.2em;
+    	position: absolute;
+    	z-index: 2;
+    	width: 0.5em;
+    	height: 1.2em;
+    	cursor: default;
+    	border-radius: 4px;
+    	-moz-border-radius: 4px;
+    	-webkit-border-radius: 4px;
+    }
+
+	/*-- Currently applied filters --*/
+	.current-filters,
+	.current-filters[class*="span"]{
+		list-style: none;
+		color: #FFFFFF;
+		font: 400 14px/14px "Muli", Arial, sans-serif;
+		margin-left: 0px;
+		min-height: 0px;
+	}
+	
+	.current-filters > li,
+	.current-filters > li[class*="span"]{
+		background-color: #009999;
+		padding-left: 10px;
+		margin-top: 3px;
+		width: 99%;
+		border-radius: 2px;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
+		min-height: 1em;
+		margin-left: 0px;
+	}
+	
+	.current-filters > li > i{
+		float: right;
+		margin-top: 2px;
+	}
+	
+	.current-filters > li > i:hover{
+		font-size: 18px;
+    	position: relative;
+    	top: -2px;
+    	cursor: pointer;
+	}
+    
+	
+    /*-- Headers in sidebar --*/
+    h2.nav-header {
+      font: 700 22px/38px "Muli", Arial, sans-serif;
+      color: #555555;    
+      text-transform: capitalize;  
+      display: block;
+      padding: 0px;
+      margin: 0px;
+      min-height: 25px;
+    }
+    
+    h3.nav-header{
+    	font: 700 15px/20px "Muli", Arial, sans-serif;
+    	margin: 20px 0px 5px 0px;
+    	color: #555555;
+    	text-transform: none;
+    	display: block;
+    	padding: 0px;
+    }
+    
+    h3.nav-header > label{
+    	display: inline-block;
+    	font: 400 14px/18px "Muli", Arial, sans-serif;
+    }
+    
+    h3.nav-header > input{
+    	height: 20px;
+    }
+    
+    .nav-header > i{
+    	margin-right: 5px;
+    	font-size: 16px;
+    }
+    
+    li.nav-header{
+    	text-transform: none;
+		font: 600 13px/13px "Muli";
+		color: #7F7F7F;
+    }
+    
+    /*-- Your Collections area --*/
+    ul.collections{
+    	margin-left: 0px;
+    	list-style: none;
+    }
+    
+    a.collections {
+    	color: #555555;
+    }
+    
+    a.collections:hover{
+    	color: #3399CC;
+    }
+    
+    a.collections > i{
+    	margin-right: 5px;
+    }
+    
+   input[class*="span"].left,
+   .row-fluid input[class*="span"].left{
+   		float: left;
+   }
+
+	/*-- Share Your Data button --*/
+	#sidebar_share {
+      margin: 20px 10px 30px 15px;
+      padding: 8px;
+    }
+    
+    #clear-all{
+    	text-align: right;
+    	float: right;
+    	cursor: pointer;
+    	padding-top:12px;
     }
 
 /* RESULT CSS
