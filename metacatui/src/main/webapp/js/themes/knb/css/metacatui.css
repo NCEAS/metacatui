@@ -926,11 +926,11 @@ Bold 700 Italic
     	float: left;
     }
     
-    #year-range{
-    	min-height: 15px;
+        #year-range{
+    	min-height: 6px;
     	border-radius: 4px;
-    	border: 1px solid #AAAAAA;
-    	background: #FFFFFF;
+    	border: 0px;
+    	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
     	width: 95%;
@@ -950,20 +950,20 @@ Bold 700 Italic
     	display: block;
     	border: 0;
     	background: #115E95;
-    }
+   }
     
     .ui-slider-handle{
-    	border: 1px solid #115E95;
+    	border: 1px solid #999999;
     	background-color: #EFEFEF;
-    	top: -0.2em;
+    	top: -0.4em;
     	position: absolute;
     	z-index: 2;
-    	width: 0.5em;
+    	width: 1.2em;
     	height: 1.2em;
     	cursor: default;
-    	border-radius: 4px;
-    	-moz-border-radius: 4px;
-    	-webkit-border-radius: 4px;
+    	border-radius: 1.2em;
+    	-moz-border-radius: 1.2em;
+    	-webkit-border-radius: 1.2em;
     }
 
 	/*-- Currently applied filters --*/
@@ -1069,8 +1069,9 @@ Bold 700 Italic
 
 	/*-- Share Your Data button --*/
 	#sidebar_share {
-      margin: 20px 10px 30px 15px;
+      margin: 0px 0px 20px 0px;
       padding: 8px;
+      width: 95%;
     }
     
     #clear-all{

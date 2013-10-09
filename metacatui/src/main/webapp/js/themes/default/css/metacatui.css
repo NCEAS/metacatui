@@ -602,13 +602,6 @@ Bold 700
       min-height: 400px;
     } 
         
-    #sidebar_share {
-      margin: 20px 10px 10px 0px;
-      padding: 8px;
-      background-image: none;
-      background-color: #166194;
-      width: 90%;
-    }
     
     .filter-contain{
    	  margin-bottom: 25px;
@@ -631,6 +624,7 @@ Bold 700
     .filter.btn > i{
     	margin-bottom: 2px;
     	display: block;
+    	color: #999999;
     }
     
     .filter.btn > i:hover{
@@ -681,10 +675,10 @@ Bold 700
     }
     
     #year-range{
-    	min-height: 15px;
+    	min-height: 6px;
     	border-radius: 4px;
-    	border: 1px solid #AAAAAA;
-    	background: #FFFFFF;
+    	border: 0px;
+    	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
     	width: 95%;
@@ -707,17 +701,17 @@ Bold 700
     }
     
     .ui-slider-handle{
-    	border: 1px solid #166194;
+    	border: 1px solid #999999;
     	background-color: #EFEFEF;
-    	top: -0.2em;
+    	top: -0.4em;
     	position: absolute;
     	z-index: 2;
-    	width: 0.5em;
+    	width: 1.2em;
     	height: 1.2em;
     	cursor: default;
-    	border-radius: 4px;
-    	-moz-border-radius: 4px;
-    	-webkit-border-radius: 4px;
+    	border-radius: 1.2em;
+    	-moz-border-radius: 1.2em;
+    	-webkit-border-radius: 1.2em;
     }
 
 	/*-- Currently applied filters --*/
@@ -820,10 +814,20 @@ Bold 700
    }
 
 	/*-- Share Your Data button --*/
-	#sidebar_share {
-      margin: 20px 10px 30px 15px;
+    
+    #sidebar_share {
+      margin: 0px 0px 20px 0px;
       padding: 8px;
+      background-image: none;
+      background-color: #166194;
+      width: 90%;
     }
+    
+    #sidebar_share:hover{
+      color: #166194;
+      background: rgba(22, 97, 148, 0.2);
+      }
+    
     
     #clear-all{
     	text-align: right;

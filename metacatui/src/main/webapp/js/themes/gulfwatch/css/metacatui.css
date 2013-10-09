@@ -710,9 +710,6 @@ Normal 400
        color: #005580;
        text-decoration: underline;
     }
-    #sidebar_share {
-      margin: 20px 10px 10px 15px;
-    }
     
     #search_txt_side{
       width: 70%;
@@ -1150,8 +1147,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2d8989', end
 
 	/*-- Share Your Data button --*/
 	#sidebar_share {
-      margin: 20px 10px 30px 15px;
+      margin: 0px 0px 20px 0px;
       padding: 8px;
+      width: 94%;
     }
     
     #clear-all{
