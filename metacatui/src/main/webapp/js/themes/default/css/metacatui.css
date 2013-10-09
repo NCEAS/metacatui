@@ -311,6 +311,10 @@ Bold 700
       text-decoration:none;     
     }
     
+    .btn > i, .btn-primary > i, .btn-large > i, .btn-small > i, .btn-mini > i{
+    	color: #FFFFFF;
+    }
+    
     .btn-primary {
       background-color: #166194;
       color: #FFFFFF;
@@ -400,10 +404,10 @@ Bold 700
     .navbar-inner {
       border: none;
       background:rgb(0,0,0);
-      background:transparent\9;
+      background:transparent\9; /* For IE */
       background:rgba(0,0,0,0);
-      filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#00000000,endColorstr=#00000000);
-      zoom: 1;
+      filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#00000000,endColorstr=#00000000); /* For IE */
+      zoom: 1; /* For IE */
       min-height: 0px;
       box-shadow: none;
     } 
@@ -597,6 +601,14 @@ Bold 700
     #sidebar {
       min-height: 400px;
     } 
+        
+    #sidebar_share {
+      margin: 20px 10px 10px 0px;
+      padding: 8px;
+      background-image: none;
+      background-color: #166194;
+      width: 90%;
+    }
     
     .filter-contain{
    	  margin-bottom: 25px;
