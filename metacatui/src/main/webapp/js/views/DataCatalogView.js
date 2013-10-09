@@ -323,6 +323,9 @@ define(['jquery',
 				
 			//Show the UI filter
 			this.showFilter(category, term);
+			
+			//Trigger a new search
+			this.triggerSearch();
 		},
 		
 		updateBooleanFilters : function(e){
@@ -437,7 +440,7 @@ define(['jquery',
 				viewRef.hideFilter(this);
 			});
 			
-			//Then reset the model which will trigger a new search
+			//Then reset the model
 			searchModel.clear().set(searchModel.defaults);		
 			
 			//Reset the year slider handles
@@ -450,6 +453,9 @@ define(['jquery',
 			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
 			$("#data_year").prop("checked", searchModel.get("pubYear"));
 			$("#publish_year").prop("checked", searchModel.get("dataYear"));
+		
+			//Trigger a new search
+			this.triggerSearch();
 		},
 		
 		//Removes a specified filter node from the DOM
