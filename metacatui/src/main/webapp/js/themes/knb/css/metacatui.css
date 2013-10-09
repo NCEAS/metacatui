@@ -218,6 +218,10 @@ Bold 700 Italic
       margin: 15px 0px 0px 0px;                 
     }
     
+    footer#Footer img[alt=NCEAS]{
+    	width: 90px;
+    }
+    
     ul.helpitems a {
       color: #FDFDFD;
       text-decoration: none;      
