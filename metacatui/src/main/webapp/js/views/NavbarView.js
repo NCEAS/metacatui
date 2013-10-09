@@ -39,8 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 					this.template( 
 							{
 								username: appModel.get('username'),
-								fullName: appModel.get('fullName'),
-								searchTerm: appModel.get('searchTerm')
+								fullName: appModel.get('fullName')
 							} 
 					)
 			);
@@ -49,6 +48,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		triggerSearch: function() {
 			// Get the search term entered
 			var searchTerm = $("#search_txt").val();
+			
+			//Clear te input value
+			$("#search_txt").val('');
 			
 			//Clear the search model to start a fresh search
 			searchModel.clear().set(searchModel.defaults);

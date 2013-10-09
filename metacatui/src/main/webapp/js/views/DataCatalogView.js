@@ -93,7 +93,6 @@ define(['jquery',
 			//Populate the search template with some model attributes
 			var cel = this.template(
 					{
-						searchTerm: appModel.get('searchTerm'),
 						sortOrder: searchModel.get('sortOrder'),
 						yearMin: searchModel.get('yearMin'),
 						yearMax: searchModel.get('yearMax'),
@@ -241,9 +240,6 @@ define(['jquery',
 			// go to the page
 			this.showPage(page);
 			
-			// update the search box
-			this.updateSearchBox();
-			
 			// don't want to follow links
 			return false;
 		},
@@ -265,9 +261,6 @@ define(['jquery',
 		// TODO: handle compound searches like most recent+keyword (and others in the future)
 		showRecent: function () {
 			console.log('showing recent');
-			
-			// get the current search term (TODO: anyhting with it?)
-			var currentSearchTerm = appModel.get('searchTerm');
 			
 			// search last month
 			var dateQuery = "dateUploaded: [NOW-1MONTH/DAY TO *]";
@@ -531,12 +524,6 @@ define(['jquery',
 					})
 				);
 			}
-		},
-		
-		updateSearchBox: function() {
-			// look up from the model to ensure we display the side box correctly
-			var search = appModel.get('searchTerm');
-			this.$("#all_input").val(search);
 		},
 		
 		updatePageNumber: function(page) {

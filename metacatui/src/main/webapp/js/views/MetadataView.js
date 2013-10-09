@@ -151,7 +151,6 @@ define(['jquery',
 									submitter: submitter
 								})
 							);
-							$('[rel=popover]').popover();
 						};
 						
 						// are we authorized to publish?
