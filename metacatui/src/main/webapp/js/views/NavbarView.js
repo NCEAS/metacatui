@@ -50,7 +50,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// alert the model that a search should be performed
 			var searchTerm = $("#search_txt").val();
 			appModel.set('searchTerm', searchTerm);
-			appModel.trigger('search');
+			
+			console.log(searchModel);
 			
 			// make sure the browser knows where we are
 			uiRouter.navigate("data", {trigger: true});
