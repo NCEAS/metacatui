@@ -20,8 +20,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// listen to the appModel for changes in username
 			//this.listenTo(appModel, 'change:username', this.render);
 			this.listenTo(appModel, 'change:fullName', this.render);
-			this.listenTo(appModel, 'change:searchTerm', this.render);
 			this.listenTo(appModel, 'change:headerType', this.render);
+
 		},
 				
 		render: function () {
@@ -47,9 +47,17 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		},
 		
 		triggerSearch: function() {
-			// alert the model that a search should be performed
+			// Get the search term entered
 			var searchTerm = $("#search_txt").val();
-			appModel.set('searchTerm', searchTerm);
+			
+			//Clear the search model to start a fresh search
+			searchModel.clear().set(searchModel.defaults);
+			
+			//Create a new array with the new search term
+			var newSearch = [searchTerm];
+			
+			//Set up the search model for this new term
+			searchModel.set('all', newSearch);
 			
 			console.log(searchModel);
 			

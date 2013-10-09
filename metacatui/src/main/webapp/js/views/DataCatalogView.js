@@ -104,10 +104,23 @@ define(['jquery',
 			);
 			this.$el.html(cel);
 			this.updateStats();
+			
+			//Update the year slider
 			this.updateYearRange(); 
 			
 			//Initialize the year type label tooltips
 			$('.year-tooltip').tooltip();
+			
+			//Iterate through each search model text attribute and show UI filter for each
+			var categories = ['all', 'creator', 'taxon'];
+			var thisTerm = null;
+			
+			for (var i=0; i<categories.length; i++){
+				thisTerm = searchModel.get(categories[i]);
+				for (var x=0; x<thisTerm.length; x++){
+					this.showFilter(categories[i], thisTerm[x]);
+				}
+			}			
 			
 			// Register listeners; this is done here in render because the HTML
 			// needs to be bound before the listenTo call can be made
@@ -117,7 +130,7 @@ define(['jquery',
 			
 			//Listen to changes in the searchModel
 			this.stopListening(searchModel);
-			this.listenTo(searchModel, 'change', this.triggerSearch);
+			//this.listenTo(searchModel, 'change', this.triggerSearch);
 			
 			// listen to the appModel for the search trigger
 			this.stopListening(appModel);
