@@ -237,6 +237,10 @@ Bold 700
     	float:right;
     }
     
+    footer#Footer > .logos > div > a > img:hover{
+    	opacity: 1;
+    }
+    
     footer#Footer > .logos img.small-logo{
     	height: 25%;
     	width: auto;

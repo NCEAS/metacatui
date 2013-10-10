@@ -17,19 +17,22 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.rows = options.rows || 10;
 		    this.start = options.start || 0;
 		    this.sort = options.sort || 'dateUploaded+desc';
+		    this.facet = options.facet || 'keywords';
 		},
 		
 		url: function() {
-			var endpoint = appModel.get('queryServiceUrl') + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start;
+			var endpoint = appModel.get('queryServiceUrl') + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start + "&facet=true&facet.field=" + this.facet;
 			console.log(endpoint);
 			return endpoint;
 		},
 		  
 		parse: function(solr) {
-			this.header = new SolrHeader(solr.responseHeader);
+			this.header = new SolrHeader(solr.responseHeader);			
 			this.header.set({"numFound" : solr.response.numFound});
 			this.header.set({"start" : solr.response.start});
 			this.header.set({"rows" : solr.responseHeader.params.rows});
+			
+			console.log(solr.facet_counts);
 			return solr.response.docs;
 		},
 		
@@ -94,6 +97,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		
 		setSort: function(newsort) {
 			this.sort = newsort;
+		},
+		
+		setFacet: function(field) {
+			this.facet = field;
 		},
 		
 	});

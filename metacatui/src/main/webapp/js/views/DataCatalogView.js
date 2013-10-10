@@ -104,6 +104,7 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();
 			
+			
 			//Update the year slider
 			this.updateYearRange(); 
 			
@@ -167,7 +168,6 @@ define(['jquery',
 			appSearchResults.setrows(25);
 			appSearchResults.setSort(sortOrder);
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
-			//appSearchResults.setQuery('formatType:METADATA+-obsoletedBy:*+' + search);
 			
 			//Create the filter terms from the search model and create the query
 			var query = "formatType:METADATA+-obsoletedBy:*";
@@ -236,6 +236,7 @@ define(['jquery',
 			
 			console.log('query: ' + query);
 			
+			appSearchResults.setFacet("keywords");
 			appSearchResults.setQuery(query);
 			
 			// go to the page
@@ -580,6 +581,8 @@ define(['jquery',
 			appSearchResults.toPage(page);
 			this.$resultsview.show();
 			this.updateStats();
+			
+			
 			
 			this.updatePageNumber(page);
 
