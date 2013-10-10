@@ -109,6 +109,7 @@ define(['jquery',
 			
 			//Initialize the year type label tooltips
 			$('.year-tooltip').tooltip();
+			$('.tooltip-this').tooltip();
 			
 			//Iterate through each search model text attribute and show UI filter for each
 			var categories = ['all', 'creator', 'taxon'];

@@ -479,42 +479,62 @@ Bold 700
     #SignIn {
       float: right;
     }
-    
-    #Navbar input, #Navbar .btn{
-    	margin-top: 15px;
-    	float: left;
-    	border: none;
-    }
+ 
     
     /* Search bar in nav bar */
     
     #search_txt{
-    	border-radius: 5px 0px 0px 5px;
-    	-webkit-border-radius: 5px 0px 0px 5px;
-		-moz-border-radius: 5px 0px 0px 5px;
+    	border-radius: 0px;
+    	-webkit-border-radius: 0px;
+		-moz-border-radius: 0px;
+		border: 1px solid #FFFFFF;
+		margin-top: 15px;
+		float: left;
+		background-color: transparent;
+		background-image: none;
+		border-right: 0px;		
     }
+    	#search_txt::-webkit-input-placeholder {
+		   color: #EEEEEE;
+		}
+		#search_txt:-moz-placeholder { /* Firefox 18- */
+		   color: #EEEEEE;  
+		}
+		
+		#search_txt::-moz-placeholder {  /* Firefox 19+ */
+		   color: #EEEEEE;  
+		}
+		
+		#search_txt:-ms-input-placeholder {  
+		   color: #EEEEEE;  
+		}
+    
     
     #search_btn{
-    	margin-top: 0px;
+    	margin-top: 15px;
     	height: 14px;
     	width: auto;
-    	background: #FFFFFF;
-    	border-radius: 0px 5px 5px 0px;
-    	-webkit-border-radius: 0px 5px 5px 0px;
-		-moz-border-radius: 0px 5px 5px 0px;
+    	float: left;
+    	background-image: none;
+    	background-color: transparent;
+    	border-radius: 0px;
+    	-webkit-border-radius: 0px;
+		-moz-border-radius: 0px;
     	padding: 7px;
+    	border: 1px solid #FFFFFF;
+    	border-left: 0px;
+    }
+    
+    #search_btn:hover{
+    	color: #3399CC;
     }
     
     #search_btn > i{
     	font-size: 13px;
-    	color: #999999;
+    	color: #FFFFFF;
     	text-shadow: none;
     	float: left;
-    }
-    
-    #search_btn:hover {
-      background-color: #166194;
-      opacity: 1.0;
+    	line-height: 15px;
     }
     
     #search_btn:hover > i{
@@ -610,12 +630,13 @@ Bold 700
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
-    	background-color: #ffffff;
+    	background-color: transparent;
+    	background-image: none;
     	color: #555555;
-    	border-radius: 0px 5px 5px 0px;
-    	-moz-border-radius: 0px 5px 5px 0px;
-    	-webkit-border-radius: 0px 5px 5px 0px;
-    	border: 1px solid #AAAAAA;
+    	border-radius: 0px;
+    	-moz-border-radius: 0px;
+    	-webkit-border-radius: 0px;
+    	border: 1px solid #999999;
     	border-left: 0px;
     	height: 30px;
     	display: inline-block;
@@ -633,12 +654,15 @@ Bold 700
     
     /*-- Inputs for search filters --*/
     input.filter{
-    	border-radius: 5px 0px 0px 5px;
-    	-webkit-border-radius: 5px 0px 0px 5px;
-    	-moz-border-radius: 5px 0px 0px 5px;
-    	border: 1px solid #AAAAAA;
+    	border-radius: 0px;
+    	-webkit-border-radius: 0px;
+    	-moz-border-radius: 0px;
+    	border: 1px solid #999999;
     	border-right: 0px;
     	height: 20px;
+    	background-color: transparent;
+    	background-image: none;
+    	width: 80%;
     }
 
 	/*-- The 'Year' filter elements --*/
@@ -697,7 +721,7 @@ Bold 700
     	z-index: 1;
     	display: block;
     	border: 0;
-    	background: #166194;
+    	background: rgba(22, 97, 148, 0.5)	;
     }
     
     .ui-slider-handle{
@@ -726,27 +750,35 @@ Bold 700
 	
 	.current-filters > li,
 	.current-filters > li[class*="span"]{
-		background-color: #166194;
-		padding-left: 10px;
-		margin-top: 3px;
-		width: 99%;
+		background-color: rgba(22, 97, 148, 0.5);
+		padding: 0px 5px 0px 5px;
 		border-radius: 2px;
 		-moz-border-radius: 2px;
 		-webkit-border-radius: 2px;
 		min-height: 1em;
-		margin-left: 0px;
+		width: auto;
+		max-width: 100%;
+		margin: 5px 5px 0px 0px;
+	}
+	
+	.current-filters > li > span{
+		float: left;
+		margin-right: 5px;
+		line-height: 1.5em;
 	}
 	
 	.current-filters > li > i{
 		float: right;
-		margin-top: 2px;
+		line-height: 1.5em;
+		font-size: 1em;
 	}
 	
 	.current-filters > li > i:hover{
-		font-size: 18px;
+		font-size: 1.3em;
     	position: relative;
-    	top: -2px;
+    	margin-top: 2px;
     	cursor: pointer;
+    	line-height: 1em;
 	}
     
 	
@@ -820,7 +852,7 @@ Bold 700
       padding: 8px;
       background-image: none;
       background-color: #166194;
-      width: 90%;
+      width: 95%;
     }
     
     #sidebar_share:hover{
@@ -833,6 +865,9 @@ Bold 700
     	text-align: right;
     	float: right;
     	cursor: pointer;
+    	font-size: 20px;
+    	margin: 0px 5px 0px 5px;
+    	color: #931D1D;
     }
 
 /* RESULT CSS

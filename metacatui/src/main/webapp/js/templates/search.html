@@ -6,10 +6,10 @@
 			<a id="sidebar_share" class="btn btn-primary" href="#share"> <i class="icon-upload icon-white icon-large share-feature"></i>  Share Your Data </a>
     		<div class="filter-contain">
 	    		<h2 class="nav-header span6">Filter</h2>
-	    		<a class="span4" id="clear-all">Clear all <i class="icon-remove"></i></a>
+	    		<a class="span4" id="clear-all"><i class="icon-remove tooltip-this" data-placement="top" data-title="Reset filters" data-trigger="hover"></i></a>
 				
 				<div class="input-append filter-contain">
-					<input class="span10 filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
+					<input class="filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
 					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
 			    	<ul id="current-all-filters" class="current-filters" data-category="all">
 			    	</ul>
@@ -24,7 +24,7 @@
 				
 				<div class="input-append filter-contain">
 					<h3 class="nav-header"><i class="icon-user"></i>Created by</h3>
-					<input class="span10 filter" type="text" placeholder="First or last name" id="creator_input" data-category="creator">
+					<input class="filter" type="text" placeholder="First or last name" id="creator_input" data-category="creator">
 					<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
 			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
 			    	</ul>
@@ -48,7 +48,7 @@
 				
 				<div class="input-append filter-contain">
 					<h3 class="nav-header"><i class="icon-sitemap"></i>Taxon</h3>
-					<input class="span10 filter" type="text" placeholder="Phylum, class, order..." id="taxon_input" data-category="taxon">
+					<input class="filter" type="text" placeholder="Phylum, class, order..." id="taxon_input" data-category="taxon">
 					<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
 					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
 					</ul>
