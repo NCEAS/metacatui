@@ -426,18 +426,13 @@ define(['jquery',
 			var category = filterNode.parent().attr('data-category');
 			
 			//Remove this filter term from the searchModel
-			if(category){
-				//Get the current filter terms array
-				var currentTerms = searchModel.get(category);
-				//Remove this filter term from the array
-				var newTerms = _.without(currentTerms, term);
-				//Set the new value
-				searchModel.set(category, newTerms);				
-			}
-			
 			this.removeFromModel(category, term);
 			
+			//Hide the filter from the UI
 			this.hideFilter(filterNode);
+			
+			//Trigger a new search
+			this.triggerSearch();
 
 		},
 		
