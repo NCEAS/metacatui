@@ -131,8 +131,6 @@ define(['jquery',
 			
 			//Listen to changes in the searchModel
 			this.stopListening(searchModel);
-			this.listenTo(searchModel, 'change:yearMin', this.triggerSearch);
-			this.listenTo(searchModel, 'change:yearMax', this.triggerSearch);
 			
 			// listen to the appModel for the search trigger
 			this.stopListening(appModel);
@@ -349,6 +347,8 @@ define(['jquery',
 		//Also update the model
 		updateYearRange : function(e) {
 			
+			var viewRef = this;
+			
 			// Get the minimum and maximum values from the input fields
 			var minVal = $('#min_year').val();
 			var maxVal = $('#max_year').val();
@@ -379,6 +379,8 @@ define(['jquery',
 			      searchModel.set('yearMin', $('#min_year').val());
 			      searchModel.set('yearMax', $('#max_year').val());
 			      
+			      //Trigger a new search
+			      viewRef.triggerSearch();
 			    }
 			  });
 			
