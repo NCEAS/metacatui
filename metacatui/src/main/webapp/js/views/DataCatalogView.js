@@ -32,21 +32,21 @@ define(['jquery',
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
-			'click #results_prev': 'prevpage',
-			'click #results_next': 'nextpage',
-			'click #results_prev_bottom': 'prevpage',
-			'click #results_next_bottom': 'nextpage',
-			'click .pagerLink': 'navigateToPage',
-			'click .filter.btn': 'updateTextFilters',
-			'keypress input.filter' : 'triggerOnEnter',
-			'change #sortOrder': 'triggerSearch',
-			'change #min_year' : 'updateYearRange',
-			'change #max_year' : 'updateYearRange',
-			'click #publish_year'  : 'updateYearRange',
-			'click #data_year' : 'updateYearRange', 
-			'click .remove-filter' : 'removeFilter',
+							'click #results_prev' : 'prevpage',
+							'click #results_next' : 'nextpage',
+					 'click #results_prev_bottom' : 'prevpage',
+					 'click #results_next_bottom' : 'nextpage',
+			       			   'click .pagerLink' : 'navigateToPage',
+							  'click .filter.btn' : 'updateTextFilters',
+						  'keypress input.filter' : 'triggerOnEnter',
+							  'change #sortOrder' : 'triggerSearch',
+							   'change #min_year' : 'updateYearRange',
+							   'change #max_year' : 'updateYearRange',
+			                'click #publish_year' : 'updateYearRange',
+			                   'click #data_year' : 'updateYearRange', 
+						   'click .remove-filter' : 'removeFilter',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
-			'click #clear-all' : 'resetFilters'
+							   'click #clear-all' : 'resetFilters'
 		},
 		
 		initialize: function () {
@@ -131,7 +131,8 @@ define(['jquery',
 			
 			//Listen to changes in the searchModel
 			this.stopListening(searchModel);
-			//this.listenTo(searchModel, 'change', this.triggerSearch);
+			this.listenTo(searchModel, 'change:yearMin', this.triggerSearch);
+			this.listenTo(searchModel, 'change:yearMax', this.triggerSearch);
 			
 			// listen to the appModel for the search trigger
 			this.stopListening(appModel);
@@ -339,6 +340,9 @@ define(['jquery',
 
 			//Update the model
 			searchModel.set(category, state);
+			
+			//Trigger a new search
+			this.triggerSearch();
 		},
 		
 		//Update the UI year slider and input values
@@ -374,6 +378,7 @@ define(['jquery',
 			      //Also update the search model
 			      searchModel.set('yearMin', $('#min_year').val());
 			      searchModel.set('yearMax', $('#max_year').val());
+			      
 			    }
 			  });
 			
@@ -402,6 +407,7 @@ define(['jquery',
 					sliderEls[i].prop("disabled", true);
 				}
 			}
+
 
 		},
 		

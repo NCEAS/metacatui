@@ -878,7 +878,6 @@ Bold 700
 -------------------------------------------------- */
     .result-header {
       font-weight: bold;
-      border-bottom: thin solid;
     }
     
     .result-header-count {
@@ -887,8 +886,15 @@ Bold 700
     
     .result-row {
       display: block;
-        border-bottom: 1px solid #BBBBBB;
-        padding: 5px;
+      padding: 5px 10px;
+    }
+    
+    .result-row:nth-child(odd){
+    	background-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .result-row:nth-child(even){
+    	background-color: transparent;
     }
     
     .result-row:hover { 
