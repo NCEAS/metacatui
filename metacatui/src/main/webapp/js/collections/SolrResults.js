@@ -17,12 +17,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.rows = options.rows || 10;
 		    this.start = options.start || 0;
 		    this.sort = options.sort || 'dateUploaded+desc';
-		    this.facet = options.facet || 'keywords';
+		    this.facet = options.facet || ['keywords'];
+		    this.facetCounts = "nothing";
 		},
 		
 		url: function() {
-			var endpoint = appModel.get('queryServiceUrl') + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start + "&facet=true&facet.field=" + this.facet;
+			//Convert facet keywords to a string
+			var facetFields = null;
+			for (var i=0; i<this.facet.length; i++){
+				facetFields = "&facet.field=" + this.facet[i];
+			}
+			//create the query url
+			var endpoint = appModel.get('queryServiceUrl') + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start + "&facet=true" + facetFields;
 			console.log(endpoint);
+			
 			return endpoint;
 		},
 		  
@@ -32,7 +40,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			this.header.set({"start" : solr.response.start});
 			this.header.set({"rows" : solr.responseHeader.params.rows});
 			
-			console.log(solr.facet_counts);
+			//Get the facet counts and store them in this model
+			this.facetCounts = solr.facet_counts.facet_fields;
+			console.log(this.facetCounts);
 			return solr.response.docs;
 		},
 		
@@ -99,8 +109,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			this.sort = newsort;
 		},
 		
-		setFacet: function(field) {
-			this.facet = field;
+		setFacet: function(fields) {
+			this.facet = fields;
 		},
 		
 	});

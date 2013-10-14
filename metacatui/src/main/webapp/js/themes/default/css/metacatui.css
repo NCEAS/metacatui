@@ -873,6 +873,25 @@ Bold 700
     	margin: 0px 5px 0px 5px;
     	color: #931D1D;
     }
+    
+    /* Autocomplete */
+    ul.ui-autocomplete{
+    	width: 246px;
+    	background-color: #FFFFFF;
+    	border: 1px solid #999999;
+    	padding: 10px;
+    	list-style: none;
+    }
+    
+    li.ui-menu-item > a{
+    	color: #555555;
+    	font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;
+    }
+    
+    li.ui-menu-item > a:hover{
+    	color: #166194;
+    	cursor: pointer;
+    }
 
 /* RESULT CSS
 -------------------------------------------------- */

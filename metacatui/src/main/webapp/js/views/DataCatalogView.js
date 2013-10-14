@@ -145,6 +145,7 @@ define(['jquery',
 			
 			// and go to a certain page if we have it
 			this.showResults();
+			
 
 			return this;
 		},
@@ -177,6 +178,20 @@ define(['jquery',
 				query += '+resourceMap:resourceMap*';
 			}
 			
+			//Function here to check for spaces in a string - we'll use this to url encode the query
+			var phrase = function(entry){
+				var space = null;
+				
+				space = entry.indexOf(" ");
+				
+				if(space < 0){
+					return false;
+				}
+				else{
+					return true;
+				}
+			};
+			
 			//All
 			var thisAll = null;
 			var all = searchModel.get('all');
@@ -185,7 +200,7 @@ define(['jquery',
 				thisAll = all[i].trim();
 				
 				//Is this a phrase?
-				if(this.phrase(thisAll)){
+				if(phrase(thisAll)){
 					thisAll = thisAll.replace(" ", "%20");
 					query += "+*%22" + thisAll + "%22*";
 				}
@@ -202,7 +217,7 @@ define(['jquery',
 				thisCreator = creator[i].trim();
 				
 				//Is this a phrase?
-				if(this.phrase(thisCreator)){
+				if(phrase(thisCreator)){
 					thisCreator = thisCreator.replace(" ", "%20");
 					query += "+origin:*%22" + thisCreator + "%22*";
 				}
@@ -235,7 +250,7 @@ define(['jquery',
 			
 			console.log('query: ' + query);
 			
-			appSearchResults.setFacet("keywords");
+			appSearchResults.setFacet(["keywords"]);
 			appSearchResults.setQuery(query);
 			
 			// go to the page
@@ -243,20 +258,6 @@ define(['jquery',
 			
 			// don't want to follow links
 			return false;
-		},
-		
-		//Checks for spaces in a given string
-		phrase: function(entry){
-			var space = null;
-			space = entry.indexOf(" ");
-			
-			if(space < 0){
-				return false;
-			}
-			else{
-				return true;
-			}
-
 		},
 		
 		// TODO: handle compound searches like most recent+keyword (and others in the future)
@@ -513,6 +514,8 @@ define(['jquery',
 			
 			// piggy back here
 			this.updatePager();
+			this.getFacetCounts();
+			
 
 		},
 		
@@ -580,15 +583,37 @@ define(['jquery',
 		},
 		
 		showPage: function(page) {
+			//Remove all the current search results
 			this.removeAll();
 			appSearchResults.toPage(page);
 			this.$resultsview.show();
-			this.updateStats();
-			
-			
-			
+			this.updateStats();	
 			this.updatePageNumber(page);
-
+		},
+		
+		//Get the facet counts
+		getFacetCounts: function(){
+			if (appSearchResults.header != null) {
+				console.log(appSearchResults.facetCounts.keywords);
+				
+				var facetCounts = appSearchResults.facetCounts;
+				//Set up the autocomplete (jQueryUI) feature for each input
+				//For the 'all' filter, use keywords
+				var allSuggestions = appSearchResults.facetCounts.keywords;
+				$('#all_input').autocomplete({
+					source: allSuggestions
+				});
+			}
+			/*//Get the facet counts from the search results			
+			//Set up the autocomplete (jQueryUI) feature for each input
+			//For the 'all' filter, use keywords
+			var allSuggestions = facetCounts.keywords;
+			$('#all_input').autocomplete({
+				source: allSuggestions
+			});*/
+			
+			//Let's log them all for now for testing purposes
+			
 		},
 		
 		// Add a single SolrResult item to the list by creating a view for it, and
