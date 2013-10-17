@@ -122,11 +122,8 @@ Normal 400
   header#Header {
     position: absolute;
     top: 0px;
-    z-index: 100;
-    height: 175px;
-    overflow: hidden;
-    opacity: 1.0;
-    width:100%;    
+    height: 0px;  
+    display: none;  
   }
   
   header#mainHeader {
@@ -159,134 +156,26 @@ Normal 400
     footer#Footer {
       position: relative;
       bottom: 0px;
-      padding-top: 30px;
+      padding-top: 10px;
       margin-top: 0px;
       color: #FDFDFD;
       background-color: #5A5758;
-    }
-    
-    #Footer > div.container{
-    	width: 1170px;
-    }
-        
-    footer#Footer div#FooterHeading {
-      max-width: 650px;
+      min-height: 100px;
     }
 
-    footer#Footer h2 {
-      font-weight: 700;
-      font-size: 14px;
-      vertical-align: middle;
-      padding: 0;
-      line-height: 16px;
+    
+    footer a{
+    	color: #FFFFFF;
+    	text-decoration: underline;
     }
-        
-    footer#Footer h3 {
-      font: 700 30px/30px;
-      text-align: center;
-      padding: 0px 0px 20px 0px;
-      margin-bottom: -25px;
-      border-bottom: 1px solid #FDFDFD;
-      
+    
+    footer a:hover{
+    	color: #FFFFFF;
+    	text-decoration: none;
     }
 
-    footer#Footer h3 > span {
-      font: 400 30px/30px;
-      font-style: italic;
-    }
-    
-    footer#Footer h4.subheading {
-      vertical-align: baseline;
-      padding: 0;
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    
-    footer#Footer h4.subheading > span {
-      font: 400 30px/30px;
-      font-style: italic;
-      text-transform: uppercase;
-      background-color: #3F3F3F;
-      padding: 0px 15px 0px 15px;
-    }
-    
-    footer#Footer ul.helpitems {
-      list-style: none;
-      list-style-position: inside;
-      margin: 0px 0px 40px 0px;
-      font-size: 12px;
-    }
-    
-    footer#Footer ul.helpitems li {
-      vertical-align: baseline;                 
-    }
-    
-    ul.helpitems a {
-      color: #FDFDFD;
-      text-decoration: none;      
-    }
-    
-    ul.helpitems a:hover {
-       text-decoration: underline;
-    }
-    
-    footer#Footer .disclaimer {
-      color: #FDFDFD;
-      font: 100 14px/14px;      
-    }
-    
-    footer#Footer .acknowledgements {
-      margin-top: 40px;
-    }
-
-    footer#Footer img:first-of-type {
-      width: 110px;
-      margin: 0px 0px 20px 0px;
-    }
-
-    #footer_signup {
-      position: relative;
-      left: 50%;
-      /*bottom: 0px;*/
-      width: 188px;
-      margin: 20px auto 20px -94px;
-    }
-    
-    .subfooter ul{
-      float:right;
-      list-style:none;
-    }
-    
-    .subfooter > ul > li{
-      float: left;
-      display: inline;
-      padding: 0px 5px;
-    }
-    
-    .subfooter ul li:nth-child(n+2){
-      border-left: 1px solid #FFFFFF;
-    }
-    
-    footer#Footer .alert{
-    	border-radius: 0;
-    	background-color: #CCCCCC;
-    	border-color: #CCCCCC;
-    	color: #555555;
-    	width: 100%;
-    	margin-bottom: 0;
-    }
-    
-    footer#Footer .alert > img{
-    	height: 45px;
-    	width: auto;
-    	float: left;
-    	margin-right: 10px;
-    }
-    
-    footer#Footer .alert a{
-    	text-shadow: none;
-    }
-    
+ /* BUTTONS 
+-------------------------------------------------- */       
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 400;
       background-image: none;
@@ -341,7 +230,7 @@ Normal 400
 	}
 	
 	.dropdown-menu > li > a:hover{
-		background-color: #009999;
+		background-color: #08C08C;
 		background-image: none;
 	}
 	
@@ -503,7 +392,7 @@ Normal 400
     .navbar {
       border: none;
       z-index: 210;   
-      background-color: #009999;
+      background-color: #000000;
       background-image: none;
       filter: none;
     }
@@ -513,19 +402,20 @@ Normal 400
       z-index: 220;
       padding: 0px;
       background-image: none;
-      background-color: #009999;
+      background-color: transparent;
       border: 0px;
       box-shadow: none;
       -moz-box-shadow: none;
       width: 1170px;
       margin: 0px auto;
-      filter: none;
-      
-      
+      filter: none;    
     }
     
-  	.navbar .nav{
-    	width: 100%;
+    nav header{
+    	color: #FFFFFF;
+    	font: 400 20px/40px "Muli", sans-serif;
+    	width: auto;
+    	float: left;	
     }
     
     .navbar .nav > li > * {
@@ -562,16 +452,6 @@ Normal 400
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
 
-    /* Offset the responsive button for proper vertical alignment */
-    .navbar .btn-navbar {
-      margin-top: 10px;
-    }
-
-    /* Offset the search div for proper vertical alignment */
-    .navbar .input-append {
-      margin: 5px 0px 0px 0px;
-      z-index: 290;
-    }
 
     #Navbar form {
       margin: 0px 0px 0px 0px;
@@ -581,8 +461,9 @@ Normal 400
       opacity: .6;
     }
     
-    ul.nav {
-      width: 87%;
+    ul.nav, .navbar .nav {
+      width: auto;
+      float: right;
     }
 
 
@@ -700,15 +581,6 @@ Normal 400
   /* Main body containing sidebar and content */
     .main-body-padded {
       padding-top: 90px;
-    }
-    
-    a {
-       color: #009999;
-    }
-    
-    a:hover {
-       color: #005580;
-       text-decoration: underline;
     }
     
     #search_txt_side{
@@ -840,7 +712,7 @@ Normal 400
          
      /* Download  and Publish buttons */
      #downloadPackage a.btn {
-    	background-color: #009999;
+    	background-color: #08C08C;
     	color: #FFFFFF;
     	text-shadow: none;
     	text-decoration: none;
@@ -1024,12 +896,12 @@ Normal 400
     	border: 0;
     	background: #009999;
     	background: -moz-linear-gradient(top, #2d8989 1%, #009999 55%, #00cccc 98%, #009999 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#2d8989), color-stop(55%,#009999), color-stop(98%,#00cccc), color-stop(100%,#009999)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* IE10+ */
-background: linear-gradient(to bottom, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2d8989', endColorstr='#009999',GradientType=0 ); /* IE6-9 */
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#2d8989), color-stop(55%,#009999), color-stop(98%,#00cccc), color-stop(100%,#009999)); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* Opera 11.10+ */
+		background: -ms-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* IE10+ */
+		background: linear-gradient(to bottom, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* W3C */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2d8989', endColorstr='#009999',GradientType=0 ); /* IE6-9 */
     }
     
     .ui-slider-handle{
@@ -1158,6 +1030,26 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2d8989', end
     	cursor: pointer;
     	padding-top:12px;
     }
+    
+     /* Autocomplete */
+    ul.ui-autocomplete{
+    	width: 246px;
+    	background-color: #FFFFFF;
+    	border: 1px solid #999999;
+    	padding: 10px;
+    	list-style: none;
+    }
+    
+    li.ui-menu-item > a{
+    	color: #555555;
+    	font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;
+    }
+    
+    li.ui-menu-item > a:hover{
+    	color: #166194;
+    	cursor: pointer;
+    }
+    
 
 /* RESULT CSS
 -------------------------------------------------- */
