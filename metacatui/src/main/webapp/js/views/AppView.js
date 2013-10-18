@@ -100,14 +100,21 @@ define(['jquery',
 			var thisAppViewRef = this;
 			
 			// Change the background image if there is one
-			if($('#bg_image').length > 0){
-				var imgCnt = $('#bg_image').attr('data-image-count');
-				$('#bg_image').fadeOut('fast', function(){
+			var imageEl = $('#bg_image');
+			if($(imageEl).length > 0){
+				var imgCnt = $(imageEl).attr('data-image-count');
+				$(imageEl).fadeOut('fast', function(){
 					//Randomly choose the next background image
 					var bgNum = Math.ceil(Math.random() * imgCnt);
-					$('#bg_image').attr('src', './js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg');	
+					//If the element is an img, change the src attribute
+					if ($(imageEl).prop('tagName') == 'IMG'){
+						$(imageEl).attr('src', './js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg');							
+					}
+					else{ //Otherwise, change the background image style property
+						$(imageEl).css('background-image', 'url(\'./js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg\')');
+					}
 				});
-				$('#bg_image').fadeIn('slow');
+				$(imageEl).fadeIn('slow');
 			}
 			
 			// close the current view
