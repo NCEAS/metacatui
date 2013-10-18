@@ -13,6 +13,8 @@ define(['jquery',
 	
 	var app = app || {};
 	
+	var theme = document.getElementById("loader").getAttribute("data-theme");
+	
 	// Our overall **AppView** is the top-level piece of UI.
 	var AppView = Backbone.View.extend({
 
@@ -103,7 +105,7 @@ define(['jquery',
 				$('#bg_image').fadeOut('fast', function(){
 					//Randomly choose the next background image
 					var bgNum = Math.ceil(Math.random() * imgCnt);
-					$('#bg_image').attr('src', './img/backgrounds/bg' + bgNum + '.jpg');	
+					$('#bg_image').attr('src', './js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg');	
 				});
 				$('#bg_image').fadeIn('slow');
 			}
