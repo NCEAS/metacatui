@@ -1636,10 +1636,6 @@ Bold 700 Italic
  */
 
 
-/*
-*  import eml css:
-*/
-
 #content_wrapper {
 	margin:                     0px 10px 10px 10px;
 }
@@ -1760,20 +1756,6 @@ div.left-padding {
     left:                       167px;
     margin:                     0px 10px 10px 177px;
     }
-
-p,ul,ol,dl,li,dt {
-    color:                      #555555;
-    font-style:                 normal;
-    font-weight:                normal;
-    text-decoration:            none;
-  }
-  
-p ol,p ul, p dl, ol ul {
-    color:                      #555555;
-    font-style:                 normal;
-    font-weight:                normal;
-    text-decoration:            none; 
-  } 
 
 ul,ol {
     padding:                    0px;
