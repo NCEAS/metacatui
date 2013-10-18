@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		template: null,
 		
-		containerTemplate: '<article id="external"><div class="container"><div class="row-fluid"><div id="DynamicContent" class="text-left"></div></div></div></article>',
+		containerTemplate: '<article id="external"><div class="container"><div class="row-fluid span10"><div id="DynamicContent" class="text-left"></div></div></div></article>',
 				
 		lastUrl: null,
 		
