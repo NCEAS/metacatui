@@ -1,10 +1,10 @@
-<div class="share-feature">
-<a id="publish" 
+
+<a id="publish" class="share-feature btn btn-primary"
 <% if (!isAuthorized) {
 	print(' disabled="disabled" '); 
 	print(' rel="popover" data-placement="bottom" data-trigger="hover" data-content="Sign in to publish with DOI" '); 	
 } %> 
-class="btn btn-primary" pid="<%= identifier %>">Publish <i class="icon-share icon-white icon-large"></i></a>
+ pid="<%= identifier %>">Publish <i class="icon-share icon-white icon-large"></i></a>
 	
 	<!-- TODO: include these details -->
 	<!-- 		
@@ -54,4 +54,4 @@ class="btn btn-primary" pid="<%= identifier %>">Publish <i class="icon-share ico
 		</li>
 	</ul>
 	-->
-</div>
+
