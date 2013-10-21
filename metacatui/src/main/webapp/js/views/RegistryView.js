@@ -52,6 +52,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 					this.registryUrl + this.registryQueryString,
 					function() {
 						viewRef.verifyLoginStatus();
+						viewRef.augementForm();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow');
 					});
@@ -70,6 +71,19 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			// if we have the registry form but it doesn't look like we are logged in, force a logout
 			if (registryEntryForm.length && !appModel.get('username')) {
 				uiRouter.navigate("logout", {trigger: true});
+			}
+		},
+		
+		augementForm: function() {
+			// want to add fields to the form automatically
+			var registryEntryForm = $("#RegistryEntryForm");
+			
+			// if we have the registry form we can add to it
+			if (registryEntryForm.length) {
+				// TOOD: pull from the config
+				registryEntryForm.find("#keyword").attr("value", DEFAULT);
+				// this method is defined in the registry script, bound to the "add" button
+				addKeyword();
 			}
 		},
 		
