@@ -98,7 +98,9 @@ define(['jquery',
 						yearMax: searchModel.get('yearMax'),
 						pubYear: searchModel.get('pubYear'),
 						dataYear: searchModel.get('dataYear'),
-						resourceMap: searchModel.get('resourceMap')
+						resourceMap: searchModel.get('resourceMap'),
+						searchOptions: registryModel.get('searchOptions')
+						
 					}
 			);
 			this.$el.html(cel);

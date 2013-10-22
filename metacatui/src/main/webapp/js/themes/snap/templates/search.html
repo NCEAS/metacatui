@@ -53,6 +53,20 @@
 					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
 					</ul>
 				</div>
+				<!-- filter by working groups -->
+				<div class="input-append filter-contain row-fluid">">
+					<h3 class="nav-header"><i class="icon-user"></i>Working Group</h3>
+					<ul>
+						<%
+						_.each(searchOptions, function(value, key) {
+							print('<li>');
+							print('<a class="keyword-search-link" href="#data/search/', value, '"><i class="halflings-icon search"></i>', key, '</a>');
+							print('</li>');
+						});
+						%>
+					</ul>
+				</div>
+				
 			<!--  Coming in next release
 				<div class="input-append filter-contain">
 					<h3 class="nav-header"><i class="icon-map-marker"></i>Location</h3>
