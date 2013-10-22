@@ -97,7 +97,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				// TODO: use variables for the selection
 				var formOptions = registryModel.get("formOptions");
 
-				registryEntryForm.find("#collapseBasic").after(this.template(formOptions));
+				registryEntryForm.find("#collapseBasic").after(this.template({formOptions: formOptions}));
 				
 			}
 		},
