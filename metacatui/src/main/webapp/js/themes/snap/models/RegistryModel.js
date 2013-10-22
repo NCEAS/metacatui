@@ -30,8 +30,8 @@ define(['jquery', 'underscore', 'backbone'],
 			// searchLabel: solr criteria	
 			searchOptions:
 				{
-					"Coastal Defenses" : '+origin: "Coastal Defenses"',
-					"Western Amazonia" : '+origin: "Western Amazonia"'
+					"Coastal Defenses" : 'origin:Coastal%20Defenses',
+					"Western Amazonia" : 'origin:Western%20Amazonia'
 				}
 			
 		}
