@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone'],
 				{
 					"keyword" : "*",
 					"originator" : "*"
-				}
+				},
 			formOptions:
 				{
 					"wg" : 
