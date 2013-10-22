@@ -10,27 +10,28 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			formFields: 
 				{
-					"keyword" : "Default"
+					"keyword" : "SNAP"
 				},
 			// TODO: include in all queries for the given theme	
 			searchFields: 
 				{
-					"keyword" : "*",
-					"originator" : "*"
+					"keywords" : "SNAP",
+					"origin" : "*"
 				},
 			formOptions:
 				{
 					"wg" : 
 						[
-						"SNAP: Coastal Defenses",
-						"SNAP: Western Amazonia"
+						"Coastal Defenses",
+						"Western Amazonia"
 						]
 				},
-			// TODO: potential for driving optional filters for specific WGs	
+			// TODO: potential for driving optional filters for specific WGs
+			// searchLabel: solr criteria	
 			searchOptions:
 				{
-					"origin" : "SNAP: Coastal Defenses",
-					"origin" : "SNAP: Western Amazonia"
+					"Coastal Defenses" : '+origin: "Coastal Defenses"',
+					"Western Amazonia" : '+origin: "Western Amazonia"'
 				}
 			
 		}
