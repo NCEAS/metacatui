@@ -95,7 +95,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				
 				// add to input form
 				// TODO: use variables for the selection
-				registryEntryForm.find("#collapseBasic").after(this.template());
+				var formOptions = registryModel.get("formOptions");
+
+				registryEntryForm.find("#collapseBasic").after(this.template(formOptions));
 				
 			}
 		},

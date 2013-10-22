@@ -12,6 +12,14 @@ define(['jquery', 'underscore', 'backbone'],
 				{
 					"keyword" : "Default"
 				},
+			formOptions:
+				{
+					"wg" : 
+						[
+						"SNAP: Coastal Defenses",
+						"SNAP: Western Amazonia"
+						]
+				},
 			searchFields: 
 				{
 					"keyword" : "Default",

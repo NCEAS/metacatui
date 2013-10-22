@@ -10,10 +10,15 @@
 		<div class="control-group">
 			<label class="control-label" for="site">*Name</label>
 			<div class="controls">
-				<select name="wg" multiple="multiple" size="5">
-					<option value="SNAP: Coastal Defenses">Coastal Defenses</option>
-					<option value="SNAP: Western Amazonia">Western Amazonia</option>
-				</select>
+				<%
+				_.each(formOptions, function(value, key) {
+					print('<select name="', key, '" multiple="multiple" size="5">');
+					_.each(value, function(element, index) {
+						print('<option value="', element, '">', element, '</option>');
+					});
+					print('</select>');
+				});
+				%>
 			</div>
 		</div>						
     </div>
