@@ -8,31 +8,10 @@ define(['jquery', 'underscore', 'backbone'],
 	var RegistryModel = Backbone.Model.extend({
 		// This model contains additional fields needed for the Registry
 		defaults: {
-			formFields: 
-				{
-					"keyword" : "Default"
-				},
-			// TODO: include in all queries for the given theme	
-			searchFields: 
-				{
-					"keyword" : "*",
-					"originator" : "*"
-				}
-			formOptions:
-				{
-					"wg" : 
-						[
-						"SNAP: Coastal Defenses",
-						"SNAP: Western Amazonia"
-						]
-				},
-			// TODO: potential for driving optional filters for specific WGs	
-			searchOptions:
-				{
-					"origin" : "SNAP: Coastal Defenses",
-					"origin" : "SNAP: Western Amazonia"
-				}
-			
+			formFields: null,
+			searchFields: null,
+			formOptions: null,
+			searchOptions: null
 		}
 		
 	});
