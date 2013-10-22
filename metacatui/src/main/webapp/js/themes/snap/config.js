@@ -12,7 +12,7 @@ var themeMap =
 		'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
 		'templates/registryFields.html' : 'themes/' + theme + '/templates/registryFields.html',
-		'models/RegsitryModel' : 'themes/' + theme + '/models/RegsitryModel',
+		'models/RegistryModel' : 'themes/' + theme + '/models/RegistryModel',
 		'routers/router' : 'themes/' + theme + '/routers/router'
 		}
 };
