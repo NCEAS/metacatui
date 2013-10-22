@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'], 				
-	function($, _, Backbone, Registry, BootStrap) {
+define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templates/registryFields.html'], 				
+	function($, _, Backbone, Registry, BootStrap, RegistryFields) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -8,7 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 
 		el: '#Content',
 		
-		template: null,
+		template: _.template(RegistryFields),
 				
 		registryUrl: null,
 		
@@ -92,6 +92,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 					// this method is defined in the registry script, bound to the "add" button
 					addKeyword();
 				});
+				
+				// add to input form
+				// TODO: use variables for the selection
+				registryEntryForm.find("#collapseBasic").after(this.template());
 				
 			}
 		},
