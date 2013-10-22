@@ -80,10 +80,19 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap'],
 			
 			// if we have the registry form we can add to it
 			if (registryEntryForm.length) {
-				// TOOD: pull from the config
-				registryEntryForm.find("#keyword").attr("value", "DEFAULT");
-				// this method is defined in the registry script, bound to the "add" button
-				addKeyword();
+				// pull from the model configuration
+				var formFields = registryModel.get("formFields");
+				_.each(formFields, function(value, key, list) {
+					// set in the form
+					registryEntryForm.find("#" + key).attr("value", value);
+					//registryEntryForm.find("#keywordType").attr("value", "None");
+					//registryEntryForm.find("#keywordTh").attr("value", "None");
+
+					// add to the form
+					// this method is defined in the registry script, bound to the "add" button
+					addKeyword();
+				});
+				
 			}
 		},
 		
