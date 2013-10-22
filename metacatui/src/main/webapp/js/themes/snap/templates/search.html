@@ -56,11 +56,11 @@
 				<!-- filter by working groups -->
 				<div class="input-append filter-contain row-fluid">
 					<h3 class="nav-header"><i class="icon-user"></i>Working Group</h3>
-					<ul>
+					<ul class="nav nav-list">
 						<%
 						_.each(searchOptions, function(value, key) {
 							print('<li>');
-							print('<a class="keyword-search-link" href="#data/search/', value, '"><i class="halflings-icon search"></i>', key, '</a>');
+							print('<a class="keyword-search-link" href="#data/search/', value, '"><i class="halflings-icon search"></i> ', key, '</a>');
 							print('</li>');
 						});
 						%>
