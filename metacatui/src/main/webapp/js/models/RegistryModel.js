@@ -12,6 +12,12 @@ define(['jquery', 'underscore', 'backbone'],
 				{
 					"keyword" : "Default"
 				},
+			// TODO: include in all queries for the given theme	
+			searchFields: 
+				{
+					"keyword" : "*",
+					"originator" : "*"
+				}
 			formOptions:
 				{
 					"wg" : 
@@ -20,11 +26,13 @@ define(['jquery', 'underscore', 'backbone'],
 						"SNAP: Western Amazonia"
 						]
 				},
-			searchFields: 
+			// TODO: potential for driving optional filters for specific WGs	
+			searchOptions:
 				{
-					"keyword" : "Default",
-					"originator" : "*"
+					"origin" : "SNAP: Coastal Defenses",
+					"origin" : "SNAP: Western Amazonia"
 				}
+			
 		}
 		
 	});
