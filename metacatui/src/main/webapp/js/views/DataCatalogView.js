@@ -126,6 +126,8 @@ define(['jquery',
 					this.showFilter(categories[i], thisTerm[x]);
 				}
 			}			
+			// the additional fields
+			this.showAdditionalCriteria();
 			
 			// Register listeners; this is done here in render because the HTML
 			// needs to be bound before the listenTo call can be made
@@ -488,8 +490,25 @@ define(['jquery',
 			return;
 		},
 		
-		//Removes a specific filter term from the searchModel
-		additionalCriteria : function(e){			
+		// highlights anything additional that has been selected
+		showAdditionalCriteria: function() {
+			
+			// style the selection			
+			$(".keyword-search-link").each(function(index, targetNode){
+				$(targetNode).removeClass("active");
+				var dataCategory = $(targetNode).attr("data-category");
+				var dataTerm = $(targetNode).attr("data-term");
+				var terms = searchModel.get(dataCategory);
+				if (_.contains(terms, dataTerm)) {
+					$(targetNode).addClass("active");
+				}
+
+			});
+			
+		},
+		
+		// add additional criteria to the search model based on link click
+		additionalCriteria: function(e){			
 			// Get the clicked node
 			var targetNode = $(e.target);
 			
@@ -505,7 +524,7 @@ define(['jquery',
 			var category = targetNode.attr('data-category');
 			
 			// Add this criteria to the search model
-			searchModel.set(category, term);
+			searchModel.set(category, [term]);
 			
 			// Trigger the search
 			this.triggerSearch();
