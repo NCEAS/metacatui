@@ -19,7 +19,8 @@ define(['jquery', 'underscore', 'backbone'],
 			resultsYearMax: 2013, //The maximum year of all search results
 			pubYear: false,
 			dataYear: false,
-			sortOrder: 'dateUploaded+desc'
+			sortOrder: 'dateUploaded+desc',
+			additionalCriteria: []
 		},
 		
 		clear: function() {

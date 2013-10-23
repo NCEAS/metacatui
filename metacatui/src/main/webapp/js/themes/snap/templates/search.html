@@ -60,7 +60,7 @@
 						<%
 						_.each(searchOptions, function(value, key) {
 							print('<li>');
-							print('<a class="keyword-search-link" href="#data/search/', value, '"><i class="halflings-icon search"></i> ', key, '</a>');
+							print('<a href="" class="keyword-search-link" data-category="additionalCriteria" data-term="', value, '"><i class="halflings-icon search"></i> ', key, '</a>');
 							print('</li>');
 						});
 						%>

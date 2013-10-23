@@ -46,7 +46,9 @@ define(['jquery',
 			                   'click #data_year' : 'updateYearRange', 
 						   'click .remove-filter' : 'removeFilter',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
-							   'click #clear-all' : 'resetFilters'
+							   'click #clear-all' : 'resetFilters',
+					 'click .keyword-search-link' : 'additionalCriteria'
+
 		},
 		
 		initialize: function () {
@@ -232,6 +234,12 @@ define(['jquery',
 			var taxon = searchModel.get('taxon');
 			for(var i=0; i < taxon.length; i++){
 				query += "*" + taxon[i].trim() + "*";
+			}
+			
+			// Additional criteria - both field and value are provided
+			var additionalCriteria = searchModel.get('additionalCriteria');
+			for (var i=0; i < additionalCriteria.length; i++){
+				query += additionalCriteria[i];
 			}
 			
 			//Year
@@ -477,7 +485,7 @@ define(['jquery',
 		//Removes a specified filter from the search model
 		removeFromModel : function(category, term){			
 			//Remove this filter term from the searchModel
-			if(category){
+			if (category){
 				//Get the current filter terms array
 				var currentTerms = searchModel.get(category);
 				//Remove this filter term from the array
@@ -500,6 +508,33 @@ define(['jquery',
 			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));
 				
 			return;
+		},
+		
+		//Removes a specific filter term from the searchModel
+		additionalCriteria : function(e){			
+			// Get the clicked node
+			var targetNode = $(e.target);
+			
+			// style the selection
+			$(".keyword-search-link").removeClass("active");
+			targetNode.addClass("active");
+			
+			// Get the filter criteria
+			var term = targetNode.attr('data-term');
+			console.log('applying additional criteria '+ term);
+			
+			// Find this element's category in the data-category attribute
+			var category = targetNode.attr('data-category');
+			
+			// Add this criteria to the search model
+			searchModel.set(category, term);
+			
+			// Trigger the search
+			this.triggerSearch();
+			
+			// prevent default action of click
+			return false;
+
 		},
 
 		updateStats : function() {
