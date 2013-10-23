@@ -381,7 +381,7 @@ define(['jquery',
 			    min: minResultsVal,			//sets the minimum on the UI slider on initialization
 			    max: maxResultsVal, 		//sets the maximum on the UI slider on initialization
 			    values: [ minVal, maxVal ], //where the left and right slider handles are
-			    slide: function( event, ui ) {
+			    stop: function( event, ui ) {
 			      // When the slider is changed, update the input values
 			      $('#min_year').val(ui.values[0]);
 			      $('#max_year').val(ui.values[1]);
