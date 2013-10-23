@@ -270,28 +270,6 @@ define(['jquery',
 			return false;
 		},
 		
-		// TODO: handle compound searches like most recent+keyword (and others in the future)
-		showRecent: function () {
-			console.log('showing recent');
-			
-			// search last month
-			var dateQuery = "dateUploaded: [NOW-1MONTH/DAY TO *]";
-			
-			// replace current search term with date query
-			appModel.set('searchTerm', dateQuery);
-			
-			// show the results, at the start page
-			this.showResults();
-			
-			// update links
-			this.$(".popular-search-link").removeClass("sidebar-item-selected");
-			this.$("#recent_link").addClass("sidebar-item-selected");
-			
-			// don't want the link to be followed
-			return false;
-			
-		},
-		
 		updateTextFilters : function(e){
 			//Get the search/filter category
 			var category = $(e.target).attr('data-category');
