@@ -12,6 +12,8 @@
 700 Bold
 */
 
+@import url(http://fonts.googleapis.com/css?family=Lato:400);
+
 /* Body CSS
 -------------------------------------------------- */
     html, body {
@@ -22,24 +24,37 @@
     
     body {
       color: #3C4043;
-      background-color: #f3f3f1;
+      background-color: #eae7e3;
       font: 400 1.1em/1.5em "PT Serif", "Georgia", "serif";
     }
     
 	h3 {
 		font: 400 24.5px/40px "PT Serif", Georgia, serif;
+		color: #6c7578;
+		font-style: italic;
 	}
 	
 	h2{
 		font: 400 27.5px/40px "PT Serif", Georgia, serif;
+		color: #6c7578;
+		font-style: italic;
 	}
 	
     
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
-      display:block;   
+      display:block; 
+      overflow: visible;  
     }
 
-
+	section{
+		display: block;
+		width: 100%;
+		overflow: visible;
+		position: relative;
+		background-color: #eae7e3;
+		word-break: break-word;
+		padding-top: 20px;
+	}
 
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -84,6 +99,14 @@
     	clear: both;
     }
     
+    .left{
+    	float: left;
+    }
+    
+    .inline{
+    	display: inline;
+    }
+    
     .italic{
     	font-style: italic;
     }
@@ -96,7 +119,26 @@
       margin: 35px auto auto auto;
     }
 
-    
+ /* HEADER
+-------------------------------------------------- */ 
+header{
+	min-height: 35%;
+	width: 100%;
+	overflow: hidden;
+	position: relative;	
+}
+   
+#bg_image{
+    	height: 100%;
+    	width: 100%;
+   		background-repeat: no-repeat;
+   		background-position: center;
+   		background-size: cover;
+   		position: absolute;
+   		top: 0;
+   		z-index: 0;
+}
+
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 
 	.controls-well {
@@ -120,6 +162,7 @@
 		/*To hide the drop-down arrow in Firefox */
 		text-indent: 0.01px;
 		text-overflow: '';
+		font-family: "PT Serif";
 	}
 	
 	#results-header .select > i{
@@ -129,13 +172,7 @@
 	.input-append{
 		font-size: 1em;
 	}
-	
 
-/* CUSTOMIZE THE ACCORDIAN 
--------------------------------------------------- */
-.accordion-heading a.accordion-toggle {
-	display: inline-block; 
-} 
 
 /* SHARE/UPLOAD, AND LOGIN FEATURES 
 * Choose to hide these features
@@ -192,6 +229,12 @@
       color: #FDFDFD;
     }
     
+    footer a{
+    	color: #FFFFFF;
+    	font-weight: bold;
+    }
+    
+    
     footer#Footer ul.helpitems {
       list-style: none;
     }
@@ -210,8 +253,72 @@
     }
     
 
-    footer#Footer img {
+    footer img {
       opacity: .75;
+    }
+    
+    footer img:hover{
+    	opacity: 1;
+    }
+    
+    footer a.knb{
+		color: #D9D9D9;
+		font: 400 40px "Lato";
+		line-height: 55px;
+		letter-spacing: -3px;
+		text-align: center;
+    }
+    
+    footer a.knb:hover{
+    	color: #FFFFFF;
+    	text-decoration: none;
+    }
+    
+    
+    a.social{
+    	display: inline-block;
+    	padding: 0 0 0 20px;
+    }
+    
+    a.gplus{
+    	background: url(../img/icon-gplus.png) no-repeat 2px 3px;
+    	margin-left: 4px;
+    }
+    
+    a.facebook{
+    	background: url(../img/icon-facebook.png) no-repeat 0 3px;
+    }
+    
+    a.twitter{
+    	background: url(../img/icon-twitter.png) no-repeat 0 3px;
+    	margin-left: 5px;
+    }
+    
+    a.cgi,
+    a img.cgi{
+    	opacity: 1;
+    	display: block;
+    	float: left;
+    	margin-right: 20px;
+    }
+    
+    .footer-left{
+    	width: 275px;
+    	float: left;
+    	margin-right: 20px;
+    }
+    
+    .footer-middle{
+    	display: block;
+    	float: left;
+    	max-width: 400px;
+    	margin-right: 10px;
+    }
+    
+    .footer-right{
+    	display: block;
+    	float: left;
+    	max-width: 275px;
     }
     
     
@@ -274,20 +381,9 @@
       opacity: 1;
     }
    
-/* HEADER
--------------------------------------------------- */
-  header{
-  	height: 200px;
-  } 
+    
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
-
-
-    #bg_image{
-    	height: 150px;
-    	width: 100%;
-   		background-repeat: repeat-x;
-    }
     
     ul.nav{
     	height: 100%;
@@ -344,6 +440,7 @@
     #Navbar .dropdown-menu:after{
     	left: 80%;
     }
+    
     
     #Navbar .dropdown-menu > li > a:hover{
     	background-color: transparent;
@@ -493,34 +590,32 @@
      	display: block;
      	position: fixed;
      	top: 0px;
-     	color: #FFFFFF;
-     	font-size: 1.2em;
      	background-color: rgba(0,0,0,0.2);
-     	padding: 5px;
-     	width: 110px;
-     	height: 20px;
+     	padding: 10px 0px 0px 10px;
+     	width: 85px;
+     	height: 30px;
      	-webkit-transition: all 0.1s ease-out;
      	-moz-transition: all 0.1s ease-out;
      	-ms-transition: all 0.1s ease-out;
      	-o-transition: all 0.1s ease-out;
      	transition: all 0.1s ease-out;
+     	cursor: pointer;
      }
      
      #sidr-click span{
-     background-image: url('../img/logo-menu1.png');
+     	background-image: url('../img/logo-menu.png');
      	background-repeat: no-repeat;
-     	background-position: center -20px;
-     	width: 110px;
-     	height: 20px;
+     	background-position: center -13px;
+     	width: 73px;
+     	height: 26px;
      	position: relative;
      	display: block;
      	overflow: hidden;
-     	
      }
      
      #sidr-click span:hover,
      #sidr-click:hover span{
-     	background-position: center 0px;
+     	background-position: center 3px;
      }
      
      #sidr-click:hover{
@@ -580,6 +675,11 @@
 		font-size: .8em;
 		line-height: 1.2em;
 	}
+	
+	    #Content .dropdown-menu > li > a.btn{
+    	background-color: #FFFFFF;
+    	font-size: 1em;
+    }
     
 /* Registry CSS
 -------------------------------------------------- */
@@ -615,28 +715,30 @@
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-    #sidebar {
-      min-height: 400px;
-    } 
     
-    .filter-contain{
-   	  margin-bottom: 25px;
+    #sidebar{
+    
+    }
+    
+    #sidebar > .filter-contain > .row-fluid {
+   	  margin-bottom: 30px;
    }
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
-    	background-color: transparent;
+    	background-color: #333333;
     	background-image: none;
-    	color: #555555;
+    	color: #FFFFFF;
     	border-radius: 0px;
     	-moz-border-radius: 0px;
     	-webkit-border-radius: 0px;
-    	border: 1px solid #999999;
-    	border-left: 0px;
+    	border: 1px solid #000000;
     	height: 30px;
     	display: inline-block;
-    	margin-left: -2%;
+    	margin-left: -3%;
     	width: 20%;
+    	padding: 0px;
+    	vertical-align: top;
     }
     
     .filter.btn > i{
@@ -646,7 +748,7 @@
     }
     
     .filter.btn > i:hover{
-    	color: #3399CC;
+    	color: #FFFFFF;
     }
     
     /*-- Inputs for search filters --*/
@@ -657,12 +759,29 @@
     	border: 1px solid #999999;
     	border-right: 0px;
     	height: 20px;
-    	background-color: transparent;
+    	background-color: #FFFFFF;
     	background-image: none;
     	font: 400 0.8em/20px "PT Serif", Georgia, serif;
     	width:80%;
+    	padding: 0 0 0 2%;
+    	height: 29px;
+    	vertical-align: top;
+    	float: left;
     }
-
+    
+	#filter-year input.filter[type="checkbox"]{
+		width: 15px;
+		height: 20px;
+		min-height: 20px;
+		margin-top: 0px;
+		font-size: 13px;
+	}
+	
+	input.filter[type="checkbox"]{
+		min-height: 20px;
+		height: 20px;
+	}
+	
 	/*-- The 'Year' filter elements --*/
     #filter-year label{
    		min-height: 18px;
@@ -678,6 +797,7 @@
    		border: 0px;
    		text-align: right;
    		min-height: 2em;
+   		width: 60px;
    		-webkit-appearance: none;
    		box-shadow: none;
    		top: -5px;
@@ -726,11 +846,12 @@
     .ui-slider-handle{
     	border: 1px solid #999999;
     	background-color: #EFEFEF;
-    	top: -0.4em;
+    	top: -6px;
+    	margin-left: -3px;
     	position: absolute;
     	z-index: 2;
-    	width: 1.2em;
-    	height: 1.2em;
+    	width: 15px;
+    	height: 15px;
     	cursor: default;
     	border-radius: 1.2em;
     	-moz-border-radius: 1.2em;
@@ -784,44 +905,52 @@
     
 	
     /*-- Headers in sidebar --*/
-    h2.nav-header {    
+    h2 {    
       display: block;
       padding: 0px;
       margin: 0px;
-      font-size: 1em;
-      font-style: italic;
+      font-size: 1.66em;
+      line-height:1.36em;
+      color: #393f41;
+      font-style: normal;
+      font-weight: normal;
       font-family: "PT Serif", Georgia, serif;
       color: inherit;
       text-transform: none;
     }
     
-    h3.nav-header{
-    	margin: 20px 0px 5px 0px;
+
+    h3{
     	text-transform: none;
     	display: block;
-    	padding: 0px;
-    	font-size: 1em;
-    	font-family: "Open Sans", Arial, sans-serif;
-    	color: inherit;
+    	font-family: "PT Serif", Georgia, serif;
+    	font-weight: normal;
+    	font-style: italic;
+    	font-size: 0.9em;
+    	line-height: 1.7em;
+    	margin-bottom: 0px;
+    	margin-top: 0px;
+    	color: #6c7578;   	
+    } 
+    
+    .filter-contain h3{
+    
+          display: block;
+      padding: 0px;
+      margin: 0px 0px 5px 0px;
+      font-size: 1em;
+      line-height:1.36em;
+      color: #393f41;
+      font-style: normal;
+      font-weight: normal;
+      font-family: "PT Serif", Georgia, serif;
+      color: inherit;
+      text-transform: none;
     }
-    
-    
-    h3.nav-header > label{
-    	display: inline-block;
-    }
-    
-    h3.nav-header > input{
-    	height: 20px;
-    }
-    
-    .nav-header > i{
+       
+
+    .filter-contain h3 > i{
     	margin-right: 5px;
-    	font-size: 23px;
-    }
-    
-    li.nav-header{
-    	text-transform: none;
-		color: #7F7F7F;
     }
     
     /*-- Your Collections area --*/
@@ -859,7 +988,7 @@
     }
     
     #sidebar_share:hover{
-    	color: #B7B325;
+    	color: #0F375E;
     }
     
     
@@ -897,15 +1026,12 @@
     .result-row {
       display: block;
       padding: 5px 10px;
+      background-color: #FFFFFF;
+      border-top: 4px solid #789a01;
+      box-shadow: 0 0 15px 5px rgba(50,50,50,0.2);
+      margin-top:10px;
     }
-    
-    .result-row:nth-child(odd){
-    	background-color: rgba(255, 255, 255, 0.5);
-    }
-    
-    .result-row:nth-child(even){
-    	background-color: transparent;
-    }
+
     
     .result-row:hover { 
     background-color: #FDFDFD;
@@ -926,6 +1052,11 @@
 
     .result-author {
       font-weight: bold;
+    }
+    
+    .result-id{
+    	font-style: italic;
+    	color: #6C7578;
     }
     
     .pagination {
