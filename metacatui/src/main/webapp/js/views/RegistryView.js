@@ -148,12 +148,14 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			this.showProgressBar();
 			
 			// ajax call to submit the given form and then render the results in the content area
+			var viewRef = this;
 			var contentArea = this.$el;
 			$.post(
 					this.registryUrl,
 					formData,
 					function(data, textStatus, jqXHR) {
 						contentArea.html(data);
+						viewRef.augementForm();
 					}
 			);
 			
