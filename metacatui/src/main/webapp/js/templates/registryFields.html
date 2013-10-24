@@ -1,1 +1,18 @@
 <!-- Form elements to be added after rendering -->
+<div class="accordion-heading">
+	<a class="accordion-toggle" data-toggle="collapse" data-target="#collapseExtra" href="#none">
+		Organization
+	</a>
+	<a data-toggle="modal" data-target="#myModal" role="button" href="/metacat/cgi-bin/register-dataset.cgi?cfg=metacatui&amp;stage=guide#Organization"><i class="icon-question-sign"></i></a>
+</div>
+<div id="collapseExtra" class="accordion-body collapse in">
+	<div class="accordion-inner">
+		<!--  the INPUT -->
+		<div class="control-group">
+			<label class="control-label" for="site">*Name</label>
+			<div class="controls">
+				<input type="text" name="site"/>
+			</div>
+		</div>						
+    </div>
+</div>
