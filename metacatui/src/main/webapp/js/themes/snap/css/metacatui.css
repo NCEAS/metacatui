@@ -123,6 +123,11 @@
     	font-style: italic;
     }
     
+    .text-info{
+    	font-style: italic;
+    	color: #6c7578;
+    }
+    
     .margin-bottom{
     	margin-bottom: 20px;
     }
@@ -354,19 +359,19 @@ header{
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini, .btn-group > .btn, .btn-group > .dropdown-toggle {
       background-image: none;
       background-repeat: none;
-      background-color: transparent;
+      background-color: #b7b325;
       box-shadow: none;
       -moz-box-shadow: none;
       border-radius: 0px 0px 0px 0px;
       -webkit-border-radius: 0px 0px 0px 0px;
       -moz-border-radius: 0px 0px 0px 0px;
-      border: 0px;
+      border: 1px solid #FFFFFF;
       filter: none;
       font: 700 0.7em/1.5em "Open Sans", Helvetica, Arial, sans-serif;
       text-transform: uppercase;
       font-style: normal;
       text-shadow: none;
-      color: #789a01;
+      color: #FFFFFF;
     }
     
     .btn-group > .btn:last-child,
@@ -844,6 +849,11 @@ header{
 	     -moz-border-radius: inherit;
 	          border-radius: inherit;
 	}    
+	
+	.accordion-heading a.accordion-toggle{
+		display: inline-block;
+		padding: 0px;
+	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
@@ -1298,7 +1308,8 @@ header{
   	}
   	
   	.result-row .icon-caret-down{
-  		font-size: 10px;
+  		font-size: 17px;
+  		margin-left: 5px;
   		color: #AAAAAA;
   	}
   	

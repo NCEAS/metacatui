@@ -29,9 +29,9 @@
          </div>
          
 	    <% if (resourceMap) {
-				print('<span class="btn-group span1 pagination-right">');
+				print('<span class="span1">');
 	
-				print('<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-download-alt"></i><i class="icon-caret-down"></i></a>');
+				print('<a data-toggle="dropdown" href="#"><i class="icon-download-alt"></i><i class="icon-caret-down"></i></a>');
 			        print('<ul class="dropdown-menu">');
 			        var cnt = 1;
 			        _.each(resourceMap, function(resourceMapId) {
@@ -43,8 +43,8 @@
 			        print('</ul></span>');
 			    }
 		    else {
-		    	print('<span class="btn-group span1 pagination-right">');
-				print('<a class=\"btn\" href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a></span>'); 
+		    	print('<span class="span1">');
+				print('<a href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a></span>'); 
 			}
 		%>
 		
