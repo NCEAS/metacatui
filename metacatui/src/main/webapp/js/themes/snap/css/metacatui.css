@@ -130,6 +130,10 @@
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
+    
+    .tooltip{
+    	min-width: 60px;
+    }
 
  /* HEADER
 -------------------------------------------------- */ 
@@ -902,6 +906,7 @@ header{
     	height: 28px;
     	vertical-align: top;
     	float: left;
+    	margin-bottom: 0px;
     }
     
 	#filter-year input.filter[type="checkbox"]{
@@ -926,7 +931,7 @@ header{
     }
    
     #filter-year > input[type="number"]{
-   		color: #824e52;
+   		color: #127180;
    		font-style: italic;
    		background: none;
    		border: 0px;
@@ -975,7 +980,7 @@ header{
     	z-index: 1;
     	display: block;
     	border: 0;
-    	background-color: #824e52;
+    	background-color: #127180;
     }
     
     .ui-slider-handle{
@@ -1004,7 +1009,7 @@ header{
 	
 	.current-filters > li,
 	.current-filters > li[class*="span"]{
-		background-color: #824e52;
+		background-color: #127180;
 		color: #FFFFFF;
 		padding: 0px 5px 0px 5px;
 		border-radius: 2px;
