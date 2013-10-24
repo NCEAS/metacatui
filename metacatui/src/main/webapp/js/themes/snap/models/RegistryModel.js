@@ -21,7 +21,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// Multi-select options inserted into the Registry form for user to select from 	
 			formOptions:
 				{
-					"wg" : 
+					"site" : 
 						[
 						"Coastal Defenses",
 						"Western Amazonia"
