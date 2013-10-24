@@ -756,6 +756,12 @@ header{
     
     }
     
+    #sidebar > .filter-contain,
+    #results-view{
+    	padding: 0 7%;
+    	width: 85%;
+    }
+    
     #sidebar > .filter-contain > .row-fluid {
    	  margin-bottom: 30px;
    }
