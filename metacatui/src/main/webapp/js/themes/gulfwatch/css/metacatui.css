@@ -920,7 +920,8 @@ Normal 400
 
 	/*-- Currently applied filters --*/
 	.current-filters,
-	.current-filters[class*="span"]{
+	.current-filters[class*="span"],
+	a[class*="active"] {
 		list-style: none;
 		color: #FFFFFF;
 		font: 400 14px/14px "Muli", Arial, sans-serif;
@@ -929,7 +930,8 @@ Normal 400
 	}
 	
 	.current-filters > li,
-	.current-filters > li[class*="span"]{
+	.current-filters > li[class*="span"],
+	a[class*="active"] {
 		background-color: #009999;
 		padding-left: 10px;
 		margin-top: 3px;
