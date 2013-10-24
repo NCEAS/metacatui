@@ -83,13 +83,14 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				// pull from the model configuration
 				var formFields = registryModel.get("formFields");
 				_.each(formFields, function(value, key, list) {
+					// check if it exists yet
+					if (registryEntryForm.find("input[name='" + key + "'][value='" + value +"']")) {
+						return;
+					}
 					// set in the form
 					registryEntryForm.find("#" + key).attr("value", value);
-					//registryEntryForm.find("#keywordType").attr("value", "None");
-					//registryEntryForm.find("#keywordTh").attr("value", "None");
 
 					// add to the form
-					// this method is defined in the registry script, bound to the "add" button
 					addKeyword();
 				});
 				
