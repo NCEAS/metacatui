@@ -244,6 +244,12 @@ define(['jquery',
 				query += additionalCriteria[i];
 			}
 			
+			// Theme restrictions from Registry Model
+			var registryCriteria = registryModel.get('searchFields');
+			_.each(registryCriteria, function(value, key, list) {
+				query += value;
+			});
+			
 			//Year
 			//Get the types of year to be searched first
 			var pubYear = searchModel.get('pubYear');
