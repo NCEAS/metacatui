@@ -23,7 +23,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
 			'tools(/:anchorId)'         : 'renderTools',  // tools page
-			'data(/search/:searchTerm)(/page/:page)' : 'renderData',    // data search page
+			'data(/page/:page)'			: 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',    // metadata page
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
 			'logout'                    : 'logout',    // logout the user
@@ -53,11 +53,8 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(toolsView);
 		},
 		
-		renderData: function (searchTerm, page) {
+		renderData: function (page) {
 			console.log('Called UIRouter.renderData()');
-			if (searchTerm) {
-				appModel.set('searchTerm', searchTerm);
-			}
 			appModel.set('page', page);
 			appView.showView(dataCatalogView);
 		},

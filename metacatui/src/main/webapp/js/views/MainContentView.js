@@ -30,8 +30,23 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'],
 		
 		triggerSearch: function() {
 			// alert the model that a search should be performed
-			var searchTerm = $("#search_txt_main").val();		
-			appModel.set('searchTerm', searchTerm);
+			var searchTerm = $("#search_txt_main").val();
+			
+			//Clear the search model to start a fresh search
+			searchModel.clear().set(searchModel.defaults);
+			
+			//Create a new array with the new search term
+			var newSearch = [searchTerm];
+			
+			//Set up the search model for this new term
+			searchModel.set('all', newSearch);
+			
+			// make sure the browser knows where we are going
+			uiRouter.navigate("data", {trigger: true});
+			
+			// ...but don't want to follow links
+			return false;
+			
 		},
 		
 		triggerOnEnter: function(e) {
