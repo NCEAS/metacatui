@@ -8,10 +8,10 @@ define(['jquery', 'underscore', 'backbone'],
 	var RegistryModel = Backbone.Model.extend({
 		// This model contains additional fields needed for the Registry
 		defaults: {
-			formFields: null,
-			searchFields: null,
-			formOptions: null,
-			searchOptions: null
+			formFields: {},
+			searchFields: {},
+			formOptions: {},
+			searchOptions: {}
 		}
 		
 	});
