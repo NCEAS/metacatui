@@ -18,7 +18,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''                          : 'renderData', // the default route
+			''             				: 'routeToData', // the default route
 			'about'                     : 'renderAbout',  // about page
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
@@ -32,6 +32,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'share'                     : 'renderRegistry'    // registry page
 		},
 
+		routeToData: function () {
+			console.log('Called UIRouter.routeToData()');
+			this.navigate("data", {trigger: true});
+		},
+		
 		renderIndex: function (param) {
 			console.log('Called UIRouter.renderIndex()');
 			appView.showView(indexView);
