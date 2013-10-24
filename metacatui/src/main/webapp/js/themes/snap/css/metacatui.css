@@ -40,6 +40,18 @@
 		font-style: italic;
 	}
 	
+	h1{
+		font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+		font-weight: 800;
+		font-size: 1.5em;
+		color: #FFFFFF;
+		line-height: 1.35;
+		margin: 0 0 0.125em 0;
+		-webkit-text-stroke: 0.75px rgba(255, 255, 255, 0.5);
+		text-shadow: 0 0 10px rgba(0,0,0,1);
+	}
+	
+	
     
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block; 
@@ -137,6 +149,12 @@ header{
    		position: absolute;
    		top: 0;
    		z-index: 0;
+}
+
+#bg_image h1{
+	position:absolute;
+	top: 85%;
+	left: 8%;
 }
 
 /* FORM/INPUT CUSTOMIZATIONS
@@ -664,9 +682,15 @@ header{
       transition: all 0.3s ease-out;
 	}
 	
-
-	#downloadPackage > a{
+	#downloadPackage > .btn-group{
+		width: 100%;
+	}
+	
+	#downloadPackage > a,
+	#downloadPackage > .btn-group > a{
 		width: 80%;
+		background-color: #789a01;
+		color: #FFFFFF;
 	}
 	
 	#attributeTabs > li > a{
@@ -676,9 +700,21 @@ header{
 		line-height: 1.2em;
 	}
 	
-	    #Content .dropdown-menu > li > a.btn{
+	 .dropdown-menu > li > a.btn,
+	 .dropdown-menu > li > a{
     	background-color: #FFFFFF;
+    	color: #789a01;
+    	font-family:"Open Sans", Arial, sans-serif;
+    	font-weight: bold;
+    	font-style: normal;
     	font-size: 1em;
+    }
+    
+    .dropdown-menu > li > a.btn:hover,
+    .dropdown-menu > li > a:hover{
+    	background-image: none;
+    	background-color: #789a01;
+ 		color: #FFFFFF;
     }
     
 /* Registry CSS
@@ -722,6 +758,11 @@ header{
     
     #sidebar > .filter-contain > .row-fluid {
    	  margin-bottom: 30px;
+   }
+   
+    #sidebar > .filter-contain > .row-fluid.title {
+   	  margin-bottom: 10px;
+   	  position: relative;
    }
     
     /*-- Search buttons next to text inputs --*/
@@ -979,12 +1020,7 @@ header{
 	/*-- Share Your Data button --*/
     
     #sidebar_share {
-      margin-top: 80px;
-      padding: 8px 0px 8px 0px;
-      border: 0px;
-      background-image: none;
-      background-color: transparent;
-      font: 700 1em/1em "Open Sans", Arial, sans-serif;
+
     }
     
     #sidebar_share:hover{
@@ -998,6 +1034,10 @@ header{
     	cursor: pointer;
     	color: #840C11;
     	font-size: .8em;
+    	min-height: 0.8em;
+    	position: absolute;
+    	bottom: 0px;
+    	right: 0px;
     }
     
     #clear-all > i{
@@ -1026,6 +1066,48 @@ header{
     	color: #166194;
     	cursor: pointer;
     }
+    
+    /* Working Groups */
+    .subset-choice{
+      display: block;
+      padding: 5px 10px;
+      background-color: #FFFFFF;
+      border-top: 4px solid #0B4750;
+      box-shadow: 0 0 15px 5px rgba(50,50,50,0.2);
+      margin-top:10px;
+      position: relative;
+      color: #127180;
+  		font-family: "Open Sans", Arial, sans-serif;
+  		font-style: normal;
+  		font-weight: bold;
+  		font-size: 1em;
+    }
+    
+    .subset-choice:hover { 
+    	background-color: #127180;
+    	border-top: 4px solid #0B4750;
+    	color: #FFFFFF;
+    	text-decoration: none;
+    	font-style: normal;
+    	transition: all 0.3s ease-in-out;
+    	-moz-transition: all 0.3s ease-in-out;
+    	-ms-transition: all 0.3s ease-in-out;
+    	-o-transition: all 0.3s ease-in-out;
+    	-webkit-transition: all 0.3s ease-in-out;
+  	}
+  	
+  	
+  	.subset-choice:hover i{
+  		color: #FFFFFF;
+  		text-decoration: none;
+  	}
+  	
+  	.subset-choice i.icon-caret-right{
+  	    position: absolute;
+  		right: 15px;
+  		top: 50%;
+  		margin-top:-10px;
+  	}
 
 /* RESULT CSS
 -------------------------------------------------- */
@@ -1070,7 +1152,7 @@ header{
 		color: #789a01;
 		font-family: "Open Sans", Helvetica, Arial, sans-serif;
 		font-weight: bold;
-		font-size: 1.44em;
+		font-size: 1.2em;
 		font-style: normal;
 		line-height: 1em;
   	}

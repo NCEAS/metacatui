@@ -29,7 +29,7 @@
          </div>
          
 	    <% if (resourceMap) {
-				print('<div class="btn-group span1 pagination-right">');
+				print('<span class="btn-group span1 pagination-right">');
 	
 				print('<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-download-alt"></i><i class="icon-caret-down"></i></a>');
 			        print('<ul class="dropdown-menu">');
@@ -40,26 +40,15 @@
 						print('</li>'); 
 						 
 					})
-			        print('</ul></div>');
+			        print('</ul></span>');
 			    }
 		    else {
-		    	print('<div class="btn-group span1 pagination-right">');
-				print('<a class=\"btn\" href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a></div>'); 
+		    	print('<span class="btn-group span1 pagination-right">');
+				print('<a class=\"btn\" href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a></span>'); 
 			}
 		%>
 		
 
-<!--
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          Download
-          <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-          <li><a href="#">Add to collection...</a></li>
-          <li class="divider"></li>
-          <li><a href="#">Share...</a></li>
-        </ul>
--->
 
 	<i class="icon-caret-right"></i>
-      </div>
+

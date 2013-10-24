@@ -4,7 +4,23 @@
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
     		<div class="filter-contain row-fluid">
-    			<div class="row-fluid">
+    			<!-- filter by working groups -->
+				<div class="subsets row-fluid">
+						<%
+						_.each(searchOptions, function(value, key) {
+							print('<a href="" class="subset-choice keyword-search-link" data-category="additionalCriteria" data-term="', value, '">', key);
+							print('<i class="icon-caret-right"></i>');
+							print('</span>');
+							print('</a>');
+						});
+						%>
+				</div>
+				
+							<div class="row-fluid">
+				<a id="sidebar_share" href="#share"> <i class="icon-upload icon-white icon-large share-feature"></i>  Share Your Data </a>
+			</div>
+			
+    			<div class="row-fluid title">
 		    		<h2 class="span6">Filter</h2>
 		    		<a class="span4" id="clear-all">Clear filters<i class="icon-remove tooltip-this" data-placement="top" data-title="Reset filters" data-trigger="hover"></i></a>
 				</div>	
@@ -62,37 +78,9 @@
 						</ul>
 					</div>
 				</div>
-				
-				<!-- filter by working groups -->
-				<div class="filter-contain row-fluid">
-					<h3><i class="icon-user"></i>Working Group</h3>
-					<ul class="nav nav-list">
-						<%
-						_.each(searchOptions, function(value, key) {
-							print('<li>');
-							print('<a href="" class="keyword-search-link" data-category="additionalCriteria" data-term="', value, '"><i class="halflings-icon search"></i> ', key, '</a>');
-							print('</li>');
-						});
-						%>
-					</ul>
-				</div>
-				<!--  Coming in next release
-					<div class="filter-contain">
-						<h3 class="nav-header"><i class="icon-map-marker"></i>Location</h3>
-						<input class="span10 filter" type="text" placeholder="Name or coordinates" id="location_input" data-category="location" >
-						<button class="filter btn" id="location_btn" data-category="location"><i class="icon-search"></i></button>
-						<ul id="current-location-filters" class="current-filters" data-category="location">
-						</ul>
-					</div>
+
 				
 				
-				<h2 class="nav-header">Your Collections</h2>
-				<ul class="collections">
-					<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Your Data</a></li>		
-					<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Study</a></li>		
-					<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Collection</a></li>		
-				</ul>
-				-->
 			</div>
 		</aside>
 
