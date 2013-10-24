@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				var formFields = registryModel.get("formFields");
 				_.each(formFields, function(value, key, list) {
 					// check if it exists yet
-					if (registryEntryForm.find("input[name='" + key + "'][value='" + value +"']")) {
+					if (registryEntryForm.find("input[name='" + key + "'][value='" + value +"']").length > 0) {
 						return;
 					}
 					// set in the form
