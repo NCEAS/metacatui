@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// include in ALL queries for this theme, the key is not used, but must be unique
 			searchFields: 
 				{
-					"SNAP" : "+keywords:SNAP"
+					//"SNAP" : "+keywords:SNAP"
 				},
 			// Multi-select options inserted into the Registry form for user to select from 	
 			formOptions:

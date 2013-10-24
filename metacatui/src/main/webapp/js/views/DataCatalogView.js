@@ -455,6 +455,9 @@ define(['jquery',
 			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
 			$("#data_year").prop("checked", searchModel.get("pubYear"));
 			$("#publish_year").prop("checked", searchModel.get("dataYear"));
+			
+			// reset any filter links
+			this.showAdditionalCriteria();
 		
 			//Trigger a new search
 			this.triggerSearch();
