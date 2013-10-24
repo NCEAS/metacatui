@@ -844,10 +844,6 @@ header{
   /* SIDEBAR CSS
   -------------------------------------------------- */
     
-    #sidebar{
-    
-    }
-    
     #sidebar > .filter-contain,
     #results-view{
     	padding: 0 7%;
@@ -1165,6 +1161,10 @@ header{
     	cursor: pointer;
     }
     
+    span[role="status"]{  /** Hide the status from the autocomplete plugin **/
+    	display: none;
+    }
+    
     /* Working Groups */
     .subset-choice{
       display: block;
@@ -1181,7 +1181,8 @@ header{
   		font-size: 1em;
     }
     
-    .subset-choice:hover { 
+    .subset-choice:hover,
+    .subset-choice.active { 
     	background-color: #127180;
     	border-top: 4px solid #0B4750;
     	color: #FFFFFF;
@@ -1199,7 +1200,8 @@ header{
   		color: #FFFFFF;
   		text-decoration: none;
   	}
-  	
+
+  	 
   	.subset-choice i.icon-caret-right{
   	    position: absolute;
   		right: 15px;
