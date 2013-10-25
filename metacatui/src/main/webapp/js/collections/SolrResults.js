@@ -27,6 +27,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			for (var i=0; i<this.facet.length; i++){
 				facetFields += "&facet.field=" + this.facet[i];
 			}
+			// limit to matches
+			if (this.facet.length > 0) {
+				facetFields += "&facet.mincount=1";
+			}
+			
 			//create the query url
 			var endpoint = appModel.get('queryServiceUrl') + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start + "&facet=true" + facetFields;
 			console.log(endpoint);
