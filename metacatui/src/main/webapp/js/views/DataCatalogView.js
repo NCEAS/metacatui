@@ -668,14 +668,31 @@ define(['jquery',
 				//Set up the autocomplete (jQueryUI) feature for each input
 				//For the 'all' filter, use keywords
 				var allSuggestions = appSearchResults.facetCounts.keywords;
+				var viewRef = this;
 				$('#all_input').autocomplete({
-					source: allSuggestions
+					source: allSuggestions,
+					select: function(event, ui) {
+						// set the text field
+						$('#all_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					}
 				});
 				
 				// suggest creator names/organizations
 				var originSuggestions = appSearchResults.facetCounts.origin;
 				$('#creator_input').autocomplete({
-					source: originSuggestions
+					source: originSuggestions,
+					select: function(event, ui) {
+						// set the text field
+						$('#creator_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					}
 				});
 				
 				// suggest taxonomic criteria
@@ -696,7 +713,15 @@ define(['jquery',
 						orderSuggestions, 
 						classSuggestions);
 				$('#taxon_input').autocomplete({
-					source: taxonSuggestions
+					source: taxonSuggestions,
+					select: function(event, ui) {
+						// set the text field
+						$('#taxon_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					}
 				});
 				
 			}
