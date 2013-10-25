@@ -171,7 +171,7 @@ define(['jquery',
 			
 			this.removeAll();
 			
-			appSearchResults.setrows(25);
+			appSearchResults.setrows(10);
 			appSearchResults.setSort(sortOrder);
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
 			
@@ -347,6 +347,9 @@ define(['jquery',
 			//Show the UI filter
 			this.showFilter(category, term);
 			
+			//Route to page 1
+			this.updatePageNumber(0);
+			
 			//Trigger a new search
 			this.triggerSearch();
 		},
@@ -360,6 +363,9 @@ define(['jquery',
 
 			//Update the model
 			searchModel.set(category, state);
+			
+			//Route to page 1
+			this.updatePageNumber(0);
 			
 			//Trigger a new search
 			this.triggerSearch();
@@ -400,6 +406,9 @@ define(['jquery',
 			      //Also update the search model
 			      searchModel.set('yearMin', $('#min_year').val());
 			      searchModel.set('yearMax', $('#max_year').val());
+			      
+					//Route to page 1
+					viewRef.updatePageNumber(0);
 			      
 			      //Trigger a new search
 			      viewRef.triggerSearch();
@@ -453,6 +462,9 @@ define(['jquery',
 			//Hide the filter from the UI
 			this.hideFilter(filterNode);
 			
+			//Route to page 1
+			this.updatePageNumber(0);
+			
 			//Trigger a new search
 			this.triggerSearch();
 
@@ -483,6 +495,9 @@ define(['jquery',
 			
 			// reset any filter links
 			this.showAdditionalCriteria();
+			
+			//Route to page 1
+			this.updatePageNumber(0);
 		
 			//Trigger a new search
 			this.triggerSearch();
