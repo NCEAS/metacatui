@@ -900,8 +900,9 @@ header{
    }
    
     #sidebar > .filter-contain > .row-fluid.title {
-   	  margin-bottom: 10px;
+   	  margin-bottom: 0px;
    	  position: relative;
+   	  font-size: 1.1em;
    }
     
     /*-- Search buttons next to text inputs --*/
@@ -1115,7 +1116,7 @@ header{
     	color: #6c7578;   	
     } 
     
-    .filter-contain h3{
+    .filter-contain .filter-contain h3{
     
           display: block;
       padding: 0px;
