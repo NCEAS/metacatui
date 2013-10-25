@@ -293,7 +293,7 @@ define(['jquery',
 			
 			console.log('query: ' + query);
 			
-			appSearchResults.setFacet(["keywords", "family", "species", "genus", "kingdom", "phylum", "order", "class"]);
+			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class"]);
 			appSearchResults.setQuery(query);
 			
 			// go to the page
@@ -670,6 +670,12 @@ define(['jquery',
 				var allSuggestions = appSearchResults.facetCounts.keywords;
 				$('#all_input').autocomplete({
 					source: allSuggestions
+				});
+				
+				// suggest creator names/organizations
+				var originSuggestions = appSearchResults.facetCounts.origin;
+				$('#creator_input').autocomplete({
+					source: originSuggestions
 				});
 				
 				// suggest taxonomic criteria
