@@ -234,8 +234,33 @@ define(['jquery',
 			
 			//Taxon - just searching the default text field for now until we index taxon
 			var taxon = searchModel.get('taxon');
-			for(var i=0; i < taxon.length; i++){
-				query += "*" + taxon[i].trim() + "*";
+			var thisTaxon = null;
+			for (var i=0; i < taxon.length; i++){
+				//Trim the spaces off
+				thisTaxon = taxon[i].trim();
+				
+				// Is this a phrase?
+				if (phrase(thisTaxon)){
+					thisTaxon = thisTaxon.replace(" ", "%20");
+					thisTaxon = "%22" + thisTaxon + "%22";
+				}
+				
+				query += "+(";
+				query += "family:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "species:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "genus:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "kingdom:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "phylum:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "order:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "class:*" + thisTaxon + "*";
+				query += ")";
+
 			}
 			
 			// Additional criteria - both field and value are provided
