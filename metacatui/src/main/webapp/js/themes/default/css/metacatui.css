@@ -25,6 +25,7 @@ Bold 700
     
     body {
       color: #333333;
+      background: rgba(0, 0, 0, .8);
       font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
       min-height: 100%;
       position: relative;

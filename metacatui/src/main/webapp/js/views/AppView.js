@@ -49,6 +49,16 @@ define(['jquery',
 
 			app.footerView = new FooterView();
 			app.footerView.setElement($('#Footer')).render();
+			
+			// listen for image loading - bind only once in init method
+			var imageEl = $('#bg_image');
+			if ($(imageEl).length > 0) {
+				// only show the image when it is completely done loading
+				$(imageEl).load(function() {
+					console.debug("Showing IMAGE AFTER LOAD()");
+					$(imageEl).fadeIn('slow');
+				});
+			}
 
 		},
 				
@@ -101,20 +111,27 @@ define(['jquery',
 			
 			// Change the background image if there is one
 			var imageEl = $('#bg_image');
-			if($(imageEl).length > 0){
+			if ($(imageEl).length > 0) {
+				
 				var imgCnt = $(imageEl).attr('data-image-count');
-				$(imageEl).fadeOut('fast', function(){
+				
+				// hide the existing image
+				$(imageEl).fadeOut('fast', function() {
+					
 					//Randomly choose the next background image
 					var bgNum = Math.ceil(Math.random() * imgCnt);
 					//If the element is an img, change the src attribute
 					if ($(imageEl).prop('tagName') == 'IMG'){
-						$(imageEl).attr('src', './js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg');							
+						$(imageEl).attr('src', './js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg');
+						// note the load() callback will show this image for us
 					}
-					else{ //Otherwise, change the background image style property
+					else { 
+						//Otherwise, change the background image style property
 						$(imageEl).css('background-image', 'url(\'./js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg\')');
+						$(imageEl).fadeIn('slow');
 					}
+					
 				});
-				$(imageEl).fadeIn('slow');
 			}
 			
 			// close the current view
