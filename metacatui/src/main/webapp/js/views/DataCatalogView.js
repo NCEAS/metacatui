@@ -234,8 +234,33 @@ define(['jquery',
 			
 			//Taxon - just searching the default text field for now until we index taxon
 			var taxon = searchModel.get('taxon');
-			for(var i=0; i < taxon.length; i++){
-				query += "*" + taxon[i].trim() + "*";
+			var thisTaxon = null;
+			for (var i=0; i < taxon.length; i++){
+				//Trim the spaces off
+				thisTaxon = taxon[i].trim();
+				
+				// Is this a phrase?
+				if (phrase(thisTaxon)){
+					thisTaxon = thisTaxon.replace(" ", "%20");
+					thisTaxon = "%22" + thisTaxon + "%22";
+				}
+				
+				query += "+(";
+				query += "family:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "species:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "genus:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "kingdom:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "phylum:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "order:*" + thisTaxon + "*";
+				query += " OR ";
+				query += "class:*" + thisTaxon + "*";
+				query += ")";
+
 			}
 			
 			// Additional criteria - both field and value are provided
@@ -268,7 +293,7 @@ define(['jquery',
 			
 			console.log('query: ' + query);
 			
-			appSearchResults.setFacet(["keywords"]);
+			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class"]);
 			appSearchResults.setQuery(query);
 			
 			// go to the page
@@ -646,6 +671,34 @@ define(['jquery',
 				$('#all_input').autocomplete({
 					source: allSuggestions
 				});
+				
+				// suggest creator names/organizations
+				var originSuggestions = appSearchResults.facetCounts.origin;
+				$('#creator_input').autocomplete({
+					source: originSuggestions
+				});
+				
+				// suggest taxonomic criteria
+				var familySuggestions = appSearchResults.facetCounts.family;
+				var speciesSuggestions = appSearchResults.facetCounts.species;
+				var genusSuggestions = appSearchResults.facetCounts.genus;
+				var kingdomSuggestions = appSearchResults.facetCounts.kingdom;
+				var phylumSuggestions = appSearchResults.facetCounts.phylum;
+				var orderSuggestions = appSearchResults.facetCounts.order;
+				var classSuggestions = appSearchResults.facetCounts["class"];
+				
+				var taxonSuggestions = _.union(
+						familySuggestions, 
+						speciesSuggestions, 
+						genusSuggestions, 
+						kingdomSuggestions, 
+						phylumSuggestions, 
+						orderSuggestions, 
+						classSuggestions);
+				$('#taxon_input').autocomplete({
+					source: taxonSuggestions
+				});
+				
 			}
 			/*//Get the facet counts from the search results			
 			//Set up the autocomplete (jQueryUI) feature for each input

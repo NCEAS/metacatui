@@ -23,9 +23,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		
 		url: function() {
 			//Convert facet keywords to a string
-			var facetFields = null;
+			var facetFields = "";
 			for (var i=0; i<this.facet.length; i++){
-				facetFields = "&facet.field=" + this.facet[i];
+				facetFields += "&facet.field=" + this.facet[i];
 			}
 			//create the query url
 			var endpoint = appModel.get('queryServiceUrl') + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start + "&facet=true" + facetFields;
