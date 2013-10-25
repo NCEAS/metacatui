@@ -32,26 +32,26 @@
    
       	
 		<% if (resourceMap) {
-				//print('<a class=\"btn\" href=\"', package_service, resourceMap[0], '\"><i class="icon-arrow-down"></i> Download</a>');
+				//print('<a href=\"', package_service, resourceMap[0], '\"><i class="icon-download-alt"></i><i class="icon-arrow-down"></i></a>');
 				// handle multiple resourceMaps
 				print('<i class="span1 icon-folder-open has-data" data-trigger="hover" data-title="Includes data" data-placement="top"></i>');
 		
-				print('<div class="btn-group span1 pagination-right">');
+				print('<div class="span1 download">');
 	
-				print('<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-download-alt"></i><span class="icon-caret-down"></span></a>');
+				print('<a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-download-alt"></i><i class="icon-caret-down"></i></a>');
 			        print('<ul class="dropdown-menu">');
 			        var cnt = 1;
 			        _.each(resourceMap, function(resourceMapId) {
 						print('<li>');
-						print('<a class="btn" href="', package_service, resourceMapId, '" title="', resourceMapId ,'" >', 'Package ', cnt, '</a>');
+						print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" >', 'Package ', cnt, '</a>');
 						print('</li>'); 
 						 
 					})
 			        print('</ul>');
 			    }
 		    else {
-		    	print('<div class="btn-group span1 offset1 pagination-right">');
-				print('<a class=\"btn\" href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a>'); 
+		    	print('<div class="span1 offset1">');
+				print('<a href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a>'); 
 			}
 		%>
 <!--

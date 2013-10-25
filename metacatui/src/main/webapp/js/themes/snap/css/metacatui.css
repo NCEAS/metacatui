@@ -1021,11 +1021,11 @@ header{
 	.current-filters > li[class*="span"]{
 		background-color: #127180;
 		color: #FFFFFF;
-		padding: 0px 5px 0px 5px;
-		border-radius: 2px;
-		-moz-border-radius: 2px;
-		-webkit-border-radius: 2px;
-		min-height: 1em;
+		padding: 0px 2px 0px 5px;
+		border-radius: 0px;
+		-moz-border-radius: 0px;
+		-webkit-border-radius: 0px;
+		min-height: 0.9em;
 		width: auto;
 		max-width: 100%;
 		margin: 5px 5px 0px 0px;
@@ -1043,6 +1043,7 @@ header{
 		float: right;
 		line-height: 1.5em;
 		font-size: 1em;
+		color: #42A2B1;
 	}
 	
 	.current-filters > li > i:hover{
@@ -1165,10 +1166,20 @@ header{
     	border: 1px solid #999999;
     	padding: 10px;
     	list-style: none;
+    	overflow-y: scroll;
+    	max-height: 250px;
+    }
+    
+    li.ui-menu-item{
+    	width: 245px;
+    	overflow: hidden;
+    	white-space: nowrap;
+    	text-overflow: ellipsis;
     }
     
     li.ui-menu-item > a{
     	color: #555555;
+    	width: 245px;
     }
     
     li.ui-menu-item > a:hover{
@@ -1307,10 +1318,23 @@ header{
   		font-size: 30px;
   	}
   	
+  	
   	.result-row .icon-caret-down{
   		font-size: 17px;
   		margin-left: 5px;
   		color: #AAAAAA;
+  	}
+  	
+  	.result-row .download{
+  		position: relative;
+  	}
+  	
+  	.result-row .download:hover i{
+  		text-decoration: none;
+  	}
+  	
+  	  	.result-row .dropdown-menu{
+  		left: -100%;
   	}
   	
     .result-row .btn > .icon-caret-down {

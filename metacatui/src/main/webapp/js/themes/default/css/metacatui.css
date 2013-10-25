@@ -775,6 +775,8 @@ Bold 700
 		float: right;
 		line-height: 1.5em;
 		font-size: 1em;
+		color: #FFFFFF; /*IE fallback */
+		color: rgba(22, 97, 148, 0.5);
 	}
 	
 	.current-filters > li > i:hover{
@@ -881,11 +883,21 @@ Bold 700
     	border: 1px solid #999999;
     	padding: 10px;
     	list-style: none;
+    	overflow-y: scroll;
+    	max-height: 250px;
+    }
+    
+    li.ui-menu-item{
+    	width: 245px;
+    	overflow: hidden;
+    	white-space: nowrap;
+    	text-overflow: ellipsis;
     }
     
     li.ui-menu-item > a{
     	color: #555555;
     	font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;
+    	width: 245px;
     }
     
     li.ui-menu-item > a:hover{
@@ -936,6 +948,26 @@ Bold 700
     .result-author {
       font-weight: bold;
     }
+    
+    .result-row .icon-download-alt{
+    	font-size: 18px;
+    }
+    
+    .result-row .icon-caret-down{
+    	font-size: 15px;
+    }
+    
+    .result-row .download{
+  		position: relative;
+  	}
+  	
+  	.result-row .download:hover i{
+  		text-decoration: none;
+  	}
+  	
+  	.result-row .dropdown-menu{
+  		left: -100%;
+  	}
     
     .pagination {
     	cursor: pointer;

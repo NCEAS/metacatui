@@ -1040,11 +1040,21 @@ Normal 400
     	border: 1px solid #999999;
     	padding: 10px;
     	list-style: none;
+    	overflow-y: scroll;
+    	max-height: 250px;
+    }
+    
+    li.ui-menu-item{
+    	width: 245px;
+    	overflow: hidden;
+    	white-space: nowrap;
+    	text-overflow: ellipsis;
     }
     
     li.ui-menu-item > a{
     	color: #555555;
     	font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;
+    	width: 245px;
     }
     
     li.ui-menu-item > a:hover{
@@ -1082,17 +1092,31 @@ Normal 400
       font-weight: bold;
     }
     
-    .result-row .btn > .icon-caret-down {
-    	margin-left: 5px;
-    	font-size: 16px;
+    .result-row .icon-caret-down {
+    	font-size: 15px;
     } 
+    .result-row .icon-download-alt {
+    	font-size: 18px;
+    }
     
-    .result-row .btn-group .has-data{
+    .result-row .has-data{
     	color: #555555;
     	font-size: 18px;
     	position: relative;
     	left: -15px;
     }
+    
+    .result-row .download{
+    	position: relative;
+    }
+    
+    .result-row .download:hover i{
+    	text-decoration: none;
+    }
+    
+    .result-row .dropdown-menu{
+  		left: -100%;
+  	}
     
     .pagination {
     	cursor: pointer;
