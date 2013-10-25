@@ -293,7 +293,7 @@ define(['jquery',
 			
 			console.log('query: ' + query);
 			
-			appSearchResults.setFacet(["keywords"]);
+			appSearchResults.setFacet(["keywords", "family", "species", "genus", "kingdom", "phylum", "order", "class"]);
 			appSearchResults.setQuery(query);
 			
 			// go to the page
@@ -671,6 +671,28 @@ define(['jquery',
 				$('#all_input').autocomplete({
 					source: allSuggestions
 				});
+				
+				// suggest taxonomic criteria
+				var familySuggestions = appSearchResults.facetCounts.family;
+				var speciesSuggestions = appSearchResults.facetCounts.species;
+				var genusSuggestions = appSearchResults.facetCounts.genus;
+				var kingdomSuggestions = appSearchResults.facetCounts.kingdom;
+				var phylumSuggestions = appSearchResults.facetCounts.phylum;
+				var orderSuggestions = appSearchResults.facetCounts.order;
+				var classSuggestions = appSearchResults.facetCounts["class"];
+				
+				var taxonSuggestions = _.union(
+						familySuggestions, 
+						speciesSuggestions, 
+						genusSuggestions, 
+						kingdomSuggestions, 
+						phylumSuggestions, 
+						orderSuggestions, 
+						classSuggestions);
+				$('#taxon_input').autocomplete({
+					source: taxonSuggestions
+				});
+				
 			}
 			/*//Get the facet counts from the search results			
 			//Set up the autocomplete (jQueryUI) feature for each input
