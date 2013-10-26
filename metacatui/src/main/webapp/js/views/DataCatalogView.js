@@ -683,9 +683,13 @@ define(['jquery',
 				//Set up the autocomplete (jQueryUI) feature for each input
 				//For the 'all' filter, use keywords
 				var allSuggestions = appSearchResults.facetCounts.keywords;
+				var rankedSuggestions = new Array();
+				for (var i=0; i < allSuggestions.length-1; i+=2) {
+					rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + ")"});
+				}
 				var viewRef = this;
 				$('#all_input').autocomplete({
-					source: allSuggestions,
+					source: rankedSuggestions,
 					select: function(event, ui) {
 						// set the text field
 						$('#all_input').val(ui.item.value);
@@ -698,8 +702,12 @@ define(['jquery',
 				
 				// suggest creator names/organizations
 				var originSuggestions = appSearchResults.facetCounts.origin;
+				var rankedOriginSuggestions = new Array();
+				for (var i=0; i < originSuggestions.length-1; i+=2) {
+					rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
+				}
 				$('#creator_input').autocomplete({
-					source: originSuggestions,
+					source: rankedOriginSuggestions,
 					select: function(event, ui) {
 						// set the text field
 						$('#creator_input').val(ui.item.value);
@@ -719,16 +727,21 @@ define(['jquery',
 				var orderSuggestions = appSearchResults.facetCounts.order;
 				var classSuggestions = appSearchResults.facetCounts["class"];
 				
-				var taxonSuggestions = _.union(
-						familySuggestions, 
-						speciesSuggestions, 
-						genusSuggestions, 
-						kingdomSuggestions, 
-						phylumSuggestions, 
-						orderSuggestions, 
-						classSuggestions);
+				var taxonSuggestions = [];
+				
+				taxonSuggestions = taxonSuggestions.concat(familySuggestions); 
+				taxonSuggestions = taxonSuggestions.concat(speciesSuggestions);
+				taxonSuggestions = taxonSuggestions.concat(genusSuggestions);
+				taxonSuggestions = taxonSuggestions.concat(kingdomSuggestions); 
+				taxonSuggestions = taxonSuggestions.concat(phylumSuggestions);
+				taxonSuggestions = taxonSuggestions.concat(orderSuggestions);
+				taxonSuggestions = taxonSuggestions.concat(classSuggestions);
+				var rankedTaxonSuggestions = new Array();
+				for (var i=0; i < taxonSuggestions.length-1; i+=2) {
+					rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
+				}
 				$('#taxon_input').autocomplete({
-					source: taxonSuggestions,
+					source: rankedTaxonSuggestions,
 					select: function(event, ui) {
 						// set the text field
 						$('#taxon_input').val(ui.item.value);
