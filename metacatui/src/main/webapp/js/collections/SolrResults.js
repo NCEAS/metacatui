@@ -29,7 +29,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			}
 			// limit to matches
 			if (this.facet.length > 0) {
-				facetFields += "&facet.mincount=1";
+				facetFields += "&facet.mincount=1"; // only facets meeting the current search
+				facetFields += "&facet.limit=-1"; // CAREFUL: -1 means no limit on the number of facets
 			}
 			
 			//create the query url

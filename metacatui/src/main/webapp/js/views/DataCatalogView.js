@@ -728,14 +728,15 @@ define(['jquery',
 				var classSuggestions = appSearchResults.facetCounts["class"];
 				
 				var taxonSuggestions = [];
-				
-				taxonSuggestions = taxonSuggestions.concat(familySuggestions); 
-				taxonSuggestions = taxonSuggestions.concat(speciesSuggestions);
-				taxonSuggestions = taxonSuggestions.concat(genusSuggestions);
-				taxonSuggestions = taxonSuggestions.concat(kingdomSuggestions); 
-				taxonSuggestions = taxonSuggestions.concat(phylumSuggestions);
-				taxonSuggestions = taxonSuggestions.concat(orderSuggestions);
-				taxonSuggestions = taxonSuggestions.concat(classSuggestions);
+				taxonSuggestions = 
+					taxonSuggestions.concat(
+						familySuggestions, 
+						speciesSuggestions, 
+						genusSuggestions, 
+						kingdomSuggestions,
+						phylumSuggestions,
+						orderSuggestions,
+						classSuggestions);
 				var rankedTaxonSuggestions = new Array();
 				for (var i=0; i < taxonSuggestions.length-1; i+=2) {
 					rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
