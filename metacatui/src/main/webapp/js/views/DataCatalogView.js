@@ -296,6 +296,15 @@ define(['jquery',
 			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class"]);
 			appSearchResults.setQuery(query);
 			
+			//Show or hide the reset filters button
+			if(searchModel.get('filterCount') > 0){
+				$('#clear-all').css('display', 'block');
+			}
+			else{
+				$('#clear-all').css('display', 'none');
+			}
+				
+			
 			// go to the page
 			this.showPage(page);
 			
@@ -343,6 +352,9 @@ define(['jquery',
 			
 			//Replace the current array with the new one in the search model
 			searchModel.set(category, filtersArray);
+			
+			//+1 the filter count
+			searchModel.set('filterCount', searchModel.get('filterCount') + 1);
 				
 			//Show the UI filter
 			this.showFilter(category, term);
@@ -363,6 +375,17 @@ define(['jquery',
 
 			//Update the model
 			searchModel.set(category, state);
+			
+			//+1 the filter count if it is checked
+			if(state){
+				searchModel.set('filterCount', searchModel.get('filterCount') + 1);
+			}
+			else{
+				searchModel.set('filterCount', searchModel.get('filterCount') - 1);
+			}
+			
+			//Show the reset button
+			$('#clear-all').css('display', 'block');
 			
 			//Route to page 1
 			this.updatePageNumber(0);
@@ -493,6 +516,9 @@ define(['jquery',
 			$("#data_year").prop("checked", searchModel.get("pubYear"));
 			$("#publish_year").prop("checked", searchModel.get("dataYear"));
 			
+			//Hide the reset button again
+			$('#clear-all').css('display', 'none');
+			
 			// reset any filter links
 			this.showAdditionalCriteria();
 			
@@ -520,7 +546,10 @@ define(['jquery',
 				//Remove this filter term from the array
 				var newTerms = _.without(currentTerms, term);
 				//Set the new value
-				searchModel.set(category, newTerms);				
+				searchModel.set(category, newTerms);	
+				
+				//-1 the filter count
+				searchModel.set('filterCount', searchModel.get('filterCount') - 1);
 			}
 		},
 		
@@ -535,6 +564,7 @@ define(['jquery',
 							
 			//Add a filter node to the DOM
 			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));
+			
 				
 			return;
 		},
@@ -677,7 +707,6 @@ define(['jquery',
 		//Get the facet counts
 		getFacetCounts: function(){
 			if (appSearchResults.header != null) {
-				console.log(appSearchResults.facetCounts.keywords);
 				
 				var facetCounts = appSearchResults.facetCounts;
 				//Set up the autocomplete (jQueryUI) feature for each input

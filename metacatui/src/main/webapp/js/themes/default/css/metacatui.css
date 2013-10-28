@@ -750,7 +750,7 @@ Bold 700
 	
 	.current-filters > li,
 	.current-filters > li[class*="span"]{
-		background-color: rgba(22, 97, 148, 0.5);
+		background-color: rgba(22, 97, 148, 0.6);
 		padding: 0px 5px 0px 5px;
 		border-radius: 2px;
 		-moz-border-radius: 2px;
@@ -772,15 +772,13 @@ Bold 700
 		line-height: 1.5em;
 		font-size: 1em;
 		color: #FFFFFF; /*IE fallback */
-		color: rgba(22, 97, 148, 0.5);
+		color: rgba(255, 255, 255, 0.5);
 	}
 	
 	.current-filters > li > i:hover{
-		font-size: 1.3em;
-    	position: relative;
-    	margin-top: 2px;
     	cursor: pointer;
-    	line-height: 1em;
+    	color: #FFFFFF;
+    	opacity: 1;
 	}
     
 	
@@ -874,6 +872,7 @@ Bold 700
     	font-size: 14px;
     	margin: 0px 5px 0px 5px;
     	color: #931D1D;
+    	display: none;
     }
     
     #clear-all > i{

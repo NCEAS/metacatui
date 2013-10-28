@@ -20,7 +20,8 @@ define(['jquery', 'underscore', 'backbone'],
 			pubYear: false,
 			dataYear: false,
 			sortOrder: 'dateUploaded+desc',
-			additionalCriteria: []
+			additionalCriteria: [],
+			filterCount: 0
 		},
 		
 		clear: function() {
