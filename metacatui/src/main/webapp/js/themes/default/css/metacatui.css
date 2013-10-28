@@ -899,16 +899,19 @@ Bold 700
     	text-overflow: ellipsis;
     }
     
-    li.ui-menu-item > a{
+    li.ui-menu-item > a {
     	color: #555555;
-    	font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;
+    	/*font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;*/
     	width: 245px;
     }
-    
-    li.ui-menu-item > a:hover{
-    	color: #166194;
+	
+    li.ui-menu-item > a:hover,
+    .ui-state-focus {
     	cursor: pointer;
-    }
+    	text-decoration: none;
+    	font-weight: bold;
+    	color: #166194;
+    } 
 
 /* RESULT CSS
 -------------------------------------------------- */
