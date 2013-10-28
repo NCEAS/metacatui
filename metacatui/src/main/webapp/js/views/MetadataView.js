@@ -161,7 +161,7 @@ define(['jquery',
 										populateTemplate(true);
 									},
 									error: function(xhr, textStatus, errorThrown) {
-										populateTemplate(false);
+										console.log('Not authorized to publish');
 									}
 							
 								}

@@ -1042,6 +1042,7 @@ Normal 400
     	list-style: none;
     	overflow-y: scroll;
     	max-height: 250px;
+    	z-index: 10;
     }
     
     li.ui-menu-item{
