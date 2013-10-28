@@ -171,7 +171,7 @@ define(['jquery',
 			
 			this.removeAll();
 			
-			appSearchResults.setrows(10);
+			appSearchResults.setrows(25);
 			appSearchResults.setSort(sortOrder);
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
 			
