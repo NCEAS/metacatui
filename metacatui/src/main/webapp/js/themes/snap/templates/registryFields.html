@@ -1,28 +1,13 @@
-<div class="accordion-heading">
-	<a class="accordion-toggle" data-toggle="collapse" data-target="#collapseExtra" href="#none">
-		Working Group
-	</a>
-	<a data-toggle="modal" data-target="#myModal" role="button" href="/metacat/cgi-bin/register-dataset.cgi?cfg=metacatui&amp;stage=guide#WorkingGroup"><i class="icon-question-sign"></i></a>
+<div class="select-editable">
+	<%
+	_.each(formOptions, function(value, key) {
+		print('<select name="', key, '">');
+		print('<option value=""></option>');
+		_.each(value, function(element, index) {
+			print('<option value="', element, '">', element, '</option>');
+		});
+		print('</select>');
+	});
+	%>
+	<input type="text" id="keyword" value=""/>
 </div>
-<div id="collapseExtra" class="accordion-body collapse in">
-	<div class="accordion-inner">
-		<!--  the INPUT -->
-		<div class="control-group">
-			<label class="control-label" for="site">*Name</label>
-			<div class="controls">
-				<%
-				_.each(formOptions, function(value, key) {
-					//print('<select name="', key, '" multiple="multiple" size="5">');
-					print('<select name="', key, '">');
-					print('<option value=""></option>');
-					_.each(value, function(element, index) {
-						print('<option value="', element, '">', element, '</option>');
-					});
-					print('</select>');
-				});
-				%>
-			</div>
-		</div>						
-    </div>
-</div>
-

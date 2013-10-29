@@ -94,10 +94,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 					addKeyword();
 				});
 				
-				// add to input form
+				// replace keywords with this widget
 				// use configuration from model for the selection
 				var formOptions = registryModel.get("formOptions");
-				registryEntryForm.find("#collapseBasic").after(this.template({formOptions: formOptions}));
+				registryEntryForm.find("#keyword").replaceWith(this.template({formOptions: formOptions}));
 				
 			}
 		},

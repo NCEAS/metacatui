@@ -614,7 +614,43 @@ Bold 700
 	  -webkit-border-radius: inherit;
 	     -moz-border-radius: inherit;
 	          border-radius: inherit;
-	}    
+	}  
+	
+/* Combobox styles, overlay text input on select
+<!-- example here -->
+<div class="select-editable">
+  <select onchange="this.nextElementSibling.value=this.value">
+    <option value=""></option>
+    <option value="sample">sample</option>
+  </select>
+  <input type="text" name="keyword" value=""/>
+</div>
+-------------------------------------------------- */     
+	.select-editable {
+		position: relative; 
+		width: 120px; 
+		height: 30px; 
+	}
+	.select-editable select { 
+		position:absolute; 
+		top: 0px; 
+		left: 0px; 
+		width: 120px; 
+		height: 29px;
+	}
+	.select-editable input {
+		position:absolute; 
+		top: 0px;
+		left: 0px; 
+		width: 100px; 
+		padding: 1px; 
+		font-size: 12px;
+		height: 25px;
+	}
+	.select-editable select:focus, 
+	.select-editable input:focus { 
+		outline:none; 
+	}	  
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
@@ -910,7 +946,8 @@ Bold 700
     	text-decoration: none;
     	font-weight: bold;
     	color: #166194;
-    } 
+    }
+    
 
 /* RESULT CSS
 -------------------------------------------------- */
