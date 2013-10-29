@@ -860,6 +860,10 @@ header{
 		min-height: 800px;
     }
     
+    radio.inline {
+    	width: 40%;
+    }
+    
     /* Larger modal for guide content */
     .modal.large {
     	width: 80%;
