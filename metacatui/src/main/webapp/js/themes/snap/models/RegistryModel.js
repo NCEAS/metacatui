@@ -30,8 +30,8 @@ define(['jquery', 'underscore', 'backbone'],
 			// optional filters for specific WGs, keyword categories, etc (side bar use)
 			searchOptions:
 				{
-					"Coastal Defenses" : '+origin:%22Coastal%20Defenses%22',
-					"Western Amazonia" : '+origin:%22Western%20Amazonia%22'
+					"Coastal Defenses" : '+keywords:%22Coastal%20Defenses%22',
+					"Western Amazonia" : '+keywords:%22Western%20Amazonia%22'
 				}
 			
 		}
