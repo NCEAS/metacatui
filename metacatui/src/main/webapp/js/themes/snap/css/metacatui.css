@@ -898,21 +898,20 @@ header{
 -------------------------------------------------- */     
 	.select-editable {
 		position: relative; 
-		width: 120px; 
 		height: 30px; 
 	}
 	.select-editable select { 
 		position:absolute; 
 		top: 0px; 
 		left: 0px; 
-		width: 120px; 
+		width: 220px; 
 		height: 29px;
 	}
 	.select-editable input {
 		position:absolute; 
 		top: 0px;
 		left: 0px; 
-		width: 100px; 
+		width: 197px; 
 		padding: 1px; 
 		font-size: 12px;
 		height: 25px;
