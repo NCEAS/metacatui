@@ -860,7 +860,7 @@ header{
 		min-height: 800px;
     }
     
-    radio.inline {
+    label.inline {
     	width: 40%;
     }
     
