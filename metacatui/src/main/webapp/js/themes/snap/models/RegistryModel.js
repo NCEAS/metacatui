@@ -8,7 +8,7 @@ define(['jquery', 'underscore', 'backbone'],
 	var RegistryModel = Backbone.Model.extend({
 		// This model contains additional fields needed for the Registry
 		defaults: {
-			// include in the Registry form for this theme
+			// include by default in the Registry form for this theme
 			formFields: 
 				{
 					"keyword" : "SNAP"
@@ -18,10 +18,10 @@ define(['jquery', 'underscore', 'backbone'],
 				{
 					//"SNAP" : "+keywords:SNAP"
 				},
-			// Multi-select options inserted into the Registry form for user to select from 	
+			// keyword options inserted into the Registry form for user to select from 	
 			formOptions:
 				{
-					"site" : 
+					"workingGroup" : 
 						[
 						"Coastal Defenses",
 						"Western Amazonia"
