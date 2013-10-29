@@ -62,35 +62,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			
 			//Get the facet counts and store them in this model
 			this.facetCounts = solr.facet_counts.facet_fields;
-			
-			//Get the minimum and maximum data years and store in this model
-			var beginDates = this.facetCounts.beginDate;
-			var cleanedBeginDates = new Array();
-			//remove the facet counts from the array
-			for (var i=0; i < beginDates.length-1; i+=2) {
-				cleanedBeginDates[i] = beginDates[i].substring(0,4);
-			}
-			//Sort the array to get the lowest year first
-			cleanedBeginDates.sort();
-			//update the model if this year is the lowest year yet
-			if(cleanedBeginDates[0] < this.minYear){
-				this.minYear = cleanedBeginDates[0];	
-			}
-			
-			var endDates = this.facetCounts.endDate;
-			var cleanedEndDates = new Array();
-			//remove the facet counts from the array
-			for (var i=0; i < endDates.length-1; i+=2) {
-				cleanedEndDates[i] = endDates[i].substring(0,4);
-			}
-			//Sort the array
-			cleanedEndDates.sort();
-			// And reverse it, to get the highest year first
-			cleanedEndDates.reverse();
-			//update the model if this year is the maximum year yet
-			if (cleanedEndDates[0] > this.maxYear){
-				this.maxYear = cleanedEndDates[0];
-			}
 					
 			return solr.response.docs;
 		},
