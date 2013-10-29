@@ -1,7 +1,7 @@
 <div class="select-editable">
 	<%
 	_.each(formOptions, function(value, key) {
-		print('<select name="', key, '">');
+		print('<select name="', key, '" onchange="this.nextElementSibling.value=this.value">');
 		print('<option value=""></option>');
 		_.each(value, function(element, index) {
 			print('<option value="', element, '">', element, '</option>');
