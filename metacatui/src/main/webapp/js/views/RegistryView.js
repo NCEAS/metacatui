@@ -24,7 +24,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			"click #createAccount" : "createAccount",
 			"click #lookupAccount" : "lookupAccount",
 			"click #resetPassword" : "resetPassword",
-			"click #changePassword" : "changePassword"
+			"click #changePassword" : "changePassword",
+			"keypress input[name='password']" : "submitOnEnter",
+			"keypress input[name='uid']" : "submitOnEnter"
 
 		},
 
@@ -174,19 +176,19 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			var password = this.trimString(formObj.elements["password"].value);
 
 			if (username == "") {
-				alert("You must type a username. \n" + popupMsg);
+				alert("You must type a username. \n");
 				formObj.elements["uid"].focus();
 				return false;
 			}
 
 			if (organization == "") {
-				alert("You must select an organization. \n" + popupMsg);
+				alert("You must select an organization. \n");
 				formObj.elements["organization"].focus();
 				return false;
 			}
 
 			if (password == "") {
-				alert("You must type a password. \n" + popupMsg);
+				alert("You must type a password. \n");
 				formObj.elements["password"].focus();
 				return false;
 			}
@@ -362,6 +364,12 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 		scrollToTop: function() {
 			$("html, body").animate({ scrollTop: 0 }, "slow");
 			return false;
+		},
+		
+		submitOnEnter: function(e) {
+			console.log('Pressed enter');
+			if (e.keyCode != 13) return;
+			this.submitLoginForm();
 		}
 				
 	});
