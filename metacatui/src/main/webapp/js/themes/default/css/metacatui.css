@@ -595,6 +595,10 @@ Bold 700
 		min-height: 800px;
     }
     
+    label.inline {
+    	width: 40%;
+    }
+    
     /* Larger modal for guide content */
     .modal.large {
     	width: 80%;
