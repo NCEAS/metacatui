@@ -173,7 +173,7 @@ define(['jquery',
 			
 			appSearchResults.setrows(25);
 			appSearchResults.setSort(sortOrder);
-			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap");
+			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate");
 			
 			//Create the filter terms from the search model and create the query
 			var query = "formatType:METADATA+-obsoletedBy:*";
@@ -279,16 +279,26 @@ define(['jquery',
 			//Get the types of year to be searched first
 			var pubYear = searchModel.get('pubYear');
 			var dataYear = searchModel.get('dataYear');
-			//Get the minimum and maximum years chosen
-			var yearMin = searchModel.get('yearMin');
-			var yearMax = searchModel.get('yearMax');
-			//Add to the query if we are searching data coverage year
-			if(dataYear){
-				query += "+beginDate:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20NOW%5D+endDate:%5B*%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";
+			if (pubYear || dataYear){
+				//Get the minimum and maximum years chosen
+				var yearMin = searchModel.get('yearMin');
+				var yearMax = searchModel.get('yearMax');	
+				
+				//Add to the query if we are searching data coverage year
+				if(dataYear){
+					query += "+beginDate:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20NOW%5D+endDate:%5B*%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";
+				}
+				//Add to the query if we are searching publication year
+				if(pubYear){
+					query += "+dateUploaded:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";				
+				}
 			}
-			//Add to the query if we are searching publication year
-			if(pubYear){
-				query += "+dateUploaded:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";				
+			else{
+				var resultsYearMin = searchModel.get('resultsYearMin');
+				var resultsYearMax = searchModel.get('resultsYearMax');
+				
+				//Get the minimum and maximum years of the data coverage years from the search results
+				
 			}
 			
 			console.log('query: ' + query);
@@ -302,8 +312,7 @@ define(['jquery',
 			}
 			else{
 				$('#clear-all').css('display', 'none');
-			}
-				
+			}				
 			
 			// go to the page
 			this.showPage(page);
@@ -410,8 +419,8 @@ define(['jquery',
 		    searchModel.set('yearMax', maxVal);
 			
 			//Get the minimum and maximum values from the metacat results
-			var minResultsVal = searchModel.get('resultsYearMin');
-			var maxResultsVal = searchModel.get('resultsYearMax');
+			var minResultsVal = appSearchResults.minYear;
+			var maxResultsVal = appSearchResults.maxYear;
 						
 			
 			//jQueryUI slider 
@@ -710,6 +719,7 @@ define(['jquery',
 				
 				var facetCounts = appSearchResults.facetCounts;
 				//Set up the autocomplete (jQueryUI) feature for each input
+				
 				//For the 'all' filter, use keywords
 				var allSuggestions = appSearchResults.facetCounts.keywords;
 				var rankedSuggestions = new Array();
@@ -780,18 +790,9 @@ define(['jquery',
 						// prevent default action
 						return false;
 					}
-				});
+				});				
 				
 			}
-			/*//Get the facet counts from the search results			
-			//Set up the autocomplete (jQueryUI) feature for each input
-			//For the 'all' filter, use keywords
-			var allSuggestions = facetCounts.keywords;
-			$('#all_input').autocomplete({
-				source: allSuggestions
-			});*/
-			
-			//Let's log them all for now for testing purposes
 			
 		},
 		

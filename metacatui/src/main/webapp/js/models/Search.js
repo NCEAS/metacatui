@@ -13,10 +13,8 @@ define(['jquery', 'underscore', 'backbone'],
 			taxon: [],
 			location: [],
 			resourceMap: false,
-			yearMin: 1900, //The minimum year in the search range
-			yearMax: 2013, //The maximum year in the search range
-			resultsYearMin: 1900, //The minimum year of all search results
-			resultsYearMax: 2013, //The maximum year of all search results
+			yearMin: 1900, //The user-selected minimum year
+			yearMax: new Date().getFullYear(), //The user-selected maximum year
 			pubYear: false,
 			dataYear: false,
 			sortOrder: 'dateUploaded+desc',
