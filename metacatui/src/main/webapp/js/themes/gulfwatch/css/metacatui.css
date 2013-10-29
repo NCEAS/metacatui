@@ -832,6 +832,7 @@ Normal 400
     
     #sidebar ul li a > i{
     	margin-right: 5px;
+    	color: #555555;
     }
     
     .filter-contain{
@@ -975,6 +976,14 @@ Normal 400
 		-webkit-border-radius: 2px;
 		min-height: 1em;
 		margin-left: 0px;
+	}
+	
+	a[class*="active"]{
+		padding: 2px;
+	}
+	
+	#sidebar a[class*="active"] > i{
+		color: #FFFFFF;
 	}
 	
 	.current-filters > li > i{
