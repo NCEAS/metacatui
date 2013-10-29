@@ -915,8 +915,9 @@ header{
 		position:absolute; 
 		top: 0px;
 		left: 0px; 
-		width: 197px; 
-		padding: 1px; 
+		width: 193px; 
+		padding: 1px;
+		padding-left: 5px;
 		height: 25px;
 	}
 	.select-editable select:focus, 
