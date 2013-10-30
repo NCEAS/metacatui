@@ -614,6 +614,9 @@ define(['jquery',
 			// Add this criteria to the search model
 			searchModel.set(category, [term]);
 			
+			//Up the filter count
+			searchModel.set('filterCount', searchModel.get('filterCount') + 1);
+			
 			// Trigger the search
 			this.triggerSearch();
 			
