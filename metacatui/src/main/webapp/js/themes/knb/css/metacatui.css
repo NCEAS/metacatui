@@ -749,10 +749,17 @@ Bold 700 Italic
       padding-top: 90px;
     }
     
-    #sidebar_share {
-      margin: 20px 10px 10px 15px;
-    }
-    
+	.subset-choice.keyword-search-link {
+		background-color: #115E95;
+		color: white;
+		text-shadow: none;
+		margin-bottom: 10px;
+	}
+	
+	.keyword-search-link.active{
+		background-color: #1981CC;
+	}
+
     h2.nav-header {
       font: 400 18px/18px "Lato";
       margin: 20px 10px 10px 15px;
@@ -888,9 +895,26 @@ Bold 700 Italic
     } 
     
     .filter-contain{
-   	  margin-bottom: 25px;
-   	  width: 100%;
+    	margin-top:20px;
+    	width: 100%;
+    	margin-bottom: 25px;
+    }
+    
+    .filter-contain .filter-contain{
+   	  margin-top: 0px;  	  
    }
+   
+   aside > div{
+   	margin: 0px 0px 10px 0px;
+	display: block;
+	clear: both;
+	height: auto; 
+	}
+	
+	#sidebar_share > i{
+		margin-right: 5px;
+	}
+
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
@@ -1111,13 +1135,7 @@ Bold 700 Italic
    .row-fluid input[class*="span"].left{
    		float: left;
    }
-
-	/*-- Share Your Data button --*/
-	#sidebar_share {
-      margin: 0px 0px 20px 0px;
-      padding: 8px;
-      width: 95%;
-    }
+  
     
     #clear-all{
     	text-align: right;

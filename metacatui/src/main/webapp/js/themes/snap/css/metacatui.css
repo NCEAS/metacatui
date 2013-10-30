@@ -1290,7 +1290,7 @@ header{
   	
   	
   	.subset-choice:hover i{
-  		color: #FFFFFF;
+  		color: #1AAEC4;
   		text-decoration: none;
   	}
 
@@ -1300,6 +1300,22 @@ header{
   		right: 15px;
   		top: 50%;
   		margin-top:-10px;
+  	}
+  	
+  	.subset-choice.alt,
+  	.subset-choice.alt > i{
+  		color: #b7b325;
+  		border-color: #8D8A1D;
+  	}
+  	
+  	.subset-choice.alt:hover,
+  	.subset-choice.alt.active {
+  		color: #FFFFFF;
+  		background-color: #b7b325;
+  	}
+  	.subset-choice.alt:hover > i,
+  	.subset-choice.active.alt > i{
+  		color: #FFFFFF;
   	}
 
 /* RESULT CSS

@@ -750,6 +750,11 @@ Normal 400
       border:1px solid #D1D3D4;
     }
     
+    aside > div{
+    	margin-bottom: 10px;
+    }
+    
+    
     .sidebar-subhead {
       color: #666666;
       font-weight: bold;
@@ -1015,14 +1020,7 @@ Normal 400
    .row-fluid input[class*="span"].left{
    		float: left;
    }
-
-	/*-- Share Your Data button --*/
-	#sidebar_share {
-      margin: 0px 0px 20px 0px;
-      padding: 8px;
-      width: 94%;
-    }
-    
+  
     #clear-all{
     	text-align: right;
     	float: right;

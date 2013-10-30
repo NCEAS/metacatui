@@ -4,10 +4,18 @@
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
 	      	<div>
-	      		<a id="sidebar_share" class="btn btn-primary" href="#share">
+	      		<a id="sidebar_share" class="btn btn-primary span12" href="#share">
 	        <i class="icon-upload icon-white icon-large"></i>  Share Your Data
 	      	</a>
 	      	</div>
+	      	<div class="clear"></div>
+    		<% if(username){
+    		print('<div class="subset-choices">');
+				print('<a class="subset-choice keyword-search-link span12 btn" href="#" data-category="additionalCriteria" data-term="+rightsHolder:' + username + '"> My packages </a>');    			
+    		print('</div>');
+    		}
+    		%>
+    		<div class="clear"></div>
     	    <div class="filter-contain">
 	    		<h2 class="nav-header span6">Filter</h2>
 	    		<a class="span4" id="clear-all">Clear all <i class="icon-remove"></i></a>

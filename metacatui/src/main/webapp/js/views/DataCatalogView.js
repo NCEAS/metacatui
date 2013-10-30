@@ -101,8 +101,8 @@ define(['jquery',
 						pubYear: searchModel.get('pubYear'),
 						dataYear: searchModel.get('dataYear'),
 						resourceMap: searchModel.get('resourceMap'),
-						searchOptions: registryModel.get('searchOptions')
-						
+						searchOptions: registryModel.get('searchOptions'),
+						username: appModel.get('username')
 					}
 			);
 			this.$el.html(cel);

@@ -660,8 +660,36 @@ Bold 700
     #sidebar {
       min-height: 400px;
     } 
- 
+ 	
+ 	aside > div{
+ 		margin-bottom: 10px;		
+ 	}
     
+    .subset-choice{
+    background-color: rgba(23, 97, 146, 0.46);
+	color: white;
+	font-size: 20px;
+	font-family: "Oswald";
+	padding: 2px 0px 0px 30%;
+	position: relative;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	}
+	
+	.subset-choice:hover,
+	.subset-choice:hover > i{
+		color: #166194;
+	}
+	
+	.subset-choice > i{
+		position:absolute;
+		right: 0;
+		margin-right: 10px;
+		top: 20%;
+	}
+    
+    /***Filters ***/
     .filter-contain{
    	  margin-bottom: 25px;
    	  width: 100%;
@@ -884,15 +912,6 @@ Bold 700
    		float: left;
    }
 
-	/*-- Share Your Data button --*/
-    
-    #sidebar_share {
-      margin: 0px 0px 20px 0px;
-      padding: 8px;
-      background-image: none;
-      background-color: #166194;
-      width: 95%;
-    }
     
     #sidebar_share:hover{
       color: #166194;
