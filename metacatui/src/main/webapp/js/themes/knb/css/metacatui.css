@@ -1156,7 +1156,7 @@ Bold 700 Italic
     }
     
     li.ui-menu-item{
-    	width: 245px;
+    	width: 100%;
     	overflow: hidden;
     	white-space: nowrap;
     	text-overflow: ellipsis;
@@ -1165,8 +1165,7 @@ Bold 700 Italic
     
     li.ui-menu-item > a{
     	color: #555555;
-    	/*font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;*/
-    	width: 245px;
+    	width: 100%;
     }
     
     li.ui-menu-item > a:hover,
