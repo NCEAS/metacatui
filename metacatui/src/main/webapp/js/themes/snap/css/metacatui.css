@@ -242,8 +242,6 @@ header{
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
   section#Notification {
-    position: fixed;
-    top: 105px;
     height: 40px;
     width: inherit;
     max-height: 40px;
