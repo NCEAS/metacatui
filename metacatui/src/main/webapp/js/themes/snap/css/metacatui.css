@@ -265,8 +265,8 @@ header{
     footer#Footer {
       margin-top: 40px;
       background: rgba(0, 0, 0, 0.8);
-      padding: 20px 0px;
-      height: 200px;
+      padding: 20px;
+      height: 100%;
       width: 100%;
       color: #E2E5E7;
       font-size: 0.8em;
