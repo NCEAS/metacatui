@@ -11,12 +11,12 @@ define(['jquery', 'underscore', 'backbone'],
 			// include by default in the Registry form for this theme
 			formFields: 
 				{
-					"keyword" : "SNAP"
+					"keyword" : "Science for Nature and People (SNAP)"
 				},
 			// include in ALL queries for this theme, the key is not used, but must be unique
 			searchFields: 
 				{
-					//"SNAP" : "+keywords:SNAP"
+					//"SNAP" : "+keywords:Science for Nature and People (SNAP)"
 				},
 			// keyword options inserted into the Registry form for user to select from 	
 			formOptions:
