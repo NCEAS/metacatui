@@ -27,7 +27,7 @@ define(['jquery',
 		render: function () {
 			console.log('Rendering dynamic subviews within the IndexView');
 			
-			appModel.set('headerType', 'main');
+			appModel.set('headerType', 'alt');
 			
 			// Add in the main content section
 			console.log("el: " + this.el);

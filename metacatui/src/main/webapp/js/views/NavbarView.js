@@ -20,19 +20,11 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// listen to the appModel for changes in username
 			//this.listenTo(appModel, 'change:username', this.render);
 			this.listenTo(appModel, 'change:fullName', this.render);
-			this.listenTo(appModel, 'change:headerType', this.render);
-
+			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);
 		},
 				
 		render: function () {
 			console.log('Rendering the navbar');
-			
-			// set the navbar [positioning] class based on what the page requested
-			var headerType = appModel.get('headerType');
-			$(this.$el).attr('class', '');
-			if (headerType) {
-				$(this.$el).addClass(headerType);
-			}
 			
 			// set the username in the template (can be null if not logged in)
 			this.$el.html(
@@ -49,7 +41,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// Get the search term entered
 			var searchTerm = $("#search_txt").val();
 			
-			//Clear te input value
+			//Clear the input value
 			$("#search_txt").val('');
 			
 			//Clear the search model to start a fresh search
@@ -75,6 +67,23 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			if (e.keyCode != 13) return;
 			this.triggerSearch();
 		},
+		
+		toggleHeaderType: function(){
+			// set the navbar class based on what the page requested
+			var headerType = appModel.get('headerType');
+			if (headerType == "default") {
+				//Remove the alt class
+				$(this.$el).removeClass("alt");
+				//Add the class given
+				$(this.$el).addClass(headerType);
+			}
+			else if(headerType == "alt"){
+				//Remove the default class
+				$(this.$el).removeClass("default");
+				//Add the class given
+				$(this.$el).addClass(headerType);
+			}
+		}
 				
 	});
 	return NavbarView;		

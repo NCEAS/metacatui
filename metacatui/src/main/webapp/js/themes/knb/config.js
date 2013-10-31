@@ -15,7 +15,7 @@ var themeMap =
 		'templates/featuredData.html' : 'themes/' + theme + '/templates/featuredData.html',
 		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
 		'templates/mainContent.html' : 'themes/' + theme + '/templates/mainContent.html',
-		'templates/mainHeader.html' : 'themes/' + theme + '/templates/mainHeader.html',
+		'templates/altHeader.html' : 'themes/' + theme + '/templates/altHeader.html',
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
 		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
 		'templates/tools.html' : 'themes/' + theme + '/templates/tools.html',

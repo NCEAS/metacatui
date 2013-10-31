@@ -133,7 +133,7 @@ Bold 700 Italic
     opacity: 1.0;    
   }
   
-  header#mainHeader {
+  header#altHeader {
     position: relative;
     top: 0px;
     z-index: 100;
@@ -542,7 +542,7 @@ Bold 700 Italic
     }
     
     /* Depending on the headerType, these classes apply */
-    nav#Navbar.main {
+    nav#Navbar.alt {
       position: absolute;
     }
     nav#Navbar.default {

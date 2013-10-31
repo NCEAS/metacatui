@@ -3,12 +3,12 @@ define(['jquery',
 				'underscore', 
 				'backbone',
 				'views/NavbarView',
-				'views/MainHeaderView',
+				'views/AltHeaderView',
 				'views/FooterView',
 				'text!templates/appHead.html',
 				'text!templates/app.html'
 				], 				
-	function($, _, Backbone, NavbarView, MainHeaderView, FooterView, AppHeadTemplate, AppTemplate) {
+	function($, _, Backbone, NavbarView, AltHeaderView, FooterView, AppHeadTemplate, AppTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -44,8 +44,8 @@ define(['jquery',
 			app.navbarView = new NavbarView();
 			app.navbarView.setElement($('#Navbar')).render();
 
-			app.mainHeaderView = new MainHeaderView();
-			app.mainHeaderView.setElement($('#HeaderContainer')).render();
+			app.altHeaderView = new AltHeaderView();
+			app.altHeaderView.setElement($('#HeaderContainer')).render();
 
 			app.footerView = new FooterView();
 			app.footerView.setElement($('#Footer')).render();
