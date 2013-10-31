@@ -266,7 +266,7 @@ header{
       margin-top: 40px;
       background: rgba(0, 0, 0, 0.8);
       padding: 20px;
-      height: 100%;
+      min-height: 400px;
       width: 100%;
       color: #E2E5E7;
       font-size: 0.8em;
