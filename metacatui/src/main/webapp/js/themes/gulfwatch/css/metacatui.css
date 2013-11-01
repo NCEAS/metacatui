@@ -1,26 +1,13 @@
 
-/* Import font families */
-@import url(http://fonts.googleapis.com/css?family=Muli:400,400italic);
-/* Muli weights:
-Normal 400
-Normal italic 400
-*/
-@import url(http://fonts.googleapis.com/css?family=Cinzel);
-/* Cinzel weights:
-Normal 400
-*/
 
 
 /* Body CSS
 -------------------------------------------------- */
     body {
-      color: #555555;
-      background-color: #E9E9E1;
+      color: #333333;
+      background-color: #FFFFFF;
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       text-shadow: none;
-    }
-
-    body p {
       font-weight: 400;
       line-height: 1.5;
     }
@@ -41,19 +28,7 @@ Normal 400
       z-index: 10;
     }
         
-    body > #Content {
-    	position: relative;
-    	margin: 0px 0px auto 0px;
-    	min-height: 600px;
-    	padding-top: 10px;
-    }
-    
-    #Content .container{
-    	background-color: #FFFFFF;
-	    box-shadow: 0 0 0 10px #FFFFFF;
-		border: 1px solid #D1D3D4;
-		padding: 20px;
-    }
+
 		
     body > section > article {
       min-height: 800px;
@@ -131,7 +106,7 @@ Normal 400
     display: none;  
   }
   
-  header#mainHeader {
+  header#altHeader {
     position: relative;
     top: 0px;
     z-index: 100;
@@ -350,12 +325,29 @@ Normal 400
       filter: none;    
     }
     
+    .navbar-inner > div:first-child > img{
+    	float: left;
+    	margin: 12px 0px 0px 12px;
+    }
+    
     nav header{
     	color: #FFFFFF;
     	width: auto;
     	float: left;	
     	font-style: italic;
-    	margin-top: 8px;
+    	margin: 8px 0px 0px 8px;
+    	line-height: 1em;
+    }
+    
+    nav > .alert{
+    	border-radius: 0px;
+    	-webkit-border-radius: 0px;
+    	-moz-border-radius: 0px;
+    	margin-bottom: 0px;
+    }
+    
+    .navbar-inner .btn-group{
+    	float: left;
     }
     
     .navbar .nav > li > * {
@@ -393,16 +385,11 @@ Normal 400
 
 
     #Navbar form {
-      margin: 0px 0px 0px 0px;
+      margin: 8px 0px 0px 0px;
       padding: 0px 0px 0px 0px;
     }
     #Navbar i .user {
       opacity: .6;
-    }
-    
-    ul.nav, .navbar .nav {
-      width: auto;
-      float: right;
     }
 
 
@@ -525,13 +512,7 @@ Normal 400
     #search_txt_side{
       width: 70%;
     }
-    
-    h2.nav-header {
-      font: 700 18px/18px;
-      margin: 20px 10px 10px 15px;
-      padding: 3px 0px 3px 0px;
-      color: #555555;      
-    }
+
     
     .nav-list{
     	width: 100%;
@@ -579,14 +560,6 @@ Normal 400
     #Metadata {
 		min-height: 800px;
     }
-    
-    #Metadata > .container {
-      background-color: #FFFFFF;
-	  box-shadow: 0 0 0 10px #FFFFFF;
-	  border: 1px solid #D1D3D4;
-	  padding: 20px;
-	  width: 1170px;
-    }
    
    .attributeList div.span2{
    		width: 23.404255319148934%; /*Effectively make it span3 */
@@ -603,7 +576,22 @@ Normal 400
    	}
    	
    	.result-pubdate{
-   		color: #888888;
+   		color: #777777;
+   	}
+   	
+   	#Metadata .well .span10{
+		font-size: 30px;
+		margin: 10px 0;
+		font-family: inherit;
+		line-height: 1;
+		color: inherit;
+		text-rendering: optimizelegibility;
+		color: #333;
+   	}
+   	
+   	#Metadata .well .span10 strong{
+   		display: block;
+   		margin: 10px 0px 10px 0px;
    	}
     
 	/* Registry CSS
@@ -711,27 +699,6 @@ Normal 400
     
   /* Data Catalog CSS
   -------------------------------------------------- */
-	#mainBody {
-		min-height: 500px;
-		display:table;
-		width: 1170px;
-		margin: 0px auto;
-	}
-	 
-	#mainBody .span9 {
-	    width: 72.46808510638297%;
-	    background-color: #FFFFFF;
-	    box-shadow: 0 0 0 10px #FFFFFF;
-		border: 1px solid #D1D3D4;
-	}
-	
-	#mainBody .span3 {
-		width: 21.404255319148934%;
-		background-color: #FFFFFF;
-	    box-shadow: 0 0 0 10px #FFFFFF;
-		border: 1px solid #D1D3D4;
-		margin-left: 4.127659574468085%;
-	}
 	
 	#attributeTabs li > a:hover{
 		color: #1388b7;
@@ -743,79 +710,73 @@ Normal 400
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-    #sidebar {
-      min-height: 400px;
-      background-color:#FFFFFF;
-      box-shadow: 0 0 0 10px #FFFFFF;
-      border:1px solid #D1D3D4;
+    aside.well{
+    	padding: 10px 0px 0px 0px;
     }
     
-    aside > div{
-    	margin-bottom: 10px;
+    .filter-contain h2.nav-header{
+    	margin-bottom: 0px;
     }
     
-    
-    .sidebar-subhead {
-      color: #666666;
-      font-weight: bold;
-      text-transform:uppercase;
-      padding: 20px 0 10px 0;
-    }
-    
-    .sidebar-item {
-      color: #666666;
-      font-weight: bold;
-      padding: 5px;
-      border-radius: 5px;
-      -webkit-border-radius: 5px;
-      -moz-border-radius: 5px;
-      line-height: 25px;
-    }
-    
-    .sidebar-item-selected {
-      background-color: #AAAAAA;
-      color: #fff;
-      padding-top: 3px;
-      padding-bottom: 3px;
-    }
-    
-        #sidebar {
-      min-height: 400px;
-      padding: 20px;
-    } 
-    
-    #sidebar ul{
-    	list-style: none;
-    	padding: 0px;
+    /*-- Data categories --*/
+    .category-nav{
+    	width: 100%;
     	margin: 0px;
+    	padding: 0px;
     }
     
-    #sidebar ul li a > i{
-    	margin-right: 5px;
-    	color: #555555;
+    .category-nav > li.nav-item{
+    	width: 96%;
+    	padding-left: 4%;
+    	border-bottom: 1px solid #e0e0e0;
     }
     
-    .filter-contain{
-   	  margin-bottom: 25px;
-   	  width: 100%;
-   }
+    .category-nav > li.nav-item > a{
+    	padding-left: 0px;
+    }
+    
+    .category-nav > li.nav-item:hover,
+     .category-nav > li.nav-item:hover > a,
+      .category-nav > li.nav-item.active:hover,
+     .category-nav > li.nav-item:hover > a.active{
+    	background-color: #e0e0e0;
+    	color: #333;
+    }
+    
+    .filter-contain .filter-contain{
+    	padding: 12px 15px 12px 15px;
+		border-bottom: 1px solid #e0e0e0;
+    }
+
+    
+    .category-nav .active > a,
+    .category-nav li.nav-item.active{
+    	background-color: #e0e0e0;
+		color: #333;
+		margin-top: 0px;
+    }
+    
+    
+    .category-nav  i.icon-remove{
+    	padding-top: 5px;
+    	visibility: hidden;
+    }
+    
+    .category-nav  > li.nav-item.active i.icon-remove{
+    	visibility: visible;
+    }
+    
+    .filter-contain .filter-contain{
+    	width: 90%;
+    }
+
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
-    	background-color: #ffffff;
-    	color: #555555;
     	border-radius: 0px 5px 5px 0px;
     	-moz-border-radius: 0px 5px 5px 0px;
     	-webkit-border-radius: 0px 5px 5px 0px;
     	border: 1px solid #AAAAAA;
-    	border-left: 0px;
-    	height: 30px;
-    	display: inline-block;
-    }
-    
-    .filter.btn > i{
-    	margin-bottom: 2px;
-    	display: block;
     }
     
     .filter.btn > i:hover{
@@ -841,7 +802,7 @@ Normal 400
     }
    
     #filter-year > input[type="number"]{
-   		color: #009999;
+   		color: #006699;
    		background: none;
    		border: 0px;
    		text-align: right;
@@ -851,6 +812,7 @@ Normal 400
    		top: -5px;
    		position: relative;
    		margin-bottom: 0px;
+   		margin-top: 10px;
     }
     
     #filter-year > input[type="number"]:focus{
@@ -859,6 +821,7 @@ Normal 400
     
     #max_year{
     	float: right;
+    	right: 5px;
     }
     
     #min_year{
@@ -872,7 +835,7 @@ Normal 400
     	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
-    	width: 95%;
+    	width: 90%;
     }
     
     #year-range.disabled,
@@ -888,14 +851,7 @@ Normal 400
     	z-index: 1;
     	display: block;
     	border: 0;
-    	background: #009999;
-    	background: -moz-linear-gradient(top, #2d8989 1%, #009999 55%, #00cccc 98%, #009999 100%); /* FF3.6+ */
-		background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,#2d8989), color-stop(55%,#009999), color-stop(98%,#00cccc), color-stop(100%,#009999)); /* Chrome,Safari4+ */
-		background: -webkit-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* Chrome10+,Safari5.1+ */
-		background: -o-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* Opera 11.10+ */
-		background: -ms-linear-gradient(top, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* IE10+ */
-		background: linear-gradient(to bottom, #2d8989 1%,#009999 55%,#00cccc 98%,#009999 100%); /* W3C */
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2d8989', endColorstr='#009999',GradientType=0 ); /* IE6-9 */
+    	background: #006699;
     }
     
     .ui-slider-handle{
@@ -917,64 +873,45 @@ Normal 400
 	.current-filters[class*="span"],
 	a[class*="active"] {
 		list-style: none;
-		color: #FFFFFF;
-		font: 400 14px/14px;
 		margin-left: 0px;
 		min-height: 0px;
 	}
-	
-	.current-filters > li,
-	.current-filters > li[class*="span"],
-	a[class*="active"] {
-		background-color: #009999;
-		padding-left: 10px;
-		margin-top: 3px;
-		width: 99%;
-		border-radius: 2px;
-		-moz-border-radius: 2px;
-		-webkit-border-radius: 2px;
-		min-height: 1em;
-		margin-left: 0px;
+		
+	.current-filter{
+		margin: 5px 5px 0px 0px;
+		padding: 0px 5px;
+		background-color: #e0e0e0;
+		display:inline-block;
+		font-size: 14px;
+		font-weight: 500;
+		width: auto;
+		color: #333;
+		text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 	}
 	
-	a[class*="active"]{
-		padding: 2px;
-	}
-	
-	#sidebar a[class*="active"] > i{
-		color: #FFFFFF;
-	}
-	
-	.current-filters > li > i{
+	.current-filter > i{
 		float: right;
 		margin-top: 2px;
 	}
 	
-	.current-filters > li > i:hover{
-		font-size: 18px;
-    	position: relative;
-    	top: -2px;
+	.current-filter > i:hover{
     	cursor: pointer;
+	}
+	
+	.current-filter > span{
+		float: left;
+		margin-right: 5px;
 	}
     
 	
     /*-- Headers in sidebar --*/
-    h2.nav-header {
-      font: 700 22px/38px;
-      color: #555555;    
-      text-transform: capitalize;  
-      display: block;
-      padding: 0px;
-      margin: 0px;
-      min-height: 25px;
-    }
-    
+
+	.filter-contain h2{
+		margin: 20px 0px 10px 0px;
+	}
+	
     h3.nav-header{
-    	font: 700 15px/20px;
-    	margin: 20px 0px 5px 0px;
-    	color: #555555;
-    	text-transform: none;
-    	display: block;
+    	color: #777777;
     	padding: 0px;
     }
     
@@ -1025,7 +962,8 @@ Normal 400
     	text-align: right;
     	float: right;
     	cursor: pointer;
-    	padding-top:12px;
+    	padding: 0px;
+    	margin: 18px 18px 0px 0px;
     }
     
      /* Autocomplete */
@@ -1365,7 +1303,7 @@ Normal 400
  	clear: right;
  }
  
- pre{
+ #metacatDocs pre{
 	 padding: 10px;
 	background: rgba(0, 153, 153, 0.8);
 	color: #FFFFFF;

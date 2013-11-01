@@ -1,26 +1,112 @@
 
-<article id="mainBody" class="container-fluid">
-	<section class="row-fluid">
-
-
+<article id="mainBody" class="container center">
+	<section class="container-fluid">
+		<div class="row-fluid">
+		<!--SIDEBAR AREA-->
+		<aside id="sidebar" class="span4 well">
+			<div class="row-fluid">
+				<a id="sidebar_share" class="btn btn-primary span10 offset1" href="#share">
+	        		<i class="icon-upload icon-white icon-large"></i>  Share Your Data
+	      		</a>
+      		</div>
+      		<div class="clear"></div>
+	    		<% if(username){
+	    		print('<div class="subset-choices">');
+					print('<a class="subset-choice keyword-search-link span12 btn" href="#" data-category="additionalCriteria" data-term="+rightsHolder:' + username + '"> My packages </a>');    			
+	    		print('</div>');
+	    		print('<div class="clear"></div>');
+	    		}
+	    		%>
+    	    <div class="filter-contain row-fluid">
+    	    	<div class="row-fluid">
+		    		<h2 class="nav-header span4">Filters</h2>
+		    		<a class="span7" id="clear-all">Clear all <i class="icon-remove"></i></a>
+				</div>
+				<div class="input-append filter-contain">
+					<input class="span10 filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
+					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
+			    	<ul id="current-all-filters" class="current-filters" data-category="all">
+			    	</ul>
+			    </div>
+				
+				<div class="filter-contain">
+					<h3 class="nav-header"><i class="icon-folder-open"></i>
+						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
+						<label for="includes_data">Includes data files</label>
+					</h3>
+				</div>
+				
+				<div class="input-append filter-contain">
+					<h3 class="nav-header"><i class="icon-user"></i><label>Created by</label></h3>
+					<input class="span10 filter" type="text" placeholder="First or last name" id="creator_input" data-category="creator">
+					<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
+			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
+			    	</ul>
+			    </div>
+	
+				
+				<div id="filter-year" class="filter-contain" data-category="year">
+					<h3 class="nav-header"><i class="icon-calendar"></i><label>Year</label></h3>
+					<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
+					<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="right">Data covers</label>					
+					<div class="clear"></div>
+					<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
+					<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="right" >Published between</label>
+					<div class="clear"></div>
+					<input class="span3"  type="number" id="min_year" pattern="{4}" value=<% print('"' + yearMin + '"'); %> />
+					<input class="span3"  type="number" id="max_year" pattern="{4}" value=<% print('"' + yearMax + '"'); %>/>
+					<div class="clear"></div>
+					<div id="year-range"></div>
+					<div class="clear"></div>
+				</div>
+				
+				<div class="input-append filter-contain">
+					<h3 class="nav-header"><i class="icon-sitemap"></i><label>Taxon</label></h3>
+					<input class="span10 filter" type="text" placeholder="Phylum, class, order..." id="taxon_input" data-category="taxon">
+					<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
+					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
+					</ul>
+				</div>
+			</div>
+			<ul class="category-nav nav-list nav">
+				<li><h2 class="nav-header span12">Data Categories</h2></li>
+			<%
+				var keywords = [{link: "+keywords:EVOSTC", display: "EVOSTC"}, 
+								{link: "+keywords:%22Exxon%20Valdez%20Oil%20Spill%20Trustee%20Council%22", display: "Exxon Valdez Oil Spill Trustee Council"},
+								{link: "+keywords:%22Exxon%20Valdez%22", display: "Exxon Valdez"},
+								{link: "+keywords:%22Oil%20Spill%22", display: "Oil spill"},
+								{link: "+keywords:%22EVOS%20Gulf%20Watch%20Projects%22", display: "EVOS Gulf Watch Projects"},
+								{link: "+keywords:Benthic", display: "Benthic"},
+								{link: "+keywords:Pelagic", display: "Pelagic"},
+								{link: "+keywords:%22Environmental%20Drivers%22", display: "Environmental Drivers"},
+								{link: "+keywords:Birds", display: "Birds"},
+								{link: "+keywords:Fish", display: "Fish"},
+								{link: "+keywords:Imagery", display: "Imagery"},
+								{link: "+keywords:%22Invertebrates%20and%20Algae%22", display: "Invertebrates & Algae"},
+								{link: "+keywords:Mammals", display: "Mammals"},
+								{link: "+keywords:Management", display: "Management"},
+								{link: "+keywords:Modeling", display: "Modeling"},
+								{link: "+keywords:%22Ocean%20and%20Atmosphere%22", display: "Ocean and Atmosphere"},
+								{link: "+keywords:%22Oil%20and%20Contaminants%22", display: "Oil/Contaminants"},
+								{link: "+keywords:%22Satellites%20and%20Sensors%22", display: "Satellites and Sensors"},
+								{link: "+keywords:%22Shorelines%20Habitat%20and%20Sensitivity%22", display: "Shorelines (Habitat and Sensitivity)"},
+								{link: "+keywords:%22Study%20Catalogs%22", display: "Study Catalogs"},
+								{link: "+keywords:Watershed", display: "Watershed"}
+				];
+				
+				_.each(keywords, function(element, index){
+					print('<li class="nav-item" data-category="additionalCriteria" data-term="' + keywords[index].link + '"><i class="icon-remove span1 remove-addtl-criteria"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="' + keywords[index].link + '">' + keywords[index].display + '</a><div class="clear"></div></li>');
+				});
+			%>
+			</ul>
+			
+		</aside>
+		
 		<!--CONTENT AREA-->
-		<div id="content" class="span9">
+		<div id="content" class="span8">
 			<div id="results-view" class="container-fluid">
-				<h2 id="pagehead" class="row-fluid">Data Portal</h2>
 				<div id="results-header" class="row-fluid result-header">
-					<!-- 
-					<div class="result-header-menu span1">
-						<div class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
-								class="icon-plus"></i> <b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="#">Add to collection...</a></li>
-								<li><a href="#">Download</a></li>
-							</ul>
-						</div>
-					</div>
-					-->
-					
+									
 					<!-- count stats -->
 					<div class="result-header-count span6" id="statcounts">0 to 0 of 0</div>
 					
@@ -71,99 +157,7 @@
 			</div>
 			<div id="metadata-view" class="container-fluid"></div>
 		</div>
-		
-		<!--SIDEBAR AREA-->
-		<aside id="sidebar" class="span3">
-			<!-- <div class="sidebar-subhead">Contribute</div> -->
-			<div>
-				<a id="sidebar_share" class="btn btn-primary span12" href="#share">
-	        		<i class="icon-upload icon-white icon-large"></i>  Share Your Data
-	      		</a>
-      		</div>
-      		<div class="clear"></div>
-	    		<% if(username){
-	    		print('<div class="subset-choices">');
-					print('<a class="subset-choice keyword-search-link span12 btn" href="#" data-category="additionalCriteria" data-term="+rightsHolder:' + username + '"> My packages </a>');    			
-	    		print('</div>');
-	    		}
-	    		%>
-    		<div class="clear"></div>
-    	    <div class="filter-contain">
-	    		<h2 class="nav-header span4">Filter</h2>
-	    		<a class="span7" id="clear-all">Clear all <i class="icon-remove"></i></a>
-				
-				<div class="input-append filter-contain">
-					<input class="span10 filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
-					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
-			    	<ul id="current-all-filters" class="current-filters" data-category="all">
-			    	</ul>
-			    </div>
-				
-				<div class="filter-contain">
-					<h3 class="nav-header"><i class="icon-folder-open"></i>
-						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
-						<label for="includes_data">Includes data files</label>
-					</h3>
-				</div>
-				
-				<div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-user"></i>Created by</h3>
-					<input class="span10 filter" type="text" placeholder="First or last name" id="creator_input" data-category="creator">
-					<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
-			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
-			    	</ul>
-			    </div>
-	
-				
-				<div id="filter-year" class="filter-contain" data-category="year">
-					<h3 class="nav-header"><i class="icon-calendar"></i>Year</h3>
-					<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
-					<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="right">Data covers</label>					
-					<div class="clear"></div>
-					<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-					<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="right" >Published between</label>
-					<div class="clear"></div>
-					<input class="span4"  type="number" id="min_year" pattern="{4}" value=<% print('"' + yearMin + '"'); %> />
-					<input class="span4"  type="number" id="max_year" pattern="{4}" value=<% print('"' + yearMax + '"'); %>/>
-					<div class="clear"></div>
-					<div id="year-range"></div>
-					<div class="clear"></div>
-				</div>
-				
-				<div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-sitemap"></i>Taxon</h3>
-					<input class="span10 filter" type="text" placeholder="Phylum, class, order..." id="taxon_input" data-category="taxon">
-					<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
-					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
-					</ul>
-				</div>
-			</div>
-			<ul>
-				<li><h2 class="nav-header">Data Categories</h2></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:EVOSTC"><i class="icon-search search"></i>EVOSTC</a></li>
-  				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Exxon%20Valdez%20Oil%20Spill%20Trustee%20Council%22"><i class="icon-search search"></i>Exxon Valdez Oil Spill Trustee Council</a></li>
-  				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Exxon%20Valdez%22"><i class="icon-search search"></i>Exxon Valdez</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Oil%20Spill%22"><i class="icon-search search"></i>Oil spill</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22EVOS%20Gulf%20Watch%20Projects%22"><i class="icon-search search"></i>EVOS Gulf Watch Projects</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Benthic"><i class="icon-search search"></i>Benthic</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Pelagic"><i class="icon-search search"></i>Pelagic</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Environmental%20Drivers%22"><i class="icon-search search"></i>Environmental Drivers</a></li>	
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Birds"><i class="icon-search search"></i>Birds</a></li>		
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Fish"><i class="icon-search search"></i>Fish</a></li>		
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Imagery"><i class="icon-search search"></i>Imagery</a></li>				
-			    <li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Invertebrates%20and%20Algae%22"><i class="icon-search search"></i>Invertebrates & Algae</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Mammals"><i class="icon-search search"></i>Mammals</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Management"><i class="icon-search search"></i>Management</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Modeling"><i class="icon-search search"></i>Modeling</a>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Ocean%20and%20Atmosphere%22"><i class="icon-search search"></i>Ocean and Atmosphere</a></li></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Oil%20and%20Contaminants%22"><i class="icon-search search"></i>Oil/Contaminants</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Satellites%20and%20Sensors%22"><i class="icon-search search"></i>Satellites and Sensors</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Shorelines%20Habitat%20and%20Sensitivity%22"><i class="icon-search search"></i>Shorelines (Habitat and Sensitivity)</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:%22Study%20Catalogs%22"><i class="icon-search search"></i>Study Catalogs</a></li>
-				<li><a class="keyword-search-link" href="" data-category="additionalCriteria" data-term="+keywords:Watershed"><i class="icon-search search"></i>Watershed</a></li>
-			</ul>
-			
-		</aside>
+		</div>
 	</section>
 </article>
 

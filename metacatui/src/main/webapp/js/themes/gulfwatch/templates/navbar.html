@@ -1,31 +1,34 @@
-<div class="navbar">
-  <div class="navbar-inner">
-  		<header>Gulf of Alaska Data Portal</header>
+<div class="alert alert-block span12 row-fluid" >
+<strong>Notice:</strong> Our site is currently under construction, please check back for current updates. <br>Please contact Tammy Neher, Gulf Watch Alaska Science Coordinator at <a href="mailto:tammy.neher@noaa.gov">tammy.neher@noaa.gov</a> with your questions or suggestions.
+</div>
+<div class="navbar row-fluid">
+  <div class="navbar-inner center">
+  	<div class="span3">
+  		<img src="./js/themes/gulfwatch/img/aoos-logo.png" />
+  		<header>Gulf of Alaska <br/> Data Portal</header>
+  	</div>
+  	<div class="span4">
+  		<form id="search" class="navbar-search span12">
+  		<div class="input-append span12">
+  			<input class="search-query-input span8" autocomplete="off" data-provide="typeahead" size="16" type="search" value="">
+  			<button type="button" class="btn submit"><i class="icon-search"></i></button>
+  			<button type="button" class="btn clear"><i class="icon-remove"></i></button>
+  		</div>
+  		</form>
+  	</div>
+  	<div class="span5">
+	  	<div class="btn-group">	
+			  <a class="btn btn-primary launch_ocean_portal" href="http://data.aoos.org/maps/modular-oikos/?portal_id=8&amp;lg=" target="_blank">
+			  	<i class="icon-globe icon-white"></i> Launch Ocean Portal
+			 </a>
+			  <button class="btn btn-inverse dropdown-toggle" id="layer_count_button" data-toggle="dropdown" style="display: none;"><span id="layer_count"><strong>0</strong></span> layers <span class="caret icon-white"></span></button>
+			  <ul class="dropdown-menu" id="queued_layers">
+			    <li><p style="padding:20px">Explore data and add to layer queue. Then use Launch Ocean Portal to load all layers in portal.</p></li> 
+				<li class="divider"></li> 
+			  </ul>	
+		</div>
 	    <ul class="nav">
 	    	<li><a href="#data">Data Portal</a></li>
-	        <!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
-	        <!-- comment out for now until we have plans -->
-	        <!-- 
-	        <li class="dropdown">
-	          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plans <b class="caret"></b></a>
-	          <ul class="dropdown-menu">
-	            <li><a href="#">About data plans</a></li>
-	            <li class="divider"></li>
-	            <li><a href="#">Basic (free)</a></li>
-	            <li><a href="#">Annual Data</a></li>
-	            <li><a href="#">Big Data</a></li>
-	
-	          </ul>
-	        </li>
-	        -->
-	        <!--<li>
-	          <div class="nav">
-	            <div class="input-append">
-	              <input type="text" class="span3" placeholder="Search for data" id="search_txt" >
-	              <a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-white icon-large"></i></a>
-	            </div>
-	          </div>
-	        </li>-->
 	        
 	        <% if (fullName) { 
 	        	print(
@@ -50,5 +53,6 @@
 	        } %>
 	        	
 	      </ul>
+	  </div>
   </div><!-- /.navbar-inner -->
 </div><!-- /.navbar -->
