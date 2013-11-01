@@ -47,7 +47,8 @@ define(['jquery',
 						   'click .remove-filter' : 'removeFilter',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
 							   'click #clear-all' : 'resetFilters',
-					 'click .keyword-search-link' : 'additionalCriteria'
+					 'click .keyword-search-link' : 'additionalCriteria',
+				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria'
 
 		},
 		
@@ -478,15 +479,16 @@ define(['jquery',
 		
 		//Removes a specific filter term from the searchModel
 		removeFilter : function(e){			
-			//Get the parent element that stores the filter term
+			//Get the parent element that stores the filter term 
 			var filterNode = $(e.target).parent();
+			
+			//Find this element's category in the data-category attribute of it's parent
+			var category = filterNode.parent().attr('data-category');
 			
 			//Get the filter term
 			var term = $(filterNode).attr('data-term');
 			console.log('removing '+ term);
 			
-			//Find this element's category in the data-category attribute of it's parent
-			var category = filterNode.parent().attr('data-category');
 			
 			//Remove this filter term from the searchModel
 			this.removeFromModel(category, term);
@@ -583,12 +585,20 @@ define(['jquery',
 			
 			// style the selection			
 			$(".keyword-search-link").each(function(index, targetNode){
+				//Neutralize all keyword search links by 'deactivating'
 				$(targetNode).removeClass("active");
+				//Do this for the parent node as well for template flexibility
+				$(targetNode).parent().removeClass("active");
+				
 				var dataCategory = $(targetNode).attr("data-category");
 				var dataTerm = $(targetNode).attr("data-term");
 				var terms = searchModel.get(dataCategory);
 				if (_.contains(terms, dataTerm)) {
+					//Add the active class for styling
 					$(targetNode).addClass("active");
+					
+					//Add the class to the parent node as well for template flexibility
+					$(targetNode).parent().addClass("active");
 				}
 
 			});
@@ -602,7 +612,9 @@ define(['jquery',
 			
 			// style the selection
 			$(".keyword-search-link").removeClass("active");
+			$(".keyword-search-link").parent().removeClass("active");
 			targetNode.addClass("active");
+			targetNode.parent().addClass("active");
 			
 			// Get the filter criteria
 			var term = targetNode.attr('data-term');
@@ -623,6 +635,33 @@ define(['jquery',
 			// prevent default action of click
 			return false;
 
+		},
+		
+		removeAdditionalCriteria: function(e){
+			// Get the clicked node
+			var targetNode = $(e.target);
+			
+			// remove the styling
+			$(".keyword-search-link").removeClass("active");
+			$(".keyword-search-link").parent().removeClass("active");
+			
+			//Get the term
+			var term = targetNode.parent().attr('data-term');
+			
+			//Get the current search model additional criteria 
+			var current = searchModel.get('additionalCriteria');
+			//If this term is in the current search model (should be)...
+			if(_.contains(current, term)){
+				//then remove it
+				var newTerms = _.without(current, term);
+				searchModel.set("additionalCriteria", newTerms);
+			}
+			
+			//Route to page 1
+			this.updatePageNumber(0);
+			
+			//Trigger a new search
+			this.triggerSearch();
 		},
 
 		updateStats : function() {
