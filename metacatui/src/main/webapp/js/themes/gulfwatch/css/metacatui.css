@@ -1029,9 +1029,13 @@
     
     .result-row .icon-caret-down {
     	font-size: 15px;
+    	color: #333333;
+    	height: 14px;
     } 
     .result-row .icon-download-alt {
     	font-size: 18px;
+    	color: #333333;
+    	height: 14px;
     }
     
     .result-row .has-data{
@@ -1043,6 +1047,13 @@
     
     .result-row .download{
     	position: relative;
+    	min-height: 10px;
+    }
+    
+    .result-row .download > a,
+    .result-row .download > i{
+    	min-height: 20px;
+    	height: 30px;
     }
     
     .result-row .download:hover i{
