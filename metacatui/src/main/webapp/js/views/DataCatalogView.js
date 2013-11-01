@@ -657,6 +657,9 @@ define(['jquery',
 				searchModel.set("additionalCriteria", newTerms);
 			}
 			
+			//Update the filter count on the serach model
+			searchModel.set('filterCount', searchModel.get('filterCount') - 1);
+			
 			//Route to page 1
 			this.updatePageNumber(0);
 			
