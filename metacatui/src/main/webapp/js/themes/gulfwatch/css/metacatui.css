@@ -885,8 +885,10 @@
 		font-size: 14px;
 		font-weight: 500;
 		width: auto;
+		max-width: 94%;
 		color: #333;
 		text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+		float: left;
 	}
 	
 	.current-filter > i{
@@ -901,6 +903,14 @@
 	.current-filter > span{
 		float: left;
 		margin-right: 5px;
+		max-width: 90%;
+		white-space: -moz-pre-wrap !important;
+		white-space: -pre-wrap;
+		white-space: -o-pre-wrap;
+		white-space: pre-wrap;
+		word-wrap: break-word;
+		word-break: break-all;
+		white-space: normal;
 	}
     
 	
