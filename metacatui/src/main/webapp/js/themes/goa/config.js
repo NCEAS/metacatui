@@ -1,4 +1,4 @@
-var theme = theme || "gulfwatch";
+var theme = theme || "goa";
 var themeMap = 
 {
 	'*': {
