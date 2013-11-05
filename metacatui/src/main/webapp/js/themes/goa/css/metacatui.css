@@ -654,7 +654,8 @@
 		border-color: #04c #04c #002a80;
 		border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
 		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc',endColorstr='#ff0044cc',GradientType=0);
-		filter: progid:DXImageTransform.
+		margin-bottom: 10px;
+		width: 80%;
     }
     
     #downloadPackage a.btn:hover{
@@ -734,6 +735,10 @@
     .category-nav > li.nav-item > a{
     	padding-left: 0px;
     }
+	
+	.category-nav > li.my-packages > a{
+		color: #08c;
+	}
     
     .category-nav > li.nav-item:hover,
      .category-nav > li.nav-item:hover > a,

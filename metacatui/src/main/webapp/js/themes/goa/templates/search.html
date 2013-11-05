@@ -10,13 +10,6 @@
 	      		</a>
       		</div>
       		<div class="clear"></div>
-	    		<% if(username){
-	    		print('<div class="subset-choices">');
-					print('<a class="subset-choice keyword-search-link span12 btn" href="#" data-category="additionalCriteria" data-term="+rightsHolder:' + username + '"> My packages </a>');    			
-	    		print('</div>');
-	    		print('<div class="clear"></div>');
-	    		}
-	    		%>
     	    <div class="filter-contain row-fluid">
     	    	<div class="row-fluid">
 		    		<h2 class="nav-header span4">Filters</h2>
@@ -69,7 +62,11 @@
 				</div>
 			</div>
 			<ul class="category-nav nav-list nav">
-				<li><h2 class="nav-header span12">Data Categories</h2></li>
+				<li><h2 class="nav-header span12">Data Categories</h2><div class="clear"></div></li>
+			<% if(username){
+	    		print('<li class="nav-item my-packages" data-category="additionalCriteria" data-term="+rightsHolder:'+ username +'"><i class="icon-remove span1 remove-addtl-criteria"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="+rightsHolder:'+ username +'">My packages</a><div class="clear"></div></li>');
+	    		}
+	    	%>
 			<%
 				var keywords = [{link: "+keywords:EVOSTC", display: "EVOSTC"}, 
 								{link: "+keywords:%22Exxon%20Valdez%20Oil%20Spill%20Trustee%20Council%22", display: "Exxon Valdez Oil Spill Trustee Council"},
