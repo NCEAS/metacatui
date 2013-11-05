@@ -51,7 +51,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			// load all the registry content so all the js can run in what gets loaded
 			var viewRef = this;
 			$.post(
-					this.registryUrl + this.registryQueryString,
+					this.registryUrl,
+					this.registryQueryString,
 					function(data, textStatus, jqXHR) {
 						viewRef.$el.html(data);
 						viewRef.verifyLoginStatus();
