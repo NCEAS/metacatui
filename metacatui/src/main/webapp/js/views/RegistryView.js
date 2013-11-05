@@ -12,7 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				
 		registryUrl: null,
 		
-		registryQueryString:  "?cfg=metacatui",
+		registryQueryString:  "cfg=metacatui",
 		
 		events: {
 			"click #entryFormSubmit"   : "submitEntryForm",
@@ -50,9 +50,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			
 			// load all the registry content so all the js can run in what gets loaded
 			var viewRef = this;
-			this.$el.load(
-					this.registryUrl + this.registryQueryString,
-					function() {
+			$.post(
+					this.registryUrl,
+					this.registryQueryString,
+					function(data, textStatus, jqXHR) {
+						viewRef.$el.html(data);
 						viewRef.verifyLoginStatus();
 						viewRef.augementForm();
 						viewRef.$el.hide();
@@ -274,7 +276,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			
 			// ajax call to logout, only want the form object
 			this.$('#tempMetacatContainer').load(
-				this.registryUrl + this.registryQueryString + "&stage=logout form",
+				this.registryUrl + "?" + this.registryQueryString + "&stage=logout form",
 				null, // params are in the URL
 				function(data, textStatus, xhr) {
 					
