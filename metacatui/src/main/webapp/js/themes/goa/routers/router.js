@@ -12,7 +12,9 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var metadataView = new MetadataView();
 	var externalView = new ExternalView();
 	var ldapView = new LdapView();
-
+	
+	// set the KNB as the only LDAP servicer for this theme
+	appModel.set('ldapwebServiceUrl', 'https://knb.ecoinformatics.org/knb/cgi-bin/ldapweb.cgi');
 	
 	// MetacatUI Router
 	// ----------------
