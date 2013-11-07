@@ -191,7 +191,10 @@ define(['jquery',
 				viewRef.triggerSearch();
 			});
 		},
-			
+		
+		/* 
+		 * showResults gets all the current search filters from the searchModel, creates a Solr query, and runs that query.
+		 */
 		showResults: function (page) {
 			console.log('showing results');
 			
@@ -339,12 +342,18 @@ define(['jquery',
 			
 			//Spatial
 			if(searchModel.get('north')!=null){
-				query += ('+southBoundCoord:%7B' + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D+eastBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D");		
+				query += ("+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
+						  "+eastBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
+						  "+westBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
+						  "+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D");
 			}
 			
 			console.log('query: ' + query);
 			
+			//Set the facets in the query
 			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class"]);
+			
+			//Run the query
 			appSearchResults.setQuery(query);
 			
 			//Show or hide the reset filters button
