@@ -172,6 +172,10 @@ define(['jquery',
 				minZoom: 0,
 				maxZoom: 15,
 			    center: mapCenter,
+			    zoomControl: true,
+			    zoomControlOptions: {
+				          style: google.maps.ZoomControlStyle.LARGE
+				        },
 			    mapTypeId: google.maps.MapTypeId.TERRAIN
 			};
 			
@@ -182,12 +186,22 @@ define(['jquery',
 			var viewRef = this;
 			
 			google.maps.event.addListener(mapRef, "idle", function(){
-				if(mapRef.getZoom() == mapOptions.maxZoom){ return; }
+				//If the map is zoomed all the way out, do not apply the spatial filters
+				if(mapRef.getZoom() == mapOptions.minZoom){ return; }
+				
+				//Get the Google map bounding box
 				var boundingBox = mapRef.getBounds();
+				
+				//Set the search model filters
 				searchModel.set('north', boundingBox.getNorthEast().lat());
 				searchModel.set('west', boundingBox.getNorthEast().lng());
 				searchModel.set('south', boundingBox.getSouthWest().lat());
 				searchModel.set('east', boundingBox.getSouthWest().lng());
+				
+				//Up the filter count
+				searchModel.set('filterCount', searchModel.get('filterCount') + 1);
+				
+				//Trigger a new search
 				viewRef.triggerSearch();
 			});
 		},
@@ -575,6 +589,9 @@ define(['jquery',
 			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
 			$("#data_year").prop("checked", searchModel.get("pubYear"));
 			$("#publish_year").prop("checked", searchModel.get("dataYear"));
+			
+			//Zoom out the Google Map
+			this.map.setZoom(0);
 			
 			//Hide the reset button again
 			$('#clear-all').css('display', 'none');

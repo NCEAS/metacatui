@@ -1059,8 +1059,8 @@ Bold 700
 /* MAPS 
 --------------------------------- */
 #map-canvas{
-	height: 300px;
-	width: 300px;
+	height: 270px;
+	width: 100%;
 }
 /* MAIN CONTENT 
 --------------------------------- */
