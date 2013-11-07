@@ -28,7 +28,9 @@ require.config({
                '/' + metacatContext + '/style/common/templates/metacatui/entryForm',
                // fallback to local version
                'scripts/entryForm'
-                ]
+                ],
+    domReady: '../components/domready',
+    async: '../components/async'
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
@@ -56,6 +58,12 @@ var searchModel = searchModel || {};
 var registryModel = registryModel || {};
 
 
+//Define Google Maps API
+define('gmaps', ['async!https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyCcGB6lZHoq2Isp0ugdqsCPTDpl_ryo8Pk&sensor=false'], function() {
+    return google.maps;
+});
+
+
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
 function(Bootstrap, AppView, AppModel) {
@@ -64,6 +72,7 @@ function(Bootstrap, AppView, AppModel) {
 	// initialize the application to get the index.html scaffolding in place
 	appModel = new AppModel({context: '/' + metacatContext});
 	appView = new AppView();
+
 	
 	/* Now require the rest of the libraries for the application */
 	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 'models/RegistryModel'],
@@ -78,7 +87,8 @@ function(Bootstrap, AppView, AppModel) {
 		
 		// Initialize routing and start Backbone.history()
 		uiRouter = new UIRouter();
-		Backbone.history.start();   
+		Backbone.history.start();  
+		
 	    	
 	});
     	

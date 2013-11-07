@@ -1055,7 +1055,13 @@ Bold 700
 		font: 400 16px/16px "Oswald", sans-serif;
 		border: none;
 	}
-	
+
+/* MAPS 
+--------------------------------- */
+#map-canvas{
+	height: 300px;
+	width: 300px;
+}
 /* MAIN CONTENT 
 --------------------------------- */
 #mainContent{

@@ -9,9 +9,10 @@ define(['jquery',
 				'text!templates/pager.html',
 				'text!templates/resultsItem.html',
 				'text!templates/mainContent.html',
-				'text!templates/currentFilter.html'
+				'text!templates/currentFilter.html',
+				'gmaps'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate, MainContentTemplate, CurrentFilterTemplate) {
+	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -109,6 +110,9 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();
 			
+			//Render the Google Map
+			this.renderMap();
+			
 			
 			//Update the year slider
 			this.updateYearRange(); 
@@ -156,7 +160,38 @@ define(['jquery',
 
 			return this;
 		},
+		
+		renderMap: function() {
+			
+			var map;
 
+			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
+			
+			var mapOptions = {
+			    zoom: 0,
+				minZoom: 0,
+				maxZoom: 15,
+			    center: mapCenter,
+			    mapTypeId: google.maps.MapTypeId.TERRAIN
+			};
+			
+			gmaps.visualRefresh = true;
+			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
+			
+			var mapRef = this.map;
+			var viewRef = this;
+			
+			google.maps.event.addListener(mapRef, "idle", function(){
+				if(mapRef.getZoom() == mapOptions.maxZoom){ return; }
+				var boundingBox = mapRef.getBounds();
+				searchModel.set('north', boundingBox.getNorthEast().lat());
+				searchModel.set('west', boundingBox.getNorthEast().lng());
+				searchModel.set('south', boundingBox.getSouthWest().lat());
+				searchModel.set('east', boundingBox.getSouthWest().lng());
+				viewRef.triggerSearch();
+			});
+		},
+			
 		showResults: function (page) {
 			console.log('showing results');
 			
@@ -300,6 +335,11 @@ define(['jquery',
 				
 				//Get the minimum and maximum years of the data coverage years from the search results
 				
+			}
+			
+			//Spatial
+			if(searchModel.get('north')!=null){
+				query += ('+southBoundCoord:%7B' + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D+eastBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D");		
 			}
 			
 			console.log('query: ' + query);

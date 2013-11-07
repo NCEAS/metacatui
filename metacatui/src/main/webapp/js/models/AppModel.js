@@ -28,8 +28,6 @@ define(['jquery', 'underscore', 'backbone'],
 			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null
-
-
 		},
 		
 		initialize: function() {
