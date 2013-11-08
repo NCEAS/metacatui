@@ -198,7 +198,8 @@ define(['jquery',
 						type: "PUT",
 						success: function(data, textStatus, xhr) {
 							// the response should have new identifier in it
-							identifier = $(data).find("identifier").text();
+							identifier = $(data).find("d1:\\identifier, identifier").text();
+						
 							console.log('identifier: ' + identifier);
 							if (identifier) {
 								
