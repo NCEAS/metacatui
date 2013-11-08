@@ -168,8 +168,8 @@ define(['jquery',
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
 			
 			var mapOptions = {
-			    zoom: 0,
-				minZoom: 0,
+			    zoom: 3,
+				minZoom: 3,
 				maxZoom: 15,
 			    center: mapCenter,
 			    zoomControl: true,
@@ -186,6 +186,7 @@ define(['jquery',
 			var viewRef = this;
 			
 			google.maps.event.addListener(mapRef, "idle", function(){
+				console.log(mapRef.getZoom());
 				//If the map is zoomed all the way out, do not apply the spatial filters
 				if(mapRef.getZoom() == mapOptions.minZoom){ return; }
 				

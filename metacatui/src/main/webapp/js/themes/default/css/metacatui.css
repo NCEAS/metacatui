@@ -28,6 +28,7 @@ Bold 700
       background: rgba(0, 0, 0, .8);
       font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
       min-height: 100%;
+      height: 100%;
       position: relative;
     }
     
@@ -1059,7 +1060,12 @@ Bold 700
 /* MAPS 
 --------------------------------- */
 #map-canvas{
-	height: 270px;
+	height: 100%;
+	width: 100%;
+}
+
+#map-container{
+	height: 100%;
 	width: 100%;
 }
 /* MAIN CONTENT 
