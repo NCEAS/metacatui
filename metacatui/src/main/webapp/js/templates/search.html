@@ -1,6 +1,3 @@
-
-<article id="mainBody" class="container-fluid">
-	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
     		<% if(username){
@@ -63,59 +60,20 @@
 				<div class="filter-contain">
 				
 				</div>
-			<!--  Coming in next release
-				<div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-map-marker"></i>Location</h3>
-					<input class="span10 filter" type="text" placeholder="Name or coordinates" id="location_input" data-category="location" >
-					<button class="filter btn" id="location_btn" data-category="location"><i class="icon-search"></i></button>
-					<ul id="current-location-filters" class="current-filters" data-category="location">
-					</ul>
-				</div>
-			
-			
-			<h2 class="nav-header">Your Collections</h2>
-			<ul class="collections">
-				<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Your Data</a></li>		
-				<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Study</a></li>		
-				<li><a class="collections" id="" href=""><i class="icon-folder-close"></i>Collection</a></li>		
-			</ul>
-			-->
 			</div>
 		</aside>
 
 		<!--CONTENT AREA-->
 		<div id="content" class="span9">
 			<div id="results-view" class="container-fluid">
-				<h2 id="pagehead" class="row-fluid">Data</h2>
 				<div id="results-header" class="row-fluid result-header">
-					<!-- 
-					<div class="result-header-menu span1">
-						<div class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
-								class="icon-plus"></i> <b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="#">Add to collection...</a></li>
-								<li><a href="#">Download</a></li>
-							</ul>
-						</div>
-					</div>
-					-->
 					
 					<!-- count stats -->
-					<div class="result-header-count span6" id="statcounts">0 to 0 of 0</div>
+					<div class="result-header-count span9" id="statcounts">0 to 0 of 0 data packages</div>
 					
-					<!-- top pager -->
-					<!-- 
-					<div class="result-header-pager span3 pagination pagination-right" id="resultspager_top">
-						<ul>
-							<li><a id="results_prev">Prev</a></li>
-							<li><a id="results_next">Next</a></li>
-						</ul>
-					</div>
-					-->
 					
 					<!-- sort order -->
-					<div class="span6 text-right select">
+					<div class="span3 text-right select">
 						<i class="icon-small icon-chevron-down"></i>
 						<select id=sortOrder>
 							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
@@ -124,18 +82,6 @@
 							<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
 						</select>
 					</div>
-					
-					<!-- 
-					<div class="result-header-menu span1">
-						<div class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
-								class="icon-cog"></i> <b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="#">Settings...</a></li>
-							</ul>
-						</div>
-					</div>
-					-->
 					
 				</div>
 				
@@ -152,6 +98,4 @@
 			</div>
 			<div id="metadata-view" class="container-fluid"></div>
 		</div>
-	</section>
-</article>
 
