@@ -14,6 +14,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var ldapView = new LdapView();
 	
 	// set the KNB as the only LDAP servicer for this theme
+	// NOTE: requires CORS configured on the web server
 	appModel.set('ldapwebServiceUrl', 'https://knb.ecoinformatics.org/knb/cgi-bin/ldapweb.cgi');
 	
 	// MetacatUI Router
