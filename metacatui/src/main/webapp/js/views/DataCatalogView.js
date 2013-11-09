@@ -235,7 +235,7 @@ define(['jquery',
 			//resourceMap
 			var resourceMap = searchModel.get('resourceMap');
 			if(resourceMap){
-				query += '+resourceMap:*';
+				query += '+resourceMap:resourceMap*';
 			}
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
