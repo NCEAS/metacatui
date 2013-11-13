@@ -677,7 +677,6 @@ Bold 700
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
-      min-height: 0px;
       position: fixed;
       width: 15%;
       min-width: 250px;
@@ -693,6 +692,10 @@ Bold 700
 	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
     } 
+    
+    #sidebar.collapsed{
+    	height: 50px;
+    }
  	
  	aside > div{
  		margin-bottom: 10px;		

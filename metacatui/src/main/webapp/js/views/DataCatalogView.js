@@ -932,9 +932,9 @@ define(['jquery',
 			this.$results.html('');
 		},
 		
-		//Collapses the filter sidebar in the default theme
+		//Toggles the collapseable filters sidebar in the default theme 
 		collapseFilters: function(){
-			$('#sidebar').css('height', '50px');
+			$('#sidebar').toggleClass('collapsed');
 		},
 		
 		onClose: function () {			
