@@ -45,13 +45,6 @@ Bold 700
       display:block;   
     }
 
-        
-    body > #Content {
-    	position: relative;
-    	margin: 40px auto auto auto;
-    	width: 1170px;
-    	padding-bottom: 360px; /* height + vertical padding + vertical margins of footer */
-    }
 		
     body > section > article {
       background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
@@ -64,6 +57,11 @@ Bold 700
     
      .container{
     	width: 100%;
+    }
+    
+    .center{
+    	margin: 0 auto;
+    	float: none;
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -111,10 +109,7 @@ Bold 700
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
-    
-    h2#pagehead{
-    	font: 400 31px/31px "Oswald" Arial sans-serif;
-    }
+
      
     /* For full-screen background image */
 	img.bg{
@@ -126,7 +121,7 @@ Bold 700
 		top: 0;
 		left: 0;
 		z-index: -1; /* So that right-clicking on background image will behave like right-clicking on background */
-		
+		display: none;
 	}
 	
 	@media screen and (max-width: 1024px) {
@@ -139,7 +134,21 @@ Bold 700
     
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 
-	.controls-well {
+	.depth {
+  display: block;
+  border: 1px solid silver;
+  background: linear-gradient(#eee, #fff);
+  transition: all 0.3s ease-out;
+  padding: 5px;
+  color: #555;
+}
+
+.depth:focus {
+  outline: none;
+  background-position: 0 -1.7em;
+}
+
+.controls-well {
 	    padding: 4px;
 	    background: rgba(255, 255, 255, 0.3);
 	}
@@ -148,7 +157,7 @@ Bold 700
 	}
 	
 	select{
-    	font: 300 16px/16px "Oswald", Arial, sans-serif;
+    	font: 400 16px/16px "Source Sans Pro", Arial, sans-serif;
     }
 	
 	
@@ -210,64 +219,35 @@ Bold 700
 /* FOOTER CSS
 -------------------------------------------------- */    
 
-    footer#Footer {
-      position: absolute;
-      bottom: 0px;
-      margin-top: 40px;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 20px 0px;
-      height: 280px;
-      width: 100%;
-      color: #FFFFFF;
+    #Footer {
+      position: fixed;
+		bottom: 0px;
+		background: #333;
+		padding: 0px 10px;
+		height: 18px;
+		width: 100%;
+		color: #FFFFFF;
+		display: block;
     }
     
-    footer#Footer > .logos{
-    	width: 450px;
-    	margin: 20px auto;
+    #Footer:hover{
+    	height: 100px;
+    	transition: height .5s ease-out;
     }
     
-    footer#Footer > .logos > div{
-    	height: 100px; 	
+    #Footer .center{
+    	width: 20%;
+    	font-size: 13px;
+    	margin-bottom: 10px;
     }
-    
-    footer#Footer > .logos > div > a{
-    	line-height: 100px; 	
-    }
-    
-    footer#Footer > .logos > div > a > img{
-    	float:right;
-    }
-    
-    footer#Footer > .logos > div > a > img:hover{
-    	opacity: 1;
-    }
-    
-    footer#Footer > .logos img.small-logo{
-    	height: 25%;
-    	width: auto;
-    }
-    
-    footer#Footer > .logos img.small-logo:last-child{
-    	float:left;
-    }
-    
-    
-    footer#Footer > .logos img.short-logo{
-    	margin-top: 20%;
-    }
-    
-    footer#Footer > .logos 
-	
-	footer#Footer > div:last-child{
-		text-align: center;
-		color: #999999;
-	}
+
 
     footer#Footer h2 {
-      font: 300 25px/25px "Oswald", Arial, sans-serif;
+      font: 400 20px/20px "Source Sans Pro", Arial, sans-serif;
       color: #FDFDFD;
       padding: 0;
-      line-height: 48px;
+      display: inline;
+      margin-left: 2%;
     }
     
     footer#Footer ul.helpitems {
@@ -275,9 +255,8 @@ Bold 700
     }
     
     footer#Footer ul.helpitems li {
-      font: 400 15px/15px "Source Sans Pro", Arial, sans-serif;
-      vertical-align: baseline;
-      margin: 15px 0px 0px 0px;                 
+      font: 400 13px/20px "Source Sans Pro", Arial, sans-serif;
+      margin: 0px 0px 0px 5px;                 
     }
     
     ul.helpitems a {
@@ -290,18 +269,35 @@ Bold 700
     }
     
 
-    footer#Footer img {
-      opacity: .75;
+    #Footer img {
+      opacity: .6;
+    }
+    
+    #Footer img:hover{
+    	opacity: 1;
+    	transition: opacity 1s;
     }
     
     
  /* BUTTONS CSS
 -------------------------------------------------- */   
-    
+    .metro.three-d {
+  position: relative;
+  box-shadow: 
+    1px 1px #53A7EA,
+    2px 2px #53A7EA,
+    3px 3px #53A7EA;
+  transition: all 0.1s ease-in;
+}
+
+.metro.three-d:active { 
+  box-shadow: none;
+
+}
+
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       background-image: none;
       background-repeat: none;
-      background-color: #166194;
       box-shadow: none;
       -moz-box-shadow: none;
       border: none;
@@ -309,6 +305,11 @@ Bold 700
       font: 400 20px/20px "Oswald", Arial, sans-serif;
       text-shadow: none;
       color: #FFFFFF;
+    }
+    
+    .btn:hover{
+    	background-color: #0377DD;
+    	transition: background-color 1s;
     }
 
     .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
@@ -321,7 +322,6 @@ Bold 700
     }
     
     .btn-primary {
-      background-color: #166194;
       color: #FFFFFF;
       
     }
@@ -333,10 +333,6 @@ Bold 700
 		border: none;
     }
         
-    .btn:hover, .btn-primary:hover, .btn-large:hover, .btn-small:hover, .btn-mini:hover{
-      color: #166194;
-      background: rgba(22, 97, 148, 0.2);
-    }
     
     .btn-group > .dropdown-toggle {
 		-webkit-border-top-right-radius: 4px;
@@ -381,17 +377,36 @@ Bold 700
     
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
-    
-    .center {
-      float: none;
-      margin: 0 auto;
-    }
-    
+   
     nav#Navbar {
       top: 0px;
       width: 100%;
-      float: none;      
+      float: none; 
+      height: 40px;     
     }
+    
+    /*Share Your Data button */
+    #share{
+    	position: absolute;
+    	top: 0px;
+    	width: auto;
+    	margin: 0px;
+    	border-radius: 0px 0px 5px 5px;
+    	-webkit-border-radius: 0px 0px 5px 5px;
+    	-moz-border-radius: 0px 0px 5px 5px;
+    	z-index: 99;
+    	background-color: #166194;
+    	color: #FFFFFF;
+    	padding: 5px;
+    	font-size: 17px;
+    	font-weight: 600;
+    }
+    
+    #share:hover{
+    	padding-top: 20px;
+    	transition: all .5s;
+    }
+
     
     /* Depending on the headerType, these classes apply */
 
@@ -422,12 +437,14 @@ Bold 700
     }
 
 	.navbar-inner > ul > li img{
-		height: 45px;
+		height: 32px;
+		margin-top: -10px;
 	}
     .navbar .nav > li > a {
       color: #FFFFFF;
-      font: normal normal 400 35px/35px "Oswald", Arial, sans-serif;
+      font: normal normal 400 25px/20px "Oswald", Arial, sans-serif;
       text-transform: uppercase;
+      text-shadow: 0 1px 1px #555;
     }
 
     .navbar .nav > li > a:focus,
@@ -489,45 +506,46 @@ Bold 700
     /* Search bar in nav bar */
     
     #search_txt{
-    	border-radius: 4px 0px 0px 4px;
-    	-webkit-border-radius: 4px 0px 0px 4px;
-		-moz-border-radius: 4px 0px 0px 4px;
-		border: 1px solid #FFFFFF;
-		margin-top: 15px;
+    	border-radius: 2px 0px 0px 2px;
+    	-webkit-border-radius: 2px 0px 0px 2px;
+		-moz-border-radius: 2px 0px 0px 2px;
+		border: 0px;
+		margin-top: 5px;
 		float: left;
-		background-color: #FFFFFF;
+		background-color: #888888;
 		background-image: none;
-		border-right: 0px;		
+		box-shadow: inset 0 2px 10px rgba(0,0,0,.3);
+		border-right: 0px;	
+		color: #FFFFFF;	
     }
     	#search_txt::-webkit-input-placeholder {
-		   color: #999999;
+		   color: #DDDDDD;
 		}
 		#search_txt:-moz-placeholder { /* Firefox 18- */
-		   color: #999999;  
+		   color: #DDDDDD;  
 		}
 		
 		#search_txt::-moz-placeholder {  /* Firefox 19+ */
-		   color: #999999;  
+		   color: #DDDDDD;  
 		}
 		
 		#search_txt:-ms-input-placeholder {  
-		   color: #999999;  
+		   color: #DDDDDD;  
 		}
     
     
     #search_btn{
-    	margin-top: 15px;
-    	height: 14px;
+    	margin-top: 5px;
+    	height: 16px;
     	width: auto;
     	float: left;
     	background-image: none;
-    	background-color: #FFFFFF;
-    	border-radius: 0px 4px 4px 0px;
-    	-webkit-border-radius: 0px 4px 4px 0px;
-		-moz-border-radius: 0px 4px 4px 0px;
-    	padding: 7px;
-    	border: 1px solid #FFFFFF;
-    	border-left: 0px;
+    	background-color: #555555;
+    	border-radius: 0px 2px 2px 0px;
+    	-webkit-border-radius: 0px 2px 2px 0px;
+		-moz-border-radius: 0px 2px 2px 0px;
+    	padding: 5px 7px 7px 7px;
+    	border: 0px;
     }
     
     #search_btn > i:hover{
@@ -536,7 +554,7 @@ Bold 700
     
     #search_btn > i{
     	font-size: 13px;
-    	color: #999999;
+    	color: #DDD;
     	text-shadow: none;
     	float: left;
     	line-height: 15px;
@@ -660,6 +678,20 @@ Bold 700
   -------------------------------------------------- */
     #sidebar {
       min-height: 400px;
+      position: fixed;
+      width: 15%;
+      min-width: 250px;
+      bottom: 0px;
+      left: 0px;
+      padding: 0px;
+      background-color: rgba(255,255,255,0.7);
+      border-radius: 0px 5px 0px 0px;
+      -moz-border-radius: 0px 5px 0px 0px;
+      -webkit-border-radius: 0px 5px 0px 0px;
+      margin: 0px;
+      -webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
     } 
  	
  	aside > div{
@@ -691,6 +723,10 @@ Bold 700
 	}
     
     /***Filters ***/
+    .filter-container{
+    	padding: 0px 10px;
+    }
+    
     .filter-contain{
    	  margin-bottom: 25px;
    	  width: 100%;
@@ -708,6 +744,7 @@ Bold 700
     	border-left: 0px;
     	height: 30px;
     	display: inline-block;
+    	width: 20%;
     }
     
     .filter.btn > i{
@@ -730,7 +767,7 @@ Bold 700
     	height: 20px;
     	background-color: #FFFFFF;
     	background-image: none;
-    	width: 80%;
+    	width: 75%;
     }
 
 	/*-- The 'Year' filter elements --*/
@@ -854,12 +891,15 @@ Bold 700
     /*-- Headers in sidebar --*/
     h2.nav-header {
       font: 400 20px/25px "Oswald" Arial sans-serif;
-      color: #555555;    
-      text-transform: uppercase;  
-      display: block;
-      padding: 0px;
-      margin: 0px;
-      min-height: 25px;
+	color: white;
+	text-transform: uppercase;
+	display: block;
+	padding: 0px;
+	margin: 0px;
+	min-height: 25px;
+	background-color: #333;
+	padding: 4px 0px 4px 10px;
+	margin-bottom: 10px;
     }
     
     h3.nav-header{
@@ -912,31 +952,25 @@ Bold 700
    input[class*="span"].left,
    .row-fluid input[class*="span"].left{
    		float: left;
-   }
-
-    
-    #sidebar_share:hover{
-      color: #166194;
-      background: rgba(22, 97, 148, 0.2);
-      }
-      
-     #sidebar_share:hover > i{
-     	color: #166194;
-     }
-    
+   }  
     
     #clear-all{
     	text-align: right;
-    	float: right;
-    	cursor: pointer;
-    	font-size: 14px;
-    	margin: 0px 5px 0px 5px;
-    	color: #931D1D;
-    	display: none;
+float: right;
+cursor: pointer;
+font-size: 14px;
+margin: 0px 5px 0px 5px;
+color: #931D1D;
+display: none;
+margin-top: -36px;
+background-color: #931d1d;
+color: white;
+padding: 0px 5px;
+border-radius: 3px;
     }
     
     #clear-all > i{
-    	font-size: 20px;
+    	font-size: 15px;
     	margin-left: 7px;
     }
     
@@ -975,26 +1009,35 @@ Bold 700
 
 /* RESULT CSS
 -------------------------------------------------- */
+    #results{
+    	background-color: rgba(255,255,255,0.8);
+    }
+    
     .result-header {
-      font-weight: bold;
+      background-color: #333333;
+      padding: 0px 3%;
+      width: 94%;
     }
     
     .result-header-count {
-      font: 300 18px/18px "Oswald", Arial, sans-serif;
+      font: 400 20px/40px "Oswald", Arial, sans-serif;
+      color: #DDDDDD;
+      text-transform: uppercase;
+    }
+    
+    .result-header-count > .result-header-count:after{
+    	content: " data packages";
     }
     
     .result-row {
       display: block;
-      padding: 8px 10px;
-    }
-    
-    .result-row a.view_link{
-    	color: #155988;
-    	font-weight: 600;
+      padding: 8px 3%;
+      width: 94%;
+      font: 400 16px/19px "Source Sans Pro" Arial, sans-serif;
     }
     
     .result-row:nth-child(odd){
-    	background-color: rgba(192, 218, 255, 0.3);
+    	background-color: rgba(185, 185, 185, 0.3);
     }
     
     .result-row:nth-child(even){
@@ -1002,7 +1045,7 @@ Bold 700
     }
     
     .result-row:hover { 
-    background-color: #FDFDFD;
+    background-color: rgba(178, 202, 221, 0.8);
   	}
   
     .result-row .btn > .icon-caret-down {
@@ -1019,7 +1062,12 @@ Bold 700
     }
 
     .result-author {
-      font-weight: bold;
+      font-weight: normal;
+    }
+    
+    .result-title{
+    	font-weight: 600;
+    	color: #166194;
     }
     
     .result-row .icon-download-alt{
@@ -1034,8 +1082,10 @@ Bold 700
   		position: relative;
   	}
   	
-  	.result-row .download:hover i{
+  	.result-row a > i,
+  	.result-row i{
   		text-decoration: none;
+  		color: #555555;
   	}
   	
   	.result-row .dropdown-menu{
@@ -1067,11 +1117,33 @@ Bold 700
 #map-container{
 	height: 100%;
 	width: 100%;
+	position: fixed;
+	top:0px;
 }
+
+#mainBody{
+	padding:0px;
+}
+
+#content {
+position: fixed;
+right: 0;
+bottom: 18px;
+background-color: rgba(255,255,255,0.8);
+height: auto;
+max-height: 90%;
+width: 40%;
+min-width: 300px;
+overflow-y:scroll;
+margin-top: 40px;
+}
+
+
 /* MAIN CONTENT 
 --------------------------------- */
 #mainContent{
-	height: 600px;
+	height: 0px;
+	padding: 0px;
 }
 
 #mainContent h1{

@@ -1,15 +1,17 @@
+
+<article id="mainBody" class="container-fluid">
+	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
+		<h2 class="nav-header">Filter</h2>
     		<% if(username){
     		print('<div class="subset-choices">');
 				print('<a class="subset-choice keyword-search-link span12" href="#" data-category="additionalCriteria" data-term="+rightsHolder:' + username + '"> My packages <i class="icon-caret-right"></i> </a>');    			
-    		print('</div>');
+    		print('</div><div class="clear"></div>');
     		}
     		%>
-    		<div class="clear"></div>
-    		<div class="filter-contain">
-	    		<h2 class="nav-header span6">Filter</h2>
-	    		<a class="span5" id="clear-all">Clear filters<i class="icon-remove tooltip-this" data-placement="top" data-title="Reset filters" data-trigger="hover"></i></a>
+    		<div class="filter-container">
+	    		<a id="clear-all">Clear filters<i class="icon-remove tooltip-this" data-placement="top" data-title="Reset filters" data-trigger="hover"></i></a>
 				
 				<div class="input-append filter-contain">
 					<input class="filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
@@ -56,24 +58,21 @@
 					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
 					</ul>
 				</div>
-					
-				<div class="filter-contain">
-				
-				</div>
+
 			</div>
 		</aside>
 
 		<!--CONTENT AREA-->
 		<div id="content" class="span9">
-			<div id="results-view" class="container-fluid">
+			<div id="results-view">
 				<div id="results-header" class="row-fluid result-header">
 					
 					<!-- count stats -->
-					<div class="result-header-count span9" id="statcounts">0 to 0 of 0 data packages</div>
+					<div class="result-header-count span6" id="statcounts">0 to 0 of 0</div>
 					
 					
 					<!-- sort order -->
-					<div class="span3 text-right select">
+					<div class="span6 text-right select">
 						<i class="icon-small icon-chevron-down"></i>
 						<select id=sortOrder>
 							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
@@ -82,6 +81,18 @@
 							<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
 						</select>
 					</div>
+					
+					<!-- 
+					<div class="result-header-menu span1">
+						<div class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
+								class="icon-cog"></i> <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="#">Settings...</a></li>
+							</ul>
+						</div>
+					</div>
+					-->
 					
 				</div>
 				
@@ -98,4 +109,6 @@
 			</div>
 			<div id="metadata-view" class="container-fluid"></div>
 		</div>
+	</section>
+</article>
 
