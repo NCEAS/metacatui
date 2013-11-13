@@ -49,7 +49,8 @@ define(['jquery',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
 							   'click #clear-all' : 'resetFilters',
 					 'click .keyword-search-link' : 'additionalCriteria',
-				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria'
+				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
+				   		'click #collapse-filters' : 'collapseFilters'
 
 		},
 		
@@ -929,6 +930,11 @@ define(['jquery',
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
 			this.$results.html('');
+		},
+		
+		//Collapses the filter sidebar in the default theme
+		collapseFilters: function(){
+			$('#sidebar').css('height', '50px');
 		},
 		
 		onClose: function () {			

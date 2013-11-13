@@ -677,7 +677,7 @@ Bold 700
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
-      min-height: 400px;
+      min-height: 0px;
       position: fixed;
       width: 15%;
       min-width: 250px;
