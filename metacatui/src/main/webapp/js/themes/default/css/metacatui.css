@@ -730,6 +730,7 @@ Bold 700
     .filter-contain{
    	  margin-bottom: 25px;
    	  width: 100%;
+   	  position: relative;
    }
     
     /*-- Search buttons next to text inputs --*/
@@ -1119,6 +1120,16 @@ border-radius: 3px;
 	width: 100%;
 	position: fixed;
 	top:0px;
+}
+
+#edit-map{
+	font-size: 14px;
+	line-height: 17px;
+	color: #166194;
+	border-bottom: 1px dotted #166194;
+	position: absolute;
+	top: 25px;
+	left: 160px;
 }
 
 #mainBody{

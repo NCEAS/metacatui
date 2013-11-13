@@ -58,6 +58,15 @@
 					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
 					</ul>
 				</div>
+				
+				<div class="input-append filter-contain">
+					<h3 class="nav-header"><i class="icon-globe"></i>Spatial Coverage</h3>
+					<div id="edit-map">edit map</div>
+					<input class="filter" type="text" placeholder="Place or address" id="spatial_input" data-category="spatial">
+					<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
+					<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
+					</ul>
+				</div>
 
 			</div>
 		</aside>
@@ -68,11 +77,11 @@
 				<div id="results-header" class="row-fluid result-header">
 					
 					<!-- count stats -->
-					<div class="result-header-count span6" id="statcounts">0 to 0 of 0</div>
+					<div class="result-header-count span7" id="statcounts">0 to 0 of 0</div>
 					
 					
 					<!-- sort order -->
-					<div class="span6 text-right select">
+					<div class="span5 text-right select">
 						<i class="icon-small icon-chevron-down"></i>
 						<select id=sortOrder>
 							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>

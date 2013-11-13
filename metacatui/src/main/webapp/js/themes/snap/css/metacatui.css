@@ -769,6 +769,22 @@ header{
 		left: 0px;
 		background-color: #353535;
 	}
+/* MAP
+-------------------------------------------------- */
+#edit-map{
+	font-size: 14px;
+	border-bottom: 1px dotted #127180;
+	width: 58px;
+	margin-top: -25px;
+	margin-left: 165px;
+	line-height: 18px;
+	color: #127180;
+	position: absolute;
+}
+
+#map-canvas{
+	height: 400px;
+}
 	
 /* METADATA VIEW CSS
 -------------------------------------------------- */

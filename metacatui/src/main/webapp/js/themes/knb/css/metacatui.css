@@ -325,6 +325,12 @@ Bold 700 Italic
     i.glyphicons-icon.white {
       opacity: 1;
     }
+ 
+ /* MAP
+-------------------------------------------------- */    
+#map-canvas{
+	height: 500px;
+} 
     
 /* FEATURES CSS 
 -------------------------------------------------- */    
