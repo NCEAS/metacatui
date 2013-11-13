@@ -50,8 +50,7 @@ define(['jquery',
 							   'click #clear-all' : 'resetFilters',
 					 'click .keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
-				   		'click #collapse-filters' : 'collapseFilters'
-
+				   			 'click .collapse-me' : 'collapse'
 		},
 		
 		initialize: function () {
@@ -932,9 +931,16 @@ define(['jquery',
 			this.$results.html('');
 		},
 		
-		//Toggles the collapseable filters sidebar in the default theme 
-		collapseFilters: function(){
-			$('#sidebar').toggleClass('collapsed');
+		//Toggles the collapseable filters sidebar and result list in the default theme 
+		collapse: function(e){
+			console.log(e.target);
+			if($(e.target).attr('id') == "filters-header"){
+				$('#sidebar').toggleClass('collapsed');
+			}
+			else if( ($(e.target).attr('id') == "results-header") || ($(e.target).attr('id') == "countstats")){
+				console.log('clicked');
+				$('#content').toggleClass('collapsed');	
+			}
 		},
 		
 		onClose: function () {			
