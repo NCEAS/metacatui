@@ -172,21 +172,39 @@ define(['jquery',
 				minZoom: 3,
 				maxZoom: 15,
 			    center: mapCenter,
+				disableDefaultUI: true,
 			    zoomControl: true,
 			    zoomControlOptions: {
-				          style: google.maps.ZoomControlStyle.LARGE
+				          style: google.maps.ZoomControlStyle.SMALL,
+				          position: google.maps.ControlPosition.TOP_LEFT
 				        },
+				panControl: false,
+				scaleControl: false,
+				streetViewControl: false,
+				mapTypeControl: true,
+				mapTypeControlOptions:{
+						position: google.maps.ControlPosition.TOP_LEFT
+				},
 			    mapTypeId: google.maps.MapTypeId.TERRAIN
 			};
 			
 			gmaps.visualRefresh = true;
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
+			//$('div[title*="Zoom"]').parent().parent().css('top', '150px');
 			
 			var mapRef = this.map;
 			var viewRef = this;
 			
+			google.maps.event.addListener(mapRef, "tilesloaded", function(){
+				//$('div[title*="Zoom"]').parent().parent().css('top', '150px');
+			});
+			
 			google.maps.event.addListener(mapRef, "idle", function(){
+				
+				//$('div[title*="Zoom"]').parent().parent().css('top', '150px');
+				
 				console.log(mapRef.getZoom());
+			
 				//If the map is zoomed all the way out, do not apply the spatial filters
 				if(mapRef.getZoom() == mapOptions.minZoom){ return; }
 				
@@ -205,6 +223,7 @@ define(['jquery',
 				//Trigger a new search
 				viewRef.triggerSearch();
 			});
+
 		},
 		
 		/* 

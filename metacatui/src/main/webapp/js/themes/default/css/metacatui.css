@@ -40,6 +40,13 @@ Bold 700
 		font: 400 27.5px/40px "Oswald", sans-serif;
 	}
 	
+    .bold-header{
+    	background-color: #333;
+    	color: #DDD;
+    	font: 400 20px/30px "Oswald", Arial, sans-serif;
+    	text-transform: uppercase;
+    	text-shadow: none;
+    }
     
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block;   
@@ -381,31 +388,36 @@ Bold 700
    
     nav#Navbar {
       top: 0px;
-      width: 100%;
-      float: none; 
+      width: auto;
+      float: right; 
       height: 40px;     
     }
     
     /*Share Your Data button */
     #share{
     	position: absolute;
-    	top: 0px;
+    	top: 150px;
+    	left: -160px;
     	width: auto;
     	margin: 0px;
-    	border-radius: 0px 0px 5px 5px;
-    	-webkit-border-radius: 0px 0px 5px 5px;
-    	-moz-border-radius: 0px 0px 5px 5px;
-    	z-index: 99;
-    	background-color: #166194;
-    	color: #FFFFFF;
-    	padding: 5px;
-    	font-size: 17px;
-    	font-weight: 600;
+    	border-radius: 0px;
+    	-webkit-border-radius: 0px;
+    	-moz-border-radius: 0px;
+    	padding: 0px 5px;
+    	line-height: 33px;
+    	-webkit-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
+		-moz-box-shadow:    3px -1px 15px rgba(50, 50, 50, 0.51);
+		box-shadow:         3px -1px 15px rgba(50, 50, 50, 0.51);
+    }
+    
+    #share > i{
+    	margin-left: 10px;
+    	font-size: 24px;
     }
     
     #share:hover{
-    	padding-top: 20px;
-    	transition: all .5s;
+    	left: 0px;
+    	transition: all .8s;
     }
 
     
@@ -431,15 +443,7 @@ Bold 700
       zoom: 1; /* For IE */
       min-height: 0px;
       box-shadow: none;
-      background: rgba(69,69,69,0.66);
-background: -moz-linear-gradient(top, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
-background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(69,69,69,0.66)), color-stop(100%, rgba(110,110,110,0)));
-background: -webkit-linear-gradient(top, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
-background: -o-linear-gradient(top, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
-background: -ms-linear-gradient(top, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
-background: linear-gradient(to bottom, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', endColorstr='#6e6e6e', GradientType=0 );
-    } 
+	} 
     
     .navbar-inner > ul{
     	margin: 0px;
@@ -453,7 +457,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
       color: #FFFFFF;
       font: normal normal 400 25px/20px "Oswald", Arial, sans-serif;
       text-transform: uppercase;
-      text-shadow: 0 1px 1px #555;
+      text-shadow: 0 1px 8px #333;
     }
 
     .navbar .nav > li > a:focus,
@@ -515,17 +519,17 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
     /* Search bar in nav bar */
     
     #search_txt{
-    	border-radius: 4px 0px 0px 4px;
-		-webkit-border-radius: 4px 0px 0px 4px;
-		-moz-border-radius: 4px 0px 0px 4px;
 		border: 0px;
+		border-radius: 0px;
+		-moz-border-radius: 0px;
+		-webkit-border-radius: 0px;
 		margin-top: 5px;
 		float: left;
-		background-color: rgba(255,255,255,0.7);
+		background-color: #FFFFFF;
 		background-image: none;
-		box-shadow: inset 0 2px 10px rgba(0,0,0,.6);
-		border-right: 0px;
 		color: #333;	
+		box-shadow: 0 1px 8px #333;
+		
     }
     	#search_txt::-webkit-input-placeholder {
 		   color: #666;
@@ -555,6 +559,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
 		-moz-border-radius: 0px 2px 2px 0px;
     	padding: 5px 7px 7px 7px;
     	border: 0px;
+    	box-shadow: 0 1px 8px #333;
     }
     
     #search_btn > i:hover{
@@ -868,11 +873,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
 	
 	.current-filters > li,
 	.current-filters > li[class*="span"]{
-		background-color: rgba(22, 97, 148, 0.6);
+		background-color: #166194;
 		padding: 0px 5px 0px 5px;
-		border-radius: 2px;
-		-moz-border-radius: 2px;
-		-webkit-border-radius: 2px;
 		min-height: 1.5em;
 		width: auto;
 		max-width: 100%;
@@ -890,8 +892,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
 		float: right;
 		line-height: 1.5em;
 		font-size: 1em;
-		color: #FFFFFF; /*IE fallback */
-		color: rgba(255, 255, 255, 0.5);
+		color: #71A9BD;
 	}
 	
 	.current-filters > li > i:hover{
@@ -903,16 +904,12 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
 	
     /*-- Headers in sidebar --*/
     h2.nav-header {
-      font: 400 20px/25px "Oswald" Arial sans-serif;
-	color: white;
-	text-transform: uppercase;
-	display: block;
-	padding: 0px;
-	margin: 0px;
-	min-height: 25px;
-	background-color: #333;
-	padding: 4px 0px 4px 10px;
-	margin-bottom: 10px;
+		display: block;
+		margin: 0px;
+		min-height: 25px;
+		padding: 0px;
+		padding-left: 10px;
+		margin-bottom: 10px;
     }
     
     h3.nav-header{
@@ -1027,16 +1024,10 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
     }
     
     .result-header {
-      background-color: #333333;
       padding: 0px 3%;
       width: 94%;
     }
     
-    .result-header-count {
-      font: 400 20px/40px "Oswald", Arial, sans-serif;
-      color: #DDDDDD;
-      text-transform: uppercase;
-    }
     
     .result-header-count > .result-header-count:after{
     	content: " data packages";
@@ -1049,9 +1040,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
     
     .result-row {
       display: block;
-      padding: 8px 3%;
+      padding: 4px 3%;
       width: 94%;
-      font: 400 16px/19px "Source Sans Pro" Arial, sans-serif;
+      font: 400 14px/18px "Source Sans Pro" Arial, sans-serif;
     }
     
     .result-row:nth-child(odd){
@@ -1141,6 +1132,14 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
 	position: fixed;
 	top:0px;
 }
+
+
+/* Fixes Infowindow popup problem - interaction with bootstrap? */
+img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
+    max-width: 99999px;
+}
+
+
 
 #edit-map{
 	font-size: 14px;
