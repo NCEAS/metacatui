@@ -223,7 +223,7 @@ Bold 700
     #Footer {
       position: fixed;
 		bottom: 0px;
-		background: #333;
+		background: #222222;
 		padding: 0px 10px;
 		height: 18px;
 		width: 100%;
@@ -232,7 +232,7 @@ Bold 700
     }
     
     #Footer:hover{
-    	height: 100px;
+    	height: 150px;
     	transition: height .5s ease-out;
     }
     
@@ -431,6 +431,14 @@ Bold 700
       zoom: 1; /* For IE */
       min-height: 0px;
       box-shadow: none;
+      background: rgba(69,69,69,0.66);
+background: -moz-linear-gradient(top, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
+background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(69,69,69,0.66)), color-stop(100%, rgba(110,110,110,0)));
+background: -webkit-linear-gradient(top, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
+background: -o-linear-gradient(top, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
+background: -ms-linear-gradient(top, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
+background: linear-gradient(to bottom, rgba(69,69,69,0.66) 0%, rgba(110,110,110,0) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', endColorstr='#6e6e6e', GradientType=0 );
     } 
     
     .navbar-inner > ul{
@@ -507,9 +515,9 @@ Bold 700
     /* Search bar in nav bar */
     
     #search_txt{
-    	border-radius: 2px 0px 0px 2px;
-		-webkit-border-radius: 2px 0px 0px 2px;
-		-moz-border-radius: 2px 0px 0px 2px;
+    	border-radius: 4px 0px 0px 4px;
+		-webkit-border-radius: 4px 0px 0px 4px;
+		-moz-border-radius: 4px 0px 0px 4px;
 		border: 0px;
 		margin-top: 5px;
 		float: left;
@@ -1151,6 +1159,9 @@ border-radius: 3px;
 	min-width: 300px;
 	overflow-y:scroll;
 	margin-top: 40px;
+	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
+	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);
 }
 
 #content.collapsed{
