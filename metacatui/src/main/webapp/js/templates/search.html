@@ -81,8 +81,7 @@
 					
 				</div>
 				<!-- sort order -->
-					<div class="span5 text-right select">
-						<i class="icon-small icon-chevron-down"></i>
+					<div class="row-fluid">
 						<select id=sortOrder>
 							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
 							<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>

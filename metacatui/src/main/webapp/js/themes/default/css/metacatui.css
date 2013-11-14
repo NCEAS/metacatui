@@ -528,18 +528,18 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
 		color: #333;	
     }
     	#search_txt::-webkit-input-placeholder {
-		   color: #888;
+		   color: #666;
 		}
 		#search_txt:-moz-placeholder { /* Firefox 18- */
-		   color: #888;  
+		   color: #666;  
 		}
 		
 		#search_txt::-moz-placeholder {  /* Firefox 19+ */
-		   color: #888;  
+		   color: #666;  
 		}
 		
 		#search_txt:-ms-input-placeholder {  
-		   color: #888;  
+		   color: #666;  
 		}
     
     
@@ -969,17 +969,17 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', end
     
     #clear-all{
     	text-align: right;
-float: right;
-cursor: pointer;
-font-size: 14px;
-margin: 0px 5px 0px 5px;
-color: #931D1D;
-display: none;
-margin-top: -36px;
-background-color: #931d1d;
-color: white;
-padding: 0px 5px;
-border-radius: 3px;
+	float: right;
+	cursor: pointer;
+	font-size: 14px;
+	margin: 0px 5px 0px 5px;
+	color: #931D1D;
+	display: none;
+	margin-top: -36px;
+	background-color: #931d1d;
+	color: white;
+	padding: 0px 5px;
+	border-radius: 3px;
     }
     
     #clear-all > i{
@@ -1040,6 +1040,11 @@ border-radius: 3px;
     
     .result-header-count > .result-header-count:after{
     	content: " data packages";
+    }
+    
+    #sortOrder{
+    	float: right;
+    	margin-top: 5px;
     }
     
     .result-row {
@@ -1108,6 +1113,7 @@ border-radius: 3px;
     .pagination {
     	cursor: pointer;
     	margin: auto;
+    	margin-bottom: 20px;
     }
 
 	.pagination ul{
@@ -1116,8 +1122,10 @@ border-radius: 3px;
 	}
 	
 	.pagination ul > li > a{
-		font: 400 16px/16px "Oswald", sans-serif;
-		border: none;
+		background-color: #DDD;
+		color: #333;
+		font: 400 16px/16px "Source Sans Pro";
+		
 	}
 
 /* MAPS 

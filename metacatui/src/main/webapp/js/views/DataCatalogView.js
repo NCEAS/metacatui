@@ -933,11 +933,12 @@ define(['jquery',
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 
 		collapse: function(e){
-			console.log(e.target);
-			if($(e.target).attr('id') == "filters-header"){
+			var id = $(e.target).attr('id');
+			
+			if(id == "filters-header"){
 				$('#sidebar').toggleClass('collapsed');
 			}
-			else if( ($(e.target).attr('id') == "results-header") || ($(e.target).attr('id') == "countstats")){
+			else if((id == "results-header") || (id == "countstats")){
 				console.log('clicked');
 				$('#content').toggleClass('collapsed');	
 			}
