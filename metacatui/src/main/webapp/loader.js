@@ -1,6 +1,7 @@
 // Step 1: Find the data-theme specified in the script include
 var theme = document.getElementById("loader").getAttribute("data-theme");
 var metacatContext = document.getElementById("loader").getAttribute("data-metacat-context");
+var mapKey = document.getElementById("loader").getAttribute("data-map-key");
 
 // Step 2: let everything else be taken care of by the app
 loadTheme(theme);
