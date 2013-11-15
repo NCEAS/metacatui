@@ -890,6 +890,8 @@ define(['jquery',
 				// suggest attribute criteria
 				var attributeNameSuggestions = appSearchResults.facetCounts.attributeName;
 				var attributeLabelSuggestions = appSearchResults.facetCounts.attributeLabel;
+				// NOTE: only using attributeName for auto-complete suggestions.
+				attributeLabelSuggestions = null;
 				
 				var attributeSuggestions = [];
 				attributeSuggestions = 
