@@ -54,7 +54,6 @@ define(['jquery',
 							viewRef.showMessage(response);
 						} else {
 							viewRef.insertResourceMapLink(pid);
-							viewRef.showLatestVersion(pid);
 						}
 						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
@@ -97,8 +96,8 @@ define(['jquery',
 
 						}
 						
-						// fetch the other parts to this section
-						viewRef.insertDoiButton(pid);
+						// is this the latest version? (includes DOI link when needed)
+						viewRef.showLatestVersion(pid);
 						
 					}
 				);
@@ -272,6 +271,9 @@ define(['jquery',
 										viewRef.versionTemplate({pid: pid})
 										);
 								
+							} else {
+								// finally add the DOI button - this is the latest version
+								viewRef.insertDoiButton(pid);
 							}
 							
 						}
