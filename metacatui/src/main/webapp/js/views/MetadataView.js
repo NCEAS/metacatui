@@ -22,6 +22,8 @@ define(['jquery',
 		
 		versionTemplate: _.template(VersionTemplate),
 		
+		DOI_PREFIXES: ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."],
+		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 			"click #publish": "publish"
@@ -103,8 +105,25 @@ define(['jquery',
 				
 		},
 		
+		// checks if the pid is already a DOI
+		isDOI: function(pid) {
+			for (var i=0; i < this.DOI_PREFIXES.length; i++) {
+				if (pid.toLowerCase().indexOf(this.DOI_PREFIXES[i].toLowerCase()) == 0) {
+					return true;
+				}
+			}
+			return false;
+				
+		},
+		
 		// this will insert the DOI publish button
 		insertDoiButton: function(pid) {
+			
+			// first check if already a DOI
+			if (this.isDOI(pid)) {
+				console.log(pid + " is already a DOI");
+				return;
+			}
 			
 			// see if the user is authorized to update this object
 			var authServiceUrl = appModel.get('authServiceUrl');
