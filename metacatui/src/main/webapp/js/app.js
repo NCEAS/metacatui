@@ -59,7 +59,7 @@ var registryModel = registryModel || {};
 
 
 //Define Google Maps API
-define('gmaps', ['async!https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyCcGB6lZHoq2Isp0ugdqsCPTDpl_ryo8Pk&sensor=false'], function() {
+define('gmaps', ['async!https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey], function() {
     return google.maps;
 });
 
