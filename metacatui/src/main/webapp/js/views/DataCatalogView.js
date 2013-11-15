@@ -31,6 +31,8 @@ define(['jquery',
 		
 		currentFilterTemplate: _.template(CurrentFilterTemplate),
 		
+		markers: [],
+		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 							'click #results_prev' : 'prevpage',
@@ -246,7 +248,7 @@ define(['jquery',
 			
 			appSearchResults.setrows(25);
 			appSearchResults.setSort(sortOrder);
-			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate");
+			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord");
 			
 			//Create the filter terms from the search model and create the query
 			var query = "formatType:METADATA+-obsoletedBy:*";
@@ -971,6 +973,62 @@ define(['jquery',
 			
 		},
 		
+		/* add a marker for objects
+		 * TODO: cluster them */
+		addObjectMarker: function(solrResult) {
+			
+			var latLngNW = new gmaps.LatLng(solrResult.get('northBoundCoord'), solrResult.get('westBoundCoord'));
+			var latLngSE = new gmaps.LatLng(solrResult.get('southBoundCoord'), solrResult.get('eastBoundCoord'));
+
+			console.log('Adding marker for: ' + solrResult.get('id'));
+			
+			var infoWindow = new gmaps.InfoWindow({
+				content: 
+					'<h4>' + solrResult.get('title') 
+					+ ' ' 
+					+ '<a href="#view/' + solrResult.get('id') + '" >'
+					+ solrResult.get('id') 
+					+ '</a>'
+					+ '</h4>'
+					+ '<p>' + solrResult.get('abstract') + '</p>'
+			});
+			//var markerImage = "./img/d1-location-markers-teal-15px.png";
+			var markerOptions = {
+				position: latLngNW,
+				title: solrResult.get('title'),
+				//icon: markerImage,
+				animation: google.maps.Animation.DROP,
+				map: this.map,
+				zIndex: 99999
+			}
+			var marker = new gmaps.Marker(markerOptions);
+			this.markers.push(marker);
+			gmaps.event.addListener(marker, 'click', function() {
+				titleWindow.close();
+				infoWindow.open(this.map, marker);
+			});
+			
+			// a bigger hover window
+			var titleWindow = new gmaps.InfoWindow({
+				content: solrResult.get('title')
+			});
+			gmaps.event.addListener(marker, 'mouseover', function() {
+				if (infoWindow)
+				titleWindow.open(this.map, marker);
+			});
+			gmaps.event.addListener(marker, 'mouseout', function() {
+				titleWindow.close();
+			});
+			
+		},
+		
+		clearMarkers: function() {
+			_.each(this.markers, function(marker) {
+				marker.setMap(null);
+			});
+			this.markers = [];
+		},
+		
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
@@ -981,6 +1039,10 @@ define(['jquery',
 			// Initialize the tooltip for the has data icon
 			$(".has-data").tooltip();
 			this.$results.append(view.render().el);
+			
+			// map it
+			this.addObjectMarker(result);
+
 		},
 
 		// Add all items in the **SearchResults** collection at once.
@@ -992,6 +1054,7 @@ define(['jquery',
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
 			this.$results.html('');
+			this.clearMarkers();
 		},
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 
