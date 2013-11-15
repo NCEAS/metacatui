@@ -20,6 +20,14 @@
 			    	</ul>
 			    </div>
 				
+				<div class="input-append filter-contain">
+					<h3 class="nav-header"><i class="icon-table"></i>Data Attribute</h3>
+					<input class="filter" type="text" placeholder="Variable or column name" id="attribute_input" data-category="attribute">
+					<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
+			    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
+			    	</ul>
+			    </div>
+			    
 				<div class="filter-contain">
 					<h3 class="nav-header"><i class="icon-folder-open"></i>
 						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />

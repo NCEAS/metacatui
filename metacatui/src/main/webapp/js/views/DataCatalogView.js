@@ -271,6 +271,23 @@ define(['jquery',
 				}
 			};
 			
+			// attribute
+			var thisAttribute = null;
+			var attribute = searchModel.get('attribute');
+			for (var i=0; i < attribute.length; i++){
+				//Trim the spaces off
+				thisAttribute = attribute[i].trim();
+				
+				// Is this a phrase?
+				if (phrase(thisAttribute)){
+					thisAttribute = thisAttribute.replace(" ", "%20");
+					thisAttribute = "%22" + thisAttribute + "%22";
+				}
+				// TODO: surround with **?
+				query += "+attribute:" + thisAttribute;
+				
+			}
+			
 			//All
 			var thisAll = null;
 			var all = searchModel.get('all');
