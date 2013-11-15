@@ -402,7 +402,7 @@ define(['jquery',
 			console.log('query: ' + query);
 			
 			//Set the facets in the query
-			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class"]);
+			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class", "attributeName", "attributeLabel"]);
 			
 			//Run the query
 			appSearchResults.setQuery(query);
@@ -880,6 +880,31 @@ define(['jquery',
 					select: function(event, ui) {
 						// set the text field
 						$('#all_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					}
+				});
+				
+				// suggest attribute criteria
+				var attributeNameSuggestions = appSearchResults.facetCounts.attributeName;
+				var attributeLabelSuggestions = appSearchResults.facetCounts.attributeLabel;
+				
+				var attributeSuggestions = [];
+				attributeSuggestions = 
+					attributeSuggestions.concat(
+						attributeNameSuggestions, 
+						attributeLabelSuggestions);
+				var rankedAttributeSuggestions = new Array();
+				for (var i=0; i < attributeSuggestions.length-1; i+=2) {
+					rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
+				}
+				$('#attribute_input').autocomplete({
+					source: rankedAttributeSuggestions,
+					select: function(event, ui) {
+						// set the text field
+						$('#attribute_input').val(ui.item.value);
 						// add to the filter immediately
 						viewRef.updateTextFilters(event);
 						// prevent default action
