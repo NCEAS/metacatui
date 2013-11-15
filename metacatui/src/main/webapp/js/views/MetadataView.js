@@ -189,7 +189,8 @@ define(['jquery',
 			if (ret) {
 				
 				// show the progressbar
-				this.showProgressBar();
+				var message = "Publishing package...please be patient";
+				this.showProgressBar(message);
 				
 				var identifier = null;
 				var viewRef = this;
@@ -275,10 +276,15 @@ define(['jquery',
 
 		},
 		
-		showProgressBar: function() {
+		showProgressBar: function(msg) {
 			this.hideProgressBar();
 			this.scrollToTop();
-			this.$el.prepend('<section id="Notification"><div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>');
+			var content = '<section id="Notification">';
+			if (msg) {
+				content += '<div class="alert alert-info">' + msg + '</div>';
+			}
+			content += '<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>';
+			this.$el.prepend(content);
 		},
 		
 		hideProgressBar: function() {
