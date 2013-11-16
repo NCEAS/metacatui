@@ -219,9 +219,6 @@ define(['jquery',
 				searchModel.set('south', boundingBox.getSouthWest().lat());
 				searchModel.set('east', boundingBox.getSouthWest().lng());
 				
-				//Up the filter count
-				searchModel.set('filterCount', searchModel.get('filterCount') + 1);
-				
 				//Trigger a new search
 				viewRef.triggerSearch();
 			});
@@ -410,7 +407,7 @@ define(['jquery',
 			appSearchResults.setQuery(query);
 			
 			//Show or hide the reset filters button
-			if(searchModel.get('filterCount') > 0){
+			if(searchModel.filterCount() > 0){
 				$('#clear-all').css('display', 'block');
 			}
 			else{
@@ -465,9 +462,6 @@ define(['jquery',
 			//Replace the current array with the new one in the search model
 			searchModel.set(category, filtersArray);
 			
-			//+1 the filter count
-			searchModel.set('filterCount', searchModel.get('filterCount') + 1);
-				
 			//Show the UI filter
 			this.showFilter(category, term);
 			
@@ -487,14 +481,6 @@ define(['jquery',
 
 			//Update the model
 			searchModel.set(category, state);
-			
-			//+1 the filter count if it is checked
-			if(state){
-				searchModel.set('filterCount', searchModel.get('filterCount') + 1);
-			}
-			else{
-				searchModel.set('filterCount', searchModel.get('filterCount') - 1);
-			}
 			
 			//Show the reset button
 			$('#clear-all').css('display', 'block');
@@ -664,8 +650,6 @@ define(['jquery',
 				//Set the new value
 				searchModel.set(category, newTerms);	
 				
-				//-1 the filter count
-				searchModel.set('filterCount', searchModel.get('filterCount') - 1);
 			}
 		},
 		
@@ -731,9 +715,6 @@ define(['jquery',
 			// Add this criteria to the search model
 			searchModel.set(category, [term]);
 			
-			//Up the filter count
-			searchModel.set('filterCount', searchModel.get('filterCount') + 1);
-			
 			// Trigger the search
 			this.triggerSearch();
 			
@@ -761,10 +742,7 @@ define(['jquery',
 				var newTerms = _.without(current, term);
 				searchModel.set("additionalCriteria", newTerms);
 			}
-			
-			//Update the filter count on the serach model
-			searchModel.set('filterCount', searchModel.get('filterCount') - 1);
-			
+
 			//Route to page 1
 			this.updatePageNumber(0);
 			
