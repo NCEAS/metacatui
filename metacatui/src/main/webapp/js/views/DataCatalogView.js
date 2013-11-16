@@ -977,9 +977,16 @@ define(['jquery',
 		 * TODO: cluster them */
 		addObjectMarker: function(solrResult) {
 			
-			var latLngNW = new gmaps.LatLng(solrResult.get('northBoundCoord'), solrResult.get('westBoundCoord'));
-			var latLngSE = new gmaps.LatLng(solrResult.get('southBoundCoord'), solrResult.get('eastBoundCoord'));
-
+			var n = solrResult.get('northBoundCoord');
+			var s = solrResult.get('southBoundCoord');
+			var e = solrResult.get('eastBoundCoord');
+			var w = solrResult.get('westBoundCoord');
+			
+			var latLngSW = new gmaps.LatLng(s, w);
+			var latLngNE = new gmaps.LatLng(n, e);
+			var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
+			var latLngCEN = bounds.getCenter();
+			
 			console.log('Adding marker for: ' + solrResult.get('id'));
 			
 			var infoWindow = new gmaps.InfoWindow({
@@ -994,7 +1001,7 @@ define(['jquery',
 			});
 			//var markerImage = "./img/d1-location-markers-teal-15px.png";
 			var markerOptions = {
-				position: latLngNW,
+				position: latLngCEN,
 				title: solrResult.get('title'),
 				//icon: markerImage,
 				animation: google.maps.Animation.DROP,
