@@ -396,7 +396,7 @@ Bold 700
     /*Share Your Data button */
     #share{
     	position: fixed;
-    	top: 150px;
+    	top: 60px;
     	left: -160px;
     	z-index: 999;
     	width: auto;
@@ -702,13 +702,15 @@ Bold 700
       left: 0px;
       padding: 0px;
       background-color: #222;
-      border-radius: 0px 5px 0px 0px;
-      -moz-border-radius: 0px 5px 0px 0px;
-      -webkit-border-radius: 0px 5px 0px 0px;
+      border-radius: 0px;
+      -moz-border-radius: 0px;
+      -webkit-border-radius: 0px;
       margin: 0px;
       -webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  max-height: 750px;
+	  overflow-y: scroll;
     } 
     
     #sidebar.collapsed{
