@@ -175,8 +175,6 @@ define(['jquery',
 				return;
 			}
 			
-			var map;
-
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
 			
 			var mapOptions = {
