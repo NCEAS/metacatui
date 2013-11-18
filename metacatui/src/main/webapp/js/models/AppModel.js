@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone'],
 			page: null,
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
-			context: '/knb',
+			context: '/metacat',
 			d1Service: '/d1/mn/v1',
 			viewServiceUrl: null,
 			packageServiceUrl: null,
