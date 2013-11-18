@@ -31,6 +31,8 @@ define(['jquery',
 		
 		currentFilterTemplate: _.template(CurrentFilterTemplate),
 		
+		map: null,
+		
 		markers: [],
 		
 		// Delegated events for creating new items, and clearing completed ones.
@@ -173,8 +175,6 @@ define(['jquery',
 				return;
 			}
 			
-			var map;
-
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
 			
 			var mapOptions = {
@@ -1058,6 +1058,13 @@ define(['jquery',
 					$('#content').toggleClass('collapsed');	
 				}				
 
+		},
+		
+		postRender: function() {
+			console.log("Resizing the map");
+			var center = this.map.getCenter(); 
+			google.maps.event.trigger(this.map, 'resize'); 
+			this.map.setCenter(center);
 		},
 		
 		onClose: function () {			
