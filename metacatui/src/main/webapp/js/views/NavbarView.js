@@ -13,7 +13,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		
 		events: {
 			'click #search_btn': 'triggerSearch',
-			'keypress #search_txt': 'triggerOnEnter'
+			'keypress #search_txt': 'triggerOnEnter',
+			'click #myData': 'myDataSearch'
 		},
 		
 		initialize: function () {
@@ -52,6 +53,30 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			
 			//Set up the search model for this new term
 			searchModel.set('all', newSearch);
+			
+			console.log(searchModel);
+			
+			// make sure the browser knows where we are
+			uiRouter.navigate("data", {trigger: true});
+			
+			// ...but don't want to follow links
+			return false;
+			
+		},
+		
+		myDataSearch: function() {
+			
+			// Get the user name
+			var username = appModel.get('username');
+			
+			// Clear the search model to start a fresh search
+			searchModel.clear().set(searchModel.defaults);
+			
+			// Create a new array with the new search term
+			var newSearch = ["+rightsHolder:" + username];
+			
+			//Set up the search model for this new term
+			searchModel.set('additionalCriteria', newSearch);
 			
 			console.log(searchModel);
 			
