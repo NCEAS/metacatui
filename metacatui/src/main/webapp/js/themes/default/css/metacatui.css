@@ -952,6 +952,21 @@ Bold 700
     	color: #FFFFFF;
     	opacity: 1;
 	}
+	
+	/** for showing "my packages" filter */
+	.keyword-search-link {
+		display: none;
+	}
+	.current-filters.active {
+		background-color: inherit;
+		border-color: inherit;
+		display: block;
+	}
+	.keyword-search-link.active {
+		background-color: #166194;
+		border-color: inherit;
+		display: block;
+	}
     
 	
     /*-- Headers in sidebar --*/

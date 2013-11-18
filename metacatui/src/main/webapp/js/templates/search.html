@@ -7,12 +7,6 @@
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
 		<h2 class="nav-header collapse-me bold-header" id="filters-header">Filter</h2>
-    		<% if(username){
-    		print('<div class="subset-choices">');
-				print('<a class="subset-choice keyword-search-link span12" href="#" data-category="additionalCriteria" data-term="+rightsHolder:' + username + '"> My packages <i class="icon-caret-right"></i> </a>');    			
-    		print('</div><div class="clear"></div>');
-    		}
-    		%>
     		<div class="filter-container">
 	    		<a id="clear-all">Clear filters<i class="icon-remove"></i></a>
 				
@@ -51,6 +45,14 @@
 						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
 			    		<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
 			    		</ul>
+			    		<ul id="current-attribute-filters" class="current-filters span12" data-category="additionalCriteria">
+			    			<li class="current-filter keyword-search-link" data-category="additionalCriteria" data-term="+rightsHolder:<%=username%>">
+								<span>
+								Me
+								</span>
+								<i class="icon-remove remove-filter"></i>
+							</li>
+				    	</ul>
 			    	</div>
 			    </div>
 	
