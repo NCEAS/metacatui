@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templates/registryFields.html'], 				
-	function($, _, Backbone, Registry, BootStrap, RegistryFields) {
+define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html'], 				
+	function($, _, Backbone, Registry, BootStrap, RegistryFields, LdapAccountToolsTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -9,6 +9,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 		el: '#Content',
 		
 		template: _.template(RegistryFields),
+		
+		ldapAccountToolsTemplate: _.template(LdapAccountToolsTemplate),
 				
 		registryUrl: null,
 		
@@ -57,6 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 						viewRef.$el.html(data);
 						viewRef.verifyLoginStatus();
 						viewRef.augementForm();
+						viewRef.modifyLoginForm();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow');
 					});
@@ -103,6 +106,21 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				var formOptions = registryModel.get("formOptions");
 				registryEntryForm.find("#keyword").replaceWith(this.template({formOptions: formOptions}));
 				
+			}
+		},
+		
+		modifyLoginForm: function() {
+			// customize the login form to provide external links as needed
+			var ldapAccountTools = $("#ldapAccountTools");
+			
+			// if we have the login form we can modify it
+			if (ldapAccountTools.length) {
+				var ldapwebServiceUrl = appModel.get('ldapwebServiceUrl') + this.registryQueryString;
+
+				var templateContent = this.ldapAccountToolsTemplate({ldapwebServiceUrl: ldapwebServiceUrl});
+				if (templateContent.length) {
+					ldapAccountTools.replaceWith(templateContent);				
+				}
 			}
 		},
 		
