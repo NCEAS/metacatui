@@ -1,12 +1,12 @@
 
 /* Import font families */
-@import url(http://fonts.googleapis.com/css?family=Oswald:400,300,700);
+@import url(https://fonts.googleapis.com/css?family=Oswald:400,300,700);
 /* Oswald weights:
 Light 300
 Normal 400
 Bold 700
 */
-@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic);
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic);
 /* Source Sans Pro weights:
 Light 300
 Normal 400
@@ -46,6 +46,10 @@ Bold 700
     	font: 400 20px/30px "Oswald", Arial, sans-serif;
     	text-transform: uppercase;
     	text-shadow: none;
+    }
+    
+    .collapse-me{
+    	cursor: pointer;
     }
     
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
@@ -759,6 +763,10 @@ Bold 700
    		font-size: 18px;
    }
    
+   .filter-contain > i.icon-map-marker{
+   		font-size: 23px;
+   }
+   
    .filter-contain label i{
    		font-size: 15px;
    		margin-left: 3px;
@@ -1039,7 +1047,15 @@ Bold 700
 		padding: 0px;
 		padding-left: 10px;
 		margin-bottom: 0px;
-		cursor: pointer;
+    }
+    
+    h2.nav-header > i{
+    	font-size: 18px;
+    	float: right;
+    	margin-right: 20px;
+    	margin-top: 5px;
+    	color: #DDD;
+    	cursor: pointer;
     }
 
     
@@ -1100,19 +1116,22 @@ Bold 700
     
     #clear-all{
     	text-align: right;
-	float: right;
-	cursor: pointer;
-	font-size: 14px;
-	margin: 0px 5px 0px 5px;
-	color: #931D1D;
-	display: none;
-	background-color: #931d1d;
-	color: white;
-	padding: 0px 5px;
-	border-radius: 3px;
-	position: absolute;
-	top: 7px;
-	left: 130px;
+		float: right;
+		cursor: pointer;
+		font-size: 14px;
+		margin: 0px 5px 0px 5px;
+		color: #931D1D;
+		display: none;
+		background-color: #931d1d;
+		color: white;
+		padding: 0px 5px;
+		border-radius: 3px;
+		position: absolute;
+		top: 7px;
+		left: 68px;
+		line-height: 20px;
+		text-transform: none;
+		font-family: "Source Sans Pro";
     }
     
     #clear-all > i{
@@ -1163,12 +1182,20 @@ Bold 700
     .result-header {
       padding: 0px 3%;
       width: 94%;
-      cursor: pointer;
     }
     
     
     .result-header-count > .result-header-count:after{
     	content: " data packages";
+    }
+    
+    #collapse-content{
+    	position: absolute;
+    	top: 5px;
+    	right: 20px;
+    	font-size: 18px;
+    	color: #DDD;
+    	cursor: pointer;
     }
     
     #sortOrder{

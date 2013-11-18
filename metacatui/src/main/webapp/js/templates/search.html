@@ -6,10 +6,12 @@
 	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
-		<h2 class="nav-header collapse-me bold-header" id="filters-header">Filter</h2>
+		<h2 class="nav-header bold-header collapse-me" id="filters-header">
+			Filter
+			<!--  <i class="icon-minus collapse-me" id="collapse-filters"></i> -->
+			<a id="clear-all">Clear filters<i class="icon-remove"></i></a>
+		</h2>
     		<div class="filter-container">
-	    		<a id="clear-all">Clear filters<i class="icon-remove"></i></a>
-				
 				<div class="input-append filter-contain">
 					<input class="filter" type="text" placeholder="Anything" id="all_input" data-category="all">
 					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
@@ -101,9 +103,10 @@
 				</div>
 				
 				<div class="input-append filter-contain">
-					<i class="icon-globe span1"></i>
+					<i class="icon-map-marker span1">
+						<div id="hide-map"><i class="icon-eye-open"></i></div>
+					</i>
 					<div class="span11">
-						<div id="edit-map">edit map</div>
 						<input class="filter" type="text" placeholder="Location" id="spatial_input" data-category="spatial">
 						<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
 						<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
@@ -117,12 +120,13 @@
 		<!--CONTENT AREA-->
 		<div id="content" class="span9">
 			<div id="results-view">
-				<div id="results-header" class="row-fluid result-header collapse-me bold-header">
+				<div id="results-header" class="row-fluid result-header bold-header">
 					
 					<!-- count stats -->
-					<div class="result-header-count span7" id="statcounts">0 to 0 of 0</div>
+					<div class="result-header-count span12" id="statcounts">0 to 0 of 0</div>
 					
 				</div>
+				<!-- <i class="icon-minus collapse-me" id="collapse-content"></i>-->	
 				<!-- sort order -->
 					<div class="row-fluid">
 						<select id=sortOrder>
