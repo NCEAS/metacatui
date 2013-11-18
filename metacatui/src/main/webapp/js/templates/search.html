@@ -27,11 +27,15 @@
 				    </div>
 			    </div>
 			    
-				<div class="filter-contain">
+				<div class="filter-contain" id="includes-files">
 					<i class="icon-folder-open span1"></i>
 					<div class="span11">
 						<h3 class="nav-header">
-						<label for="includes_data">Includes data files</label>
+						<label for="includes_data">
+							Includes data files
+							<i class="icon-check"></i>
+							<i class="icon-check-empty"></i>	
+						</label>
 						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
 						</h3>
 					</div>
@@ -59,18 +63,28 @@
 				
 				<div id="filter-year" class="filter-contain" data-category="year">
 					<i class="icon-calendar span1"></i>
-					<div class="span11">
-						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
-						<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="right">Data covers</label>					
-						<div class="clear"></div>
-						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-						<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="right" >Published between</label>
+					<div class="span11 left-padding">
+						<div id="year-range"></div>
 						<div class="clear"></div>
 						<input class="span3"  type="number" id="min_year" pattern="{4}" value=<% print('"' + yearMin + '"'); %> />
 						<input class="span3"  type="number" id="max_year" pattern="{4}" value=<% print('"' + yearMax + '"'); %>/>
 						<div class="clear"></div>
-						<div id="year-range"></div>
+						
+						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
+						<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="top">
+							Data covers
+							<i class="icon-check"></i>
+							<i class="icon-check-empty"></i>
+						</label>					
+						
+						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
+						<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="top" >
+							Published between
+							<i class="icon-check"></i>
+							<i class="icon-check-empty"></i>
+						</label>
 						<div class="clear"></div>
+
 					</div>
 					<div class="clear"></div>
 				</div>

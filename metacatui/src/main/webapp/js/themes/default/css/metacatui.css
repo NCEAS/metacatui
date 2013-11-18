@@ -758,6 +758,13 @@ Bold 700
    		color: #AAA;
    		font-size: 18px;
    }
+   
+   .filter-contain label i{
+   		font-size: 15px;
+   		margin-left: 3px;
+		top: 2px;	
+		position: relative;
+   }
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
@@ -810,35 +817,61 @@ Bold 700
 		color: #DDD;
 		font-family: "Source Sans Pro";
 		font-weight: normal;
+		text-shadow: none;
 	}
 	input.filter:-moz-placeholder{ /* Firefox 18- */
 		color: #DDD;
 		font-family: "Source Sans Pro";
 		font-weight: normal;
+		text-shadow: none;
 	}
 	input.filter::-moz-placeholder{ /* Firefox 19+ */
 		color: #DDD;
 		font-family: "Source Sans Pro";
 		font-weight: normal;
+		text-shadow: none;
 	}
 	input.filter:-ms-input-placeholder{
 		color: #DDD;
 		font-family: "Source Sans Pro";
 		font-weight: normal;
+		text-shadow: none;
 	}
 
-	/*-- The 'Year' filter elements --*/
-    #filter-year label{
-   		min-height: 18px;
-   		margin-bottom: 0px;
-   		line-height: 16px;
-   		width: auto;
-   		color: #DDD;
+	/*-- The filter checkboxes --*/
+	#filter-year input[type="checkbox"],
+    #includes-files input[type="checkbox"]{
+    	display: none;
     }
+    
+    #filter-year label,
+    #includes-files label{
+   		padding: 0px 5px 0px 5px;
+		min-height: 1.5em;
+		width: auto;
+		max-width: 100%;
+		margin: 5px 5px 0px 0px;
+		color: #DDD;
+    }  
+    
+
+    
+	/*-- The 'Year' filter elements --*/
+	#filter-year .left-padding{
+		padding-left: 10px;
+	}
+    
+    #data-year-label{
+    	margin-left: 10px;
+    }
+
    
     #filter-year  input[type="number"]{
    		background: #111;
 		border: 0px;
+		border-radius: 0px;
+		-moz-border-radius: 0px;
+		-webkit-border-radius: 0px;
 		text-align: right;
 		min-height: 23px;
 		-webkit-appearance: none;
@@ -924,15 +957,29 @@ Bold 700
 	}
 	
 	.current-filters > li,
-	.current-filters > li[class*="span"]{
+	.current-filters > li[class*="span"],
+	#filter-year label.ui-state-active, 
+	#includes-files label.ui-state-active{
 		background-color: #166194;
 		padding: 0px 5px 0px 5px;
-		min-height: 1.5em;
+		height: auto;
+		line-height: 21px;
 		width: auto;
 		max-width: 100%;
 		margin: 5px 5px 0px 0px;
 		float:left;
 	}
+	
+	 #includes-files label,
+     #includes-files label.ui-state-active{
+    	margin-top: 0px;
+    	line-height: 21px;
+    	height: 21px;
+    } 
+    
+    #filter-year label#data-year-label{
+    	margin-top:0px;
+    }
 	
 	.current-filters > li > span{
 		float: left;
@@ -945,6 +992,21 @@ Bold 700
 		line-height: 1.5em;
 		font-size: 1em;
 		color: #71A9BD;
+	}
+	
+	
+	label.ui-state-active i{
+		color: #71A9BD;
+	}
+	
+	
+	label.ui-state-active i.icon-check-empty,
+	label.ui-state-default i.icon-check{
+		display: none;
+	}
+	
+	label.ui-state-active i.icon-check{
+		display: inline;
 	}
 	
 	.current-filters > li > i:hover{

@@ -50,7 +50,7 @@ define(['jquery',
 						   'click .remove-filter' : 'removeFilter',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
 							   'click #clear-all' : 'resetFilters',
-					 'click .keyword-search-link' : 'additionalCriteria',
+					 'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse'
 		},
@@ -122,6 +122,10 @@ define(['jquery',
 			//Initialize the year type label tooltips
 			$('.year-tooltip').tooltip();
 			$('.tooltip-this').tooltip();
+			
+			//Initialize the jQueryUI button checkboxes
+			$( "#filter-year" ).buttonset();
+			$( "#includes-files" ).buttonset();
 			
 			//Iterate through each search model text attribute and show UI filter for each
 			var categories = ['all', 'creator', 'taxon'];
