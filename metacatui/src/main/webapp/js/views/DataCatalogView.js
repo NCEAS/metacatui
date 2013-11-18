@@ -169,6 +169,10 @@ define(['jquery',
 		
 		renderMap: function() {
 			
+			if (!gmaps) {
+				return;
+			}
+			
 			var map;
 
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
@@ -951,6 +955,10 @@ define(['jquery',
 		 * TODO: cluster them */
 		addObjectMarker: function(solrResult) {
 			
+			if (!gmaps) {
+				return;
+			}
+			
 			var n = solrResult.get('northBoundCoord');
 			var s = solrResult.get('southBoundCoord');
 			var e = solrResult.get('eastBoundCoord');
@@ -1040,15 +1048,16 @@ define(['jquery',
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 
 		collapse: function(e){
-			var id = $(e.target).attr('id');
-			
-			if(id == "filters-header"){
-				$('#sidebar').toggleClass('collapsed');
-			}
-			else if((id == "results-header") || (id == "countstats")){
-				console.log('clicked');
-				$('#content').toggleClass('collapsed');	
-			}
+				var id = $(e.target).attr('id');
+				
+				if((id == "filters-header") || (id == "collapse-filters")){
+					$('#sidebar').toggleClass('collapsed');
+				}
+				if((id == "results-header") || (id == "countstats") || (id == "collapse-content")){
+					//console.log(id + ' clicked');
+					$('#content').toggleClass('collapsed');	
+				}				
+
 		},
 		
 		onClose: function () {			
