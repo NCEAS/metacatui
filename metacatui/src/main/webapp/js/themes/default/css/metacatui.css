@@ -753,7 +753,7 @@ Bold 700
    }
    
    .filter-contain i{
-   		color: #DDD;
+   		color: #AAA;
    		font-size: 18px;
    }
     
@@ -966,10 +966,10 @@ Bold 700
     
     h3.nav-header,
     h3.nav-header > label{
-    	font: 300 17px/25px "Oswald" Arial sans-serif;
+    	font: 400 14px/25px "Source Sans Pro" Arial sans-serif;
 		margin: 0px;
 		color: #ddd;
-		text-transform: uppercase;
+		text-transform: none;
 		display: block;
 		padding: 0px;
 		text-shadow: none;
