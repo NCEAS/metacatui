@@ -33,7 +33,7 @@ require.config({
                 ],
     domReady: '../components/domready',
     async: '../components/async',
-    recaptcha: recaptchaURL,
+    recaptcha: [recaptchaURL, 'scripts/placeholder'],
     gmapsAPI: gmapsURL
 
   },
@@ -54,14 +54,6 @@ require.config({
     }
   }
 });
-
-var appModel = appModel || {};
-var appView = appView || {};
-var uiRouter = uiRouter || {};
-var appSearchResults = appSearchResults || {};
-var searchModel = searchModel || {};
-var registryModel = registryModel || {};
-
 
 /** 
  * Define Google Maps API if we can load the first script for it
@@ -88,6 +80,12 @@ require(['gmapsAPI'],
 	}
 );
 
+var appModel = appModel || {};
+var appView = appView || {};
+var uiRouter = uiRouter || {};
+var appSearchResults = appSearchResults || {};
+var searchModel = searchModel || {};
+var registryModel = registryModel || {};
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
