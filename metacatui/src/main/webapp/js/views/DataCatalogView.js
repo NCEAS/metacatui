@@ -169,6 +169,10 @@ define(['jquery',
 		
 		renderMap: function() {
 			
+			if (!gmaps) {
+				return;
+			}
+			
 			var map;
 
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
@@ -950,6 +954,10 @@ define(['jquery',
 		/* add a marker for objects
 		 * TODO: cluster them */
 		addObjectMarker: function(solrResult) {
+			
+			if (!gmaps) {
+				return;
+			}
 			
 			var n = solrResult.get('northBoundCoord');
 			var s = solrResult.get('southBoundCoord');
