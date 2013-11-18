@@ -192,20 +192,11 @@ define(['jquery',
 			
 			gmaps.visualRefresh = true;
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
-			//$('div[title*="Zoom"]').parent().parent().css('top', '150px');
-			
+
 			var mapRef = this.map;
 			var viewRef = this;
 			
-			google.maps.event.addListener(mapRef, "tilesloaded", function(){
-				//$('div[title*="Zoom"]').parent().parent().css('top', '150px');
-			});
-			
 			google.maps.event.addListener(mapRef, "idle", function(){
-				
-				//$('div[title*="Zoom"]').parent().parent().css('top', '150px');
-				
-				console.log(mapRef.getZoom());
 			
 				//If the map is zoomed all the way out, do not apply the spatial filters
 				if(mapRef.getZoom() == mapOptions.minZoom){ return; }
