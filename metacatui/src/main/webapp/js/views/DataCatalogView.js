@@ -31,6 +31,8 @@ define(['jquery',
 		
 		currentFilterTemplate: _.template(CurrentFilterTemplate),
 		
+		map: null,
+		
 		markers: [],
 		
 		// Delegated events for creating new items, and clearing completed ones.
@@ -244,7 +246,7 @@ define(['jquery',
 			
 			appSearchResults.setrows(25);
 			appSearchResults.setSort(sortOrder);
-			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord");
+			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord, site");
 			
 			//Create the filter terms from the search model and create the query
 			var query = "formatType:METADATA+-obsoletedBy:*";
@@ -389,12 +391,29 @@ define(['jquery',
 				
 			}
 			
-			//Spatial
+			//Map
 			if(searchModel.get('north')!=null){
 				query += ("+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
 						  "+eastBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
 						  "+westBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
 						  "+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D");
+			}
+			
+			//Spatial string
+			var thisSpatial = null;
+			var spatial = searchModel.get('spatial');
+			for(var i=0; i < spatial.length; i++){
+				//Trim the spaces off
+				thisSpatial = spatial[i].trim();
+				
+				//Is this a phrase?
+				if(phrase(thisSpatial)){
+					thisSpatial = thisSpatial.replace(" ", "%20");
+					query += "+site:*%22" + thisSpatial + "%22*";
+				}
+				else{
+					query += "+site:*" + thisSpatial + "*";
+				}
 			}
 			
 			console.log('query: ' + query);
@@ -1058,6 +1077,13 @@ define(['jquery',
 					$('#content').toggleClass('collapsed');	
 				}				
 
+		},
+		
+		postRender: function() {
+			console.log("Resizing the map");
+			var center = this.map.getCenter(); 
+			google.maps.event.trigger(this.map, 'resize'); 
+			this.map.setCenter(center);
 		},
 		
 		onClose: function () {			
