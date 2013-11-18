@@ -796,12 +796,34 @@ Bold 700
     	-moz-box-shadow: inset 0 0 10px -1px #555;
 		-webkit-box-shadow: inset 0 0 10px -1px #555;
 		box-shadow: inset 0 0 10px -1px #555;
+		color: #222;
     }
     
     #all_input{
     	width: 72%;
     	margin-left: 0px;
     }
+    
+    input.filter::-webkit-input-placeholder{
+		color: #DDD;
+		font-family: "Source Sans Pro";
+		font-weight: normal;
+	}
+	input.filter:-moz-placeholder{ /* Firefox 18- */
+		color: #DDD;
+		font-family: "Source Sans Pro";
+		font-weight: normal;
+	}
+	input.filter::-moz-placeholder{ /* Firefox 19+ */
+		color: #DDD;
+		font-family: "Source Sans Pro";
+		font-weight: normal;
+	}
+	input.filter:-ms-input-placeholder{
+		color: #DDD;
+		font-family: "Source Sans Pro";
+		font-weight: normal;
+	}
 
 	/*-- The 'Year' filter elements --*/
     #filter-year label{
@@ -1015,6 +1037,7 @@ Bold 700
     #clear-all > i{
     	font-size: 15px;
     	margin-left: 7px;
+    	color: #DB8080;
     }
     
     /* Autocomplete */

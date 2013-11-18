@@ -17,7 +17,7 @@
 	    		<a id="clear-all">Clear filters<i class="icon-remove"></i></a>
 				
 				<div class="input-append filter-contain">
-					<input class="filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
+					<input class="filter" type="text" placeholder="Anything" id="all_input" data-category="all">
 					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
 			    	<ul id="current-all-filters" class="current-filters" data-category="all">
 			    	</ul>
@@ -26,8 +26,7 @@
 				<div class="input-append filter-contain">
 					<i class="icon-table span1"></i>
 					<div class="span11">
-						<h3 class="nav-header">Data Attributes</h3>
-						<input class="filter" type="text" placeholder="Variable or column name" id="attribute_input" data-category="attribute">
+						<input class="filter" type="text" placeholder="Data attribute" id="attribute_input" data-category="attribute">
 						<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
 				    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
 				    	</ul>
@@ -48,8 +47,7 @@
 				<div class="input-append filter-contain">
 					<i class="icon-user span1"></i>
 					<div class="span11">
-						<h3 class="nav-header">Created by</h3>
-						<input class="filter" type="text" placeholder="First or last name" id="creator_input" data-category="creator">
+						<input class="filter" type="text" placeholder="Creator" id="creator_input" data-category="creator">
 						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
 			    		<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
 			    		</ul>
@@ -60,7 +58,6 @@
 				<div id="filter-year" class="filter-contain" data-category="year">
 					<i class="icon-calendar span1"></i>
 					<div class="span11">
-						<h3 class="nav-header">Year</h3>
 						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
 						<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="right">Data covers</label>					
 						<div class="clear"></div>
@@ -79,8 +76,7 @@
 				<div class="input-append filter-contain">
 					<i class="icon-sitemap span1"></i>
 					<div class="span11">
-						<h3 class="nav-header">Taxon</h3>
-						<input class="filter" type="text" placeholder="Phylum, class, order..." id="taxon_input" data-category="taxon">
+						<input class="filter" type="text" placeholder="Taxon" id="taxon_input" data-category="taxon">
 						<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
 						<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
 						</ul>
@@ -91,9 +87,8 @@
 				<div class="input-append filter-contain">
 					<i class="icon-globe span1"></i>
 					<div class="span11">
-						<h3 class="nav-header">Spatial Coverage</h3>
 						<div id="edit-map">edit map</div>
-						<input class="filter" type="text" placeholder="Place or address" id="spatial_input" data-category="spatial">
+						<input class="filter" type="text" placeholder="Location" id="spatial_input" data-category="spatial">
 						<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
 						<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
 						</ul>
