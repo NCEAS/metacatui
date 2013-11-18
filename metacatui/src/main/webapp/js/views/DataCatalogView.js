@@ -607,8 +607,9 @@ define(['jquery',
 
 			//Reset the checkboxes
 			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
-			$("#data_year").prop("checked", searchModel.get("pubYear"));
-			$("#publish_year").prop("checked", searchModel.get("dataYear"));
+			$("#data_year").prop("checked", searchModel.get("dataYear"));
+			console.log($('#data_year').prop('checked'));
+			$("#publish_year").prop("checked", searchModel.get("pubYear"));
 			
 			//Zoom out the Google Map
 			this.map.setZoom(0);

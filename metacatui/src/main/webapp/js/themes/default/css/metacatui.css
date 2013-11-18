@@ -1038,7 +1038,7 @@ Bold 700
 		min-height: 25px;
 		padding: 0px;
 		padding-left: 10px;
-		margin-bottom: 10px;
+		margin-bottom: 0px;
 		cursor: pointer;
     }
 
@@ -1106,11 +1106,13 @@ Bold 700
 	margin: 0px 5px 0px 5px;
 	color: #931D1D;
 	display: none;
-	margin-top: -36px;
 	background-color: #931d1d;
 	color: white;
 	padding: 0px 5px;
 	border-radius: 3px;
+	position: absolute;
+	top: 7px;
+	left: 130px;
     }
     
     #clear-all > i{
