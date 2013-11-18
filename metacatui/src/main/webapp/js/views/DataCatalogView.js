@@ -50,7 +50,7 @@ define(['jquery',
 						   'click .remove-filter' : 'removeFilter',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
 							   'click #clear-all' : 'resetFilters',
-					 'click .keyword-search-link' : 'additionalCriteria',
+					 'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse'
 		},
