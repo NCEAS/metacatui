@@ -2,8 +2,9 @@
 	<div id="map-canvas"></div>
 </div>
 
-<div id="hide-map">
-	Hide map
+<div id="hide-map" class="bold-header" >
+	<div id="hide-map-control"><span>Hide map</span><i class="icon-eye-open"></i></div>
+	<div id="show-map-control"><span>Show map</span> <i class="icon-eye-close"></i></div>
 </div>
 
 <article id="mainBody" class="container-fluid">
@@ -107,9 +108,7 @@
 				</div>
 				
 				<div class="input-append filter-contain">
-					<i class="icon-map-marker span1">
-						<div id="hide-map"><i class="icon-eye-open"></i></div>
-					</i>
+					<i class="icon-map-marker span1"></i>
 					<div class="span11">
 						<input class="filter" type="text" placeholder="Location" id="spatial_input" data-category="spatial">
 						<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>

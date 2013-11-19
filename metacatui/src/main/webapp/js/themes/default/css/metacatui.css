@@ -1125,7 +1125,7 @@ Bold 700
 		background-color: #931d1d;
 		color: white;
 		padding: 0px 5px;
-		border-radius: 3px;
+		border-radius: 0px;
 		position: absolute;
 		top: 7px;
 		left: 68px;
@@ -1298,28 +1298,65 @@ Bold 700
 	top:0px;
 }
 
-#hide-map{
-	z-index: 10;
-	position: absolute;
-	left: 135px;
-	background-color: white;
-	padding: 2px;
-	font-size: 12px;
-	top: 5px;
-	height: 18px;
-	border: 1px solid #bbb;
-	cursor: pointer;
-	box-shadow: 1px 1px 4px #555;
-}
+
 
 .hidden{
-	display:none;
-	
+	display:none;	
+}
+
+#hide-map{
+	position: fixed;
+	left: -85px;
+	top: 100px;
+	z-index: 999;
+	background-color: #222;
+	border: 0px;
+	padding: 0px 5px;
+	-webkit-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
+	-moz-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
+	box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
+	cursor: pointer;
+}
+
+#hide-map i{
+	font-size: 25px;
 }
 
 #hide-map:hover{
-	background-color: #EEE;
+	left: 0px;
+	transition: all 1s;
 }
+
+#hide-map:hover i{
+	color: #3399CC;
+}
+
+#hide-map span{
+	margin-right: 10px;
+	color: #3399CC;
+}
+
+#hide-map #show-map-control{
+	display: none;
+}
+
+#hide-map.hidden-map{
+	left: -100px;
+}
+
+#hide-map.hidden-map:hover{
+	left: 0px;
+}
+
+#hide-map.hidden-map #hide-map-control{
+	display: none;
+}
+
+#hide-map.hidden-map #show-map-control{
+	display: block;
+}
+
+
 
 
 /* Fixes Infowindow popup problem - interaction with bootstrap? */
@@ -1341,6 +1378,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #mainBody{
 	padding:0px;
+	background: none;
+	background-color: transparent;
 }
 
 #content {
