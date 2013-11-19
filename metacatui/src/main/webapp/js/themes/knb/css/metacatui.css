@@ -340,6 +340,16 @@ Bold 700 Italic
 	width: 100%;
 }
 
+.mapMode #Header {
+	display: none;
+}
+
+/* Data Catalog CSS
+-------------------------------------------------- */
+#mainBody {
+	min-height: 800px;
+	margin-top: 430px;'
+}
 
 /* Fixes Infowindow popup problem - interaction with bootstrap? */
 img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
@@ -901,13 +911,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	.select-editable input:focus { 
 		outline:none; 
 	}	
-    
-  /* Data Catalog CSS
-  -------------------------------------------------- */
-	#mainBody {
-		min-height: 800px;
-		margin-top: 430px;'
-	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
@@ -916,7 +919,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       z-index: 300;
       position: relative;
       background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px;
     } 
     
     .filter-contain{
