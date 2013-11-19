@@ -176,6 +176,9 @@ define(['jquery',
 				return;
 			}
 			
+			// set to map mode
+			$("body").addClass("mapMode");
+			
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
 			
 			var mapOptions = {
@@ -1103,7 +1106,10 @@ define(['jquery',
 		},
 		
 		toggleMap: function(){
-			$('#map-container').toggleClass('hidden');
+			//Toggle the map visibility
+			$('#map-container').toggleClass('hidden');			
+			$('#hide-map').toggleClass('hidden-map');
+			
 		},
 		
 		postRender: function() {
@@ -1115,6 +1121,10 @@ define(['jquery',
 		
 		onClose: function () {			
 			console.log('Closing the data view');
+			
+			// unset map mode
+			$("body").removeClass("mapMode");
+			
 			// remove everything so we don't get a flicker
 			this.$el.html('')
 		}				
