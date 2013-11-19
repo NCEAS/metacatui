@@ -142,7 +142,7 @@
 
  /* HEADER
 -------------------------------------------------- */ 
-header{
+header {
 	min-height: 35%;
 	width: 100%;
 	overflow: hidden;
@@ -782,8 +782,26 @@ header{
 	position: absolute;
 }
 
+#map-container {
+	height: 400px;
+	width: 100%;
+	position: fixed;
+	top: 0px;
+	left: 95px;
+}
+
 #map-canvas{
 	height: 400px;
+	width: 100%;
+}
+
+.mapMode header {
+	min-height: 400px;
+}
+
+/* Fixes Infowindow popup problem - interaction with bootstrap? */
+img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
+    max-width: 99999px;
 }
 	
 /* METADATA VIEW CSS

@@ -179,6 +179,9 @@ define(['jquery',
 			// set to map mode
 			$("body").addClass("mapMode");
 			
+			// set to map mode
+			$("body").addClass("mapMode");
+			
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
 			
 			var mapOptions = {
