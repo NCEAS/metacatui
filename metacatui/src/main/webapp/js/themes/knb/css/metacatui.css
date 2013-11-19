@@ -326,11 +326,25 @@ Bold 700 Italic
       opacity: 1;
     }
  
- /* MAP
--------------------------------------------------- */    
+/* MAPS 
+--------------------------------- */
+#map-container{
+	height: 400px;
+	width: 100%;
+	position: fixed;
+	top: 0px;
+}
+
 #map-canvas{
-	height: 500px;
-} 
+	height: 400px;
+	width: 100%;
+}
+
+
+/* Fixes Infowindow popup problem - interaction with bootstrap? */
+img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
+    max-width: 99999px;
+}
     
 /* FEATURES CSS 
 -------------------------------------------------- */    
@@ -892,12 +906,17 @@ Bold 700 Italic
   -------------------------------------------------- */
 	#mainBody {
 		min-height: 800px;
+		margin-top: 430px;'
 	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
       min-height: 400px;
+      z-index: 300;
+      position: relative;
+      background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
+      background-color: rgba(255, 255, 255, 0.9);
     } 
     
     .filter-contain{
