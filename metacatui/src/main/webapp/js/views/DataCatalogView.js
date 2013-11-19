@@ -54,7 +54,8 @@ define(['jquery',
 							   'click #clear-all' : 'resetFilters',
 					 'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
-				   			 'click .collapse-me' : 'collapse'
+				   			 'click .collapse-me' : 'collapse',
+				   			 	'click #hide-map' : 'toggleMap'
 		},
 		
 		initialize: function () {
@@ -1099,6 +1100,10 @@ define(['jquery',
 					$('#content').toggleClass('collapsed');	
 				}				
 
+		},
+		
+		toggleMap: function(){
+			$('#map-container').toggleClass('hidden');
 		},
 		
 		postRender: function() {

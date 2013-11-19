@@ -1298,6 +1298,29 @@ Bold 700
 	top:0px;
 }
 
+#hide-map{
+	z-index: 10;
+	position: absolute;
+	left: 135px;
+	background-color: white;
+	padding: 2px;
+	font-size: 12px;
+	top: 5px;
+	height: 18px;
+	border: 1px solid #bbb;
+	cursor: pointer;
+	box-shadow: 1px 1px 4px #555;
+}
+
+.hidden{
+	display:none;
+	
+}
+
+#hide-map:hover{
+	background-color: #EEE;
+}
+
 
 /* Fixes Infowindow popup problem - interaction with bootstrap? */
 img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
