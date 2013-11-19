@@ -417,7 +417,7 @@ define(['jquery',
 			console.log('query: ' + query);
 			
 			//Set the facets in the query
-			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class", "attributeName", "attributeLabel"]);
+			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class", "attributeName", "attributeLabel", "site"]);
 			
 			//Run the query
 			appSearchResults.setQuery(query);
@@ -954,6 +954,9 @@ define(['jquery',
 				}
 				$('#taxon_input').autocomplete({
 					source: rankedTaxonSuggestions,
+					position: {
+						collision: "flip"						
+					},
 					select: function(event, ui) {
 						// set the text field
 						$('#taxon_input').val(ui.item.value);
@@ -962,7 +965,28 @@ define(['jquery',
 						// prevent default action
 						return false;
 					}
-				});				
+				});	
+				
+				// suggest location names
+				var spatialSuggestions = appSearchResults.facetCounts.site;
+				var rankedSpatialSuggestions = new Array();
+				for (var i=0; i < spatialSuggestions.length-1; i+=2) {
+					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
+				}
+				$('#spatial_input').autocomplete({
+					source: rankedSpatialSuggestions,
+					position: {
+						collision: "flip"						
+					},
+					select: function(event, ui) {
+						// set the text field
+						$('#spatial_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					}
+				});
 				
 			}
 			
