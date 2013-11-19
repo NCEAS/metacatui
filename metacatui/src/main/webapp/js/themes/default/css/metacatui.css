@@ -1324,7 +1324,7 @@ Bold 700
 
 #hide-map:hover{
 	left: 0px;
-	transition: all 1s;
+	transition: all 0.5s;
 }
 
 #hide-map:hover i{

@@ -179,8 +179,8 @@ define(['jquery',
 			// set to map mode
 			$("body").addClass("mapMode");
 			
-			// set to map mode
-			$("body").addClass("mapMode");
+			//Set a reserved phrase for the map filter
+			this.reservedMapPhrase = "Using map boundaries";
 			
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
 			
@@ -225,10 +225,27 @@ define(['jquery',
 				searchModel.set('south', boundingBox.getSouthWest().lat());
 				searchModel.set('east', boundingBox.getSouthWest().lng());
 				
+				//Add a new visual 'current filter' to the DOM for the spatial search
+				viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+				
 				//Trigger a new search
 				viewRef.triggerSearch();
 			});
 
+		},
+		
+		resetMap : function(){
+			//First reset the model
+			//The categories pertaining to the map
+			var categories = ["east", "west", "north", "south"];
+			
+			//Loop through each and remove the filters from the model
+			for(var i = 0; i < categories.length; i++){
+				searchModel.set(categories[i], null);				
+			}
+			
+			//Go back to the min zoom level
+			this.map.setZoom(0);
 		},
 		
 		/* 
@@ -327,7 +344,7 @@ define(['jquery',
 				}
 			}
 			
-			//Taxon - just searching the default text field for now until we index taxon
+			//Taxon
 			var taxon = searchModel.get('taxon');
 			var thisTaxon = null;
 			for (var i=0; i < taxon.length; i++){
@@ -598,11 +615,17 @@ define(['jquery',
 			
 			//Get the filter term
 			var term = $(filterNode).attr('data-term');
-			console.log('removing '+ term);
+			console.log('removing '+ term);	
 			
-			
-			//Remove this filter term from the searchModel
-			this.removeFromModel(category, term);
+			//Check if this is the reserved phrase for the map filter
+			if((category == "spatial") && (term == this.reservedMapPhrase)){
+				this.resetMap();
+			}
+			else{
+				//Remove this filter term from the searchModel
+				this.removeFromModel(category, term);				
+			}
+
 			
 			//Hide the filter from the UI
 			this.hideFilter(filterNode);
@@ -667,6 +690,7 @@ define(['jquery',
 		removeFromModel : function(category, term){			
 			//Remove this filter term from the searchModel
 			if (category){
+				
 				//Get the current filter terms array
 				var currentTerms = searchModel.get(category);
 				//Remove this filter term from the array
@@ -678,17 +702,33 @@ define(['jquery',
 		},
 		
 		//Adds a specified filter node to the DOM
-		showFilter : function(category, term){
+		showFilter : function(category, term, checkForDuplicates){
 			
 			var viewRef = this;
 			
 			//Get the element to add the UI filter node to 
 			//The pattern is #current-<category>-filters
 			var e = this.$el.find('#current-' + category + '-filters');
+			
+			//Allow the option to only display this exact filter category and term once to the DOM
+			//Helpful when adding a filter that is not stored in the search model (for display only)
+			if (checkForDuplicates){
+				var duplicate = false;
+				
+				//Get the current terms from the DOM and check against the new term
+				e.children().each( function(){
+					if($(this).attr('data-term') == term){
+						duplicate = true;
+					}
+				});
+				
+				//If there is a duplicate, exit without adding it
+				if(duplicate){ return; }				
+			}
+			
 							
 			//Add a filter node to the DOM
-			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));
-			
+			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));			
 				
 			return;
 		},
@@ -870,7 +910,9 @@ define(['jquery',
 			if (appSearchResults.header != null) {
 				
 				var facetCounts = appSearchResults.facetCounts;
-				//Set up the autocomplete (jQueryUI) feature for each input
+				
+				
+				//***Set up the autocomplete (jQueryUI) feature for each input****//
 				
 				//For the 'all' filter, use keywords
 				var allSuggestions = appSearchResults.facetCounts.keywords;
