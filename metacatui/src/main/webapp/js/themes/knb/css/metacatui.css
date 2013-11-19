@@ -156,6 +156,33 @@ Bold 700 Italic
 /* FOOTER CSS
 -------------------------------------------------- */    
 
+    .mapMode #Footer{
+    	position: fixed;
+    	height: 30px;
+    	min-height: 20px;
+    	padding-top: 0px;
+    	padding-bottom: 0px;
+    	transition: all 1s ease-out;
+    }
+    
+    .mapMode #Footer h3,
+    .mapMode #Footer h3 > span{
+    	font-size: 16px;
+    	margin-top: 2px;
+    }
+    
+    .mapMode #Footer:hover{
+    	height: 600px;
+    	padding-top: 20px;
+    	padding-bottom: 20px;
+    }
+    
+    .mapMode #Footer:hover h3,
+    .mapMode #Footer:hover h3 > span{
+    	font-size: 30px;
+    	line-height: 30px;
+    }
+    
     footer#Footer {
       position: relative;
       bottom: 0px;
@@ -164,6 +191,7 @@ Bold 700 Italic
       margin-top: 0px;
       color: #FDFDFD;
       background-color: #3F3F3F;
+      width: 100%;
     }
         
     footer#Footer div#FooterHeading {
@@ -187,7 +215,7 @@ Bold 700 Italic
     }
 
     footer#Footer h3 > span {
-      font: 400 30px/30px "Gentium Book Basic";
+      font: 400 20px/22px "Gentium Book Basic";
       font-style: italic;
     }
     
@@ -329,14 +357,14 @@ Bold 700 Italic
 /* MAPS 
 --------------------------------- */
 #map-container {
-	height: 400px;
+	height: 100%;
 	width: 100%;
 	position: fixed;
 	top: 0px;
 }
 
 #map-canvas{
-	height: 400px;
+	height: 100%;
 	width: 100%;
 }
 
@@ -365,14 +393,20 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #content {
 	position: fixed;
 	right: 0;
-	top: 400px;
-	background-color: rgba(255,255,255,0.8);
+	bottom: 0px;
+	background-color: #FFF;
 	height: auto;
 	max-height: 90%;
-	width: 80%;
+	width: 40%;
 	min-width: 300px;
 	overflow-y:scroll;
 	margin-top: 0px;
+	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
+	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);
+	-webkit-border-radius: 3px 0px 0px 0px;
+	-moz-border-radius: 3px 0px 0px 0px;
+	border-radius: 3px 0px 0px 0px;
 }
     
 /* FEATURES CSS 
@@ -937,26 +971,24 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	position: fixed;
 		width: 20%;
 		min-width: 250px;
-		top: 200px;
+		bottom: 0px;
 		left: 0px;
 		padding: 10px;
 		
 		max-height: 750px;
 		overflow-y: scroll;		
 		
-		min-height: 400px;
-		z-index: 300;
 		
-		background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
-		background-color: rgba(255, 255, 255, 0.8);
+		background-color: #FFFFFF; 
 		
-		border-radius: 4px 4px 4px 4px;
-		-moz-border-radius: 4px 4px 4px 4px;
-		-webkit-border-radius: 4px 4px 4px 4px;
+		border-radius: 0px 4px 0px 0px;
+		-moz-border-radius: 0px 4px 0px 0px;
+		-webkit-border-radius: 0px 4px 0px 0px;
 		
-		-webkit-box-shadow: 4px -2px 5px rgba(50, 50, 50, 0.4);
-		-moz-box-shadow:    4px -2px 5px rgba(50, 50, 50, 0.4);
-		box-shadow:         4px -2px 5px rgba(50, 50, 50, 0.4);
+      -webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+		
     } 
     
     .filter-contain{
@@ -976,10 +1008,26 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	height: auto; 
 	}
 	
+	#sidebar_share{
+		position: fixed;
+		width: auto;
+		height: 20px;
+		left: -153px;
+		top: 100px;
+		margin-left: 0px;
+		font-size: 20px;
+		margin: 0px;
+		padding: 6px;
+		transition: 1s ease-out;
+	}
+	
 	#sidebar_share > i{
-		margin-right: 5px;
+		margin-left: 5px;
 	}
 
+	#sidebar_share:hover{
+		left: -2px;
+	}
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{

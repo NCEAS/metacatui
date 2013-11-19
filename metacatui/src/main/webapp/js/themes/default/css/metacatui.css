@@ -240,11 +240,11 @@ Bold 700
 		width: 100%;
 		color: #FFFFFF;
 		display: block;
+		transition: height 0.5s ease-out;
     }
     
     #Footer:hover{
     	height: 150px;
-    	transition: height .5s ease-out;
     }
     
     #Footer .center{
@@ -413,6 +413,7 @@ Bold 700
     	-webkit-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
 		-moz-box-shadow:    3px -1px 15px rgba(50, 50, 50, 0.51);
 		box-shadow:         3px -1px 15px rgba(50, 50, 50, 0.51);
+		transition: all .8s;
     }
     
     #share > i{
@@ -422,7 +423,6 @@ Bold 700
     
     #share:hover{
     	left: 0px;
-    	transition: all .8s;
     }
 
     
@@ -1315,15 +1315,16 @@ Bold 700
 	-moz-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
 	box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
 	cursor: pointer;
+	transition: all 0.8s;
 }
 
 #hide-map i{
 	font-size: 25px;
+	transition: all 0.5s;
 }
 
 #hide-map:hover{
 	left: 0px;
-	transition: all 0.5s;
 }
 
 #hide-map:hover i{
@@ -1631,6 +1632,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
 	padding: 10px;
+	
 }
 
 #metacatDocs > .footer > .small-print{
