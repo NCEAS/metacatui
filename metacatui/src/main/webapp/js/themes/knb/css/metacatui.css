@@ -103,6 +103,10 @@ Bold 700 Italic
           text-transform: uppercase;
     }
     
+    .hidden{
+    	display: none;
+    }
+    
     .collapse-me:hover{
     	cursor: pointer;
     }
@@ -377,6 +381,7 @@ Bold 700 Italic
 	width: 100%;
 	position: fixed;
 	top: 0px;
+	transition: display .4s;
 }
 
 #map-canvas{
@@ -392,6 +397,52 @@ Bold 700 Italic
 	-webkit-box-shadow: 4px 2px 5px rgba(50, 50, 50, 0.4);
 	-moz-box-shadow:    4px 2px 5px rgba(50, 50, 50, 0.4);
 	box-shadow:         4px 2px 5px rgba(50, 50, 50, 0.4);
+}
+
+#hide-map{
+	z-index: 1;
+	position: fixed;
+	top: 140px;
+	left: -102px;
+	padding: 0px 3px;
+	background-color: #992222;
+	color: #FFF;
+	font-size: 20px;
+	line-height: 33px;
+	-webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	border-radius: 0px 4px 4px 0px;
+	-webkit-border-radius: 0px 4px 4px 0px;
+	-moz-border-radius: 0px 4px 4px 0px;
+	transition: left .5s;
+	cursor: pointer;
+}
+
+#hide-map.hidden-map{
+	left: -121px;
+}
+
+#hide-map i{
+	margin-left: 10px;
+	font-size: 24px;
+	margin-right: 4px;
+}
+
+#hide-map:hover{
+	left: 0px;
+}
+
+#show-map-control{
+	display: none;
+}
+
+#hide-map.hidden-map #hide-map-control{
+	display: none;
+}
+
+#hide-map.hidden-map #show-map-control{
+	display: block;
 }
 
 /* Data Catalog CSS
@@ -1025,10 +1076,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		position: fixed;
 		width: auto;
 		height: 20px;
-		left: -153px;
+		left: -195px;
 		top: 100px;
 		margin-left: 0px;
 		font-size: 20px;
+		text-transform: uppercase;
+		text-shadow: none;
 		margin: 0px;
 		padding: 6px;
 		transition: 1s ease-out;
@@ -1037,6 +1090,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		-webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 		-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 		box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+		background-image: none;
 	}
 	
 	#share-data-view > i{
