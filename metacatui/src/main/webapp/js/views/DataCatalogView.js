@@ -55,7 +55,7 @@ define(['jquery',
 					 'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
-				   			 	'click #hide-map' : 'toggleMap'
+				   			 	'click #toggle-map' : 'toggleMapMode'
 		},
 		
 		initialize: function () {
@@ -1150,11 +1150,8 @@ define(['jquery',
 
 		},
 		
-		toggleMap: function(){
-			//Toggle the map visibility
-			$('#map-container').toggleClass('hidden');			
-			$('#hide-map').toggleClass('hidden-map');
-			
+		toggleMapMode: function(){			
+			$('body').toggleClass('mapMode');		
 		},
 		
 		postRender: function() {

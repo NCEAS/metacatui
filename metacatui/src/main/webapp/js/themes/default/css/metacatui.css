@@ -1308,7 +1308,7 @@ Bold 700
 	display:none;	
 }
 
-#hide-map{
+#toggle-map{
 	position: fixed;
 	left: -85px;
 	top: 100px;
@@ -1322,41 +1322,41 @@ Bold 700
 	transition: all 0.8s;
 }
 
-#hide-map i{
+#toggle-map i{
 	font-size: 25px;
 	transition: all 0.5s;
 }
 
-#hide-map:hover{
+#toggle-map:hover{
 	left: 0px;
 }
 
-#hide-map:hover i{
+#toggle-map:hover i{
 	color: #3399CC;
 }
 
-#hide-map span{
+#toggle-map span{
 	margin-right: 10px;
 	color: #3399CC;
 }
 
-#hide-map #show-map-control{
+#toggle-map #show-map-control{
 	display: none;
 }
 
-#hide-map.hidden-map{
+#toggle-map.hidden-map{
 	left: -100px;
 }
 
-#hide-map.hidden-map:hover{
+#toggle-map.hidden-map:hover{
 	left: 0px;
 }
 
-#hide-map.hidden-map #hide-map-control{
+#toggle-map.hidden-map #toggle-map-control{
 	display: none;
 }
 
-#hide-map.hidden-map #show-map-control{
+#toggle-map.hidden-map #show-map-control{
 	display: block;
 }
 

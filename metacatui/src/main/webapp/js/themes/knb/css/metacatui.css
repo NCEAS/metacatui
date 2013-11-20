@@ -103,9 +103,6 @@ Bold 700 Italic
           text-transform: uppercase;
     }
     
-    .hidden{
-    	display: none;
-    }
     
     .collapse-me:hover{
     	cursor: pointer;
@@ -143,14 +140,23 @@ Bold 700 Italic
 
 /* HEADER CSS
 -------------------------------------------------- */    
-  header#Header {
+  #Header {
     position: fixed;
     top: 0px;
     z-index: 100;
     height: 95px;
-    background-color: #FDFDFD;
+    background-color: transparent;
+    background-image: none;
     overflow: hidden;
-    opacity: 1.0;    
+    opacity: 1.0;   
+  }
+  
+  #Header > img{
+  	transition: opacity 1s;
+  }
+  
+  .mapMode #Header > img {
+	opacity: 0;
   }
   
   header#altHeader {
@@ -376,22 +382,25 @@ Bold 700 Italic
  
 /* MAPS 
 --------------------------------- */
-#map-container {
+#map-container{
+	transition: all 1s;
+	display: none;
 	height: 100%;
 	width: 100%;
 	position: fixed;
 	top: 0px;
-	transition: display .4s;
 }
+
+.mapMode #map-container {
+	display: block;
+}
+
 
 #map-canvas{
 	height: 100%;
 	width: 100%;
 }
 
-.mapMode #Header {
-	display: none;
-}
 
 .mapMode .navbar-inner {
 	-webkit-box-shadow: 4px 2px 5px rgba(50, 50, 50, 0.4);
@@ -399,10 +408,10 @@ Bold 700 Italic
 	box-shadow:         4px 2px 5px rgba(50, 50, 50, 0.4);
 }
 
-#hide-map{
+#toggle-map{
 	z-index: 1;
 	position: fixed;
-	top: 140px;
+	top: 155px;
 	left: -102px;
 	padding: 0px 3px;
 	background-color: #992222;
@@ -419,37 +428,51 @@ Bold 700 Italic
 	cursor: pointer;
 }
 
-#hide-map.hidden-map{
+#toggle-map{
 	left: -121px;
 }
 
-#hide-map i{
+.mapMode #toggle-map{
+	left: -102px;
+}
+
+#toggle-map i{
 	margin-left: 10px;
 	font-size: 24px;
 	margin-right: 4px;
 }
 
-#hide-map:hover{
+#toggle-map:hover{
 	left: 0px;
 }
 
 #show-map-control{
-	display: none;
-}
-
-#hide-map.hidden-map #hide-map-control{
-	display: none;
-}
-
-#hide-map.hidden-map #show-map-control{
 	display: block;
 }
+
+.mapMode #show-map-control{
+	display: none;
+}
+
+#hide-map-control{
+	display: none;
+}
+
+.mapMode #hide-map-control{
+	display: block;
+}
+
 
 /* Data Catalog CSS
 -------------------------------------------------- */
 #mainBody {
 	min-height: 800px;
-	margin-top: 430px;'
+	margin-top: 150px;
+	padding-left: 50px;
+}
+
+.mapMode #mainBody{
+	margin-top: 0px;
 }
 
 /* Fixes Infowindow popup problem - interaction with bootstrap? */
@@ -458,31 +481,44 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #content {
-	position: fixed;
+	position: relative;
 	right: 0;
-	bottom: 0px;
+	bottom: 30px;
 	background-color: #FFF;
 	height: auto;
-	max-height: 90%;
-	width: 40%;
 	min-width: 300px;
 	overflow-y:scroll;
 	overflow-x: hidden;
-	margin-top: 0px;
-	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
-	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);
+	margin-top: 20px;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
 	-webkit-border-radius: 3px 0px 0px 0px;
 	-moz-border-radius: 3px 0px 0px 0px;
 	border-radius: 3px 0px 0px 0px;
+	transition: width 1s;
 }
 
-#content.collapsed{
-	height: 60px;
+.mapMode #content.collapsed{
+	height: 30px;
+}
+
+.mapMode #content{
+	margin-top: 0px;	
+	width: 40%;
+	max-height: 90%;
+	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
+	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);	
+	position: fixed;
 }
 
 #countstats{
 	margin-left: 10px;
+}
+
+#countstats:after{
+	content: " data packages";
 }
     
 /* FEATURES CSS 
@@ -1044,12 +1080,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   /* SIDEBAR CSS
   -------------------------------------------------- */
 	#sidebar {
-    	position: fixed;
+    	position: relative;
+    	bottom: 0px;
 		width: 20%;
 		min-width: 250px;
-		bottom: 9px;
-		left: 0px;
 		padding: 0px;
+		margin-top: -10px;
 		
 		max-height: 750px;
 		overflow-y: scroll;		
@@ -1061,23 +1097,34 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		-moz-border-radius: 0px 4px 0px 0px;
 		-webkit-border-radius: 0px 4px 0px 0px;
 		
-      -webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-		
+        -webkit-box-shadow: none;
+    	-moz-box-shadow: none;
+    	box-shadow: none;
+    	
     } 
     
-    #sidebar.collapsed{
+    .mapMode #sidebar.collapsed{
     	height: 50px;
     }
     
+    .mapMode #sidebar{
+    	position: fixed;
+    	bottom: 9px;
+		left: 0px;
+		
+    	webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  	-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  
+    }
+    
     /** Share Your Data button **/
-    	#share-data-view{
+    #share-data-view{
 		position: fixed;
 		width: auto;
 		height: 20px;
 		left: -195px;
-		top: 100px;
+		top: 110px;
 		margin-left: 0px;
 		font-size: 20px;
 		text-transform: uppercase;
