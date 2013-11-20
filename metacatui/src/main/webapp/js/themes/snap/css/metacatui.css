@@ -1440,15 +1440,19 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   		color: #AAAAAA;
   	}
   	
-  	.result-row .download{
+  	.result-row .download {
   		position: relative;
+  	}
+  	
+  	.result-row .download a {
+  		white-space: nowrap;
   	}
   	
   	.result-row .download:hover i{
   		text-decoration: none;
   	}
   	
-  	  	.result-row .dropdown-menu{
+  	.result-row .dropdown-menu{
   		left: -100%;
   	}
   	
