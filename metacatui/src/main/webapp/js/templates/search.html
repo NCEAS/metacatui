@@ -7,6 +7,11 @@
 	<div id="show-map-control"><span>Show map</span> <i class="icon-eye-close"></i></div>
 </div>
 
+<a id="share-data-view" class="btn btn-primary span12" href="#share">
+	Share Your Data
+	<i class="icon-upload icon-white icon-large"></i>
+</a>
+
 <article id="mainBody" class="container-fluid">
 	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
@@ -85,7 +90,7 @@
 						</label>					
 						
 						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-						<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="top" >
+						<label class="span11 left year-tooltip" id="pub-year-label" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="top" >
 							Published between
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>

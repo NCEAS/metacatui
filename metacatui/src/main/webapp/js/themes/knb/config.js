@@ -17,7 +17,6 @@ var themeMap =
 		'templates/mainContent.html' : 'themes/' + theme + '/templates/mainContent.html',
 		'templates/altHeader.html' : 'themes/' + theme + '/templates/altHeader.html',
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
-		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
 		'templates/tools.html' : 'themes/' + theme + '/templates/tools.html',
 		'templates/about.html' : 'themes/' + theme + '/templates/about.html'
 		}

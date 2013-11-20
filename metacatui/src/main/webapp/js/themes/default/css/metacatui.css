@@ -398,6 +398,10 @@ Bold 700
     }
     
     /*Share Your Data button */
+    #share-data-view{
+    	display: none;
+    }
+    
     #share{
     	position: fixed;
     	top: 60px;
