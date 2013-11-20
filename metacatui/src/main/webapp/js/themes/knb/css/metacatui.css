@@ -75,6 +75,12 @@ Bold 700 Italic
     
     a {
 		color: #115E95; /*blue from the earthtones pallette */
+		transition: color .5s;
+    }
+    
+    a:hover{
+    	text-decoration:none;
+    	color: #660000;
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -997,39 +1003,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		
     } 
     
-    .filter-contain{
-    	width: 94%;
-    	margin-bottom: 10px;
-    	border-bottom: 1px dashed #CCC;
-    	padding: 0px 3%;
-    }
-    
-    .filter-contain .filter-contain{
-   	  margin-top: 0px;  	  
-   }
-   
-   .filter-contain > i{
-		color: #AAA;
-		font-size: 20px;
-   }
-   
-   .filter-contain > i.icon-sitemap{
-   		font-size: 18px;
-   }
-   
-   .filter-contain > i.icon-map-marker{
-   		font-size: 22px;
-   }
-   
-   
-   aside > div{
-   	margin: 0px 0px 10px 0px;
-	display: block;
-	clear: both;
-	height: auto; 
-	}
-	
-	#share-data-view{
+    /** Share Your Data button **/
+    	#share-data-view{
 		position: fixed;
 		width: auto;
 		height: 20px;
@@ -1052,6 +1027,44 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		left: -2px;
 	}
     
+    
+    /** Filter containers **/
+    
+    .filter-contain{
+    	width: 94%;
+    	margin-bottom: 10px;
+    	border-bottom: 1px dashed #CCC;
+    	padding: 0px 3%;
+    }
+    
+    .filter-contain .filter-contain{
+   	  margin-top: 0px;  	  
+   }
+   
+      
+   aside > div{
+   	margin: 0px 0px 10px 0px;
+	display: block;
+	clear: both;
+	height: auto; 
+	}
+	
+	
+	/** Filter icons **/
+   .filter-contain > i{
+		color: #AAA;
+		font-size: 20px;
+   }
+   
+   .filter-contain > i.icon-sitemap{
+   		font-size: 18px;
+   }
+   
+   .filter-contain > i.icon-map-marker{
+   		font-size: 22px;
+   }
+   
+	
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
     	background-color: #ffffff;
@@ -1097,7 +1110,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
 	
 	label.ui-state-active i{
-		color: #71A9BD;
+		color: #8DBCDD;
 	}
 	
 	
@@ -1118,6 +1131,26 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 
 	/*-- Currently applied filters --*/
+	
+	#clear-all{
+		background-color: #992222;
+		color: #FFFFFF;
+		padding: 0px 5px 0px 5px;
+		border-radius: 2px;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
+		width: auto;
+		max-width: 100%;
+		margin: 0px 4% 0px 0px;
+		display: inline-block;
+		font: 400 14px/20px "Lato", "Arial", sans-serif;
+		text-transform: none;
+		text-shadow: none;
+	}
+	
+	#clear-all i{
+		margin-left: 5px;
+	}
 	
 	.current-filters,
 	.current-filters[class*="span"]{
@@ -1142,6 +1175,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		max-width: 100%;
 		margin: 5px 5px 0px 0px;
 		display: inline-block;
+		text-shadow: none;
 	}
 	
 	.current-filters > li > span{
@@ -1154,13 +1188,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		float: right;
 		margin-top: 2px;
 		color: #8DBCDD;
+		transition: color .5s;
 	}
 	
 	.current-filters > li > i:hover{
-		font-size: 18px;
-    	position: relative;
-    	top: -2px;
-    	cursor: pointer;
+		color: #FFF;
 	}
 	
 	 #includes-files label,
@@ -1391,12 +1423,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 /* RESULT CSS
 -------------------------------------------------- */
-    
+ 	#sortOrder{
+ 		float: right;
+ 		margin-right: 7px;
+ 	}
     
     .result-row {
-      display: inline-block;
-        border-bottom: thin solid;
-        padding: 5px;
+      display: block;
+        border-bottom: 1px dashed #ccc;
+        padding: 5px 7px;
     }
     
     .result-row .btn-group .has-data{
