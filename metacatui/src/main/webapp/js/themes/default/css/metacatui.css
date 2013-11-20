@@ -238,20 +238,30 @@ Bold 700
   
 /* FOOTER CSS
 -------------------------------------------------- */    
-
     #Footer {
+      position: relative;
+      bottom: 0px;
+      margin-top: 40px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px 20px;
+      height: 280px;
+      width: 100%;
+      color: #DDD;
+    }
+    
+    .mapMode #Footer {
       position: fixed;
 		bottom: 0px;
 		background: #333;
 		padding: 0px 10px;
 		height: 18px;
 		width: 100%;
-		color: #FFFFFF;
+		color: #DDD;
 		display: block;
 		transition: height 0.5s ease-out;
     }
     
-    #Footer:hover{
+    .mapMode #Footer:hover{
     	height: 150px;
     }
     
@@ -475,19 +485,26 @@ Bold 700
 		margin-top: -10px;
 	}
     .navbar .nav > li > a {
-      color: #FFFFFF;
+      color: #FFFFFF; /*IE fallback */
+      color: rgba(255, 255, 255, 0.8);
+      text-shadow: none;
       font: normal normal 400 25px/20px "Oswald", Arial, sans-serif;
       text-transform: uppercase;
-      text-shadow: 0 1px 8px #333;
     }
+    
+    .mapMode .navbar .nav > li > a{
+      text-shadow: 0 1px 8px #333;
+      color: #FFF;
+    }
+    
 
     .navbar .nav > li > a:focus,
     .navbar .nav > li > a:hover {
-      color: #3399CC;
+      color: #FFF;
       text-decoration: none;
-      text-shadow: 0 1px 4px #FFF;
+      text-shadow: none;
       transition: all .5s;
-    }
+    }   
     
     .navbar .nav > .active > a,
     .navbar .nav > .active > a:hover,
@@ -502,6 +519,13 @@ Bold 700
       -webkit-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
          -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
+    }
+    
+    .mapMode .navbar .nav > li > a:focus,
+    .mapMode .navbar .nav > li > a:hover{
+    	text-shadow: none;
+    	color: #666;
+    	transition: all .5s;
     }
 
     #Navbar form {
