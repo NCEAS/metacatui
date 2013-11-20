@@ -28,7 +28,6 @@ Bold 700
       background: rgba(0, 0, 0, .8);
       font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
       min-height: 100%;
-      height: 100%;
       position: relative;
     }
     
@@ -48,7 +47,7 @@ Bold 700
     	text-shadow: none;
     }
     
-    .collapse-me{
+    .mapMode .collapse-me{
     	cursor: pointer;
     }
     
@@ -121,6 +120,15 @@ Bold 700
       margin: 35px auto auto auto;
     }
 
+     #Content{
+     	width: 80%;
+     	margin: 20px auto;
+     }
+     
+     .mapMode #Content{
+     	width: 100%;
+     	margin: 0px;
+     }
      
     /* For full-screen background image */
 	img.bg{
@@ -393,8 +401,7 @@ Bold 700
     nav#Navbar {
       top: 0px;
       width: auto;
-      float: right; 
-      height: 40px;     
+      float: none;    
     }
     
     /*Share Your Data button */
@@ -441,6 +448,10 @@ Bold 700
     .navbar .nav{
     	float: right;
     	margin: 0px;
+    	z-index: 999;
+    }
+    
+    .mapMode .navbar .nav{
     	z-index: 999;
     }
 

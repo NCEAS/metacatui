@@ -104,7 +104,7 @@ Bold 700 Italic
     }
     
     
-    .collapse-me:hover{
+    .mapMode .collapse-me:hover{
     	cursor: pointer;
     }
     
