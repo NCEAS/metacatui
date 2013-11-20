@@ -1296,16 +1296,17 @@ Bold 700
 }
 
 #map-container{
+	display: none;
+	transition: all 1s;
+}
+
+.mapMode #map-container{
 	height: 100%;
 	width: 100%;
 	position: fixed;
 	top:0px;
-}
-
-
-
-.hidden{
-	display:none;	
+	display: block;
+	transition: all 1s;
 }
 
 #toggle-map{
@@ -1327,10 +1328,6 @@ Bold 700
 	transition: all 0.5s;
 }
 
-#toggle-map:hover{
-	left: 0px;
-}
-
 #toggle-map:hover i{
 	color: #3399CC;
 }
@@ -1340,25 +1337,30 @@ Bold 700
 	color: #3399CC;
 }
 
-#toggle-map #show-map-control{
+#show-map-control,
+.mapMode #hide-map-control{
+	display: block;
+}
+
+.mapMode #show-map-control,
+#hide-map-control{
 	display: none;
 }
 
-#toggle-map.hidden-map{
+.mapMode #toggle-map{
+	left: -84px;
+}
+
+#toggle-map{
 	left: -100px;
 }
 
-#toggle-map.hidden-map:hover{
+#toggle-map:hover{
 	left: 0px;
 }
 
-#toggle-map.hidden-map #toggle-map-control{
-	display: none;
-}
 
-#toggle-map.hidden-map #show-map-control{
-	display: block;
-}
+
 
 
 
@@ -1393,13 +1395,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	background-color: rgba(255,255,255,0.8);
 	height: auto;
 	max-height: 90%;
-	width: 40%;
 	min-width: 300px;
 	overflow-y:scroll;
 	margin-top: 40px;
 	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
 	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
 	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);
+	transition: width 1s;
+}
+
+.mapMode #content{
+	width: 40%;
 }
 
 #content.collapsed{
