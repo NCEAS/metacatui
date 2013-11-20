@@ -98,9 +98,13 @@ Bold 700 Italic
     }
     
     .bold-header{
-          font: 400 20px/30px "Lato" Arial sans-serif;
+          font: 400 18px/30px "Lato" Arial sans-serif;
           color: #555555;
           text-transform: uppercase;
+    }
+    
+    .collapse-me:hover{
+    	cursor: pointer;
     }
     
 	/* Offsets the anchor links by the same height as the fixed header */
@@ -412,6 +416,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	width: 40%;
 	min-width: 300px;
 	overflow-y:scroll;
+	overflow-x: hidden;
 	margin-top: 0px;
 	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
 	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
@@ -419,6 +424,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-webkit-border-radius: 3px 0px 0px 0px;
 	-moz-border-radius: 3px 0px 0px 0px;
 	border-radius: 3px 0px 0px 0px;
+}
+
+#content.collapsed{
+	height: 60px;
+}
+
+#countstats{
+	margin-left: 10px;
 }
     
 /* FEATURES CSS 
@@ -1003,6 +1016,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		
     } 
     
+    #sidebar.collapsed{
+    	height: 50px;
+    }
+    
     /** Share Your Data button **/
     	#share-data-view{
 		position: fixed;
@@ -1017,6 +1034,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		transition: 1s ease-out;
 		cursor: pointer;
 		z-index: 999;
+		-webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+		-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+		box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	}
 	
 	#share-data-view > i{
