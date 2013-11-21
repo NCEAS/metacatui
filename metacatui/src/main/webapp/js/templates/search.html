@@ -131,19 +131,15 @@
 				<div id="results-header" class="row-fluid result-header bold-header">
 					
 					<!-- count stats -->
-					<div class="result-header-count span12" id="statcounts">0 to 0 of 0</div>
+					<div class="result-header-count span9" id="statcounts">0 to 0 of 0</div>
 					
-				</div>
-				<!-- <i class="icon-minus collapse-me" id="collapse-content"></i>-->	
-				<!-- sort order -->
-					<div class="row-fluid">
-						<select id=sortOrder>
+					<select id="sortOrder" class="span3">
 							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
 							<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
 							<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
 							<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
-						</select>
-					</div>
+					</select>
+				</div>
 				
 				<!-- search results here -->
 				<div id="results" class="search-results"></div>

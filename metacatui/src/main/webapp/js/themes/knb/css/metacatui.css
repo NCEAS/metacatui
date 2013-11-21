@@ -156,11 +156,12 @@ Bold 700 Italic
   }
   
   #Header > img{
-  	transition: opacity 1s;
+  	transition: all 2s;
   }
   
   .mapMode #Header > img {
 	opacity: 0;
+	height: 0px;
   }
   
   header#altHeader {
@@ -507,10 +508,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	height: 30px;
 }
 
+
 .mapMode #content{
 	margin-top: 0px;	
 	width: 40%;
-	max-height: 90%;
+	max-height: 85%;
 	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
 	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
 	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);	
@@ -1558,25 +1560,51 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 /* RESULT CSS
 -------------------------------------------------- */
  	.result-header{
- 		position: fixed;
- 		background-color: #FFFFFF;
+ 		position: relative;
  		border-bottom: 1px dashed #CCC;
  		padding-bottom: 5px;
  	}
  	
- 	#sortOrder{
+ 	.mapMode .result-header{
+ 		position: relative;
+ 		background-color: #FFFFFF;
+ 	}
+ 	
+ 	.mapMode .result-header > .result-header-count{
  		position: fixed;
+ 		background-color: #FFFFFF;
+ 		border-bottom: 3px solid #DDDDDD;
+ 		padding-bottom: 5px;
+ 		margin-left: 0px;
+ 		cursor: pointer;
+ 	}
+ 	
+ 	#sortOrder{
+ 		float:right;
+ 		width: auto;
+ 		padding-right: 10px;
+ 	}
+ 	
+ 	.mapMode #sortOrder{
+ 		position: fixed;
+ 		width: auto;
  		right: 10px;
  		margin-top: 5px;
+ 	}
+ 	
+ 	.mapMode #content.collapsed #sortOrder{
+ 		display: none;
  	}
  	
  	select{
  		font: "400 14px/14px "Lato", "Arial", sans-serif;
  		height: 24px;
+ 		width: auto;
  	}
+ 	
     
-    .search-results{
-    	margin-top: 40px;
+    .mapMode .search-results{
+    	margin-top: 33px;
     }
     
     .result-row {
