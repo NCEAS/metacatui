@@ -179,27 +179,7 @@ Bold 700
     	font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
     	width: auto;
     }
-    
-	
-	
-	#results-header select{
-		border: 0;
-		border-radius: 0;
-		-webkit-border-radius: 0px;
-		-moz-border-radius: 0px;
-		-webkit-appearance: none;
-		background: none;
-		width: 120px;
-		-moz-appearance: none;
-		appearance: none;
-		/*To hide the drop-down arrow in Firefox */
-		text-indent: 0.01px;
-		text-overflow: '';
-	}
-	
-	#results-header .select > i{
-		margin-right: -110px;
-	}
+
 
 	
 
@@ -240,7 +220,7 @@ Bold 700
   
 /* FOOTER CSS
 -------------------------------------------------- */    
-    #Footer {
+    /*#Footer {
       position: relative;
       bottom: 0px;
       margin-top: 40px;
@@ -249,9 +229,9 @@ Bold 700
       height: 280px;
       width: 100%;
       color: #DDD;
-    }
+    }*/
     
-    .mapMode #Footer {
+    #Footer {
       position: fixed;
 		bottom: 0px;
 		background: #333;
@@ -260,7 +240,7 @@ Bold 700
 		width: 100%;
 		color: #DDD;
 		display: block;
-		transition: height 0.5s ease-out;
+		transition: height 0.5s ease-out .5s;
     }
     
     .mapMode #Footer:hover{
@@ -741,8 +721,7 @@ Bold 700
   -------------------------------------------------- */
     #sidebar {
       position: fixed;
-      width: 15%;
-      min-width: 250px;
+      width: 250px;
       bottom: 0px;
       left: 0px;
       padding: 0px;
@@ -1215,46 +1194,50 @@ Bold 700
     }
     
 
-/* RESULT CSS
+/* RESULTS CSS
 -------------------------------------------------- */
-   .result-header{
- 		position: fixed;
- 		padding-bottom: 5px;
- 	}
- 	
- 	#sortOrder{
- 		position: fixed;
+    /*-- Results header --*/
+    .result-header {
+      position: relative;
+    }
+    
+    .result-header > .result-header-count{
+    	position: relative;
+    }
+    
+    .result-header-count > .result-header-count{
+    	position: fixed;
+    	margin-left: 0px;
+    	padding-left: 10px;
+    }
+    
+    .result-header-count > .result-header-count:after{
+    	content: " data packages";
+    }
+    
+    #sortOrder{
+    	border: 0px;
+    	border-radius: 0px;
+    	-webkit-border-radius: 0px;
+    	-moz-border-radius: 0px;
+    	background-color: #333333;
+    	width: auto;
+    	position: fixed;
  		right: 10px;
  		margin-top: 5px;
- 		background-color: transparent;
-		background-image: none;
 		color: #FFF;
-		border: 0px;
-		border-radius: 0px;
-		-moz-border-radius: 0px;
-		-webkit-border-radius: 0px;
 		height: 18px;
- 	}
+		float: right;
+    }
  	
  	.mapMode #content.collapsed #sortOrder{
  		display: none;
  	}
-
-
-    
+   
+   /*-- Results rows --*/
     .search-results{
     	background-color: rgba(255,255,255,0.8);
-    	margin-top: 40px;
-    }
-    
-    .result-header {
-      padding: 0px 1%;
-      width: 98%;
-    }
-    
-    
-    .result-header-count > .result-header-count:after{
-    	content: " data packages";
+    	margin-top: 10px;
     }
     
     #collapse-content{
@@ -1264,11 +1247,6 @@ Bold 700
     	font-size: 18px;
     	color: #DDD;
     	cursor: pointer;
-    }
-    
-    #sortOrder{
-    	float: right;
-    	margin-top: 5px;
     }
     
     .result-row {
@@ -1296,11 +1274,6 @@ Bold 700
     	font-size: 16px;
     } 
     
-    .has-data{
-    	color: #666;
-    	margin-left: 10px;
-    }
-
     .result-author {
       font-weight: normal;
     }
@@ -1309,6 +1282,17 @@ Bold 700
     	font-weight: 600;
     	color: #166194;
     }
+    
+    .result-row .dropdown-menu{
+  		left: -100%;
+  	}
+    
+    /*-- Result row icons --*/
+    .has-data{
+    	color: #666;
+    	margin-left: 10px;
+    }
+    
     
     .result-row .icon-download-alt{
     	font-size: 18px;
@@ -1329,10 +1313,7 @@ Bold 700
   		color: #555555;
   	}
   	
-  	.result-row .dropdown-menu{
-  		left: -100%;
-  	}
-    
+    /*-- Pagination widget --*/
     .pagination {
     	cursor: pointer;
     	margin: 20px auto;
