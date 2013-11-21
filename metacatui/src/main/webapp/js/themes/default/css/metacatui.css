@@ -1209,6 +1209,7 @@ Bold 700
     	position: fixed;
     	margin-left: 0px;
     	padding-left: 10px;
+    	z-index: 1;
     }
     
     .result-header-count > .result-header-count:after{
@@ -1228,6 +1229,7 @@ Bold 700
 		color: #FFF;
 		height: 18px;
 		float: right;
+		z-index: 1;
     }
  	
  	.mapMode #content.collapsed #sortOrder{

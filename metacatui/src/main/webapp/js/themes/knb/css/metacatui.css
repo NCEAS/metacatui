@@ -496,7 +496,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	min-width: 300px;
 	overflow-y:scroll;
 	overflow-x: hidden;
-	margin-top: 20px;
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;
 	box-shadow: none;
@@ -1579,6 +1578,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		padding-bottom: 5px; 
  		margin-left: 0px;
  		cursor: pointer;
+ 		z-index: 1;
  	}
  	
  	#sortOrder{
@@ -1592,6 +1592,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		width: auto;
  		right: 10px;
  		margin-top: 5px;
+ 		z-index: 1;
  	}
  	
  	.mapMode #content.collapsed #sortOrder{
