@@ -434,7 +434,7 @@ Bold 700
     	-webkit-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
 		-moz-box-shadow:    3px -1px 15px rgba(50, 50, 50, 0.51);
 		box-shadow:         3px -1px 15px rgba(50, 50, 50, 0.51);
-		transition: all .8s;
+		transition: all .5s;
     }
     
     #share > i{
@@ -1267,11 +1267,9 @@ Bold 700
     	font-size: 16px;
     } 
     
-    .result-row .btn-group .has-data{
-    	color: #555555;
-    	font-size: 18px;
-    	position: relative;
-    	left: -15px;
+    .has-data{
+    	color: #666;
+    	margin-left: 10px;
     }
 
     .result-author {
@@ -1285,6 +1283,7 @@ Bold 700
     
     .result-row .icon-download-alt{
     	font-size: 18px;
+    	text-shadow: 1px 1px 1px #ccc;
     }
     
     .result-row .icon-caret-down{
@@ -1307,8 +1306,7 @@ Bold 700
     
     .pagination {
     	cursor: pointer;
-    	margin: auto;
-    	margin-bottom: 20px;
+    	margin: 20px auto;
     }
 
 	.pagination ul{

@@ -1,5 +1,5 @@
         <!-- <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div> -->
-        <div class="result-citation span10">
+        <div class="result-citation span11">
               <span class="result-author"><% var count=0; _.each(origin, function(author) {
                    count++;
                    if (count > 1) {
@@ -20,6 +20,9 @@
                } %></span>
                <span class="result-title"> <% if (title) { print('<a class=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
                <span class="result-id"> <%- id %></span>
+               <% if (resourceMap) {
+               		print('<span><i class="icon-folder-open has-data" data-trigger="hover" data-title="Includes data" data-placement="top"></i></span>');
+               } %>
         </div>
         
         <!-- TODO: show stats when we have them in the index -->
@@ -33,9 +36,7 @@
       	
 		<% if (resourceMap) {
 				//print('<a href=\"', package_service, resourceMap[0], '\"><i class="icon-download-alt"></i><i class="icon-arrow-down"></i></a>');
-				// handle multiple resourceMaps
-				print('<div class="span1"><i class="icon-folder-open has-data" data-trigger="hover" data-title="Includes data" data-placement="top"></i></div>');
-		
+				// handle multiple resourceMaps		
 				print('<div class="span1 download">');
 	
 				print('<a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-download-alt"></i><i class="icon-caret-down"></i></a>');
@@ -50,7 +51,7 @@
 			        print('</ul>');
 			    }
 		    else {
-		    	print('<div class="span1 offset1">');
+		    	print('<div class="span1">');
 				print('<a href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a>'); 
 			}
 		%>

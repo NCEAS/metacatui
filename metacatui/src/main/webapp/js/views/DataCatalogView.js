@@ -1150,7 +1150,8 @@ define(['jquery',
 
 		},
 		
-		toggleMapMode: function(){			
+		toggleMapMode: function(){		
+			
 			$('body').toggleClass('mapMode');		
 		},
 		
