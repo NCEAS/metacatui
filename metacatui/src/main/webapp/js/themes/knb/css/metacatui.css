@@ -1579,6 +1579,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		margin-left: 0px;
  		cursor: pointer;
  		z-index: 1;
+ 		border-radius: 4px 0px 0px 0px;
+ 		-moz-border-radius: 4px 0px 0px 0px;
+ 		-webkit-border-radius: 4px 0px 0px 0px;
  	}
  	
  	#sortOrder{
