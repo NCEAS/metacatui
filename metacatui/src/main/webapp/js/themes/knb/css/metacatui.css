@@ -1557,10 +1557,27 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 /* RESULT CSS
 -------------------------------------------------- */
- 	#sortOrder{
- 		float: right;
- 		margin-right: 7px;
+ 	.result-header{
+ 		position: fixed;
+ 		background-color: #FFFFFF;
+ 		border-bottom: 1px dashed #CCC;
+ 		padding-bottom: 5px;
  	}
+ 	
+ 	#sortOrder{
+ 		position: fixed;
+ 		right: 10px;
+ 		margin-top: 5px;
+ 	}
+ 	
+ 	select{
+ 		font: "400 14px/14px "Lato", "Arial", sans-serif;
+ 		height: 24px;
+ 	}
+    
+    .search-results{
+    	margin-top: 40px;
+    }
     
     .result-row {
       display: block;
