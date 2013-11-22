@@ -396,6 +396,10 @@ Bold 700 Italic
 	top: 0px;
 }
 
+#map-container.loading {
+	opacity: 0.5;
+}
+
 .mapMode #map-container {
 	display: block;
 }
