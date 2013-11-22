@@ -1088,6 +1088,10 @@ define(['jquery',
 				position: latLngCEN,
 				title: solrResult.get('title'),
 				//icon: markerImage,
+<<<<<<< HEAD
+=======
+				//animation: google.maps.Animation.DROP,
+>>>>>>> branch 'master' of https://code.nceas.ucsb.edu/git/nceas-staff/datadepot.git
 				map: this.map,
 				visible: false,
 				zIndex: 99999
@@ -1154,11 +1158,15 @@ define(['jquery',
 
 		// Add all items in the **SearchResults** collection at once.
 		addAll: function () {
-			appSearchResults.each(this.addOne, this);
+			
+			// do this first to indicate coming results
 			this.updateStats();
+<<<<<<< HEAD
 			
 			var d4 = new Date();
 			console.log(d4.getTime() - d3.getTime());
+=======
+>>>>>>> branch 'master' of https://code.nceas.ucsb.edu/git/nceas-staff/datadepot.git
 
 			var min = 25;
 			min = Math.min(min, appSearchResults.models.length);
