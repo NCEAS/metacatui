@@ -1088,10 +1088,6 @@ define(['jquery',
 				position: latLngCEN,
 				title: solrResult.get('title'),
 				//icon: markerImage,
-<<<<<<< HEAD
-=======
-				//animation: google.maps.Animation.DROP,
->>>>>>> branch 'master' of https://code.nceas.ucsb.edu/git/nceas-staff/datadepot.git
 				map: this.map,
 				visible: false,
 				zIndex: 99999
