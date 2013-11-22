@@ -194,12 +194,14 @@ Bold 700 Italic
     	padding-top: 0px;
     	padding-bottom: 0px;
     	transition: all 1s ease-out;
+    	transition-delay: .5s;
     }
     
     .mapMode #Footer h3,
     .mapMode #Footer h3 > span{
     	font-size: 16px;
     	margin-top: 2px;
+    	transition-delay: .6s;
     }
     
     .mapMode #Footer:hover{
@@ -498,7 +500,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	min-width: 300px;
 	overflow-y:scroll;
 	overflow-x: hidden;
-	margin-top: 20px;
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;
 	box-shadow: none;
@@ -1298,6 +1299,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		font: 400 14px/14px "Lato", Arial, sans-serif;
 		margin-left: 0px;
 		min-height: 0px;
+		width: auto;
 	}
 	
 	.current-filters > li,
@@ -1460,6 +1462,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		background-color: rgba(17, 94, 149, .8);
 		border-color: inherit;
 		display: block;
+		height: 20px;
 	}
 	
     /*-- Headers in sidebar --*/
@@ -1578,9 +1581,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		position: fixed;
  		background-color: #FFFFFF;
  		border-bottom: 3px solid #DDDDDD;
- 		padding-bottom: 5px;
+ 		padding-bottom: 5px; 
  		margin-left: 0px;
  		cursor: pointer;
+ 		z-index: 1;
+ 		border-radius: 4px 0px 0px 0px;
+ 		-moz-border-radius: 4px 0px 0px 0px;
+ 		-webkit-border-radius: 4px 0px 0px 0px;
  	}
  	
  	#sortOrder{
@@ -1594,6 +1601,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		width: auto;
  		right: 10px;
  		margin-top: 5px;
+ 		z-index: 1;
  	}
  	
  	.mapMode #content.collapsed #sortOrder{
