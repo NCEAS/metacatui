@@ -55,6 +55,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		},
 		  
 		parse: function(solr) {
+			var d = new Date();
+			var start = d.getTime();
+			console.log(start);
 			this.header = new SolrHeader(solr.responseHeader);			
 			this.header.set({"numFound" : solr.response.numFound});
 			this.header.set({"start" : solr.response.start});
@@ -62,7 +65,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			
 			//Get the facet counts and store them in this model
 			this.facetCounts = solr.facet_counts.facet_fields;
-					
+			
+			var d2 = new Date();
+			console.log(d2.getTime() - start);
+			
 			return solr.response.docs;
 		},
 		

@@ -33,7 +33,9 @@ define(['jquery',
 		
 		map: null,
 		
-		markers: [],
+		ready: false,
+				
+		markers: {},
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -173,6 +175,7 @@ define(['jquery',
 		renderMap: function() {
 			
 			if (!gmaps) {
+				this.ready = true;
 				return;
 			}
 			
@@ -213,6 +216,8 @@ define(['jquery',
 			
 			google.maps.event.addListener(mapRef, "idle", function(){
 			
+				viewRef.ready = true;
+				
 				//If the map is zoomed all the way out, do not apply the spatial filters
 				if(mapRef.getZoom() == mapOptions.minZoom){ return; }
 				
@@ -266,7 +271,7 @@ define(['jquery',
 			
 			this.removeAll();
 			
-			appSearchResults.setrows(25);
+			appSearchResults.setrows(500);
 			appSearchResults.setSort(sortOrder);
 			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord, site");
 			
@@ -1049,6 +1054,13 @@ define(['jquery',
 				return;
 			}
 			
+			var pid = solrResult.get('id');
+			
+			// already on map
+			if (this.markers[pid]) {
+				return;
+			}
+			
 			var n = solrResult.get('northBoundCoord');
 			var s = solrResult.get('southBoundCoord');
 			var e = solrResult.get('eastBoundCoord');
@@ -1059,13 +1071,13 @@ define(['jquery',
 			var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
 			var latLngCEN = bounds.getCenter();
 			
-			console.log('Adding marker for: ' + solrResult.get('id'));
+			//console.log('Adding marker for: ' + solrResult.get('id'));
 			
 			var infoWindow = new gmaps.InfoWindow({
 				content: 
 					'<h4>' + solrResult.get('title') 
 					+ ' ' 
-					+ '<a href="#view/' + solrResult.get('id') + '" >'
+					+ '<a href="#view/' + pid + '" >'
 					+ solrResult.get('id') 
 					+ '</a>'
 					+ '</h4>'
@@ -1076,12 +1088,12 @@ define(['jquery',
 				position: latLngCEN,
 				title: solrResult.get('title'),
 				//icon: markerImage,
-				animation: google.maps.Animation.DROP,
 				map: this.map,
+				visible: false,
 				zIndex: 99999
 			}
 			var marker = new gmaps.Marker(markerOptions);
-			this.markers.push(marker);
+			this.markers[pid] = marker;
 			gmaps.event.addListener(marker, 'click', function() {
 				titleWindow.close();
 				infoWindow.open(this.map, marker);
@@ -1101,11 +1113,27 @@ define(['jquery',
 			
 		},
 		
-		clearMarkers: function() {
-			_.each(this.markers, function(marker) {
-				marker.setMap(null);
+		showMarkers: function() {
+			var i = 1;
+			_.each(_.values(this.markers), function(marker) {
+				setTimeout(function() {
+					marker.setVisible(true);
+				}, i++ * 1);
 			});
-			this.markers = [];
+		},
+		
+		clearMarkers: function() {
+			var searchPids =
+			_.map(appSearchResults.models, function(element, index, list) {
+				return element.get("id");
+			});
+			var diff = _.difference(_.keys(this.markers), searchPids);
+			var viewRef = this;
+			_.each(diff, function(pid, index, list) {
+				var marker = viewRef.markers[pid];
+				marker.setMap(null);
+				delete viewRef.markers[pid];
+			});
 		},
 		
 		// Add a single SolrResult item to the list by creating a view for it, and
@@ -1128,12 +1156,41 @@ define(['jquery',
 		addAll: function () {
 			appSearchResults.each(this.addOne, this);
 			this.updateStats();
+			
+			var d4 = new Date();
+			console.log(d4.getTime() - d3.getTime());
+
+			var min = 25;
+			min = Math.min(min, appSearchResults.models.length);
+			var i = 0;
+			for (i = 0; i < min; i++) {
+				var element = appSearchResults.models[i];
+				this.addOne(element);
+			};
+			var viewRef = this;
+			var intervalId = setInterval(function() {
+				if (viewRef.ready) {
+					for (i = min; i < appSearchResults.models.length; i++) {
+						var element = appSearchResults.models[i];
+						viewRef.addOne(element);
+					};
+					// clean out the old markers
+					viewRef.clearMarkers();
+					viewRef.showMarkers();
+					//$("#map-container").css("opacity", "1.0");
+					$("#map-container").removeClass("loading");
+					clearInterval(intervalId);
+				}
+				
+			}, 500);
+
 		},
 		
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
+			//$("#map-container").css("opacity", "0.5");
+			$("#map-container").addClass("loading");
 			this.$results.html('');
-			this.clearMarkers();
 		},
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 
