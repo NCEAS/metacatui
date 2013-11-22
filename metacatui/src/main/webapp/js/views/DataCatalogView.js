@@ -1161,13 +1161,7 @@ define(['jquery',
 			
 			// do this first to indicate coming results
 			this.updateStats();
-<<<<<<< HEAD
 			
-			var d4 = new Date();
-			console.log(d4.getTime() - d3.getTime());
-=======
->>>>>>> branch 'master' of https://code.nceas.ucsb.edu/git/nceas-staff/datadepot.git
-
 			var min = 25;
 			min = Math.min(min, appSearchResults.models.length);
 			var i = 0;
