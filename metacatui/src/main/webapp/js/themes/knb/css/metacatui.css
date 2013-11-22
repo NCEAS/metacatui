@@ -1295,6 +1295,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		font: 400 14px/14px "Lato", Arial, sans-serif;
 		margin-left: 0px;
 		min-height: 0px;
+		width: auto;
 	}
 	
 	.current-filters > li,
@@ -1457,6 +1458,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		background-color: rgba(17, 94, 149, .8);
 		border-color: inherit;
 		display: block;
+		height: 20px;
 	}
 	
     /*-- Headers in sidebar --*/

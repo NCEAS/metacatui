@@ -1051,12 +1051,13 @@ Bold 700
 	.current-filters.active {
 		background-color: inherit;
 		border-color: inherit;
-		display: block;
+		display: inline-block;
 	}
 	.keyword-search-link.active {
 		background-color: #166194;
 		border-color: inherit;
-		display: block;
+		display: inline-block;
+		width: auto;
 	}
     
 	
