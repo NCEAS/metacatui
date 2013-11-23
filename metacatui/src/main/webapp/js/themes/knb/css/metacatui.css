@@ -1625,9 +1625,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
         padding: 5px 7px;
     }
     
-    .has-data{
+    .result-row .has-data{
     	color: #666;
     	margin-left: 10px;
+    }
+    
+    .result-row .on-map{
+    	color: #DA4D3A;
+    	font-size: 1.1em;
+    	margin-left: 5px;
     }
     
     .result-row .icon-download-alt,

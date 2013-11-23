@@ -22,6 +22,10 @@
                <span class="result-id"> <%- id %></span>
                <% if (resourceMap) {
                		print('<span><i class="icon-folder-open has-data" data-trigger="hover" data-title="Includes data" data-placement="top"></i></span>');
+               }
+               console.log(typeof southBoundCoord);
+               if (typeof southBoundCoord != "undefined"){
+               		print('<span><i class="icon-map-marker on-map"></i></span>');
                } %>
         </div>
         
