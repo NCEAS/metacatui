@@ -1208,6 +1208,7 @@ Bold 700
     
     .result-header-count > .result-header-count{
     	position: fixed;
+    	width: 40%;
     	margin-left: 0px;
     	padding-left: 10px;
     	z-index: 1;

@@ -131,26 +131,19 @@
 				<div id="results-header" class="row-fluid result-header">
 					
 					<!-- count stats -->
-					<div class="result-header-count span9" id="statcounts">0 to 0 of 0</div>
+					<div class="result-header-count span10" id="statcounts">0 to 0 of 0</div>
 					
-					<select id="sortOrder" class="span3">
+					<select id="sortOrder" class="span2">
 							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
 							<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
 							<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
 							<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
 					</select>
+				
 				</div>
 				
 				<!-- search results here -->
 				<div id="results" class="search-results"></div>
-				
-				<!-- pager -->
-				<div id="resultspager" class="row-fluid pagination pagination-centered">
-					<ul>
-						<li><a id="results_prev_bottom">Prev</a></li>
-						<li><a id="results_next_bottom">Next</a></li>
-					</ul>
-				</div>
 			</div>
 			<div id="metadata-view" class="container-fluid"></div>
 		</div>

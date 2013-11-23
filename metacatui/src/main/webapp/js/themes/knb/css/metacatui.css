@@ -523,18 +523,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);	
 	position: fixed;
 }
-
-#countstats{
-	margin-left: 10px;
-}
-
-#countstats > span{
-	text-transform: none;
-}
-
-#countstats:after{
-	content: " data packages";
-}
     
 /* FEATURES CSS 
 -------------------------------------------------- */    
@@ -1583,12 +1571,27 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		border-bottom: 3px solid #DDDDDD;
  		padding-bottom: 5px; 
  		margin-left: 0px;
+ 		width: 40%;
  		cursor: pointer;
  		z-index: 1;
  		border-radius: 4px 0px 0px 0px;
  		-moz-border-radius: 4px 0px 0px 0px;
  		-webkit-border-radius: 4px 0px 0px 0px;
  	}
+ 	
+ 	#countstats{
+		margin-left: 10px;
+		margin-bottom: 10px;
+	}
+	
+	#countstats > span{
+		text-transform: none;
+	}
+	
+	#countstats:after{
+		content: " data packages";
+	}
+
  	
  	#sortOrder{
  		float:right;
@@ -1656,7 +1659,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .pagination {
     	cursor: pointer;
-    	margin: 20px auto;
+    	margin: 0px;
     }
 
 	.result-row .icon-download-alt{
