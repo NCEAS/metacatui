@@ -280,6 +280,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 		// this logout hits both the perl registry and the Metacat API
 		logout: function () {
 			
+			// clear the search criteria in case we are filtering by username
+			searchModel.clear();
+			
 			// look up the url from the main application model
 			this.registryUrl = appModel.get('registryServiceUrl');
 			
