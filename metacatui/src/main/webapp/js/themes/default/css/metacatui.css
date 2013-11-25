@@ -1200,6 +1200,7 @@ Bold 700
     /*-- Results header --*/
     .result-header {
       position: relative;
+      z-index: 1;
     }
     
     .result-header > .result-header-count{
@@ -1237,8 +1238,17 @@ Bold 700
  	.mapMode #content.collapsed #sortOrder{
  		display: none;
  	}
+ 	
+ 	#statcounts{
+ 		position: fixed;
+ 		width: 40%;
+ 	}
    
    /*-- Results rows --*/
+   #results{
+   		margin-top: 80px;
+   }
+   
     .search-results{
     	background-color: rgba(255,255,255,0.8);
     	margin-top: 10px;
@@ -1326,7 +1336,9 @@ Bold 700
     /*-- Pagination widget --*/
     .pagination {
     	cursor: pointer;
-    	margin: 20px auto;
+    	margin: 30px auto;
+    	padding-bottom: 5px;
+    	background-color: #222222;
     }
 
 	.pagination ul{
@@ -1335,10 +1347,21 @@ Bold 700
 	}
 	
 	.pagination ul > li > a{
-		background-color: #DDD;
-		color: #333;
-		font: 400 16px/16px "Source Sans Pro";
-		
+		background-color: #555555;
+		color: #EEEEEE;
+		font: 400 16px/16px "Source Sans Pro";	
+		border: 1px solid #333333;	
+	}
+	
+	.pagination ul > li > a:hover{
+		background-color: #777777;
+	}
+	
+	
+	.pagination ul > .active > a,
+	.pagination ul > .active > a:hover{
+		color: #222222;
+		background-color: #CCCCCC;
 	}
 
 /* MAPS 
