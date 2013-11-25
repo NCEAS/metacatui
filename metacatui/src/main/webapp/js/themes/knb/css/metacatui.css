@@ -1158,7 +1158,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	width: 94%;
     	margin-bottom: 10px;
     	border-bottom: 1px dashed #CCC;
-    	padding: 0px 3%;
+    	padding: 0px 3% 10px 3%;
     }
     
     .filter-contain .filter-contain{
@@ -1285,7 +1285,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		list-style: none;
 		color: #FFFFFF;
 		font: 400 14px/14px "Lato", Arial, sans-serif;
-		margin-left: 0px;
+		margin: 0px;
 		min-height: 0px;
 		width: auto;
 	}
