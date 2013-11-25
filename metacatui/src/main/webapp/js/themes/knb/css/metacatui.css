@@ -1681,6 +1681,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	.result-row .dropdown-menu{
   		left: -100%;
   	}
+  	
+  	.mapMode .result-row .dropdown-menu{
+  		left: -320%;
+  	}
+  	
 /* RESPONSIVE CSS
 -------------------------------------------------- */
 /*    
