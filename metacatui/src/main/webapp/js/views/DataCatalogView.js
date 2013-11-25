@@ -1107,8 +1107,8 @@ define(['jquery',
 				position: latLngCEN,
 				title: solrResult.get('title'),
 				icon: this.markerImage,
-				map: this.map,
-				visible: false,
+				//map: this.map,
+				//visible: false,
 				zIndex: 99999
 			}
 			var marker = new gmaps.Marker(markerOptions);
@@ -1141,7 +1141,8 @@ define(['jquery',
 			});
 		},
 		
-		clearMarkers: function() {
+		// removes any existing markers that are not in the new search results
+		mergeMarkers: function() {
 			var searchPids =
 			_.map(appSearchResults.models, function(element, index, list) {
 				return element.get("id");
@@ -1171,7 +1172,11 @@ define(['jquery',
 
 		},
 
-		// Add all items in the **SearchResults** collection at once.
+		/** Add all items in the **SearchResults** collection
+		 * This loads the first 25, then waits for the map to be 
+		 * fully loaded and then loads the remaining items.
+		 * Without this delay, the app waits until all records are processed
+		*/
 		addAll: function () {
 			
 			// do this first to indicate coming results
@@ -1191,9 +1196,12 @@ define(['jquery',
 						var element = appSearchResults.models[i];
 						viewRef.addOne(element);
 					};
-					// clean out the old markers
-					viewRef.clearMarkers();
-					viewRef.showMarkers();
+					
+					// clean out any old markers
+					viewRef.mergeMarkers();
+					
+					// show them if the are hidden
+					//viewRef.showMarkers();
 					
 					// show the clutered markers
 					var mcOptions = {
@@ -1221,7 +1229,6 @@ define(['jquery',
 		
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
-			//$("#map-container").css("opacity", "0.5");
 			$("#map-container").addClass("loading");
 			this.$results.html('');
 		},
