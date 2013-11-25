@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone'],
 			page: null,
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
-			context: '/knb',
+			context: '/metacat',
 			d1Service: '/d1/mn/v1',
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -38,6 +38,8 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				this.set('baseUrl', baseUrl);
 			}
+			
+			this.set('baseUrl', "http://dev2.nceas.ucsb.edu");
 
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');

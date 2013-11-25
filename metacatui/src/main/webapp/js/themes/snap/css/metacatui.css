@@ -1,18 +1,18 @@
 
 /* Import font families */
-@import url(http://fonts.googleapis.com/css?family=PT+Serif:400,700, 400italic);
+@import url(https://fonts.googleapis.com/css?family=PT+Serif:400,700, 400italic);
 /* PT Serif 
 400 Normal
 400 Normal Italic
 700 Bold
 */
 
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:700);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:700);
 /* Open Sans
 700 Bold
 */
 
-@import url(http://fonts.googleapis.com/css?family=Lato:400);
+@import url(https://fonts.googleapis.com/css?family=Lato:400);
 
 /* Body CSS
 -------------------------------------------------- */
@@ -142,7 +142,7 @@
 
  /* HEADER
 -------------------------------------------------- */ 
-header{
+header {
 	min-height: 35%;
 	width: 100%;
 	overflow: hidden;
@@ -782,8 +782,26 @@ header{
 	position: absolute;
 }
 
+#map-container {
+	height: 400px;
+	width: 100%;
+	position: fixed;
+	top: 0px;
+	left: 95px;
+}
+
 #map-canvas{
 	height: 400px;
+	width: 100%;
+}
+
+.mapMode header {
+	min-height: 400px;
+}
+
+/* Fixes Infowindow popup problem - interaction with bootstrap? */
+img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
+    max-width: 99999px;
 }
 	
 /* METADATA VIEW CSS
@@ -1110,7 +1128,7 @@ header{
 		border-radius: 0px;
 		-moz-border-radius: 0px;
 		-webkit-border-radius: 0px;
-		min-height: 0.9em;
+		min-height: 1.5em;
 		width: auto;
 		max-width: 100%;
 		margin: 5px 5px 0px 0px;
@@ -1422,15 +1440,19 @@ header{
   		color: #AAAAAA;
   	}
   	
-  	.result-row .download{
+  	.result-row .download {
   		position: relative;
+  	}
+  	
+  	.result-row .download a {
+  		white-space: nowrap;
   	}
   	
   	.result-row .download:hover i{
   		text-decoration: none;
   	}
   	
-  	  	.result-row .dropdown-menu{
+  	.result-row .dropdown-menu{
   		left: -100%;
   	}
   	

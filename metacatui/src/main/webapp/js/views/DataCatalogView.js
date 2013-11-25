@@ -10,9 +10,10 @@ define(['jquery',
 				'text!templates/resultsItem.html',
 				'text!templates/mainContent.html',
 				'text!templates/currentFilter.html',
-				'gmaps'
+				'gmaps',
+				'markerClusterer'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps) {
+	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps, MarkerClusterer) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -31,6 +32,29 @@ define(['jquery',
 		
 		currentFilterTemplate: _.template(CurrentFilterTemplate),
 		
+		map: null,
+		
+		ready: false,
+				
+		markers: {},
+		
+		markerClusterer: {},
+				
+		markerImage: './img/markers/orangered-marker.png',
+		
+		markerImage15: './img/markers/orangered-15px-25a.png',
+		
+		markerImage20: './img/markers/orangered-20px-25a.png',
+		
+		markerImage30: './img/markers/orangered-30px-25a.png',
+		
+		markerImage40: './img/markers/orangered-40px-25a.png',
+		
+		markerImage50: './img/markers/orangered-50px-25a.png',
+		
+		markerImage60: './img/markers/orangered-60px-25a.png',
+	
+		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 							'click #results_prev' : 'prevpage',
@@ -48,9 +72,10 @@ define(['jquery',
 						   'click .remove-filter' : 'removeFilter',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
 							   'click #clear-all' : 'resetFilters',
-					 'click .keyword-search-link' : 'additionalCriteria',
+					 'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
-				   			 'click .collapse-me' : 'collapse'
+				   			 'click .collapse-me' : 'collapse',
+				   			 	'click #toggle-map' : 'toggleMapMode'
 		},
 		
 		initialize: function () {
@@ -121,6 +146,10 @@ define(['jquery',
 			$('.year-tooltip').tooltip();
 			$('.tooltip-this').tooltip();
 			
+			//Initialize the jQueryUI button checkboxes
+			$( "#filter-year" ).buttonset();
+			$( "#includes-files" ).buttonset();
+			
 			//Iterate through each search model text attribute and show UI filter for each
 			var categories = ['all', 'creator', 'taxon'];
 			var thisTerm = null;
@@ -163,8 +192,17 @@ define(['jquery',
 		
 		renderMap: function() {
 			
-			var map;
-
+			if (!gmaps) {
+				this.ready = true;
+				return;
+			}
+			
+			// set to map mode
+			$("body").addClass("mapMode");
+			
+			//Set a reserved phrase for the map filter
+			this.reservedMapPhrase = "Using map boundaries";
+			
 			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
 			
 			var mapOptions = {
@@ -172,21 +210,32 @@ define(['jquery',
 				minZoom: 3,
 				maxZoom: 15,
 			    center: mapCenter,
+				disableDefaultUI: true,
 			    zoomControl: true,
 			    zoomControlOptions: {
-				          style: google.maps.ZoomControlStyle.LARGE
+				          style: google.maps.ZoomControlStyle.SMALL,
+				          position: google.maps.ControlPosition.TOP_LEFT
 				        },
+				panControl: false,
+				scaleControl: false,
+				streetViewControl: false,
+				mapTypeControl: true,
+				mapTypeControlOptions:{
+						position: google.maps.ControlPosition.TOP_LEFT
+				},
 			    mapTypeId: google.maps.MapTypeId.TERRAIN
 			};
 			
 			gmaps.visualRefresh = true;
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
-			
+
 			var mapRef = this.map;
 			var viewRef = this;
 			
 			google.maps.event.addListener(mapRef, "idle", function(){
-				console.log(mapRef.getZoom());
+			
+				viewRef.ready = true;
+				
 				//If the map is zoomed all the way out, do not apply the spatial filters
 				if(mapRef.getZoom() == mapOptions.minZoom){ return; }
 				
@@ -199,12 +248,27 @@ define(['jquery',
 				searchModel.set('south', boundingBox.getSouthWest().lat());
 				searchModel.set('east', boundingBox.getSouthWest().lng());
 				
-				//Up the filter count
-				searchModel.set('filterCount', searchModel.get('filterCount') + 1);
+				//Add a new visual 'current filter' to the DOM for the spatial search
+				viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
 				
 				//Trigger a new search
 				viewRef.triggerSearch();
 			});
+
+		},
+		
+		resetMap : function(){
+			//First reset the model
+			//The categories pertaining to the map
+			var categories = ["east", "west", "north", "south"];
+			
+			//Loop through each and remove the filters from the model
+			for(var i = 0; i < categories.length; i++){
+				searchModel.set(categories[i], null);				
+			}
+			
+			//Go back to the min zoom level
+			this.map.setZoom(0);
 		},
 		
 		/* 
@@ -225,9 +289,9 @@ define(['jquery',
 			
 			this.removeAll();
 			
-			appSearchResults.setrows(25);
+			appSearchResults.setrows(500);
 			appSearchResults.setSort(sortOrder);
-			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate");
+			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord, site");
 			
 			//Create the filter terms from the search model and create the query
 			var query = "formatType:METADATA+-obsoletedBy:*";
@@ -251,6 +315,23 @@ define(['jquery',
 					return true;
 				}
 			};
+			
+			// attribute
+			var thisAttribute = null;
+			var attribute = searchModel.get('attribute');
+			for (var i=0; i < attribute.length; i++){
+				//Trim the spaces off
+				thisAttribute = attribute[i].trim();
+				
+				// Is this a phrase?
+				if (phrase(thisAttribute)){
+					thisAttribute = thisAttribute.replace(" ", "%20");
+					thisAttribute = "%22" + thisAttribute + "%22";
+				}
+				// TODO: surround with **?
+				query += "+attribute:" + thisAttribute;
+				
+			}
 			
 			//All
 			var thisAll = null;
@@ -286,7 +367,7 @@ define(['jquery',
 				}
 			}
 			
-			//Taxon - just searching the default text field for now until we index taxon
+			//Taxon
 			var taxon = searchModel.get('taxon');
 			var thisTaxon = null;
 			for (var i=0; i < taxon.length; i++){
@@ -355,7 +436,7 @@ define(['jquery',
 				
 			}
 			
-			//Spatial
+			//Map
 			if(searchModel.get('north')!=null){
 				query += ("+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
 						  "+eastBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
@@ -363,16 +444,33 @@ define(['jquery',
 						  "+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D");
 			}
 			
+			//Spatial string
+			var thisSpatial = null;
+			var spatial = searchModel.get('spatial');
+			for(var i=0; i < spatial.length; i++){
+				//Trim the spaces off
+				thisSpatial = spatial[i].trim();
+				
+				//Is this a phrase?
+				if(phrase(thisSpatial)){
+					thisSpatial = thisSpatial.replace(" ", "%20");
+					query += "+site:*%22" + thisSpatial + "%22*";
+				}
+				else{
+					query += "+site:*" + thisSpatial + "*";
+				}
+			}
+			
 			console.log('query: ' + query);
 			
 			//Set the facets in the query
-			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class"]);
+			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class", "attributeName", "attributeLabel", "site"]);
 			
 			//Run the query
 			appSearchResults.setQuery(query);
 			
 			//Show or hide the reset filters button
-			if(searchModel.get('filterCount') > 0){
+			if(searchModel.filterCount() > 0){
 				$('#clear-all').css('display', 'block');
 			}
 			else{
@@ -427,9 +525,6 @@ define(['jquery',
 			//Replace the current array with the new one in the search model
 			searchModel.set(category, filtersArray);
 			
-			//+1 the filter count
-			searchModel.set('filterCount', searchModel.get('filterCount') + 1);
-				
 			//Show the UI filter
 			this.showFilter(category, term);
 			
@@ -450,14 +545,6 @@ define(['jquery',
 			//Update the model
 			searchModel.set(category, state);
 			
-			//+1 the filter count if it is checked
-			if(state){
-				searchModel.set('filterCount', searchModel.get('filterCount') + 1);
-			}
-			else{
-				searchModel.set('filterCount', searchModel.get('filterCount') - 1);
-			}
-			
 			//Show the reset button
 			$('#clear-all').css('display', 'block');
 			
@@ -477,7 +564,7 @@ define(['jquery',
 			// Get the minimum and maximum values from the input fields
 			var minVal = $('#min_year').val();
 			var maxVal = $('#max_year').val();
-			console.log(minVal, maxVal);
+			//console.log(minVal, maxVal);
 			
 			//Also update the search model
 		    searchModel.set('yearMin', minVal);
@@ -551,11 +638,17 @@ define(['jquery',
 			
 			//Get the filter term
 			var term = $(filterNode).attr('data-term');
-			console.log('removing '+ term);
+			console.log('removing '+ term);	
 			
-			
-			//Remove this filter term from the searchModel
-			this.removeFromModel(category, term);
+			//Check if this is the reserved phrase for the map filter
+			if((category == "spatial") && (term == this.reservedMapPhrase)){
+				this.resetMap();
+			}
+			else{
+				//Remove this filter term from the searchModel
+				this.removeFromModel(category, term);				
+			}
+
 			
 			//Hide the filter from the UI
 			this.hideFilter(filterNode);
@@ -588,8 +681,11 @@ define(['jquery',
 
 			//Reset the checkboxes
 			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
-			$("#data_year").prop("checked", searchModel.get("pubYear"));
-			$("#publish_year").prop("checked", searchModel.get("dataYear"));
+			$("#includes-files").buttonset("refresh");
+			$("#data_year").prop("checked", searchModel.get("dataYear"));
+			$("#publish_year").prop("checked", searchModel.get("pubYear"));
+			console.log($('#data_year').prop('checked'));
+			$("#filter-year").buttonset("refresh");
 			
 			//Zoom out the Google Map
 			this.map.setZoom(0);
@@ -619,6 +715,7 @@ define(['jquery',
 		removeFromModel : function(category, term){			
 			//Remove this filter term from the searchModel
 			if (category){
+				
 				//Get the current filter terms array
 				var currentTerms = searchModel.get(category);
 				//Remove this filter term from the array
@@ -626,23 +723,37 @@ define(['jquery',
 				//Set the new value
 				searchModel.set(category, newTerms);	
 				
-				//-1 the filter count
-				searchModel.set('filterCount', searchModel.get('filterCount') - 1);
 			}
 		},
 		
 		//Adds a specified filter node to the DOM
-		showFilter : function(category, term){
+		showFilter : function(category, term, checkForDuplicates){
 			
 			var viewRef = this;
 			
 			//Get the element to add the UI filter node to 
 			//The pattern is #current-<category>-filters
 			var e = this.$el.find('#current-' + category + '-filters');
+			
+			//Allow the option to only display this exact filter category and term once to the DOM
+			//Helpful when adding a filter that is not stored in the search model (for display only)
+			if (checkForDuplicates){
+				var duplicate = false;
+				
+				//Get the current terms from the DOM and check against the new term
+				e.children().each( function(){
+					if($(this).attr('data-term') == term){
+						duplicate = true;
+					}
+				});
+				
+				//If there is a duplicate, exit without adding it
+				if(duplicate){ return; }				
+			}
+			
 							
 			//Add a filter node to the DOM
-			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));
-			
+			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));			
 				
 			return;
 		},
@@ -693,9 +804,6 @@ define(['jquery',
 			// Add this criteria to the search model
 			searchModel.set(category, [term]);
 			
-			//Up the filter count
-			searchModel.set('filterCount', searchModel.get('filterCount') + 1);
-			
 			// Trigger the search
 			this.triggerSearch();
 			
@@ -723,10 +831,7 @@ define(['jquery',
 				var newTerms = _.without(current, term);
 				searchModel.set("additionalCriteria", newTerms);
 			}
-			
-			//Update the filter count on the serach model
-			searchModel.set('filterCount', searchModel.get('filterCount') - 1);
-			
+
 			//Route to page 1
 			this.updatePageNumber(0);
 			
@@ -762,7 +867,7 @@ define(['jquery',
 				try {
 					currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
 				} catch (ex) {
-					console.log(ex.message);
+					console.log("Exception when calculating pages:" + ex.message);
 				}
 				this.$resultspager = this.$('#resultspager');
 				this.$resultspager.html(
@@ -830,7 +935,9 @@ define(['jquery',
 			if (appSearchResults.header != null) {
 				
 				var facetCounts = appSearchResults.facetCounts;
-				//Set up the autocomplete (jQueryUI) feature for each input
+				
+				
+				//***Set up the autocomplete (jQueryUI) feature for each input****//
 				
 				//For the 'all' filter, use keywords
 				var allSuggestions = appSearchResults.facetCounts.keywords;
@@ -844,6 +951,33 @@ define(['jquery',
 					select: function(event, ui) {
 						// set the text field
 						$('#all_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					}
+				});
+				
+				// suggest attribute criteria
+				var attributeNameSuggestions = appSearchResults.facetCounts.attributeName;
+				var attributeLabelSuggestions = appSearchResults.facetCounts.attributeLabel;
+				// NOTE: only using attributeName for auto-complete suggestions.
+				attributeLabelSuggestions = null;
+				
+				var attributeSuggestions = [];
+				attributeSuggestions = 
+					attributeSuggestions.concat(
+						attributeNameSuggestions, 
+						attributeLabelSuggestions);
+				var rankedAttributeSuggestions = new Array();
+				for (var i=0; i < attributeSuggestions.length-1; i+=2) {
+					rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
+				}
+				$('#attribute_input').autocomplete({
+					source: rankedAttributeSuggestions,
+					select: function(event, ui) {
+						// set the text field
+						$('#attribute_input').val(ui.item.value);
 						// add to the filter immediately
 						viewRef.updateTextFilters(event);
 						// prevent default action
@@ -894,6 +1028,9 @@ define(['jquery',
 				}
 				$('#taxon_input').autocomplete({
 					source: rankedTaxonSuggestions,
+					position: {
+						collision: "flip"						
+					},
 					select: function(event, ui) {
 						// set the text field
 						$('#taxon_input').val(ui.item.value);
@@ -902,10 +1039,121 @@ define(['jquery',
 						// prevent default action
 						return false;
 					}
-				});				
+				});	
+				
+				// suggest location names
+				var spatialSuggestions = appSearchResults.facetCounts.site;
+				var rankedSpatialSuggestions = new Array();
+				for (var i=0; i < spatialSuggestions.length-1; i+=2) {
+					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
+				}
+				$('#spatial_input').autocomplete({
+					source: rankedSpatialSuggestions,
+					position: {
+						collision: "flip"						
+					},
+					select: function(event, ui) {
+						// set the text field
+						$('#spatial_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					}
+				});
 				
 			}
 			
+		},
+		
+		/* add a marker for objects
+		 * TODO: cluster them */
+		addObjectMarker: function(solrResult) {
+			
+			if (!gmaps) {
+				return;
+			}
+			
+			var pid = solrResult.get('id');
+			
+			// already on map
+			if (this.markers[pid]) {
+				return;
+			}
+			
+			var n = solrResult.get('northBoundCoord');
+			var s = solrResult.get('southBoundCoord');
+			var e = solrResult.get('eastBoundCoord');
+			var w = solrResult.get('westBoundCoord');
+			
+			var latLngSW = new gmaps.LatLng(s, w);
+			var latLngNE = new gmaps.LatLng(n, e);
+			var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
+			var latLngCEN = bounds.getCenter();
+			
+			//console.log('Adding marker for: ' + solrResult.get('id'));
+			
+			var infoWindow = new gmaps.InfoWindow({
+				content: 
+					'<h4>' + solrResult.get('title') 
+					+ ' ' 
+					+ '<a href="#view/' + pid + '" >'
+					+ solrResult.get('id') 
+					+ '</a>'
+					+ '</h4>'
+					+ '<p>' + solrResult.get('abstract') + '</p>'
+			});
+
+			var markerOptions = {
+				position: latLngCEN,
+				title: solrResult.get('title'),
+				icon: this.markerImage,
+				map: this.map,
+				visible: false,
+				zIndex: 99999
+			}
+			var marker = new gmaps.Marker(markerOptions);
+			this.markers[pid] = marker;
+			gmaps.event.addListener(marker, 'click', function() {
+				titleWindow.close();
+				infoWindow.open(this.map, marker);
+			});
+			
+			// a bigger hover window
+			var titleWindow = new gmaps.InfoWindow({
+				content: solrResult.get('title')
+			});
+			gmaps.event.addListener(marker, 'mouseover', function() {
+				if (infoWindow)
+				titleWindow.open(this.map, marker);
+			});
+			gmaps.event.addListener(marker, 'mouseout', function() {
+				titleWindow.close();
+			});
+			
+		},
+		
+		showMarkers: function() {
+			var i = 1;
+			_.each(_.values(this.markers), function(marker) {
+				setTimeout(function() {
+					marker.setVisible(true);
+				}, i++ * 1);
+			});
+		},
+		
+		clearMarkers: function() {
+			var searchPids =
+			_.map(appSearchResults.models, function(element, index, list) {
+				return element.get("id");
+			});
+			var diff = _.difference(_.keys(this.markers), searchPids);
+			var viewRef = this;
+			_.each(diff, function(pid, index, list) {
+				var marker = viewRef.markers[pid];
+				marker.setMap(null);
+				delete viewRef.markers[pid];
+			});
 		},
 		
 		// Add a single SolrResult item to the list by creating a view for it, and
@@ -916,35 +1164,101 @@ define(['jquery',
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
 			var view = new SearchResultView({ model: result });
 			// Initialize the tooltip for the has data icon
-			$(".has-data").tooltip();
+			$(".tooltip-this").tooltip();
 			this.$results.append(view.render().el);
+			
+			// map it
+			this.addObjectMarker(result);
+
 		},
 
 		// Add all items in the **SearchResults** collection at once.
 		addAll: function () {
-			appSearchResults.each(this.addOne, this);
+			
+			// do this first to indicate coming results
 			this.updateStats();
+			
+			var min = 25;
+			min = Math.min(min, appSearchResults.models.length);
+			var i = 0;
+			for (i = 0; i < min; i++) {
+				var element = appSearchResults.models[i];
+				this.addOne(element);
+			};
+			var viewRef = this;
+			var intervalId = setInterval(function() {
+				if (viewRef.ready) {
+					for (i = min; i < appSearchResults.models.length; i++) {
+						var element = appSearchResults.models[i];
+						viewRef.addOne(element);
+					};
+					// clean out the old markers
+					viewRef.clearMarkers();
+					viewRef.showMarkers();
+					
+					// show the clutered markers
+					var mcOptions = {
+						gridSize: 25,
+						styles: [
+						{height: 20, width: 20, url: viewRef.markerImage20, textColor: '#FFFFFF'},
+						{height: 30, width: 30, url: viewRef.markerImage30, textColor: '#FFFFFF'},
+						{height: 40, width: 40, url: viewRef.markerImage40, textColor: '#FFFFFF'},
+						{height: 50, width: 50, url: viewRef.markerImage50, textColor: '#FFFFFF'},
+						{height: 60, width: 60, url: viewRef.markerImage60, textColor: '#FFFFFF'},
+						]
+					};
+					if ( viewRef.markerCluster ) {
+						viewRef.markerCluster.clearMarkers();
+					}
+					viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
+					
+					$("#map-container").removeClass("loading");
+					clearInterval(intervalId);
+				}
+				
+			}, 500);
+
 		},
 		
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
+			//$("#map-container").css("opacity", "0.5");
+			$("#map-container").addClass("loading");
 			this.$results.html('');
 		},
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 
 		collapse: function(e){
-			console.log(e.target);
-			if($(e.target).attr('id') == "filters-header"){
-				$('#sidebar').toggleClass('collapsed');
-			}
-			else if( ($(e.target).attr('id') == "results-header") || ($(e.target).attr('id') == "countstats")){
-				console.log('clicked');
-				$('#content').toggleClass('collapsed');	
-			}
+				var id = $(e.target).attr('id');
+				
+				if((id == "filters-header") || (id == "collapse-filters")){
+					$('#sidebar').toggleClass('collapsed');
+				}
+				if((id == "results-header") || (id == "countstats") || (id == "collapse-content")){
+					//console.log(id + ' clicked');
+					$('#content').toggleClass('collapsed');	
+				}				
+
+		},
+		
+		toggleMapMode: function(){		
+			
+			$('body').toggleClass('mapMode');		
+		},
+		
+		postRender: function() {
+			console.log("Resizing the map");
+			var center = this.map.getCenter(); 
+			google.maps.event.trigger(this.map, 'resize'); 
+			this.map.setCenter(center);
 		},
 		
 		onClose: function () {			
 			console.log('Closing the data view');
+			
+			// unset map mode
+			$("body").removeClass("mapMode");
+			
 			// remove everything so we don't get a flicker
 			this.$el.html('')
 		}				

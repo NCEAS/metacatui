@@ -62,7 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			
 			//Get the facet counts and store them in this model
 			this.facetCounts = solr.facet_counts.facet_fields;
-					
+			
 			return solr.response.docs;
 		},
 		

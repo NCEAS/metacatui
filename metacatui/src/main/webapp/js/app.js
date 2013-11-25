@@ -8,6 +8,9 @@ console.log("Using theme: " + theme);
 console.log("Using themeMap: " + themeMap);
 console.log("Using metacatContext: " + metacatContext);
 
+var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
+var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
@@ -16,13 +19,12 @@ require.config({
   map: themeMap,
   paths: {
     jquery: '../components/jquery',
-    jqueryui: '../components/jquery-ui-1.10.3.custom.min',
+    jqueryui: '../components/jquery-ui-1.10.3-2.custom.min',
     underscore: '../components/underscore',
     backbone: '../components/backbone',
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
     moment: '../components/moment',
-    recaptcha: 'https://www.google.com/recaptcha/api/js/recaptcha_ajax',
     registry: [ 
                // use the path fallback in case there is no metacat installed here
                '/' + metacatContext + '/style/common/templates/metacatui/entryForm',
@@ -30,7 +32,11 @@ require.config({
                'scripts/entryForm'
                 ],
     domReady: '../components/domready',
-    async: '../components/async'
+    async: '../components/async',
+    recaptcha: [recaptchaURL, 'scripts/placeholder'],
+    gmapsAPI: gmapsURL,
+	markerClusterer: '../components/markerclusterer_compiled'
+
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
@@ -46,9 +52,37 @@ require.config({
     },
     registry: {
     	exports: 'Registry'
-    }
+    },
+    markerClusterer: {
+		exports: "MarkerClusterer"
+	}
   }
 });
+
+/** 
+ * Define Google Maps API if we can load the first script for it
+ * Allows running without internet connection
+ */
+require(['gmapsAPI'],
+	function(gmapsAPI) {
+		console.log("Loaded gmapsAPI...continuing with asynchronous load");
+		define('gmaps', 
+				['async!' + gmapsURL], 
+				function() {
+					return google.maps;
+				}
+			);
+	},
+	function(err) {
+		console.log("Error loading gmapsAPI, falling back to placeholder");
+		define('gmaps', 
+				[null], 
+				function() {
+					return null;
+				}
+			);
+	}
+);
 
 var appModel = appModel || {};
 var appView = appView || {};
@@ -56,13 +90,6 @@ var uiRouter = uiRouter || {};
 var appSearchResults = appSearchResults || {};
 var searchModel = searchModel || {};
 var registryModel = registryModel || {};
-
-
-//Define Google Maps API
-define('gmaps', ['async!https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyCcGB6lZHoq2Isp0ugdqsCPTDpl_ryo8Pk&sensor=false'], function() {
-    return google.maps;
-});
-
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],

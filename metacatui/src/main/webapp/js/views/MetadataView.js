@@ -22,6 +22,8 @@ define(['jquery',
 		
 		versionTemplate: _.template(VersionTemplate),
 		
+		DOI_PREFIXES: ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."],
+		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 			"click #publish": "publish"
@@ -52,7 +54,6 @@ define(['jquery',
 							viewRef.showMessage(response);
 						} else {
 							viewRef.insertResourceMapLink(pid);
-							viewRef.showLatestVersion(pid);
 						}
 						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
@@ -95,16 +96,33 @@ define(['jquery',
 
 						}
 						
-						// fetch the other parts to this section
-						viewRef.insertDoiButton(pid);
+						// is this the latest version? (includes DOI link when needed)
+						viewRef.showLatestVersion(pid);
 						
 					}
 				);
 				
 		},
 		
+		// checks if the pid is already a DOI
+		isDOI: function(pid) {
+			for (var i=0; i < this.DOI_PREFIXES.length; i++) {
+				if (pid.toLowerCase().indexOf(this.DOI_PREFIXES[i].toLowerCase()) == 0) {
+					return true;
+				}
+			}
+			return false;
+				
+		},
+		
 		// this will insert the DOI publish button
 		insertDoiButton: function(pid) {
+			
+			// first check if already a DOI
+			if (this.isDOI(pid)) {
+				console.log(pid + " is already a DOI");
+				return;
+			}
 			
 			// see if the user is authorized to update this object
 			var authServiceUrl = appModel.get('authServiceUrl');
@@ -189,7 +207,8 @@ define(['jquery',
 			if (ret) {
 				
 				// show the progressbar
-				this.showProgressBar();
+				var message = "Publishing package...please be patient";
+				this.showProgressBar(message);
 				
 				var identifier = null;
 				var viewRef = this;
@@ -252,6 +271,9 @@ define(['jquery',
 										viewRef.versionTemplate({pid: pid})
 										);
 								
+							} else {
+								// finally add the DOI button - this is the latest version
+								viewRef.insertDoiButton(pid);
 							}
 							
 						}
@@ -275,10 +297,15 @@ define(['jquery',
 
 		},
 		
-		showProgressBar: function() {
+		showProgressBar: function(msg) {
 			this.hideProgressBar();
 			this.scrollToTop();
-			this.$el.prepend('<section id="Notification"><div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>');
+			var content = '<section id="Notification">';
+			if (msg) {
+				content += '<div class="alert alert-info">' + msg + '</div>';
+			}
+			content += '<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>';
+			this.$el.prepend(content);
 		},
 		
 		hideProgressBar: function() {

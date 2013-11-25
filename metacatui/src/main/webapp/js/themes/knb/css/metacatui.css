@@ -75,6 +75,12 @@ Bold 700 Italic
     
     a {
 		color: #115E95; /*blue from the earthtones pallette */
+		transition: color .5s;
+    }
+    
+    a:hover{
+    	text-decoration:none;
+    	color: #660000;
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -89,6 +95,17 @@ Bold 700 Italic
     h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
 		content: "";
     	padding-top: 115px;
+    }
+    
+    .bold-header{
+          font: 400 18px/30px "Lato" Arial sans-serif;
+          color: #555555;
+          text-transform: uppercase;
+    }
+    
+    
+    .mapMode .collapse-me:hover{
+    	cursor: pointer;
     }
     
 	/* Offsets the anchor links by the same height as the fixed header */
@@ -123,14 +140,28 @@ Bold 700 Italic
 
 /* HEADER CSS
 -------------------------------------------------- */    
-  header#Header {
+  #Header {
     position: fixed;
     top: 0px;
     z-index: 100;
     height: 95px;
-    background-color: #FDFDFD;
+    background-color: transparent;
+    background-image: none;
     overflow: hidden;
-    opacity: 1.0;    
+    opacity: 1.0;   
+  }
+  
+  .mapModw #Header{
+  		z-index: 0;
+  }
+  
+  #Header > img{
+  	transition: all 2s;
+  }
+  
+  .mapMode #Header > img {
+	opacity: 0;
+	height: 0px;
   }
   
   header#altHeader {
@@ -156,6 +187,35 @@ Bold 700 Italic
 /* FOOTER CSS
 -------------------------------------------------- */    
 
+    .mapMode #Footer{
+    	position: fixed;
+    	height: 30px;
+    	min-height: 20px;
+    	padding-top: 0px;
+    	padding-bottom: 0px;
+    	transition: all 1s ease-out;
+    	transition-delay: .5s;
+    }
+    
+    .mapMode #Footer h3,
+    .mapMode #Footer h3 > span{
+    	font-size: 16px;
+    	margin-top: 2px;
+    	transition-delay: .6s;
+    }
+    
+    .mapMode #Footer:hover{
+    	height: 600px;
+    	padding-top: 20px;
+    	padding-bottom: 20px;
+    }
+    
+    .mapMode #Footer:hover h3,
+    .mapMode #Footer:hover h3 > span{
+    	font-size: 30px;
+    	line-height: 30px;
+    }
+    
     footer#Footer {
       position: relative;
       bottom: 0px;
@@ -164,6 +224,7 @@ Bold 700 Italic
       margin-top: 0px;
       color: #FDFDFD;
       background-color: #3F3F3F;
+      width: 100%;
     }
         
     footer#Footer div#FooterHeading {
@@ -187,7 +248,7 @@ Bold 700 Italic
     }
 
     footer#Footer h3 > span {
-      font: 400 30px/30px "Gentium Book Basic";
+      font: 400 20px/22px "Gentium Book Basic";
       font-style: italic;
     }
     
@@ -326,11 +387,142 @@ Bold 700 Italic
       opacity: 1;
     }
  
- /* MAP
--------------------------------------------------- */    
+/* MAPS 
+--------------------------------- */
+#map-container{
+	transition: all 1s;
+	display: none;
+	height: 100%;
+	width: 100%;
+	position: fixed;
+	top: 0px;
+}
+
+#map-container.loading {
+	opacity: 0.5;
+}
+
+.mapMode #map-container {
+	display: block;
+}
+
+
 #map-canvas{
-	height: 500px;
-} 
+	height: 100%;
+	width: 100%;
+}
+
+
+.mapMode .navbar-inner {
+	-webkit-box-shadow: 4px 2px 5px rgba(50, 50, 50, 0.4);
+	-moz-box-shadow:    4px 2px 5px rgba(50, 50, 50, 0.4);
+	box-shadow:         4px 2px 5px rgba(50, 50, 50, 0.4);
+}
+
+#toggle-map{
+	z-index: 1;
+	position: fixed;
+	top: 155px;
+	left: -102px;
+	padding: 0px 3px;
+	background-color: #992222;
+	color: #FFF;
+	font-size: 20px;
+	line-height: 33px;
+	-webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	border-radius: 0px 4px 4px 0px;
+	-webkit-border-radius: 0px 4px 4px 0px;
+	-moz-border-radius: 0px 4px 4px 0px;
+	transition: left .5s;
+	cursor: pointer;
+}
+
+#toggle-map{
+	left: -121px;
+}
+
+.mapMode #toggle-map{
+	left: -102px;
+}
+
+#toggle-map i{
+	margin-left: 10px;
+	font-size: 24px;
+	margin-right: 4px;
+}
+
+#toggle-map:hover{
+	left: 0px;
+}
+
+#show-map-control{
+	display: block;
+}
+
+.mapMode #show-map-control{
+	display: none;
+}
+
+#hide-map-control{
+	display: none;
+}
+
+.mapMode #hide-map-control{
+	display: block;
+}
+
+
+/* Data Catalog CSS
+-------------------------------------------------- */
+#mainBody {
+	min-height: 800px;
+	margin-top: 150px;
+	padding-left: 50px;
+}
+
+.mapMode #mainBody{
+	margin-top: 0px;
+}
+
+/* Fixes Infowindow popup problem - interaction with bootstrap? */
+img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
+    max-width: 99999px;
+}
+
+#content {
+	position: relative;
+	right: 0;
+	bottom: 30px;
+	background-color: #FFF;
+	height: auto;
+	min-width: 300px;
+	overflow-y:scroll;
+	overflow-x: hidden;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+	-webkit-border-radius: 3px 0px 0px 0px;
+	-moz-border-radius: 3px 0px 0px 0px;
+	border-radius: 3px 0px 0px 0px;
+	transition: width 1s;
+}
+
+.mapMode #content.collapsed{
+	height: 30px;
+}
+
+
+.mapMode #content{
+	margin-top: 0px;	
+	width: 40%;
+	max-height: 85%;
+	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
+	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);	
+	position: fixed;
+}
     
 /* FEATURES CSS 
 -------------------------------------------------- */    
@@ -887,29 +1079,93 @@ Bold 700 Italic
 	.select-editable input:focus { 
 		outline:none; 
 	}	
-    
-  /* Data Catalog CSS
-  -------------------------------------------------- */
-	#mainBody {
-		min-height: 800px;
-	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-    #sidebar {
-      min-height: 400px;
+	#sidebar {
+    	position: relative;
+    	bottom: 30px;
+		width: 20%;
+		min-width: 250px;
+		padding: 0px;
+		margin-top: -10px;
+		
+		max-height: 750px;
+		overflow-y: scroll;		
+		
+		
+		background-color: #FFFFFF; 
+		
+		border-radius: 0px 4px 0px 0px;
+		-moz-border-radius: 0px 4px 0px 0px;
+		-webkit-border-radius: 0px 4px 0px 0px;
+		
+        -webkit-box-shadow: none;
+    	-moz-box-shadow: none;
+    	box-shadow: none;
+    	
     } 
     
+    .mapMode #sidebar.collapsed{
+    	height: 30px;
+    }
+    
+    .mapMode #sidebar{
+    	position: fixed;
+    	bottom: 30px;
+		left: 0px;
+		
+    	webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  	-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+	  
+    }
+    
+    /** Share Your Data button **/
+    #share-data-view{
+		position: fixed;
+		width: auto;
+		height: 20px;
+		left: -195px;
+		top: 110px;
+		margin-left: 0px;
+		font-size: 20px;
+		text-transform: uppercase;
+		text-shadow: none;
+		margin: 0px;
+		padding: 6px;
+		transition: .5s ease-out;
+		cursor: pointer;
+		z-index: 999;
+		-webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+		-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+		box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
+		background-image: none;
+	}
+	
+	#share-data-view > i{
+		margin-left: 5px;
+	}
+
+	#share-data-view:hover{
+		left: -2px;
+	}
+    
+    
+    /** Filter containers **/
+    
     .filter-contain{
-    	margin-top:20px;
-    	width: 100%;
-    	margin-bottom: 25px;
+    	width: 94%;
+    	margin-bottom: 10px;
+    	border-bottom: 1px dashed #CCC;
+    	padding: 0px 3% 10px 3%;
     }
     
     .filter-contain .filter-contain{
    	  margin-top: 0px;  	  
    }
    
+      
    aside > div{
    	margin: 0px 0px 10px 0px;
 	display: block;
@@ -917,11 +1173,22 @@ Bold 700 Italic
 	height: auto; 
 	}
 	
-	#sidebar_share > i{
-		margin-right: 5px;
-	}
-
-    
+	
+	/** Filter icons **/
+   .filter-contain > i{
+		color: #AAA;
+		font-size: 20px;
+   }
+   
+   .filter-contain > i.icon-sitemap{
+   		font-size: 18px;
+   }
+   
+   .filter-contain > i.icon-map-marker{
+   		font-size: 22px;
+   }
+   
+	
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
     	background-color: #ffffff;
@@ -933,6 +1200,7 @@ Bold 700 Italic
     	border-left: 0px;
     	height: 30px;
     	display: inline-block;
+    	padding: 0px 8px 0px 8px;
     }
     
     .filter.btn > i{
@@ -959,14 +1227,127 @@ Bold 700 Italic
     	font-family: "Lato", Arial, sans-serif;
     	width: 84%;
     }
+    
+    #all_input{
+    	width: 85%;
+    }
+    
+    input.filter[type="checkbox"]{
+    	display: none;
+    } 
+    
+	
+	label.ui-state-active i{
+		color: #8DBCDD;
+	}
+	
+	
+	label.ui-state-active i.icon-check-empty,
+	label.ui-state-default i.icon-check{
+		display: none;
+	}
+	
+	label.ui-state-active i.icon-check{
+		display: inline;
+	}
+	
+	.current-filters > li > i:hover{
+    	cursor: pointer;
+    	color: #FFFFFF;
+    	opacity: 1;
+	}
 
-	/*-- The 'Year' filter elements --*/
+
+	/*-- Currently applied filters --*/
+	
+	#clear-all{
+		background-color: #992222;
+		color: #FFFFFF;
+		padding: 0px 5px 0px 5px;
+		border-radius: 2px;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
+		width: auto;
+		max-width: 100%;
+		margin: 0px 4% 0px 0px;
+		display: inline-block;
+		font: 400 14px/20px "Lato", "Arial", sans-serif;
+		text-transform: none;
+		text-shadow: none;
+	}
+	
+	#clear-all i{
+		margin-left: 5px;
+	}
+	
+	.current-filters,
+	.current-filters[class*="span"]{
+		list-style: none;
+		color: #FFFFFF;
+		font: 400 14px/14px "Lato", Arial, sans-serif;
+		margin: 0px;
+		min-height: 0px;
+		width: auto;
+	}
+	
+	.current-filters > li,
+	.current-filters > li[class*="span"],
+	#filter-year label.ui-state-active, 
+	#includes-files label.ui-state-active{
+		background-color: rgba(17, 94, 149, .8);
+		color: #FFFFFF;
+		padding: 0px 5px 0px 5px;
+		border-radius: 2px;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
+		width: auto;
+		max-width: 100%;
+		margin: 5px 5px 0px 0px;
+		display: inline-block;
+		text-shadow: none;
+	}
+	
+	.current-filters > li > span{
+		float: left;
+		margin-right: 5px;
+		line-height: 20px;
+	}
+	
+	.current-filters > li > i{
+		float: right;
+		margin-top: 2px;
+		color: #8DBCDD;
+		transition: color .5s;
+	}
+	
+	.current-filters > li > i:hover{
+		color: #FFF;
+	}
+	
+	 #includes-files label,
+     #includes-files label.ui-state-active{
+    	margin-top: 0px;
+    	line-height: 21px;
+    	height: 21px;
+    	padding-left: 5px;
+    	margin: 0px;
+    }
+    
+    #filter-year label#data-year-label,
+    #filter-year label#pub-year-label{
+    	margin: 0px 0px 5px 0px;
+    }
+    
+    	/*-- The 'Year' filter elements --*/
     #filter-year label{
+   		margin-bottom: 5px;
+   		margin-top: 0px; 
+   		line-height: 18px;
    		min-height: 18px;
-   		margin-bottom: 0px;
-   		line-height: 16px;
+   		padding: 0px 5px 0px 5px;
    		width: auto;
    		font-family: "Lato", Arial, sans-serif;
+   		clear: both;
     }
    
     #filter-year > input[type="number"]{
@@ -989,6 +1370,7 @@ Bold 700 Italic
     
     #max_year{
     	float: right;
+    	margin-right: 3%;
     }
     
     #min_year{
@@ -1002,7 +1384,7 @@ Bold 700 Italic
     	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
-    	width: 95%;
+    	width: 91%;
     }
     
     #year-range.disabled,
@@ -1034,75 +1416,62 @@ Bold 700 Italic
     	-moz-border-radius: 1.2em;
     	-webkit-border-radius: 1.2em;
     }
-
-	/*-- Currently applied filters --*/
-	.current-filters,
-	.current-filters[class*="span"]{
-		list-style: none;
-		color: #FFFFFF;
-		font: 400 14px/14px "Lato", Arial, sans-serif;
-		margin-left: 0px;
-		min-height: 0px;
-	}
-	
-	.current-filters > li,
-	.current-filters > li[class*="span"]{
-		background-color: rgba(17, 94, 149, .8);
-		color: #FFFFFF;
-		padding: 0px 5px 0px 5px;
-		border-radius: 2px;
-		-moz-border-radius: 2px;
-		-webkit-border-radius: 2px;
-		min-height: 1.5em;
-		width: auto;
-		max-width: 100%;
-		margin: 5px 5px 0px 0px;
-	}
-	
-	.current-filters > li > span{
-		float: left;
-		margin-right: 5px;
-		line-height: 1.5em;
-	}
-	
-	.current-filters > li > i{
-		float: right;
-		margin-top: 2px;
-		color: #8DBCDD;
-	}
-	
-	.current-filters > li > i:hover{
-		font-size: 18px;
-    	position: relative;
-    	top: -2px;
-    	cursor: pointer;
-	}
     
+        #filter-year  input[type="number"]{
+   			background: #FFF;
+			border: 1px solid #ccc;
+			text-align: right;
+			min-height: 23px;
+			-webkit-appearance: none;
+			top: -5px;
+			position: relative;
+			margin-bottom: 0px;
+			width: 56px;
+			margin-top: 10px;
+			margin-bottom: 10px;
+			font-size: 14px;
+			color: #555;
+			line-height: 14px;
+			padding: 2px;
+    }
+    
+    
+    /** for showing "my packages" filter */
+	.keyword-search-link,
+	.current-filters > li.keyword-search-link {
+		display: none;
+	}
+	.current-filters.active {
+		background-color: inherit;
+		border-color: inherit;
+		display: block;
+	}
+	.keyword-search-link.active {
+		background-color: rgba(17, 94, 149, .8);
+		border-color: inherit;
+		display: block;
+		height: 20px;
+	}
 	
     /*-- Headers in sidebar --*/
-    h2.nav-header {
-      font: 400 20px/25px "Oswald" Arial sans-serif;
-      color: #555555;    
-      text-transform: uppercase;  
+    h2.nav-header {  
       display: block;
       padding: 0px;
       margin: 0px;
       min-height: 25px;
+      margin-left: 4%;
+      padding-top: 5px;
     }
     
     h3.nav-header{
-    	font: 300 20px/25px "Lato" Arial sans-serif;
-    	margin: 20px 0px 5px 0px;
-    	color: #555555;
     	text-transform: none;
-    	display: block;
+    	margin: 0px;
+    	color: #555;
+    	margin-left: 0px;
     	padding: 0px;
+    	padding-left: 0px;
     }
-    
-    h3.nav-header > label{
-    	display: inline-block;
-    	font: 300 20px/25px "Lato" Arial sans-serif;
-    }
+
     
     h3.nav-header > input{
     	height: 20px;
@@ -1185,34 +1554,87 @@ Bold 700 Italic
 
 /* RESULT CSS
 -------------------------------------------------- */
-    .result-header {
-      font-weight: bold;
-      border-bottom: thin solid;
+ 	/*-- Result List Header --*/
+ 	.result-header{
+ 		position: relative;
+ 		border-bottom: 1px dashed #CCC;
+ 		padding-bottom: 5px;
+ 	}
+ 	
+ 	.mapMode .result-header{
+ 		position: relative;
+ 		background-color: #FFFFFF;
+ 	}
+ 	
+ 	.mapMode .result-header > .result-header-count{
+ 		position: fixed;
+ 		background-color: #FFFFFF;
+ 		border-bottom: 3px solid #DDDDDD;
+ 		padding-bottom: 5px; 
+ 		margin-left: 0px;
+ 		width: 40%;
+ 		cursor: pointer;
+ 		z-index: 1;
+ 		border-radius: 4px 0px 0px 0px;
+ 		-moz-border-radius: 4px 0px 0px 0px;
+ 		-webkit-border-radius: 4px 0px 0px 0px;
+ 	}
+ 	
+ 	#countstats{
+		margin-left: 10px;
+		margin-bottom: 10px;
+	}
+	
+	#countstats > span{
+		text-transform: none;
+	}
+	
+	#countstats:after{
+		content: " data packages";
+	}
+
+ 	
+ 	#sortOrder{
+ 		float:right;
+ 		width: auto;
+ 		padding-right: 10px;
+ 	}
+ 	
+ 	.mapMode #sortOrder{
+ 		position: fixed;
+ 		width: auto;
+ 		right: 10px;
+ 		margin-top: 5px;
+ 		z-index: 1;
+ 	}
+ 	
+ 	.mapMode #content.collapsed #sortOrder{
+ 		display: none;
+ 	}
+ 	
+ 	select{
+ 		font: "400 14px/14px "Lato", "Arial", sans-serif;
+ 		height: 24px;
+ 		width: auto;
+ 	}
+ 	
+ 	.pagination {
+    	cursor: pointer;
+    	margin: 0px;
     }
     
-    .result-header-count {
-      font-style: italic;
+    /*-- Results List Rows--*/
+    .mapMode .search-results{
+    	margin-top: 80px;
     }
     
     .result-row {
-      display: inline-block;
-        border-bottom: thin solid;
-        padding: 5px;
+      display: block;
+        border-bottom: 1px dashed #ccc;
+        padding: 5px 7px;
     }
     
-    .result-row .btn-group .has-data{
-    	color: #555555;
-    	font-size: 18px;
-    	position: relative;
-    	left: -15px;
-    }
-    
-    .result-row .btn > .icon-caret-down {
-    	margin-left: 5px;
-    	font-size: 16px;
-    } 
-    
-    .result-row:hover { 
+     .result-row:hover { 
     background-color: #eee;
   }
 
@@ -1220,11 +1642,32 @@ Bold 700 Italic
       font-weight: bold;
     }
     
-    .pagination {
-    	cursor: pointer;
-    	margin: auto;
+    /*-- Results List Icons --*/
+    .result-row .has-data{
+    	color: #666;
+    	margin-left: 10px;
     }
-
+    
+    .result-row .on-map{
+    	color: #DA4D3A;
+    	font-size: 1.1em;
+    	margin-left: 5px;
+    }
+    
+    .result-row .tooltip-inner{
+    	width: 70px;
+    }
+    
+    .result-row .icon-download-alt,
+    .result-row .icon-caret-down{
+    	text-shadow: 1px 1px 1px #ccc
+    }
+    
+    .result-row .btn > .icon-caret-down {
+    	margin-left: 5px;
+    	font-size: 16px;
+    } 
+    
 	.result-row .icon-download-alt{
 		font-size: 18px;
 	}
@@ -1244,6 +1687,11 @@ Bold 700 Italic
   	.result-row .dropdown-menu{
   		left: -100%;
   	}
+  	
+  	.mapMode .result-row .dropdown-menu{
+  		left: -320%;
+  	}
+  	
 /* RESPONSIVE CSS
 -------------------------------------------------- */
 /*    

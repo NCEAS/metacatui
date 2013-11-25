@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'text!templates/resultsIte
 			//this.listenTo(this.model, 'visible', this.toggleVisible);
 		},
 
-		// Re-render the titles of the result item.
+		// Re-render the citation of the result item.
 		render: function () {
 			var json = this.model.toJSON();
 			var ri = this.template(json);
