@@ -34,7 +34,8 @@ require.config({
     domReady: '../components/domready',
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
-    gmapsAPI: gmapsURL
+    gmapsAPI: gmapsURL,
+	markerClusterer: '../components/markerclusterer_compiled'
 
   },
   shim: { /* used for libraries without native AMD support */
@@ -51,7 +52,10 @@ require.config({
     },
     registry: {
     	exports: 'Registry'
-    }
+    },
+    markerClusterer: {
+		exports: "MarkerClusterer"
+	}
   }
 });
 

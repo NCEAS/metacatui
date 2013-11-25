@@ -10,9 +10,10 @@ define(['jquery',
 				'text!templates/resultsItem.html',
 				'text!templates/mainContent.html',
 				'text!templates/currentFilter.html',
-				'gmaps'
+				'gmaps',
+				'markerClusterer'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps) {
+	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps, MarkerClusterer) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -36,6 +37,22 @@ define(['jquery',
 		ready: false,
 				
 		markers: {},
+		
+		markerClusterer: {},
+				
+		markerImage10: './img/markers/d1-location-markers-plum-10px-25a.png',
+		
+		markerImage15: './img/markers/d1-location-markers-plum-15px-25a.png',
+		
+		markerImage20: './img/markers/d1-location-markers-plum-20px-25a.png',
+		
+		markerImage30: './img/markers/d1-location-markers-plum-30px-25a.png',
+		
+		markerImage40: './img/markers/d1-location-markers-plum-40px-25a.png',
+		
+		markerImage50: './img/markers/d1-location-markers-plum-50px-25a.png',
+		
+		markerImage60: './img/markers/d1-location-markers-plum-60px-25a.png',
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -546,7 +563,7 @@ define(['jquery',
 			// Get the minimum and maximum values from the input fields
 			var minVal = $('#min_year').val();
 			var maxVal = $('#max_year').val();
-			console.log(minVal, maxVal);
+			//console.log(minVal, maxVal);
 			
 			//Also update the search model
 		    searchModel.set('yearMin', minVal);
@@ -849,7 +866,7 @@ define(['jquery',
 				try {
 					currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
 				} catch (ex) {
-					console.log(ex.message);
+					console.log("Exception when calculating pages:" + ex.message);
 				}
 				this.$resultspager = this.$('#resultspager');
 				this.$resultspager.html(
@@ -1089,7 +1106,7 @@ define(['jquery',
 			var markerOptions = {
 				position: latLngCEN,
 				title: solrResult.get('title'),
-				//icon: markerImage,
+				icon: this.markerImage10,
 				map: this.map,
 				visible: false,
 				zIndex: 99999
@@ -1177,7 +1194,23 @@ define(['jquery',
 					// clean out the old markers
 					viewRef.clearMarkers();
 					viewRef.showMarkers();
-					//$("#map-container").css("opacity", "1.0");
+					
+					// show the clutered markers
+					var mcOptions = {
+						gridSize: 25,
+						styles: [
+						{height: 20, width: 20, url: viewRef.markerImage20, textColor: '#FFFFFF'},
+						{height: 30, width: 30, url: viewRef.markerImage30, textColor: '#FFFFFF'},
+						{height: 40, width: 40, url: viewRef.markerImage40, textColor: '#FFFFFF'},
+						{height: 50, width: 50, url: viewRef.markerImage50, textColor: '#FFFFFF'},
+						{height: 60, width: 60, url: viewRef.markerImage60, textColor: '#FFFFFF'},
+						]
+					};
+					if ( viewRef.markerCluster ) {
+						viewRef.markerCluster.clearMarkers();
+					}
+					viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
+					
 					$("#map-container").removeClass("loading");
 					clearInterval(intervalId);
 				}
