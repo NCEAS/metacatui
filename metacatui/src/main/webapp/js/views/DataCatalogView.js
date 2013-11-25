@@ -143,7 +143,6 @@ define(['jquery',
 			this.updateYearRange(); 
 			
 			//Initialize the year type label tooltips
-			$('.year-tooltip').tooltip();
 			$('.tooltip-this').tooltip();
 			
 			//Initialize the jQueryUI button checkboxes
