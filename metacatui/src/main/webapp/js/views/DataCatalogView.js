@@ -243,9 +243,9 @@ define(['jquery',
 				
 				//Set the search model filters
 				searchModel.set('north', boundingBox.getNorthEast().lat());
-				searchModel.set('west', boundingBox.getNorthEast().lng());
+				searchModel.set('west', boundingBox.getSouthWest().lng());
 				searchModel.set('south', boundingBox.getSouthWest().lat());
-				searchModel.set('east', boundingBox.getSouthWest().lng());
+				searchModel.set('east', boundingBox.getNorthEast().lng());
 				
 				//Add a new visual 'current filter' to the DOM for the spatial search
 				viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
@@ -437,10 +437,27 @@ define(['jquery',
 			
 			//Map
 			if(searchModel.get('north')!=null){
-				query += ("+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
-						  "+eastBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
-						  "+westBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
-						  "+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D");
+				query += 
+						"+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
+						"+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D";
+				if (searchModel.get('west') > searchModel.get('east')) {
+					query += 
+						"+eastBoundCoord:("
+						+ "%7B" + searchModel.get('west') + "%20TO%20" + "180" + "%7D"
+						+ "%20OR%20"
+						+ "%7B" + "-180" + "%20TO%20" + searchModel.get('east') + "%7D"
+						+ ")"
+						+ "+westBoundCoord:(" 
+						+ "%7B" + searchModel.get('west') + "%20TO%20" + "180" + "%7D"
+						+ "%20OR%20"
+						+ "%7B" + "-180" + "%20TO%20" + searchModel.get('east') + "%7D"
+						+ ")"
+						;
+				} else {
+					query += 
+						"+eastBoundCoord:%7B" + searchModel.get('west') + "%20TO%20" + searchModel.get('east') + "%7D" +
+						"+westBoundCoord:%7B" + searchModel.get('west') + "%20TO%20" + searchModel.get('east') + "%7D";
+				}
 			}
 			
 			//Spatial string
