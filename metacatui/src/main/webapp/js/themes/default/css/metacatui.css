@@ -1313,6 +1313,10 @@ Bold 700
     	margin-left: 5px;
     }
     
+    .result-row .tooltip-inner{
+    	width: 70px;
+    }
+    
     
     .result-row .icon-download-alt{
     	font-size: 18px;

@@ -1164,7 +1164,7 @@ define(['jquery',
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
 			var view = new SearchResultView({ model: result });
 			// Initialize the tooltip for the has data icon
-			$(".has-data").tooltip();
+			$(".tooltip-this").tooltip();
 			this.$results.append(view.render().el);
 			
 			// map it

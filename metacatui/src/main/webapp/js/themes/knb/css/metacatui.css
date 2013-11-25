@@ -1554,6 +1554,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 /* RESULT CSS
 -------------------------------------------------- */
+ 	/*-- Result List Header --*/
  	.result-header{
  		position: relative;
  		border-bottom: 1px dashed #CCC;
@@ -1617,7 +1618,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		width: auto;
  	}
  	
+ 	.pagination {
+    	cursor: pointer;
+    	margin: 0px;
+    }
     
+    /*-- Results List Rows--*/
     .mapMode .search-results{
     	margin-top: 80px;
     }
@@ -1628,6 +1634,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
         padding: 5px 7px;
     }
     
+     .result-row:hover { 
+    background-color: #eee;
+  }
+
+    .result-author {
+      font-weight: bold;
+    }
+    
+    /*-- Results List Icons --*/
     .result-row .has-data{
     	color: #666;
     	margin-left: 10px;
@@ -1637,6 +1652,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	color: #DA4D3A;
     	font-size: 1.1em;
     	margin-left: 5px;
+    }
+    
+    .result-row .tooltip-inner{
+    	width: 70px;
     }
     
     .result-row .icon-download-alt,
@@ -1649,19 +1668,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	font-size: 16px;
     } 
     
-    .result-row:hover { 
-    background-color: #eee;
-  }
-
-    .result-author {
-      font-weight: bold;
-    }
-    
-    .pagination {
-    	cursor: pointer;
-    	margin: 0px;
-    }
-
 	.result-row .icon-download-alt{
 		font-size: 18px;
 	}
