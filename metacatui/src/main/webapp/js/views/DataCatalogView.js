@@ -40,19 +40,21 @@ define(['jquery',
 		
 		markerClusterer: {},
 				
-		markerImage10: './img/markers/d1-location-markers-plum-10px-25a.png',
+		markerImage10: './img/markers/knb-orangered-10px-25a.png',
 		
-		markerImage15: './img/markers/d1-location-markers-plum-15px-25a.png',
+		markerImage15: './img/markers/knb-orangered-15px-25a.png',
 		
-		markerImage20: './img/markers/d1-location-markers-plum-20px-25a.png',
+		markerImage20: './img/markers/knb-orangered-20px-25a.png',
 		
-		markerImage30: './img/markers/d1-location-markers-plum-30px-25a.png',
+		markerImage30: './img/markers/knb-orangered-30px-25a.png',
 		
-		markerImage40: './img/markers/d1-location-markers-plum-40px-25a.png',
+		markerImage40: './img/markers/knb-orangered-40px-25a.png',
 		
-		markerImage50: './img/markers/d1-location-markers-plum-50px-25a.png',
+		markerImage50: './img/markers/knb-orangered-50px-25a.png',
 		
-		markerImage60: './img/markers/d1-location-markers-plum-60px-25a.png',
+		markerImage60: './img/markers/knb-orangered-60px-25a.png',
+		
+		markerImageKNB: './img/markers/knb-orangered-marker.png',
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -1106,7 +1108,7 @@ define(['jquery',
 			var markerOptions = {
 				position: latLngCEN,
 				title: solrResult.get('title'),
-				icon: this.markerImage10,
+				icon: this.markerImageKNB,
 				map: this.map,
 				visible: false,
 				zIndex: 99999
