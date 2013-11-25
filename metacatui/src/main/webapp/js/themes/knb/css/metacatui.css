@@ -1597,7 +1597,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	#sortOrder{
  		float:right;
  		width: auto;
- 		padding-right: 10px;
+ 		margin-right: 10px;
  	}
  	
  	.mapMode #sortOrder{
