@@ -59,7 +59,7 @@ Bold 700 Italic
     body > #Content {
     	position: relative;
     	margin: 0px 0px auto 0px;
-    	min-height: 400px;
+    	min-height: 900px;
     }
 		
     body > section > article {

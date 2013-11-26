@@ -253,6 +253,10 @@ define(['jquery',
 				//Trigger a new search
 				viewRef.triggerSearch();
 			});
+			
+			google.maps.event.addListener(mapRef, "click", function(){
+				google.maps.InfoWindow.close();
+			}
 
 		},
 		
