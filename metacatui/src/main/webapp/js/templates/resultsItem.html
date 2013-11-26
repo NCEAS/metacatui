@@ -1,16 +1,16 @@
         <!-- <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div> -->
 		<div class="span1 info-icons">
-			<div class="span6">
+			<div class="span6 on-map">
 				<% 
 					if (typeof southBoundCoord != "undefined"){
 	               		print('<i class="icon-map-marker on-map tooltip-this" data-trigger="hover" data-title="On map" data-placement="right"></i>');
 	               }
 	            %>
             </div>
-            <div class="span6">  
+            <div class="span6 has-data">  
                <%
 	               	if (resourceMap) {
-		               		print('<i class="icon-folder-open has-data tooltip-this" data-trigger="hover" data-title="Includes data" data-placement="right"></i>');
+		               		print('<i class="icon-folder-open has-data tooltip-this" data-trigger="hover" data-title="Includes data files" data-placement="right"></i>');
 		            }
            		%>
            </div>

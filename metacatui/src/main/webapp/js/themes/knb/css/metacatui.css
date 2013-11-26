@@ -1689,7 +1689,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     /*-- Results List Icons --*/
-    .result-row .has-data{
+    .result-row i.has-data{
     	color: #666;
     	margin-left: 10px;
     }
@@ -1700,8 +1700,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	margin-left: 5px;
     }
     
-    .result-row .tooltip-inner{
+    .on-map .tooltip-inner{
     	width: 70px;
+    }
+    
+    .has-data .tooltip-inner{
+    	width: 100px;
     }
     
     .result-row .icon-download-alt,
