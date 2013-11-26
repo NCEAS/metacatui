@@ -52,7 +52,6 @@ Bold 700 Italic
     }
     
     body > section, footer {
-      min-height: 400px;
       margin: 0;
       z-index: 10;
     }
@@ -189,10 +188,7 @@ Bold 700 Italic
 
     .mapMode #Footer{
     	position: fixed;
-    	height: 30px;
-    	min-height: 20px;
-    	padding-top: 0px;
-    	padding-bottom: 0px;
+    	height: 20px;
     	transition: all 1s ease-out;
     	transition-delay: .5s;
     }
@@ -205,26 +201,23 @@ Bold 700 Italic
     }
     
     .mapMode #Footer:hover{
-    	height: 600px;
-    	padding-top: 20px;
-    	padding-bottom: 20px;
+    	min-height: 200px;
     }
     
     .mapMode #Footer:hover h3,
     .mapMode #Footer:hover h3 > span{
-    	font-size: 30px;
-    	line-height: 30px;
+    	font-size: 19px;
+    	line-height: 19px;
     }
     
     footer#Footer {
       position: relative;
       bottom: 0px;
-      padding-top: 30px;
-      padding-bottom: 30px;
+      padding: 5px 1%;
       margin-top: 0px;
       color: #FDFDFD;
       background-color: #3F3F3F;
-      width: 100%;
+      width: 98%;
     }
         
     footer#Footer div#FooterHeading {
@@ -232,14 +225,14 @@ Bold 700 Italic
     }
 
     footer#Footer h2 {
-      font: 300 25px/25px "Lato";
+      font: 300 18px/16px "Lato";
       vertical-align: middle;
       padding: 0;
-      line-height: 48px;
+      margin-bottom: 3px;
     }
         
     footer#Footer h3 {
-      font: 800 30px/30px "Open Sans";
+      font: 800 19px/19px "Open Sans";
       text-align: center;
       padding: 0px 0px 20px 0px;
       margin-bottom: -25px;
@@ -256,47 +249,55 @@ Bold 700 Italic
       vertical-align: baseline;
       padding: 0;
       text-align: center;
-      margin-bottom: 40px;
     }
     
     footer#Footer h4.subheading > span {
-      font: 400 30px/30px "Gentium Book Basic";
+      font: 400 23px/23px "Gentium Book Basic";
       font-style: italic;
       text-transform: uppercase;
       background-color: #3F3F3F;
       padding: 0px 15px 0px 15px;
     }
     
+    footer#Footer i{
+    	margin-right: 5px;
+    	color: #CCCCCC;
+    }
+    
+    footer#Footer ul{
+    	margin: 0px;
+    }
+    
     footer#Footer ul.helpitems {
+      margin: 0px;
       list-style: none;
       list-style-position: inside;
-      margin: 0px 0px 40px 0px;
     }
     
     footer#Footer ul.helpitems li {
-      font: 100 20px/20px "Lato";
-      vertical-align: baseline;
-      margin: 15px 0px 0px 0px;                 
+      font: 100 14px/25px "Lato";
+      vertical-align: baseline;                 
     }
     
-    footer#Footer img[alt=NCEAS]{
-    	width: 90px;
+    footer#Footer ul.helpitems li:hover i{
+    	color: #FFFFFF;
     }
     
     ul.helpitems a {
-      color: #FDFDFD;
+      color: #CCCCCC;
       text-decoration: none;      
     }
     
     footer#Footer a:hover {
       color: #FFFFFF;
       font-weight: 300;
-      text-decoration: none;      
+      text-decoration: none; 
+      transition: color .5s;     
     }
     
     footer#Footer .disclaimer {
       color: #FDFDFD;
-      font: 100 14px/14px "Lato";      
+      font: 100 12px/14px "Lato";      
     }
     
     footer#Footer .logo {
@@ -308,20 +309,43 @@ Bold 700 Italic
       text-align: center;
     }
     
+    footer#Footer img {
+      opacity: .75;
+      transition: opacity .5s;
+    }
+    
+    footer#Footer .logos img:hover,
+    footer#Footer .logos p:hover{
+    	opacity: 1;
+    }
+    
+    footer#Footer .logos .knb{
+    	display: block;
+    	margin-top: 17px;
+    }
+    
+    footer#Footer .logos .dataone{
+    	display: block;
+    	margin-top: 25px;
+    	margin-left: 43px;
+    }
+    
+    footer#Footer .logos .nceas{
+    	display: block;
+    	margin-top: 0px;
+    }
+    
+    footer#Footer .logos .nceas img{
+    	width: 90px;
+    }
+    
     footer#Footer .acknowledgements {
       margin-top: 40px;
     }
 
-    footer#Footer img {
-      opacity: .75;
-    }
-
     #footer_signup {
       position: relative;
-      left: 50%;
-      /*bottom: 0px;*/
-      width: 188px;
-      margin: 20px auto 20px -94px;
+      width: auto;
     }
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
