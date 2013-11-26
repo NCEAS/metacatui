@@ -185,13 +185,6 @@ Bold 700 Italic
   
 /* FOOTER CSS
 -------------------------------------------------- */    
-
-    .mapMode #Footer{
-    	position: fixed;
-    	height: 20px;
-    	transition: all 1s ease-out;
-    	transition-delay: .5s;
-    }
     
     .mapMode #Footer h3,
     .mapMode #Footer h3 > span{
@@ -220,6 +213,17 @@ Bold 700 Italic
       background-color: #3F3F3F;
       width: 98%;
       z-index: 2;
+    }
+    
+    .mapMode #Footer{
+    	position: fixed;
+    	bottom: 0;
+    	background-color: #3F3F3F;
+    	height: 22px;
+    	transition: all 1s ease-out;
+    	transition-delay: .5s;
+    	z-index: 10;
+    	padding-top: 3px;
     }
         
     footer#Footer div#FooterHeading {
@@ -614,6 +618,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       border-top: 0px;
       padding-bottom: 40px;
       margin: 20px 10px 20px 10px;
+      background-color: #555555; /*IE 8 fallback */
       background: rgba(0,0,0,0.6);
       color: #FFFFFF;
       border-radius: 6px 6px 6px 6px;
@@ -926,6 +931,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     .carousel-caption {
+      background-color: #555555; /*IE 8 fallback */
       background: rgba(0,0,0,0.3);
       position: absolute;
       top: 150px;
@@ -1318,6 +1324,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	.current-filters > li[class*="span"],
 	#filter-year label.ui-state-active, 
 	#includes-files label.ui-state-active{
+		background-color: #166194; /*IE 8 fallback*/
 		background-color: rgba(17, 94, 149, .8);
 		color: #FFFFFF;
 		padding: 0px 5px 0px 5px;
@@ -1471,6 +1478,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		display: block;
 	}
 	.keyword-search-link.active {
+		background-color: #115E95; /*IE 8 fallback */
 		background-color: rgba(17, 94, 149, .8);
 		border-color: inherit;
 		display: block;
@@ -2064,6 +2072,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
 #metacatDocs table{
+		background-color: #FFFFFF;
     	background: rgba(255,255,255, 0.8);
     	margin: 40px auto;
     	

@@ -147,7 +147,7 @@ define(['jquery',
 			
 			//Initialize the jQueryUI button checkboxes
 			$( "#filter-year" ).buttonset();
-			$( "#includes-files" ).buttonset();
+			$( "#includes-files-buttonset" ).buttonset();
 			
 			//Iterate through each search model text attribute and show UI filter for each
 			var categories = ['all', 'creator', 'taxon'];
@@ -318,7 +318,16 @@ define(['jquery',
 			// attribute
 			var thisAttribute = null;
 			var attribute = searchModel.get('attribute');
+			
+			/* Add trim() function for IE*/
+			if(typeof String.prototype.trim !== 'function') {
+				  String.prototype.trim = function() {
+				    return this.replace(/^\s+|\s+$/g, ''); 
+				  }
+				}
+			
 			for (var i=0; i < attribute.length; i++){
+				
 				//Trim the spaces off
 				thisAttribute = attribute[i].trim();
 				
@@ -697,7 +706,7 @@ define(['jquery',
 
 			//Reset the checkboxes
 			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
-			$("#includes-files").buttonset("refresh");
+			$("#includes-files-buttonset").buttonset("refresh");
 			$("#data_year").prop("checked", searchModel.get("dataYear"));
 			$("#publish_year").prop("checked", searchModel.get("pubYear"));
 			console.log($('#data_year').prop('checked'));
@@ -1246,6 +1255,7 @@ define(['jquery',
 		
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
+			console.log('remove all');
 			$("#map-container").addClass("loading");
 			this.$results.html('');
 		},

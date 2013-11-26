@@ -25,6 +25,7 @@ Bold 700
     
     body {
       color: #333333;
+      background-color: #555555; /*IE 8 fallback*/
       background: rgba(0, 0, 0, .8);
       font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
       min-height: 100%;
@@ -173,6 +174,7 @@ Bold 700
 
 .controls-well {
 	    padding: 4px;
+	    backgorund-color: #FFFFFF; /*IE 8 fallback */
 	    background: rgba(255, 255, 255, 0.3);
 	}
 	.control-label {
@@ -1317,6 +1319,7 @@ Bold 700
    }
    
     .search-results{
+    	background-color: #FFFFFF; /* IE 8 fallback */
     	background-color: rgba(255,255,255,0.9);
     	margin-top: 10px;
     }
@@ -1338,6 +1341,7 @@ Bold 700
     }
     
     .result-row:nth-child(odd){
+    	background-color: #CCCCCC; /*IE 8 fallback */
     	background-color: rgba(185, 185, 185, 0.3);
     }
     
@@ -1346,6 +1350,7 @@ Bold 700
     }
     
     .result-row:hover { 
+    background-color: #DAEBF7; /* IE 8 fallback */
     background-color: rgba(178, 202, 221, 0.8);
   	}
   
@@ -1625,6 +1630,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs > .banner{
 	width: 100%;
 	height: 100px;
+	background-color: #000000; /*IE 8 fallback */
 	background: rgba(0,0,0, 0.7);
 	border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -1769,6 +1775,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs .sidebar{
 	float: right;
 	margin: 20px 0px 30px 20px;
+	background-color: #FFFFFF; /*IE 8 fallback */
 	background: rgba(255,255,255, 0.5);
 	border-radius: 20px;
 	padding: 20px;
@@ -1791,6 +1798,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	bottom: 0;
 	width: 96%;
 	margin: 50px auto 0 auto;
+	background-color: #FFFFFF; /*IE 8 fallback */
 	background: rgba(0,0,0, 0.7);
 	border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -1831,6 +1839,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
 #metacatDocs table{
+		background-color: #FFFFFF; /*IE 8 fallback */
     	background: rgba(255,255,255, 0.8);
     	margin: 40px auto;
     	
@@ -1848,6 +1857,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
 #metacatDocs tr.row-odd{
+		background-color: #BAD6E6; /*IE8 fallback*/
     	background: rgba(103, 184, 229, 0.2);
     }
 
@@ -1871,6 +1881,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  
  pre{
 	 padding: 10px;
+	 background-color: #166194; /*IE 8 fallback*/ 
 	background: rgba(22,97,148,0.7);
 	color: #FFFFFF;
 	font-size: 15px;
@@ -1913,6 +1924,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  
  
 #metacatDocs .topic{
+	background-color: #FFFFFF; /*iE 8 fallback */
  	background: rgba(255,255,255,0.5);
  	padding: 20px;
  	border-radius: 20px;
