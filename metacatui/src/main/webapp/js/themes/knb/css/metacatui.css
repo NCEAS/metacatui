@@ -202,6 +202,7 @@ Bold 700 Italic
     
     .mapMode #Footer:hover{
     	min-height: 200px;
+    	z-index: 2;
     }
     
     .mapMode #Footer:hover h3,
@@ -218,6 +219,7 @@ Bold 700 Italic
       color: #FDFDFD;
       background-color: #3F3F3F;
       width: 98%;
+      z-index: 2;
     }
         
     footer#Footer div#FooterHeading {

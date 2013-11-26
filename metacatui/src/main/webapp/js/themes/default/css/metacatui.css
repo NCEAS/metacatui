@@ -236,7 +236,7 @@ Bold 700
     }*/
     
     #Footer {
-      position: fixed;
+      	position: fixed;
 		bottom: 0px;
 		background: #222;
 		padding: 0px 10px;
@@ -245,10 +245,12 @@ Bold 700
 		color: #DDD;
 		display: block;
 		transition: height 0.5s ease-out .5s;
+		z-index: 2;
     }
     
     .mapMode #Footer:hover{
     	height: 150px;
+    	z-index: 2;
     }
     
     #Footer .center{
