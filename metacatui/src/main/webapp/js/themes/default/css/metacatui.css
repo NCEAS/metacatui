@@ -139,7 +139,11 @@ Bold 700
 		position: fixed;
 		top: 0;
 		left: 0;
+		display: block;
 		z-index: -1; /* So that right-clicking on background image will behave like right-clicking on background */
+	}
+	
+	.mapMode img.bg{
 		display: none;
 	}
 	
@@ -1212,10 +1216,19 @@ Bold 700
     	position: fixed;
     	width: 100%;
     	margin-left: 0px;
-    	padding-left: 50px;
+    	padding-left: 10px;
     	padding-top: 5px;
     	z-index: 1;
     	color: #888888;
+    	text-transform: none;
+    }
+    
+    .mapMode .result-header-count > .result-header-count{
+    	padding-left: 50px;
+    }
+    
+    .collapsed .result-header-count > .result-header-count{
+    	padding-left: 10px;
     }
     
     .mapMode .result-header-count > .result-header-count{
@@ -1230,7 +1243,19 @@ Bold 700
     	content: " data packages";
     }
     
+    #countstats:before{
+		content: "Listing ";
+	}
+	
+	.mapMode #countstats:before{
+		content: "Mapping ";
+	}
+    
     .map-pointer{
+    	display: none;
+    }
+    
+    .mapMode .map-pointer{
 		display: block;
 		position: fixed;
 		font-size: 75px;
@@ -1242,6 +1267,10 @@ Bold 700
 		border-radius: 0px;
 		-webkit-border-radius: 0px;
 		-moz-border-radius: 0px;
+	}
+	
+	.collapsed .map-pointer{
+		display: none;
 	}
 	
     #sortOrder{
@@ -1260,10 +1289,6 @@ Bold 700
 		z-index: 1;
     }
  	
- 	.mapMode #content.collapsed #sortOrder{
- 		display: none;
- 	}
- 	
  	#statcounts{
  		width: 100%;
  		height: inherit;
@@ -1277,7 +1302,7 @@ Bold 700
    /*-- Results rows --*/
    #results{
    		margin-top: 0px;
-   		width: 95%;
+   		width: 100%;
    		overflow-x: hidden;
    		float: right;
    		-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
@@ -1286,7 +1311,7 @@ Bold 700
    }
    
    .mapMode #results{
-   		
+   		width: 95%;
    }
    
     .search-results{
@@ -1536,8 +1561,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #content.collapsed{
-	height: 30px;
-	max-height: 40px;
+	height: 76px;
+	position: fixed;
 }
 
 /* MAIN CONTENT 

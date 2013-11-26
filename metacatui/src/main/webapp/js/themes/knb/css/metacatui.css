@@ -1603,6 +1603,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		-webkit-border-radius: 4px 0px 0px 4px;
  	}
  	
+ 	.mapMode .collapsed .result-header > .result-header-count{
+ 		padding-left: 10px;
+ 	}
+ 	
  	.mapMode .result-header > i{
  		background-color: #FFFFFF;
  		color: #CCCCCC;
@@ -1656,6 +1660,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		border-radius: 4px 0px 0px 4px;
 		-webkit-border-radius: 4px 0px 0px 4px;
 		-moz-border-radius: 4px 0px 0px 4px;
+	}
+	
+	.mapMode .collapsed .map-pointer{
+		display: none;
 	}
  	
  	#sortOrder{
