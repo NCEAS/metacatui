@@ -234,7 +234,7 @@ Bold 700
     #Footer {
       position: fixed;
 		bottom: 0px;
-		background: #333;
+		background: #222;
 		padding: 0px 10px;
 		height: 18px;
 		width: 100%;
@@ -1387,6 +1387,12 @@ Bold 700
     	margin: 30px auto;
     	padding-bottom: 5px;
     	background-color: #333333;
+    	width: 80%;
+    	position: fixed;
+    }
+    
+    .mapMode .pagination{
+    	width: inherit;
     }
 
 	.pagination ul{
