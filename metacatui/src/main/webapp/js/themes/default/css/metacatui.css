@@ -235,23 +235,16 @@ Bold 700
       color: #DDD;
     }*/
     
-    #Footer{
-    	position: relative;
-    	bottom: 0px;
+    #Footer {
+      position: fixed;
+		bottom: 0px;
 		background: #222;
 		padding: 0px 10px;
-		height: auto;
+		height: 18px;
 		width: 100%;
 		color: #DDD;
 		display: block;
 		transition: height 0.5s ease-out .5s;
-		margin-top: 20px;
-    }
-    
-    .mapMode #Footer {
-      position: fixed;
-		height: 18px;
-		margin-top: 0px;
     }
     
     .mapMode #Footer:hover{
