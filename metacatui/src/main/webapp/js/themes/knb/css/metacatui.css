@@ -516,12 +516,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 .mapMode #content{
 	margin-top: 0px;	
-	width: 40%;
-	max-height: 85%;
-	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
-	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);	
+	width: 45%;
+	max-height: 85%;	
 	position: fixed;
+	background-color: transparent;
 }
     
 /* FEATURES CSS 
@@ -1564,6 +1562,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	.mapMode .result-header{
  		position: relative;
  		background-color: #FFFFFF;
+ 		width: 100%;
  	}
  	
  	.mapMode .result-header > .result-header-count{
@@ -1572,27 +1571,68 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		border-bottom: 3px solid #DDDDDD;
  		padding-bottom: 5px; 
  		margin-left: 0px;
- 		width: 40%;
+ 		width: 45%;
  		cursor: pointer;
  		z-index: 1;
- 		border-radius: 4px 0px 0px 0px;
- 		-moz-border-radius: 4px 0px 0px 0px;
- 		-webkit-border-radius: 4px 0px 0px 0px;
+ 		border-radius: 4px 0px 0px 4px;
+ 		-moz-border-radius: 4px 0px 0px 4px;
+ 		-webkit-border-radius: 4px 0px 0px 4px;
+ 	}
+ 	
+ 	.mapMode .result-header > i{
+ 		background-color: #FFFFFF;
+ 		color: #CCCCCC;
+ 		border-radius: 4px 0px 0px 4px;
+ 		box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
  	}
  	
  	#countstats{
 		margin-left: 10px;
 		margin-bottom: 10px;
+		text-transform: none;
+		color: #999999;
+	}
+	
+	.mapMode #countstats{
+		margin-left: 49px;
+		margin-top: 5px;
+		font-size: 22px;
 	}
 	
 	#countstats > span{
 		text-transform: none;
+		color: #555555;
 	}
 	
 	#countstats:after{
 		content: " data packages";
 	}
-
+	
+	#countstats:before{
+		content: "Listing ";
+	}
+	
+	.mapMode #countstats:before{
+		content: "Mapping ";
+	}
+	
+	.map-pointer{
+		display:none;
+	}
+	
+	.mapMode .map-pointer{
+		display: block;
+		position: fixed;
+		font-size: 54px;
+		background-color: #FFFFFF;
+		z-index: 1;
+		width: auto;
+		color: #999999;
+		padding-left: 5px;
+		border-radius: 4px 0px 0px 4px;
+		-webkit-border-radius: 4px 0px 0px 4px;
+		-moz-border-radius: 4px 0px 0px 4px;
+	}
  	
  	#sortOrder{
  		float:right;
@@ -1626,6 +1666,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     /*-- Results List Rows--*/
     .mapMode .search-results{
     	margin-top: 80px;
+    	width: 95%;
+    	float: right;
+    	background-color: #FFFFFF;
+    	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+    	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+    	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
     }
     
     .result-row {
