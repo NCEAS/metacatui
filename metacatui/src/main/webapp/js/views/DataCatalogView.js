@@ -278,7 +278,9 @@ define(['jquery',
 			}
 			
 			//Refresh the map
-			this.renderMap();
+			if($('body').hasClass('mapMode')){
+				this.renderMap();
+			}
 		},
 		
 		/* 
@@ -1312,10 +1314,10 @@ define(['jquery',
 
 		},
 		
-		toggleMapMode: function(){		
+		toggleMapMode: function(){	
 			if(gmaps){
 				$('body').toggleClass('mapMode');	
-			}		
+			}
 		},
 		
 		routeToMetadata: function(e){

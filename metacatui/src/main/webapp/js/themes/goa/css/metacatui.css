@@ -23,7 +23,7 @@
     }
     
     body > section, footer {
-      min-height: 400px;
+      min-height: 800px;
       margin: 0;
       z-index: 10;
     }
