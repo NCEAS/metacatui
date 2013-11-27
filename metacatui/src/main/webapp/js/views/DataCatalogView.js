@@ -135,8 +135,10 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();
 			
-			//Render the Google Map
-			this.renderMap();
+			if(gmaps){
+				//Render the Google Map
+				this.renderMap();	
+			}
 			
 			
 			//Update the year slider
@@ -262,6 +264,10 @@ define(['jquery',
 		},
 		
 		resetMap : function(){
+			if(!gmaps){
+				return;
+			}
+			
 			//First reset the model
 			//The categories pertaining to the map
 			var categories = ["east", "west", "north", "south"];
@@ -295,7 +301,12 @@ define(['jquery',
 			
 			appSearchResults.setrows(500);
 			appSearchResults.setSort(sortOrder);
-			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord, site");
+			
+			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate";
+			if(gmaps){
+				fields += "northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
+			}
+			appSearchResults.setfields(fields);
 			
 			//Create the filter terms from the search model and create the query
 			var query = "formatType:METADATA+-obsoletedBy:*";
@@ -717,8 +728,10 @@ define(['jquery',
 			console.log($('#data_year').prop('checked'));
 			$("#filter-year").buttonset("refresh");
 			
-			//Zoom out the Google Map
-			this.map.setZoom(0);
+			if(gmaps){
+				//Zoom out the Google Map
+				this.map.setZoom(0);	
+			}
 			
 			//Hide the reset button again
 			$('#clear-all').css('display', 'none');
@@ -1214,7 +1227,9 @@ define(['jquery',
 			this.$results.append(view.render().el);
 			
 			// map it
-			this.addObjectMarker(result);
+			if(gmaps){
+				this.addObjectMarker(result);	
+			}
 
 		},
 
@@ -1243,29 +1258,32 @@ define(['jquery',
 						viewRef.addOne(element);
 					};
 					
-					// clean out any old markers
-					viewRef.mergeMarkers();
-					
-					// show them if the are hidden
-					//viewRef.showMarkers();
-					
-					// show the clutered markers
-					var mcOptions = {
-						gridSize: 25,
-						styles: [
-						{height: 20, width: 20, url: viewRef.markerImage20, textColor: '#FFFFFF'},
-						{height: 30, width: 30, url: viewRef.markerImage30, textColor: '#FFFFFF'},
-						{height: 40, width: 40, url: viewRef.markerImage40, textColor: '#FFFFFF'},
-						{height: 50, width: 50, url: viewRef.markerImage50, textColor: '#FFFFFF'},
-						{height: 60, width: 60, url: viewRef.markerImage60, textColor: '#FFFFFF'},
-						]
-					};
-					if ( viewRef.markerCluster ) {
-						viewRef.markerCluster.clearMarkers();
+					if(gmaps){
+						// clean out any old markers
+						viewRef.mergeMarkers();
+						
+						// show them if the are hidden
+						//viewRef.showMarkers();
+						
+						// show the clutered markers
+						var mcOptions = {
+							gridSize: 25,
+							styles: [
+							{height: 20, width: 20, url: viewRef.markerImage20, textColor: '#FFFFFF'},
+							{height: 30, width: 30, url: viewRef.markerImage30, textColor: '#FFFFFF'},
+							{height: 40, width: 40, url: viewRef.markerImage40, textColor: '#FFFFFF'},
+							{height: 50, width: 50, url: viewRef.markerImage50, textColor: '#FFFFFF'},
+							{height: 60, width: 60, url: viewRef.markerImage60, textColor: '#FFFFFF'},
+							]
+						};
+						if ( viewRef.markerCluster ) {
+							viewRef.markerCluster.clearMarkers();
+						}
+						viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
+						
+						$("#map-container").removeClass("loading");
 					}
-					viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
 					
-					$("#map-container").removeClass("loading");
 					clearInterval(intervalId);
 				}
 				
@@ -1295,22 +1313,27 @@ define(['jquery',
 		},
 		
 		toggleMapMode: function(){		
-			
-			$('body').toggleClass('mapMode');		
+			if(gmaps){
+				$('body').toggleClass('mapMode');	
+			}		
 		},
 		
 		postRender: function() {
-			console.log("Resizing the map");
-			var center = this.map.getCenter(); 
-			google.maps.event.trigger(this.map, 'resize'); 
-			this.map.setCenter(center);
+			if(gmaps){
+				console.log("Resizing the map");
+				var center = this.map.getCenter(); 
+				google.maps.event.trigger(this.map, 'resize'); 
+				this.map.setCenter(center);	
+			}
 		},
 		
 		onClose: function () {			
 			console.log('Closing the data view');
 			
-			// unset map mode
-			$("body").removeClass("mapMode");
+			if(gmaps){
+				// unset map mode
+				$("body").removeClass("mapMode");	
+			}
 			
 			// remove everything so we don't get a flicker
 			this.$el.html('')
