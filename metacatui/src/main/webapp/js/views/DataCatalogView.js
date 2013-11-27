@@ -253,10 +253,6 @@ define(['jquery',
 				//Trigger a new search
 				viewRef.triggerSearch();
 			});
-			
-			google.maps.event.addListener(mapRef, "click", function(){
-				google.maps.InfoWindow.close();
-			}
 
 		},
 		
@@ -1099,29 +1095,31 @@ define(['jquery',
 		 * TODO: cluster them */
 		addObjectMarker: function(solrResult) {
 			
+			//Skip this if there is no map
 			if (!gmaps) {
 				return;
 			}
 			
 			var pid = solrResult.get('id');
 			
-			// already on map
+			// if already on map
 			if (this.markers[pid]) {
 				return;
 			}
 			
+			//Get the four bounding lat/longs for this data item
 			var n = solrResult.get('northBoundCoord');
 			var s = solrResult.get('southBoundCoord');
 			var e = solrResult.get('eastBoundCoord');
 			var w = solrResult.get('westBoundCoord');
 			
+			//Get the centertroid location of this data item
 			var latLngSW = new gmaps.LatLng(s, w);
 			var latLngNE = new gmaps.LatLng(n, e);
 			var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
 			var latLngCEN = bounds.getCenter();
-			
-			//console.log('Adding marker for: ' + solrResult.get('id'));
-			
+	
+			//Create an infowindow or bubble for each marker
 			var infoWindow = new gmaps.InfoWindow({
 				content: 
 					'<h4>' + solrResult.get('title') 
@@ -1133,6 +1131,7 @@ define(['jquery',
 					+ '<p>' + solrResult.get('abstract') + '</p>'
 			});
 
+			//Set up the options for each marker
 			var markerOptions = {
 				position: latLngCEN,
 				title: solrResult.get('title'),
@@ -1141,21 +1140,33 @@ define(['jquery',
 				//visible: false,
 				zIndex: 99999
 			}
+			
+			//Create an instance of the marker
 			var marker = new gmaps.Marker(markerOptions);
 			this.markers[pid] = marker;
+			
+			//Show the info window upon marker click
 			gmaps.event.addListener(marker, 'click', function() {
 				titleWindow.close();
 				infoWindow.open(this.map, marker);
 			});
 			
-			// a bigger hover window
+			//Close the infowindow upon any click on the map
+			gmaps.event.addListener(this.map, 'click', function() {
+				titleWindow.close();
+				infoWindow.close();
+			});
+			
+			// A small info window with just the title
 			var titleWindow = new gmaps.InfoWindow({
 				content: solrResult.get('title')
 			});
+			//Show the title window on mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
 				if (infoWindow)
 				titleWindow.open(this.map, marker);
 			});
+			//And close the title window on mouseout
 			gmaps.event.addListener(marker, 'mouseout', function() {
 				titleWindow.close();
 			});
