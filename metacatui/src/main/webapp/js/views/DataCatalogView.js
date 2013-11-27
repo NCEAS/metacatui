@@ -257,6 +257,7 @@ define(['jquery',
 			
 			//Let the view know we have zoomed on the map
 			google.maps.event.addListener(mapRef, "zoom_changed", function(){
+				console.log('has zoomed');
 				viewRef.map.hasZoomed = true;
 			});
 
@@ -276,8 +277,8 @@ define(['jquery',
 				searchModel.set(categories[i], null);				
 			}
 			
-			//Go back to the min zoom level
-			this.map.setZoom(0);
+			//Refresh the map
+			this.renderMap();
 		},
 		
 		/* 
@@ -292,6 +293,7 @@ define(['jquery',
 			}
 			
 			//Get all the search model attributes
+			
 			//Start with the 'all' category
 			var search = searchModel.get('all');
 			var sortOrder = searchModel.get('sortOrder');
@@ -310,12 +312,6 @@ define(['jquery',
 			//Create the filter terms from the search model and create the query
 			var query = "formatType:METADATA+-obsoletedBy:*";
 			
-			//resourceMap
-			var resourceMap = searchModel.get('resourceMap');
-			if(resourceMap){
-				query += '+resourceMap:*';
-			}
-			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var phrase = function(entry){
 				var space = null;
@@ -330,16 +326,22 @@ define(['jquery',
 				}
 			};
 			
-			// attribute
-			var thisAttribute = null;
-			var attribute = searchModel.get('attribute');
-			
 			/* Add trim() function for IE*/
 			if(typeof String.prototype.trim !== 'function') {
 				  String.prototype.trim = function() {
 				    return this.replace(/^\s+|\s+$/g, ''); 
 				  }
-				}
+			}
+			
+			//resourceMap
+			var resourceMap = searchModel.get('resourceMap');
+			if(resourceMap){
+				query += '+resourceMap:*';
+			}
+			
+			// attribute
+			var thisAttribute = null;
+			var attribute = searchModel.get('attribute');
 			
 			for (var i=0; i < attribute.length; i++){
 				
@@ -727,11 +729,9 @@ define(['jquery',
 			console.log($('#data_year').prop('checked'));
 			$("#filter-year").buttonset("refresh");
 			
-			if(gmaps){
-				//Zoom out the Google Map
-				this.map.setZoom(0);	
-			}
-			
+			//Zoom out the Google Map
+			this.resetMap();	
+		
 			//Hide the reset button again
 			$('#clear-all').css('display', 'none');
 			
