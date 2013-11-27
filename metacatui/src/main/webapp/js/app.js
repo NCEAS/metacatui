@@ -9,7 +9,9 @@ console.log("Using themeMap: " + themeMap);
 console.log("Using metacatContext: " + metacatContext);
 
 var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
-var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+if (mapKey){
+	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+}
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
