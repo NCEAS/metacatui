@@ -72,10 +72,11 @@ define(['jquery',
 						   'click .remove-filter' : 'removeFilter',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
 							   'click #clear-all' : 'resetFilters',
-					 'click a.keyword-search-link' : 'additionalCriteria',
+					'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
-				   			 	'click #toggle-map' : 'toggleMapMode'
+				   			  'click #toggle-map' : 'toggleMapMode',
+				   			   'click .view-link' : 'routeToMetadata'
 		},
 		
 		initialize: function () {
@@ -1314,6 +1315,11 @@ define(['jquery',
 			if(gmaps){
 				$('body').toggleClass('mapMode');	
 			}		
+		},
+		
+		routeToMetadata: function(e){
+			var doi = $(e.target).attr('data-doi');
+			uiRouter.renderMetadata(doi);
 		},
 		
 		postRender: function() {
