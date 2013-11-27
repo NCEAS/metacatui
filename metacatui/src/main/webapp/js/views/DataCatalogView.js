@@ -235,8 +235,8 @@ define(['jquery',
 			
 				viewRef.ready = true;
 				
-				//If the map is zoomed all the way out, do not apply the spatial filters
-				if(mapRef.getZoom() == mapOptions.minZoom){ return; }
+				//If we haven't zoomed into the map yet, do not apply the spatial filters
+				if((!viewRef.map.hasZoomed)){ return; }
 				
 				//Get the Google map bounding box
 				var boundingBox = mapRef.getBounds();
@@ -252,6 +252,11 @@ define(['jquery',
 				
 				//Trigger a new search
 				viewRef.triggerSearch();
+			});
+			
+			//Let the view know we have zoomed on the map
+			google.maps.event.addListener(mapRef, "zoom_changed", function(){
+				viewRef.map.hasZoomed = true;
 			});
 
 		},
