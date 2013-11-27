@@ -135,10 +135,8 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();
 			
-			if(gmaps){
-				//Render the Google Map
-				this.renderMap();	
-			}
+			//Render the Google Map
+			this.renderMap();	
 			
 			
 			//Update the year slider
