@@ -195,7 +195,7 @@ Bold 700 Italic
     
     .mapMode #Footer:hover{
     	min-height: 200px;
-    	z-index: 2;
+    	z-index: 10;
     }
     
     .mapMode #Footer:hover h3,
