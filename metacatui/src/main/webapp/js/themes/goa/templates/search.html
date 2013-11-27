@@ -122,20 +122,10 @@
 				<div id="results-header" class="row-fluid result-header">
 									
 					<!-- count stats -->
-					<div class="result-header-count span6" id="statcounts">0 to 0 of 0</div>
-					
-					<!-- top pager -->
-					<!-- 
-					<div class="result-header-pager span3 pagination pagination-right" id="resultspager_top">
-						<ul>
-							<li><a id="results_prev">Prev</a></li>
-							<li><a id="results_next">Next</a></li>
-						</ul>
-					</div>
-					-->
+					<div class="result-header-count span7" id="statcounts">0 to 0 of 0</div>
 					
 					<!-- sort order -->
-					<div class="span6 text-right">
+					<div class="span3 text-right">
 						<select id=sortOrder>
 							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
 							<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>

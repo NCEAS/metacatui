@@ -22,6 +22,10 @@
       
     }
     
+    select{
+    	width: auto;
+    }
+    
     body > section, footer {
       min-height: 800px;
       margin: 0;
@@ -1083,6 +1087,10 @@
     .pagination {
     	cursor: pointer;
     	margin: 10px auto;
+    }
+    
+    .pagination > ul{
+    	float: left;
     }
     
     
