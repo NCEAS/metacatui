@@ -1477,7 +1477,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		border-color: inherit;
 		display: block;
 	}
-	.keyword-search-link.active {
+	
+	.current-filters > li.keyword-search-link.active {
 		background-color: #115E95; /*IE 8 fallback */
 		background-color: rgba(17, 94, 149, .8);
 		border-color: inherit;
