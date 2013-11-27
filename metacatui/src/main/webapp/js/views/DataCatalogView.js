@@ -303,7 +303,7 @@ define(['jquery',
 			
 			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate";
 			if(gmaps){
-				fields += "northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
+				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}
 			appSearchResults.setfields(fields);
 			
@@ -1108,8 +1108,7 @@ define(['jquery',
 			
 		},
 		
-		/* add a marker for objects
-		 * TODO: cluster them */
+		/* add a marker for objects */
 		addObjectMarker: function(solrResult) {
 			
 			//Skip this if there is no map
@@ -1256,7 +1255,7 @@ define(['jquery',
 						var element = appSearchResults.models[i];
 						viewRef.addOne(element);
 					};
-					
+
 					if(gmaps){
 						// clean out any old markers
 						viewRef.mergeMarkers();
@@ -1275,9 +1274,11 @@ define(['jquery',
 							{height: 60, width: 60, url: viewRef.markerImage60, textColor: '#FFFFFF'},
 							]
 						};
+						
 						if ( viewRef.markerCluster ) {
 							viewRef.markerCluster.clearMarkers();
 						}
+						
 						viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
 						
 						$("#map-container").removeClass("loading");
