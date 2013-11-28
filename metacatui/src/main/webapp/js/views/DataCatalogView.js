@@ -1131,13 +1131,17 @@ define(['jquery',
 			var e = solrResult.get('eastBoundCoord');
 			var w = solrResult.get('westBoundCoord');
 			
-			//Get the centertroid location of this data item
+			//Create Google Map LatLng objects out of our coordinates
 			var latLngSW = new gmaps.LatLng(s, w);
 			var latLngNE = new gmaps.LatLng(n, e);
+			var latLngNW = new gmaps.LatLng(n, w);
+			var latLngSE = new gmaps.LatLng(s, e);
+			
+			//Get the centertroid location of this data item
 			var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
 			var latLngCEN = bounds.getCenter();
 	
-			//Create an infowindow or bubble for each marker
+			//An infowindow or bubble for each marker
 			var infoWindow = new gmaps.InfoWindow({
 				content: 
 					'<h4>' + solrResult.get('title') 
@@ -1148,16 +1152,29 @@ define(['jquery',
 					+ '</h4>'
 					+ '<p>' + solrResult.get('abstract') + '</p>'
 			});
+			
+			// A small info window with just the title for each marker
+			var titleWindow = new gmaps.InfoWindow({
+				content: solrResult.get('title')
+			});
 
 			//Set up the options for each marker
 			var markerOptions = {
 				position: latLngCEN,
 				title: solrResult.get('title'),
 				icon: this.markerImage,
-				//map: this.map,
-				//visible: false,
 				zIndex: 99999
 			}
+			
+			//Set up the polygon for each marker
+			var polygon = new gmaps.Polygon({
+				paths: [latLngNW, latLngNE, latLngSE, latLngSW],
+				strokeColor: '#166194',
+				strokeWeight: 2,
+				fillColor: '#166194',
+				fillOpacity: '0.3'
+			});
+			
 			
 			//Create an instance of the marker
 			var marker = new gmaps.Marker(markerOptions);
@@ -1175,18 +1192,18 @@ define(['jquery',
 				infoWindow.close();
 			});
 			
-			// A small info window with just the title
-			var titleWindow = new gmaps.InfoWindow({
-				content: solrResult.get('title')
-			});
+			var viewRef = this;
+			
 			//Show the title window on mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
-				if (infoWindow)
 				titleWindow.open(this.map, marker);
+				polygon.setMap(viewRef.map);
+				polygon.setVisible(true);
 			});
 			//And close the title window on mouseout
 			gmaps.event.addListener(marker, 'mouseout', function() {
 				titleWindow.close();
+				polygon.setVisible(false);
 			});
 			
 		},
