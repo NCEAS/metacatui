@@ -837,18 +837,23 @@ define(['jquery',
 			// Get the clicked node
 			var targetNode = $(e.target);
 			
+			//If this additional criteria is already applied, remove it
+			if(targetNode.hasClass('active')){
+				this.removeAdditionalCriteria(e);
+				return false;
+			}
+			
+			// Get the filter criteria
+			var term = targetNode.attr('data-term');
+			
+			// Find this element's category in the data-category attribute
+			var category = targetNode.attr('data-category');
+			
 			// style the selection
 			$(".keyword-search-link").removeClass("active");
 			$(".keyword-search-link").parent().removeClass("active");
 			targetNode.addClass("active");
 			targetNode.parent().addClass("active");
-			
-			// Get the filter criteria
-			var term = targetNode.attr('data-term');
-			console.log('applying additional criteria '+ term);
-			
-			// Find this element's category in the data-category attribute
-			var category = targetNode.attr('data-category');
 			
 			// Add this criteria to the search model
 			searchModel.set(category, [term]);
@@ -862,6 +867,7 @@ define(['jquery',
 		},
 		
 		removeAdditionalCriteria: function(e){
+
 			// Get the clicked node
 			var targetNode = $(e.target);
 			
@@ -870,7 +876,7 @@ define(['jquery',
 			$(".keyword-search-link").parent().removeClass("active");
 			
 			//Get the term
-			var term = targetNode.parent().attr('data-term');
+			var term = targetNode.attr('data-term');
 			
 			//Get the current search model additional criteria 
 			var current = searchModel.get('additionalCriteria');
