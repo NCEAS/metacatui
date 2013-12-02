@@ -42,6 +42,8 @@ define(['jquery',
 				
 		markerImage: './img/markers/orangered-marker.png',
 		
+		markerImageAlt: './img/markers/red-enlarged-marker.png',
+		
 		markerImage15: './img/markers/orangered-15px-25a.png',
 		
 		markerImage20: './img/markers/orangered-20px-25a.png',
@@ -77,7 +79,8 @@ define(['jquery',
 				   			 'click .collapse-me' : 'collapse',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			   'click .view-link' : 'routeToMetadata',
-				   			      'click .on-map' : 'highlightMarker'
+				   		 'mouseover .open-marker' : 'openMarker',
+				   	      'mouseout .open-marker' : 'closeMarker'
 		},
 		
 		initialize: function () {
@@ -120,6 +123,7 @@ define(['jquery',
 
 			console.log('Rendering the DataCatalog view');
 			appModel.set('headerType', 'default');
+		
 			
 			//Populate the search template with some model attributes
 			var cel = this.template(
@@ -134,13 +138,14 @@ define(['jquery',
 						username: appModel.get('username')
 					}
 			);
+			
+			
 			this.$el.html(cel);
-			this.updateStats();
+			this.updateStats();		
 			
 			//Render the Google Map
 			this.renderMap();	
-			
-			
+					
 			//Update the year slider
 			this.updateYearRange(); 
 			
@@ -185,8 +190,7 @@ define(['jquery',
 			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
 			
 			// and go to a certain page if we have it
-			this.showResults();
-			
+			this.showResults();		
 
 			return this;
 		},
@@ -1164,8 +1168,9 @@ define(['jquery',
 				position: latLngCEN,
 				title: solrResult.get('title'),
 				icon: this.markerImage,
-				zIndex: 99999
-			}
+				zIndex: 99999,
+				map: this.map
+			};
 			
 			//Set up the polygon for each marker
 			var polygon = new gmaps.Polygon({
@@ -1195,23 +1200,54 @@ define(['jquery',
 			
 			var viewRef = this;
 			
-			//Show the title window on mouseover
+			// Behavior for marker mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
+				//Open the brief title window
 				titleWindow.open(this.map, marker);
+				
+				//Change the marker icon
+				marker.setIcon(viewRef.markerImageAlt);
+				
+				//Show the data boundaries as a polygon
 				polygon.setMap(viewRef.map);
 				polygon.setVisible(true);
 			});
-			//And close the title window on mouseout
+			
+			// Behavior for marker mouseout
 			gmaps.event.addListener(marker, 'mouseout', function() {
 				titleWindow.close();
+				
+				//Change the marker icon
+				marker.setIcon(viewRef.markerImage);
+				
 				polygon.setVisible(false);
 			});
 			
 		},
 		
-		highlightMarker: function(e){
+		openMarker: function(e){
 			var id = $(e.target).attr('data-id');
-			gmaps.event.trigger(this.markers[id], 'click');
+
+			gmaps.event.trigger(this.markers[id], 'mouseover');
+			
+			// If we are still at the minimum zoom level (not restricting search on map boundaries) then
+			// center the map on this marker. Refrain from panning the map when we have zoomed
+			// so that a new search isn't triggered.
+			if(!this.map.hasZoomed){
+				var position = this.markers[id].getPosition();
+				
+				//Adjust the longitude a bit to accomidate for the results list
+				var adjustedPosition = new gmaps.LatLng(position.lat(), position.lng()+50);
+				
+				//Pan the map
+				this.map.panTo(adjustedPosition);
+			}
+			
+		},
+		
+		closeMarker: function(e){
+			var id = $(e.target).attr('data-id');
+			gmaps.event.trigger(this.markers[id], 'mouseout');
 		},
 		
 		showMarkers: function() {
