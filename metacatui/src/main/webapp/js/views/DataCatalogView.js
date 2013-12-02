@@ -76,7 +76,8 @@ define(['jquery',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
 				   			  'click #toggle-map' : 'toggleMapMode',
-				   			   'click .view-link' : 'routeToMetadata'
+				   			   'click .view-link' : 'routeToMetadata',
+				   			      'click .on-map' : 'highlightMarker'
 		},
 		
 		initialize: function () {
@@ -1169,9 +1170,9 @@ define(['jquery',
 			//Set up the polygon for each marker
 			var polygon = new gmaps.Polygon({
 				paths: [latLngNW, latLngNE, latLngSE, latLngSW],
-				strokeColor: '#166194',
+				strokeColor: '#FFFFFF',
 				strokeWeight: 2,
-				fillColor: '#166194',
+				fillColor: '#FFFFFF',
 				fillOpacity: '0.3'
 			});
 			
@@ -1206,6 +1207,11 @@ define(['jquery',
 				polygon.setVisible(false);
 			});
 			
+		},
+		
+		highlightMarker: function(e){
+			var id = $(e.target).attr('data-id');
+			gmaps.event.trigger(this.markers[id], 'click');
 		},
 		
 		showMarkers: function() {
