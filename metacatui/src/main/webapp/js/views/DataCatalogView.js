@@ -143,13 +143,15 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();		
 			
-			//Render the Google Map
-			this.renderMap();	
+			if(appModel.get('searchMode') == 'map'){
+				//Render the Google Map
+				this.renderMap();	
+			}	
 					
 			//Update the year slider
 			this.updateYearRange(); 
 			
-			//Initialize the year type label tooltips
+			//Initialize the tooltips
 			$('.tooltip-this').tooltip();
 			
 			//Initialize the jQueryUI button checkboxes
@@ -203,7 +205,8 @@ define(['jquery',
 			}
 			
 			// set to map mode
-			$("body").addClass("mapMode");
+			appModel.set('searchMode', 'map');
+			$("body").addClass("mapMode");				
 			
 			//Set a reserved phrase for the map filter
 			this.reservedMapPhrase = "Using map boundaries";
@@ -283,7 +286,7 @@ define(['jquery',
 			}
 			
 			//Refresh the map
-			if($('body').hasClass('mapMode')){
+			if(appModel.get('searchMode') == 'map'){
 				this.renderMap();
 			}
 		},
@@ -1383,6 +1386,13 @@ define(['jquery',
 			if(gmaps){
 				$('body').toggleClass('mapMode');	
 			}
+			
+			if(appModel.get('searchMode') == 'map'){
+				appModel.set('searchMode', 'list');
+			}
+			else if (appModel.get('searchMode') == 'list'){
+				appModel.set('searchMode', 'map');
+			}
 		},
 		
 		routeToMetadata: function(e){
@@ -1404,7 +1414,7 @@ define(['jquery',
 			
 			if(gmaps){
 				// unset map mode
-				$("body").removeClass("mapMode");	
+				$("body").removeClass("mapMode");
 			}
 			
 			// remove everything so we don't get a flicker
