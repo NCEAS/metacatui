@@ -1716,7 +1716,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .result-row {
       display: block;
         border-bottom: 1px dashed #ccc;
-        padding: 5px 7px;
+        padding: 5px 1%;
+        width: 98%;
+    }
+    
+    .result-row .result-row{
+    	border-bottom: 0px;
     }
     
      .result-row:hover { 
@@ -1725,6 +1730,24 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
     .result-author {
       font-weight: bold;
+    }
+    
+    .result-id{
+    	color: #999999;
+    }
+    
+    .result-row.abstract{
+    	display: none;
+    	transition: all .5s ease-in 1s;
+    	padding: 2%;
+    	width: 96%;
+    	border: 0px;
+    	font-size: 0.9em;
+    	clear: both;
+    }
+    
+    .result-row:hover .abstract{
+    	display: block;
     }
     
     /*-- Results List Icons --*/

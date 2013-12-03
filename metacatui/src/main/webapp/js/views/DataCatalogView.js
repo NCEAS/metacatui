@@ -1286,12 +1286,18 @@ define(['jquery',
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
+			//Get the view and package service URL's
 			this.$view_service = appModel.get('viewServiceUrl');
 			this.$package_service = appModel.get('packageServiceUrl');
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
+			
+			//Create a new result item
 			var view = new SearchResultView({ model: result });
-			// Initialize the tooltip for the has data icon
+			
+			// Initialize any tooltips within the result item
 			$(".tooltip-this").tooltip();
+			
+			//Add this item to the list
 			this.$results.append(view.render().el);
 			
 			// map it

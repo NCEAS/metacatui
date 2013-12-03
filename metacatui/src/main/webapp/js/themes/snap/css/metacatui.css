@@ -1358,13 +1358,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     .result-row {
-      display: block;
+      display: inline-block;
       padding: 5px 10px;
       background-color: #FFFFFF;
       border-top: 4px solid #4C6101;
       box-shadow: 0 0 15px 5px rgba(50,50,50,0.2);
       margin-top:10px;
       position: relative;
+      width: 100%;
     }
 
     
@@ -1374,7 +1375,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	color: #FFFFFF;
     	transition: all 0.3s ease-in-out;
     	-moz-transition: all 0.3s ease-in-out;
-    	-ms-transition: all 0.3s ease-in-out;
+    	-ms-transition: all 0.3s ease-in-out;	
     	-o-transition: all 0.3s ease-in-out;
     	-webkit-transition: all 0.3s ease-in-out;
   	}
@@ -1387,6 +1388,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	.result-row:hover a > span,
   	.result-row:hover i{
   		color: #FFFFFF;
+  	}
+  	
+  	.result-row .result-row{
+		border: 0px;
+		padding: 0px;
+		box-shadow: none;
   	}
   	
   	.result-title > a{
@@ -1415,6 +1422,20 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   		font-size: 0.9em;
   		font-style: normal; 
   	}
+  	
+  	.result-row .abstract{
+    	display: none;
+    	padding: 2%;
+    	width: 96%;
+    	border: 0px;
+    	font-size: 0.9em;
+    	clear: both;
+    	background-color: inherit;
+    }
+    
+    .result-row:hover .abstract{
+    	display: block;
+    }
   	
   	.result-row .has-data{
   		font-size: 0.8em;

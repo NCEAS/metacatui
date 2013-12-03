@@ -1,4 +1,5 @@
         <!-- <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div> -->
+ <div class="citation-row">
         <div class="result-citation span10 view-link" data-doi="<%- id %>">
               <span class="result-author"><% var count=0; _.each(origin, function(author) {
                    count++;
@@ -51,3 +52,7 @@
 
 
 	<i class="icon-caret-right view-link" data-doi="<%- id %>"></i>
+</div>
+	<div class="abstract view-link" data-doi="<%- id %>">
+	<%=abstract%>
+</div>

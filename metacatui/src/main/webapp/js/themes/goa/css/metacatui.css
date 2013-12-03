@@ -1036,7 +1036,13 @@
     .result-row {
       display: block;
         border-bottom: thin solid;
-        padding: 5px;
+        padding: 5px 1%;
+        width: 98%;
+    }
+    
+    .result-row .result-row{
+    	border-bottom:0px;
+    	padding: 0px;
     }
     
     .result-row:hover { 
@@ -1045,6 +1051,20 @@
 
     .result-author {
       font-weight: bold;
+    }
+    
+    .result-row.abstract{
+    	display: none;
+    	transition: all .5s ease-in 1s;
+    	padding: 2%;
+    	width: 96%;
+    	border: 0px;
+    	font-size: 0.9em;
+    	clear: both;
+    }
+    
+    .result-row:hover .abstract{
+    	display: block;
     }
     
     .result-row .icon-caret-down {
@@ -1059,10 +1079,9 @@
     }
     
     .result-row .has-data{
-    	color: #555555;
+    	color: #999999;
     	font-size: 18px;
     	position: relative;
-    	left: -15px;
     }
     
     .result-row .download{

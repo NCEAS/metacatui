@@ -1349,6 +1349,11 @@ Bold 700
     	background-color: transparent;
     }
     
+    .result-row .result-row,
+    .result-row:hover .result-row{
+    	background-color: transparent;
+    }
+    
     .result-row:hover { 
     background-color: #DAEBF7; /* IE 8 fallback */
     background-color: rgba(178, 202, 221, 0.8);
@@ -1369,6 +1374,19 @@ Bold 700
     	color: #166194;
     }
     
+    .result-row.abstract{
+    	display: none;
+    	transition: all .5s ease-in 1s;
+    	padding: 2%;
+    	width: 96%;
+    	border: 0px;
+    	font-size: 0.9em;
+    	clear: both;
+    }
+    
+    .result-row:hover .abstract{
+    	display: block;
+    }
     .result-row .dropdown-menu{
   		left: -320%;
   	}
