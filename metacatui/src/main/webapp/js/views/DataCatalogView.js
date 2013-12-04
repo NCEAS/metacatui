@@ -556,6 +556,11 @@ define(['jquery',
 			var input = this.$el.find($('#' + category + '_input'));
 			var term = input.val();
 			
+			//Check that something was actually entered
+			if((term == "") || (term == " ")){
+				return false;
+			}
+			
 			//Now clear that input
 			input.val('');
 				
