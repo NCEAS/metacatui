@@ -1732,6 +1732,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       font-weight: bold;
     }
     
+    .result-citation{
+    	padding-left: 3%;
+    }
+    
     .result-id{
     	color: #999999;
     }

@@ -21,7 +21,7 @@ require.config({
   map: themeMap,
   paths: {
     jquery: '../components/jquery',
-    jqueryui: '../components/jquery-ui-1.10.3-2.custom.min',
+    jqueryui: '../components/jquery-ui-1.10.3.custom.min',
     underscore: '../components/underscore',
     backbone: '../components/backbone',
     bootstrap: '../components/bootstrap.min',

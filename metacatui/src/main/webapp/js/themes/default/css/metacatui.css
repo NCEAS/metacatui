@@ -1369,6 +1369,10 @@ Bold 700
       font-weight: normal;
     }
     
+    .result-citation{
+    	padding-left: 3%;
+    }
+    
     .result-title{
     	font-weight: 600;
     	color: #166194;
