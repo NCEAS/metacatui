@@ -205,22 +205,22 @@ Bold 700
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
   section#Notification {
-    position: fixed;
-    top: 105px;
-    height: 40px;
-    width: inherit;
-    max-height: 40px;
-    min-height: 40px;
+    position: relative;
+    top: 95px;
+    margin: 50px auto;
+    font-size: 40px;
   }
   
-  .progress-striped{
-  	border-radius: 0px;
-  	-webkit-border-radius: 0px;
-	-moz-border-radius: 0px;
+  #Notification i{
+  	font-size: 40px;
+  	margin-left: 43%;
   }
   
-  .progress-striped .bar{
-  	background-color: #166194;
+  #Notification p{
+  	font-size: 20px;
+  	width: 350px;
+  	margin: 20px auto;
+  	display: block;
   }
 
   

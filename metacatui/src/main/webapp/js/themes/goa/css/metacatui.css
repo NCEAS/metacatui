@@ -120,17 +120,22 @@
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
   section#Notification {
-    position: fixed;
-    top: 120px;
-    height: 40px;
-    width: 100%;
-    max-height: 40px;
-    min-height: 40px;
-    background-color: #FDFDFD;
+    position: relative;
+    top: 95px;
+    margin: 50px auto;
+    font-size: 40px;
   }
   
-  .progress .bar{
-  	background-color: #00b3ed;
+  #Notification i{
+  	font-size: 40px;
+  	margin-left: 43%;
+  }
+  
+  #Notification p{
+  	font-size: 20px;
+  	width: 350px;
+  	margin: 20px auto;
+  	display: block;
   }
 
   
