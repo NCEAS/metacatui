@@ -1765,8 +1765,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     /*-- Results List Icons --*/
     .result-row i.has-data{
-    	color: #666;
+    	color: #999;
     	margin-left: 10px;
+    }
+    
+    .result-row i.has-data:hover{
+    	color: #666;
     }
     
     .result-row .on-map{

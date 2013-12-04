@@ -1186,6 +1186,7 @@ define(['jquery',
 				title: solrResult.get('title'),
 				icon: this.markerImage,
 				zIndex: 99999,
+				id: solrResult.get('id'),
 				map: this.map
 			};
 			
@@ -1325,6 +1326,7 @@ define(['jquery',
 			// do this first to indicate coming results
 			this.updateStats();
 			
+			//Load the first 25 results first so the list has visible results while the rest load in the background
 			var min = 25;
 			min = Math.min(min, appSearchResults.models.length);
 			var i = 0;
@@ -1332,6 +1334,8 @@ define(['jquery',
 				var element = appSearchResults.models[i];
 				this.addOne(element);
 			};
+			
+			//After the map is done loading, then load the rest of the results into the list
 			var viewRef = this;
 			var intervalId = setInterval(function() {
 				if (viewRef.ready) {
@@ -1364,6 +1368,8 @@ define(['jquery',
 						}
 						
 						viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
+						
+						viewRef.markerClusters = viewRef.markerCluster.getMarkers();
 						
 						$("#map-container").removeClass("loading");
 					}
