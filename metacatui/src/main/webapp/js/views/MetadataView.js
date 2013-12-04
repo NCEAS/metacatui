@@ -4,9 +4,10 @@ define(['jquery',
 		'backbone',
 		'text!templates/package.html',
 		'text!templates/publishDOI.html',
-		'text!templates/newerVersion.html'
+		'text!templates/newerVersion.html',
+		'text!templates/loading.html'
 		], 				
-	function($, _, Backbone, PackageTemplate, PublishDoiTemplate, VersionTemplate) {
+	function($, _, Backbone, PackageTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate) {
 	'use strict';
 
 	
@@ -21,6 +22,8 @@ define(['jquery',
 		doiTemplate: _.template(PublishDoiTemplate),
 		
 		versionTemplate: _.template(VersionTemplate),
+		
+		loadingTemplate: _.template(LoadingTemplate),
 		
 		DOI_PREFIXES: ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."],
 		
@@ -206,9 +209,9 @@ define(['jquery',
 			
 			if (ret) {
 				
-				// show the progressbar
+				// show the loading icon
 				var message = "Publishing package...please be patient";
-				this.showProgressBar(message);
+				this.showLoading(message);
 				
 				var identifier = null;
 				var viewRef = this;
@@ -230,7 +233,7 @@ define(['jquery',
 										function() {
 											// avoid a double fade out/in
 											viewRef.$el.html('');
-											viewRef.showProgressBar();
+											viewRef.showLoading();
 											uiRouter.navigate("view/" + identifier, {trigger: true})
 										}, 
 										3000);
@@ -283,7 +286,7 @@ define(['jquery',
 		},
 		
 		showMessage: function(msg, prepend, alertType) {
-			this.hideProgressBar();
+			this.hideLoading();
 			var alertClass = "alert";
 			if (alertType) {
 				alertClass += " " + alertType;
@@ -297,18 +300,19 @@ define(['jquery',
 
 		},
 		
-		showProgressBar: function(msg) {
-			this.hideProgressBar();
+		showLoading: function(message) {
+			this.hideLoading();
 			this.scrollToTop();
-			var content = '<section id="Notification">';
+			/*var content = '<section id="Notification">';
 			if (msg) {
 				content += '<div class="alert alert-info">' + msg + '</div>';
 			}
 			content += '<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>';
-			this.$el.prepend(content);
+			*/
+			this.$el.prepend(this.loadingTemplate({msg: message}));
 		},
 		
-		hideProgressBar: function() {
+		hideLoading: function() {
 			$("#Notification").remove();
 		},
 		

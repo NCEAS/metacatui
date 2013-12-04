@@ -154,6 +154,9 @@ define(['jquery',
 			//Initialize the tooltips
 			$('.tooltip-this').tooltip();
 			
+			//Initialize the resizeable content div
+			$('#content').resizable({handles: "n,s,e,w"});
+			
 			//Initialize the jQueryUI button checkboxes
 			$( "#filter-year" ).buttonset();
 			$( "#includes-files-buttonset" ).buttonset();

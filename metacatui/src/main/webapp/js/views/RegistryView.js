@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html'], 				
-	function($, _, Backbone, Registry, BootStrap, RegistryFields, LdapAccountToolsTemplate) {
+define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, Registry, BootStrap, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -9,6 +9,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 		el: '#Content',
 		
 		template: _.template(RegistryFields),
+		
+		loadingTemplate: _.template(LoadingTemplate),
 		
 		ldapAccountToolsTemplate: _.template(LdapAccountToolsTemplate),
 				
@@ -47,8 +49,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			console.log('Calling the registry to display');
 			console.log('Calling the registry URL: ' + this.registryUrl);
 			
-			// show the progress bar
-			this.showProgressBar();
+			// show the loading icon
+			this.showLoading();
 			
 			// load all the registry content so all the js can run in what gets loaded
 			var viewRef = this;
@@ -129,8 +131,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			// use FormData for the file upload to work
 			var data = new FormData($('#entryForm')[0]);
 			
-			// show the progress bar
-			this.showProgressBar();
+			// show the loading icon
+			this.showLoading();
 			
 			var contentArea = this.$el;
 			$.ajax({
@@ -164,11 +166,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 		
 		submitForm: function(formId) {
 			
-			// get the form data before replacing everything with the progressbar!
+			// get the form data before replacing everything with the loading icon
 			var formData = $("#" + formId).serialize()
 			
-			// show the progress bar
-			this.showProgressBar();
+			// show the loading icon
+			this.showLoading();
 			
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
@@ -217,11 +219,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 					+ formObj.elements["organization"].value
 					+ ",dc=ecoinformatics,dc=org";
 			
-			// get the form data before replacing everything with the progressbar!
+			// get the form data before replacing everything with the loading icon!
 			var formData = $("#loginForm").serialize();
 			
-			// show the progress bar
-			this.showProgressBar();
+			// show the loading icon
+			this.showLoading();
 
 			// reference to this view for callback functions
 			var viewRef = this;
@@ -286,8 +288,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			// look up the url from the main application model
 			this.registryUrl = appModel.get('registryServiceUrl');
 			
-			// show the progress bar
-			this.showProgressBar();
+			// show the loading icon
+			this.showLoading();
 			
 			// reference to this view for callback functions
 			var viewRef = this;
@@ -379,9 +381,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			return stringToTrim.replace(/^\s*/, '').replace(/\s*$/, '');
 		},
 		
-		showProgressBar: function() {
+		showLoading: function() {
 			this.scrollToTop();
-			this.$el.html('<section id="Notification"><div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>');
+			this.$el.html(this.loadingTemplate());
 		},
 		
 		scrollToTop: function() {
