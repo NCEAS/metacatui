@@ -1172,7 +1172,8 @@ define(['jquery',
 					+ solrResult.get('id') 
 					+ '</a>'
 					+ '</h4>'
-					+ '<p>' + solrResult.get('abstract') + '</p>'
+					+ '<p>' + solrResult.get('abstract') + '</p>',
+				isOpen: false
 			});
 			
 			// A small info window with just the title for each marker
@@ -1208,20 +1209,25 @@ define(['jquery',
 			gmaps.event.addListener(marker, 'click', function() {
 				titleWindow.close();
 				infoWindow.open(this.map, marker);
+				infoWindow.isOpen = true;
 			});
 			
 			//Close the infowindow upon any click on the map
 			gmaps.event.addListener(this.map, 'click', function() {
 				titleWindow.close();
 				infoWindow.close();
+				infoWindow.isOpen = false;
 			});
 			
 			var viewRef = this;
 			
 			// Behavior for marker mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
-				//Open the brief title window
-				titleWindow.open(this.map, marker);
+				
+				if(!infoWindow.isOpen){
+					//Open the brief title window
+					titleWindow.open(this.map, marker);	
+				}
 				
 				//Change the marker icon
 				marker.setIcon(viewRef.markerImageAlt);
