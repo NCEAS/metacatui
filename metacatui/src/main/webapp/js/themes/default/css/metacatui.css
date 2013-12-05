@@ -48,6 +48,10 @@ Bold 700
     	text-shadow: none;
     }
     
+    .pointer{
+    	cursor: pointer;
+    }
+    
     .mapMode .collapse-me{
     	cursor: pointer;
     }

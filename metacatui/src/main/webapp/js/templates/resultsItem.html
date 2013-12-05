@@ -1,10 +1,17 @@
         <!-- <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div> -->
-<div class="result-row">
+<% 
+	if (typeof southBoundCoord != "undefined"){
+		print('<div class="result-row view-link pointer open-marker" data-id="'+id+'">');
+	}
+	else{
+		print('<div class="result-row view-link pointer">');
+	}
+%>
 		<div class="span1 info-icons">
 			<div class="span6 on-map">
 				<% 
 					if (typeof southBoundCoord != "undefined"){
-	               		print('<i class="icon-map-marker on-map open-marker" data-id=\"', id, '\"></i>');
+	               		print('<i class="icon-map-marker on-map"></i>');
 	               }
 	            %>
             </div>
@@ -64,6 +71,14 @@
 			}
 		%>
 </div>
-<div class="result-row row-fluid abstract">
-	<%=abstract%>
+<div
+<% if (typeof southBoundCoord != "undefined"){
+		print('class="result-row row-fluid abstract view-link pointer open-marker" data-id="' + id + '">');
+	}
+	else{
+		print('class="result-row row-fluid abstract view-link pointer">');
+	}
+	
+	print(abstract);
+%>
 </div>

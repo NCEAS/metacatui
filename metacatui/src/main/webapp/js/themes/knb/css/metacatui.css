@@ -102,6 +102,9 @@ Bold 700 Italic
           text-transform: uppercase;
     }
     
+    .pointer{
+    	cursor: pointer;
+    }
     
     .mapMode .collapse-me:hover{
     	cursor: pointer;

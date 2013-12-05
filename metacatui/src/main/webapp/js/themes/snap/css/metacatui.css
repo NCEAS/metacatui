@@ -129,6 +129,10 @@
     	color: #6c7578;
     }
     
+    .pointer{
+    	cursor: pointer;
+    }
+    
     .margin-bottom{
     	margin-bottom: 20px;
     }

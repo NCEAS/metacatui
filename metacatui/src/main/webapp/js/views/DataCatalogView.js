@@ -1251,7 +1251,16 @@ define(['jquery',
 		
 		openMarker: function(e){
 			var id = $(e.target).attr('data-id');
-
+			
+			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
+			if(typeof id == "undefined"){
+				$(e.target).parents().each(function(){
+					if(typeof $(this).attr('data-id') != "undefined"){
+						id = $(this).attr('data-id');
+					}
+				});
+			}
+			
 			gmaps.event.trigger(this.markers[id], 'mouseover');
 			
 			// If we are still at the minimum zoom level (not restricting search on map boundaries) then
@@ -1271,6 +1280,16 @@ define(['jquery',
 		
 		closeMarker: function(e){
 			var id = $(e.target).attr('data-id');
+			
+			//The mouseout event might be triggered by a nested element, so loop through the parents to find the id
+			if(typeof id == "undefined"){
+				$(e.target).parents().each(function(){
+					if(typeof $(this).attr('data-id') != "undefined"){
+						id = $(this).attr('data-id');
+					}
+				});
+			}
+			
 			gmaps.event.trigger(this.markers[id], 'mouseout');
 		},
 		
@@ -1422,8 +1441,8 @@ define(['jquery',
 		},
 		
 		routeToMetadata: function(e){
-			var doi = $(e.target).attr('data-doi');
-			uiRouter.renderMetadata(doi);
+			var id = $(e.target).attr('data-id');
+			uiRouter.renderMetadata(id);
 		},
 		
 		postRender: function() {
