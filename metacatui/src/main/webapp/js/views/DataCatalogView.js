@@ -1162,6 +1162,14 @@ define(['jquery',
 			//Get the centertroid location of this data item
 			var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
 			var latLngCEN = bounds.getCenter();
+			
+			//Keep track of our overall bounds
+			if(this.masterBounds){
+				this.masterBounds = bounds.union(this.masterBounds);
+			}
+			else{
+				this.masterBounds = bounds;
+			}
 	
 			//An infowindow or bubble for each marker
 			var infoWindow = new gmaps.InfoWindow({
@@ -1351,6 +1359,9 @@ define(['jquery',
 			// do this first to indicate coming results
 			this.updateStats();
 			
+			//reset the master bounds
+			this.masterBounds = null;
+			
 			//Load the first 25 results first so the list has visible results while the rest load in the background
 			var min = 25;
 			min = Math.min(min, appSearchResults.models.length);
@@ -1376,7 +1387,7 @@ define(['jquery',
 						// show them if the are hidden
 						//viewRef.showMarkers();
 						
-						// show the clutered markers
+						// show the clustered markers
 						var mcOptions = {
 							gridSize: 25,
 							styles: [
@@ -1395,6 +1406,13 @@ define(['jquery',
 						viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
 						
 						viewRef.markerClusters = viewRef.markerCluster.getMarkers();
+						
+						//Pan the map to the center of our results
+						if((!viewRef.map.hasZoomed) && (viewRef.masterBounds)){
+							var center = viewRef.masterBounds.getCenter();
+							var adjustedCenter = new gmaps.LatLng(center.lat(), center.lng()+50);
+							viewRef.map.panTo(adjustedCenter);
+						}
 						
 						$("#map-container").removeClass("loading");
 					}
