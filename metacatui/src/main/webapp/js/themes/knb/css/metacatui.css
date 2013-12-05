@@ -1153,7 +1153,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	position: fixed;
     	bottom: 30px;
 		left: 0px;
-		
+		min-width: 270px;
     	webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  	-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
