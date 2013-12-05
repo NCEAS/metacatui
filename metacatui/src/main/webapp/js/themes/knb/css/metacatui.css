@@ -1348,6 +1348,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		margin: 5px 5px 0px 0px;
 		display: inline-block;
 		text-shadow: none;
+		float:left;
 	}
 	
 	.current-filters > li > span{

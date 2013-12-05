@@ -566,6 +566,9 @@ define(['jquery',
 			
 			//Now clear that input
 			input.val('');
+			
+			//Close the autocomplete box
+			$('#' + category + '_input').autocomplete("close");
 				
 			//Get the current searchModel array
 			var filtersArray = _.clone(searchModel.get(category));
