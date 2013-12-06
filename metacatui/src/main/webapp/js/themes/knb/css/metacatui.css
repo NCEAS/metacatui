@@ -1753,18 +1753,22 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	color: #999999;
     }
     
-    .result-row.abstract{
-    	display: none;
-    	transition: all .5s ease-in 1s;
-    	padding: 2%;
+    .result-row .abstract{
+    	padding: 0px 2%;
     	width: 96%;
     	border: 0px;
     	font-size: 0.9em;
     	clear: both;
+    	max-height: 0px;
+    	opacity: 0;
+    	transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
+ 
     }
     
     .result-row:hover .abstract{
-    	display: block;
+   		max-height: 999px;
+   		opacity: 1;
+   		padding: 2%;
     }
     
     /*-- Results List Icons --*/
