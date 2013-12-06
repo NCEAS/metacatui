@@ -1235,9 +1235,13 @@ define(['jquery',
 			// Behavior for marker mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
 				
-				if(!infoWindow.isOpen){
+				if(!infoWindow.isOpen){					
+					//Reset the map and position of the marker for it to work on the clustered markers
+					marker.setMap(viewRef.map);
+					marker.setPosition(latLngCEN);
+					
 					//Open the brief title window
-					titleWindow.open(this.map, marker);	
+					titleWindow.open(viewRef.map, marker);	
 				}
 				
 				//Change the marker icon
