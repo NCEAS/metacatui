@@ -1474,6 +1474,15 @@ define(['jquery',
 		
 		routeToMetadata: function(e){
 			var id = $(e.target).attr('data-id');
+			
+			if(typeof id == "undefined"){
+				$(e.target).parents().each(function(){
+					if(typeof $(this).attr('data-id') != "undefined"){
+						id = $(this).attr('data-id');
+					}
+				});
+			}
+			
 			uiRouter.renderMetadata(id);
 		},
 		
