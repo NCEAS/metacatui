@@ -540,8 +540,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	background-color: #FFF;
 	height: auto;
 	max-width: 70%;
-	overflow-y:scroll;
-	overflow-x: hidden;
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;
 	box-shadow: none;
@@ -562,6 +560,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	max-height: 85%;	
 	position: fixed;
 	background-color: transparent;
+	overflow-y:scroll;
+	overflow-x: hidden;
 }
     
 /* FEATURES CSS 
@@ -1044,6 +1044,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     #Metadata {
 		min-height: 800px;
     }
+    
+    #Metadata > .container{
+		width: 100%;
+	}
     
     /* Download  and Publish buttons */
      #downloadPackage a.btn {
