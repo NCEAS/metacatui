@@ -1772,6 +1772,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     /*-- Results List Icons --*/
+    .info-icons{
+    	min-width: 28px;
+    }
+    
     .result-row i.has-data{
     	color: #999;
     	margin-left: 10px;

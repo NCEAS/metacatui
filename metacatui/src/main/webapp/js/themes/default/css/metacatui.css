@@ -1403,7 +1403,11 @@ Bold 700
   		left: -320%;
   	}
     
-    /*-- Result row icons --*/   
+    /*-- Result row icons --*/ 
+    .info-icons{
+    	min-width: 28px;
+    }
+      
     .result-row i.has-data{
     	color: #666;
     	margin-left: 10px;
