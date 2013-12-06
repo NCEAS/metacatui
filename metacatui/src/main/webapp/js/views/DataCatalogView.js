@@ -1235,17 +1235,22 @@ define(['jquery',
 			// Behavior for marker mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
 				
-				if(!infoWindow.isOpen){					
-					//Reset the map and position of the marker for it to work on the clustered markers
-					marker.setMap(viewRef.map);
-					marker.setPosition(latLngCEN);
+				if(!infoWindow.isOpen){	
+					
+					//If the map for this marker is null, then it is a clustered marker. Mark it as such.
+					if(marker.getMap() == null){
+						marker.isClustered = true;
+						
+						//Redefine the map of the marker for it to work on the clustered markers
+						marker.setMap(viewRef.map);
+					}
+					else{
+						marker.isClustered = false;
+					}
 					
 					//Open the brief title window
 					titleWindow.open(viewRef.map, marker);	
 				}
-				
-				//Change the marker icon
-				marker.setIcon(viewRef.markerImageAlt);
 				
 				//Show the data boundaries as a polygon
 				polygon.setMap(viewRef.map);
@@ -1256,8 +1261,10 @@ define(['jquery',
 			gmaps.event.addListener(marker, 'mouseout', function() {
 				titleWindow.close();
 				
-				//Change the marker icon
-				marker.setIcon(viewRef.markerImage);
+				//If clustered, hide the marker again by setting the map to null
+				if(marker.isClustered){
+					marker.setMap(null);	
+				}
 				
 				polygon.setVisible(false);
 			});
@@ -1285,7 +1292,7 @@ define(['jquery',
 				var position = this.markers[id].getPosition();
 				
 				//Adjust the longitude a bit to accomidate for the results list
-				var adjustedPosition = new gmaps.LatLng(position.lat(), position.lng()+50);
+				var adjustedPosition = new gmaps.LatLng(position.lat(), position.lng()+10);
 				
 				//Pan the map
 				this.map.panTo(adjustedPosition);
