@@ -1587,7 +1587,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	background-color: transparent;
 	height: auto;
 	max-height: 90%;
-	min-width: 300px;
+	max-width: 70%;
 	overflow-y:scroll;
 	margin-top: 40px;
 	transition: width 1s;

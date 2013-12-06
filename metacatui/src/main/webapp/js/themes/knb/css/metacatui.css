@@ -539,7 +539,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	bottom: 30px;
 	background-color: #FFF;
 	height: auto;
-	min-width: 300px;
+	max-width: 70%;
 	overflow-y:scroll;
 	overflow-x: hidden;
 	-webkit-box-shadow: none;

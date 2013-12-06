@@ -1364,7 +1364,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     .result-row {
-      display: inline-block;
+      display: block;
       padding: 5px 10px;
       background-color: #FFFFFF;
       border-top: 4px solid #4C6101;
