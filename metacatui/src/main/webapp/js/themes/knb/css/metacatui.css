@@ -1043,6 +1043,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   -------------------------------------------------- */
     #Metadata {
 		min-height: 800px;
+		width: 90%;
     }
     
     #Metadata > .container{
@@ -1771,14 +1772,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	clear: both;
     	max-height: 0px;
     	opacity: 0;
-    	transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
- 
     }
     
     .result-row:hover .abstract{
    		max-height: 999px;
    		opacity: 1;
    		padding: 2%;
+    	transition: opacity .5s ease-in .8s, max-height .5s ease-in .5s, padding .2s ease-in .5s;
     }
     
     /*-- Results List Icons --*/

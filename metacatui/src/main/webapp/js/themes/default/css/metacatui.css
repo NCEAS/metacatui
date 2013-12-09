@@ -1390,14 +1390,15 @@ Bold 700
     	clear: both;
     	max-height: 0px;
     	opacity: 0;
-    	transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
- 
+    	display: none;
     }
     
     .result-row:hover .abstract{
    		max-height: 999px;
+   		display:block;
    		opacity: 1;
    		padding: 2%;
+   		transition: opacity .5s ease-in .8s, max-height .5s ease-in .5s, padding .2s ease-in .5s;
     }
     .result-row .dropdown-menu{
   		left: -320%;

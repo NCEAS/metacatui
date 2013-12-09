@@ -35,6 +35,8 @@ define(['jquery',
 		map: null,
 		
 		ready: false,
+		
+		allowSearch: true,
 				
 		markers: {},
 		
@@ -247,23 +249,28 @@ define(['jquery',
 			
 				viewRef.ready = true;
 				
-				//If we haven't zoomed into the map yet, do not apply the spatial filters
-				if((!viewRef.map.hasZoomed)){ return; }
-				
-				//Get the Google map bounding box
-				var boundingBox = mapRef.getBounds();
-				
-				//Set the search model filters
-				searchModel.set('north', boundingBox.getNorthEast().lat());
-				searchModel.set('west', boundingBox.getSouthWest().lng());
-				searchModel.set('south', boundingBox.getSouthWest().lat());
-				searchModel.set('east', boundingBox.getNorthEast().lng());
-				
-				//Add a new visual 'current filter' to the DOM for the spatial search
-				viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
-				
-				//Trigger a new search
-				viewRef.triggerSearch();
+				if(viewRef.allowSearch){
+					//If we haven't zoomed into the map yet, do not apply the spatial filters
+					if((!viewRef.map.hasZoomed)){ return; }
+					
+					//Get the Google map bounding box
+					var boundingBox = mapRef.getBounds();
+					
+					//Set the search model filters
+					searchModel.set('north', boundingBox.getNorthEast().lat());
+					searchModel.set('west', boundingBox.getSouthWest().lng());
+					searchModel.set('south', boundingBox.getSouthWest().lat());
+					searchModel.set('east', boundingBox.getNorthEast().lng());
+					
+					//Add a new visual 'current filter' to the DOM for the spatial search
+					viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+					
+					//Trigger a new search
+					viewRef.triggerSearch();	
+				}
+				else{
+					viewRef.allowSearch = true;
+				}
 			});
 			
 			//Let the view know we have zoomed on the map
@@ -728,6 +735,8 @@ define(['jquery',
 		resetFilters : function(e){			
 			var viewRef = this;
 			
+			this.allowSearch = true;
+			
 			//Clear all the filters in the UI
 			this.$el.find('.current-filter').each(function(){
 				viewRef.hideFilter(this);
@@ -1184,12 +1193,14 @@ define(['jquery',
 					+ '</a>'
 					+ '</h4>'
 					+ '<p>' + solrResult.get('abstract') + '</p>',
-				isOpen: false
+				isOpen: false,
+				disableAutoPan: true
 			});
 			
 			// A small info window with just the title for each marker
 			var titleWindow = new gmaps.InfoWindow({
-				content: solrResult.get('title')
+				content: solrResult.get('title'),
+				disableAutoPan: true
 			});
 
 			//Set up the options for each marker
@@ -1285,18 +1296,17 @@ define(['jquery',
 			
 			gmaps.event.trigger(this.markers[id], 'mouseover');
 			
-			// If we are still at the minimum zoom level (not restricting search on map boundaries) then
-			// center the map on this marker. Refrain from panning the map when we have zoomed
-			// so that a new search isn't triggered.
-			if(!this.map.hasZoomed){
-				var position = this.markers[id].getPosition();
+			var position = this.markers[id].getPosition();
 				
-				//Adjust the longitude a bit to accomidate for the results list
-				var adjustedPosition = new gmaps.LatLng(position.lat(), position.lng()+10);
-				
-				//Pan the map
-				this.map.panTo(adjustedPosition);
-			}
+			//Adjust the longitude a bit to accomidate for the results list
+			var adjustedPosition = new gmaps.LatLng(position.lat(), position.lng()+10);
+			
+			//Do not trigger a new search when we pan
+			this.allowSearch = false;
+			
+			//Pan the map
+			this.map.panTo(adjustedPosition);
+			
 			
 		},
 		
