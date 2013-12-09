@@ -1719,6 +1719,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	margin: 0px;
     }
     
+    .pagination ul > li > a.unactive{
+    	font-size: 20px;
+    	color: #999999;
+    	cursor: default;
+    }
+    
     /*-- Results List Rows--*/
     .mapMode .search-results{
     	margin-top: 80px;

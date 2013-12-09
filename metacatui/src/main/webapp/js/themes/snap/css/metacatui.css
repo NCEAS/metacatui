@@ -1514,6 +1514,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		border: none;
 	}
 	
+	.pagination ul > li > a.unactive,
+	.pagination ul > li > a.unactive:hover{
+		color: #999999;
+		cursor: default;
+	}
+	
 /* MAIN CONTENT 
 --------------------------------- */
 #mainContent{

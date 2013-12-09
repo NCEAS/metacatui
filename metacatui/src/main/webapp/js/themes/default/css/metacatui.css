@@ -1473,6 +1473,14 @@ Bold 700
 		border: 1px solid #333333;	
 	}
 	
+	.pagination ul > li > a.unactive,
+	.pagination ul > li > a.unactive:hover{
+    	font-size: 20px;
+    	color: #999999;
+    	background-color: transparent;
+    	cursor: default;
+    }
+	
 	.pagination ul > li > a:hover{
 		background-color: #777777;
 	}

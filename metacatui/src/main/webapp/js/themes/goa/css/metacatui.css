@@ -1117,6 +1117,10 @@
     	float: left;
     }
     
+    .pagination  ul > li > a.unactive{
+    	cursor: default;
+    	color: #999999;
+    }
     
     
     /*-------------- DOCUMENTATION CSS -----------------------------*/
