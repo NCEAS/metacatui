@@ -1493,6 +1493,7 @@ define(['jquery',
 				});
 			}
 			
+			uiRouter.navigate('view/'+id);
 			uiRouter.renderMetadata(id);
 		},
 		
