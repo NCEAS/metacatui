@@ -561,7 +561,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	position: fixed;
 	background-color: transparent;
 	overflow-y:scroll;
-	overflow-x: hidden;
+	overflow-x: visible;
 }
     
 /* FEATURES CSS 
@@ -1262,6 +1262,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     /*-- Inputs for search filters --*/
     .clear{
     	clear: both;
+    	height: 0px;
+    	margin: 0px;
+    	padding:0px;
     }
     
     input.filter{
@@ -1735,6 +1738,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
     	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
     	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+    	overflow-y: scroll;
+    	overflow-x: visible;
     }
     
     .result-row {
@@ -1751,10 +1756,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
      .result-row:hover { 
     background-color: #eee;
   }
-
-    .result-author {
-      font-weight: bold;
-    }
+  
+  .result-title > a{
+  	color: #555555;
+  	font-weight: bold;
+  }
     
     .result-citation{
     	padding-left: 3%;
@@ -1764,41 +1770,61 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	color: #999999;
     }
     
+    .result-row > .expand{
+    	color: #999999;
+    }
+    
     .result-row .abstract{
     	padding: 0px 2%;
     	width: 96%;
+		float: none;
+		clear: both;
     	border: 0px;
     	font-size: 0.9em;
-    	clear: both;
-    	max-height: 0px;
-    	opacity: 0;
-    }
-    
-    .result-row:hover .abstract{
-   		max-height: 999px;
-   		opacity: 1;
-   		padding: 2%;
-    	transition: opacity .5s ease-in .8s, max-height .5s ease-in .5s, padding .2s ease-in .5s;
+		display:none;
     }
     
     /*-- Results List Icons --*/
     .info-icons{
     	min-width: 28px;
+    	max-height: 43px;
     }
     
-    .result-row i.has-data{
-    	color: #999;
+    .info-icons .show-abstract > i{
+    	color: #EEE;
+    	margin-left: 3px;
+    	font-size: 17px;
+    }
+    
+    .info-icons .show-abstract > i.show-abstract{
+    	color: #666666;
+    }
+    
+    .info-icons .has-data > i{
+    	color: #EEE;
     	margin-left: 10px;
     }
     
-    .result-row i.has-data:hover{
-    	color: #666;
+    .info-icons .has-data > i.has-data{
+    	color: #666666;
     }
     
-    .result-row .on-map{
-    	color: #DA4D3A;
-    	font-size: 1.1em;
+    .info-icons .on-map > i{
+    	font-size: 17px;
     	margin-left: 5px;
+    	color: #EEE;
+    }
+    
+    .info-icons .on-map > i.on-map{
+    	color: #DA4D3A;
+    }
+    
+    .popover{
+    	max-width: 250px;
+    }
+    
+    .mapMode .popover{
+    	min-width: 30%;
     }
     
     .on-map .tooltip-inner{

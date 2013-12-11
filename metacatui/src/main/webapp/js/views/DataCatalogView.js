@@ -79,6 +79,7 @@ define(['jquery',
 					'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
+				   		   'click .show-abstract' : 'showAbstract',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			   'click .view-link' : 'routeToMetadata',
 				   		 'mouseover .open-marker' : 'openMarker',
@@ -155,6 +156,7 @@ define(['jquery',
 			
 			//Initialize the tooltips
 			$('.tooltip-this').tooltip();
+			$('.popover-this').popover();
 			
 			//Initialize the resizeable content div
 			$('#content').resizable({handles: "n,s,e,w"});
@@ -1362,6 +1364,7 @@ define(['jquery',
 			
 			// Initialize any tooltips within the result item
 			$(".tooltip-this").tooltip();
+			$(".popover-this").popover();
 			
 			//Add this item to the list
 			this.$results.append(view.render().el);
@@ -1469,6 +1472,14 @@ define(['jquery',
 
 		},
 		
+		showAbstract: function(e){
+			var id = $(e.target).attr('data-id');
+			
+			$('.abstract[data-id="'+id+'"]').toggleClass('open');
+			
+			return false;
+		},
+		
 		toggleMapMode: function(){	
 			if(gmaps){
 				$('body').toggleClass('mapMode');	
@@ -1493,8 +1504,7 @@ define(['jquery',
 				});
 			}
 			
-			uiRouter.navigate('view/'+id);
-			uiRouter.renderMetadata(id);
+			uiRouter.navigate('view/'+id, true);
 		},
 		
 		postRender: function() {

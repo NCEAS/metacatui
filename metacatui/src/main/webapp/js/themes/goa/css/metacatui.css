@@ -1058,19 +1058,51 @@
       font-weight: bold;
     }
     
-    .result-row.abstract{
-    	display: none;
-    	transition: all .5s ease-in 1s;
-    	padding: 2%;
-    	width: 96%;
-    	border: 0px;
-    	font-size: 0.9em;
-    	clear: both;
+       .info-icons{
+    	min-width: 28px;
+    	max-height: 43px;
     }
     
-    .result-row:hover .abstract{
-    	display: block;
+    .info-icons .show-abstract > i{
+    	color: #EEE;
+    	margin-left: 3px;
+    	font-size: 17px;
     }
+    
+    .info-icons .show-abstract > i.show-abstract{
+    	color: #666666;
+    }
+    
+    .info-icons .has-data > i{
+    	color: #EEE;
+    	margin-left: 10px;
+    	margin-top: 3px;
+    	display: block;
+    	font-size: 15px;
+    }
+    
+    .info-icons .has-data > i.has-data{
+    	color: #666666;
+    }
+    
+    .info-icons .on-map > i{
+    	font-size: 17px;
+    	margin-left: 5px;
+    	color: #EEE;
+    }
+    
+    .info-icons .on-map > i.on-map{
+    	color: #DA4D3A;
+    }
+    
+    .popover{
+    	max-width: 250px;
+    }
+    
+    .mapMode .popover{
+    	min-width: 30%;
+    }
+  
     
     .result-row .icon-caret-down {
     	font-size: 15px;
