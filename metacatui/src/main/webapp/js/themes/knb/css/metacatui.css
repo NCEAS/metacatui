@@ -1827,12 +1827,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	min-width: 30%;
     }
     
-    .on-map .tooltip-inner{
-    	width: 70px;
-    }
-    
-    .has-data .tooltip-inner{
-    	width: 100px;
+    .has-data .popover{
+    	min-width: 150px;
+    	max-width: 150px;
     }
     
     .result-row .icon-download-alt,

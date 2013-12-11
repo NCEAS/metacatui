@@ -23,7 +23,7 @@
 	            <div class="span6 has-data">  
 	               <%
 		               	if (resourceMap) {
-			               		print('<i class="icon-folder-open has-data tooltip-this" data-trigger="hover" data-title="Includes data files" data-placement="right"></i>');
+			               		print('<i class="icon-folder-open has-data popover-this" data-trigger="hover" data-content="Includes data files" data-placement="right"></i>');
 			            }
 			            else{
 			            	print('<i class="icon-folder-open"></i>');
@@ -71,14 +71,14 @@
               	
 		<% if (resourceMap) {
 				// handle multiple resourceMaps		
-				print('<div class="span1 download">');
+				print('<div class="span1 stop-route">');
 	
-				print('<a class="dropdown-toggle download" data-toggle="dropdown" href="#" alt="Download"><i class="icon-download-alt"></i><i class="icon-caret-down"></i></a>');
-			        print('<ul class="dropdown-menu">');
+				print('<a class="dropdown-toggle download stop-route" data-toggle="dropdown" href="#" alt="Download"><i class="icon-download-alt stop-route"></i><i class="icon-caret-down"></i></a>');
+			        print('<ul class="dropdown-menu download">');
 			        var cnt = 1;
 			        _.each(resourceMap, function(resourceMapId) {
-						print('<li>');
-						print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" >', 'Package ', cnt, '</a>');
+						print('<li class="stop-route">');
+						print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" class="stop-route">', 'Package ', cnt, '</a>');
 						print('</li>'); 
 						 
 					})
@@ -86,8 +86,8 @@
 			        print('</div>');
 			    }
 		    else {
-		    	print('<div class="span1">');
-				print('<a href=\"', package_service, id, '\" class="download" alt="Download"><i class="icon-download-alt"></i></a>'); 
+		    	print('<div class="span1 stop-route">');
+				print('<a href=\"', package_service, id, '\" class="download" alt="Download"><i class="icon-download-alt stop-route"></i></a>'); 
 				print('</div>');
 			}
 		%>

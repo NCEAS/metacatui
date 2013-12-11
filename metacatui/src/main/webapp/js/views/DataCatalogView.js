@@ -79,7 +79,6 @@ define(['jquery',
 					'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
-				   		   'click .show-abstract' : 'showAbstract',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			   'click .view-link' : 'routeToMetadata',
 				   		 'mouseover .open-marker' : 'openMarker',
@@ -1472,14 +1471,6 @@ define(['jquery',
 
 		},
 		
-		showAbstract: function(e){
-			var id = $(e.target).attr('data-id');
-			
-			$('.abstract[data-id="'+id+'"]').toggleClass('open');
-			
-			return false;
-		},
-		
 		toggleMapMode: function(){	
 			if(gmaps){
 				$('body').toggleClass('mapMode');	
@@ -1495,6 +1486,12 @@ define(['jquery',
 		
 		routeToMetadata: function(e){
 			var id = $(e.target).attr('data-id');
+			console.log($(e.target));
+			
+			//If the user clicked on the download button, we don't want to navigate to the metadata
+			if ($(e.target).hasClass('stop-route')){
+				return;
+			}
 			
 			if(typeof id == "undefined"){
 				$(e.target).parents().each(function(){

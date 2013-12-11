@@ -75,6 +75,10 @@
      	text-decoration: underline;
      }
      
+     .pointer{
+     	cursor: pointer;
+     }
+     
      .clear{
      	clear:both;
      }
