@@ -22,6 +22,10 @@ define(['jquery', 'underscore', 'backbone'],
 			west: null,
 			north: null,
 			south: null,
+			map: {
+				zoom: null,
+				center: null
+			},
 			spatial: [],
 			attribute: [],
 			additionalCriteria: []

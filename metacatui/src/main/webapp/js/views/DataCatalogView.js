@@ -242,6 +242,12 @@ define(['jquery',
 			
 			gmaps.visualRefresh = true;
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
+			
+			//If the spatial filters are set, rezoom and recenter the map to those filters
+			if(searchModel.get('north')){
+				this.map.setZoom(searchModel.get('map').zoom);
+				this.map.setCenter(searchModel.get('map').center);
+			}
 
 			var mapRef = this.map;
 			var viewRef = this;
@@ -257,11 +263,17 @@ define(['jquery',
 					//Get the Google map bounding box
 					var boundingBox = mapRef.getBounds();
 					
-					//Set the search model filters
+					//Set the search model spatial filters
 					searchModel.set('north', boundingBox.getNorthEast().lat());
 					searchModel.set('west', boundingBox.getSouthWest().lng());
 					searchModel.set('south', boundingBox.getSouthWest().lat());
 					searchModel.set('east', boundingBox.getNorthEast().lng());
+					
+					//Set the search model map filters
+					searchModel.set('map', {
+						zoom: viewRef.map.getZoom(), 
+						center: viewRef.map.getCenter()
+						});
 					
 					//Add a new visual 'current filter' to the DOM for the spatial search
 					viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
@@ -295,6 +307,12 @@ define(['jquery',
 			for(var i = 0; i < categories.length; i++){
 				searchModel.set(categories[i], null);				
 			}
+			
+			//Reset the map settings
+			searchModel.set('map', {
+				zoom: null,
+				center: null
+			});
 			
 			//Refresh the map
 			if(appModel.get('searchMode') == 'map'){
