@@ -217,12 +217,20 @@ define(['jquery',
 			//Set a reserved phrase for the map filter
 			this.reservedMapPhrase = "Using map boundaries";
 			
-			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
+			//If the spatial filters are set, rezoom and recenter the map to those filters
+			if(searchModel.get('north')){
+				var mapZoom = searchModel.get('map').zoom;
+				var mapCenter = searchModel.get('map').center;
+			}
+			else{
+				var mapZoom = 3;
+				var mapCenter = new gmaps.LatLng(-15.0, 0.0);
+			}
 			
 			var mapOptions = {
-			    zoom: 3,
+			    zoom: mapZoom,
 				minZoom: 3,
-				maxZoom: 15,
+				//maxZoom: 15,
 			    center: mapCenter,
 				disableDefaultUI: true,
 			    zoomControl: true,
@@ -242,12 +250,6 @@ define(['jquery',
 			
 			gmaps.visualRefresh = true;
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
-			
-			//If the spatial filters are set, rezoom and recenter the map to those filters
-			if(searchModel.get('north')){
-				this.map.setZoom(searchModel.get('map').zoom);
-				this.map.setCenter(searchModel.get('map').center);
-			}
 
 			var mapRef = this.map;
 			var viewRef = this;
@@ -313,6 +315,8 @@ define(['jquery',
 				zoom: null,
 				center: null
 			});
+			
+			this.map.hasZoomed = false;
 			
 			//Refresh the map
 			if(appModel.get('searchMode') == 'map'){
