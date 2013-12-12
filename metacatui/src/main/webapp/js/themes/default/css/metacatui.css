@@ -1433,20 +1433,27 @@ Bold 700
     	color: #DA4D3A;
     }
     
-    .popover{
+        .popover{
     	max-width: 250px;
     }
     
-    .mapMode .popover{
+     body > .popover{
+    	max-height: 500px;
+    	min-height: 10px;
+    	overflow: hidden;
+    	word-break: break-all;
+    	text-overflow: ellipsis;
+    	min-width: 10%;
+    	max-width: 250px;
+    }
+    
+    .mapMode > .popover{
     	min-width: 30%;
     }
      
-    .on-map .tooltip-inner{
-    	width: 70px;
-    }
-    
-    .has-data .tooltip-inner{
-    	width: 100px;
+     .has-data .popover{
+    	min-width: 150px;
+    	max-width: 150px;
     }
     
     

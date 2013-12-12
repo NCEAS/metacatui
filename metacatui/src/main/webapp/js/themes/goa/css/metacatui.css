@@ -1080,9 +1080,10 @@
     .info-icons .has-data > i{
     	color: #EEE;
     	margin-left: 10px;
-    	margin-top: 3px;
+    	margin-top: 4px;
     	display: block;
-    	font-size: 15px;
+    	font-size: 14px;
+    	width: 15px;
     }
     
     .info-icons .has-data > i.has-data{
@@ -1099,14 +1100,29 @@
     	color: #DA4D3A;
     }
     
+        
     .popover{
     	max-width: 250px;
     }
     
-    .mapMode .popover{
+     body > .popover{
+    	max-height: 500px;
+    	min-height: 10px;
+    	overflow: hidden;
+    	word-break: break-all;
+    	text-overflow: ellipsis;
+    	min-width: 10%;
+    	max-width: 250px;
+    }
+    
+    .mapMode > .popover{
     	min-width: 30%;
     }
-  
+    
+    .has-data .popover{
+    	min-width: 150px;
+    	max-width: 150px;
+    }
     
     .result-row .icon-caret-down {
     	font-size: 15px;
@@ -1117,12 +1133,6 @@
     	font-size: 18px;
     	color: #333333;
     	height: 14px;
-    }
-    
-    .result-row .has-data{
-    	color: #999999;
-    	font-size: 18px;
-    	position: relative;
     }
     
     .result-row .download{
