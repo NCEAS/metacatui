@@ -155,6 +155,7 @@ define(['jquery',
 			
 			//Initialize the tooltips
 			$('.tooltip-this').tooltip();
+			$('.popover-this').popover();
 			
 			//Initialize the resizeable content div
 			$('#content').resizable({handles: "n,s,e,w"});
@@ -1362,6 +1363,7 @@ define(['jquery',
 			
 			// Initialize any tooltips within the result item
 			$(".tooltip-this").tooltip();
+			$(".popover-this").popover();
 			
 			//Add this item to the list
 			this.$results.append(view.render().el);
@@ -1484,6 +1486,12 @@ define(['jquery',
 		
 		routeToMetadata: function(e){
 			var id = $(e.target).attr('data-id');
+			console.log($(e.target));
+			
+			//If the user clicked on the download button, we don't want to navigate to the metadata
+			if ($(e.target).hasClass('stop-route')){
+				return;
+			}
 			
 			if(typeof id == "undefined"){
 				$(e.target).parents().each(function(){
@@ -1493,7 +1501,7 @@ define(['jquery',
 				});
 			}
 			
-			uiRouter.renderMetadata(id);
+			uiRouter.navigate('view/'+id, true);
 		},
 		
 		postRender: function() {

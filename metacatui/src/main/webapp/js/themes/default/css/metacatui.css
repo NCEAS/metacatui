@@ -1388,17 +1388,11 @@ Bold 700
     	border: 0px;
     	font-size: 0.9em;
     	clear: both;
-    	max-height: 0px;
-    	opacity: 0;
     	display: none;
     }
     
     .result-row:hover .abstract{
-   		max-height: 999px;
    		display:block;
-   		opacity: 1;
-   		padding: 2%;
-   		transition: opacity .5s ease-in .8s, max-height .5s ease-in .5s, padding .2s ease-in .5s;
     }
     .result-row .dropdown-menu{
   		left: -320%;
@@ -1407,19 +1401,46 @@ Bold 700
     /*-- Result row icons --*/ 
     .info-icons{
     	min-width: 28px;
+    	max-height: 43px;
     }
-      
-    .result-row i.has-data{
-    	color: #666;
+    
+    .info-icons .show-abstract > i{
+    	color: #EEE;
+    	margin-left: 3px;
+    	font-size: 17px;
+    }
+    
+    .info-icons .show-abstract > i.show-abstract{
+    	color: #666666;
+    }
+    
+    .info-icons .has-data > i{
+    	color: #EEE;
     	margin-left: 10px;
     }
     
-    .result-row i.on-map{
-    	color: #DA4D3A;
-    	font-size: 1.1em;
-    	margin-left: 5px;
+    .info-icons .has-data > i.has-data{
+    	color: #666666;
     }
     
+    .info-icons .on-map > i{
+    	font-size: 17px;
+    	margin-left: 5px;
+    	color: #EEE;
+    }
+    
+    .info-icons .on-map > i.on-map{
+    	color: #DA4D3A;
+    }
+    
+    .popover{
+    	max-width: 250px;
+    }
+    
+    .mapMode .popover{
+    	min-width: 30%;
+    }
+     
     .on-map .tooltip-inner{
     	width: 70px;
     }
