@@ -1306,6 +1306,9 @@ define(['jquery',
 		},
 		
 		openMarker: function(e){
+			//Clear the panning timeout
+			window.clearTimeout(this.centerTimeout);
+			
 			var id = $(e.target).attr('data-id');
 			
 			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
@@ -1328,9 +1331,7 @@ define(['jquery',
 			this.allowSearch = false;
 			
 			//Pan the map
-			this.map.panTo(adjustedPosition);
-			
-			
+			this.map.panTo(adjustedPosition);		
 		},
 		
 		closeMarker: function(e){
@@ -1345,7 +1346,21 @@ define(['jquery',
 				});
 			}
 			
+			//Trigger the mouseout event
 			gmaps.event.trigger(this.markers[id], 'mouseout');
+			
+			//Pan back to the map center so the map will reflect the current spatial filter bounding box
+			var mapCenter = searchModel.get('map').center;			
+			if(mapCenter){
+				var viewRef = this;
+				// Set a delay on the panning in case we hover over another openMarker item right away.
+				// Without this delay the map will recenter quickly, then move to the next marker, etc. and it is very jarring
+				var recenter = function(){ viewRef.map.panTo(mapCenter); }
+
+				this.centerTimeout = window.setTimeout(recenter, 500);
+
+			}
+			
 		},
 		
 		showMarkers: function() {
