@@ -1299,6 +1299,7 @@ define(['jquery',
 					marker.setMap(null);	
 				}
 				
+				//Hide the data coverage boundaries polygon
 				polygon.setVisible(false);
 			});
 			
@@ -1322,15 +1323,12 @@ define(['jquery',
 			gmaps.event.trigger(this.markers[id], 'mouseover');
 			
 			var position = this.markers[id].getPosition();
-				
-			//Adjust the longitude a bit to accomidate for the results list
-			var adjustedPosition = new gmaps.LatLng(position.lat(), position.lng()+10);
 			
 			//Do not trigger a new search when we pan
 			this.allowSearch = false;
 			
 			//Pan the map
-			this.map.panTo(adjustedPosition);		
+			this.map.panTo(position);	
 		},
 		
 		closeMarker: function(e){
@@ -1350,14 +1348,18 @@ define(['jquery',
 			
 			//Pan back to the map center so the map will reflect the current spatial filter bounding box
 			var mapCenter = searchModel.get('map').center;			
-			if(mapCenter){
+			if(mapCenter !== null){
 				var viewRef = this;
 				// Set a delay on the panning in case we hover over another openMarker item right away.
 				// Without this delay the map will recenter quickly, then move to the next marker, etc. and it is very jarring
-				var recenter = function(){ viewRef.map.panTo(mapCenter); }
+				var recenter = function(){
+					//Do not trigger a new search when we pan
+					viewRef.allowSearch = false;
+					
+					viewRef.map.panTo(mapCenter);
+				}
 
 				this.centerTimeout = window.setTimeout(recenter, 500);
-
 			}
 			
 		},
