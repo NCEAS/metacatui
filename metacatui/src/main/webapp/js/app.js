@@ -37,7 +37,7 @@ require.config({
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
     gmapsAPI: gmapsURL,
-	markerClusterer: '../components/markerclusterer_compiled'
+	markerClusterer: '../components/markerclustererplus_2.1.2'
 
   },
   shim: { /* used for libraries without native AMD support */

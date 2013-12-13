@@ -217,12 +217,19 @@ define(['jquery',
 			//Set a reserved phrase for the map filter
 			this.reservedMapPhrase = "Using map boundaries";
 			
-			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
+			//If the spatial filters are set, rezoom and recenter the map to those filters
+			if(searchModel.get('north')){
+				var mapZoom = searchModel.get('map').zoom;
+				var mapCenter = searchModel.get('map').center;
+			}
+			else{
+				var mapZoom = 3;
+				var mapCenter = new gmaps.LatLng(-15.0, 0.0);
+			}
 			
 			var mapOptions = {
-			    zoom: 3,
+			    zoom: mapZoom,
 				minZoom: 3,
-				maxZoom: 15,
 			    center: mapCenter,
 				disableDefaultUI: true,
 			    zoomControl: true,
@@ -257,11 +264,17 @@ define(['jquery',
 					//Get the Google map bounding box
 					var boundingBox = mapRef.getBounds();
 					
-					//Set the search model filters
+					//Set the search model spatial filters
 					searchModel.set('north', boundingBox.getNorthEast().lat());
 					searchModel.set('west', boundingBox.getSouthWest().lng());
 					searchModel.set('south', boundingBox.getSouthWest().lat());
 					searchModel.set('east', boundingBox.getNorthEast().lng());
+					
+					//Set the search model map filters
+					searchModel.set('map', {
+						zoom: viewRef.map.getZoom(), 
+						center: viewRef.map.getCenter()
+						});
 					
 					//Add a new visual 'current filter' to the DOM for the spatial search
 					viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
@@ -295,6 +308,14 @@ define(['jquery',
 			for(var i = 0; i < categories.length; i++){
 				searchModel.set(categories[i], null);				
 			}
+			
+			//Reset the map settings
+			searchModel.set('map', {
+				zoom: null,
+				center: null
+			});
+			
+			this.map.hasZoomed = false;
 			
 			//Refresh the map
 			if(appModel.get('searchMode') == 'map'){
@@ -1284,6 +1305,9 @@ define(['jquery',
 		},
 		
 		openMarker: function(e){
+			//Clear the panning timeout
+			window.clearTimeout(this.centerTimeout);
+			
 			var id = $(e.target).attr('data-id');
 			
 			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
@@ -1306,9 +1330,7 @@ define(['jquery',
 			this.allowSearch = false;
 			
 			//Pan the map
-			this.map.panTo(adjustedPosition);
-			
-			
+			this.map.panTo(adjustedPosition);			
 		},
 		
 		closeMarker: function(e){
@@ -1323,7 +1345,21 @@ define(['jquery',
 				});
 			}
 			
+			//Trigger the mouseout event
 			gmaps.event.trigger(this.markers[id], 'mouseout');
+			
+			//Pan back to the map center so the map will reflect the current spatial filter bounding box
+			var mapCenter = searchModel.get('map').center;			
+			if(mapCenter){
+				var viewRef = this;
+				// Set a delay on the panning in case we hover over another openMarker item right away.
+				// Without this delay the map will recenter quickly, then move to the next marker, etc. and it is very jarring
+				var recenter = function(){ viewRef.map.panTo(mapCenter); }
+
+				this.centerTimeout = window.setTimeout(recenter, 500);
+
+			}
+			
 		},
 		
 		showMarkers: function() {
@@ -1416,6 +1452,7 @@ define(['jquery',
 						// show the clustered markers
 						var mcOptions = {
 							gridSize: 25,
+							maxZoom: 15,
 							styles: [
 							{height: 20, width: 20, url: viewRef.markerImage20, textColor: '#FFFFFF'},
 							{height: 30, width: 30, url: viewRef.markerImage30, textColor: '#FFFFFF'},
