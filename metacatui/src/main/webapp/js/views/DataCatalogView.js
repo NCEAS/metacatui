@@ -230,7 +230,6 @@ define(['jquery',
 			var mapOptions = {
 			    zoom: mapZoom,
 				minZoom: 3,
-				//maxZoom: 15,
 			    center: mapCenter,
 				disableDefaultUI: true,
 			    zoomControl: true,
