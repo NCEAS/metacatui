@@ -169,8 +169,7 @@ ClusterIcon.prototype.onAdd = function () {
           // https://code.google.com/p/google-maps-utility-library-v3/issues/detail?can=2&start=0&num=100&q=&colspec=ID%20Type%20Status%20Priority%20Fixed%20Owner%20Summary%20Stars&groupby=&sort=&id=210
           // getting the type the map is and what the zoom is set to
 			var mapType = mc.getMap().getMapTypeId();
-			var mapZoomLvl = mc.getMap().getZoom();
-			console.log(mapZoomLvl, mapType);
+			var mapZoomLvl = mc.getMap().getZoom();	
 
 			//if the zoom is set to the highest zoom we could have a cluster that is unbreakable.
 			// To make sure the cluster does not disappear repaint() is used. The repaint()

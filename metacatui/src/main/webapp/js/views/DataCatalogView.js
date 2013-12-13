@@ -1452,6 +1452,7 @@ define(['jquery',
 						// show the clustered markers
 						var mcOptions = {
 							gridSize: 25,
+							maxZoom: 15,
 							styles: [
 							{height: 20, width: 20, url: viewRef.markerImage20, textColor: '#FFFFFF'},
 							{height: 30, width: 30, url: viewRef.markerImage30, textColor: '#FFFFFF'},
