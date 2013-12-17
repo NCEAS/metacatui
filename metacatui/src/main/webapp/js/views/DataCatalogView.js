@@ -258,26 +258,31 @@ define(['jquery',
 				viewRef.ready = true;
 				
 				if(viewRef.allowSearch){
-					//If we haven't zoomed into the map yet, do not apply the spatial filters
-					if((!viewRef.map.hasZoomed)){ return; }
 					
-					//Get the Google map bounding box
-					var boundingBox = mapRef.getBounds();
-					
-					//Set the search model spatial filters
-					searchModel.set('north', boundingBox.getNorthEast().lat());
-					searchModel.set('west', boundingBox.getSouthWest().lng());
-					searchModel.set('south', boundingBox.getSouthWest().lat());
-					searchModel.set('east', boundingBox.getNorthEast().lng());
-					
-					//Set the search model map filters
-					searchModel.set('map', {
-						zoom: viewRef.map.getZoom(), 
-						center: viewRef.map.getCenter()
-						});
-					
-					//Add a new visual 'current filter' to the DOM for the spatial search
-					viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
+					if(viewRef.map.getZoom() == mapOptions.minZoom){
+						console.log('at minimum zoom');
+						viewRef.resetMap();						
+					}
+					else{
+						//Get the Google map bounding box
+						var boundingBox = mapRef.getBounds();
+						
+						//Set the search model spatial filters
+						searchModel.set('north', boundingBox.getNorthEast().lat());
+						searchModel.set('west', boundingBox.getSouthWest().lng());
+						searchModel.set('south', boundingBox.getSouthWest().lat());
+						searchModel.set('east', boundingBox.getNorthEast().lng());
+						
+						//Set the search model map filters
+						searchModel.set('map', {
+							zoom: viewRef.map.getZoom(), 
+							center: viewRef.map.getCenter()
+							});
+						
+						//Add a new visual 'current filter' to the DOM for the spatial search
+						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+					}
 					
 					//Trigger a new search
 					viewRef.triggerSearch();	
@@ -290,11 +295,12 @@ define(['jquery',
 			//Let the view know we have zoomed on the map
 			google.maps.event.addListener(mapRef, "zoom_changed", function(){
 				console.log('has zoomed');
-				viewRef.map.hasZoomed = true;
+				viewRef.allowSearch = true;
 			});
 
 		},
 		
+		//Resets the model and view settings related to the map
 		resetMap : function(){
 			if(!gmaps){
 				return;
@@ -315,12 +321,11 @@ define(['jquery',
 				center: null
 			});
 			
-			this.map.hasZoomed = false;
+			this.allowSearch = false;
 			
-			//Refresh the map
-			if(appModel.get('searchMode') == 'map'){
-				this.renderMap();
-			}
+			
+			//Remove the map filter in the UI
+			this.hideFilter($('#current-spatial-filters').find('[data-term="'+ this.reservedMapPhrase +'"]'));
 		},
 		
 		/* 
@@ -715,12 +720,12 @@ define(['jquery',
 			//Check if this is the reserved phrase for the map filter
 			if((category == "spatial") && (term == this.reservedMapPhrase)){
 				this.resetMap();
+				this.renderMap();
 			}
 			else{
 				//Remove this filter term from the searchModel
 				this.removeFromModel(category, term);				
 			}
-
 			
 			//Hide the filter from the UI
 			this.hideFilter(filterNode);
@@ -734,7 +739,7 @@ define(['jquery',
 		},
 		
 		//Clear all the currently applied filters
-		resetFilters : function(e){			
+		resetFilters : function(){			
 			var viewRef = this;
 			
 			this.allowSearch = true;
@@ -1528,7 +1533,7 @@ define(['jquery',
 						viewRef.markerClusters = viewRef.markerCluster.getMarkers();
 						
 						//Pan the map to the center of our results
-						if((!viewRef.map.hasZoomed) && (viewRef.masterBounds)){
+						if((!viewRef.allowSearch) && (viewRef.masterBounds)){
 							var center = viewRef.masterBounds.getCenter();
 							var adjustedCenter = new gmaps.LatLng(center.lat(), center.lng()+50);
 							viewRef.map.panTo(adjustedCenter);
