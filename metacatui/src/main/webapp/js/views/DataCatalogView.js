@@ -1327,19 +1327,7 @@ define(['jquery',
 			// Behavior for marker mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
 				
-				if(!infoWindow.isOpen){	
-					
-					//If the map for this marker is null, then it is a clustered marker. Mark it as such.
-					if(marker.getMap() == null){
-						marker.isClustered = true;
-						
-						//Redefine the map of the marker for it to work on the clustered markers
-						marker.setMap(viewRef.map);
-					}
-					else{
-						marker.isClustered = false;
-					}
-					
+				if(!infoWindow.isOpen){						
 					//Open the brief title window
 					titleWindow.open(viewRef.map, marker);	
 				}
@@ -1352,11 +1340,6 @@ define(['jquery',
 			// Behavior for marker mouseout
 			gmaps.event.addListener(marker, 'mouseout', function() {
 				titleWindow.close();
-				
-				//If clustered, hide the marker again by setting the map to null
-				if(marker.isClustered){
-					marker.setMap(null);	
-				}
 				
 				//Hide the data coverage boundaries polygon
 				polygon.setVisible(false);
