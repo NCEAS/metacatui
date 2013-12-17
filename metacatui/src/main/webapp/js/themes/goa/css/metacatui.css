@@ -1042,6 +1042,11 @@
     	margin-top: 10px;
     }
     
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
+    }
+    
     .result-row {
       display: block;
         border-bottom: thin solid;

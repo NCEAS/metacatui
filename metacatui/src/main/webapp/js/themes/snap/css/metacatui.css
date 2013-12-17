@@ -1363,6 +1363,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       font-weight: bold;
     }
     
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
+    }
+    
     .result-row {
       display: block;
       padding: 5px 10px;

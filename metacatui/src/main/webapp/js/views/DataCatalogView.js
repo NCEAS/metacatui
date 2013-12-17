@@ -940,26 +940,36 @@ define(['jquery',
 		updatePager : function() {
 			if (appSearchResults.header != null) {
 				var pageCount = Math.ceil(appSearchResults.header.get("numFound") / appSearchResults.header.get("rows"));
-				var pages = new Array(pageCount);
-				// mark current page correctly, avoid NaN
-				var currentPage = -1;
-				try {
-					currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
-				} catch (ex) {
-					console.log("Exception when calculating pages:" + ex.message);
+				
+				//If no results were found, do not populate the pagination.
+				if(pageCount == 0){
+					this.$results.html('<p>No results found.</p>');
 				}
-				this.$resultspager = this.$('#resultspager');
-				this.$resultspager.html(
-					this.pagerTemplate({
-						pages: pages,
-						currentPage: currentPage
-					})
-				);
+				else{
+					var pages = new Array(pageCount);
+					
+					// mark current page correctly, avoid NaN
+					var currentPage = -1;
+					try {
+						currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
+					} catch (ex) {
+						console.log("Exception when calculating pages:" + ex.message);
+					}
+					
+					this.$resultspager = this.$('#resultspager');
+					
+					//Populate the pagination element in the UI
+					this.$resultspager.html(
+						this.pagerTemplate({
+							pages: pages,
+							currentPage: currentPage
+						})
+					);
+				}
 			}
 		},
 		
 		updatePageNumber: function(page) {
-			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
 			var route = Backbone.history.fragment;
 			if (route.indexOf("/page/") >= 0) {
 				//replace the last number with the new one
@@ -1048,8 +1058,8 @@ define(['jquery',
 						return false;
 					},
 					position: {
-						my: "center top",
-						at: "center bottom"				
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -1092,8 +1102,8 @@ define(['jquery',
 						return false;
 					},
 					position: {
-						my: "center top",
-						at: "center bottom"				
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -1127,8 +1137,8 @@ define(['jquery',
 						return false;
 					},
 					position: {
-						my: "center top",
-						at: "center bottom"				
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -1171,8 +1181,8 @@ define(['jquery',
 			            response(startsWith.concat(contains));
 			        },
 					position: {
-						my: "center top",
-						at: "center bottom",
+						my: "left top",
+						at: "left bottom",
 						collision: "none"
 					},
 					select: function(event, ui) {
@@ -1215,8 +1225,8 @@ define(['jquery',
 						return false;
 					},
 					position: {
-						my: "center top",
-						at: "center bottom",
+						my: "left top",
+						at: "left bottom",
 						collision: "flip"
 					}
 				});
@@ -1463,6 +1473,7 @@ define(['jquery',
 		 * Without this delay, the app waits until all records are processed
 		*/
 		addAll: function () {
+			console.log("Adding all the results to the list and map");
 			
 			// do this first to indicate coming results
 			this.updateStats();
@@ -1535,7 +1546,7 @@ define(['jquery',
 		
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
-			console.log('remove all');
+			console.log('Removing all the results from the list');
 			$("#map-container").addClass("loading");
 			this.$results.html('');
 		},

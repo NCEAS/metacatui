@@ -1,6 +1,17 @@
 
 
-<div class="result-header-count span12 collapse-me bold-header" id="countstats"><span><%- start %></span> to <span><%- end %></span> of <span><%- numFound %></span></div>
+<div class="result-header-count span12 collapse-me bold-header" id="countstats">
+
+<% if(numFound > 0){
+		print('<span>' + start + '</span>');
+		print(' to <span>' + end + '</span>');
+		print(' of <span>' + numFound + '</span>');
+	}
+	else if(numFound == 0){
+		print('<span>0</span>');
+	}
+%>
+</div>
 					
 <!-- pager -->
 <div id="resultspager" class="row-fluid pagination pagination-centered">
