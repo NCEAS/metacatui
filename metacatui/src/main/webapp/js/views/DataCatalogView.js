@@ -1016,8 +1016,7 @@ define(['jquery',
 				var facetCounts = appSearchResults.facetCounts;
 				
 				
-				//***Set up the autocomplete (jQueryUI) feature for each input****//
-				
+				//***Set up the autocomplete (jQueryUI) feature for each text input****//				
 				//For the 'all' filter, use keywords
 				var allSuggestions = appSearchResults.facetCounts.keywords;
 				var rankedSuggestions = new Array();
@@ -1026,7 +1025,20 @@ define(['jquery',
 				}
 				var viewRef = this;
 				$('#all_input').autocomplete({
-					source: rankedSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#all_input').val(ui.item.value);
@@ -1034,6 +1046,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "center top",
+						at: "center bottom"				
 					}
 				});
 				
@@ -1053,7 +1069,20 @@ define(['jquery',
 					rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
 				}
 				$('#attribute_input').autocomplete({
-					source: rankedAttributeSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedAttributeSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#attribute_input').val(ui.item.value);
@@ -1061,6 +1090,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "center top",
+						at: "center bottom"				
 					}
 				});
 				
@@ -1071,7 +1104,20 @@ define(['jquery',
 					rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
 				}
 				$('#creator_input').autocomplete({
-					source: rankedOriginSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedOriginSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#creator_input').val(ui.item.value);
@@ -1079,6 +1125,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "center top",
+						at: "center bottom"				
 					}
 				});
 				
@@ -1106,9 +1156,24 @@ define(['jquery',
 					rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
 				}
 				$('#taxon_input').autocomplete({
-					source: rankedTaxonSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedTaxonSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					position: {
-						collision: "flip"						
+						my: "center top",
+						at: "center bottom",
+						collision: "none"
 					},
 					select: function(event, ui) {
 						// set the text field
@@ -1127,10 +1192,20 @@ define(['jquery',
 					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
 				}
 				$('#spatial_input').autocomplete({
-					source: rankedSpatialSuggestions,
-					position: {
-						collision: "flip"						
-					},
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedSpatialSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#spatial_input').val(ui.item.value);
@@ -1138,6 +1213,11 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "center top",
+						at: "center bottom",
+						collision: "flip"
 					}
 				});
 				

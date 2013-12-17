@@ -1182,7 +1182,7 @@ Bold 700
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     }
     
     li.ui-menu-item{

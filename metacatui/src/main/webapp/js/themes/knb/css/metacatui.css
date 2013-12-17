@@ -1580,7 +1580,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     	z-index: 100;
     }
     
@@ -1605,6 +1605,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	text-decoration: none;
     	font-weight: bold;
 	}
+
 
 /* RESULT CSS
 -------------------------------------------------- */
