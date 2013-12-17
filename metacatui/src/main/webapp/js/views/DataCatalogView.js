@@ -767,6 +767,7 @@ define(['jquery',
 			
 			//Zoom out the Google Map
 			this.resetMap();	
+			this.renderMap();
 		
 			//Hide the reset button again
 			$('#clear-all').css('display', 'none');
