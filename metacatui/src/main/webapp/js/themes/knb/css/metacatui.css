@@ -39,11 +39,15 @@ Bold 700 Italic
     body {
       color: #555555;
       background-color: #FDFDFD;
-      font-family: "Lato", "Helvetica Nueue", "Helvetica", "sans serif";
+      font-family: "Helvetica Nueue", "Helvetica", "Open Sans", "Arial", "sans serif";
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 23px;
     }
 
     body p {
-      font-weight: 300;
+      font-weight: 400;
+      font-size: 14px;
       line-height: 1.5;
     }
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
@@ -64,10 +68,6 @@ Bold 700 Italic
 		
     body > section > article {
       min-height: 800px;
-      /*margin: 135px auto auto auto;*/
-      font-weight: 300;
-      font-size: 110%;
-      line-height: 1.5;
       margin: 175px auto auto auto;
       padding-bottom: 40px;  			
     }
@@ -97,13 +97,18 @@ Bold 700 Italic
     }
     
     .bold-header{
-          font: 400 18px/30px "Lato" Arial sans-serif;
+          font-size: 18px;
+          line-height: 30px;
           color: #555555;
           text-transform: uppercase;
     }
     
     .pointer{
     	cursor: pointer;
+    }
+    
+    .subtle{
+    	color: #888888;
     }
     
     .mapMode .collapse-me:hover{
@@ -239,11 +244,12 @@ Bold 700 Italic
     }
         
     footer#Footer div#FooterHeading {
-      max-width: 650px;
+      max-width: 490px;
     }
 
     footer#Footer h2 {
-      font: 300 18px/16px "Lato";
+      font-size: 14px;
+      line-height: 16px;
       vertical-align: middle;
       padding: 0;
       margin-bottom: 3px;
@@ -293,7 +299,8 @@ Bold 700 Italic
     }
     
     footer#Footer ul.helpitems li {
-      font: 100 14px/25px "Lato";
+      font-size: 13px;
+      line-height: 23px;
       vertical-align: baseline;                 
     }
     
@@ -308,19 +315,18 @@ Bold 700 Italic
     
     footer#Footer a:hover {
       color: #FFFFFF;
-      font-weight: 300;
       text-decoration: none; 
       transition: color .5s;     
     }
     
     footer#Footer .disclaimer {
-      color: #FDFDFD;
-      font: 100 12px/14px "Lato";      
+      color: #CCC;
+      font-size: 12px;      
     }
     
     footer#Footer .logo {
       color: #D9D9D9;
-      font: 300 48px "Lato";
+      font-size: 39px;
       line-height: 1.0;
       letter-spacing: -3px;
       margin: 0px 0px 15px 0px;
@@ -342,10 +348,10 @@ Bold 700 Italic
     	margin-top: 17px;
     }
     
-    footer#Footer .logos .dataone{
-    	display: block;
-    	margin-top: 25px;
-    	margin-left: 43px;
+    footer#Footer .dataone img{
+    	height: 27px;
+    	width: auto;
+    	margin-top: 24px;
     }
     
     footer#Footer .logos .nceas{
@@ -354,16 +360,20 @@ Bold 700 Italic
     }
     
     footer#Footer .logos .nceas img{
-    	width: 90px;
+    	width: 70px;
+    	height: auto;
+    	margin-top: 5px;
     }
     
     footer#Footer .acknowledgements {
-      margin-top: 40px;
+      margin-top: 12px;
     }
 
     #footer_signup {
       position: relative;
       width: auto;
+      font-size: inherit;
+      padding: 5px;
     }
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
@@ -820,7 +830,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .navbar .nav > li > a {
       color: #555555;
       font-size: 18px;
-      font-family: "Lato";
       font-weight: 400;
       text-transform: uppercase;
     }
@@ -1001,7 +1010,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	}
 
     h2.nav-header {
-      font: 400 18px/18px "Lato";
       margin: 20px 10px 10px 15px;
       padding: 3px 0px 3px 0px;
       color: #555555;      
@@ -1189,10 +1197,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 		background-image: none;
 	}
-	
-	#share-data-view > i{
-		margin-left: 5px;
-	}
+
 
 	#share-data-view:hover{
 		left: -2px;
@@ -1274,7 +1279,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	border: 1px solid #AAAAAA;
     	border-right: 0px;
     	height: 20px;
-    	font-family: "Lato", Arial, sans-serif;
     	width: 84%;
     }
     
@@ -1321,9 +1325,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		max-width: 100%;
 		margin: 0px 4% 0px 0px;
 		display: inline-block;
-		font: 400 14px/20px "Lato", "Arial", sans-serif;
 		text-transform: none;
 		text-shadow: none;
+		font-size: 14px;
+		line-height: 20px;
 	}
 	
 	#clear-all i{
@@ -1334,9 +1339,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	.current-filters[class*="span"]{
 		list-style: none;
 		color: #FFFFFF;
-		font: 400 14px/14px "Lato", Arial, sans-serif;
 		margin: 0px;
 		min-height: 0px;
+		font-size: 14px;
 		width: auto;
 	}
 	
@@ -1398,7 +1403,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
    		min-height: 18px;
    		padding: 0px 5px 0px 5px;
    		width: auto;
-   		font-family: "Lato", Arial, sans-serif;
    		clear: both;
     }
    
@@ -1413,7 +1417,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
    		top: -5px;
    		position: relative;
    		margin-bottom: 0px;
-   		font-family: "Lato", Arial, sans-serif;
+   
     }
     
     #filter-year > input[type="number"]:focus{
@@ -1452,7 +1456,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	z-index: 1;
     	display: block;
     	border: 0;
-    	background: #115E95;
+    	background-color: #166194;
    }
     
     .ui-slider-handle{
@@ -1515,6 +1519,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       min-height: 25px;
       margin-left: 4%;
       padding-top: 5px;
+      font-weight: normal;
     }
     
     h3.nav-header{
@@ -1714,7 +1719,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	}
  	
  	select{
- 		font: "400 14px/14px "Lato", "Arial", sans-serif;
  		height: 24px;
  		width: auto;
  	}
@@ -1770,10 +1774,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .result-citation{
     	padding-left: 3%;
-    }
-    
-    .result-id{
-    	color: #999999;
     }
     
     .result-row > .expand{
