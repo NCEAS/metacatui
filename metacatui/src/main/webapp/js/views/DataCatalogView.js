@@ -479,7 +479,7 @@ define(['jquery',
 			
 			//Year
 			//Get the types of year to be searched first
-			var pubYear = searchModel.get('pubYear');
+			var pubYear  = searchModel.get('pubYear');
 			var dataYear = searchModel.get('dataYear');
 			if (pubYear || dataYear){
 				//Get the minimum and maximum years chosen
@@ -497,10 +497,7 @@ define(['jquery',
 			}
 			else{
 				var resultsYearMin = searchModel.get('resultsYearMin');
-				var resultsYearMax = searchModel.get('resultsYearMax');
-				
-				//Get the minimum and maximum years of the data coverage years from the search results
-				
+				var resultsYearMax = searchModel.get('resultsYearMax');			
 			}
 			
 			//Map
@@ -544,9 +541,6 @@ define(['jquery',
 					query += "+site:*" + thisSpatial + "*";
 				}
 			}
-			
-			console.log('query: ' + query);
-			
 			//Set the facets in the query
 			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class", "attributeName", "attributeLabel", "site"]);
 			
@@ -656,7 +650,6 @@ define(['jquery',
 			// Get the minimum and maximum values from the input fields
 			var minVal = $('#min_year').val();
 			var maxVal = $('#max_year').val();
-			//console.log(minVal, maxVal);
 			
 			//Also update the search model
 		    searchModel.set('yearMin', minVal);
@@ -670,7 +663,7 @@ define(['jquery',
 			//jQueryUI slider 
 			$('#year-range').slider({
 			    range: true,
-			    disabled: true,
+			    disabled: false,
 			    min: minResultsVal,			//sets the minimum on the UI slider on initialization
 			    max: maxResultsVal, 		//sets the maximum on the UI slider on initialization
 			    values: [ minVal, maxVal ], //where the left and right slider handles are
@@ -682,40 +675,27 @@ define(['jquery',
 			      //Also update the search model
 			      searchModel.set('yearMin', $('#min_year').val());
 			      searchModel.set('yearMax', $('#max_year').val());
+			     
+			      var pubYearChecked  = $('#publish_year').prop('checked');
+			      var dataYearChecked = $('#data_year').prop('checked');
 			      
-					//Route to page 1
-					viewRef.updatePageNumber(0);
+			      //If neither the publish year or data coverage year are checked
+			      if((!pubYearChecked) && (!dataYearChecked)){
+			    	  //Then we want to check the data coverage year on the user's behalf
+			    	  $('#data_year').prop('checked', 'true');
+			    	  //And update the search model
+			    	  searchModel.set('dataYear', true);
+			    	  //refresh the UI buttonset so it appears as checked
+			    	  $("#filter-year").buttonset("refresh");
+			      }
+			      
+			      //Route to page 1
+				  viewRef.updatePageNumber(0);
 			      
 			      //Trigger a new search
 			      viewRef.triggerSearch();
 			    }
 			  });
-			
-			//Check checkbox values for type of year
-			//All the slider elements this will affect
-			var sliderEls = [$('#year-range'), $('#min_year'), $('#max_year')];
-			//If either data year or publication year is checked,
-			if($('#data_year').prop("checked") || ($('#publish_year').prop("checked"))){
-				//Then enable the jQueryUI slider
-				$('#year-range').slider("option", "disabled", false);
-				
-				//And enable all elements and remove disabled class
-				for(var i=0; i<sliderEls.length; i++){
-					sliderEls[i].removeClass('disabled');
-					sliderEls[i].prop("disabled", false);
-				}
-			}
-			//If neither are checked
-			else if(!$('#data_year').prop("checked") && (!$('#publish_year').prop("checked"))){
-				//Disable the jQueryUI slider
-				$('#year-range').slider("option", "disabled", true);
-				
-				//And disbale all elements and add disabled class
-				for(var i=0; i<sliderEls.length; i++){
-					sliderEls[i].addClass('disabled');
-					sliderEls[i].prop("disabled", true);
-				}
-			}
 
 
 		},
@@ -778,7 +758,6 @@ define(['jquery',
 			$("#includes-files-buttonset").buttonset("refresh");
 			$("#data_year").prop("checked", searchModel.get("dataYear"));
 			$("#publish_year").prop("checked", searchModel.get("pubYear"));
-			console.log($('#data_year').prop('checked'));
 			$("#filter-year").buttonset("refresh");
 			
 			//Zoom out the Google Map
