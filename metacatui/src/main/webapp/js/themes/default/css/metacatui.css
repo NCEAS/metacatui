@@ -1182,7 +1182,7 @@ Bold 700
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     }
     
     li.ui-menu-item{
@@ -1326,6 +1326,11 @@ Bold 700
     	background-color: #FFFFFF; /* IE 8 fallback */
     	background-color: rgba(255,255,255,0.9);
     	margin-top: 10px;
+    }
+    
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
     }
     
     #collapse-content{

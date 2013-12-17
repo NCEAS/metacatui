@@ -1270,7 +1270,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     }
     
     li.ui-menu-item{
@@ -1361,6 +1361,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 -------------------------------------------------- */
     .result-header {
       font-weight: bold;
+    }
+    
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
     }
     
     .result-row {

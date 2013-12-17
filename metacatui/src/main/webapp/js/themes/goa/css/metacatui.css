@@ -1002,7 +1002,7 @@
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     	z-index: 10;
     }
     
@@ -1040,6 +1040,11 @@
     
     #results-view{
     	margin-top: 10px;
+    }
+    
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
     }
     
     .result-row {

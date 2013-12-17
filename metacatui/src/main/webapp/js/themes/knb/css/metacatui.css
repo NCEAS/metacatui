@@ -1580,7 +1580,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     	z-index: 100;
     }
     
@@ -1740,6 +1740,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
     	overflow-y: scroll;
     	overflow-x: visible;
+    }
+    
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
     }
     
     .result-row {

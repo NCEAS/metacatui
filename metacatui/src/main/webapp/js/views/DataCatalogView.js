@@ -258,26 +258,31 @@ define(['jquery',
 				viewRef.ready = true;
 				
 				if(viewRef.allowSearch){
-					//If we haven't zoomed into the map yet, do not apply the spatial filters
-					if((!viewRef.map.hasZoomed)){ return; }
 					
-					//Get the Google map bounding box
-					var boundingBox = mapRef.getBounds();
-					
-					//Set the search model spatial filters
-					searchModel.set('north', boundingBox.getNorthEast().lat());
-					searchModel.set('west', boundingBox.getSouthWest().lng());
-					searchModel.set('south', boundingBox.getSouthWest().lat());
-					searchModel.set('east', boundingBox.getNorthEast().lng());
-					
-					//Set the search model map filters
-					searchModel.set('map', {
-						zoom: viewRef.map.getZoom(), 
-						center: viewRef.map.getCenter()
-						});
-					
-					//Add a new visual 'current filter' to the DOM for the spatial search
-					viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
+					if(viewRef.map.getZoom() == mapOptions.minZoom){
+						console.log('at minimum zoom');
+						viewRef.resetMap();						
+					}
+					else{
+						//Get the Google map bounding box
+						var boundingBox = mapRef.getBounds();
+						
+						//Set the search model spatial filters
+						searchModel.set('north', boundingBox.getNorthEast().lat());
+						searchModel.set('west', boundingBox.getSouthWest().lng());
+						searchModel.set('south', boundingBox.getSouthWest().lat());
+						searchModel.set('east', boundingBox.getNorthEast().lng());
+						
+						//Set the search model map filters
+						searchModel.set('map', {
+							zoom: viewRef.map.getZoom(), 
+							center: viewRef.map.getCenter()
+							});
+						
+						//Add a new visual 'current filter' to the DOM for the spatial search
+						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+					}
 					
 					//Trigger a new search
 					viewRef.triggerSearch();	
@@ -290,11 +295,12 @@ define(['jquery',
 			//Let the view know we have zoomed on the map
 			google.maps.event.addListener(mapRef, "zoom_changed", function(){
 				console.log('has zoomed');
-				viewRef.map.hasZoomed = true;
+				viewRef.allowSearch = true;
 			});
 
 		},
 		
+		//Resets the model and view settings related to the map
 		resetMap : function(){
 			if(!gmaps){
 				return;
@@ -315,12 +321,11 @@ define(['jquery',
 				center: null
 			});
 			
-			this.map.hasZoomed = false;
+			this.allowSearch = false;
 			
-			//Refresh the map
-			if(appModel.get('searchMode') == 'map'){
-				this.renderMap();
-			}
+			
+			//Remove the map filter in the UI
+			this.hideFilter($('#current-spatial-filters').find('[data-term="'+ this.reservedMapPhrase +'"]'));
 		},
 		
 		/* 
@@ -497,10 +502,7 @@ define(['jquery',
 			}
 			else{
 				var resultsYearMin = searchModel.get('resultsYearMin');
-				var resultsYearMax = searchModel.get('resultsYearMax');
-				
-				//Get the minimum and maximum years of the data coverage years from the search results
-				
+				var resultsYearMax = searchModel.get('resultsYearMax');			
 			}
 			
 			//Map
@@ -544,9 +546,6 @@ define(['jquery',
 					query += "+site:*" + thisSpatial + "*";
 				}
 			}
-			
-			console.log('query: ' + query);
-			
 			//Set the facets in the query
 			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class", "attributeName", "attributeLabel", "site"]);
 			
@@ -656,7 +655,6 @@ define(['jquery',
 			// Get the minimum and maximum values from the input fields
 			var minVal = $('#min_year').val();
 			var maxVal = $('#max_year').val();
-			//console.log(minVal, maxVal);
 			
 			//Also update the search model
 		    searchModel.set('yearMin', minVal);
@@ -670,7 +668,7 @@ define(['jquery',
 			//jQueryUI slider 
 			$('#year-range').slider({
 			    range: true,
-			    disabled: true,
+			    disabled: false,
 			    min: minResultsVal,			//sets the minimum on the UI slider on initialization
 			    max: maxResultsVal, 		//sets the maximum on the UI slider on initialization
 			    values: [ minVal, maxVal ], //where the left and right slider handles are
@@ -682,40 +680,27 @@ define(['jquery',
 			      //Also update the search model
 			      searchModel.set('yearMin', $('#min_year').val());
 			      searchModel.set('yearMax', $('#max_year').val());
+			     
+			      var pubYearChecked  = $('#publish_year').prop('checked');
+			      var dataYearChecked = $('#data_year').prop('checked');
 			      
-					//Route to page 1
-					viewRef.updatePageNumber(0);
+			      //If neither the publish year or data coverage year are checked
+			      if((!pubYearChecked) && (!dataYearChecked)){
+			    	  //Then we want to check the data coverage year on the user's behalf
+			    	  $('#data_year').prop('checked', 'true');
+			    	  //And update the search model
+			    	  searchModel.set('dataYear', true);
+			    	  //refresh the UI buttonset so it appears as checked
+			    	  $("#filter-year").buttonset("refresh");
+			      }
+			      
+			      //Route to page 1
+				  viewRef.updatePageNumber(0);
 			      
 			      //Trigger a new search
 			      viewRef.triggerSearch();
 			    }
 			  });
-			
-			//Check checkbox values for type of year
-			//All the slider elements this will affect
-			var sliderEls = [$('#year-range'), $('#min_year'), $('#max_year')];
-			//If either data year or publication year is checked,
-			if($('#data_year').prop("checked") || ($('#publish_year').prop("checked"))){
-				//Then enable the jQueryUI slider
-				$('#year-range').slider("option", "disabled", false);
-				
-				//And enable all elements and remove disabled class
-				for(var i=0; i<sliderEls.length; i++){
-					sliderEls[i].removeClass('disabled');
-					sliderEls[i].prop("disabled", false);
-				}
-			}
-			//If neither are checked
-			else if(!$('#data_year').prop("checked") && (!$('#publish_year').prop("checked"))){
-				//Disable the jQueryUI slider
-				$('#year-range').slider("option", "disabled", true);
-				
-				//And disbale all elements and add disabled class
-				for(var i=0; i<sliderEls.length; i++){
-					sliderEls[i].addClass('disabled');
-					sliderEls[i].prop("disabled", true);
-				}
-			}
 
 
 		},
@@ -735,12 +720,12 @@ define(['jquery',
 			//Check if this is the reserved phrase for the map filter
 			if((category == "spatial") && (term == this.reservedMapPhrase)){
 				this.resetMap();
+				this.renderMap();
 			}
 			else{
 				//Remove this filter term from the searchModel
 				this.removeFromModel(category, term);				
 			}
-
 			
 			//Hide the filter from the UI
 			this.hideFilter(filterNode);
@@ -754,7 +739,7 @@ define(['jquery',
 		},
 		
 		//Clear all the currently applied filters
-		resetFilters : function(e){			
+		resetFilters : function(){			
 			var viewRef = this;
 			
 			this.allowSearch = true;
@@ -778,11 +763,11 @@ define(['jquery',
 			$("#includes-files-buttonset").buttonset("refresh");
 			$("#data_year").prop("checked", searchModel.get("dataYear"));
 			$("#publish_year").prop("checked", searchModel.get("pubYear"));
-			console.log($('#data_year').prop('checked'));
 			$("#filter-year").buttonset("refresh");
 			
 			//Zoom out the Google Map
 			this.resetMap();	
+			this.renderMap();
 		
 			//Hide the reset button again
 			$('#clear-all').css('display', 'none');
@@ -961,26 +946,36 @@ define(['jquery',
 		updatePager : function() {
 			if (appSearchResults.header != null) {
 				var pageCount = Math.ceil(appSearchResults.header.get("numFound") / appSearchResults.header.get("rows"));
-				var pages = new Array(pageCount);
-				// mark current page correctly, avoid NaN
-				var currentPage = -1;
-				try {
-					currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
-				} catch (ex) {
-					console.log("Exception when calculating pages:" + ex.message);
+				
+				//If no results were found, do not populate the pagination.
+				if(pageCount == 0){
+					this.$results.html('<p>No results found.</p>');
 				}
-				this.$resultspager = this.$('#resultspager');
-				this.$resultspager.html(
-					this.pagerTemplate({
-						pages: pages,
-						currentPage: currentPage
-					})
-				);
+				else{
+					var pages = new Array(pageCount);
+					
+					// mark current page correctly, avoid NaN
+					var currentPage = -1;
+					try {
+						currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
+					} catch (ex) {
+						console.log("Exception when calculating pages:" + ex.message);
+					}
+					
+					this.$resultspager = this.$('#resultspager');
+					
+					//Populate the pagination element in the UI
+					this.$resultspager.html(
+						this.pagerTemplate({
+							pages: pages,
+							currentPage: currentPage
+						})
+					);
+				}
 			}
 		},
 		
 		updatePageNumber: function(page) {
-			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
 			var route = Backbone.history.fragment;
 			if (route.indexOf("/page/") >= 0) {
 				//replace the last number with the new one
@@ -1037,8 +1032,7 @@ define(['jquery',
 				var facetCounts = appSearchResults.facetCounts;
 				
 				
-				//***Set up the autocomplete (jQueryUI) feature for each input****//
-				
+				//***Set up the autocomplete (jQueryUI) feature for each text input****//				
 				//For the 'all' filter, use keywords
 				var allSuggestions = appSearchResults.facetCounts.keywords;
 				var rankedSuggestions = new Array();
@@ -1047,7 +1041,20 @@ define(['jquery',
 				}
 				var viewRef = this;
 				$('#all_input').autocomplete({
-					source: rankedSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#all_input').val(ui.item.value);
@@ -1055,6 +1062,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -1074,7 +1085,20 @@ define(['jquery',
 					rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
 				}
 				$('#attribute_input').autocomplete({
-					source: rankedAttributeSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedAttributeSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#attribute_input').val(ui.item.value);
@@ -1082,6 +1106,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -1092,7 +1120,20 @@ define(['jquery',
 					rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
 				}
 				$('#creator_input').autocomplete({
-					source: rankedOriginSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedOriginSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#creator_input').val(ui.item.value);
@@ -1100,6 +1141,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -1127,9 +1172,24 @@ define(['jquery',
 					rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
 				}
 				$('#taxon_input').autocomplete({
-					source: rankedTaxonSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedTaxonSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					position: {
-						collision: "flip"						
+						my: "left top",
+						at: "left bottom",
+						collision: "none"
 					},
 					select: function(event, ui) {
 						// set the text field
@@ -1148,10 +1208,20 @@ define(['jquery',
 					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
 				}
 				$('#spatial_input').autocomplete({
-					source: rankedSpatialSuggestions,
-					position: {
-						collision: "flip"						
-					},
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedSpatialSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#spatial_input').val(ui.item.value);
@@ -1159,6 +1229,11 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom",
+						collision: "flip"
 					}
 				});
 				
@@ -1268,19 +1343,7 @@ define(['jquery',
 			// Behavior for marker mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
 				
-				if(!infoWindow.isOpen){	
-					
-					//If the map for this marker is null, then it is a clustered marker. Mark it as such.
-					if(marker.getMap() == null){
-						marker.isClustered = true;
-						
-						//Redefine the map of the marker for it to work on the clustered markers
-						marker.setMap(viewRef.map);
-					}
-					else{
-						marker.isClustered = false;
-					}
-					
+				if(!infoWindow.isOpen){						
 					//Open the brief title window
 					titleWindow.open(viewRef.map, marker);	
 				}
@@ -1293,11 +1356,6 @@ define(['jquery',
 			// Behavior for marker mouseout
 			gmaps.event.addListener(marker, 'mouseout', function() {
 				titleWindow.close();
-				
-				//If clustered, hide the marker again by setting the map to null
-				if(marker.isClustered){
-					marker.setMap(null);	
-				}
 				
 				//Hide the data coverage boundaries polygon
 				polygon.setVisible(false);
@@ -1341,7 +1399,7 @@ define(['jquery',
 						id = $(this).attr('data-id');
 					}
 				});
-			}
+			}		
 			
 			//Trigger the mouseout event
 			gmaps.event.trigger(this.markers[id], 'mouseout');
@@ -1350,6 +1408,8 @@ define(['jquery',
 			var mapCenter = searchModel.get('map').center;			
 			if(mapCenter !== null){
 				var viewRef = this;
+			
+				
 				// Set a delay on the panning in case we hover over another openMarker item right away.
 				// Without this delay the map will recenter quickly, then move to the next marker, etc. and it is very jarring
 				var recenter = function(){
@@ -1419,6 +1479,7 @@ define(['jquery',
 		 * Without this delay, the app waits until all records are processed
 		*/
 		addAll: function () {
+			console.log("Adding all the results to the list and map");
 			
 			// do this first to indicate coming results
 			this.updateStats();
@@ -1473,7 +1534,7 @@ define(['jquery',
 						viewRef.markerClusters = viewRef.markerCluster.getMarkers();
 						
 						//Pan the map to the center of our results
-						if((!viewRef.map.hasZoomed) && (viewRef.masterBounds)){
+						if((!viewRef.allowSearch) && (viewRef.masterBounds)){
 							var center = viewRef.masterBounds.getCenter();
 							var adjustedCenter = new gmaps.LatLng(center.lat(), center.lng()+50);
 							viewRef.map.panTo(adjustedCenter);
@@ -1491,7 +1552,7 @@ define(['jquery',
 		
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
-			console.log('remove all');
+			console.log('Removing all the results from the list');
 			$("#map-container").addClass("loading");
 			this.$results.html('');
 		},
