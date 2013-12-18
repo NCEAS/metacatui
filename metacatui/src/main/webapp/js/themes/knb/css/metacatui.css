@@ -1064,6 +1064,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	margin-bottom: 8px;
     } 
     
+    /* Google Map Images for Geographic Region */
+    .georegion-map{
+    	margin-left: 125px;
+    	margin-bottom: 10px;
+    	border: 1px solid #DDD;
+    	padding: 7px;
+    	border-radius: 4px;
+    	-moz-border-radius: 4px;
+    	-webkit-border-radius: 4px;
+    }
+    
 	/* Registry CSS
 	-------------------------------------------------- */
     #RegistryEntryForm, 

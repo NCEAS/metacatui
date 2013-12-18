@@ -2,12 +2,13 @@
 define(['jquery',
 		'underscore', 
 		'backbone',
+		'gmaps',
 		'text!templates/package.html',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html'
 		], 				
-	function($, _, Backbone, PackageTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate) {
+	function($, _, Backbone, gmaps, PackageTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate) {
 	'use strict';
 
 	
@@ -57,6 +58,9 @@ define(['jquery',
 							viewRef.showMessage(response);
 						} else {
 							viewRef.insertResourceMapLink(pid);
+							if(gmaps){ 
+								viewRef.insertSpatialCoverageMap(pid);
+							}
 						}
 						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
@@ -105,6 +109,56 @@ define(['jquery',
 					}
 				);
 				
+		},
+		
+		insertSpatialCoverageMap: function(pid){
+			var queryServiceUrl = appModel.get('queryServiceUrl');
+		
+			var findCoordinates = this.$el.find('h4:contains("Geographic Region")').each(function(){
+				var parentEl = $(this).parent();
+				
+				var coordinates = new Array();
+				
+				['North', 'South', 'East', 'West'].forEach(function(direction){
+					var labelEl = $(parentEl).find('label:contains("' + direction + '")');
+					var coordinate = $(labelEl).next().html();
+					coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
+					coordinates.push(coordinate);
+				});
+				
+				//Extract the coordinates
+				var n = coordinates[0];
+				var s = coordinates[1];
+				var e = coordinates[2];
+				var w = coordinates[3];
+				
+				//Create Google Map LatLng objects out of our coordinates
+				var latLngSW = new gmaps.LatLng(s, w);
+				var latLngNE = new gmaps.LatLng(n, e);
+				var latLngNW = new gmaps.LatLng(n, w);
+				var latLngSE = new gmaps.LatLng(s, e);
+				
+				//Get the centertroid location of this data item
+				var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
+				var latLngCEN = bounds.getCenter();
+
+				//Create a google map image
+				var mapHTML = "<img class='georegion-map' " +
+							  "src='http://maps.googleapis.com/maps/api/staticmap?" +
+							  "center="+latLngCEN.lat()+","+latLngCEN.lng() +
+							  "&size=550x250" +
+							  "&maptype=terrain" +
+							  "&markers=size:mid|color:0xDA4D3Aff|"+latLngCEN.lat()+","+latLngCEN.lng() +
+							  "&path=color:0xDA4D3Aff|weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
+							  "&visible=" + latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
+							  "&sensor=false" +
+							  "&key=" + mapKey + "'/>";
+
+				//Find the spot in the DOM to insert our map image
+				var lastEl = $(parentEl).find('label:contains("West")').parent().parent(); //The last coordinate listed
+				lastEl.append(mapHTML);
+			});
+
 		},
 		
 		// checks if the pid is already a DOI
