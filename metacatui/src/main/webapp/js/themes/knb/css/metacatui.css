@@ -96,6 +96,11 @@ Bold 700 Italic
     	padding-top: 115px;
     }
     
+    h4{
+    	font-size: 20px;
+    	font-weight: 400;
+    }
+    
     .bold-header{
           font-size: 18px;
           line-height: 30px;
@@ -249,6 +254,7 @@ Bold 700 Italic
 
     footer#Footer h2 {
       font-size: 14px;
+      font-weight: 400;
       line-height: 16px;
       vertical-align: middle;
       padding: 0;
