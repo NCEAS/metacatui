@@ -59,7 +59,7 @@ define(['jquery',
 						} else {
 							viewRef.insertResourceMapLink(pid);
 							if(gmaps){ 
-								viewRef.insertSpatialCoverageMap(pid);
+								viewRef.insertSpatialCoverageMap();
 							}
 						}
 						console.log('Loaded metadata, now fading in MetadataView');
@@ -111,9 +111,7 @@ define(['jquery',
 				
 		},
 		
-		insertSpatialCoverageMap: function(pid){
-			var queryServiceUrl = appModel.get('queryServiceUrl');
-		
+		insertSpatialCoverageMap: function(){
 			var findCoordinates = this.$el.find('h4:contains("Geographic Region")').each(function(){
 				var parentEl = $(this).parent();
 				
