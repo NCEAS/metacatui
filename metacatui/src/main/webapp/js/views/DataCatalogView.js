@@ -338,14 +338,10 @@ define(['jquery',
 			if (page == null) {
 				page = 0;
 			}
-			
-			//Get all the search model attributes
-			
-			//Start with the 'all' category
-			var search = searchModel.get('all');
-			var sortOrder = searchModel.get('sortOrder');
-			
+					
 			this.removeAll();
+			
+			var sortOrder = searchModel.get('sortOrder');
 			
 			appSearchResults.setrows(500);
 			appSearchResults.setSort(sortOrder);
@@ -379,6 +375,11 @@ define(['jquery',
 				    return this.replace(/^\s+|\s+$/g, ''); 
 				  }
 			}
+			
+			//**Get all the search model attributes**
+			
+			//Start with the 'all' category
+			var search = searchModel.get('all');
 			
 			//resourceMap
 			var resourceMap = searchModel.get('resourceMap');
@@ -742,6 +743,8 @@ define(['jquery',
 		resetFilters : function(){			
 			var viewRef = this;
 			
+			console.log('Resetting the filters');
+			
 			this.allowSearch = true;
 			
 			//Clear all the filters in the UI
@@ -949,7 +952,7 @@ define(['jquery',
 				
 				//If no results were found, do not populate the pagination.
 				if(pageCount == 0){
-					this.$results.html('<p>No results found.</p>');
+					this.$results.html('<p id="no-results-found">No results found.</p>');
 				}
 				else{
 					var pages = new Array(pageCount);
@@ -1451,6 +1454,10 @@ define(['jquery',
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
+			
+			if(typeof $('#no-results-found') != 'undefined'){
+				$('#no-results-found').remove();
+			}
 			//Get the view and package service URL's
 			this.$view_service = appModel.get('viewServiceUrl');
 			this.$package_service = appModel.get('packageServiceUrl');
