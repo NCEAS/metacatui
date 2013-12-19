@@ -25,6 +25,7 @@ Bold 700
     
     body {
       color: #333333;
+      background-color: #555555; /*IE 8 fallback*/
       background: rgba(0, 0, 0, .8);
       font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
       min-height: 100%;
@@ -40,11 +41,15 @@ Bold 700
 	}
 	
     .bold-header{
-    	background-color: #222;
+    	background-color: #333;
     	color: #DDD;
     	font: 400 20px/30px "Oswald", Arial, sans-serif;
     	text-transform: uppercase;
     	text-shadow: none;
+    }
+    
+    .pointer{
+    	cursor: pointer;
     }
     
     .mapMode .collapse-me{
@@ -139,7 +144,11 @@ Bold 700
 		position: fixed;
 		top: 0;
 		left: 0;
+		display: block;
 		z-index: -1; /* So that right-clicking on background image will behave like right-clicking on background */
+	}
+	
+	.mapMode img.bg{
 		display: none;
 	}
 	
@@ -169,6 +178,7 @@ Bold 700
 
 .controls-well {
 	    padding: 4px;
+	    backgorund-color: #FFFFFF; /*IE 8 fallback */
 	    background: rgba(255, 255, 255, 0.3);
 	}
 	.control-label {
@@ -199,22 +209,22 @@ Bold 700
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
   section#Notification {
-    position: fixed;
-    top: 105px;
-    height: 40px;
-    width: inherit;
-    max-height: 40px;
-    min-height: 40px;
+    position: relative;
+    top: 95px;
+    margin: 50px auto;
+    font-size: 40px;
   }
   
-  .progress-striped{
-  	border-radius: 0px;
-  	-webkit-border-radius: 0px;
-	-moz-border-radius: 0px;
+  #Notification i{
+  	font-size: 40px;
+  	margin-left: 43%;
   }
   
-  .progress-striped .bar{
-  	background-color: #166194;
+  #Notification p{
+  	font-size: 20px;
+  	width: 350px;
+  	margin: 20px auto;
+  	display: block;
   }
 
   
@@ -232,19 +242,21 @@ Bold 700
     }*/
     
     #Footer {
-      position: fixed;
+      	position: fixed;
 		bottom: 0px;
-		background: #333;
+		background: #222;
 		padding: 0px 10px;
 		height: 18px;
 		width: 100%;
 		color: #DDD;
 		display: block;
 		transition: height 0.5s ease-out .5s;
+		z-index: 2;
     }
     
     .mapMode #Footer:hover{
     	height: 150px;
+    	z-index: 2;
     }
     
     #Footer .center{
@@ -725,7 +737,7 @@ Bold 700
       bottom: 0px;
       left: 0px;
       padding: 0px;
-      background-color: #222;
+      background-color: #333;
       border-radius: 0px;
       -moz-border-radius: 0px;
       -webkit-border-radius: 0px;
@@ -1170,7 +1182,7 @@ Bold 700
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     }
     
     li.ui-menu-item{
@@ -1201,6 +1213,7 @@ Bold 700
     .result-header {
       position: relative;
       z-index: 1;
+      height: 76px;
     }
     
     .result-header > .result-header-count{
@@ -1209,16 +1222,65 @@ Bold 700
     
     .result-header-count > .result-header-count{
     	position: fixed;
-    	width: 40%;
+    	width: 100%;
     	margin-left: 0px;
     	padding-left: 10px;
+    	padding-top: 5px;
     	z-index: 1;
+    	color: #888888;
+    	text-transform: none;
+    }
+    
+    .mapMode .result-header-count > .result-header-count{
+    	padding-left: 50px;
+    }
+    
+    .collapsed .result-header-count > .result-header-count{
+    	padding-left: 10px;
+    }
+    
+    .mapMode .result-header-count > .result-header-count{
+    	width: 45%;
+    }
+    
+    .result-header-count > .result-header-count > span{
+    	color: #CCCCCC;
     }
     
     .result-header-count > .result-header-count:after{
     	content: " data packages";
     }
     
+    #countstats:before{
+		content: "Listing ";
+	}
+	
+	.mapMode #countstats:before{
+		content: "Mapping ";
+	}
+    
+    .map-pointer{
+    	display: none;
+    }
+    
+    .mapMode .map-pointer{
+		display: block;
+		position: fixed;
+		font-size: 75px;
+		background-color: inherit;
+		z-index: 1;
+		width: auto;
+		color: #777777;
+		padding-left: 5px;
+		border-radius: 0px;
+		-webkit-border-radius: 0px;
+		-moz-border-radius: 0px;
+	}
+	
+	.collapsed .map-pointer{
+		display: none;
+	}
+	
     #sortOrder{
     	border: 0px;
     	border-radius: 0px;
@@ -1235,23 +1297,40 @@ Bold 700
 		z-index: 1;
     }
  	
- 	.mapMode #content.collapsed #sortOrder{
- 		display: none;
+ 	#statcounts{
+ 		width: 100%;
+ 		height: inherit;
  	}
  	
- 	#statcounts{
+ 	.mapMode #statcounts{
  		position: fixed;
- 		width: 40%;
+ 		width: 45%;
  	}
    
    /*-- Results rows --*/
    #results{
-   		margin-top: 80px;
+   		margin-top: 0px;
+   		width: 100%;
+   		overflow-x: hidden;
+   		float: right;
+   		-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+		-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
+		box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);
+   }
+   
+   .mapMode #results{
+   		width: 95%;
    }
    
     .search-results{
-    	background-color: rgba(255,255,255,0.8);
+    	background-color: #FFFFFF; /* IE 8 fallback */
+    	background-color: rgba(255,255,255,0.9);
     	margin-top: 10px;
+    }
+    
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
     }
     
     #collapse-content{
@@ -1265,12 +1344,13 @@ Bold 700
     
     .result-row {
       display: block;
-      padding: 4px 3%;
-      width: 94%;
+      padding: 4px 1%;
+      width: 99%;
       font: 400 14px/18px "Source Sans Pro" Arial, sans-serif;
     }
     
     .result-row:nth-child(odd){
+    	background-color: #CCCCCC; /*IE 8 fallback */
     	background-color: rgba(185, 185, 185, 0.3);
     }
     
@@ -1278,7 +1358,13 @@ Bold 700
     	background-color: transparent;
     }
     
+    .result-row .result-row,
+    .result-row:hover .result-row{
+    	background-color: transparent;
+    }
+    
     .result-row:hover { 
+    background-color: #DAEBF7; /* IE 8 fallback */
     background-color: rgba(178, 202, 221, 0.8);
   	}
   
@@ -1292,29 +1378,87 @@ Bold 700
       font-weight: normal;
     }
     
+    .result-citation{
+    	padding-left: 3%;
+    }
+    
     .result-title{
     	font-weight: 600;
     	color: #166194;
     }
     
+    .result-row .abstract{
+    	padding: 0px 2%;
+    	width: 96%;
+    	border: 0px;
+    	font-size: 0.9em;
+    	clear: both;
+    	display: none;
+    }
+    
+    .result-row:hover .abstract{
+   		display:block;
+    }
     .result-row .dropdown-menu{
   		left: -320%;
   	}
     
-    /*-- Result row icons --*/   
-    .result-row .has-data{
-    	color: #666;
+    /*-- Result row icons --*/ 
+    .info-icons{
+    	min-width: 28px;
+    	max-height: 43px;
+    }
+    
+    .info-icons .show-abstract > i{
+    	color: #EEE;
+    	margin-left: 3px;
+    	font-size: 17px;
+    }
+    
+    .info-icons .show-abstract > i.show-abstract{
+    	color: #666666;
+    }
+    
+    .info-icons .has-data > i{
+    	color: #EEE;
     	margin-left: 10px;
     }
     
-    .result-row .on-map{
-    	color: #DA4D3A;
-    	font-size: 1.1em;
-    	margin-left: 5px;
+    .info-icons .has-data > i.has-data{
+    	color: #666666;
     }
     
-    .result-row .tooltip-inner{
-    	width: 70px;
+    .info-icons .on-map > i{
+    	font-size: 17px;
+    	margin-left: 5px;
+    	color: #EEE;
+    }
+    
+    .info-icons .on-map > i.on-map{
+    	color: #DA4D3A;
+    }
+    
+        .popover{
+    	max-width: 250px;
+    }
+    
+     body > .popover{
+    	max-height: 500px;
+    	min-height: 10px;
+    	overflow: hidden;
+    	word-break: break-all;
+    	text-overflow: ellipsis;
+    	min-width: 10%;
+    	max-width: 250px;
+    }
+    
+    .mapMode > .popover{
+    	min-width: 30%;
+    }
+     
+     .has-data .popover{
+    	min-width: 150px;
+    	max-width: 150px;
     }
     
     
@@ -1342,7 +1486,13 @@ Bold 700
     	cursor: pointer;
     	margin: 30px auto;
     	padding-bottom: 5px;
-    	background-color: #222222;
+    	background-color: #333333;
+    	width: 80%;
+    	position: fixed;
+    }
+    
+    .mapMode .pagination{
+    	width: inherit;
     }
 
 	.pagination ul{
@@ -1356,6 +1506,14 @@ Bold 700
 		font: 400 16px/16px "Source Sans Pro";	
 		border: 1px solid #333333;	
 	}
+	
+	.pagination ul > li > a.unactive,
+	.pagination ul > li > a.unactive:hover{
+    	font-size: 20px;
+    	color: #999999;
+    	background-color: transparent;
+    	cursor: default;
+    }
 	
 	.pagination ul > li > a:hover{
 		background-color: #777777;
@@ -1472,25 +1630,22 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	position: fixed;
 	right: 0;
 	bottom: 18px;
-	background-color: rgba(255,255,255,0.8);
+	background-color: transparent;
 	height: auto;
 	max-height: 90%;
-	min-width: 300px;
-	overflow-y:scroll;
+	max-width: 70%;
 	margin-top: 40px;
-	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
-	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);
 	transition: width 1s;
 }
 
 .mapMode #content{
-	width: 40%;
+	width: 45%;
+	overflow-y:scroll;
 }
 
 #content.collapsed{
-	height: 30px;
-	max-height: 40px;
+	height: 76px;
+	position: fixed;
 }
 
 /* MAIN CONTENT 
@@ -1551,6 +1706,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs > .banner{
 	width: 100%;
 	height: 100px;
+	background-color: #000000; /*IE 8 fallback */
 	background: rgba(0,0,0, 0.7);
 	border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -1695,6 +1851,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs .sidebar{
 	float: right;
 	margin: 20px 0px 30px 20px;
+	background-color: #FFFFFF; /*IE 8 fallback */
 	background: rgba(255,255,255, 0.5);
 	border-radius: 20px;
 	padding: 20px;
@@ -1717,6 +1874,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	bottom: 0;
 	width: 96%;
 	margin: 50px auto 0 auto;
+	background-color: #FFFFFF; /*IE 8 fallback */
 	background: rgba(0,0,0, 0.7);
 	border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -1757,6 +1915,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
 #metacatDocs table{
+		background-color: #FFFFFF; /*IE 8 fallback */
     	background: rgba(255,255,255, 0.8);
     	margin: 40px auto;
     	
@@ -1774,6 +1933,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
 #metacatDocs tr.row-odd{
+		background-color: #BAD6E6; /*IE8 fallback*/
     	background: rgba(103, 184, 229, 0.2);
     }
 
@@ -1797,6 +1957,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  
  pre{
 	 padding: 10px;
+	 background-color: #166194; /*IE 8 fallback*/ 
 	background: rgba(22,97,148,0.7);
 	color: #FFFFFF;
 	font-size: 15px;
@@ -1839,6 +2000,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  
  
 #metacatDocs .topic{
+	background-color: #FFFFFF; /*iE 8 fallback */
  	background: rgba(255,255,255,0.5);
  	padding: 20px;
  	border-radius: 20px;

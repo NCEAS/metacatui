@@ -1,8 +1,21 @@
-<div class="result-header-count span12 collapse-me bold-header" id="countstats"><%- start %> <span>to</span> <%- end %> <span>of</span> <%- numFound %></div>
-					<!-- pager -->
-					<div id="resultspager" class="row-fluid pagination pagination-centered">
-						<ul>
-							<li><a id="results_prev_bottom">Prev</a></li>
-							<li><a id="results_next_bottom">Next</a></li>
-						</ul>
-					</div>
+
+
+<div class="result-header-count span12 collapse-me bold-header" id="countstats">
+<% if(numFound > 0){
+		print('<span>' + start + '</span>');
+		print(' to <span>' + end + '</span>');
+		print(' of <span>' + numFound + '</span>');
+	}
+	else if(numFound == 0){
+		print('<span>0</span>');
+	}
+%>
+</div>
+					
+<!-- pager -->
+<div id="resultspager" class="row-fluid pagination pagination-centered">
+	<ul>
+		<li><a id="results_prev_bottom">Prev</a></li>
+		<li><a id="results_next_bottom">Next</a></li>
+	</ul>
+</div>

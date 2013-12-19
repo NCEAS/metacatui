@@ -2,20 +2,58 @@
 <ul>
 	<li><a id="results_prev_bottom">Prev</a></li>
 	<%
-	var range = 5;
-	var printMid = true;
-	for (var i = 0; i < pages.length; i++) {
-		var pageClass = '';
-		if (i == currentPage) {
-			pageClass = 'active';
-		}
-		if (i < range || (pages.length - i) <= range) {
-			print('<li class="', pageClass ,'"><a class="pagerLink" page="', i, '">', i+1, '</a></li>');
-		} else if (printMid) {
-			print('<li class="disabled"><a>...</a></li>');
-			printMid = false;
-		}
+	
+	var firstPage = 0;
+	var lastPage = pages.length-1;
+
+	if(currentPage == firstPage){
+		print('<li class="active"><a class="pagerLink" page="', firstPage, '">', firstPage+1, '</a></li>');
 	}
+	else if(currentPage-1 == firstPage){
+		print('<li><a class="pagerLink" page="', firstPage, '">', firstPage+1, '</a></li>');
+		print('<li class="active"><a class="pagerLink" page="', currentPage, '">', currentPage+1, '</a></li>');
+	}
+	else if(currentPage-2 == firstPage){
+		print('<li><a class="pagerLink" page="', firstPage, '">', firstPage+1, '</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage-1, '">', (currentPage-1)+1, '</a></li>');
+		print('<li class="active"><a class="pagerLink" page="', currentPage, '">', currentPage+1, '</a></li>');
+	}
+	else if(currentPage-3 == firstPage){
+		print('<li><a class="pagerLink" page="', firstPage, '">', firstPage+1, '</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage-2, '">', (currentPage-2)+1, '</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage-1, '">', (currentPage-1)+1, '</a></li>');
+		print('<li class="active"><a class="pagerLink" page="', currentPage, '">', currentPage+1, '</a></li>');
+	}
+	else{
+		print('<li><a class="pagerLink" page="', firstPage, '">', firstPage+1, '</a></li>');
+		print('<li><a class="unactive">...</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage-2, '">', (currentPage-2)+1, '</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage-1, '">', (currentPage-1)+1, '</a></li>');
+		print('<li class="active"><a class="pagerLink" page="', currentPage, '">', currentPage+1, '</a></li>');	
+	}
+
+	if(currentPage == lastPage){
+		//Do nothing
+	}
+	else if(currentPage+1 == lastPage){
+		print('<li><a class="pagerLink" page="', currentPage+1, '">', (currentPage+1)+1, '</a></li>');
+	}
+	else if(currentPage+2 == lastPage){
+		print('<li><a class="pagerLink" page="', currentPage+1, '">', (currentPage+1)+1, '</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage+2, '">', (currentPage+2)+1, '</a></li>');
+	}
+	else if(currentPage+3 == lastPage){
+		print('<li><a class="pagerLink" page="', currentPage+1, '">', (currentPage+1)+1, '</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage+2, '">', (currentPage+2)+1, '</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage+3, '">', (currentPage+3)+1, '</a></li>');
+	}
+	else{
+		print('<li><a class="pagerLink" page="', currentPage+1, '">', (currentPage+1)+1, '</a></li>');
+		print('<li><a class="pagerLink" page="', currentPage+2, '">', (currentPage+2)+1, '</a></li>');
+		print('<li><a class="unactive">...</a></li>');
+		print('<li><a class="pagerLink" page="', lastPage, '">', (lastPage)+1, '</a></li>');
+	}
+	
 	%>
 	<li><a id="results_next_bottom">Next</a></li>
 </ul>

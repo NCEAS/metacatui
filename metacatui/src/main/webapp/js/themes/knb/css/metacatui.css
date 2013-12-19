@@ -39,11 +39,15 @@ Bold 700 Italic
     body {
       color: #555555;
       background-color: #FDFDFD;
-      font-family: "Lato", "Helvetica Nueue", "Helvetica", "sans serif";
+      font-family: "Helvetica Nueue", "Helvetica", "Open Sans", "Arial", "sans serif";
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 23px;
     }
 
     body p {
-      font-weight: 300;
+      font-weight: 400;
+      font-size: 14px;
       line-height: 1.5;
     }
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
@@ -52,7 +56,6 @@ Bold 700 Italic
     }
     
     body > section, footer {
-      min-height: 400px;
       margin: 0;
       z-index: 10;
     }
@@ -60,21 +63,17 @@ Bold 700 Italic
     body > #Content {
     	position: relative;
     	margin: 0px 0px auto 0px;
-    	min-height: 400px;
+    	min-height: 900px;
     }
 		
     body > section > article {
       min-height: 800px;
-      /*margin: 135px auto auto auto;*/
-      font-weight: 300;
-      font-size: 110%;
-      line-height: 1.5;
       margin: 175px auto auto auto;
       padding-bottom: 40px;  			
     }
     
     a {
-		color: #115E95; /*blue from the earthtones pallette */
+		color: #006699; 
 		transition: color .5s;
     }
     
@@ -97,12 +96,29 @@ Bold 700 Italic
     	padding-top: 115px;
     }
     
+    h4{
+    	font-size: 20px;
+    	font-weight: 400;
+    }
+    
+    h2, h3{
+    	font-weight: 300;
+    }
+    
     .bold-header{
-          font: 400 18px/30px "Lato" Arial sans-serif;
+          font-size: 18px;
+          line-height: 30px;
           color: #555555;
           text-transform: uppercase;
     }
     
+    .pointer{
+    	cursor: pointer;
+    }
+    
+    .subtle{
+    	color: #888888;
+    }
     
     .mapMode .collapse-me:hover{
     	cursor: pointer;
@@ -174,28 +190,27 @@ Bold 700 Italic
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
   section#Notification {
-    position: fixed;
+    position: relative;
     top: 95px;
-    height: 40px;
-    width: 100%;
-    max-height: 40px;
-    min-height: 40px;
-    background-color: #FDFDFD;
+    margin: 50px auto;
+    font-size: 40px;
+  }
+  
+  #Notification i{
+  	font-size: 40px;
+  	margin-left: 43%;
+  }
+  
+  #Notification p{
+  	font-size: 20px;
+  	width: 350px;
+  	margin: 20px auto;
+  	display: block;
   }
 
   
 /* FOOTER CSS
 -------------------------------------------------- */    
-
-    .mapMode #Footer{
-    	position: fixed;
-    	height: 30px;
-    	min-height: 20px;
-    	padding-top: 0px;
-    	padding-bottom: 0px;
-    	transition: all 1s ease-out;
-    	transition-delay: .5s;
-    }
     
     .mapMode #Footer h3,
     .mapMode #Footer h3 > span{
@@ -205,41 +220,53 @@ Bold 700 Italic
     }
     
     .mapMode #Footer:hover{
-    	height: 600px;
-    	padding-top: 20px;
-    	padding-bottom: 20px;
+    	min-height: 200px;
+    	z-index: 10;
     }
     
     .mapMode #Footer:hover h3,
     .mapMode #Footer:hover h3 > span{
-    	font-size: 30px;
-    	line-height: 30px;
+    	font-size: 19px;
+    	line-height: 19px;
     }
     
     footer#Footer {
       position: relative;
       bottom: 0px;
-      padding-top: 30px;
-      padding-bottom: 30px;
+      padding: 5px 1%;
       margin-top: 0px;
       color: #FDFDFD;
       background-color: #3F3F3F;
-      width: 100%;
+      width: 98%;
+      z-index: 2;
+    }
+    
+    .mapMode #Footer{
+    	position: fixed;
+    	bottom: 0;
+    	background-color: #3F3F3F;
+    	height: 22px;
+    	transition: all 1s ease-out;
+    	transition-delay: .5s;
+    	z-index: 10;
+    	padding-top: 3px;
     }
         
     footer#Footer div#FooterHeading {
-      max-width: 650px;
+      max-width: 490px;
     }
 
     footer#Footer h2 {
-      font: 300 25px/25px "Lato";
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 16px;
       vertical-align: middle;
       padding: 0;
-      line-height: 48px;
+      margin-bottom: 3px;
     }
         
     footer#Footer h3 {
-      font: 800 30px/30px "Open Sans";
+      font: 800 19px/19px "Open Sans";
       text-align: center;
       padding: 0px 0px 20px 0px;
       margin-bottom: -25px;
@@ -256,72 +283,107 @@ Bold 700 Italic
       vertical-align: baseline;
       padding: 0;
       text-align: center;
-      margin-bottom: 40px;
     }
     
     footer#Footer h4.subheading > span {
-      font: 400 30px/30px "Gentium Book Basic";
+      font: 400 23px/23px "Gentium Book Basic";
       font-style: italic;
       text-transform: uppercase;
       background-color: #3F3F3F;
       padding: 0px 15px 0px 15px;
     }
     
+    footer#Footer i{
+    	margin-right: 5px;
+    	color: #CCCCCC;
+    }
+    
+    footer#Footer ul{
+    	margin: 0px;
+    }
+    
     footer#Footer ul.helpitems {
+      margin: 0px;
       list-style: none;
       list-style-position: inside;
-      margin: 0px 0px 40px 0px;
     }
     
     footer#Footer ul.helpitems li {
-      font: 100 20px/20px "Lato";
-      vertical-align: baseline;
-      margin: 15px 0px 0px 0px;                 
+      font-size: 13px;
+      line-height: 23px;
+      vertical-align: baseline;                 
     }
     
-    footer#Footer img[alt=NCEAS]{
-    	width: 90px;
+    footer#Footer ul.helpitems li:hover i{
+    	color: #FFFFFF;
     }
     
     ul.helpitems a {
-      color: #FDFDFD;
+      color: #CCCCCC;
       text-decoration: none;      
     }
     
     footer#Footer a:hover {
       color: #FFFFFF;
-      font-weight: 300;
-      text-decoration: none;      
+      text-decoration: none; 
+      transition: color .5s;     
     }
     
     footer#Footer .disclaimer {
-      color: #FDFDFD;
-      font: 100 14px/14px "Lato";      
+      color: #CCC;
+      font-size: 12px;      
     }
     
     footer#Footer .logo {
       color: #D9D9D9;
-      font: 300 48px "Lato";
+      font-size: 39px;
       line-height: 1.0;
       letter-spacing: -3px;
       margin: 0px 0px 15px 0px;
       text-align: center;
     }
     
-    footer#Footer .acknowledgements {
-      margin-top: 40px;
-    }
-
     footer#Footer img {
       opacity: .75;
+      transition: opacity .5s;
+    }
+    
+    footer#Footer .logos img:hover,
+    footer#Footer .logos p:hover{
+    	opacity: 1;
+    }
+    
+    footer#Footer .logos .knb{
+    	display: block;
+    	margin-top: 17px;
+    }
+    
+    footer#Footer .dataone img{
+    	height: 27px;
+    	width: auto;
+    	margin-top: 24px;
+    }
+    
+    footer#Footer .logos .nceas{
+    	display: block;
+    	margin-top: 0px;
+    }
+    
+    footer#Footer .logos .nceas img{
+    	width: 70px;
+    	height: auto;
+    	margin-top: 5px;
+    }
+    
+    footer#Footer .acknowledgements {
+      margin-top: 12px;
     }
 
     #footer_signup {
       position: relative;
-      left: 50%;
-      /*bottom: 0px;*/
-      width: 188px;
-      margin: 20px auto 20px -94px;
+      width: auto;
+      font-size: inherit;
+      padding: 5px;
     }
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
@@ -497,9 +559,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	bottom: 30px;
 	background-color: #FFF;
 	height: auto;
-	min-width: 300px;
-	overflow-y:scroll;
-	overflow-x: hidden;
+	max-width: 70%;
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;
 	box-shadow: none;
@@ -510,18 +570,18 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 .mapMode #content.collapsed{
-	height: 30px;
+	height: 88px;
 }
 
 
 .mapMode #content{
 	margin-top: 0px;	
-	width: 40%;
-	max-height: 85%;
-	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-	-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
-	box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);	
+	width: 45%;
+	max-height: 85%;	
 	position: fixed;
+	background-color: transparent;
+	overflow-y:scroll;
+	overflow-x: visible;
 }
     
 /* FEATURES CSS 
@@ -590,6 +650,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       border-top: 0px;
       padding-bottom: 40px;
       margin: 20px 10px 20px 10px;
+      background-color: #555555; /*IE 8 fallback */
       background: rgba(0,0,0,0.6);
       color: #FFFFFF;
       border-radius: 6px 6px 6px 6px;
@@ -779,7 +840,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .navbar .nav > li > a {
       color: #555555;
       font-size: 18px;
-      font-family: "Lato";
       font-weight: 400;
       text-transform: uppercase;
     }
@@ -902,6 +962,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     .carousel-caption {
+      background-color: #555555; /*IE 8 fallback */
       background: rgba(0,0,0,0.3);
       position: absolute;
       top: 150px;
@@ -959,7 +1020,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	}
 
     h2.nav-header {
-      font: 400 18px/18px "Lato";
       margin: 20px 10px 10px 15px;
       padding: 3px 0px 3px 0px;
       color: #555555;      
@@ -1001,13 +1061,29 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   -------------------------------------------------- */
     #Metadata {
 		min-height: 800px;
+		width: 90%;
     }
+    
+    #Metadata > .container{
+		width: 100%;
+	}
     
     /* Download  and Publish buttons */
      #downloadPackage a.btn {
     	width: 100px;
     	margin-bottom: 8px;
     } 
+    
+    /* Google Map Images for Geographic Region */
+    .georegion-map{
+    	margin-left: 125px;
+    	margin-bottom: 10px;
+    	border: 1px solid #DDD;
+    	padding: 7px;
+    	border-radius: 4px;
+    	-moz-border-radius: 4px;
+    	-webkit-border-radius: 4px;
+    }
     
 	/* Registry CSS
 	-------------------------------------------------- */
@@ -1114,7 +1190,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	position: fixed;
     	bottom: 30px;
 		left: 0px;
-		
+		min-width: 270px;
     	webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  	-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
@@ -1142,10 +1218,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 		background-image: none;
 	}
-	
-	#share-data-view > i{
-		margin-left: 5px;
-	}
+
 
 	#share-data-view:hover{
 		left: -2px;
@@ -1215,6 +1288,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     /*-- Inputs for search filters --*/
     .clear{
     	clear: both;
+    	height: 0px;
+    	margin: 0px;
+    	padding:0px;
     }
     
     input.filter{
@@ -1224,7 +1300,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	border: 1px solid #AAAAAA;
     	border-right: 0px;
     	height: 20px;
-    	font-family: "Lato", Arial, sans-serif;
     	width: 84%;
     }
     
@@ -1271,9 +1346,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		max-width: 100%;
 		margin: 0px 4% 0px 0px;
 		display: inline-block;
-		font: 400 14px/20px "Lato", "Arial", sans-serif;
 		text-transform: none;
 		text-shadow: none;
+		font-size: 14px;
+		line-height: 20px;
 	}
 	
 	#clear-all i{
@@ -1284,9 +1360,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	.current-filters[class*="span"]{
 		list-style: none;
 		color: #FFFFFF;
-		font: 400 14px/14px "Lato", Arial, sans-serif;
 		margin: 0px;
 		min-height: 0px;
+		font-size: 14px;
 		width: auto;
 	}
 	
@@ -1294,7 +1370,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	.current-filters > li[class*="span"],
 	#filter-year label.ui-state-active, 
 	#includes-files label.ui-state-active{
-		background-color: rgba(17, 94, 149, .8);
+		background-color: #006699;
 		color: #FFFFFF;
 		padding: 0px 5px 0px 5px;
 		border-radius: 2px;
@@ -1305,18 +1381,19 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		margin: 5px 5px 0px 0px;
 		display: inline-block;
 		text-shadow: none;
+		float:left;
 	}
 	
 	.current-filters > li > span{
 		float: left;
 		margin-right: 5px;
-		line-height: 20px;
+		line-height: 19px;
 	}
 	
 	.current-filters > li > i{
 		float: right;
 		margin-top: 2px;
-		color: #8DBCDD;
+		color: #99cccc;
 		transition: color .5s;
 	}
 	
@@ -1346,7 +1423,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
    		min-height: 18px;
    		padding: 0px 5px 0px 5px;
    		width: auto;
-   		font-family: "Lato", Arial, sans-serif;
    		clear: both;
     }
    
@@ -1361,7 +1437,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
    		top: -5px;
    		position: relative;
    		margin-bottom: 0px;
-   		font-family: "Lato", Arial, sans-serif;
+   
     }
     
     #filter-year > input[type="number"]:focus{
@@ -1400,7 +1476,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	z-index: 1;
     	display: block;
     	border: 0;
-    	background: #115E95;
+    	background-color: #006699;
    }
     
     .ui-slider-handle{
@@ -1446,8 +1522,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		border-color: inherit;
 		display: block;
 	}
-	.keyword-search-link.active {
-		background-color: rgba(17, 94, 149, .8);
+	
+	.current-filters > li.keyword-search-link.active {
+		background-color: #006699; /*IE 8 fallback */
+		background-color: rgba(0, 102, 153, .8);
 		border-color: inherit;
 		display: block;
 		height: 20px;
@@ -1461,6 +1539,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       min-height: 25px;
       margin-left: 4%;
       padding-top: 5px;
+      font-weight: normal;
     }
     
     h3.nav-header{
@@ -1526,7 +1605,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     	z-index: 100;
     }
     
@@ -1546,11 +1625,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     li.ui-menu-item > a:hover,
     .ui-state-focus
      {
-        color: #166194;
+        color: #006699;
     	cursor: pointer;
     	text-decoration: none;
     	font-weight: bold;
 	}
+
 
 /* RESULT CSS
 -------------------------------------------------- */
@@ -1564,6 +1644,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	.mapMode .result-header{
  		position: relative;
  		background-color: #FFFFFF;
+ 		width: 100%;
  	}
  	
  	.mapMode .result-header > .result-header-count{
@@ -1572,32 +1653,81 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		border-bottom: 3px solid #DDDDDD;
  		padding-bottom: 5px; 
  		margin-left: 0px;
- 		width: 40%;
+ 		width: 45%;
  		cursor: pointer;
  		z-index: 1;
- 		border-radius: 4px 0px 0px 0px;
- 		-moz-border-radius: 4px 0px 0px 0px;
- 		-webkit-border-radius: 4px 0px 0px 0px;
+ 		border-radius: 4px 0px 0px 4px;
+ 		-moz-border-radius: 4px 0px 0px 4px;
+ 		-webkit-border-radius: 4px 0px 0px 4px;
+ 	}
+ 	
+ 	.mapMode .collapsed .result-header > .result-header-count{
+ 		padding-left: 10px;
+ 	}
+ 	
+ 	.mapMode .result-header > i{
+ 		background-color: #FFFFFF;
+ 		color: #CCCCCC;
+ 		border-radius: 4px 0px 0px 4px;
+ 		box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
  	}
  	
  	#countstats{
 		margin-left: 10px;
 		margin-bottom: 10px;
+		text-transform: none;
+		color: #999999;
+	}
+	
+	.mapMode #countstats{
+		margin-left: 49px;
+		margin-top: 5px;
+		font-size: 22px;
 	}
 	
 	#countstats > span{
 		text-transform: none;
+		color: #555555;
 	}
 	
 	#countstats:after{
 		content: " data packages";
 	}
-
+	
+	#countstats:before{
+		content: "Listing ";
+	}
+	
+	.mapMode #countstats:before{
+		content: "Mapping ";
+	}
+	
+	.map-pointer{
+		display:none;
+	}
+	
+	.mapMode .map-pointer{
+		display: block;
+		position: fixed;
+		font-size: 54px;
+		background-color: #FFFFFF;
+		z-index: 1;
+		width: auto;
+		color: #999999;
+		padding-left: 5px;
+		border-radius: 4px 0px 0px 4px;
+		-webkit-border-radius: 4px 0px 0px 4px;
+		-moz-border-radius: 4px 0px 0px 4px;
+	}
+	
+	.mapMode .collapsed .map-pointer{
+		display: none;
+	}
  	
  	#sortOrder{
  		float:right;
  		width: auto;
- 		padding-right: 10px;
+ 		margin-right: 10px;
  	}
  	
  	.mapMode #sortOrder{
@@ -1608,12 +1738,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		z-index: 1;
  	}
  	
- 	.mapMode #content.collapsed #sortOrder{
- 		display: none;
- 	}
- 	
  	select{
- 		font: "400 14px/14px "Lato", "Arial", sans-serif;
  		height: 24px;
  		width: auto;
  	}
@@ -1623,39 +1748,124 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	margin: 0px;
     }
     
+    .pagination ul > li > a.unactive{
+    	font-size: 20px;
+    	color: #999999;
+    	cursor: default;
+    }
+    
     /*-- Results List Rows--*/
     .mapMode .search-results{
     	margin-top: 80px;
+    	width: 95%;
+    	float: right;
+    	background-color: #FFFFFF;
+    	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+    	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+    	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
+    	overflow-y: scroll;
+    	overflow-x: visible;
+    }
+    
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
     }
     
     .result-row {
       display: block;
         border-bottom: 1px dashed #ccc;
-        padding: 5px 7px;
+        padding: 5px 1%;
+        width: 98%;
+    }
+    
+    .result-row .result-row{
+    	border-bottom: 0px;
     }
     
      .result-row:hover { 
     background-color: #eee;
   }
-
-    .result-author {
-      font-weight: bold;
+  
+  .result-title > a{
+  	color: #555555;
+  	font-weight: bold;
+  }
+    
+    .result-citation{
+    	padding-left: 3%;
+    }
+    
+    .result-row > .expand{
+    	color: #999999;
+    }
+    
+    .result-row .abstract{
+    	padding: 0px 2%;
+    	width: 96%;
+		float: none;
+		clear: both;
+    	border: 0px;
+    	font-size: 0.9em;
+		display:none;
     }
     
     /*-- Results List Icons --*/
-    .result-row .has-data{
-    	color: #666;
+    .info-icons{
+    	min-width: 28px;
+    	max-height: 43px;
+    }
+    
+    .info-icons .show-abstract > i{
+    	color: #EEE;
+    	margin-left: 3px;
+    	font-size: 17px;
+    }
+    
+    .info-icons .show-abstract > i.show-abstract{
+    	color: #666666;
+    }
+    
+    .info-icons .has-data > i{
+    	color: #EEE;
     	margin-left: 10px;
     }
     
-    .result-row .on-map{
-    	color: #DA4D3A;
-    	font-size: 1.1em;
-    	margin-left: 5px;
+    .info-icons .has-data > i.has-data{
+    	color: #666666;
     }
     
-    .result-row .tooltip-inner{
-    	width: 70px;
+    .info-icons .on-map > i{
+    	font-size: 17px;
+    	margin-left: 5px;
+    	color: #EEE;
+    }
+    
+    .info-icons .on-map > i.on-map{
+    	color: #DA4D3A;
+    }
+    
+    .popover{
+    	max-width: 250px;
+    }
+    
+     body > .popover{
+    	max-height: 500px;
+    	min-height: 10px;
+    	overflow: hidden;
+    	word-break: break-all;
+    	text-overflow: ellipsis;
+    	min-width: 10%;
+    	max-width: 250px;
+    }
+    
+    .mapMode > .popover{
+    	min-width: 30%;
+    }
+    
+    .has-data .popover{
+    	min-width: 150px;
+    	max-width: 150px;
     }
     
     .result-row .icon-download-alt,
@@ -1913,7 +2123,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs > .document h2:hover > .headerlink,
 #metacatDocs > .document h3:hover > .headerlink{
 	display: inline;
-	color: #166194;
+	color: #006699;
 }
 
 
@@ -1984,6 +2194,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
 #metacatDocs table{
+		background-color: #FFFFFF;
     	background: rgba(255,255,255, 0.8);
     	margin: 40px auto;
     	

@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes for the Application
 		defaults: {
 			headerType: 'default',
+			searchMode: 'map',
 			username: null,
 			fullName: null,
 			sortOrder: 'dateUploaded+desc',
@@ -39,8 +40,6 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 			}
 			
-			this.set('baseUrl', "http://dev2.nceas.ucsb.edu");
-
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');

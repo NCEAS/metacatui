@@ -22,8 +22,12 @@
       
     }
     
+    select{
+    	width: auto;
+    }
+    
     body > section, footer {
-      min-height: 400px;
+      min-height: 800px;
       margin: 0;
       z-index: 10;
     }
@@ -71,6 +75,10 @@
      	text-decoration: underline;
      }
      
+     .pointer{
+     	cursor: pointer;
+     }
+     
      .clear{
      	clear:both;
      }
@@ -116,17 +124,22 @@
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
   section#Notification {
-    position: fixed;
-    top: 120px;
-    height: 40px;
-    width: 100%;
-    max-height: 40px;
-    min-height: 40px;
-    background-color: #FDFDFD;
+    position: relative;
+    top: 95px;
+    margin: 50px auto;
+    font-size: 40px;
   }
   
-  .progress .bar{
-  	background-color: #00b3ed;
+  #Notification i{
+  	font-size: 40px;
+  	margin-left: 43%;
+  }
+  
+  #Notification p{
+  	font-size: 20px;
+  	width: 350px;
+  	margin: 20px auto;
+  	display: block;
   }
 
   
@@ -749,7 +762,7 @@
     }
     
     .filter-contain .filter-contain{
-    	padding: 12px 15px 12px 15px;
+    	padding: 0px 15px 12px 15px;
 		border-bottom: 1px solid #e0e0e0;
     }
 
@@ -989,7 +1002,7 @@
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	max-height: 250px;
+    	max-height: 150px;
     	z-index: 10;
     }
     
@@ -1029,10 +1042,21 @@
     	margin-top: 10px;
     }
     
+    .search-results > p{
+    	text-align: center;
+    	padding-top: 5px;
+    }
+    
     .result-row {
       display: block;
         border-bottom: thin solid;
-        padding: 5px;
+        padding: 5px 1%;
+        width: 98%;
+    }
+    
+    .result-row .result-row{
+    	border-bottom:0px;
+    	padding: 0px;
     }
     
     .result-row:hover { 
@@ -1041,6 +1065,67 @@
 
     .result-author {
       font-weight: bold;
+    }
+    
+       .info-icons{
+    	min-width: 28px;
+    	max-height: 43px;
+    }
+    
+    .info-icons .show-abstract > i{
+    	color: #EEE;
+    	margin-left: 3px;
+    	font-size: 17px;
+    }
+    
+    .info-icons .show-abstract > i.show-abstract{
+    	color: #666666;
+    }
+    
+    .info-icons .has-data > i{
+    	color: #EEE;
+    	margin-left: 10px;
+    	margin-top: 4px;
+    	display: block;
+    	font-size: 14px;
+    	width: 15px;
+    }
+    
+    .info-icons .has-data > i.has-data{
+    	color: #666666;
+    }
+    
+    .info-icons .on-map > i{
+    	font-size: 17px;
+    	margin-left: 5px;
+    	color: #EEE;
+    }
+    
+    .info-icons .on-map > i.on-map{
+    	color: #DA4D3A;
+    }
+           
+    .popover{
+    	max-width: 250px;
+    }
+    
+     body > .popover{
+    	max-height: 500px;
+    	min-height: 10px;
+    	overflow: hidden;
+    	word-break: break-all;
+    	text-overflow: ellipsis;
+    	min-width: 10%;
+    	max-width: 250px;
+    }
+    
+    .mapMode > .popover{
+    	min-width: 30%;
+    }
+    
+    .has-data .popover{
+    	min-width: 150px;
+    	max-width: 150px;
     }
     
     .result-row .icon-caret-down {
@@ -1052,13 +1137,6 @@
     	font-size: 18px;
     	color: #333333;
     	height: 14px;
-    }
-    
-    .result-row .has-data{
-    	color: #555555;
-    	font-size: 18px;
-    	position: relative;
-    	left: -15px;
     }
     
     .result-row .download{
@@ -1085,6 +1163,14 @@
     	margin: 10px auto;
     }
     
+    .pagination > ul{
+    	float: left;
+    }
+    
+    .pagination  ul > li > a.unactive{
+    	cursor: default;
+    	color: #999999;
+    }
     
     
     /*-------------- DOCUMENTATION CSS -----------------------------*/

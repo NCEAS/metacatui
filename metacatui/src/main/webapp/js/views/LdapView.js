@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha'], 				
-	function($, _, Backbone, BootStrap, Recaptcha) {
+define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!templates/loading.html'], 				
+	function($, _, Backbone, BootStrap, Recaptcha, LoadingTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -9,6 +9,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha'],
 		el: '#Content',
 		
 		template: null,
+		
+		loadingTemplate: _.template(LoadingTemplate),
 		
 		containerTemplate: '<article><div class="container"><div class="row-fluid"><div id="DynamicContent" class="text-left"></div></div></div></article>',
 				
@@ -31,8 +33,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha'],
 			appModel.set('headerType', 'default');
 			
 			console.log('Calling the ldapweb to display');
-			// show the progress bar
-			this.showProgressBar();
+			// show the loading icon
+			this.showLoading();
 			
 			// do we have a specific stage?
 			var completeUrl = this.ldapwebUrl + this.ldapwebQueryString;
@@ -80,11 +82,11 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha'],
 			// which form?
 			var form = $(event.target).parents("form");
 			
-			// get the form data before replacing everything with the progressbar!
+			// get the form data before replacing everything with the loading icon!
 			var formData = $(form).serialize()
 			
-			// show the progress bar
-			this.showProgressBar();
+			// show the loading icon
+			this.showLoading();
 			
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
@@ -108,9 +110,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha'],
 			
 		},
 		
-		showProgressBar: function() {
+		showLoading: function() {
 			this.scrollToTop();
-			this.$el.html('<section id="Notification"><div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></section>');
+			this.$el.html(this.loadingTemplate());
 		},
 		
 		scrollToTop: function() {

@@ -55,7 +55,7 @@ define(['jquery',
 			if ($(imageEl).length > 0) {
 				// only show the image when it is completely done loading
 				$(imageEl).load(function() {
-					console.debug("Showing IMAGE AFTER LOAD()");
+					console.log("Showing IMAGE AFTER LOAD()");
 					$(imageEl).fadeIn('slow');
 				});
 			}
@@ -108,7 +108,7 @@ define(['jquery',
 			
 			//reference to appView
 			var thisAppViewRef = this;
-			
+	
 			// Change the background image if there is one
 			var imageEl = $('#bg_image');
 			if ($(imageEl).length > 0) {
@@ -133,6 +133,7 @@ define(['jquery',
 					
 				});
 			}
+		
 			
 			// close the current view
 			if (this.currentView){

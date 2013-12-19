@@ -9,7 +9,9 @@ console.log("Using themeMap: " + themeMap);
 console.log("Using metacatContext: " + metacatContext);
 
 var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
-var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+if (mapKey){
+	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+}
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
@@ -19,7 +21,7 @@ require.config({
   map: themeMap,
   paths: {
     jquery: '../components/jquery',
-    jqueryui: '../components/jquery-ui-1.10.3-2.custom.min',
+    jqueryui: '../components/jquery-ui-1.10.3.custom.min',
     underscore: '../components/underscore',
     backbone: '../components/backbone',
     bootstrap: '../components/bootstrap.min',
@@ -35,7 +37,7 @@ require.config({
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
     gmapsAPI: gmapsURL,
-	markerClusterer: '../components/markerclusterer_compiled'
+	markerClusterer: '../components/markerclustererplus_2.1.2'
 
   },
   shim: { /* used for libraries without native AMD support */

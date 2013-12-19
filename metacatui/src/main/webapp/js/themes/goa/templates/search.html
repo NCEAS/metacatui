@@ -23,7 +23,7 @@
 			    </div>
 			    
 			    <div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-table"></i>Data Attributes</h3>
+					<h3 class="nav-header"><i class="icon-table"></i><label>Data Attributes</label></h3>
 					<input class="span10 filter" type="text" placeholder="Variable or column name" id="attribute_input" data-category="attribute">
 					<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
 			    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
@@ -68,6 +68,15 @@
 					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
 					</ul>
 				</div>
+				
+				<div class="input-append filter-contain">
+					<h3 class="nav-header"><i class="icon-map-marker span1"></i><label>Location</label></h3>
+					<input class="filter" type="text" placeholder="Location" id="spatial_input" data-category="spatial">
+					<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
+					<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
+					</ul>
+				</div>
+				
 			</div>
 			<ul class="category-nav nav-list nav">
 				<li><h2 class="nav-header span12">Data Categories</h2><div class="clear"></div></li>
@@ -100,7 +109,7 @@
 				];
 				
 				_.each(keywords, function(element, index){
-					print('<li class="nav-item" data-category="additionalCriteria" data-term="' + keywords[index].link + '"><i class="icon-remove span1 remove-addtl-criteria"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="' + keywords[index].link + '">' + keywords[index].display + '</a><div class="clear"></div></li>');
+					print('<li class="nav-item" data-category="additionalCriteria" data-term="' + keywords[index].link + '"><i class="icon-remove span1 remove-addtl-criteria" data-category="additionalCriteria" data-term="' + keywords[index].link + '"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="' + keywords[index].link + '">' + keywords[index].display + '</a><div class="clear"></div></li>');
 				});
 			%>
 			</ul>
@@ -113,20 +122,10 @@
 				<div id="results-header" class="row-fluid result-header">
 									
 					<!-- count stats -->
-					<div class="result-header-count span6" id="statcounts">0 to 0 of 0</div>
-					
-					<!-- top pager -->
-					<!-- 
-					<div class="result-header-pager span3 pagination pagination-right" id="resultspager_top">
-						<ul>
-							<li><a id="results_prev">Prev</a></li>
-							<li><a id="results_next">Next</a></li>
-						</ul>
-					</div>
-					-->
+					<div class="result-header-count span7" id="statcounts">0 to 0 of 0</div>
 					
 					<!-- sort order -->
-					<div class="span6 text-right">
+					<div class="span3 text-right">
 						<select id=sortOrder>
 							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
 							<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>

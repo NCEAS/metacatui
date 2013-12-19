@@ -35,12 +35,16 @@ define(['jquery',
 		map: null,
 		
 		ready: false,
+		
+		allowSearch: true,
 				
 		markers: {},
 		
 		markerClusterer: {},
 				
 		markerImage: './img/markers/orangered-marker.png',
+		
+		markerImageAlt: './img/markers/orangered-enlarged-marker.png',
 		
 		markerImage15: './img/markers/orangered-15px-25a.png',
 		
@@ -72,10 +76,13 @@ define(['jquery',
 						   'click .remove-filter' : 'removeFilter',
 			'click input[type="checkbox"].filter' : 'updateBooleanFilters',
 							   'click #clear-all' : 'resetFilters',
-					 'click a.keyword-search-link' : 'additionalCriteria',
+					'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
-				   			 	'click #toggle-map' : 'toggleMapMode'
+				   			  'click #toggle-map' : 'toggleMapMode',
+				   			   'click .view-link' : 'routeToMetadata',
+				   		 'mouseover .open-marker' : 'openMarker',
+				   	      'mouseout .open-marker' : 'closeMarker'
 		},
 		
 		initialize: function () {
@@ -118,6 +125,7 @@ define(['jquery',
 
 			console.log('Rendering the DataCatalog view');
 			appModel.set('headerType', 'default');
+		
 			
 			//Populate the search template with some model attributes
 			var cel = this.template(
@@ -132,23 +140,29 @@ define(['jquery',
 						username: appModel.get('username')
 					}
 			);
+			
+			
 			this.$el.html(cel);
-			this.updateStats();
+			this.updateStats();		
 			
-			//Render the Google Map
-			this.renderMap();
-			
-			
+			if(appModel.get('searchMode') == 'map'){
+				//Render the Google Map
+				this.renderMap();	
+			}	
+					
 			//Update the year slider
 			this.updateYearRange(); 
 			
-			//Initialize the year type label tooltips
-			$('.year-tooltip').tooltip();
+			//Initialize the tooltips
 			$('.tooltip-this').tooltip();
+			$('.popover-this').popover();
+			
+			//Initialize the resizeable content div
+			$('#content').resizable({handles: "n,s,e,w"});
 			
 			//Initialize the jQueryUI button checkboxes
 			$( "#filter-year" ).buttonset();
-			$( "#includes-files" ).buttonset();
+			$( "#includes-files-buttonset" ).buttonset();
 			
 			//Iterate through each search model text attribute and show UI filter for each
 			var categories = ['all', 'creator', 'taxon'];
@@ -184,8 +198,7 @@ define(['jquery',
 			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
 			
 			// and go to a certain page if we have it
-			this.showResults();
-			
+			this.showResults();		
 
 			return this;
 		},
@@ -198,17 +211,25 @@ define(['jquery',
 			}
 			
 			// set to map mode
-			$("body").addClass("mapMode");
+			appModel.set('searchMode', 'map');
+			$("body").addClass("mapMode");				
 			
 			//Set a reserved phrase for the map filter
 			this.reservedMapPhrase = "Using map boundaries";
 			
-			var mapCenter = new gmaps.LatLng(-15.0, 0.0);
+			//If the spatial filters are set, rezoom and recenter the map to those filters
+			if(searchModel.get('north')){
+				var mapZoom = searchModel.get('map').zoom;
+				var mapCenter = searchModel.get('map').center;
+			}
+			else{
+				var mapZoom = 3;
+				var mapCenter = new gmaps.LatLng(-15.0, 0.0);
+			}
 			
 			var mapOptions = {
-			    zoom: 3,
+			    zoom: mapZoom,
 				minZoom: 3,
-				maxZoom: 15,
 			    center: mapCenter,
 				disableDefaultUI: true,
 			    zoomControl: true,
@@ -236,28 +257,55 @@ define(['jquery',
 			
 				viewRef.ready = true;
 				
-				//If the map is zoomed all the way out, do not apply the spatial filters
-				if(mapRef.getZoom() == mapOptions.minZoom){ return; }
-				
-				//Get the Google map bounding box
-				var boundingBox = mapRef.getBounds();
-				
-				//Set the search model filters
-				searchModel.set('north', boundingBox.getNorthEast().lat());
-				searchModel.set('west', boundingBox.getNorthEast().lng());
-				searchModel.set('south', boundingBox.getSouthWest().lat());
-				searchModel.set('east', boundingBox.getSouthWest().lng());
-				
-				//Add a new visual 'current filter' to the DOM for the spatial search
-				viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
-				
-				//Trigger a new search
-				viewRef.triggerSearch();
+				if(viewRef.allowSearch){
+					
+					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
+					if(viewRef.map.getZoom() == mapOptions.minZoom){
+						console.log('at minimum zoom');
+						viewRef.resetMap();						
+					}
+					else{
+						//Get the Google map bounding box
+						var boundingBox = mapRef.getBounds();
+						
+						//Set the search model spatial filters
+						searchModel.set('north', boundingBox.getNorthEast().lat());
+						searchModel.set('west', boundingBox.getSouthWest().lng());
+						searchModel.set('south', boundingBox.getSouthWest().lat());
+						searchModel.set('east', boundingBox.getNorthEast().lng());
+						
+						//Set the search model map filters
+						searchModel.set('map', {
+							zoom: viewRef.map.getZoom(), 
+							center: viewRef.map.getCenter()
+							});
+						
+						//Add a new visual 'current filter' to the DOM for the spatial search
+						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+					}
+					
+					//Trigger a new search
+					viewRef.triggerSearch();	
+				}
+				else{
+					viewRef.allowSearch = true;
+				}
+			});
+			
+			//Let the view know we have zoomed on the map
+			google.maps.event.addListener(mapRef, "zoom_changed", function(){
+				console.log('has zoomed');
+				viewRef.allowSearch = true;
 			});
 
 		},
 		
+		//Resets the model and view settings related to the map
 		resetMap : function(){
+			if(!gmaps){
+				return;
+			}
+			
 			//First reset the model
 			//The categories pertaining to the map
 			var categories = ["east", "west", "north", "south"];
@@ -267,8 +315,17 @@ define(['jquery',
 				searchModel.set(categories[i], null);				
 			}
 			
-			//Go back to the min zoom level
-			this.map.setZoom(0);
+			//Reset the map settings
+			searchModel.set('map', {
+				zoom: null,
+				center: null
+			});
+			
+			this.allowSearch = false;
+			
+			
+			//Remove the map filter in the UI
+			this.hideFilter($('#current-spatial-filters').find('[data-term="'+ this.reservedMapPhrase +'"]'));
 		},
 		
 		/* 
@@ -281,26 +338,22 @@ define(['jquery',
 			if (page == null) {
 				page = 0;
 			}
-			
-			//Get all the search model attributes
-			//Start with the 'all' category
-			var search = searchModel.get('all');
-			var sortOrder = searchModel.get('sortOrder');
-			
+					
 			this.removeAll();
+			
+			var sortOrder = searchModel.get('sortOrder');
 			
 			appSearchResults.setrows(500);
 			appSearchResults.setSort(sortOrder);
-			appSearchResults.setfields("id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord, site");
+			
+			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate";
+			if(gmaps){
+				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
+			}
+			appSearchResults.setfields(fields);
 			
 			//Create the filter terms from the search model and create the query
 			var query = "formatType:METADATA+-obsoletedBy:*";
-			
-			//resourceMap
-			var resourceMap = searchModel.get('resourceMap');
-			if(resourceMap){
-				query += '+resourceMap:*';
-			}
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var phrase = function(entry){
@@ -316,10 +369,30 @@ define(['jquery',
 				}
 			};
 			
+			/* Add trim() function for IE*/
+			if(typeof String.prototype.trim !== 'function') {
+				  String.prototype.trim = function() {
+				    return this.replace(/^\s+|\s+$/g, ''); 
+				  }
+			}
+			
+			//**Get all the search model attributes**
+			
+			//Start with the 'all' category
+			var search = searchModel.get('all');
+			
+			//resourceMap
+			var resourceMap = searchModel.get('resourceMap');
+			if(resourceMap){
+				query += '+resourceMap:*';
+			}
+			
 			// attribute
 			var thisAttribute = null;
 			var attribute = searchModel.get('attribute');
+			
 			for (var i=0; i < attribute.length; i++){
+				
 				//Trim the spaces off
 				thisAttribute = attribute[i].trim();
 				
@@ -412,7 +485,7 @@ define(['jquery',
 			
 			//Year
 			//Get the types of year to be searched first
-			var pubYear = searchModel.get('pubYear');
+			var pubYear  = searchModel.get('pubYear');
 			var dataYear = searchModel.get('dataYear');
 			if (pubYear || dataYear){
 				//Get the minimum and maximum years chosen
@@ -430,18 +503,32 @@ define(['jquery',
 			}
 			else{
 				var resultsYearMin = searchModel.get('resultsYearMin');
-				var resultsYearMax = searchModel.get('resultsYearMax');
-				
-				//Get the minimum and maximum years of the data coverage years from the search results
-				
+				var resultsYearMax = searchModel.get('resultsYearMax');			
 			}
 			
 			//Map
 			if(searchModel.get('north')!=null){
-				query += ("+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
-						  "+eastBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
-						  "+westBoundCoord:%7B" + searchModel.get('east') + "%20TO%20" + searchModel.get('west') + "%7D" +
-						  "+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D");
+				query += 
+						"+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
+						"+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D";
+				if (searchModel.get('west') > searchModel.get('east')) {
+					query += 
+						"+eastBoundCoord:("
+						+ "%7B" + searchModel.get('west') + "%20TO%20" + "180" + "%7D"
+						+ "%20OR%20"
+						+ "%7B" + "-180" + "%20TO%20" + searchModel.get('east') + "%7D"
+						+ ")"
+						+ "+westBoundCoord:(" 
+						+ "%7B" + searchModel.get('west') + "%20TO%20" + "180" + "%7D"
+						+ "%20OR%20"
+						+ "%7B" + "-180" + "%20TO%20" + searchModel.get('east') + "%7D"
+						+ ")"
+						;
+				} else {
+					query += 
+						"+eastBoundCoord:%7B" + searchModel.get('west') + "%20TO%20" + searchModel.get('east') + "%7D" +
+						"+westBoundCoord:%7B" + searchModel.get('west') + "%20TO%20" + searchModel.get('east') + "%7D";
+				}
 			}
 			
 			//Spatial string
@@ -460,9 +547,6 @@ define(['jquery',
 					query += "+site:*" + thisSpatial + "*";
 				}
 			}
-			
-			console.log('query: ' + query);
-			
 			//Set the facets in the query
 			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class", "attributeName", "attributeLabel", "site"]);
 			
@@ -504,8 +588,16 @@ define(['jquery',
 			var input = this.$el.find($('#' + category + '_input'));
 			var term = input.val();
 			
+			//Check that something was actually entered
+			if((term == "") || (term == " ")){
+				return false;
+			}
+			
 			//Now clear that input
 			input.val('');
+			
+			//Close the autocomplete box
+			$('#' + category + '_input').autocomplete("close");
 				
 			//Get the current searchModel array
 			var filtersArray = _.clone(searchModel.get(category));
@@ -564,7 +656,6 @@ define(['jquery',
 			// Get the minimum and maximum values from the input fields
 			var minVal = $('#min_year').val();
 			var maxVal = $('#max_year').val();
-			//console.log(minVal, maxVal);
 			
 			//Also update the search model
 		    searchModel.set('yearMin', minVal);
@@ -578,7 +669,7 @@ define(['jquery',
 			//jQueryUI slider 
 			$('#year-range').slider({
 			    range: true,
-			    disabled: true,
+			    disabled: false,
 			    min: minResultsVal,			//sets the minimum on the UI slider on initialization
 			    max: maxResultsVal, 		//sets the maximum on the UI slider on initialization
 			    values: [ minVal, maxVal ], //where the left and right slider handles are
@@ -590,40 +681,27 @@ define(['jquery',
 			      //Also update the search model
 			      searchModel.set('yearMin', $('#min_year').val());
 			      searchModel.set('yearMax', $('#max_year').val());
+			     
+			      var pubYearChecked  = $('#publish_year').prop('checked');
+			      var dataYearChecked = $('#data_year').prop('checked');
 			      
-					//Route to page 1
-					viewRef.updatePageNumber(0);
+			      //If neither the publish year or data coverage year are checked
+			      if((!pubYearChecked) && (!dataYearChecked)){
+			    	  //Then we want to check the data coverage year on the user's behalf
+			    	  $('#data_year').prop('checked', 'true');
+			    	  //And update the search model
+			    	  searchModel.set('dataYear', true);
+			    	  //refresh the UI buttonset so it appears as checked
+			    	  $("#filter-year").buttonset("refresh");
+			      }
+			      
+			      //Route to page 1
+				  viewRef.updatePageNumber(0);
 			      
 			      //Trigger a new search
 			      viewRef.triggerSearch();
 			    }
 			  });
-			
-			//Check checkbox values for type of year
-			//All the slider elements this will affect
-			var sliderEls = [$('#year-range'), $('#min_year'), $('#max_year')];
-			//If either data year or publication year is checked,
-			if($('#data_year').prop("checked") || ($('#publish_year').prop("checked"))){
-				//Then enable the jQueryUI slider
-				$('#year-range').slider("option", "disabled", false);
-				
-				//And enable all elements and remove disabled class
-				for(var i=0; i<sliderEls.length; i++){
-					sliderEls[i].removeClass('disabled');
-					sliderEls[i].prop("disabled", false);
-				}
-			}
-			//If neither are checked
-			else if(!$('#data_year').prop("checked") && (!$('#publish_year').prop("checked"))){
-				//Disable the jQueryUI slider
-				$('#year-range').slider("option", "disabled", true);
-				
-				//And disbale all elements and add disabled class
-				for(var i=0; i<sliderEls.length; i++){
-					sliderEls[i].addClass('disabled');
-					sliderEls[i].prop("disabled", true);
-				}
-			}
 
 
 		},
@@ -643,12 +721,12 @@ define(['jquery',
 			//Check if this is the reserved phrase for the map filter
 			if((category == "spatial") && (term == this.reservedMapPhrase)){
 				this.resetMap();
+				this.renderMap();
 			}
 			else{
 				//Remove this filter term from the searchModel
 				this.removeFromModel(category, term);				
 			}
-
 			
 			//Hide the filter from the UI
 			this.hideFilter(filterNode);
@@ -662,8 +740,12 @@ define(['jquery',
 		},
 		
 		//Clear all the currently applied filters
-		resetFilters : function(e){			
+		resetFilters : function(){			
 			var viewRef = this;
+			
+			console.log('Resetting the filters');
+			
+			this.allowSearch = true;
 			
 			//Clear all the filters in the UI
 			this.$el.find('.current-filter').each(function(){
@@ -681,15 +763,15 @@ define(['jquery',
 
 			//Reset the checkboxes
 			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
-			$("#includes-files").buttonset("refresh");
+			$("#includes-files-buttonset").buttonset("refresh");
 			$("#data_year").prop("checked", searchModel.get("dataYear"));
 			$("#publish_year").prop("checked", searchModel.get("pubYear"));
-			console.log($('#data_year').prop('checked'));
 			$("#filter-year").buttonset("refresh");
 			
 			//Zoom out the Google Map
-			this.map.setZoom(0);
-			
+			this.resetMap();	
+			this.renderMap();
+		
 			//Hide the reset button again
 			$('#clear-all').css('display', 'none');
 			
@@ -788,18 +870,23 @@ define(['jquery',
 			// Get the clicked node
 			var targetNode = $(e.target);
 			
+			//If this additional criteria is already applied, remove it
+			if(targetNode.hasClass('active')){
+				this.removeAdditionalCriteria(e);
+				return false;
+			}
+			
+			// Get the filter criteria
+			var term = targetNode.attr('data-term');
+			
+			// Find this element's category in the data-category attribute
+			var category = targetNode.attr('data-category');
+			
 			// style the selection
 			$(".keyword-search-link").removeClass("active");
 			$(".keyword-search-link").parent().removeClass("active");
 			targetNode.addClass("active");
 			targetNode.parent().addClass("active");
-			
-			// Get the filter criteria
-			var term = targetNode.attr('data-term');
-			console.log('applying additional criteria '+ term);
-			
-			// Find this element's category in the data-category attribute
-			var category = targetNode.attr('data-category');
 			
 			// Add this criteria to the search model
 			searchModel.set(category, [term]);
@@ -813,6 +900,7 @@ define(['jquery',
 		},
 		
 		removeAdditionalCriteria: function(e){
+
 			// Get the clicked node
 			var targetNode = $(e.target);
 			
@@ -821,7 +909,7 @@ define(['jquery',
 			$(".keyword-search-link").parent().removeClass("active");
 			
 			//Get the term
-			var term = targetNode.parent().attr('data-term');
+			var term = targetNode.attr('data-term');
 			
 			//Get the current search model additional criteria 
 			var current = searchModel.get('additionalCriteria');
@@ -861,26 +949,36 @@ define(['jquery',
 		updatePager : function() {
 			if (appSearchResults.header != null) {
 				var pageCount = Math.ceil(appSearchResults.header.get("numFound") / appSearchResults.header.get("rows"));
-				var pages = new Array(pageCount);
-				// mark current page correctly, avoid NaN
-				var currentPage = -1;
-				try {
-					currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
-				} catch (ex) {
-					console.log("Exception when calculating pages:" + ex.message);
+				
+				//If no results were found, do not populate the pagination.
+				if(pageCount == 0){
+					this.$results.html('<p id="no-results-found">No results found.</p>');
 				}
-				this.$resultspager = this.$('#resultspager');
-				this.$resultspager.html(
-					this.pagerTemplate({
-						pages: pages,
-						currentPage: currentPage
-					})
-				);
+				else{
+					var pages = new Array(pageCount);
+					
+					// mark current page correctly, avoid NaN
+					var currentPage = -1;
+					try {
+						currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
+					} catch (ex) {
+						console.log("Exception when calculating pages:" + ex.message);
+					}
+					
+					this.$resultspager = this.$('#resultspager');
+					
+					//Populate the pagination element in the UI
+					this.$resultspager.html(
+						this.pagerTemplate({
+							pages: pages,
+							currentPage: currentPage
+						})
+					);
+				}
 			}
 		},
 		
 		updatePageNumber: function(page) {
-			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
 			var route = Backbone.history.fragment;
 			if (route.indexOf("/page/") >= 0) {
 				//replace the last number with the new one
@@ -937,8 +1035,7 @@ define(['jquery',
 				var facetCounts = appSearchResults.facetCounts;
 				
 				
-				//***Set up the autocomplete (jQueryUI) feature for each input****//
-				
+				//***Set up the autocomplete (jQueryUI) feature for each text input****//				
 				//For the 'all' filter, use keywords
 				var allSuggestions = appSearchResults.facetCounts.keywords;
 				var rankedSuggestions = new Array();
@@ -947,7 +1044,20 @@ define(['jquery',
 				}
 				var viewRef = this;
 				$('#all_input').autocomplete({
-					source: rankedSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#all_input').val(ui.item.value);
@@ -955,6 +1065,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -974,7 +1088,20 @@ define(['jquery',
 					rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
 				}
 				$('#attribute_input').autocomplete({
-					source: rankedAttributeSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedAttributeSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#attribute_input').val(ui.item.value);
@@ -982,6 +1109,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -992,7 +1123,20 @@ define(['jquery',
 					rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
 				}
 				$('#creator_input').autocomplete({
-					source: rankedOriginSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedOriginSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#creator_input').val(ui.item.value);
@@ -1000,6 +1144,10 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom"				
 					}
 				});
 				
@@ -1027,9 +1175,24 @@ define(['jquery',
 					rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
 				}
 				$('#taxon_input').autocomplete({
-					source: rankedTaxonSuggestions,
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedTaxonSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					position: {
-						collision: "flip"						
+						my: "left top",
+						at: "left bottom",
+						collision: "none"
 					},
 					select: function(event, ui) {
 						// set the text field
@@ -1048,10 +1211,20 @@ define(['jquery',
 					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
 				}
 				$('#spatial_input').autocomplete({
-					source: rankedSpatialSuggestions,
-					position: {
-						collision: "flip"						
-					},
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedSpatialSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
 					select: function(event, ui) {
 						// set the text field
 						$('#spatial_input').val(ui.item.value);
@@ -1059,6 +1232,11 @@ define(['jquery',
 						viewRef.updateTextFilters(event);
 						// prevent default action
 						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom",
+						collision: "flip"
 					}
 				});
 				
@@ -1066,33 +1244,46 @@ define(['jquery',
 			
 		},
 		
-		/* add a marker for objects
-		 * TODO: cluster them */
+		/* add a marker for objects */
 		addObjectMarker: function(solrResult) {
 			
+			//Skip this if there is no map
 			if (!gmaps) {
 				return;
 			}
 			
 			var pid = solrResult.get('id');
 			
-			// already on map
+			// if already on map
 			if (this.markers[pid]) {
 				return;
 			}
 			
+			//Get the four bounding lat/longs for this data item
 			var n = solrResult.get('northBoundCoord');
 			var s = solrResult.get('southBoundCoord');
 			var e = solrResult.get('eastBoundCoord');
 			var w = solrResult.get('westBoundCoord');
 			
+			//Create Google Map LatLng objects out of our coordinates
 			var latLngSW = new gmaps.LatLng(s, w);
 			var latLngNE = new gmaps.LatLng(n, e);
+			var latLngNW = new gmaps.LatLng(n, w);
+			var latLngSE = new gmaps.LatLng(s, e);
+			
+			//Get the centertroid location of this data item
 			var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
 			var latLngCEN = bounds.getCenter();
 			
-			//console.log('Adding marker for: ' + solrResult.get('id'));
-			
+			//Keep track of our overall bounds
+			if(this.masterBounds){
+				this.masterBounds = bounds.union(this.masterBounds);
+			}
+			else{
+				this.masterBounds = bounds;
+			}
+	
+			//An infowindow or bubble for each marker
 			var infoWindow = new gmaps.InfoWindow({
 				content: 
 					'<h4>' + solrResult.get('title') 
@@ -1101,35 +1292,138 @@ define(['jquery',
 					+ solrResult.get('id') 
 					+ '</a>'
 					+ '</h4>'
-					+ '<p>' + solrResult.get('abstract') + '</p>'
+					+ '<p>' + solrResult.get('abstract') + '</p>',
+				isOpen: false,
+				disableAutoPan: true
+			});
+			
+			// A small info window with just the title for each marker
+			var titleWindow = new gmaps.InfoWindow({
+				content: solrResult.get('title'),
+				disableAutoPan: true
 			});
 
+			//Set up the options for each marker
 			var markerOptions = {
 				position: latLngCEN,
 				title: solrResult.get('title'),
 				icon: this.markerImage,
-				map: this.map,
-				visible: false,
-				zIndex: 99999
-			}
+				zIndex: 99999,
+				id: solrResult.get('id'),
+				map: this.map
+			};
+			
+			//Set up the polygon for each marker
+			var polygon = new gmaps.Polygon({
+				paths: [latLngNW, latLngNE, latLngSE, latLngSW],
+				strokeColor: '#FFFFFF',
+				strokeWeight: 2,
+				fillColor: '#FFFFFF',
+				fillOpacity: '0.3'
+			});
+			
+			
+			//Create an instance of the marker
 			var marker = new gmaps.Marker(markerOptions);
 			this.markers[pid] = marker;
+			
+			//Show the info window upon marker click
 			gmaps.event.addListener(marker, 'click', function() {
 				titleWindow.close();
 				infoWindow.open(this.map, marker);
+				infoWindow.isOpen = true;
 			});
 			
-			// a bigger hover window
-			var titleWindow = new gmaps.InfoWindow({
-				content: solrResult.get('title')
+			//Close the infowindow upon any click on the map
+			gmaps.event.addListener(this.map, 'click', function() {
+				titleWindow.close();
+				infoWindow.close();
+				infoWindow.isOpen = false;
 			});
+			
+			var viewRef = this;
+			
+			// Behavior for marker mouseover
 			gmaps.event.addListener(marker, 'mouseover', function() {
-				if (infoWindow)
-				titleWindow.open(this.map, marker);
+				
+				if(!infoWindow.isOpen){						
+					//Open the brief title window
+					titleWindow.open(viewRef.map, marker);	
+				}
+				
+				//Show the data boundaries as a polygon
+				polygon.setMap(viewRef.map);
+				polygon.setVisible(true);
 			});
+			
+			// Behavior for marker mouseout
 			gmaps.event.addListener(marker, 'mouseout', function() {
 				titleWindow.close();
+				
+				//Hide the data coverage boundaries polygon
+				polygon.setVisible(false);
 			});
+			
+		},
+		
+		openMarker: function(e){
+			//Clear the panning timeout
+			window.clearTimeout(this.centerTimeout);
+			
+			var id = $(e.target).attr('data-id');
+			
+			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
+			if(typeof id == "undefined"){
+				$(e.target).parents().each(function(){
+					if(typeof $(this).attr('data-id') != "undefined"){
+						id = $(this).attr('data-id');
+					}
+				});
+			}
+			
+			gmaps.event.trigger(this.markers[id], 'mouseover');
+			
+			var position = this.markers[id].getPosition();
+			
+			//Do not trigger a new search when we pan
+			this.allowSearch = false;
+			
+			//Pan the map
+			this.map.panTo(position);	
+		},
+		
+		closeMarker: function(e){
+			var id = $(e.target).attr('data-id');
+			
+			//The mouseout event might be triggered by a nested element, so loop through the parents to find the id
+			if(typeof id == "undefined"){
+				$(e.target).parents().each(function(){
+					if(typeof $(this).attr('data-id') != "undefined"){
+						id = $(this).attr('data-id');
+					}
+				});
+			}		
+			
+			//Trigger the mouseout event
+			gmaps.event.trigger(this.markers[id], 'mouseout');
+			
+			//Pan back to the map center so the map will reflect the current spatial filter bounding box
+			var mapCenter = searchModel.get('map').center;			
+			if(mapCenter !== null){
+				var viewRef = this;
+			
+				
+				// Set a delay on the panning in case we hover over another openMarker item right away.
+				// Without this delay the map will recenter quickly, then move to the next marker, etc. and it is very jarring
+				var recenter = function(){
+					//Do not trigger a new search when we pan
+					viewRef.allowSearch = false;
+					
+					viewRef.map.panTo(mapCenter);
+				}
+
+				this.centerTimeout = window.setTimeout(recenter, 500);
+			}
 			
 		},
 		
@@ -1142,7 +1436,8 @@ define(['jquery',
 			});
 		},
 		
-		clearMarkers: function() {
+		// removes any existing markers that are not in the new search results
+		mergeMarkers: function() {
 			var searchPids =
 			_.map(appSearchResults.models, function(element, index, list) {
 				return element.get("id");
@@ -1159,25 +1454,47 @@ define(['jquery',
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
+			
+			if(typeof $('#no-results-found') != 'undefined'){
+				$('#no-results-found').remove();
+			}
+			//Get the view and package service URL's
 			this.$view_service = appModel.get('viewServiceUrl');
 			this.$package_service = appModel.get('packageServiceUrl');
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
+			
+			//Create a new result item
 			var view = new SearchResultView({ model: result });
-			// Initialize the tooltip for the has data icon
+			
+			// Initialize any tooltips within the result item
 			$(".tooltip-this").tooltip();
+			$(".popover-this").popover();
+			
+			//Add this item to the list
 			this.$results.append(view.render().el);
 			
 			// map it
-			this.addObjectMarker(result);
+			if(gmaps){
+				this.addObjectMarker(result);	
+			}
 
 		},
 
-		// Add all items in the **SearchResults** collection at once.
+		/** Add all items in the **SearchResults** collection
+		 * This loads the first 25, then waits for the map to be 
+		 * fully loaded and then loads the remaining items.
+		 * Without this delay, the app waits until all records are processed
+		*/
 		addAll: function () {
+			console.log("Adding all the results to the list and map");
 			
 			// do this first to indicate coming results
 			this.updateStats();
 			
+			//reset the master bounds
+			this.masterBounds = null;
+			
+			//Load the first 25 results first so the list has visible results while the rest load in the background
 			var min = 25;
 			min = Math.min(min, appSearchResults.models.length);
 			var i = 0;
@@ -1185,6 +1502,8 @@ define(['jquery',
 				var element = appSearchResults.models[i];
 				this.addOne(element);
 			};
+			
+			//After the map is done loading, then load the rest of the results into the list
 			var viewRef = this;
 			var intervalId = setInterval(function() {
 				if (viewRef.ready) {
@@ -1192,27 +1511,45 @@ define(['jquery',
 						var element = appSearchResults.models[i];
 						viewRef.addOne(element);
 					};
-					// clean out the old markers
-					viewRef.clearMarkers();
-					viewRef.showMarkers();
-					
-					// show the clutered markers
-					var mcOptions = {
-						gridSize: 25,
-						styles: [
-						{height: 20, width: 20, url: viewRef.markerImage20, textColor: '#FFFFFF'},
-						{height: 30, width: 30, url: viewRef.markerImage30, textColor: '#FFFFFF'},
-						{height: 40, width: 40, url: viewRef.markerImage40, textColor: '#FFFFFF'},
-						{height: 50, width: 50, url: viewRef.markerImage50, textColor: '#FFFFFF'},
-						{height: 60, width: 60, url: viewRef.markerImage60, textColor: '#FFFFFF'},
-						]
-					};
-					if ( viewRef.markerCluster ) {
-						viewRef.markerCluster.clearMarkers();
+
+					if(gmaps){
+						// clean out any old markers
+						viewRef.mergeMarkers();
+						
+						// show them if the are hidden
+						//viewRef.showMarkers();
+						
+						// show the clustered markers
+						var mcOptions = {
+							gridSize: 25,
+							maxZoom: 15,
+							styles: [
+							{height: 20, width: 20, url: viewRef.markerImage20, textColor: '#FFFFFF'},
+							{height: 30, width: 30, url: viewRef.markerImage30, textColor: '#FFFFFF'},
+							{height: 40, width: 40, url: viewRef.markerImage40, textColor: '#FFFFFF'},
+							{height: 50, width: 50, url: viewRef.markerImage50, textColor: '#FFFFFF'},
+							{height: 60, width: 60, url: viewRef.markerImage60, textColor: '#FFFFFF'},
+							]
+						};
+						
+						if ( viewRef.markerCluster ) {
+							viewRef.markerCluster.clearMarkers();
+						}
+						
+						viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
+						
+						viewRef.markerClusters = viewRef.markerCluster.getMarkers();
+						
+						//Pan the map to the center of our results
+						if((!viewRef.allowSearch) && (viewRef.masterBounds)){
+							var center = viewRef.masterBounds.getCenter();
+							var adjustedCenter = new gmaps.LatLng(center.lat(), center.lng()+50);
+							viewRef.map.panTo(adjustedCenter);
+						}
+						
+						$("#map-container").removeClass("loading");
 					}
-					viewRef.markerCluster = new MarkerClusterer(viewRef.map, _.values(viewRef.markers), mcOptions);
 					
-					$("#map-container").removeClass("loading");
 					clearInterval(intervalId);
 				}
 				
@@ -1222,7 +1559,7 @@ define(['jquery',
 		
 		// Remove all html for items in the **SearchResults** collection at once.
 		removeAll: function () {
-			//$("#map-container").css("opacity", "0.5");
+			console.log('Removing all the results from the list');
 			$("#map-container").addClass("loading");
 			this.$results.html('');
 		},
@@ -1241,23 +1578,55 @@ define(['jquery',
 
 		},
 		
-		toggleMapMode: function(){		
+		toggleMapMode: function(){	
+			if(gmaps){
+				$('body').toggleClass('mapMode');	
+			}
 			
-			$('body').toggleClass('mapMode');		
+			if(appModel.get('searchMode') == 'map'){
+				appModel.set('searchMode', 'list');
+			}
+			else if (appModel.get('searchMode') == 'list'){
+				appModel.set('searchMode', 'map');
+			}
+		},
+		
+		routeToMetadata: function(e){
+			var id = $(e.target).attr('data-id');
+			console.log($(e.target));
+			
+			//If the user clicked on the download button, we don't want to navigate to the metadata
+			if ($(e.target).hasClass('stop-route')){
+				return;
+			}
+			
+			if(typeof id == "undefined"){
+				$(e.target).parents().each(function(){
+					if(typeof $(this).attr('data-id') != "undefined"){
+						id = $(this).attr('data-id');
+					}
+				});
+			}
+			
+			uiRouter.navigate('view/'+id, true);
 		},
 		
 		postRender: function() {
-			console.log("Resizing the map");
-			var center = this.map.getCenter(); 
-			google.maps.event.trigger(this.map, 'resize'); 
-			this.map.setCenter(center);
+			if(gmaps){
+				console.log("Resizing the map");
+				var center = this.map.getCenter(); 
+				google.maps.event.trigger(this.map, 'resize'); 
+				this.map.setCenter(center);	
+			}
 		},
 		
 		onClose: function () {			
 			console.log('Closing the data view');
 			
-			// unset map mode
-			$("body").removeClass("mapMode");
+			if(gmaps){
+				// unset map mode
+				$("body").removeClass("mapMode");
+			}
 			
 			// remove everything so we don't get a flicker
 			this.$el.html('')

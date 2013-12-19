@@ -22,6 +22,10 @@ define(['jquery', 'underscore', 'backbone'],
 			west: null,
 			north: null,
 			south: null,
+			map: {
+				zoom: null,
+				center: null
+			},
 			spatial: [],
 			attribute: [],
 			additionalCriteria: []
@@ -38,7 +42,6 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		clear: function() {
 			console.log('Clear the filters');
-			console.log(_.clone(this.defaults));
 		    return this.set(_.clone(this.defaults));
 		  }
 		
