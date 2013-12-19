@@ -44,7 +44,7 @@ define(['jquery',
 				
 		markerImage: './img/markers/orangered-marker.png',
 		
-		markerImageAlt: './img/markers/red-enlarged-marker.png',
+		markerImageAlt: './img/markers/orangered-enlarged-marker.png',
 		
 		markerImage15: './img/markers/orangered-15px-25a.png',
 		
