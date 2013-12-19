@@ -73,7 +73,7 @@ Bold 700 Italic
     }
     
     a {
-		color: #115E95; /*blue from the earthtones pallette */
+		color: #006699; 
 		transition: color .5s;
     }
     
@@ -99,6 +99,10 @@ Bold 700 Italic
     h4{
     	font-size: 20px;
     	font-weight: 400;
+    }
+    
+    h2, h3{
+    	font-weight: 300;
     }
     
     .bold-header{
@@ -1355,8 +1359,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	.current-filters > li[class*="span"],
 	#filter-year label.ui-state-active, 
 	#includes-files label.ui-state-active{
-		background-color: #166194; /*IE 8 fallback*/
-		background-color: rgba(17, 94, 149, .8);
+		background-color: #006699;
 		color: #FFFFFF;
 		padding: 0px 5px 0px 5px;
 		border-radius: 2px;
@@ -1373,13 +1376,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	.current-filters > li > span{
 		float: left;
 		margin-right: 5px;
-		line-height: 20px;
+		line-height: 19px;
 	}
 	
 	.current-filters > li > i{
 		float: right;
 		margin-top: 2px;
-		color: #8DBCDD;
+		color: #99cccc;
 		transition: color .5s;
 	}
 	
@@ -1462,7 +1465,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	z-index: 1;
     	display: block;
     	border: 0;
-    	background-color: #166194;
+    	background-color: #006699;
    }
     
     .ui-slider-handle{
@@ -1510,8 +1513,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	}
 	
 	.current-filters > li.keyword-search-link.active {
-		background-color: #115E95; /*IE 8 fallback */
-		background-color: rgba(17, 94, 149, .8);
+		background-color: #006699; /*IE 8 fallback */
+		background-color: rgba(0, 102, 153, .8);
 		border-color: inherit;
 		display: block;
 		height: 20px;
@@ -1611,7 +1614,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     li.ui-menu-item > a:hover,
     .ui-state-focus
      {
-        color: #166194;
+        color: #006699;
     	cursor: pointer;
     	text-decoration: none;
     	font-weight: bold;
@@ -1839,7 +1842,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	max-height: 500px;
     	min-height: 10px;
     	overflow: hidden;
-    	word-break: break-all;
+    	word-break: keep-all;
     	text-overflow: ellipsis;
     	min-width: 10%;
     	max-width: 250px;
@@ -2109,7 +2112,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs > .document h2:hover > .headerlink,
 #metacatDocs > .document h3:hover > .headerlink{
 	display: inline;
-	color: #166194;
+	color: #006699;
 }
 
 

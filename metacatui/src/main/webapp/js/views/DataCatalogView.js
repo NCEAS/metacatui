@@ -44,7 +44,7 @@ define(['jquery',
 				
 		markerImage: './img/markers/orangered-marker.png',
 		
-		markerImageAlt: './img/markers/red-enlarged-marker.png',
+		markerImageAlt: './img/markers/orangered-enlarged-marker.png',
 		
 		markerImage15: './img/markers/orangered-15px-25a.png',
 		
@@ -82,7 +82,8 @@ define(['jquery',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			   'click .view-link' : 'routeToMetadata',
 				   		 'mouseover .open-marker' : 'openMarker',
-				   	      'mouseout .open-marker' : 'closeMarker'
+				   	      'mouseout .open-marker' : 'closeMarker',
+		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
 		},
 		
 		initialize: function () {
@@ -338,14 +339,10 @@ define(['jquery',
 			if (page == null) {
 				page = 0;
 			}
-			
-			//Get all the search model attributes
-			
-			//Start with the 'all' category
-			var search = searchModel.get('all');
-			var sortOrder = searchModel.get('sortOrder');
-			
+					
 			this.removeAll();
+			
+			var sortOrder = searchModel.get('sortOrder');
 			
 			appSearchResults.setrows(500);
 			appSearchResults.setSort(sortOrder);
@@ -379,6 +376,11 @@ define(['jquery',
 				    return this.replace(/^\s+|\s+$/g, ''); 
 				  }
 			}
+			
+			//**Get all the search model attributes**
+			
+			//Start with the 'all' category
+			var search = searchModel.get('all');
 			
 			//resourceMap
 			var resourceMap = searchModel.get('resourceMap');
@@ -484,7 +486,7 @@ define(['jquery',
 			
 			//Year
 			//Get the types of year to be searched first
-			var pubYear = searchModel.get('pubYear');
+			var pubYear  = searchModel.get('pubYear');
 			var dataYear = searchModel.get('dataYear');
 			if (pubYear || dataYear){
 				//Get the minimum and maximum years chosen
@@ -742,6 +744,8 @@ define(['jquery',
 		resetFilters : function(){			
 			var viewRef = this;
 			
+			console.log('Resetting the filters');
+			
 			this.allowSearch = true;
 			
 			//Clear all the filters in the UI
@@ -949,7 +953,7 @@ define(['jquery',
 				
 				//If no results were found, do not populate the pagination.
 				if(pageCount == 0){
-					this.$results.html('<p>No results found.</p>');
+					this.$results.html('<p id="no-results-found">No results found.</p>');
 				}
 				else{
 					var pages = new Array(pageCount);
@@ -1451,6 +1455,10 @@ define(['jquery',
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the `<ul>`.
 		addOne: function (result) {
+			
+			if(typeof $('#no-results-found') != 'undefined'){
+				$('#no-results-found').remove();
+			}
 			//Get the view and package service URL's
 			this.$view_service = appModel.get('viewServiceUrl');
 			this.$package_service = appModel.get('packageServiceUrl');
@@ -1571,6 +1579,39 @@ define(['jquery',
 
 		},
 		
+		//Move the popover element up the page a bit if it runs off the bottom of the page
+		preventPopoverRunoff: function(e){
+			//In map view only (because all elements are fixed and you can't scroll)
+			if(appModel.get('searchMode') == 'map'){
+				var viewportHeight = $('#map-container').outerHeight();
+			}
+			else{
+				return false;
+			}
+
+			var offset = $('.popover').offset();
+			var popoverHeight = $('.popover').outerHeight();
+			var topPosition = offset.top;
+			
+			//If pixels are cut off the top of the page, readjust its vertical position
+			if(topPosition < 0){
+				$('.popover').offset({top: 10});
+			}
+			else{
+				//Else, let's check if it is cut off at the bottom
+				var totalHeight = topPosition + popoverHeight;
+	
+				var pixelsHidden = totalHeight - viewportHeight;
+		
+				var newTopPosition = topPosition - pixelsHidden - 10;
+				
+				//If pixels are cut off the bottom of the page, readjust its vertical position
+				if(pixelsHidden > 0){
+					$('.popover').offset({top: newTopPosition});
+				}
+			}
+		},
+		
 		toggleMapMode: function(){	
 			if(gmaps){
 				$('body').toggleClass('mapMode');	
@@ -1588,7 +1629,7 @@ define(['jquery',
 			var id = $(e.target).attr('data-id');
 			console.log($(e.target));
 			
-			//If the user clicked on the download button, we don't want to navigate to the metadata
+			//If the user clicked on the download button or any element with the class 'stop-route', we don't want to navigate to the metadata
 			if ($(e.target).hasClass('stop-route')){
 				return;
 			}
