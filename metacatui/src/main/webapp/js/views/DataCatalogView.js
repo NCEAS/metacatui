@@ -1595,7 +1595,7 @@ define(['jquery',
 			var id = $(e.target).attr('data-id');
 			console.log($(e.target));
 			
-			//If the user clicked on the download button, we don't want to navigate to the metadata
+			//If the user clicked on the download button or any element with the class 'stop-route', we don't want to navigate to the metadata
 			if ($(e.target).hasClass('stop-route')){
 				return;
 			}

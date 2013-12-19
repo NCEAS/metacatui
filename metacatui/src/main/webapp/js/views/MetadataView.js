@@ -142,7 +142,7 @@ define(['jquery',
 
 				//Create a google map image
 				var mapHTML = "<img class='georegion-map' " +
-							  "src='http://maps.googleapis.com/maps/api/staticmap?" +
+							  "src='https://maps.googleapis.com/maps/api/staticmap?" +
 							  "center="+latLngCEN.lat()+","+latLngCEN.lng() +
 							  "&size=550x250" +
 							  "&maptype=terrain" +
