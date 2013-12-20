@@ -1853,7 +1853,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	max-height: 500px;
     	min-height: 10px;
     	overflow: hidden;
-    	word-break: break-all;
+    	word-break: keep-all;
     	text-overflow: ellipsis;
     	min-width: 10%;
     	max-width: 250px;

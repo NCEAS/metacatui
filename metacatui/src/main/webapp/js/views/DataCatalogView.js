@@ -82,7 +82,8 @@ define(['jquery',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			   'click .view-link' : 'routeToMetadata',
 				   		 'mouseover .open-marker' : 'openMarker',
-				   	      'mouseout .open-marker' : 'closeMarker'
+				   	      'mouseout .open-marker' : 'closeMarker',
+		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
 		},
 		
 		initialize: function () {
@@ -1578,6 +1579,39 @@ define(['jquery',
 
 		},
 		
+		//Move the popover element up the page a bit if it runs off the bottom of the page
+		preventPopoverRunoff: function(e){
+			//In map view only (because all elements are fixed and you can't scroll)
+			if(appModel.get('searchMode') == 'map'){
+				var viewportHeight = $('#map-container').outerHeight();
+			}
+			else{
+				return false;
+			}
+
+			var offset = $('.popover').offset();
+			var popoverHeight = $('.popover').outerHeight();
+			var topPosition = offset.top;
+			
+			//If pixels are cut off the top of the page, readjust its vertical position
+			if(topPosition < 0){
+				$('.popover').offset({top: 10});
+			}
+			else{
+				//Else, let's check if it is cut off at the bottom
+				var totalHeight = topPosition + popoverHeight;
+	
+				var pixelsHidden = totalHeight - viewportHeight;
+		
+				var newTopPosition = topPosition - pixelsHidden - 10;
+				
+				//If pixels are cut off the bottom of the page, readjust its vertical position
+				if(pixelsHidden > 0){
+					$('.popover').offset({top: newTopPosition});
+				}
+			}
+		},
+		
 		toggleMapMode: function(){	
 			if(gmaps){
 				$('body').toggleClass('mapMode');	
@@ -1595,7 +1629,7 @@ define(['jquery',
 			var id = $(e.target).attr('data-id');
 			console.log($(e.target));
 			
-			//If the user clicked on the download button, we don't want to navigate to the metadata
+			//If the user clicked on the download button or any element with the class 'stop-route', we don't want to navigate to the metadata
 			if ($(e.target).hasClass('stop-route')){
 				return;
 			}
