@@ -344,7 +344,7 @@ define(['jquery',
 			
 			var sortOrder = searchModel.get('sortOrder');
 			
-			appSearchResults.setrows(500);
+			appSearchResults.setrows(200);
 			appSearchResults.setSort(sortOrder);
 			
 			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate";
@@ -1603,7 +1603,7 @@ define(['jquery',
 	
 				var pixelsHidden = totalHeight - viewportHeight;
 		
-				var newTopPosition = topPosition - pixelsHidden - 10;
+				var newTopPosition = topPosition - pixelsHidden - 40;
 				
 				//If pixels are cut off the bottom of the page, readjust its vertical position
 				if(pixelsHidden > 0){

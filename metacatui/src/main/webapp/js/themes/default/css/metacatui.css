@@ -1218,6 +1218,7 @@ Bold 700
     
     .result-header > .result-header-count{
     	position: relative;
+    	width: 100%;
     }
     
     .result-header-count > .result-header-count{
@@ -1288,12 +1289,10 @@ Bold 700
     	-moz-border-radius: 0px;
     	background-color: #333333;
     	width: auto;
-    	position: fixed;
  		right: 10px;
  		margin-top: 5px;
 		color: #FFF;
 		height: 18px;
-		float: right;
 		z-index: 1;
     }
  	
@@ -1305,6 +1304,12 @@ Bold 700
  	.mapMode #statcounts{
  		position: fixed;
  		width: 45%;
+ 	}
+ 	
+ 	.pagination label{
+ 		display: inline;
+ 		color: #eeeeee;
+ 		margin-right: 5px;
  	}
    
    /*-- Results rows --*/
@@ -1489,6 +1494,11 @@ Bold 700
     	background-color: #333333;
     	width: 80%;
     	position: fixed;
+    }
+    
+    #resultspager{
+    	float: left;
+    	margin-left: 10px;
     }
     
     .mapMode .pagination{

@@ -1724,20 +1724,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		display: none;
 	}
  	
- 	#sortOrder{
- 		float:right;
- 		width: auto;
- 		margin-right: 10px;
- 	}
- 	
- 	.mapMode #sortOrder{
- 		position: fixed;
- 		width: auto;
- 		right: 10px;
- 		margin-top: 5px;
- 		z-index: 1;
- 	}
- 	
  	select{
  		height: 24px;
  		width: auto;
@@ -1748,6 +1734,30 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	margin: 0px;
     }
     
+    #resultspager{
+    	float: left;
+    	margin-left: 10px;
+    	margin-top:10px;
+    }
+    
+    .sort-by{
+    	float: right;
+    	min-width: 185px;
+    	margin-top: 10px;
+    }
+    .sort-by label{
+ 		display: inline;
+ 		margin-right: 5px;
+ 		color: #999;
+ 		font-size: 12px;
+ 	}
+	 	
+ 	.mapMode .sort-by select{
+ 		width: auto;
+ 		right: 10px;
+ 		z-index: 1;
+ 	}
+ 	
     .pagination ul > li > a.unactive{
     	font-size: 20px;
     	color: #999999;
@@ -1823,7 +1833,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     .info-icons .show-abstract > i.show-abstract{
-    	color: #666666;
+    	color: #999999;
     }
     
     .info-icons .has-data > i{
@@ -1832,7 +1842,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     .info-icons .has-data > i.has-data{
-    	color: #666666;
+    	color: #999999;
     }
     
     .info-icons .on-map > i{
