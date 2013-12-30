@@ -344,7 +344,7 @@ define(['jquery',
 			
 			var sortOrder = searchModel.get('sortOrder');
 			
-			appSearchResults.setrows(500);
+			appSearchResults.setrows(200);
 			appSearchResults.setSort(sortOrder);
 			
 			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate";

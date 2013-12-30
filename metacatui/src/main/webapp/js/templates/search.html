@@ -132,19 +132,29 @@
 				<div id="results-header" class="row-fluid result-header">
 					
 					<!-- count stats -->
-					<div class="result-header-count span10" id="statcounts">0 to 0 of 0</div>
+					<div class="result-header-count span10">
+						<div id="statcounts"></div>
+						
+						<!-- pager -->
+						<div class="row-fluid pagination pagination-centered">
+							<div id="resultspager">
+							</div>
+							
+							<div class="sort-by">
+								<label for="sortOrder">Sort by</label>
+								<select id="sortOrder">
+									<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
+									<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
+									<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
+									<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
+								</select>
+							</div>
+						</div>
+					</div>
 										
 					<div class="map-pointer">
 						<i class="icon-angle-left"></i>
 					</div>
-					
-					<select id="sortOrder" class="span2">
-							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
-							<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
-							<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
-							<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
-					</select>
-				
 				</div>
 				
 				<!-- search results here -->
