@@ -1069,7 +1069,8 @@ define(['jquery',
 					},
 					position: {
 						my: "left top",
-						at: "left bottom"				
+						at: "left bottom",
+						collision: "fit"
 					}
 				});
 				

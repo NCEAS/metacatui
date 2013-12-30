@@ -220,7 +220,7 @@ Bold 700 Italic
     }
     
     .mapMode #Footer:hover{
-    	min-height: 200px;
+    	min-height: 240px;
     	z-index: 10;
     }
     
