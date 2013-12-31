@@ -56,8 +56,8 @@
 					<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
 					<label class="span11 left year-tooltip popover-this" for="publish_year" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="right" >Published between</label>
 					<div class="clear"></div>
-					<input class="span3"  type="number" id="min_year" pattern="{4}" value=<% print('"' + yearMin + '"'); %> />
-					<input class="span3"  type="number" id="max_year" pattern="{4}" value=<% print('"' + yearMax + '"'); %>/>
+					<input class="span3"  type="number" id="min_year" value="<%=yearMin%>" />
+					<input class="span3"  type="number" id="max_year" value="<%=yearMax%>" />
 					<div class="clear"></div>
 					<div id="year-range"></div>
 					<div class="clear"></div>

@@ -1715,7 +1715,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
  	
  	select{
- 		height: 24px;
+ 		height: 30px;
  		width: auto;
  	}
  	
@@ -1756,7 +1756,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     /*-- Results List Rows--*/
     .mapMode .search-results{
-    	margin-top: 80px;
+    	margin-top: 90px;
     	width: 95%;
     	float: right;
     	background-color: #FFFFFF;

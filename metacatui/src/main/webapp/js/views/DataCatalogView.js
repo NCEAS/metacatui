@@ -150,7 +150,11 @@ define(['jquery',
 				//Render the Google Map
 				this.renderMap();	
 			}	
-					
+			
+			//Set the minimum and maximum year text inputs
+			//$('#min_year').val(1900);
+			//$('#max_year').val(2000);
+			
 			//Update the year slider
 			this.updateYearRange(); 
 			
@@ -704,7 +708,6 @@ define(['jquery',
 			    }
 			  });
 
-
 		},
 		
 		//Removes a specific filter term from the searchModel
@@ -1031,6 +1034,7 @@ define(['jquery',
 		
 		//Get the facet counts
 		getFacetCounts: function(){
+			
 			if (appSearchResults.header != null) {
 				
 				var facetCounts = appSearchResults.facetCounts;
