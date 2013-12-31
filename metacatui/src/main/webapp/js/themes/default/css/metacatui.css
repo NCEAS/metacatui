@@ -1443,8 +1443,9 @@ Bold 700
     	color: #DA4D3A;
     }
     
-        .popover{
+    .popover{
     	max-width: 250px;
+    	font-size: 13px;
     }
     
      body > .popover{

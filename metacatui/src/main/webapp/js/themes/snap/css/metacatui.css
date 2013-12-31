@@ -129,6 +129,11 @@
     	color: #6c7578;
     }
     
+    .popover{
+    	font-size: 13px;
+    	line-height: 15px;
+    }
+    	
     .pointer{
     	cursor: pointer;
     }

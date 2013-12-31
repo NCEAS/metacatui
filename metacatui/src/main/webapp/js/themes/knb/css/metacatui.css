@@ -1847,6 +1847,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .popover{
     	max-width: 250px;
+    	font-size: 13px;
     }
     
      body > .popover{
