@@ -43,8 +43,8 @@
 				<div class="filter-contain" id="includes-files">
 					<i class="icon-folder-open span1"></i>
 					<div class="span11" id="includes-files-buttonset">
-						<label for="includes_data">
-							Includes data files
+						<label for="includes_data" class="popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top">
+							Only results with data
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>	
 						</label>
@@ -83,14 +83,14 @@
 						<div class="clear"></div>
 						
 						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
-						<label class="span11 left tooltip-this" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="top">
+						<label class="span11 left popover-this" for="data_year" id="data-year-label" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top">
 							Data covers
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>
 						</label>					
 						
 						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-						<label class="span11 left tooltip-this" id="pub-year-label" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="top" >
+						<label class="span11 left popover-this" id="pub-year-label" for="publish_year" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top" >
 							Published between
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>

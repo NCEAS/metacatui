@@ -48,7 +48,9 @@
 					<div class="filter-contain">
 						<h3><i class="icon-folder-open"></i>
 							<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
-							<label for="includes_data" class="inline">Includes data files</label>
+							<label for="includes_data" class="inline popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top">
+								Only results with data
+							</label>
 						</h3>
 					</div>
 				</div>	
@@ -65,10 +67,10 @@
 					<div id="filter-year" class="filter-contain row-fluid" data-category="year">
 						<h3><i class="icon-calendar"></i>Year</h3>
 						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
-						<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="right">Data covers</label>					
+						<label class="span11 left year-tooltip popover-this" for="data_year" id="data-year-label" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top">Data covers</label>					
 						<div class="clear"></div>
 						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-						<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="right" >Published between</label>
+						<label class="span11 left year-tooltip popover-this" for="publish_year" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top" >Published between</label>
 						<div class="clear"></div>
 						<input class="span3"  type="number" id="min_year" pattern="{4}" value=<% print('"' + yearMin + '"'); %> />
 						<input class="span3"  type="number" id="max_year" pattern="{4}" value=<% print('"' + yearMax + '"'); %>/>
