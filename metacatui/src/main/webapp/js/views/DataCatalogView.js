@@ -1572,15 +1572,9 @@ define(['jquery',
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 
 		collapse: function(e){
-				var id = $(e.target).attr('id');
-				
-				if((id == "filters-header") || (id == "collapse-filters")){
-					$('#sidebar').toggleClass('collapsed');
-				}
-				if((id == "results-header") || (id == "countstats") || (id == "collapse-content")){
-					//console.log(id + ' clicked');
-					$('#content').toggleClass('collapsed');	
-				}				
+				var id = $(e.target).attr('data-collapse');
+
+				$('#'+id).toggleClass('collapsed');
 
 		},
 		

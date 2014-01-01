@@ -729,6 +729,42 @@ Bold 700
 		outline:none; 
 	}	  
 
+	.minimize > i{
+        color: #CCCCCC;
+    	font-size: 16px;
+    	margin-top: 5px;
+    	display: none;
+    }
+    
+    .mapMode .minimize > i{
+    	display: block;
+    }
+    
+    #sidebar .minimize > i{
+    	float: right;
+    	margin-right: 10px;
+    }
+    
+    #content .minimize{
+    	position: absolute;
+    	right: 10px;
+    	z-index: 1;
+    }
+    
+    .mapMode #sidebar.collapsed .minimize > i.minimize,
+    .mapMode #sidebar .minimize > i.maximize,
+    .mapMode #content.collapsed .minimize > i.minimize,
+    .mapMode #content .minimize > i.maximize{
+    	display: none;
+    }
+    
+    .mapMode #sidebar.collapsed .minimize > i.maximize,
+    .mapMode #sidebar .minimize > i.minimize,
+    .mapMode #content.collapsed .minimize > i.maximize,
+    .mapMode #content .minimize > i.minimize{
+    	display: block;
+    }
+    
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
@@ -751,7 +787,7 @@ Bold 700
     } 
     
     #sidebar.collapsed{
-    	height: 50px;
+    	height: 60px;
     }
  	
  	aside > div{
@@ -1081,6 +1117,7 @@ Bold 700
 		padding: 0px;
 		padding-left: 10px;
 		margin-bottom: 0px;
+		float: left;
     }
     
     h2.nav-header > i{
@@ -1216,9 +1253,10 @@ Bold 700
       height: 76px;
     }
     
-    .result-header > .result-header-count{
+     .result-header > .result-header-count{
     	position: relative;
     	width: 100%;
+    	padding-left: 7%;
     }
     
     .result-header-count > .result-header-count{
@@ -1268,11 +1306,12 @@ Bold 700
 		display: block;
 		position: fixed;
 		font-size: 75px;
-		background-color: inherit;
+		background-color: #333;
 		z-index: 1;
 		width: auto;
 		color: #777777;
 		padding-left: 5px;
+		padding-right: 11px;
 		border-radius: 0px;
 		-webkit-border-radius: 0px;
 		-moz-border-radius: 0px;
@@ -1298,6 +1337,8 @@ Bold 700
  	
  	#statcounts{
  		width: 100%;
+ 		padding-left: 2%;
+ 		background-color: #333333;
  		height: inherit;
  	}
  	
@@ -1499,7 +1540,7 @@ Bold 700
     
     #resultspager{
     	float: left;
-    	margin-left: 10px;
+    	padding-left: 2%;
     }
     
     .mapMode .pagination{

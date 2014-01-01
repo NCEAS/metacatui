@@ -566,7 +566,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-webkit-border-radius: 3px 0px 0px 0px;
 	-moz-border-radius: 3px 0px 0px 0px;
 	border-radius: 3px 0px 0px 0px;
-	transition: width 1s;
 }
 
 .mapMode #content.collapsed{
@@ -1172,7 +1171,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     } 
     
     .mapMode #sidebar.collapsed{
-    	height: 30px;
+    	height: 35px;
     }
     
     .mapMode #sidebar{
@@ -1185,6 +1184,42 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	  	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  
     }
+    
+    .minimize > i{
+        color: #888888;
+    	font-size: 16px;
+    	margin-top: 5px;
+    	display: none;
+    }
+    
+    .mapMode .minimize > i{
+    	display: block;
+    }
+    
+    #sidebar .minimize > i{
+    	float: right;
+    	margin-right: 10px;
+    }
+    
+    #content .minimize{
+    	position: absolute;
+    	right: 10px;
+    }
+    
+    .mapMode #sidebar.collapsed .minimize > i.minimize,
+    .mapMode #sidebar .minimize > i.maximize,
+    .mapMode #content.collapsed .minimize > i.minimize,
+    .mapMode #content .minimize > i.maximize{
+    	display: none;
+    }
+    
+     .mapMode #sidebar.collapsed .minimize > i.maximize,
+     .mapMode #sidebar .minimize > i.minimize,
+     .mapMode #content.collapsed .minimize > i.maximize,
+     .mapMode #content .minimize > i.minimize{
+    	display: block;
+    }
+
     
     /** Share Your Data button **/
     #share-data-view{
@@ -1525,10 +1560,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       display: block;
       padding: 0px;
       margin: 0px;
-      min-height: 25px;
+      min-height: 20px;
+      line-height: 25px;
       margin-left: 4%;
-      padding-top: 5px;
       font-weight: normal;
+      float: left;
     }
     
     h3.nav-header{
@@ -1581,8 +1617,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   
     
     #clear-all{
-    	text-align: right;
-    	float: right;
+    	float: left;
+    	margin-bottom: 5px;
     	cursor: pointer;
     }
     
@@ -1763,7 +1799,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
     	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
     	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-    	overflow-y: scroll;
+    	overflow-y: visible;
     	overflow-x: visible;
     }
     
