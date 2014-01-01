@@ -16,7 +16,11 @@
 	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
-		<h2 class="nav-header bold-header collapse-me" id="filters-header">
+		<div class="minimize">
+			<i class="icon-collapse minimize collapse-me" data-collapse="sidebar"></i>
+			<i class="icon-collapse-top maximize collapse-me"  data-collapse="sidebar"></i>
+		</div>
+		<h2 class="nav-header bold-header" id="filters-header">
 			Filter
 			<!--  <i class="icon-minus collapse-me" id="collapse-filters"></i> -->
 			<a id="clear-all">Clear filters<i class="icon-remove"></i></a>
@@ -133,6 +137,10 @@
 					
 					<!-- count stats -->
 					<div class="result-header-count span10">
+						<div class="minimize">
+							<i class="icon-collapse minimize collapse-me" data-collapse="content"></i>
+							<i class="icon-collapse-top maximize collapse-me" data-collapse="content"></i>
+						</div>
 						<div id="statcounts"></div>
 						
 						<!-- pager -->
