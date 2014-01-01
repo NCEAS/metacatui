@@ -576,7 +576,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 .mapMode #content{
 	margin-top: 0px;	
 	width: 45%;
-	max-height: 85%;	
+	max-height: 80%;	
 	position: fixed;
 	background-color: transparent;
 	overflow-y:scroll;
@@ -631,7 +631,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
     #FeaturedData > section {
       border-top: 1px solid #878787;
+      height: 554px;
     }
+	
+	#FeaturedData > section:nth-child(even){
+		background-color: #333366;
+	}
+	
+	#FeaturedData > section:nth-child(odd){
+		background-color: #006666;
+	}
 		
 	  #FeaturedData h2 {
 	  	font-weight: 300;
@@ -934,15 +943,20 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       z-index: 191;
     }
 
+	.carousel .item:nth-child(2n){
+		background-color: #333366;
+	}
+	
+	.carousel .item:nth-child(2n+1){
+		background-color: #006666;
+	}
+	
+	.carousel .item:nth-child(3n){
+		background-color: #660000;
+	}
+	
     .carousel .item {
-      background-color: #FDFDFD; /* Fallback to solid color if the gradient fails */
-      background-image: -webkit-gradient(
-       linear,
-       left bottom,
-       left top,
-       color-stop(0.9, #FFFFFF),
-       color-stop(0.3, #FDFDFD)
-      );
+    	height: 400px;
       z-index: 170;
       /*
       -webkit-transition: opacity 4s; 
