@@ -1603,6 +1603,11 @@ Bold 700
 	transition: all 1s;
 }
 
+.gmaps-infowindow{
+	max-height: 300px;
+	overflow-y:scroll;	
+}
+
 #toggle-map{
 	position: fixed;
 	left: -85px;
@@ -2150,3 +2155,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	border-bottom: 1px solid #CCCCCC;
  }
 
+
+#loading-app{
+	display: none;
+}
