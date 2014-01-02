@@ -11,7 +11,7 @@
             <div class="row-fluid">
             <% if((typeof abstract == 'undefined') || (abstract == "")){ 
            			print('<div class="span6 show-abstract">');
-           			print('<i class="icon-info-sign"></i>');
+           			print('<i class="icon-info-sign inactive"></i>');
            			print('</div>');
            		} 
            		else{	        
@@ -26,7 +26,7 @@
 			               		print('<i class="icon-folder-open has-data popover-this" data-trigger="hover" data-content="Includes data files" data-placement="right"></i>');
 			            }
 			            else{
-			            	print('<i class="icon-folder-open"></i>');
+			            	print('<i class="icon-folder-open inactive"></i>');
 			            }
 	           		%>
 	           </div>
@@ -38,7 +38,7 @@
 		               		print('<i class="icon-map-marker on-map"></i>');
 		               }
 		               else{
-		               		print('<i class="icon-map-marker"></i>');
+		               		print('<i class="icon-map-marker inactive"></i>');
 		               }
 		            %>
 	            </div>
