@@ -731,9 +731,13 @@ Bold 700
 
 	.minimize > i{
         color: #CCCCCC;
-    	font-size: 16px;
+    	font-size: 20px;
     	margin-top: 5px;
     	display: none;
+    }
+    
+    .minimize > i.icon-check-minus{
+    	font-size: 17px;
     }
     
     .mapMode .minimize > i{
