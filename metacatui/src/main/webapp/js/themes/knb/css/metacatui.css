@@ -1185,7 +1185,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     } 
     
     .mapMode #sidebar.collapsed{
-    	height: 35px;
+    	height: 40px;
     }
     
     .mapMode #sidebar{
@@ -1201,9 +1201,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .minimize > i{
         color: #888888;
-    	font-size: 16px;
+    	font-size: 20px;
     	margin-top: 5px;
     	display: none;
+    }
+    
+    .minimize > i.icon-check-minus{
+    	font-size: 17px;
     }
     
     .mapMode .minimize > i{
@@ -1215,7 +1219,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	margin-right: 10px;
     }
     
-    #content .minimize{
+    #content div.minimize{
     	position: absolute;
     	right: 10px;
     }
@@ -1574,7 +1578,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       display: block;
       padding: 0px;
       margin: 0px;
-      min-height: 20px;
+      margin-bottom: 5px;
+      min-height: 25px;
       line-height: 25px;
       margin-left: 4%;
       font-weight: normal;
