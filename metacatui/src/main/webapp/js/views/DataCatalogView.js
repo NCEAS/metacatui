@@ -1291,22 +1291,26 @@ define(['jquery',
 	
 			//An infowindow or bubble for each marker
 			var infoWindow = new gmaps.InfoWindow({
-				content: 
-					'<h4>' + solrResult.get('title') 
+				content:
+					'<div class="gmaps-infowindow">'
+					+ '<h4>' + solrResult.get('title') 
 					+ ' ' 
 					+ '<a href="#view/' + pid + '" >'
 					+ solrResult.get('id') 
 					+ '</a>'
 					+ '</h4>'
-					+ '<p>' + solrResult.get('abstract') + '</p>',
+					+ '<p>' + solrResult.get('abstract') + '</p>'
+					+ '</div>',
 				isOpen: false,
-				disableAutoPan: true
+				disableAutoPan: true,
+				maxWidth: 250
 			});
 			
 			// A small info window with just the title for each marker
 			var titleWindow = new gmaps.InfoWindow({
 				content: solrResult.get('title'),
-				disableAutoPan: true
+				disableAutoPan: true,
+				maxWidth: 250
 			});
 
 			//Set up the options for each marker
@@ -1391,11 +1395,16 @@ define(['jquery',
 			
 			var position = this.markers[id].getPosition();
 			
+			var long = position.lng() + 20;
+			var lat = position.lat();
+			
+			var newPosition = new gmaps.LatLng(lat, long);
+			
 			//Do not trigger a new search when we pan
 			this.allowSearch = false;
 			
 			//Pan the map
-			this.map.panTo(position);	
+			this.map.panTo(newPosition);	
 		},
 		
 		closeMarker: function(e){

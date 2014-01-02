@@ -553,6 +553,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     max-width: 99999px;
 }
 
+.gmaps-infowindow{
+	max-height: 300px;
+	overflow-y:scroll;
+}
+
 #content {
 	position: relative;
 	right: 0;
@@ -3044,3 +3049,6 @@ div.sectiontitle {
 }
 
     
+#loading-app{
+	display: none;
+}
