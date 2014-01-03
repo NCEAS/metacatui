@@ -581,65 +581,6 @@ define(['jquery',
 			return false;
 		},
 		
-		updateTextFilters : function(e){
-			//Get the search/filter category
-			var category = $(e.target).attr('data-category');
-			
-			//Try the parent elements if not found
-			if(!category){
-				var parents = $(e.target).parents().each(function(){
-					category = $(this).attr('data-category');
-					if (category){
-						return false;
-					}
-				});
-			}
-			
-			if(!category){ return false; }
-			
-			//Get the value of the associated input
-			var input = this.$el.find($('#' + category + '_input'));
-			var term = input.val();
-			
-			//Check that something was actually entered
-			if((term == "") || (term == " ")){
-				return false;
-			}
-			
-			//Now clear that input
-			input.val('');
-			
-			//Close the autocomplete box
-			$('#' + category + '_input').autocomplete("close");
-				
-			//Get the current searchModel array
-			var filtersArray = _.clone(searchModel.get(category));
-				
-			//Check if this entry is a duplicate
-			var duplicate = (function(){
-				for(var i=0; i < filtersArray.length; i++){
-					if(filtersArray[i] === term){ return true; }
-				}
-			})();
-			
-			if(duplicate){ return false; }
-				
-			//Add the new entry to the array of current filters
-			filtersArray.push(term);
-			
-			//Replace the current array with the new one in the search model
-			searchModel.set(category, filtersArray);
-			
-			//Show the UI filter
-			this.showFilter(category, term);
-			
-			//Route to page 1
-			this.updatePageNumber(0);
-			
-			//Trigger a new search
-			this.triggerSearch();
-		},
-		
 		updateBooleanFilters : function(e){
 			//Get the category
 			var category = $(e.target).attr('data-category');
@@ -716,6 +657,62 @@ define(['jquery',
 			    }
 			  });
 
+		},
+		
+		updateTextFilters : function(e){
+			//Get the search/filter category
+			var category = $(e.target).attr('data-category');
+			
+			//Try the parent elements if not found
+			if(!category){
+				var parents = $(e.target).parents().each(function(){
+					category = $(this).attr('data-category');
+					if (category){
+						return false;
+					}
+				});
+			}
+			
+			if(!category){ return false; }
+			
+			//Get the value of the associated input
+			var input = this.$el.find($('#' + category + '_input'));
+			var term = input.val();
+			
+			//Check that something was actually entered
+			if((term == "") || (term == " ")){
+				return false;
+			}
+			
+			//Close the autocomplete box
+			$('#' + category + '_input').autocomplete("close");
+				
+			//Get the current searchModel array
+			var filtersArray = _.clone(searchModel.get(category));
+				
+			//Check if this entry is a duplicate
+			var duplicate = (function(){
+				for(var i=0; i < filtersArray.length; i++){
+					if(filtersArray[i] === term){ return true; }
+				}
+			})();
+			
+			if(duplicate){ return false; }
+				
+			//Add the new entry to the array of current filters
+			filtersArray.push(term);
+			
+			//Replace the current array with the new one in the search model
+			searchModel.set(category, filtersArray);
+			
+			//Show the UI filter
+			this.showFilter(category, term);
+			
+			//Route to page 1
+			this.updatePageNumber(0);
+			
+			//Trigger a new search
+			this.triggerSearch();
 		},
 		
 		//Removes a specific filter term from the searchModel
@@ -847,7 +844,11 @@ define(['jquery',
 			
 							
 			//Add a filter node to the DOM
-			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));			
+			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));	
+			
+			//Clear the associated input
+			var input = this.$el.find($('#' + category + '_input'));
+			input.val('');
 				
 			return;
 		},
