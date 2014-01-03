@@ -506,7 +506,7 @@ Bold 700 Italic
 }
 
 .mapMode #toggle-map{
-	left: -102px;
+	left: -104px;
 }
 
 #toggle-map i{
@@ -1237,7 +1237,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     #content div.minimize{
     	position: absolute;
-    	right: 10px;
+    	right: 25px;
     }
     
     .mapMode #sidebar.collapsed .minimize > i.minimize,
@@ -1816,6 +1816,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	float: right;
     	min-width: 185px;
     	margin-top: 10px;
+    	margin-right: 10px;
     }
     .sort-by label{
  		display: inline;
