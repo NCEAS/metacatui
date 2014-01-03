@@ -37,6 +37,8 @@ define(['jquery',
 		ready: false,
 		
 		allowSearch: true,
+		
+		hasZoomed: false,
 				
 		markers: {},
 		
@@ -266,8 +268,11 @@ define(['jquery',
 					
 					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
 					if(viewRef.map.getZoom() == mapOptions.minZoom){
-						console.log('at minimum zoom');
-						viewRef.resetMap();						
+						console.log('at minimum zoom');		
+						if(!viewRef.hasZoomed){
+							return;
+						}	
+						viewRef.resetMap();	
 					}
 					else{
 						//Get the Google map bounding box
@@ -295,12 +300,15 @@ define(['jquery',
 				else{
 					viewRef.allowSearch = true;
 				}
+				
+				viewRef.hasZoomed = false;
 			});
 			
 			//Let the view know we have zoomed on the map
 			google.maps.event.addListener(mapRef, "zoom_changed", function(){
 				console.log('has zoomed');
 				viewRef.allowSearch = true;
+				viewRef.hasZoomed = true;
 			});
 
 		},
