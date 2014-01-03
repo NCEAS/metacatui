@@ -484,7 +484,7 @@ Bold 700 Italic
 #toggle-map{
 	z-index: 1;
 	position: fixed;
-	top: 155px;
+	top: 139px;
 	left: -102px;
 	padding: 0px 3px;
 	background-color: #992222;
@@ -502,11 +502,12 @@ Bold 700 Italic
 }
 
 #toggle-map{
-	left: -121px;
+	left: -124px;
 }
 
 .mapMode #toggle-map{
 	left: -104px;
+	top: 124px;
 }
 
 #toggle-map i{
@@ -1179,14 +1180,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	#sidebar {
     	position: relative;
     	bottom: 30px;
+		
 		width: 20%;
 		min-width: 250px;
+		
 		padding: 0px;
 		margin-top: -10px;
 		
-		max-height: 750px;
-		overflow-y: scroll;		
-		
+		overflow-y: visible;	
+		overflow-x: visible;			
 		
 		background-color: #FFFFFF; 
 		
@@ -1209,10 +1211,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	bottom: 30px;
 		left: 0px;
 		min-width: 270px;
+    	
     	webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  	-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  
+	    max-height: 70%;
+	    overflow-y: scroll;	
+		overflow-x: hidden;
     }
     
     .minimize > i{
@@ -1261,7 +1267,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		width: auto;
 		height: 20px;
 		left: -195px;
-		top: 110px;
+		top: 100px;
 		margin-left: 0px;
 		font-size: 20px;
 		text-transform: uppercase;
@@ -1275,6 +1281,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 		box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 		background-image: none;
+	}
+	
+	.mapMode #share-data-view{
+		top: 84px;
 	}
 
 
