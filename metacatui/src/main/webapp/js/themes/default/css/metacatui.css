@@ -750,8 +750,8 @@ Bold 700
     }
     
     #content .minimize{
-    	position: absolute;
-    	right: 10px;
+    	position: fixed;
+    	right: 25px;
     	z-index: 1;
     }
     
@@ -773,7 +773,7 @@ Bold 700
   -------------------------------------------------- */
     #sidebar {
       position: fixed;
-      width: 250px;
+      width: 260px;
       bottom: 0px;
       left: 0px;
       padding: 0px;
@@ -785,7 +785,7 @@ Bold 700
       -webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  max-height: 750px;
+	  max-height: 76%;
 	  overflow-y: scroll;
 	  overflow-x: hidden;
     } 
@@ -846,6 +846,13 @@ Bold 700
 		top: 2px;	
 		position: relative;
    }
+    
+    .filter-contain i.more-info{
+    	font-size: 13px;
+    	line-height: 23px;
+    	top: 5px;
+    	float: left;
+    }
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
@@ -1055,6 +1062,7 @@ Bold 700
      #includes-files label.ui-state-active{
     	margin-top: 0px;
     	line-height: 21px;
+    	float:left;
     	height: 21px;
     } 
     
@@ -1066,6 +1074,8 @@ Bold 700
 		float: left;
 		margin-right: 5px;
 		line-height: 1.5em;
+		white-space: normal;
+		max-width: 90%;
 	}
 	
 	.current-filters > li > i{
@@ -1457,6 +1467,10 @@ Bold 700
     .info-icons{
     	min-width: 28px;
     	max-height: 43px;
+    }
+    
+    .info-icons i{
+     cursor: help;
     }
     
     .info-icons .show-abstract > i{

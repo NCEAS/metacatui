@@ -222,7 +222,7 @@ define(['jquery',
 			$("body").addClass("mapMode");				
 			
 			//Set a reserved phrase for the map filter
-			this.reservedMapPhrase = "Using map boundaries";
+			this.reservedMapPhrase = "Only results with any spatial coverage inside the map";
 			
 			//If the spatial filters are set, rezoom and recenter the map to those filters
 			if(searchModel.get('north')){
@@ -292,6 +292,7 @@ define(['jquery',
 						
 						//Add a new visual 'current filter' to the DOM for the spatial search
 						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+					
 					}
 					
 					//Trigger a new search
@@ -708,6 +709,9 @@ define(['jquery',
 			//Show the UI filter
 			this.showFilter(category, term);
 			
+			//Clear the input
+			input.val('');
+			
 			//Route to page 1
 			this.updatePageNumber(0);
 			
@@ -845,10 +849,6 @@ define(['jquery',
 							
 			//Add a filter node to the DOM
 			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));	
-			
-			//Clear the associated input
-			var input = this.$el.find($('#' + category + '_input'));
-			input.val('');
 				
 			return;
 		},
