@@ -218,7 +218,7 @@ define(['jquery',
 			$("body").addClass("mapMode");				
 			
 			//Set a reserved phrase for the map filter
-			this.reservedMapPhrase = "Using map boundaries";
+			this.reservedMapPhrase = "Only results with any spatial coverage inside the map";
 			
 			//If the spatial filters are set, rezoom and recenter the map to those filters
 			if(searchModel.get('north')){
@@ -704,6 +704,9 @@ define(['jquery',
 			//Show the UI filter
 			this.showFilter(category, term);
 			
+			//Clear the input
+			input.val('');
+			
 			//Route to page 1
 			this.updatePageNumber(0);
 			
@@ -841,10 +844,6 @@ define(['jquery',
 							
 			//Add a filter node to the DOM
 			e.prepend(viewRef.currentFilterTemplate({filterTerm: term}));	
-			
-			//Clear the associated input
-			var input = this.$el.find($('#' + category + '_input'));
-			input.val('');
 				
 			return;
 		},
@@ -1039,6 +1038,7 @@ define(['jquery',
 		
 		//Get the facet counts
 		getFacetCounts: function(){
+			
 			if (appSearchResults.header != null) {
 				
 				var facetCounts = appSearchResults.facetCounts;

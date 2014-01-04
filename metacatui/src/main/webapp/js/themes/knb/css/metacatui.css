@@ -1465,6 +1465,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		float: left;
 		margin-right: 5px;
 		line-height: 19px;
+		white-space: normal;
+		max-width: 90%;
 	}
 	
 	.current-filters > li > i{
