@@ -2372,8 +2372,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  /* MISC
  -----------------------------------------------*/
  #external > .container{
- 	width: 100%;
+ 	width: 80%;
  }
+ 
+ #external dt{
+ 	line-height: 34px;
+ 	font-size: 16px;
+ }
+ 
  .align-center{
  	margin-left: auto;
  	margin-right: auto;
