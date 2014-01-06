@@ -12,9 +12,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		template: _.template(NavbarTemplate),
 		
 		events: {
-			'click #search_btn': 'triggerSearch',
-			'keypress #search_txt': 'triggerOnEnter',
-			'click #myData': 'myDataSearch'
+						  'click #search_btn' : 'triggerSearch',
+					   'keypress #search_txt' : 'triggerOnEnter',
+							  'click #myData' : 'myDataSearch',
+			'click #show-new-dataCatalogView' : 'showNewSearch'
 		},
 		
 		initialize: function () {
@@ -54,14 +55,19 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			//Set up the search model for this new term
 			searchModel.set('all', newSearch);
 			
-			console.log(searchModel);
-			
 			// make sure the browser knows where we are
 			uiRouter.navigate("data", {trigger: true});
 			
 			// ...but don't want to follow links
 			return false;
 			
+		},
+		
+		showNewSearch: function(){
+			// Clear the search model to start a fresh search
+			searchModel.clear().set(searchModel.defaults);
+			
+			uiRouter.navigate('data', {trigger: true});
 		},
 		
 		myDataSearch: function() {

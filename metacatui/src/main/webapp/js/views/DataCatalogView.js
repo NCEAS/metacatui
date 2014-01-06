@@ -128,7 +128,6 @@ define(['jquery',
 
 			console.log('Rendering the DataCatalog view');
 			appModel.set('headerType', 'default');
-		
 			
 			//Populate the search template with some model attributes
 			var cel = this.template(
@@ -152,10 +151,6 @@ define(['jquery',
 				//Render the Google Map
 				this.renderMap();	
 			}	
-			
-			//Set the minimum and maximum year text inputs
-			//$('#min_year').val(1900);
-			//$('#max_year').val(2000);
 			
 			//Update the year slider
 			this.updateYearRange(); 
@@ -211,7 +206,7 @@ define(['jquery',
 		},
 		
 		renderMap: function() {
-			
+			console.log('rendering map');
 			if (!gmaps) {
 				this.ready = true;
 				return;

@@ -439,6 +439,10 @@ Bold 700
     #share:hover{
     	left: 0px;
     }
+    
+    #show-new-dataCatalogView{
+    	cursor: pointer;
+    }
 
     
     /* Depending on the headerType, these classes apply */
