@@ -1404,7 +1404,7 @@ define(['jquery',
 			
 			var position = this.markers[id].getPosition();
 			
-			var long = position.lng() + 20;
+			var long = position.lng();
 			var lat = position.lat();
 			
 			var newPosition = new gmaps.LatLng(lat, long);
