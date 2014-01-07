@@ -1466,12 +1466,8 @@ define(['jquery',
 		},
 		
 		// Add a single SolrResult item to the list by creating a view for it, and
-		// appending its element to the `<ul>`.
+		// appending its element to the DOM.
 		addOne: function (result) {
-			
-			if(typeof $('#no-results-found') != 'undefined'){
-				$('#no-results-found').remove();
-			}
 			//Get the view and package service URL's
 			this.$view_service = appModel.get('viewServiceUrl');
 			this.$package_service = appModel.get('packageServiceUrl');
@@ -1511,11 +1507,6 @@ define(['jquery',
 			var numFound = appSearchResults.models.length;
 			if (numFound == 0){
 				this.$results.html('<p id="no-results-found">No results found.</p>');
-				
-				//Remove the loading class and styling
-				this.$results.removeClass('loading');
-				
-				return;
 			}
 
 			//Load the first 25 results first so the list has visible results while the rest load in the background
