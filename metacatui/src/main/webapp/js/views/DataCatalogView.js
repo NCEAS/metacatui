@@ -1483,10 +1483,6 @@ define(['jquery',
 			//Add this item to the list
 			this.$results.append(view.render().el);
 			
-			// Initialize any tooltips within the result item
-			$(".tooltip-this").tooltip();
-			$(".popover-this").popover();
-			
 			// map it
 			if(gmaps){
 				this.addObjectMarker(result);	
@@ -1542,6 +1538,10 @@ define(['jquery',
 						var element = appSearchResults.models[i];
 						viewRef.addOne(element);
 					};
+					
+					// Initialize any tooltips within the result item
+					$(".tooltip-this").tooltip();
+					$(".popover-this").popover();
 
 					if(gmaps){
 						// clean out any old markers
