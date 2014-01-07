@@ -1485,12 +1485,12 @@ define(['jquery',
 			//Create a new result item
 			var view = new SearchResultView({ model: result });
 			
+			//Add this item to the list
+			this.$results.append(view.render().el);
+			
 			// Initialize any tooltips within the result item
 			$(".tooltip-this").tooltip();
 			$(".popover-this").popover();
-			
-			//Add this item to the list
-			this.$results.append(view.render().el);
 			
 			// map it
 			if(gmaps){
