@@ -814,7 +814,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       float: none;      
     }
     
-    #show-new-dataCatalogView{
+    .show-new-dataCatalogView{
     	cursor: pointer;
     }
     

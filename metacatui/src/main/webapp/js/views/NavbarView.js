@@ -15,7 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 						  'click #search_btn' : 'triggerSearch',
 					   'keypress #search_txt' : 'triggerOnEnter',
 							  'click #myData' : 'myDataSearch',
-			'click #show-new-dataCatalogView' : 'showNewSearch'
+			'click .show-new-dataCatalogView' : 'showNewSearch'
 		},
 		
 		initialize: function () {
