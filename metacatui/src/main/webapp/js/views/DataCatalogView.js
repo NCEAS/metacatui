@@ -1480,12 +1480,12 @@ define(['jquery',
 			//Create a new result item
 			var view = new SearchResultView({ model: result });
 			
+			//Add this item to the list
+			this.$results.append(view.render().el);
+			
 			// Initialize any tooltips within the result item
 			$(".tooltip-this").tooltip();
 			$(".popover-this").popover();
-			
-			//Add this item to the list
-			this.$results.append(view.render().el);
 			
 			// map it
 			if(gmaps){
@@ -1600,6 +1600,7 @@ define(['jquery',
 		
 		//Move the popover element up the page a bit if it runs off the bottom of the page
 		preventPopoverRunoff: function(e){
+			console.log(e.target);
 			//In map view only (because all elements are fixed and you can't scroll)
 			if(appModel.get('searchMode') == 'map'){
 				var viewportHeight = $('#map-container').outerHeight();
