@@ -479,6 +479,10 @@ header {
          -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
+    
+    .show-new-dataCatalogView{
+    	cursor: pointer;
+    }
 
     #Navbar form {
       margin: 0px 0px 0px 0px;

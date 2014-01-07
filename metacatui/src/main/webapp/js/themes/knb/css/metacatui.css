@@ -814,6 +814,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       float: none;      
     }
     
+    .show-new-dataCatalogView{
+    	cursor: pointer;
+    }
+    
     /* Depending on the headerType, these classes apply */
     nav#Navbar.alt {
       position: absolute;
