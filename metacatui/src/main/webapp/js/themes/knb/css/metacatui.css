@@ -1825,18 +1825,20 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     #resultspager{
     	float: left;
     	margin-left: 10px;
-    	margin-top:10px;
+    	margin-top:18px;
+    	max-width: 70%;
     }
     
     .sort-by{
     	float: right;
-    	min-width: 185px;
-    	margin-top: 10px;
-    	margin-right: 10px;
+    	max-width: 30%;
+    	margin-right: 2%;
     }
     .sort-by label{
  		display: inline;
+ 		float: left;
  		margin-right: 5px;
+ 		margin-bottom: 0px;
  		color: #999;
  		font-size: 12px;
  	}
@@ -1844,6 +1846,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	.mapMode .sort-by select{
  		width: auto;
  		right: 10px;
+ 		float: left;
  		z-index: 1;
  	}
  	
@@ -1851,6 +1854,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	font-size: 20px;
     	color: #999999;
     	cursor: default;
+    	padding-left: 4px;
+    	padding-right: 4px;
     }
     
     /*-- Results List Rows--*/
