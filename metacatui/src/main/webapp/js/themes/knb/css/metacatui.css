@@ -1849,7 +1849,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     /*-- Results List Rows--*/
     .mapMode .search-results{
-    	margin-top: 90px;
+    	margin-top: 100px;
     	width: 95%;
     	float: right;
     	background-color: #FFFFFF;
