@@ -575,7 +575,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 .mapMode #content.collapsed{
-	height: 88px;
+	height: 105px;
 }
 
 
@@ -1738,7 +1738,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		position: fixed;
  		background-color: #FFFFFF;
  		border-bottom: 3px solid #DDDDDD;
- 		padding-bottom: 5px; 
  		margin-left: 0px;
  		width: 45%;
  		cursor: pointer;
@@ -1824,15 +1823,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     #resultspager{
     	float: left;
-    	margin-left: 10px;
     	margin-top:18px;
     	max-width: 70%;
+    	height: 30px;
     }
     
     .sort-by{
     	float: right;
     	max-width: 30%;
-    	margin-right: 2%;
+    	margin-right: 20px;
     }
     .sort-by label{
  		display: inline;
@@ -1859,6 +1858,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     /*-- Results List Rows--*/
+    #results.loading *{
+    	color: #DDD;
+    	border: 0px;
+    }
+    
     .mapMode .search-results{
     	margin-top: 90px;
     	width: 95%;

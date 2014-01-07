@@ -1400,6 +1400,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	padding-top: 5px;
     }
     
+    #results.loading *{
+    	color: #DDD;
+    	border: 0px;
+    }
+    
     .result-row {
       display: block;
       padding: 5px 10px;

@@ -91,35 +91,6 @@ define(['jquery',
 		initialize: function () {
 			
 		},
-		
-		triggerSearch: function() {	
-			console.log('Search triggered');			
-			
-			//Set the sort order 
-			var sortOrder = $("#sortOrder").val();
-			searchModel.set('sortOrder', sortOrder);
-			
-			//Trigger a search to load the results
-			appModel.trigger('search');
-			
-			// make sure the browser knows where we are
-			var route = Backbone.history.fragment;
-			if (route.indexOf("data") < 0) {
-				uiRouter.navigate("data");
-			} else {
-				uiRouter.navigate(route);
-			}
-			
-			// ...but don't want to follow links
-			return false;
-		},
-		
-		triggerOnEnter: function(e) {
-			if (e.keyCode != 13) return;
-			
-			//Update the filters
-			this.updateTextFilters(e);
-		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
@@ -337,6 +308,35 @@ define(['jquery',
 			this.hideFilter($('#current-spatial-filters').find('[data-term="'+ this.reservedMapPhrase +'"]'));
 		},
 		
+		triggerSearch: function() {	
+			console.log('Search triggered');			
+			
+			//Set the sort order 
+			var sortOrder = $("#sortOrder").val();
+			searchModel.set('sortOrder', sortOrder);
+			
+			//Trigger a search to load the results
+			appModel.trigger('search');
+			
+			// make sure the browser knows where we are
+			var route = Backbone.history.fragment;
+			if (route.indexOf("data") < 0) {
+				uiRouter.navigate("data");
+			} else {
+				uiRouter.navigate(route);
+			}
+			
+			// ...but don't want to follow links
+			return false;
+		},
+		
+		triggerOnEnter: function(e) {
+			if (e.keyCode != 13) return;
+			
+			//Update the filters
+			this.updateTextFilters(e);
+		},
+		
 		/* 
 		 * showResults gets all the current search filters from the searchModel, creates a Solr query, and runs that query.
 		 */
@@ -348,7 +348,7 @@ define(['jquery',
 				page = 0;
 			}
 					
-			this.removeAll();
+			this.loading();
 			
 			var sortOrder = searchModel.get('sortOrder');
 			
@@ -935,6 +935,7 @@ define(['jquery',
 			this.triggerSearch();
 		},
 
+		//Update all the statistics throughout the page
 		updateStats : function() {
 			if (appSearchResults.header != null) {
 				this.$statcounts = this.$('#statcounts');
@@ -950,8 +951,6 @@ define(['jquery',
 			// piggy back here
 			this.updatePager();
 			this.getFacetCounts();
-			
-
 		},
 		
 		updatePager : function() {
@@ -959,10 +958,7 @@ define(['jquery',
 				var pageCount = Math.ceil(appSearchResults.header.get("numFound") / appSearchResults.header.get("rows"));
 				
 				//If no results were found, do not populate the pagination.
-				if(pageCount == 0){
-					this.$results.html('<p id="no-results-found">No results found.</p>');
-				}
-				else{
+				if(pageCount > 0){
 					var pages = new Array(pageCount);
 					
 					// mark current page correctly, avoid NaN
@@ -1000,7 +996,7 @@ define(['jquery',
 
 		// Next page of results
 		nextpage: function () {
-			this.removeAll();
+			this.loading();
 			appSearchResults.nextpage();
 			this.$resultsview.show();
 			this.updateStats();
@@ -1012,7 +1008,7 @@ define(['jquery',
 		
 		// Previous page of results
 		prevpage: function () {
-			this.removeAll();
+			this.loading();
 			appSearchResults.prevpage();
 			this.$resultsview.show();
 			this.updateStats();
@@ -1028,8 +1024,7 @@ define(['jquery',
 		},
 		
 		showPage: function(page) {
-			//Remove all the current search results
-			this.removeAll();
+			this.loading();
 			appSearchResults.toPage(page);
 			this.$resultsview.show();
 			this.updateStats();	
@@ -1509,24 +1504,41 @@ define(['jquery',
 			
 			// do this first to indicate coming results
 			this.updateStats();
-			
+						
 			//reset the master bounds
 			this.masterBounds = null;
 			
+			//Clear the results list before we start adding new rows
+			this.$results.html('');
+			
+			//If there are no results, display so
+			var numFound = appSearchResults.models.length;
+			if (numFound == 0){
+				this.$results.html('<p id="no-results-found">No results found.</p>');
+				
+				//Remove the loading class and styling
+				this.$results.removeClass('loading');
+				
+				return;
+			}
+
 			//Load the first 25 results first so the list has visible results while the rest load in the background
 			var min = 25;
-			min = Math.min(min, appSearchResults.models.length);
+			min = Math.min(min, numFound);
 			var i = 0;
 			for (i = 0; i < min; i++) {
 				var element = appSearchResults.models[i];
 				this.addOne(element);
 			};
 			
+			//Remove the loading class and styling
+			this.$results.removeClass('loading');
+			
 			//After the map is done loading, then load the rest of the results into the list
 			var viewRef = this;
 			var intervalId = setInterval(function() {
 				if (viewRef.ready) {
-					for (i = min; i < appSearchResults.models.length; i++) {
+					for (i = min; i < numFound; i++) {
 						var element = appSearchResults.models[i];
 						viewRef.addOne(element);
 					};
@@ -1534,9 +1546,6 @@ define(['jquery',
 					if(gmaps){
 						// clean out any old markers
 						viewRef.mergeMarkers();
-						
-						// show them if the are hidden
-						//viewRef.showMarkers();
 						
 						// show the clustered markers
 						var mcOptions = {
@@ -1562,8 +1571,7 @@ define(['jquery',
 						//Pan the map to the center of our results
 						if((!viewRef.allowSearch) && (viewRef.masterBounds)){
 							var center = viewRef.masterBounds.getCenter();
-							var adjustedCenter = new gmaps.LatLng(center.lat(), center.lng()+50);
-							viewRef.map.panTo(adjustedCenter);
+							viewRef.map.panTo(center);
 						}
 						
 						$("#map-container").removeClass("loading");
@@ -1576,11 +1584,10 @@ define(['jquery',
 
 		},
 		
-		// Remove all html for items in the **SearchResults** collection at once.
-		removeAll: function () {
-			console.log('Removing all the results from the list');
+		// Communicate that the page is loading
+		loading: function () {
 			$("#map-container").addClass("loading");
-			this.$results.html('');
+			this.$results.addClass("loading");
 		},
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 

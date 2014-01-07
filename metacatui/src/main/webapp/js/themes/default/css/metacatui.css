@@ -1406,6 +1406,12 @@ Bold 700
     	cursor: pointer;
     }
     
+    #results.loading *{
+    	color: #CCCCCC;
+    	background-color: #DDDDDD;
+    	border: 0px;
+    }
+    
     .result-row {
       display: block;
       padding: 4px 1%;

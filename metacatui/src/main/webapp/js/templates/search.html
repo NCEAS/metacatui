@@ -142,9 +142,6 @@
 						
 						<!-- pager -->
 						<div class="row-fluid pagination pagination-centered">
-							<div id="resultspager">
-							</div>
-							
 							<div class="sort-by">
 								<label for="sortOrder">Sort by</label>
 								<select id="sortOrder">
@@ -153,6 +150,8 @@
 									<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
 									<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
 								</select>
+							</div>
+							<div id="resultspager">
 							</div>
 						</div>
 					</div>
