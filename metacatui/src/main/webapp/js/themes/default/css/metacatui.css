@@ -63,7 +63,7 @@ Bold 700
 		
     body > section > article {
       background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 0.8);
       padding: 20px;
       border-radius: 10px;		
       -webkit-border-radius: 10px;
@@ -1743,13 +1743,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #mainContent input{
 	height: 90px;
-	border-radius: 20px;
-	-webkit-border-radius: 20px;
-	-moz-border-radius: 20px;
+	border-radius: 20px 0px 0px 20px;
+	-webkit-border-radius: 20px 0px 0px 20px;
+	-moz-border-radius: 20px 0px 0px 20px;
 	font: 300 30px/30px "Oswald", Arial, sans-serif;
-	border: none; 
+	border: 3px solid #EEEEEE;
+	border-right: 0px; 
 	padding-left: 20px;
+	margin-right: 20px;
 	float: left;
+	background-color: #FFFFFF; /* IE fallback */
+	background-color: rgba(255,255,255,0.8);
 }
 
 #mainContent input::-webkit-input-placeholder{
@@ -1766,14 +1770,25 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #search_btn_main{
-	float:left;
-	height:59px;
+	float: left;
+	height: 98px;
 	margin-left: -20px;
 	border-radius: 0 15px 15px 0;
 	-webkit-border-radius: 0 15px 15px 0;
 	-moz-border-radius: 0 15px 15px 0;
+	border: 3px solid #EEEEEE;
+	border-left: 0px;
 	background-color: #FFFFFF;
-	padding-top: 35px;
+	background-color: rgba(255,255,255,0.8);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	padding: 0px;
+	width: 100px;
+	line-height: 90px;
+}
+
+#search_btn_main > i{
 	color: #999999;
 }
 
