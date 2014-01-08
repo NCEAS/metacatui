@@ -18,6 +18,7 @@ if (mapKey){
    support requirejs. */
 require.config({
   baseUrl: 'js/',
+  waitSeconds: 180, //wait 3 minutes before throwing a timeout error
   map: themeMap,
   paths: {
     jquery: '../components/jquery',

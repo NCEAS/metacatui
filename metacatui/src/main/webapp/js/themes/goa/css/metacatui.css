@@ -396,6 +396,9 @@
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
 
+	.show-new-dataCatalogView{
+    	cursor: pointer;
+    }
 
     #Navbar form {
       margin: 8px 0px 0px 0px;
@@ -1047,6 +1050,11 @@
     	padding-top: 5px;
     }
     
+    #results.loading *{
+    	color: #DDD;
+    	border: 0px;
+    }
+    
     .result-row {
       display: block;
         border-bottom: thin solid;
@@ -1113,7 +1121,7 @@
     	max-height: 500px;
     	min-height: 10px;
     	overflow: hidden;
-    	word-break: break-all;
+    	word-break: keep-all;
     	text-overflow: ellipsis;
     	min-width: 10%;
     	max-width: 250px;
@@ -1551,4 +1559,8 @@
  .tablehead{
  	padding-top: 10px;
  	border-bottom: 1px solid #CCCCCC;
+ }
+ 
+ #loading-app{
+ 	display: none;
  }

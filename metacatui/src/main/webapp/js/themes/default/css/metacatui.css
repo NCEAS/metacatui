@@ -439,6 +439,10 @@ Bold 700
     #share:hover{
     	left: 0px;
     }
+    
+    .show-new-dataCatalogView{
+    	cursor: pointer;
+    }
 
     
     /* Depending on the headerType, these classes apply */
@@ -729,11 +733,51 @@ Bold 700
 		outline:none; 
 	}	  
 
+	.minimize > i{
+        color: #CCCCCC;
+    	font-size: 20px;
+    	margin-top: 5px;
+    	display: none;
+    }
+    
+    .minimize > i.icon-check-minus{
+    	font-size: 17px;
+    }
+    
+    .mapMode .minimize > i{
+    	display: block;
+    }
+    
+    #sidebar .minimize > i{
+    	float: right;
+    	margin-right: 10px;
+    }
+    
+    #content .minimize{
+    	position: fixed;
+    	right: 25px;
+    	z-index: 1;
+    }
+    
+    .mapMode #sidebar.collapsed .minimize > i.minimize,
+    .mapMode #sidebar .minimize > i.maximize,
+    .mapMode #content.collapsed .minimize > i.minimize,
+    .mapMode #content .minimize > i.maximize{
+    	display: none;
+    }
+    
+    .mapMode #sidebar.collapsed .minimize > i.maximize,
+    .mapMode #sidebar .minimize > i.minimize,
+    .mapMode #content.collapsed .minimize > i.maximize,
+    .mapMode #content .minimize > i.minimize{
+    	display: block;
+    }
+    
   /* SIDEBAR CSS
   -------------------------------------------------- */
     #sidebar {
       position: fixed;
-      width: 250px;
+      width: 260px;
       bottom: 0px;
       left: 0px;
       padding: 0px;
@@ -745,13 +789,13 @@ Bold 700
       -webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  max-height: 750px;
+	  max-height: 76%;
 	  overflow-y: scroll;
 	  overflow-x: hidden;
     } 
     
     #sidebar.collapsed{
-    	height: 50px;
+    	height: 60px;
     }
  	
  	aside > div{
@@ -806,6 +850,13 @@ Bold 700
 		top: 2px;	
 		position: relative;
    }
+    
+    .filter-contain i.more-info{
+    	font-size: 13px;
+    	line-height: 23px;
+    	top: 5px;
+    	float: left;
+    }
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
@@ -1015,6 +1066,7 @@ Bold 700
      #includes-files label.ui-state-active{
     	margin-top: 0px;
     	line-height: 21px;
+    	float:left;
     	height: 21px;
     } 
     
@@ -1026,6 +1078,8 @@ Bold 700
 		float: left;
 		margin-right: 5px;
 		line-height: 1.5em;
+		white-space: normal;
+		max-width: 90%;
 	}
 	
 	.current-filters > li > i{
@@ -1081,6 +1135,7 @@ Bold 700
 		padding: 0px;
 		padding-left: 10px;
 		margin-bottom: 0px;
+		float: left;
     }
     
     h2.nav-header > i{
@@ -1216,8 +1271,10 @@ Bold 700
       height: 76px;
     }
     
-    .result-header > .result-header-count{
+     .result-header > .result-header-count{
     	position: relative;
+    	width: 100%;
+    	padding-left: 7%;
     }
     
     .result-header-count > .result-header-count{
@@ -1267,11 +1324,12 @@ Bold 700
 		display: block;
 		position: fixed;
 		font-size: 75px;
-		background-color: inherit;
+		background-color: #333;
 		z-index: 1;
 		width: auto;
 		color: #777777;
 		padding-left: 5px;
+		padding-right: 11px;
 		border-radius: 0px;
 		-webkit-border-radius: 0px;
 		-moz-border-radius: 0px;
@@ -1288,23 +1346,29 @@ Bold 700
     	-moz-border-radius: 0px;
     	background-color: #333333;
     	width: auto;
-    	position: fixed;
  		right: 10px;
  		margin-top: 5px;
 		color: #FFF;
 		height: 18px;
-		float: right;
 		z-index: 1;
     }
  	
  	#statcounts{
  		width: 100%;
+ 		padding-left: 2%;
+ 		background-color: #333333;
  		height: inherit;
  	}
  	
  	.mapMode #statcounts{
  		position: fixed;
  		width: 45%;
+ 	}
+ 	
+ 	.pagination label{
+ 		display: inline;
+ 		color: #eeeeee;
+ 		margin-right: 5px;
  	}
    
    /*-- Results rows --*/
@@ -1340,6 +1404,12 @@ Bold 700
     	font-size: 18px;
     	color: #DDD;
     	cursor: pointer;
+    }
+    
+    #results.loading *{
+    	color: #CCCCCC;
+    	background-color: #DDDDDD;
+    	border: 0px;
     }
     
     .result-row {
@@ -1409,6 +1479,10 @@ Bold 700
     	max-height: 43px;
     }
     
+    .info-icons i{
+     cursor: help;
+    }
+    
     .info-icons .show-abstract > i{
     	color: #EEE;
     	margin-left: 3px;
@@ -1438,15 +1512,16 @@ Bold 700
     	color: #DA4D3A;
     }
     
-        .popover{
+    .popover{
     	max-width: 250px;
+    	font-size: 13px;
     }
     
      body > .popover{
     	max-height: 500px;
     	min-height: 10px;
     	overflow: hidden;
-    	word-break: break-all;
+    	word-break: keep-all;
     	text-overflow: ellipsis;
     	min-width: 10%;
     	max-width: 250px;
@@ -1489,6 +1564,11 @@ Bold 700
     	background-color: #333333;
     	width: 80%;
     	position: fixed;
+    }
+    
+    #resultspager{
+    	float: left;
+    	padding-left: 2%;
     }
     
     .mapMode .pagination{
@@ -1545,6 +1625,11 @@ Bold 700
 	top:0px;
 	display: block;
 	transition: all 1s;
+}
+
+.gmaps-infowindow{
+	max-height: 300px;
+	overflow-y:scroll;	
 }
 
 #toggle-map{
@@ -2094,3 +2179,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	border-bottom: 1px solid #CCCCCC;
  }
 
+
+#loading-app{
+	display: none;
+}

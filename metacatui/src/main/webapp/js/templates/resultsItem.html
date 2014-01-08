@@ -1,4 +1,4 @@
-        <!-- <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div> -->
+
 <% 
 	if (typeof southBoundCoord != "undefined"){
 		print('<div class="result-row view-link pointer open-marker" data-id="'+id+'">');
@@ -11,12 +11,12 @@
             <div class="row-fluid">
             <% if((typeof abstract == 'undefined') || (abstract == "")){ 
            			print('<div class="span6 show-abstract">');
-           			print('<i class="icon-info-sign"></i>');
+           			print('<i class="icon-info-sign inactive"></i>');
            			print('</div>');
            		} 
            		else{	        
            			var safeAbstract = abstract.replace(/\"/g, "'");   		
-           			print('<div class="span6 show-abstract popover-this stop-route" data-placement="left" data-trigger="hover" data-title="Abstract" data-container="body" data-content="' + safeAbstract + '">');
+           			print('<div class="span6 show-abstract popover-this stop-route prevent-popover-runoff" data-placement="left" data-trigger="hover" data-title="Abstract" data-container="body" data-content="' + safeAbstract + '">');
            			print('<i class="icon-info-sign show-abstract stop-route"></i>');
            			print('</div>');
            		 } %>
@@ -26,7 +26,7 @@
 			               		print('<i class="icon-folder-open has-data popover-this" data-trigger="hover" data-content="Includes data files" data-placement="right"></i>');
 			            }
 			            else{
-			            	print('<i class="icon-folder-open"></i>');
+			            	print('<i class="icon-folder-open inactive"></i>');
 			            }
 	           		%>
 	           </div>
@@ -38,7 +38,7 @@
 		               		print('<i class="icon-map-marker on-map"></i>');
 		               }
 		               else{
-		               		print('<i class="icon-map-marker"></i>');
+		               		print('<i class="icon-map-marker inactive"></i>');
 		               }
 		            %>
 	            </div>
