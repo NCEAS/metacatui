@@ -320,11 +320,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			
 			// ajax call to logout, only want the form object
 			$.ajax({
-				type: "POST",
+				type: "GET",
 				xhrFields: {
 					withCredentials: true
 				},
-				url: this.registryUrl + "?" + this.registryQueryString + "&stage=logout form",
+				url: this.registryUrl + "?" + this.registryQueryString + "&stage=logout",
 				data: null, // params are in the URL
 				success: function(data, textStatus, xhr) {
 					
