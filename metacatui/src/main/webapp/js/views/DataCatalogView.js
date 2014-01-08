@@ -355,7 +355,7 @@ define(['jquery',
 			appSearchResults.setrows(200);
 			appSearchResults.setSort(sortOrder);
 			
-			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate";
+			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i";
 			if(gmaps){
 				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}

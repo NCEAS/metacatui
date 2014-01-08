@@ -30,8 +30,8 @@
 			            }
 	           		%>
 	           </div>
-           </div>
-        	<div class="row-fluid">
+			</div>
+			<div class="row-fluid">
         		<div class="span6 on-map">
 					<% 
 						if (typeof southBoundCoord != "undefined"){
@@ -42,6 +42,32 @@
 		               }
 		            %>
 	            </div>
+	            
+        		<div class="span6">
+	            	<% if (resourceMap) {
+						// handle multiple resourceMaps		
+						print('<div class="span1 stop-route">');
+			
+						print('<a class="dropdown-toggle download stop-route" data-toggle="dropdown" href="#" alt="Download"><i class="icon-download-alt stop-route"></i><i class="icon-caret-down"></i></a>');
+					        print('<ul class="dropdown-menu download">');
+					        var cnt = 1;
+					        _.each(resourceMap, function(resourceMapId) {
+								print('<li class="stop-route">');
+								print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" class="stop-route">', 'Package ', cnt, '</a>');
+								print('</li>'); 
+								 
+							})
+					        print('</ul>');
+					        print('</div>');
+					    }
+				    else {
+				    	print('<div class="span1 stop-route">');
+						print('<a href=\"', package_service, id, '\" class="download" alt="Download"><i class="icon-download-alt stop-route"></i></a>'); 
+						print('</div>');
+					}
+				%>
+	            </div>
+	            
 	        </div>
         </div>      
         <div class="result-citation span10">
@@ -68,28 +94,13 @@
                <span class="result-id subtle"> <%- id %></span>
         </div>
         
-              	
-		<% if (resourceMap) {
-				// handle multiple resourceMaps		
-				print('<div class="span1 stop-route">');
-	
-				print('<a class="dropdown-toggle download stop-route" data-toggle="dropdown" href="#" alt="Download"><i class="icon-download-alt stop-route"></i><i class="icon-caret-down"></i></a>');
-			        print('<ul class="dropdown-menu download">');
-			        var cnt = 1;
-			        _.each(resourceMap, function(resourceMapId) {
-						print('<li class="stop-route">');
-						print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" class="stop-route">', 'Package ', cnt, '</a>');
-						print('</li>'); 
-						 
-					})
-			        print('</ul>');
-			        print('</div>');
-			    }
-		    else {
-		    	print('<div class="span1 stop-route">');
-				print('<a href=\"', package_service, id, '\" class="download" alt="Download"><i class="icon-download-alt stop-route"></i></a>'); 
-				print('</div>');
+		<div class="span1 stats">
+			<% 
+			if (typeof read_count_i != "undefined"){
+				print('<span class="badge">', read_count_i, ' views</span>');
 			}
-		%>
+			%>
+		</div>
+
 		<div class="clear"></div>
 </div>
