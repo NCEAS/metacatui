@@ -147,6 +147,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			    contentType: false,
 			    processData: false,
 			    type: 'POST',
+				xhrFields: {
+					withCredentials: true
+				},
 			    success: function(data, textStatus, jqXHR) {
 					contentArea.html(data);
 				}

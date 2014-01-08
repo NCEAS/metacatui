@@ -227,18 +227,19 @@ define(['jquery',
 						};
 						
 						// are we authorized to publish?
-						$.ajax(
-								{
-									url: authServiceUrl + pid + "?action=changePermission",
-									success: function(data, textStatus, xhr) {
-										populateTemplate(true);
-									},
-									error: function(xhr, textStatus, errorThrown) {
-										console.log('Not authorized to publish');
-									}
-							
+						$.ajax({
+								url: authServiceUrl + pid + "?action=changePermission",
+								type: "GET",
+								xhrFields: {
+									withCredentials: true
+								},
+								success: function(data, textStatus, xhr) {
+									populateTemplate(true);
+								},
+								error: function(xhr, textStatus, errorThrown) {
+									console.log('Not authorized to publish');
 								}
-							);
+							});
 					}
 					
 				}
@@ -270,6 +271,9 @@ define(['jquery',
 				$.ajax({
 						url: publishServiceUrl + pid,
 						type: "PUT",
+						xhrFields: {
+							withCredentials: true
+						},
 						success: function(data, textStatus, xhr) {
 							// the response should have new identifier in it
 							identifier = $(data).find("d1\\:identifier, identifier").text();
