@@ -83,16 +83,23 @@ define(['jquery', 'underscore', 'backbone'],
 				    contentType: false,
 				    processData: false,
 				    type: 'POST',
+				    xhrFields: {
+						withCredentials: true
+					},
 				    success: complete
 				});
 			} else {
 				// simple form
 				formData = $(form).serialize();
-				$.post(
-					formUrl,
-					formData,
-					complete
-				);
+				$.ajax({
+					type: "POST",
+					xhrFields: {
+						withCredentials: true
+					},
+					url: formUrl,
+					data: formData,
+					success: complete
+				});
 			}
 			
 			return false;

@@ -54,17 +54,22 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			
 			// load all the registry content so all the js can run in what gets loaded
 			var viewRef = this;
-			$.post(
-					this.registryUrl,
-					this.registryQueryString,
-					function(data, textStatus, jqXHR) {
+			$.ajax({
+					type: "POST",
+					xhrFields: {
+						withCredentials: true
+					},
+					url: this.registryUrl,
+					data: this.registryQueryString,
+					success: function(data, textStatus, jqXHR) {
 						viewRef.$el.html(data);
 						viewRef.verifyLoginStatus();
 						viewRef.augementForm();
 						viewRef.modifyLoginForm();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow');
-					});
+					}
+				});
 			
 			return this;
 		},
@@ -142,6 +147,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			    contentType: false,
 			    processData: false,
 			    type: 'POST',
+				xhrFields: {
+					withCredentials: true
+				},
 			    success: function(data, textStatus, jqXHR) {
 					contentArea.html(data);
 				}
@@ -175,14 +183,18 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
 			var contentArea = this.$el;
-			$.post(
-					this.registryUrl,
-					formData,
-					function(data, textStatus, jqXHR) {
+			$.ajax({
+					type: "POST",
+					xhrFields: {
+						withCredentials: true
+					},
+					url: this.registryUrl,
+					data: formData,
+					success: function(data, textStatus, jqXHR) {
 						contentArea.html(data);
 						viewRef.augementForm();
 					}
-			);
+			});
 			
 		},
 		
@@ -233,10 +245,14 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			
 			// ajax call to submit the given form and then render the results in the content area
 			// use post to prevent passwords in the URL
-			$.post(
-				this.registryUrl,
-				formData,
-				function(data, textStatus, xhr) {
+			$.ajax({
+				type: "POST",
+				xhrFields: {
+					withCredentials: true
+				},
+				url: this.registryUrl,
+				data: formData,
+				success: function(data, textStatus, xhr) {
 					
 					// stash the form content
 					viewRef.$('#tempMetacatContainer').html(data);
@@ -248,9 +264,14 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 					if (metacatUrl) {
 						// submit the Metacat API login form
 						var loginFormData = viewRef.$("form").serialize();
-						$.post(metacatUrl,
-							loginFormData,
-							function(data1, textStatus1, xhr1) {
+						$.ajax({
+							type: "POST",
+							xhrFields: {
+								withCredentials: true
+							},
+							url: metacatUrl,
+							data: loginFormData,
+							success: function(data1, textStatus1, xhr1) {
 								// browser has the JSESSIONID cookie now
 								//var allHeaders = xhr1.getAllResponseHeaders();
 								console.log("Got headers, JSESSIONID cookie");
@@ -264,7 +285,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 								// then load the registry url again, now that we are logged in
 								viewRef.render();
 							}
-						);
+						});
 					} else {
 						// just show what was returned (error message)
 						viewRef.$el.html(data);
@@ -274,7 +295,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 					viewRef.$('#tempMetacatContainer').remove();
 					
 				}
-			);
+		});
 			
 			return true;
 		},
@@ -298,10 +319,16 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			viewRef.$el.append("<div id='tempMetacatContainer' />");
 			
 			// ajax call to logout, only want the form object
-			this.$('#tempMetacatContainer').load(
-				this.registryUrl + "?" + this.registryQueryString + "&stage=logout form",
-				null, // params are in the URL
-				function(data, textStatus, xhr) {
+			$.ajax({
+				type: "GET",
+				xhrFields: {
+					withCredentials: true
+				},
+				url: this.registryUrl + "?" + this.registryQueryString + "&stage=logout",
+				data: null, // params are in the URL
+				success: function(data, textStatus, xhr) {
+					
+					viewRef.$('#tempMetacatContainer').html(data);
 					
 					// the Metacat logout form is now in the main content for us to work with
 					var metacatUrl = viewRef.$("form").attr("action");
@@ -310,9 +337,14 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 					if (metacatUrl) {
 						// submit the Metacat API login form
 						var logoutFormData = viewRef.$("form").serialize();
-						$.post(metacatUrl,
-							logoutFormData,
-							function(data1, textStatus1, xhr1) {
+						$.ajax({
+							type: "POST",
+							xhrFields: {
+								withCredentials: true
+							},
+							url: metacatUrl,
+							data: logoutFormData,
+							success: function(data1, textStatus1, xhr1) {
 								// don't really do anything with this - browser has the JSESSIONID cookie now
 								console.log("Logged out, this JSESSIONID cookie is invalid now");
 								
@@ -322,7 +354,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 								// trigger the check for logged in user
 								appView.checkUserStatus();
 							}
-						);
+						});
 					} else {
 						// just show what was returned (error message)
 						viewRef.$el.html(data);
@@ -335,7 +367,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 					viewRef.render();
 
 				}
-			);
+			});
 			
 			return true;
 		},
