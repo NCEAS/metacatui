@@ -1433,7 +1433,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		color: #999;
 		font-size: 13px;
 		margin-top: 2px;
-		margin-left: 5px;
 		cursor: help;
 	}
 	
@@ -1895,6 +1894,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     background-color: #eee;
   }
   
+  .result-row .open > .dropdown-menu{
+  	position: relative;
+  }
+  
   .result-title > a{
   	color: #555555;
   	font-weight: bold;
@@ -1920,35 +1923,24 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     /*-- Results List Icons --*/
     .info-icons{
-    	min-width: 28px;
-    	max-height: 43px;
-    }
+    	max-width: 15px;
+    } 
     
-    .info-icons i{
+    .info-icons i.more-info{
     	cursor: help;
-    }
-    
+    }   
     
     .info-icons .show-abstract > i{
-    	margin-left: 3px;
     	font-size: 17px;
+    	margin-left: -2px;
     }
     
     .info-icons .show-abstract > i.show-abstract{
     	color: #999999;
     }
     
-    .info-icons .has-data > i{
-    	margin-left: 10px;
-    }
-    
-    .info-icons .has-data > i.has-data{
-    	color: #999999;
-    }
-    
     .info-icons .on-map > i{
     	font-size: 17px;
-    	margin-left: 5px;
     }
     
     .info-icons .on-map > i.on-map{
@@ -1956,7 +1948,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	cursor: default;
     }
     
-    .info-icons i.inactive{
+    .download.btn{
+    	width: 33px;
+		color: #666666;
+		padding-right: 5px;
+		padding-left: 5px;
+    }
+    
+    i.inactive{
     	color: #EEE;
     	cursor: default;
     }
@@ -1992,32 +1991,23 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .result-row .btn > .icon-caret-down {
     	margin-left: 5px;
-    	font-size: 16px;
+    	font-size: 12px;
     } 
     
-	.result-row .icon-download-alt{
+	.result-row i.download{
 		font-size: 18px;
+		cursor: pointer;
 	}
 	
 	.result-row .icon-caret-down{
 		font-size: 15px;
+		margin-left: 2px;
 	}
-	
-  	.result-row .download{
-  		position: relative;
-  	}
   	
   	.result-row .download:hover i{
   		text-decoration: none;
   	}
-  	
-  	.result-row .dropdown-menu{
-  		left: -100%;
-  	}
-  	
-  	.mapMode .result-row .dropdown-menu{
-  		left: -320%;
-  	}
+
   	
 /* RESPONSIVE CSS
 -------------------------------------------------- */
