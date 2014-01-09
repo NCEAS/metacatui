@@ -6,9 +6,10 @@ define(['jquery',
 		'text!templates/package.html',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
-		'text!templates/loading.html'
+		'text!templates/loading.html',
+		'text!templates/usageStats.html'
 		], 				
-	function($, _, Backbone, gmaps, PackageTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate) {
+	function($, _, Backbone, gmaps, PackageTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate) {
 	'use strict';
 
 	
@@ -22,6 +23,8 @@ define(['jquery',
 
 		doiTemplate: _.template(PublishDoiTemplate),
 		
+		usageTemplate: _.template(UsageTemplate),
+
 		versionTemplate: _.template(VersionTemplate),
 		
 		loadingTemplate: _.template(LoadingTemplate),
@@ -80,7 +83,7 @@ define(['jquery',
 			var viewRef = this;
 
 			// surround pid value in "" so that doi characters do not affect solr query
-			var query = 'fl=id,resourceMap&wt=xml&q=formatType:METADATA+-obsoletedBy:*+resourceMap:*+id:"' + pid + '"';
+			var query = 'fl=id,resourceMap,read_count_i&wt=xml&q=formatType:METADATA+-obsoletedBy:*+resourceMap:*+id:"' + pid + '"';
 			$.get(
 					queryServiceUrl + query,
 					function(data, textStatus, xhr) {
@@ -102,6 +105,17 @@ define(['jquery',
 							);
 
 						}
+						
+						// the response should have a read_count_i element
+						$(data).find("int[name='read_count_i']").each(function(index, element) {
+							var read_count_i = $(this).text();
+							console.log('read_count_i: ' + read_count_i);
+							viewRef.$el.find("#downloadPackage").append(
+									viewRef.usageTemplate({
+										read_count_i: read_count_i
+									})
+								);
+							});
 						
 						// is this the latest version? (includes DOI link when needed)
 						viewRef.showLatestVersion(pid);
