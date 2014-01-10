@@ -1883,8 +1883,8 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   	font-weight: bold;
   }
     
-    .result-citation{
-    	padding-left: 3%;
+    .result-row > .result-citation{
+    	width: 76%;
     }
     
     .result-row > .expand{
@@ -1928,6 +1928,9 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     	cursor: default;
     }
     
+    .result-row > .download{
+    	width: 10%;
+    }
     .download.btn{
     	width: 33px;
 		color: #666666;
