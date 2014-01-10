@@ -134,15 +134,16 @@
 					
 					<!-- count stats -->
 					<div class="result-header-count span10">
-						<div class="minimize">
+						<div class="minimize span2">
 							<i class="icon-check-minus minimize collapse-me" data-collapse="content"></i>
 							<i class="icon-expand-alt maximize collapse-me" data-collapse="content"></i>
 						</div>
-						<div id="statcounts"></div>
+						<div id="statcounts" class="span10"></div>
 						
 						<!-- pager -->
 						<div class="row-fluid pagination pagination-centered">
-							<div class="sort-by">
+							<div id="resultspager" class="span8"></div>
+							<div class="sort-by span4">
 								<label for="sortOrder">Sort by</label>
 								<select id="sortOrder">
 									<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
@@ -151,13 +152,7 @@
 									<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
 								</select>
 							</div>
-							<div id="resultspager">
-							</div>
 						</div>
-					</div>
-										
-					<div class="map-pointer">
-						<i class="icon-angle-left"></i>
 					</div>
 				</div>
 				

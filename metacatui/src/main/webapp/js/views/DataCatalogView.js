@@ -1515,6 +1515,7 @@ define(['jquery',
 			var i = 0;
 			for (i = 0; i < min; i++) {
 				var element = appSearchResults.models[i];
+
 				this.addOne(element);
 			};
 			

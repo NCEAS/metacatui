@@ -1,30 +1,10 @@
 
 /* Import font families */
-@import url(https://fonts.googleapis.com/css?family=Lato);
-/* Lato weights:
-Ultra-Light 100
-Ultra-Light 100 Italic
-Book 300
-Book 300 Italic
-Normal 400
-Normal 400 Italic
-Bold 700
-Bold 700 Italic
-Ultra-Bold 900
-Ultra-Bold 900 Italic
-*/
-@import url(https://fonts.googleapis.com/css?family=Open+Sans);
-/* Open Sans weights:
-Book 300 
-Book 300 Italic
-Normal 400
-Normal 400 Italic
-Semi-Bold 600
-Semi-Bold 600 Italic
-Bold 700
-Bold 700 Italic
-Extra-Bold 800
-Extra-Bold 800 Italic
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,300italic,400italic,600italic);
+/* Source Sans Pro wights 
+Light 300, italic
+Normal 400, italic
+Semi-bold 600, italic
 */
 @import url(https://fonts.googleapis.com/css?family=Gentium+Book+Basic);
 /* Gentium Book Basic weights:
@@ -39,10 +19,14 @@ Bold 700 Italic
     body {
       color: #555555;
       background-color: #FDFDFD;
-      font-family: "Helvetica Nueue", "Helvetica", "Open Sans", "Arial", "sans serif";
+      font-family: "Helvetica Nueue", "Helvetica", "Source Sans Pro", "Arial", "sans serif";
       font-weight: 400;
       font-size: 14px;
-      line-height: 23px;
+      line-height: 20px;
+    }
+    
+    body.mapMode{
+    	position: fixed;
     }
 
     body p {
@@ -122,6 +106,10 @@ Bold 700 Italic
     
     .mapMode .collapse-me:hover{
     	cursor: pointer;
+    }
+    
+    .row-fluid{
+    	min-height: 0px;
     }
     
 	/* Offsets the anchor links by the same height as the fixed header */
@@ -266,7 +254,9 @@ Bold 700 Italic
     }
         
     footer#Footer h3 {
-      font: 800 19px/19px "Open Sans";
+      font-size: 19px;
+      line-height: 19px;
+      font-weight: bold; 
       text-align: center;
       padding: 0px 0px 20px 0px;
       margin-bottom: -25px;
@@ -587,6 +577,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	background-color: transparent;
 	overflow-y:scroll;
 	overflow-x: visible;
+-webkit-box-shadow: -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
+-moz-box-shadow:    -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
+box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 }
     
 /* FEATURES CSS 
@@ -1238,6 +1231,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .mapMode .minimize > i{
     	display: block;
+    	float: right;
     }
     
     #sidebar .minimize > i{
@@ -1765,9 +1759,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	}
 	
 	.mapMode #countstats{
-		margin-left: 49px;
 		margin-top: 5px;
-		font-size: 22px;
+		font-size: 18px;
 	}
 	
 	#countstats > span{
@@ -1808,30 +1801,27 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	.mapMode .collapsed .map-pointer{
 		display: none;
 	}
-
- 	
- 	select{
- 		height: 30px;
- 		width: auto;
- 	}
  	
  	.pagination {
     	cursor: pointer;
     	margin: 0px;
+    	clear:both;
+    }
+    
+    .pagination ul>li>a{
+    	padding: 4px;
+    	line-height: 12px;
     }
     
     #resultspager{
-    	float: left;
-    	margin-top:18px;
-    	max-width: 70%;
-    	height: 30px;
+    	font-size: 12px;
+    	margin-left: 10px;
     }
     
     .sort-by{
-    	float: right;
-    	max-width: 30%;
-    	margin-right: 20px;
+    	min-width: 150px;
     }
+
     .sort-by label{
  		display: inline;
  		float: left;
@@ -1843,9 +1833,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	 	
  	.mapMode .sort-by select{
  		width: auto;
- 		right: 10px;
+ 		height: auto;
  		float: left;
  		z-index: 1;
+ 		font-size: 12px;
+ 	}
+ 	
+ 	.pagination ul{
+ 		float: left;
  	}
  	
     .pagination ul > li > a.unactive{
@@ -1863,8 +1858,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     .mapMode .search-results{
-    	margin-top: 90px;
-    	width: 95%;
+    	margin-top: 100px;
+    	width: 100%;
     	float: right;
     	background-color: #FFFFFF;
     	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
@@ -1979,11 +1974,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	min-width: 30%;
     }
     
-    .has-data .popover{
-    	min-width: 150px;
-    	max-width: 150px;
-    }
-    
     .result-row .icon-download-alt,
     .result-row .icon-caret-down{
     	text-shadow: 1px 1px 1px #ccc
@@ -2006,6 +1996,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	
   	.result-row .download:hover i{
   		text-decoration: none;
+  	}
+  	
+  	.result-row .stats .count{
+  		text-align: center;
+  		display: block;
+  		font-size: 16px;
+  	}
+  	
+  	.result-row .stats label{
+  		font-size: 12px;
+  		text-align: center;
   	}
 
   	
