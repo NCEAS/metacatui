@@ -1438,11 +1438,6 @@ Bold 700
     background-color: rgba(178, 202, 221, 0.8);
   	}
   
-    .result-row .btn > .icon-caret-down {
-    	color: #FFFFFF;
-    	margin-left: 5px;
-    	font-size: 16px;
-    } 
     
     .result-author {
       font-weight: normal;
@@ -1493,15 +1488,6 @@ Bold 700
     	color: #666666;
     }
     
-    .info-icons .has-data > i{
-    	color: #EEE;
-    	margin-left: 10px;
-    }
-    
-    .info-icons .has-data > i.has-data{
-    	color: #666666;
-    }
-    
     .info-icons .on-map > i{
     	font-size: 17px;
     	margin-left: 5px;
@@ -1530,30 +1516,92 @@ Bold 700
     .mapMode > .popover{
     	min-width: 30%;
     }
-     
-     .has-data .popover{
-    	min-width: 150px;
-    	max-width: 150px;
-    }
-    
-    
-    .result-row .icon-download-alt{
-    	font-size: 18px;
-    	text-shadow: 1px 1px 1px #ccc;
-    }
-    
-    .result-row .icon-caret-down{
-    	font-size: 15px;
-    }
-    
-    .result-row .download{
-  		position: relative;
-  	}
   	
   	.result-row a > i,
   	.result-row i{
   		text-decoration: none;
   		color: #555555;
+  	}
+  	
+  		/** Download button **/   
+
+    
+    a.download{
+    	width: 77%;
+    	display:inline-block;
+		color: #888888;
+		padding-right: 5px;
+		padding-left: 5px;
+		margin-left: -6px;
+		transition: all 0.5s;
+		-webkit-transition: all 0.5s;
+    }
+
+    
+    .result-row a.download > .icon-caret-down {
+    	margin-left: 3px;
+    	font-size: 12px;
+    	float: left;
+    } 
+    
+    
+    .result-row:hover a.download{
+    background-image: none;
+    color: #555555;
+padding: 4px 12px;
+margin-bottom: 0;
+font-size: 14px;
+line-height: 20px;
+text-align: center;
+text-shadow: 0 1px 1px rgba(255,255,255,0.75);
+vertical-align: middle;
+cursor: pointer;
+background-color: #f5f5f5;
+background-repeat: repeat-x;
+border: 1px solid #ccc;
+border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
+border-bottom-color: #b3b3b3;
+-webkit-border-radius: 4px;
+-moz-border-radius: 4px;
+border-radius: 4px;
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff',endColorstr='#ffe6e6e6',GradientType=0);
+filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+-webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
+-moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
+box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
+-webkit-transition: all 0.5s;
+transition: all 0.5s;
+    }
+    
+    .result-row a.download:hover{
+    	background-color: #e6e6e6;
+    }
+    
+	.result-row i.download{
+		font-size: 16px;
+		cursor: pointer;
+		float: left;
+		transition: all 0.5s;
+		-webkit-transition: all 0.5s;
+	}
+	
+	.result-row .download label{
+		font-size: 12px;
+		margin-left: -4px;
+		opacity: 0;
+		display:inline;
+		transition: all 0.5s;
+		-webkit-transition: all 0.5s;
+	}
+	
+	.result-row:hover .download label{
+		opacity: 1;
+	}
+
+  	
+  	.result-row .download:hover i{
+  		text-decoration: none;
   	}
   	
     /*-- Pagination widget --*/
