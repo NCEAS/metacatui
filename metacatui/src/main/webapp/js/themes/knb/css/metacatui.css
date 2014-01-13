@@ -1813,7 +1813,8 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     #resultspager{
     	font-size: 12px;
-    	margin-left: 27%;
+    	margin-left: 15px;
+    	width: 100%;
     }
     
     .pagination .sort-by{
@@ -2010,6 +2011,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     color: #555555;
 	padding: 4px 4px;
 	margin-bottom: 0;
+	width: 100%;
 	font-size: 14px;
 	line-height: 20px;
 	text-align: center;
@@ -2049,7 +2051,9 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	
 	.result-row .download label{
 		font-size: 12px;
+		line-height: 17px;
 		margin-left: -10px;
+		margin-bottom: 0px;
 		float: right;
 		opacity: 0;
 		display:inline;

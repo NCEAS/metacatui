@@ -119,10 +119,10 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();		
 			
-			if(appModel.get('searchMode') == 'map'){
-				//Render the Google Map
-				this.renderMap();	
-			}	
+
+			//Render the Google Map
+			this.renderMap();	
+
 					
 			//Update the year slider
 			this.updateYearRange(); 
@@ -181,9 +181,10 @@ define(['jquery',
 			
 			if (!gmaps) {
 				this.ready = true;
+				appModel.set('searchMode', 'list');
 				return;
 			}
-			
+
 			// set to map mode
 			appModel.set('searchMode', 'map');
 			$("body").addClass("mapMode");				
@@ -1592,7 +1593,7 @@ define(['jquery',
 		
 		//Move the popover element up the page a bit if it runs off the bottom of the page
 		preventPopoverRunoff: function(e){
-			console.log(e.target);
+			
 			//In map view only (because all elements are fixed and you can't scroll)
 			if(appModel.get('searchMode') == 'map'){
 				var viewportHeight = $('#map-container').outerHeight();
@@ -1622,6 +1623,7 @@ define(['jquery',
 					$('.popover').offset({top: newTopPosition});
 				}
 			}
+			
 		},
 		
 		toggleMapMode: function(){	
