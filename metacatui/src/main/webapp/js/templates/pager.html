@@ -1,11 +1,15 @@
 <!-- pager for showing pages -->
 <ul>
-	<li><a id="results_prev_bottom">Prev</a></li>
 	<%
 	
 	var firstPage = 0;
 	var lastPage = pages.length-1;
 
+	if(currentPage != firstPage){
+		print('<li><a id="results_prev_bottom">Prev</a></li>');
+	}
+	
+	
 	if(currentPage == firstPage){
 		print('<li class="active"><a class="pagerLink" page="', firstPage, '">', firstPage+1, '</a></li>');
 	}
@@ -54,7 +58,10 @@
 		print('<li><a class="pagerLink" page="', lastPage, '">', (lastPage)+1, '</a></li>');
 	}
 	
+
+	if(currentPage != lastPage){
+		print('<li><a id="results_next_bottom">Next</a></li>');
+		}
 	%>
-	<li><a id="results_next_bottom">Next</a></li>
 </ul>
 
