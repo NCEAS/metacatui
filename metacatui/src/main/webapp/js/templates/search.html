@@ -7,20 +7,18 @@
 	<div id="show-map-control"><span>Show map</span> <i class="icon-eye-open"></i></div>
 </div>
 
-<a id="share-data-view" class="btn btn-primary span12" href="#share">
-	Share Your Data
-	<i class="icon-upload icon-white icon-large"></i>
-</a>
-
 <article id="mainBody" class="container-fluid">
 	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span3">
-		<h2 class="nav-header bold-header collapse-me" id="filters-header">
+		<div class="minimize">
+			<i class="icon-check-minus minimize collapse-me popover-this" data-collapse="sidebar" data-trigger="hover" data-container="body" data-content="Collapse" data-placement="top"></i>
+			<i class="icon-expand-alt maximize collapse-me popover-this"  data-collapse="sidebar" data-trigger="hover" data-container="body" data-content="Expand" data-placement="top"></i>
+		</div>
+		<h2 class="nav-header bold-header" id="filters-header">
 			Filter
-			<!--  <i class="icon-minus collapse-me" id="collapse-filters"></i> -->
-			<a id="clear-all">Clear filters<i class="icon-remove"></i></a>
 		</h2>
+			<a id="clear-all">Clear all filters<i class="icon-remove"></i></a>
     		<div class="filter-container">
 				<div class="input-append filter-contain">
 					<input class="filter" type="text" placeholder="Anything" id="all_input" data-category="all">
@@ -44,11 +42,12 @@
 					<i class="icon-folder-open span1"></i>
 					<div class="span11" id="includes-files-buttonset">
 						<label for="includes_data">
-							Includes data files
+							Only results with data
 							<i class="icon-check"></i>
-							<i class="icon-check-empty"></i>	
+							<i class="icon-check-empty"></i>
 						</label>
 						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
+						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
 					</div>
 					<div class="clear"></div>
 				</div>
@@ -78,23 +77,25 @@
 					<div class="span11 left-padding">
 						<div id="year-range"></div>
 						<div class="clear"></div>
-						<input class="span3"  type="number" id="min_year" pattern="{4}" value=<% print('"' + yearMin + '"'); %> />
-						<input class="span3"  type="number" id="max_year" pattern="{4}" value=<% print('"' + yearMax + '"'); %>/>
+						<input class="span3"  type="number" id="min_year"  value="<%=yearMin%>"/>
+						<input class="span3"  type="number" id="max_year"  value="<%=yearMax%>"/>
 						<div class="clear"></div>
 						
 						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
-						<label class="span11 left tooltip-this" for="data_year" id="data-year-label" data-trigger="hover" data-title="Only show results with data collected within the year range" data-placement="top">
+						<label class="span11 left" for="data_year" id="data-year-label">
 							Data covers
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>
 						</label>					
+						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top"></i>	
 						
 						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-						<label class="span11 left tooltip-this" id="pub-year-label" for="publish_year" data-trigger="hover" data-title="Only show results that were published within the year range" data-placement="top" >
+						<label class="span11 left" id="pub-year-label" for="publish_year">
 							Published between
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>
 						</label>
+						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top"></i>	
 						<div class="clear"></div>
 
 					</div>
@@ -132,19 +133,27 @@
 				<div id="results-header" class="row-fluid result-header">
 					
 					<!-- count stats -->
-					<div class="result-header-count span10" id="statcounts">0 to 0 of 0</div>
-										
-					<div class="map-pointer">
-						<i class="icon-angle-left"></i>
+					<div class="result-header-count">
+						<div class="minimize span2 ">
+							<i class="icon-check-minus minimize collapse-me popover-this" data-collapse="content" data-trigger="hover" data-container="body" data-content="Collapse" data-placement="left"></i>
+							<i class="icon-expand-alt maximize collapse-me popover-this" data-collapse="content" data-trigger="hover" data-container="body" data-content="Expand" data-placement="left"></i>
+						</div>
+						<div id="statcounts" class="span10"></div>
+						
+						<!-- pager -->
+						<div class="row-fluid pagination pagination-centered">
+							<div id="resultspager" class="span8"></div>
+							<div class="sort-by span4">
+								<label for="sortOrder">Sort by</label>
+								<select id="sortOrder">
+									<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
+									<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
+									<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
+									<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
+								</select>
+							</div>
+						</div>
 					</div>
-					
-					<select id="sortOrder" class="span2">
-							<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
-							<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
-							<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
-							<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
-					</select>
-				
 				</div>
 				
 				<!-- search results here -->

@@ -129,6 +129,11 @@
     	color: #6c7578;
     }
     
+    .popover{
+    	font-size: 13px;
+    	line-height: 15px;
+    }
+    	
     .pointer{
     	cursor: pointer;
     }
@@ -473,6 +478,10 @@ header {
       -webkit-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
          -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
+    }
+    
+    .show-new-dataCatalogView{
+    	cursor: pointer;
     }
 
     #Navbar form {
@@ -1042,6 +1051,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		height: 20px;
 	}
 	
+	#includes_data,
+	label[for="includes_data"]{
+		float:left;
+	}
+	
 	/*-- The 'Year' filter elements --*/
     #filter-year label{
    		min-height: 18px;
@@ -1194,6 +1208,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	color: #6c7578;   	
     } 
     
+    .filter-contain label.inline{
+    	width: auto;
+    }
+    
     .filter-contain .filter-contain h3{
     
           display: block;
@@ -1212,6 +1230,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
     .filter-contain h3 > i{
     	margin-right: 5px;
+    }
+    
+    .filter-contain h3 i{
+    	float: left;
     }
     
     /*-- Your Collections area --*/
@@ -1356,6 +1378,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	.subset-choice.active.alt > i{
   		color: #FFFFFF;
   	}
+  	
+  	/* Question mark icons */
+  		i.more-info{
+		float: left;
+		color: #999;
+		font-size: 13px;
+		margin-top: 2px;
+		margin-left: 5px;
+		cursor: help;
+	}
 
 /* RESULT CSS
 -------------------------------------------------- */
@@ -1366,6 +1398,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .search-results > p{
     	text-align: center;
     	padding-top: 5px;
+    }
+    
+    #results.loading *{
+    	color: #DDD;
+    	border: 0px;
     }
     
     .result-row {
@@ -1444,7 +1481,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	max-height: 0px;
     	opacity: 0;
     	transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
- 
+ 		-webkit-transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
+ 		-moz-transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
+ 		-o-transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
+ 		
     }
     
     .result-row:hover .abstract{
@@ -1942,5 +1982,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  .tablehead{
  	padding-top: 10px;
  	border-bottom: 1px solid #CCCCCC;
+ }
+ 
+ 
+ #loading-app{
+ 	display: none;
  }
 

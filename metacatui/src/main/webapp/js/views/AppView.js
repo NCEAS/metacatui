@@ -80,10 +80,14 @@ define(['jquery',
 			console.log('Checking user status in AppView');
 
 			// ajax call to validate the session/get the user info
-			$.post(
-				metacatUrl,
-				{ action: "validatesession" },
-				function(data, textStatus, xhr) {
+			$.ajax({
+				type: "POST",
+				xhrFields: {
+					withCredentials: true
+				},
+				url: metacatUrl,
+				data: { action: "validatesession" },
+				success: function(data, textStatus, xhr) {
 					
 					// the Metacat (XML) response should have a fullName element
 					var fullName = $(data).find("fullName").text();
@@ -95,7 +99,7 @@ define(['jquery',
 					appModel.set('username', username);
 					
 				}
-			);
+			});
 			
 			return false;
 		},

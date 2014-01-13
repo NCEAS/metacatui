@@ -91,10 +91,14 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
 			
-			$.post(
-					this.ldapwebUrl,
-					formData,
-					function(data, textStatus, jqXHR) {
+			$.ajax({
+					type: "POST",
+					xhrFields: {
+						withCredentials: true
+					},
+					url: this.ldapwebUrl,
+					data: formData,
+					success: function(data, textStatus, jqXHR) {
 						viewRef.$el.hide();
 						
 						viewRef.$el.html(viewRef.containerTemplate);
@@ -104,7 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 						viewRef.cleanStyles();
 						viewRef.$el.fadeIn('slow');
 					}
-			);
+			});
 			
 			return false;
 			
