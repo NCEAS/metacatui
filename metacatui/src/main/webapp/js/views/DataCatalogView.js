@@ -959,9 +959,11 @@ define(['jquery',
 			if (appSearchResults.header != null) {
 				var pageCount = Math.ceil(appSearchResults.header.get("numFound") / appSearchResults.header.get("rows"));
 				
-				//If no results were found, do not populate the pagination.
+				//If no results were found, display a message instead of the list and clear the pagination.
 				if(pageCount == 0){
 					this.$results.html('<p id="no-results-found">No results found.</p>');
+					
+					this.$('#resultspager').html("");
 				}
 				else{
 					var pages = new Array(pageCount);
