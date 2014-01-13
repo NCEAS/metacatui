@@ -737,15 +737,11 @@ Bold 700
         color: #CCCCCC;
     	font-size: 20px;
     	margin-top: 5px;
-    	display: none;
+    	float: right;
     }
     
     .minimize > i.icon-check-minus{
     	font-size: 17px;
-    }
-    
-    .mapMode .minimize > i{
-    	display: block;
     }
     
     #sidebar .minimize > i{
@@ -759,17 +755,17 @@ Bold 700
     	z-index: 1;
     }
     
-    .mapMode #sidebar.collapsed .minimize > i.minimize,
-    .mapMode #sidebar .minimize > i.maximize,
-    .mapMode #content.collapsed .minimize > i.minimize,
-    .mapMode #content .minimize > i.maximize{
+     #sidebar.collapsed .minimize > i.minimize,
+     #sidebar .minimize > i.maximize,
+     #content.collapsed .minimize > i.minimize,
+     #content .minimize > i.maximize{
     	display: none;
     }
     
-    .mapMode #sidebar.collapsed .minimize > i.maximize,
-    .mapMode #sidebar .minimize > i.minimize,
-    .mapMode #content.collapsed .minimize > i.maximize,
-    .mapMode #content .minimize > i.minimize{
+     #sidebar.collapsed .minimize > i.maximize,
+     #sidebar .minimize > i.minimize,
+     #content.collapsed .minimize > i.maximize,
+     #content .minimize > i.minimize{
     	display: block;
     }
     
@@ -1355,14 +1351,17 @@ Bold 700
  	
  	#statcounts{
  		width: 100%;
- 		padding-left: 2%;
+ 		padding-left: 10px;
  		background-color: #333333;
  		height: inherit;
+ 		left: 30%;
+ 		margin-left: 0px;
+ 		position: fixed;
  	}
  	
  	.mapMode #statcounts{
- 		position: fixed;
- 		width: 45%;
+ 		width: 42%;
+ 		left: 57%;
  	}
  	
  	.pagination label{
@@ -1373,7 +1372,7 @@ Bold 700
    
    /*-- Results rows --*/
    #results{
-   		margin-top: 0px;
+   		margin-top: 33px;
    		width: 100%;
    		overflow-x: hidden;
    		float: right;
@@ -1462,49 +1461,56 @@ Bold 700
   		left: -320%;
   	}
     
-    /*-- Result row icons --*/ 
+    /*-- Results List Icons --*/
+    
     .info-icons{
-    	min-width: 28px;
-    	max-height: 43px;
+    	max-width: 14%;
     }
     
-    .info-icons i{
-     cursor: help;
+    .info-icons > div:first-child{
+    	max-width: 45px;
     }
+    
+    .info-icons i.more-info{
+    	cursor: help;
+    }   
     
     .info-icons .show-abstract > i{
-    	color: #EEE;
-    	margin-left: 3px;
-    	font-size: 17px;
+    	font-size: 19px;
+    	margin-left: -2px;
+    	margin-top: -1px;
     }
     
     .info-icons .show-abstract > i.show-abstract{
-    	color: #666666;
+    	color: #999999;
     }
     
     .info-icons .on-map > i{
-    	font-size: 17px;
-    	margin-left: 5px;
-    	color: #EEE;
+    	font-size: 19px;
     }
     
     .info-icons .on-map > i.on-map{
     	color: #DA4D3A;
+    	cursor: default;
+    }
+    
+    
+    .info-icons i.inactive{
+    	color: #EEE;
+    	cursor: default;
     }
     
     .popover{
-    	max-width: 250px;
     	font-size: 13px;
     }
     
-     body > .popover{
+     .abstract-popover{
     	max-height: 500px;
     	min-height: 10px;
-    	overflow: hidden;
+    	width: 250px;
+		overflow: hidden;
     	word-break: keep-all;
     	text-overflow: ellipsis;
-    	min-width: 10%;
-    	max-width: 250px;
     }
     
     .mapMode > .popover{
@@ -1522,13 +1528,15 @@ Bold 700
     
     a.download{
     	width: 77%;
+    	min-width: 56px;
+    	max-width: 79px;
     	display:inline-block;
 		color: #888888;
 		padding-right: 5px;
 		padding-left: 5px;
 		margin-left: -6px;
-		transition: all 0.5s;
-		-webkit-transition: all 0.5s;
+		transition: all 0.3s;
+		-webkit-transition: all 0.3s;
     }
 
     
@@ -1542,30 +1550,31 @@ Bold 700
     .result-row:hover a.download{
     background-image: none;
     color: #555555;
-padding: 4px 12px;
-margin-bottom: 0;
-font-size: 14px;
-line-height: 20px;
-text-align: center;
-text-shadow: 0 1px 1px rgba(255,255,255,0.75);
-vertical-align: middle;
-cursor: pointer;
-background-color: #f5f5f5;
-background-repeat: repeat-x;
-border: 1px solid #ccc;
-border-color: #e6e6e6 #e6e6e6 #bfbfbf;
-border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
-border-bottom-color: #b3b3b3;
--webkit-border-radius: 4px;
--moz-border-radius: 4px;
-border-radius: 4px;
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff',endColorstr='#ffe6e6e6',GradientType=0);
-filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
--webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
--moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
--webkit-transition: all 0.5s;
-transition: all 0.5s;
+	padding: 4px 4px;
+	margin-bottom: 0;
+	width: 100%;
+	font-size: 14px;
+	line-height: 20px;
+	text-align: center;
+	text-shadow: 0 1px 1px rgba(255,255,255,0.75);
+	vertical-align: middle;
+	cursor: pointer;
+	background-color: #f5f5f5;
+	background-repeat: repeat-x;
+	border: 1px solid #ccc;
+	border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+	border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
+	border-bottom-color: #b3b3b3;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff',endColorstr='#ffe6e6e6',GradientType=0);
+	filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+	-webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
+	-moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
+	box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
+	-webkit-transition: all 0.3s;
+	transition: all 0.3s;
     }
     
     .result-row a.download:hover{
@@ -1576,17 +1585,21 @@ transition: all 0.5s;
 		font-size: 16px;
 		cursor: pointer;
 		float: left;
-		transition: all 0.5s;
-		-webkit-transition: all 0.5s;
+		transition: all 0.3s;
+		-webkit-transition: all 0.3s;
+		margin-right: 0px;
 	}
 	
 	.result-row .download label{
 		font-size: 12px;
-		margin-left: -4px;
+		line-height: 17px;
+		margin-left: -10px;
+		margin-bottom: 0px;
+		float: right;
 		opacity: 0;
 		display:inline;
-		transition: all 0.5s;
-		-webkit-transition: all 0.5s;
+		transition: all 0.3s;
+		-webkit-transition: all 0.3s;
 	}
 	
 	.result-row:hover .download label{
@@ -1604,28 +1617,37 @@ transition: all 0.5s;
     	margin: 30px auto;
     	padding-bottom: 5px;
     	background-color: #333333;
-    	width: 80%;
+    	width: 70%;
+    	left: 30%;
     	position: fixed;
+    }
+    
+    .mapMode .pagination{
+        width: 80%;
+    	left: 57%;
     }
     
     #resultspager{
     	float: left;
     	padding-left: 2%;
+    	margin-top:10px;
+    	width: 100%;
     }
     
     .mapMode .pagination{
-    	width: inherit;
+    	width: 42%;
     }
 
 	.pagination ul{
 		border: none;
-		margin-top: 10px;
+		float: left;
 	}
 	
 	.pagination ul > li > a{
 		background-color: #555555;
 		color: #EEEEEE;
-		font: 400 16px/16px "Source Sans Pro";	
+		font-size: 14px;
+		line-height: 14px;	
 		border: 1px solid #333333;	
 	}
 	
@@ -1646,6 +1668,12 @@ transition: all 0.5s;
 	.pagination ul > .active > a:hover{
 		color: #222222;
 		background-color: #CCCCCC;
+	}
+	
+	.pagination .sort-by{
+		width: 167px;
+		float: right;
+		margin-right: 10px;
 	}
 
 /* MAPS 

@@ -147,11 +147,11 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();		
 			
-			if(appModel.get('searchMode') == 'map'){
-				//Render the Google Map
-				this.renderMap();	
-			}	
-			
+
+			//Render the Google Map
+			this.renderMap();	
+
+					
 			//Update the year slider
 			this.updateYearRange(); 
 			
@@ -209,6 +209,7 @@ define(['jquery',
 			console.log('rendering map');
 			if (!gmaps) {
 				this.ready = true;
+				appModel.set('searchMode', 'list');
 				return;
 			}
 			
@@ -1488,10 +1489,6 @@ define(['jquery',
 			//Add this item to the list
 			this.$results.append(view.render().el);
 			
-			// Initialize any tooltips within the result item
-			$(".tooltip-this").tooltip();
-			$(".popover-this").popover();
-			
 			// map it
 			if(gmaps){
 				this.addObjectMarker(result);	
@@ -1530,6 +1527,10 @@ define(['jquery',
 						var element = appSearchResults.models[i];
 						viewRef.addOne(element);
 					};
+					
+					// Initialize any tooltips within the result item
+					$(".tooltip-this").tooltip();
+					$(".popover-this").popover();
 
 					if(gmaps){
 						// clean out any old markers
