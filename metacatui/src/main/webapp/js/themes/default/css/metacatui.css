@@ -737,15 +737,11 @@ Bold 700
         color: #CCCCCC;
     	font-size: 20px;
     	margin-top: 5px;
-    	display: none;
+    	float: right;
     }
     
     .minimize > i.icon-check-minus{
     	font-size: 17px;
-    }
-    
-    .mapMode .minimize > i{
-    	display: block;
     }
     
     #sidebar .minimize > i{
@@ -759,17 +755,17 @@ Bold 700
     	z-index: 1;
     }
     
-    .mapMode #sidebar.collapsed .minimize > i.minimize,
-    .mapMode #sidebar .minimize > i.maximize,
-    .mapMode #content.collapsed .minimize > i.minimize,
-    .mapMode #content .minimize > i.maximize{
+     #sidebar.collapsed .minimize > i.minimize,
+     #sidebar .minimize > i.maximize,
+     #content.collapsed .minimize > i.minimize,
+     #content .minimize > i.maximize{
     	display: none;
     }
     
-    .mapMode #sidebar.collapsed .minimize > i.maximize,
-    .mapMode #sidebar .minimize > i.minimize,
-    .mapMode #content.collapsed .minimize > i.maximize,
-    .mapMode #content .minimize > i.minimize{
+     #sidebar.collapsed .minimize > i.maximize,
+     #sidebar .minimize > i.minimize,
+     #content.collapsed .minimize > i.maximize,
+     #content .minimize > i.minimize{
     	display: block;
     }
     
@@ -1358,13 +1354,14 @@ Bold 700
  		padding-left: 10px;
  		background-color: #333333;
  		height: inherit;
+ 		left: 30%;
+ 		margin-left: 0px;
+ 		position: fixed;
  	}
  	
  	.mapMode #statcounts{
- 		position: fixed;
  		width: 42%;
  		left: 57%;
- 		margin-left: 0px;
  	}
  	
  	.pagination label{
@@ -1375,7 +1372,7 @@ Bold 700
    
    /*-- Results rows --*/
    #results{
-   		margin-top: 0px;
+   		margin-top: 33px;
    		width: 100%;
    		overflow-x: hidden;
    		float: right;
@@ -1504,7 +1501,7 @@ Bold 700
     }
     
     
-    i.inactive{
+    .info-icons i.inactive{
     	color: #EEE;
     	cursor: default;
     }
@@ -1628,9 +1625,14 @@ Bold 700
     	margin: 30px auto;
     	padding-bottom: 5px;
     	background-color: #333333;
-    	width: 80%;
-    	left: 57%;
+    	width: 70%;
+    	left: 30%;
     	position: fixed;
+    }
+    
+    .mapMode .pagination{
+        width: 80%;
+    	left: 57%;
     }
     
     #resultspager{

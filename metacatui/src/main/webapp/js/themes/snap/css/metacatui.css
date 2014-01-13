@@ -1481,7 +1481,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	max-height: 0px;
     	opacity: 0;
     	transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
- 
+ 		-webkit-transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
+ 		-moz-transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
+ 		-o-transition: opacity .5s ease-in 1.3s, max-height .5s ease-in 1s, padding .2s ease-in 1s;
+ 		
     }
     
     .result-row:hover .abstract{
