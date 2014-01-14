@@ -62,7 +62,7 @@ define(['jquery',
 						if (status == "error") {
 							viewRef.showMessage(response);
 						} else {
-							viewRef.insertResourceMapLink(pid);
+							viewRef.insertResourceMapContents(pid);
 							if(gmaps){ 
 								viewRef.insertSpatialCoverageMap();
 							}
@@ -72,14 +72,11 @@ define(['jquery',
 						
 					});
 			
-			console.log($('.popover-this'));
-			$('.popover-this').popover();
-			
 			return this;
 		},
 		
 		// this will insert the ORE package download link if available
-		insertResourceMapLink: function(pid) {
+		insertResourceMapContents: function(pid) {
 			//Keep a map of resource map ID <-> objects in that resource map 
 			var packages = new Array();
 			//Keep a list of all resource map objects
@@ -287,7 +284,7 @@ define(['jquery',
 						
 						var populateTemplate = function(auth) {
 							// TODO: include SystemMetadata details						
-							viewRef.$el.find("#downloadPackage").append(
+							viewRef.$el.find("#viewMetadataCitationLink").after(
 								viewRef.doiTemplate({
 									isAuthorized: auth,
 									identifier: identifier,
