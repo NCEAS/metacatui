@@ -1091,12 +1091,20 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     #Metadata > .container{
 		width: 100%;
 	}
-    
-    /* Download  and Publish buttons */
-     #downloadPackage a.btn {
-    	width: 100px;
-    	margin-bottom: 8px;
-    } 
+	
+	.citation{
+		font-size: 25px;
+		line-height: 30px;
+		border: 0px;
+		box-shadow: none;
+		-webkit-box-shadow: none;
+		-moz-box-shadow: none;
+		padding: 0px;
+	}
+	
+	.citation .span10{
+		width: 100%;
+	}
     
     /* Google Map Images for Geographic Region */
     .georegion-map{
@@ -1107,6 +1115,68 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     	border-radius: 4px;
     	-moz-border-radius: 4px;
     	-webkit-border-radius: 4px;
+    }
+    
+    /* Download  and Publish buttons */
+     #downloadPackage a.btn {
+    	width: 100px;
+    	margin-bottom: 8px;
+    } 
+    
+    .download-this-package{
+    	float: left;
+    	height: 100%;
+    	margin-left: 20px;
+    }
+    
+    .download-this-package a{
+    	margin-top: 15%;
+    	background-color: #660000;
+    	color: #FFFFFF;
+    	text-shadow: none;
+    }
+    
+    .download-this-package a:hover{
+    	background-color: #882222;
+    	color: #FFFFFF;
+    }
+    
+    .download-this-package a.metadata{
+    	margin-top: 0px;
+    }
+    
+    .download-this-package i{
+    	margin-left: 5px;
+    }
+    
+    /* Resource map contents table */
+    #downloadContents .controls-well{
+    	background-color: #EEE;
+    }
+    
+    #downloadContents{
+    	margin-bottom: 40px;
+    }
+    
+    table.download-contents{
+    	float: left;
+    }
+    
+    table.download-contents td{
+    	min-width: 115px;
+    }
+    
+    .format-type i{
+    	margin-right: 5px;
+    }
+    
+    .file-type i{
+  		  color: #999;
+  		  margin-left: 5px;
+    }
+    
+    th.id{
+    	min-width: 180px;
     }
     
 	/* Registry CSS
@@ -1180,6 +1250,11 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 		outline:none; 
 	}	
 
+/* TOOLS PAGE
+  -------------------------------------------------- */
+#Tools .container  .row-fluid{
+	margin-top: 30px;
+}
   /* SIDEBAR CSS
   -------------------------------------------------- */
 	#sidebar {

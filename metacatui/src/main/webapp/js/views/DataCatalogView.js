@@ -964,6 +964,10 @@ define(['jquery',
 					
 					this.$('#resultspager').html("");
 				}
+				//Do not display the pagination if there is only one page
+				else if(pageCount == 1){
+					this.$('#resultspager').html("");
+				}
 				else{
 					var pages = new Array(pageCount);
 					
