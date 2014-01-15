@@ -1,0 +1,116 @@
+<div class="controls-well">
+<table class="download-contents">
+<thead>
+<%
+/**
+ * Convert number of bytes into human readable format
+ *
+ * @param integer bytes     Number of bytes to convert
+ * @param integer precision Number of digits after the decimal separator
+ * @return string
+ */
+function bytesToSize(bytes, precision)
+{  
+    var kilobyte = 1024;
+    var megabyte = kilobyte * 1024;
+    var gigabyte = megabyte * 1024;
+    var terabyte = gigabyte * 1024;
+   
+    if ((bytes >= 0) && (bytes < kilobyte)) {
+        return bytes + ' B';
+ 
+    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+        return (bytes / kilobyte).toFixed(precision) + ' KB';
+ 
+    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+        return (bytes / megabyte).toFixed(precision) + ' MB';
+ 
+    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+        return (bytes / gigabyte).toFixed(precision) + ' GB';
+ 
+    } else if (bytes >= terabyte) {
+        return (bytes / terabyte).toFixed(precision) + ' TB';
+ 
+    } else {
+        return bytes + ' B';
+    }
+}
+var formatType = "";
+var id = "";
+var size = "";
+var fileType = "";
+var fileTypePopover = null;
+var readCount = "";
+var downloadButton = "";
+	
+if(resourceMap){
+	formatType = "Package " + packageCount;
+	id = resourceMap.id;
+	
+	size = 0;
+	_.each(objects, function(object){
+		size += object.size;
+	});
+	size = bytesToSize(size, 2);
+	
+	fileType = ".zip";
+	fileTypePopover = null;
+	readCount = resourceMap.read_count_i + " downloads";
+	downloadButton = '<a class="btn" href="' + package_service + id + '">Download all<i class="icon-arrow-down"></i></a>'; 
+	
+	print('<tr>');
+	print('<th class="format-type"><i class="icon-folder-open"></i>' + formatType + '</th>');
+	print('<th class="id">' + id + '</th>');
+	print('<th class="fileType">' + fileType + '</th>');
+	print('<th class="size">' + size + '</th>');
+	print('<th class="readCount">' + readCount + '</th>');
+	print('</tr>');
+}		
+else{
+	downloadButton = '<a class="btn metadata" href="' + package_service + objects[0].id + '">Download metadata<i class="icon-arrow-down"></i></a>'; 	
+}
+%>
+</thead>
+<tbody>
+<%
+	
+	_.each(objects, function(object){
+		formatType = object.formatType.toLowerCase();
+		id = '<a href="' + object_service + object.id + '">' + object.id + '</a>';
+		size = bytesToSize(object.size, 2);
+		
+		fileTypePopover = null;
+		fileType = object.formatId;
+		if(fileType.substr(0, 3) == "eml"){
+			fileTypePopover = '<i class="icon-question-sign popover-this" data-trigger="hover" data-placement="top" data-html="true" data-content="<h5>EML version:</h5>' + fileType + '"></i>';
+			fileType = '.xml (<a href="#tools/eml">EML '+fileTypePopover+'</a>)';
+		}
+		
+		if(formatType == "metadata"){
+			readCount = object.read_count_i + " views";
+			formatType = '<i class="icon-file-text"></i>' + formatType;
+		}
+		else{
+			readCount = object.read_count_i + " downloads";
+			formatType = '<i class="icon-table"></i>' + formatType;
+		}
+				
+		
+		print('<tr>');
+		print('<td class="format-type">' + formatType + '</td>');
+		print('<td class="id">' + id + '</td>');		
+		print('<td class="file-type">' + fileType + '</td>');		
+		print('<td class="size">' + size + '</td>');
+		print('<td class="readCount">' + readCount + '</td>');
+		print('</tr>');
+		
+	});
+	
+	
+
+%>
+</tbody>
+</table>
+<div class="download-this-package"><%=downloadButton%></div>
+<div class="clear"></div>
+</div>

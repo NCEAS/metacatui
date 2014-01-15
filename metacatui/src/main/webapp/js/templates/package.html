@@ -1,6 +1,6 @@
 <div class="btn-group">
 
-<% if (resourceMap) {
+<% if (resourceMap.length>1) {
 		// handle multiple resourceMaps
 		print('<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">Download <span class="icon-caret-down"></span></a>');
         print('<ul class="dropdown-menu">');
@@ -13,7 +13,7 @@
 		})
         print('</ul>');
 	} else {
-		print('<a class=\"btn\" href=\"', package_service, id, '\">Download <i class="icon-arrow-down"></i></a>'); 
+		print('<a class=\"btn\" href=\"', package_service, resourceMap[0], '\">Download <i class="icon-arrow-down"></i></a>'); 
 	}
 %>
 </div>
