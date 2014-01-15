@@ -141,7 +141,9 @@ define(['jquery',
 						//Now go through all of our objects and add them to our map
 						_.each(objects, function(object){
 							_.each(object.resourceMap, function(resourceMapId){
-								packages[resourceMapId].push(object);												
+								if (packages[resourceMapId]) {
+									packages[resourceMapId].push(object);												
+								}												
 							});
 						});
 											
