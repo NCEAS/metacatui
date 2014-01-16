@@ -1086,6 +1086,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     #Metadata {
 		min-height: 800px;
 		width: 90%;
+		margin-top: 125px;
     }
     
     #Metadata > .container{
@@ -1095,6 +1096,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	.citation{
 		font-size: 25px;
 		line-height: 30px;
+		margin-bottom: 40px;
 		border: 0px;
 		box-shadow: none;
 		-webkit-box-shadow: none;
@@ -1131,13 +1133,13 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     .download-this-package a{
     	margin-top: 15%;
-    	background-color: #660000;
+    	background-color: #992222;
     	color: #FFFFFF;
     	text-shadow: none;
     }
     
     .download-this-package a:hover{
-    	background-color: #882222;
+    	background-color: #660000;
     	color: #FFFFFF;
     }
     
@@ -1262,7 +1264,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     	bottom: 30px;
 		
 		width: 20%;
-		min-width: 250px;
 		
 		padding: 0px;
 		margin-top: -10px;
@@ -2954,7 +2955,7 @@ table.right {
 
 th {
     border-bottom:              #006666 solid 1px;
-    color:                      #003366;
+    color:                      #555555;
     padding:                    0;
     margin:                     0;
     text-align:                 left;
