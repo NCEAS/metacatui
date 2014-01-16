@@ -147,6 +147,7 @@
 								<label for="sortOrder">Sort by</label>
 								<select id="sortOrder">
 									<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
+									<option <% if (sortOrder == "read_count_i+desc") { print('selected="selected"'); } %> value="read_count_i+desc">Popularity</option>
 									<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
 									<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
 									<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
