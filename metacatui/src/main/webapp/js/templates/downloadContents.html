@@ -1,5 +1,5 @@
 <div class="controls-well">
-<table class="download-contents">
+<table class="download-contents table-striped table-condensed table">
 <thead>
 <%
 /**
@@ -44,7 +44,7 @@ var readCount = "";
 var downloadButton = "";
 	
 if(resourceMap){
-	formatType = "Package " + packageCount;
+	formatType = "Package";
 	id = resourceMap.id;
 	
 	size = 0;
@@ -60,7 +60,7 @@ if(resourceMap){
 	
 	print('<tr>');
 	print('<th class="format-type"><i class="icon-folder-open"></i>' + formatType + '</th>');
-	print('<th class="id">' + id + '</th>');
+	print('<th class="id"><a href="' + package_service + id + '">' + id + '</a></th>');
 	print('<th class="fileType">' + fileType + '</th>');
 	print('<th class="size">' + size + '</th>');
 	print('<th class="readCount">' + readCount + '</th>');

@@ -150,11 +150,9 @@ define(['jquery',
 						//For each resource map package, add a table of its contents to the page 
 						var count = 0;
 						_.each(maps, function(thisMap){
-							count++;
 							$('#downloadContents').append(viewRef.downloadContentsTemplate({
 								objects: packages[thisMap.id],
 								resourceMap: thisMap,
-								packageCount: count,
 								package_service: packageServiceUrl,
 								object_service: objectServiceUrl
 							}));	

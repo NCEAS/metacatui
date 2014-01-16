@@ -1094,7 +1094,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	}
 	
 	.citation{
-		font-size: 25px;
+		font-size: 20px;
 		line-height: 30px;
 		margin-bottom: 40px;
 		border: 0px;
@@ -1102,6 +1102,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 		-webkit-box-shadow: none;
 		-moz-box-shadow: none;
 		padding: 0px;
+		background-color: transparent;
 	}
 	
 	.citation .span10{
@@ -1152,9 +1153,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     }
     
     /* Resource map contents table */
-    #downloadContents .controls-well{
-    	background-color: #EEE;
-    }
     
     #downloadContents{
     	margin-bottom: 40px;
@@ -1162,6 +1160,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     table.download-contents{
     	float: left;
+    	width: auto;
     }
     
     table.download-contents td{
