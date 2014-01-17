@@ -1039,6 +1039,8 @@ define(['jquery',
 		
 		//Get the facet counts
 		getFacetCounts: function(){
+			var viewRef = this;
+			
 			var facetQuery = "q=" + appSearchResults.currentquery +
 							 "&wt=json" + 
 							 "&facet=true" +
@@ -1069,7 +1071,7 @@ define(['jquery',
 				for (var i=0; i < allSuggestions.length-1; i+=2) {
 					rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + "+)"});
 				}
-				var viewRef = this;
+
 				$('#all_input').autocomplete({
 					source: function (request, response) {
 			            var term = $.ui.autocomplete.escapeRegex(request.term)
