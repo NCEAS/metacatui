@@ -363,7 +363,8 @@ define(['jquery',
 			appSearchResults.setfields(fields);
 			
 			//Create the filter terms from the search model and create the query
-			var query = "formatType:METADATA+-obsoletedBy:*";
+			var query = "formatType:METADATA";
+			var filterQuery = "&fq=-obsoletedBy:*";
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var phrase = function(entry){
@@ -394,7 +395,7 @@ define(['jquery',
 			//resourceMap
 			var resourceMap = searchModel.get('resourceMap');
 			if(resourceMap){
-				query += '+resourceMap:*';
+				filterQuery += '&fq=resourceMap:*';
 			}
 			
 			// attribute
@@ -412,7 +413,7 @@ define(['jquery',
 					thisAttribute = "%22" + thisAttribute + "%22";
 				}
 				// TODO: surround with **?
-				query += "+attribute:" + thisAttribute;
+				filterQuery += "&fq=attribute:" + thisAttribute;
 				
 			}
 			
@@ -426,10 +427,10 @@ define(['jquery',
 				//Is this a phrase?
 				if(phrase(thisAll)){
 					thisAll = thisAll.replace(" ", "%20");
-					query += "+*%22" + thisAll + "%22*";
+					filterQuery += "&fq=*%22" + thisAll + "%22*";
 				}
 				else{
-					query += "+" + thisAll;
+					filterQuery += "&fq=" + thisAll;
 				}
 			}
 			
@@ -443,10 +444,10 @@ define(['jquery',
 				//Is this a phrase?
 				if(phrase(thisCreator)){
 					thisCreator = thisCreator.replace(" ", "%20");
-					query += "+origin:*%22" + thisCreator + "%22*";
+					filterQuery += "&fq=origin:*%22" + thisCreator + "%22*";
 				}
 				else{
-					query += "+origin:*" + thisCreator + "*";
+					filterQuery += "&fq=origin:*" + thisCreator + "*";
 				}
 			}
 			
@@ -463,34 +464,33 @@ define(['jquery',
 					thisTaxon = "%22" + thisTaxon + "%22";
 				}
 				
-				query += "+(";
-				query += "family:*" + thisTaxon + "*";
-				query += " OR ";
-				query += "species:*" + thisTaxon + "*";
-				query += " OR ";
-				query += "genus:*" + thisTaxon + "*";
-				query += " OR ";
-				query += "kingdom:*" + thisTaxon + "*";
-				query += " OR ";
-				query += "phylum:*" + thisTaxon + "*";
-				query += " OR ";
-				query += "order:*" + thisTaxon + "*";
-				query += " OR ";
-				query += "class:*" + thisTaxon + "*";
-				query += ")";
-
+				filterQuery += "&fq=(" +
+							   "family:*" + thisTaxon + "*" +
+							   " OR " +
+							   "species:*" + thisTaxon + "*" +
+							   " OR " +
+							   "genus:*" + thisTaxon + "*" +
+							   " OR " +
+							   "kingdom:*" + thisTaxon + "*" +
+							   " OR " +
+							   "phylum:*" + thisTaxon + "*" +
+							   " OR " +
+							   "order:*" + thisTaxon + "*" +
+							   " OR " +
+							   "class:*" + thisTaxon + "*" +
+							   ")";
 			}
 			
 			// Additional criteria - both field and value are provided
 			var additionalCriteria = searchModel.get('additionalCriteria');
 			for (var i=0; i < additionalCriteria.length; i++){
-				query += additionalCriteria[i];
+				filterQuery += "&fq=" + additionalCriteria[i];
 			}
 			
 			// Theme restrictions from Registry Model
 			var registryCriteria = registryModel.get('searchFields');
 			_.each(registryCriteria, function(value, key, list) {
-				query += value;
+				filterQuery += "&fq=" + value;
 			});
 			
 			//Year
@@ -504,23 +504,22 @@ define(['jquery',
 				
 				//Add to the query if we are searching data coverage year
 				if(dataYear){
-					query += "+beginDate:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20NOW%5D+endDate:%5B*%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";
+					//Add to the main query because there can be hundreds of year variations cluttering our filter cache
+					query += "+beginDate:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20*%5D" +
+							 "+endDate:%5B*%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";
 				}
 				//Add to the query if we are searching publication year
 				if(pubYear){
 					query += "+dateUploaded:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";				
 				}
 			}
-			else{
-				var resultsYearMin = searchModel.get('resultsYearMin');
-				var resultsYearMax = searchModel.get('resultsYearMax');			
-			}
 			
 			//Map
+			//Add to the main query because there can be thousands of lat/long variations cluttering our filter cache
 			if(searchModel.get('north')!=null){
-				query += 
-						"+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
-						"+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D";
+				query += "+southBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D" + 
+						 "+northBoundCoord:%7B" + searchModel.get('south') + "%20TO%20" + searchModel.get('north') + "%7D";
+				
 				if (searchModel.get('west') > searchModel.get('east')) {
 					query += 
 						"+eastBoundCoord:("
@@ -551,17 +550,15 @@ define(['jquery',
 				//Is this a phrase?
 				if(phrase(thisSpatial)){
 					thisSpatial = thisSpatial.replace(" ", "%20");
-					query += "+site:*%22" + thisSpatial + "%22*";
+					query += "&fq=site:*%22" + thisSpatial + "%22*";
 				}
 				else{
-					query += "+site:*" + thisSpatial + "*";
+					query += "&fq=site:*" + thisSpatial + "*";
 				}
 			}
-			//Set the facets in the query
-			appSearchResults.setFacet(["keywords", "origin", "family", "species", "genus", "kingdom", "phylum", "order", "class", "attributeName", "attributeLabel", "site"]);
 			
 			//Run the query
-			appSearchResults.setQuery(query);
+			appSearchResults.setQuery(query + filterQuery);
 			
 			//Show or hide the reset filters button
 			if(searchModel.filterCount() > 0){
@@ -936,6 +933,7 @@ define(['jquery',
 			this.triggerSearch();
 		},
 
+		//Update all the statistics throughout the page
 		updateStats : function() {
 			if (appSearchResults.header != null) {
 				this.$statcounts = this.$('#statcounts');
@@ -950,9 +948,6 @@ define(['jquery',
 			
 			// piggy back here
 			this.updatePager();
-			this.getFacetCounts();
-			
-
 		},
 		
 		updatePager : function() {
@@ -1041,15 +1036,32 @@ define(['jquery',
 		
 		//Get the facet counts
 		getFacetCounts: function(){
-			
-			if (appSearchResults.header != null) {
+			var facetQuery = "q=" + appSearchResults.currentquery +
+							 "&wt=json" + 
+							 "&facet=true" +
+							 "&facet.sort=count" +
+							 "&facet.field=keywords" +
+							 "&facet.field=origin" +
+							 "&facet.field=family" +
+							 "&facet.field=species" +
+							 "&facet.field=genus" +
+							 "&facet.field=kingdom" + 
+							 "&facet.field=phylum" + 
+							 "&facet.field=order" +
+							 "&facet.field=class" +
+							 "&facet.field=attributeName" +
+							 "&facet.field=attributeLabel" +
+							 "&facet.field=site" +
+							 "&facet.mincount=1" +
+							 "&facet.limit=-1";
+
+			$.get(appModel.get('queryServiceUrl') + facetQuery, function(data, textStatus, xhr) {
 				
-				var facetCounts = appSearchResults.facetCounts;
-				
-				
+				var facetCounts = data.facet_counts.facet_fields;
+								
 				//***Set up the autocomplete (jQueryUI) feature for each text input****//				
 				//For the 'all' filter, use keywords
-				var allSuggestions = appSearchResults.facetCounts.keywords;
+				var allSuggestions = facetCounts.keywords;
 				var rankedSuggestions = new Array();
 				for (var i=0; i < allSuggestions.length-1; i+=2) {
 					rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + "+)"});
@@ -1086,8 +1098,8 @@ define(['jquery',
 				});
 				
 				// suggest attribute criteria
-				var attributeNameSuggestions = appSearchResults.facetCounts.attributeName;
-				var attributeLabelSuggestions = appSearchResults.facetCounts.attributeLabel;
+				var attributeNameSuggestions = facetCounts.attributeName;
+				var attributeLabelSuggestions = facetCounts.attributeLabel;
 				// NOTE: only using attributeName for auto-complete suggestions.
 				attributeLabelSuggestions = null;
 				
@@ -1130,7 +1142,7 @@ define(['jquery',
 				});
 				
 				// suggest creator names/organizations
-				var originSuggestions = appSearchResults.facetCounts.origin;
+				var originSuggestions = facetCounts.origin;
 				var rankedOriginSuggestions = new Array();
 				for (var i=0; i < originSuggestions.length-1; i+=2) {
 					rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
@@ -1165,13 +1177,13 @@ define(['jquery',
 				});
 				
 				// suggest taxonomic criteria
-				var familySuggestions = appSearchResults.facetCounts.family;
-				var speciesSuggestions = appSearchResults.facetCounts.species;
-				var genusSuggestions = appSearchResults.facetCounts.genus;
-				var kingdomSuggestions = appSearchResults.facetCounts.kingdom;
-				var phylumSuggestions = appSearchResults.facetCounts.phylum;
-				var orderSuggestions = appSearchResults.facetCounts.order;
-				var classSuggestions = appSearchResults.facetCounts["class"];
+				var familySuggestions  = facetCounts.family;
+				var speciesSuggestions = facetCounts.species;
+				var genusSuggestions   = facetCounts.genus;
+				var kingdomSuggestions = facetCounts.kingdom;
+				var phylumSuggestions  = facetCounts.phylum;
+				var orderSuggestions   = facetCounts.order;
+				var classSuggestions   = facetCounts["class"];
 				
 				var taxonSuggestions = [];
 				taxonSuggestions = 
@@ -1218,7 +1230,7 @@ define(['jquery',
 				});	
 				
 				// suggest location names
-				var spatialSuggestions = appSearchResults.facetCounts.site;
+				var spatialSuggestions = facetCounts.site;
 				var rankedSpatialSuggestions = new Array();
 				for (var i=0; i < spatialSuggestions.length-1; i+=2) {
 					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
@@ -1252,9 +1264,7 @@ define(['jquery',
 						collision: "flip"
 					}
 				});
-				
-			}
-			
+			});
 		},
 		
 		/* add a marker for objects */
@@ -1565,8 +1575,7 @@ define(['jquery',
 						//Pan the map to the center of our results
 						if((!viewRef.allowSearch) && (viewRef.masterBounds)){
 							var center = viewRef.masterBounds.getCenter();
-							var adjustedCenter = new gmaps.LatLng(center.lat(), center.lng()+50);
-							viewRef.map.panTo(adjustedCenter);
+							viewRef.map.panTo(center);
 						}
 						
 						$("#map-container").removeClass("loading");
@@ -1576,6 +1585,9 @@ define(['jquery',
 				}
 				
 			}, 500);
+			
+			//After all the results are loaded, query for our facet counts in the background
+			this.getFacetCounts();
 
 		},
 		
