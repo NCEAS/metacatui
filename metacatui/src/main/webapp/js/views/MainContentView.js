@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'],
 		
 		events: {
 			'click #search_btn_main': 'triggerSearch',
-			'keypress #search_txt_main': 'triggerOnEnter',
+			'keypress #search_txt_main': 'triggerOnEnter'
 		},
 				
 		render: function () {
