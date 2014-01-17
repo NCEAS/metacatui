@@ -681,7 +681,7 @@ define(['jquery',
 			//Close the autocomplete box
 			$('#' + category + '_input').autocomplete("close");
 				
-			//Get the current searchModel array
+			//Get the current searchModel array for this category
 			var filtersArray = _.clone(searchModel.get(category));
 				
 			//Check if this entry is a duplicate
@@ -691,7 +691,22 @@ define(['jquery',
 				}
 			})();
 			
-			if(duplicate){ return false; }
+			if(duplicate){ 	
+				//Display a quick message
+				if($('#duplicate-' + category + '-alert').length <= 0){					
+					$('#current-' + category + '-filters').prepend(
+							'<div class="alert alert-block" id="duplicate-' + category + '-alert">' +
+							'You are already using that filter' +
+							'</div>'						
+					);
+					
+					$('#duplicate-' + category + '-alert').delay(2000).fadeOut(500, function(){
+						this.remove();
+					});
+				}
+				
+				return false; 
+			}
 				
 			//Add the new entry to the array of current filters
 			filtersArray.push(term);

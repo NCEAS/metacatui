@@ -52,6 +52,12 @@ Bold 700
     	cursor: pointer;
     }
     
+    .alert{
+    	background-color: #FCF3C1;
+    	color: #8D703D;
+    	padding: 5px;
+    }
+    
     .mapMode .collapse-me{
     	cursor: pointer;
     }
@@ -1038,6 +1044,11 @@ Bold 700
 		font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
 		margin-left: 10px;
 		min-height: 0px;
+	}
+	
+	.current-filters .alert{
+		width: 100%;
+		margin-top: 10px;
 	}
 	
 	#current-all-filters{

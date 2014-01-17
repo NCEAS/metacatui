@@ -105,6 +105,11 @@ Bold 700 Italic
     	color: #888888;
     }
     
+    .alert{
+    	background-color: #FCF3C1;
+    	color: #8D703D;
+    	padding: 5px;
+    }
     .mapMode .collapse-me:hover{
     	cursor: pointer;
     }
@@ -287,6 +292,10 @@ Bold 700 Italic
       padding: 0px 15px 0px 15px;
     }
     
+    footer div.help-items{
+    	min-width: 179px;
+    }
+    
     footer#Footer i{
     	margin-right: 5px;
     	color: #CCCCCC;
@@ -357,6 +366,7 @@ Bold 700 Italic
     footer#Footer .dataone img{
     	height: 27px;
     	width: auto;
+    	min-width: 120px;
     	margin-top: 24px;
     }
     
@@ -1520,6 +1530,11 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 		margin-top: 2px;
 		margin-left: 5px;
 		cursor: help;
+	}
+	
+	.current-filters .alert{
+		width: 100%;
+		margin-top: 10px;
 	}
 	
 	.current-filters,
