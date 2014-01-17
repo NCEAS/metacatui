@@ -1091,6 +1091,11 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     #Metadata > .container{
 		width: 100%;
 	}
+	
+	#Metadata .well > .row-fluid > .span10{
+		font-size: 20px;
+		line-height: 31px;
+	}
     
     /* Download  and Publish buttons */
      #downloadPackage a.btn {
@@ -2008,6 +2013,7 @@ transition: all 0.3s;
     
 	.result-row i.download{
 		font-size: 16px;
+		margin-right: 5px;
 		cursor: pointer;
 		float: left;
 		transition: all 0.3s;
@@ -2016,7 +2022,7 @@ transition: all 0.3s;
 	
 	.result-row .download label{
 		font-size: 12px;
-		margin-left: -4px;
+		float: left;
 		opacity: 0;
 		display:inline;
 		transition: all 0.3s;

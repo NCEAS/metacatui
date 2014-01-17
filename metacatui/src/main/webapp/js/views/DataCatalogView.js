@@ -1040,6 +1040,7 @@ define(['jquery',
 			
 			var facetQuery = "q=" + appSearchResults.currentquery +
 							 "&wt=json" + 
+							 "&rows=0" +
 							 "&facet=true" +
 							 "&facet.sort=count" +
 							 "&facet.field=keywords" +
