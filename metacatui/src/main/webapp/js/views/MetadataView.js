@@ -66,6 +66,11 @@ define(['jquery',
 							if(gmaps){ 
 								viewRef.insertSpatialCoverageMap();
 							}
+							
+							if(uiRouter.lastRoute() == "data"){
+								$('#Metadata').prepend('<a href="#data" title="Back"><i class="icon-angle-left"></i> Back to search</a>');
+
+							}
 						}
 						console.log('Loaded metadata, now fading in MetadataView');
 						viewRef.$el.fadeIn('slow');
@@ -99,6 +104,9 @@ define(['jquery',
 			_.each(wells, function(well){
 				if($(well).find('#viewMetadataCitationLink').length > 0){
 					
+					//Save this element in the view
+					viewRef.citationEl = well;
+					
 					//Mark this in the DOM for CSS styling
 					$(well).addClass('citation');
 					
@@ -110,7 +118,7 @@ define(['jquery',
 			//*** Find each resource map that this metadata is a part of 
 			// surround pid value in "" so that doi characters do not affect solr query
 			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&q=formatType:METADATA+-obsoletedBy:*+id:%22' + pid + '%22';
-			console.log(queryServiceUrl + query);
+
 			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
 						
 				var resourceMap = data.response.docs[0].resourceMap;
@@ -161,7 +169,6 @@ define(['jquery',
 				}	
 				//If this is just a metadata object, just send that info alone
 				else{
-					console.log(data.response.docs);
 					$('#downloadContents').append(viewRef.downloadContentsTemplate({
 						objects: data.response.docs,
 						resourceMap: null,

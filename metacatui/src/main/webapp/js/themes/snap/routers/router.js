@@ -31,58 +31,80 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'account(/:stage)'          : 'renderLdap',    // use ldapweb for different stages
 			'share'                     : 'renderRegistry'    // registry page
 		},
-
+		
+		routeHistory: new Array(),
+		
+		// Will return the last route, which is actually the second to last item in the route history, 
+		// since the last item is the route being currently viewed
+		lastRoute: function(){
+			if((this.routeHistory === undefined) || (this.routeHistory.length <= 1)){
+				return false;
+			}
+			
+			return this.routeHistory[this.routeHistory.length-2];
+		},
+		
 		routeToData: function () {
+			this.routeHistory.push("data");
 			console.log('Called UIRouter.routeToData()');
 			this.navigate("data", {trigger: true});
 		},
 		
 		renderIndex: function (param) {
+			this.routeHistory.push("index");
 			console.log('Called UIRouter.renderIndex()');
 			appView.showView(indexView);
 		},
 		
 		renderAbout: function (anchorId) {
 			console.log('Called UIRouter.renderAbout()');
+			this.routeHistory.push("about");
 			appModel.set('anchorId', anchorId);
 			appView.showView(aboutView);
 		},
 		
 		renderPlans: function (param) {
 			console.log('Called UIRouter.renderPlans()');
+			this.routeHistory.push("plans");
 		},
 		
 		renderTools: function (anchorId) {
 			console.log('Called UIRouter.renderTools()');
+			this.routeHistory.push("tools");
 			appModel.set('anchorId', anchorId);
 			appView.showView(toolsView);
 		},
 		
 		renderData: function (page) {
 			console.log('Called UIRouter.renderData()');
+			this.routeHistory.push("data");
 			appModel.set('page', page);
 			appView.showView(dataCatalogView);
 		},
 		
 		renderMetadata: function (pid) {
 			console.log('Called UIRouter.renderMetadata()');
+			this.routeHistory.push("metadata");
 			appModel.set('pid', pid);
 			appView.showView(metadataView);
 		},
 		
 		renderRegistry: function (param) {
 			console.log('Called UIRouter.renderRegistry()');
+			this.routeHistory.push("registry");
 			appView.showView(registryView);
 		},
 		
 		renderLdap: function (stage) {
 			console.log('Called UIRouter.renderLdap()');
+			this.routeHistory.push("ldap");
 			ldapView.stage = stage;
 			appView.showView(ldapView);
 		},
 		
 		logout: function (param) {
 			console.log('Called UIRouter.logout()');
+			this.routeHistory.push("logout");
 			registryView.logout();
 			//appView.showView(indexView);
 		},
@@ -90,6 +112,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
 			console.log('Called UIRouter.renderExternal()');
+			this.routeHistory.push("external");
 			externalView.url = url;
 			appView.showView(externalView);
 		}

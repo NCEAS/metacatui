@@ -822,6 +822,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	
 /* METADATA VIEW CSS
 -------------------------------------------------- */
+		
+	#Metadata > a[href="#data"]{
+		display: block;
+		margin-bottom: 20px;
+		margin-left: 10px;
+		font-size: 14px;
+	}
 	
 	#Metadata .well{;
 		border: 1px solid #CCCCCC;

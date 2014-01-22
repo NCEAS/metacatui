@@ -1103,6 +1103,12 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 		width: 100%;
 	}
 	
+	#Metadata > a[href="#data"]{
+		display: block;
+		margin-bottom: 20px;
+		font-size: 13px;
+	}
+	
 	.citation{
 		font-size: 20px;
 		line-height: 30px;

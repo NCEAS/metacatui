@@ -632,6 +632,12 @@ Bold 700
 	label.control-label{
 		font: 400 15px/18px "Source Sans Pro", Arial, sans-serif;
 	}
+		
+	#Metadata > a[href="#data"]{
+		display: block;
+		margin-bottom: 20px;
+		font-size: 13px;
+	}
 	
 	#Metadata .well{
 		font: 300 21px/30px "Oswald", Arial, sans-serif;
