@@ -599,6 +599,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 -------------------------------------------------- */    
     
     #mainContent {
+      margin-top: -115px;
       position: relative;
       background-color: #899CA6;
       padding-top: 20px;

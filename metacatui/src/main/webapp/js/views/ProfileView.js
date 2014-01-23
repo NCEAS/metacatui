@@ -32,6 +32,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/profile.html', 'text
 				query = "*:*";
 			}
 			
+			//Build the query to get the format types
 			var facetFormatType = "q=" + query +
 								  "+(formatType:METADATA%20OR%20formatType:DATA)" +
 								  "&wt=json" +
@@ -41,7 +42,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/profile.html', 'text
 								  "&group.limit=0" +
 								  "&sort=formatType%20desc";
 			
-			//Get faceted counts of the format types
+			//Run the query
 			$.get(appModel.get('queryServiceUrl') + facetFormatType, function(data, textStatus, xhr) {
 				
 				//Extract the format types (because of filtering and sorting they will always return in this order)
@@ -100,7 +101,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/profile.html', 'text
 					classes: "alert-error"
 				}));
 			});
-			
 			
 			return this;
 		},

@@ -39,7 +39,7 @@ require.config({
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
     gmapsAPI: gmapsURL,
 	markerClusterer: '../components/markerclustererplus_2.1.2',
-	d3: '../components/d3.v3.min.js'
+	d3: '../components/d3.v3.min'
 
   },
   shim: { /* used for libraries without native AMD support */
