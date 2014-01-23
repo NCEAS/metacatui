@@ -46,13 +46,13 @@ Bold 700 Italic
         
     body > #Content {
     	position: relative;
-    	margin: 0px 0px auto 0px;
+    	margin: 115px 0px auto 0px;
     	min-height: 900px;
     }
 		
     body > section > article {
       min-height: 800px;
-      margin: 175px auto auto auto;
+      margin: auto;
       padding-bottom: 40px;  			
     }
     
@@ -104,12 +104,7 @@ Bold 700 Italic
     .subtle{
     	color: #888888;
     }
-    
-    .alert{
-    	background-color: #FCF3C1;
-    	color: #8D703D;
-    	padding: 5px;
-    }
+
     .mapMode .collapse-me:hover{
     	cursor: pointer;
     }
@@ -1269,9 +1264,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 
 /* TOOLS PAGE
   -------------------------------------------------- */
-#Tools .container  .row-fluid{
-	margin-top: 30px;
-}
+
   /* SIDEBAR CSS
   -------------------------------------------------- */
 	#sidebar {

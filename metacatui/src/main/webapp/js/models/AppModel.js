@@ -16,6 +16,7 @@ define(['jquery', 'underscore', 'backbone'],
 			pid: null,
 			anchorId: null,
 			page: null,
+			profileQuery: null,
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',

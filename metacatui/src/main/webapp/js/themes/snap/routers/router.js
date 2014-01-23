@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ExternalView, LdapView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ProfileView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ProfileView, ExternalView, LdapView) {
 
 	var indexView = new IndexView();
 	var aboutView = aboutView || new AboutView();
@@ -10,6 +10,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var dataCatalogView = new DataCatalogView();
 	var registryView = new RegistryView();
 	var metadataView = new MetadataView();
+	var profileView = new ProfileView();
 	var externalView = new ExternalView();
 	var ldapView = new LdapView();
 
@@ -87,6 +88,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.routeHistory.push("metadata");
 			appModel.set('pid', pid);
 			appView.showView(metadataView);
+		},
+		
+		renderProfile: function(query){
+			console.log('Called UIRouter.renderProfile()');
+			this.routeHistory.push("profile");
+			appModel.set('profileQuery');
+			appView.showView(profileView);
 		},
 		
 		renderRegistry: function (param) {

@@ -367,17 +367,24 @@ define(['jquery',
 			var filterQuery = "&fq=-obsoletedBy:*";
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
-			var phrase = function(entry){
+			var needsQuotes = function(entry){
+				//Check for spaces
 				var space = null;
 				
 				space = entry.indexOf(" ");
 				
-				if(space < 0){
-					return false;
-				}
-				else{
+				if(space >= 0){
 					return true;
 				}
+				
+				//Check for the colon : character
+				var colon = null;
+				colon = entry.indexOf(":");
+				if(colon >= 0){
+					return true;
+				}
+				
+				return false;
 			};
 			
 			/* Add trim() function for IE*/
@@ -388,10 +395,7 @@ define(['jquery',
 			}
 			
 			//**Get all the search model attributes**
-			
-			//Start with the 'all' category
-			var search = searchModel.get('all');
-			
+		
 			//resourceMap
 			var resourceMap = searchModel.get('resourceMap');
 			if(resourceMap){
@@ -407,7 +411,7 @@ define(['jquery',
 				//Trim the spaces off
 				thisAttribute = attribute[i].trim();
 				
-				// Is this a phrase?
+				// Does this need to be wrapped in quotes?
 				if (phrase(thisAttribute)){
 					thisAttribute = thisAttribute.replace(" ", "%20");
 					thisAttribute = "%22" + thisAttribute + "%22";
@@ -424,8 +428,8 @@ define(['jquery',
 				//Trim the spaces off
 				thisAll = all[i].trim();
 				
-				//Is this a phrase?
-				if(phrase(thisAll)){
+				//Does this need to be wrapped in quotes?
+				if(needsQuotes(thisAll)){
 					thisAll = thisAll.replace(" ", "%20");
 					filterQuery += "&fq=*%22" + thisAll + "%22*";
 				}
@@ -441,8 +445,8 @@ define(['jquery',
 				//Trim the spaces off
 				thisCreator = creator[i].trim();
 				
-				//Is this a phrase?
-				if(phrase(thisCreator)){
+				//Does this need to be wrapped in quotes?
+				if(needsQuotes(thisCreator)){
 					thisCreator = thisCreator.replace(" ", "%20");
 					filterQuery += "&fq=origin:*%22" + thisCreator + "%22*";
 				}
@@ -458,7 +462,7 @@ define(['jquery',
 				//Trim the spaces off
 				thisTaxon = taxon[i].trim();
 				
-				// Is this a phrase?
+				// Does this need to be wrapped in quotes?
 				if (phrase(thisTaxon)){
 					thisTaxon = thisTaxon.replace(" ", "%20");
 					thisTaxon = "%22" + thisTaxon + "%22";
@@ -547,8 +551,8 @@ define(['jquery',
 				//Trim the spaces off
 				thisSpatial = spatial[i].trim();
 				
-				//Is this a phrase?
-				if(phrase(thisSpatial)){
+				//Does this need to be wrapped in quotes?
+				if(needsQuotes(thisSpatial)){
 					thisSpatial = thisSpatial.replace(" ", "%20");
 					query += "&fq=site:*%22" + thisSpatial + "%22*";
 				}
