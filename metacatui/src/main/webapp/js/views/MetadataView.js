@@ -8,9 +8,10 @@ define(['jquery',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html',
 		'text!templates/usageStats.html',
-		'text!templates/downloadContents.html'
+		'text!templates/downloadContents.html',
+		'text!templates/alert.html'
 		], 				
-	function($, _, Backbone, gmaps, PackageTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate) {
+	function($, _, Backbone, gmaps, PackageTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate) {
 	'use strict';
 
 	
@@ -21,6 +22,8 @@ define(['jquery',
 		template: null,
 				
 		packageTemplate: _.template(PackageTemplate),
+		
+		alertTemplate: _.template(AlertTemplate),
 
 		doiTemplate: _.template(PublishDoiTemplate),
 		
@@ -59,9 +62,20 @@ define(['jquery',
 			var viewRef = this;
 			this.$el.load(endpoint,
 					function(response, status, xhr) {
-						if (status == "error") {
-							viewRef.showMessage(response);
-						} else {
+						if(status=="error"){
+							var msg = response;
+							
+							//If we get a 404, it is most likely because the ID is wrong
+							if(xhr.status == 404){
+								msg = "<h4>That ID doesn't exist</h4>" + response;
+							}
+							
+							viewRef.$el.html(viewRef.alertTemplate({
+								msg: msg,
+								classes: "alert-error"
+							}));
+						}
+						else{
 							viewRef.insertResourceMapContents(pid);
 							if(gmaps){ 
 								viewRef.insertSpatialCoverageMap();
@@ -69,12 +83,14 @@ define(['jquery',
 							
 							if(uiRouter.lastRoute() == "data"){
 								$('#Metadata').prepend('<a href="#data" title="Back"><i class="icon-angle-left"></i> Back to search</a>');
-
 							}
-						}
-						console.log('Loaded metadata, now fading in MetadataView');
-						viewRef.$el.fadeIn('slow');
+							
+							//TODO:Find the Taxonomic coverage element and give it a class for styling
 						
+							
+							console.log('Loaded metadata, now fading in MetadataView');
+							viewRef.$el.fadeIn('slow');
+						}
 					});
 			
 			return this;
@@ -110,8 +126,6 @@ define(['jquery',
 					//Mark this in the DOM for CSS styling
 					$(well).addClass('citation');
 					
-					//Insert the container div for the download contents
-					$(well).after("<div id='downloadContents'><h4>Download contents</h4></div>");
 				}
 			});
 			
@@ -120,6 +134,9 @@ define(['jquery',
 			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&q=formatType:METADATA+-obsoletedBy:*+id:%22' + pid + '%22';
 
 			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
+				
+				//Insert the container div for the download contents
+				$(viewRef.citationEl).after("<div id='downloadContents'><h4>Download contents</h4></div>");
 						
 				var resourceMap = data.response.docs[0].resourceMap;
 						
@@ -165,6 +182,12 @@ define(['jquery',
 								object_service: objectServiceUrl
 							}));	
 						}); 
+						
+						//Move the download button to our download content list area
+					    $("#downloadPackage").detach();
+					    
+					}).error(function(){
+						console.warn(reponse);
 					});
 				}	
 				//If this is just a metadata object, just send that info alone
@@ -175,14 +198,16 @@ define(['jquery',
 						package_service: packageServiceUrl,
 						object_service: objectServiceUrl
 					}));
+					
+					//Move the download button to our download content list area
+				    $("#downloadPackage").detach();
 				}
 										
 				//Initialize any popovers
 				$('.popover-this').popover();
-																			
-				//Move the download button to our download content list area
-			    $("#downloadPackage").detach();
 							
+			}).error(function(){
+				console.warn(repsonse);
 			});
 					
 			// is this the latest version? (includes DOI link when needed)
@@ -358,16 +383,21 @@ define(['jquery',
 						
 							console.log('identifier: ' + identifier);
 							if (identifier) {
-								
+								viewRef.hideLoading();
 								var msg = "Published package '" + identifier + "'";
-								viewRef.showMessage(msg, false, "alert-success");
+								viewRef.$el.find('.container').prepend(
+										viewRef.alertTemplate({
+											msg: msg,
+											classes: 'alert-success'
+										})
+								);
 								
 								// navigate to the new view after a few seconds
 								setTimeout(
 										function() {
 											// avoid a double fade out/in
-											viewRef.$el.html('');
-											viewRef.showLoading();
+											$(viewRef).$el.html('');
+											$(viewRef).showLoading();
 											uiRouter.navigate("view/" + identifier, {trigger: true})
 										}, 
 										3000);
@@ -375,8 +405,15 @@ define(['jquery',
 						},
 						error: function(xhr, textStatus, errorThrown) {
 							// show the error message, but stay on the same page
-							var msg = $(xhr.responseText).find("description").text();
-							viewRef.showMessage(msg, true, "alert-error");
+							var msg = "Publish failed: " + $(xhr.responseText).find("description").text();
+							
+							viewRef.hideLoading();
+							viewRef.$el.find('.container').prepend(
+									viewRef.alertTemplate({
+										msg: msg,
+										classes: 'alert-error'
+									})
+							);
 						}
 					}
 				);
@@ -392,47 +429,28 @@ define(['jquery',
 
 			// look up the meta
 			var viewRef = this;
-			$.get(
-					metaServiceUrl + pid,
-					function(data, textStatus, xhr) {
+			$.get(metaServiceUrl + pid, function(data, textStatus, xhr) {
 						
-						// the response should have a resourceMap element
-						obsoletedBy = $(data).find("obsoletedBy").text();
-						console.log('obsoletedBy: ' + obsoletedBy);
+				// the response should have a resourceMap element
+				obsoletedBy = $(data).find("obsoletedBy").text();
+				console.log('obsoletedBy: ' + obsoletedBy);
 						
-						if (obsoletedBy) {						
-							viewRef.showLatestVersion(obsoletedBy, true);
-						} else {
-							if (traversing) {
-								viewRef.$el.find("#Metadata > .container").prepend(
-										viewRef.versionTemplate({pid: pid})
-										);
+				if (obsoletedBy) {						
+					viewRef.showLatestVersion(obsoletedBy, true);
+				} else {
+					if (traversing) {
+						viewRef.$el.find("#Metadata > .container").prepend(
+								viewRef.versionTemplate({pid: pid})
+						);
 								
-							} else {
-								// finally add the DOI button - this is the latest version
-								viewRef.insertDoiButton(pid);
-							}
-							
-						}
-					}
-				);
-				
+					} else {
+						// finally add the DOI button - this is the latest version
+						viewRef.insertDoiButton(pid);
+					}			
+				}
+			});	
 		},
-		
-		showMessage: function(msg, prepend, alertType) {
-			this.hideLoading();
-			var alertClass = "alert";
-			if (alertType) {
-				alertClass += " " + alertType;
-			}
-			var content = '<section id="Notification"><div class="' + alertClass + '"><h4>' + msg + '</h4></div></section>';
-			if (prepend) {
-				this.$el.prepend(content);
-			} else {
-				this.$el.html(content);
-			}
 
-		},
 		
 		showLoading: function(message) {
 			this.hideLoading();
