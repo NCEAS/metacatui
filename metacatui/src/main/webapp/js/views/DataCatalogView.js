@@ -363,8 +363,8 @@ define(['jquery',
 			appSearchResults.setfields(fields);
 			
 			//Create the filter terms from the search model and create the query
-			var query = "formatType:METADATA";
-			var filterQuery = "&fq=-obsoletedBy:*";
+			var query = "formatType:METADATA+-obsoletedBy:*";
+			var filterQuery = "";
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var needsQuotes = function(entry){
