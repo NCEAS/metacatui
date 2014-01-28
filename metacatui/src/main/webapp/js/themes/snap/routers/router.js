@@ -112,7 +112,9 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		
 		logout: function (param) {
 			console.log('Called UIRouter.logout()');
-			this.routeHistory.push("logout");
+			//Clear our browsing history when we log out
+			this.routeHistory.length = 0;
+			
 			registryView.logout();
 			//appView.showView(indexView);
 		},

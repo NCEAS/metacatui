@@ -904,6 +904,28 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  		color: #FFFFFF;
     }
     
+    /*Taxonomic range*/
+    .taxonomic-range .control-group{
+    	margin-bottom: 20px;
+    	width: auto;
+    }
+    .taxonomic-range .control-label{
+    	width: auto;
+    	padding: 0px 10px;
+    }
+    
+    .taxonomic-range .controls > .control-group:nth-child(2n){
+    	margin-left: 104px;
+    }
+    
+    .taxonomic-range .control-label{
+    	color: #999;
+    }
+    
+    .taxonomic-range .controls {
+		margin-left: 0px;
+	}
+    
 /* Registry CSS
 -------------------------------------------------- */
     #RegistryEntryForm, 
