@@ -26,7 +26,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
 			'tools(/:anchorId)'         : 'renderTools',  // tools page
-			'data(/page/:page)'			: 'renderData',    // data search page
+			'data(/page/:page)(/mode=:mode)(/query=:query)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',    // metadata page
 			'profile(/*query)'			: 'renderProfile', //profile page
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
@@ -79,10 +79,16 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(toolsView);
 		},
 		
-		renderData: function (page) {
+		renderData: function (page, mode, query) {
 			console.log('Called UIRouter.renderData()');
 			this.routeHistory.push('data');
 			appModel.set('page', page);
+			if(mode){
+				appModel.set('searchMode', mode)
+			}
+			if(query){
+				searchModel.set('customQuery', query);
+			}
 			appView.showView(dataCatalogView);
 		},
 		

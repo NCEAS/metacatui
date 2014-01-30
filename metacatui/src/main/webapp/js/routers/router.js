@@ -23,7 +23,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
 			'tools(/:anchorId)'         : 'renderTools',  // tools page
-			'data(/page/:page)(/m=:mode)(/q=:query)' : 'renderData',    // data search page
+			'data(/page/:page)(/mode=:mode)(/query=:query)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',    // metadata page
 			'profile(/*query)'			: 'renderProfile',
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
@@ -76,6 +76,9 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appModel.set('page', page);
 			if(mode){
 				appModel.set('searchMode', mode)
+			}
+			if(query){
+				searchModel.set('customQuery', query);
 			}
 			appView.showView(dataCatalogView);
 		},

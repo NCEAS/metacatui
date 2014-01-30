@@ -28,7 +28,8 @@ define(['jquery', 'underscore', 'backbone'],
 			},
 			spatial: [],
 			attribute: [],
-			additionalCriteria: []
+			additionalCriteria: [],
+			customQuery: null,
 		},
 		
 		filterCount: function() {

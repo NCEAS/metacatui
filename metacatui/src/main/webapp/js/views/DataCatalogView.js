@@ -152,6 +152,11 @@ define(['jquery',
 			// the additional fields
 			this.showAdditionalCriteria();
 			
+			// Add the custom query under the "Anything" filter
+			if(searchModel.get('customQuery')){
+				this.showFilter("all", searchModel.get('customQuery'));
+			}
+			
 			// Register listeners; this is done here in render because the HTML
 			// needs to be bound before the listenTo call can be made
 			this.stopListening(appSearchResults);
@@ -415,7 +420,7 @@ define(['jquery',
 				thisAttribute = attribute[i].trim();
 				
 				// Does this need to be wrapped in quotes?
-				if (phrase(thisAttribute)){
+				if (needsQuotes(thisAttribute)){
 					thisAttribute = thisAttribute.replace(" ", "%20");
 					thisAttribute = "%22" + thisAttribute + "%22";
 				}
@@ -466,7 +471,7 @@ define(['jquery',
 				thisTaxon = taxon[i].trim();
 				
 				// Does this need to be wrapped in quotes?
-				if (phrase(thisTaxon)){
+				if (needsQuotes(thisTaxon)){
 					thisTaxon = thisTaxon.replace(" ", "%20");
 					thisTaxon = "%22" + thisTaxon + "%22";
 				}
@@ -499,6 +504,10 @@ define(['jquery',
 			_.each(registryCriteria, function(value, key, list) {
 				filterQuery += "&fq=" + value;
 			});
+			
+			//Custom query (passed from the router)
+			var customQuery = searchModel.get('customQuery');
+			query += customQuery;
 			
 			//Year
 			//Get the types of year to be searched first
@@ -1710,7 +1719,7 @@ define(['jquery',
 		},
 		
 		postRender: function() {
-			if(gmaps){
+			if((gmaps) && (appModel.get('searchMode') == 'map')){
 				console.log("Resizing the map");
 				var center = this.map.getCenter(); 
 				google.maps.event.trigger(this.map, 'resize'); 
