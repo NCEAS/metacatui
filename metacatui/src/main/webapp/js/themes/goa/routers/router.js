@@ -28,6 +28,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'tools(/:anchorId)'         : 'renderTools',  // tools page
 			'data(/page/:page)'			: 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',    // metadata page
+			'profile(/*query)'			: 'renderProfile', //profile page
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
 			'logout'                    : 'logout',    // logout the user
 			'signup'          			: 'renderLdap',    // use ldapweb for registration
@@ -90,6 +91,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.routeHistory.push('metadata');
 			appModel.set('pid', pid);
 			appView.showView(metadataView);
+		},
+		
+		renderProfile: function(query){
+			console.log('Called UIRouter.renderProfile()');
+			this.routeHistory.push("profile");
+			appModel.set('profileQuery', query);
+			appView.showView(profileView);
 		},
 		
 		renderRegistry: function (param) {

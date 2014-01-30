@@ -22,15 +22,29 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/profile.html', 'text
 			
 			console.log('Rendering the profile view');
 			
-			var viewRef = this;
-			
 			//Get the query from the appModel
 			var query = appModel.get('profileQuery');
 			
 			//If no query was given, then show all of the repository info
-			if(query == ""){
+			if(!query){
 				query = "*:*";
 			}
+			
+			this.getFormatTypes(query);
+			
+			return this;
+		},
+		
+		onClose: function () {			
+			console.log('Closing the profile view');
+		},
+		
+		postRender: function() {
+
+		},
+		
+		getFormatTypes: function(query){
+			var viewRef = this;
 			
 			//Build the query to get the format types
 			var facetFormatType = "q=" + query +
@@ -101,16 +115,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/profile.html', 'text
 					classes: "alert-error"
 				}));
 			});
-			
-			return this;
-		},
-		
-		onClose: function () {			
-			console.log('Closing the profile view');
-		},
-		
-		postRender: function() {
-
 		}
 		
 	});
