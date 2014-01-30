@@ -673,6 +673,37 @@ Bold 700
 		font: 700 14px/14px "Source Sans Pro", Arial, sans-serif;
 	}
 	
+	/* Resource map contents table */
+    
+    #downloadContents{
+    	margin-bottom: 40px;
+    }
+    
+    table.download-contents {
+    	float: left;
+    	width: auto;
+    }
+    
+    table.download-contents td{
+    	min-width: 115px;
+    }
+    
+    .format-type i {
+    	margin-right: 5px;
+    }
+    .format-type {
+    	text-transform: capitalize;
+    }
+    
+    .file-type i {
+  		  color: #999;
+  		  margin-left: 5px;
+    }
+    
+    th.id {
+    	min-width: 180px;
+    }
+	
 	/*Taxonomic range*/
     .taxonomic-range .control-group{
     	margin-bottom: 20px;
