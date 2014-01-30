@@ -136,7 +136,7 @@ define(['jquery',
 			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
 				
 				//Insert the container div for the download contents
-				$(viewRef.citationEl).after("<div id='downloadContents'><h4>Download contents</h4></div>");
+				$(viewRef.citationEl).after("<div id='downloadContents'></div>");
 						
 				var resourceMap = data.response.docs[0].resourceMap;
 						
@@ -205,6 +205,10 @@ define(['jquery',
 										
 				//Initialize any popovers
 				$('.popover-this').popover();
+				
+				// disable the ecogrid links because the info is in the download area
+				// see https://projects.ecoinformatics.org/ecoinfo/issues/6305
+				$('a[href*="action=read&qformat=metacatui"]').removeAttr('href');
 							
 			}).error(function(){
 				console.warn(repsonse);
