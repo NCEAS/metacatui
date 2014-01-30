@@ -1431,6 +1431,11 @@ define(['jquery',
 		},
 		
 		openMarker: function(e){
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
 			//Clear the panning timeout
 			window.clearTimeout(this.centerTimeout);
 			
@@ -1462,6 +1467,11 @@ define(['jquery',
 		},
 		
 		closeMarker: function(e){
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
 			var id = $(e.target).attr('data-id');
 			
 			//The mouseout event might be triggered by a nested element, so loop through the parents to find the id
@@ -1497,6 +1507,11 @@ define(['jquery',
 		},
 		
 		showMarkers: function() {
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
 			var i = 1;
 			_.each(_.values(this.markers), function(marker) {
 				setTimeout(function() {
@@ -1507,6 +1522,11 @@ define(['jquery',
 		
 		// removes any existing markers that are not in the new search results
 		mergeMarkers: function() {
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
 			var searchPids =
 			_.map(appSearchResults.models, function(element, index, list) {
 				return element.get("id");
