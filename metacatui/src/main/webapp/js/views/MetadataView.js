@@ -136,7 +136,7 @@ define(['jquery',
 			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
 				
 				//Insert the container div for the download contents
-				$(viewRef.citationEl).after("<div id='downloadContents'><h4>Download contents</h4></div>");
+				$(viewRef.citationEl).after("<div id='downloadContents'></div>");
 						
 				var resourceMap = data.response.docs[0].resourceMap;
 						
