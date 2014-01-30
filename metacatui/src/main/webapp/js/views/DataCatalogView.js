@@ -59,7 +59,8 @@ define(['jquery',
 		markerImage50: './img/markers/orangered-50px-25a.png',
 		
 		markerImage60: './img/markers/orangered-60px-25a.png',
-	
+		
+		reservedMapPhrase: 'Only results with all spatial coverage inside the map',
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -179,19 +180,21 @@ define(['jquery',
 		
 		renderMap: function() {
 			
+			//If gmaps isn't enabled or loaded with an error, use list mode
 			if (!gmaps) {
 				this.ready = true;
 				appModel.set('searchMode', 'list');
 				return;
-			}
+			}		
 
-			// set to map mode
-			appModel.set('searchMode', 'map');
+			// If the list mode is currently in use, no need to render the map
+			if(appModel.get('searchMode') == 'list'){
+				this.ready = true;
+				return;
+			}
+			
 			$("body").addClass("mapMode");				
-			
-			//Set a reserved phrase for the map filter
-			this.reservedMapPhrase = "Only results with any spatial coverage inside the map";
-			
+					
 			//If the spatial filters are set, rezoom and recenter the map to those filters
 			if(searchModel.get('north')){
 				var mapZoom = searchModel.get('map').zoom;
@@ -1523,7 +1526,7 @@ define(['jquery',
 			this.$results.append(view.render().el);
 			
 			// map it
-			if(gmaps){
+			if(gmaps && (appModel.get('searchMode') == 'map')){
 				this.addObjectMarker(result);	
 			}
 
@@ -1681,6 +1684,8 @@ define(['jquery',
 			}
 			else if (appModel.get('searchMode') == 'list'){
 				appModel.set('searchMode', 'map');
+				this.renderMap();
+				this.showResults();
 			}
 		},
 		
