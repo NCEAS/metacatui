@@ -609,6 +609,28 @@
    		display: block;
    		margin: 10px 0px 10px 0px;
    	}
+   	
+   	/*Taxonomic range*/
+    .taxonomic-range .control-group{
+    	margin-bottom: 20px;
+    	width: auto;
+    }
+    .taxonomic-range .control-label{
+    	width: auto;
+    	padding: 0px 10px;
+    }
+    
+    .taxonomic-range .controls > .control-group:nth-child(2n){
+    	margin-left: 99px;
+    }
+    
+    .taxonomic-range .control-label{
+    	color: #999;
+    }
+    
+    .taxonomic-range .controls {
+		margin-left: 0px;
+	}
     
 	/* Registry CSS
 	-------------------------------------------------- */

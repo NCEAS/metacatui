@@ -18,7 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'text!templates/resultsIte
 
 		// The DOM events specific to an item.
 		events: {
-			'click .result-selection': 'toggleSelected',
+			'click .result-selection': 'toggleSelected'
 			//'dblclick label': 'edit',
 			//'click .destroy': 'clear',
 			//'keypress .edit': 'updateOnEnter',

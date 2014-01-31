@@ -38,7 +38,8 @@ require.config({
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
     gmapsAPI: gmapsURL,
-	markerClusterer: '../components/markerclustererplus_2.1.2'
+	markerClusterer: '../components/markerclustererplus_2.1.2',
+	d3: '../components/d3.v3.min'
 
   },
   shim: { /* used for libraries without native AMD support */
@@ -105,8 +106,8 @@ function(Bootstrap, AppView, AppModel) {
 
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 'models/RegistryModel'],
-	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel) {
+	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 'models/RegistryModel', 'd3'],
+	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, d3) {
 		'use strict';  
 	    		
 		appSearchResults = new SolrResultList([], {});
@@ -117,9 +118,8 @@ function(Bootstrap, AppView, AppModel) {
 		
 		// Initialize routing and start Backbone.history()
 		uiRouter = new UIRouter();
-		Backbone.history.start();  
-		
-	    	
+		Backbone.history.start();
+	  
 	});
     	
 });

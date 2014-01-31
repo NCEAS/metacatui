@@ -52,6 +52,12 @@ Bold 700
     	cursor: pointer;
     }
     
+    .alert{
+    	background-color: #FCF3C1;
+    	color: #8D703D;
+    	padding: 5px;
+    }
+    
     .mapMode .collapse-me{
     	cursor: pointer;
     }
@@ -626,6 +632,12 @@ Bold 700
 	label.control-label{
 		font: 400 15px/18px "Source Sans Pro", Arial, sans-serif;
 	}
+		
+	#Metadata > a[href="#data"]{
+		display: block;
+		margin-bottom: 20px;
+		font-size: 13px;
+	}
 	
 	#Metadata .well{
 		font: 300 21px/30px "Oswald", Arial, sans-serif;
@@ -659,6 +671,59 @@ Bold 700
 	
 	.search-results a.btn{
 		font: 700 14px/14px "Source Sans Pro", Arial, sans-serif;
+	}
+	
+	/* Resource map contents table */
+    
+    #downloadContents{
+    	margin-bottom: 40px;
+    }
+    
+    table.download-contents {
+    	float: left;
+    	width: auto;
+    }
+    
+    table.download-contents td{
+    	min-width: 115px;
+    }
+    
+    .format-type i {
+    	margin-right: 5px;
+    }
+    .format-type {
+    	text-transform: capitalize;
+    }
+    
+    .file-type i {
+  		  color: #999;
+  		  margin-left: 5px;
+    }
+    
+    th.id {
+    	min-width: 180px;
+    }
+	
+	/*Taxonomic range*/
+    .taxonomic-range .control-group{
+    	margin-bottom: 20px;
+    	width: auto;
+    }
+    .taxonomic-range .control-label{
+    	width: auto;
+    	padding: 0px 10px;
+    }
+    
+    .taxonomic-range .controls > .control-group:nth-child(2n){
+    	margin-left: 107px;
+    }
+    
+    .taxonomic-range .control-label{
+    	color: #999;
+    }
+    
+    .taxonomic-range .controls {
+		margin-left: 0px;
 	}
 
     
@@ -1038,6 +1103,11 @@ Bold 700
 		font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
 		margin-left: 10px;
 		min-height: 0px;
+	}
+	
+	.current-filters .alert{
+		width: 100%;
+		margin-top: 10px;
 	}
 	
 	#current-all-filters{

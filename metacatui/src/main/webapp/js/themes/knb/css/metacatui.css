@@ -46,13 +46,13 @@ Bold 700 Italic
         
     body > #Content {
     	position: relative;
-    	margin: 0px 0px auto 0px;
+    	margin: 115px 0px auto 0px;
     	min-height: 900px;
     }
 		
     body > section > article {
       min-height: 800px;
-      margin: 175px auto auto auto;
+      margin: auto;
       padding-bottom: 40px;  			
     }
     
@@ -104,7 +104,7 @@ Bold 700 Italic
     .subtle{
     	color: #888888;
     }
-    
+
     .mapMode .collapse-me:hover{
     	cursor: pointer;
     }
@@ -287,6 +287,10 @@ Bold 700 Italic
       padding: 0px 15px 0px 15px;
     }
     
+    footer div.help-items{
+    	min-width: 179px;
+    }
+    
     footer#Footer i{
     	margin-right: 5px;
     	color: #CCCCCC;
@@ -357,6 +361,7 @@ Bold 700 Italic
     footer#Footer .dataone img{
     	height: 27px;
     	width: auto;
+    	min-width: 120px;
     	margin-top: 24px;
     }
     
@@ -594,6 +599,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 -------------------------------------------------- */    
     
     #mainContent {
+      margin-top: -115px;
       position: relative;
       background-color: #899CA6;
       padding-top: 20px;
@@ -1086,20 +1092,29 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     #Metadata {
 		min-height: 800px;
 		width: 90%;
+		margin-top: 125px;
     }
     
     #Metadata > .container{
 		width: 100%;
 	}
 	
+	#Metadata > a[href="#data"]{
+		display: block;
+		margin-bottom: 20px;
+		font-size: 13px;
+	}
+	
 	.citation{
-		font-size: 25px;
+		font-size: 20px;
 		line-height: 30px;
+		margin-bottom: 40px;
 		border: 0px;
 		box-shadow: none;
 		-webkit-box-shadow: none;
 		-moz-box-shadow: none;
 		padding: 0px;
+		background-color: transparent;
 	}
 	
 	.citation .span10{
@@ -1131,13 +1146,13 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     .download-this-package a{
     	margin-top: 15%;
-    	background-color: #660000;
+    	background-color: #992222;
     	color: #FFFFFF;
     	text-shadow: none;
     }
     
     .download-this-package a:hover{
-    	background-color: #882222;
+    	background-color: #660000;
     	color: #FFFFFF;
     }
     
@@ -1150,9 +1165,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     }
     
     /* Resource map contents table */
-    #downloadContents .controls-well{
-    	background-color: #EEE;
-    }
     
     #downloadContents{
     	margin-bottom: 40px;
@@ -1160,6 +1172,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     table.download-contents{
     	float: left;
+    	width: auto;
     }
     
     table.download-contents td{
@@ -1168,6 +1181,9 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     .format-type i{
     	margin-right: 5px;
+    }
+    .format-type {
+    	text-transform: capitalize;
     }
     
     .file-type i{
@@ -1179,6 +1195,27 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     	min-width: 180px;
     }
     
+    /*Taxonomic range*/
+    .taxonomic-range .control-group{
+    	margin-bottom: 20px;
+    	width: auto;
+    }
+    .taxonomic-range .control-label{
+    	width: auto;
+    	padding: 0px 10px;
+    }
+    
+    .taxonomic-range .controls > .control-group:nth-child(2n){
+    	margin-left: 99px;
+    }
+    
+    .taxonomic-range .control-label{
+    	color: #999;
+    }
+    
+    .taxonomic-range .controls {
+		margin-left: 0px;
+	}
 	/* Registry CSS
 	-------------------------------------------------- */
     #RegistryEntryForm, 
@@ -1252,9 +1289,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 
 /* TOOLS PAGE
   -------------------------------------------------- */
-#Tools .container  .row-fluid{
-	margin-top: 30px;
-}
+
   /* SIDEBAR CSS
   -------------------------------------------------- */
 	#sidebar {
@@ -1262,7 +1297,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     	bottom: 30px;
 		
 		width: 20%;
-		min-width: 250px;
 		
 		padding: 0px;
 		margin-top: -10px;
@@ -1522,6 +1556,11 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 		cursor: help;
 	}
 	
+	.current-filters .alert{
+		width: 100%;
+		margin-top: 10px;
+	}
+	
 	.current-filters,
 	.current-filters[class*="span"]{
 		list-style: none;
@@ -1555,7 +1594,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 		margin-right: 5px;
 		line-height: 19px;
 		white-space: normal;
-		max-width: 90%;
+		max-width: 89%;
 	}
 	
 	.current-filters > li > i{
@@ -2954,7 +2993,7 @@ table.right {
 
 th {
     border-bottom:              #006666 solid 1px;
-    color:                      #003366;
+    color:                      #555555;
     padding:                    0;
     margin:                     0;
     text-align:                 left;
