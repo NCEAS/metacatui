@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>KNB | Knowledge Network for Biocomplexity</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Metacat UI">
+    <meta name="author" content="Ecoinformatics Development Team">
+
+    <!-- Stylesheets -->
+    <link href="../../../../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../css/font-awesome-3.2.1.min.css" rel="stylesheet">
+    <link href="../../../../css/glyphicons.css" rel="stylesheet">
+    <link href="../../../../css/halflings.css" rel="stylesheet">
+    <link href="../../../../js/themes/<%=theme%>/css/metacatui.css" type="text/css" rel="stylesheet">
+    <!--link href="./css/bootstrap-responsive.min.css" rel="stylesheet"-->
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="./components/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../img/knb-144.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../img/knb-114.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../img/knb-72.png">
+    <link rel="apple-touch-icon-precomposed" href="../img/knb-57.png">
+
+	<style>
+	.code_example { display: block; white-space: pre; }
+	</style>
+</head>
+<body>
+<!--
+NOTE: ALL CONTENT ABOVE THIS POINT SHOULD BE REMOVED, LEAVING ONLY THE 'article'
+WHEN THIS TEMPLATE IS INCORPORATED INTO A VIEW IN MetacatUI.
+The <html>, <head> and <body> tags here are just for testing before a view is created. 
+  -->
+<article id="DeveloperAPI">
+	<div class="container-fluid">
+
+    	<div class="span2 list-group">
+      		<a href="#api" class="list-group-item active">DataONE REST API</a>
+      		<a href="#apijava" class="list-group-item">Java Client Library</a>
+      		<a href="#apipython" class="list-group-item">Python Client Library</a>
+    	</div>
+
+    	<div class="span10">
+
+			<div class="row-fluid">
+				<div class="text-left">
+					<h2>
+						<i class="glyphicons-icon cloud"></i>
+						Developer Tools
+					</h2>
+					<p class="lead">The KNB supports the DataONE RESTful API, and Java, Python, and R libraries for easily creating client tools.  
+					</p>	
+				</div>
+			</div>
+
+				<div class="row-fluid">
+					<article class="text-left">
+						<h3 id="api">
+							<i class="glyphicons-icon cloud"></i> DataONE
+							Developer API
+						</h3>
+						<p class="lead">A RESTful API for accessing and contributing
+							data.</p>
+						<p>
+							The KNB supports the <a
+								href="http://releases.dataone.org/online/api-documentation-v1.2/apis/index.html"
+								target="_external">DataONE REST API</a> (also see the <a
+								href="http://releases.dataone.org/online/api-documentation-v1.2/apis/index.html"
+								target="_external">dev version</a>) to provide a common web
+							service interface for users and developers to access and
+							contribute data and metadata to the KNB. This allows any software
+							tool that supports the DataONE API (such as the rDataONE R
+							package) to also be able to seamlessly interact with KNB data.
+							While DataONE maintains the full technical documentation on the
+							API, here is a brief overview for commonly accessed services.
+						</p>
+						<section id="summary">
+							<h3>Summary</h3>
+							<p>
+								All API access is over HTTPS, and accessed via the
+								<code>https://knb.ecoinformatics.org/knb/d1/mn/v1/</code>
+								endpoint. The relative path prefix
+								<code>/v1/</code>
+								indicates that we are currently using version 1 of the DataONE
+								API. 						    
+							<blockquote><i class="glyphicons-icon warning_sign"></i>
+							<p class="text-warning">The examples below show calls to the production KNB site 
+							(<code>https://knb.ecoinformatics.org</code>), but developers
+						    should not create test data on the production KNB.  Instead, they can use
+						    a test Metacat server to explore the API 
+						    (e.g., <code>https://mn-demo-5.test.dataone.org/knb/d1/mn/v1/</code>).
+						    </p></blockquote>
+								
+							</p>
+							<p>DataONE distinguishes three classes of objects that it
+								will store and manage: data objects, science metadata objects,
+								and resource map documents. Each of these are uniquely
+								identifiable by their persistent identifier (PID), and each has
+								associated SystemMetadata which describes the object type, size,
+								access rules, etc.</p>
+							<p>
+								Data objects are treated as opaque blobs, and are retrievable
+								via the get method given a persistent identifier (PID). Science
+								metadata objects are metadata documents such as EML, FGDC,
+								ISO19115 and so forth that provide metadata describing some data
+								object(s). These are represented in XML according to their
+								respective schema. Resource Maps are OAI-ORE documents that
+								describe the aggregations of data and metadata into
+								<code>data packages</code>
+								.
+							</p>
+							<h4>Quick Reference</h4>
+							<table class="endpoints">
+								<tbody>
+									<tr>
+										<th>URL</th>
+										<th>Method</th>
+										<th>Example</th>
+									</tr>
+									<tr>
+										<td><code>/object</code></td>
+										<td>GET</td>
+										<td><a href="#listObjects">List Objects</a></td>
+									</tr>
+									<tr>
+										<td><code>/object/&lt;pid&gt;</code></td>
+										<td>GET</td>
+										<td><a href="#get">Get an Object</a></td>
+									</tr>
+									<tr>
+										<td><code>/object</code></td>
+										<td>POST</td>
+										<td><a href="#create">Create an Object</a></td>
+									</tr>
+									<tr>
+										<td><code>/object/&lt;pid&gt;</code></td>
+										<td>PUT</td>
+										<td><a href="#update">Update an Object</a></td>
+									</tr>
+									<tr>
+										<td><code>/object/&lt;pid&gt;</code></td>
+										<td>DELETE</td>
+										<td><a href="#delete">Delete an Object</a></td>
+									</tr>
+									<tr>
+										<td><code>/archive/&lt;pid&gt;</code></td>
+										<td>PUT</td>
+										<td><a href="#archive">Archive an Object</a></td>
+									</tr>
+									<tr>
+										<td><code>/meta/&lt;pid&gt;</code></td>
+										<td>GET</td>
+										<td><a href="#getSystemMetadata">Get System Metadata for an Object</a></td>
+									</tr>
+									<tr>
+										<td><code>/generate</code></td>
+										<td>POST</td>
+										<td><a href="#generate">Generate an Identifier</a></td>
+									</tr>
+								</tbody>
+							</table>
+						</section>
+						<section id="Calling Services">
+							<h3 id="requestFormat">Request Format</h3>
+							<ul>
+								<li>GET, HEAD, and DELETE requests only pass parameters as
+									part of the URL. The parameter values are converted to UTF-8
+									Strings and appropriately escaped for incorporating into the
+									URL.</li>
+								<li>Message bodies (e.g. for POST and PUT requests) are
+									encoded using MIME Multipart, mixed (RFC2046). All information
+									for creating the new object or resource is transmitted in the
+									message body, which is encoded as a MIME multipart/mixed
+									message. We use two types of content in MIME multipart/mixed
+									messages: parameters and files. Parameters are to be used for
+									all simple types (such as a String value). Files are to be used
+									for all complex types (such as an XML structure) and for octet
+									streams.</li>
+							</ul>
+							<h3 id="responseFormat">Response Format</h3>
+							<p>Version 1.0 of the DataONE services only support XML serialization, and 
+							this format MUST be used when communicating with the KNB.
+							Request and response documents MUST also be encoded using UTF-8.</p>
+							<h3 id="auth">Authentication and Authorization</h3>
+							<p>Authentication is handled using SSL with client-side certificates 
+							(in X.509 format).  Users can 
+							<a href="https://cilogon.org/?skin=DataONE" target="_external">log into CILogon</a> 
+							to download a certificate, 
+							which can then be included in requests.  The Subject of the provided certificate
+							will be used by the KNB to determine all access control decisions for accessing,
+							creating, updating, archiving, and deleting objects.  If a client-side certificate
+							is not provided, the user will be considered an anonymous <code>public</code> user
+							and will only be able to access public content.   
+							</p>
+							<p>Each language or submission tool will have different mechanisms for setting the 
+							client certificate in the SSL session.  For example, for Curl the certificate filename 
+							is passed in on the commandline: <code>curl -X POST --cert /tmp/x509up_u502 ...</code>.
+							</p>
+						</section>
+						<section id="examples">
+						    
+							<h3 id="listObjects">List Objects</h3>
+							<code class="code_example">
+curl -X GET -H "Accept: text/xml" "https://knb.ecoinformatics.org/knb/d1/mn/v1/object?start=0&amp;count=100"
+							</code>
+							<h3 id="get">Get an Object</h3>
+							<code class="code_example">
+curl -X GET \
+     -H "Accept: text/xml" \
+     "https://knb.ecoinformatics.org/knb/d1/mn/v1/object/doi:10.5063/F1HT2M7Q"
+							</code>
+							<h3 id="create">Create an Object</h3>
+							<code class="code_example">
+curl -X POST \
+     --cert /tmp/x509up_u501 \
+     -H "Charset: utf-8" \
+     -H "Content-Type: multipart/mixed; boundary=----------4A2D135C-52CC-017FC-B269-B711ED211576_$" \
+     -H "Accept: text/xml" \
+     -F pid=urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a \
+     -F object=@mydatafile.csv \
+     -F sysmeta=@mysystemmetadata.xml \
+     "https://knb.ecoinformatics.org/knb/d1/mn/v1/object"
+							</code>
+							<h3 id="update">Update an Object</h3>
+							<code class="code_example">
+curl -X PUT \
+     --cert /tmp/x509up_u501 \
+     -H "Charset: utf-8" \
+     -H "Content-Type: multipart/mixed; boundary=----------4A2D135C-52CC-017FC-B269-B711ED211576_$" \
+     -H "Accept: text/xml" \
+     -F newPid=urn:uuid:21865616-8b0d-11e3-a31f-00334b2a1a0a \
+     -F object=@mydatafile.csv \
+     -F sysmeta=@mysystemmetadata.xml \
+     "https://knb.ecoinformatics.org/knb/d1/mn/v1/object/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
+							</code>
+							<h3 id="delete">Delete an Object</h3>
+							<code class="code_example">
+curl -X DELETE \
+     --cert /tmp/x509up_u501 \
+     -H "Accept: text/xml" \
+     "https://knb.ecoinformatics.org/knb/d1/mn/v1/object/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
+							</code>
+							<h3 id="archive">Archive an Object</h3>
+							<code class="code_example">
+curl -X PUT \
+     --cert /tmp/x509up_u501 \
+     -H "Accept: text/xml" \
+     "https://knb.ecoinformatics.org/knb/d1/mn/v1/archive/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
+							</code>
+							<h3 id="getSystemMetadata">Get System Metadata for an Object</h3>
+							<code class="code_example">
+curl -X GET \
+     -H "Accept: text/xml" \
+     "https://knb.ecoinformatics.org/knb/d1/mn/v1/meta/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
+							</code>
+							<h3 id="archive">Generate an identifier</h3>
+							<code class="code_example">
+curl -X POST \
+     --cert /tmp/x509up_u501 \
+     -H "Accept: text/xml" \
+     -F scheme=UUID \
+     "https://knb.ecoinformatics.org/knb/d1/mn/v1/generate"
+							</code>
+						</section>
+					</article>
+				</div>
+
+				<div class="row-fluid">
+				<div class="text-left">
+					<h3 id="apijava">
+						<i class="glyphicons-icon cloud"></i>
+						DataONE Java Client Library
+					</h3>
+					<p class="lead">A helper library for calling the REST API using Java.</p>
+				</div>
+			</div>
+
+			<div class="row-fluid">
+				<div class="text-left">
+					<h3 id="apipython">
+						<i class="glyphicons-icon cloud"></i>
+						DataONE Python Client Library
+					</h3>
+					<p class="lead">A helper library for calling the REST API using Python.</p>
+				</div>
+			</div>
+
+		</div>
+    </div>
+</article>
+
+<!--
+NOTE: ALL CONTENT BELOW THIS POINT SHOULD BE REMOVED, LEAVING ONLY THE 'article'
+WHEN THIS TEMPLATE IS INCORPORATED INTO A VIEW IN MetacatUI.
+The <html>, <head>, and <body> tags here are just for testing before a view is created. 
+  -->
+</body>
+</html>
