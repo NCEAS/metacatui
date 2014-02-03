@@ -30,7 +30,7 @@ require.config({
     moment: '../components/moment',
     registry: [ 
                // use the path fallback in case there is no metacat installed here
-               '/' + metacatContext + '/style/common/templates/metacatui/entryForm',
+               //'/' + metacatContext + '/style/common/templates/metacatui/entryForm',
                // fallback to local version
                'scripts/entryForm'
                 ],
