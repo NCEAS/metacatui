@@ -400,8 +400,8 @@ define(['jquery',
 								setTimeout(
 										function() {
 											// avoid a double fade out/in
-											$(viewRef).$el.html('');
-											$(viewRef).showLoading();
+											viewRef.$el.html('');
+											viewRef.showLoading();
 											uiRouter.navigate("view/" + identifier, {trigger: true})
 										}, 
 										3000);
