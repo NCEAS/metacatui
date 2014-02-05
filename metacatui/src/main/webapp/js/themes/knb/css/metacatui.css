@@ -16,6 +16,16 @@ Bold 700 Italic
 
 @import url(http://fonts.googleapis.com/css?family=Lato);
 
+/***d3 play***/
+#data-chart div{
+	background-color: steelblue;
+	height: 20px;
+	color: white;
+}
+/*******/
+
+
+
 /* Body CSS
 -------------------------------------------------- */
     body {
@@ -69,6 +79,10 @@ Bold 700 Italic
     	color: #660000;
     }
     
+    a:visited{
+    	color: #7DC4E8;
+    }
+    
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
@@ -88,8 +102,14 @@ Bold 700 Italic
     	font-weight: 400;
     }
     
-    h2, h3{
+    h2{
     	font-weight: 300;
+    }
+    
+    h3{
+    	font-weight: 400;
+    	line-height: 47px;
+    	font-size: 26.5px;
     }
     
     .bold-header{
@@ -654,7 +674,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	}
 	
 	#FeaturedData > section:nth-child(odd){
-		background-color: #006666;
+		background-color: #6C94A4;
 	}
 		
 	  #FeaturedData h2 {
@@ -962,17 +982,19 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
       z-index: 191;
     }
 
+	/* Fallback colors for the carousel while images are loading */
 	.carousel .item:nth-child(2n){
-		background-color: #333366;
+		background-color: #6C78A4;
 	}
 	
 	.carousel .item:nth-child(2n+1){
-		background-color: #006666;
+		background-color: #6C94A4;
 	}
 	
 	.carousel .item:nth-child(3n){
-		background-color: #660000;
+		background-color: #6C8AA4;
 	}
+	/************/
 	
     .carousel .item {
     	height: 400px;
@@ -2010,10 +2032,14 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   .result-row .open > .dropdown-menu{
   	position: relative;
   }
-  
+  .result-title{
+    	font-weight: 600;
+   }
   .result-title > a{
   	color: #555555;
-  	font-weight: bold;
+  }
+  .result-title > a:visited{
+  	color: #999;
   }
     
     .result-row > .result-citation{
