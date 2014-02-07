@@ -610,6 +610,23 @@
    		margin: 10px 0px 10px 0px;
    	}
    	
+   	/*** Download contents table **/
+   	.download-contents .format-type i{
+   		margin-right: 10px;
+   	}
+   	/*Details link*/
+    .download-contents .more-info{
+    	padding-left: 20px;
+    	max-width: 65px;
+    	color: #999;
+    	font-size: 12px;
+    }
+    
+    .download-contents .more-info i{
+    	margin-left: 3px;
+    	font-size: 14px;
+    }
+   	
    	/*Taxonomic range*/
     .taxonomic-range .control-group{
     	margin-bottom: 20px;
@@ -1107,7 +1124,7 @@
     	max-width: 45px;
     }
     
-    .info-icons i.more-info{
+    .info-icons .more-info{
     	cursor: help;
     }   
     

@@ -1219,6 +1219,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     	min-width: 180px;
     }
     
+    /*Details link*/
     .download-contents .more-info{
     	padding-left: 20px;
     	max-width: 65px;
