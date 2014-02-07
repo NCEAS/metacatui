@@ -80,7 +80,7 @@ Bold 700 Italic
     }
     
     a:visited{
-    	color: #7DC4E8;
+    	color: #1C91CB;
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -1219,6 +1219,18 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     	min-width: 180px;
     }
     
+    .download-contents .more-info{
+    	padding-left: 20px;
+    	max-width: 65px;
+    	color: #999;
+    	font-size: 12px;
+    }
+    
+    .download-contents .more-info i{
+    	margin-left: 3px;
+    	font-size: 14px;
+    }
+    
     /*Taxonomic range*/
     .taxonomic-range .control-group{
     	margin-bottom: 20px;
@@ -1569,15 +1581,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	
 	#clear-all i{
 		margin-left: 5px;
-	}
-	
-	i.more-info{
-		float: left;
-		color: #999;
-		font-size: 13px;
-		margin-top: 2px;
-		margin-left: 5px;
-		cursor: help;
 	}
 	
 	.current-filters .alert{
@@ -2068,11 +2071,16 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     .info-icons > div:first-child{
     	max-width: 45px;
-    }
+    } 
     
-    .info-icons i.more-info{
-    	cursor: help;
-    }   
+    .info-icons .more-info{
+		float: left;
+		color: #999;
+		font-size: 13px;
+		margin-top: 2px;
+		margin-left: 5px;
+		cursor: help;
+	}
     
     .info-icons .show-abstract > i{
     	font-size: 19px;

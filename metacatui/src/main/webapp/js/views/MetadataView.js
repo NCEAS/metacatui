@@ -35,6 +35,8 @@ define(['jquery',
 		
 		downloadContentsTemplate: _.template(DownloadContentsTemplate),
 		
+		objectIds: [],
+		
 		DOI_PREFIXES: ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."],
 		
 		// Delegated events for creating new items, and clearing completed ones.
@@ -85,7 +87,7 @@ define(['jquery',
 								$('#Metadata').prepend('<a href="#data" title="Back"><i class="icon-angle-left"></i> Back to search</a>');
 							}
 							
-							//TODO:Find the Taxonomic coverage element and give it a class for styling
+							//Find the taxonomic range and give it a class for styling
 							$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomic-range');
 							
 							console.log('Loaded metadata, now fading in MetadataView');
@@ -152,7 +154,10 @@ define(['jquery',
 					//*** Find all the files that are a part of those resource maps
 					var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&q=-obsoletedBy:*+%28' + resourceMapQuery + 'id:%22' + pid + '%22%29';
 					$.get(queryServiceUrl + query, function(moreData, textStatus, xhr) {
-										
+								
+						//Keep track of each object pid
+						var pids = [];
+						
 						//Separate the resource maps from the data/metadata objects
 						_.each(moreData.response.docs, function(doc){
 							if(doc.formatType == "RESOURCE"){											
@@ -160,8 +165,12 @@ define(['jquery',
 							}
 							else{
 								objects.push(doc);
+								pids.push(doc.id);
 							}
 						});
+						
+						//Replace Ecogrid Links with DataONE API links
+						viewRef.replaceEcoGridLinks(pids);
 										
 						//Now go through all of our objects and add them to our map
 						_.each(objects, function(object){
@@ -205,11 +214,7 @@ define(['jquery',
 										
 				//Initialize any popovers
 				$('.popover-this').popover();
-				
-				// disable the ecogrid links because the info is in the download area
-				// see https://projects.ecoinformatics.org/ecoinfo/issues/6305
-				$('a[href*="action=read&qformat=metacatui"]').removeAttr('href');
-							
+						
 			}).error(function(){
 				console.warn(repsonse);
 			});
@@ -354,6 +359,41 @@ define(['jquery',
 			
 			
 				
+		},
+		
+		replaceEcoGridLinks: function(pids){
+			var viewRef = this;
+			
+			//Find the element in the DOM housing the ecogrid link
+			$("label:contains('Online Distribution Info')").next().each(function(){
+				var link = $(this).find("a:contains('ecogrid://')");
+				_.each(link, function(thisLink){
+					
+					//Get the link text
+					var linkText = $(thisLink).text();
+					
+					//Clean up the link text
+					var start = linkText.lastIndexOf("/");
+					var ecogridPid = linkText.substr(start+1);
+					
+					//Iterate over each id in the package and try to fuzzily match the ecogrid link to the id
+					for(var i = 0; i < pids.length; i++){
+						
+						//If we find a match, replace the ecogrid links with a DataONE API link to the object
+						if(pids[i].indexOf(ecogridPid) > -1){
+							$(thisLink).attr('href', appModel.get('objectServiceUrl') + pids[i]);
+							$(thisLink).text(pids[i]);
+							
+							//Insert an anchor near this spot in the DOM
+							$(thisLink).parents().find('.dataTableContainer').prepend('<a name="' + pids[i] + '"></a>');
+							
+							//We can stop looking at the pids now
+							i = pids.length;
+						}
+					}
+				});			
+				
+			});
 		},
 		
 		publish: function(event) {
