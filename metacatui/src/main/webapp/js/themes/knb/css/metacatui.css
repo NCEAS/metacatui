@@ -2073,7 +2073,8 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     	max-width: 45px;
     } 
     
-    .info-icons .more-info{
+    .info-icons .more-info,
+    .filter-contain .more-info{
 		float: left;
 		color: #999;
 		font-size: 13px;
