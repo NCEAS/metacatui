@@ -2039,7 +2039,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   .result-title{
     	font-weight: 600;
    }
-  .result-title > a{
+  .result-title > a{ 
   	color: #555555;
   }
   .result-title > a:visited{
