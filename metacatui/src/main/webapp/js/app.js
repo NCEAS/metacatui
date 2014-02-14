@@ -94,6 +94,7 @@ var uiRouter = uiRouter || {};
 var appSearchResults = appSearchResults || {};
 var searchModel = searchModel || {};
 var registryModel = registryModel || {};
+var profileModel = profileModel || {};
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
@@ -106,8 +107,8 @@ function(Bootstrap, AppView, AppModel) {
 
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 'models/RegistryModel', 'd3'],
-	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, d3) {
+	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 'models/RegistryModel', 'models/Profile', 'd3'],
+	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Profile, d3) {
 		'use strict';  
 	    		
 		appSearchResults = new SolrResultList([], {});
@@ -115,6 +116,8 @@ function(Bootstrap, AppView, AppModel) {
 		searchModel = new Search();
 		
 		registryModel = new RegistryModel();
+		
+		profileModel = new Profile();
 		
 		// Initialize routing and start Backbone.history()
 		uiRouter = new UIRouter();

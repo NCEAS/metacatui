@@ -1,4 +1,4 @@
-
+ 
 /* Import font families */
 @import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,300italic,400italic,600italic);
 /* Source Sans Pro wights 
@@ -1110,6 +1110,25 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     #About {
 		min-height: 800px;
     }
+    
+/* Profile styles 
+  -------------------------------------------------- */
+  #Profile{
+  	width: 80%;
+  	margin-left: 10%;
+  	margin-right: 10%;
+  }
+  
+.format-charts{
+	max-width: 440px;
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 220px;	
+}
+.format-charts > svg:first-child{
+	margin: 0 30px 0 0;
+}
+
 
   /* Metadata rendering CSS
   -------------------------------------------------- */
