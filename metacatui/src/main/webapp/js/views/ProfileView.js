@@ -12,10 +12,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		
 		alertTemplate: _.template(AlertTemplate),
 		
-		dataChartColors: ['#006a66', '#98cbcb', '#329898', '#005149', '#00e0cf', '#416865', '#002825'],
-		
-		metadataChartColors: ['#992222', '#5f1616', '#411313', '#681818', '#b22929', '#cc2e2e', '#ee3837'],
-		
 		initialize: function(){
 		},
 				
@@ -44,125 +40,60 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		},
 		
 		drawDataCountChart: function(){
-			//** Just making the data chart for now
 			var data = profileModel.get('dataFormatIDs');	
 			
 			data = this.getPercentages(data, profileModel.get('dataCount'));
 			
 			console.log(data);			
 			
-			var chart = d3.select("#data-chart");
-			
-			var c = 2 * Math.PI;
-			
-			//Set up the global src properties
-			var arc = d3.svg.arc()
-			  .innerRadius(87)
-			  .outerRadius(100);
-			
 			//Reiterate over the colors if there aren't enough specified
 			var i = 0;
-			while(this.dataChartColors.length < data.length){
-				this.dataChartColors.push(this.dataChartColors[i]);
+			while(profileModel.style.dataChartColors.length < data.length){
+				profileModel.style.dataChartColors.push(profileModel.style.dataChartColors[i]);
 				i++;
 			}
 			
-			var endAngle = data[0]*c; //Calculate the end angle for the first arc
-			
-			//Add an arc piece for each format ID we have
-			for(i=0; i<data.length; i++){
-				//The first arc is treated differently
-				if(i==0){
-					arc.startAngle(0)  //Start it at the top
-					   .endAngle(endAngle);
-				}
-				else{		
-					//Start at the end of the last arc
-					arc.startAngle(endAngle);
-					
-					//Calculate the end angle and apply it
-					endAngle += (data[i] * c); 					
-					arc.endAngle(endAngle);
-				}
-				
-				//Append the arc paths and apply styling
-				chart.append("path")
-					.attr("d", arc)
-					.attr("fill", this.dataChartColors[i])
-					.attr("transform", 
-							"translate(" + $('#data-chart').attr('width')/2 + ", " + 
-							$('#data-chart').attr('height')/2 + ")");  //Center the circle
-			}
-			
-			//Add the data count in text inside the circle
-			var textData = [{
-								"cx" : $('#data-chart').attr('width')/2,  //Start at the center
-								"cy" : $('#data-chart').attr('height')/2, //Start at the center
-								"text" : profileModel.get('dataCount'),
-								"fontFamily" : "sans-serif",
-								"fontSize" : "26px",
-								"color" : "#006a66"
-							},
-							{
-								"cx" : $('#data-chart').attr('width')/2,  //Start at the center
-								"cy" : $('#data-chart').attr('height')/2, //Start at the center
-								"text" : "data files",
-								"fontFamily" : "sans-serif",
-								"fontSize" : "19px",
-								"color" : "#555555"
-							}];
-			
-			var count = chart.selectAll('text')
-							.data(textData)
-							.enter()
-							.append('text');
-			
-			var attributes = count
-							.text(function(d){ return d.text; })
-							.attr("font-family", function(d){ return d.fontFamily; })
-							.attr("font-size",   function(d){ return d.fontSize; })
-							.attr("fill",        function(d){ return d.color; })
-							.attr("x", function(d, i){ return d.cx - count[0][i].clientWidth/2; }) //Center horizontally based on the width
-							.attr("y", function(d, i){ 
-											//Center vertically based on the height
-											if(i > 0){
-												return d.cy + count[0][i-1].clientHeight/2;
-											}
-											else{
-												return d.cy - count[0][i].clientHeight/2;
-											}
-							});
+			this.drawDonutChart(data, "#data-chart", "data", profileModel.style.dataChartColors);
 
 		},
 
 		drawMetadataCountChart: function(){
-			//** Just making the data chart for now
 			var data = profileModel.get('metadataFormatIDs');	
 			
 			data = this.getPercentages(data, profileModel.get('metadataCount'));
 			
 			console.log(data);			
 			
-			var chart = d3.select("#metadata-chart");
+			//Reiterate over the colors if there aren't enough specified
+			var i = 0;
+			while(profileModel.style.metadataChartColors.length < data.length){
+				profileModel.style.metadataChartColors.push(profileModel.style.metadataChartColors[i]);
+				i++;
+			}
+			
+			this.drawDonutChart(data, "#metadata-chart", "metadata", profileModel.style.metadataChartColors);
+			
+		},
+		
+		//This function uses d3 to draw a donut chart of the format types and ID's
+		//param: data  = array of format IDs
+		//param: svgEl = selector string for the SVG element to insert the donut chart
+		//param: format = ONLY either "metadata" or "data" accepted
+		//param: colors = array of colors for the SVG arcs
+		drawDonutChart: function(data, svgEl, format, colors){
+			var chart = d3.select(svgEl);
 			
 			var c = 2 * Math.PI;
 			
-			//Set up the global src properties
+			//Set up the global svg properties
 			var arc = d3.svg.arc()
-			  .innerRadius(87)
-			  .outerRadius(100);
-			
-			//Reiterate over the colors if there aren't enough specified
-			var i = 0;
-			while(this.metadataChartColors.length < data.length){
-				this.metadataChartColors.push(this.metadataChartColors[i]);
-				i++;
-			}
+			  			.innerRadius(87)
+			  			.outerRadius(100);
 			
 			var endAngle = data[0]*c; //Calculate the end angle for the first arc
 			
 			//Add an arc piece for each format ID we have
-			for(i=0; i<data.length; i++){
+			for(var i=0; i<data.length; i++){
 				//The first arc is treated differently
 				if(i==0){
 					arc.startAngle(0)  //Start it at the top
@@ -180,51 +111,50 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 				//Append the arc paths and apply styling
 				chart.append("path")
 					.attr("d", arc)
-					.attr("fill", this.metadataChartColors[i])
-					.attr("transform", 
-							"translate(" + $('#metadata-chart').attr('width')/2 + ", " + 
-							$('#metadata-chart').attr('height')/2 + ")");  //Center the circle
+					.attr("fill", colors[i])
+					.attr("transform",
+							"translate(" + $(svgEl).attr('width')/2 + ", " + $(svgEl).attr('height')/2 + ")"
+					); //Center the circle
 			}
 			
 			//Add the data count in text inside the circle
 			var textData = [{
-								"cx" : $('#metadata-chart').attr('width')/2,  //Start at the center
-								"cy" : $('#metadata-chart').attr('height')/2, //Start at the center
-								"text" : profileModel.get('metadataCount'),
-								"fontFamily" : "sans-serif",
-								"fontSize" : "26px",
-								"color" : "#992222"
+								"cx" : $(svgEl).attr('width')/2,  //Start at the center
+								"cy" : $(svgEl).attr('height')/2, //Start at the center
+								"text" : profileModel.get(format + 'Count'),
+								"id" : format + "-count-stat",
+								"classType" : format
 							},
 							{
-								"cx" : $('#metadata-chart').attr('width')/2,  //Start at the center
-								"cy" : $('#metadata-chart').attr('height')/2, //Start at the center
-								"text" : "metadata files",
-								"fontFamily" : "sans-serif",
-								"fontSize" : "19px",
-								"color" : "#555555"
+								"cx" : $(svgEl).attr('width')/2,  //Start at the center
+								"cy" : $(svgEl).attr('height')/2, //Start at the center
+								"text" : format + " files",
+								"id" : format + "-count-label",
+								"classType" : format
 							}];
 			
 			var count = chart.selectAll('text')
-							.data(textData)
-							.enter()
-							.append('text');
-			
-			var attributes = count
-							.text(function(d){ return d.text; })
-							.attr("font-family", function(d){ return d.fontFamily; })
-							.attr("font-size",   function(d){ return d.fontSize; })
-							.attr("fill",        function(d){ return d.color; })
-							.attr("x", function(d, i){ return d.cx - count[0][i].clientWidth/2; }) //Center horizontally based on the width
-							.attr("y", function(d, i){ 
-											//Center vertically based on the height
-											if(i > 0){
-												return d.cy + count[0][i-1].clientHeight/2;
-											}
-											else{
-												return d.cy - count[0][i].clientHeight/2;
-											}
-							});
+							 .data(textData)
+							 .enter()
+							 .append('text');
 
+			var attributes = count
+						.text(function(d){ return d.text; })
+						.attr("id", function(d){ return d.id; })
+						.attr("class", function(d){ return d.classType; })
+						.attr("font-family", function(d){ return d.fontFamily; })
+						.attr("font-size",   function(d){ return d.fontSize; })
+						.attr("fill",        function(d){ return d.color; })
+						.attr("x", function(d, i){ return d.cx - count[0][i].clientWidth/2; }) //Center horizontally based on the width
+						.attr("y", function(d, i){ 
+										//Center vertically based on the height
+										if(i > 0){
+											return d.cy + count[0][i-1].clientHeight/2;
+										}
+										else{
+											return d.cy - count[0][i].clientHeight/2;
+										}
+						});
 		},
 		
 		//** This function will loop through the raw facet counts response array from Solr and returns

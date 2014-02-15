@@ -407,6 +407,7 @@ Bold 700 Italic
       width: auto;
       font-size: inherit;
       padding: 5px;
+      color: #FFFFFF;
     }
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
@@ -1128,6 +1129,27 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 .format-charts > svg:first-child{
 	margin: 0 30px 0 0;
 }
+#Profile .metadata{
+	color: #992222;
+	fill: #992222;
+}
+
+#Profile .data{
+	color: #006a66;
+	fill: #006a66;
+}
+#Profile #data-count-stat,
+#Profile #metadata-count-stat{
+	font-size: 24px;
+}
+#Profile #data-count-label,
+#Profile #metadata-count-label{
+	color: #555555;
+	fill: #555555;
+	font-size: 15px;
+	line-height: 17px;
+}
+ 
 
 
   /* Metadata rendering CSS

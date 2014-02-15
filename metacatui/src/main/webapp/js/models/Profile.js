@@ -12,6 +12,11 @@ define(['jquery', 'underscore', 'backbone'],
 			dataCount: 0,
 			metadataFormatIDs: [], //Uses same structure as Solr facet counts: ["text/csv", 5]
 			dataFormatIDs: [] //Uses same structure as Solr facet counts: ["text/csv", 5]
+		},
+		
+		style: {
+			dataChartColors: ['#006a66', '#98cbcb', '#329898', '#005149', '#00e0cf', '#416865', '#002825'],
+			metadataChartColors: ['#992222', '#551515', '#c13a3a', '#994242', '#371312', '#c12d2c', '#622222'],
 		}
 		
 	});
