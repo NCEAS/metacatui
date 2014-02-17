@@ -24,7 +24,6 @@ Bold 700
     }
     
     body {
-      color: #333333;
       background-color: #555555; /*IE 8 fallback*/
       background: rgba(0, 0, 0, .8);
       font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
@@ -32,26 +31,49 @@ Bold 700
       position: relative;
     }
     
+    a {
+      color: #166194;
+      font-weight: 600;
+    }
+        
+    a:hover{
+    	color: #3399CC;
+    	text-decoration: none;
+    }
+    
+    body, h1, h2, h3, h4, h5, h6, i{
+    	color: #555;
+    }
+    
 	h3 {
-		font: 400 24.5px/40px "Source Sans Pro", sans-serif;
+		font-size: 25px;
+		font-weight: 400;
 	}
 	
 	h2{
-		font: 400 27.5px/40px "Oswald", sans-serif;
+		font-size: 27px;
+		font-weight: 600;
 	}
 	
-    .bold-header{
+	strong{
+		font-weight: 600;
+	}
+	
+    /*.bold-header{
     	background-color: #333;
     	color: #DDD;
     	font: 400 20px/30px "Oswald", Arial, sans-serif;
     	text-transform: uppercase;
     	text-shadow: none;
-    }
+    }*/
     
     .pointer{
     	cursor: pointer;
     }
     
+    .lead{
+    	font-weight: 400;
+    }
     .alert{
     	background-color: #FCF3C1;
     	color: #8D703D;
@@ -71,9 +93,9 @@ Bold 700
       background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
       background-color: rgba(255, 255, 255, 0.8);
       padding: 20px;
-      border-radius: 10px;		
-      -webkit-border-radius: 10px;
-	  -moz-border-radius: 10px;			
+      border-radius: 4px;		
+      -webkit-border-radius: 4px;
+	  -moz-border-radius: 4px;			
     }
     
      .container{
@@ -87,7 +109,7 @@ Bold 700
     
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
-      color: #555555;
+      color: #555;
       text-decoration: none;
       z-index: 20; /*keeps hidden anchor tags from blocking content*/
     }
@@ -97,15 +119,6 @@ Bold 700
     h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
 		content: "";
     padding-top: 115px;
-    }
-    
-    a {
-      color: #166194;
-    }
-    
-    a:hover{
-    	color: #3399CC;
-    	text-decoration: none;
     }
     
     ul, ol{
@@ -236,32 +249,29 @@ Bold 700
   
 /* FOOTER CSS
 -------------------------------------------------- */    
-    /*#Footer {
-      position: relative;
-      bottom: 0px;
-      margin-top: 40px;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 20px 20px;
-      height: 280px;
-      width: 100%;
-      color: #DDD;
-    }*/
     
     #Footer {
-      	position: fixed;
-		bottom: 0px;
+      	position: absolute;
+		bottom: -125px;
 		background: #222;
-		padding: 0px 10px;
-		height: 18px;
-		width: 100%;
+		background-color: rgba(0,0,0,0.8);
+		padding: 5px 2%;
+		height: 98px;
+		width: 96%;
 		color: #DDD;
 		display: block;
 		transition: height 0.5s ease-out .5s;
 		z-index: 2;
     }
     
+    .mapMode #Footer{
+		background: #222;
+	   	position: fixed;
+    	bottom: -80px;
+    }
+    
     .mapMode #Footer:hover{
-    	height: 150px;
+    	height: 177px;
     	z-index: 2;
     }
     
@@ -273,24 +283,27 @@ Bold 700
 
 
     footer#Footer h2 {
-      font: 400 20px/20px "Source Sans Pro", Arial, sans-serif;
-      color: #FDFDFD;
+      font-size: 15px;
+      line-height: 15px;
+      color: #BBB;
       padding: 0;
       display: inline;
       margin-left: 2%;
     }
     
-    footer#Footer ul.helpitems {
+    footer#Footer .helpitems {
       list-style: none;
     }
     
-    footer#Footer ul.helpitems li {
-      font: 400 13px/20px "Source Sans Pro", Arial, sans-serif;
+    footer#Footer .helpitems li{
       margin: 0px 0px 0px 5px;                 
     }
     
     ul.helpitems a {
-      color: #FDFDFD;     
+      color: #CCC;
+      font-weight: 400;
+      font-size: 13px;
+           
     }
     
     ul.helpitems a:hover{
@@ -306,6 +319,18 @@ Bold 700
     #Footer img:hover{
     	opacity: 1;
     	transition: opacity 1s;
+    }
+    .nceas{
+    	width: 60px;
+    }
+    .metacat{
+    	width: 60px;
+    	margin-left: 10px;
+    }
+    
+    .dataone{
+    	width: 100px;
+    	margin-left: 10px;
     }
     
     
@@ -328,17 +353,18 @@ Bold 700
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       background-image: none;
       background-repeat: none;
+      background-color: #166194;
       box-shadow: none;
       -moz-box-shadow: none;
       border: none;
       filter: none;
-      font: 400 20px/20px "Oswald", Arial, sans-serif;
       text-shadow: none;
       color: #FFFFFF;
     }
     
     .btn:hover{
     	background-color: #0377DD;
+    	color: #FFF;
     	transition: background-color 1s;
     }
 
@@ -378,6 +404,14 @@ Bold 700
     	width: 100px;
     	margin-bottom: 8px;
     } 
+    
+    .download-this-package{
+    	margin-left: 20px;
+    }
+    
+    .download-this-package i{
+    	margin-left: 10px;
+    }
     
     #downloadPackage .dropdown-toggle {
 		font: 400 20px/20px "Oswald", Arial, sans-serif;
@@ -440,6 +474,7 @@ Bold 700
     #share > i{
     	margin-left: 10px;
     	font-size: 24px;
+    	color: #EEE;
     }
     
     #share:hover{
@@ -570,16 +605,18 @@ Bold 700
     
     #search_txt{
 		border: 0px;
-		border-radius: 0px;
-		-moz-border-radius: 0px;
-		-webkit-border-radius: 0px;
+		border-radius: 4px 0px 0px 4px;
+		-moz-border-radius: 4px 0px 0px 4px;
+		-webkit-border-radius: 4px 0px 0px 4px;
 		margin-top: 5px;
 		float: left;
 		background-color: #FFFFFF;
 		background-image: none;
 		color: #333;	
-		box-shadow: 0 1px 8px #333;
-		
+    }
+    .mapMode #search_txt,
+    .mapMode #search_btn{
+    	box-shadow: 0 1px 8px #666;
     }
     	#search_txt::-webkit-input-placeholder {
 		   color: #666;
@@ -603,13 +640,12 @@ Bold 700
     	width: auto;
     	float: left;
     	background-image: none;
-    	background-color: #555555;
-    	border-radius: 0px 2px 2px 0px;
-    	-webkit-border-radius: 0px 2px 2px 0px;
-		-moz-border-radius: 0px 2px 2px 0px;
+    	background-color: #999;
+    	border-radius: 0px 4px 4px 0px;
+    	-webkit-border-radius: 0px 4px 4px 0px;
+		-moz-border-radius: 0px 4px 4px 0px;
     	padding: 5px 7px 7px 7px;
     	border: 0px;
-    	box-shadow: 0 1px 8px #333;
     }
     
     #search_btn > i:hover{
@@ -640,7 +676,9 @@ Bold 700
 	}
 	
 	#Metadata .well{
-		font: 300 21px/30px "Oswald", Arial, sans-serif;
+		font-size: 23px;
+		line-height: 30px;
+		font-weight: 400;
 		border: 1px solid #CCCCCC;
 		box-shadow: none;
 		-moz-box-shadow: none;
@@ -702,6 +740,19 @@ Bold 700
     
     th.id {
     	min-width: 180px;
+    }
+    
+    /*Details link*/
+    .download-contents .more-info{
+    	padding-left: 20px;
+    	max-width: 65px;
+    	color: #999;
+    	font-size: 12px;
+    }
+    
+    .download-contents .more-info i{
+    	margin-left: 3px;
+    	font-size: 14px;
     }
 	
 	/*Taxonomic range*/
@@ -799,7 +850,6 @@ Bold 700
 	}	  
 
 	.minimize > i{
-        color: #CCCCCC;
     	font-size: 20px;
     	margin-top: 5px;
     	float: right;
@@ -838,20 +888,23 @@ Bold 700
   -------------------------------------------------- */
     #sidebar {
       position: fixed;
-      width: 260px;
+      width: 252px;
       bottom: 0px;
       left: 0px;
       padding: 0px;
-      background-color: #333;
+      background-color: rgba(255,255,255,0.8);
       border-radius: 0px;
       -moz-border-radius: 0px;
       -webkit-border-radius: 0px;
+      border-top-right-radius:4px;
+      -moz-border-top-right-radius:4px;
+      -webkit-border-top-right-radius:4px;
       margin: 0px;
       -webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
 	  max-height: 76%;
-	  overflow-y: scroll;
+	  overflow-y: visible;
 	  overflow-x: hidden;
     } 
     
@@ -892,12 +945,12 @@ Bold 700
     .filter-contain{
    	  width: 232px;
    	  position: relative;
-   	  border-bottom: 1px solid #444;
+   	  border-bottom: 1px solid #DDD;
    	  padding: 10px;
    }
    
    .filter-contain i{
-   		color: #AAA;
+   		color: #999;
    		font-size: 18px;
    }
    
@@ -913,7 +966,7 @@ Bold 700
    }
     
     .filter-contain i.more-info{
-    	font-size: 13px;
+    	font-size: 14px;
     	line-height: 23px;
     	top: 5px;
     	float: left;
@@ -921,13 +974,19 @@ Bold 700
     
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
-    	background-color: #555;
+    	background-color: #999;
     	background-image: none;
     	border-radius: 0px;
     	-moz-border-radius: 0px;
     	-webkit-border-radius: 0px;
+    	border-top-right-radius: 4px;
+		border-bottom-right-radius: 4px;
+		-webkit-border-top-right-radius: 4px;
+		-webkit-border-bottom-right-radius: 4px;
+		-moz-border-top-right-radius: 4px;
+		-moz-border-bottom-right-radius: 4px;
     	border: 0px;
-    	height: 28px;
+    	height: 30px;
     	padding: 0px;
     	display: inline-block;
     	width: 20%;
@@ -936,7 +995,7 @@ Bold 700
     .filter.btn > i{
     	margin-bottom: 2px;
     	display: block;
-    	color: #999999;
+    	color: #FFF;
     }
     
     .filter.btn > i:hover{
@@ -946,19 +1005,25 @@ Bold 700
     
     /*-- Inputs for search filters --*/
     input.filter{
-    	border-radius: 0px;
-    	-webkit-border-radius: 0px;
-    	-moz-border-radius: 0px;
-    	border: 0px;
+    	border-radius: 4px;
+    	-webkit-border-radius: 4px;
+    	-moz-border-radius: 4px;
+    	border-top-right-radius: 0px;
+		border-bottom-right-radius: 0px;
+    	-webkit-border-top-right-radius: 0px;
+		-webkit-border-bottom-right-radius: 0px;
+    	-moz-border-top-right-radius: 0px;
+		-moz-border-bottom-right-radius: 0px;
+    	border: 1px solid #AAA;
     	height: 20px;
-    	background-color: #999;
+    	background-color: #FFF;
     	background-image: none;
     	width: 140px;
     	margin-left: 10px;
-    	-moz-box-shadow: inset 0 0 10px -1px #555;
-		-webkit-box-shadow: inset 0 0 10px -1px #555;
-		box-shadow: inset 0 0 10px -1px #555;
-		color: #222;
+    	-moz-box-shadow: inset 0 0 10px -1px #CCC;
+		-webkit-box-shadow: inset 0 0 10px -1px #CCC;
+		box-shadow: inset 0 0 10px -1px #CCC;
+		color: #555;
     }
     
     #all_input{
@@ -967,7 +1032,7 @@ Bold 700
     }
     
     input.filter::-webkit-input-placeholder{
-		color: #DDD;
+		color: #777;
 		font-family: "Source Sans Pro";
 		font-weight: normal;
 		text-shadow: none;
@@ -1004,7 +1069,6 @@ Bold 700
 		width: auto;
 		max-width: 100%;
 		margin: 5px 5px 0px 0px;
-		color: #DDD;
     }  
     
 
@@ -1020,11 +1084,11 @@ Bold 700
 
    
     #filter-year  input[type="number"]{
-   		background: #111;
-		border: 0px;
-		border-radius: 0px;
-		-moz-border-radius: 0px;
-		-webkit-border-radius: 0px;
+   		background: #FFF;
+		border: 1px solid #CCC;
+		border-radius: 4px;
+		-moz-border-radius: 4px;
+		-webkit-border-radius: 4px;
 		text-align: right;
 		min-height: 23px;
 		-webkit-appearance: none;
@@ -1034,11 +1098,11 @@ Bold 700
 		width: 56px;
 		margin-top: 10px;
 		margin-bottom: 10px;
-		-moz-box-shadow: inset 0 0 10px -1px #000;
-		-webkit-box-shadow: inset 0 0 10px -1px #000;
-		box-shadow: inset 0 0 10px -1px #000;
+		-moz-box-shadow: inset 0 0 10px -1px #CCC;
+		-webkit-box-shadow: inset 0 0 10px -1px #CCC;
+		box-shadow: inset 0 0 10px -1px #CCC;
 		font-size: 14px;
-		color: #AAA;
+		color: #888;
 		line-height: 14px;
 		padding: 2px;
     }
@@ -1119,6 +1183,7 @@ Bold 700
 	#filter-year label.ui-state-active, 
 	#includes-files label.ui-state-active{
 		background-color: #166194;
+		color: #FFF;
 		padding: 0px 5px 0px 5px;
 		height: auto;
 		line-height: 21px;
@@ -1126,6 +1191,9 @@ Bold 700
 		max-width: 100%;
 		margin: 5px 5px 0px 0px;
 		float:left;
+		border-radius: 3px;
+		-webkit-border-radius: 3px;
+		-moz-border-radius: 3px;
 	}
 	
 	 #includes-files label,
@@ -1202,6 +1270,9 @@ Bold 700
 		padding-left: 10px;
 		margin-bottom: 0px;
 		float: left;
+		font-size: 18px;
+		text-transform: none;
+		color: #666;
     }
     
     h2.nav-header > i{
@@ -1270,23 +1341,19 @@ Bold 700
    }  
     
     #clear-all{
-    	text-align: right;
-		float: right;
 		cursor: pointer;
 		font-size: 14px;
-		margin: 0px 5px 0px 5px;
 		color: #931D1D;
 		display: none;
 		background-color: #931d1d;
-		color: white;
+		color: #FFF;
 		padding: 0px 5px;
-		border-radius: 0px;
+		border-radius: 3px;
+		-moz-border-radius: 3px;
+		-webkit-border-radius: 3px;
 		position: absolute;
 		top: 7px;
 		left: 68px;
-		line-height: 20px;
-		text-transform: none;
-		font-family: "Source Sans Pro";
     }
     
     #clear-all > i{
@@ -1336,6 +1403,12 @@ Bold 700
       z-index: 1;
       height: 76px;
     }
+    
+    .result-header-count{
+    font-weight: 600;
+	font-size: 20px;
+	line-height: 25px;
+}
     
      .result-header > .result-header-count{
     	position: relative;
@@ -1406,23 +1479,22 @@ Bold 700
 	}
 	
     #sortOrder{
-    	border: 0px;
-    	border-radius: 0px;
-    	-webkit-border-radius: 0px;
-    	-moz-border-radius: 0px;
-    	background-color: #333333;
+    	border: 1px solid #CCC;
+    	border-radius: 4px;
+    	-webkit-border-radius: 4px;
+    	-moz-border-radius: 4px;
+    	background-color: #FFF;
     	width: auto;
  		right: 10px;
  		margin-top: 5px;
-		color: #FFF;
-		height: 18px;
+		height: 22px;
 		z-index: 1;
     }
  	
  	#statcounts{
  		width: 100%;
  		padding-left: 10px;
- 		background-color: #333333;
+ 		background-color: #FFF;
  		height: inherit;
  		left: 30%;
  		margin-left: 0px;
@@ -1430,13 +1502,15 @@ Bold 700
  	}
  	
  	.mapMode #statcounts{
- 		width: 42%;
- 		left: 57%;
+ 		left: 55%;
+ 		border-top-left-radius: 4px;
+ 		text-transform: 0 1px 0 rgba(255,255,255,0.5);
+ 		color: #666;
  	}
  	
  	.pagination label{
  		display: inline;
- 		color: #eeeeee;
+		font-weight: 600;
  		margin-right: 5px;
  	}
    
@@ -1452,7 +1526,7 @@ Bold 700
    }
    
    .mapMode #results{
-   		width: 95%;
+   		width: 100%;
    }
    
     .search-results{
@@ -1557,7 +1631,8 @@ Bold 700
     	margin-top: -1px;
     }
     
-    .info-icons .show-abstract > i.show-abstract{
+    .info-icons .show-abstract > i.show-abstract,
+    .info-icons .download{
     	color: #999999;
     }
     
@@ -1693,16 +1768,17 @@ Bold 700
     .pagination {
     	cursor: pointer;
     	margin: 30px auto;
-    	padding-bottom: 5px;
-    	background-color: #333333;
+    	padding-bottom: 2px;
     	width: 70%;
     	left: 30%;
     	position: fixed;
+    	background-color: #FFF;
+    	border-bottom: 1px solid #CCC;
     }
     
     .mapMode .pagination{
-        width: 80%;
-    	left: 57%;
+        width: 44%;
+    	left: 55%;
     }
     
     #resultspager{
@@ -1711,10 +1787,6 @@ Bold 700
     	margin-top:10px;
     	width: 100%;
     }
-    
-    .mapMode .pagination{
-    	width: 42%;
-    }
 
 	.pagination ul{
 		border: none;
@@ -1722,11 +1794,11 @@ Bold 700
 	}
 	
 	.pagination ul > li > a{
-		background-color: #555555;
-		color: #EEEEEE;
+		background-color: #EEE;
+		color: #555;
 		font-size: 14px;
 		line-height: 14px;	
-		border: 1px solid #333333;	
+		border: 1px solid #CCC;	
 	}
 	
 	.pagination ul > li > a.unactive,
@@ -1738,18 +1810,19 @@ Bold 700
     }
 	
 	.pagination ul > li > a:hover{
-		background-color: #777777;
+		background-color: #DDD;
+		color: #166194;
 	}
 	
 	
 	.pagination ul > .active > a,
 	.pagination ul > .active > a:hover{
-		color: #222222;
-		background-color: #CCCCCC;
+		color: #FFF;
+		background-color: #AAA;
 	}
 	
 	.pagination .sort-by{
-		width: 167px;
+		width: 170px;
 		float: right;
 		margin-right: 10px;
 	}
@@ -1796,6 +1869,7 @@ Bold 700
 
 #toggle-map i{
 	font-size: 25px;
+	color: #EEE;
 	transition: all 0.5s;
 }
 
@@ -1874,10 +1948,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 .mapMode #content{
 	width: 45%;
 	overflow-y:scroll;
+	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
+	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
+	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
 }
 
 #content.collapsed{
-	height: 76px;
+	height: 80px;
 	position: fixed;
 }
 
@@ -1900,7 +1977,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	border-radius: 20px 0px 0px 20px;
 	-webkit-border-radius: 20px 0px 0px 20px;
 	-moz-border-radius: 20px 0px 0px 20px;
-	font: 300 30px/30px "Oswald", Arial, sans-serif;
+	font-size: 30px; 
+	font-family: "Source Sans Pro";
 	border: 3px solid #EEEEEE;
 	border-right: 0px; 
 	padding-left: 20px;

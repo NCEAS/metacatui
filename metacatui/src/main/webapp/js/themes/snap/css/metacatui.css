@@ -903,6 +903,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	background-color: #789a01;
  		color: #FFFFFF;
     }
+    /*** Download contents table **/
+   	.download-contents .format-type i{
+   		margin-right: 10px;
+   	}
     
     /*Taxonomic range*/
     .taxonomic-range .control-group{

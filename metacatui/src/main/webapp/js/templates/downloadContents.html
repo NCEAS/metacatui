@@ -58,7 +58,10 @@ if(resourceMap){
 	
 	fileType = ".zip";
 	fileTypePopover = null;
-	readCount = resourceMap.read_count_i + " downloads";
+	
+	if(resourceMap.read_count_i !== undefined){
+		readCount = resourceMap.read_count_i + " downloads";
+	}
 	downloadButton = '<a class="btn" href="' + package_service + id + '">Download all<i class="icon-arrow-down"></i></a>'; 
 	
 	print('<tr>');
@@ -66,7 +69,10 @@ if(resourceMap){
 	print('<th class="id"><a href="' + package_service + id + '">' + id + '</a></th>');
 	print('<th class="fileType">' + fileType + '</th>');
 	print('<th class="size">' + size + '</th>');
-	print('<th class="readCount">' + readCount + '</th>');
+	if(readCount.length > 0){
+		print('<th class="readCount">' + readCount + '</th>');
+	}
+	print('<th class="more-info"></th>');
 	print('</tr>');
 }		
 else{
@@ -79,7 +85,9 @@ else{
 	
 	_.each(objects, function(object){
 		formatType = object.formatType.toLowerCase();
+		
 		id = '<a href="' + object_service + object.id + '">' + object.id + '</a>';
+		
 		size = bytesToSize(object.size, 2);
 		
 		fileTypePopover = null;
@@ -90,12 +98,18 @@ else{
 		}
 		
 		if(formatType == "metadata"){
-			readCount = object.read_count_i + " views";
+			if(object.read_count_i !== undefined){
+				readCount = object.read_count_i + " views";
+			}
 			formatType = '<i class="icon-file-text"></i>' + formatType;
+			moreInfo = "";
 		}
 		else{
-			readCount = object.read_count_i + " downloads";
+			if(object.read_count_i !== undefined){
+				readCount = object.read_count_i + " downloads";
+			}			
 			formatType = '<i class="icon-table"></i>' + formatType;
+			moreInfo = '<a href="#' + object.id + '">Details <i class="icon-info-sign"></i></a>';
 		}
 				
 		
@@ -104,7 +118,10 @@ else{
 		print('<td class="id">' + id + '</td>');		
 		print('<td class="file-type">' + fileType + '</td>');		
 		print('<td class="size">' + size + '</td>');
-		print('<td class="readCount">' + readCount + '</td>');
+		if(readCount.length > 0){
+			print('<td class="readCount">' + readCount + '</td>');
+		}
+		print('<td class="more-info">' + moreInfo + '</td>');
 		print('</tr>');
 		
 	});

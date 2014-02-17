@@ -507,7 +507,9 @@ define(['jquery',
 			
 			//Custom query (passed from the router)
 			var customQuery = searchModel.get('customQuery');
-			query += customQuery;
+			if(customQuery){
+				query += customQuery;
+			}
 			
 			//Year
 			//Get the types of year to be searched first

@@ -1,4 +1,4 @@
-
+ 
 /* Import font families */
 @import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,300italic,400italic,600italic);
 /* Source Sans Pro wights 
@@ -13,6 +13,18 @@ Normal 400 Italic
 Bold 700
 Bold 700 Italic
 */
+
+@import url(http://fonts.googleapis.com/css?family=Lato);
+
+/***d3 play***/
+#data-chart div{
+	background-color: steelblue;
+	height: 20px;
+	color: white;
+}
+/*******/
+
+
 
 /* Body CSS
 -------------------------------------------------- */
@@ -67,6 +79,10 @@ Bold 700 Italic
     	color: #660000;
     }
     
+    a:visited{
+    	color: #1C91CB;
+    }
+    
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
@@ -86,8 +102,14 @@ Bold 700 Italic
     	font-weight: 400;
     }
     
-    h2, h3{
+    h2{
     	font-weight: 300;
+    }
+    
+    h3{
+    	font-weight: 400;
+    	line-height: 47px;
+    	font-size: 26.5px;
     }
     
     .bold-header{
@@ -385,6 +407,7 @@ Bold 700 Italic
       width: auto;
       font-size: inherit;
       padding: 5px;
+      color: #FFFFFF;
     }
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
@@ -652,7 +675,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	}
 	
 	#FeaturedData > section:nth-child(odd){
-		background-color: #006666;
+		background-color: #6C94A4;
 	}
 		
 	  #FeaturedData h2 {
@@ -849,7 +872,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     .navbar .brand {
       font-size: 48px;
       font-weight: 300;
-      font-family: "Lato";
+      font-family: "Lato", Helvetica, sans-serif;
       color: #992222;
       letter-spacing: -3px;
       margin: 7px 5px 7px 5px;
@@ -960,17 +983,19 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
       z-index: 191;
     }
 
+	/* Fallback colors for the carousel while images are loading */
 	.carousel .item:nth-child(2n){
-		background-color: #333366;
+		background-color: #6C78A4;
 	}
 	
 	.carousel .item:nth-child(2n+1){
-		background-color: #006666;
+		background-color: #6C94A4;
 	}
 	
 	.carousel .item:nth-child(3n){
-		background-color: #660000;
+		background-color: #6C8AA4;
 	}
+	/************/
 	
     .carousel .item {
     	height: 400px;
@@ -1086,6 +1111,46 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     #About {
 		min-height: 800px;
     }
+    
+/* Profile styles 
+  -------------------------------------------------- */
+  #Profile{
+  	width: 80%;
+  	margin-left: 10%;
+  	margin-right: 10%;
+  }
+  
+.format-charts{
+	max-width: 440px;
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 220px;	
+}
+.format-charts > svg:first-child{
+	margin: 0 30px 0 0;
+}
+#Profile .metadata{
+	color: #992222;
+	fill: #992222;
+}
+
+#Profile .data{
+	color: #006a66;
+	fill: #006a66;
+}
+#Profile #data-count-stat,
+#Profile #metadata-count-stat{
+	font-size: 24px;
+}
+#Profile #data-count-label,
+#Profile #metadata-count-label{
+	color: #555555;
+	fill: #555555;
+	font-size: 15px;
+	line-height: 17px;
+}
+ 
+
 
   /* Metadata rendering CSS
   -------------------------------------------------- */
@@ -1193,6 +1258,19 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     th.id{
     	min-width: 180px;
+    }
+    
+    /*Details link*/
+    .download-contents .more-info{
+    	padding-left: 20px;
+    	max-width: 65px;
+    	color: #999;
+    	font-size: 12px;
+    }
+    
+    .download-contents .more-info i{
+    	margin-left: 3px;
+    	font-size: 14px;
     }
     
     /*Taxonomic range*/
@@ -1545,15 +1623,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	
 	#clear-all i{
 		margin-left: 5px;
-	}
-	
-	i.more-info{
-		float: left;
-		color: #999;
-		font-size: 13px;
-		margin-top: 2px;
-		margin-left: 5px;
-		cursor: help;
 	}
 	
 	.current-filters .alert{
@@ -2008,10 +2077,14 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   .result-row .open > .dropdown-menu{
   	position: relative;
   }
-  
-  .result-title > a{
+  .result-title{
+    	font-weight: 600;
+   }
+  .result-title > a{ 
   	color: #555555;
-  	font-weight: bold;
+  }
+  .result-title > a:visited{
+  	color: #666666;
   }
     
     .result-row > .result-citation{
@@ -2040,11 +2113,17 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     .info-icons > div:first-child{
     	max-width: 45px;
-    }
+    } 
     
-    .info-icons i.more-info{
-    	cursor: help;
-    }   
+    .info-icons .more-info,
+    .filter-contain .more-info{
+		float: left;
+		color: #999;
+		font-size: 13px;
+		margin-top: 2px;
+		margin-left: 5px;
+		cursor: help;
+	}
     
     .info-icons .show-abstract > i{
     	font-size: 19px;
