@@ -371,6 +371,8 @@ Bold 700
      #downloadPackage a.btn {
     	width: 100px;
     	margin-bottom: 8px;
+    	background-color: #166194;
+    	color: #FFF;
     } 
     
     #downloadPackage .dropdown-toggle {
