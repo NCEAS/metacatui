@@ -14,9 +14,10 @@
         </p>
         <img class="pull-right" style="height: 150px;width: 150px; margin: 10px 40px 10px 20px" alt="Data underlies metadata" src="./js/themes/knb/img/data-metadata-graphic.png">
         <p>
-          For scientists, the KNB is an efficient way to discover, access and
-          interpret complex ecological data. Due to the rich contextual
-          information, scientists are able to integrate and analyze data with
+          For scientists, the KNB is an efficient way to share, discover, access and
+          interpret complex ecological data. Due to rich contextual
+          information provided with KNB data, scientists are able to integrate and 
+          analyze data with
           less effort. The data originate from a highly-distributed set of
           field stations, laboratories, research sites, and individual
           researchers. The foundation of the KNB is the rich, detailed metadata
@@ -28,7 +29,7 @@
           free and open source manner, so other groups can build upon the tools.
           The KNB is powered by the Metacat data management system, and is
           optimized for handling data sets described using the Ecological 
-          Metadata Language, but can store any XML-based document.
+          Metadata Language, but can store any XML-based metadata document.
         </p>
       </div>
     </div>
@@ -41,13 +42,13 @@
         </h2>
           <p>
             As a long-term repository, the KNB allows you to preserve your data
-            for future generations of scientists. However, you can and to share
+            for future generations of scientists. However, you can share
             your data with your colleagues today, and get a permanent
             identifier for all files in your data set. The KNB supports <a
             href="http://www.doi.org/">Digital Object Identifiers</a> (DOIs),
             so your data sets can be confidently referenced in any publication.
             And as a <a href="http://dataone.org">DataONE</a> Member Node, the
-            KNB will securely replicate you data to other servers, maintaining
+            KNB will securely replicate your data to other servers, maintaining
             all of the access controls you set, public or private. This means
             that your data are secure in the event that the KNB servers
             themselves experience any catastrophic failure.
@@ -79,7 +80,7 @@
           data files</a>. For a given project, perhaps you have 6 data files,
           and one document that describes the methods that you used to collect
           or analyze your data. Collect these files into a single directory,
-          and name them with short but desciptive names. Try to avoid spaces in
+          and name them with short but descriptive names. Try to avoid spaces in
           your file names, but rather use dashes "-" or underscores "_". While
           the KNB supports the upload of any data file format, sharing data can
           be greatly enhanced if you use ubiquitous, easy-to-read formats. For
@@ -142,6 +143,66 @@
           href="mailto:knb-help@nceas.ucsb.edu">KNB Help</a>, and we can
           further help you or your lab in effectively managing data and
           metadata.
+        </p>
+        <h3>
+          <a name="assigning-dois"></a>
+          Publishing data with a DOI
+        </h3>
+        <p>
+          Digital Object Identifiers (DOIs) provide a long-term
+          identifier for a data package that can be used to cite usage
+          of the data and to provide a stable mechanism to find the
+          current location(s) for the data.  Because the KNB creates
+          replica copies of data packages via <a
+          href="http://dataone.org">DataONE</a>, it is important that
+          the identifier for the data set not be tied to a specific
+          address on the internet, which can change over time.  DOIs
+          allow an identifier to be created that can be resolved to the
+          multiple locations that a data set might exist, and then
+          client tools can decide which of those copies is the most
+          efficient to access.
+        </p>
+        <p>
+          To assign a DOI using the KNB requires that you have the
+          proper permissions on the data set.  Simply log in to the KNB
+          web interface with your username and password, and then search
+          for your data package.  If you are the owner or have been
+          granted management permissions, you will see a 'Publish'
+          button, which both makes the data package publicly accessible
+          and assigns a DOI to that particular version of the data
+          package.  The DOI is registered with <a
+          href="http://www.datacite.org">DataCite</a> using the <a
+          href="http://ezid.cdlib.org/">EZID</a> service, and will be
+          discoverable through multiple data citation networks,
+          including <a href="http://dataone.org">DataONE</a> and others.
+        </p>
+        <h3>
+            <a name="using-the-knb"></a>
+            Licensing and Data Distribution
+        </h3>
+        <p>
+            As a tool dedicated to helping researchers
+            increase collaboration and the pace of science, this repository
+            needs certain rights to copy, store, and redistribute data.
+            By uploading data, metadata, and any other content to
+            this repository, you warrant that you have the rights to
+            the content and are authorized to do so under copyright
+            or any other right that might pertain to the content.
+            <a
+            href="http://www.bitlaw.com/copyright/database.html">Data
+            and facts themselves are not covered under copyright</a>
+            in the US and most countries, since facts in and of
+            themselves are not eligible for copyright. That said,
+            some associated metadata and some particular compilations
+            of data could potentially be covered by copyright in
+            some jurisdictions. Thus, by uploading content, you
+            grant this repository and UCSB all rights needed to copy, store,
+            redistribute, and share data, metadata, and any other
+            content under the access control rules that you specify.
+            By marking content as publicly available, you grant this 
+            repository, UCSB, and any other users the right to copy the
+            content and redistribute it to the public without restriction
+            under the terms of <a href="http://creativecommons.org/licenses/by/3.0/" target="_blank">CC-BY</a>.
         </p>
       </div>
     </div>
