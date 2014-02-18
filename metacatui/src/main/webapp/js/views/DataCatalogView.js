@@ -626,8 +626,36 @@ define(['jquery',
 			var defaultMinYear = searchModel.defaults.yearMin;
 			var defaultMaxYear = searchModel.defaults.yearMax;
 			
+			// If either of the year type selectors is what brought us here, then determine whether the user
+			// is completely removing both (reset both year filters) or just one (remove just that one filter)
+			if((e !== undefined)){
+				if(($(e.target).attr('id') == "data_year") || ($(e.target).attr('id') == "publish_year")){
+					var pubYearChecked  = $('#publish_year').prop('checked');
+					var dataYearChecked = $('#data_year').prop('checked');
+					
+					//When both are unchecked, assume user wants to reset the year filter
+					if((!pubYearChecked) && (!dataYearChecked)){
+						//Reset the search model
+						searchModel.set('yearMin', defaultMinYear);
+						searchModel.set('yearMax', defaultMaxYear);
+						searchModel.set('dataYear', false);
+						searchModel.set('pubYear', false);
+						
+						//Reset the number inputs
+						$('#min_year').val(defaultMinYear);
+						$('#max_year').val(defaultMaxYear);
+						
+						//Slide the handles back to the defaults
+						$('#year-range').slider("values", [defaultMinYear, defaultMaxYear]);
+						
+						return;
+					}
+				}	
+			}
+			
 			//If either of the year inputs have changed
 			if((minVal != defaultMinYear) || (maxVal != defaultMaxYear)){
+				
 				//Update the search model to match what is in the text inputs
 			    searchModel.set('yearMin', $('#min_year').val());
 			    searchModel.set('yearMax', $('#max_year').val());	
@@ -673,20 +701,21 @@ define(['jquery',
 
 		},
 		
-		selectYearType : function(){
+		selectYearType : function(autoSelect){
 			
 		      var pubYearChecked  = $('#publish_year').prop('checked');
 			  var dataYearChecked = $('#data_year').prop('checked');
 		    
 			  // If neither the publish year or data coverage year are checked
 		      if((!pubYearChecked) && (!dataYearChecked)){
-		    	  //Then we want to check the data coverage year on the user's behalf
-		    	  $('#data_year').prop('checked', 'true');
-	
+		    	  
+		    	  //We want to check the data coverage year on the user's behalf
+		    	  $('#data_year').prop('checked', 'true');  
+			    	  
 		    	  //And update the search model
 		    	  searchModel.set('dataYear', true);
 		    	  
-		    	  //refresh the UI buttonset so it appears as checked
+		    	  //refresh the UI buttonset so it appears as checked/unchecked
 		    	  $("#filter-year").buttonset("refresh");
 		      }
 		},
