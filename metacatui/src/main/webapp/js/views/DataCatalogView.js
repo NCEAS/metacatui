@@ -123,10 +123,6 @@ define(['jquery',
 
 			//Render the Google Map
 			this.renderMap();	
-
-					
-			//Update the year slider
-			this.updateYearRange(); 
 			
 			//Initialize the tooltips
 			$('.tooltip-this').tooltip();
@@ -138,6 +134,9 @@ define(['jquery',
 			//Initialize the jQueryUI button checkboxes
 			$( "#filter-year" ).buttonset();
 			$( "#includes-files-buttonset" ).buttonset();
+			
+			//Update the year slider
+			this.updateYearRange(); 
 			
 			//Iterate through each search model text attribute and show UI filter for each
 			var categories = ['all', 'creator', 'taxon'];
@@ -622,24 +621,37 @@ define(['jquery',
 			// Get the minimum and maximum values from the input fields
 			var minVal = $('#min_year').val();
 			var maxVal = $('#max_year').val();
+			  
+			//Get the default minimum and maximum values
+			var defaultMinYear = searchModel.defaults.yearMin;
+			var defaultMaxYear = searchModel.defaults.yearMax;
 			
-			//Also update the search model
-		    searchModel.set('yearMin', minVal);
-		    searchModel.set('yearMax', maxVal);
-			
-			//Get the minimum and maximum values from the metacat results
-			var minResultsVal = appSearchResults.minYear;
-			var maxResultsVal = appSearchResults.maxYear;
-						
-			
+			//If either of the year inputs have changed
+			if((minVal != defaultMinYear) || (maxVal != defaultMaxYear)){
+				//Update the search model to match what is in the text inputs
+			    searchModel.set('yearMin', $('#min_year').val());
+			    searchModel.set('yearMax', $('#max_year').val());	
+			    
+			    //auto choose the year type for the user
+			    this.selectYearType();
+			    
+				  //Route to page 1
+			      this.updatePageNumber(0);
+				      
+				 //Trigger a new search
+				 this.triggerSearch();
+			}
+
+		      			
 			//jQueryUI slider 
 			$('#year-range').slider({
 			    range: true,
 			    disabled: false,
-			    min: minResultsVal,			//sets the minimum on the UI slider on initialization
-			    max: maxResultsVal, 		//sets the maximum on the UI slider on initialization
-			    values: [ minVal, maxVal ], //where the left and right slider handles are
+			    min: searchModel.defaults.yearMin,	//sets the minimum on the UI slider on initialization
+			    max: searchModel.defaults.yearMax, 	//sets the maximum on the UI slider on initialization
+			    values: [ searchModel.get('yearMin'), searchModel.get('yearMax') ], //where the left and right slider handles are
 			    stop: function( event, ui ) {
+			    	
 			      // When the slider is changed, update the input values
 			      $('#min_year').val(ui.values[0]);
 			      $('#max_year').val(ui.values[1]);
@@ -647,28 +659,36 @@ define(['jquery',
 			      //Also update the search model
 			      searchModel.set('yearMin', $('#min_year').val());
 			      searchModel.set('yearMax', $('#max_year').val());
-			     
-			      var pubYearChecked  = $('#publish_year').prop('checked');
-			      var dataYearChecked = $('#data_year').prop('checked');
 			      
-			      //If neither the publish year or data coverage year are checked
-			      if((!pubYearChecked) && (!dataYearChecked)){
-			    	  //Then we want to check the data coverage year on the user's behalf
-			    	  $('#data_year').prop('checked', 'true');
-			    	  //And update the search model
-			    	  searchModel.set('dataYear', true);
-			    	  //refresh the UI buttonset so it appears as checked
-			    	  $("#filter-year").buttonset("refresh");
-			      }
+			      viewRef.selectYearType();
 			      
-			      //Route to page 1
-				  viewRef.updatePageNumber(0);
-			      
-			      //Trigger a new search
-			      viewRef.triggerSearch();
-			    }
+				  //Route to page 1
+			      viewRef.updatePageNumber(0);
+				      
+				 //Trigger a new search
+				 viewRef.triggerSearch();
+			    } 
+			    
 			  });
 
+		},
+		
+		selectYearType : function(){
+			
+		      var pubYearChecked  = $('#publish_year').prop('checked');
+			  var dataYearChecked = $('#data_year').prop('checked');
+		    
+			  // If neither the publish year or data coverage year are checked
+		      if((!pubYearChecked) && (!dataYearChecked)){
+		    	  //Then we want to check the data coverage year on the user's behalf
+		    	  $('#data_year').prop('checked', 'true');
+	
+		    	  //And update the search model
+		    	  searchModel.set('dataYear', true);
+		    	  
+		    	  //refresh the UI buttonset so it appears as checked
+		    	  $("#filter-year").buttonset("refresh");
+		      }
 		},
 		
 		updateTextFilters : function(e){

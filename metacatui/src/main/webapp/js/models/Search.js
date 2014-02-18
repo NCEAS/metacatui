@@ -13,8 +13,8 @@ define(['jquery', 'underscore', 'backbone'],
 			taxon: [],
 			location: [],
 			resourceMap: false,
-			yearMin: "1900", //The user-selected minimum year
-			yearMax: new Date().getFullYear().toString(), //The user-selected maximum year
+			yearMin: 1900, //The user-selected minimum year
+			yearMax: new Date().getFullYear(), //The user-selected maximum year
 			pubYear: false,
 			dataYear: false,
 			sortOrder: 'dateUploaded+desc',
