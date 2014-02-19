@@ -53,6 +53,10 @@
 
 	<i class="icon-caret-right view-link" data-doi="<%- id %>"></i>
 </div>
-	<div class="abstract view-link" data-doi="<%- id %>">
-	<%=abstract%>
-</div>
+	<%
+	if(abstract !==undefined){
+		print('<div class="abstract view-link" data-doi="' + id + '">');
+		print(abstract);
+		print('</div>');
+	}
+	%>
