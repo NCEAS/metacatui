@@ -218,7 +218,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 					var msg = "No data sets were found for that criteria.";
 					viewRef.$el.prepend(viewRef.alertTemplate({
 						msg: msg,
-						classes: "alert-error"
+						classes: "alert-error",
+						includeEmail: true
 					}));
 				}
 				else{
@@ -272,7 +273,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 				var msg = "It seems there has been an error. Please try again.";
 				viewRef.$el.prepend(viewRef.alertTemplate({
 					msg: msg,
-					classes: "alert-error"
+					classes: "alert-error",
+					includeEmail: true
 				}));
 			});
 

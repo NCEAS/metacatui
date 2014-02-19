@@ -74,7 +74,8 @@ define(['jquery',
 							
 							viewRef.$el.html(viewRef.alertTemplate({
 								msg: msg,
-								classes: "alert-error"
+								classes: "alert-error",
+								includeEmail: true
 							}));
 						}
 						else{
@@ -455,7 +456,8 @@ define(['jquery',
 							viewRef.$el.find('.container').prepend(
 									viewRef.alertTemplate({
 										msg: msg,
-										classes: 'alert-error'
+										classes: 'alert-error',
+										includeEmail: true
 									})
 							);
 						}

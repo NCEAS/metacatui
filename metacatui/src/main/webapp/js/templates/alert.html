@@ -5,10 +5,15 @@ if(classes === undefined){
 if(msg === undefined){
 	var msg = "";
 }
+var email = "";
+if(includeEmail !== undefined){
+	email = "<span class='webmaster-email'><i class='icon-envelope-alt'></i><a href='mailto:knb-help@nceas.ucsb.edu'>Need help?</a></span>";
+}
 %>
 
 <div class="container">
 	<div class="alert <%=classes%>">
 	<%=msg%>
+	<%=email%>
 	</div>
 </div>

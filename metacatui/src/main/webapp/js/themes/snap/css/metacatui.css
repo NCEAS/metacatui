@@ -107,6 +107,15 @@
     ul.plain-list > li{
     	list-style: none;
     }
+    
+    .webmaster-email{
+    	display: block;
+    	margin-top: 1em;   	
+    }
+    
+    .webmaster-email i{
+    	margin-right: 5px;
+    }
    
     .clear{
     	clear: both;

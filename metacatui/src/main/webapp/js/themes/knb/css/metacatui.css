@@ -16,13 +16,6 @@ Bold 700 Italic
 
 @import url(http://fonts.googleapis.com/css?family=Lato);
 
-/***d3 play***/
-#data-chart div{
-	background-color: steelblue;
-	height: 20px;
-	color: white;
-}
-/*******/
 
 
 
@@ -125,6 +118,15 @@ Bold 700 Italic
     
     .subtle{
     	color: #888888;
+    }
+    
+    .webmaster-email{
+    	display: block;
+    	margin-top: 1em;   	
+    }
+    
+    .webmaster-email i{
+    	margin-right: 5px;
     }
 
     .mapMode .collapse-me:hover{
@@ -407,6 +409,7 @@ Bold 700 Italic
       width: auto;
       font-size: inherit;
       padding: 5px;
+      background-color: #992222;
       color: #FFFFFF;
     }
     
