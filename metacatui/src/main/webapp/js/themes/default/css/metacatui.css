@@ -374,6 +374,9 @@ Bold 700
     	background-color: #166194;
     	color: #FFF;
     } 
+      #downloadPackage a.btn:hover {
+    	background-color: #3399CC;
+    } 
     
     #downloadPackage .dropdown-toggle {
 		font: 400 20px/20px "Oswald", Arial, sans-serif;
