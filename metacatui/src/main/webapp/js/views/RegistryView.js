@@ -16,6 +16,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				
 		registryUrl: null,
 		
+		stage:  null,
+		
+		pid:  null,
+
 		registryQueryString:  "cfg=metacatui",
 		
 		events: {
@@ -48,6 +52,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			
 			console.log('Calling the registry to display');
 			console.log('Calling the registry URL: ' + this.registryUrl);
+			console.log('Registry stage: ' + this.stage + " and pid " + this.pid);
+			var stageParams = '';
+			if (this.stage) {
+				stageParams = "&stage=" + this.stage + "&pid=" + this.pid;
+			}
 			
 			// show the loading icon
 			this.showLoading();
@@ -60,7 +69,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 						withCredentials: true
 					},
 					url: this.registryUrl,
-					data: this.registryQueryString,
+					data: this.registryQueryString + stageParams,
 					success: function(data, textStatus, jqXHR) {
 						viewRef.$el.html(data);
 						viewRef.verifyLoginStatus();
