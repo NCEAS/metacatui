@@ -74,6 +74,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 						viewRef.$el.html(data);
 						viewRef.verifyLoginStatus();
 						viewRef.augementForm();
+						viewRef.fixModalLinks();
 						viewRef.modifyLoginForm();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow');
@@ -95,6 +96,16 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			if (registryEntryForm.length && !appModel.get('username')) {
 				uiRouter.navigate("logout", {trigger: true});
 			}
+		},
+		
+		fixModalLinks: function() {
+			var baseUrl = appModel.get("baseUrl");
+			$("#myModal").each(function(index, element) {
+				var href = baseUrl + $(element).attr('data-remote');
+				$(element).attr('data-remote', href);
+			});
+			// disable the pointer to old api
+			$("a[href*='metacat?action=read&qformat=']").removeAttr("href");
 		},
 		
 		augementForm: function() {
