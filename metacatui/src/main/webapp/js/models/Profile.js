@@ -14,6 +14,15 @@ define(['jquery', 'underscore', 'backbone'],
 			dataFormatIDs: [] //Uses same structure as Solr facet counts: ["text/csv", 5]
 		},
 		
+		getColor: function(type, i){
+			if(type == "metadata"){
+				return this.style.metadataChartColors[i];
+			}
+			else if(type == "data"){
+				return this.style.dataChartColors[i];
+			}
+		},
+		
 		style: {
 			dataChartColors: ['#006a66', '#98cbcb', '#329898', '#005149', '#00e0cf', '#416865', '#002825'],
 			metadataChartColors: ['#992222', '#551515', '#c13a3a', '#994242', '#371312', '#c12d2c', '#622222'],

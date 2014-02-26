@@ -43,9 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 			var data = profileModel.get('dataFormatIDs');	
 			
 			data = this.getPercentages(data, profileModel.get('dataCount'));
-			
-			console.log(data);			
-			
+						
 			//Reiterate over the colors if there aren't enough specified
 			var i = 0;
 			while(profileModel.style.dataChartColors.length < data.length){
@@ -61,9 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 			var data = profileModel.get('metadataFormatIDs');	
 			
 			data = this.getPercentages(data, profileModel.get('metadataCount'));
-			
-			console.log(data);			
-			
+						
 			//Reiterate over the colors if there aren't enough specified
 			var i = 0;
 			while(profileModel.style.metadataChartColors.length < data.length){
@@ -75,87 +71,93 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 			
 		},
 		
-		//This function uses d3 to draw a donut chart of the format types and ID's
-		//param: data  = array of format IDs
-		//param: svgEl = selector string for the SVG element to insert the donut chart
-		//param: format = ONLY either "metadata" or "data" accepted
-		//param: colors = array of colors for the SVG arcs
 		drawDonutChart: function(data, svgEl, format, colors){
-			var chart = d3.select(svgEl);
 			
-			var c = 2 * Math.PI;
-			
-			//Set up the global svg properties
-			var arc = d3.svg.arc()
-			  			.innerRadius(87)
-			  			.outerRadius(100);
-			
-			var endAngle = data[0]*c; //Calculate the end angle for the first arc
-			
-			//Add an arc piece for each format ID we have
-			for(var i=0; i<data.length; i++){
-				//The first arc is treated differently
-				if(i==0){
-					arc.startAngle(0)  //Start it at the top
-					   .endAngle(endAngle);
-				}
-				else{		
-					//Start at the end of the last arc
-					arc.startAngle(endAngle);
-					
-					//Calculate the end angle and apply it
-					endAngle += (data[i] * c); 					
-					arc.endAngle(endAngle);
-				}
-				
-				//Append the arc paths and apply styling
-				chart.append("path")
-					.attr("d", arc)
-					.attr("fill", colors[i])
-					.attr("transform",
-							"translate(" + $(svgEl).attr('width')/2 + ", " + $(svgEl).attr('height')/2 + ")"
-					); //Center the circle
-			}
-			
-			//Add the data count in text inside the circle
-			var textData = [{
-								"cx" : $(svgEl).attr('width')/2,  //Start at the center
-								"cy" : $(svgEl).attr('height')/2, //Start at the center
-								"text" : profileModel.get(format + 'Count'),
-								"id" : format + "-count-stat",
-								"classType" : format
-							},
-							{
-								"cx" : $(svgEl).attr('width')/2,  //Start at the center
-								"cy" : $(svgEl).attr('height')/2, //Start at the center
-								"text" : format + " files",
-								"id" : format + "-count-label",
-								"classType" : format
-							}];
-			
-			var count = chart.selectAll('text')
-							 .data(textData)
-							 .enter()
-							 .append('text');
+			        var w = $(svgEl).width(),
+			            h = $(svgEl).height(),
+			            r = Math.min(w, h) / 4,
+			            labelr = r + 10, // radius for label anchor
+			           // color = colorScale(),//d3.scale.category20(),
+			            donut = d3.layout.pie(),
+			            arc = d3.svg.arc().innerRadius(r * .85).outerRadius(r);
 
-			var attributes = count
-						.text(function(d){ return d.text; })
-						.attr("id", function(d){ return d.id; })
-						.attr("class", function(d){ return d.classType; })
-						.attr("font-family", function(d){ return d.fontFamily; })
-						.attr("font-size",   function(d){ return d.fontSize; })
-						.attr("fill",        function(d){ return d.color; })
-						.attr("x", function(d, i){ return d.cx - count[0][i].clientWidth/2; }) //Center horizontally based on the width
-						.attr("y", function(d, i){ 
-										//Center vertically based on the height
-										if(i > 0){
-											return d.cy + count[0][i-1].clientHeight/2;
-										}
-										else{
-											return d.cy - count[0][i].clientHeight/2;
-										}
-						});
+			        var vis = d3.select(svgEl)
+			            .data([data]);
+
+			        var arcs = vis.selectAll("g.arc")
+			            .data(donut.value(function(d) { return d.val }))
+			            .enter().append("svg:g")
+			            .attr("class", "arc")
+			            .attr("transform", "translate(" + (r + 30) + "," + r + ")")
+			            .attr("transform",
+							"translate(" + (w)/2 + ", " + (h)/2 + ")");
+
+			        arcs.append("svg:path")
+			            .attr("fill", function(d, i) { return profileModel.getColor(format, i); })
+			            .attr("d", arc)
+			            .attr(function(d){  return "transform", "translate(" + w/2 + "," + h/2 + ")" })
+;
+
+			        arcs.append("svg:text")
+			            .attr("transform", function(d) {
+			                var c = arc.centroid(d),
+			                    x = c[0],
+			                    y = c[1],
+			                    // pythagorean theorem for hypotenuse
+			                    h = Math.sqrt(x*x + y*y);
+			                return "translate(" + (x/h * labelr) +  ',' +
+			                   (y/h * labelr) +  ")"; 
+			            })
+			            .attr("dy", ".35em")
+			            .attr("text-anchor", function(d) {
+			                // are we past the center?
+			                return (d.endAngle + d.startAngle)/2 > Math.PI ?
+			                    "end" : "start";
+			            })
+			            .text(function(d, i) { return d.data.name; });
+			        
+			      //Add the data count in text inside the circle
+					var textData = [{
+										"cx" : $(svgEl).attr('width')/2,  //Start at the center
+										"cy" : $(svgEl).attr('height')/2, //Start at the center
+										"text" : profileModel.get(format + 'Count'),
+										"id" : format + "-count-stat",
+										"classType" : format
+									},
+									{
+										"cx" : $(svgEl).attr('width')/2,  //Start at the center
+										"cy" : $(svgEl).attr('height')/2, //Start at the center
+										"text" : format + " files",
+										"id" : format + "-count-label",
+										"classType" : format
+									}];
+					
+					var count = vis.append("svg:g")
+									.selectAll("text")
+								   .data(textData)
+								   .enter().append('svg:text');
+
+					var attributes = count
+								.text(function(d){ return d.text; })
+								.attr("id", function(d){ return d.id; })
+								.attr("class", function(d){ return d.classType; })
+								.attr("font-family", function(d){ return d.fontFamily; })
+								.attr("font-size",   function(d){ return d.fontSize; })
+								.attr("fill",        function(d){ return d.color; })
+								.attr("x", function(d, i){ return d.cx - count[0][i].clientWidth/2; }) //Center horizontally based on the width
+								.attr("y", function(d, i){ 
+												//Center vertically based on the height
+												if(i > 0){
+													return d.cy + count[0][i-1].clientHeight/2;
+												}
+												else{
+													return d.cy - count[0][i].clientHeight/2;
+												}
+								})
+								.attr(function(d){  return "transform", "translate(" + d.cx + "," + d.cy + ")" })
+		
 		},
+		
 		
 		//** This function will loop through the raw facet counts response array from Solr and returns
 		//   a new array containing the fractions of those counts of the total specified
@@ -168,12 +170,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 					other += array[i]/total;
 				}
 				else{
-					newArray.push(array[i]/total);
+					newArray.push({name: array[i+1], val: array[i]/total});
 				}
 			}
 			
-			if(other){
-				newArray.push(other);
+			if(other > 0){
+				newArray.push({name: "Other", val: other});
 			}
 			
 			return newArray;
