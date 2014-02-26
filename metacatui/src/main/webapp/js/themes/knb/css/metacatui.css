@@ -138,7 +138,9 @@ Bold 700 Italic
     }
     
 	/* Offsets the anchor links by the same height as the fixed header */
-	a[name] {	
+	#About a[name],
+	#Tools a[name],
+	#external .book a[name] { /*for eml parser docs */	
 		position:relative;
 		top: -95px;
 		display: block;
