@@ -1160,6 +1160,12 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 #Profile .id-label{
 	font-size: 14px;
 }
+.format-charts .labels{
+	visibility: hidden;
+}
+.format-charts .arc>path:hover + .labels{
+	visibility: visible;
+}
  
 
 
