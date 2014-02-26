@@ -93,7 +93,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 							"translate(" + (w)/2 + ", " + (h)/2 + ")");
 
 			        arcs.append("svg:path")
-			            .attr("fill", function(d, i) { return profileModel.getColor(format, i); })
+			            .attr("fill", function(d, i) { return colors[i]; })
 			            .attr("d", arc)
 			            .attr(function(d){  return "transform", "translate(" + w/2 + "," + h/2 + ")" })
 ;
