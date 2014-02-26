@@ -30,7 +30,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'logout'                    : 'logout',    // logout the user
 			'signup'          			: 'renderLdap',    // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',    // use ldapweb for different stages
-			'share'                     : 'renderRegistry'    // registry page
+			'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
 		},
 		
 		routeHistory: new Array(),
@@ -97,9 +97,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(profileView);
 		},
 		
-		renderRegistry: function (param) {
+		renderRegistry: function (stage, pid) {
 			console.log('Called UIRouter.renderRegistry()');
 			this.routeHistory.push("registry");
+			registryView.stage = stage;
+			registryView.pid = pid;
 			appView.showView(registryView);
 		},
 		

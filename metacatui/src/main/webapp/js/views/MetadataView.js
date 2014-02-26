@@ -3,15 +3,15 @@ define(['jquery',
 		'underscore', 
 		'backbone',
 		'gmaps',
-		'text!templates/package.html',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html',
 		'text!templates/usageStats.html',
 		'text!templates/downloadContents.html',
-		'text!templates/alert.html'
+		'text!templates/alert.html',
+		'text!templates/editMetadata.html'
 		], 				
-	function($, _, Backbone, gmaps, PackageTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate) {
+	function($, _, Backbone, gmaps, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate) {
 	'use strict';
 
 	
@@ -20,9 +20,7 @@ define(['jquery',
 		el: '#Content',
 		
 		template: null,
-				
-		packageTemplate: _.template(PackageTemplate),
-		
+						
 		alertTemplate: _.template(AlertTemplate),
 
 		doiTemplate: _.template(PublishDoiTemplate),
@@ -34,6 +32,8 @@ define(['jquery',
 		loadingTemplate: _.template(LoadingTemplate),
 		
 		downloadContentsTemplate: _.template(DownloadContentsTemplate),
+		
+		editMetadataTemplate: _.template(EditMetadataTemplate),
 		
 		objectIds: [],
 		
@@ -348,6 +348,7 @@ define(['jquery',
 								},
 								success: function(data, textStatus, xhr) {
 									populateTemplate(true);
+									viewRef.insertEditLink(pid);
 								},
 								error: function(xhr, textStatus, errorThrown) {
 									console.log('Not authorized to publish');
@@ -360,6 +361,14 @@ define(['jquery',
 			
 			
 				
+		},
+		
+		insertEditLink: function(pid) {
+			this.$el.find("#viewMetadataCitationLink").after(
+					this.editMetadataTemplate({
+						identifier: pid
+					}));
+			//this.$el.find("#viewMetadataCitationLink").after("<a href='#share/modify/" + pid + "'>Edit</a>");
 		},
 		
 		replaceEcoGridLinks: function(pids){

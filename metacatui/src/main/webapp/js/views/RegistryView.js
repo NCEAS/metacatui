@@ -16,6 +16,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				
 		registryUrl: null,
 		
+		stage:  null,
+		
+		pid:  null,
+
 		registryQueryString:  "cfg=metacatui",
 		
 		events: {
@@ -48,6 +52,11 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			
 			console.log('Calling the registry to display');
 			console.log('Calling the registry URL: ' + this.registryUrl);
+			console.log('Registry stage: ' + this.stage + " and pid " + this.pid);
+			var stageParams = '';
+			if (this.stage) {
+				stageParams = "&stage=" + this.stage + "&pid=" + this.pid;
+			}
 			
 			// show the loading icon
 			this.showLoading();
@@ -60,11 +69,12 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 						withCredentials: true
 					},
 					url: this.registryUrl,
-					data: this.registryQueryString,
+					data: this.registryQueryString + stageParams,
 					success: function(data, textStatus, jqXHR) {
 						viewRef.$el.html(data);
 						viewRef.verifyLoginStatus();
 						viewRef.augementForm();
+						viewRef.fixModalLinks();
 						viewRef.modifyLoginForm();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow');
@@ -86,6 +96,16 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 			if (registryEntryForm.length && !appModel.get('username')) {
 				uiRouter.navigate("logout", {trigger: true});
 			}
+		},
+		
+		fixModalLinks: function() {
+			var baseUrl = appModel.get("baseUrl");
+			$("#myModal").each(function(index, element) {
+				var href = baseUrl + $(element).attr('data-remote');
+				$(element).attr('data-remote', href);
+			});
+			// disable the pointer to old api
+			$("a[href*='metacat?action=read&qformat=']").removeAttr("href");
 		},
 		
 		augementForm: function() {
