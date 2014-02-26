@@ -73,49 +73,99 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		
 		drawDonutChart: function(data, svgEl, format, colors){
 			
+					//Set up the attributes for our donut chart
 			        var w = $(svgEl).width(),
 			            h = $(svgEl).height(),
+			            lastX = 0,
+			            lastY = 0,
+			            lastWidth = 0,
 			            r = Math.min(w, h) / 4,
 			            labelr = r + 10, // radius for label anchor
-			           // color = colorScale(),//d3.scale.category20(),
 			            donut = d3.layout.pie(),
 			            arc = d3.svg.arc().innerRadius(r * .85).outerRadius(r);
 
+			        //Select the SVG element and connect our data to it
 			        var vis = d3.select(svgEl)
 			            .data([data]);
 
+			        //Set up a group for each arc we will create
 			        var arcs = vis.selectAll("g.arc")
 			            .data(donut.value(function(d) { return d.val }))
 			            .enter().append("svg:g")
 			            .attr("class", "arc")
-			            .attr("transform", "translate(" + (r + 30) + "," + r + ")")
+			            .attr("transform", "translate(" + (r + 30) + "," + (r-20) + ")")
 			            .attr("transform",
 							"translate(" + (w)/2 + ", " + (h)/2 + ")");
 
+			        //Append an arc to each group
 			        arcs.append("svg:path")
 			            .attr("fill", function(d, i) { return colors[i]; })
 			            .attr("d", arc)
-			            .attr(function(d){  return "transform", "translate(" + w/2 + "," + h/2 + ")" })
-;
-
-			        arcs.append("svg:text")
-			            .attr("transform", function(d) {
+			            .attr(function(d){  return "transform", "translate(" + w/2 + "," + h/2 + ")" });
+			        	
+			        //Append a text label next to each arc
+			        arcs.append("svg:g")
+			        	.attr("class", "labels")
+			        	.attr("transform", function(d) {
 			                var c = arc.centroid(d),
 			                    x = c[0],
 			                    y = c[1],
 			                    // pythagorean theorem for hypotenuse
 			                    h = Math.sqrt(x*x + y*y);
-			                return "translate(" + (x/h * labelr) +  ',' +
-			                   (y/h * labelr) +  ")"; 
+			            	lastWidth = this.offsetWidth;
+			                if((y/h * labelr) < -100){
+			                	var newY = (y/h * labelr) - 20;
+			                }
+			                else{
+			                	var newY = (y/h * labelr);
+			                }
+			                return "translate(" + ((x/h * labelr)+5) +  ',' + ((y/h * labelr) -20) +  ")"; 
 			            })
-			            .attr("dy", ".35em")
+			        	.append("svg:text")
+			        	.attr("class", "id-label")
+			        	.attr("x-test", function(d) {
+			        			var c = arc.centroid(d),
+			                    x = c[0],
+			                    y = c[1],
+			                    // pythagorean theorem for hypotenuse
+			                    h = Math.sqrt(x*x + y*y);
+			        			return (x/h * labelr);
+			        	})
+			        	.attr("y-test", function(d) {
+			        			var c = arc.centroid(d),
+			                    x = c[0],
+			                    y = c[1],
+			                    // pythagorean theorem for hypotenuse
+			                    h = Math.sqrt(x*x + y*y);
+			        			return ((y/h * labelr));
+			        	})
+			            .attr("fill", function(d, i){ return colors[i]; })
 			            .attr("text-anchor", function(d) {
 			                // are we past the center?
 			                return (d.endAngle + d.startAngle)/2 > Math.PI ?
 			                    "end" : "start";
 			            })
-			            .text(function(d, i) { return d.data.name; });
+			            .text(function(d, i) { 
+			            	return d.data.name; 
+			            });
 			        
+			        //Append a text label with the count next to each arc
+			        arcs.selectAll("g.labels")
+			        	.append("svg:text")
+			        	.attr("class", "id-count")
+			            .attr("text-anchor", function(d) {
+			                // are we past the center?
+			                return (d.endAngle + d.startAngle)/2 > Math.PI ?
+			                    "end" : "start";
+			            })
+			            .text(function(d, i) { 	         
+			            	return d.data.count; 
+			            })
+			           .attr("transform", function(d) {
+			        	   return "translate(0,20)";
+			            });
+			        
+
 			      //Add the data count in text inside the circle
 					var textData = [{
 										"cx" : $(svgEl).attr('width')/2,  //Start at the center
@@ -163,19 +213,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		//   a new array containing the fractions of those counts of the total specified
 		getPercentages: function(array, total){
 			var newArray = [];
-			var other = 0;
+			var otherPercent = 0;
+			var otherCount = 0;
 			
 			for(var i=1; i<array.length; i+=2){
 				if(array[i]/total < .01){
-					other += array[i]/total;
+					otherPercent += array[i]/total;
+					otherCount += array[i];
 				}
 				else{
-					newArray.push({name: array[i+1], val: array[i]/total});
+					newArray.push({name: array[i+1], val: array[i]/total, count:array[i]});
 				}
 			}
 			
-			if(other > 0){
-				newArray.push({name: "Other", val: other});
+			if(otherCount > 0){
+				newArray.push({name: "Other", val: otherPercent, count: otherCount});
 			}
 			
 			return newArray;

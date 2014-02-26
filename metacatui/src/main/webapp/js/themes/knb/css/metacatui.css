@@ -1154,8 +1154,11 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 #Profile #metadata-count-label{
 	color: #555555;
 	fill: #555555;
-	font-size: 15px;
+	font-size: 17px;
 	line-height: 17px;
+}
+#Profile .id-label{
+	font-size: 14px;
 }
  
 
