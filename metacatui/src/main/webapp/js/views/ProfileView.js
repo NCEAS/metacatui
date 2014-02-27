@@ -72,6 +72,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		},
 		
 		drawDonutChart: function(data, svgEl, format, colors){
+			//Function to add commas to large numbers
+			var commaSeparateNumber = function(val){
+			    while (/(\d+)(\d{3})/.test(val.toString())){
+			      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+			    }
+			    return val;
+			  }
 			
 					//Set up the attributes for our donut chart
 			        var w = $(svgEl).width(),
@@ -123,22 +130,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 			            })
 			        	.append("svg:text")
 			        	.attr("class", "id-label")
-			        	.attr("x-test", function(d) {
-			        			var c = arc.centroid(d),
-			                    x = c[0],
-			                    y = c[1],
-			                    // pythagorean theorem for hypotenuse
-			                    h = Math.sqrt(x*x + y*y);
-			        			return (x/h * labelr);
-			        	})
-			        	.attr("y-test", function(d) {
-			        			var c = arc.centroid(d),
-			                    x = c[0],
-			                    y = c[1],
-			                    // pythagorean theorem for hypotenuse
-			                    h = Math.sqrt(x*x + y*y);
-			        			return ((y/h * labelr));
-			        	})
 			            .attr("fill", function(d, i){ return colors[i]; })
 			            .attr("text-anchor", function(d) {
 			                // are we past the center?
@@ -159,7 +150,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 			                    "end" : "start";
 			            })
 			            .text(function(d, i) { 	         
-			            	return d.data.count; 
+			            	return commaSeparateNumber(d.data.count); 
 			            })
 			           .attr("transform", function(d) {
 			        	   return "translate(0,20)";
@@ -170,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 					var textData = [{
 										"cx" : $(svgEl).attr('width')/2,  //Start at the center
 										"cy" : $(svgEl).attr('height')/2, //Start at the center
-										"text" : profileModel.get(format + 'Count'),
+										"text" : commaSeparateNumber(profileModel.get(format + 'Count')),
 										"id" : format + "-count-stat",
 										"classType" : format
 									},
@@ -204,7 +195,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 													return d.cy - count[0][i].clientHeight/2;
 												}
 								})
-								.attr(function(d){  return "transform", "translate(" + d.cx + "," + d.cy + ")" })
+								.attr(function(d){  return "transform", "translate(" + d.cx + "," + d.cy + ")" });
 		
 		},
 		
