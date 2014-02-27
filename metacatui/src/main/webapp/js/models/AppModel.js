@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 			}
 			
-			//this.set('baseUrl', 'https://knb.ecoinformatics.org');
+			this.set('baseUrl', 'https://knb.ecoinformatics.org');
 			
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');

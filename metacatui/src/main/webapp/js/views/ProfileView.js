@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		drawDataCountChart: function(){
 			var data = profileModel.get('dataFormatIDs');	
 			
-			data = this.getPercentages(data, profileModel.get('dataCount'));
+			data = this.formatData(data, profileModel.get('dataCount'));
 						
 			//Reiterate over the colors if there aren't enough specified
 			var i = 0;
@@ -58,7 +58,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		drawMetadataCountChart: function(){
 			var data = profileModel.get('metadataFormatIDs');	
 			
-			data = this.getPercentages(data, profileModel.get('metadataCount'));
+			data = this.formatData(data, profileModel.get('metadataCount'));
 						
 			//Reiterate over the colors if there aren't enough specified
 			var i = 0;
@@ -72,13 +72,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		},
 		
 		drawDonutChart: function(data, svgEl, format, colors){
-			//Function to add commas to large numbers
-			var commaSeparateNumber = function(val){
-			    while (/(\d+)(\d{3})/.test(val.toString())){
-			      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-			    }
-			    return val;
-			  }
+					//Function to add commas to large numbers
+					var commaSeparateNumber = function(val){
+					    while (/(\d+)(\d{3})/.test(val.toString())){
+					      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+					    }
+					    return val;
+					  }
 			
 					//Set up the attributes for our donut chart
 			        var w = $(svgEl).width(),
@@ -87,7 +87,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 			            lastY = 0,
 			            lastWidth = 0,
 			            r = Math.min(w, h) / 4,
-			            labelr = r + 10, // radius for label anchor
+			            labelr = r*1.3, // radius for label anchor
 			            donut = d3.layout.pie(),
 			            arc = d3.svg.arc().innerRadius(r * .85).outerRadius(r);
 
@@ -119,14 +119,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 			                    y = c[1],
 			                    // pythagorean theorem for hypotenuse
 			                    h = Math.sqrt(x*x + y*y);
-			            	lastWidth = this.offsetWidth;
-			                if((y/h * labelr) < -100){
-			                	var newY = (y/h * labelr) - 20;
-			                }
-			                else{
-			                	var newY = (y/h * labelr);
-			                }
-			                return "translate(" + ((x/h * labelr)+5) +  ',' + ((y/h * labelr) -20) +  ")"; 
+			                return "translate(" + ((x/h * labelr)+5) +  ',' + ((y/h * labelr) -10) +  ")"; 
 			            })
 			        	.append("svg:text")
 			        	.attr("class", "id-label")
@@ -157,7 +150,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 			            });
 			        
 
-			      //Add the data count in text inside the circle
+			        //Add the data count in text inside the circle
 					var textData = [{
 										"cx" : $(svgEl).attr('width')/2,  //Start at the center
 										"cy" : $(svgEl).attr('height')/2, //Start at the center
@@ -202,7 +195,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 		
 		//** This function will loop through the raw facet counts response array from Solr and returns
 		//   a new array containing the fractions of those counts of the total specified
-		getPercentages: function(array, total){
+		formatData: function(array, total){
 			var newArray = [];
 			var otherPercent = 0;
 			var otherCount = 0;
@@ -213,7 +206,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'text!templates/profile.html',
 					otherCount += array[i];
 				}
 				else{
-					newArray.push({name: array[i+1], val: array[i]/total, count:array[i]});
+					var name = array[i+1];
+					if((name.indexOf("ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
+						//Get the EML version only
+						name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
+					}
+					newArray.push({name: name, val: array[i]/total, count:array[i]});
 				}
 			}
 			
