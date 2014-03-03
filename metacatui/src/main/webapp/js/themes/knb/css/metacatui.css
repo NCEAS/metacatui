@@ -1191,6 +1191,11 @@ svg text{
 	stroke-width: 1px;
 	stroke: #555555;
 }
+.line-chart .point{
+	fill: #FFFFFF;
+	stroke-width: 2px;
+}
+
 
 
   /* Metadata rendering CSS

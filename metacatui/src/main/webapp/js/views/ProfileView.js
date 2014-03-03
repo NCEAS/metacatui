@@ -226,8 +226,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					var uploadData = formatUploadData(counts);
 					
 					//Create the line chart and draw the metadata line
-					var lineChart = new LineChart();
-					var line = lineChart.render(uploadData, "#upload-chart", "metadata");
+					var lineChartView = new LineChart();
+					var lineChart = lineChartView.render(uploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4});
 					
 					/* Now do the same thing for DATA uploads */
 					query = setQuery("DATA");
@@ -238,7 +238,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						uploadData = formatUploadData(counts);
 						
 						//Add a line to our chart for DATA uploads
-						line.addLine(uploadData, "data");
+						lineChart.addLine(uploadData, "data", {frequency: 12, radius: 4});
 					})
 					.error(function(){
 						console.warn('Solr query for data upload info returned error. Continuing with load.');
