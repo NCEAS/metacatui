@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'text!templates/profile.html', 'text!templates/alert.html'], 				
-	function($, _, Backbone, d3, DonutChart, ProfileTemplate, AlertTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views/LineChartView', 'text!templates/profile.html', 'text!templates/alert.html'], 				
+	function($, _, Backbone, d3, DonutChart, LineChart, ProfileTemplate, AlertTemplate) {
 	'use strict';
 		
 	// Build the main header view of the application
@@ -20,21 +20,20 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'text!
 			
 			this.listenTo(profileModel, 'change:dataFormatIDs', this.drawDataCountChart);
 			this.listenTo(profileModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
+			this.listenTo(profileModel, 'change:firstUpload', this.drawUploadChart);
 			
 			this.$el.prepend(this.template());
 			
 			// set the header type
 			appModel.set('headerType', 'default');
 			
-			//Get the query from the appModel
-			var query = appModel.get('profileQuery');
-			
 			//If no query was given, then show all of the repository info
-			if(!query){
-				query = "*:*";
+			if(!appModel.get('profileQuery')){
+				appModel.set('profileQuery', '*:*');
 			}
-			
-			this.getFormatTypes(query);
+
+			this.getGeneralInfo();
+			this.getFormatTypes();			
 			
 			return this;
 		},
@@ -42,12 +41,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'text!
 		/**
 		** getFormatTypes will send three Solr queries to get the formatTypes and formatID statistics and will update the Profile model 
 		**/
-		getFormatTypes: function(query){
+		getFormatTypes: function(){
 			var viewRef = this;
 			
 			//Build the query to get the format types
-			var facetFormatType = "q=" + query +
-								  "+%28formatType:METADATA%20OR%20formatType:DATA%29" +
+			var facetFormatType = "q=" + appModel.get('profileQuery') +
+								  "+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*" +
 								  "&wt=json" +
 								  "&rows=2" +
 							 	  "&group=true" +
@@ -84,7 +83,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'text!
 				}	
 
 				if(profileModel.get('dataCount') > 0){
-					var dataFormatIds = "q=formatType:DATA" +
+					var dataFormatIds = "q=formatType:DATA+-obsoletedBy:*" +
 					"&facet=true" +
 					"&facet.field=formatId" +
 					"&facet.limit=-1" +
@@ -102,7 +101,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'text!
 				}
 				
 				if(profileModel.get('metadataCount') > 0){
-					var metadataFormatIds = "q=formatType:METADATA" +
+					var metadataFormatIds = "q=formatType:METADATA+-obsoletedBy:*" +
 					"&facet=true" +
 					"&facet.field=formatId" +
 					"&facet.limit=-1" +
@@ -182,6 +181,91 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'text!
 			}
 			
 			return newArray;
+		},
+		
+		/**
+		 * drawUploadChart will get the files uploaded statistics and draw the upload time series chart
+		 */
+		drawUploadChart: function() {
+			
+				function setQuery(formatType){
+					return query = "q=" + appModel.get('profileQuery') +
+					  "+formatType:" + formatType +
+					  "&wt=json" +
+					  "&rows=0" +
+					  "&facet=true" +
+					  "&facet.missing=true" + //Include months that have 0 uploads
+					  "&facet.limit=-1" +
+					  "&facet.range=dateUploaded" +
+					  "&facet.range.start=" + profileModel.get('firstUpload') +
+					  "&facet.range.end=NOW" +
+					  "&facet.range.gap=%2B1MONTH";
+				}
+				
+				function formatUploadData(counts){
+					//Format the data before we draw the chart
+					//We will take only the first 10 characters of the date
+					//To make it a cumulative chart, we will keep adding to the count
+					var uploadData = [];
+					var lastCount = 0;
+					for(var i=0; i < counts.length; i+=2){
+						uploadData.push({date: counts[i].substr(0, 10), count: lastCount + counts[i+1]});
+						lastCount += counts[i+1];
+					}
+					
+					return uploadData;
+				}
+							
+				//First query the Solr index to get the dates uploaded values
+				var query = setQuery("METADATA");
+	
+				//Run the query
+				$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+					//Format our data for the line chart drawing function
+					var counts = data.facet_counts.facet_ranges.dateUploaded.counts;					
+					var uploadData = formatUploadData(counts);
+					
+					//Create the line chart and draw the metadata line
+					var lineChart = new LineChart();
+					var line = lineChart.render(uploadData, "#upload-chart", "metadata");
+					
+					/* Now do the same thing for DATA uploads */
+					query = setQuery("DATA");
+					
+					$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+						//Format our data for the line chart drawing function
+						counts = data.facet_counts.facet_ranges.dateUploaded.counts;
+						uploadData = formatUploadData(counts);
+						
+						//Add a line to our chart for DATA uploads
+						line.addLine(uploadData, "data");
+					})
+					.error(function(){
+						console.warn('Solr query for data upload info returned error. Continuing with load.');
+					});
+				})
+				.error(function(){
+					console.warn('Solr query for metadata upload info returned error. Continuing with load.');
+				});
+				
+				
+			
+		},
+		
+		getGeneralInfo: function(){
+			//Send a Solr query to retrieve the first activity date (dateUploaded) for this person/query
+			var query = "q=" + appModel.get('profileQuery') +
+				"&rows=1" +
+				"&wt=json" +
+				"&fl=dateUploaded" +
+				"&sort=dateUploaded+asc";
+			
+			//Run the query
+			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+				profileModel.set('firstUpload', data.response.docs[0].dateUploaded);
+				profileModel.set('totalUploaded', data.response.numFound);
+			});
+			
 		},
 		
 		onClose: function () {			

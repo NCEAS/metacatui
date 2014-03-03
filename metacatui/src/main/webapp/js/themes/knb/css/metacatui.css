@@ -1125,6 +1125,18 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   	margin-right: 10%;
   }
   
+  /* The universal color for data */
+  #Profile .data{
+  	color: #006a66;
+  	stroke: #006a66;
+  }
+  
+  /* The universal color for metadata */
+  #Profile .metadata{
+  	color: #992222;
+  	stroke: #992222;
+  }
+  
 .format-charts{
 	margin-left: auto;
 	margin-right: auto;
@@ -1164,7 +1176,21 @@ svg text{
 .format-charts .donut-arc>path:hover + .donut-labels{
 	visibility: visible;
 }
- 
+
+#upload-chart{
+	width: 800px;
+	height: 400px;
+}
+
+.line-chart .line{
+	fill: none;
+  	stroke-width: 2px;
+}
+.line-chart .domain{
+	fill: none;
+	stroke-width: 1px;
+	stroke: #555555;
+}
 
 
   /* Metadata rendering CSS

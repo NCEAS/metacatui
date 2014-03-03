@@ -10,12 +10,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		
 		height: 500,
 		
-		parseDate: d3.time.format("%d-%m-%y").parse,
+		parseDate: d3.time.format("%Y-%m-%d").parse, //The format for the date - can be modified for each chart. This is the format for ISO dates returned from Solr
 				
 		initialize: function () {
 		},
 				
 		/*
+		 * --Adapted from http://bl.ocks.org/mbostock/3885211--
 		 * This function draws a line time series chart
 		 * param data: An array of data to use to draw the line. Each point on the line needs a date and count.
 		 * 				The points will be drawn in order, so sort the array in ascending time order first
