@@ -83,7 +83,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				}	
 
 				if(profileModel.get('dataCount') > 0){
-					var dataFormatIds = "q=formatType:DATA+-obsoletedBy:*" +
+					var dataFormatIds = "q=" + appModel.get('profileQuery') +
+					"+formatType:DATA+-obsoletedBy:*" +
 					"&facet=true" +
 					"&facet.field=formatId" +
 					"&facet.limit=-1" +
@@ -101,7 +102,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				}
 				
 				if(profileModel.get('metadataCount') > 0){
-					var metadataFormatIds = "q=formatType:METADATA+-obsoletedBy:*" +
+					var metadataFormatIds = "q=" + appModel.get('profileQuery') +
+					"+formatType:METADATA+-obsoletedBy:*" +
 					"&facet=true" +
 					"&facet.field=formatId" +
 					"&facet.limit=-1" +
@@ -161,13 +163,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var otherPercent = 0;
 			var otherCount = 0;
 			
-			for(var i=1; i<array.length; i+=2){
+			for(var i=1; i<=array.length; i+=2){
 				if(array[i]/total < .01){
 					otherPercent += array[i]/total;
 					otherCount += array[i];
 				}
 				else{
-					var name = array[i+1];
+					var name = array[i-1];
 					if((name !== undefined) && (name.indexOf("ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
 						//Get the EML version only
 						name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
