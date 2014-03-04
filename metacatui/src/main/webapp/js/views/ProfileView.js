@@ -168,7 +168,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				}
 				else{
 					var name = array[i+1];
-					if((name.indexOf("ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
+					if((name !== undefined) && (name.indexOf("ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
 						//Get the EML version only
 						name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
 					}

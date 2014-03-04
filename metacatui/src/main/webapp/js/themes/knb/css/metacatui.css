@@ -1126,15 +1126,17 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   }
   
   /* The universal color for data */
-  #Profile .data{
+.line-chart .data{
   	color: #006a66;
   	stroke: #006a66;
+  	fill: #006a66;
   }
   
   /* The universal color for metadata */
-  #Profile .metadata{
+.line-chart .metadata{
   	color: #992222;
   	stroke: #992222;
+  	fill: #992222;
   }
   
 .format-charts{
@@ -1182,6 +1184,11 @@ svg text{
 	height: 400px;
 }
 
+#upload-chart-title{
+	width: 800px;
+	height: 100px;
+}
+
 .line-chart .line{
 	fill: none;
   	stroke-width: 2px;
@@ -1195,6 +1202,16 @@ svg text{
 	fill: #FFFFFF;
 	stroke-width: 2px;
 }
+.line-chart .line-chart-label{
+	font-weight: bold;
+	font-size: 14px;
+	stroke-width: 0px;
+	visibility: hidden;
+}
+.line-chart .point:hover + .line-chart-label{
+	visibility: visible;
+}
+
 
 
 

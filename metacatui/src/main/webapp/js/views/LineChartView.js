@@ -95,31 +95,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .datum(data)
 		      .attr("class", "line " + className)
 		      .attr("d", line);
-	  
-		  //Should we add points?
-		  if(points){
-			  //Pare down the data to every X for the points
-			  var pointData = [];
-			  for(var i=0; i<data.length; i+=points.frequency){
-				  pointData.push(data[i]);
-			  }
-			  
-			  var points = svg.selectAll(".point")
-			  					.data(pointData)
-			  					.enter().append("svg:circle")
-			  					.attr("stroke", "black")
-			  					.attr("fill", "black")
-			  					.attr("class", "point " + className)
-			  					.attr("cx", function(d, i){ return x(d.date) })
-			  					.attr("cy", function(d, i){ return y(d.count)})
-			  					.attr("r", function(d, i){ return points.radius });  
-		  }
-		  
+	  		  
 		  /* save a reference to certain objects so we can add new lines later */
 			this.svg = svg; 
 			this.line = line; 
 			
 			//this.addLine(data, className, points);
+			  this.addPoints(data, className, points);
+
 	        
 			return this;
 		},
@@ -153,7 +136,23 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		    	.attr("class", "line " + className)
 		    	.attr("d", line);
 		    
-		  //Should we add points?
+		    this.addPoints(data, className, points);
+		    
+		},
+		
+		addPoints: function(data, className, points){
+			var viewRef = this;
+			
+			var x = d3.time.scale()
+    			.range([0, this.width]);
+
+			var y = d3.scale.linear()
+	    		.range([this.height, 0]);
+			
+			x.domain(d3.extent(data, function(d) { return d.date; }));
+		    y.domain(d3.extent(data, function(d) { return d.count; }));
+	
+			  //Should we add points?
 			  if(points){
 				  console.log('add line points');
 				  
@@ -163,18 +162,47 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					  pointData.push(data[i]);
 				  }
 				  
-				  var points = viewRef.svg.append("g")
-				  					.selectAll(".point")
-				  					.data(pointData)
-				  					.enter().append("svg:circle")
-				  					.attr("stroke", "black")
-				  					.attr("fill", "black")
-				  					.attr("class", "point " + className)
-				  					.attr("cx", function(d, i){ return x(d.date) })
-				  					.attr("cy", function(d, i){ return y(d.count)})
-				  					.attr("r", function(d, i){ return points.radius });  
+				  
+				  var circles = viewRef.svg.selectAll("svg")
+						  					.data(pointData)
+						  					.enter().append("g");
+				  
+						  			circles.append("svg:circle")
+						  					.attr("stroke", "black")
+						  					.attr("fill", "black")
+						  					.attr("class", "point " + className)
+						  					.attr("cx", function(d, i){ return x(d.date) })
+						  					.attr("cy", function(d, i){ return y(d.count)})
+						  					.attr("r", function(d, i){ return points.radius });
+						  
+				  circles.append("text")
+				  						.text(function(d, i){
+				  							return viewRef.commaSeparateNumber(d.count);
+				  						})
+				  				 .attr("x", function(d, i){
+					  						var labelX = x(d.date) - 20;
+					  						if(labelX > (viewRef.width-100)){
+					  							labelX = x(d.date) - 80;
+					  						}
+					  						return  x(d.date); })
+					  			.attr("y", function(d, i){
+					  						var labelY = y(d.count) - 10;
+					  						if(labelY < 20){
+					  							labelY = y(d.count) + 20;
+					  						}
+					  						return labelY; })
+					  			.attr("class", "line-chart-label " + className)
+					  			.attr("text-anchor", "end");
 			  }
-		}
+		},
+		
+		//Function to add commas to large numbers
+		commaSeparateNumber: function(val){
+		    while (/(\d+)(\d{3})/.test(val.toString())){
+		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+		    }
+		    return val;
+		 }
 		
 	});
 	return LineChartView;		
