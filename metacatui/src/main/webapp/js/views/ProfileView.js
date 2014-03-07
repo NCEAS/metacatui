@@ -18,11 +18,18 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		render: function () {
 			console.log('Rendering the profile view');
 			
+			//Stop listening to the profile model while we reset it
+			this.stopListening(profileModel);
+			//Reset the profile model
+			profileModel.clear().set(profileModel.defaults);	
+			
+			//Now listen again to the profile model so we can draw charts when values are changed
 			this.listenTo(profileModel, 'change:dataFormatIDs', this.drawDataCountChart);
 			this.listenTo(profileModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			this.listenTo(profileModel, 'change:firstUpload', this.drawUploadChart);
 			
-			this.$el.prepend(this.template());
+			//Insert the template
+			this.$el.html(this.template());
 			
 			// set the header type
 			appModel.set('headerType', 'default');
@@ -32,6 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				appModel.set('profileQuery', '*:*');
 			}
 
+			//Start retrieving data from Solr
 			this.getGeneralInfo();
 			this.getFormatTypes();			
 			
@@ -218,11 +226,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					return uploadData;
 				}
 							
+				var viewRef = this;
+							
 				//First query the Solr index to get the dates uploaded values
 				var query = setQuery("METADATA");
 	
 				//Run the query
 				$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+					profileModel.set("metadataUploaded", data.response.numFound);
+										
 					//Format our data for the line chart drawing function
 					var counts = data.facet_counts.facet_ranges.dateUploaded.counts;					
 					var uploadData = formatUploadData(counts);
@@ -235,6 +247,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					query = setQuery("DATA");
 					
 					$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+						profileModel.set("dataUploaded", data.response.numFound);
+												
 						//Format our data for the line chart drawing function
 						counts = data.facet_counts.facet_ranges.dateUploaded.counts;
 						uploadData = formatUploadData(counts);
@@ -250,8 +264,17 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					console.warn('Solr query for metadata upload info returned error. Continuing with load.');
 				});
 				
+				//Draw the titles
+				/*this.drawTitle("#upload-chart-title", function(){
+					var data = [
+						{count: profileModel.get("metadataUploaded"), title: "metadata files", className: "metadata"},
+						{count: profileModel.get("dataUploaded"), title: "data files", className: "data"}
+					];
 				
-			
+					return data;
+				});
+			*/
+				return true;
 		},
 		
 		getGeneralInfo: function(){
@@ -267,6 +290,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				profileModel.set('firstUpload', data.response.docs[0].dateUploaded);
 				profileModel.set('totalUploaded', data.response.numFound);
 			});
+			
+		},
+		
+		drawTitle: function(svgEl, data){	
+			
+			console.log("draw chart title");
+			
+			var r = 30;
+			
+			var circle = d3.selectAll(svgEl)
+							.data(data)
+							.enter().append("svg:circle")
+							.attr("class", function(d, i){ return "count " + d.className; })
+							.attr("r", r)
+							.attr("transform", "translate(" + (r*2) + ", 30)");
 			
 		},
 		

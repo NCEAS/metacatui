@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ExternalView, LdapView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ExternalView', 'views/LdapView', 'views/ProfileView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ExternalView, LdapView, ProfileView) {
 
 	var indexView = new IndexView();
 	var aboutView = aboutView || new AboutView();
@@ -12,6 +12,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var metadataView = new MetadataView();
 	var externalView = new ExternalView();
 	var ldapView = new LdapView();
+	var profileView = new ProfileView();
 	
 	// set the KNB as the only LDAP servicer for this theme
 	// NOTE: requires CORS configured on the web server

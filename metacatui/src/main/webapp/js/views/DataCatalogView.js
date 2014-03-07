@@ -1730,25 +1730,27 @@ define(['jquery',
 				return false;
 			}
 
-			var offset = $('.popover').offset();
-			var popoverHeight = $('.popover').outerHeight();
-			var topPosition = offset.top;
-			
-			//If pixels are cut off the top of the page, readjust its vertical position
-			if(topPosition < 0){
-				$('.popover').offset({top: 10});
-			}
-			else{
-				//Else, let's check if it is cut off at the bottom
-				var totalHeight = topPosition + popoverHeight;
-	
-				var pixelsHidden = totalHeight - viewportHeight;
-		
-				var newTopPosition = topPosition - pixelsHidden - 40;
+			if($('.popover').length > 0){
+				var offset = $('.popover').offset();
+				var popoverHeight = $('.popover').outerHeight();
+				var topPosition = offset.top;
 				
-				//If pixels are cut off the bottom of the page, readjust its vertical position
-				if(pixelsHidden > 0){
-					$('.popover').offset({top: newTopPosition});
+				//If pixels are cut off the top of the page, readjust its vertical position
+				if(topPosition < 0){
+					$('.popover').offset({top: 10});
+				}
+				else{
+					//Else, let's check if it is cut off at the bottom
+					var totalHeight = topPosition + popoverHeight;
+		
+					var pixelsHidden = totalHeight - viewportHeight;
+			
+					var newTopPosition = topPosition - pixelsHidden - 40;
+					
+					//If pixels are cut off the bottom of the page, readjust its vertical position
+					if(pixelsHidden > 0){
+						$('.popover').offset({top: newTopPosition});
+					}
 				}
 			}
 			
