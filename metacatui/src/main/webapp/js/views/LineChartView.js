@@ -10,6 +10,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		
 		height: 500,
 		
+		x: function(){ return d3.time.scale().range([0, this.width]); },
+
+		y: function(){ return d3.scale.linear().range([this.height, 0]); },
+		
 		parseDate: d3.time.format("%Y-%m-%d").parse, //The format for the date - can be modified for each chart. This is the format for ISO dates returned from Solr
 				
 		initialize: function () {
@@ -33,24 +37,21 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		render: function (data, svgEl, className, points) {			
 			console.log('Rendering a line chart');
 			
-			var viewRef = this;
-			
 			var margin = {top: 20, right: 20, bottom: 30, left: 50};
 			this.width  = $(svgEl).width() - margin.left - margin.right;
 			this.height = $(svgEl).height() - margin.top - margin.bottom;
-						
-			var x = d3.time.scale()
-		    		.range([0, this.width]);
 
-			var y = d3.scale.linear()
-			    	.range([this.height, 0]);
-
+			this.x = this.x();
+			this.y = this.y();
+			
+			var viewRef = this;
+			
 			var xAxis = d3.svg.axis()
-			    .scale(x)
+			    .scale(viewRef.x)
 			    .orient("bottom");
 
 			var yAxis = d3.svg.axis()
-			    .scale(y)
+			    .scale(viewRef.y)
 			    .orient("left");
 			
 			var svg = d3.select(svgEl)
@@ -66,8 +67,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  
 		  this.data = data;
 			
-		  x.domain(d3.extent(data, function(d) { return d.date; }));
-		  y.domain(d3.extent(data, function(d) { return d.count; }));
+		  this.x.domain(d3.extent(data, function(d) { return d.date; }));
+		  this.y.domain(d3.extent(data, function(d) { return d.count; }));
 
 		  svg.append("g")
 		      .attr("class", "x axis")
@@ -85,10 +86,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .attr("transform", "translate(0, " + this.height/2 + ")")
 		      .attr("transform", "rotate(-90)");
 		  
+		  viewRef = this;
+		  
 			var line = d3.svg.line()
 			.interpolate("cardinal")
-			.x(function(d) { return x(d.date); })
-			.y(function(d) {console.log(d.count); return y(d.count); });
+			.x(function(d) { return viewRef.x(d.date); })
+			.y(function(d) { return viewRef.y(d.count); });
 
 
 		  svg.append("path")
@@ -100,8 +103,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.svg = svg; 
 			this.line = line; 
 			
-			//this.addLine(data, className, points);
-			  this.addPoints(data, className, points);
+			this.addPoints(data, className, points);
 
 	        
 			return this;
@@ -109,27 +111,20 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		
 		addLine: function(data, className, points){
 			console.log('add a line');
-			
-			var viewRef = this;
 							
-			var x = d3.time.scale()
-		    		.range([0, this.width]);
-
-			var y = d3.scale.linear()
-			    	.range([this.height, 0]);
-
+			var viewRef = this;
+			
 		   data.forEach(function(d) {
 		    	d.date = viewRef.parseDate(d.date);
 		    	d.count = +d.count;
 		    });
-			
-		    x.domain(d3.extent(data, function(d) { return d.date; }));
-		    y.domain(d3.extent(data, function(d) { return d.count; }));
+					   
+			viewRef = this;
 		    
 			var line = d3.svg.line()
 				.interpolate("cardinal")
-				.x(function(d) { return x(d.date); })
-				.y(function(d) { return y(d.count); });
+				.x(function(d) { return viewRef.x(d.date); })
+				.y(function(d) { return viewRef.y(d.count); });
 
 		    this.svg.append("path")
 		    	.datum(data)
@@ -142,16 +137,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		
 		addPoints: function(data, className, points){
 			var viewRef = this;
-			
-			var x = d3.time.scale()
-    			.range([0, this.width]);
-
-			var y = d3.scale.linear()
-	    		.range([this.height, 0]);
-			
-			x.domain(d3.extent(data, function(d) { return d.date; }));
-		    y.domain(d3.extent(data, function(d) { return d.count; }));
-	
+		
 			  //Should we add points?
 			  if(points){
 				  console.log('add line points');
@@ -171,8 +157,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 						  					.attr("stroke", "black")
 						  					.attr("fill", "black")
 						  					.attr("class", "point " + className)
-						  					.attr("cx", function(d, i){ return x(d.date) })
-						  					.attr("cy", function(d, i){ return y(d.count)})
+						  					.attr("cx", function(d, i){ return viewRef.x(d.date) })
+						  					.attr("cy", function(d, i){ return viewRef.y(d.count)})
 						  					.attr("r", function(d, i){ return points.radius });
 						  
 				  circles.append("text")
@@ -180,15 +166,15 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  							return viewRef.commaSeparateNumber(d.count);
 				  						})
 				  				 .attr("x", function(d, i){
-					  						var labelX = x(d.date) - 20;
+					  						var labelX = viewRef.x(d.date) - 20;
 					  						if(labelX > (viewRef.width-100)){
-					  							labelX = x(d.date) - 80;
+					  							labelX = viewRef.x(d.date) - 80;
 					  						}
-					  						return  x(d.date); })
+					  						return  viewRef.x(d.date); })
 					  			.attr("y", function(d, i){
-					  						var labelY = y(d.count) - 10;
+					  						var labelY = viewRef.y(d.count) - 10;
 					  						if(labelY < 20){
-					  							labelY = y(d.count) + 20;
+					  							labelY = viewRef.y(d.count) + 20;
 					  						}
 					  						return labelY; })
 					  			.attr("class", "line-chart-label " + className)
