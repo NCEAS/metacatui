@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 * 					m-d-y - month, date, and year
 		 * 				radius = radius of the point circle
 		 * 				className = class to give the circle elements
-		 * 				{frequency: 12, labelDate: "year", radius: 5, className: "point"}
+		 * 				{frequency: 12, labelDate: "y", radius: 5, className: "point"}
 		 */
 		render: function (data, svgEl, className, points) {			
 			console.log('Rendering a line chart');
@@ -159,8 +159,15 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  var pointData = [];
 				  for(var i=0; i<data.length; i+=points.frequency){
 					  pointData.push(data[i]);
+					  if(i== data.length){
+						  
+					  }
 				  }
-				  
+				  var remainder = data.length%points.frequency;
+				  if(remainder){
+					  //Make sure we included the last data point - we always want our lines to end with a point
+					  pointData.push(data[data.length-1]);  
+				  }
 				  
 				  var circles = viewRef.svg.selectAll("svg")
 						  					.data(pointData)
