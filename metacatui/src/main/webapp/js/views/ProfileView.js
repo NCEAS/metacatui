@@ -237,12 +237,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 										
 					//Format our data for the line chart drawing function
 					var counts = data.facet_counts.facet_ranges.dateUploaded.counts;					
-					var uploadData = formatUploadData(counts);
-					
-					//Create the line chart and draw the metadata line
-					var lineChartView = new LineChart();
-					var lineChart = lineChartView.render(uploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4});
-					
+					var metadataUploadData = formatUploadData(counts);
+									
 					/* Now do the same thing for DATA uploads */
 					query = setQuery("DATA");
 					
@@ -251,10 +247,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 												
 						//Format our data for the line chart drawing function
 						counts = data.facet_counts.facet_ranges.dateUploaded.counts;
-						uploadData = formatUploadData(counts);
+						var dataUploadData = formatUploadData(counts);
 						
-						//Add a line to our chart for DATA uploads
-						lineChart.addLine(uploadData, "data", {frequency: 12, radius: 4});
+						//Create the line chart and draw the metadata line
+						var lineChartView = new LineChart();
+						//Check which line we should draw first since the scale will be based off the first line
+						if(metadataUploadData[metadataUploadData.length-1] > dataUploadData[dataUploadData.length-1] ){
+							var lineChart = lineChartView.render(metadataUploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4});
+							//Add a line to our chart for data uploads
+							lineChart.addLine(dataUploadData, "data", {frequency: 12, radius: 4});
+						}
+						else{
+							var lineChart = lineChartView.render(dataUploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4});
+							//Add a line to our chart for data uploads
+							lineChart.addLine(metadataUploadData, "data", {frequency: 12, radius: 4});
+						}
 					})
 					.error(function(){
 						console.warn('Solr query for data upload info returned error. Continuing with load.');

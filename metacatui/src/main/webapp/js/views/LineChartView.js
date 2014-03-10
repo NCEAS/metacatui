@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		render: function (data, svgEl, className, points) {			
 			console.log('Rendering a line chart');
 			
-			var margin = {top: 20, right: 20, bottom: 30, left: 50};
+			var margin = {top: 20, right: 30, bottom: 30, left: 50};
 			this.width  = $(svgEl).width() - margin.left - margin.right;
 			this.height = $(svgEl).height() - margin.top - margin.bottom;
 
@@ -66,10 +66,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  });
 		  
 		  this.data = data;
+		  
+		  console.log(data);
 			
+		  var highestY = 0;		  
 		  this.x.domain(d3.extent(data, function(d) { return d.date; }));
-		  this.y.domain(d3.extent(data, function(d) { return d.count; }));
-
+		  this.y.domain(d3.extent(data, function(d) { if(d.count > highestY){ highestY = d.count; } return d.count; }));
+		  console.log(highestY);
+		  
 		  svg.append("g")
 		      .attr("class", "x axis")
 		      .attr("transform", "translate(0," + this.height + ")")
@@ -78,7 +82,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .selectAll(".tick")
 		      .attr("transform", function(d){
 		    	  var currentX = this.attributes.transform.value;
-		    	  var newX = currentX.substring(10, currentX.indexOf(",")) - (margin.left + margin.right);
+		    	  var newX = parseInt(currentX.substring(10, currentX.indexOf(","))) + (margin.left/2);
 		    	  return "translate(" + newX + ", 0)";
 		      });
 
