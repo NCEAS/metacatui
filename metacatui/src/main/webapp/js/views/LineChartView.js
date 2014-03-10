@@ -73,7 +73,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  svg.append("g")
 		      .attr("class", "x axis")
 		      .attr("transform", "translate(0," + this.height + ")")
-		      .call(xAxis);
+		      .call(xAxis)
+		      //Adjust the year labels so they fall directly under the points
+		      .selectAll(".tick")
+		      .attr("transform", function(d){
+		    	  var currentX = this.attributes.transform.value;
+		    	  var newX = currentX.substring(10, currentX.indexOf(",")) - (margin.left + margin.right);
+		    	  return "translate(" + newX + ", 0)";
+		      });
 
 		  svg.append("g")
 		      .attr("class", "y axis")
@@ -86,12 +93,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .attr("transform", "translate(0, " + this.height/2 + ")")
 		      .attr("transform", "rotate(-90)");
 		  
+		  
 		  viewRef = this;
 		  
-			var line = d3.svg.line()
-			.interpolate("cardinal")
-			.x(function(d) { return viewRef.x(d.date); })
-			.y(function(d) { return viewRef.y(d.count); });
+		  var line = d3.svg.line()
+						.interpolate("cardinal")
+						.x(function(d) { return viewRef.x(d.date); })
+						.y(function(d) { return viewRef.y(d.count); });
 
 
 		  svg.append("path")

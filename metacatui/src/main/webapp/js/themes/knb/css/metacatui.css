@@ -1125,6 +1125,12 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   	margin-right: 10%;
   }
   
+  #Profile .charts{
+  	width: 840px;
+  	margin-left: auto;
+  	margin-right: auto;
+  }
+  
   /* The universal color for data */
 .line-chart .data{
   	color: #006a66;
@@ -1181,7 +1187,7 @@ svg text{
 
 #upload-chart{
 	width: 800px;
-	height: 400px;
+	height: 250px;
 }
 
 #upload-chart-title{

@@ -265,7 +265,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				});
 				
 				//Draw the titles
-				/*this.drawTitle("#upload-chart-title", function(){
+				this.drawTitle("#upload-chart-title", function(){
 					var data = [
 						{count: profileModel.get("metadataUploaded"), title: "metadata files", className: "metadata"},
 						{count: profileModel.get("dataUploaded"), title: "data files", className: "data"}
@@ -273,7 +273,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				
 					return data;
 				});
-			*/
+			
 				return true;
 		},
 		
