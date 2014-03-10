@@ -1126,7 +1126,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   }
   
   #Profile .charts{
-  	width: 840px;
+  	width: 900px;
   	margin-left: auto;
   	margin-right: auto;
   }
@@ -1151,7 +1151,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	width: 840px;	
 }
 svg text{
-	font-size: 12px;
+	font-size: 11px;
 	
 }
 .format-charts > svg:first-child{
@@ -1180,10 +1180,11 @@ svg text{
 	font-size: 14px;
 }
 .format-charts .donut-labels{
-	visibility: hidden;
+	opacity: 0;
 }
 .format-charts .donut-arc>path:hover + .donut-labels{
-	visibility: visible;
+	opacity: 1;
+	transition: all .5s;
 }
 
 #upload-chart{
@@ -1192,7 +1193,7 @@ svg text{
 }
 
 #upload-chart-title{
-	width: 800px;
+	width: 900px;
 	height: 100px;
 }
 
@@ -1213,13 +1214,14 @@ svg text{
 	font-weight: bold;
 	font-size: 14px;
 	stroke-width: 0px;
-	visibility: hidden;
+	opacity: 0;
 }
 .line-chart > .title{
 	font-size: 15px;
 }
 .line-chart .point:hover + .line-chart-label{
-	visibility: visible;
+	opacity: 1;
+	transition: all .5s;
 }
 #Profile .title .label{
 	color: #555555;

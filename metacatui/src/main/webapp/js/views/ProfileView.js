@@ -252,15 +252,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						//Create the line chart and draw the metadata line
 						var lineChartView = new LineChart();
 						//Check which line we should draw first since the scale will be based off the first line
-						if(metadataUploadData[metadataUploadData.length-1] > dataUploadData[dataUploadData.length-1] ){
-							var lineChart = lineChartView.render(metadataUploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4});
+						if(profileModel.get("metadataUploaded") > profileModel.get("dataUploaded") ){
+							var lineChart = lineChartView.render(metadataUploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4, labelDate: "y"});
 							//Add a line to our chart for data uploads
-							lineChart.addLine(dataUploadData, "data", {frequency: 12, radius: 4});
+							lineChart.addLine(dataUploadData, "data", {frequency: 12, radius: 4, labelDate: "y"});
 						}
 						else{
-							var lineChart = lineChartView.render(dataUploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4, labelDate: "y"});
+							var lineChart = lineChartView.render(dataUploadData, "#upload-chart", "data", {frequency: 12, radius: 4, labelDate: "y"});
 							//Add a line to our chart for data uploads
-							lineChart.addLine(metadataUploadData, "data", {frequency: 12, radius: 4, labelDate: "y"});
+							lineChart.addLine(metadataUploadData, "metadata", {frequency: 12, radius: 4, labelDate: "y"});
 						}
 						
 						var titleChartData = [
@@ -300,8 +300,17 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		
 		drawTitle: function(svgEl, data, title){	
 			console.log("draw chart title");
+			
+			var viewRef = this;
 		
 			var r = 30; //The circle radius
+			
+			//If we have counts with at least 4 digits, we'll need to increase the radius
+			_.each(data, function(d, i){
+				if(d.count > 1000){
+					r = 40;
+				}
+			});
 			
 			var svg = d3.select(svgEl); //Select the SVG element
 			
@@ -332,7 +341,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				.selectAll("text")
 				.data(data)
 				.enter().append("svg:text")
-				.text(function(d){ return d.count; })
+				.text(function(d){ return viewRef.commaSeparateNumber(d.count); })
 				.attr("transform", function(d, i){
 					return "translate(" + ((r*2*(i+1))+(r*i))+ "," + (r+5) + ")";
 				})
@@ -346,6 +355,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				.attr("transform", "translate(" + (((r * 2 * (data.length+1))+(r * (data.length)))-r) + "," + r + ")")
 				.attr("text-anchor", "left");
 		},
+		
+		//Function to add commas to large numbers
+		commaSeparateNumber: function(val){
+		    while (/(\d+)(\d{3})/.test(val.toString())){
+		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+		    }
+		    return val;
+		 },
 		
 		onClose: function () {			
 			console.log('Closing the profile view');

@@ -41,8 +41,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 */
 		render: function (data, svgEl, className, points) {			
 			console.log('Rendering a line chart');
+			console.log(className , data);
 			
-			var margin = {top: 20, right: 30, bottom: 30, left: 60};
+			var margin = {top: 20, right: 50, bottom: 30, left: 80};
 			this.width  = $(svgEl).width() - margin.left - margin.right;
 			this.height = $(svgEl).height() - margin.top - margin.bottom;
 
@@ -81,9 +82,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .call(xAxis)
 		      //Adjust the year labels so they fall directly under the points
 		      .selectAll(".tick")
-		      .attr("transform", function(d){
+		     .attr("transform", function(d){
 		    	  var currentX = this.attributes.transform.value;
-		    	  var newX = parseInt(currentX.substring(10, currentX.indexOf(","))) + (margin.left/3);
+		    	  var newX = parseInt(currentX.substring(10, currentX.indexOf(","))) + 10;
 		    	  return "translate(" + newX + ", 0)";
 		      });
 
