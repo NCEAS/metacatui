@@ -30,14 +30,19 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 * param className: A class name to give the line
 		 * param points: A couple of settings for adding points to the line (optional). Example:
 		 * 				frequency = add a point for every X points in our data set (i.e. a point for every 12 months)
+		 * 				labelDate = Instructions for how to display the date
+		 * 					m - month only
+		 * 					y - year only
+		 * 					m-y - month and year
+		 * 					m-d-y - month, date, and year
 		 * 				radius = radius of the point circle
 		 * 				className = class to give the circle elements
-		 * 				{frequency: 12, radius: 5, className: "point"}
+		 * 				{frequency: 12, labelDate: "year", radius: 5, className: "point"}
 		 */
 		render: function (data, svgEl, className, points) {			
 			console.log('Rendering a line chart');
 			
-			var margin = {top: 20, right: 30, bottom: 30, left: 50};
+			var margin = {top: 20, right: 30, bottom: 30, left: 60};
 			this.width  = $(svgEl).width() - margin.left - margin.right;
 			this.height = $(svgEl).height() - margin.top - margin.bottom;
 
@@ -66,13 +71,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  });
 		  
 		  this.data = data;
-		  
-		  console.log(data);
-			
-		  var highestY = 0;		  
+		  			
 		  this.x.domain(d3.extent(data, function(d) { return d.date; }));
-		  this.y.domain(d3.extent(data, function(d) { if(d.count > highestY){ highestY = d.count; } return d.count; }));
-		  console.log(highestY);
+		  this.y.domain(d3.extent(data, function(d) { return d.count; }));
 		  
 		  svg.append("g")
 		      .attr("class", "x axis")
@@ -82,20 +83,21 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .selectAll(".tick")
 		      .attr("transform", function(d){
 		    	  var currentX = this.attributes.transform.value;
-		    	  var newX = parseInt(currentX.substring(10, currentX.indexOf(","))) + (margin.left/2);
+		    	  var newX = parseInt(currentX.substring(10, currentX.indexOf(","))) + (margin.left/3);
 		    	  return "translate(" + newX + ", 0)";
 		      });
 
 		  svg.append("g")
 		      .attr("class", "y axis")
-		      .call(yAxis)
-		    .append("text")
+		      .call(yAxis);
+		  
+		  d3.select(svgEl).append("text")
 		      .attr("y", 6)
 		      .attr("dy", ".71em")
-		      .style("text-anchor", "end")
+		      .style("text-anchor", "middle")
 		      .text("files uploaded")
-		      .attr("transform", "translate(0, " + this.height/2 + ")")
-		      .attr("transform", "rotate(-90)");
+		      .attr("class", "title")
+		  	  .attr("transform", "translate(0, " + (this.height/2) + ") rotate(-90)");
 		  
 		  
 		  viewRef = this;
@@ -152,7 +154,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		
 			  //Should we add points?
 			  if(points){
-				  console.log('add line points');
 				  
 				  //Pare down the data to every X for the points
 				  var pointData = [];
@@ -165,32 +166,58 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 						  					.data(pointData)
 						  					.enter().append("g");
 				  
-						  			circles.append("svg:circle")
-						  					.attr("stroke", "black")
-						  					.attr("fill", "black")
-						  					.attr("class", "point " + className)
-						  					.attr("cx", function(d, i){ return viewRef.x(d.date) })
-						  					.attr("cy", function(d, i){ return viewRef.y(d.count)})
-						  					.attr("r", function(d, i){ return points.radius });
+				circles.append("svg:circle")
+						.attr("stroke", "black")
+						.attr("fill", "black")
+						.attr("class", "point " + className)
+						.attr("cx", function(d, i){ return viewRef.x(d.date) })
+						.attr("cy", function(d, i){ return viewRef.y(d.count)})
+						.attr("r", function(d, i){ return points.radius });
 						  
 				  circles.append("text")
-				  						.text(function(d, i){
-				  							return viewRef.commaSeparateNumber(d.count);
-				  						})
-				  				 .attr("x", function(d, i){
-					  						var labelX = viewRef.x(d.date) - 20;
-					  						if(labelX > (viewRef.width-100)){
-					  							labelX = viewRef.x(d.date) - 80;
-					  						}
-					  						return  viewRef.x(d.date); })
-					  			.attr("y", function(d, i){
-					  						var labelY = viewRef.y(d.count) - 10;
-					  						if(labelY < 20){
-					  							labelY = viewRef.y(d.count) + 20;
-					  						}
-					  						return labelY; })
-					  			.attr("class", "line-chart-label " + className)
-					  			.attr("text-anchor", "end");
+				  		.text(function(d, i){
+				  			var date = "";
+				  			//If frequency is one year, show just the year
+				  			switch(points.labelDate){
+				  				case "y": 
+				  					date = new Date(d.date).getFullYear();
+				  					break;
+				  				case "m":
+				  					date = new Date(d.date).getMonth();
+				  					break;
+				  				case "d":
+				  					date = new Date(d.date).getDate();
+				  					break;
+				  				case "m-y":
+				  					date = new Date(d.date);
+				  					date = date.getMonth() + "/" + date.getFullYear();
+				  					break;
+				  				case "m-d-y":
+				  					date = new Date(d.date);
+				  					date = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
+				  					break;
+				  				default:
+				  					date = new Date(d.date);
+				  					date = date.getMonth() + "/" + date.getFullYear();
+				  					break;
+				  				}
+				  			return date + " : " + viewRef.commaSeparateNumber(d.count);
+				  		})
+				  		.attr("x", function(d, i){
+					  		var labelX = viewRef.x(d.date) - 20;
+					  		if(labelX > (viewRef.width-100)){
+					  			labelX = viewRef.x(d.date) - 80;
+					  		}
+					  		return  viewRef.x(d.date); })
+					  	.attr("y", function(d, i){
+					  		var labelY = viewRef.y(d.count) - 10;
+					  		if(labelY < 20){
+					  			labelY = viewRef.y(d.count) + 20;
+					  		}
+					  		return labelY; 
+					  	})
+					  	.attr("class", "line-chart-label " + className)
+					  	.attr("text-anchor", "end");
 			  }
 		},
 		

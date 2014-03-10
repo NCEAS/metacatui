@@ -14,7 +14,7 @@ define(['jquery', 'underscore', 'backbone'],
 			dataFormatIDs: [], //Uses same structure as Solr facet counts: ["text/csv", 5]
 			firstUpload: 0,
 			totalUploaded: 0, //total data and metadata objects uploaded, including now obsoleted objects
-			metadataUplodaded: 0,
+			metadataUploaded: 0,
 			dataUploaded: 0,
 		},
 		

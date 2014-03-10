@@ -258,10 +258,18 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							lineChart.addLine(dataUploadData, "data", {frequency: 12, radius: 4});
 						}
 						else{
-							var lineChart = lineChartView.render(dataUploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4});
+							var lineChart = lineChartView.render(dataUploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4, labelDate: "y"});
 							//Add a line to our chart for data uploads
-							lineChart.addLine(metadataUploadData, "data", {frequency: 12, radius: 4});
+							lineChart.addLine(metadataUploadData, "data", {frequency: 12, radius: 4, labelDate: "y"});
 						}
+						
+						var titleChartData = [
+						                      {count: profileModel.get("metadataUploaded"), label: "metadata", className: "metadata"},
+										      {count: profileModel.get("dataUploaded"), label: "data", className: "data"}
+											 ];
+						
+						//Draw the upload chart title
+						viewRef.drawTitle("#upload-chart-title", titleChartData, "uploaded");
 					})
 					.error(function(){
 						console.warn('Solr query for data upload info returned error. Continuing with load.');
@@ -271,17 +279,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					console.warn('Solr query for metadata upload info returned error. Continuing with load.');
 				});
 				
-				//Draw the titles
-				this.drawTitle("#upload-chart-title", function(){
-					var data = [
-						{count: profileModel.get("metadataUploaded"), title: "metadata files", className: "metadata"},
-						{count: profileModel.get("dataUploaded"), title: "data files", className: "data"}
-					];
-				
-					return data;
-				});
 			
-				return true;
 		},
 		
 		getGeneralInfo: function(){
@@ -300,19 +298,53 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			
 		},
 		
-		drawTitle: function(svgEl, data){	
-			
+		drawTitle: function(svgEl, data, title){	
 			console.log("draw chart title");
+		
+			var r = 30; //The circle radius
 			
-			var r = 30;
+			var svg = d3.select(svgEl); //Select the SVG element
 			
-			var circle = d3.selectAll(svgEl)
+			//Draw the circles
+			var circle = svg.selectAll("circle")
 							.data(data)
 							.enter().append("svg:circle")
-							.attr("class", function(d, i){ return "count " + d.className; })
+							.attr("class", function(d, i){ return d.className; })
 							.attr("r", r)
-							.attr("transform", "translate(" + (r*2) + ", 30)");
+							.attr("transform", function(d, i){ 
+								return "translate(" + ((r*2*(i+1))+(r*i))+ "," + r + ")";
+							});
 			
+			//Draw the text labels underneath the circles
+			svg.append("g")
+				.selectAll("text")
+				.data(data)
+				.enter().append("svg:text")
+				.attr("transform", function(d, i){ 
+					return "translate(" + ((r*2*(i+1))+(r*i))+ "," + ((r*2) + 20) + ")";
+				})
+				.attr("class", function(d){ return d.className + " label"; })
+				.attr("text-anchor", "middle")
+				.text(function(d){ return d.label; });
+			
+			//Draw the count labels inside the circles
+			svg.append("g")
+				.selectAll("text")
+				.data(data)
+				.enter().append("svg:text")
+				.text(function(d){ return d.count; })
+				.attr("transform", function(d, i){
+					return "translate(" + ((r*2*(i+1))+(r*i))+ "," + (r+5) + ")";
+				})
+				.attr("class", function(d){ return d.className + " count"; })
+				.attr("text-anchor", "middle");
+					
+			//Draw the title next to the circles at the end
+			svg.append("text")
+				.text(title)
+				.attr("class", "title")
+				.attr("transform", "translate(" + (((r * 2 * (data.length+1))+(r * (data.length)))-r) + "," + r + ")")
+				.attr("text-anchor", "left");
 		},
 		
 		onClose: function () {			

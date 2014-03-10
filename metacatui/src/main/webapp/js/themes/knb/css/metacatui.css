@@ -1132,17 +1132,17 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   }
   
   /* The universal color for data */
-.line-chart .data{
-  	color: #006a66;
-  	stroke: #006a66;
-  	fill: #006a66;
+#Profile .data{
+  	color: #329898;
+  	stroke: #329898;
+  	fill: #329898;
   }
   
   /* The universal color for metadata */
-.line-chart .metadata{
-  	color: #992222;
-  	stroke: #992222;
-  	fill: #992222;
+#Profile .metadata{
+  	color: #761012;
+  	stroke: #761012;
+  	fill: #761012;
   }
   
 .format-charts{
@@ -1169,10 +1169,11 @@ svg text{
 .donut-title-count{
 	font-size: 24px;
 }
-.donut-title-text{
+.donut-title-text,
+.title{
 	color: #555555;
 	fill: #555555;
-	font-size: 17px;
+	font-size: 19px;
 	line-height: 17px;
 }
 .donut-arc-label{
@@ -1195,16 +1196,16 @@ svg text{
 	height: 100px;
 }
 
-.line-chart .line{
+#Profile .line-chart .line{
 	fill: none;
   	stroke-width: 2px;
 }
-.line-chart .domain{
+#Profile .line-chart .domain{
 	fill: none;
 	stroke-width: 1px;
 	stroke: #555555;
 }
-.line-chart .point{
+#Profile .line-chart .point{
 	fill: #FFFFFF;
 	stroke-width: 2px;
 }
@@ -1214,8 +1215,24 @@ svg text{
 	stroke-width: 0px;
 	visibility: hidden;
 }
+.line-chart > .title{
+	font-size: 15px;
+}
 .line-chart .point:hover + .line-chart-label{
 	visibility: visible;
+}
+#Profile .title .label{
+	color: #555555;
+	fill: #555555;
+	stroke-width: 0px;
+	font-size: 13px;
+	font-weight: 300;
+}
+#Profile .title .count{
+	color: #FFFFFF;
+	fill: #FFFFFF;
+	stroke-width: 0px;
+	font-size: 20px;
 }
 
 
