@@ -107,16 +107,16 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        	
 	        	if(titleCount || (titleCount !== undefined)){
 	        		textData.push({
-									"cx" : $(svgEl).attr('width')/2,  //Start at the center
-									"cy" : $(svgEl).attr('height')/2, //Start at the center
+									"cx" : w/2,  //Start at the center
+									"cy" : h/2, //Start at the center
 									"text" : this.commaSeparateNumber(titleCount),
 									"className" : "donut-title-count"
 								});
 	        	}
 	        	if(titleText || (titleText !== undefined)){
 	        		textData.push({
-									"cx" : $(svgEl).attr('width')/2,  //Start at the center
-									"cy" : $(svgEl).attr('height')/2, //Start at the center
+									"cx" : w/2,  //Start at the center
+									"cy" : h/2, //Start at the center
 									"text" : titleText,
 									"className" : "donut-title-text"
 								});
