@@ -14,6 +14,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		
 		initialize: function(){
 		},
+		
+		events: {
+			'click .donut-arc' : function(){console.log('hello');}
+		},
 				
 		render: function () {
 			console.log('Rendering the profile view');
@@ -41,9 +45,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 
 			//Start retrieving data from Solr
 			this.getGeneralInfo();
-			this.getFormatTypes();			
+			this.getFormatTypes();	
+			this.getTemporalCoverage();
 			
 			return this;
+		},
+		
+		
+		getGeneralInfo: function(){
+			//Send a Solr query to retrieve the first activity date (dateUploaded) for this person/query
+			var query = "q=" + appModel.get('profileQuery') +
+				"&rows=1" +
+				"&wt=json" +
+				"&fl=dateUploaded" +
+				"&sort=dateUploaded+asc";
+			
+			//Run the query
+			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+				profileModel.set('firstUpload', data.response.docs[0].dateUploaded);
+				profileModel.set('totalUploaded', data.response.numFound);
+			});
+			
 		},
 		
 		/**
@@ -150,8 +172,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			data = this.formatDonutData(data, profileModel.get('dataCount'));
 			
 			//Draw a donut chart
-			var donut = new DonutChart();
-			donut.render(data, "#data-chart", profileModel.style.dataChartColors, "data files", profileModel.get("dataCount"));
+			var donut = new DonutChart({
+							id: "data-chart",
+							data: data, 
+							colors: profileModel.style.dataChartColors, 
+							titleText: "data files", 
+							titleCount: profileModel.get("dataCount")
+						});
+			this.$('.format-charts').append(donut.render().el);
 		},
 
 		drawMetadataCountChart: function(){
@@ -160,8 +188,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			data = this.formatDonutData(data, profileModel.get('metadataCount'));
 			
 			//Draw a donut chart
-			var donut = new DonutChart();
-			donut.render(data, "#metadata-chart", profileModel.style.metadataChartColors, "metadata files", profileModel.get("metadataCount"));
+			var donut = new DonutChart({
+							id: "metadata-chart",
+							data: data, 
+							colors: profileModel.style.metadataChartColors, 
+							titleText: "metadata files", 
+							titleCount: profileModel.get("metadataCount")
+						});
+			this.$('.format-charts').append(donut.render().el); 
 		},
 		
 		//** This function will loop through the raw facet counts response array from Solr and returns
@@ -273,28 +307,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					})
 					.error(function(){
 						console.warn('Solr query for data upload info returned error. Continuing with load.');
+						$(".upload-chart").prepend(viewRef.alertTemplate({
+							msg: "Oops, something happened and we can't display the uploaded files graph.",
+							classes: "alert-warn",
+							includeEmail: false
+						}));
 					});
 				})
 				.error(function(){
 					console.warn('Solr query for metadata upload info returned error. Continuing with load.');
+					$(".upload-chart").prepend(viewRef.alertTemplate({
+						msg: "Oops, something happened and we can't display the uploaded files graph.",
+						classes: "alert-warn",
+						includeEmail: false
+					}));
 				});
 				
-			
-		},
-		
-		getGeneralInfo: function(){
-			//Send a Solr query to retrieve the first activity date (dateUploaded) for this person/query
-			var query = "q=" + appModel.get('profileQuery') +
-				"&rows=1" +
-				"&wt=json" +
-				"&fl=dateUploaded" +
-				"&sort=dateUploaded+asc";
-			
-			//Run the query
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				profileModel.set('firstUpload', data.response.docs[0].dateUploaded);
-				profileModel.set('totalUploaded', data.response.numFound);
-			});
 			
 		},
 		
@@ -354,6 +382,32 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				.attr("class", "title")
 				.attr("transform", "translate(" + (((r * 2 * (data.length+1))+(r * (data.length)))-r) + "," + r + ")")
 				.attr("text-anchor", "left");
+		},
+		
+		/* getTemporalCoverage
+		 * Get the temporal coverage of this query/user from Solr
+		 */
+		getTemporalCoverage: function(){
+			//Construct our query to get the begin and end date of all objects for this query
+		/*	var query = "q=" + appModel.get('profileQuery') +
+			  "fl=beginDate,endDate" +
+			  "-obsoletedBy:*" +
+			  "&wt=json" +
+			  "&rows=100000";
+			
+			var viewRef = this;
+			
+			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+				
+			}).error(function(){
+				//Log this warning and display a warning where the graph should be
+				console.warn("Solr query for temporal coverage failed. Displaying a warning.");
+				$(".temporal-coverage-chart").prepend(viewRef.alertTemplate({
+					msg: "Oops, something happened and we can't display the data coverage graph.",
+					classes: "alert-warn",
+					includeEmail: false
+				}));
+			}); */
 		},
 		
 		//Function to add commas to large numbers

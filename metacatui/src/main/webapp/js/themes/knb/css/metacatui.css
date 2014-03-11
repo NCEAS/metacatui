@@ -1159,7 +1159,8 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 #metadata-chart,
 #data-chart{
 	height: 400px;
-	width: 500px;	
+	width: 500px;
+	float: left;	
 }
 
 #metadata-chart .donut-title-count{
@@ -1181,15 +1182,21 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 	font-size: 19px;
 	line-height: 17px;
 }
-.donut-arc-label{
-	font-size: 14px;
+.donut-arc{
+	transition: opacity .2s;
 }
-.format-charts .donut-labels{
-	opacity: 0;
+.donut-arc.inactive,
+.donut-arc.inactive + .donut-labels{
+	opacity: 0.2;
 }
-.format-charts .donut-arc>path:hover + .donut-labels{
+.donut-arc.active + .donut-labels{
 	opacity: 1;
-	transition: all .5s;
+	font-weight: bold;
+}
+.donut-labels{
+	font-size: 14px;
+	opacity: 0.7;
+	transition: opacity .2s;
 }
 
 #upload-chart{
