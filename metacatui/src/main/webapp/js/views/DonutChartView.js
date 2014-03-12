@@ -20,6 +20,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * titleCount (optional): A number to insert in the center of the donut
 			 * height: height of SVG element
 			 * width: width of SVG element
+			 * svgClass: class to give the parent svg element
 			 */
 			
 			//Give all the specified options to this view
@@ -30,6 +31,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.titleCount = options.titleCount || 0;
 			this.height 	= options.height	 || 400;
 			this.width		= options.width		 || 500;
+			this.svgClass	= options.svgClass	 || "";
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -74,6 +76,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
 	        //Select the SVG element and connect our data to it
 	        var vis = d3.select(this.el)
+	        			.attr("class", "donut " + this.svgClass)
 	        			.data([viewRef.data]);
 
 	        //Set up a group for each arc we will create

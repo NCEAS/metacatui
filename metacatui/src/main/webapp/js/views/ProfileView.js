@@ -92,6 +92,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					//Extract the format type if there is only one type found
 					if(data.grouped.formatType.groups[0].groupValue == "METADATA"){
 						profileModel.set('metadataCount', data.grouped.formatType.groups[0].doclist.numFound);
+						profileModel.set('dataCount', 0);
+						profileModel.set('dataFormatIDs', ["", 0]);
 					}else{
 						profileModel.set('dataCount', data.grouped.formatType.groups[0].doclist.numFound);
 					}					
@@ -167,9 +169,17 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		},
 		
 		drawDataCountChart: function(){
+			var dataCount = profileModel.get('dataCount');
+			var data = profileModel.get('dataFormatIDs');
 			//Format our Solr facet counts for the donut chart rendering
-			var data = profileModel.get('dataFormatIDs');	
 			data = this.formatDonutData(data, profileModel.get('dataCount'));
+
+			if(dataCount){	
+				var svgClass = "data";
+			}
+			else{	//Are we drawing a blank chart (i.e. 0 data objects found)?
+				var svgClass = "data default";
+			}
 			
 			//Draw a donut chart
 			var donut = new DonutChart({
@@ -177,15 +187,24 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							data: data, 
 							colors: profileModel.style.dataChartColors, 
 							titleText: "data files", 
-							titleCount: profileModel.get("dataCount")
+							titleCount: dataCount,
+							svgClass: svgClass
 						});
 			this.$('.format-charts').append(donut.render().el);
 		},
 
 		drawMetadataCountChart: function(){
+			var metadataCount = profileModel.get("metadataCount");
 			//Format our Solr facet counts for the donut chart rendering
 			var data = profileModel.get('metadataFormatIDs');	
 			data = this.formatDonutData(data, profileModel.get('metadataCount'));
+			
+			if(metadataCount){
+				var svgClass = "metadata";
+			}
+			else{	//Are we drawing a blank chart (i.e. 0 data objects found)?
+				var svgClass = "metadata default";
+			}
 			
 			//Draw a donut chart
 			var donut = new DonutChart({
@@ -193,30 +212,42 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							data: data, 
 							colors: profileModel.style.metadataChartColors, 
 							titleText: "metadata files", 
-							titleCount: profileModel.get("metadataCount")
+							titleCount: metadataCount,
+							svgClass: svgClass
 						});
+			
 			this.$('.format-charts').append(donut.render().el); 
 		},
 		
 		//** This function will loop through the raw facet counts response array from Solr and returns
 		//   a new array of objects that are in the format needed to draw a donut chart
-		formatDonutData: function(array, total){
+		// Format of data output:
+		//		  label: formatID from array given	perc: percentage of total	count: count from array given
+		//		[{label: "Format ID", perc: .50, count: 20}]
+		// param counts: array of formatID names followed by their count, identical to Solr facet format. e.g. ["text/CSV", 10, "text", 20]
+		formatDonutData: function(counts, total){
 			var newArray = [];
 			var otherPercent = 0;
 			var otherCount = 0;
 			
-			for(var i=1; i<=array.length; i+=2){
-				if(array[i]/total < .01){
-					otherPercent += array[i]/total;
-					otherCount += array[i];
+			for(var i=1; i<=counts.length; i+=2){
+				if(counts[i]/total < .01){
+					otherPercent += counts[i]/total;
+					otherCount += counts[i];
 				}
 				else{
-					var name = array[i-1];
+					var name = counts[i-1];
 					if((name !== undefined) && (name.indexOf("ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
 						//Get the EML version only
 						name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
 					}
-					newArray.push({label: name, perc: array[i]/total, count:array[i]});
+					if((total == 0) && (counts[i] == 0)){
+						var perc = 1;
+					}
+					else{
+						var perc = counts[i]/total;
+					}
+					newArray.push({label: name, perc: perc, count:counts[i]});
 				}
 			}
 			
