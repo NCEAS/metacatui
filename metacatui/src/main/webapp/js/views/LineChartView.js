@@ -5,98 +5,110 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		
 	// Build the main header view of the application
 	var LineChartView = Backbone.View.extend({
+				
+		initialize: function (options) {
+			/* OPTIONS:
+			 * data: An array of data to use to draw the line. Each point on the line needs a date and count.
+			 * 				The points will be drawn in order, so sort the array in ascending time order first
+			 * 				Format example:
+			 * 				[{date: "13-01-08", count: 500}, {date: "20-03-12", count: 30}]
+			 * id: The id to use for the svg element
+			 * frequency = add a point for every X points in our data set (i.e. a point for every 12 months)
+			 * labelDate = Instructions for how to display the date
+			 * 					m - month only
+			 * 					y - year only
+			 * 					d - date only
+			 * 					m-y - month and year
+			 * 					m-d-y - month, date, and year
+			 * 	radius = radius of the point circle
+			 * 	className = class to give the line path and point circle elements
+			 *  width = width of SVG element
+			 *  height = height of SVG element
+			 */
+			
+			this.data 	   = options.data 	   || [{date: "00-00-00", count: 0}];
+			this.id 	   = options.id 	   || "";
+			this.className = options.className || "";
+			this.frequency = options.frequency || 1; 	//Use 0 to not add any points
+			this.labelDate = options.labelDate || "m-d-y";
+			this.yLabel	   = options.yLabel	   || "";
+			this.radius	   = options.radius    || 4;
+			this.width 	   = options.width 	   || 800;
+			this.height    = options.height    || 250;
+		},
 		
-		width: 960,
-		
-		height: 500,
-		
-		x: function(){ return d3.time.scale().range([0, this.width]); },
-
-		y: function(){ return d3.scale.linear().range([this.height, 0]); },
+		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
+		// Give our el a svg namespace because Backbone gives a different one automatically
+		nameSpace: "http://www.w3.org/2000/svg",
+		  _ensureElement: function() {
+		     if (!this.el) {
+		        var attrs = _.extend({}, _.result(this, 'attributes'));
+		        if (this.id) attrs.id = _.result(this, 'id');
+		        if (this.className) attrs['class'] = _.result(this, 'className');
+		        var $el = $(window.document.createElementNS(_.result(this, 'nameSpace'), _.result(this, 'tagName'))).attr(attrs);
+		        this.setElement($el, false);
+		     } else {
+		        this.setElement(_.result(this, 'el'), false);
+		     }
+		 },
+				
+		tagName: "svg",
 		
 		parseDate: d3.time.format("%Y-%m-%d").parse, //The format for the date - can be modified for each chart. This is the format for ISO dates returned from Solr
-				
-		initialize: function () {
-		},
-				
+			
 		/*
 		 * --Adapted from http://bl.ocks.org/mbostock/3885211--
 		 * This function draws a line time series chart
-		 * param data: An array of data to use to draw the line. Each point on the line needs a date and count.
-		 * 				The points will be drawn in order, so sort the array in ascending time order first
-		 * 				Format example:
-		 * 				[{date: "13-01-08", count: 500}, {date: "20-03-12", count: 30}]
-		 * param svgEl: A string to use as a selector for the svg element to draw the chart in (e.g. "#chart")
-		 * param className: A class name to give the line
-		 * param points: A couple of settings for adding points to the line (optional). Example:
-		 * 				frequency = add a point for every X points in our data set (i.e. a point for every 12 months)
-		 * 				labelDate = Instructions for how to display the date
-		 * 					m - month only
-		 * 					y - year only
-		 * 					m-y - month and year
-		 * 					m-d-y - month, date, and year
-		 * 				radius = radius of the point circle
-		 * 				className = class to give the circle elements
-		 * 				{frequency: 12, labelDate: "y", radius: 5, className: "point"}
 		 */
-		render: function (data, svgEl, className, points) {			
+		render: function () {			
 			console.log('Rendering a line chart');
-			console.log(className , data);
 			
 			var margin = {top: 20, right: 50, bottom: 30, left: 80};
-			this.width  = $(svgEl).width() - margin.left - margin.right;
-			this.height = $(svgEl).height() - margin.top - margin.bottom;
-
-			this.x = this.x();
-			this.y = this.y();
+			this.width  = this.width - margin.left - margin.right;
+			this.height = this.height - margin.top - margin.bottom;
+			
+			this.x = d3.time.scale().range([0, this.width]);
+			this.y = d3.scale.linear().range([this.height, 0]);
 			
 			var viewRef = this;
 			
 			var xAxis = d3.svg.axis()
-			    .scale(viewRef.x)
+			    .scale(this.x)
 			    .orient("bottom");
 
 			var yAxis = d3.svg.axis()
-			    .scale(viewRef.y)
+			    .scale(this.y)
 			    .orient("left");
 			
-			var svg = d3.select(svgEl)
+			var svg = d3.select(this.el)
+						.attr("class", "line-chart")
 					    .attr("width", this.width + margin.left + margin.right)
 					    .attr("height", this.height + margin.top + margin.bottom)
 					    .append("g")
 					    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-		  data.forEach(function(d) {
+		  this.data.forEach(function(d) {
 		    d.date = viewRef.parseDate(d.date);
 		    d.count = +d.count;
 		  });
-		  
-		  this.data = data;
-		  			
-		  this.x.domain(d3.extent(data, function(d) { return d.date; }));
-		  this.y.domain(d3.extent(data, function(d) { return d.count; }));
+		  		  			
+		  this.x.domain(d3.extent(this.data, function(d) { return d.date; }));
+		  this.y.domain(d3.extent(this.data, function(d) { return d.count; }));
 		  
 		  svg.append("g")
 		      .attr("class", "x axis")
 		      .attr("transform", "translate(0," + this.height + ")")
-		      .call(xAxis)
-		      //Adjust the year labels so they fall directly under the points
-		      .selectAll(".tick")
-		     .attr("transform", function(d){
-		    	  var currentX = this.attributes.transform.value;
-		    	  var newX = parseInt(currentX.substring(10, currentX.indexOf(","))) + 10;
-		    	  return "translate(" + newX + ", 0)";
-		      });
+		      .call(xAxis);
 
 		  svg.append("g")
 		      .attr("class", "y axis")
 		      .call(yAxis);
 		  
-		  d3.select(svgEl).append("text")
+		  d3.select(this.el).append("text")
 		      .attr("y", 6)
 		      .attr("dy", ".71em")
 		      .style("text-anchor", "middle")
-		      .text("files uploaded")
+		      .text(this.yLabel)
 		      .attr("class", "title")
 		  	  .attr("transform", "translate(0, " + (this.height/2) + ") rotate(-90)");
 		  
@@ -110,32 +122,29 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
 
 		  svg.append("path")
-		      .datum(data)
-		      .attr("class", "line " + className)
+		      .datum(this.data)
+		      .attr("class", "line " + this.className)
 		      .attr("d", line);
 	  		  
 		  /* save a reference to certain objects so we can add new lines later */
 			this.svg = svg; 
 			this.line = line; 
 			
-			this.addPoints(data, className, points);
-
+			this.addPoints();
 	        
 			return this;
 		},
 		
-		addLine: function(data, className, points){
+		addLine: function(data){
 			console.log('add a line');
 							
 			var viewRef = this;
-			
+					
 		   data.forEach(function(d) {
 		    	d.date = viewRef.parseDate(d.date);
 		    	d.count = +d.count;
 		    });
-					   
-			viewRef = this;
-		    
+					   		    
 			var line = d3.svg.line()
 				.interpolate("cardinal")
 				.x(function(d) { return viewRef.x(d.date); })
@@ -143,50 +152,46 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
 		    this.svg.append("path")
 		    	.datum(data)
-		    	.attr("class", "line " + className)
+		    	.attr("class", "line " + this.className)
 		    	.attr("d", line);
 		    
-		    this.addPoints(data, className, points);
+		    this.data = data;
+		    
+		    this.addPoints();
 		    
 		},
 		
-		addPoints: function(data, className, points){
+		addPoints: function(){
 			var viewRef = this;
 		
 			  //Should we add points?
-			  if(points){
-				  
+			  if(this.frequency > 0){
 				  //Pare down the data to every X for the points
 				  var pointData = [];
-				  for(var i=0; i<data.length; i+=points.frequency){
-					  pointData.push(data[i]);
-					  if(i== data.length){
-						  
-					  }
+				  for(var i=0; i<this.data.length; i+=this.frequency){
+					  pointData.push(this.data[i]);
 				  }
-				  var remainder = data.length%points.frequency;
+				  var remainder = (this.data.length-1)%this.frequency;
 				  if(remainder){
 					  //Make sure we included the last data point - we always want our lines to end with a point
-					  pointData.push(data[data.length-1]);  
+					  pointData.push(this.data[this.data.length-1]);  
 				  }
 				  
-				  var circles = viewRef.svg.selectAll("svg")
+				  var circles = this.svg.selectAll("svg")
 						  					.data(pointData)
 						  					.enter().append("g");
 				  
 				circles.append("svg:circle")
-						.attr("stroke", "black")
-						.attr("fill", "black")
-						.attr("class", "point " + className)
+						.attr("class", "point " + this.className)
 						.attr("cx", function(d, i){ return viewRef.x(d.date) })
 						.attr("cy", function(d, i){ return viewRef.y(d.count)})
-						.attr("r", function(d, i){ return points.radius });
+						.attr("r", function(d, i){ return viewRef.radius });
 						  
 				  circles.append("text")
 				  		.text(function(d, i){
 				  			var date = "";
-				  			//If frequency is one year, show just the year
-				  			switch(points.labelDate){
+				  			//Format the date according to the options passed to this line chart
+				  			switch(viewRef.labelDate){
 				  				case "y": 
 				  					date = new Date(d.date).getFullYear();
 				  					break;
@@ -224,7 +229,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					  		}
 					  		return labelY; 
 					  	})
-					  	.attr("class", "line-chart-label " + className)
+					  	.attr("class", "line-chart-label " + this.className)
 					  	.attr("text-anchor", "end");
 			  }
 		},

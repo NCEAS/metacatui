@@ -314,18 +314,37 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						counts = data.facet_counts.facet_ranges.dateUploaded.counts;
 						var dataUploadData = formatUploadData(counts);
 						
-						//Create the line chart and draw the metadata line
-						var lineChartView = new LineChart();
 						//Check which line we should draw first since the scale will be based off the first line
 						if(profileModel.get("metadataUploaded") > profileModel.get("dataUploaded") ){
-							var lineChart = lineChartView.render(metadataUploadData, "#upload-chart", "metadata", {frequency: 12, radius: 4, labelDate: "y"});
+							//Create the line chart and draw the metadata line
+							var lineChartView = new LineChart(
+									{	  data: metadataUploadData,
+											id: "upload-chart",
+									 className: "metadata",
+									 	yLabel: "files uploaded",
+									 frequency: 12, 
+										radius: 4, 
+									 labelDate: "y"});
+							
+							viewRef.$('.upload-chart').append(lineChartView.render().el);
 							//Add a line to our chart for data uploads
-							lineChart.addLine(dataUploadData, "data", {frequency: 12, radius: 4, labelDate: "y"});
+							lineChartView.className = "data";
+							lineChartView.addLine(dataUploadData);
 						}
 						else{
-							var lineChart = lineChartView.render(dataUploadData, "#upload-chart", "data", {frequency: 12, radius: 4, labelDate: "y"});
-							//Add a line to our chart for data uploads
-							lineChart.addLine(metadataUploadData, "metadata", {frequency: 12, radius: 4, labelDate: "y"});
+							var lineChartView = new LineChart(
+									{	  data: dataUploadData,
+											id: "upload-chart",
+									 className: "data",
+									 	yLabel: "files uploaded",
+									 frequency: 12, 
+										radius: 4, 
+									 labelDate: "y"});
+							
+							viewRef.$('.upload-chart').append(lineChartView.render().el);
+							lineChartView.className = "metadata";
+							//Add a line to our chart for metadata uploads
+							lineChartView.addLine(metadataUploadData);
 						}
 						
 						var titleChartData = [

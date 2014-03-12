@@ -1124,6 +1124,13 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   	margin-left: 10%;
   	margin-right: 10%;
   }
+    
+   
+  #Profile .charts{
+  	margin-left: auto;
+  	margin-right: auto;
+  	margin-bottom: 20px;
+  }
   
   /* The universal color for data */
 svg .data{
@@ -1139,28 +1146,21 @@ svg .metadata{
   	fill: #761012;
   }
   
-   
-  #Profile .charts{
-  	width: 900px;
-  	margin-left: auto;
-  	margin-right: auto;
-  	margin-bottom: 20px;
-  }
-  
-  /* Donut charts */
-#Profile .format-charts{
+  /* Donut charts */  
+  #metadata-chart,
+#data-chart{
+	height: 400px;
+	width: 500px;
+	float: left;	
+}
+
+ .format-charts{
 	margin-left: auto;
 	margin-right: auto;
 	width: 1100px;	
 }
 .format-charts > svg:first-child{
 	margin: 0 30px 0 0;
-}
-#metadata-chart,
-#data-chart{
-	height: 400px;
-	width: 500px;
-	float: left;	
 }
 
 .donut.default .donut-labels{
@@ -1211,26 +1211,25 @@ svg .metadata{
 	transition: opacity .2s;
 }
 
-#upload-chart{
+/* Line Chart */
+.upload-chart{
 	width: 800px;
-	height: 250px;
 }
-
 #upload-chart-title{
 	width: 900px;
 	height: 100px;
 }
 
-#Profile .line-chart .line{
+.line-chart .line{
 	fill: none;
   	stroke-width: 2px;
 }
-#Profile .line-chart .domain{
+.line-chart .domain{
 	fill: none;
 	stroke-width: 1px;
 	stroke: #555555;
 }
-#Profile .line-chart .point{
+.line-chart .point{
 	fill: #FFFFFF;
 	stroke-width: 2px;
 }
@@ -1247,14 +1246,14 @@ svg .metadata{
 	opacity: 1;
 	transition: all .5s;
 }
-#Profile .title .label{
+.chart-title .label{
 	color: #555555;
 	fill: #555555;
 	stroke-width: 0px;
 	font-size: 13px;
 	font-weight: 300;
 }
-#Profile .title .count{
+.chart-title .count{
 	color: #FFFFFF;
 	fill: #FFFFFF;
 	stroke-width: 0px;
