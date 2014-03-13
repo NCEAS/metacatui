@@ -361,7 +361,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 											 ];
 						
 						//Draw the upload chart title
-						viewRef.drawTitle("#upload-chart-title", titleChartData, "uploads");
+						viewRef.drawTitle("#upload-chart-title", titleChartData, "uploads and revisions");
 					})
 					.error(function(){
 						console.warn('Solr query for data upload info returned error. Continuing with load.');

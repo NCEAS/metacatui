@@ -1150,8 +1150,11 @@ svg .metadata{
   #metadata-chart,
 #data-chart{
 	height: 400px;
-	width: 500px;
-	float: left;	
+	width: 500px;	
+}
+
+#metadata-chart{
+	float: left;
 }
 
  .format-charts{
