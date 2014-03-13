@@ -22,10 +22,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		render: function () {
 			console.log('Rendering the profile view');
 			
-			//Stop listening to the profile model while we reset it
+			/*//Stop listening to the profile model while we reset it
 			this.stopListening(profileModel);
 			//Reset the profile model
-			profileModel.clear().set(profileModel.defaults);	
+			profileModel.clear().set(profileModel.defaults);	*/
 			
 			//Now listen again to the profile model so we can draw charts when values are changed
 			this.listenTo(profileModel, 'change:dataFormatIDs', this.drawDataCountChart);
@@ -36,11 +36,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			this.$el.html(this.template());
 			
 			// set the header type
-			appModel.set('headerType', 'default');
+			profileModel.set('headerType', 'default');
 			
 			//If no query was given, then show all of the repository info
-			if(!appModel.get('profileQuery')){
-				appModel.set('profileQuery', '*:*');
+			if(!profileModel.get('query')){
+				profileModel.set('query', '*:*');
 			}
 
 			//Start retrieving data from Solr
@@ -53,8 +53,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		
 		
 		getGeneralInfo: function(){
-			//Send a Solr query to retrieve the first activity date (dateUploaded) for this person/query
-			var query = "q=" + appModel.get('profileQuery') +
+		
+			//Send a Solr query to retrieve some preliminary information we will need for this person/query
+			var query = "q=" + profileModel.get('query') +
 				"&rows=1" +
 				"&wt=json" +
 				"&fl=dateUploaded" +
@@ -66,6 +67,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				profileModel.set('totalUploaded', data.response.numFound);
 			});
 			
+			//Is the query for a user only? If so, treat the general info as a user profile
+			var query = profileModel.get('query');
+			
+			
 		},
 		
 		/**
@@ -75,7 +80,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var viewRef = this;
 			
 			//Build the query to get the format types
-			var facetFormatType = "q=" + appModel.get('profileQuery') +
+			var facetFormatType = "q=" + profileModel.get('query') +
 								  "+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*" +
 								  "&wt=json" +
 								  "&rows=2" +
@@ -115,7 +120,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				}	
 
 				if(profileModel.get('dataCount') > 0){
-					var dataFormatIds = "q=" + appModel.get('profileQuery') +
+					var dataFormatIds = "q=" + profileModel.get('query') +
 					"+formatType:DATA+-obsoletedBy:*" +
 					"&facet=true" +
 					"&facet.field=formatId" +
@@ -134,7 +139,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				}
 				
 				if(profileModel.get('metadataCount') > 0){
-					var metadataFormatIds = "q=" + appModel.get('profileQuery') +
+					var metadataFormatIds = "q=" + profileModel.get('query') +
 					"+formatType:METADATA+-obsoletedBy:*" +
 					"&facet=true" +
 					"&facet.field=formatId" +
@@ -264,7 +269,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		drawUploadChart: function() {
 			
 				function setQuery(formatType){
-					return query = "q=" + appModel.get('profileQuery') +
+					return query = "q=" + profileModel.get('query') +
 					  "+formatType:" + formatType +
 					  "&wt=json" +
 					  "&rows=0" +
@@ -353,7 +358,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 											 ];
 						
 						//Draw the upload chart title
-						viewRef.drawTitle("#upload-chart-title", titleChartData, "uploaded");
+						viewRef.drawTitle("#upload-chart-title", titleChartData, "uploads");
 					})
 					.error(function(){
 						console.warn('Solr query for data upload info returned error. Continuing with load.');
@@ -439,7 +444,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 */
 		getTemporalCoverage: function(){
 			//Construct our query to get the begin and end date of all objects for this query
-		/*	var query = "q=" + appModel.get('profileQuery') +
+		/*	var query = "q=" + profileModel.get('query') +
 			  "fl=beginDate,endDate" +
 			  "-obsoletedBy:*" +
 			  "&wt=json" +

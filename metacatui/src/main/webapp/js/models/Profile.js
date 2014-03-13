@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'backbone'],
 	var Profile = Backbone.Model.extend({
 		// This model contains all of the statistics in a user's or query's profile
 		defaults: {
+			query: "*:*", //Show everything
 			metadataCount: 0,
 			dataCount: 0,
 			metadataFormatIDs: [], //Uses same structure as Solr facet counts: ["text/csv", 5]

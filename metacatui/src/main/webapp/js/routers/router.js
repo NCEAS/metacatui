@@ -93,7 +93,12 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		renderProfile: function(query){
 			console.log('Called UIRouter.renderProfile()');
 			this.routeHistory.push("profile");
-			appModel.set('profileQuery', query);
+			
+			//Reset the profile model first
+			profileModel.clear().set(profileModel.defaults);			
+			if(query.length > 0){
+				profileModel.set('query', query);				
+			}
 			appView.showView(profileView);
 		},
 		
