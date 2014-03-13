@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ProfileView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ProfileView, ExternalView, LdapView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, StatsView, ExternalView, LdapView) {
 
 	var indexView = new IndexView();
 	var aboutView = aboutView || new AboutView();
@@ -10,7 +10,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var dataCatalogView = new DataCatalogView();
 	var registryView = new RegistryView();
 	var metadataView = new MetadataView();
-	var profileView = new ProfileView();
+	var statsView = new StatsView();
 	var externalView = new ExternalView();
 	var ldapView = new LdapView();
 
@@ -100,8 +100,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		renderProfile: function(query){
 			console.log('Called UIRouter.renderProfile()');
 			this.routeHistory.push("profile");
-			appModel.set('profileQuery');
-			appView.showView(profileView);
+			
+			//Reset the profile model first
+			statsModel.clear().set(statsModel.defaults);			
+			if(query.length > 0){
+				statsModel.set('query', query);				
+			}
+			appView.showView(statsView);
 		},
 		
 		renderRegistry: function (stage, pid) {

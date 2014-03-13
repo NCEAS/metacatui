@@ -1,14 +1,14 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views/LineChartView', 'text!templates/profile.html', 'text!templates/alert.html'], 				
-	function($, _, Backbone, d3, DonutChart, LineChart, ProfileTemplate, AlertTemplate) {
+	function($, _, Backbone, d3, DonutChart, LineChart, profileTemplate, AlertTemplate) {
 	'use strict';
 		
 	// Build the main header view of the application
-	var ProfileView = Backbone.View.extend({
+	var StatsView = Backbone.View.extend({
 
 		el: '#Content',
 		
-		template: _.template(ProfileTemplate),
+		template: _.template(profileTemplate),
 		
 		alertTemplate: _.template(AlertTemplate),
 		
@@ -20,22 +20,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		},
 				
 		render: function () {
-			console.log('Rendering the profile view');
+			console.log('Rendering the stats view');
 			
-			//Now listen again to the profile model so we can draw charts when values are changed
-			this.listenTo(profileModel, 'change:dataFormatIDs', this.drawDataCountChart);
-			this.listenTo(profileModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
-			this.listenTo(profileModel, 'change:firstUpload', this.drawUploadChart);
+			//Now listen again to the stats model so we can draw charts when values are changed
+			this.listenTo(statsModel, 'change:dataFormatIDs', this.drawDataCountChart);
+			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
+			this.listenTo(statsModel, 'change:firstUpload', this.drawUploadChart);
 			
 			//Insert the template
 			this.$el.html(this.template());
 			
 			// set the header type
-			profileModel.set('headerType', 'default');
+			statsModel.set('headerType', 'default');
 			
 			//If no query was given, then show all of the repository info
-			if(!profileModel.get('query')){
-				profileModel.set('query', '*:*');
+			if(!statsModel.get('query')){
+				statsModel.set('query', '*:*');
 			}
 
 			//Start retrieving data from Solr
@@ -50,7 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		getGeneralInfo: function(){
 		
 			//Send a Solr query to retrieve some preliminary information we will need for this person/query
-			var query = "q=" + profileModel.get('query') +
+			var query = "q=" + statsModel.get('query') +
 				"&rows=1" +
 				"&wt=json" +
 				"&fl=dateUploaded" +
@@ -58,15 +58,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			
 			//Run the query
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				profileModel.set('firstUpload', data.response.docs[0].dateUploaded);
-				profileModel.set('totalUploaded', data.response.numFound);
+				statsModel.set('firstUpload', data.response.docs[0].dateUploaded);
+				statsModel.set('totalUploaded', data.response.numFound);
 			});
 			
 			//Is the query for a user only? If so, treat the general info as a user profile
-			var profileQuery = profileModel.get('query');
-			if(profileQuery.indexOf("rightsHolder") > -1){
+			var statsQuery = statsModel.get('query');
+			if(statsQuery.indexOf("rightsHolder") > -1){
 				//Extract the uid string from the query string 
-				var uid = profileQuery.substring(profileQuery.indexOf("uid="));
+				var uid = statsQuery.substring(statsQuery.indexOf("uid="));
 				uid = uid.substring(4, uid.indexOf(","));
 
 				//Display the name of the person
@@ -77,13 +77,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		},
 		
 		/**
-		** getFormatTypes will send three Solr queries to get the formatTypes and formatID statistics and will update the Profile model 
+		** getFormatTypes will send three Solr queries to get the formatTypes and formatID statistics and will update the Stats model 
 		**/
 		getFormatTypes: function(){
 			var viewRef = this;
 			
 			//Build the query to get the format types
-			var facetFormatType = "q=" + profileModel.get('query') +
+			var facetFormatType = "q=" + statsModel.get('query') +
 								  "+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*" +
 								  "&wt=json" +
 								  "&rows=2" +
@@ -99,11 +99,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					
 					//Extract the format type if there is only one type found
 					if(data.grouped.formatType.groups[0].groupValue == "METADATA"){
-						profileModel.set('metadataCount', data.grouped.formatType.groups[0].doclist.numFound);
-						profileModel.set('dataCount', 0);
-						profileModel.set('dataFormatIDs', ["", 0]);
+						statsModel.set('metadataCount', data.grouped.formatType.groups[0].doclist.numFound);
+						statsModel.set('dataCount', 0);
+						statsModel.set('dataFormatIDs', ["", 0]);
 					}else{
-						profileModel.set('dataCount', data.grouped.formatType.groups[0].doclist.numFound);
+						statsModel.set('dataCount', data.grouped.formatType.groups[0].doclist.numFound);
 					}					
 				}	
 				//If no data or metadata objects were found, display a warning
@@ -118,12 +118,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				}
 				else{
 					//Extract the format types (because of filtering and sorting they will always return in this order)
-					profileModel.set('metadataCount', data.grouped.formatType.groups[0].doclist.numFound);
-					profileModel.set('dataCount', data.grouped.formatType.groups[1].doclist.numFound);
+					statsModel.set('metadataCount', data.grouped.formatType.groups[0].doclist.numFound);
+					statsModel.set('dataCount', data.grouped.formatType.groups[1].doclist.numFound);
 				}	
 
-				if(profileModel.get('dataCount') > 0){
-					var dataFormatIds = "q=" + profileModel.get('query') +
+				if(statsModel.get('dataCount') > 0){
+					var dataFormatIds = "q=" + statsModel.get('query') +
 					"+formatType:DATA+-obsoletedBy:*" +
 					"&facet=true" +
 					"&facet.field=formatId" +
@@ -134,15 +134,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					
 					//Now get facet counts of the data format ID's 
 					$.get(appModel.get('queryServiceUrl') + dataFormatIds, function(data, textStatus, xhr) {
-						profileModel.set('dataFormatIDs', data.facet_counts.facet_fields.formatId);
+						statsModel.set('dataFormatIDs', data.facet_counts.facet_fields.formatId);
 					}).error(function(){
 						console.warn('Solr query error for data formatIds - not vital to page, so we will keep going');
 					});
 					
 				}
 				
-				if(profileModel.get('metadataCount') > 0){
-					var metadataFormatIds = "q=" + profileModel.get('query') +
+				if(statsModel.get('metadataCount') > 0){
+					var metadataFormatIds = "q=" + statsModel.get('query') +
 					"+formatType:METADATA+-obsoletedBy:*" +
 					"&facet=true" +
 					"&facet.field=formatId" +
@@ -153,15 +153,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					
 					//Now get facet counts of the metadata format ID's 
 					$.get(appModel.get('queryServiceUrl') + metadataFormatIds, function(data, textStatus, xhr) {
-						profileModel.set('metadataFormatIDs', data.facet_counts.facet_fields.formatId);
+						statsModel.set('metadataFormatIDs', data.facet_counts.facet_fields.formatId);
 					}).error(function(){
 						console.warn('Solr query error for metadata formatIds - not vital to page, so we will keep going');
 					});
 				}
 					
 				//Insert the counts into the DOM
-				$('#data-chart').prepend(profileModel.get('dataCount'));
-				$('#metadata-chart').prepend(profileModel.get('metadataCount'));
+				$('#data-chart').prepend(statsModel.get('dataCount'));
+				$('#metadata-chart').prepend(statsModel.get('metadataCount'));
 						
 			//Display error when our original Solr query went wrong
 			}).error(function(){
@@ -177,10 +177,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		},
 		
 		drawDataCountChart: function(){
-			var dataCount = profileModel.get('dataCount');
-			var data = profileModel.get('dataFormatIDs');
+			var dataCount = statsModel.get('dataCount');
+			var data = statsModel.get('dataFormatIDs');
 			//Format our Solr facet counts for the donut chart rendering
-			data = this.formatDonutData(data, profileModel.get('dataCount'));
+			data = this.formatDonutData(data, statsModel.get('dataCount'));
 
 			if(dataCount){	
 				var svgClass = "data";
@@ -193,7 +193,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var donut = new DonutChart({
 							id: "data-chart",
 							data: data, 
-							colors: profileModel.style.dataChartColors, 
+							colors: statsModel.style.dataChartColors, 
 							titleText: "data files", 
 							titleCount: dataCount,
 							svgClass: svgClass
@@ -202,10 +202,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		},
 
 		drawMetadataCountChart: function(){
-			var metadataCount = profileModel.get("metadataCount");
+			var metadataCount = statsModel.get("metadataCount");
 			//Format our Solr facet counts for the donut chart rendering
-			var data = profileModel.get('metadataFormatIDs');	
-			data = this.formatDonutData(data, profileModel.get('metadataCount'));
+			var data = statsModel.get('metadataFormatIDs');	
+			data = this.formatDonutData(data, statsModel.get('metadataCount'));
 			
 			if(metadataCount){
 				var svgClass = "metadata";
@@ -218,7 +218,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var donut = new DonutChart({
 							id: "metadata-chart",
 							data: data, 
-							colors: profileModel.style.metadataChartColors, 
+							colors: statsModel.style.metadataChartColors, 
 							titleText: "metadata files", 
 							titleCount: metadataCount,
 							svgClass: svgClass
@@ -272,7 +272,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		drawUploadChart: function() {
 			
 				function setQuery(formatType){
-					return query = "q=" + profileModel.get('query') +
+					return query = "q=" + statsModel.get('query') +
 					  "+formatType:" + formatType +
 					  "&wt=json" +
 					  "&rows=0" +
@@ -280,7 +280,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					  "&facet.missing=true" + //Include months that have 0 uploads
 					  "&facet.limit=-1" +
 					  "&facet.range=dateUploaded" +
-					  "&facet.range.start=" + profileModel.get('firstUpload') +
+					  "&facet.range.start=" + statsModel.get('firstUpload') +
 					  "&facet.range.end=NOW" +
 					  "&facet.range.gap=%2B1MONTH";
 				}
@@ -306,7 +306,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 	
 				//Run the query
 				$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-					profileModel.set("metadataUploaded", data.response.numFound);
+					statsModel.set("metadataUploaded", data.response.numFound);
 										
 					//Format our data for the line chart drawing function
 					var counts = data.facet_counts.facet_ranges.dateUploaded.counts;					
@@ -316,14 +316,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					query = setQuery("DATA");
 					
 					$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-						profileModel.set("dataUploaded", data.response.numFound);
+						statsModel.set("dataUploaded", data.response.numFound);
 												
 						//Format our data for the line chart drawing function
 						counts = data.facet_counts.facet_ranges.dateUploaded.counts;
 						var dataUploadData = formatUploadData(counts);
 						
 						//Check which line we should draw first since the scale will be based off the first line
-						if(profileModel.get("metadataUploaded") > profileModel.get("dataUploaded") ){
+						if(statsModel.get("metadataUploaded") > statsModel.get("dataUploaded") ){
 							//Create the line chart and draw the metadata line
 							var lineChartView = new LineChart(
 									{	  data: metadataUploadData,
@@ -356,8 +356,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						}
 						
 						var titleChartData = [
-						                      {count: profileModel.get("metadataUploaded"), label: "metadata", className: "metadata"},
-										      {count: profileModel.get("dataUploaded"), label: "data", className: "data"}
+						                      {count: statsModel.get("metadataUploaded"), label: "metadata", className: "metadata"},
+										      {count: statsModel.get("dataUploaded"), label: "data", className: "data"}
 											 ];
 						
 						//Draw the upload chart title
@@ -447,7 +447,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 */
 		getTemporalCoverage: function(){
 			//Construct our query to get the begin and end date of all objects for this query
-		/*	var query = "q=" + profileModel.get('query') +
+		/*	var query = "q=" + statsModel.get('query') +
 			  "fl=beginDate,endDate" +
 			  "-obsoletedBy:*" +
 			  "&wt=json" +
@@ -477,9 +477,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 },
 		
 		onClose: function () {			
-			console.log('Closing the profile view');
+			console.log('Closing the stats view');
 		},
 		
 	});
-	return ProfileView;		
+	return StatsView;		
 });
