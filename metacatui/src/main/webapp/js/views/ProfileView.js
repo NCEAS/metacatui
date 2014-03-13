@@ -22,11 +22,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		render: function () {
 			console.log('Rendering the profile view');
 			
-			/*//Stop listening to the profile model while we reset it
-			this.stopListening(profileModel);
-			//Reset the profile model
-			profileModel.clear().set(profileModel.defaults);	*/
-			
 			//Now listen again to the profile model so we can draw charts when values are changed
 			this.listenTo(profileModel, 'change:dataFormatIDs', this.drawDataCountChart);
 			this.listenTo(profileModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
@@ -68,7 +63,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			});
 			
 			//Is the query for a user only? If so, treat the general info as a user profile
-			var query = profileModel.get('query');
+			var profileQuery = profileModel.get('query');
+			if(profileQuery.indexOf("rightsHolder") > -1){
+				//Extract the uid string from the query string 
+				var uid = profileQuery.substring(profileQuery.indexOf("uid="));
+				uid = uid.substring(4, uid.indexOf(","));
+
+				//Display the name of the person
+				$(".stats-title").text(uid);
+			}
 			
 			
 		},
