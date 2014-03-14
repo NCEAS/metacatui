@@ -16,17 +16,19 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					r = radius of the circle - can be an int or if nothing is sent for radius, it will be determined based on the count length
 			 *  id: The id to use for the svg element
 			 *  title = optional text to append to the end of the row of circles
-			 *  globalRadius = use the same radius for all circles in the data array. Pass a number to specify a global radius or true to determine the radius for each circle dynamically and use the largest found
+			 *  useGlobalR = use the same radius for all circles in the data array. Pass true to determine the radius for each circle dynamically and use the largest found
+			 *  globalR = use the same radius for all circles in the data array. Pass a number to use as the radius for every circle
 			 *  className = class to give the SVG element
 			 *  margin = margin in pixels between circles
 			 */
 			
-			this.id		   = options.id	 	   || "";
-			this.data	   = options.data	   || [{count: 0, className: "default"}];
-			this.title	   = options.title	   || null;
-			this.globalR   = options.globalR   || null;
-			this.className = options.className || "";
-			this.margin	   = options.margin	   || 20;
+			this.id		    = options.id	 	   || "";
+			this.data	    = options.data	   	   || [{count: 0, className: "default"}];
+			this.title	    = options.title	   	   || null;
+			this.globalR    = options.globalR      || null;
+			this.useGlobalR = options.useGlobalR   || false;
+			this.className  = options.className    || "";
+			this.margin	    = options.margin	   || 20;
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -51,43 +53,49 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			var viewRef = this;
 			
-			//TODO: add functinality for a global radius				
-				//If we have counts with at least 4 digits, we'll need to increase the radius
-				var largestR = 0;
+			//TODO: add functinality for a global radius
+			var radiuses = [13, 17, 25, 30, 40, 60];
 				_.each(this.data, function(d, i){
-					if((viewRef.globalR) && (viewRef.globalR > 0)){
+					console.log(d, i);
+					if((viewRef.useGlobalR) && (viewRef.globalR)){
 						d.r = viewRef.globalR;
 					}					
 					//If no radius or global radius number is specified, we will determine the radius based on the count length
-					else if(!d.r){						
-						if(d.count < 100){ 	   							 //i.e. is 1-2 digits 
-							d.r = 10;
-							if(10 > largestR){
-								largestR = 10;
+					if(!d.r){		
+						if(d.count < 10){ 	   							 	//i.e. is 1 digit 
+							d.r = radiuses[0];
+							if(radiuses[0] > viewRef.globalR){
+								viewRef.globalR = radiuses[0];
+							}
+						}
+						else if((d.count >= 10) && (d.count < 100)){ 	   	//i.e. is 2 digits 
+							d.r = radiuses[1];
+							if(radiuses[1] > viewRef.globalR){
+								viewRef.globalR = radiuses[1];
 							}
 						}
 						else if((d.count >= 100) && (d.count < 1000)){     //i.e. is 3 digits 
-							d.r = 20;
-							if(20 > largestR){
-								largestR = 20;
+							d.r = radiuses[2];
+							if(radiuses[2] >  viewRef.globalR){
+								 viewRef.globalR = radiuses[2];
 							}
 						}
 						else if((d.count >= 1000) && (d.count < 10000)){   //i.e. is 4 digits 
-							d.r = 30;
-							if(30 > largestR){
-								largestR = 30;
+							d.r = radiuses[3];
+							if(radiuses[3] >  viewRef.globalR){
+								 viewRef.globalR = radiuses[3];
 							}
 						}
 						else if((d.count >= 10000) && (d.count < 100000)){ //i.e. is 5 digits
-							d.r = 40;
-							if(40 > largestR){
-								largestR = 40;
+							d.r = radiuses[4];
+							if(radiuses[4] >  viewRef.globalR){
+								 viewRef.globalR = radiuses[4];
 							}
 						}
 						else{
-							d.r = 60;
-							if(60 > largestR){
-								largestR = 60;
+							d.r = radiuses[5];
+							if(radiuses[5] >  viewRef.globalR){
+								 viewRef.globalR = radiuses[5];
 							}
 						}
 					}
@@ -100,7 +108,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 							.data(this.data)
 							.enter().append("svg:circle")
 							.attr("class", function(d, i){ return d.className; })
-							.attr("r", function(d, i){ return d.r; })
+							.attr("r", function(d, i){
+								if(viewRef.useGlobalR){
+									d.r = viewRef.globalR;
+								}
+								return d.r; 
+							})
 							.attr("transform", function(d, i){ 
 								if(i == 0){
 									d.x = d.r;

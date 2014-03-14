@@ -317,7 +317,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						//Get information for our upload chart title
 						var titleChartData = [
 						                      {count: statsModel.get("metadataUploaded"), label: "metadata", className: "metadata"},
-										      {count: statsModel.get("dataUploaded"), 	  label: "data", 	 className: "data"},
+										      {count: statsModel.get("dataUploaded"), 	  label: "data", 	 className: "data"}
 											 ];
 						
 						//Draw the upload chart title
@@ -325,7 +325,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							id: "upload-chart-title",
 							data: titleChartData,
 							title: "uploads and revisions",
-							className: "chart-title"
+							className: "chart-title",
+							useGlobalR: true
 						});
 						viewRef.$('.upload-chart').prepend(uploadChartTitle.render().el);
 					})
