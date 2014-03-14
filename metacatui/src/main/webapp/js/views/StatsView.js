@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views/LineChartView', 'text!templates/profile.html', 'text!templates/alert.html'], 				
-	function($, _, Backbone, d3, DonutChart, LineChart, profileTemplate, AlertTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views/LineChartView', 'views/CircleBadgeView', 'text!templates/profile.html', 'text!templates/alert.html'], 				
+	function($, _, Backbone, d3, DonutChart, LineChart, CircleBadge, profileTemplate, AlertTemplate) {
 	'use strict';
 		
 	// Build the main header view of the application
@@ -22,7 +22,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		render: function () {
 			console.log('Rendering the stats view');
 			
-			//Now listen again to the stats model so we can draw charts when values are changed
+			//Listen to the stats model so we can draw charts when values are changed
 			this.listenTo(statsModel, 'change:dataFormatIDs', this.drawDataCountChart);
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			this.listenTo(statsModel, 'change:firstUpload', this.drawUploadChart);
@@ -179,8 +179,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		drawDataCountChart: function(){
 			var dataCount = statsModel.get('dataCount');
 			var data = statsModel.get('dataFormatIDs');
-			//Format our Solr facet counts for the donut chart rendering
-			data = this.formatDonutData(data, statsModel.get('dataCount'));
 
 			if(dataCount){	
 				var svgClass = "data";
@@ -193,6 +191,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var donut = new DonutChart({
 							id: "data-chart",
 							data: data, 
+							total: statsModel.get('dataCount'),
 							colors: statsModel.style.dataChartColors, 
 							titleText: "data files", 
 							titleCount: dataCount,
@@ -203,9 +202,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 
 		drawMetadataCountChart: function(){
 			var metadataCount = statsModel.get("metadataCount");
-			//Format our Solr facet counts for the donut chart rendering
 			var data = statsModel.get('metadataFormatIDs');	
-			data = this.formatDonutData(data, statsModel.get('metadataCount'));
 			
 			if(metadataCount){
 				var svgClass = "metadata";
@@ -217,7 +214,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			//Draw a donut chart
 			var donut = new DonutChart({
 							id: "metadata-chart",
-							data: data, 
+							data: data,
+							total: statsModel.get('metadataCount'),
 							colors: statsModel.style.metadataChartColors, 
 							titleText: "metadata files", 
 							titleCount: metadataCount,
@@ -225,45 +223,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						});
 			
 			this.$('.format-charts').append(donut.render().el); 
-		},
-		
-		//** This function will loop through the raw facet counts response array from Solr and returns
-		//   a new array of objects that are in the format needed to draw a donut chart
-		// Format of data output:
-		//		  label: formatID from array given	perc: percentage of total	count: count from array given
-		//		[{label: "Format ID", perc: .50, count: 20}]
-		// param counts: array of formatID names followed by their count, identical to Solr facet format. e.g. ["text/CSV", 10, "text", 20]
-		formatDonutData: function(counts, total){
-			var newArray = [];
-			var otherPercent = 0;
-			var otherCount = 0;
-			
-			for(var i=1; i<=counts.length; i+=2){
-				if(counts[i]/total < .01){
-					otherPercent += counts[i]/total;
-					otherCount += counts[i];
-				}
-				else{
-					var name = counts[i-1];
-					if((name !== undefined) && (name.indexOf("ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
-						//Get the EML version only
-						name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
-					}
-					if((total == 0) && (counts[i] == 0)){
-						var perc = 1;
-					}
-					else{
-						var perc = counts[i]/total;
-					}
-					newArray.push({label: name, perc: perc, count:counts[i]});
-				}
-			}
-			
-			if(otherCount > 0){
-				newArray.push({label: "Other", perc: otherPercent, count: otherCount});
-			}
-			
-			return newArray;
 		},
 		
 		/**
@@ -355,13 +314,20 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							lineChartView.addLine(metadataUploadData);
 						}
 						
+						//Get information for our upload chart title
 						var titleChartData = [
 						                      {count: statsModel.get("metadataUploaded"), label: "metadata", className: "metadata"},
-										      {count: statsModel.get("dataUploaded"), label: "data", className: "data"}
+										      {count: statsModel.get("dataUploaded"), 	  label: "data", 	 className: "data"},
 											 ];
 						
 						//Draw the upload chart title
-						viewRef.drawTitle("#upload-chart-title", titleChartData, "uploads and revisions");
+						var uploadChartTitle = new CircleBadge({
+							id: "upload-chart-title",
+							data: titleChartData,
+							title: "uploads and revisions",
+							className: "chart-title"
+						});
+						viewRef.$('.upload-chart').prepend(uploadChartTitle.render().el);
 					})
 					.error(function(){
 						console.warn('Solr query for data upload info returned error. Continuing with load.');
@@ -382,64 +348,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				});
 				
 			
-		},
-		
-		drawTitle: function(svgEl, data, title){	
-			console.log("draw chart title");
-			
-			var viewRef = this;
-		
-			var r = 30; //The circle radius
-			
-			//If we have counts with at least 4 digits, we'll need to increase the radius
-			_.each(data, function(d, i){
-				if(d.count > 1000){
-					r = 40;
-				}
-			});
-			
-			var svg = d3.select(svgEl); //Select the SVG element
-			
-			//Draw the circles
-			var circle = svg.selectAll("circle")
-							.data(data)
-							.enter().append("svg:circle")
-							.attr("class", function(d, i){ return d.className; })
-							.attr("r", r)
-							.attr("transform", function(d, i){ 
-								return "translate(" + ((r*2*(i+1))+(r*i))+ "," + r + ")";
-							});
-			
-			//Draw the text labels underneath the circles
-			svg.append("g")
-				.selectAll("text")
-				.data(data)
-				.enter().append("svg:text")
-				.attr("transform", function(d, i){ 
-					return "translate(" + ((r*2*(i+1))+(r*i))+ "," + ((r*2) + 20) + ")";
-				})
-				.attr("class", function(d){ return d.className + " label"; })
-				.attr("text-anchor", "middle")
-				.text(function(d){ return d.label; });
-			
-			//Draw the count labels inside the circles
-			svg.append("g")
-				.selectAll("text")
-				.data(data)
-				.enter().append("svg:text")
-				.text(function(d){ return viewRef.commaSeparateNumber(d.count); })
-				.attr("transform", function(d, i){
-					return "translate(" + ((r*2*(i+1))+(r*i))+ "," + (r+5) + ")";
-				})
-				.attr("class", function(d){ return d.className + " count"; })
-				.attr("text-anchor", "middle");
-					
-			//Draw the title next to the circles at the end
-			svg.append("text")
-				.text(title)
-				.attr("class", "title")
-				.attr("transform", "translate(" + (((r * 2 * (data.length+1))+(r * (data.length)))-r) + "," + r + ")")
-				.attr("text-anchor", "left");
 		},
 		
 		/* getTemporalCoverage

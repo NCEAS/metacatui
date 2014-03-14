@@ -10,11 +10,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			/*  -- Options for creating donut charts --
 			 *  id of the SVG element to be created
-		 	 *  data: An array of objects with the data needed to draw each arc. Format:
-			 * 				[{label: "label text", count: 100, perc: 0.35}]
-			 * 				label = text for arc label
-			 * 				count = number for arc label
-			 * 				perc  = percent of total to determine arc size
+		 	 *  data: array of formatID names followed by their count, identical to Solr facet format. e.g. ["text/CSV", 10, "text", 20]
+			 * total: total count for this donut chart (used to calculate percentages)
 			 * colors: an array of colors (strings of hex code) for the arcs 
 			 * titleText (optional): A string to insert in the center of the donut 
 			 * titleCount (optional): A number to insert in the center of the donut
@@ -25,13 +22,15 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			//Give all the specified options to this view
 			this.id 		= options.id 		 || "chart";
-			this.data 		= options.data 		 || [{label: "", count: 0, perc: 0}];
 			this.colors 	= options.colors 	 || ["#000000"];
 			this.titleText  = options.titleText  || "";
 			this.titleCount = options.titleCount || 0;
-			this.height 	= options.height	 || 400;
+			this.height 	= options.height	 || 300;
 			this.width		= options.width		 || 500;
 			this.svgClass	= options.svgClass	 || "";
+			this.total		= options.total		 || 0;
+			this.data 		= this.formatDonutData(options.data, options.total) || [{label: "", count: 0, perc: 0}];;
+
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -72,7 +71,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	            r = Math.min(w, h) / 4,
 	            labelr = r*1.3, // radius for label anchor
 	            donut = d3.layout.pie(),
-	            arc = d3.svg.arc().innerRadius(r * .85).outerRadius(r);
+	            arc = d3.svg.arc().innerRadius(r * .80).outerRadius(r);
 
 	        //Select the SVG element and connect our data to it
 	        var vis = d3.select(this.el)
@@ -170,10 +169,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 							.attr("y", function(d, i){ 
 											//Center vertically based on the height
 											if(i > 0){
-												return d.cy + 15;
+												return d.cy + 12;
 											}
 											else{
-												return d.cy - 15;
+												return d.cy - 12;
 											}
 							})
 							.attr("text-anchor", "middle")
@@ -232,6 +231,45 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        	        	 	        
 			return this;
 	
+		},
+		
+		//** This function will loop through the raw facet counts response array from Solr and returns
+		//   a new array of objects that are in the format needed to draw a donut chart
+		// Format of data output:
+		//		  label: formatID from array given	perc: percentage of total	count: count from array given
+		//		[{label: "Format ID", perc: .50, count: 20}]
+		// param counts: array of formatID names followed by their count, identical to Solr facet format. e.g. ["text/CSV", 10, "text", 20]
+		formatDonutData: function(counts){
+			var newArray = [];
+			var otherPercent = 0;
+			var otherCount = 0;
+			
+			for(var i=1; i<=counts.length; i+=2){
+				if(counts[i]/this.total < .01){
+					otherPercent += counts[i]/this.total;
+					otherCount += counts[i];
+				}
+				else{
+					var name = counts[i-1];
+					if((name !== undefined) && (name.indexOf("ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
+						//Get the EML version only
+						name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
+					}
+					if((this.total == 0) && (counts[i] == 0)){
+						var perc = 1;
+					}
+					else{
+						var perc = counts[i]/this.total;
+					}
+					newArray.push({label: name, perc: perc, count:counts[i]});
+				}
+			}
+			
+			if(otherCount > 0){
+				newArray.push({label: "Other", perc: otherPercent, count: otherCount});
+			}
+			
+			return newArray;
 		},
 		
 		//Function to add commas to large numbers

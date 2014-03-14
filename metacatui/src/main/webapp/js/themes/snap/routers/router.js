@@ -103,7 +103,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			
 			//Reset the profile model first
 			statsModel.clear().set(statsModel.defaults);			
-			if(query.length > 0){
+			if(!query || query.length > 0){
 				statsModel.set('query', query);				
 			}
 			appView.showView(statsView);

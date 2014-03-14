@@ -1117,7 +1117,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
 		min-height: 800px;
     }
     
-/* Profile styles 
+/* Stats styles 
   -------------------------------------------------- */
   #Profile{
   	width: 80%;
@@ -1129,7 +1129,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   #Profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	margin-bottom: 20px;
   }
   
   /* The universal color for data */
@@ -1149,8 +1148,8 @@ svg .metadata{
   /* Donut charts */  
   #metadata-chart,
 #data-chart{
-	height: 400px;
-	width: 500px;	
+	height: 300px;
+	width: 400px;	
 }
 
 #metadata-chart{
@@ -1194,7 +1193,7 @@ svg .metadata{
 .title{
 	color: #555555;
 	fill: #555555;
-	font-size: 19px;
+	font-size: 17px;
 	line-height: 17px;
 }
 .donut-arc{
@@ -1220,7 +1219,7 @@ svg .metadata{
 }
 #upload-chart-title{
 	width: 900px;
-	height: 100px;
+	height: 125px;
 }
 
 .line-chart .line{
@@ -1249,6 +1248,8 @@ svg .metadata{
 	opacity: 1;
 	transition: all .5s;
 }
+
+/* Circle Badges */
 .chart-title .label{
 	color: #555555;
 	fill: #555555;
