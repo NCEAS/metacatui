@@ -51,15 +51,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		
 			//Send a Solr query to retrieve some preliminary information we will need for this person/query
 			var query = "q=" + statsModel.get('query') +
+				"+dateUploaded:*" +
 				"&rows=1" +
 				"&wt=json" +
 				"&fl=dateUploaded" +
 				"&sort=dateUploaded+asc";
 			
+			var beginDateQuery = "q=" + statsModel.get('query') +
+				"+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+ 				"&rows=1" +
+				"&wt=json" +
+				"&fl=beginDate" +
+				"&sort=beginDate+asc";
+			
 			//Run the query
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
 				statsModel.set('firstUpload', data.response.docs[0].dateUploaded);
 				statsModel.set('totalUploaded', data.response.numFound);
+			});
+			
+			$.get(appModel.get('queryServiceUrl') + beginDateQuery, function(data, textStatus, xhr) {
+				statsModel.set('firstBeginDate', data.response.docs[0].beginDate);
 			});
 			
 			//Is the query for a user only? If so, treat the general info as a user profile
@@ -356,11 +368,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 */
 		getTemporalCoverage: function(){
 			//Construct our query to get the begin and end date of all objects for this query
-		/*	var query = "q=" + statsModel.get('query') +
-			  "fl=beginDate,endDate" +
-			  "-obsoletedBy:*" +
+			var facetQuery = function(numYears){
+				return "&facet.query=(beginDate:[NOW-" + numYears +"/YEAR%20TO%20*]+endDate:[*%20TO%20" + numYears + "/YEAR])";
+			}
+			
+			//How many years back should we look for temporal coverage?
+			var fullFacetQuery = "";
+			
+			var query = "q=" + statsModel.get('query') +
+			  "+-obsoletedBy:*" +
 			  "&wt=json" +
-			  "&rows=100000";
+			  "&rows=0" +
+			  "&facet=true" +
+			  fullFacetQuery;
 			
 			var viewRef = this;
 			
@@ -374,7 +394,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					classes: "alert-warn",
 					includeEmail: false
 				}));
-			}); */
+			}); 
 		},
 		
 		//Function to add commas to large numbers

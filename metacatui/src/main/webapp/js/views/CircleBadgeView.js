@@ -53,10 +53,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			var viewRef = this;
 			
-			//TODO: add functinality for a global radius
 			var radiuses = [13, 17, 25, 30, 40, 60];
 				_.each(this.data, function(d, i){
-					console.log(d, i);
+
 					if((viewRef.useGlobalR) && (viewRef.globalR)){
 						d.r = viewRef.globalR;
 					}					

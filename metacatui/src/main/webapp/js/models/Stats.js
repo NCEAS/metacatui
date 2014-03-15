@@ -17,6 +17,7 @@ define(['jquery', 'underscore', 'backbone'],
 			totalUploaded: 0, //total data and metadata objects uploaded, including now obsoleted objects
 			metadataUploaded: 0,
 			dataUploaded: 0,
+			firstBeginDate: 0
 		},
 		
 		style: {
