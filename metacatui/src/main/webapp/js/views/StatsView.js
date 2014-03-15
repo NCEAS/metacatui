@@ -26,6 +26,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			this.listenTo(statsModel, 'change:dataFormatIDs', this.drawDataCountChart);
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			this.listenTo(statsModel, 'change:firstUpload', this.drawUploadChart);
+			this.listenTo(statsModel, 'change:firstBeginDate', this.getTemporalCoverage);
 			
 			//Insert the template
 			this.$el.html(this.template());
@@ -41,7 +42,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			//Start retrieving data from Solr
 			this.getGeneralInfo();
 			this.getFormatTypes();	
-			this.getTemporalCoverage();
 			
 			return this;
 		},
@@ -71,7 +71,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			});
 			
 			$.get(appModel.get('queryServiceUrl') + beginDateQuery, function(data, textStatus, xhr) {
-				statsModel.set('firstBeginDate', data.response.docs[0].beginDate);
+				statsModel.set('firstBeginDate', new Date(data.response.docs[0].beginDate));
 			});
 			
 			//Is the query for a user only? If so, treat the general info as a user profile
@@ -369,17 +369,45 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		getTemporalCoverage: function(){
 			//Construct our query to get the begin and end date of all objects for this query
 			var facetQuery = function(numYears){
-				return "&facet.query=(beginDate:[NOW-" + numYears +"/YEAR%20TO%20*]+endDate:[*%20TO%20" + numYears + "/YEAR])";
+				return "&facet.query=(beginDate:[*%20TO%20NOW-" + numYears +"YEARS/YEAR]%20endDate:[NOW-" + numYears + "YEARS/YEAR%20TO%20*])";
 			}
 			
 			//How many years back should we look for temporal coverage?
-			var fullFacetQuery = "";
+			var now = new Date().getFullYear();
+			var totalYears = now - statsModel.get('firstBeginDate').getFullYear(); 
+			var interval = 1;
 			
+			if((totalYears > 10) && (totalYears <= 20)){
+				interval = 2;
+			}
+			else if((totalYears > 20) && (totalYears <= 50)){
+				interval = 5;
+			}
+			else if((totalYears > 50) && (totalYears <= 100)){
+				interval = 10;
+			}
+			else if(totalYears > 100){
+				interval = 25;
+			}
+			
+			var fullFacetQuery = "";
+			for(var i=0; i<=totalYears; i+=interval){
+				fullFacetQuery += facetQuery(i)
+			}
+			
+			var remainder = totalYears%interval;
+			if(remainder){
+				fullFacetQuery += facetQuery(totalYears);
+			}
+						
 			var query = "q=" + statsModel.get('query') +
+			  "+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
 			  "+-obsoletedBy:*" +
 			  "&wt=json" +
 			  "&rows=0" +
 			  "&facet=true" +
+			  "&facet.limit=30000" + //Put some reasonable limit here so we don't wait forever for this query
+			  "&facet.missing=true" + //We want to retrieve years with 0 results
 			  fullFacetQuery;
 			
 			var viewRef = this;
