@@ -368,8 +368,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 */
 		getTemporalCoverage: function(){
 			//Construct our query to get the begin and end date of all objects for this query
-			var facetQuery = function(numYears){
-				return "&facet.query=(beginDate:[*%20TO%20NOW-" + numYears +"YEARS/YEAR]%20endDate:[NOW-" + numYears + "YEARS/YEAR%20TO%20*])";
+			var facetQuery = function(numYears, key){
+				return "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + numYears +"YEARS/YEAR]%20endDate:[NOW-" + numYears + "YEARS/YEAR%20TO%20*])";
 			}
 			
 			//How many years back should we look for temporal coverage?
@@ -391,13 +391,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			}
 			
 			var fullFacetQuery = "";
-			for(var i=0; i<=totalYears; i+=interval){
-				fullFacetQuery += facetQuery(i)
+			for(var i=totalYears; i>=0; i-=interval){
+				fullFacetQuery += facetQuery(i, now-i);
 			}
 			
 			var remainder = totalYears%interval;
 			if(remainder){
-				fullFacetQuery += facetQuery(totalYears);
+				fullFacetQuery += facetQuery(0, now);
 			}
 						
 			var query = "q=" + statsModel.get('query') +
