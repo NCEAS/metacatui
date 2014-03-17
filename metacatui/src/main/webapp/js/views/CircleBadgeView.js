@@ -115,7 +115,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 							})
 							.attr("transform", function(d, i){ 
 								if(i == 0){
-									d.x = d.r;
+									d.x = d.r + viewRef.margin;
 								}
 								else{
 									d.x = viewRef.data[i-1].x + viewRef.data[i-1].r + viewRef.margin + d.r;
@@ -142,7 +142,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				.enter().append("svg:text")
 				.text(function(d){ return viewRef.commaSeparateNumber(d.count); })
 				.attr("transform", function(d, i){
-					return "translate(" + d.x + "," + (d.r+5) + ")";
+					return "translate(" + d.x + "," + (d.r+7) + ")";
 				})
 				.attr("class", function(d){ return d.className + " count"; })
 				.attr("text-anchor", "middle");

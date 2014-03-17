@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views/LineChartView', 'views/CircleBadgeView', 'text!templates/profile.html', 'text!templates/alert.html'], 				
-	function($, _, Backbone, d3, DonutChart, LineChart, CircleBadge, profileTemplate, AlertTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views/LineChartView', 'views/CircleBadgeView', 'views/BarChartView', 'text!templates/profile.html', 'text!templates/alert.html'], 				
+	function($, _, Backbone, d3, DonutChart, LineChart, CircleBadge, BarChart, profileTemplate, AlertTemplate) {
 	'use strict';
 		
 	// Build the main header view of the application
@@ -27,6 +27,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			this.listenTo(statsModel, 'change:firstUpload', this.drawUploadChart);
 			this.listenTo(statsModel, 'change:firstBeginDate', this.getTemporalCoverage);
+			this.listenTo(statsModel, 'change:temporalCoverage', this.drawBarChart);
 			
 			//Insert the template
 			this.$el.html(this.template());
@@ -369,12 +370,17 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		getTemporalCoverage: function(){
 			//Construct our query to get the begin and end date of all objects for this query
 			var facetQuery = function(numYears, key){
-				return "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + numYears +"YEARS/YEAR]%20endDate:[NOW-" + numYears + "YEARS/YEAR%20TO%20*])";
+				if(numYears==0){
+					return "&facet.query=%7B!key=" + key + "%7D(beginDate:[*%20TO%20NOW]%20endDate:[NOW-1YEARS/YEAR%20TO%20NOW])";
+				}
+				return "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + (numYears-1) +"YEARS/YEAR]%20endDate:[NOW-" + numYears + "YEARS/YEAR%20TO%20*])";
 			}
 			
 			//How many years back should we look for temporal coverage?
 			var now = new Date().getFullYear();
 			var totalYears = now - statsModel.get('firstBeginDate').getFullYear(); 
+			
+			//Determine our year interval/bin size so that no more than 10 facet.queries are being sent at a time
 			var interval = 1;
 			
 			if((totalYears > 10) && (totalYears <= 20)){
@@ -390,16 +396,16 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				interval = 25;
 			}
 			
+			//Construct our facet.queries for the beginDate and endDates, starting with all years before this current year
 			var fullFacetQuery = "";
-			for(var i=totalYears; i>=0; i-=interval){
+			for(var i=totalYears; i>0; i-=interval){
 				fullFacetQuery += facetQuery(i, now-i);
 			}
 			
-			var remainder = totalYears%interval;
-			if(remainder){
-				fullFacetQuery += facetQuery(0, now);
-			}
-						
+			//Always query for the current year
+			fullFacetQuery += facetQuery(0, now);
+
+			//The full query			
 			var query = "q=" + statsModel.get('query') +
 			  "+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
 			  "+-obsoletedBy:*" +
@@ -413,7 +419,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var viewRef = this;
 			
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				
+				statsModel.set('temporalCoverage', data.facet_counts.facet_queries);				
 			}).error(function(){
 				//Log this warning and display a warning where the graph should be
 				console.warn("Solr query for temporal coverage failed. Displaying a warning.");
@@ -423,6 +429,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					includeEmail: false
 				}));
 			}); 
+		},
+		
+		drawBarChart: function(){
+			//Format the temporal coverage facets for out bar chart drawing
+			var data = statsModel.get("temporalCoverage");
+			var keys = Object.keys(data);
+			var formattedData = [];
+			for(var i=0; i<keys.length; i++){
+				formattedData.push({
+					x: keys[i],
+					y: data[keys[i]]
+				});
+			}
+			
+			var barChart = new BarChart({
+				data: formattedData,
+				id: "temporal-coverage-chart",
+				yLabel: "data packages"
+			});
+			this.$('.temporal-coverage-chart').append(barChart.render().el);
+			
 		},
 		
 		//Function to add commas to large numbers

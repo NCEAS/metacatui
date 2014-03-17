@@ -1214,39 +1214,44 @@ svg .metadata{
 }
 
 /* Line Chart */
-.upload-chart{
+.upload-chart,
+.temporal-coverage-chart{
 	width: 800px;
 }
 #upload-chart-title{
 	width: 900px;
-	height: 125px;
+	height: 80px;
 }
 
-.line-chart .line{
+svg .line{
 	fill: none;
   	stroke-width: 2px;
 }
-.line-chart .domain{
+svg .domain{
 	fill: none;
 	stroke-width: 1px;
 	stroke: #555555;
 }
-.line-chart .point{
+svg .point{
 	fill: #FFFFFF;
 	stroke-width: 2px;
 }
-.line-chart .line-chart-label{
+svg .line-chart-label{
 	font-weight: bold;
 	font-size: 14px;
 	stroke-width: 0px;
 	opacity: 0;
 }
-.line-chart > .title{
+svg> .title{
 	font-size: 15px;
 }
-.line-chart .point:hover + .line-chart-label{
+svg .point:hover + .line-chart-label{
 	opacity: 1;
 	transition: all .5s;
+}
+
+.bar-chart .bar{
+	fill: #102876;
 }
 
 /* Circle Badges */

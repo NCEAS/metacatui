@@ -29,7 +29,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.width		= options.width		 || 500;
 			this.svgClass	= options.svgClass	 || "";
 			this.total		= options.total		 || 0;
-			this.data 		= this.formatDonutData(options.data, options.total) || [{label: "", count: 0, perc: 0}];;
+			if(typeof options.data !== undefined){
+				this.data = this.formatDonutData(options.data, options.total);
+			}
+			else{
+				this.data = [{label: "", count: 0, perc: 0}];
+			};
 
 		},
 		
