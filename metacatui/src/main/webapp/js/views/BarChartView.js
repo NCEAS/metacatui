@@ -11,8 +11,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * 	data: An array of objects that represents the data to be graphed. Pass in a format of {"x axis label": y-axis number, "className": "class attribute string"}. Example:
 			 * 			[{x: "2009", y: 20, "className": "bar"}]
 			 * 			Any objects with the same x value will be graphed as overlapping bars on the same spot on the x-axis, so stacked bar charts can be created that way.
-			 * 	id: The id to use for the svg element
+			 * 	formatFromSolrFacets = pass true to pass a Solr facets object to format and then use as the data to graph
+			 *  id: The id to use for the svg element
 			 * 	className = class to give the SVG element
+			 *  barClass = a class to give every bar element
 			 *  yLabel = the text of the label along the y-axis
 			 *  width = width of SVG element
 			 *  height = height of SVG element
@@ -20,9 +22,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.data 	   = options.data 	   || [{x: "", y: 0, className: "default"}];
 			this.id 	   = options.id 	   || "";
 			this.className = options.className || "";
+			this.barClass  = options.barClass  || "";
 			this.yLabel	   = options.yLabel	   || "";
 			this.width 	   = options.width 	   || 800;
 			this.height    = options.height    || 250;
+			
+			if(options.formatFromSolrFacets){
+				this.data = this.formatFromSolrFacets(this.data);
+			}
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -96,7 +103,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .attr("class", "bar")
 		      .attr("x", function(d) { return x(d.x); })
 		      .attr("y", function(d) { console.log(d.y); return y(d.y); })
-		      .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className; })
+		      .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className + " " + viewRef.barClass; })
 		      .attr("height", function(d) { return height - y(d.y); })
 		      .attr("width", x.rangeBand());
 		  
@@ -110,6 +117,21 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  	  .attr("transform", "translate(0, " + (this.height/2) + ") rotate(-90)");
 				
 			return this;
+		},
+		
+		// This function will take a single object of key:value pairs (identical to the format that Solr returns for facets) and format it as needed to draw a bar chart
+		// param rawData: Format example: {"cats": 5, "dogs": 6, "fish": 10}
+		formatFromSolrFacets: function(rawData){
+			var keys = Object.keys(rawData);
+			var data = [];
+			for(var i=0; i<keys.length; i++){
+				data.push({
+					x: keys[i],
+					y: rawData[keys[i]]
+				});
+			}
+			
+			return data;
 		},
 		
 		//Function to add commas to large numbers

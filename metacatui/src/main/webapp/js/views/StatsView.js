@@ -431,20 +431,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			}); 
 		},
 		
+		//Draw a bar chart for the temporal coverage 
 		drawBarChart: function(){
-			//Format the temporal coverage facets for out bar chart drawing
-			var data = statsModel.get("temporalCoverage");
-			var keys = Object.keys(data);
-			var formattedData = [];
-			for(var i=0; i<keys.length; i++){
-				formattedData.push({
-					x: keys[i],
-					y: data[keys[i]]
-				});
-			}
 			
 			var barChart = new BarChart({
-				data: formattedData,
+				data: statsModel.get("temporalCoverage"),
+				formatFromSolrFacets: true,
 				id: "temporal-coverage-chart",
 				yLabel: "data packages"
 			});
