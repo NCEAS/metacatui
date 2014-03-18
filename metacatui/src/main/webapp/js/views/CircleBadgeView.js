@@ -100,7 +100,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					}
 				});
 			
-			var svg = d3.select(this.el); //Select the SVG element
+			//Select the SVG element
+			var svg = d3.select(this.el)
+						.attr("class", "circle-badge"); 
 			
 			//Draw the circles
 			var circle = svg.selectAll("circle")

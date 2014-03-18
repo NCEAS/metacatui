@@ -28,6 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			this.listenTo(statsModel, 'change:firstUpload', this.drawUploadChart);
 			this.listenTo(statsModel, 'change:firstBeginDate', this.getTemporalCoverage);
 			this.listenTo(statsModel, 'change:temporalCoverage', this.drawBarChart);
+			this.listenTo(statsModel, 'change:coverageYears', this.drawBarChartTitle);
 			
 			//Insert the template
 			this.$el.html(this.template());
@@ -419,7 +420,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var viewRef = this;
 			
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				statsModel.set('temporalCoverage', data.facet_counts.facet_queries);				
+				statsModel.set('temporalCoverage', data.facet_counts.facet_queries);	
+				statsModel.set('coverageYears',  totalYears);
 			}).error(function(){
 				//Log this warning and display a warning where the graph should be
 				console.warn("Solr query for temporal coverage failed. Displaying a warning.");
@@ -438,10 +440,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				data: statsModel.get("temporalCoverage"),
 				formatFromSolrFacets: true,
 				id: "temporal-coverage-chart",
-				yLabel: "data packages"
+				yLabel: "data packages",
+				barClass: "packages"
 			});
 			this.$('.temporal-coverage-chart').append(barChart.render().el);
 			
+		},
+		
+		drawBarChartTitle: function(){
+			//Also draw the title
+			var coverageTitle = new CircleBadge({
+				data: [{count: statsModel.get('coverageYears'), className: "packages"}],
+				id: "temporal-coverage-title",
+				title: "years of data coverage"
+			});
+			this.$('.temporal-coverage-chart').prepend(coverageTitle.render().el);
 		},
 		
 		//Function to add commas to large numbers

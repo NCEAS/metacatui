@@ -1145,6 +1145,12 @@ svg .metadata{
   	fill: #761012;
   }
   
+svg .packages{
+	color: #102876;
+	stroke: #102876;
+	fill: #102876;
+}
+  
   /* Donut charts */  
   #metadata-chart,
 #data-chart{
@@ -1219,10 +1225,8 @@ svg .metadata{
 	width: 800px;
 }
 #upload-chart-title{
-	width: 900px;
 	height: 80px;
 }
-
 svg .line{
 	fill: none;
   	stroke-width: 2px;
@@ -1250,19 +1254,23 @@ svg .point:hover + .line-chart-label{
 	transition: all .5s;
 }
 
-.bar-chart .bar{
-	fill: #102876;
+.temporal-coverage-chart{
+	margin-top: 20px;
 }
 
 /* Circle Badges */
-.chart-title .label{
+.circle-badge{
+	width: 900px;
+	height: 60px;
+}
+.circle-badge .label{
 	color: #555555;
 	fill: #555555;
 	stroke-width: 0px;
 	font-size: 13px;
 	font-weight: 300;
 }
-.chart-title .count{
+.circle-badge .count{
 	color: #FFFFFF;
 	fill: #FFFFFF;
 	stroke-width: 0px;

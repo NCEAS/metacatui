@@ -102,7 +102,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		    .enter().append("rect")
 		      .attr("class", "bar")
 		      .attr("x", function(d) { return x(d.x); })
-		      .attr("y", function(d) { console.log(d.y); return y(d.y); })
+		      .attr("y", function(d) { return y(d.y); })
 		      .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className + " " + viewRef.barClass; })
 		      .attr("height", function(d) { return height - y(d.y); })
 		      .attr("width", x.rangeBand());

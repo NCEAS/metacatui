@@ -18,7 +18,8 @@ define(['jquery', 'underscore', 'backbone'],
 			metadataUploaded: 0,
 			dataUploaded: 0,
 			firstBeginDate: 0,
-			temporalCoverage: 0
+			temporalCoverage: 0,
+			coverageYears: 0
 		},
 		
 		style: {
