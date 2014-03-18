@@ -1398,6 +1398,9 @@ Bold 700
 /* RESULTS CSS
 -------------------------------------------------- */
     /*-- Results header --*/
+    #results-view{
+    	background-color: #FFF;
+    }
     .result-header {
       position: relative;
       z-index: 1;
@@ -1494,7 +1497,6 @@ Bold 700
  	#statcounts{
  		width: 43.5%;
  		padding-left: 10px;
- 		background-color: #FFF;
  		height: inherit;
  		left: 30%;
  		margin-left: 0px;
@@ -1863,13 +1865,14 @@ Bold 700
 	-webkit-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
 	-moz-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
 	box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
+	background-color: #FFFFFF;
 	cursor: pointer;
 	transition: all 0.8s;
 }
 
 #toggle-map i{
 	font-size: 25px;
-	color: #EEE;
+	color: #666666;
 	transition: all 0.5s;
 }
 
@@ -1879,7 +1882,10 @@ Bold 700
 
 #toggle-map span{
 	margin-right: 10px;
-	color: #3399CC;
+	color: #666666;
+	text-transform: uppercase;
+	font-size: 20px;
+	line-height: 20px;
 }
 
 #show-map-control,
@@ -1893,7 +1899,7 @@ Bold 700
 }
 
 .mapMode #toggle-map{
-	left: -84px;
+	left: -90px;
 }
 
 #toggle-map{
