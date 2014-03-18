@@ -16,6 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * 	className = class to give the SVG element
 			 *  barClass = a class to give every bar element
 			 *  yLabel = the text of the label along the y-axis
+			 *  yFormat = the format to use for the y-axis tick marks, in d3.format syntax (https://github.com/mbostock/d3/wiki/Formatting#d3_format)
 			 *  width = width of SVG element
 			 *  height = height of SVG element
 			 */
@@ -24,6 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.className = options.className || "";
 			this.barClass  = options.barClass  || "";
 			this.yLabel	   = options.yLabel	   || "";
+			this.yFormat   = options.yFormat   || null;
 			this.width 	   = options.width 	   || 800;
 			this.height    = options.height    || 250;
 			
@@ -69,7 +71,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
 		var y = d3.scale.linear()
 		    .range([height, 0]);
-
 		var xAxis = d3.svg.axis()
 		    .scale(x)
 		    .orient("bottom");
@@ -77,7 +78,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		var yAxis = d3.svg.axis()
 		    .scale(y)
 		    .orient("left");
-
+		
+		if(this.yFormat){
+		    yAxis.tickFormat(this.yFormat); 
+		}
 		var chart = d3.select(this.el)
 			.attr("class", "bar-chart " + this.className)
 		    .attr("width", width + margin.left + margin.right)

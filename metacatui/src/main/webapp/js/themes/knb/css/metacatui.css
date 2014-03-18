@@ -2058,11 +2058,10 @@ svg .point:hover + .line-chart-label{
  	
  	.mapMode .result-header > .result-header-count{
  		position: fixed;
- 		width: 82%;
  		background-color: #FFFFFF;
  		border-bottom: 3px solid #DDDDDD;
  		margin-left: 0px;
- 		width: 43.6%;
+ 		width: 44.6%;
  		cursor: pointer;
  		z-index: 1;
  		border-radius: 4px 0px 0px 4px;
