@@ -91,9 +91,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		    d.date = viewRef.parseDate(d.date);
 		    d.count = +d.count;
 		  });
-		  		  			
+		  		  		
 		  this.x.domain(d3.extent(this.data, function(d) { return d.date; }));
-		  this.y.domain(d3.extent(this.data, function(d) { return d.count; }));
+		  this.y.domain([0, d3.max(this.data, function(d){ return d.count; })]); //y axis is always 0 - max y value
 		  
 		  svg.append("g")
 		      .attr("class", "x axis")

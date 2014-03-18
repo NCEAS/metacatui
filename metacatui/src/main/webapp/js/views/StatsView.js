@@ -441,7 +441,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				formatFromSolrFacets: true,
 				id: "temporal-coverage-chart",
 				yLabel: "data packages",
-				yFormat: "d",
+				yFormat: d3.format("d"),
 				barClass: "packages"
 			});
 			this.$('.temporal-coverage-chart').append(barChart.render().el);
