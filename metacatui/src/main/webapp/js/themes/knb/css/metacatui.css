@@ -2062,7 +2062,7 @@ svg .point:hover + .line-chart-label{
  		background-color: #FFFFFF;
  		border-bottom: 3px solid #DDDDDD;
  		margin-left: 0px;
- 		width: 45%;
+ 		width: 43.6%;
  		cursor: pointer;
  		z-index: 1;
  		border-radius: 4px 0px 0px 4px;
@@ -2129,8 +2129,8 @@ svg .point:hover + .line-chart-label{
     }
     
     .pagination .sort-by{
-    	min-width: 150px;
-    	max-width: 165px;
+    	min-width: 160px;
+    	max-width: 180px;
     	float: right;
     	margin-right: 10px;
     }
@@ -2146,7 +2146,7 @@ svg .point:hover + .line-chart-label{
 	 	
  	.sort-by select{
  		width: auto;
- 		height: auto;
+ 		height: 27px;
  		float: left;
  		z-index: 1;
  		font-size: 12px;
@@ -2171,7 +2171,7 @@ svg .point:hover + .line-chart-label{
     }
     
     .mapMode .search-results{
-    	margin-top: 100px;
+    	margin-top: 109px;
     	width: 100%;
     	float: right;
     	background-color: #FFFFFF;
