@@ -460,8 +460,26 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var viewRef = this;
 			
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				statsModel.set('temporalCoverage', data.facet_counts.facet_queries);	
-				statsModel.set('coverageYears',  totalYears);
+				statsModel.set('temporalCoverage', data.facet_counts.facet_queries);
+				
+				// Get the total number of years with coverage by counting the number of indices with a value
+				// This method isn't perfect because summing by the interval doesn't guarantee each year in that interval is populated
+				var keys = Object.keys(data.facet_counts.facet_queries),
+					coverageYears = 0,
+					remainder = totalYears%interval;
+				
+				for(var i=0; i<keys.length; i++){
+					if((i == keys.length-1) && data.facet_counts.facet_queries[keys[i]]){
+						coverageYears += remainder;
+					}
+					else if(data.facet_counts.facet_queries[keys[i]]){
+						coverageYears += interval;
+					}
+					
+				}
+								
+				statsModel.set('coverageYears',  coverageYears);
+				
 			}).error(function(){
 				//Log this warning and display a warning where the graph should be
 				console.warn("Solr query for temporal coverage failed. Displaying a warning.");
@@ -481,8 +499,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				formatFromSolrFacets: true,
 				id: "temporal-coverage-chart",
 				yLabel: "data packages",
-				yFormat: d3.format("d"),
-				barClass: "packages"
+				yFormat: d3.format(",d"),
+				barClass: "packages",
+				roundedRect: true
 			});
 			this.$('.temporal-coverage-chart').append(barChart.render().el);
 			

@@ -28,6 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.yFormat   = options.yFormat   || null;
 			this.width 	   = options.width 	   || 800;
 			this.height    = options.height    || 250;
+			this.roundedRect = options.roundedRect || false;
 			
 			if(options.formatFromSolrFacets){
 				this.data = this.formatFromSolrFacets(this.data);
@@ -101,15 +102,55 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .attr("class", "y axis")
 		      .call(yAxis);
 
+		  /* rounded_rect: A function for drawing a rounded rectangle 
+		    	x: x-coordinate
+				y: y-coordinate
+				w: width
+				h: height
+				r: corner radius
+				tl: top_left rounded?
+				tr: top_right rounded?
+				bl: bottom_left rounded?
+				br: bottom_right rounded?
+		   */
+		  function rounded_rect(x, y, w, h, r, tl, tr, bl, br) {
+			    var retval;
+			    retval  = "M" + (x + r) + "," + y;
+			    retval += "h" + (w - 2*r);
+			    if (tr) { retval += "a" + r + "," + r + " 0 0 1 " + r + "," + r; }
+			    else { retval += "h" + r; retval += "v" + r; }
+			    retval += "v" + (h - 2*r);
+			    if (br) { retval += "a" + r + "," + r + " 0 0 1 " + -r + "," + r; }
+			    else { retval += "v" + r; retval += "h" + -r; }
+			    retval += "h" + (2*r - w);
+			    if (bl) { retval += "a" + r + "," + r + " 0 0 1 " + -r + "," + -r; }
+			    else { retval += "h" + -r; retval += "v" + -r; }
+			    retval += "v" + (2*r - h);
+			    if (tl) { retval += "a" + r + "," + r + " 0 0 1 " + r + "," + -r; }
+			    else { retval += "v" + -r; retval += "h" + r; }
+			    retval += "z";
+			    return retval;
+			}
+		  
+		  
 		  chart.selectAll(".bar")
-		      .data(this.data)
-		    .enter().append("rect")
-		      .attr("class", "bar")
-		      .attr("x", function(d) { return x(d.x); })
-		      .attr("y", function(d) { return y(d.y); })
-		      .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className + " " + viewRef.barClass; })
-		      .attr("height", function(d) { return height - y(d.y); })
-		      .attr("width", x.rangeBand());
+			   .data(this.data).enter().append("path")
+			   .attr("d", function(d){
+					    	  if(!d.y) return false; // Do not draw anything if this y-value is 0
+					    	  
+					    	  if(viewRef.roundedRect){
+						    	  var DOMheight = height - y(d.y),
+						    	  	  radius = Math.min(x.rangeBand()/2, 30), //Try to make the bars completely rounded on top - i.e. the radius for both corners is half the width of the bar. - but don't go over 30 pixels because really wide bars with a completely round top look very odd
+						    	  	  radius = Math.min(radius, DOMheight/2); //If bars are too short, the rounded corners will mess up the rendering so make sure the rounded corners are no more than half the height of the SVG path element
+					      	  }
+					      	  else var radius = 0;
+					    	  
+					    	  return rounded_rect(x(d.x), y(d.y), x.rangeBand(), height - y(d.y), radius, true, true);
+				})
+				.attr("x", function(d) { return x(d.x); })
+		  	    .attr("y", function(d) { return y(d.y); })
+		  	    .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className + " " + viewRef.barClass; });
+
 		  
 		  //Add a label to the y-axis
 		  d3.select(this.el).append("text")
@@ -137,6 +178,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			return data;
 		},
+		
 		
 		//Function to add commas to large numbers
 		commaSeparateNumber: function(val){
