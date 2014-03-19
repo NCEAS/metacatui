@@ -1150,6 +1150,12 @@ svg .packages{
 	stroke: #102876;
 	fill: #102876;
 }
+
+svg .default{
+	fill: #CCCCCC;
+	stroke: #CCCCCC;
+	color: #CCCCCC;
+}
   
   /* Donut charts */  
   #metadata-chart,
@@ -1276,6 +1282,10 @@ svg .point:hover + .line-chart-label{
 	stroke-width: 0px;
 	font-size: 20px;
 }
+.circle-badge .default{
+	
+}
+
 
 
 

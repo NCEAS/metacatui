@@ -23,12 +23,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			console.log('Rendering the stats view');
 			
 			//Listen to the stats model so we can draw charts when values are changed
-			this.listenTo(statsModel, 'change:dataFormatIDs', this.drawDataCountChart);
+			this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
-			this.listenTo(statsModel, 'change:firstUpload', this.drawUploadChart);
-			this.listenTo(statsModel, 'change:firstBeginDate', this.getTemporalCoverage);
-			this.listenTo(statsModel, 'change:temporalCoverage', this.drawBarChart);
-			this.listenTo(statsModel, 'change:coverageYears', this.drawBarChartTitle);
+			this.listenTo(statsModel, 'change:firstUpload', 	  this.drawUploadChart);
+			this.listenTo(statsModel, 'change:firstBeginDate', 	  this.getTemporalCoverage);
+			this.listenTo(statsModel, 'change:temporalCoverage',  this.drawCoverageChart);
+			this.listenTo(statsModel, 'change:coverageYears', 	  this.drawCoverageChartTitle);
 			
 			//Insert the template
 			this.$el.html(this.template());
@@ -51,29 +51,50 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		
 		getGeneralInfo: function(){
 		
-			//Send a Solr query to retrieve some preliminary information we will need for this person/query
+			//Send a Solr query to retrieve some preliminary information we will need for this person/query	
 			var query = "q=" + statsModel.get('query') +
-				"+dateUploaded:*" +
-				"&rows=1" +
-				"&wt=json" +
-				"&fl=dateUploaded" +
-				"&sort=dateUploaded+asc";
-			
-			var beginDateQuery = "q=" + statsModel.get('query') +
-				"+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
- 				"&rows=1" +
-				"&wt=json" +
-				"&fl=beginDate" +
-				"&sort=beginDate+asc";
+						"&rows=0" +
+						"&wt=json" +
+						"&fl=dateUploaded,beginDate" +
+						"&group=true" +
+						"&group.rows=1" +
+						"&group.query=dateUploaded:*" + 
+						"&group.sort=dateUploaded+asc" +
+						"&group.query=(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)+-obsoletedBy:*" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+						"&group.sort=beginDate+asc"; //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
 			
 			//Run the query
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				statsModel.set('firstUpload', data.response.docs[0].dateUploaded);
-				statsModel.set('totalUploaded', data.response.numFound);
-			});
-			
-			$.get(appModel.get('queryServiceUrl') + beginDateQuery, function(data, textStatus, xhr) {
-				statsModel.set('firstBeginDate', new Date(data.response.docs[0].beginDate));
+				var keys = Object.keys(data.grouped);	
+				for(var i=0; i<keys.length; i++){
+					//Which key is this? Find out by searching for beginDate and dateUploaded
+					if(keys[i].indexOf("beginDate") > -1){
+						// This is the group with our earliest beginDate
+						if(!data.grouped[keys[i]].doclist.numFound){
+							//Save some falsey values if none are found
+							statsModel.set('firstBeginDate', null);
+							statsModel.set('totalBeginDates', 0);
+						}
+						else{
+							// Save the earliest beginDate and total found in our model
+							statsModel.set('firstBeginDate', new Date(data.grouped[keys[i]].doclist.docs[0].beginDate));
+							statsModel.set('totalBeginDates', data.grouped[keys[i]].doclist.numFound);
+						}						
+					}
+					else if(keys[i].indexOf("dateUploaded") > -1){
+						//This is our group with the earliest dateUploaded
+						if(!data.grouped[keys[i]].doclist.numFound){
+							//Save some falsey values if none are found
+							statsModel.set('firstUpload', null);
+							statsModel.set('totalDateUploaded', 0);
+						}
+						else{
+							// Save the earliest dateUploaded and total found in our model
+							statsModel.set('firstUpload', data.grouped[keys[i]].doclist.docs[0].dateUploaded);
+							statsModel.set('totalDateUploaded', data.grouped[keys[i]].doclist.numFound);
+						}
+					}
+				}
 			});
 			
 			//Is the query for a user only? If so, treat the general info as a user profile
@@ -120,16 +141,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						statsModel.set('dataCount', data.grouped.formatType.groups[0].doclist.numFound);
 					}					
 				}	
-				//If no data or metadata objects were found, display a warning
-				else if(data.grouped.formatType.groups.length == 0){
-					console.warn('No metadata or data objects found. Stopping view load.');
-					var msg = "No data sets were found for that criteria.";
-					viewRef.$el.prepend(viewRef.alertTemplate({
-						msg: msg,
-						classes: "alert-error",
-						includeEmail: true
-					}));
-				}
+				//If no data or metadata objects were found, draw blank charts
+				/*else if(data.grouped.formatType.groups.length == 0){
+					console.warn('No metadata or data objects found. Draw some blank charts.');
+					
+					statsModel.set
+				}*/
 				else{
 					//Extract the format types (because of filtering and sorting they will always return in this order)
 					statsModel.set('metadataCount', data.grouped.formatType.groups[0].doclist.numFound);
@@ -243,6 +260,18 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 * drawUploadChart will get the files uploaded statistics and draw the upload time series chart
 		 */
 		drawUploadChart: function() {
+			//If there was no first upload, draw a blank chart and exit
+			if(!statsModel.get('firstUpload')){
+				var lineChartView = new LineChart(
+						{	    id: "upload-chart",
+						 className: "default",
+						 	yLabel: "files uploaded"
+						 });
+				
+				this.$('.upload-chart').append(lineChartView.render().el);
+				
+				return;
+			}
 			
 				function setQuery(formatType){
 					return query = "q=" + statsModel.get('query') +
@@ -308,9 +337,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 									 labelDate: "y"});
 							
 							viewRef.$('.upload-chart').append(lineChartView.render().el);
-							//Add a line to our chart for data uploads
-							lineChartView.className = "data";
-							lineChartView.addLine(dataUploadData);
+							
+							//If no data files were uploaded, we don't want to draw the data file line
+							if(statsModel.get("dataUploaded")){
+								//Add a line to our chart for data uploads
+								lineChartView.className = "data";
+								lineChartView.addLine(dataUploadData);
+							}
 						}
 						else{
 							var lineChartView = new LineChart(
@@ -323,15 +356,28 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 									 labelDate: "y"});
 							
 							viewRef.$('.upload-chart').append(lineChartView.render().el);
-							lineChartView.className = "metadata";
-							//Add a line to our chart for metadata uploads
-							lineChartView.addLine(metadataUploadData);
+
+							//If no data files were uploaded, we don't want to draw the data file line
+							if(statsModel.get("metadataUploaded")){
+								//Add a line to our chart for metadata uploads
+								lineChartView.className = "metadata";
+								lineChartView.addLine(metadataUploadData);
+							}
 						}
 						
 						//Get information for our upload chart title
+						var titleChartData = [],
+							metadataUploaded = statsModel.get("metadataUploaded"),
+							dataUploaded = statsModel.get("dataUploaded"),
+							metadataClass = "metadata",
+							dataClass = "data";						
+						
+						if(metadataUploaded == 0) metadataClass = "default";
+						if(dataUploaded == 0) dataClass = "default";
+						
 						var titleChartData = [
-						                      {count: statsModel.get("metadataUploaded"), label: "metadata", className: "metadata"},
-										      {count: statsModel.get("dataUploaded"), 	  label: "data", 	 className: "data"}
+						                      {count: statsModel.get("metadataUploaded"), label: "metadata", className: metadataClass},
+										      {count: statsModel.get("dataUploaded"), 	  label: "data", 	 className: dataClass}
 											 ];
 						
 						//Draw the upload chart title
@@ -434,7 +480,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		},
 		
 		//Draw a bar chart for the temporal coverage 
-		drawBarChart: function(){
+		drawCoverageChart: function(){
 			
 			var barChart = new BarChart({
 				data: statsModel.get("temporalCoverage"),
@@ -448,7 +494,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			
 		},
 		
-		drawBarChartTitle: function(){
+		drawCoverageChartTitle: function(){
 			//Also draw the title
 			var coverageTitle = new CircleBadge({
 				data: [{count: statsModel.get('coverageYears'), className: "packages"}],
