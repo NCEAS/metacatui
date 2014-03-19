@@ -30,6 +30,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.id 	   = options.id 	   || "";
 			this.className = options.className || "";
 			this.frequency = options.frequency || 1; 	//Use 0 to not add any points
+			if(!options.data) this.frequency = 0; //If no data is provided, do not draw any points (otherwise, one point at 0,0 will be drawn)
 			this.labelDate = options.labelDate || "m-d-y";
 			this.yLabel	   = options.yLabel	   || "";
 			this.radius	   = options.radius    || 4;

@@ -107,8 +107,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				//Display the name of the person
 				$(".stats-title").text(uid);
 			}
-			
-			
 		},
 		
 		/**
@@ -129,28 +127,35 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			
 			//Run the query
 			$.get(appModel.get('queryServiceUrl') + facetFormatType, function(data, textStatus, xhr) {
+				var formats = data.grouped.formatType.groups;
 				
-				if(data.grouped.formatType.groups.length == 1){
-					
-					//Extract the format type if there is only one type found
-					if(data.grouped.formatType.groups[0].groupValue == "METADATA"){
-						statsModel.set('metadataCount', data.grouped.formatType.groups[0].doclist.numFound);
+				if(formats.length == 1){	//Only one format type was found				
+					if(formats[0].groupValue == "METADATA"){ //That one format type is metadata
+						statsModel.set('metadataCount', formats[0].doclist.numFound);
 						statsModel.set('dataCount', 0);
 						statsModel.set('dataFormatIDs', ["", 0]);
 					}else{
-						statsModel.set('dataCount', data.grouped.formatType.groups[0].doclist.numFound);
+						statsModel.set('dataCount', formats[0].doclist.numFound);
+						statsModel.set('metadataCount', 0);
+						statsModel.set('metadataFormatIDs', ["", 0]);
 					}					
 				}	
 				//If no data or metadata objects were found, draw blank charts
-				/*else if(data.grouped.formatType.groups.length == 0){
+				else if(formats.length == 0){
 					console.warn('No metadata or data objects found. Draw some blank charts.');
 					
-					statsModel.set
-				}*/
+					//Store falsey data
+					statsModel.set('dataCount', 0);
+					statsModel.set('metadataCount', 0);
+					statsModel.set('metadataFormatIDs', ["", 0]);
+					statsModel.set('dataFormatIDs', ["", 0]);
+					
+					return;
+				}
 				else{
 					//Extract the format types (because of filtering and sorting they will always return in this order)
-					statsModel.set('metadataCount', data.grouped.formatType.groups[0].doclist.numFound);
-					statsModel.set('dataCount', data.grouped.formatType.groups[1].doclist.numFound);
+					statsModel.set('metadataCount', formats[0].doclist.numFound);
+					statsModel.set('dataCount', formats[1].doclist.numFound);
 				}	
 
 				if(statsModel.get('dataCount') > 0){
@@ -189,10 +194,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						console.warn('Solr query error for metadata formatIds - not vital to page, so we will keep going');
 					});
 				}
-					
-				//Insert the counts into the DOM
-				$('#data-chart').prepend(statsModel.get('dataCount'));
-				$('#metadata-chart').prepend(statsModel.get('metadataCount'));
 						
 			//Display error when our original Solr query went wrong
 			}).error(function(){
@@ -261,17 +262,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 */
 		drawUploadChart: function() {
 			//If there was no first upload, draw a blank chart and exit
-			if(!statsModel.get('firstUpload')){
-				var lineChartView = new LineChart(
-						{	    id: "upload-chart",
-						 className: "default",
-						 	yLabel: "files uploaded"
-						 });
-				
-				this.$('.upload-chart').append(lineChartView.render().el);
-				
-				return;
-			}
+			if(!statsModel.get('firstUpload')) return;
 			
 				function setQuery(formatType){
 					return query = "q=" + statsModel.get('query') +
@@ -415,6 +406,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 * Get the temporal coverage of this query/user from Solr
 		 */
 		getTemporalCoverage: function(){
+			//If no results were found for this query, do not draw a chart
+			if(!statsModel.get('firstBeginDate')) return;
+			
 			//Construct our query to get the begin and end date of all objects for this query
 			var facetQuery = function(numYears, key){
 				if(numYears==0){
