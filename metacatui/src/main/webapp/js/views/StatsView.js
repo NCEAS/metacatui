@@ -68,20 +68,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				var keys = Object.keys(data.grouped);	
 				for(var i=0; i<keys.length; i++){
 					//Which key is this? Find out by searching for beginDate and dateUploaded
-					if(keys[i].indexOf("beginDate") > -1){
-						// This is the group with our earliest beginDate
-						if(!data.grouped[keys[i]].doclist.numFound){
-							//Save some falsey values if none are found
-							statsModel.set('firstBeginDate', null);
-							statsModel.set('totalBeginDates', 0);
-						}
-						else{
-							// Save the earliest beginDate and total found in our model
-							statsModel.set('firstBeginDate', new Date(data.grouped[keys[i]].doclist.docs[0].beginDate));
-							statsModel.set('totalBeginDates', data.grouped[keys[i]].doclist.numFound);
-						}						
-					}
-					else if(keys[i].indexOf("dateUploaded") > -1){
+					if(keys[i].indexOf("dateUploaded") > -1){
 						//This is our group with the earliest dateUploaded
 						if(!data.grouped[keys[i]].doclist.numFound){
 							//Save some falsey values if none are found
@@ -93,6 +80,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							statsModel.set('firstUpload', data.grouped[keys[i]].doclist.docs[0].dateUploaded);
 							statsModel.set('totalDateUploaded', data.grouped[keys[i]].doclist.numFound);
 						}
+					}
+					else if(keys[i].indexOf("beginDate") > -1){
+						// This is the group with our earliest beginDate
+						if(!data.grouped[keys[i]].doclist.numFound){
+							//Save some falsey values if none are found
+							statsModel.set('firstBeginDate', null);
+							statsModel.set('totalBeginDates', 0);
+						}
+						else{
+							// Save the earliest beginDate and total found in our model
+							statsModel.set('firstBeginDate', new Date(data.grouped[keys[i]].doclist.docs[0].beginDate));
+							statsModel.set('totalBeginDates', data.grouped[keys[i]].doclist.numFound);
+						}						
 					}
 				}
 			});
@@ -508,9 +508,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		},
 		
 		drawCoverageChartTitle: function(){
+			//Match the radius to the metadata and data uploads chart title 
+			var radius = parseInt(this.$('#upload-chart-title .metadata').attr('r')) || null;		
+			
 			//Also draw the title
 			var coverageTitle = new CircleBadge({
-				data: [{count: statsModel.get('coverageYears'), className: "packages"}],
+				data: [{count: statsModel.get('coverageYears'), className: "packages", r: radius}],
 				id: "temporal-coverage-title",
 				title: "years of data coverage"
 			});

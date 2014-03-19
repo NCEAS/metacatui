@@ -136,7 +136,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  chart.selectAll(".bar")
 			   .data(this.data).enter().append("path")
 			   .attr("d", function(d){
-					    	  if(!d.y) return false; // Do not draw anything if this y-value is 0
+					    	  if(!d.y) return null; // Do not draw anything if this y-value is 0
 					    	  
 					    	  if(viewRef.roundedRect){
 						    	  var DOMheight = height - y(d.y),

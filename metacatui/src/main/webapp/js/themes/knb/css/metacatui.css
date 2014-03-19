@@ -1232,6 +1232,7 @@ svg .default{
 }
 #upload-chart-title{
 	height: 80px;
+	max-height: 105px;
 }
 svg .line{
 	fill: none;
