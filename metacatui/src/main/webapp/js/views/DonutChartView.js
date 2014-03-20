@@ -122,7 +122,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        //Keep track of how many labels we rotate
 	        var rotatedLabels = [],
 	        	rotatedCounts = [],
-	        	rotateWidth = 0.9; //The max arc width/length to attach straight labels to. Anything under this gets rotated.
+	        	rotateWidth = .5; //The max arc width/length to attach straight labels to. Anything under this gets rotated.
 	        
 	        // Append a text label to each arc
         	labelGroups.append("svg:text")
