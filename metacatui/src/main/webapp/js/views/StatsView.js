@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			this.$el.html(this.template());
 			
 			// set the header type
-			statsModel.set('headerType', 'default');
+			appModel.set('headerType', 'default');
 			
 			//If no query was given, then show all of the repository info
 			if(!statsModel.get('query')){
@@ -264,7 +264,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			//If there was no first upload, draw a blank chart and exit
 			if(!statsModel.get('firstUpload')) return;
 			
-				function setQuery(formatType){
+			function setQuery(formatType){
 					return query = "q=" + statsModel.get('query') +
 					  "+formatType:" + formatType +
 					  "&wt=json" +
@@ -276,9 +276,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					  "&facet.range.start=" + statsModel.get('firstUpload') +
 					  "&facet.range.end=NOW" +
 					  "&facet.range.gap=%2B1MONTH";
-				}
+			}
 				
-				function formatUploadData(counts){
+			function formatUploadData(counts){
 					//Format the data before we draw the chart
 					//We will take only the first 10 characters of the date
 					//To make it a cumulative chart, we will keep adding to the count
@@ -290,7 +290,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					}
 					
 					return uploadData;
-				}
+			}
 							
 				var viewRef = this;
 							
@@ -406,8 +406,28 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 * Get the temporal coverage of this query/user from Solr
 		 */
 		getTemporalCoverage: function(){
-			//If no results were found for this query, do not draw a chart
-			if(!statsModel.get('firstBeginDate')) return;
+			// If results were found but none have temporal coverage, draw a default chart
+			if(!statsModel.get('firstBeginDate')){
+
+				//Draw a default bar chart
+				var barChart = new BarChart({
+					id: "temporal-coverage-chart",
+					yLabel: "data packages"
+				});
+				this.$('.temporal-coverage-chart').append(barChart.render().el);
+					
+				//Match the radius to the metadata and data uploads chart title 
+				var radius = parseInt(this.$('#upload-chart-title .metadata').attr('r')) || null;
+				
+				//Draw the title
+				var coverageTitle = new CircleBadge({
+					globalR: radius,
+					title: "years of data coverage"
+				});
+				this.$('.temporal-coverage-chart').prepend(coverageTitle.render().el);
+				
+				return;
+			}
 			
 			//Construct our query to get the begin and end date of all objects for this query
 			var facetQuery = function(numYears, key){
@@ -492,31 +512,35 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		},
 		
 		//Draw a bar chart for the temporal coverage 
-		drawCoverageChart: function(){
+		drawCoverageChart: function(e, data){
+				var options = {
+						data: data,
+						formatFromSolrFacets: true,
+						id: "temporal-coverage-chart",
+						yLabel: "data packages",
+						yFormat: d3.format(",d"),
+						barClass: "packages",
+						roundedRect: true
+					};
 			
-			var barChart = new BarChart({
-				data: statsModel.get("temporalCoverage"),
-				formatFromSolrFacets: true,
-				id: "temporal-coverage-chart",
-				yLabel: "data packages",
-				yFormat: d3.format(",d"),
-				barClass: "packages",
-				roundedRect: true
-			});
+			var barChart = new BarChart(options);
 			this.$('.temporal-coverage-chart').append(barChart.render().el);
 			
 		},
 		
-		drawCoverageChartTitle: function(){
+		drawCoverageChartTitle: function(e, data){
+
 			//Match the radius to the metadata and data uploads chart title 
-			var radius = parseInt(this.$('#upload-chart-title .metadata').attr('r')) || null;		
-			
+			var radius = parseInt(this.$('#upload-chart-title .metadata').attr('r')) || null;
+				
+			var options = {
+					data: [{count: data, className: "packages"}],
+					id: "temporal-coverage-title",
+					title: "years of data coverage"
+			}		
+						
 			//Also draw the title
-			var coverageTitle = new CircleBadge({
-				data: [{count: statsModel.get('coverageYears'), className: "packages", r: radius}],
-				id: "temporal-coverage-title",
-				title: "years of data coverage"
-			});
+			var coverageTitle = new CircleBadge(options);
 			this.$('.temporal-coverage-chart').prepend(coverageTitle.render().el);
 		},
 		

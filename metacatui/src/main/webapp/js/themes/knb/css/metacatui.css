@@ -1215,7 +1215,8 @@ svg .default{
 .donut-arc.inactive + .donut-labels{
 	opacity: 0.2;
 }
-.donut-arc.active + .donut-labels{
+.donut-arc.active + .donut-labels,
+.donut-arc.active + .donut-labels .donut-arc-count.rotated{
 	opacity: 1;
 	font-weight: bold;
 }
@@ -1224,6 +1225,9 @@ svg .default{
 	opacity: 0.7;
 	transition: opacity .2s;
 }
+.donut-arc-count.rotated{
+	opacity: 0;
+}
 
 /* Line Chart */
 .upload-chart,
@@ -1231,7 +1235,7 @@ svg .default{
 	width: 800px;
 }
 #upload-chart-title{
-	height: 80px;
+	height: auto;
 	max-height: 105px;
 }
 svg .line{
@@ -1262,7 +1266,7 @@ svg .point:hover + .line-chart-label{
 }
 
 .temporal-coverage-chart{
-	margin-top: 20px;
+	margin-top: 30px;
 }
 
 /* Circle Badges */

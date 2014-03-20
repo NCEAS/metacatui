@@ -58,8 +58,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		render: function () {			
 			console.log('Rendering a donut chart');
 			
-			var viewRef = this;
-						
+			var viewRef = this;				
+			
+	        /*
+	         * ========================================================================
+	         * Gather and create preliminary data for our donut chart
+	         * ========================================================================
+	         */
+			
 			//Reiterate over the colors if there aren't enough specified for each arc
 			var i = 0;
 			while(this.colors.length < this.data.length){
@@ -77,11 +83,17 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	            labelr = r*1.3, // radius for label anchor
 	            donut = d3.layout.pie(),
 	            arc = d3.svg.arc().innerRadius(r * .80).outerRadius(r);
-
+	        
 	        //Select the SVG element and connect our data to it
 	        var vis = d3.select(this.el)
 	        			.attr("class", "donut " + this.svgClass)
 	        			.data([viewRef.data]);
+	        
+	        /*
+	         * ========================================================================
+	         * Draw the arcs
+	         * ========================================================================
+	         */
 
 	        //Set up a group for each arc we will create
 	        var arcs = vis.selectAll("g.arc")
@@ -96,19 +108,43 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        	.attr("class", "donut-arc")
 	            .attr("fill", function(d, i) { return viewRef.colors[i]; })
 	            .attr("d", arc);
-	        	
-	        //Append a text label next to each arc
-	        arcs.append("svg:g")
-	        	.attr("class", "donut-labels")
-	        	.attr("transform", function(d) { //Calculate the label position based on arc centroid
+	        
+	        /*
+	         * ========================================================================
+	         * Add labels next to each arc
+	         * ========================================================================
+	         */
+
+	        //Append a group to each arc group to contain the labels
+	        var labelGroups = arcs.append("svg:g")
+        						  .attr("class", "donut-labels");
+	        
+	        //Keep track of how many labels we rotate
+	        var rotatedLabels = [],
+	        	rotatedCounts = [],
+	        	rotateWidth = 0.9; //The max arc width/length to attach straight labels to. Anything under this gets rotated.
+	        
+	        // Append a text label to each arc
+        	labelGroups.append("svg:text")
+        				.attr("transform", function(d, i) { //Calculate the label position based on arc centroid
 	                var c = arc.centroid(d),
 	                    x = c[0],
 	                    y = c[1],
-	                    // pythagorean theorem for hypotenuse
-	                    h = Math.sqrt(x*x + y*y);
-	                return "translate(" + ((x/h * labelr)+5) +  ',' + ((y/h * labelr) -10) +  ")"; 
+	                    h = Math.sqrt(x*x + y*y), // pythagorean theorem for hypotenuse
+	                    width = d.endAngle - d.startAngle;
+	                
+	                    this.transformX = (x/h * labelr);
+	                    this.transformY = (y/h * labelr);
+	                    var transform = "translate(" + (this.transformX+5) + "," + this.transformY +  ")";
+	                
+	                //Rotate the labels if the arc width is below a certain threshold
+	                if(width < rotateWidth){
+	                	transform = "translate(" + this.transformX +  ',' + (this.transformY + 10) +  ") rotate(40)";
+	                	rotatedLabels.push(this);
+	                }
+	               	                
+	                return transform; 
 	            })
-	        	.append("svg:text")
 	        	.attr("class", "donut-arc-label")
 	            .attr("fill", function(d, i){ return viewRef.colors[i]; })
 	            .attr("text-anchor", function(d) {
@@ -119,11 +155,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	            .text(function(d, i) { 
 	            	return d.data.label; 
 	            });
+        	
+        	// Append a count label next to each arc
+	        var countLabels = labelGroups.append("svg:text");
 	        
-	        //Append a text label with the count next to each arc
-	        arcs.selectAll("g.donut-labels")
-	        	.append("svg:text")
-	        	.attr("class", "donut-arc-count")
+	        countLabels.attr("class", "donut-arc-count")
 	            .attr("text-anchor", function(d) {
 	                // are we past the center?
 	                return (d.endAngle + d.startAngle)/2 > Math.PI ?
@@ -132,15 +168,51 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	            .text(function(d, i) { 	         
 	            	return viewRef.commaSeparateNumber(d.data.count); 
 	            })
-	           .attr("transform", function(d) {
-	        	   return "translate(0,20)";
+	           .attr("transform", function(d, i) { //Calculate the label position based on arc centroid
+	                var c = arc.centroid(d),
+	                    x = c[0],
+	                    y = c[1],
+	                    h = Math.sqrt(x*x + y*y), // pythagorean theorem for hypotenuse
+	                    width = d.endAngle - d.startAngle;
+	                
+	                    this.transformX = (x/h * labelr);
+	                    this.transformY = (y/h * labelr); 
+	                    var transform = "translate(" + (this.transformX + 5) +  ',' + (this.transformY + 20) +  ")"; 
+                    
+	                // Again, if the arc is below a certain width, we will rotate it. Just move down and to the left a bit to align it with its corresponding label 
+	                if(width < rotateWidth){
+	                	transform = "translate(" + (this.transformX-10) +  ',' + (this.transformY+20) +  ") rotate(40)";
+	                	
+	                	rotatedCounts.push(this);
+	                	
+	                	//Give it a rotated class for special styling
+		                var classes = d3.select(this).attr("class");	                
+		                d3.select(this).attr("class", classes + " rotated");
+	                }
+	                	                
+	                return transform; 
 	            });
 	        
-	        //** Now add a title to the center of the donut chart
+	        //If there is only one rotated label in the whole donut chart, we can safely assume this doesn't need to be rotated. So "un-rotate" it
+        	if(rotatedLabels.length == 1) d3.select(rotatedLabels[0]).attr("transform", "translate(" + (rotatedLabels[0].transformX + 5) + "," +  rotatedLabels[0].transformY 		+ ")");
+        	if(rotatedCounts.length == 1){
+        		d3.select(rotatedCounts[0]).attr("transform", "translate(" +  rotatedCounts[0].transformX 	 + "," + (rotatedCounts[0].transformY + 20) + ")");
+        		
+        		var classes = d3.select(rotatedCounts[0]).attr("class");	                
+                d3.select(rotatedCounts[0]).attr("class", classes.replace("rotated", ""));
+        	}
+
+	        /*
+	         * ========================================================================
+	         * Add the title to the center of the donut chart
+	         * ========================================================================
+	         */
+        	//Check if a title was sent in the first place
 	        if((this.titleText || (this.titleText !== undefined)) && (this.titleCount || (this.titleCount !== undefined))){
 		        //Add the data count in text inside the circle
 	        	var textData = [];
 	        	
+	        	// If we were given a count to display,
 	        	if(this.titleCount || (this.titleCount !== undefined)){
 	        		textData.push({
 									"cx" : w/2,  //Start at the center
@@ -149,6 +221,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 									"className" : "donut-title-count"
 								});
 	        	}
+	        	//If we were given a text title to display,
 	        	if(this.titleText || (this.titleText !== undefined)){
 	        		textData.push({
 									"cx" : w/2,  //Start at the center
@@ -158,18 +231,17 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								});
 	        	}
 				
+	        	// Draw the count in the SVG element
 				var count = vis.append("svg:g")
 								.selectAll("text")
 							   .data(textData)
 							   .enter().append('svg:text');
 	
+				// Give the count title some attributes for styling and identification
 				var attributes = count
 							.text(function(d){ return d.text; })
 							.attr("id", function(d){ return d.id; })
 							.attr("class", function(d){ return d.className; })
-							.attr("font-family", function(d){ return d.fontFamily; })
-							.attr("font-size",   function(d){ return d.fontSize; })
-							.attr("fill",        function(d){ return d.color; })
 							.attr("x", function(d, i){ return d.cx  }) 
 							.attr("y", function(d, i){ 
 											//Center vertically based on the height
@@ -182,8 +254,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 							})
 							.attr("text-anchor", "middle")
 							.attr(function(d){  return "transform", "translate(" + d.cx + "," + d.cy + ")" });
-	
 	        }
+	        
+	        /*
+	         * ========================================================================
+	         * Add event listeners to the arcs 
+	         * ========================================================================
+	         */
 	        
 	        // We will need to add event listeners here instead of using the Backbone event handler because we
 	        // are dynamically creating our SVG element
@@ -233,6 +310,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					
 				 });
 	        });
+	        
 	        	        	 	        
 			return this;
 	
@@ -250,13 +328,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			var otherCount = 0;
 			
 			for(var i=1; i<=counts.length; i+=2){
-				if(counts[i]/this.total < .01){
+				if(counts[i]/this.total < .02){
 					otherPercent += counts[i]/this.total;
-					otherCount += counts[i];
+					otherCount   += counts[i];
 				}
 				else{
 					var name = counts[i-1];
-					if((name !== undefined) && (name.indexOf("ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
+					if((name !== undefined) && (name.indexOf("eml://ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
 						//Get the EML version only
 						name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
 					}
@@ -274,7 +352,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				newArray.push({label: "Other", perc: otherPercent, count: otherCount});
 			}
 			
-			return newArray;
+			return newArray.sort(function(obj1, obj2){
+				return obj1.count - obj2.count;
+			});
+			
+			//return newArray;
 		},
 		
 		//Function to add commas to large numbers
