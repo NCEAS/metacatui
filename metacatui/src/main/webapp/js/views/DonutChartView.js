@@ -29,12 +29,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.width		= options.width		 || 500;
 			this.svgClass	= options.svgClass	 || "";
 			this.total		= options.total		 || 0;
-			if(typeof options.data !== undefined){
+			this.data	    = this.formatDonutData(options.data, options.total) || [{label: "", count: 0, perc: 0}];
+			/*if(typeof options.data !== undefined){
 				this.data = this.formatDonutData(options.data, options.total);
 			}
 			else{
 				this.data = [{label: "", count: 0, perc: 0}];
-			};
+			};*/
 
 		},
 		
@@ -323,6 +324,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		//		[{label: "Format ID", perc: .50, count: 20}]
 		// param counts: array of formatID names followed by their count, identical to Solr facet format. e.g. ["text/CSV", 10, "text", 20]
 		formatDonutData: function(counts){
+			
+			if(!counts || counts===undefined) return false;
+			
 			var newArray = [];
 			var otherPercent = 0;
 			var otherCount = 0;

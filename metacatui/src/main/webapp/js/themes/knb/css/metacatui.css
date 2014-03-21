@@ -887,7 +887,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     }
   
     .navbar .nav > li > * {
-      margin: 7px 5px 7px 5px;
+      margin: 0px 5px 7px 5px;
     }
 
     .navbar .nav > li > a {
@@ -943,12 +943,61 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
       opacity: .6;
     }
     
-    ul.nav {
+    .navbar .nav {
       width: 85%;
+      margin-top: 8px;
     }
+    
     #SignIn {
       float: right;
     }
+    
+    .dropdown-header {
+		display: block;
+		padding: 3px 20px;
+		font-size: 12px;
+		line-height: 1.42857143;
+		color: #666;
+	}
+    
+    /** Backbone override for dropdowns so they dsplay on hover rather than click **/
+    .dropdown-menu .sub-menu {
+	    left: 100%;
+	    position: absolute;
+	    top: 0;
+	    visibility: hidden;
+	    margin-top: -1px;
+	}
+	
+	.dropdown-menu li:hover .sub-menu {
+	    visibility: visible;
+	}
+	
+	.dropdown:hover .dropdown-menu {
+	    display: block;
+	}
+	
+	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
+	    margin-top: 0;
+	}
+	
+	.navbar .sub-menu:before {
+	    border-bottom: 7px solid transparent;
+	    border-left: none;
+	    border-right: 7px solid rgba(0, 0, 0, 0.2);
+	    border-top: 7px solid transparent;
+	    left: -7px;
+	    top: 10px;
+	}
+	.navbar .sub-menu:after {
+	    border-top: 6px solid transparent;
+	    border-left: none;
+	    border-right: 6px solid #fff;
+	    border-bottom: 6px solid transparent;
+	    left: 10px;
+	    top: 11px;
+	    left: -6px;
+	}
 
     /* CAROUSEL CSS
     -------------------------------------------------- */
@@ -1126,12 +1175,13 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   }
     
    
-  #Profile .charts{
+.profile .charts{
   	margin-left: auto;
   	margin-right: auto;
+  	width: 900px;
   }
   
-  #Profile .charts > svg{
+.profile .charts > svg{
   	margin-left: auto;
   	margin-right: auto;
   	display: block;
@@ -1166,7 +1216,7 @@ svg .default{
   #metadata-chart,
 #data-chart{
 	height: 300px;
-	width: 400px;
+	width: 450px;
 	margin:0px;	
 }
 
@@ -1175,13 +1225,14 @@ svg .default{
 	margin: 0px;
 }
 
+#data-chart{
+	float: right;
+}
+
  .format-charts{
 	margin-left: auto;
 	margin-right: auto;
 	width: 1100px;	
-}
-.format-charts > svg:first-child{
-	margin: 0 30px 0 0;
 }
 
 .donut.default .donut-labels{
@@ -1280,7 +1331,7 @@ svg .point:hover + .line-chart-label{
 
 /* Circle Badges */
 .circle-badge{
-	width: 900px;
+	width: 820px;
 	height: 60px;
 }
 .circle-badge .label{

@@ -28,7 +28,13 @@
 			  </ul>	
 		</div>
 	    <ul class="nav">
-	    	<li><a class="show-new-dataCatalogView">Data Portal</a></li>
+	    	<li class="dropdown">
+	        	<a class="show-new-dataCatalogView dropdown-toggle" data-toggle="dropdown">Data Portal</a>
+	        	<ul class="dropdown-menu">
+	        		<li><a class="show-new-dataCatalogView">Data search</a></li>
+	        		<li><a href="#profile">Summary</a></li>
+	        	</ul>
+        	</li>
 	        
 	        <% if (fullName) { 
 	        	print(

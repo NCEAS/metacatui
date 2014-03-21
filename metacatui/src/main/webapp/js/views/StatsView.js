@@ -22,6 +22,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		render: function () {
 			console.log('Rendering the stats view');
 			
+			//Clear the page first
+			this.$el.html("");
+			
 			//Listen to the stats model so we can draw charts when values are changed
 			this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
@@ -555,6 +558,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 },
 		
 		onClose: function () {			
+			//Clear the template
+			this.$el.html("");
+			
+			//Stop listening to changes in the model
+			this.stopListening(statsModel);
+			
 			console.log('Closing the stats view');
 		},
 		

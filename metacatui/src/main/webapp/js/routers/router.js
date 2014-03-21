@@ -96,7 +96,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			
 			//Reset the stats model first
 			statsModel.clear().set(statsModel.defaults);			
-			if(!query || query.length > 0){
+			if(query){
 				statsModel.set('query', query);				
 			}
 			appView.showView(statsView);

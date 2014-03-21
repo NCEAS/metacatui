@@ -3,24 +3,15 @@
       <a class="brand" href="#">knb</a>
       <ul class="nav">
         <li><a href="#about">About</a></li>
-        <li><a class="show-new-dataCatalogView">Data</a></li>
+        <li class="dropdown">
+        	<a class="show-new-dataCatalogView dropdown-toggle" data-toggle="dropdown">Data</a>
+        	<ul class="dropdown-menu">
+        		<li><a class="show-new-dataCatalogView">Data search</a></li>
+        		<li><a href="#profile">Summary</a></li>
+        	</ul>
+        </li>
         <li><a href="#share">Share</a></li>
         <li><a href="#tools">Tools</a></li>
-        <!-- Read about Bootstrap dropdowns at http://twitter.github.com/bootstrap/javascript.html#dropdowns -->
-        <!-- comment out for now until we have plans -->
-        <!-- 
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plans <b class="caret"></b></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">About data plans</a></li>
-            <li class="divider"></li>
-            <li><a href="#">Basic (free)</a></li>
-            <li><a href="#">Annual Data</a></li>
-            <li><a href="#">Big Data</a></li>
-
-          </ul>
-        </li>
-        -->
         <li>
           <div class="nav">
             <div class="input-append">
@@ -37,11 +28,9 @@
 					'<i class="halflings-icon user"></i><b class="caret"></b>',
 				'</a>',
 				'<ul class="dropdown-menu">',
-					'<li><a href="#profile/rightsHolder:(', username, ')">', fullName, '</a></li>',
-					'<li class="divider"></li>',  
+					'<li class="dropdown-header">', fullName, '</li>',
 					'<li><a href="#share">Register data</a></li>',
 					'<li><a href="#data" id="myData">My packages</a></li>',
-					//'<li><a href="#">My account</a></li>',
 					'<li class="divider"></li>',
 					'<li><a href="#logout">Logout</a></li>',
 				'</ul>',
