@@ -194,9 +194,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	            });
 	        
 	        //If there is only one rotated label in the whole donut chart, we can safely assume this doesn't need to be rotated. So "un-rotate" it
-        	if(rotatedLabels.length == 1) d3.select(rotatedLabels[0]).attr("transform", "translate(" + (rotatedLabels[0].transformX + 5) + "," +  rotatedLabels[0].transformY 		+ ")");
+        	if(rotatedLabels.length == 1) d3.select(rotatedLabels[0]).attr("transform", "translate(" + (rotatedLabels[0].transformX + 5) + "," +  (rotatedLabels[0].transformY-5) + ")");
         	if(rotatedCounts.length == 1){
-        		d3.select(rotatedCounts[0]).attr("transform", "translate(" +  rotatedCounts[0].transformX 	 + "," + (rotatedCounts[0].transformY + 20) + ")");
+        		d3.select(rotatedCounts[0]).attr("transform", "translate(" + rotatedCounts[0].transformX + "," + (rotatedCounts[0].transformY + 15) + ")");
         		
         		var classes = d3.select(rotatedCounts[0]).attr("class");	                
                 d3.select(rotatedCounts[0]).attr("class", classes.replace("rotated", ""));

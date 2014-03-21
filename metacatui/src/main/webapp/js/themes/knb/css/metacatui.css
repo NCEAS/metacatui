@@ -1131,6 +1131,12 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   	margin-right: auto;
   }
   
+  #Profile .charts > svg{
+  	margin-left: auto;
+  	margin-right: auto;
+  	display: block;
+  }
+  
   /* The universal color for data */
 svg .data{
   	color: #2B8282;
@@ -1147,7 +1153,6 @@ svg .metadata{
   
 svg .packages{
 	color: #0E69A1;
-	stroke: #0E69A1;
 	fill: #0E69A1;
 }
 
@@ -1161,11 +1166,13 @@ svg .default{
   #metadata-chart,
 #data-chart{
 	height: 300px;
-	width: 400px;	
+	width: 400px;
+	margin:0px;	
 }
 
 #metadata-chart{
 	float: left;
+	margin: 0px;
 }
 
  .format-charts{
@@ -1228,6 +1235,7 @@ svg .default{
 .donut-arc-count.rotated{
 	opacity: 0;
 }
+#metadata-chart .donut-arc-group:nth-child(1)
 
 /* Line Chart */
 .upload-chart,
@@ -1237,6 +1245,7 @@ svg .default{
 #upload-chart-title{
 	height: auto;
 	max-height: 105px;
+	width: 90%;
 }
 svg .line{
 	fill: none;
@@ -1291,6 +1300,12 @@ svg .point:hover + .line-chart-label{
 	
 }
 
+/** Bar charts ***/
+.bar-label{
+	fill: #0E69A1;
+	font-size: 14px;
+	font-weight: bold;
+}
 
 
 

@@ -266,7 +266,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			
 			function setQuery(formatType){
 					return query = "q=" + statsModel.get('query') +
-					  "+formatType:" + formatType +
+					  "+-obsoletedBy:*+formatType:" + formatType +
 					  "&wt=json" +
 					  "&rows=0" +
 					  "&facet=true" +
@@ -324,7 +324,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 									 className: "metadata",
 									 	yLabel: "files uploaded",
 									 frequency: 12, 
-										radius: 4, 
+										radius: 5, 
 									 labelDate: "y"});
 							
 							viewRef.$('.upload-chart').append(lineChartView.render().el);
@@ -375,7 +375,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						var uploadChartTitle = new CircleBadge({
 							id: "upload-chart-title",
 							data: titleChartData,
-							title: "uploads and revisions",
+							title: "uploads",
 							className: "chart-title",
 							useGlobalR: true
 						});
@@ -520,7 +520,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						yLabel: "data packages",
 						yFormat: d3.format(",d"),
 						barClass: "packages",
-						roundedRect: true
+						roundedRect: true,
+						roundedRadius: 10,
+						barLabelClass: "packages"
 					};
 			
 			var barChart = new BarChart(options);

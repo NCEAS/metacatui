@@ -19,6 +19,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 *  yFormat = the format to use for the y-axis tick marks, in d3.format syntax (https://github.com/mbostock/d3/wiki/Formatting#d3_format)
 			 *  width = width of SVG element
 			 *  height = height of SVG element
+			 *  roundedRect = pass true to rounded the top corners of the bars. Use false for stacked bar charts
+			 *  displayBarLabel = pass false to turn off the count labels displayed at the top of each bar
 			 */
 			this.data 	   = options.data 	   || [{x: "", y: 0, className: "default"}];
 			this.id 	   = options.id 	   || "";
@@ -28,7 +30,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.yFormat   = options.yFormat   || null;
 			this.width 	   = options.width 	   || 800;
 			this.height    = options.height    || 250;
-			this.roundedRect = options.roundedRect || false;
+			this.roundedRect 	 = options.roundedRect 	   || false;
+			this.roundedRadius 	 = options.roundedRadius   || null;
+			this.displayBarLabel = options.displayBarLabel || true;
+			this.barLabelClass	 = options.barLabelClass   || "";
 			
 			if(options.formatFromSolrFacets){
 				this.data = this.formatFromSolrFacets(this.data);
@@ -51,9 +56,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 },
 				
 		tagName: "svg",
-		
-		parseDate: d3.time.format("%Y-%m-%d").parse, //The format for the date - can be modified for each chart. This is the format for ISO dates returned from Solr
-			
+					
 		/*
 		 * --Adapted from http://bl.ocks.org/mbostock/7441121--
 		 * This function draws a simple bar chart
@@ -62,6 +65,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			console.log('Rendering a bar chart');
 					
 			var viewRef = this;
+			
+			/*
+	         * ========================================================================
+	         * Gather and create preliminary data for our bar chart
+	         * ========================================================================
+	         */
 			
 			var margin = {top: 20, right: 30, bottom: 30, left: 80},
 		    width = this.width - margin.left - margin.right,
@@ -93,6 +102,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  x.domain(this.data.map(function(d) { return d.x; }));
 		  y.domain([0, d3.max(viewRef.data, function(d) {  return d.y; })]);
 
+		  
 		  chart.append("g")
 		      .attr("class", "x axis")
 		      .attr("transform", "translate(0," + height + ")")
@@ -132,18 +142,32 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			    return retval;
 			}
 		  
+		  /*
+	         * ========================================================================
+	         * Draw the bars
+	         * ========================================================================
+	         */
 		  
-		  chart.selectAll(".bar")
-			   .data(this.data).enter().append("path")
-			   .attr("d", function(d){
+		  var bars = chart.selectAll(".bar")
+			   			  .data(this.data).enter().append("g");
+		  
+			   bars.append("path")
+			   	   .attr("d", function(d){
 					    	  if(!d.y) return null; // Do not draw anything if this y-value is 0
 					    	  
 					    	  if(viewRef.roundedRect){
-						    	  var DOMheight = height - y(d.y),
-						    	  	  radius = Math.min(x.rangeBand()/2, 30), //Try to make the bars completely rounded on top - i.e. the radius for both corners is half the width of the bar. - but don't go over 30 pixels because really wide bars with a completely round top look very odd
-						    	  	  radius = Math.min(radius, DOMheight/2); //If bars are too short, the rounded corners will mess up the rendering so make sure the rounded corners are no more than half the height of the SVG path element
+					    		  
+					    		  if(viewRef.roundedRadius){
+					    			  var radius = viewRef.roundedRadius;
+					    		  }
+					    		  else{
+						    	  	  var radius = Math.min(x.rangeBand()/2, 30); //Try to make the bars completely rounded on top - i.e. the radius for both corners is half the width of the bar. - but don't go over 30 pixels because really wide bars with a completely round top look very odd
+					    		  }	
+				    			  
+				    			  var DOMheight = height - y(d.y);
+				    			  radius = Math.min(radius, DOMheight/2); //If bars are too short, the rounded corners will mess up the rendering so make sure the rounded corners are no more than half the height of the SVG path element
 					      	  }
-					      	  else var radius = 0;
+					      	  else var radius = 0; //Square corners
 					    	  
 					    	  return rounded_rect(x(d.x), y(d.y), x.rangeBand(), height - y(d.y), radius, true, true);
 				})
@@ -151,9 +175,29 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  	    .attr("y", function(d) { return y(d.y); })
 		  	    .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className + " " + viewRef.barClass; });
 
+		/*
+		* ========================================================================
+	    * Display the count above the bar
+		* ========================================================================
+		*/
+	   if(this.displayBarLabel){
+		  bars.append("text")
+		  	  .attr("transform", function(d){ 
+		  		  var textX = x(d.x) + (x.rangeBand()/2),
+		  		  	  textY = y(d.y) - 10;
+		  		  
+		  		  return "translate(" + textX + "," + textY + ")"; })
+		  	  .text(function(d){ return viewRef.commaSeparateNumber(d.y); })
+		  	  .attr("text-anchor", "middle")
+		  	  .attr("class", "bar-label " + this.barLabelClass);
+	   }
 		  
-		  //Add a label to the y-axis
-		  d3.select(this.el).append("text")
+		  /*
+	         * ========================================================================
+	         * Add a label to the y-axis
+	         * ========================================================================
+	         */
+		  	d3.select(this.el).append("text")
 		      .attr("y", 6)
 		      .attr("dy", ".71em")
 		      .style("text-anchor", "middle")
