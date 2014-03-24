@@ -1319,9 +1319,6 @@ svg .default{
 .donut-arc-count.rotated{
 	opacity: 0;
 }
-.profile .format-charts{
-	margin: 0px;
-}
 .profile .format-charts-container{
 	height: 400px;
 }
@@ -1330,6 +1327,10 @@ svg .default{
 }
 .profile .format-charts{
 	width: 100%;
+}
+.profile .format-charts .chart{
+	width: 50%;
+	margin: 0px;
 }
 
 /* Line Chart */

@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views/LineChartView', 'views/CircleBadgeView', 'views/BarChartView', 'text!templates/profile.html', 'text!templates/alert.html'], 				
-	function($, _, Backbone, d3, DonutChart, LineChart, CircleBadge, BarChart, profileTemplate, AlertTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views/LineChartView', 'views/CircleBadgeView', 'views/BarChartView', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, d3, DonutChart, LineChart, CircleBadge, BarChart, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
 		
 	// Build the main header view of the application
@@ -11,6 +11,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		template: _.template(profileTemplate),
 		
 		alertTemplate: _.template(AlertTemplate),
+		
+		loadingTemplate: _.template(LoadingTemplate),
 		
 		initialize: function(){
 		},
@@ -45,6 +47,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			this.$el.html(this.template({
 				query: statsModel.get('query')
 			}));
+			
+			//Insert the loading template into the space where the charts will go
+			this.$(".chart").html(this.loadingTemplate);
 
 			//Start retrieving data from Solr
 			this.getGeneralInfo();
@@ -234,7 +239,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							titleCount: dataCount,
 							svgClass: svgClass
 						});
-			this.$('.format-charts').append(donut.render().el);
+			this.$('.format-charts-data').html(donut.render().el);
 		},
 
 		drawMetadataCountChart: function(){
@@ -259,7 +264,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							svgClass: svgClass
 						});
 			
-			this.$('.format-charts').append(donut.render().el); 
+			this.$('.format-charts-metadata').html(donut.render().el); 
 		},
 		
 		/**
@@ -332,7 +337,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 										radius: 5, 
 									 labelDate: "y"});
 							
-							viewRef.$('.upload-chart').append(lineChartView.render().el);
+							viewRef.$('.upload-chart').html(lineChartView.render().el);
 							
 							//If no data files were uploaded, we don't want to draw the data file line
 							if(statsModel.get("dataUploaded")){
@@ -351,7 +356,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 										radius: 4, 
 									 labelDate: "y"});
 							
-							viewRef.$('.upload-chart').append(lineChartView.render().el);
+							viewRef.$('.upload-chart').html(lineChartView.render().el);
 
 							//If no data files were uploaded, we don't want to draw the data file line
 							if(statsModel.get("metadataUploaded")){
@@ -419,7 +424,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					id: "temporal-coverage-chart",
 					yLabel: "data packages"
 				});
-				this.$('.temporal-coverage-chart').append(barChart.render().el);
+				this.$('.temporal-coverage-chart').html(barChart.render().el);
 					
 				//Match the radius to the metadata and data uploads chart title 
 				
@@ -528,7 +533,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					};
 			
 			var barChart = new BarChart(options);
-			this.$('.temporal-coverage-chart').prepend(barChart.render().el);
+			this.$('.temporal-coverage-chart').html(barChart.render().el);
 			
 		},
 		
