@@ -33,9 +33,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			this.listenTo(statsModel, 'change:temporalCoverage',  this.drawCoverageChart);
 			this.listenTo(statsModel, 'change:coverageYears', 	  this.drawCoverageChartTitle);
 			
-			//Insert the template
-			this.$el.html(this.template());
-			
 			// set the header type
 			appModel.set('headerType', 'default');
 			
@@ -43,6 +40,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			if(!statsModel.get('query')){
 				statsModel.set('query', '*:*');
 			}
+			
+			//Insert the template
+			this.$el.html(this.template({
+				query: statsModel.get('query')
+			}));
 
 			//Start retrieving data from Solr
 			this.getGeneralInfo();
@@ -108,7 +110,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				uid = uid.substring(4, uid.indexOf(","));
 
 				//Display the name of the person
-				$(".stats-title").text(uid);
+				$(".profile-title").text(uid);
 			}
 		},
 		
@@ -378,11 +380,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						var uploadChartTitle = new CircleBadge({
 							id: "upload-chart-title",
 							data: titleChartData,
-							title: "uploads",
 							className: "chart-title",
-							useGlobalR: true
+							useGlobalR: true,
+							globalR: 40
 						});
-						viewRef.$('.upload-chart').prepend(uploadChartTitle.render().el);
+						viewRef.$('#uploads-title').prepend(uploadChartTitle.render().el);
 					})
 					.error(function(){
 						console.warn('Solr query for data upload info returned error. Continuing with load.');
@@ -420,15 +422,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				this.$('.temporal-coverage-chart').append(barChart.render().el);
 					
 				//Match the radius to the metadata and data uploads chart title 
-				var radius = parseInt(this.$('#upload-chart-title .metadata').attr('r')) || null;
 				
 				//Draw the title
 				var coverageTitle = new CircleBadge({
-					globalR: radius,
-					title: "years of data coverage"
+					globalR: 40
 				});
-				this.$('.temporal-coverage-chart').prepend(coverageTitle.render().el);
-				
+				this.$('#coverage-title').prepend(coverageTitle.render().el);
 				return;
 			}
 			
@@ -529,24 +528,23 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					};
 			
 			var barChart = new BarChart(options);
-			this.$('.temporal-coverage-chart').append(barChart.render().el);
+			this.$('.temporal-coverage-chart').prepend(barChart.render().el);
 			
 		},
 		
 		drawCoverageChartTitle: function(e, data){
 
 			//Match the radius to the metadata and data uploads chart title 
-			var radius = parseInt(this.$('#upload-chart-title .metadata').attr('r')) || null;
+			var radius = parseInt(this.$('#upload-chart-title .metadata').attr('r')) || 40;
 				
 			var options = {
-					data: [{count: data, className: "packages"}],
-					id: "temporal-coverage-title",
-					title: "years of data coverage"
+					data: [{count: data, className: "packages", r: radius}],
+					id: "temporal-coverage-title"
 			}		
 						
 			//Also draw the title
 			var coverageTitle = new CircleBadge(options);
-			this.$('.temporal-coverage-chart').prepend(coverageTitle.render().el);
+			this.$('#coverage-title').prepend(coverageTitle.render().el);
 		},
 		
 		//Function to add commas to large numbers

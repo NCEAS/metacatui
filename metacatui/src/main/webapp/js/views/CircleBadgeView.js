@@ -53,6 +53,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			var viewRef = this;
 			
+			/*
+			* ========================================================================
+		    * Calculate the radius for the circle/circles
+			* ========================================================================
+			*/
+			
 			var radiuses = [13, 17, 25, 30, 40, 60];
 				_.each(this.data, function(d, i){
 
@@ -99,6 +105,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 						}
 					}
 				});
+				
+			/*
+			* ========================================================================
+			* Draw the circles
+			* ========================================================================
+			*/
 			
 			//Select the SVG element
 			var svg = d3.select(this.el)
@@ -117,21 +129,26 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 							})
 							.attr("transform", function(d, i){ 
 								if(i == 0){
-									d.x = d.r + viewRef.margin;
+									d.x = d.r + 5;
 								}
 								else{
 									d.x = viewRef.data[i-1].x + viewRef.data[i-1].r + viewRef.margin + d.r;
 								}
-								return "translate(" + d.x + "," + d.r + ")";
+								return "translate(" + d.x + "," + (d.r + 5) + ")"; //Add 5 pixels to allow for a 5px stroke
 							});
 			
+			/*
+			* ========================================================================
+		    * Draw the text inside and beside the circle(s)
+			* ========================================================================
+			*/
 			//Draw the text labels underneath the circles
 			svg.append("g")
 				.selectAll("text")
 				.data(this.data)
 				.enter().append("svg:text")
 				.attr("transform", function(d, i){
-					return "translate(" + d.x + "," + ((d.r*2) + 20) + ")";
+					return "translate(" + d.x + "," + ((d.r*2) + 25) + ")";
 				})
 				.attr("class", function(d){ return d.className + " label"; })
 				.attr("text-anchor", "middle")
@@ -144,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				.enter().append("svg:text")
 				.text(function(d){ return viewRef.commaSeparateNumber(d.count); })
 				.attr("transform", function(d, i){
-					return "translate(" + d.x + "," + (d.r+7) + ")";
+					return "translate(" + d.x + "," + (d.r+12) + ")";
 				})
 				.attr("class", function(d){ return d.className + " count"; })
 				.attr("text-anchor", "middle");
@@ -154,7 +171,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				svg.append("text")
 					.text(this.title)
 					.attr("class", "title") 
-					.attr("transform", function(d, i){ return "translate(" + (viewRef.data[viewRef.data.length-1].x + viewRef.data[viewRef.data.length-1].r + viewRef.margin) + "," + viewRef.data[viewRef.data.length-1].r + ")"; })
+					.attr("transform", function(d, i){ return "translate(" + (viewRef.data[viewRef.data.length-1].x + viewRef.data[viewRef.data.length-1].r + viewRef.margin) + "," + (viewRef.data[viewRef.data.length-1].r + 5) + ")"; })
 					.attr("text-anchor", "left");	
 			}
 	        

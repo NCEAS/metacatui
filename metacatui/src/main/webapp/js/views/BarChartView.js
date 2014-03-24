@@ -28,7 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.barClass  = options.barClass  || "";
 			this.yLabel	   = options.yLabel	   || "";
 			this.yFormat   = options.yFormat   || null;
-			this.width 	   = options.width 	   || 800;
+			this.width 	   = options.width 	   || 650;
 			this.height    = options.height    || 250;
 			this.roundedRect 	 = options.roundedRect 	   || false;
 			this.roundedRadius 	 = options.roundedRadius   || null;

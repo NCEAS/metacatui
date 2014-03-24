@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.labelDate = options.labelDate || "m-d-y";
 			this.yLabel	   = options.yLabel	   || "";
 			this.radius	   = options.radius    || 4;
-			this.width 	   = options.width 	   || 800;
+			this.width 	   = options.width 	   || 650;
 			this.height    = options.height    || 250;
 		},
 		
