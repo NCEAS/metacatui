@@ -425,7 +425,7 @@ Bold 700 Italic
       background-repeat: none;
     }
 
-    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
+    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a, a.btn-primary:visited {
       color: #FFFFFF; 
       text-decoration:none;     
     }

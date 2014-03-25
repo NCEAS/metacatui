@@ -772,6 +772,7 @@ Bold 700
     
     #downloadContents{
     	margin-bottom: 40px;
+    	overflow: scroll;
     }
     
     table.download-contents {
@@ -781,6 +782,14 @@ Bold 700
     
     table.download-contents td{
     	min-width: 115px;
+    }
+    
+    #downloadContents .control-label{
+    	width: 35px;
+    }
+    
+    #downloadContents .controls-well{
+    	margin-left: 50px;
     }
     
     .format-type i {
@@ -909,6 +918,10 @@ Bold 700
     	font-size: 20px;
     	margin-top: 5px;
     	float: right;
+    }
+    
+    .mapMode .minimize{
+    	display: block;
     }
     
     .mapMode .minimize > i.icon-check-minus{
@@ -2324,7 +2337,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
 }
 
-#content.collapsed{
+.mapMode #content.collapsed{
 	height: 80px;
 	position: fixed;
 }
