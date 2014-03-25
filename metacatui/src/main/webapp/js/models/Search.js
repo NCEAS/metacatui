@@ -36,6 +36,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var changedAttr = this.changedAttributes(_.clone(this.defaults));
 			if (changedAttr) {
 				var changedKeys = _.keys(changedAttr);
+				console.log(changedKeys);
 				return changedKeys.length;
 			}
 			return 0;

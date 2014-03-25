@@ -536,6 +536,12 @@ Bold 700
       text-transform: uppercase;
     }
     
+    .navbar .nav > li  i{
+      color: #FFFFFF; /*IE fallback */
+      color: rgba(255, 255, 255, 0.8);
+      text-shadow: none;
+    }
+    
     .mapMode .navbar .nav > li > a{
       text-shadow: 0 1px 8px #333;
       color: #FFF;
@@ -831,14 +837,7 @@ Bold 700
     
 /* Registry CSS
 -------------------------------------------------- */
-    #RegistryEntryForm, 
-    #RegistryLogin, 
-    #RegistryResponse, 
-    #RegistryEntryReview, 
-    #RegistryGuide {
-		/*margin-top: 110px;*/
-		min-height: 800px;
-    }
+
     
     label.inline {
     	width: 40%;
@@ -899,45 +898,60 @@ Bold 700
 	.select-editable input:focus { 
 		outline:none; 
 	}	  
+	
+	.minimize > i,
+	.result-header-count .minimize{
+		display: none;
+	}
 
-	.minimize > i{
+	.mapMode .minimize > i{
+		display: block;
     	font-size: 20px;
     	margin-top: 5px;
     	float: right;
     }
     
-    .minimize > i.icon-check-minus{
+    .mapMode .minimize > i.icon-check-minus{
     	font-size: 17px;
     }
     
-    #sidebar .minimize > i{
+    .mapMode #sidebar .minimize > i{
     	float: right;
     	margin-right: 10px;
     }
     
-    #content .minimize{
+    .mapMode #content .minimize{
     	position: fixed;
     	right: 25px;
     	z-index: 1;
     }
     
-     #sidebar.collapsed .minimize > i.minimize,
-     #sidebar .minimize > i.maximize,
-     #content.collapsed .minimize > i.minimize,
-     #content .minimize > i.maximize{
+     .mapMode #sidebar.collapsed .minimize > i.minimize,
+     .mapMode #sidebar .minimize > i.maximize,
+     .mapMode #content.collapsed .minimize > i.minimize,
+     .mapMode #content .minimize > i.maximize{
     	display: none;
     }
     
-     #sidebar.collapsed .minimize > i.maximize,
-     #sidebar .minimize > i.minimize,
-     #content.collapsed .minimize > i.maximize,
-     #content .minimize > i.minimize{
+     .mapMode #sidebar.collapsed .minimize > i.maximize,
+     .mapMode #sidebar .minimize > i.minimize,
+     .mapMode #content.collapsed .minimize > i.maximize,
+     .mapMode #content .minimize > i.minimize{
     	display: block;
     }
     
   /* SIDEBAR CSS
   -------------------------------------------------- */
-    #sidebar {
+  #sidebar{
+  		border-radius: 5px;
+  		-webkit-border-radius: 5px;
+  		-moz-border-radius: 5px;
+  		width: 252px;
+  		height: auto;
+  		position: fixed;
+  		background-color: rgba(255,255,255,0.9);
+  }
+    .mapMode #sidebar {
       position: fixed;
       width: 252px;
       bottom: 0px;
@@ -959,7 +973,7 @@ Bold 700
 	  overflow-x: hidden;
     } 
     
-    #sidebar.collapsed{
+    .mapMode #sidebar.collapsed{
     	height: 60px;
     }
  	
@@ -1451,8 +1465,21 @@ Bold 700
     /*-- Results header --*/
     #results-view{
     	background-color: #FFF;
+    	border-radius: 5px;
+    	-moz-border-radius: 5px;
+    	-webkit-border-radius: 5px;
     }
-    .result-header {
+    
+    .mapMode  #results-view{
+    	border-radius: 0px;
+    	-moz-border-radius: 0px;
+    	-webkit-border-radius: 0px;
+    }
+    
+    .result-header{
+    	height: auto;
+    }
+    .mapMode .result-header {
       position: relative;
       z-index: 1;
       height: 76px;
@@ -1464,13 +1491,13 @@ Bold 700
 	line-height: 25px;
 }
     
-     .result-header > .result-header-count{
+     .mapMode .result-header > .result-header-count{
     	position: relative;
     	width: 100%;
     	padding-left: 7%;
     }
     
-    .result-header-count > .result-header-count{
+    .mapMode .result-header-count > .result-header-count{
     	position: fixed;
     	width: 100%;
     	margin-left: 0px;
@@ -1532,7 +1559,7 @@ Bold 700
 		display: none;
 	}
 	
-    #sortOrder{
+    .mapMode #sortOrder{
     	border: 1px solid #CCC;
     	border-radius: 4px;
     	-webkit-border-radius: 4px;
@@ -1544,13 +1571,19 @@ Bold 700
 		height: 30px;
 		z-index: 1;
     }
+    
+    #statcounts{
+    	float: none;
+    	margin-top: 10px;
+    }
  	
- 	#statcounts{
- 		width: 43.5%;
+ 	.mapMode #statcounts{
+ 		width: 44.5%;
  		padding-left: 10px;
  		height: inherit;
  		left: 30%;
  		margin-left: 0px;
+ 		margin-top: 0px;
  		position: fixed;
  	}
  	
@@ -1559,16 +1592,17 @@ Bold 700
  		border-top-left-radius: 4px;
  		text-transform: 0 1px 0 rgba(255,255,255,0.5);
  		color: #666;
+ 		background-color: #FFF;
  	}
  	
- 	.pagination label{
+ 	.mapMode .pagination label{
  		display: inline;
 		font-weight: 600;
  		margin-right: 5px;
  	}
    
    /*-- Results rows --*/
-   #results{
+   .mapMode #results{
    		margin-top: 42px;
    		width: 100%;
    		overflow-x: hidden;
@@ -1582,18 +1616,18 @@ Bold 700
    		width: 100%;
    }
    
-    .search-results{
+    .mapMode .search-results{
     	background-color: #FFFFFF; /* IE 8 fallback */
     	background-color: rgba(255,255,255,0.9);
     	margin-top: 10px;
     }
     
-    .search-results > p{
+    .mapMode .search-results > p{
     	text-align: center;
     	padding-top: 5px;
     }
     
-    #collapse-content{
+    .mapMode #collapse-content{
     	position: absolute;
     	top: 5px;
     	right: 20px;
@@ -1611,7 +1645,7 @@ Bold 700
     .result-row {
       display: block;
       padding: 4px 1%;
-      width: 99%;
+      width: 98%;
       font: 400 14px/18px "Source Sans Pro" Arial, sans-serif;
     }
     
@@ -1702,6 +1736,10 @@ Bold 700
     .info-icons i.inactive{
     	color: #EEE;
     	cursor: default;
+    }
+    
+    .result-row:hover .info-icons .inactive{
+    	color: rgba(178, 202, 221, 1);
     }
     
     .popover{
@@ -1818,7 +1856,10 @@ Bold 700
   	}
   	
     /*-- Pagination widget --*/
-    .pagination {
+    .pagination{
+    	margin: 0px;
+    }
+    .mapMode .pagination {
     	cursor: pointer;
     	margin: 30px auto;
     	padding-bottom: 2px;
@@ -1846,6 +1887,9 @@ Bold 700
 		float: left;
 	}
 	
+	.pagination ul > li{
+		cursor: pointer;
+	}
 	.pagination ul > li > a{
 		background-color: #EEE;
 		color: #555;
@@ -1880,12 +1924,18 @@ Bold 700
 		margin-right: 10px;
 	}
 	
+	.pagination .sort-by label{
+		display: inline;
+	}
+	
 	    
 /* Stats styles 
   -------------------------------------------------- */ 
   
   #Profile{
   	width: 960px;
+  	margin: auto;
+  	background-color: transparent;
   }
 .profile .charts{
   	margin-left: auto;
@@ -1894,24 +1944,23 @@ Bold 700
   	clear: both;
   }
   
-  .profile .stripe{
+  .stripe{
     	min-height: 350px;
     	margin-top: 20px;
+    	background-color: rgba(255, 255, 255, 0.9);
+    	border-radius: 5px;
+    	padding: 20px;
   }
   
   .profile h1{
     margin: 20px auto;
-	width: 900px;
-	border-bottom: 1px solid #ccc;
+    padding: 0px 20px;
 	line-height: 90px;
-  }
-
-  
-  
-.profile .charts-container .stripe:nth-child(even){
 	background-color: #FFF;
-	background-color: rgba(255,255,255, 0.5);
-}
+	border-radius: 5px;
+	padding: 0px 20px;
+	color: #555;
+  }
   
 .profile .charts > svg{
   	margin-left: auto;
@@ -1952,9 +2001,9 @@ svg .metadata{
     /* The universal color for packages */
   
 svg .packages{
-	color: #B88787;
-	fill: #B88787;
-	stroke: #B88787;
+	color: #7F9733;
+	fill: #7F9733;
+	stroke: #7F9733;
 }
 
 svg .default{
@@ -2040,7 +2089,7 @@ svg .default{
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #79A805;	
+	fill: #847E06;	
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
@@ -2251,10 +2300,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	background-color: transparent;
 }
 
-#content {
+#content{
+	margin-left: 270px;
+}
+
+.mapMode #content {
 	position: fixed;
 	right: 0;
-	bottom: 18px;
+	bottom: 28px;
 	background-color: transparent;
 	height: auto;
 	max-height: 90%;
