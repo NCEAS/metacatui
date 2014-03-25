@@ -20,11 +20,6 @@ define(['jquery', 'underscore', 'backbone'],
 			firstBeginDate: 0,
 			temporalCoverage: 0,
 			coverageYears: 0
-		},
-		
-		style: {
-			dataChartColors: ['#006a66', '#98cbcb', '#329898', '#005149', '#00e0cf', '#416865', '#002825'],
-			metadataChartColors: ['#992222', '#551515', '#c13a3a', '#994242', '#371312', '#c12d2c', '#622222']
 		}
 		
 	});

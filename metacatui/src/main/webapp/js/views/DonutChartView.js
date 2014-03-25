@@ -12,7 +12,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 *  id of the SVG element to be created
 		 	 *  data: array of formatID names followed by their count, identical to Solr facet format. e.g. ["text/CSV", 10, "text", 20]
 			 * total: total count for this donut chart (used to calculate percentages)
-			 * colors: an array of colors (strings of hex code) for the arcs 
 			 * titleText (optional): A string to insert in the center of the donut 
 			 * titleCount (optional): A number to insert in the center of the donut
 			 * height: height of SVG element
@@ -23,7 +22,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			//Give all the specified options to this view
 			this.id 		= options.id 		 || "chart";
-			this.colors 	= options.colors 	 || ["#000000"];
 			this.titleText  = options.titleText  || "";
 			this.titleCount = options.titleCount || 0;
 			this.height 	= options.height	 || 300;
@@ -68,13 +66,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	         * Gather and create preliminary data for our donut chart
 	         * ========================================================================
 	         */
-			
-			//Reiterate over the colors if there aren't enough specified for each arc
-			var i = 0;
-			while(this.colors.length < this.data.length){
-				this.colors.push(this.colors[i]);
-				i++;
-			}
 	
 			//Set up the attributes for our donut chart
 	        var w = this.width,
@@ -109,7 +100,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        //Append an arc to each group
 	        arcs.append("svg:path")
 	        	.attr("class", "donut-arc")
-	            .attr("fill", function(d, i) { return viewRef.colors[i]; })
 	            .attr("d", arc);
 	        
 	        /*
@@ -149,7 +139,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	                return transform; 
 	            })
 	        	.attr("class", "donut-arc-label")
-	            .attr("fill", function(d, i){ return viewRef.colors[i]; })
 	            .attr("text-anchor", function(d) {
 	                // are we past the center?
 	                return (d.endAngle + d.startAngle)/2 > Math.PI ?
