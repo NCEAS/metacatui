@@ -18,6 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * width: width of SVG element
 			 * svgClass: class to give the parent svg element
 			 * countClass: class to give the count label element
+			 * formatLabel: a custom function to perform on each arc text label.
 			 */
 			
 			//Give all the specified options to this view
@@ -29,13 +30,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.svgClass	= options.svgClass	 || "";
 			this.countClass = options.countClass || "";
 			this.total		= options.total		 || 0;
+			this.formatLabel=options.formatLabel || function(d){ return d }
 			this.data	    = this.formatDonutData(options.data, options.total) || [{label: "", count: 0, perc: 0}];
-			/*if(typeof options.data !== undefined){
-				this.data = this.formatDonutData(options.data, options.total);
-			}
-			else{
-				this.data = [{label: "", count: 0, perc: 0}];
-			};*/
+			
 
 		},
 		
@@ -120,33 +117,33 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        // Append a text label to each arc
         	labelGroups.append("svg:text")
         				.attr("transform", function(d, i) { //Calculate the label position based on arc centroid
-	                var c = arc.centroid(d),
-	                    x = c[0],
-	                    y = c[1],
-	                    h = Math.sqrt(x*x + y*y), // pythagorean theorem for hypotenuse
-	                    width = d.endAngle - d.startAngle;
-	                
-	                    this.transformX = (x/h * labelr);
-	                    this.transformY = (y/h * labelr);
-	                    var transform = "translate(" + (this.transformX+5) + "," + this.transformY +  ")";
-	                
-	                //Rotate the labels if the arc width is below a certain threshold
-	                if(width < rotateWidth){
-	                	transform = "translate(" + this.transformX +  ',' + (this.transformY + 10) +  ") rotate(40)";
-	                	rotatedLabels.push(this);
-	                }
-	               	                
-	                return transform; 
-	            })
-	        	.attr("class", "donut-arc-label")
-	            .attr("text-anchor", function(d) {
-	                // are we past the center?
-	                return (d.endAngle + d.startAngle)/2 > Math.PI ?
-	                    "end" : "start";
-	            })
-	            .text(function(d, i) { 
-	            	return d.data.label; 
-	            });
+			                var c = arc.centroid(d),
+			                    x = c[0],
+			                    y = c[1],
+			                    h = Math.sqrt(x*x + y*y), // pythagorean theorem for hypotenuse
+			                    width = d.endAngle - d.startAngle;
+			                
+			                    this.transformX = (x/h * labelr);
+			                    this.transformY = (y/h * labelr);
+			                    var transform = "translate(" + (this.transformX+5) + "," + this.transformY +  ")";
+			                
+			                //Rotate the labels if the arc width is below a certain threshold
+			                if(width < rotateWidth){
+			                	transform = "translate(" + this.transformX +  ',' + (this.transformY + 10 + (rotatedLabels.length*5)) +  ") rotate(30)";
+			                	rotatedLabels.push(this);
+			                }
+			               	                
+			                return transform; 
+			            })
+			        	.attr("class", "donut-arc-label")
+			            .attr("text-anchor", function(d) {
+			                // are we past the center?
+			                return (d.endAngle + d.startAngle)/2 > Math.PI ?
+			                    "end" : "start";
+			            })
+			            .text(function(d, i) { 
+			            	return d.data.label;
+			            });
         	
         	// Append a count label next to each arc
 	        var countLabels = labelGroups.append("svg:text");
@@ -173,7 +170,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
                     
 	                // Again, if the arc is below a certain width, we will rotate it. Just move down and to the left a bit to align it with its corresponding label 
 	                if(width < rotateWidth){
-	                	transform = "translate(" + (this.transformX-10) +  ',' + (this.transformY+20) +  ") rotate(40)";
+	                	transform = "translate(" + (this.transformX-10) +  ',' + (this.transformY+20+(rotatedCounts.length*5)) +  ") rotate(30)";
 	                	
 	                	rotatedCounts.push(this);
 	                	
@@ -328,11 +325,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					otherCount   += counts[i];
 				}
 				else{
-					var name = counts[i-1];
-					if((name !== undefined) && (name.indexOf("eml://ecoinformatics.org") > -1) && (name.indexOf("eml") > -1)){
-						//Get the EML version only
-						name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
-					}
+					var name = this.formatLabel(counts[i-1]);
+
 					if((this.total == 0) && (counts[i] == 0)){
 						var perc = 1;
 					}

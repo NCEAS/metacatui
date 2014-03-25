@@ -233,7 +233,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							titleText: "data files", 
 							titleCount: dataCount,
 							svgClass: svgClass,
-							countClass: "data"
+							countClass: "data",
+							height: 300
 						});
 			this.$('.format-charts-data').html(donut.render().el);
 		},
@@ -257,7 +258,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							titleText: "metadata files", 
 							titleCount: metadataCount,
 							svgClass: svgClass,
-							countClass: "metadata"
+							countClass: "metadata",
+							height: 300,
+							formatLabel: function(name){
+								if((name !== undefined) && (name.indexOf("//ecoinformatics.org") > -1)){
+									//EML - extract the version only
+									if(name.substring(0,4) == "eml:") name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
+									
+									//EML modules
+									if(name.indexOf("-//ecoinformatics.org//eml-") > -1) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5); 
+								}
+								
+								return name;
+							}
 						});
 			
 			this.$('.format-charts-metadata').html(donut.render().el); 
