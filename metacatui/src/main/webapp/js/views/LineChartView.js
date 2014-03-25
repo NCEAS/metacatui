@@ -26,7 +26,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 *  height = height of SVG element
 			 */
 			
-			this.data 	   = options.data 	   || [{date: "00-00-00", count: 0}];
+			this.data 	   = options.data 	   || [{date: "00-00-1900", count: 0}];
 			this.id 	   = options.id 	   || "";
 			this.className = options.className || "";
 			this.frequency = options.frequency || 1; 	//Use 0 to not add any points

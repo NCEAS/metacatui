@@ -62,7 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			var radiuses = [13, 17, 25, 30, 40, 60];
 				_.each(this.data, function(d, i){
 
-					if((viewRef.useGlobalR) && (viewRef.globalR)){
+					if((viewRef.globalR)){
 						d.r = viewRef.globalR;
 					}					
 					//If no radius or global radius number is specified, we will determine the radius based on the count length

@@ -268,7 +268,25 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		 */
 		drawUploadChart: function() {
 			//If there was no first upload, draw a blank chart and exit
-			if(!statsModel.get('firstUpload')) return;
+			if(!statsModel.get('firstUpload')){
+				
+				//Draw the upload chart title
+				var uploadChartTitle = new CircleBadge({
+					id: "upload-chart-title",
+					globalR: 40
+				});
+				this.$('#uploads-title').prepend(uploadChartTitle.render().el);
+				
+				var lineChartView = new LineChart(
+						{	  id: "upload-chart",
+						 	yLabel: "files uploaded",
+						 frequency: 0
+						});
+				
+				this.$('.upload-chart').html(lineChartView.render().el);
+								
+				return;
+		}
 			
 			function setQuery(formatType){
 					return query = "q=" + statsModel.get('query') +
@@ -421,9 +439,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					yLabel: "data packages"
 				});
 				this.$('.temporal-coverage-chart').html(barChart.render().el);
-					
-				//Match the radius to the metadata and data uploads chart title 
-				
+									
 				//Draw the title
 				var coverageTitle = new CircleBadge({
 					globalR: 40
