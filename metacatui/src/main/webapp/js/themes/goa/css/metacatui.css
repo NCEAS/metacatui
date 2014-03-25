@@ -784,6 +784,16 @@ svg .default{
 .donut.data > g:nth-child(odd) .donut-arc-label{
 	fill: #00BD9F;
 }
+/* Have a different color for the first arc so no two colors are adjacent */
+.donut.metadata > g:first-child .donut-arc,
+.donut.metadata > g:first-child .donut-arc-label{
+	fill: #0088FF;
+}
+
+.donut.data > g:first-child .donut-arc,
+.donut.data > g:first-child .donut-arc-label{
+	fill: #1E5D5D;
+}
 
 /* Line Chart */
 .upload-chart,

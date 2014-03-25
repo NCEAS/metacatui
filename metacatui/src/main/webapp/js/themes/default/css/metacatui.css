@@ -1999,9 +1999,9 @@ Bold 700
   
   /* The universal color for data */
 svg .data{
-  	color: #ABA805;
-  	stroke: #ABA805;
-  	fill: #ABA805;
+  	color: #90AB05;
+  	stroke: #90AB05;
+  	fill: #90AB05;
   }
   
   /* The universal color for metadata */
@@ -2014,9 +2014,9 @@ svg .metadata{
     /* The universal color for packages */
   
 svg .packages{
-	color: #7F9733;
-	fill: #7F9733;
-	stroke: #7F9733;
+	color: #ABA805;
+	fill: #ABA805;
+	stroke: #ABA805;
 }
 
 svg .default{
@@ -2090,6 +2090,7 @@ svg .default{
 .donut-arc-count.rotated{
 	opacity: 0;
 }
+/* Donut arc colors */
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
 {
@@ -2102,12 +2103,23 @@ svg .default{
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #847E06;	
+	fill: #6E8302;	
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
-	fill: #ABA805;
+	fill: #90AB05;
 }
+/* Have a different color for the first arc so no two colors are adjacent */
+.donut.metadata > g:first-child .donut-arc,
+.donut.metadata > g:first-child .donut-arc-label{
+	fill: #05446A;
+}
+
+.donut.data > g:first-child .donut-arc,
+.donut.data > g:first-child .donut-arc-label{
+	fill: #445200;
+}
+
 .profile .format-charts-container{
 	height: 400px;
 }

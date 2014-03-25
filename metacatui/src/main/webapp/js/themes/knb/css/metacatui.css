@@ -1311,6 +1311,8 @@ svg .default{
 .donut-arc-count.rotated{
 	opacity: 0;
 }
+
+/* Donut arc colors */
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
 {
@@ -1329,6 +1331,18 @@ svg .default{
 .donut.data > g:nth-child(odd) .donut-arc-label{
 	fill: #38B0B0;
 }
+/* Have a different color for the first arc so no two colors are adjacent */
+.donut.metadata > g:first-child .donut-arc,
+.donut.metadata > g:first-child .donut-arc-label{
+	fill: #D5181C;
+}
+
+.donut.data > g:first-child .donut-arc,
+.donut.data > g:first-child .donut-arc-label{
+	fill: #42D2D2;
+}
+
+
 .profile .format-charts-container{
 	height: 400px;
 }
