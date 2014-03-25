@@ -1,0 +1,189 @@
+<div id="map-container">
+	<div id="map-canvas"></div>
+</div>
+
+<div id="toggle-map" class="bold-header" >
+	<div id="hide-map-control"><span>Hide map</span><i class="icon-eye-close"></i></div>
+	<div id="show-map-control"><span>Show map</span> <i class="icon-eye-open"></i></div>
+</div>
+
+<article id="mainBody" class="container-fluid">
+	<section class="row-fluid">
+		<!--SIDEBAR AREA-->
+		<aside id="sidebar" class="span3">
+		<div class="minimize">
+			<i class="icon-check-minus minimize collapse-me popover-this" data-collapse="sidebar" data-trigger="hover" data-container="body" data-content="Collapse" data-placement="top"></i>
+			<i class="icon-expand-alt maximize collapse-me popover-this"  data-collapse="sidebar" data-trigger="hover" data-container="body" data-content="Expand" data-placement="top"></i>
+		</div>
+		<h2 class="nav-header bold-header" id="filters-header">
+			Filter
+		</h2>
+			<a id="clear-all">Clear all filters<i class="icon-remove"></i></a>
+    		<div class="filter-container">
+				<div class="input-append filter-contain">
+					<input class="filter" type="text" placeholder="Anything" id="all_input" data-category="all">
+					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
+			    	<ul id="current-all-filters" class="current-filters" data-category="all">
+			    	</ul>
+			    </div>
+				
+				<div class="input-append filter-contain">
+					<i class="icon-table span1"></i>
+					<div class="span11">
+						<input class="filter" type="text" placeholder="Data attribute (density, length, etc.)" id="attribute_input" data-category="attribute">
+						<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
+				    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
+				    	</ul>
+				    </div>
+				    <div class="clear"></div>
+			    </div>
+			    
+			    <div class="input-append filter-contain">
+					<i class="icon-beaker span1"></i>
+					<div class="span11">
+						<input class="filter" type="text" placeholder="Characteristic (mass, time, length, etc.)" id="characteristic_input" data-category="characteristic">
+						<button class="filter btn" id="characteristic_btn" data-category="characteristic"><i class="icon-search"></i></button>
+				    	<ul id="current-characteristic-filters" class="current-filters span12" data-category="characteristic">
+				    	</ul>
+				    </div>
+				    <div class="clear"></div>
+			    </div>
+			    
+			    <div class="input-append filter-contain">
+					<i class="icon-superscript span1"></i>
+					<div class="span11">
+						<input class="filter" type="text" placeholder="Standard (Meter, Gram, Lumen, etc.)" id="standard_input" data-category="standard">
+						<button class="filter btn" id="standard_btn" data-category="standard"><i class="icon-search"></i></button>
+				    	<ul id="current-standard-filters" class="current-filters span12" data-category="standard">
+				    	</ul>
+				    </div>
+				    <div class="clear"></div>
+			    </div>
+			    
+				<div class="filter-contain" id="includes-files">
+					<i class="icon-folder-open span1"></i>
+					<div class="span11" id="includes-files-buttonset">
+						<label for="includes_data">
+							Only results with data
+							<i class="icon-check"></i>
+							<i class="icon-check-empty"></i>
+						</label>
+						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
+						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
+					</div>
+					<div class="clear"></div>
+				</div>
+				
+				<div class="input-append filter-contain">
+					<i class="icon-user span1"></i>
+					<div class="span11">
+						<input class="filter" type="text" placeholder="Creator" id="creator_input" data-category="creator">
+						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
+			    		<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
+			    		</ul>
+			    		<ul id="current-attribute-filters" class="current-filters span12" data-category="additionalCriteria">
+			    			<li class="current-filter keyword-search-link" data-category="additionalCriteria" data-term="+rightsHolder:<%=username%>">
+								<span>
+								Me
+								</span>
+								<i class="icon-remove remove-filter"></i>
+							</li>
+				    	</ul>
+			    	</div>
+			    	<div class="clear"></div>
+			    </div>
+	
+				
+				<div id="filter-year" class="filter-contain" data-category="year">
+					<i class="icon-calendar span1"></i>
+					<div class="span11 left-padding">
+						<div id="year-range"></div>
+						<div class="clear"></div>
+						<input class="span3"  type="number" id="min_year"  value="<%=yearMin%>"/>
+						<input class="span3"  type="number" id="max_year"  value="<%=yearMax%>"/>
+						<div class="clear"></div>
+						
+						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
+						<label class="span11 left" for="data_year" id="data-year-label">
+							Data covers
+							<i class="icon-check"></i>
+							<i class="icon-check-empty"></i>
+						</label>					
+						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top"></i>	
+						
+						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
+						<label class="span11 left" id="pub-year-label" for="publish_year">
+							Published between
+							<i class="icon-check"></i>
+							<i class="icon-check-empty"></i>
+						</label>
+						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top"></i>	
+						<div class="clear"></div>
+
+					</div>
+					<div class="clear"></div>
+				</div>
+				
+				<div class="input-append filter-contain">
+					<i class="icon-sitemap span1"></i>
+					<div class="span11">
+						<input class="filter" type="text" placeholder="Taxon" id="taxon_input" data-category="taxon">
+						<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
+						<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
+						</ul>
+					</div>
+					<div class="clear"></div>
+				</div>
+				
+				<div class="input-append filter-contain">
+					<i class="icon-map-marker span1"></i>
+					<div class="span11">
+						<input class="filter" type="text" placeholder="Location" id="spatial_input" data-category="spatial">
+						<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
+						<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
+						</ul>
+					</div>
+				</div>
+
+			</div>
+		</aside>
+
+		<!--CONTENT AREA-->
+		<div id="content" class="span9">
+
+			<div id="results-view">
+				<div id="results-header" class="row-fluid result-header">
+					
+					<!-- count stats -->
+					<div class="result-header-count">
+						<div class="minimize span2 ">
+							<i class="icon-check-minus minimize collapse-me popover-this" data-collapse="content" data-trigger="hover" data-container="body" data-content="Collapse" data-placement="left"></i>
+							<i class="icon-expand-alt maximize collapse-me popover-this" data-collapse="content" data-trigger="hover" data-container="body" data-content="Expand" data-placement="left"></i>
+						</div>
+						<div id="statcounts" class="span10"></div>
+						
+						<!-- pager -->
+						<div class="row-fluid pagination pagination-centered">
+							<div id="resultspager" class="span8"></div>
+							<div class="sort-by span4">
+								<label for="sortOrder">Sort by</label>
+								<select id="sortOrder">
+									<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
+									<option <% if (sortOrder == "read_count_i+desc") { print('selected="selected"'); } %> value="read_count_i+desc">Popularity</option>
+									<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
+									<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
+									<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- search results here -->
+				<div id="results" class="search-results"></div>
+			</div>
+			<div id="metadata-view" class="container-fluid"></div>
+		</div>
+	</section>
+</article>
+
