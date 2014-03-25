@@ -889,9 +889,9 @@ svg .packages{
 }
 
 svg .default{
-	fill: #CCCCCC;
-	stroke: #CCCCCC;
-	color: #CCCCCC;
+	fill: #A3A191;
+	stroke: #A3A191;
+	color: #A3A191;
 }
   
   /* Donut charts */  
@@ -917,17 +917,6 @@ svg .default{
 	width: 100%;	
 }
 
-.donut.default .donut-labels{
-	visibility: hidden;
-}
-
-.donut.default .donut-title-count,
-.donut.default .donut-title-text{
-	fill: #CCCCCC;
-}
-.donut.default .donut-arc{
-	fill: #CCCCCC;
-}
 
 .donut-title-count{
 	font-size: 24px;
@@ -986,6 +975,20 @@ svg .default{
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
 	fill: #324000;
+}
+
+.donut.default .donut-labels{
+	visibility: hidden;
+}
+
+.donut.default .donut-title-count,
+.donut.default .donut-title-text{
+	fill: #A3A191;
+}
+.donut.default > g .donut-arc,
+.donut.data.default > g .donut-arc,
+.donut.metadata.default > g .donut-arc{
+	fill: #A3A191;
 }
 
 

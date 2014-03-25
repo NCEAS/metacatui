@@ -1269,17 +1269,6 @@ svg .default{
 	width: 100%;	
 }
 
-.donut.default .donut-labels{
-	visibility: hidden;
-}
-
-.donut.default .donut-title-count,
-.donut.default .donut-title-text{
-	fill: #CCCCCC;
-}
-.donut.default .donut-arc{
-	fill: #CCCCCC;
-}
 
 .donut-title-count{
 	font-size: 24px;
@@ -1340,6 +1329,20 @@ svg .default{
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
 	fill: #42D2D2;
+}
+
+.donut.default .donut-labels{
+	visibility: hidden;
+}
+
+.donut.default .donut-title-count,
+.donut.default .donut-title-text{
+	fill: #CCCCCC;
+}
+.donut.default > g .donut-arc,
+.donut.data.default > g .donut-arc,
+.donut.metadata.default > g .donut-arc{
+	fill: #CCCCCC;
 }
 
 
