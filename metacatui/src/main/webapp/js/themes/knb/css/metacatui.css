@@ -1221,9 +1221,9 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
   
   /* The universal color for data */
 svg .data{
-  	color: #2B8282;
-  	stroke: #2B8282;
-  	fill: #2B8282;
+  	color: #38B0B0;
+  	stroke: #38B0B0;
+  	fill: #38B0B0;
   }
   
   /* The universal color for metadata */
@@ -1232,7 +1232,8 @@ svg .metadata{
   	stroke: #761012;
   	fill: #761012;
   }
-  
+
+  /* The universal color for packages */
 svg .packages{
 	color: #0E69A1;
 	fill: #0E69A1;
@@ -1280,15 +1281,6 @@ svg .default{
 	fill: #CCCCCC;
 }
 
-.metadata .donut-title-count{
-	color: #992222;
-	fill: #992222;
-}
-
-.data .donut-title-count{
-	color: #006a66;
-	fill: #006a66;
-}
 .donut-title-count{
 	font-size: 24px;
 }
@@ -1318,6 +1310,24 @@ svg .default{
 }
 .donut-arc-count.rotated{
 	opacity: 0;
+}
+.donut.metadata > g:nth-child(even) .donut-arc,
+.donut.metadata > g:nth-child(even) .donut-arc-label
+{
+	fill: #B90004;	
+}
+.donut.metadata > g:nth-child(odd) .donut-arc,
+.donut.metadata > g:nth-child(odd) .donut-arc-label{
+	fill: #761012;
+}
+.donut.data > g:nth-child(even) .donut-arc,
+.donut.data > g:nth-child(even) .donut-arc-label
+{
+	fill: #2B8282;	
+}
+.donut.data > g:nth-child(odd) .donut-arc,
+.donut.data > g:nth-child(odd) .donut-arc-label{
+	fill: #38B0B0;
 }
 .profile .format-charts-container{
 	height: 400px;

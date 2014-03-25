@@ -16,10 +16,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 		
 		initialize: function(){
 		},
-		
-		events: {
-			'click .donut-arc' : function(){console.log('hello');}
-		},
 				
 		render: function () {
 			console.log('Rendering the stats view');
@@ -237,7 +233,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							colors: statsModel.style.dataChartColors, 
 							titleText: "data files", 
 							titleCount: dataCount,
-							svgClass: svgClass
+							svgClass: svgClass,
+							countClass: "data"
 						});
 			this.$('.format-charts-data').html(donut.render().el);
 		},
@@ -261,7 +258,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 							colors: statsModel.style.metadataChartColors, 
 							titleText: "metadata files", 
 							titleCount: metadataCount,
-							svgClass: svgClass
+							svgClass: svgClass,
+							countClass: "metadata"
 						});
 			
 			this.$('.format-charts-metadata').html(donut.render().el); 
