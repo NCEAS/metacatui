@@ -1522,6 +1522,7 @@ svg .point:hover + .line-chart-label{
     
     #downloadContents{
     	margin-bottom: 40px;
+    	overflow: overlay;
     }
     
     table.download-contents{

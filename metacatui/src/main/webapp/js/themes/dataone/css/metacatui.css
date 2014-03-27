@@ -26,18 +26,18 @@ Bold 700
     body {
       background-color: #555555; /*IE 8 fallback*/
       background: rgba(0, 0, 0, .8);
-      font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
+      font: 400 14px/20px Tahoma, Helvetica, "sans serif";
       min-height: 100%;
       position: relative;
     }
     
     a {
-      color: #166194;
+      color: #1C6E84;
       font-weight: 600;
     }
         
     a:hover{
-    	color: #3399CC;
+    	color: #10424F;
     	text-decoration: none;
     }
     
@@ -52,7 +52,7 @@ Bold 700
 	
 	h2{
 		font-size: 27px;
-		font-weight: 600;
+		font-weight: 500;
 	}
 	
 	strong{
@@ -210,8 +210,9 @@ Bold 700
 	}
 	
 	select{
-    	font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
     	width: auto;
+    	font-size: 14px;
+    	line-height: 14px;
     }
 
 
@@ -358,7 +359,7 @@ Bold 700
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       background-image: none;
       background-repeat: none;
-      background-color: #166194;
+      background-color: #1C6E84;
       box-shadow: none;
       -moz-box-shadow: none;
       border: none;
@@ -368,7 +369,7 @@ Bold 700
     }
     
     .btn:hover{
-    	background-color: #0377DD;
+    	background-color: #10424F;
     	color: #FFF;
     	transition: background-color 1s;
     }
@@ -419,17 +420,21 @@ Bold 700
     }
     
     #downloadPackage .dropdown-toggle {
-		font: 400 20px/20px "Oswald", Arial, sans-serif;
+		font-size: 20px;
+		line-height: 20px;
+		font-weight: 400;
 	 }
     
     .btn-group.open .btn.dropdown-toggle{
-    	color: #166194;
+    	color: #1C6E84;
       	background: rgba(22, 97, 148, 0.2);
     }  
     
     .dropdown-menu > li > a.btn{
     	background-color: #FFFFFF;
-    	font: 300 18px/18px "Oswald", Arial, sans-serif;
+    	font-weight: 300;
+    	font-size: 18px;
+    	line-height: 18px;
     }
     
 /* ICONS CSS
@@ -525,14 +530,16 @@ Bold 700
     }
 
 	.navbar-inner > ul > li img{
-		height: 32px;
+		max-height: 32px;
 		margin-top: -10px;
 	}
     .navbar .nav > li > a {
       color: #FFFFFF; /*IE fallback */
       color: rgba(255, 255, 255, 0.8);
       text-shadow: none;
-      font: normal normal 400 25px/20px "Oswald", Arial, sans-serif;
+      font-size: 25px;
+      font-weight: 500;
+      line-height: 20px;
       text-transform: uppercase;
     }
     
@@ -603,7 +610,7 @@ Bold 700
     }
     
     #Navbar .dropdown-menu > li > a:hover{
-    	background-color: #166194;
+    	background-color: #1C6E84;
     	background-image: none;
     }
     
@@ -723,13 +730,15 @@ Bold 700
 /* METADATA VIEW CSS
 -------------------------------------------------- */
 	label.control-label{
-		font: 400 15px/18px "Source Sans Pro", Arial, sans-serif;
+		font-weight: 400;
+		font-size: 15px;
+		line-height: 18px;
 	}
 		
 	#Metadata > a[href="#data"]{
 		display: block;
-		margin-bottom: 20px;
 		font-size: 13px;
+		padding: 10px;
 	}
 	
 	#Metadata .well{
@@ -756,7 +765,7 @@ Bold 700
 	
 	#Metadata .nav-list > .active > a{
 		font-weight: 700;
-		background-color: #166194;
+		background-color: #1C6E84;
 		text-shadow: none;
 	}
 	
@@ -765,7 +774,7 @@ Bold 700
 	}
 	
 	.search-results a.btn{
-		font: 700 14px/14px "Source Sans Pro", Arial, sans-serif;
+		font-weight: 700;
 	}
 	
 	/* Resource map contents table */
@@ -1008,7 +1017,7 @@ Bold 700
 	
 	.subset-choice:hover,
 	.subset-choice:hover > i{
-		color: #166194;
+		color: #1C6E84;
 	}
 	
 	.subset-choice > i{
@@ -1111,25 +1120,21 @@ Bold 700
     
     input.filter::-webkit-input-placeholder{
 		color: #777;
-		font-family: "Source Sans Pro";
 		font-weight: normal;
 		text-shadow: none;
 	}
 	input.filter:-moz-placeholder{ /* Firefox 18- */
 		color: #DDD;
-		font-family: "Source Sans Pro";
 		font-weight: normal;
 		text-shadow: none;
 	}
 	input.filter::-moz-placeholder{ /* Firefox 19+ */
 		color: #DDD;
-		font-family: "Source Sans Pro";
 		font-weight: normal;
 		text-shadow: none;
 	}
 	input.filter:-ms-input-placeholder{
 		color: #DDD;
-		font-family: "Source Sans Pro";
 		font-weight: normal;
 		text-shadow: none;
 	}
@@ -1220,7 +1225,7 @@ Bold 700
     	z-index: 1;
     	display: block;
     	border: 0;
-    	background: #166194;
+    	background: #1C6E84;
     }
     
     .ui-slider-handle{
@@ -1242,7 +1247,7 @@ Bold 700
 	.current-filters[class*="span"]{
 		list-style: none;
 		color: #FFFFFF;
-		font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
+		font-weight: 400;
 		margin-left: 10px;
 		min-height: 0px;
 	}
@@ -1260,7 +1265,7 @@ Bold 700
 	.current-filters > li[class*="span"],
 	#filter-year label.ui-state-active, 
 	#includes-files label.ui-state-active{
-		background-color: #166194;
+		background-color: #1C6E84;
 		color: #FFF;
 		padding: 0px 5px 0px 5px;
 		height: auto;
@@ -1272,6 +1277,7 @@ Bold 700
 		border-radius: 3px;
 		-webkit-border-radius: 3px;
 		-moz-border-radius: 3px;
+		font-size: 14px;
 	}
 	
 	 #includes-files label,
@@ -1332,7 +1338,7 @@ Bold 700
 		display: inline-block;
 	}
 	.keyword-search-link.active {
-		background-color: #166194;
+		background-color: #1C6E84;
 		border-color: inherit;
 		display: inline-block;
 		width: auto;
@@ -1348,7 +1354,8 @@ Bold 700
 		padding-left: 10px;
 		margin-bottom: 0px;
 		float: left;
-		font-size: 18px;
+		font-size: 21px;
+		font-weight: 500;
 		text-transform: none;
 		color: #666;
     }
@@ -1365,7 +1372,6 @@ Bold 700
     
     h3.nav-header,
     h3.nav-header > label{
-    	font: 400 14px/25px "Source Sans Pro" Arial sans-serif;
 		margin: 0px;
 		color: #ddd;
 		text-transform: none;
@@ -1373,6 +1379,7 @@ Bold 700
 		padding: 0px;
 		text-shadow: none;
 		padding-left: 10px;
+		line-height: 25px;
     }
     
     h3.nav-header > label{
@@ -1391,8 +1398,10 @@ Bold 700
     
     li.nav-header{
     	text-transform: none;
-		font: 600 13px/13px "Source Sans Pro", "Arial", sans-serif;
 		color: #7F7F7F;
+		font-weight: 600;
+		font-size: 13px;
+		line-height: 13px;
     }
     
     /*-- Your Collections area --*/
@@ -1425,13 +1434,14 @@ Bold 700
 		display: none;
 		background-color: #931d1d;
 		color: #FFF;
+		font-weight: 500;
 		padding: 0px 5px;
 		border-radius: 3px;
 		-moz-border-radius: 3px;
 		-webkit-border-radius: 3px;
 		position: absolute;
-		top: 7px;
-		left: 68px;
+		top: 10px;
+		left: 77px;
     }
     
     #clear-all > i{
@@ -1460,7 +1470,6 @@ Bold 700
     
     li.ui-menu-item > a {
     	color: #555555;
-    	/*font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;*/
     	width: 245px;
     }
 	
@@ -1469,7 +1478,7 @@ Bold 700
     	cursor: pointer;
     	text-decoration: none;
     	font-weight: bold;
-    	color: #166194;
+    	color: #1C6E84;
     }
     
 
@@ -1499,9 +1508,9 @@ Bold 700
     }
     
     .result-header-count{
-    font-weight: 600;
+    font-weight: 500;
 	font-size: 20px;
-	line-height: 25px;
+	line-height: 35px;
 }
     
      .mapMode .result-header > .result-header-count{
@@ -1610,7 +1619,6 @@ Bold 700
  	
  	.mapMode .pagination label{
  		display: inline;
-		font-weight: 600;
  		margin-right: 5px;
  	}
    
@@ -1659,7 +1667,6 @@ Bold 700
       display: block;
       padding: 4px 1%;
       width: 98%;
-      font: 400 14px/18px "Source Sans Pro" Arial, sans-serif;
     }
     
     .result-row:nth-child(odd){
@@ -1678,7 +1685,7 @@ Bold 700
     
     .result-row:hover { 
     background-color: #DAEBF7; /* IE 8 fallback */
-    background-color: rgba(178, 202, 221, 0.8);
+    background-color: rgba(28, 110, 132, 0.18);
   	}
   
     
@@ -1692,7 +1699,7 @@ Bold 700
     
     .result-title{
     	font-weight: 600;
-    	color: #166194;
+    	color: #1C6E84;
     }
     
     .result-row .abstract{
@@ -1741,7 +1748,7 @@ Bold 700
     }
     
     .info-icons .on-map > i.on-map{
-    	color: #DA4D3A;
+    	color: #660033;
     	cursor: default;
     }
     
@@ -1907,6 +1914,7 @@ Bold 700
 		background-color: #EEE;
 		color: #555;
 		font-size: 14px;
+		font-weight: 500;
 		line-height: 14px;	
 		border: 1px solid #CCC;	
 	}
@@ -1921,7 +1929,7 @@ Bold 700
 	
 	.pagination ul > li > a:hover{
 		background-color: #DDD;
-		color: #166194;
+		color: #1C6E84;
 	}
 	
 	
@@ -1932,7 +1940,7 @@ Bold 700
 	}
 	
 	.pagination .sort-by{
-		width: 180px;
+		width: 200px;
 		float: right;
 		margin-right: 10px;
 	}
@@ -1999,24 +2007,24 @@ Bold 700
   
   /* The universal color for data */
 svg .data{
-  	color: #90AB05;
-  	stroke: #90AB05;
-  	fill: #90AB05;
+  	color: #660033;
+  	stroke: #660033;
+  	fill: #660033;
   }
   
   /* The universal color for metadata */
 svg .metadata{
-  	color: #0E69A1;
-  	stroke: #0E69A1;
-  	fill: #0E69A1;
+  	color: #1C6E84;
+  	stroke: #1C6E84;
+  	fill: #1C6E84;
   }
   
     /* The universal color for packages */
   
 svg .packages{
-	color: #ABA805;
-	fill: #ABA805;
-	stroke: #ABA805;
+	color: #FF6633;
+	fill: #FF6633;
+	stroke: #FF6633;
 }
 
 svg .default{
@@ -2083,30 +2091,30 @@ svg .default{
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
 {
-	fill: #118AD5;	
+	fill: #279DBD;	
 }
 .donut.metadata > g:nth-child(odd) .donut-arc,
 .donut.metadata > g:nth-child(odd) .donut-arc-label{
-	fill: #0E69A1;
+	fill: #1C6E84;
 }
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #6E8302;	
+	fill: #2B0015;	
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
-	fill: #90AB05;
+	fill: #660033;
 }
 /* Have a different color for the first arc so no two colors are adjacent */
 .donut.metadata > g:first-child .donut-arc,
 .donut.metadata > g:first-child .donut-arc-label{
-	fill: #05446A;
+	fill: #124958;
 }
 
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
-	fill: #445200;
+	fill: #BC005E;
 }
 
 
@@ -2258,6 +2266,8 @@ svg .point:hover + .line-chart-label{
 	background-color: #FFFFFF;
 	cursor: pointer;
 	transition: all 0.8s;
+		border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
 }
 
 #toggle-map i{
@@ -2267,7 +2277,7 @@ svg .point:hover + .line-chart-label{
 }
 
 #toggle-map:hover i{
-	color: #3399CC;
+	color: #1C6E84;
 }
 
 #toggle-map span{
@@ -2289,7 +2299,7 @@ svg .point:hover + .line-chart-label{
 }
 
 .mapMode #toggle-map{
-	left: -90px;
+	left: -97px;
 }
 
 #toggle-map{
@@ -2316,8 +2326,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #edit-map{
 	font-size: 14px;
 	line-height: 17px;
-	color: #166194;
-	border-bottom: 1px dotted #166194;
+	color: #1C6E84;
+	border-bottom: 1px dotted #1C6E84;
 	position: absolute;
 	top: 25px;
 	left: 160px;
@@ -2366,10 +2376,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #mainContent h1{
-	font: 400 60px/60px "Oswald", Arial, sans-serif;
+	font-size: 60px;
+	font-weight: 500;
+	line-height: 60px;
 	color: #FFFFFF;
 	text-transform: uppercase;
-	width: 300px;
+	width: 342px;
 }
 
 #mainContent input{
@@ -2378,7 +2390,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-webkit-border-radius: 20px 0px 0px 20px;
 	-moz-border-radius: 20px 0px 0px 20px;
 	font-size: 30px; 
-	font-family: "Source Sans Pro";
 	border: 3px solid #EEEEEE;
 	border-right: 0px; 
 	padding-left: 20px;
@@ -2448,7 +2459,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #metacatDocs > .banner > .title{
-	font: 400 18px/18px "Oswald", Arial, sans-serif;
+	font-size: 18px;
 	color: #FFFFFF;
 	float: left;
 	margin: 38px 10px;
@@ -2474,7 +2485,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metacatDocs .related > ul > li.right > a{
 	color: #FFFFFF;
-	font: 400 30px/30px "Oswald", sans-serif;	
+	font-size: 30px;
 	text-decoration: none;
 	text-transform: uppercase;	
 }
@@ -2501,11 +2512,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-webkit-border-radius: 0 4px 4px 0;
 	-moz-border-radius: 0 4px 4px 0;
 	border-left: 1px solid #CCCCCC;
-	font: 300 16px/16px "Oswald", sans-serif;
+	font-size: 16px;
 }
 
 #metacatDocs .related > ul input[type="submit"]:hover{	/*"Go" button on navigation search bar */
-	background-color: #166194;
+	background-color: #1C6E84;
 	color: #FFFFFF;
 	cursor: pointer;
 }
@@ -2529,7 +2540,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metacatDocs .related .breadcrumb,
 #metacatDocs .related .breadcrumb > a{
-	font: 300 16px/16px "Oswald", Arial, sans-serif;
 	color: #FFFFFF;
 }
 
@@ -2568,7 +2578,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs > .document h2:hover > .headerlink,
 #metacatDocs > .document h3:hover > .headerlink{
 	display: inline;
-	color: #166194;
+	color: #1C6E84;
 }
 
 
@@ -2585,7 +2595,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #metacatDocs .sidebar .sidebar-title{
-	font: 300 24px/24px "Oswald", Arial, sans-serif;
+	font-size: 24px;
 	margin-top: 0;
 }
 
@@ -2616,7 +2626,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	clear: both;
 	margin: 20px auto 0 auto;
 	color: #CCCCCC;
-	font: 300 14px/14px "Source Sans Pro", Arial, sans-serif;
+	font-size: 14px;
 }
 
 #metacatDocs > .footer > .footerNav{
@@ -2651,11 +2661,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs th{
     	background-color: #555555;
     	color: #FFFFFF;
-    	font: 300 16px/20px "Source Sans Pro", Arial, sans-serif;
+    	font-size: 16px;
+    	line-height: 20px;
     }
     
 #metacatDocs td{
-    	font: 400 15px/20px "Source Sans Pro", Arial, sans-serif;
+    	font-size: 16px;
+    	line-height: 20px;
     }
     
 #metacatDocs tr.row-odd{
@@ -2683,7 +2695,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  
  pre{
 	 padding: 10px;
-	 background-color: #166194; /*IE 8 fallback*/ 
+	 background-color: #1C6E84; /*IE 8 fallback*/ 
 	background: rgba(22,97,148,0.7);
 	color: #FFFFFF;
 	font-size: 15px;
@@ -2719,7 +2731,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  .figure > .caption{
 	 margin-bottom: 0px;
 	text-align: center;
-	font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
 	color: #666;
 	padding-top: 10px;
  }
@@ -2739,7 +2750,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  }
  
  #metacatDocs .topic-title{
- 	font: 300 24px/24px "Oswald", sans-serif;
+ 	font-size: 24px;
 	margin-top: 0;
  }
  
@@ -2753,7 +2764,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  }
  
     dt{
-   		font: 300 18px/24px "Oswald", sans-serif;
+   		font-size: 18px;
+   		line-height: 24px;
    }
    
    #metacatDocs input {
@@ -2771,15 +2783,18 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     #metacatDocs h3 {
-		font: 400 24.5px/40px "Source Sans Pro", sans-serif;
+		font-size: 24px;
+		line-height: 40px;
 	}
 	
 	#metacatDocs h2{
-		font: 400 27.5px/40px "Oswald", sans-serif;
+		font-size: 27px;
+		line-height: 40px;
 	}
 		
 	#metacatDocs h1{
-		font: 400 32px/40px "Oswald", sans-serif;
+		font-size: 32px;
+		line-height: 40px;
 	}
 	
 	#metacatDocs h1 > a, 
