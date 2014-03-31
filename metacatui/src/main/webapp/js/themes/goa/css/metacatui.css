@@ -642,7 +642,9 @@
 	line-height: 90px;
   }
 
-  
+    .profile-title:empty{
+  	display: none;
+  }
   
 .profile .charts-container .stripe:nth-child(even){
 	background-image: url("../img/sos.png");

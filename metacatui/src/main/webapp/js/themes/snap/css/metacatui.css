@@ -840,7 +840,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	line-height: 90px;
   }
 
-  
+    .profile-title:empty{
+  	display: none;
+  }
   
 .profile .charts-container .stripe:nth-child(even){
 	background-color: rgb(203, 199, 194);

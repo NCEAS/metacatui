@@ -1985,6 +1985,10 @@ Bold 700
 	color: #555;
   }
   
+    .profile-title:empty{
+  	display: none;
+  }
+  
 .profile .charts > svg{
   	margin-left: auto;
   	margin-right: auto;
