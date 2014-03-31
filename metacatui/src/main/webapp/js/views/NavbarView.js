@@ -15,7 +15,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 						  'click #search_btn' : 'triggerSearch',
 					   'keypress #search_txt' : 'triggerOnEnter',
 							  'click #myData' : 'myDataSearch',
-			'click .show-new-dataCatalogView' : 'showNewSearch'
+			'click .show-new-dataCatalogView' : 'showNewSearch',
+			 		 'click .dropdown-menu a' : 'hideDropdown',
+			 		 	'mouseover .dropdown' : 'showDropdown',
+			 		 		'click .dropdown' : 'hideDropdown'
 		},
 		
 		initialize: function () {
@@ -37,6 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 							} 
 					)
 			);
+
 		},
 		
 		triggerSearch: function() {
@@ -92,6 +96,17 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// ...but don't want to follow links
 			return false;
 			
+		},
+		
+		hideDropdown: function(){
+			console.log('hide dropdown');
+			//Close the dropdown menu when a link is clicked
+			this.$('.dropdown-menu').addClass('hidden');
+			this.$('.dropdown').removeClass('open');
+		},
+		
+		showDropdown: function(){
+			this.$('.dropdown-menu').removeClass('hidden');
 		},
 		
 		triggerOnEnter: function(e) {

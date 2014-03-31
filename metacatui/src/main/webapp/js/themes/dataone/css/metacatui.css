@@ -693,9 +693,19 @@ Bold 700
 	.dropdown-menu li:hover .sub-menu {
 	    visibility: visible;
 	}
-	
-	.dropdown:hover .dropdown-menu {
+
+	.dropdown:hover .dropdown-menu{
 	    display: block;
+	}
+	
+	.dropdown:hover .dropdown-menu.hidden,
+	.dropdown-menu.hidden{
+		display: none;
+	}
+	
+	.navbar .nav li.dropdown.open > .dropdown-toggle{
+		color: #FFF;
+		background-color: transparent;
 	}
 	
 	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {

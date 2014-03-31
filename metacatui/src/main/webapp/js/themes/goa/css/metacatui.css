@@ -434,6 +434,16 @@
 	    display: block;
 	}
 	
+	.dropdown:hover .dropdown-menu.hidden,
+	.dropdown-menu.hidden{
+		display: none;
+	}
+	
+	.navbar .nav li.dropdown.open > .dropdown-toggle{
+		color: #FFF;
+		background-color: transparent;
+	}
+	
 	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
 	    margin-top: 0;
 	}
