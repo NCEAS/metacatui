@@ -46,62 +46,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			
 			//Insert the loading template into the space where the charts will go
 			this.$(".chart").html(this.loadingTemplate);
-
-			//Start retrieving data from Solr
-			this.getGeneralInfo();
-			this.getFormatTypes();	
-			
-			return this;
-		},
-		
-		
-		getGeneralInfo: function(){
-		
-			//Send a Solr query to retrieve some preliminary information we will need for this person/query	
-			var query = "q=" + statsModel.get('query') +
-						"&rows=0" +
-						"&wt=json" +
-						"&fl=dateUploaded,beginDate" +
-						"&group=true" +
-						"&group.rows=1" +
-						"&group.query=dateUploaded:*" + 
-						"&group.sort=dateUploaded+asc" +
-						"&group.query=(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)+-obsoletedBy:*" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
-						"&group.sort=beginDate+asc"; //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
-			
-			//Run the query
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				var keys = Object.keys(data.grouped);	
-				for(var i=0; i<keys.length; i++){
-					//Which key is this? Find out by searching for beginDate and dateUploaded
-					if(keys[i].indexOf("dateUploaded") > -1){
-						//This is our group with the earliest dateUploaded
-						if(!data.grouped[keys[i]].doclist.numFound){
-							//Save some falsey values if none are found
-							statsModel.set('firstUpload', null);
-							statsModel.set('totalDateUploaded', 0);
-						}
-						else{
-							// Save the earliest dateUploaded and total found in our model
-							statsModel.set('firstUpload', data.grouped[keys[i]].doclist.docs[0].dateUploaded);
-							statsModel.set('totalDateUploaded', data.grouped[keys[i]].doclist.numFound);
-						}
-					}
-					else if(keys[i].indexOf("beginDate") > -1){
-						// This is the group with our earliest beginDate
-						if(!data.grouped[keys[i]].doclist.numFound){
-							//Save some falsey values if none are found
-							statsModel.set('firstBeginDate', null);
-							statsModel.set('totalBeginDates', 0);
-						}
-						else{
-							// Save the earliest beginDate and total found in our model
-							statsModel.set('firstBeginDate', new Date(data.grouped[keys[i]].doclist.docs[0].beginDate));
-							statsModel.set('totalBeginDates', data.grouped[keys[i]].doclist.numFound);
-						}						
-					}
-				}
-			});
 			
 			//Is the query for a user only? If so, treat the general info as a user profile
 			var statsQuery = statsModel.get('query');
@@ -113,6 +57,60 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				//Display the name of the person
 				$(".profile-title").text(uid);
 			}
+
+			//Start retrieving data from Solr
+			this.getFirstDates();
+			this.getFormatTypes();	
+			
+			return this;
+		},
+		
+		
+		getFirstDates: function(){
+		
+			//Get the earliest upload date	
+			var query = "q=" + statsModel.get('query') +
+						"+dateUploaded:*" +
+						"&wt=json" +
+						"&fl=dateUploaded" +
+						"&rows=1" +
+						"&sort=dateUploaded+asc";
+			
+			//Run the query
+			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+						if(!data.response.numFound){
+							//Save some falsey values if none are found
+							statsModel.set('firstUpload', null);
+							statsModel.set('totalDateUploaded', 0);
+						}
+						else{
+							// Save the earliest dateUploaded and total found in our model
+							statsModel.set('firstUpload', data.response.docs[0].dateUploaded);
+							statsModel.set('totalDateUploaded', data.response.numFound);
+						}					
+			});
+			
+			//Get the earliest temporal data coverage year
+			query = "q=" + statsModel.get('query') +
+					"+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)+-obsoletedBy:*" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+					"&rows=1" +
+					"&wt=json" +	
+					"&fl=beginDate" +
+					"&sort=beginDate+asc";
+			
+			//Run the query
+			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+				if(!data.response.numFound){
+					//Save some falsey values if none are found
+					statsModel.set('firstBeginDate', null);
+					statsModel.set('totalBeginDates', 0);
+				}
+				else{
+					// Save the earliest beginDate and total found in our model
+					statsModel.set('firstBeginDate', new Date(data.response.docs[0].beginDate));					
+					statsModel.set('totalBeginDates', data.response.numFound);
+				}	
+			});
 		},
 		
 		/**
@@ -470,8 +468,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			}
 			
 			//How many years back should we look for temporal coverage?
-			var now = new Date().getFullYear();
-			var totalYears = now - statsModel.get('firstBeginDate').getFullYear(); 
+			var now = new Date().getUTCFullYear();
+			var totalYears = now - statsModel.get('firstBeginDate').getUTCFullYear(); 
 			
 			//Determine our year interval/bin size so that no more than 10 facet.queries are being sent at a time
 			var interval = 1;
@@ -527,7 +525,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					else if(data.facet_counts.facet_queries[keys[i]]){
 						coverageYears += interval;
 					}
-					
+				}
+				
+				//If our intervals/bins are more than one year, we need to subtract one bin from our total since we are actually conting the number of years BETWEEN bins (i.e. count one less)
+				if(interval > 1){
+					coverageYears -= interval;
 				}
 								
 				statsModel.set('coverageYears',  coverageYears);

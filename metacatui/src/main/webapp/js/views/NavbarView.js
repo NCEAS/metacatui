@@ -99,7 +99,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		},
 		
 		hideDropdown: function(){
-			console.log('hide dropdown');
 			//Close the dropdown menu when a link is clicked
 			this.$('.dropdown-menu').addClass('hidden');
 			this.$('.dropdown').removeClass('open');
