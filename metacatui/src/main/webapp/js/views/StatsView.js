@@ -339,7 +339,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					//Format our data for the line chart drawing function
 					var counts = data.facet_counts.facet_ranges.dateUploaded.counts;					
 					var metadataUploadData = formatUploadData(counts);
-									
+														
 					/* Now do the same thing for DATA uploads */
 					query = setQuery("DATA");
 					
@@ -349,7 +349,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						//Format our data for the line chart drawing function
 						counts = data.facet_counts.facet_ranges.dateUploaded.counts;
 						var dataUploadData = formatUploadData(counts);
-						
+												
 						//Check which line we should draw first since the scale will be based off the first line
 						if(statsModel.get("metadataUploaded") > statsModel.get("dataUploaded") ){
 							//Create the line chart and draw the metadata line
