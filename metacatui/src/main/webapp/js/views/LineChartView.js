@@ -24,6 +24,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * 	className = class to give the line path and point circle elements
 			 *  width = width of SVG element
 			 *  height = height of SVG element
+			 *  xTicks = d3.time function for the x-axis tick marks
+			 *  xTickFormat = d3.time.format() argument for formatting x-axis tick marks
 			 */
 			
 			this.data 	   = options.data 	   || [{date: "00-00-1900", count: 0}];
@@ -31,11 +33,33 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.className = options.className || "";
 			this.frequency = options.frequency || 1; 	//Use 0 to not add any points
 			if(!options.data) this.frequency = 0; //If no data is provided, do not draw any points (otherwise, one point at 0,0 will be drawn)
-			this.labelDate = options.labelDate || "m-d-y";
 			this.yLabel	   = options.yLabel	   || "";
 			this.radius	   = options.radius    || 4;
 			this.width 	   = options.width 	   || 650;
 			this.height    = options.height    || 250;
+			
+			//What will our x-axis tick format be?
+			//Find the time span - 2628000000 ms is one month
+			var timeSpan = new Date(this.data[this.data.length-1].date) - new Date(this.data[0].date);
+			var months = 2628000000*13;
+			
+			function getTickFormat(){
+				if(timeSpan <= months) return d3.time.format("%b");
+				else return d3.time.format("%Y");
+			}
+			function getTicks(){
+				if(timeSpan <= months) return d3.time.months;
+				else return d3.time.years;
+			}
+			function getLabelDate(){
+				if(timeSpan <= months) return "m-y";
+				else return "y";
+			}
+			
+			this.xTicks	     = options.xTicks	   || getTicks();
+			this.xTickFormat = options.xTickFormat || getTickFormat();
+			this.labelDate   = options.labelDate   || getLabelDate();
+
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -58,11 +82,16 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		parseDate: d3.time.format("%Y-%m-%d").parse, //The format for the date - can be modified for each chart. This is the format for ISO dates returned from Solr
 			
 		/*
-		 * --Adapted from http://bl.ocks.org/mbostock/3885211--
 		 * This function draws a line time series chart
 		 */
 		render: function () {			
 			console.log('Rendering a line chart');
+			
+			/*
+			* ========================================================================
+		    * Set up the basic settings of our line chart (margins, scales, and axis)
+			* ========================================================================
+			*/
 			
 			var margin = {top: 20, right: 50, bottom: 30, left: 80};
 			this.width  = this.width - margin.left - margin.right;
@@ -75,7 +104,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			var xAxis = d3.svg.axis()
 			    .scale(this.x)
-			    .orient("bottom");
+			    .orient("bottom")
+			    .ticks(this.xTicks)
+			    .tickFormat(this.xTickFormat);
 
 			var yAxis = d3.svg.axis()
 			    .scale(this.y)
@@ -96,6 +127,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  this.x.domain(d3.extent(this.data, function(d) { return d.date; }));
 		  this.y.domain([0, d3.max(this.data, function(d){ return d.count; })]); //y axis is always 0 - max y value
 		  
+		  /*
+			* ========================================================================
+		    * Append the axis
+			* ========================================================================
+			*/
 		  svg.append("g")
 		      .attr("class", "x axis")
 		      .attr("transform", "translate(0," + this.height + ")")
@@ -105,6 +141,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .attr("class", "y axis")
 		      .call(yAxis);
 		  
+		  /*
+			* ========================================================================
+		    * Draw the y-axis title
+			* ========================================================================
+			*/
 		  d3.select(this.el).append("text")
 		      .attr("y", 6)
 		      .attr("dy", ".71em")
@@ -113,7 +154,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .attr("class", "title")
 		  	  .attr("transform", "translate(0, " + (this.height/2) + ") rotate(-90)");
 		  
-		  
+		  /*
+			* ========================================================================
+		    * Draw the line path
+			* ========================================================================
+			*/
 		  viewRef = this;
 		  
 		  var line = d3.svg.line()
@@ -131,11 +176,17 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.svg = svg; 
 			this.line = line; 
 			
+			/*
+			* ========================================================================
+		    * Add points to the line
+			* ========================================================================
+			*/
 			this.addPoints();
 	        
 			return this;
 		},
 		
+		//This function will add another line to the chart, using the same scales
 		addLine: function(data){
 			console.log('add a line');
 							
@@ -162,11 +213,18 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		    
 		},
 		
+		//This function will add points to the current line stored in this view (this.line)
 		addPoints: function(){
 			var viewRef = this;
 		
 			  //Should we add points?
 			  if(this.frequency > 0){
+				  
+				  /*
+					* ========================================================================
+				    * Format our data for the points
+					* ========================================================================
+					*/
 				  //Pare down the data to every X for the points
 				  var pointData = [];
 				  for(var i=0; i<this.data.length; i+=this.frequency){
@@ -178,6 +236,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					  pointData.push(this.data[this.data.length-1]);  
 				  }
 				  
+				  
+				  /*
+					* ========================================================================
+				    * Draw the circles/points
+					* ========================================================================
+					*/
 				  var circles = this.svg.selectAll("svg")
 						  					.data(pointData)
 						  					.enter().append("g");
@@ -187,7 +251,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 						.attr("cx", function(d, i){ return viewRef.x(d.date) })
 						.attr("cy", function(d, i){ return viewRef.y(d.count)})
 						.attr("r", function(d, i){ return viewRef.radius });
-						  
+				
+				/*
+				* ========================================================================
+			    * Draw the point labels
+				* ========================================================================
+				*/
 				  circles.append("text")
 				  		.text(function(d, i){
 				  			var date = "";

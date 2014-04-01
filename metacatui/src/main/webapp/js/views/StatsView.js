@@ -363,8 +363,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 									 className: "metadata",
 									 	yLabel: "files uploaded",
 									 frequency: frequency, 
-										radius: 5, 
-									 labelDate: "y"});
+										radius: 5
+									});
 							
 							viewRef.$('.upload-chart').html(lineChartView.render().el);
 							
@@ -382,8 +382,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 									 className: "data",
 									 	yLabel: "files uploaded",
 									 frequency: frequency, 
-										radius: 4, 
-									 labelDate: "y"});
+										radius: 4
+									 });
 							
 							viewRef.$('.upload-chart').html(lineChartView.render().el);
 
