@@ -117,9 +117,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  viewRef = this;
 		  
 		  var line = d3.svg.line()
-						.interpolate("basis")
 						.x(function(d) { return viewRef.x(d.date); })
-						.y(function(d) { return viewRef.y(d.count); });
+						.y(function(d) { return viewRef.y(d.count); })
+						.interpolate("linear");
 
 
 		  svg.append("path")
@@ -147,9 +147,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		    });
 					   		    
 			var line = d3.svg.line()
-				.interpolate("basis")
 				.x(function(d) { return viewRef.x(d.date); })
-				.y(function(d) { return viewRef.y(d.count); });
+				.y(function(d) { return viewRef.y(d.count); })
+				.interpolate("linear");
 
 		    this.svg.append("path")
 		    	.datum(data)

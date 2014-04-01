@@ -349,6 +349,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 						//Format our data for the line chart drawing function
 						counts = data.facet_counts.facet_ranges.dateUploaded.counts;
 						var dataUploadData = formatUploadData(counts);
+						
+						//Set the frequency of our points
+						var frequency = 12;
+						if(metadataUploadData.length < 20) frequency = 1;
 												
 						//Check which line we should draw first since the scale will be based off the first line
 						if(statsModel.get("metadataUploaded") > statsModel.get("dataUploaded") ){
@@ -358,7 +362,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 											id: "upload-chart",
 									 className: "metadata",
 									 	yLabel: "files uploaded",
-									 frequency: 12, 
+									 frequency: frequency, 
 										radius: 5, 
 									 labelDate: "y"});
 							
@@ -377,7 +381,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 											id: "upload-chart",
 									 className: "data",
 									 	yLabel: "files uploaded",
-									 frequency: 12, 
+									 frequency: frequency, 
 										radius: 4, 
 									 labelDate: "y"});
 							
