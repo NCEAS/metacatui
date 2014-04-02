@@ -1246,7 +1246,8 @@ svg .metadata{
   }
 
   /* The universal color for packages */
-svg .packages{
+svg .packages,
+#Profile .packages{
 	color: #0E69A1;
 	fill: #0E69A1;
 	stroke: #0E69A1;
@@ -1450,7 +1451,9 @@ svg .point:hover + .line-chart-label{
 	font-weight: bold;
 }
 
-
+#data-coverage-year-range{
+	display: block;
+}
 
 
   /* Metadata rendering CSS

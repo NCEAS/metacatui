@@ -1120,26 +1120,22 @@ Bold 700
     }
     
     input.filter::-webkit-input-placeholder{
-		color: #777;
-		font-family: "Source Sans Pro";
+		color: #999;
 		font-weight: normal;
 		text-shadow: none;
 	}
-	input.filter:-moz-placeholder{ /* Firefox 18- */
-		color: #DDD;
-		font-family: "Source Sans Pro";
+	input.filter:-moz-placeholder{ /* Firefox 19+ */
+		color: #999;
 		font-weight: normal;
 		text-shadow: none;
 	}
-	input.filter::-moz-placeholder{ /* Firefox 19+ */
-		color: #DDD;
-		font-family: "Source Sans Pro";
+	input.filter::-moz-placeholder{ /* Firefox 18- */
+		color: #333;
 		font-weight: normal;
 		text-shadow: none;
 	}
 	input.filter:-ms-input-placeholder{
-		color: #DDD;
-		font-family: "Source Sans Pro";
+		color: #999;
 		font-weight: normal;
 		text-shadow: none;
 	}
@@ -2027,6 +2023,7 @@ svg .metadata{
   
     /* The universal color for packages */
   
+#Profile .packages,
 svg .packages{
 	color: #ABA805;
 	fill: #ABA805;
@@ -2230,6 +2227,9 @@ svg .point:hover + .line-chart-label{
 	font-weight: bold;
 }
 
+#data-coverage-year-range{
+	display: block;
+}
 
 	
 
@@ -2265,6 +2265,9 @@ svg .point:hover + .line-chart-label{
 	top: 100px;
 	z-index: 999;
 	border: 0px;
+	border-radius: 0px 5px 5px 0px;
+	-moz-border-radius: 0px 5px 5px 0px;
+	-webkit-border-radius: 0px 5px 5px 0px;
 	padding: 0px 5px;
 	-webkit-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
 	-moz-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);

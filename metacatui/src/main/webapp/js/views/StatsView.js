@@ -26,10 +26,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			//Listen to the stats model so we can draw charts when values are changed
 			this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
+			
 			this.listenTo(statsModel, 'change:firstUpload', 	  this.drawUploadChart);
-			this.listenTo(statsModel, 'change:firstBeginDate', 	  this.getTemporalCoverage);
+			
+			this.listenTo(statsModel, 'change:lastEndDate', 	  this.getTemporalCoverage);
+			this.listenTo(statsModel, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
 			this.listenTo(statsModel, 'change:temporalCoverage',  this.drawCoverageChart);
-			this.listenTo(statsModel, 'change:coverageYears', 	  this.drawCoverageChartTitle);
 			
 			// set the header type
 			appModel.set('headerType', 'default');
@@ -59,14 +61,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			}
 
 			//Start retrieving data from Solr
-			this.getFirstDates();
+			this.getDates();
 			this.getFormatTypes();	
 			
 			return this;
 		},
 		
 		
-		getFirstDates: function(){
+		getDates: function(){
 		
 			//Get the earliest upload date	
 			var query = "q=" + statsModel.get('query') +
@@ -109,8 +111,34 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					// Save the earliest beginDate and total found in our model
 					statsModel.set('firstBeginDate', new Date(data.response.docs[0].beginDate));					
 					statsModel.set('totalBeginDates', data.response.numFound);
-				}	
+				}
+				
+				//Get the latest temporal data coverage year
+				query = "q=" + statsModel.get('query') +
+						"+(endDate:18*%20OR%20endDate:19*%20OR%20endDate:20*)+-obsoletedBy:*" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+						"&rows=1" +
+						"&wt=json" +	
+						"&fl=endDate" +
+						"&sort=endDate+desc";
+				
+				//Run the query
+				$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
+					if(!data.response.numFound){
+						//Save some falsey values if none are found
+						statsModel.set('lastEndDate', null);
+					}
+					else{
+						// Save the earliest beginDate and total found in our model - but do not accept a year greater than this current year
+						var now = new Date();
+						if(new Date(data.response.docs[0].endDate).getUTCFullYear() > now.getUTCFullYear()) statsModel.set('lastEndDate', now);
+						else statsModel.set('lastEndDate', new Date(data.response.docs[0].endDate));
+					}	
+				});
+				
 			});
+			
+			
+
 		},
 		
 		/**
@@ -455,51 +483,50 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 				});
 				this.$('.temporal-coverage-chart').html(barChart.render().el);
 									
-				//Draw the title
-				var coverageTitle = new CircleBadge({
-					globalR: 40
-				});
-				this.$('#coverage-title').prepend(coverageTitle.render().el);
 				return;
 			}
 			
-			//Construct our query to get the begin and end date of all objects for this query
-			var facetQuery = function(numYears, key){
-				if(numYears==0){
-					return "&facet.query=%7B!key=" + key + "%7D(beginDate:[*%20TO%20NOW]%20endDate:[NOW-1YEARS/YEAR%20TO%20NOW])";
-				}
-				return "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + (numYears-1) +"YEARS/YEAR]%20endDate:[NOW-" + numYears + "YEARS/YEAR%20TO%20*])";
-			}
-			
 			//How many years back should we look for temporal coverage?
-			var now = new Date().getUTCFullYear();
-			var totalYears = now - statsModel.get('firstBeginDate').getUTCFullYear(); 
+			var lastYear = statsModel.get('lastEndDate').getUTCFullYear(),
+				firstYear = statsModel.get('firstBeginDate').getUTCFullYear(),
+				totalYears = lastYear - firstYear,
+				today = new Date().getUTCFullYear(),
+				yearsFromToday = { fromBeginning: today - firstYear, 
+								   fromEnd: today - lastYear
+								  };
 			
-			//Determine our year interval/bin size so that no more than 10 facet.queries are being sent at a time
-			var interval = 1;
+			//Determine our year bin size so that no more than 10 facet.queries are being sent at a time
+			var binSize = 1;
 			
 			if((totalYears > 10) && (totalYears <= 20)){
-				interval = 2;
+				binSize = 2;
 			}
 			else if((totalYears > 20) && (totalYears <= 50)){
-				interval = 5;
+				binSize = 5;
 			}
 			else if((totalYears > 50) && (totalYears <= 100)){
-				interval = 10;
+				binSize = 10;
 			}
 			else if(totalYears > 100){
-				interval = 25;
+				binSize = 25;
 			}
-			
-			//Construct our facet.queries for the beginDate and endDates, starting with all years before this current year
-			var fullFacetQuery = "";
-			for(var i=totalYears; i>0; i-=interval){
-				fullFacetQuery += facetQuery(i, now-i);
-			}
-			
-			//Always query for the current year
-			fullFacetQuery += facetQuery(0, now);
 
+			//Construct our facet.queries for the beginDate and endDates, starting with all years before this current year
+			var fullFacetQuery = "",
+				key = "";
+			
+			for(var yearsAgo = yearsFromToday.fromBeginning; yearsAgo > yearsFromToday.fromEnd; yearsAgo -= binSize){
+				// The query logic here is: If the beginnning year is anytime before or during the last year of the bin AND the ending year is anytime after or during the first year of the bin, it counts.
+				if (yearsAgo < binSize){
+					key = (today - yearsAgo) + "-" + lastYear;
+					fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + yearsFromToday.fromEnd +"YEARS/YEAR]%20endDate:[NOW-" + yearsAgo + "YEARS/YEAR%20TO%20*])";
+				}
+				else{
+					key = (today - yearsAgo) + "-" + (today - yearsAgo + binSize-1);
+					fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + (yearsAgo - binSize-1) +"YEARS/YEAR]%20endDate:[NOW-" + yearsAgo + "YEARS/YEAR%20TO%20*])";
+				}				
+			}
+			
 			//The full query			
 			var query = "q=" + statsModel.get('query') +
 			  "+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
@@ -516,27 +543,29 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
 				statsModel.set('temporalCoverage', data.facet_counts.facet_queries);
 				
+				/* ---Save this logic in case we want total coverage years later on---
 				// Get the total number of years with coverage by counting the number of indices with a value
-				// This method isn't perfect because summing by the interval doesn't guarantee each year in that interval is populated
+				// This method isn't perfect because summing by the bin doesn't guarantee each year in that bin is populated
 				var keys = Object.keys(data.facet_counts.facet_queries),
 					coverageYears = 0,
-					remainder = totalYears%interval;
+					remainder = totalYears%binSize;
 				
 				for(var i=0; i<keys.length; i++){
 					if((i == keys.length-1) && data.facet_counts.facet_queries[keys[i]]){
 						coverageYears += remainder;
 					}
 					else if(data.facet_counts.facet_queries[keys[i]]){
-						coverageYears += interval;
+						coverageYears += binSize;
 					}
 				}
 				
-				//If our intervals/bins are more than one year, we need to subtract one bin from our total since we are actually conting the number of years BETWEEN bins (i.e. count one less)
-				if(interval > 1){
-					coverageYears -= interval;
+				//If our bins are more than one year, we need to subtract one bin from our total since we are actually conting the number of years BETWEEN bins (i.e. count one less)
+				if(binSize > 1){
+					coverageYears -= binSize;
 				}
+				
 								
-				statsModel.set('coverageYears',  coverageYears);
+				statsModel.set('coverageYears',  coverageYears); */
 				
 			}).error(function(){
 				//Log this warning and display a warning where the graph should be
@@ -568,19 +597,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			
 		},
 		
-		drawCoverageChartTitle: function(e, data){
-
-			//Match the radius to the metadata and data uploads chart title 
-			var radius = parseInt(this.$('#upload-chart-title .metadata').attr('r')) || 40;
+		drawCoverageChartTitle: function(){
+			if((!statsModel.get('firstBeginDate')) || (!statsModel.get('lastEndDate'))) return;
 				
-			var options = {
-					data: [{count: data, className: "packages", r: radius}],
-					id: "temporal-coverage-title"
-			}		
-						
-			//Also draw the title
-			var coverageTitle = new CircleBadge(options);
-			this.$('#coverage-title').prepend(coverageTitle.render().el);
+			//Create the range query
+			var yearRange = statsModel.get('firstBeginDate').getUTCFullYear() + " - " + statsModel.get('lastEndDate').getUTCFullYear();
+			
+			//Find the year range element
+			this.$('#data-coverage-year-range').text(yearRange);
 		},
 		
 		//Function to add commas to large numbers

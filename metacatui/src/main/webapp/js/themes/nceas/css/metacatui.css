@@ -68,6 +68,9 @@ Bold 700
 #Footer .last.block .footer > p > a{
 	margin-left: 20px;
 }
+input[type="text"]{
+	height: 25px;
+}
 
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 

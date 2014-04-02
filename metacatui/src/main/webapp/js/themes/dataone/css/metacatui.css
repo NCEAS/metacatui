@@ -1129,22 +1129,22 @@ Bold 700
     }
     
     input.filter::-webkit-input-placeholder{
-		color: #777;
+		color: #999;
 		font-weight: normal;
 		text-shadow: none;
 	}
-	input.filter:-moz-placeholder{ /* Firefox 18- */
-		color: #DDD;
+	input.filter:-moz-placeholder{ /* Firefox 19+ */
+		color: #999;
 		font-weight: normal;
 		text-shadow: none;
 	}
-	input.filter::-moz-placeholder{ /* Firefox 19+ */
-		color: #DDD;
+	input.filter::-moz-placeholder{ /* Firefox 18- */
+		color: #333;
 		font-weight: normal;
 		text-shadow: none;
 	}
 	input.filter:-ms-input-placeholder{
-		color: #DDD;
+		color: #999;
 		font-weight: normal;
 		text-shadow: none;
 	}
@@ -1469,6 +1469,10 @@ Bold 700
     	list-style: none;
     	overflow-y: scroll;
     	max-height: 150px;
+    }
+    
+    ul.ui-autocomplete.ui-front{
+    	z-index: 999;
     }
     
     li.ui-menu-item{
@@ -2035,7 +2039,8 @@ svg .metadata{
   
     /* The universal color for packages */
   
-svg .packages{
+svg .packages,
+#Profile .packages{
 	color: #FF6633;
 	fill: #FF6633;
 	stroke: #FF6633;
@@ -2238,7 +2243,9 @@ svg .point:hover + .line-chart-label{
 	font-weight: bold;
 }
 
-
+#data-coverage-year-range{
+	display: block;
+}
 	
 
 /* MAPS 
@@ -2317,7 +2324,7 @@ svg .point:hover + .line-chart-label{
 }
 
 #toggle-map{
-	left: -100px;
+	left: -112px;
 }
 
 #toggle-map:hover{

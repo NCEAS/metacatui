@@ -1,7 +1,7 @@
 <article id="Profile" class="profile">
 <h1 class="profile-title"><%
 if(query && query=="*:*"){
-	print("Repository summary");
+	print("Summary of holdings");
 }
 %></h1>
 <section class="charts-container">
@@ -32,7 +32,7 @@ if(query && query=="*:*"){
 		<section class="charts">
 			<section class="chart-title">
 				<div id="coverage-title"></div>
-				<h2>Years of data collection</h2>
+				<h2>Time period of data: <span id="data-coverage-year-range" class="packages"></span></h2>
 				<p>The years in which data was collected, regardless of upload date. Only the most recent version of the data package is counted.</p>
 			</section>
 			<div class="temporal-coverage-chart chart"></div>
