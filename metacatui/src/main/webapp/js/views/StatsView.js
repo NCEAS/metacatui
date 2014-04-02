@@ -515,9 +515,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 			var fullFacetQuery = "",
 				key = "";
 			
-			for(var yearsAgo = yearsFromToday.fromBeginning; yearsAgo > yearsFromToday.fromEnd; yearsAgo -= binSize){
+			for(var yearsAgo = yearsFromToday.fromBeginning; yearsAgo >= yearsFromToday.fromEnd; yearsAgo -= binSize){
 				// The query logic here is: If the beginnning year is anytime before or during the last year of the bin AND the ending year is anytime after or during the first year of the bin, it counts.
-				if (yearsAgo < binSize){
+				if(binSize == 1){
+					//Querying for just the current year needs to be treated a bit differently and won't be caught in our for loop 
+					if((yearsAgo == 0) && (lastYear == today)){
+						fullFacetQuery += "&facet.query={!key=" + lastYear + "}(beginDate:[*%20TO%20NOW%2B1YEARS/YEAR]%20endDate:[NOW-0YEARS/YEAR%20TO%20*])";
+					}
+					else{
+						key = today - yearsAgo;
+						fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + (yearsAgo-1) +"YEARS/YEAR]%20endDate:[NOW-" + yearsAgo + "YEARS/YEAR%20TO%20*])";
+					}
+				}
+				else if (yearsAgo <= binSize){
 					key = (today - yearsAgo) + "-" + lastYear;
 					fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + yearsFromToday.fromEnd +"YEARS/YEAR]%20endDate:[NOW-" + yearsAgo + "YEARS/YEAR%20TO%20*])";
 				}
@@ -526,6 +536,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'views/DonutChartView', 'views
 					fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + (yearsAgo - binSize-1) +"YEARS/YEAR]%20endDate:[NOW-" + yearsAgo + "YEARS/YEAR%20TO%20*])";
 				}				
 			}
+			
 			
 			//The full query			
 			var query = "q=" + statsModel.get('query') +
