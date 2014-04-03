@@ -139,7 +139,7 @@ define(['jquery',
 			this.updateYearRange(); 
 			
 			//Iterate through each search model text attribute and show UI filter for each
-			var categories = ['all', 'creator', 'taxon'];
+			var categories = ['all', 'creator', 'taxon', 'characteristic', 'standard'];
 			var thisTerm = null;
 			
 			for (var i=0; i<categories.length; i++){

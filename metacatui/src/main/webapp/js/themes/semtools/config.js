@@ -9,6 +9,7 @@ var themeMap =
 		//'routers/router' : 'themes/' + theme + '/routers/router',
 		
 		// Templates include extension
+		'templates/app.html' : 'themes/' + theme + '/templates/app.html',
 		'templates/search.html' : 'themes/' + theme + '/templates/search.html'
 		}
 };
