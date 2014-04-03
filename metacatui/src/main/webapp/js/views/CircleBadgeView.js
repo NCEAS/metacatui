@@ -7,6 +7,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	var CircleBadgeView = Backbone.View.extend({
 				
 		initialize: function (options) {
+			
+			if(!d3){ console.log('SVG is not supported'); return null; }
+
 			/* OPTIONS:
 			 *  data: an array of content with which to draw the circle badge. 
 			 *  Each item in the array represents one circle badge and should have a count and may include an optional className to give the circle SVG elements and a label to display underneath the circle

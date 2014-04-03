@@ -8,6 +8,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
 		initialize: function (options) {
 			
+			if(!d3){ console.log('SVG is not supported'); return null; }
+			
 			/*  -- Options for creating donut charts --
 			 *  id of the SVG element to be created
 		 	 *  data: array of formatID names followed by their count, identical to Solr facet format. e.g. ["text/CSV", 10, "text", 20]
@@ -53,7 +55,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				
 		tagName: "svg",
 						
-		render: function () {			
+		render: function () {	
+			if(!d3){ console.log('SVG is not supported'); return null; }
+
 			console.log('Rendering a donut chart');
 			
 			var viewRef = this;				

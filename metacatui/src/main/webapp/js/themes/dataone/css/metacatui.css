@@ -2243,6 +2243,10 @@ svg .point:hover + .line-chart-label{
 	font-weight: bold;
 }
 
+.bar-chart .x.axis .tick text{
+	font-size: 11px;
+}
+
 #data-coverage-year-range{
 	display: block;
 }

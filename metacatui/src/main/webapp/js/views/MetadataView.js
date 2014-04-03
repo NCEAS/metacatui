@@ -92,7 +92,7 @@ define(['jquery',
 							$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomic-range');
 							
 							console.log('Loaded metadata, now fading in MetadataView');
-							viewRef.$el.fadeIn('slow');
+							viewRef.$el.fadeIn("slow");
 						}
 					});
 			

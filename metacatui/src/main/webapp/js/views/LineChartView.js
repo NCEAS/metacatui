@@ -3,15 +3,20 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	function($, _, Backbone, d3) {
 	'use strict';
 		
-	// Build the main header view of the application
+	// Draw a line chart
 	var LineChartView = Backbone.View.extend({
 				
 		initialize: function (options) {
+
+			if(!d3){ console.log('SVG is not supported'); return null; }
+			
 			/* OPTIONS:
 			 * data: An array of data to use to draw the line. Each point on the line needs a date and count.
 			 * 				The points will be drawn in order, so sort the array in ascending time order first
 			 * 				Format example:
 			 * 				[{date: "13-01-08", count: 500}, {date: "20-03-12", count: 30}]
+			 * formatFromSolrFacets = format the raw Solr data sent before drawing the chart - Solr format would be an array like: ["2001-10-24T23:00:00Z", 12], etc.
+			 * cumulative: the data will be formatted as a cumulative chart
 			 * id: The id to use for the svg element
 			 * frequency = add a point for every X points in our data set (i.e. a point for every 12 months)
 			 * labelDate = Instructions for how to display the date
@@ -37,6 +42,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.radius	   = options.radius    || 4;
 			this.width 	   = options.width 	   || 650;
 			this.height    = options.height    || 250;
+			this.formatFromSolrFacets = options.formatFromSolrFacets || false;
+			this.cumulative = options.cumulative || false;
+
+			if(options.data && this.formatFromSolrFacets) this.data = this.formatData(options.data);
 			
 			//What will our x-axis tick format be?
 			//Find the time span - 2628000000 ms is one month
@@ -59,6 +68,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.xTicks	     = options.xTicks	   || getTicks();
 			this.xTickFormat = options.xTickFormat || getTickFormat();
 			this.labelDate   = options.labelDate   || getLabelDate();
+			
+			//The format for the date - can be modified for each chart. This is the format for ISO dates returned from Solr
+			this.parseDate = d3.time.format("%Y-%m-%d").parse;
 
 		},
 		
@@ -78,15 +90,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 },
 				
 		tagName: "svg",
-		
-		parseDate: d3.time.format("%Y-%m-%d").parse, //The format for the date - can be modified for each chart. This is the format for ISO dates returned from Solr
-			
+					
 		/*
 		 * This function draws a line time series chart
 		 */
 		render: function () {			
 			console.log('Rendering a line chart');
-			
+						
 			/*
 			* ========================================================================
 		    * Set up the basic settings of our line chart (margins, scales, and axis)
@@ -191,6 +201,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			console.log('add a line');
 							
 			var viewRef = this;
+			
+			if(this.formatFromSolrFacets){
+				data = this.formatData(data);
+			}
 					
 		   data.forEach(function(d) {
 		    	d.date = viewRef.parseDate(d.date);
@@ -302,6 +316,21 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					  	.attr("class", "line-chart-label " + this.className)
 					  	.attr("text-anchor", "end");
 			  }
+		},
+		
+		formatData: function(counts){
+			//Format the data for a cumulative time series chart
+			//We will take only the first 10 characters of the date
+			//To make it a cumulative chart, we will keep adding to the count
+			var uploadData = [];
+			var lastCount = 0;
+			for(var i=0; i < counts.length; i+=2){
+				uploadData.push({date: counts[i].substr(0, 10), count: lastCount + counts[i+1]});
+				
+				if(this.cumulative) lastCount += counts[i+1];
+			}
+			
+			return uploadData;
 		},
 		
 		//Function to add commas to large numbers
