@@ -981,6 +981,7 @@ Bold 700
   		width: 252px;
   		height: auto;
   		position: fixed;
+  		background-color: #FFFFFF; /*IE 8 fallback */
   		background-color: rgba(255,255,255,0.9);
   }
     .mapMode #sidebar {
@@ -989,6 +990,7 @@ Bold 700
       bottom: 0px;
       left: 0px;
       padding: 0px;
+      background-color: #FFFFFF; /*IE 8 fallback */
       background-color: rgba(255,255,255,0.8);
       border-radius: 0px;
       -moz-border-radius: 0px;
@@ -1312,6 +1314,7 @@ Bold 700
 	
 	.current-filters > li > i{
 		float: right;
+		display: inline;
 		line-height: 1.5em;
 		font-size: 1em;
 		color: #71A9BD;
@@ -1982,6 +1985,7 @@ Bold 700
   .stripe{
     	min-height: 350px;
     	margin-top: 20px;
+    	background-color: #FFFFFF; /*IE 8 fallback */
     	background-color: rgba(255, 255, 255, 0.9);
     	border-radius: 5px;
     	padding: 20px;
@@ -2024,14 +2028,16 @@ Bold 700
 }
   
   /* The universal color for data */
-svg .data{
+svg .data,
+.fallback.data{
   	color: #660033;
   	stroke: #660033;
   	fill: #660033;
   }
   
   /* The universal color for metadata */
-svg .metadata{
+svg .metadata,
+.fallback.metadata{
   	color: #1C6E84;
   	stroke: #1C6E84;
   	fill: #1C6E84;
@@ -2046,7 +2052,8 @@ svg .packages,
 	stroke: #FF6633;
 }
 
-svg .default{
+svg .default,
+.fallback.default{
 	fill: #CCCCCC;
 	stroke: #CCCCCC;
 	color: #CCCCCC;

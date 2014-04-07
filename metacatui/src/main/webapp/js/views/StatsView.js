@@ -317,7 +317,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.stopListening(statsModel);
 			
 			console.log('Closing the stats view');
-		},
+		}
 		
 	});
 	

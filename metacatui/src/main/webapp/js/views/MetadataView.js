@@ -229,8 +229,9 @@ define(['jquery',
 				var parentEl = $(this).parent();
 				
 				var coordinates = new Array();
+				var directions = new Array('North', 'South', 'East', 'West');
 				
-				['North', 'South', 'East', 'West'].forEach(function(direction){
+				_.each(directions, function(direction){
 					var labelEl = $(parentEl).find('label:contains("' + direction + '")');
 					var coordinate = $(labelEl).next().html();
 					coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));

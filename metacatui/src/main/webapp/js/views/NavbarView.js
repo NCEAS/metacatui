@@ -69,7 +69,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		
 		showNewSearch: function(){
 			// Clear the search model to start a fresh search
-			searchModel.clear().set(searchModel.defaults);
+			searchModel.clear();
+			searchModel.set(searchModel.defaults);
 			
 			uiRouter.navigate('data', {trigger: true});
 		},

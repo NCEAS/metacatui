@@ -124,6 +124,10 @@ Bold 700 Italic
     	color: #888888;
     }
     
+    .hidden{
+    	display: none;
+    }
+    
     .webmaster-email{
     	display: block;
     	margin-top: 1em;   	
@@ -943,8 +947,8 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
       margin: 0px 0px 0px 0px;
       padding: 0px 0px 0px 0px;
     }
-    #Navbar i .user {
-      opacity: .6;
+    #Navbar .user {
+    	font-size: 14px;
     }
     
     .navbar .nav {
@@ -1979,6 +1983,7 @@ svg .point:hover + .line-chart-label{
 	
 	.current-filters > li > i{
 		float: right;
+		display: inline;
 		margin-top: 2px;
 		color: #99cccc;
 		transition: color .5s;

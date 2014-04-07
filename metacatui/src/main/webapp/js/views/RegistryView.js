@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, Registry, BootStrap, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, Registry, BootStrap, jQueryForm, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -80,7 +80,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 						viewRef.$el.fadeIn('slow');
 					}
 				});
-			
+						
 			return this;
 		},
 		
@@ -152,17 +152,13 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 		},
 		
 		submitEntryForm: function() {
-
-			// use FormData for the file upload to work
-			var data = new FormData($('#entryForm')[0]);
-			
-			// show the loading icon
-			this.showLoading();
 			
 			var contentArea = this.$el;
-			$.ajax({
+			var view = this;
+						
+			//We need to use the jQuery plugin jQuery.form so we can submit files in older browsers
+			$('#entryForm').ajaxSubmit({
 			    url: this.registryUrl,
-			    data: data,
 			    cache: false,
 			    contentType: false,
 			    processData: false,
@@ -172,10 +168,14 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 				},
 			    success: function(data, textStatus, jqXHR) {
 					contentArea.html(data);
+					view.scrollToTop();
 				}
 			});
 			
-			
+			// prepend the loading icon because we need to keep our form element in the DOM for the jQuery.form plugin to work
+			this.scrollToTop();
+			$('#RegistryEntryForm').addClass("hidden");
+			this.$el.prepend(this.loadingTemplate());						
 		},
 		
 		submitReturnForm: function() {
@@ -434,6 +434,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'text!templ
 		},
 		
 		showLoading: function() {
+			//Keep the form HTML element in place or the upload won't work on IE 8
 			this.scrollToTop();
 			this.$el.html(this.loadingTemplate());
 		},

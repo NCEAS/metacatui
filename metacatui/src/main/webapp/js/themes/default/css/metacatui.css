@@ -972,6 +972,7 @@ Bold 700
   		width: 252px;
   		height: auto;
   		position: fixed;
+  		background-color: #FFFFFF;
   		background-color: rgba(255,255,255,0.9);
   }
     .mapMode #sidebar {
@@ -980,6 +981,7 @@ Bold 700
       bottom: 0px;
       left: 0px;
       padding: 0px;
+      background-color: #FFFFFF;
       background-color: rgba(255,255,255,0.8);
       border-radius: 0px;
       -moz-border-radius: 0px;
@@ -1005,6 +1007,7 @@ Bold 700
  	}
     
     .subset-choice{
+    background-color: #190000;
     background-color: rgba(23, 97, 146, 0.46);
 	color: white;
 	font-size: 20px;
@@ -1302,6 +1305,7 @@ Bold 700
 	
 	.current-filters > li > i{
 		float: right;
+		display: inline;
 		line-height: 1.5em;
 		font-size: 1em;
 		color: #71A9BD;
@@ -1966,6 +1970,7 @@ Bold 700
   .stripe{
     	min-height: 350px;
     	margin-top: 20px;
+    	background-color: #FFFFFF; /* IE 8 fallback */
     	background-color: rgba(255, 255, 255, 0.9);
     	border-radius: 5px;
     	padding: 20px;
@@ -2008,14 +2013,16 @@ Bold 700
 }
   
   /* The universal color for data */
-svg .data{
+svg .data,
+.fallback.data{
   	color: #90AB05;
   	stroke: #90AB05;
   	fill: #90AB05;
   }
   
   /* The universal color for metadata */
-svg .metadata{
+svg .metadata,
+.fallback.metadata{
   	color: #0E69A1;
   	stroke: #0E69A1;
   	fill: #0E69A1;

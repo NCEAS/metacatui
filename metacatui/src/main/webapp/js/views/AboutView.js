@@ -29,12 +29,12 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/about.html'],
 		},
 		
 		postRender: function() {
-			var anchorId = appModel.get('anchorId');
+		/*	var anchorId = appModel.get('anchorId');
 			if (anchorId) {
 				this.scrollToAnchor(anchorId);
 			} else {
 				this.scrollToTop();
-			}
+			}*/
 		},
 		
 		// scroll to the anchor given to the render function

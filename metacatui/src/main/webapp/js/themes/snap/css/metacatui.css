@@ -871,26 +871,30 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
   
   /* The universal color for data */
-svg .data{
+svg .data,
+.fallback.data{
   	color: #789a01;
   	stroke: #789a01;
   	fill: #789a01;
   }
   
   /* The universal color for metadata */
-svg .metadata{
+svg .metadata,
+.fallback.metadata{
   	color: #0B4750;
   	stroke: #0B4750;
   	fill: #0B4750;
   }
   
-svg .packages{
+svg .packages,
+.fallback.packages{
 	color: #0E69A1;
 	fill: #0E69A1;
 	stroke: #0E69A1;
 }
 
-svg .default{
+svg .default,
+.fallback.default{
 	fill: #A3A191;
 	stroke: #A3A191;
 	color: #A3A191;
@@ -1473,6 +1477,7 @@ svg .point:hover + .line-chart-label{
 	
 	.current-filters > li > i{
 		float: right;
+		display: inline;
 		line-height: 1.5em;
 		font-size: 1em;
 		color: #42A2B1;

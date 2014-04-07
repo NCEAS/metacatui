@@ -14,7 +14,7 @@ define(['jquery', 'underscore', 'backbone'],
 			location: [],
 			resourceMap: false,
 			yearMin: 1900, //The user-selected minimum year
-			yearMax: new Date().getFullYear(), //The user-selected maximum year
+			yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
 			pubYear: false,
 			dataYear: false,
 			sortOrder: 'dateUploaded+desc',
@@ -31,7 +31,7 @@ define(['jquery', 'underscore', 'backbone'],
 			characteristic: [],
 			standard: [],
 			additionalCriteria: [],
-			customQuery: null,
+			customQuery: null
 		},
 		
 		filterCount: function() {
