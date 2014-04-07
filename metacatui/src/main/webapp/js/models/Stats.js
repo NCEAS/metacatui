@@ -66,10 +66,10 @@ define(['jquery', 'underscore', 'backbone'],
 		//This function serves as a shorthand way to get all of the statistics stored in the model
 		getAll: function(){
 			//Listen for our responses back from the server before we send requests that require info from the response
-			this.listenTo(this, 'change:firstBeginDate', this.getLastEndDate);
-			this.listenTo(this, 'change:lastEndDate', this.getCollectionYearFacets);
-			this.listenTo(this, 'change:dataCount', this.getDataFormatIDs);
-			this.listenTo(this, 'change:metadataCount', this.getMetadataFormatIDs);
+			this.listenToOnce(this, 'change:firstBeginDate', this.getLastEndDate);
+			this.listenToOnce(this, 'change:lastEndDate', this.getCollectionYearFacets);
+			this.listenToOnce(this, 'change:dataCount', this.getDataFormatIDs);
+			this.listenToOnce(this, 'change:metadataCount', this.getMetadataFormatIDs);
 			
 			
 			this.getFirstBeginDate();
