@@ -1,12 +1,13 @@
 // Step 1: Find the data-theme specified in the script include
-var theme = document.getElementById("loader").getAttribute("data-theme");
-var metacatContext = document.getElementById("loader").getAttribute("data-metacat-context");
-var mapKey = document.getElementById("loader").getAttribute("data-map-key");
+var theme 		   = document.getElementById("loader").getAttribute("data-theme") 			|| "default";
+var metacatContext = document.getElementById("loader").getAttribute("data-metacat-context") || "metacat";
+var mapKey 		   = document.getElementById("loader").getAttribute("data-map-key") 		|| "";
+if (mapKey == "YOUR-GOOGLE-MAPS-API-KEY") mapKey = "";
 
 // Step 2: let everything else be taken care of by the app
 loadTheme(theme);
 loadIcons(theme);
-initApp(theme);
+initApp();
 
 function loadTheme(theme) {
     var script = document.createElement("script");
@@ -22,7 +23,7 @@ function loadIcons(theme) {
     link.href = url;
     document.getElementsByTagName("head")[0].appendChild(link);
 }
-function initApp(theme) {
+function initApp() {
     var script = document.createElement("script");
     script.setAttribute("data-main", "js/app.js");
     script.src = "components/require.js";
