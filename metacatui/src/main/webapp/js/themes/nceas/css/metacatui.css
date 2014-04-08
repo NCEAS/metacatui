@@ -69,7 +69,9 @@ Bold 700
 	margin-left: 20px;
 }
 input[type="text"]{
-	height: 25px;
+	height: 30px;
+	line-height: 18px;
+	font-size: 14px;
 }
 
 /* FORM/INPUT CUSTOMIZATIONS
@@ -114,7 +116,6 @@ input[type="text"]{
  * -------------------------------------------------- */    
   section#Notification {
     position: relative;
-    top: 95px;
     margin: 50px auto;
     font-size: 40px;
   }

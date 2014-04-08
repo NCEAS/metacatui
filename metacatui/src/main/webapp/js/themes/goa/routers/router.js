@@ -104,11 +104,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			console.log('Called UIRouter.renderProfile()');
 			this.routeHistory.push("profile");
 			
-			//Reset the stats model first
-			statsModel.clear().set(statsModel.defaults);			
-			if(!query || query.length > 0){
+			statsModel.clear().set(statsModel.defaults);
+			
+			if(query){
 				statsModel.set('query', query);				
 			}
+			
+			//Reset the stats model first
 			appView.showView(statsView);
 		},
 		

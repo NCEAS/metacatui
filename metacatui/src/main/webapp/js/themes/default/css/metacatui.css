@@ -794,14 +794,6 @@ Bold 700
     	min-width: 115px;
     }
     
-    #downloadContents .control-label{
-    	width: 35px;
-    }
-    
-    #downloadContents .controls-well{
-    	margin-left: 50px;
-    }
-    
     .format-type i {
     	margin-right: 5px;
     }
@@ -1645,9 +1637,11 @@ Bold 700
     	margin-top: 10px;
     }
     
-    .mapMode .search-results > p{
-    	text-align: center;
-    	padding-top: 5px;
+    .search-results > p{
+    	display: block;
+		width: 9%;
+		min-width: 115px;
+		margin: 0px auto;
     }
     
     .mapMode #collapse-content{

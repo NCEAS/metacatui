@@ -955,6 +955,10 @@ svg .point:hover + .line-chart-label{
     	margin-left: 3px;
     	font-size: 14px;
     }
+    .download-contents th.id{
+    	max-width:100px;
+    	overflow: visible;
+    }
    	
    	/*Taxonomic range*/
     .taxonomic-range .control-group{

@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, Registry, BootStrap, jQueryForm, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html'], 				
+	function($, _, Backbone, Registry, BootStrap, jQueryForm, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -13,6 +13,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 		loadingTemplate: _.template(LoadingTemplate),
 		
 		ldapAccountToolsTemplate: _.template(LdapAccountToolsTemplate),
+		
+		loginHeaderTemplate: _.template(LoginHeaderTemplate),
 				
 		registryUrl: null,
 		
@@ -71,7 +73,12 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					url: this.registryUrl,
 					data: this.registryQueryString + stageParams,
 					success: function(data, textStatus, jqXHR) {
+							
 						viewRef.$el.html(data);
+						
+						//If this is the login page, prepend some header HTML
+						if(data.indexOf('id="RegistryLogin"') != -1) viewRef.$el.prepend(viewRef.loginHeaderTemplate);
+						
 						viewRef.verifyLoginStatus();
 						viewRef.augementForm();
 						viewRef.fixModalLinks();
