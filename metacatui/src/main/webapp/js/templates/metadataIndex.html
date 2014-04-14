@@ -15,7 +15,18 @@
                        print(". ")
              }
                }) %>
-                <%=year%>. 
+              <span class="result-pubdate"> 
+               <%
+               console.log(pubDate, dateUploaded);
+                if(pubDate) { 
+                   var pubDateFormatted = moment(pubDate).format('YYYY');
+                   if(!isNaN(pubDateFormatted)) print(pubDateFormatted, '. ');
+                }
+                if(dateUploaded && isNaN(pubDateFormatted)){
+                	var dateUploadedFormatted = moment(dateUploaded).format('YYYY');
+                    if(!isNaN(dateUploadedFormatted)) print(dateUploadedFormatted, '. ');
+               } 
+               %></span> 
 				<strong><%=title%></strong>
 				(<%=id%>)
 			</div>

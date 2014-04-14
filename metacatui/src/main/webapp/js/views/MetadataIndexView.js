@@ -61,8 +61,9 @@ define(['jquery',
 						var metadataHTML = "",
 							id = doc.id,
 							creator = doc.origin,
-							year = doc.pubDate ? new Date(doc.pubDate).getUTCFullYear() : new Date(doc.datePublished).getUTCFullYear(),
 							title = doc.title,
+							pubDate = doc.pubDate,
+							dateUploaded = doc.dateUploaded,
 							keys = Object.keys(doc);
 							
 						//Extract General Info details that we want to list first
@@ -97,7 +98,8 @@ define(['jquery',
 							metadata: metadataHTML,
 							creator: creator,
 							id: id,
-							year: year,
+							pubDate: pubDate,
+							dateUploaded: dateUploaded,
 							title: title
 						}));
 

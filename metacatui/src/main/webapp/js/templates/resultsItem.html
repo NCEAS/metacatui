@@ -85,11 +85,18 @@
                        print(". ")
              }
                }) %></span>
-               <span class="result-pubdate"> <% if(pubDate) { 
-                   print(moment(pubDate).format('YYYY'), '. ')
-               } else {
-                   print(moment(dateUploaded).format('YYYY'), '. ')
-               } %></span>
+               <span class="result-pubdate"> 
+               <%
+               console.log(pubDate, dateUploaded);
+                if(pubDate) { 
+                   var pubDateFormatted = moment(pubDate).format('YYYY');
+                   if(!isNaN(pubDateFormatted)) print(pubDateFormatted, '. ');
+                }
+                if(dateUploaded && isNaN(pubDateFormatted)){
+                	var dateUploadedFormatted = moment(dateUploaded).format('YYYY');
+                    if(!isNaN(dateUploadedFormatted)) print(dateUploadedFormatted, '. ');
+               } 
+               %></span>
                <span class="result-title"> <% if (title) { print('<a class=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
                <span class="result-id subtle"> <%- id %></span>
         </div>
