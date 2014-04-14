@@ -852,6 +852,11 @@ Bold 700
     .taxonomic-range .controls {
 		margin-left: 0px;
 	}
+	
+		.metadata-index {
+		padding: 2%;
+		width: 96%;
+	}
 
     
 /* Registry CSS
@@ -2064,7 +2069,7 @@ svg .default{
 	font-size: 24px;
 }
 .donut-title-text,
-.title{
+svg .title{
 	color: #555555;
 	fill: #555555;
 	font-size: 17px;

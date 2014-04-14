@@ -1,0 +1,25 @@
+<form class="form-horizontal">
+	<div class="well citation">
+		<div class="row-fluid">
+			<div>
+				<% var count=0; _.each(creator, function(author) {
+                   count++;
+                   if (count > 1) {
+                       print(", ")
+             }
+                   if (count > 1 && count == creator.length) {
+                       print("and ")
+             }
+                   print(author)
+                   if (count == creator.length) {
+                       print(". ")
+             }
+               }) %>
+                <%=year%>. 
+				<strong><%=title%></strong>
+				(<%=id%>)
+			</div>
+		</div>
+	</div>
+	<%=metadata%>
+</form>

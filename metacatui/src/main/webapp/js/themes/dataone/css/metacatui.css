@@ -74,11 +74,6 @@ Bold 700
     .lead{
     	font-weight: 400;
     }
-    .alert{
-    	background-color: #FCF3C1;
-    	color: #8D703D;
-    	padding: 5px;
-    }
     
     .mapMode .collapse-me{
     	cursor: pointer;
@@ -204,6 +199,11 @@ Bold 700
 	    padding: 4px;
 	    backgorund-color: #FFFFFF; /*IE 8 fallback */
 	    background: rgba(255, 255, 255, 0.3);
+	    border: 1px solid #fff;
+		border-radius: 3px;
+		-webkit-border-radius: 3px;
+		-moz-border-radius: 3px;
+}
 	}
 	.control-label {
 		cursor: default;
@@ -743,6 +743,7 @@ Bold 700
 		font-weight: 400;
 		font-size: 15px;
 		line-height: 18px;
+		cursor: default;
 	}
 		
 	#Metadata > a[href="#data"]{
@@ -803,14 +804,6 @@ Bold 700
     	min-width: 115px;
     }
     
-    #downloadContents .control-label{
-    	width: 35px;
-    }
-    
-    #downloadContents .controls-well{
-    	margin-left: 50px;
-    }
-    
     .format-type i {
     	margin-right: 5px;
     }
@@ -825,6 +818,10 @@ Bold 700
     
     th.id {
     	min-width: 180px;
+    }
+    .georegion-map{
+    	margin: 0px 180px;
+    	display: block;
     }
     
     /*Details link*/
@@ -860,6 +857,56 @@ Bold 700
     
     .taxonomic-range .controls {
 		margin-left: 0px;
+	}
+	
+	/** Metadata rendering via the Index **/
+	.metadata-index {
+		padding: 2%;
+		width: 96%;
+	}
+	
+	.metadata-index .citation{
+		font-size: 1.3em;
+		line-height: 2em;
+	}
+	
+	.metadata-index .controls-well .controls-well{
+		margin-left: 0px;
+	}
+	
+	.metadata-index .controls-well .control-label{
+		display: none;
+	}
+	
+	.metadata-index .controls-well > .control-group{
+		margin-bottom: 5px;
+	}
+	
+	.metadata-index .text,
+	.metadata-index .attribute,
+	.metadata-index .attributeName,
+	.metadata-index .attributeDescription,
+	.metadata-index .checksum,
+	.metadata-index .dataUrl,
+	.metadata-index .fileID,
+	.metadata-index .size,
+	.metadata-index .resourceMap,
+	.metadata-index .presentationCat,
+	.metadata-index .checksumAlgorithm,
+	.metadata-index .author,
+	.metadata-index .authorGivenName,
+	.metadata-index .authorGivenNameSort,
+	.metadata-index .authorSurName,	
+	.metadata-index .authorSurNameSort,
+	.metadata-index .authorLastName,
+	.metadata-index .replicaVerifiedDate,
+	.metadata-index .sku,
+	.metadata-index .identifier{
+		display: none;
+	}
+	
+	.download-this-package{
+		display: none;
 	}
 
     
@@ -1760,6 +1807,10 @@ Bold 700
     	color: #999999;
     }
     
+    .info-icons .download{
+    	
+    }
+    
     .info-icons .on-map > i{
     	font-size: 19px;
     }
@@ -1961,6 +2012,7 @@ Bold 700
 		float: right;
 		margin-right: 10px;
 	}
+
 	
 	.pagination .sort-by label{
 		display: inline;
@@ -2087,7 +2139,7 @@ svg .default,
 	font-size: 24px;
 }
 .donut-title-text,
-.title{
+svg .title{
 	color: #555555;
 	fill: #555555;
 	font-size: 17px;

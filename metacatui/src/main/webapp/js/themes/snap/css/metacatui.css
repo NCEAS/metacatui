@@ -928,7 +928,7 @@ svg .default,
 	font-size: 24px;
 }
 .donut-title-text,
-.title{
+svg .title{
 	color: #555555;
 	fill: #555555;
 	font-size: 17px;
@@ -1205,7 +1205,11 @@ svg .point:hover + .line-chart-label{
     .taxonomic-range .controls {
 		margin-left: 0px;
 	}
-    
+    	.metadata-index {
+		pading: 2%;
+		width: 96%;
+	}
+	
 /* Registry CSS
 -------------------------------------------------- */
     #RegistryEntryForm, 

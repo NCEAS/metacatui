@@ -74,6 +74,12 @@ input[type="text"]{
 	font-size: 14px;
 }
 
+/* METADATA VIEW SERVICE */
+	.metadata-index {
+		padding: 2%;
+		width: 96%;
+	}
+
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 
 	.depth {
