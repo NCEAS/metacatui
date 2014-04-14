@@ -87,9 +87,14 @@ define(['jquery',
 						metadataHTML += view.formatAttributeSection(doc, taxonKeys, "Taxonomic Coverage");
 						
 						//Extract People details
-						var peopleKeys = ["origin", "investigator", "contactOrganization"];
+						var peopleKeys = ["origin", "investigator", "contactOrganization", "project"];
 						keys = _.difference(keys, peopleKeys);
 						metadataHTML += view.formatAttributeSection(doc, peopleKeys, "People and Associated Parties");
+						
+						//Extract Access Control details
+						var accessKeys = ["isPublic", "submitter", "rightsHolder", "writePermission", "readPermission", "changePermission", "authoritativeMN"];
+						keys = _.difference(keys, accessKeys);
+						metadataHTML += view.formatAttributeSection(doc, accessKeys, "Access Control");
 						
 						//Add the rest of the metadata
 						metadataHTML += view.formatAttributeSection(doc, keys, "Other");
