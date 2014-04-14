@@ -145,7 +145,7 @@ define(['jquery',
 			this.updateYearRange(); 
 			
 			//Iterate through each search model text attribute and show UI filter for each
-			var categories = ['all', 'creator', 'taxon', 'characteristic', 'standard'];
+			var categories = ['all', 'creator', 'taxon', /*'characteristic', 'standard'*/];
 			var thisTerm = null;
 			
 			for (var i=0; i<categories.length; i++){
@@ -435,7 +435,7 @@ define(['jquery',
 			}
 			
 			// characteristic
-			var thisCharacteristic = null;
+/*			var thisCharacteristic = null;
 			var characteristic = searchModel.get('characteristic');
 			
 			for (var i=0; i < characteristic.length; i++){
@@ -467,7 +467,7 @@ define(['jquery',
 				filterQuery += "&fq=standard_sm:" + thisStandard;
 				
 			}
-			
+*/			
 			//All
 			var thisAll = null;
 			var all = searchModel.get('all');
@@ -1185,9 +1185,9 @@ define(['jquery',
 							 "&facet.field=attributeName" +
 							 "&facet.field=attributeLabel" +
 							 "&facet.field=site" +
-							 "&facet.field=characteristic_sm" +
+/*							 "&facet.field=characteristic_sm" +
 							 "&facet.field=standard_sm" +
-							 "&facet.mincount=1" +
+*/							 "&facet.mincount=1" +
 							 "&facet.limit=-1";
 
 			$.get(appModel.get('queryServiceUrl') + facetQuery, function(data, textStatus, xhr) {
@@ -1277,7 +1277,7 @@ define(['jquery',
 					}
 				});
 				
-				// suggest characteristics
+/*				// suggest characteristics
 				var characteristicSuggestions = facetCounts.characteristic_sm;
 				var rankedCharacteristicSuggestions = new Array();
 				for (var i=0; i < Math.min(characteristicSuggestions.length-1, facetLimit); i+=2) {
@@ -1346,7 +1346,7 @@ define(['jquery',
 						at: "left bottom"				
 					}
 				});
-			
+*/				
 				// suggest creator names/organizations
 				var originSuggestions = facetCounts.origin;
 				var rankedOriginSuggestions = new Array();
