@@ -43,22 +43,6 @@ define(['jquery',
 		markers: {},
 		
 		markerClusterer: {},
-				
-		markerImage: './img/markers/orangered-marker.png',
-		
-		markerImageAlt: './img/markers/orangered-enlarged-marker.png',
-		
-		markerImage15: './img/markers/orangered-15px-25a.png',
-		
-		markerImage20: './img/markers/orangered-20px-25a.png',
-		
-		markerImage30: './img/markers/orangered-30px-25a.png',
-		
-		markerImage40: './img/markers/orangered-40px-25a.png',
-		
-		markerImage50: './img/markers/orangered-50px-25a.png',
-		
-		markerImage60: './img/markers/orangered-60px-25a.png',
 		
 		reservedMapPhrase: 'Only results with all spatial coverage inside the map',
 		
@@ -90,7 +74,29 @@ define(['jquery',
 		},
 		
 		initialize: function () {
+			var view = this;
 			
+			//Set the file paths for our map markers - check for custom markers first
+			$.get("./js/themes/" + theme + "/img/markers/map-marker.png", function(data, status, xhr){
+				//Custom map marker images were found
+				view.markerImage   = "./js/themes/" + theme + "/img/markers/map-marker.png";					
+				view.markerImage15 = './js/themes/' + theme + "/img/markers/cluster-15px.png";
+				view.markerImage20 = "./js/themes/" + theme + "/img/markers/cluster-20px.png";
+				view.markerImage30 = "./js/themes/" + theme + "/img/markers/cluster-30px.png";
+				view.markerImage40 = "./js/themes/" + theme + "/img/markers/cluster-40px.png";
+				view.markerImage50 = "./js/themes/" + theme + "/img/markers/cluster-50px.png";
+				view.markerImage60 = "./js/themes/" + theme + "/img/markers/cluster-60px.png";
+			})
+			.error(function(){
+				//Custom markers were not found - use the default images
+				view.markerImage   = "./img/markers/map-marker.png";						
+				view.markerImage15 = './img/markers/cluster-15px.png';
+				view.markerImage20 = './img/markers/cluster-20px.png';
+				view.markerImage30 = './img/markers/cluster-30px.png';
+				view.markerImage40 = './img/markers/cluster-40px.png';
+				view.markerImage50 = './img/markers/cluster-50px.png';
+				view.markerImage60 = './img/markers/cluster-60px.png';
+			});
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
