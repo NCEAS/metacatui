@@ -770,7 +770,9 @@ svg .title{
 	width: 50%;
 	margin: 0px;
 }
-
+.donut-arc-label{
+	font-size: 13px;
+}
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
 {
@@ -940,6 +942,11 @@ svg .point:hover + .line-chart-label{
    	}
    	
    	/*** Download contents table **/
+
+    
+    #downloadContents .controls-well{
+    	overflow-x: scroll;
+    }
    	.download-contents .format-type i{
    		margin-right: 10px;
    	}
@@ -955,9 +962,16 @@ svg .point:hover + .line-chart-label{
     	margin-left: 3px;
     	font-size: 14px;
     }
-    .download-contents th.id{
-    	max-width:100px;
-    	overflow: visible;
+    table.download-contents td{
+    	min-width: 90px;
+    }
+    
+        .download-contents .id{
+    	max-width: 100px;
+    }
+    
+    .download-contents td{
+    	overflow-wrap: break-word;
     }
    	
    	/*Taxonomic range*/

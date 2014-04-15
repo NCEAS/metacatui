@@ -1319,7 +1319,9 @@ svg .title{
 .donut-arc-count.rotated{
 	opacity: 0;
 }
-
+.donut-arc-label{
+	font-size: 13px;
+}
 /* Donut arc colors */
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
@@ -1545,9 +1547,8 @@ svg .point:hover + .line-chart-label{
     
     /* Resource map contents table */
     
-    #downloadContents{
-    	margin-bottom: 40px;
-    	overflow: overlay;
+    #downloadContents .controls-well{
+    	overflow-x: scroll;
     }
     
     table.download-contents{
@@ -1556,7 +1557,15 @@ svg .point:hover + .line-chart-label{
     }
     
     table.download-contents td{
-    	min-width: 115px;
+    	min-width: 90px;
+    }
+    
+    .download-contents .id{
+    	max-width: 100px;
+    }
+    
+    .download-contents td{
+    	overflow-wrap: break-word;
     }
     
     .format-type i{

@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone'],
 			pid: null,
 			anchorId: null,
 			page: null,
-			baseUrl: 'https://cn-stage.test.dataone.org',
+			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: 'cn/v1',
@@ -34,12 +34,14 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		initialize: function() {
 			
-			/*//For IE
+			//For IE
 			if (!window.location.origin) {
 				var baseUrl = window.location.protocol + "//" + window.location.host;
 				
 				this.set('baseUrl', baseUrl);
-			}*/
+			}
+			
+			//this.set('baseUrl', 'https://cn-stage.test.dataone.org');
 			
 			// these are pretty standard, but can be customized if needed
 			//this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');

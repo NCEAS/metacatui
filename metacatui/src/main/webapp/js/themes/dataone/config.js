@@ -10,6 +10,7 @@ var themeMap =
 		'templates/alert.html' : 'themes/' + theme + '/templates/alert.html',
 		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
-		'views/DataCatalogView' : 'js/themes/' + theme + '/views/DataCatalogView.js'
+		'views/DataCatalogView' : 'js/themes/' + theme + '/views/DataCatalogView.js',
+		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
 		}
 };

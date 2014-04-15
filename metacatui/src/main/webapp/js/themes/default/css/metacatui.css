@@ -783,10 +783,9 @@ Bold 700
 	}
 	
 	/* Resource map contents table */
-    
-    #downloadContents{
-    	margin-bottom: 40px;
-    	overflow: overlay;
+
+    #downloadContents .controls-well{
+    	overflow-x: scroll;
     }
     
     table.download-contents {
@@ -795,7 +794,15 @@ Bold 700
     }
     
     table.download-contents td{
-    	min-width: 115px;
+    	min-width: 90px;
+    }
+    
+        .download-contents .id{
+    	max-width: 100px;
+    }
+    
+    .download-contents td{
+    	overflow-wrap: break-word;
     }
     
     .format-type i {
@@ -2095,6 +2102,9 @@ svg .title{
 	font-size: 14px;
 	opacity: 0.7;
 	transition: opacity .2s;
+}
+.donut-arc-label{
+	font-size: 13px;
 }
 .donut-arc-count.rotated{
 	opacity: 0;

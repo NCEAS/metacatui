@@ -87,7 +87,6 @@
                }) %></span>
                <span class="result-pubdate"> 
                <%
-               console.log(pubDate, dateUploaded);
                 if(pubDate) { 
                    var pubDateFormatted = moment(pubDate).format('YYYY');
                    if(!isNaN(pubDateFormatted)) print(pubDateFormatted, '. ');

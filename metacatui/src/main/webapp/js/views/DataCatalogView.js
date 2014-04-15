@@ -1891,7 +1891,6 @@ define(['jquery',
 		
 		routeToMetadata: function(e){
 			var id = $(e.target).attr('data-id');
-			console.log($(e.target));
 			
 			//If the user clicked on the download button or any element with the class 'stop-route', we don't want to navigate to the metadata
 			if ($(e.target).hasClass('stop-route')){

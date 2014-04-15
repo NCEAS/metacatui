@@ -38,17 +38,19 @@ function bytesToSize(bytes, precision)
         return bytes + ' B';
     }
 }
-var formatType = "";
-var id = "";
-var size = "";
-var fileType = "";
-var fileTypePopover = null;
-var readCount = "";
-var downloadButton = "";
+var formatType = "",
+	id = "",
+	encodedId = "",
+	size = "",
+	fileType = "",
+	fileTypePopover = null,
+	readCount = "",
+	downloadButton = "";
 	
 if(resourceMap){
 	formatType = "Package";
-	id = resourceMap.id;
+	id = '<a href="' + package_service + encodeURIComponent(resourceMap.id) + '">' + resourceMap.id + '</a>';
+	encodedId = encodeURIComponent(resourceMap.id);
 	
 	size = 0;
 	_.each(objects, function(object){
@@ -62,11 +64,21 @@ if(resourceMap){
 	if(resourceMap.read_count_i !== undefined){
 		readCount = resourceMap.read_count_i + " downloads";
 	}
-	downloadButton = '<a class="btn" href="' + package_service + id + '">Download all<i class="icon-arrow-down"></i></a>'; 
+	downloadButton = '<a class="btn" href="' + package_service + encodedId + '">Download all<i class="icon-arrow-down"></i></a>'; 
+}		
+else{
+	formatType = "";
+	id = "ID";
+	fileType = "File type";
+	size = "";
+	readCount = "";
 	
+	downloadButton = '<a class="btn metadata" href="' + package_service + encodeURIComponent(objects[0].id) + '">Download metadata<i class="icon-arrow-down"></i></a>'; 	
+}
+
 	print('<tr>');
 	print('<th class="format-type"><i class="icon-folder-open"></i>' + formatType + '</th>');
-	print('<th class="id"><a href="' + package_service + id + '">' + id + '</a></th>');
+	print('<th class="id">' + id + '</th>');
 	print('<th class="fileType">' + fileType + '</th>');
 	print('<th class="size">' + size + '</th>');
 	if(readCount.length > 0){
@@ -74,10 +86,6 @@ if(resourceMap){
 	}
 	print('<th class="more-info"></th>');
 	print('</tr>');
-}		
-else{
-	downloadButton = '<a class="btn metadata" href="' + package_service + objects[0].id + '">Download metadata<i class="icon-arrow-down"></i></a>'; 	
-}
 %>
 </thead>
 <tbody>
@@ -86,7 +94,7 @@ else{
 	_.each(objects, function(object){
 		formatType = object.formatType.toLowerCase();
 		
-		id = '<a href="' + object_service + object.id + '">' + object.id + '</a>';
+		id = '<a href="' + object_service + encodeURIComponent(object.id) + '">' + object.id + '</a>';
 		
 		size = bytesToSize(object.size, 2);
 		
@@ -94,7 +102,8 @@ else{
 		fileType = object.formatId;
 		if(fileType.substr(0, 3) == "eml"){
 			fileTypePopover = '<i class="icon-question-sign popover-this" data-trigger="hover" data-placement="top" data-html="true" data-content="<h5>EML version:</h5>' + fileType + '"></i>';
-			fileType = '.xml (<a href="#tools/eml">EML '+fileTypePopover+'</a>)';
+			if(EMLRoute) fileType = '.xml (<a href="#tools/eml">EML '+fileTypePopover+'</a>)';
+			else fileType = '.xml (EML' + fileTypePopover + ')';
 		}
 		
 		if(formatType == "metadata"){

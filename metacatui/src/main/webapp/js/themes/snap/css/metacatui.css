@@ -951,6 +951,9 @@ svg .title{
 	opacity: 0.7;
 	transition: opacity .2s;
 }
+.donut-arc-label{
+	font-size: 13px;
+}
 .donut-arc-count.rotated{
 	opacity: 0;
 }
@@ -1183,6 +1186,14 @@ svg .point:hover + .line-chart-label{
    	.download-contents .format-type i{
    		margin-right: 10px;
    	}
+   	
+   	    .download-contents .id{
+    	max-width: 100px;
+    }
+    
+    .download-contents td{
+    	overflow-wrap: break-word;
+    }
     
     /*Taxonomic range*/
     .taxonomic-range .control-group{

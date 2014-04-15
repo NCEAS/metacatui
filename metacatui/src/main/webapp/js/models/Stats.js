@@ -102,7 +102,7 @@ define(['jquery', 'underscore', 'backbone'],
 					model.set('totalBeginDates', data.response.numFound);
 				}
 				
-			});
+			}, "json");
 		},
 		
 		getLastEndDate: function(){
@@ -129,7 +129,7 @@ define(['jquery', 'underscore', 'backbone'],
 					else model.set('lastEndDate', new Date.fromISO(data.response.docs[0].endDate));
 				}	
 				
-			});
+			}, "json");
 		},
 		
 		/**
@@ -182,7 +182,8 @@ define(['jquery', 'underscore', 'backbone'],
 				}	
 						
 			//Display error when our original Solr query went wrong
-			}).error(function(){
+			}, "json")
+			.error(function(){
 				console.error('Solr query for format types returned error');
 			});
 		},
@@ -203,7 +204,8 @@ define(['jquery', 'underscore', 'backbone'],
 				//Now get facet counts of the data format ID's 
 				$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
 					model.set('dataFormatIDs', data.facet_counts.facet_fields.formatId);
-				}).error(function(){
+				}, "json"
+				).error(function(){
 					console.warn('Solr query error for data formatIds - not vital to page, so we will keep going');
 				});
 				
@@ -227,7 +229,8 @@ define(['jquery', 'underscore', 'backbone'],
 				//Now get facet counts of the metadata format ID's 
 				$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
 					model.set('metadataFormatIDs', data.facet_counts.facet_fields.formatId);
-				}).error(function(){
+				}, "json")
+				.error(function(){
 					console.warn('Solr query error for metadata formatIds - not vital to page, so we will keep going');
 				});
 			}
@@ -289,16 +292,16 @@ define(['jquery', 'underscore', 'backbone'],
 								$.get(appModel.get('queryServiceUrl') + dataQuery+facets, function(data, textStatus, xhr) {
 									model.set("dataUploads", data.response.numFound);
 									model.set("dataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);		
-								})
+								}, "json")
 								.error(function(){
 									console.warn('Solr query for data upload info returned error.');
 								});
-							})
+							}, "json")
 							.error(function(){
 								console.warn('Solr query for metadata upload info returned error.');
 							});
 						}
-			});	
+			}, "json");	
 		},
 		
 		/* getTemporalCoverage
@@ -395,7 +398,8 @@ define(['jquery', 'underscore', 'backbone'],
 												
 				statsModel.set('coverageYears',  coverageYears); */
 				
-			}).error(function(){
+			}, "json")
+			.error(function(){
 				//Log this warning and display a warning where the graph should be
 				console.warn("Solr query for temporal coverage failed.");
 			}); 

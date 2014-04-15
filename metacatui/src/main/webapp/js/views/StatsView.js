@@ -89,7 +89,16 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							titleCount: dataCount,
 							svgClass: svgClass,
 							countClass: "data",
-							height: 300
+							height: 300,
+							formatLabel: function(name){
+								//If this is the application/vnd.ms-excel formatID - let's just display "MS Excel"
+								if((name !== undefined) && (name.indexOf("ms-excel") > -1)) name = "MS Excel";
+								if((name != undefined) && (name == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) name= "MS Excel OpenXML"
+								if((name != undefined) && (name == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")) name= "MS Word OpenXML"
+								if(name === undefined) name = "";
+								
+								return name;
+							}
 						});
 			this.$('.format-charts-data').html(donut.render().el);
 		},
@@ -128,9 +137,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 									if(name.substring(0,4) == "eml:") name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
 									
 									//EML modules
-									if(name.indexOf("-//ecoinformatics.org//eml-") > -1) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5); 
+									if(name.indexOf("-//ecoinformatics.org//eml-") > -1) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);							
 								}
-								
+								if((name !== undefined) && (name == "http://datadryad.org/profile/v3.1")) name = "Dryad 3.1";
+								if(name === undefined) name = "";
 								return name;
 							}
 						});
