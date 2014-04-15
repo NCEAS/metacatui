@@ -181,7 +181,7 @@ input[type="text"]{
 -------------------------------------------------- */     
 	.select-editable {
 		position: relative; 
-		height: 30px; 
+		height: 45px; 
 	}
 	.select-editable select { 
 		position:absolute; 
