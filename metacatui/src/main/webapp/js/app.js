@@ -40,6 +40,7 @@ require.config({
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
     gmapsAPI: gmapsURL,
 	markerClusterer: '../components/markerclustererplus_2.1.2',
+	geohash: '../components/geohash/main',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: ['../components/d3.v3.min', null],
 	LineChart: ['views/LineChartView', null],
@@ -64,6 +65,9 @@ require.config({
     },
     markerClusterer: {
 		exports: "MarkerClusterer"
+	},
+	geohash: {
+		exports: "geohash"
 	}
   }
 });
