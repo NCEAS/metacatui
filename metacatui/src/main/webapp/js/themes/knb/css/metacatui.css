@@ -1564,7 +1564,8 @@ svg .point:hover + .line-chart-label{
     	max-width: 100px;
     }
     
-    .download-contents td{
+    .download-contents td,
+    .download-contents .id{
     	overflow-wrap: break-word;
     }
     

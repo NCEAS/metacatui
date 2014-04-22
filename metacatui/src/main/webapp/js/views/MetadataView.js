@@ -3,6 +3,7 @@ define(['jquery',
 		'underscore', 
 		'backbone',
 		'gmaps',
+		'fancybox',
 		'views/MetadataIndexView',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
@@ -12,7 +13,7 @@ define(['jquery',
 		'text!templates/alert.html',
 		'text!templates/editMetadata.html'
 		], 				
-	function($, _, Backbone, gmaps, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate) {
+	function($, _, Backbone, gmaps, fancybox, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate) {
 	'use strict';
 
 	
@@ -194,7 +195,7 @@ define(['jquery',
 								pids.push(doc.id);
 							}
 						});
-						
+												
 						//Replace Ecogrid Links with DataONE API links
 						viewRef.replaceEcoGridLinks(pids);
 										
@@ -299,10 +300,11 @@ define(['jquery',
 							  "&visible=" + latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
 							  "&sensor=false" +
 							  "&key=" + mapKey + "'/>";
-
+				
 				//Find the spot in the DOM to insert our map image
 				var lastEl = ($(parentEl).find('label:contains("West")').parent().parent().length) ? $(parentEl).find('label:contains("West")').parent().parent() :  parentEl; //The last coordinate listed
 				lastEl.append(mapHTML);
+
 			}
 			
 			return true;
