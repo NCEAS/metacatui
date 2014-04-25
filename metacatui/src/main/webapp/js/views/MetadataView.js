@@ -48,7 +48,7 @@ define(['jquery',
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
-									"click #publish" : "publish"
+			"click #publish" : "publish"
 		},
 		
 		initialize: function () {
@@ -433,6 +433,7 @@ define(['jquery',
 			                "image/jpeg",
 			                "image/png",
 			                "image/svg xml",
+			                "image/svg+xml",
 			                "image/tiff",
 			                "image/bmp"];
 			
@@ -453,7 +454,7 @@ define(['jquery',
 			//Loop over each image object and create a dataDisplay template for it to attach to the DOM
 			for(var i=0; i<images.length; i++){
 				//Create an img element using the dataDisplay template
-				html += this.dataDisplayTemplate({
+				html = this.dataDisplayTemplate({
 					url: appModel.get('objectServiceUrl') + images[i].id,
 					src: appModel.get('objectServiceUrl') + images[i].id
 				});
