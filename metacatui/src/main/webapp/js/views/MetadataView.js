@@ -11,9 +11,10 @@ define(['jquery',
 		'text!templates/usageStats.html',
 		'text!templates/downloadContents.html',
 		'text!templates/alert.html',
-		'text!templates/editMetadata.html'
+		'text!templates/editMetadata.html',
+		'text!templates/dataDisplay.html'
 		], 				
-	function($, _, Backbone, gmaps, fancybox, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate) {
+	function($, _, Backbone, gmaps, fancybox, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate) {
 	'use strict';
 
 	
@@ -39,13 +40,15 @@ define(['jquery',
 		
 		editMetadataTemplate: _.template(EditMetadataTemplate),
 		
+		dataDisplayTemplate: _.template(DataDisplayTemplate),
+		
 		objectIds: [],
 		
 		DOI_PREFIXES: ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."],
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
-			"click #publish": "publish"
+									"click #publish" : "publish"
 		},
 		
 		initialize: function () {
@@ -87,21 +90,23 @@ define(['jquery',
 								
 								viewRef.insertResourceMapContents(appModel.get('pid'));
 								if(gmaps) viewRef.insertSpatialCoverageMap();
+
 							}
 												
 						});
 			}
 			else this.renderMetadataFromIndex();
-			
+						
 			return this;
 		},
-		
+
 		renderMetadataFromIndex: function(){
 			this.subviews.metadataFromIndex = new MetadataIndex({ 
 					pid: appModel.get('pid'), 
 					parentView: this 
 					});
 			this.$el.append(this.subviews.metadataFromIndex.render().el);
+			
 		},
 		
 		insertBackLink: function(){
@@ -182,8 +187,8 @@ define(['jquery',
 					var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&q=-obsoletedBy:*+%28' + resourceMapQuery + 'id:"' + encodeURIComponent(pid) + '"%29';
 					$.get(queryServiceUrl + query, function(moreData, textStatus, xhr) {
 								
-						//Keep track of each object pid
-						var pids = [];
+						var pids   = [], //Keep track of each object pid
+							images = []; //Keep track of each data object that is an image
 						
 						//Separate the resource maps from the data/metadata objects
 						_.each(moreData.response.docs, function(doc){
@@ -193,9 +198,15 @@ define(['jquery',
 							else{
 								objects.push(doc);
 								pids.push(doc.id);
+								
+								//Keep track of each data object that is an image
+								if(viewRef.isImage(doc)) images.push(doc);
 							}
 						});
-												
+						
+						//Display data objects if they are images
+						viewRef.insertImages(images);
+						
 						//Replace Ecogrid Links with DataONE API links
 						viewRef.replaceEcoGridLinks(pids);
 										
@@ -300,11 +311,11 @@ define(['jquery',
 							  "&visible=" + latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
 							  "&sensor=false" +
 							  "&key=" + mapKey + "'/>";
-				
+
 				//Find the spot in the DOM to insert our map image
 				var lastEl = ($(parentEl).find('label:contains("West")').parent().parent().length) ? $(parentEl).find('label:contains("West")').parent().parent() :  parentEl; //The last coordinate listed
 				lastEl.append(mapHTML);
-
+				
 			}
 			
 			return true;
@@ -409,6 +420,100 @@ define(['jquery',
 						identifier: pid
 					}));
 			//this.$el.find("#viewMetadataCitationLink").after("<a href='#share/modify/" + pid + "'>Edit</a>");
+		},
+		
+		/*
+		 * param dataObject - an object representing the data object returned from the index
+		 * returns - true if this data object is an image, false if it is other
+		 */
+		isImage: function(dataObject){
+			//The list of formatIds that are images
+			var imageIds = ["image/gif",
+			                "image/jp2",
+			                "image/jpeg",
+			                "image/png",
+			                "image/svg xml",
+			                "image/tiff",
+			                "image/bmp"];
+			
+			//Does this data object match one of these IDs?
+			if(_.indexOf(imageIds, dataObject.formatId) == -1) return false;			
+			else return true;
+			
+		},
+		
+		/*
+		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
+		 * param images - an array of objects that represent the data objects returned from the index. Each should be an image
+		 * 
+		 */
+		insertImages: function(images){
+			var html = "";
+			
+			//Loop over each image object and create a dataDisplay template for it to attach to the DOM
+			for(var i=0; i<images.length; i++){
+				//Create an img element using the dataDisplay template
+				html += this.dataDisplayTemplate({
+					url: appModel.get('objectServiceUrl') + images[i].id,
+					src: appModel.get('objectServiceUrl') + images[i].id
+				});
+				
+				//Find the part of the HTML Metadata view that describes this data object
+				var insertInto = this.$el.find("td:contains('" + images[i].id + "')").parents(".controls-well");
+				if(insertInto !== undefined) $(insertInto).append(html);
+			}
+			
+			//==== Initialize the fancybox images =====
+			// We will be checking every half-second if all the images have been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
+			var viewRef    = this,
+				numImages  = images.length,
+				closeOnClick = (numImages == 1) ? true : false,
+				numChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load 
+				lightboxSelector = "a[class^='fancybox']",
+				intervalID = window.setInterval(initializeLightboxes, 500);
+									
+			var fancyboxOptions = {
+					prevEffect	: 'none',
+					nextEffect	: 'none',
+					closeEffect : 'none',
+					openEffect  : 'none',
+					type 		: "image",
+					aspectRatio : true,
+					helpers	    : {
+						    title : {
+							      type : 'outside'
+						    }
+					},
+				   closeClick : true
+			}
+			
+			function initializeLightboxes(){
+				numChecks++;
+				
+				console.log(numChecks);
+				
+				//Initialize what images have loaded so far after 5 seconds
+				if(numChecks == 10){ 
+					$(lightboxSelector).fancybox(fancyboxOptions);
+				}
+				//When 15 seconds have passed, stop checking so we don't blow up the browser
+				else if(numChecks > 30){
+					window.clearInterval(intervalID);
+					return;
+				}
+				
+				//Are all of our images loaded yet?
+				if(viewRef.$(lightboxSelector).length < numImages) return;
+				else{					
+					//Initialize our lightboxes
+					$(lightboxSelector).fancybox(fancyboxOptions);
+					
+					//We're done - clear the interval
+					window.clearInterval(intervalID);
+				}
+				
+			}
+			
 		},
 		
 		replaceEcoGridLinks: function(pids){

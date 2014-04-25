@@ -26,7 +26,6 @@ Bold 700
     body {
       background-color: #555555; /*IE 8 fallback*/
       background: rgba(0, 0, 0, .8);
-      font: 400 15px/20px "Source Sans Pro", "Helvetica Nueue", "Helvetica", "sans serif";
       min-height: 100%;
       position: relative;
     }
@@ -214,7 +213,6 @@ Bold 700
 	}
 	
 	select{
-    	font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
     	width: auto;
     }
 
@@ -736,9 +734,6 @@ Bold 700
 
 /* METADATA VIEW CSS
 -------------------------------------------------- */
-	label.control-label{
-		font: 400 15px/18px "Source Sans Pro", Arial, sans-serif;
-	}
 		
 	#Metadata > a[href="#data"]{
 		display: block;
@@ -760,6 +755,11 @@ Bold 700
 		font-weight: 400;
 	}
 	
+	.controls-well img{
+		max-width: 90%;
+		max-height: 900px;
+	}
+	
 	#Metadata h4{
 		font-weight: 600;
 	}
@@ -776,10 +776,6 @@ Bold 700
 	
 	#Metadata .nav > li > a:hover{
 		text-shadow: none;
-	}
-	
-	.search-results a.btn{
-		font: 700 14px/14px "Source Sans Pro", Arial, sans-serif;
 	}
 	
 	/* Resource map contents table */
@@ -1258,7 +1254,6 @@ Bold 700
 	.current-filters[class*="span"]{
 		list-style: none;
 		color: #FFFFFF;
-		font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
 		margin-left: 10px;
 		min-height: 0px;
 	}
@@ -1382,7 +1377,6 @@ Bold 700
     
     h3.nav-header,
     h3.nav-header > label{
-    	font: 400 14px/25px "Source Sans Pro" Arial sans-serif;
 		margin: 0px;
 		color: #ddd;
 		text-transform: none;
@@ -1408,7 +1402,6 @@ Bold 700
     
     li.nav-header{
     	text-transform: none;
-		font: 600 13px/13px "Source Sans Pro", "Arial", sans-serif;
 		color: #7F7F7F;
     }
     
@@ -1477,7 +1470,6 @@ Bold 700
     
     li.ui-menu-item > a {
     	color: #555555;
-    	/*font: 400 1em/1.8em "Source Sans Pro", Arial, sans-serif;*/
     	width: 245px;
     }
 	
@@ -1678,7 +1670,6 @@ Bold 700
       display: block;
       padding: 4px 1%;
       width: 98%;
-      font: 400 14px/18px "Source Sans Pro" Arial, sans-serif;
     }
     
     .result-row:nth-child(odd){
@@ -2329,11 +2320,11 @@ svg .point:hover + .line-chart-label{
 }
 
 .mapMode #toggle-map{
-	left: -90px;
+	left: -100px;
 }
 
 #toggle-map{
-	left: -100px;
+	left: -120px;
 }
 
 #toggle-map:hover{
@@ -2418,7 +2409,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-webkit-border-radius: 20px 0px 0px 20px;
 	-moz-border-radius: 20px 0px 0px 20px;
 	font-size: 30px; 
-	font-family: "Source Sans Pro";
 	border: 3px solid #EEEEEE;
 	border-right: 0px; 
 	padding-left: 20px;
@@ -2656,7 +2646,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	clear: both;
 	margin: 20px auto 0 auto;
 	color: #CCCCCC;
-	font: 300 14px/14px "Source Sans Pro", Arial, sans-serif;
 }
 
 #metacatDocs > .footer > .footerNav{
@@ -2691,11 +2680,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metacatDocs th{
     	background-color: #555555;
     	color: #FFFFFF;
-    	font: 300 16px/20px "Source Sans Pro", Arial, sans-serif;
     }
     
 #metacatDocs td{
-    	font: 400 15px/20px "Source Sans Pro", Arial, sans-serif;
     }
     
 #metacatDocs tr.row-odd{
@@ -2759,7 +2746,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  .figure > .caption{
 	 margin-bottom: 0px;
 	text-align: center;
-	font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
 	color: #666;
 	padding-top: 10px;
  }
@@ -2811,7 +2797,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
     #metacatDocs h3 {
-		font: 400 24.5px/40px "Source Sans Pro", sans-serif;
 	}
 	
 	#metacatDocs h2{

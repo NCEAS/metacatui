@@ -13,7 +13,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	var statsView = new StatsView();
 	var externalView = new ExternalView();
 	var ldapView = new LdapView();
-	
+		
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
