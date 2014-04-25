@@ -756,6 +756,13 @@ Bold 700
 		font-weight: 400;
 	}
 	
+	.controls-well img{
+		max-width: 90%;
+		max-height: 900px;
+		margin: 0 auto;
+		display: block;
+	}
+	
 	#Metadata h4{
 		font-weight: 600;
 	}
@@ -842,6 +849,10 @@ Bold 700
     .taxonomic-range .control-group{
     	margin-bottom: 20px;
     	width: auto;
+    }
+    
+    .taxonomic-range > .control-group{
+    	margin-left: 180px;
     }
     .taxonomic-range .control-label{
     	width: auto;

@@ -941,6 +941,13 @@ svg .point:hover + .line-chart-label{
    		margin: 10px 0px 10px 0px;
    	}
    	
+   .controls-well img{
+		max-width: 90%;
+		max-height: 900px;
+		margin: 0 auto;
+		display: block;
+	}
+   	
    	/*** Download contents table **/
 
     
@@ -966,7 +973,7 @@ svg .point:hover + .line-chart-label{
     	min-width: 90px;
     }
     
-        .download-contents .id{
+     .download-contents .id{
     	max-width: 100px;
     }
     
@@ -979,6 +986,10 @@ svg .point:hover + .line-chart-label{
     	margin-bottom: 20px;
     	width: auto;
     }
+    .taxonomic-range > .control-group{
+    	margin-left: 180px;
+    }
+    
     .taxonomic-range .control-label{
     	width: auto;
     	padding: 0px 10px;

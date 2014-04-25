@@ -79,6 +79,17 @@ input[type="text"]{
 		padding: 2%;
 		width: 96%;
 	}
+	
+	.controls-well img{
+		max-width: 90%;
+		max-height: 900px;
+		margin: 0 auto;
+		display: block;
+	}
+	
+	td.id{
+		overflow-wrap: break-word;
+	}
 
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 

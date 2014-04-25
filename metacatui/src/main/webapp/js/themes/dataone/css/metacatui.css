@@ -829,7 +829,16 @@ Bold 700
     
     th.id {
     	min-width: 180px;
+    	overflow-wrap: break-word;
     }
+    
+    .controls-well img{
+		max-width: 90%;
+		max-height: 900px;
+		margin: 0 auto;
+		display: block;
+	}
+	
     .georegion-map{
     	margin: 0px 180px;
     	display: block;
@@ -852,6 +861,9 @@ Bold 700
     .taxonomic-range .control-group{
     	margin-bottom: 20px;
     	width: auto;
+    }
+    .taxonomic-range > .control-group{
+    	margin-left: 180px;
     }
     .taxonomic-range .control-label{
     	width: auto;

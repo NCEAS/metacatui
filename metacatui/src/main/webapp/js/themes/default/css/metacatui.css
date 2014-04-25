@@ -838,6 +838,9 @@ Bold 700
     	margin-bottom: 20px;
     	width: auto;
     }
+    .taxonomic-range > .control-group{
+    	margin-left: 180px;
+    }
     .taxonomic-range .control-label{
     	width: auto;
     	padding: 0px 10px;

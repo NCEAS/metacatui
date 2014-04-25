@@ -1501,6 +1501,13 @@ svg .point:hover + .line-chart-label{
 	.citation .span10{
 		width: 100%;
 	}
+	
+	.controls-well img{
+		max-width: 90%;
+		max-height: 900px;
+		margin: 0 auto;
+		display: block;
+	}
     
     /* Google Map Images for Geographic Region */
     .georegion-map{
@@ -1602,6 +1609,10 @@ svg .point:hover + .line-chart-label{
     .taxonomic-range .control-group{
     	margin-bottom: 20px;
     	width: auto;
+    }
+    
+    .taxonomic-range > .control-group{
+    	margin-left: 180px;
     }
     .taxonomic-range .control-label{
     	width: auto;
@@ -3360,16 +3371,11 @@ img.inlineright {
 
 .subGroup {
     padding:                    3px;
-    color:                      #003366;
     voice-family:               "\"}\""; /* begin ie5win hack */
     voice-family:               inherit;
     -moz-border-radius:         10px; /* end ie5win hack */
     }
  
-.subGroup_border {
-    /* blue-ish border */
-    border:                     #94c1d4 solid 1px;
-    }
 
 /* This selector causes the 'section' tables to indent under the overarching div
  * tags */
@@ -3415,19 +3421,6 @@ th.rowheader {
     background:                 #f1f8f8;
     border-right:               #94c1d4 solid 1px;
     }
-
-.rowodd {
-    border-bottom:              #94c1d4 dotted 1px;
-    border-top:                 #94c1d4 dotted 1px;
-    background-color:           #f1f8f8;
-    padding:                    0;
-    margin:                     0;
-} 
-
-.roweven {
-    padding:                    0;
-    margin:                     0;
-} 
 
 .coleven {
     border-left:                #94c1d4 dotted 1px;
@@ -3630,10 +3623,6 @@ iframe classes
     margin:                     0;
 }
 .tablehead {
-    border-bottom:              #006666 solid 1px;
-    color:                      #003366;
-    padding:                    0;
-    margin:                     0;
     text-align:                 left;
     font-style:                 normal;
     font-weight:                700;
@@ -3649,7 +3638,6 @@ div.book {
 }
 
 div.title {
-    color:                      #003366;
     background-color:           #ffffff;
     padding:                    0;
     font-size:                  16pt;
