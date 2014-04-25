@@ -449,31 +449,40 @@ define(['jquery',
 		 * 
 		 */
 		insertImages: function(images){
-			var html = "";
+			var html = "",
+				viewRef = this;
 			
 			//Loop over each image object and create a dataDisplay template for it to attach to the DOM
 			for(var i=0; i<images.length; i++){
+				//Find the part of the HTML Metadata view that describes this data object
+				var container = this.$el.find("td:contains('" + images[i].id + "')").parents(".controls-well");
+				
+				//Harvest the Object Name for an image caption 
+				if(container !== undefined) var title = container.find("label:contains('Object Name')").next().text();
+				else{
+					var title = "";
+					container = viewRef.el;
+				}
 				//Create an img element using the dataDisplay template
 				html = this.dataDisplayTemplate({
-					url: appModel.get('objectServiceUrl') + images[i].id,
-					src: appModel.get('objectServiceUrl') + images[i].id
+					  src : appModel.get('objectServiceUrl') + images[i].id,
+					title : title 
 				});
-				
-				//Find the part of the HTML Metadata view that describes this data object
-				var insertInto = this.$el.find("td:contains('" + images[i].id + "')").parents(".controls-well");
-				if(insertInto !== undefined) $(insertInto).append(html);
+	
+				// Insert the image element into the DOM
+				$(container).append(html);				
 			}
 			
 			//==== Initialize the fancybox images =====
 			// We will be checking every half-second if all the images have been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
-			var viewRef    = this,
-				numImages  = images.length,
+			var numImages  = images.length,
 				closeOnClick = (numImages == 1) ? true : false,
 				numChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load 
 				lightboxSelector = "a[class^='fancybox']",
 				intervalID = window.setInterval(initializeLightboxes, 500);
-									
-			var fancyboxOptions = {
+			
+			//Set up our lightbox options
+			var lightboxOptions = {
 					prevEffect	: 'none',
 					nextEffect	: 'none',
 					closeEffect : 'none',
@@ -486,17 +495,19 @@ define(['jquery',
 							      type : 'outside'
 						    }
 					},
-				   closeClick : true
+				   closeClick : true,
+				   afterLoad  : function(){
+					   //Create a custom HTML caption based on data stored in the DOM element
+					   this.title = this.title + " <a href='" + this.href + "' class='btn' target='_blank'>Download</a> ";
+				   }
 			}
 			
 			function initializeLightboxes(){
 				numChecks++;
 				
-				console.log(numChecks);
-				
 				//Initialize what images have loaded so far after 5 seconds
 				if(numChecks == 10){ 
-					$(lightboxSelector).fancybox(fancyboxOptions);
+					$(lightboxSelector).fancybox(lightboxOptions);
 				}
 				//When 15 seconds have passed, stop checking so we don't blow up the browser
 				else if(numChecks > 30){
@@ -508,7 +519,7 @@ define(['jquery',
 				if(viewRef.$(lightboxSelector).length < numImages) return;
 				else{					
 					//Initialize our lightboxes
-					$(lightboxSelector).fancybox(fancyboxOptions);
+					$(lightboxSelector).fancybox(lightboxOptions);
 					
 					//We're done - clear the interval
 					window.clearInterval(intervalID);
