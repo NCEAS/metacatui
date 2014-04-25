@@ -479,6 +479,7 @@ define(['jquery',
 					closeEffect : 'none',
 					openEffect  : 'none',
 					type 		: "image",
+					preload		: 1,
 					aspectRatio : true,
 					helpers	    : {
 						    title : {

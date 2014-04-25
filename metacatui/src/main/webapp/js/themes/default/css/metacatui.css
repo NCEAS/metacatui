@@ -758,6 +758,8 @@ Bold 700
 	.controls-well img{
 		max-width: 90%;
 		max-height: 900px;
+		margin: 0 auto;
+		display: block;
 	}
 	
 	#Metadata h4{
@@ -815,6 +817,7 @@ Bold 700
     
     th.id {
     	min-width: 180px;
+    	overflow-wrap: break-word;
     }
     
     /*Details link*/
