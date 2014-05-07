@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * 					d - date only
 			 * 					m-y - month and year
 			 * 					m-d-y - month, date, and year
+			 *  labelValue = a string to prepend to the value displayed in the label for line points
 			 * 	radius = radius of the point circle
 			 * 	className = class to give the line path and point circle elements
 			 *  width = width of SVG element
@@ -39,7 +40,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.frequency = options.frequency || 1; 	//Use 0 to not add any points
 			if(!options.data) this.frequency = 0; //If no data is provided, do not draw any points (otherwise, one point at 0,0 will be drawn)
 			this.yLabel	   = options.yLabel	   || "";
-			this.radius	   = options.radius    || 4;
+			this.labelValue	 = options.labelValue  || "Value: ";
+			this.radius	   = options.radius    || 6;
 			this.width 	   = options.width 	   || 650;
 			this.height    = options.height    || 250;
 			this.formatFromSolrFacets = options.formatFromSolrFacets || false;
@@ -61,7 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				else return d3.time.years;
 			}
 			function getLabelDate(){
-				if(timeSpan <= months) return "m-y";
+				if(timeSpan <= months) return "M y";
 				else return "y";
 			}
 			
@@ -104,6 +106,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			*/
 			
 			var margin = {top: 20, right: 50, bottom: 30, left: 80};
+			this.margin = margin;
 			this.width  = this.width - margin.left - margin.right;
 			this.height = this.height - margin.top - margin.bottom;
 			
@@ -196,7 +199,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			return this;
 		},
 		
-		//This function will add another line to the chart, using the same scales
+		/*
+		 * This function will add another line to the chart, using the same scales
+		 */
 		addLine: function(data){
 			console.log('add a line');
 							
@@ -227,7 +232,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		    
 		},
 		
-		//This function will add points to the current line stored in this view (this.line)
+		/*
+		 * This function will add points to the current line stored in this view (this.line)
+		 */
 		addPoints: function(){
 			var viewRef = this;
 		
@@ -256,24 +263,65 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				    * Draw the circles/points
 					* ========================================================================
 					*/
-				  var circles = this.svg.selectAll("svg")
-						  					.data(pointData)
-						  					.enter().append("g");
 				  
-				circles.append("svg:circle")
-						.attr("class", "point " + this.className)
-						.attr("cx", function(d, i){ return viewRef.x(d.date) })
-						.attr("cy", function(d, i){ return viewRef.y(d.count)})
-						.attr("r", function(d, i){ return viewRef.radius });
-				
+				var points = this.svg.selectAll("svg")
+									.data(pointData)
+				  					.enter().append("svg:circle")
+									.attr("class", "point " + this.className)
+									.attr("cx", function(d, i){ return viewRef.x(d.date) })
+									.attr("cy", function(d, i){ return viewRef.y(d.count)})
+									.attr("data-id", function(d, i){  return viewRef.x(d.date) + viewRef.y(d.count); })
+									.attr("r", function(d, i){ return viewRef.radius });
+							
 				/*
 				* ========================================================================
 			    * Draw the point labels
 				* ========================================================================
 				*/
-				  circles.append("text")
+				var labelsContainer =  d3.select(this.el)
+								.append("g")
+								.attr("class", "labels");
+								
+				var labels = labelsContainer.selectAll("svg")
+								.data(pointData)
+								.enter().append("g");
+				
+				var labelWidth    = 130,
+					labelHeight   = 50,
+					labelYPadding = 20,
+					labelXPadding = 10;
+				
+				  labels.append("rect")
+				  		.attr("x", function(d, i){
+				  			var xPos = viewRef.x(d.date) - (labelWidth/2);
+					  		//Don't let our label bleed off the edge
+					  		if(xPos < 0) xPos = xPos + labelWidth;
+					  		
+					  		return  xPos; 
+					  	})
+					  	.attr("y", function(d, i){
+					  		var yPos = viewRef.y(d.count) + viewRef.radius;					  		
+					  		//Don't let our label bleed off the edge
+					  		if(yPos < (viewRef.margin.top * -1)) yPos = yPos + labelHeight;
+					  		else if(yPos > (viewRef.height - labelHeight)) yPos = yPos - labelHeight;
+					  							  		
+					  		return yPos; 
+					  	})
+					  	.attr("width", labelWidth)
+					  	.attr("height", labelHeight)
+					  	.attr("rx", 5) //For rounded corners
+					  	.attr("ry", 5) //For rounded corners
+					  	.attr("class", "bg line-chart-label " + this.className)
+					  	.attr("text-anchor", "end")
+					  	.attr("data-id", function(d, i){  return viewRef.x(d.date) + viewRef.y(d.count); });
+
+				  
+				  labels.append("text")
 				  		.text(function(d, i){
 				  			var date = "";
+		  					var monthNames = [ "January", "February", "March", "April", "May", "June",
+			  					                 "July", "August", "September", "October", "November", "December" ];
+		  					
 				  			//Format the date according to the options passed to this line chart
 				  			switch(viewRef.labelDate){
 				  				case "y": 
@@ -289,33 +337,81 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  					date = new Date(d.date);
 				  					date = date.getMonth() + "/" + date.getFullYear();
 				  					break;
+				  				case "M y":
+				  					date = new Date(d.date);
+				  					date = monthNames[date.getMonth()] + " " + date.getFullYear();
+				  					break;
 				  				case "m-d-y":
 				  					date = new Date(d.date);
 				  					date = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
 				  					break;
 				  				default:
 				  					date = new Date(d.date);
-				  					date = date.getMonth() + "/" + date.getFullYear();
+				  					date = monthNames[date.getMonth()] + " " + date.getFullYear();
 				  					break;
 				  				}
-				  			return date + " : " + viewRef.commaSeparateNumber(d.count);
+				  			return date;
 				  		})
 				  		.attr("x", function(d, i){
-					  		var labelX = viewRef.x(d.date) - 20;
-					  		if(labelX > (viewRef.width-100)){
-					  			labelX = viewRef.x(d.date) - 80;
-					  		}
-					  		return  viewRef.x(d.date); })
+				  			var xPos = viewRef.x(d.date) - (labelWidth/2);
+				  			//Don't let our label bleed off the edge
+					  		if(xPos < 0) xPos = xPos + labelWidth;
+					  		
+					  		return  xPos + labelXPadding;; })
 					  	.attr("y", function(d, i){
-					  		var labelY = viewRef.y(d.count) - 10;
-					  		if(labelY < 20){
-					  			labelY = viewRef.y(d.count) + 20;
-					  		}
-					  		return labelY; 
+					  		var yPos = viewRef.y(d.count) + viewRef.radius;	
+					  		//Don't let our label bleed off the edge
+					  		if(yPos < 0) yPos = yPos + labelHeight;
+					  		else if(yPos > (viewRef.height - labelHeight)) yPos = yPos - labelHeight;
+					  		
+					  		return yPos + labelYPadding; 
 					  	})
-					  	.attr("class", "line-chart-label " + this.className)
-					  	.attr("text-anchor", "end");
+					  	.attr("class", "text line-chart-label " + this.className)
+					  	.attr("text-anchor", "start")
+				  		.attr("data-id", function(d, i){  return viewRef.x(d.date) + viewRef.y(d.count); });
+				  
+				  labels.append("text")
+				  		.text(function(d, i){
+				  			return viewRef.labelValue + viewRef.commaSeparateNumber(d.count);
+				  		})
+				  		.attr("x", function(d, i){
+				  			var xPos = viewRef.x(d.date) - (labelWidth/2);
+				  			//Don't let our label bleed off the edge
+					  		if(xPos < 0) xPos = xPos + labelWidth;
+					  		
+					  		return  xPos + labelXPadding; })
+					  	.attr("y", function(d, i){
+					  		var yPos = viewRef.y(d.count) + viewRef.radius;	
+					  		//Don't let our label bleed off the edge
+					  		if(yPos < 0) yPos = yPos + labelHeight;
+					  		else if(yPos > (viewRef.height - labelHeight)) yPos = yPos - labelHeight;
+					  		
+					  		return yPos + labelYPadding + 20; 
+					  	})
+					  	.attr("class", "text line-chart-label " + this.className)
+					  	.attr("text-anchor", "start")
+						.attr("data-id", function(d, i){  return viewRef.x(d.date) + viewRef.y(d.count); });
+
 			  }
+
+			  /*
+			   * Add an event listener to our points so we can display the labels
+			   */
+
+			  $('.point').hover(
+				function(e){
+				console.log('hover');
+				//Fade in our labels
+				 var activePoint = $(e.target);
+				 $("[data-id='" + activePoint.attr("data-id") + "'].line-chart-label").fadeIn(200);
+			   },
+			   //Fade out the labels
+			   function(e){
+				   var activePoint = $(e.target);
+				   $("[data-id='" + activePoint.attr("data-id") + "'].line-chart-label").fadeOut(100);
+			   }
+			);
+			  
 		},
 		
 		formatData: function(counts){

@@ -29,6 +29,11 @@ Bold 700
 	overflow: hidden;
 }
 
+i{
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
 #navbar{
 	list-style: none;
 }
@@ -87,8 +92,16 @@ input[type="text"]{
 		display: block;
 	}
 	
+	th.id,
 	td.id{
 		overflow-wrap: break-word;
+	}
+	td.format-type{
+		text-transform: lowercase;
+	}
+	
+	.fancybox.btn{
+		margin-left: 180px;
 	}
 
 /* FORM/INPUT CUSTOMIZATIONS

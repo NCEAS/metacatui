@@ -72,10 +72,6 @@ Bold 700 Italic
     	color: #660000;
     }
     
-    a:visited{
-    	color: #1C91CB;
-    }
-    
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
@@ -1402,14 +1398,23 @@ svg .domain{
 	stroke: #555555;
 }
 svg .point{
-	fill: #FFFFFF;
-	stroke-width: 2px;
+	stroke: #FFFFFF;
+	stroke-width: 3px;
 }
-svg .line-chart-label{
+.line-chart-label{
 	font-weight: bold;
 	font-size: 14px;
 	stroke-width: 0px;
-	opacity: 0;
+	display: none;
+}
+.line-chart-label.bg{
+	stroke-width: 2px;
+	fill: #FFF;
+	opacity: 0.8;
+}
+.line-chart-label.text{
+	font-weight: bold;
+	fill: #555;
 }
 svg> .title{
 	font-size: 15px;
@@ -1425,10 +1430,7 @@ svg .tick text{
 svg .domain{
 	stroke-width: 0px;
 }
-svg .point:hover + .line-chart-label{
-	opacity: 1;
-	transition: all .5s;
-}
+
 
 /* Circle Badges */
 .circle-badge{
@@ -1508,6 +1510,10 @@ svg .point:hover + .line-chart-label{
 		margin: 0 auto;
 		display: block;
 	}
+	
+	.controls-well > .btn{
+		margin-left: 180px;
+	}
     
     /* Google Map Images for Geographic Region */
     .georegion-map{
@@ -1527,21 +1533,8 @@ svg .point:hover + .line-chart-label{
     } 
     
     .download-this-package{
-    	float: left;
-    	height: 100%;
-    	margin-left: 20px;
-    }
-    
-    .download-this-package a{
-    	margin-top: 15%;
-    	background-color: #992222;
-    	color: #FFFFFF;
-    	text-shadow: none;
-    }
-    
-    .download-this-package a:hover{
-    	background-color: #660000;
-    	color: #FFFFFF;
+    	clear: both;
+    	margin-left: 5px;
     }
     
     .download-this-package a.metadata{
@@ -1579,8 +1572,8 @@ svg .point:hover + .line-chart-label{
     .format-type i{
     	margin-right: 5px;
     }
-    .format-type {
-    	text-transform: capitalize;
+    td.format-type {
+    	text-transform: lowercase;
     }
     
     .file-type i{

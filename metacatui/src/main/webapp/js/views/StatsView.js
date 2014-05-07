@@ -182,8 +182,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 								id: "upload-chart",
 						 className: "metadata",
 						 	yLabel: "files uploaded",
+						labelValue: "Metadata: ",
 						 frequency: frequency, 
-							radius: 5
+							radius: 6
 						});
 				
 				this.$('.upload-chart').html(lineChartView.render().el);
@@ -203,8 +204,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 									id: "upload-chart",
 							 className: "data",
 							 	yLabel: "files uploaded",
+							labelValue: "Data: ",
 							 frequency: frequency, 
-								radius: 4
+								radius: 6
 							 });
 					
 					this.$('.upload-chart').html(lineChartView.render().el);

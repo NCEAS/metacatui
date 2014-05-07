@@ -837,14 +837,22 @@ svg .domain{
 	stroke: #555555;
 }
 svg .point{
-	fill: #FFFFFF;
-	stroke-width: 2px;
+	stroke: #FFFFFF;
+	stroke-width: 3px;
 }
-svg .line-chart-label{
+.line-chart-label{
 	font-weight: bold;
 	font-size: 14px;
 	stroke-width: 0px;
-	opacity: 0;
+	display: none;
+}
+.line-chart-label.text{
+		fill: #555;
+}
+.line-chart-label.bg{
+	stroke-width: 2px;
+	fill: #FFF;
+	opacity: 0.8;
 }
 svg> .title{
 	font-size: 15px;
@@ -860,7 +868,7 @@ svg .tick text{
 svg .domain{
 	stroke-width: 0px;
 }
-svg .point:hover + .line-chart-label{
+svg .point:hover ~ .line-chart-label{
 	opacity: 1;
 	transition: all .5s;
 }
@@ -947,6 +955,10 @@ svg .point:hover + .line-chart-label{
 		margin: 0 auto;
 		display: block;
 	}
+	
+	.fancybox.btn{
+		margin-left:180px;
+	}
    	
    	/*** Download contents table **/
 
@@ -977,8 +989,13 @@ svg .point:hover + .line-chart-label{
     	max-width: 100px;
     }
     
-    .download-contents td{
+    .download-contents td,
+    .download-contents th{
     	overflow-wrap: break-word;
+    }
+    
+    .download-contents td.format-type{
+    	text-transform: lowercase;
     }
    	
    	/*Taxonomic range*/

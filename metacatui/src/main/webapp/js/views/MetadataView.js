@@ -12,9 +12,10 @@ define(['jquery',
 		'text!templates/downloadContents.html',
 		'text!templates/alert.html',
 		'text!templates/editMetadata.html',
-		'text!templates/dataDisplay.html'
+		'text!templates/dataDisplay.html',
+		'text!templates/map.html'
 		], 				
-	function($, _, Backbone, gmaps, fancybox, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate) {
+	function($, _, Backbone, gmaps, fancybox, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
 	'use strict';
 
 	
@@ -41,6 +42,8 @@ define(['jquery',
 		editMetadataTemplate: _.template(EditMetadataTemplate),
 		
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
+		
+		mapTemplate: _.template(MapTemplate),
 		
 		objectIds: [],
 		
@@ -188,8 +191,9 @@ define(['jquery',
 					$.get(queryServiceUrl + query, function(moreData, textStatus, xhr) {
 								
 						var pids   = [], //Keep track of each object pid
-							images = []; //Keep track of each data object that is an image
-						
+							images = [], //Keep track of each data object that is an image
+							pdfs   = []; //Keep track of each data object that is a PDF 
+							
 						//Separate the resource maps from the data/metadata objects
 						_.each(moreData.response.docs, function(doc){
 							if(doc.formatType == "RESOURCE"){											
@@ -201,11 +205,13 @@ define(['jquery',
 								
 								//Keep track of each data object that is an image
 								if(viewRef.isImage(doc)) images.push(doc);
+								else if(viewRef.isPDF(doc)) pdfs.push(doc); 
 							}
 						});
 						
-						//Display data objects if they are images
-						viewRef.insertImages(images);
+						//Display data objects if they are visual
+						viewRef.insertVisuals(images, "image");
+						viewRef.insertVisuals(pdfs, "pdf");
 						
 						//Replace Ecogrid Links with DataONE API links
 						viewRef.replaceEcoGridLinks(pids);
@@ -300,11 +306,15 @@ define(['jquery',
 				var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
 				var latLngCEN = bounds.getCenter();
 
+				var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() + 
+						  "&spn=0.003833,0.010568" +
+						  "&t=h" +
+						  "&z=17";
 				//Create a google map image
 				var mapHTML = "<img class='georegion-map' " +
 							  "src='https://maps.googleapis.com/maps/api/staticmap?" +
 							  "center="+latLngCEN.lat()+","+latLngCEN.lng() +
-							  "&size=550x250" +
+							  "&size=650x250" +
 							  "&maptype=terrain" +
 							  "&markers=size:mid|color:0xDA4D3Aff|"+latLngCEN.lat()+","+latLngCEN.lng() +
 							  "&path=color:0xDA4D3Aff|weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
@@ -314,7 +324,18 @@ define(['jquery',
 
 				//Find the spot in the DOM to insert our map image
 				var lastEl = ($(parentEl).find('label:contains("West")').parent().parent().length) ? $(parentEl).find('label:contains("West")').parent().parent() :  parentEl; //The last coordinate listed
-				lastEl.append(mapHTML);
+				lastEl.append(this.mapTemplate({
+					map: mapHTML,
+					url: url
+				}));
+				
+				$('.fancybox-media').fancybox({
+					openEffect: 'elastic',
+					closeEffect: 'elastic',
+					helpers: {
+						media: {}
+					}
+				})
 				
 			}
 			
@@ -443,63 +464,83 @@ define(['jquery',
 			
 		},
 		
+		isPDF: function(dataObject){
+			//The list of formatIds that are images
+			var ids = ["application/pdf"];
+			
+			//Does this data object match one of these IDs?
+			if(_.indexOf(ids, dataObject.formatId) == -1) return false;			
+			else return true;			
+		},
+		
 		/*
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
 		 * param images - an array of objects that represent the data objects returned from the index. Each should be an image
-		 * 
+		 * param type - a string that defines the type of visual content - either "image" or "pdf"
 		 */
-		insertImages: function(images){
+		insertVisuals: function(visuals, type){
 			var html = "",
 				viewRef = this;
 			
-			//Loop over each image object and create a dataDisplay template for it to attach to the DOM
-			for(var i=0; i<images.length; i++){
-				//Find the part of the HTML Metadata view that describes this data object
-				var container = this.$el.find("td:contains('" + images[i].id + "')").parents(".controls-well");
+			//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
+			for(var i=0; i<visuals.length; i++){
 				
-				//Harvest the Object Name for an image caption 
+				//Find the part of the HTML Metadata view that describes this data object
+				var container = this.$el.find("td:contains('" + visuals[i].id + "')").parents(".controls-well");
+				
+				//Harvest the Object Name for a lightbox caption 
 				if(container !== undefined) var title = container.find("label:contains('Object Name')").next().text();
 				else{
 					var title = "";
 					container = viewRef.el;
 				}
-				//Create an img element using the dataDisplay template
+				
+				//Create HTML for the visuals using the dataDisplay template
 				html = this.dataDisplayTemplate({
-					  src : appModel.get('objectServiceUrl') + images[i].id,
+					 type : type,
+					  src : appModel.get('objectServiceUrl') + visuals[i].id,
 					title : title 
 				});
 	
-				// Insert the image element into the DOM
+				// Insert the HTML into the DOM
 				$(container).append(html);				
 			}
 			
 			//==== Initialize the fancybox images =====
-			// We will be checking every half-second if all the images have been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
-			var numImages  = images.length,
-				closeOnClick = (numImages == 1) ? true : false,
+			// We will be checking every half-second if all the HTML has been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
+			var numVisuals  = visuals.length,
 				numChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load 
-				lightboxSelector = "a[class^='fancybox']",
-				intervalID = window.setInterval(initializeLightboxes, 500);
-			
-			//Set up our lightbox options
-			var lightboxOptions = {
-					prevEffect	: 'none',
-					nextEffect	: 'none',
-					closeEffect : 'none',
-					openEffect  : 'none',
-					type 		: "image",
-					preload		: 1,
-					aspectRatio : true,
-					helpers	    : {
+				lightboxSelector = (type == "image") ? "a[class^='fancybox'][data-fancybox-type='image']" : "a[class^='fancybox'][data-fancybox-iframe]",
+				intervalID = window.setInterval(initializeLightboxes, 500),
+				//The shared lightbox options for both images and PDFs
+				lightboxOptions = {
+						prevEffect	: 'elastic',
+						nextEffect	: 'elastic',
+						closeEffect : 'elastic',
+						openEffect  : 'elastic',
+						aspectRatio : true,
+						closeClick : true,
+						afterLoad  : function(){
+							//Create a custom HTML caption based on data stored in the DOM element
+							this.title = this.title + " <a href='" + this.href + "' class='btn' target='_blank'>Download</a> ";
+						},
+						helpers	    : {
 						    title : {
 							      type : 'outside'
 						    }
-					},
-				   closeClick : true,
-				   afterLoad  : function(){
-					   //Create a custom HTML caption based on data stored in the DOM element
-					   this.title = this.title + " <a href='" + this.href + "' class='btn' target='_blank'>Download</a> ";
-				   }
+						}
+				};
+			
+			if(type == "image"){
+				//Add additional options for images
+				lightboxOptions.type = "image";
+				lightboxOptions.perload = 1;
+			}
+			else if(type == "pdf"){		
+				//Add additional options for PDFs
+				lightboxOptions.type = "iframe";
+				lightboxOptions.iframe = { preload: false };
+				lightboxOptions.height = "98%";
 			}
 			
 			function initializeLightboxes(){
@@ -516,17 +557,101 @@ define(['jquery',
 				}
 				
 				//Are all of our images loaded yet?
-				if(viewRef.$(lightboxSelector).length < numImages) return;
+				if(viewRef.$(lightboxSelector).length < numVisuals) return;
 				else{					
 					//Initialize our lightboxes
 					$(lightboxSelector).fancybox(lightboxOptions);
 					
 					//We're done - clear the interval
 					window.clearInterval(intervalID);
-				}
-				
+				}				
 			}
 			
+		},
+		
+		/*
+		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
+		 * param pdfs - an array of objects that represent the data objects returned from the index. Each should be a PDF
+		 */
+		insertPDFs: function(pdfs){
+			var html = "",
+			 viewRef = this;
+		
+			//Loop over each image object and create a dataDisplay template for it to attach to the DOM
+			for(var i=0; i<pdfs.length; i++){
+				//Find the part of the HTML Metadata view that describes this data object
+				var container = this.$el.find("td:contains('" + pdfs[i].id + "')").parents(".controls-well");
+				
+				//Harvest the Object Name for an image caption 
+				if(container !== undefined) var title = container.find("label:contains('Object Name')").next().text();
+				else{
+					var title = "";
+					container = viewRef.el;
+				}
+				//Create an element using the dataDisplay template
+				html = this.dataDisplayTemplate({
+					 type : "pdf",
+					  src : appModel.get('objectServiceUrl') + pdfs[i].id,
+					title : title 
+				});
+	
+				// Insert the element into the DOM
+				$(container).append(html);				
+			}
+		
+			//==== Initialize the fancybox images =====
+			// We will be checking every half-second if all the images have been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
+			var numPDFs  = pdfs.length,
+				numChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load 
+				lightboxSelector = "a[class^='fancybox'][data-fancybox-iframe]",
+				intervalID = window.setInterval(initializeLightboxes, 500);
+			
+			//Set up our lightbox options
+			var lightboxOptions = {
+					prevEffect	: 'elastic',
+					nextEffect	: 'elastic',
+					closeEffect : 'elastic',
+					openEffect  : 'elastic',
+					type 		: "iframe",
+					aspectRatio : true,
+					helpers	    : {
+						    title : {
+							      type : 'outside'
+						    }
+					},
+				   iframe	  : {
+					   		preload : false
+				   },
+				   closeClick : true,
+				   afterLoad  : function(){
+					   //Create a custom HTML caption based on data stored in the DOM element
+					   this.title = this.title + " <a href='" + this.href + "' class='btn' target='_blank'>Download</a> ";
+				   }
+			}
+		
+			function initializeLightboxes(){
+				numChecks++;
+				
+				//Initialize what images have loaded so far after 5 seconds
+				if(numChecks == 10){ 
+					$(lightboxSelector).fancybox(lightboxOptions);
+				}
+				//When 15 seconds have passed, stop checking so we don't blow up the browser
+				else if(numChecks > 30){
+					window.clearInterval(intervalID);
+					return;
+				}
+				
+				//Are all of our pdfs loaded yet?
+				if(viewRef.$(lightboxSelector).length < numPDFs) return;
+				else{					
+					//Initialize our lightboxes
+					$(lightboxSelector).fancybox(lightboxOptions);
+					
+					//We're done - clear the interval
+					window.clearInterval(intervalID);
+				}				
+			}
 		},
 		
 		replaceEcoGridLinks: function(pids){

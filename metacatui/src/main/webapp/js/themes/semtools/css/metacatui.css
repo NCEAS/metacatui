@@ -41,7 +41,7 @@ Bold 700
     	text-decoration: none;
     }
     
-    body, h1, h2, h3, h4, h5, h6, i{
+    body, h1, h2, h3, h4, h5, h6{
     	color: #555;
     }
     
@@ -411,7 +411,8 @@ Bold 700
     } 
     
     .download-this-package{
-    	margin-left: 20px;
+    	clear: both;
+    	margin-left: 5px;
     }
     
     .download-this-package i{
@@ -819,8 +820,8 @@ Bold 700
     .format-type i {
     	margin-right: 5px;
     }
-    .format-type {
-    	text-transform: capitalize;
+    td.format-type {
+    	text-transform: lowercase;
     }
     
     .file-type i {
@@ -830,7 +831,13 @@ Bold 700
     
     th.id {
     	min-width: 180px;
+    	overflow-wrap: break-word;
     }
+    
+    .fancybox.btn{
+		margin-left:180px;
+		margin-bottom: 20px;
+	}
     
     /*Details link*/
     .download-contents .more-info{
@@ -2199,11 +2206,19 @@ svg .point{
 	fill: #FFFFFF;
 	stroke-width: 2px;
 }
-svg .line-chart-label{
+.line-chart-label{
 	font-weight: bold;
 	font-size: 14px;
 	stroke-width: 0px;
-	opacity: 0;
+	display: none;
+}
+.line-chart-label.text{
+		fill: #555;
+}
+.line-chart-label.bg{
+	stroke-width: 2px;
+	fill: #FFF;
+	opacity: 0.8;
 }
 svg> .title{
 	font-size: 15px;
@@ -2219,7 +2234,7 @@ svg .tick text{
 svg .domain{
 	stroke-width: 0px;
 }
-svg .point:hover + .line-chart-label{
+svg .point:hover ~ .line-chart-label{
 	opacity: 1;
 	transition: all .5s;
 }

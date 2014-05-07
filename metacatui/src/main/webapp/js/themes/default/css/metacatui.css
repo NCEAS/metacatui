@@ -40,7 +40,7 @@ Bold 700
     	text-decoration: none;
     }
     
-    body, h1, h2, h3, h4, h5, h6, i{
+    body, h1, h2, h3, h4, h5, h6{
     	color: #555;
     }
     
@@ -413,7 +413,8 @@ Bold 700
     } 
     
     .download-this-package{
-    	margin-left: 20px;
+    	clear: both;
+    	margin-left: 5px;
     }
     
     .download-this-package i{
@@ -780,7 +781,21 @@ Bold 700
 		text-shadow: none;
 	}
 	
+	.fancybox.btn{
+		margin-left:180px;
+	}
+	
 	/* Resource map contents table */
+	
+	span.file-type{
+		font-weight: 600;
+		font-size: 1.1em;
+	}
+	
+	i.file-type{
+		font-size: 1.2em;
+		font-weight: 600;
+	}
 
     #downloadContents .controls-well{
     	overflow-x: scroll;
@@ -802,7 +817,9 @@ Bold 700
     .download-contents td{
     	overflow-wrap: break-word;
     }
-    
+    .format-type{
+    	text-transform: lowercase;
+    }
     .format-type i {
     	margin-right: 5px;
     }
@@ -2189,11 +2206,19 @@ svg .point{
 	fill: #FFFFFF;
 	stroke-width: 2px;
 }
-svg .line-chart-label{
+.line-chart-label{
 	font-weight: bold;
 	font-size: 14px;
 	stroke-width: 0px;
-	opacity: 0;
+	display: none;
+}
+.line-chart-label.text{
+		fill: #555;
+}
+.line-chart-label.bg{
+	stroke-width: 2px;
+	fill: #FFF;
+	opacity: 0.8;
 }
 svg> .title{
 	font-size: 15px;
@@ -2209,7 +2234,7 @@ svg .tick text{
 svg .domain{
 	stroke-width: 0px;
 }
-svg .point:hover + .line-chart-label{
+svg .point:hover ~ .line-chart-label{
 	opacity: 1;
 	transition: all .5s;
 }
