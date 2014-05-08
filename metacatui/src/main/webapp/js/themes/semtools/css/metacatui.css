@@ -2220,6 +2220,10 @@ svg .point{
 	fill: #FFF;
 	opacity: 0.8;
 }
+.tick line{
+	stroke-width: 1px;
+	stroke: #CCC;
+}
 svg> .title{
 	font-size: 15px;
 }

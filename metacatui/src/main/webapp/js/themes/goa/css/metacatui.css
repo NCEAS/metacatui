@@ -1,6 +1,5 @@
 
 
-
 /* Body CSS
 -------------------------------------------------- */
     body {
@@ -838,7 +837,7 @@ svg .domain{
 }
 svg .point{
 	stroke: #FFFFFF;
-	stroke-width: 3px;
+	stroke-width: 2px;
 }
 .line-chart-label{
 	font-weight: bold;
@@ -853,6 +852,10 @@ svg .point{
 	stroke-width: 2px;
 	fill: #FFF;
 	opacity: 0.8;
+}
+.tick line{
+	stroke-width: 1px;
+	stroke: #DDD;
 }
 svg> .title{
 	font-size: 15px;

@@ -123,7 +123,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
 			var yAxis = d3.svg.axis()
 			    .scale(this.y)
-			    .orient("left");
+			    .orient("left")
+			    .innerTickSize(["-" + this.width]);
 			
 			var svg = d3.select(this.el)
 						.attr("class", "line-chart")

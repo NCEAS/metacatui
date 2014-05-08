@@ -2282,11 +2282,16 @@ svg .point{
 }
 .line-chart-label.text{
 		fill: #555;
+		font-size: 13px;
 }
 .line-chart-label.bg{
 	stroke-width: 2px;
 	fill: #FFF;
 	opacity: 0.8;
+}
+.tick line{
+	stroke-width: 1px;
+	stroke: #CCC;
 }
 svg> .title{
 	font-size: 15px;

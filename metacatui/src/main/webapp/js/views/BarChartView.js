@@ -87,7 +87,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
 		var yAxis = d3.svg.axis()
 		    .scale(y)
-		    .orient("left");
+		    .orient("left")
+		    .innerTickSize(["-" + this.width]);
 		
 		if(this.yFormat){
 		    yAxis.tickFormat(this.yFormat); 
