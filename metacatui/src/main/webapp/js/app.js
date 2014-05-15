@@ -9,9 +9,6 @@ console.log("Using themeMap: " + themeMap);
 console.log("Using metacatContext: " + metacatContext);
 
 var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
-if (mapKey){
-	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
-}
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
@@ -38,7 +35,6 @@ require.config({
     domReady: '../components/domready',
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
-    gmapsAPI: gmapsURL,
 	markerClusterer: '../components/markerclustererplus_2.1.2',
 	geohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
@@ -73,30 +69,37 @@ require.config({
   }
 });
 
+
 /** 
  * Define Google Maps API if we can load the first script for it
  * Allows running without internet connection
- */
-require(['gmapsAPI'],
-	function(gmapsAPI) {
-		console.log("Loaded gmapsAPI...continuing with asynchronous load");
-		define('gmaps', 
-				['async!' + gmapsURL], 
-				function() {
-					return google.maps;
-				}
-			);
-	},
-	function(err) {
-		console.log("Error loading gmapsAPI, falling back to placeholder");
-		define('gmaps', 
-				[null], 
-				function() {
-					return null;
-				}
-			);
-	}
-);
+ **/
+if (mapKey){
+	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+	require([gmapsURL],
+		function(gmapsAPI) {
+			console.log("Loaded gmapsAPI...continuing with asynchronous load");
+			define('gmaps', 
+					['async!' + gmapsURL], 
+					function() {
+						return google.maps;
+					}
+				);
+		},
+		function(err) {
+			console.log("Error loading gmapsAPI, falling back to placeholder");
+			define('gmaps', 
+					[null], 
+					function() {
+						return null;
+					}
+				);
+		}
+	);
+}
+else{
+	define('gmaps', null);
+}
 
 
 
