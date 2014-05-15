@@ -1,5 +1,8 @@
+<% 
+if(!formattedAttribute || (formattedAttribute === undefined)) var formattedAttribute = attribute;
+%>
 
 	<div class="control-group <%=attribute%>">
-		<label class="control-label <%=attribute%>"><%=attribute%></label>
+		<label class="control-label <%=attribute%>"><%=formattedAttribute%></label>
 		<div class="controls controls-well"><%=value%></div>
 	</div>

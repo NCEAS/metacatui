@@ -151,22 +151,30 @@ define(['jquery',
 				view = this,
 				embeddedAttributes = "";
 			
-			//If this is a multi-valued field from Solr, so the attribute value is actually multiple embedded attribute templates
+			//If this is a multi-valued field from Solr, the attribute value is actually multiple embedded attribute templates
 			var numAttributes = (Array.isArray(value) && (value.length > 1)) ? value.length : 0;
-			for(var i=0; i<numAttributes; i++){
+			for(var i=0; i<numAttributes; i++){				
 				embeddedAttributes += view.attributeTemplate({
 					attribute: "",
+					formattedAttribute: view.transformCamelCase(attribute),
 					value: value[i]
 				});
 			}
 			
 			html += view.attributeTemplate({
 				attribute: attribute,
+				formattedAttribute: view.transformCamelCase(attribute),
 				value: embeddedAttributes || value
 			});
-
 			
 			return html;
+		},
+		
+		transformCamelCase: function(string){
+			var result = string.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+			var finalResult = result.charAt(0).toUpperCase() + result.slice(1);
+			
+			return finalResult;
 		},
 		
 		onClose: function(){
