@@ -246,6 +246,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//Get the earliest upload date	
 			var query =  "q=" + this.get('query') +
 								"+dateUploaded:*" +
+								"+-obsoletes:*"+    //Only count the first version
 								"&wt=json" +
 								"&fl=dateUploaded" +
 								"&rows=1" +
@@ -269,12 +270,12 @@ define(['jquery', 'underscore', 'backbone'],
 							model.set('totalUploads', data.response.numFound);	
 							
 							var dataQuery =  "q=" + model.get('query') +
-							  "+-obsoletedBy:*+formatType:DATA";
+							  "+-obsoletes:*+formatType:DATA";
 							
 							var metadataQuery =  "q=" + model.get('query') +
-							  "+-obsoletedBy:*+formatType:METADATA";
+							  "+-obsoletes:*+formatType:METADATA";
 							  
-							var facets = "&wt=json" +
+							var facets =  "&wt=json" +
 										  "&rows=0" +
 										  "&facet=true" +
 										  "&facet.missing=true" + //Include months that have 0 uploads
