@@ -2294,7 +2294,7 @@ svg .point{
 	stroke: #CCC;
 }
 svg> .title{
-	font-size: 15px;
+	font-size: 13px;
 }
 svg text{
 	stroke: none;
@@ -2315,7 +2315,7 @@ svg .point:hover ~ .line-chart-label{
 /* Circle Badges */
 .circle-badge{
 	height: auto;
-	max-height: 100px;
+	max-height: 300px;
 }
 .circle-badge circle{
 	stroke-width: 5px;

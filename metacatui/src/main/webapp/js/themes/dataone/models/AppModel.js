@@ -29,7 +29,8 @@ define(['jquery', 'underscore', 'backbone'],
 			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
-			objectServiceUrl: null
+			objectServiceUrl: null,
+			d1LogServiceUrl: null
 		},
 		
 		initialize: function() {
@@ -41,7 +42,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 			}
 			
-			//this.set('baseUrl', 'https://cn-stage.test.dataone.org');
+			this.set('baseUrl', 'https://cn-stage.test.dataone.org');
 			
 			// these are pretty standard, but can be customized if needed
 			//this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
@@ -54,6 +55,9 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
+			
+			//this.set('d1LogServiceUrl', this.get('baseUrl') + this.get('d1Service') + 'logsolr');
+			this.set('d1LogServiceUrl', 'https://cn.dataone.org/solr/d1-cn-log/select/?');
 			
 		}
 	

@@ -24,8 +24,14 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			firstBeginDate: 0,
 			temporalCoverage: 0,
-			coverageYears: 0
+			coverageYears: 0,
+			
+			metadataDownloads: null,
+			dataDownloads: null,
+			metadataDownloadDates: null,
+			dataDownloadDates: null
 		},
+				
 		
 		initialize: function(){
 			//Add a function to parse ISO date strings for IE8 and other older browsers
@@ -75,6 +81,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.getFirstBeginDate();
 			this.getFormatTypes();
 			this.getUploads();
+			this.getDownloads();
 		},
 		
 		// Send a Solr query to get the earliest beginDate, latest endDate, and facets of data collection years
@@ -409,9 +416,57 @@ define(['jquery', 'underscore', 'backbone'],
 				
 			}, "json")
 			.error(function(){
-				//Log this warning and display a warning where the graph should be
+				//Log this warning 
 				console.warn("Solr query for temporal coverage failed.");
 			}); 
+		},
+		
+		/*
+		 * getDownloads will query the DataONE log aggregation service and get the read counts by month, starting in 2004
+		 */
+		getDownloads: function(){
+			var query = "q=event:read" +
+						"&facet=true" +
+						"&facet.missing=true" +
+						"&facet.limit=-1" +
+						"&facet.range=dateLogged" +
+						"&facet.range.start=2004-01-01T01:00:00.000Z" +
+						"&facet.range.end=NOW" +
+						"&facet.range.gap=%2B1MONTH" +
+						"&wt=json",
+				model = this;
+			
+			$.get(appModel.get("d1LogServiceUrl") + query, function(data, status, xhr){
+				if(!data.response.numFound){
+					//Save some falsey values if none are found
+					model.set('totalDownloads', 0);
+					model.set("dataDownloads", 0);
+					model.set("metadataDownloads", 0);
+					model.set('metadataDownloadDates', []);
+					model.set('dataDownloadDates', []);	
+				}
+				else{
+					model.set('totalDownloads', data.response.numFound);
+					
+					//TODO: Save all as 'dataDownloads' for now until we get formatType indexed
+					model.set('dataDownloadDates', data.facet_counts.facet_ranges.dateLogged.counts);
+				}
+				
+				return true;
+			}, "json")
+			.error(function(err){
+				//Log this warning and return false
+				console.warn("DataONE Log Aggregation service request failed");
+				
+				//Save some falsey values if none are found
+				model.set('totalDownloads', 0);
+				model.set("dataDownloads", 0);
+				model.set("metadataDownloads", 0);
+				model.set('metadataDownloadDates', []);
+				model.set('dataDownloadDates', []);
+				
+				return false;
+			});
 		}
 	});
 	return Stats;

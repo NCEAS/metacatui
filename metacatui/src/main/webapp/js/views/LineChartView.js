@@ -166,7 +166,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .style("text-anchor", "middle")
 		      .text(this.yLabel)
 		      .attr("class", "title")
-		  	  .attr("transform", "translate(0, " + (this.height/2) + ") rotate(-90)");
+		  	  .attr("transform", "translate(-5, " + (this.height/2) + ") rotate(-90)");
 		  
 		  /*
 			* ========================================================================
@@ -398,18 +398,18 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			  /*
 			   * Add an event listener to our points so we can display the labels
 			   */
-
-			  $('.point').hover(
+			  var viewRef = this;
+			  
+			  this.$('.point').hover(
 				function(e){
-				console.log('hover');
 				//Fade in our labels
 				 var activePoint = $(e.target);
-				 $("[data-id='" + activePoint.attr("data-id") + "'].line-chart-label").fadeIn(200);
+				 viewRef.$("[data-id='" + activePoint.attr("data-id") + "'].line-chart-label").fadeIn(200);
 			   },
 			   //Fade out the labels
 			   function(e){
 				   var activePoint = $(e.target);
-				   $("[data-id='" + activePoint.attr("data-id") + "'].line-chart-label").fadeOut(100);
+				   viewRef.$("[data-id='" + activePoint.attr("data-id") + "'].line-chart-label").fadeOut(100);
 			   }
 			);
 			  
