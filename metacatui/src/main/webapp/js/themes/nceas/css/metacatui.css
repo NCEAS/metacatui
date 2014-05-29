@@ -73,10 +73,9 @@ i{
 #Footer .last.block .footer > p > a{
 	margin-left: 20px;
 }
-input[type="text"]{
+input[type="text"],
+input[type="password"]{
 	height: 30px;
-	line-height: 18px;
-	font-size: 14px;
 }
 
 /* METADATA VIEW SERVICE */

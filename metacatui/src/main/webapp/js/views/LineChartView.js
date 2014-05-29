@@ -24,8 +24,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * 					y - year only
 			 * 					d - date only
 			 * 					m-y - month and year
+			 * 					M y - month name and year (e.g. September 2013)
 			 * 					m-d-y - month, date, and year
 			 *  labelValue = a string to prepend to the value displayed in the label for line points
+			 *  labelWidth = width of the label box, in pixels
 			 * 	radius = radius of the point circle
 			 * 	className = class to give the line path and point circle elements
 			 *  width = width of SVG element
@@ -41,6 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			if(!options.data) this.frequency = 0; //If no data is provided, do not draw any points (otherwise, one point at 0,0 will be drawn)
 			this.yLabel	   = options.yLabel	   || "";
 			this.labelValue	 = options.labelValue  || "Value: ";
+			this.labelWidth  = options.labelWidth  || 130;
 			this.radius	   = options.radius    || 6;
 			this.width 	   = options.width 	   || 650;
 			this.height    = options.height    || 250;
@@ -287,7 +290,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								.data(pointData)
 								.enter().append("g");
 				
-				var labelWidth    = 130,
+				var labelWidth    = this.labelWidth,
 					labelHeight   = 50,
 					labelYPadding = 20,
 					labelXPadding = 10;

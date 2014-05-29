@@ -285,7 +285,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var lineChartView = new LineChart(
 						{	  id: "download-chart",
 						 	yLabel: "downloads",
-						 frequency: 0
+						 frequency: 0,
+						 cumulative: false
 						});
 				
 				this.$('.download-chart').html(lineChartView.render().el);
@@ -294,7 +295,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 			
 			//Set the frequency of our points
-			var frequency = 12;
+			var frequency = 1;
 									
 			//Check which line we should draw first since the scale will be based off the first line
 			if(statsModel.get("metadataDownloads") > statsModel.get("dataUploads") ){
@@ -306,13 +307,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var lineChartView = new LineChart(
 						{	  data: statsModel.get('metadataDownloadDates'),
 			  formatFromSolrFacets: true,
-						cumulative: true,
+						cumulative: false,
 								id: "download-chart",
 						 className: "metadata",
 						 	yLabel: "downloads",
+						 labelDate: "M y",
 						labelValue: "Metadata: ",
 						 frequency: frequency, 
-							radius: 4
+							radius: 2
 						});
 				
 				this.$('.download-chart').html(lineChartView.render().el);
@@ -329,13 +331,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					var lineChartView = new LineChart(
 							{	  data: statsModel.get('dataDownloadDates'),
 				  formatFromSolrFacets: true,
-							cumulative: true,
+							cumulative: false,
 									id: "download-chart",
 							 className: "data",
 							 	yLabel: "downloads",
-							labelValue: "Data: ",
+							labelValue: "Downloads: ",
+							labelWidth: 150,
+							 labelDate: "M y",
 							 frequency: frequency, 
-								radius: 4
+								radius: 2
 							 });
 					
 					this.$('.download-chart').html(lineChartView.render().el);
