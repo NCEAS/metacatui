@@ -1,4 +1,12 @@
-
+<%
+		//Function to add commas to large numbers
+		function commaSeparateNumber(val){
+		    while (/(\d+)(\d{3})/.test(val.toString())){
+		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+		    }
+		    return val;
+		 }
+%>
 <% 
 	if (typeof southBoundCoord != "undefined"){
 		print('<div class="result-row view-link pointer" data-id="'+id+'">');
@@ -28,7 +36,7 @@
         		<div class="on-map span6">
 					<% 
 						if (typeof southBoundCoord != "undefined"){
-		               		print('<i class="icon-map-marker on-map open-marker" data-id="'+id+'"></i>');
+		               		print('<i class="icon-map-marker on-map open-marker" data-id="'+id+'" data-center="' + geohash_9 + '"></i>');
 		               }
 		               else{
 		               		print('<i class="icon-map-marker inactive"></i>');
@@ -104,7 +112,7 @@
 			<% 
 			
 			if (typeof read_count_i != "undefined"){
-				print('<span class="count">', read_count_i, '</span><label class="subtle">views</label>');
+				print('<span class="count">', commaSeparateNumber(read_count_i), '</span><label class="subtle">views</label>');
 			}
 			%>
 		</div>

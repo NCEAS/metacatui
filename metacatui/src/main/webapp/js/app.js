@@ -36,7 +36,7 @@ require.config({
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
 	markerClusterer: '../components/markerclustererplus_2.1.2',
-	geohash: '../components/geohash/main',
+	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: ['../components/d3.v3.min', null],
@@ -63,7 +63,7 @@ require.config({
     markerClusterer: {
 		exports: "MarkerClusterer"
 	},
-	geohash: {
+	nGeohash: {
 		exports: "geohash"
 	}
   }

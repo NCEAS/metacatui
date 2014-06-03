@@ -12,16 +12,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		model: SolrResult,
 
 		initialize: function(models, options) {
-		    this.currentquery = options.query || '*:*';
-		    this.fields = options.fields || "id,title";
-		    this.rows = options.rows || 10;
-		    this.start = options.start || 0;
-		    this.sort = options.sort || 'dateUploaded+desc';
-		    this.facet = options.facet || ['keywords'];
-		    this.facetCounts = "nothing";
-		    this.stats = options.stats || false;
-		    this.minYear = options.minYear || 1900;
-		    this.maxYear = options.maxYear || new Date().getFullYear();
+		    this.currentquery = options.query   || '*:*';
+		    this.fields 	  = options.fields  || "id,title";
+		    this.rows 		  = options.rows    || 10;
+		    this.start 		  = options.start   || 0;
+		    this.sort 		  = options.sort    || 'dateUploaded+desc';
+		    this.facet 		  = options.facet   || ['keywords'];
+		    this.facetCounts  = "nothing";
+		    this.stats 		  = options.stats   || false;
+		    this.minYear 	  = options.minYear || 1900;
+		    this.maxYear 	  = options.maxYear || new Date().getFullYear();
 		},
 		
 		url: function() {

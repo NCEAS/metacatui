@@ -22,6 +22,8 @@ define(['jquery', 'underscore', 'backbone'],
 			west: null,
 			north: null,
 			south: null,
+			geohashBBoxes: [],
+			geohashLevel: 9,
 			map: {
 				zoom: null,
 				center: null
@@ -38,10 +40,33 @@ define(['jquery', 'underscore', 'backbone'],
 			var changedAttr = this.changedAttributes(_.clone(this.defaults));
 			if (changedAttr) {
 				var changedKeys = _.keys(changedAttr);
-				console.log(changedKeys);
 				return changedKeys.length;
 			}
 			return 0;
+		},
+		
+		getQuery: function(filter){
+			if(typeof filter === undefined) return "";
+			
+			if(filter == "geohash"){
+				var geohashBBoxes = this.get("geohashBBoxes");
+				
+				if((typeof geohashBBoxes === undefined) || (geohashBBoxes.length == 0)) return "";
+				
+				var query = "+geohash_" + this.get("geohashLevel") + ":(";
+				
+				_.each(geohashBBoxes, function(geohash, key, list){
+					query += geohash + "%20OR%20";
+				});
+				
+				//Remove the last "OR"
+				query = query.substr(0, (query.length-8));
+				query += ")";
+				
+				return query;
+			}	
+			
+			return "";
 		},
 		
 		clear: function() {
