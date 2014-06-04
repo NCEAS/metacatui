@@ -1782,7 +1782,6 @@ define(['jquery',
 										
 					//--First map all the results--
 					if(gmaps){
-		    			
 						//Draw all the clusters on the map to represent the datasets
 						viewRef.drawClusters();	
 						
@@ -1806,10 +1805,10 @@ define(['jquery',
 			
 			//After all the results are loaded, query for our facet counts in the background
 			this.getAutoCompletes();
-
 		},
 		
 		drawClusters: function(){
+			
 			TextOverlay.prototype = new google.maps.OverlayView();
 			
 			/** @constructor */
@@ -1821,7 +1820,7 @@ define(['jquery',
 				  
 				  var length = text.toString().length;
 				  if(length == 1) this.width = 8;
-				  else if(length == 2) this.width = 20;
+				  else if(length == 2) this.width = 17;
 				  else if(length == 3) this.width = 25;
 				  else if(length == 4) this.width = 35;
 				  else if(length == 5) this.width = 40;
@@ -1890,86 +1889,144 @@ define(['jquery',
 			//Determine the geohash level we will use to draw clusters
 			var currentZoom = this.map.getZoom(),
 				geohashes,
-				geohashLevel;
+				geohashLevel,
+				baseRadius,
+				radius;
 			
 			switch(currentZoom){
 				case 0: // The whole world zoom level
-					geohashes = appSearchResults.facetCounts.geohash_2;
+					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
+					baseRadius   = 375000;
 					break;
 				case 1:
-					geohashes = appSearchResults.facetCounts.geohash_2;
+					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
+					baseRadius   = 375000;
 					break;
 				case 2:
-					geohashes = appSearchResults.facetCounts.geohash_2;
+					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
+					baseRadius   = 375000;
 					break;
 				case 3:
-					geohashes = appSearchResults.facetCounts.geohash_2;
+					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
+					baseRadius   = 375000;
 					break;
 				case 4:
-					geohashes = appSearchResults.facetCounts.geohash_2;
+					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
+					baseRadius   = 375000;
 					break;
 				case 5:
-					geohashes = appSearchResults.facetCounts.geohash_3;
+					geohashes    = appSearchResults.facetCounts.geohash_3;
 					geohashLevel = "geohash_3";
+					baseRadius   = 97500;
 					break;
 				case 6:
-					geohashes = appSearchResults.facetCounts.geohash_3;
+					geohashes    = appSearchResults.facetCounts.geohash_3;
 					geohashLevel = "geohash_3";
+					baseRadius   = 97500;
 					break;
 				case 7:
-					geohashes = appSearchResults.facetCounts.geohash_3;
-					geohashLevel = "geohash_3";
+					geohashes    = appSearchResults.facetCounts.geohash_4;
+					geohashLevel = "geohash_4";
+					baseRadius   = 22500;
 					break;
 				case 8:
-					geohashes = appSearchResults.facetCounts.geohash_3;
-					geohashLevel = "geohash_3";
+					geohashes    = appSearchResults.facetCounts.geohash_4;
+					geohashLevel = "geohash_4";
+					baseRadius   = 15000;
 					break;
 				case 9:
-					geohashes = appSearchResults.facetCounts.geohash_3;
-					geohashLevel = "geohash_3";
+					geohashes    = appSearchResults.facetCounts.geohash_4;
+					geohashLevel = "geohash_4";
+					baseRadius   = 15000;
 					break;
 				case 10:
-					geohashes = appSearchResults.facetCounts.geohash_4;
-					geohashLevel = "geohash_4";
+					geohashes    = appSearchResults.facetCounts.geohash_5;
+					geohashLevel = "geohash_5";
+					baseRadius   = 3750;
+					break;
+				case 11:
+					geohashes    = appSearchResults.facetCounts.geohash_5;
+					geohashLevel = "geohash_5";
+					baseRadius   = 1700;
+					break;
+				case 12:
+					geohashes    = appSearchResults.facetCounts.geohash_6;
+					geohashLevel = "geohash_6";
+					baseRadius   = 800;
+					break;
+				case 13:
+					geohashes    = appSearchResults.facetCounts.geohash_6;
+					geohashLevel = "geohash_6";
+					baseRadius   = 550;
+					break;
+				case 14:
+					geohashes    = appSearchResults.facetCounts.geohash_7;
+					geohashLevel = "geohash_7";
+					baseRadius   = 200;
+					break;
+				case 15:
+					geohashes    = appSearchResults.facetCounts.geohash_7;
+					geohashLevel = "geohash_7";
+					baseRadius   = 100;
+					break;
+				case 16:
+					geohashes    = appSearchResults.facetCounts.geohash_8;
+					geohashLevel = "geohash_8";
+					baseRadius   = 45;
+					break;
+				case 17:
+					geohashes    = appSearchResults.facetCounts.geohash_9;
+					geohashLevel = "geohash_9";
+					baseRadius   = 30;
+					break;
+				case 18:
+					geohashes    = appSearchResults.facetCounts.geohash_9;
+					geohashLevel = "geohash_9";
+					baseRadius   = 20;
+					break;
+				case 19:
+					geohashes    = appSearchResults.facetCounts.geohash_9;
+					geohashLevel = "geohash_9";
+					baseRadius   = 10;
+					break;
+				case 20:
+					geohashes    = appSearchResults.facetCounts.geohash_9;
+					geohashLevel = "geohash_9";
+					baseRadius   = 10;
 					break;
 				default:  //Anything over (Gmaps goes up to 19)
-					geohashes = appSearchResults.facetCounts.geohash_4;
+					geohashes    = appSearchResults.facetCounts.geohash_4;
 					geohashLevel = "geohash_4";
+					baseRadius   = 22500;
 			}
-			
-			var radius;
-			
+						
 			//For each facet of this geohash level
 			for(var i=0; i<geohashes.length-1; i+=2){
 				
 				//Convert this geohash to lat,long value 
 				var decodedGeohash = nGeohash.decode(geohashes[i]);
-				var latLng = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
+				var latLng = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);				
 				
 				//Determine the radius of our circle depending on the number of datasets
-				if((geohashes[i+1] <= 3) && (geohashes[i+1] < 10)) radius = 160000;
-				else if ((geohashes[i+1] >= 10) && (geohashes[i+1] < 100)) radius = 250000;
-				else if ((geohashes[i+1] >= 100) && (geohashes[i+1] < 1000)) radius = 450000;
-				else if ((geohashes[i+1] >= 1000) && (geohashes[i+1] < 10000)) radius = 650000;
-				else if (geohashes[i+1] >= 10000) radius = 750000;
-				else if(geohashes[i+1] <= 2){
+					 if ((geohashes[i+1] <= 3)    && (geohashes[i+1] < 10))    radius = baseRadius * .35;
+				else if ((geohashes[i+1] >= 10)   && (geohashes[i+1] < 100))   radius = baseRadius * .45;
+				else if ((geohashes[i+1] >= 100)  && (geohashes[i+1] < 1000))  radius = baseRadius * .6;
+				else if ((geohashes[i+1] >= 1000) && (geohashes[i+1] < 10000)) radius = baseRadius * .8;
+				else if (geohashes[i+1] >= 10000) 							   radius = baseRadius;
+				else if (geohashes[i+1] <= 2){
 					//When there are less than 2, we will display as a marker instead of a cluster
 					this.displayAsMarker.push(geohashes[i+1]);
 				}
 				
-				//Scale the radius based on our zoom level
-				if(currentZoom <= 4)  radius = radius;
-				else 				  radius = radius/currentZoom;
-				
 				//Setting for our circles
 				var clusterOptions = {
 					      strokeColor: '#DA4D3A',
-					      strokeOpacity: 0.8,
+					      strokeOpacity: 0.9,
 					      strokeWeight: 2,
 					      fillColor: '#DA4D3A',
 					      fillOpacity: 0.35,

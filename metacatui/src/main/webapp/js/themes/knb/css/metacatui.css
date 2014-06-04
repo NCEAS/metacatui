@@ -2314,12 +2314,9 @@ svg .domain{
 	}
 	
 	#countstats:before{
-		content: "Listing ";
+		content: "Datasets ";
 	}
-	
-	.mapMode #countstats:before{
-		content: "Mapping ";
-	}
+
 	#statcounts{
 		min-width: 500px;
 	}

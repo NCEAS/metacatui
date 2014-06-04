@@ -1574,11 +1574,7 @@ Bold 700
     }
     
     #countstats:before{
-		content: "Listing ";
-	}
-	
-	.mapMode #countstats:before{
-		content: "Mapping ";
+		content: "Datasets ";
 	}
     
     .map-pointer{
