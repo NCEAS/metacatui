@@ -1491,7 +1491,7 @@ define(['jquery',
 		},
 		
 		/* add a marker for objects */
-		addObjectMarker: function(markerDetails) {
+	/*	addObjectMarker: function(markerDetails) {
 			
 			//Skip this if there is no map
 			if (!gmaps) {
@@ -1723,7 +1723,7 @@ define(['jquery',
 				delete viewRef.markers[pid];
 			});
 		},
-		
+*/
 		// Add a single SolrResult item to the list by creating a view for it, and
 		// appending its element to the DOM.
 		addOne: function (result) {
@@ -1764,6 +1764,7 @@ define(['jquery',
 			
 			//Remove all the existing clusters on the map
 			this.removeClusters();
+			this.removeMarkers();
 			
 			//If there are no results, display so
 			var numFound = appSearchResults.models.length;
@@ -1822,7 +1823,7 @@ define(['jquery',
 				  if(length == 1) this.width = 8;
 				  else if(length == 2) this.width = 17;
 				  else if(length == 3) this.width = 25;
-				  else if(length == 4) this.width = 35;
+				  else if(length == 4) this.width = 32;
 				  else if(length == 5) this.width = 40;
 
 				  // We define a property to hold the image's div. We'll
@@ -2009,54 +2010,73 @@ define(['jquery',
 			for(var i=0; i<geohashes.length-1; i+=2){
 				
 				//Convert this geohash to lat,long value 
-				var decodedGeohash = nGeohash.decode(geohashes[i]);
-				var latLng = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);				
+				var decodedGeohash = nGeohash.decode(geohashes[i]),
+					latLng = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
+					displayCluster = true;
 				
 				//Determine the radius of our circle depending on the number of datasets
-					 if ((geohashes[i+1] <= 3)    && (geohashes[i+1] < 10))    radius = baseRadius * .35;
+					 if ((geohashes[i+1] >= 2)    && (geohashes[i+1] < 10))    radius = baseRadius * .35;
 				else if ((geohashes[i+1] >= 10)   && (geohashes[i+1] < 100))   radius = baseRadius * .45;
 				else if ((geohashes[i+1] >= 100)  && (geohashes[i+1] < 1000))  radius = baseRadius * .6;
 				else if ((geohashes[i+1] >= 1000) && (geohashes[i+1] < 10000)) radius = baseRadius * .8;
 				else if (geohashes[i+1] >= 10000) 							   radius = baseRadius;
-				else if (geohashes[i+1] <= 2){
+				else if (geohashes[i+1] == 1){
 					//When there are less than 2, we will display as a marker instead of a cluster
-					this.displayAsMarker.push(geohashes[i+1]);
+										
+					//Set up the options for each marker
+					var markerOptions = {
+						position: latLng,
+						icon: this.markerImage,
+						zIndex: 99999,
+						map: this.map
+					};
+					
+					//Create the marker and add to the map
+					var marker = new google.maps.Marker(markerOptions);
+					
+					//Save this marker in the view
+					this.markers.push(marker);
+					
+					//Don't draw a cluster for this geohash
+					displayCluster = false;
 				}
 				
-				//Setting for our circles
-				var clusterOptions = {
-					      strokeColor: '#DA4D3A',
-					      strokeOpacity: 0.9,
-					      strokeWeight: 2,
-					      fillColor: '#DA4D3A',
-					      fillOpacity: 0.35,
-					      map: this.map,
-					      center: latLng,
-					      visible: true,
-					      radius: radius
-					    };
-				
-				
-				// Add the circle for these datasets to the map
-				var cluster = new google.maps.Circle(clusterOptions);
-				  
-				//Add the count to the cluster
-				var bounds = new google.maps.LatLngBounds(latLng, latLng);
-				var count = new TextOverlay(bounds, this.map, geohashes[i+1]);
-				
-				//Save our clusters in the view
-				this.clusters.push({text: count, shape: cluster});
-				
-				var viewRef = this;
-				
-				//Zoom in when the cluster is clicked on
-				gmaps.event.addListener(cluster, 'click', function(clickedCluster) {
-					//Change the center
-					viewRef.map.panTo(clickedCluster.latLng);
+				if(displayCluster){
+					//Setting for our circles
+					var clusterOptions = {
+						      strokeColor: '#DA4D3A',
+						      strokeOpacity: 0.7,
+						      strokeWeight: 2,
+						      fillColor: '#DA4D3A',
+						      fillOpacity: 0.7,
+						      map: this.map,
+						      center: latLng,
+						      visible: true,
+						      radius: radius
+						    };
 					
-					//Change the zoom
-					viewRef.map.setZoom(viewRef.map.getZoom() + 1);
-				});
+					
+					// Add the circle for these datasets to the map
+					var cluster = new google.maps.Circle(clusterOptions);
+					  
+					//Add the count to the cluster
+					var bounds = new google.maps.LatLngBounds(latLng, latLng);
+					var count = new TextOverlay(bounds, this.map, geohashes[i+1]);
+					
+					//Save our clusters in the view
+					this.clusters.push({text: count, shape: cluster});
+					
+					var viewRef = this;
+					
+					//Zoom in when the cluster is clicked on
+					gmaps.event.addListener(cluster, 'click', function(clickedCluster) {
+						//Change the center
+						viewRef.map.panTo(clickedCluster.latLng);
+						
+						//Change the zoom
+						viewRef.map.setZoom(viewRef.map.getZoom() + 1);
+					});
+				}
 			}
 		},
 		
@@ -2071,8 +2091,14 @@ define(['jquery',
 			this.clusters = [];
 		},
 		
-		drawMarkers: function(){
-			//Send a query to get the datasets that need an individual marker on the map
+		removeMarkers: function(){
+			//Remove the marker from the map
+			_.each(this.markers, function(marker, key, list){
+				marker.setMap(null);
+			});
+			
+			//Reset the marker storage in the view
+			this.markers = [];
 		},
 		
 		// Communicate that the page is loading
