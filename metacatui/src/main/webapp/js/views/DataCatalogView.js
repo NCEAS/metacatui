@@ -45,9 +45,9 @@ define(['jquery',
 		
 		markerClusterer: {},
 		
-		clusters: [],
+		tiles: [],
 		
-		clusterCounts: [],
+		tileCounts: [],
 		
 		displayAsMarker: [],
 		
@@ -84,25 +84,13 @@ define(['jquery',
 			var view = this;
 			
 			//Set the file paths for our map markers - check for custom markers first
-			$.get("./js/themes/" + theme + "/img/markers/map-marker.png", function(data, status, xhr){
+			$.get("./js/themes/" + theme + "/img/map-marker.png", function(data, status, xhr){
 				//Custom map marker images were found
-				view.markerImage   = "./js/themes/" + theme + "/img/markers/map-marker.png";					
-				view.markerImage15 = './js/themes/' + theme + "/img/markers/cluster-15px.png";
-				view.markerImage20 = "./js/themes/" + theme + "/img/markers/cluster-20px.png";
-				view.markerImage30 = "./js/themes/" + theme + "/img/markers/cluster-30px.png";
-				view.markerImage40 = "./js/themes/" + theme + "/img/markers/cluster-40px.png";
-				view.markerImage50 = "./js/themes/" + theme + "/img/markers/cluster-50px.png";
-				view.markerImage60 = "./js/themes/" + theme + "/img/markers/cluster-60px.png";
+				view.markerImage   = "./js/themes/" + theme + "/img/map-marker.png";					
 			})
 			.error(function(){
 				//Custom markers were not found - use the default images
-				view.markerImage   = "./img/markers/map-marker.png";						
-				view.markerImage15 = './img/markers/cluster-15px.png';
-				view.markerImage20 = './img/markers/cluster-20px.png';
-				view.markerImage30 = './img/markers/cluster-30px.png';
-				view.markerImage40 = './img/markers/cluster-40px.png';
-				view.markerImage50 = './img/markers/cluster-50px.png';
-				view.markerImage60 = './img/markers/cluster-60px.png';
+				view.markerImage   = "./img/map-marker.png";						
 			});
 		},
 				
@@ -1400,7 +1388,7 @@ define(['jquery',
 			});
 			
 		},
-		
+	*/	
 		openMarker: function(e){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
@@ -1434,7 +1422,7 @@ define(['jquery',
 			//Pan the map
 			this.map.panTo(position);	
 		},
-		
+	/*	
 		closeMarker: function(e){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
@@ -1547,8 +1535,8 @@ define(['jquery',
 			//Clear the results list before we start adding new rows
 			this.$results.html('');
 			
-			//Remove all the existing clusters on the map
-			this.removeClusters();
+			//Remove all the existing tiles on the map
+			this.removeTiles();
 			this.removeMarkers();
 			
 			//If there are no results, display so
@@ -1568,8 +1556,8 @@ define(['jquery',
 										
 					//--First map all the results--
 					if(gmaps){
-						//Draw all the clusters on the map to represent the datasets
-						viewRef.drawClusters();	
+						//Draw all the tiles on the map to represent the datasets
+						viewRef.drawTiles();	
 						
 						//Remove the loading styles from the map
 						$("#map-container").removeClass("loading");
@@ -1593,18 +1581,19 @@ define(['jquery',
 			this.getAutoCompletes();
 		},
 		
-		drawClusters: function(){
+		drawTiles: function(){
 			
 			TextOverlay.prototype = new google.maps.OverlayView();
 			
 			/** @constructor */
-			function TextOverlay(bounds, map, text) {
+			function TextOverlay(options) {
 				// Now initialize all properties.
-				  this.bounds_ = bounds;
-				  this.map_ = map;
-				  this.text = text;
+				  this.bounds_ = options.bounds;
+				  this.map_    = options.map;
+				  this.text    = options.text;
+				  this.color   = options.color;
 				  
-				  var length = text.toString().length;
+				  var length = options.text.toString().length;
 				  if(length == 1) this.width = 8;
 				  else if(length == 2) this.width = 17;
 				  else if(length == 3) this.width = 25;
@@ -1617,14 +1606,14 @@ define(['jquery',
 				  this.div_ = null;
 				  
 				  // Explicitly call setMap on this overlay
-				  this.setMap(map);
+				  this.setMap(options.map);
 			}
 			
 			TextOverlay.prototype.onAdd = function() {
 					
 			  // Create the DIV and set some basic attributes.
 			  var div = document.createElement('div');
-			  div.style.color = '#FFF';
+			  div.style.color = this.color;
 			  div.style.fontSize = "15px";
 			  div.style.position = 'absolute';
 			  div.style.zIndex = "999";
@@ -1672,208 +1661,273 @@ define(['jquery',
 				  this.div_ = null;
 			}
 			
-			//Determine the geohash level we will use to draw clusters
+			//Determine the geohash level we will use to draw tiles
 			var currentZoom = this.map.getZoom(),
 				geohashes,
-				geohashLevel,
-				baseRadius,
-				radius;
+				geohashLevel;
 			
 			switch(currentZoom){
 				case 0: // The whole world zoom level
 					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
-					baseRadius   = 375000;
 					break;
 				case 1:
 					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
-					baseRadius   = 375000;
 					break;
 				case 2:
 					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
-					baseRadius   = 375000;
 					break;
 				case 3:
 					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
-					baseRadius   = 375000;
 					break;
 				case 4:
 					geohashes    = appSearchResults.facetCounts.geohash_2;
 					geohashLevel = "geohash_2";
-					baseRadius   = 375000;
 					break;
 				case 5:
 					geohashes    = appSearchResults.facetCounts.geohash_3;
 					geohashLevel = "geohash_3";
-					baseRadius   = 97500;
 					break;
 				case 6:
 					geohashes    = appSearchResults.facetCounts.geohash_3;
 					geohashLevel = "geohash_3";
-					baseRadius   = 97500;
 					break;
 				case 7:
 					geohashes    = appSearchResults.facetCounts.geohash_4;
 					geohashLevel = "geohash_4";
-					baseRadius   = 22500;
 					break;
 				case 8:
 					geohashes    = appSearchResults.facetCounts.geohash_4;
 					geohashLevel = "geohash_4";
-					baseRadius   = 15000;
 					break;
 				case 9:
 					geohashes    = appSearchResults.facetCounts.geohash_4;
 					geohashLevel = "geohash_4";
-					baseRadius   = 15000;
 					break;
 				case 10:
 					geohashes    = appSearchResults.facetCounts.geohash_5;
 					geohashLevel = "geohash_5";
-					baseRadius   = 3750;
 					break;
 				case 11:
 					geohashes    = appSearchResults.facetCounts.geohash_5;
 					geohashLevel = "geohash_5";
-					baseRadius   = 1700;
 					break;
 				case 12:
 					geohashes    = appSearchResults.facetCounts.geohash_6;
 					geohashLevel = "geohash_6";
-					baseRadius   = 800;
 					break;
 				case 13:
 					geohashes    = appSearchResults.facetCounts.geohash_6;
 					geohashLevel = "geohash_6";
-					baseRadius   = 550;
 					break;
 				case 14:
 					geohashes    = appSearchResults.facetCounts.geohash_7;
 					geohashLevel = "geohash_7";
-					baseRadius   = 200;
 					break;
 				case 15:
 					geohashes    = appSearchResults.facetCounts.geohash_7;
 					geohashLevel = "geohash_7";
-					baseRadius   = 100;
 					break;
 				case 16:
 					geohashes    = appSearchResults.facetCounts.geohash_8;
 					geohashLevel = "geohash_8";
-					baseRadius   = 45;
 					break;
 				case 17:
 					geohashes    = appSearchResults.facetCounts.geohash_9;
 					geohashLevel = "geohash_9";
-					baseRadius   = 30;
 					break;
 				case 18:
 					geohashes    = appSearchResults.facetCounts.geohash_9;
 					geohashLevel = "geohash_9";
-					baseRadius   = 20;
 					break;
 				case 19:
 					geohashes    = appSearchResults.facetCounts.geohash_9;
 					geohashLevel = "geohash_9";
-					baseRadius   = 10;
 					break;
 				case 20:
 					geohashes    = appSearchResults.facetCounts.geohash_9;
 					geohashLevel = "geohash_9";
-					baseRadius   = 10;
 					break;
 				default:  //Anything over (Gmaps goes up to 19)
 					geohashes    = appSearchResults.facetCounts.geohash_4;
 					geohashLevel = "geohash_4";
-					baseRadius   = 22500;
 			}
 						
-			//For each facet of this geohash level
+			//Find the totals of our geohash tiles
+			var total = appSearchResults.header.get("numFound"),
+				totalTiles = geohashes.length;
+			
+			//Now draw a tile for each geohash facet
 			for(var i=0; i<geohashes.length-1; i+=2){
 				
-				//Convert this geohash to lat,long value 
+				//Convert this geohash to lat,long values 
 				var decodedGeohash = nGeohash.decode(geohashes[i]),
-					latLng = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
-					displayCluster = true;
+					latLngCenter   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
+					geohashBox 	   = nGeohash.decode_bbox(geohashes[i]),
+					swLatLng	   = new google.maps.LatLng(geohashBox[0], geohashBox[1]),
+					neLatLng	   = new google.maps.LatLng(geohashBox[2], geohashBox[3]),
+					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
+					tileCount	   = geohashes[i+1],
+					percent		   = tileCount/total,
+					useBins		   = (total < 200) ? false : true,
+					fontColor 	   = "#FFFFFF",
+					opacity   	   = 0.6,
+					color,
+					marker = null,
+					count  = null;
 				
-				//Determine the radius of our circle depending on the number of datasets
-					 if ((geohashes[i+1] >= 2)    && (geohashes[i+1] < 10))    radius = baseRadius * .35;
-				else if ((geohashes[i+1] >= 10)   && (geohashes[i+1] < 100))   radius = baseRadius * .45;
-				else if ((geohashes[i+1] >= 100)  && (geohashes[i+1] < 1000))  radius = baseRadius * .6;
-				else if ((geohashes[i+1] >= 1000) && (geohashes[i+1] < 10000)) radius = baseRadius * .8;
-				else if (geohashes[i+1] >= 10000) 							   radius = baseRadius;
-				else if (geohashes[i+1] == 1){
-					//When there are less than 2, we will display as a marker instead of a cluster
-										
+				//When here is only one dataset in this tile, we will display a marker
+				if (tileCount == 1){										
 					//Set up the options for each marker
 					var markerOptions = {
-						position: latLng,
+						position: latLngCenter,
 						icon: this.markerImage,
 						zIndex: 99999,
 						map: this.map
 					};
 					
 					//Create the marker and add to the map
-					var marker = new google.maps.Marker(markerOptions);
+					marker = new google.maps.Marker(markerOptions);
 					
 					//Save this marker in the view
 					this.markers.push(marker);
 					
-					//Don't draw a cluster for this geohash
-					displayCluster = false;
+					//Save this geohash in the view so we know to retrieve the dataset details 
+					this.displayAsMarker.push(tileCount);
 				}
+				else{
+					if(!useBins){
+						//Determine the style of the tile depending on the number of datasets
+						if (percent < .20){
+							color = "#24ADE3"; 
+						}
+						else if (percent < .40){
+							color = "#1E92CB"; 
+						}
+						else if (percent < .70){
+							color = "#186E91"; 
+							opacity = 0.5;
+						}
+						else if (percent < .80) {
+							color = "#12536D"; 
+						}
+						else{
+							color = "#092F3E"; 
+						}
+					}
+					else{
+						//Determine the style of the tile depending on the number of datasets
+						if (tileCount < 10){
+							color = "#24ADE3"; 
+						}
+						else if (tileCount < 50){
+							color = "#1E92CB"; 
+						}
+						else if (tileCount < 100){
+							color = "#186E91"; 
+							opacity = 0.5;
+						}
+						else if (tileCount < 1000) {
+							color = "#12536D"; 
+						}
+						else{
+							color = "#092F3E"; 
+						}
+				}
+					//Add the count to the tile
+					var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
+					
+					count = new TextOverlay({
+						bounds: countLocation,
+						   map: this.map,
+						  text: tileCount,
+						 color: fontColor
+					});
 				
-				if(displayCluster){
-					//Setting for our circles
-					var clusterOptions = {
-						      strokeColor: '#DA4D3A',
-						      strokeOpacity: 0.7,
-						      strokeWeight: 2,
-						      fillColor: '#DA4D3A',
-						      fillOpacity: 0.7,
+					//Setting for our tiles
+					var tileOptions = {
+						      strokeWeight: 0,
+						      fillColor: color, //"#653ec9",
+						      fillOpacity: opacity,
 						      map: this.map,
-						      center: latLng,
 						      visible: true,
-						      radius: radius
+						      bounds: bounds
 						    };
 					
+					//Draw this tile
+					var tile = this.drawTile(tileOptions, count, fontColor);
 					
-					// Add the circle for these datasets to the map
-					var cluster = new google.maps.Circle(clusterOptions);
+					//Save our tiles in the view
+					this.tiles.push({text: count, shape: tile});
+				}
+			}
 					  
-					//Add the count to the cluster
-					var bounds = new google.maps.LatLngBounds(latLng, latLng);
-					var count = new TextOverlay(bounds, this.map, geohashes[i+1]);
+		},
 					
-					//Save our clusters in the view
-					this.clusters.push({text: count, shape: cluster});
+		drawTile: function(options, label, labelColor){
+			// Add the tile for these datasets to the map
+			var tile = new google.maps.Rectangle(options);
 					
 					var viewRef = this;
 					
-					//Zoom in when the cluster is clicked on
-					gmaps.event.addListener(cluster, 'click', function(clickedCluster) {
+			//Zoom in when the tile is clicked on
+			gmaps.event.addListener(tile, 'click', function(clickEvent) {
 						//Change the center
-						viewRef.map.panTo(clickedCluster.latLng);
+				viewRef.map.panTo(clickEvent.latLng);
+				
+				//Get this tile's bounds
+				var bounds = tile.getBounds();
 						
 						//Change the zoom
-						viewRef.map.setZoom(viewRef.map.getZoom() + 1);
-					});
-				}
-			}
-		},
-		
-		removeClusters: function(){
-			//Remove the cluster from the map
-			_.each(this.clusters, function(cluster, key, list){
-				cluster.shape.setMap(null);
-				cluster.text.setMap(null);
+				viewRef.map.fitBounds(bounds);
 			});
 			
-			//Reset the cluster storage in the view
-			this.clusters = [];
+			//Change styles when the tile is hovered on
+			google.maps.event.addListener(tile, 'mouseover', function(event) {
+				console.log("hover on tile " + tile);
+				//Lighten the tile color
+				tile.setOptions({
+					opacity: 0.8,
+					strokeColor: "#FFFFFF",
+					fillColor: "#FFFFFF",
+					strokeWeight: 1
+				});
+				
+				//Change the label color
+				var div = label.div_;
+				div.style.color = '#333333';
+				label.div_ = div;
+			});
+			
+			//Change the styles back after the tile is hovered on
+			google.maps.event.addListener(tile, 'mouseout', function(event) {
+				console.log("hoverout on tile " + event);
+				
+				//Change back the tile color
+				tile.setOptions(options);
+				
+				//Change back the label color
+				var div = label.div_;
+				div.style.color = labelColor;
+				label.div_ = div;
+					});
+			
+			
+			return tile;
+		},
+		
+		removeTiles: function(){
+			//Remove the tile from the map
+			_.each(this.tiles, function(tile, key, list){
+				if(tile.shape) tile.shape.setMap(null);
+				if(tile.text)  tile.text.setMap(null);
+			});
+			
+			//Reset the tile storage in the view
+			this.tiles = [];
 		},
 		
 		removeMarkers: function(){
@@ -1884,6 +1938,7 @@ define(['jquery',
 			
 			//Reset the marker storage in the view
 			this.markers = [];
+			this.displayAsMarker = [];
 		},
 		
 		// Communicate that the page is loading

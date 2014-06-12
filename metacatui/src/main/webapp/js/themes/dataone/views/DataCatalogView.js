@@ -74,29 +74,15 @@ define(['jquery',
 		},
 		
 		initialize: function () {
-			var view = this;
 			
-			//Set the file paths for our map markers - check for custom markers first
-			$.get("./js/themes/" + theme + "/img/markers/map-marker.png", function(data, status, xhr){
 				//Custom map marker images were found
-				view.markerImage   = "./js/themes/" + theme + "/img/markers/map-marker.png";					
-				view.markerImage15 = './js/themes/' + theme + "/img/markers/cluster-15px.png";
-				view.markerImage20 = "./js/themes/" + theme + "/img/markers/cluster-20px.png";
-				view.markerImage30 = "./js/themes/" + theme + "/img/markers/cluster-30px.png";
-				view.markerImage40 = "./js/themes/" + theme + "/img/markers/cluster-40px.png";
-				view.markerImage50 = "./js/themes/" + theme + "/img/markers/cluster-50px.png";
-				view.markerImage60 = "./js/themes/" + theme + "/img/markers/cluster-60px.png";
-			})
-			.error(function(){
-				//Custom markers were not found - use the default images
-				view.markerImage   = "./img/markers/map-marker.png";						
-				view.markerImage15 = './img/markers/cluster-15px.png';
-				view.markerImage20 = './img/markers/cluster-20px.png';
-				view.markerImage30 = './img/markers/cluster-30px.png';
-				view.markerImage40 = './img/markers/cluster-40px.png';
-				view.markerImage50 = './img/markers/cluster-50px.png';
-				view.markerImage60 = './img/markers/cluster-60px.png';
-			});
+				this.markerImage   = "./js/themes/" + theme + "/img/markers/map-marker.png";					
+				this.markerImage15 = './js/themes/' + theme + "/img/markers/cluster-15px.png";
+				this.markerImage20 = "./js/themes/" + theme + "/img/markers/cluster-20px.png";
+				this.markerImage30 = "./js/themes/" + theme + "/img/markers/cluster-30px.png";
+				this.markerImage40 = "./js/themes/" + theme + "/img/markers/cluster-40px.png";
+				this.markerImage50 = "./js/themes/" + theme + "/img/markers/cluster-50px.png";
+				this.markerImage60 = "./js/themes/" + theme + "/img/markers/cluster-60px.png";
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
