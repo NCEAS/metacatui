@@ -54,7 +54,7 @@ define(['jquery', 'underscore', 'backbone'],
 				characteristic : "characteristic_sm",
 					  standard : "standard_sm",
 					formatType : "formatType",
-						   all : "*",
+						   all : "",
 					   creator : "origin",
 					   spatial : "site",
 				   resourceMap : "resourceMap",
@@ -78,7 +78,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "characteristic", "standard", "formatType", "all", "creator", "spatial"];
+			var otherFilters = ["attribute", "characteristic", "standard", "formatType", "creator", "spatial"];
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var needsQuotes = function(entry){
@@ -101,8 +101,17 @@ define(['jquery', 'underscore', 'backbone'],
 				return false;
 			};
 			
+			//Star the query string
 			var query = "";
 			
+			//Get the keys for this model as a way to list the filters that are available
+			var defaults = this.defaults,
+				available = function(filterName){
+					if(defaults[filterName]) return true;
+					else return false;
+				};
+			
+			//See if we are looking for a sub-query or a query for all filters
 			if(typeof filter == "undefined"){
 				var filter = null;
 				var getAll = true;
@@ -110,44 +119,41 @@ define(['jquery', 'underscore', 'backbone'],
 			else var getAll = false;
 			
 			//---resourceMap---
-			if((filter == "resourceMap") || getAll){
+			if(available("resourceMap") && ((filter == "resourceMap") || getAll)){
 				if(this.get('resourceMap')) query += this.fieldNameMap["resourceMap"] + ':*';
 			}
 			
 			//---Taxon---
-			if((filter == "taxon") || getAll){
+			if(available("taxon") && ((filter == "taxon") || getAll)){
 				var taxon = this.get('taxon');
 				var thisTaxon = null;
 				for (var i=0; i < taxon.length; i++){
 					//Trim the spaces off
 					thisTaxon = taxon[i].trim();
 					
-					// Does this need to be wrapped in quotes?
-					if (needsQuotes(thisTaxon)){
-						thisTaxon = thisTaxon.replace(" ", "%20");
-						thisTaxon = "%22" + thisTaxon + "%22";
-					}
+					if(needsQuotes(thisTaxon)) value = "%22" + encodeURIComponent(thisTaxon) + "%22";
+					else value = encodeURIComponent(thisTaxon);
 					
 					query += "+(" +
-								   "family:" + thisTaxon + 
+								   "family:" + value + 
 								   " OR " +
-								   "species:" + thisTaxon + 
+								   "species:" + value + 
 								   " OR " +
-								   "genus:" + thisTaxon + 
+								   "genus:" + value + 
 								   " OR " +
-								   "kingdom:" + thisTaxon + 
+								   "kingdom:" + value + 
 								   " OR " +
-								   "phylum:" + thisTaxon + 
+								   "phylum:" + value + 
 								   " OR " +
-								   "order:" + thisTaxon +
+								   "order:" + value +
 								   " OR " +
-								   "class:" + thisTaxon + 
+								   "class:" + value + 
 								   ")";
 				}
 			}
 			
 			//------Pub Year-----
-			if((filter == "pubYear") || getAll){
+			if(available("pubYear") && ((filter == "pubYear") || getAll)){
 				//Get the types of year to be searched first
 				var pubYear  = this.get('pubYear');
 				if (pubYear){
@@ -161,7 +167,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Data year------
-			if((filter == "dataYear") || getAll){
+			if(available("dataYear") && ((filter == "dataYear") || getAll)){
 				var dataYear = this.get('dataYear');
 				
 				if(dataYear){
@@ -175,7 +181,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Geohashes-----
-			if(((filter == "geohash") || getAll) && (this.get('north') != null)){
+			if(available("geohash") && (((filter == "geohash") || getAll) && (this.get('north') != null))){
 				var geohashBBoxes = this.get("geohashBBoxes");
 				
 				if((typeof geohashBBoxes === undefined) || (geohashBBoxes.length == 0)) return "";
@@ -192,7 +198,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Excluded fields-----
-			if((filter == "exclude") || getAll){
+			if(available("exclude") && ((filter == "exclude") || getAll)){
 				var exclude = this.get("exclude");
 				_.each(exclude, function(excludeField, key, list){
 					query += "+-" + excludeField.field + ":" + excludeField.value;
@@ -200,10 +206,28 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Additional criteria - both field and value are provided-----
-			if((filter == "additionalCriteria") || getAll){
+			if(available("additionalCriteria") && ((filter == "additionalCriteria") || getAll)){
 				var additionalCriteria = this.get('additionalCriteria');
 				for (var i=0; i < additionalCriteria.length; i++){
-					query += "+" + additionalCriteria[i];
+					var value;
+					
+					if(needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
+					else value = encodeURIComponent(additionalCriteria[i]);
+					
+					query += "+" + value;
+				}
+			}
+			
+			//-----All (full text search) -----
+			if(available("all") && ((filter == "all") || getAll)){
+				var all = this.get('all');
+				for (var i=0; i < all.length; i++){
+					var value;
+					
+					if(needsQuotes(all[i])) value = "%22" + encodeURIComponent(all[i]) + "%22";
+					else value = encodeURIComponent(all[i]);
+					
+					query += "+" + value;
 				}
 			}
 			
@@ -218,7 +242,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			_.each(otherFilters, function(filterName, key, list){
-				if((filter == filterName) || getAll){
+				if(available(filterName) && ((filter == filterName) || getAll)){
 					var filterValue = null;
 					var filterValues = model.get(filterName);
 					

@@ -145,6 +145,9 @@ define(['jquery',
 			
 			for (var i=0; i<categories.length; i++){
 				thisTerm = searchModel.get(categories[i]);
+				
+				if(thisTerm === undefined) break;
+				
 				for (var x=0; x<thisTerm.length; x++){
 					this.showFilter(categories[i], thisTerm[x]);
 				}
