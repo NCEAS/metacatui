@@ -12,6 +12,7 @@ var themeMap =
 		'templates/profile.html' : 'themes/' + theme + '/templates/profile.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
 		'models/Stats' : 'js/themes/' + theme + '/models/Stats.js',
+		'models/Search' : 'js/themes/' + theme + '/models/Search.js',
 		'views/DataCatalogView' : 'js/themes/' + theme + '/views/DataCatalogView.js',
 		'views/StatsView' : 'js/themes/' + theme + '/views/StatsView.js',
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
