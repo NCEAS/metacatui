@@ -74,12 +74,19 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			console.log('Called UIRouter.renderData()');
 			this.routeHistory.push("data");
 			appModel.set('page', page);
+			
+			//If a search mode parameter is given
 			if(mode){
 				appModel.set('searchMode', mode)
 			}
+			
+			//If a query parameter is given
 			if(query){
-				searchModel.set('customQuery', query);
+				var customQuery = searchModel.get('additionalCriteria');
+				customQuery.push(query);
+				searchModel.set('additionalCriteria', customQuery);
 			}
+			
 			appView.showView(dataCatalogView);
 		},
 		
