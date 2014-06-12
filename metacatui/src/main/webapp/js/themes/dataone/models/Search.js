@@ -105,9 +105,9 @@ define(['jquery', 'underscore', 'backbone'],
 			var query = "";
 			
 			//Get the keys for this model as a way to list the filters that are available
-			var defaults = this.defaults,
+			var defaults = _.keys(this.defaults),
 				available = function(filterName){
-					if(defaults[filterName]) return true;
+					if(_.indexOf(defaults, filterName) >= 0) return true;
 					else return false;
 				};
 			
