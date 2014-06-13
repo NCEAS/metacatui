@@ -21,12 +21,8 @@ define(['jquery', 'underscore', 'backbone'],
 			west: null,
 			north: null,
 			south: null,
-			geohashBBoxes: [],
+			geohashes: [],
 			geohashLevel: 9,
-			map: {
-				zoom: null,
-				center: null
-			},
 			spatial: [],
 			attribute: [],
 			characteristic: [],
@@ -173,13 +169,13 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//-----Geohashes-----
 			if(available("geohashLevel") && (((filter == "geohash") || getAll) && (this.get('north') != null))){
-				var geohashBBoxes = this.get("geohashBBoxes");
+				var geohashes = this.get("geohashes");
 				
-				if((typeof geohashBBoxes === undefined) || (geohashBBoxes.length == 0)) return "";
+				if((typeof geohashes === undefined) || (geohashes.length == 0)) return "";
 				
 				var query = "+geohash_" + this.get("geohashLevel") + ":(";
 				
-				_.each(geohashBBoxes, function(geohash, key, list){
+				_.each(geohashes, function(geohash, key, list){
 					query += geohash + "%20OR%20";
 				});
 				

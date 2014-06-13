@@ -2298,7 +2298,7 @@ svg .point:hover ~ .line-chart-label{
 }
 
 .gmaps-infowindow{
-	max-height: 300px;
+	max-height: 400px;
 	overflow-y:scroll;	
 }
 

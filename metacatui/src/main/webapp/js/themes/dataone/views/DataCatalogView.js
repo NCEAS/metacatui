@@ -191,37 +191,8 @@ define(['jquery',
 			
 			$("body").addClass("mapMode");				
 					
-			//If the spatial filters are set, rezoom and recenter the map to those filters
-			if(searchModel.get('north')){
-				var mapZoom = searchModel.get('map').zoom;
-				var mapCenter = searchModel.get('map').center;
-			}
-			else{
-				var mapZoom = 3;
-				var mapCenter = new gmaps.LatLng(-15.0, 0.0);
-			}
-			
-			var mapOptions = {
-			    zoom: mapZoom,
-				minZoom: 3,
-			    center: mapCenter,
-				disableDefaultUI: true,
-			    zoomControl: true,
-			    zoomControlOptions: {
-				          style: google.maps.ZoomControlStyle.SMALL,
-				          position: google.maps.ControlPosition.TOP_LEFT
-				        },
-				panControl: false,
-				scaleControl: false,
-				streetViewControl: false,
-				mapTypeControl: true,
-				mapTypeControlOptions:{
-						position: google.maps.ControlPosition.TOP_LEFT
-				},
-			    mapTypeId: google.maps.MapTypeId.TERRAIN
-			};
-			
 			gmaps.visualRefresh = true;
+			var mapOptions = mapModel.get('mapOptions');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
 
 			var mapRef = this.map;
@@ -250,12 +221,6 @@ define(['jquery',
 						searchModel.set('west', boundingBox.getSouthWest().lng());
 						searchModel.set('south', boundingBox.getSouthWest().lat());
 						searchModel.set('east', boundingBox.getNorthEast().lng());
-						
-						//Set the search model map filters
-						searchModel.set('map', {
-							zoom: viewRef.map.getZoom(), 
-							center: viewRef.map.getCenter()
-							});
 						
 						//Add a new visual 'current filter' to the DOM for the spatial search
 						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
@@ -296,10 +261,7 @@ define(['jquery',
 			}
 			
 			//Reset the map settings
-			searchModel.set('map', {
-				zoom: null,
-				center: null
-			});
+			mapModel.clear();
 			
 			this.allowSearch = false;
 			
@@ -1407,7 +1369,7 @@ define(['jquery',
 			gmaps.event.trigger(this.markers[id], 'mouseout');
 			
 			//Pan back to the map center so the map will reflect the current spatial filter bounding box
-			var mapCenter = searchModel.get('map').center;			
+			var mapCenter = mapModel.get('mapOptions').center;			
 			if(mapCenter !== null){
 				var viewRef = this;
 			

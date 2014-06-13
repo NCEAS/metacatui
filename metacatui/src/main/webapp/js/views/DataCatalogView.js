@@ -49,7 +49,9 @@ define(['jquery',
 		
 		tileCounts: [],
 		
-		displayAsMarker: [],
+		markerGeohashes: [],
+		
+		tileGeohashes: [],
 		
 		reservedMapPhrase: 'Only results with all spatial coverage inside the map',
 		
@@ -78,20 +80,6 @@ define(['jquery',
 				   		 'mouseover .open-marker' : 'openMarker',
 				   	      'mouseout .open-marker' : 'closeMarker',
 		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
-		},
-		
-		initialize: function () {
-			var view = this;
-			
-			//Set the file paths for our map markers - check for custom markers first
-			$.get("./js/themes/" + theme + "/img/map-marker.png", function(data, status, xhr){
-				//Custom map marker images were found
-				view.markerImage   = "./js/themes/" + theme + "/img/map-marker.png";					
-			})
-			.error(function(){
-				//Custom markers were not found - use the default images
-				view.markerImage   = "./img/map-marker.png";						
-			});
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -202,38 +190,9 @@ define(['jquery',
 			}
 			
 			$("body").addClass("mapMode");				
-					
-			//If the spatial filters are set, rezoom and recenter the map to those filters
-			if(searchModel.get('north')){
-				var mapZoom = searchModel.get('map').zoom;
-				var mapCenter = searchModel.get('map').center;
-			}
-			else{
-				var mapZoom = 3;
-				var mapCenter = new gmaps.LatLng(-15.0, 0.0);
-			}
-			
-			var mapOptions = {
-			    zoom: mapZoom,
-				minZoom: 3,
-			    center: mapCenter,
-				disableDefaultUI: true,
-			    zoomControl: true,
-			    zoomControlOptions: {
-				          style: google.maps.ZoomControlStyle.SMALL,
-				          position: google.maps.ControlPosition.TOP_LEFT
-				        },
-				panControl: false,
-				scaleControl: false,
-				streetViewControl: false,
-				mapTypeControl: true,
-				mapTypeControlOptions:{
-						position: google.maps.ControlPosition.TOP_LEFT
-				},
-			    mapTypeId: google.maps.MapTypeId.TERRAIN
-			};
-			
+				
 			gmaps.visualRefresh = true;
+			var mapOptions = mapModel.get('mapOptions');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
 
 			var mapRef = this.map;
@@ -283,7 +242,7 @@ define(['jquery',
 							geohashBBoxes = nGeohash.bboxes(geohashSouth, geohashWest, geohashNorth, geohashEast, precision);
 						
 						//Save our geohash search settings
-						searchModel.set('geohashBBoxes', geohashBBoxes);
+						searchModel.set('geohashes', geohashBBoxes);
 						searchModel.set('geohashLevel', precision);
 						
 						//Set the search model map filters
@@ -308,7 +267,6 @@ define(['jquery',
 			
 			//Let the view know we have zoomed on the map
 			google.maps.event.addListener(mapRef, "zoom_changed", function(){
-				console.log('has zoomed');
 				viewRef.allowSearch = true;
 				viewRef.hasZoomed = true;
 			});
@@ -331,10 +289,7 @@ define(['jquery',
 			}
 			
 			//Reset the map settings
-			searchModel.set('map', {
-				zoom: null,
-				center: null
-			});
+			mapModel.clear();
 			
 			this.allowSearch = false;
 			
@@ -1447,7 +1402,7 @@ define(['jquery',
 			gmaps.event.trigger(this.markers[id], 'mouseout');
 			
 			//Pan back to the map center so the map will reflect the current spatial filter bounding box
-			var mapCenter = searchModel.get('map').center;			
+			var mapCenter = mapModel.get('center');			
 			if(mapCenter !== null){
 				var viewRef = this;
 			
@@ -1586,6 +1541,8 @@ define(['jquery',
 		
 		drawTiles: function(){
 			
+			this.removeTiles();
+			
 			TextOverlay.prototype = new google.maps.OverlayView();
 			
 			/** @constructor */
@@ -1665,103 +1622,15 @@ define(['jquery',
 			}
 			
 			//Determine the geohash level we will use to draw tiles
-			var currentZoom = this.map.getZoom(),
-				geohashes,
-				geohashLevel;
-			
-			switch(currentZoom){
-				case 0: // The whole world zoom level
-					geohashes    = appSearchResults.facetCounts.geohash_2;
-					geohashLevel = "geohash_2";
-					break;
-				case 1:
-					geohashes    = appSearchResults.facetCounts.geohash_2;
-					geohashLevel = "geohash_2";
-					break;
-				case 2:
-					geohashes    = appSearchResults.facetCounts.geohash_2;
-					geohashLevel = "geohash_2";
-					break;
-				case 3:
-					geohashes    = appSearchResults.facetCounts.geohash_2;
-					geohashLevel = "geohash_2";
-					break;
-				case 4:
-					geohashes    = appSearchResults.facetCounts.geohash_2;
-					geohashLevel = "geohash_2";
-					break;
-				case 5:
-					geohashes    = appSearchResults.facetCounts.geohash_3;
-					geohashLevel = "geohash_3";
-					break;
-				case 6:
-					geohashes    = appSearchResults.facetCounts.geohash_3;
-					geohashLevel = "geohash_3";
-					break;
-				case 7:
-					geohashes    = appSearchResults.facetCounts.geohash_4;
-					geohashLevel = "geohash_4";
-					break;
-				case 8:
-					geohashes    = appSearchResults.facetCounts.geohash_4;
-					geohashLevel = "geohash_4";
-					break;
-				case 9:
-					geohashes    = appSearchResults.facetCounts.geohash_4;
-					geohashLevel = "geohash_4";
-					break;
-				case 10:
-					geohashes    = appSearchResults.facetCounts.geohash_5;
-					geohashLevel = "geohash_5";
-					break;
-				case 11:
-					geohashes    = appSearchResults.facetCounts.geohash_5;
-					geohashLevel = "geohash_5";
-					break;
-				case 12:
-					geohashes    = appSearchResults.facetCounts.geohash_6;
-					geohashLevel = "geohash_6";
-					break;
-				case 13:
-					geohashes    = appSearchResults.facetCounts.geohash_6;
-					geohashLevel = "geohash_6";
-					break;
-				case 14:
-					geohashes    = appSearchResults.facetCounts.geohash_7;
-					geohashLevel = "geohash_7";
-					break;
-				case 15:
-					geohashes    = appSearchResults.facetCounts.geohash_7;
-					geohashLevel = "geohash_7";
-					break;
-				case 16:
-					geohashes    = appSearchResults.facetCounts.geohash_8;
-					geohashLevel = "geohash_8";
-					break;
-				case 17:
-					geohashes    = appSearchResults.facetCounts.geohash_9;
-					geohashLevel = "geohash_9";
-					break;
-				case 18:
-					geohashes    = appSearchResults.facetCounts.geohash_9;
-					geohashLevel = "geohash_9";
-					break;
-				case 19:
-					geohashes    = appSearchResults.facetCounts.geohash_9;
-					geohashLevel = "geohash_9";
-					break;
-				case 20:
-					geohashes    = appSearchResults.facetCounts.geohash_9;
-					geohashLevel = "geohash_9";
-					break;
-				default:  //Anything over (Gmaps goes up to 19)
-					geohashes    = appSearchResults.facetCounts.geohash_4;
-					geohashLevel = "geohash_4";
-			}
+			var currentZoom     = this.map.getZoom(),
+				geohashLevelNum	= mapModel.determineGeohashLevel(currentZoom),
+				geohashLevel    = "geohash_" + geohashLevelNum,
+				geohashes       = appSearchResults.facetCounts[geohashLevel];
 						
 			//Find the totals of our geohash tiles
-			var total = appSearchResults.header.get("numFound"),
-				totalTiles = geohashes.length;
+			var total      = appSearchResults.header.get("numFound"),
+				totalTiles = geohashes.length,
+				maxCount   = _.max(geohashes);
 			
 			//Now draw a tile for each geohash facet
 			for(var i=0; i<geohashes.length-1; i+=2){
@@ -1774,32 +1643,36 @@ define(['jquery',
 					neLatLng	   = new google.maps.LatLng(geohashBox[2], geohashBox[3]),
 					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
 					tileCount	   = geohashes[i+1],
-					percent		   = tileCount/total,
+					percent		   = tileCount/maxCount,
 					useBins		   = (total < 200) ? false : true,
 					fontColor 	   = "#FFFFFF",
 					opacity   	   = 0.6,
-					color,
-					marker = null,
-					count  = null;
-				
-				//When here is only one dataset in this tile, we will display a marker
-				if (tileCount == 1){										
-					//Set up the options for each marker
-					var markerOptions = {
-						position: latLngCenter,
-						icon: this.markerImage,
-						zIndex: 99999,
-						map: this.map
-					};
+					marker,
+					count,
+					color;
+								
+				//When there is only one dataset in this tile, we will display a marker
+				if ((tileCount == 1) && (currentZoom >= 7)){
+					//Find a more exact location for this marker, by looking in the geohash_9 facets
+					var geohash9Values = appSearchResults.facetCounts.geohash_9;
 					
-					//Create the marker and add to the map
-					marker = new google.maps.Marker(markerOptions);
+					//We can start at the index from this geohash array since they are sorted by index - this will save time for geohash values towards the end of the array
+					for(var x = i; x < geohash9Values.length; x+=2){
+						if(geohash9Values[x].indexOf(geohashes[i]) == 0){
+							//This is the most exact geohash location
+							var exactLocation = geohash9Values[x],
+							  decodedLocation = nGeohash.decode(exactLocation),
+							   latLngLocation = new google.maps.LatLng(decodedLocation.latitude, decodedLocation.longitude);
+							
+							break; //Stop looking
+						}
+					}
 					
-					//Save this marker in the view
-					this.markers.push(marker);
+					//Draw the marker
+					this.drawMarker(latLngLocation);
 					
 					//Save this geohash in the view so we know to retrieve the dataset details 
-					this.displayAsMarker.push(tileCount);
+					this.markerGeohashes.push(geohash[i]);
 				}
 				else{
 					if(!useBins){
@@ -1853,7 +1726,7 @@ define(['jquery',
 					//Setting for our tiles
 					var tileOptions = {
 						      strokeWeight: 0,
-						      fillColor: color, //"#653ec9",
+						      fillColor: color, 
 						      fillOpacity: opacity,
 						      map: this.map,
 						      visible: true,
@@ -1863,34 +1736,33 @@ define(['jquery',
 					//Draw this tile
 					var tile = this.drawTile(tileOptions, count, fontColor);
 					
+					//Save the geohashes for tiles in the view for later
+					this.tileGeohashes.push(geohashes[i]);
+					
 					//Save our tiles in the view
-					this.tiles.push({text: count, shape: tile});
+					this.tiles.push({text: count, shape: tile, geohash: geohashes[i]});
 				}
 			}
-					  
+			
+			//After all the tiles and markers are added, retrieve details about them
+			this.addMarkerDetails();
+			if(mapModel.isMaxZoom(this.map)) this.addTileInfoWindows();
 		},
 					
 		drawTile: function(options, label, labelColor){
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
 			// Add the tile for these datasets to the map
 			var tile = new google.maps.Rectangle(options);
 					
-					var viewRef = this;
-					
-			//Zoom in when the tile is clicked on
-			gmaps.event.addListener(tile, 'click', function(clickEvent) {
-						//Change the center
-				viewRef.map.panTo(clickEvent.latLng);
-				
-				//Get this tile's bounds
-				var bounds = tile.getBounds();
-						
-						//Change the zoom
-				viewRef.map.fitBounds(bounds);
-			});
+			var viewRef = this;
 			
 			//Change styles when the tile is hovered on
 			google.maps.event.addListener(tile, 'mouseover', function(event) {
-				console.log("hover on tile " + tile);
+				
 				//Lighten the tile color
 				tile.setOptions({
 					opacity: 0.8,
@@ -1907,7 +1779,6 @@ define(['jquery',
 			
 			//Change the styles back after the tile is hovered on
 			google.maps.event.addListener(tile, 'mouseout', function(event) {
-				console.log("hoverout on tile " + event);
 				
 				//Change back the tile color
 				tile.setOptions(options);
@@ -1916,13 +1787,164 @@ define(['jquery',
 				var div = label.div_;
 				div.style.color = labelColor;
 				label.div_ = div;
-					});
+			});
 			
+			//If we are at the max zoom, we will display an info window. If not, we will zoom in.
+			if(!mapModel.isMaxZoom(viewRef.map)){
+				//Zoom in when the tile is clicked on
+				gmaps.event.addListener(tile, 'click', function(clickEvent) {
+					//Change the center
+					viewRef.map.panTo(clickEvent.latLng);
+					
+					//Get this tile's bounds
+					var bounds = tile.getBounds();
+								
+					//Change the zoom
+					viewRef.map.fitBounds(bounds);	
+				});
+			}
 			
 			return tile;
 		},
 		
+		drawMarker: function(latLng){
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
+			//Set up the options for each marker
+			var markerOptions = {
+				position: latLng,
+				icon: mapModel.get("markerImage"),
+				zIndex: 99999,
+				map: this.map
+			};
+			
+			//Create the marker and add to the map
+			var marker = new google.maps.Marker(markerOptions);
+			
+			//Save this marker in the view
+			this.markers.push(marker);
+		},
+		
+		addMarkerDetails: function(){
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}			
+		},
+		
+		/**
+		 * Get the details on each tile - a list of ids and titles for each dataset contained in that tile
+		 * And create an infowindow for that tile
+		 */
+		addTileInfoWindows: function(){	
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
+			//Clone the Search model
+			var searchModelClone = searchModel.clone(),
+				geohashLevel = mapModel.determineGeohashLevel(this.map.getZoom()),
+				geohashName	 = "geohash_" + geohashLevel,
+				viewRef = this,
+				infoWindows = [];
+			
+			//Change the geohash filter to match our tiles 
+			searchModelClone.set("geohashLevel", geohashLevel);
+			searchModelClone.set("geohashes", this.tileGeohashes);
+			
+			//Now run a query to get a list of documents that are represented by our tiles
+			var query = "q=" + searchModelClone.getQuery() + 
+						"&wt=json" +
+						"&fl=id,title,geohash_9," + geohashName +
+						"&rows=1000";
+			
+			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){
+				//Make an infoWindow for each doc
+				var docs = data.response.docs;
+				
+				//For each tile, loop through the docs to find which ones to include in its infoWindow	
+				_.each(viewRef.tiles, function(tile, key, list){
+					
+					var infoWindowContent = "";
+								
+					_.each(docs, function(doc, key, list){
+						
+						//Is this document in this tile?
+						for(var i=0; i<doc[geohashName].length; i++){
+							if(doc[geohashName][i] == tile.geohash){
+								//Add this doc to the infoWindow content
+								infoWindowContent += "<a href='#view/" + doc.id + "'>" + doc.title +"</a> (" + doc.id +") <br/>"
+								break;
+							}	
+						}							
+					});
+						
+					//The center of the tile
+					var decodedGeohash = nGeohash.decode(tile.geohash),
+						tileCenter 	   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
+						
+					//The infowindow
+					var infoWindow = new gmaps.InfoWindow({
+						content:
+							'<div class="gmaps-infowindow">'
+							+ '<h4> Datasets located here </h4>'
+							+ "<p>" + infoWindowContent + "</p>"
+							+ '</div>',
+						isOpen: false,
+						disableAutoPan: true,
+						maxWidth: 250,
+						position: tileCenter
+					});
+					
+					//Zoom in when the tile is clicked on
+					gmaps.event.addListener(tile.shape, 'click', function(clickEvent) {
+						//If we are at the max zoom, we will display an info window. If not, we will zoom in.
+						if(mapModel.isMaxZoom(viewRef.map)){
+							
+							//Find the infowindow that belongs to this tile in the view
+							infoWindow.open(viewRef.map);
+							infoWindow.isOpen = true;
+						}
+						else{
+							//Change the center
+							viewRef.map.panTo(clickEvent.latLng);
+							
+							//Get this tile's bounds
+							var bounds = tile.shape.getBounds();
+									
+							//Change the zoom
+							viewRef.map.fitBounds(bounds);	
+						}
+					});
+					
+					//Close the infowindow upon any click on the map
+					gmaps.event.addListener(viewRef.map, 'click', function() {						
+						infoWindow.close();
+						infoWindow.isOpen = false;
+					});
+					
+					infoWindows[tile.geohash] = infoWindow;
+				});
+				
+				viewRef.infoWindows = infoWindows;
+				
+			},
+			"json");
+		},
+		
+		/**
+		 * Remove all the tiles and text from the map
+		 **/
 		removeTiles: function(){
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
 			//Remove the tile from the map
 			_.each(this.tiles, function(tile, key, list){
 				if(tile.shape) tile.shape.setMap(null);
@@ -1931,9 +1953,15 @@ define(['jquery',
 			
 			//Reset the tile storage in the view
 			this.tiles = [];
+			this.tileGeohashes = [];
 		},
 		
 		removeMarkers: function(){
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
+			
 			//Remove the marker from the map
 			_.each(this.markers, function(marker, key, list){
 				marker.setMap(null);
@@ -1941,7 +1969,7 @@ define(['jquery',
 			
 			//Reset the marker storage in the view
 			this.markers = [];
-			this.displayAsMarker = [];
+			this.markerGeohashes = [];
 		},
 		
 		// Communicate that the page is loading

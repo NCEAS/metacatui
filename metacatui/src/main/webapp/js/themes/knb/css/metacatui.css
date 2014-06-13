@@ -590,7 +590,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 .gmaps-infowindow{
-	max-height: 300px;
+	max-height: 400px;
 	overflow-y:scroll;
 }
 

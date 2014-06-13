@@ -23,10 +23,6 @@ define(['jquery', 'underscore', 'backbone'],
 			south: null,
 			//geohashBBoxes: [],
 			//geohashLevel: 9,
-			map: {
-				zoom: null,
-				center: null
-			},
 			spatial: [],
 			attribute: [],
 			//characteristic: [],
