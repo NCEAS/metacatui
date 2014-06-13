@@ -39,15 +39,6 @@ define(['jquery', 'underscore', 'backbone'],
 			}]
 		},
 		
-		initialize: function(){
-			/* Add trim() function for IE*/
-			if(typeof String.prototype.trim !== 'function') {
-				  String.prototype.trim = function() {
-				    return this.replace(/^\s+|\s+$/g, ''); 
-				  }
-			}
-		},
-		
 		//Map the filter names to their index field names
 		fieldNameMap: {
 					 attribute : "attribute",
@@ -181,7 +172,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Geohashes-----
-			if(available("geohash") && (((filter == "geohash") || getAll) && (this.get('north') != null))){
+			if(available("geohashLevel") && (((filter == "geohash") || getAll) && (this.get('north') != null))){
 				var geohashBBoxes = this.get("geohashBBoxes");
 				
 				if((typeof geohashBBoxes === undefined) || (geohashBBoxes.length == 0)) return "";
