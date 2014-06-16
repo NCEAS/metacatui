@@ -14,7 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 			mapOptions: {
 				    zoom: 3,
 					minZoom: 3,
-				    center: new gmaps.LatLng(-15.0, 0.0),
+				    center: new gmaps.LatLng(0, -70),
 					disableDefaultUI: true,
 				    zoomControl: true,
 				    zoomControlOptions: {

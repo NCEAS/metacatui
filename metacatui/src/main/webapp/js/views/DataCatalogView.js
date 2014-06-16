@@ -1743,7 +1743,7 @@ define(['jquery',
 					}
 					
 					//Draw this tile
-					var tile = this.drawTile(tileOptions, count, fontColor);
+					var tile = this.drawTile(tileOptions, count);
 					
 					//Save the geohashes for tiles in the view for later
 					this.tileGeohashes.push(geohashes[i]);
@@ -1758,7 +1758,7 @@ define(['jquery',
 			if(mapModel.isMaxZoom(this.map)) this.addTileInfoWindows();
 		},
 					
-		drawTile: function(options, label, labelColor){
+		drawTile: function(options, label){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
 				return false;
