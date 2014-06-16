@@ -92,7 +92,7 @@ else{
 <%
 	
 	_.each(objects, function(object){
-		formatType = object.formatType.toLowerCase();
+		formatType = object.formatType;
 		
 		id = '<a href="' + object_service + encodeURIComponent(object.id) + '">' + object.id + '</a>';
 		
@@ -105,8 +105,9 @@ else{
 			if(EMLRoute) fileType = '.xml (<a href="#tools/eml">EML '+fileTypePopover+'</a>)';
 			else fileType = '.xml (EML' + fileTypePopover + ')';
 		}
+		else if(fileType == "application/pdf") fileType = "PDF";
 		
-		if(formatType == "metadata"){
+		if(formatType == "METADATA"){
 			if(object.read_count_i !== undefined){
 				readCount = object.read_count_i + " views";
 			}

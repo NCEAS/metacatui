@@ -1910,15 +1910,8 @@ define(['jquery',
 						infoWindow.open(viewRef.map, marker);
 						infoWindow.isOpen = true;
 						
-						//Iterate over all the infowindows and close all of them except for this one
-						for(var i=0; i<viewRef.markerInfoWindows.length; i++){
-							if((viewRef.markerInfoWindows[i].isOpen) && (viewRef.markerInfoWindows[i] != infoWindow)){
-								//Close this info window and stop looking
-								viewRef.markerInfoWindows[i].close();
-								viewRef.markerInfoWindows[i].isOpen = false;
-								i = viewRef.markerInfoWindows.length;
-							}
-						}
+						//Close all other infowindows 
+						viewRef.closeInfoWindows(infoWindow);
 					});
 					
 					//Close the infowindow upon any click on the map
@@ -1999,23 +1992,19 @@ define(['jquery',
 					
 					//Zoom in when the tile is clicked on
 					gmaps.event.addListener(tile.shape, 'click', function(clickEvent) {
-						//If we are at the max zoom, we will display an info window. If not, we will zoom in.
+						
+						//--- We are at max zoom, display an infowindow ----//
 						if(mapModel.isMaxZoom(viewRef.map)){
 							
 							//Find the infowindow that belongs to this tile in the view
 							infoWindow.open(viewRef.map);
 							infoWindow.isOpen = true;
 							
-							//Iterate over all the infowindows and close all of them except for this one
-							for(var i=0; i<viewRef.tileInfoWindows.length; i++){
-								if((viewRef.tileInfoWindows[i].isOpen) && (viewRef.tileInfoWindows[i] != infoWindow)){
-									//Close this info window and stop looking
-									viewRef.tileInfoWindows[i].close();
-									viewRef.tileInfoWindows.isOpen = false;
-									i = viewRef.tileInfoWindows.length;
-								}
-							}
+							//Close all other infowindows 
+							viewRef.closeInfoWindows(infoWindow);
 						}
+						
+						//------ We are not at max zoom, so zoom into this tile ----//
 						else{
 							//Change the center
 							viewRef.map.panTo(clickEvent.latLng);
@@ -2041,6 +2030,26 @@ define(['jquery',
 				
 			},
 			"json");
+		},
+		
+		/**
+		 * Iterate over each infowindow that we have stored in the view and close it.
+		 * Pass an infoWindow object to this function to keep that infoWindow open/skip it
+		 */
+		closeInfoWindows: function(except){
+			var infoWindowLists = [this.markerInfoWindows, this.tileInfoWindows];
+
+			_.each(infoWindowLists, function(infoWindows, key, list){
+				//Iterate over all the marker infowindows and close all of them except for this one
+				for(var i=0; i<infoWindows.length; i++){
+					if((infoWindows[i].isOpen) && (infoWindows[i] != except)){
+						//Close this info window and stop looking, since only one of each kind should be open anyway
+						infoWindows[i].close();
+						infoWindows[i].isOpen = false;
+						i = infoWindows.length;
+					}
+				}
+			});
 		},
 		
 		/**
