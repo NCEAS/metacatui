@@ -38,6 +38,35 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				terrain   : 15,
 				satellite : 19
 			},
+			
+			///****** MAP TILE OPTIONS **********//
+			//The options for the tiles. Using Google Maps Web API
+			tileOptions: {
+			      strokeWeight: 0,
+			      fillOpacity: 0.6
+			},		
+			
+			//The options for the tiles when they are hovered on. Using Google Maps Web API
+			tileOnHover: {
+				opacity: 0.8,
+				strokeColor: "#FFFFFF",
+				fillColor: "#FFFFFF",
+				strokeWeight: 1
+			},			
+			
+			//The options for the tile text 
+			tileLabelColorOnHover: '#333333',			
+			tileLabelColor: '#FFFFFF',
+			
+			//The tile colors - there are 5 levels of color, with level1 representing tiles with a relatively LOW count of datasets and level5 representing tiles with the HIGHEST amount of datasets
+			tileColors: {
+				level1: "#24ADE3",
+				level2: "#1E92CB",
+				level3: "#186E91",
+				level4: "#12536D",
+				level5: "#092F3E"
+			}
+			
 		
 		},
 		

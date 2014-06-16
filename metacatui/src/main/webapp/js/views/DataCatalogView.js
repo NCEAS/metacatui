@@ -1649,9 +1649,7 @@ define(['jquery',
 					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
 					tileCount	   = geohashes[i+1],
 					percent		   = tileCount/maxCount,
-					useBins		   = (total < 200) ? false : true,
-					fontColor 	   = "#FFFFFF",
-					opacity   	   = 0.6,
+					useBins		   = (total > 200) ? true : false,
 					marker,
 					count,
 					color;
@@ -1684,62 +1682,65 @@ define(['jquery',
 				}
 				else{
 					if(!useBins){
-						//Determine the style of the tile depending on the number of datasets
+						//Determine the style of the tile depending on the percentage of datasets
 						if (percent < .20){
-							color = "#24ADE3"; 
+							color = mapModel.get("tileColors").level1; 
 						}
 						else if (percent < .40){
-							color = "#1E92CB"; 
+							color = mapModel.get("tileColors").level2; 
 						}
 						else if (percent < .70){
-							color = "#186E91"; 
-							opacity = 0.5;
+							color = mapModel.get("tileColors").level3; 
 						}
 						else if (percent < .80) {
-							color = "#12536D"; 
+							color = mapModel.get("tileColors").level4; 
 						}
 						else{
-							color = "#092F3E"; 
+							color = mapModel.get("tileColors").level5; 
 						}
 					}
 					else{
 						//Determine the style of the tile depending on the number of datasets
 						if (tileCount < 10){
-							color = "#24ADE3"; 
+							color = mapModel.get("tileColors").level1; 
 						}
 						else if (tileCount < 50){
-							color = "#1E92CB"; 
+							color = mapModel.get("tileColors").level2; 
 						}
 						else if (tileCount < 100){
-							color = "#186E91"; 
-							opacity = 0.5;
+							color = mapModel.get("tileColors").level3; 
 						}
 						else if (tileCount < 1000) {
-							color = "#12536D"; 
+							color = mapModel.get("tileColors").level4; 
 						}
 						else{
-							color = "#092F3E"; 
+							color = mapModel.get("tileColors").level5; 
 						}
 				}
 					//Add the count to the tile
 					var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
-					
+									
+					//Draw the tile label with the dataset count
 					count = new TextOverlay({
 						bounds: countLocation,
 						   map: this.map,
 						  text: tileCount,
-						 color: fontColor
+						 color: mapModel.get("tileLabelColor")
 					});
-				
-					//Setting for our tiles
+					
+					//Set up the default tile options 
 					var tileOptions = {
-						      strokeWeight: 0,
 						      fillColor: color, 
-						      fillOpacity: opacity,
 						      map: this.map,
 						      visible: true,
 						      bounds: bounds
 						    };
+					
+					//Merge these options with any tile options set in the map model
+					var modelTileOptions =  mapModel.get("tileOptions");					
+					for(var attr in modelTileOptions){
+						tileOptions[attr] = modelTileOptions[attr];
+					}
 					
 					//Draw this tile
 					var tile = this.drawTile(tileOptions, count, fontColor);
@@ -1771,29 +1772,24 @@ define(['jquery',
 			//Change styles when the tile is hovered on
 			google.maps.event.addListener(tile, 'mouseover', function(event) {
 				
-				//Lighten the tile color
-				tile.setOptions({
-					opacity: 0.8,
-					strokeColor: "#FFFFFF",
-					fillColor: "#FFFFFF",
-					strokeWeight: 1
-				});
+				//Change the tile style on hover
+				tile.setOptions(mapModel.get('tileOnHover'));
 				
-				//Change the label color
+				//Change the label color on hover
 				var div = label.div_;
-				div.style.color = '#333333';
+				div.style.color = mapModel.get("tileLabelColorOnHover");
 				label.div_ = div;
 			});
 			
 			//Change the styles back after the tile is hovered on
 			google.maps.event.addListener(tile, 'mouseout', function(event) {
-				
-				//Change back the tile color
+								
+				//Change back the tile to it's original styling
 				tile.setOptions(options);
 				
 				//Change back the label color
 				var div = label.div_;
-				div.style.color = labelColor;
+				div.style.color = mapModel.get("tileLabelColor");
 				label.div_ = div;
 			});
 			
