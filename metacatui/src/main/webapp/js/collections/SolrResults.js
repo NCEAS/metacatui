@@ -47,7 +47,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				}
 			}
 			//create the query url
-			var endpoint = appModel.get('queryServiceUrl') + "fl=" + this.fields + "&q=" + this.currentquery + "&sort=" + this.sort + "&wt=json" + "&rows=" + this.rows + "&start=" + this.start + "&facet=true&facet.sort=count" + facetFields + stats;		
+			var endpoint = appModel.get('queryServiceUrl') + 
+						   "fl=" + this.fields + 
+						   "&q=" + this.currentquery + 
+						   "&sort=" + this.sort + 
+						   "&wt=json" + 
+						   "&rows=" + this.rows + 
+						   "&start=" + this.start + 
+						   "&facet=true&facet.sort=index" + facetFields + 
+						   stats;		
 			
 			console.log(endpoint);
 			

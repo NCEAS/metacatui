@@ -51,6 +51,10 @@ define(['jquery',
 		
 		markerGeohashes: [],
 		
+		markerInfoWindows: [],
+		
+		tileInfoWindows: [],
+		
 		tileGeohashes: [],
 		
 		reservedMapPhrase: 'Only results with all spatial coverage inside the map',
@@ -1630,7 +1634,8 @@ define(['jquery',
 			//Find the totals of our geohash tiles
 			var total      = appSearchResults.header.get("numFound"),
 				totalTiles = geohashes.length,
-				maxCount   = _.max(geohashes);
+				maxCount   = _.max(geohashes),
+				viewRef	   = this;
 			
 			//Now draw a tile for each geohash facet
 			for(var i=0; i<geohashes.length-1; i+=2){
@@ -1654,25 +1659,28 @@ define(['jquery',
 				//When there is only one dataset in this tile, we will display a marker
 				if ((tileCount == 1) && (currentZoom >= 7)){
 					//Find a more exact location for this marker, by looking in the geohash_9 facets
-					var geohash9Values = appSearchResults.facetCounts.geohash_9;
+					var geohash9Values = appSearchResults.facetCounts.geohash_9,
+						exactLocation;
 					
 					//We can start at the index from this geohash array since they are sorted by index - this will save time for geohash values towards the end of the array
 					for(var x = i; x < geohash9Values.length; x+=2){
 						if(geohash9Values[x].indexOf(geohashes[i]) == 0){
 							//This is the most exact geohash location
-							var exactLocation = geohash9Values[x],
-							  decodedLocation = nGeohash.decode(exactLocation),
-							   latLngLocation = new google.maps.LatLng(decodedLocation.latitude, decodedLocation.longitude);
+							exactLocation = geohash9Values[x];
+							var decodedLocation = nGeohash.decode(exactLocation),
+							     latLngLocation = new google.maps.LatLng(decodedLocation.latitude, decodedLocation.longitude);
+							
+							viewRef.markerGeohashes.push(exactLocation);
 							
 							break; //Stop looking
 						}
 					}
 					
 					//Draw the marker
-					this.drawMarker(latLngLocation);
+					var marker = this.drawMarker(latLngLocation);
 					
-					//Save this geohash in the view so we know to retrieve the dataset details 
-					this.markerGeohashes.push(geohash[i]);
+					//Save this marker in the view
+					this.markers.push({marker: marker, geohash: exactLocation});
 				}
 				else{
 					if(!useBins){
@@ -1745,7 +1753,7 @@ define(['jquery',
 			}
 			
 			//After all the tiles and markers are added, retrieve details about them
-			this.addMarkerDetails();
+			if(this.markerGeohashes.length > 0) this.addMarkerInfoWindows();
 			if(mapModel.isMaxZoom(this.map)) this.addTileInfoWindows();
 		},
 					
@@ -1823,16 +1831,103 @@ define(['jquery',
 			
 			//Create the marker and add to the map
 			var marker = new google.maps.Marker(markerOptions);
-			
-			//Save this marker in the view
-			this.markers.push(marker);
+		
+			return marker;
 		},
 		
-		addMarkerDetails: function(){
+		/**
+		 * Get the details on each marker
+		 * And create an infowindow for that marker
+		 */		
+		addMarkerInfoWindows: function(){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
 				return false;
-			}			
+			}	
+			
+			//Clone the Search model
+			var searchModelClone = searchModel.clone(),
+				geohashLevel = 9,
+				viewRef = this,
+				infoWindows = [],
+				markers = this.markers;
+			
+			//Change the geohash filter to match our tiles 
+			searchModelClone.set("geohashLevel", geohashLevel);
+			searchModelClone.set("geohashes", this.markerGeohashes);
+			
+			//Now run a query to get a list of documents that are represented by our tiles
+			var query = "q=" + searchModelClone.getQuery() + 
+						"&wt=json" +
+						"&fl=id,title,geohash_9,abstract" +
+						"&rows=1000";
+			
+			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){
+				var docs = data.response.docs;
+				
+				//Create an infoWindow for each document
+				_.each(docs, function(doc, key, list){
+					
+					var marker;
+					
+					//Find the marker for this document				
+					for(var i=0; i<markers.length; i++){
+						//Is this the marker for this document?
+						if(markers[i].geohash == doc.geohash_9[0]){
+							marker = markers[i];
+							break;
+						}
+					}
+					
+					//Create the infoWindow
+					if(!marker) return;
+					
+					var decodedGeohash = nGeohash.decode(marker.geohash),
+						position 	   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
+					
+					//The infowindow
+					var infoWindow = new gmaps.InfoWindow({
+						content:
+							'<div class="gmaps-infowindow">'
+							+ "<h4>" + doc.title + "</h4>"
+							+ "<a href='#view/" + doc.id + "'>" + doc.id + "</a>"
+							+ "<p>" + doc.abstract + "</p>"
+							+ "<p><a href='#view/" + doc.id + "'>Read more</a></p>"
+							+ '</div>',
+						isOpen: false,
+						disableAutoPan: true,
+						maxWidth: 250,
+						position: position
+					});	
+					
+					//Store this infowindow in the view
+					viewRef.markerInfoWindows.push(infoWindow);
+					
+					marker = marker.marker;
+					
+					//Show the info window upon marker click
+					gmaps.event.addListener(marker, 'click', function() {
+						infoWindow.open(viewRef.map, marker);
+						infoWindow.isOpen = true;
+						
+						//Iterate over all the infowindows and close all of them except for this one
+						for(var i=0; i<viewRef.markerInfoWindows.length; i++){
+							if((viewRef.markerInfoWindows[i].isOpen) && (viewRef.markerInfoWindows[i] != infoWindow)){
+								//Close this info window and stop looking
+								viewRef.markerInfoWindows[i].close();
+								viewRef.markerInfoWindows[i].isOpen = false;
+								i = viewRef.markerInfoWindows.length;
+							}
+						}
+					});
+					
+					//Close the infowindow upon any click on the map
+					gmaps.event.addListener(viewRef.map, 'click', function() {
+						infoWindow.close();
+						infoWindow.isOpen = false;
+					});
+				});
+			});
 		},
 		
 		/**
@@ -1900,6 +1995,8 @@ define(['jquery',
 						position: tileCenter
 					});
 					
+					viewRef.tileInfoWindows.push(infoWindow);
+					
 					//Zoom in when the tile is clicked on
 					gmaps.event.addListener(tile.shape, 'click', function(clickEvent) {
 						//If we are at the max zoom, we will display an info window. If not, we will zoom in.
@@ -1908,6 +2005,16 @@ define(['jquery',
 							//Find the infowindow that belongs to this tile in the view
 							infoWindow.open(viewRef.map);
 							infoWindow.isOpen = true;
+							
+							//Iterate over all the infowindows and close all of them except for this one
+							for(var i=0; i<viewRef.tileInfoWindows.length; i++){
+								if((viewRef.tileInfoWindows[i].isOpen) && (viewRef.tileInfoWindows[i] != infoWindow)){
+									//Close this info window and stop looking
+									viewRef.tileInfoWindows[i].close();
+									viewRef.tileInfoWindows.isOpen = false;
+									i = viewRef.tileInfoWindows.length;
+								}
+							}
 						}
 						else{
 							//Change the center
@@ -1954,6 +2061,7 @@ define(['jquery',
 			//Reset the tile storage in the view
 			this.tiles = [];
 			this.tileGeohashes = [];
+			this.tileInfoWindows = [];
 		},
 		
 		removeMarkers: function(){
@@ -1964,12 +2072,13 @@ define(['jquery',
 			
 			//Remove the marker from the map
 			_.each(this.markers, function(marker, key, list){
-				marker.setMap(null);
+				marker.marker.setMap(null);
 			});
 			
 			//Reset the marker storage in the view
 			this.markers = [];
 			this.markerGeohashes = [];
+			this.markerInfoWindows = [];
 		},
 		
 		// Communicate that the page is loading
