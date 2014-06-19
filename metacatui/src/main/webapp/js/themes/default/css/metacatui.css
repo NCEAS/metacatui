@@ -211,6 +211,12 @@ Bold 700
 	.control-label {
 		cursor: default;
 	}
+	.form-horizontal .control-label{
+		width: 110px;
+	}
+	.form-horizontal .controls{
+		margin-left: 130px;
+	}
 	
 	select{
     	width: auto;
@@ -798,7 +804,7 @@ Bold 700
 	}
 
     #downloadContents .controls-well{
-    	overflow-x: scroll;
+    	overflow-x: overlay;
     }
     
     table.download-contents {
