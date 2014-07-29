@@ -252,11 +252,17 @@ Bold 700
   	margin-left: 43%;
   }
   
+  #Notification i.loading{
+  	font-size: 2em;
+  	color: #FFFFFF;
+  }
+  
   #Notification p{
   	font-size: 20px;
   	width: 350px;
   	margin: 20px auto;
   	display: block;
+  	color: #FFFFFF;
   }
 
   

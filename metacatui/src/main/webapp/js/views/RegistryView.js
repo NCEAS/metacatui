@@ -205,7 +205,12 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			var formData = $("#" + formId).serialize()
 			
 			// show the loading icon
-			this.showLoading();
+			if(formId == "confirmForm"){
+				var msg = "Uploading your data set ... this may take a few minutes.";
+			}
+			else var msg = "";
+			
+			this.showLoading(msg);
 			
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
@@ -440,10 +445,17 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			return stringToTrim.replace(/^\s*/, '').replace(/\s*$/, '');
 		},
 		
-		showLoading: function() {
+		showLoading: function(msg) {
 			//Keep the form HTML element in place or the upload won't work on IE 8
 			this.scrollToTop();
-			this.$el.html(this.loadingTemplate());
+			
+			if(typeof msg == "undefined"){
+				var msg = "";
+			}
+			
+			this.$el.html(this.loadingTemplate({
+				msg: msg
+			}));
 		},
 		
 		scrollToTop: function() {
