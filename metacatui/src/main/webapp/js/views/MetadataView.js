@@ -168,7 +168,7 @@ define(['jquery',
 						
 			//*** Find each resource map that this metadata is a part of 
 			// surround pid value in "" so that doi characters do not affect solr query
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&q=formatType:METADATA+-obsoletedBy:*+id:"' + pid + '"';
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&rows=100&q=formatType:METADATA+-obsoletedBy:*+id:"' + pid + '"';
 
 			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
 				
@@ -187,7 +187,7 @@ define(['jquery',
 					});
 
 					//*** Find all the files that are a part of those resource maps
-					var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&q=-obsoletedBy:*+%28' + resourceMapQuery + 'id:"' + encodeURIComponent(pid) + '"%29';
+					var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&rows=100&q=-obsoletedBy:*+%28' + resourceMapQuery + 'id:"' + encodeURIComponent(pid) + '"%29';
 					$.get(queryServiceUrl + query, function(moreData, textStatus, xhr) {
 								
 						var pids   = [], //Keep track of each object pid
