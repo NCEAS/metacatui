@@ -7,14 +7,13 @@ define(['jquery',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
 				'text!templates/pager.html',
-				'text!templates/resultsItem.html',
 				'text!templates/mainContent.html',
 				'text!templates/currentFilter.html',
 				'gmaps',
 				'nGeohash',
 				'markerClusterer'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, ResultItemTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps, nGeohash, MarkerClusterer) {
+	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps, nGeohash, MarkerClusterer) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -26,8 +25,6 @@ define(['jquery',
 		statsTemplate: _.template(CountTemplate),
 		
 		pagerTemplate: _.template(PagerTemplate),
-
-		resultTemplate: _.template(ResultItemTemplate),
 		
 		mainContentTemplate: _.template(MainContentTemplate),
 		
@@ -57,6 +54,8 @@ define(['jquery',
 		
 		tileGeohashes: [],
 		
+		resultMarkers: [],
+		
 		reservedMapPhrase: 'Only results with all spatial coverage inside the map',
 		
 		// Delegated events for creating new items, and clearing completed ones.
@@ -65,7 +64,6 @@ define(['jquery',
 							'click #results_next' : 'nextpage',
 					 'click #results_prev_bottom' : 'prevpage',
 					 'click #results_next_bottom' : 'nextpage',
-			       			   'click .pagerLink' : 'navigateToPage',
 							  'click .filter.btn' : 'updateTextFilters',
 						  'keypress input.filter' : 'triggerOnEnter',
 							  'change #sortOrder' : 'triggerSearch',
@@ -81,8 +79,8 @@ define(['jquery',
 				   			 'click .collapse-me' : 'collapse',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			   'click .view-link' : 'routeToMetadata',
-				   		 'mouseover .open-marker' : 'openMarker',
-				   	      'mouseout .open-marker' : 'closeMarker',
+				   		 'mouseover .open-marker' : 'showResultOnMap',
+				   	      'mouseout .open-marker' : 'hideResultOnMap',
 		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
 		},
 				
@@ -163,7 +161,7 @@ define(['jquery',
 			
 			// listen to the appModel for the search trigger
 			this.stopListening(appModel);
-			this.listenTo(appModel, 'search', this.showResults);
+			this.listenTo(appModel, 'search', this.getResults);
 
 			// Store some references to key views that we use repeatedly
 			this.$resultsview = this.$('#results-view');
@@ -173,135 +171,16 @@ define(['jquery',
 			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
 			
 			// and go to a certain page if we have it
-			this.showResults();		
+			this.getResults();		
 
 			return this;
 		},
 		
-		renderMap: function() {
-			
-			//If gmaps isn't enabled or loaded with an error, use list mode
-			if (!gmaps) {
-				this.ready = true;
-				appModel.set('searchMode', 'list');
-				return;
-			}		
-
-			// If the list mode is currently in use, no need to render the map
-			if(appModel.get('searchMode') == 'list'){
-				this.ready = true;
-				return;
-			}
-			
-			$("body").addClass("mapMode");				
-				
-			gmaps.visualRefresh = true;
-			var mapOptions = mapModel.get('mapOptions');
-			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
-
-			var mapRef = this.map;
-			var viewRef = this;
-
-			google.maps.event.addListener(mapRef, "idle", function(){
-			
-				viewRef.ready = true;
-				
-				if(viewRef.allowSearch){
-					
-					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
-					if(viewRef.map.getZoom() == mapOptions.minZoom){
-						if(!viewRef.hasZoomed){
-							return;
-						}	
-						viewRef.resetMap();	
-					}
-					else{
-						console.log("zoom level " + viewRef.map.getZoom());
-						
-						//Get the Google map bounding box
-						var boundingBox = mapRef.getBounds();
-						
-						//Set the search model spatial filters
-						searchModel.set('north', boundingBox.getNorthEast().lat());
-						searchModel.set('west',  boundingBox.getSouthWest().lng());
-						searchModel.set('south', boundingBox.getSouthWest().lat());
-						searchModel.set('east',  boundingBox.getNorthEast().lng());
-						
-						//Determine the precision of geohashes to search for
-						var zoom = mapRef.getZoom(),
-							precision;
-						
-						if(zoom <= 5) precision = 2;
-						else if(zoom <= 7) precision = 3;
-						else if (zoom <= 11) precision = 4;
-						else if (zoom <= 13) precision = 5;
-						else if (zoom <= 15) precision = 6;
-						else if (zoom <= 19) precision = 7;
-						
-						//Encode the Google Map bounding box into geohash
-						var geohashNorth = boundingBox.getNorthEast().lat(),
-							geohashWest  = boundingBox.getSouthWest().lng(),
-							geohashSouth = boundingBox.getSouthWest().lat(),
-							geohashEast	 = boundingBox.getNorthEast().lng(),
-							geohashBBoxes = nGeohash.bboxes(geohashSouth, geohashWest, geohashNorth, geohashEast, precision);
-						
-						//Save our geohash search settings
-						searchModel.set('geohashes', geohashBBoxes);
-						searchModel.set('geohashLevel', precision);
-						
-						//Set the search model map filters
-						searchModel.set('map', {
-							zoom: viewRef.map.getZoom(), 
-							center: viewRef.map.getCenter()
-							});
-						
-						//Add a new visual 'current filter' to the DOM for the spatial search
-						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
-					}
-					
-					//Trigger a new search
-					viewRef.triggerSearch();	
-				}
-				else{
-					viewRef.allowSearch = true;
-				}
-				
-				viewRef.hasZoomed = false;
-			});
-			
-			//Let the view know we have zoomed on the map
-			google.maps.event.addListener(mapRef, "zoom_changed", function(){
-				viewRef.allowSearch = true;
-				viewRef.hasZoomed = true;
-			});
-
-		},
-		
-		//Resets the model and view settings related to the map
-		resetMap : function(){
-			if(!gmaps){
-				return;
-			}
-			
-			//First reset the model
-			//The categories pertaining to the map
-			var categories = ["east", "west", "north", "south"];
-			
-			//Loop through each and remove the filters from the model
-			for(var i = 0; i < categories.length; i++){
-				searchModel.set(categories[i], null);				
-			}
-			
-			//Reset the map settings
-			mapModel.clear();
-			
-			this.allowSearch = false;
-			
-			
-			//Remove the map filter in the UI
-			this.hideFilter($('#current-spatial-filters').find('[data-term="'+ this.reservedMapPhrase +'"]'));
-		},
-		
+		/**
+		 * ==================================================================================================
+		 * 										PERFORMING SEARCH
+		 * ==================================================================================================
+		**/
 		triggerSearch: function() {	
 			console.log('Search triggered');			
 			
@@ -331,10 +210,11 @@ define(['jquery',
 			this.updateTextFilters(e);
 		},
 		
-		/* 
-		 * showResults gets all the current search filters from the searchModel, creates a Solr query, and runs that query.
+		
+		/** 
+		 * getResults gets all the current search filters from the searchModel, creates a Solr query, and runs that query.
 		 */
-		showResults: function (page) {
+		getResults: function (page) {
 			console.log('showing results');
 			
 			//Get the page number
@@ -360,6 +240,8 @@ define(['jquery',
 			//Get the query
 			var query = searchModel.getQuery();
 			
+			console.log("query: " + query);
+			
 			//Specify which facets to retrieve
 			if(gmaps){ //If we have Google Maps enabled
 				var geohashes = ["geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9"]
@@ -384,6 +266,11 @@ define(['jquery',
 			return false;
 		},
 		
+		/**
+		 * ==================================================================================================
+		 * 											FILTERS
+		 * ==================================================================================================
+		**/
 		updateBooleanFilters : function(e){
 			//Get the category
 			var category = $(e.target).attr('data-category');
@@ -812,6 +699,312 @@ define(['jquery',
 			this.triggerSearch();
 		},
 
+		//Get the facet counts
+		getAutoCompletes: function(){
+			var viewRef = this;
+			
+			//Create the facet query by using our current search query 
+			var facetQuery = "q=" + appSearchResults.currentquery +
+							 "&wt=json" +
+							 "&rows=0" +
+							 searchModel.getFacetQuery();
+
+			$.get(appModel.get('queryServiceUrl') + facetQuery, function(data, textStatus, xhr) {
+				
+				var facetCounts = data.facet_counts.facet_fields,
+					facetLimit  = 999;
+								
+				//***Set up the autocomplete (jQueryUI) feature for each text input****//				
+				//For the 'all' filter, use keywords
+				var allSuggestions = facetCounts.keywords;
+				var rankedSuggestions = new Array();
+				for (var i=0; i < Math.min(allSuggestions.length-1, facetLimit); i+=2) {
+					rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + "+)"});
+				}
+
+				$('#all_input').autocomplete({
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
+					select: function(event, ui) {
+						// set the text field
+						$('#all_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom",
+						collision: "fit"
+					}
+				});
+				
+				// suggest attribute criteria
+				var attributeNameSuggestions = facetCounts.attributeName;
+				var attributeLabelSuggestions = facetCounts.attributeLabel;
+				// NOTE: only using attributeName for auto-complete suggestions.
+				attributeLabelSuggestions = null;
+				
+				if(attributeNameSuggestions){
+					var attributeSuggestions = [];
+					attributeSuggestions = 
+						attributeSuggestions.concat(
+							attributeNameSuggestions, 
+							attributeLabelSuggestions);
+					var rankedAttributeSuggestions = new Array();
+					for (var i=0; i < Math.min(attributeSuggestions.length-1, facetLimit); i+=2) {
+						rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
+					}
+					$('#attribute_input').autocomplete({
+						source: function (request, response) {
+				            var term = $.ui.autocomplete.escapeRegex(request.term)
+				                , startsWithMatcher = new RegExp("^" + term, "i")
+				                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
+				                    return startsWithMatcher.test(value.label || value.value || value);
+				                })
+				                , containsMatcher = new RegExp(term, "i")
+				                , contains = $.grep(rankedAttributeSuggestions, function (value) {
+				                    return $.inArray(value, startsWith) < 0 && 
+				                        containsMatcher.test(value.label || value.value || value);
+				                });
+				            
+				            response(startsWith.concat(contains));
+				        },
+						select: function(event, ui) {
+							// set the text field
+							$('#attribute_input').val(ui.item.value);
+							// add to the filter immediately
+							viewRef.updateTextFilters(event);
+							// prevent default action
+							return false;
+						},
+						position: {
+							my: "left top",
+							at: "left bottom"				
+						}
+					});
+				}
+				
+				// suggest characteristics
+				var characteristicSuggestions = facetCounts.characteristic_sm;
+				if(characteristicSuggestions){
+					var rankedCharacteristicSuggestions = new Array();
+					for (var i=0; i < Math.min(characteristicSuggestions.length-1, facetLimit); i+=2) {
+						rankedCharacteristicSuggestions.push({value: characteristicSuggestions[i], label: characteristicSuggestions[i].substring(characteristicSuggestions[i].indexOf("#")) });
+					}
+					$('#characteristic_input').autocomplete({
+						source: function (request, response) {
+				            var term = $.ui.autocomplete.escapeRegex(request.term)
+				                , startsWithMatcher = new RegExp("^" + term, "i")
+				                , startsWith = $.grep(rankedCharacteristicSuggestions, function(value) {
+				                    return startsWithMatcher.test(value.label || value.value || value);
+				                })
+				                , containsMatcher = new RegExp(term, "i")
+				                , contains = $.grep(rankedCharacteristicSuggestions, function (value) {
+				                    return $.inArray(value, startsWith) < 0 && 
+				                        containsMatcher.test(value.label || value.value || value);
+				                });
+				            
+				            response(startsWith.concat(contains));
+				        },
+						select: function(event, ui) {
+							// set the text field
+							$('#characteristic_input').val(ui.item.value);
+							// add to the filter immediately
+							viewRef.updateTextFilters(event);
+							// prevent default action
+							return false;
+						},
+						position: {
+							my: "left top",
+							at: "left bottom"				
+						}
+					});
+				}
+				
+				// suggest standards
+				var standardSuggestions = facetCounts.standard_sm;
+				if(standardSuggestions){
+					var rankedStandardSuggestions = new Array();
+					for (var i=0; i < Math.min(standardSuggestions.length-1, facetLimit); i+=2) {
+						rankedStandardSuggestions.push({value: standardSuggestions[i], label: standardSuggestions[i].substring(standardSuggestions[i].indexOf("#")) });
+					}
+					$('#standard_input').autocomplete({
+						source: function (request, response) {
+				            var term = $.ui.autocomplete.escapeRegex(request.term)
+				                , startsWithMatcher = new RegExp("^" + term, "i")
+				                , startsWith = $.grep(rankedStandardSuggestions, function(value) {
+				                    return startsWithMatcher.test(value.label || value.value || value);
+				                })
+				                , containsMatcher = new RegExp(term, "i")
+				                , contains = $.grep(rankedStandardSuggestions, function (value) {
+				                    return $.inArray(value, startsWith) < 0 && 
+				                        containsMatcher.test(value.label || value.value || value);
+				                });
+				            
+				            response(startsWith.concat(contains));
+				        },
+						select: function(event, ui) {
+							// set the text field
+							$('#standard_input').val(ui.item.value);
+							// add to the filter immediately
+							viewRef.updateTextFilters(event);
+							// prevent default action
+							return false;
+						},
+						position: {
+							my: "left top",
+							at: "left bottom"				
+						}
+					});
+				}
+				
+				// suggest creator names/organizations
+				var originSuggestions = facetCounts.origin;
+				if(originSuggestions){
+					var rankedOriginSuggestions = new Array();
+					for (var i=0; i < Math.min(originSuggestions.length-1, facetLimit); i+=2) {
+						rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
+					}
+					$('#creator_input').autocomplete({
+						source: function (request, response) {
+				            var term = $.ui.autocomplete.escapeRegex(request.term)
+				                , startsWithMatcher = new RegExp("^" + term, "i")
+				                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
+				                    return startsWithMatcher.test(value.label || value.value || value);
+				                })
+				                , containsMatcher = new RegExp(term, "i")
+				                , contains = $.grep(rankedOriginSuggestions, function (value) {
+				                    return $.inArray(value, startsWith) < 0 && 
+				                        containsMatcher.test(value.label || value.value || value);
+				                });
+				            
+				            response(startsWith.concat(contains));
+				        },
+						select: function(event, ui) {
+							// set the text field
+							$('#creator_input').val(ui.item.value);
+							// add to the filter immediately
+							viewRef.updateTextFilters(event);
+							// prevent default action
+							return false;
+						},
+						position: {
+							my: "left top",
+							at: "left bottom"				
+						}
+					});
+				}
+				
+				// suggest taxonomic criteria
+				var familySuggestions  = facetCounts.family;
+				var speciesSuggestions = facetCounts.species;
+				var genusSuggestions   = facetCounts.genus;
+				var kingdomSuggestions = facetCounts.kingdom;
+				var phylumSuggestions  = facetCounts.phylum;
+				var orderSuggestions   = facetCounts.order;
+				var classSuggestions   = facetCounts["class"];
+				
+				var taxonSuggestions = [];
+				taxonSuggestions = 
+					taxonSuggestions.concat(
+						familySuggestions, 
+						speciesSuggestions, 
+						genusSuggestions, 
+						kingdomSuggestions,
+						phylumSuggestions,
+						orderSuggestions,
+						classSuggestions);
+				var rankedTaxonSuggestions = new Array();
+				for (var i=0; i < Math.min(taxonSuggestions.length-1, facetLimit); i+=2) {
+					rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
+				}
+				$('#taxon_input').autocomplete({
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedTaxonSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
+					position: {
+						my: "left top",
+						at: "left bottom",
+						collision: "none"
+					},
+					select: function(event, ui) {
+						// set the text field
+						$('#taxon_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					}
+				});	
+				
+				// suggest location names
+				var spatialSuggestions = facetCounts.site;
+				var rankedSpatialSuggestions = new Array();
+				for (var i=0; i < Math.min(spatialSuggestions.length-1, facetLimit); i+=2) {
+					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
+				}
+				$('#spatial_input').autocomplete({
+					source: function (request, response) {
+			            var term = $.ui.autocomplete.escapeRegex(request.term)
+			                , startsWithMatcher = new RegExp("^" + term, "i")
+			                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
+			                    return startsWithMatcher.test(value.label || value.value || value);
+			                })
+			                , containsMatcher = new RegExp(term, "i")
+			                , contains = $.grep(rankedSpatialSuggestions, function (value) {
+			                    return $.inArray(value, startsWith) < 0 && 
+			                        containsMatcher.test(value.label || value.value || value);
+			                });
+			            
+			            response(startsWith.concat(contains));
+			        },
+					select: function(event, ui) {
+						// set the text field
+						$('#spatial_input').val(ui.item.value);
+						// add to the filter immediately
+						viewRef.updateTextFilters(event);
+						// prevent default action
+						return false;
+					},
+					position: {
+						my: "left top",
+						at: "left bottom",
+						collision: "flip"
+					}
+				});
+			}, "json");
+		},
+		
+		/**
+		 * ==================================================================================================
+		 * 											NAVIGATING THE UI
+		 * ==================================================================================================
+		**/
 		//Update all the statistics throughout the page
 		updateStats : function() {
 			if (appSearchResults.header != null) {
@@ -916,442 +1109,158 @@ define(['jquery',
 			this.updatePageNumber(page);
 		},
 		
-		//Get the facet counts
-		getAutoCompletes: function(){
-			var viewRef = this;
+		routeToMetadata: function(e){
+			var id = $(e.target).attr('data-id');
 			
-			var facetQuery = "q=" + appSearchResults.currentquery +
-							 "&wt=json" +
-							 "&rows=0" +
-							 "&facet=true" +
-							 "&facet.sort=count" +
-							 "&facet.field=keywords" +
-							 "&facet.field=origin" +
-							 "&facet.field=family" +
-							 "&facet.field=species" +
-							 "&facet.field=genus" +
-							 "&facet.field=kingdom" + 
-							 "&facet.field=phylum" + 
-							 "&facet.field=order" +
-							 "&facet.field=class" +
-							 "&facet.field=attributeName" +
-							 "&facet.field=attributeLabel" +
-							 "&facet.field=site" +
-							 "&facet.field=characteristic_sm" +
-							 "&facet.field=standard_sm" +
-							 "&facet.mincount=1" +
-							 "&facet.limit=-1";
-
-			$.get(appModel.get('queryServiceUrl') + facetQuery, function(data, textStatus, xhr) {
-				
-				var facetCounts = data.facet_counts.facet_fields,
-					facetLimit  = 999;
-								
-				//***Set up the autocomplete (jQueryUI) feature for each text input****//				
-				//For the 'all' filter, use keywords
-				var allSuggestions = facetCounts.keywords;
-				var rankedSuggestions = new Array();
-				for (var i=0; i < Math.min(allSuggestions.length-1, facetLimit); i+=2) {
-					rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + "+)"});
-				}
-
-				$('#all_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					select: function(event, ui) {
-						// set the text field
-						$('#all_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event);
-						// prevent default action
-						return false;
-					},
-					position: {
-						my: "left top",
-						at: "left bottom",
-						collision: "fit"
-					}
-				});
-				
-				// suggest attribute criteria
-				var attributeNameSuggestions = facetCounts.attributeName;
-				var attributeLabelSuggestions = facetCounts.attributeLabel;
-				// NOTE: only using attributeName for auto-complete suggestions.
-				attributeLabelSuggestions = null;
-				
-				var attributeSuggestions = [];
-				attributeSuggestions = 
-					attributeSuggestions.concat(
-						attributeNameSuggestions, 
-						attributeLabelSuggestions);
-				var rankedAttributeSuggestions = new Array();
-				for (var i=0; i < Math.min(attributeSuggestions.length-1, facetLimit); i+=2) {
-					rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
-				}
-				$('#attribute_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedAttributeSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					select: function(event, ui) {
-						// set the text field
-						$('#attribute_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event);
-						// prevent default action
-						return false;
-					},
-					position: {
-						my: "left top",
-						at: "left bottom"				
-					}
-				});
-				
-				// suggest characteristics
-				var characteristicSuggestions = facetCounts.characteristic_sm;
-				var rankedCharacteristicSuggestions = new Array();
-				for (var i=0; i < Math.min(characteristicSuggestions.length-1, facetLimit); i+=2) {
-					rankedCharacteristicSuggestions.push({value: characteristicSuggestions[i], label: characteristicSuggestions[i].substring(characteristicSuggestions[i].indexOf("#")) });
-				}
-				$('#characteristic_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedCharacteristicSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedCharacteristicSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					select: function(event, ui) {
-						// set the text field
-						$('#characteristic_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event);
-						// prevent default action
-						return false;
-					},
-					position: {
-						my: "left top",
-						at: "left bottom"				
-					}
-				});
-				
-				// suggest standards
-				var standardSuggestions = facetCounts.standard_sm;
-				var rankedStandardSuggestions = new Array();
-				for (var i=0; i < Math.min(standardSuggestions.length-1, facetLimit); i+=2) {
-					rankedStandardSuggestions.push({value: standardSuggestions[i], label: standardSuggestions[i].substring(standardSuggestions[i].indexOf("#")) });
-				}
-				$('#standard_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedStandardSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedStandardSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					select: function(event, ui) {
-						// set the text field
-						$('#standard_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event);
-						// prevent default action
-						return false;
-					},
-					position: {
-						my: "left top",
-						at: "left bottom"				
-					}
-				});
+			//If the user clicked on the download button or any element with the class 'stop-route', we don't want to navigate to the metadata
+			if ($(e.target).hasClass('stop-route')){
+				return;
+			}
 			
-				// suggest creator names/organizations
-				var originSuggestions = facetCounts.origin;
-				var rankedOriginSuggestions = new Array();
-				for (var i=0; i < Math.min(originSuggestions.length-1, facetLimit); i+=2) {
-					rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
-				}
-				$('#creator_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedOriginSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					select: function(event, ui) {
-						// set the text field
-						$('#creator_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event);
-						// prevent default action
-						return false;
-					},
-					position: {
-						my: "left top",
-						at: "left bottom"				
+			if(typeof id == "undefined"){
+				$(e.target).parents().each(function(){
+					if(typeof $(this).attr('data-id') != "undefined"){
+						id = $(this).attr('data-id');
 					}
 				});
-				
-				// suggest taxonomic criteria
-				var familySuggestions  = facetCounts.family;
-				var speciesSuggestions = facetCounts.species;
-				var genusSuggestions   = facetCounts.genus;
-				var kingdomSuggestions = facetCounts.kingdom;
-				var phylumSuggestions  = facetCounts.phylum;
-				var orderSuggestions   = facetCounts.order;
-				var classSuggestions   = facetCounts["class"];
-				
-				var taxonSuggestions = [];
-				taxonSuggestions = 
-					taxonSuggestions.concat(
-						familySuggestions, 
-						speciesSuggestions, 
-						genusSuggestions, 
-						kingdomSuggestions,
-						phylumSuggestions,
-						orderSuggestions,
-						classSuggestions);
-				var rankedTaxonSuggestions = new Array();
-				for (var i=0; i < Math.min(taxonSuggestions.length-1, facetLimit); i+=2) {
-					rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
-				}
-				$('#taxon_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedTaxonSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					position: {
-						my: "left top",
-						at: "left bottom",
-						collision: "none"
-					},
-					select: function(event, ui) {
-						// set the text field
-						$('#taxon_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event);
-						// prevent default action
-						return false;
-					}
-				});	
-				
-				// suggest location names
-				var spatialSuggestions = facetCounts.site;
-				var rankedSpatialSuggestions = new Array();
-				for (var i=0; i < Math.min(spatialSuggestions.length-1, facetLimit); i+=2) {
-					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
-				}
-				$('#spatial_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedSpatialSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					select: function(event, ui) {
-						// set the text field
-						$('#spatial_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event);
-						// prevent default action
-						return false;
-					},
-					position: {
-						my: "left top",
-						at: "left bottom",
-						collision: "flip"
-					}
-				});
-			}, "json");
+			}
+			
+			uiRouter.navigate('view/'+id, true);
 		},
 		
-		/* add a marker for objects */
-	/*	addObjectMarker: function(markerDetails) {
+		/**
+		 * ==================================================================================================
+		 * 											THE MAP
+		 * ==================================================================================================
+		**/		
+		renderMap: function() {
 			
-			//Skip this if there is no map
+			//If gmaps isn't enabled or loaded with an error, use list mode
 			if (!gmaps) {
+				this.ready = true;
+				appModel.set('searchMode', 'list');
 				return;
-			}
-			
-			// Retrieve all the details about this marker. 
-			var pid = ("id" in markerDetails) ? markerDetails.get('id') : 0,
-				n   = ("northBoundCoord" in markerDetails) ? markerDetails.get('northBoundCoord') : null,
-				s   = ("southBoundCoord" in markerDetails) ? markerDetails.get('southBoundCoord') : null,
-				e   = ("eastBoundCoord" in markerDetails)  ? markerDetails.get('eastBoundCoord')  : null,
-				w   = ("westBoundCoord" in markerDetails)  ? markerDetails.get('westBoundCoord')  : null;
-			
-			// if already on map
-			if (this.markers[pid]) {
-				return;
-			}
-			
-			
-			//Create Google Map LatLng objects out of our coordinates
-			var latLngSW = new gmaps.LatLng(s, w);
-			var latLngNE = new gmaps.LatLng(n, e);
-			var latLngNW = new gmaps.LatLng(n, w);
-			var latLngSE = new gmaps.LatLng(s, e);
-			
-			//Get the centroid location of this data item
-			var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
-			var latLngCEN = bounds.getCenter();
-			
-			//Keep track of our overall bounds
-			if(this.masterBounds){
-				this.masterBounds = bounds.union(this.masterBounds);
-			}
-			else{
-				this.masterBounds = bounds;
-			}
-	
-			//An infowindow or bubble for each marker
-			var infoWindow = new gmaps.InfoWindow({
-				content:
-					'<div class="gmaps-infowindow">'
-					+ '<h4>' + markerDetails.get('title') 
-					+ ' ' 
-					+ '<a href="#view/' + pid + '" >'
-					+ markerDetails.get('id') 
-					+ '</a>'
-					+ '</h4>'
-					+ '<p>' + markerDetails.get('abstract') + '</p>'
-					+ '</div>',
-				isOpen: false,
-				disableAutoPan: true,
-				maxWidth: 250
-			});
-			
-			// A small info window with just the title for each marker
-			var titleWindow = new gmaps.InfoWindow({
-				content: markerDetails.get('title'),
-				disableAutoPan: true,
-				maxWidth: 250
-			});
+			}		
 
-			//Set up the options for each marker
-			var markerOptions = {
-				position: latLngCEN,
-				title: markerDetails.get('title'),
-				icon: this.markerImage,
-				zIndex: 99999,
-				id: pid,
-				map: this.map
-			};
+			// If the list mode is currently in use, no need to render the map
+			if(appModel.get('searchMode') == 'list'){
+				this.ready = true;
+				return;
+			}
 			
-			//Set up the polygon for each marker
-			var polygon = new gmaps.Polygon({
-				paths: [latLngNW, latLngNE, latLngSE, latLngSW],
-				strokeColor: '#FFFFFF',
-				strokeWeight: 2,
-				fillColor: '#FFFFFF',
-				fillOpacity: '0.3'
-			});
-			
-			
-			//Create an instance of the marker
-			var marker = new gmaps.Marker(markerOptions);
-			this.markers[pid] = marker;
-			
-			//Show the info window upon marker click
-			gmaps.event.addListener(marker, 'click', function() {
-				titleWindow.close();
-				infoWindow.open(this.map, marker);
-				infoWindow.isOpen = true;
-			});
-			
-			//Close the infowindow upon any click on the map
-			gmaps.event.addListener(this.map, 'click', function() {
-				titleWindow.close();
-				infoWindow.close();
-				infoWindow.isOpen = false;
-			});
-			
-			var viewRef = this;
-			
-			// Behavior for marker mouseover
-			gmaps.event.addListener(marker, 'mouseover', function() {
+			$("body").addClass("mapMode");				
 				
-				if(!infoWindow.isOpen){						
-					//Open the brief title window
-					titleWindow.open(viewRef.map, marker);	
+			gmaps.visualRefresh = true;
+			var mapOptions = mapModel.get('mapOptions');
+			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
+
+			var mapRef = this.map;
+			var viewRef = this;
+
+			google.maps.event.addListener(mapRef, "idle", function(){
+			
+				viewRef.ready = true;
+				
+				if(viewRef.allowSearch){
+					
+					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
+					if(viewRef.map.getZoom() == mapOptions.minZoom){
+						if(!viewRef.hasZoomed){
+							return;
+						}	
+						viewRef.resetMap();	
+					}
+					else{
+						console.log("zoom level " + viewRef.map.getZoom());
+						
+						//Get the Google map bounding box
+						var boundingBox = mapRef.getBounds();
+						
+						//Set the search model spatial filters
+						searchModel.set('north', boundingBox.getNorthEast().lat());
+						searchModel.set('west',  boundingBox.getSouthWest().lng());
+						searchModel.set('south', boundingBox.getSouthWest().lat());
+						searchModel.set('east',  boundingBox.getNorthEast().lng());
+						
+						//Determine the precision of geohashes to search for
+						var zoom = mapRef.getZoom(),
+							precision;
+						
+						if(zoom <= 5) precision = 2;
+						else if(zoom <= 7) precision = 3;
+						else if (zoom <= 11) precision = 4;
+						else if (zoom <= 13) precision = 5;
+						else if (zoom <= 15) precision = 6;
+						else if (zoom <= 19) precision = 7;
+						
+						//Encode the Google Map bounding box into geohash
+						var geohashNorth = boundingBox.getNorthEast().lat(),
+							geohashWest  = boundingBox.getSouthWest().lng(),
+							geohashSouth = boundingBox.getSouthWest().lat(),
+							geohashEast	 = boundingBox.getNorthEast().lng(),
+							geohashBBoxes = nGeohash.bboxes(geohashSouth, geohashWest, geohashNorth, geohashEast, precision);
+						
+						//Save our geohash search settings
+						searchModel.set('geohashes', geohashBBoxes);
+						searchModel.set('geohashLevel', precision);
+						
+						//Set the search model map filters
+						searchModel.set('map', {
+							zoom: viewRef.map.getZoom(), 
+							center: viewRef.map.getCenter()
+							});
+						
+						//Add a new visual 'current filter' to the DOM for the spatial search
+						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
+					}
+					
+					//Trigger a new search
+					viewRef.triggerSearch();	
+				}
+				else{
+					viewRef.allowSearch = true;
 				}
 				
-				//Show the data boundaries as a polygon
-				polygon.setMap(viewRef.map);
-				polygon.setVisible(true);
+				viewRef.hasZoomed = false;
 			});
 			
-			// Behavior for marker mouseout
-			gmaps.event.addListener(marker, 'mouseout', function() {
-				titleWindow.close();
-				
-				//Hide the data coverage boundaries polygon
-				polygon.setVisible(false);
+			//Let the view know we have zoomed on the map
+			google.maps.event.addListener(mapRef, "zoom_changed", function(){
+				viewRef.allowSearch = true;
+				viewRef.hasZoomed = true;
 			});
-			
+
 		},
-	*/	
-		openMarker: function(e){
+		
+		//Resets the model and view settings related to the map
+		resetMap : function(){
+			if(!gmaps){
+				return;
+			}
+			
+			//First reset the model
+			//The categories pertaining to the map
+			var categories = ["east", "west", "north", "south"];
+			
+			//Loop through each and remove the filters from the model
+			for(var i = 0; i < categories.length; i++){
+				searchModel.set(categories[i], null);				
+			}
+			
+			//Reset the map settings
+			mapModel.clear();
+			
+			this.allowSearch = false;
+			
+			
+			//Remove the map filter in the UI
+			this.hideFilter($('#current-spatial-filters').find('[data-term="'+ this.reservedMapPhrase +'"]'));
+		},
+		
+		/**
+		 * Show the marker, infoWindow, and bounding coordinates polygon on the map when the user hovers on the marker icon in the result list
+		 */
+		showResultOnMap: function(e){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
 				return false;
@@ -1361,22 +1270,27 @@ define(['jquery',
 			window.clearTimeout(this.centerTimeout);
 			
 			//Get the attributes about this dataset
-			var id = $(e.target).attr('data-id');
-			var centerGeohash = $(e.target).attr("data-center");
+			var resultRow = e.target,
+				id = $(resultRow).attr("data-id");
 			
 			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
 			if(typeof id == "undefined"){
-				$(e.target).parents().each(function(){
+				$(resultRow).parents().each(function(){
 					if(typeof $(this).attr('data-id') != "undefined"){
 						id = $(this).attr('data-id');
-						centerGeohash = $(this).attr('data-center');
+						resultRow = this;
 					}
 				});
 			}
 			
-			//Zoom to the center of this dataset
-			var decodedGeohash = nGeohash.decode(centerGeohash);
-			var position = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
+			//Open up the infoWindow, display the polygon, and display the marker for this dataset
+			if(this.resultMarkers[id]){
+				this.resultMarkers[id].infoWindow.open(this.map, this.resultMarkers[id].marker);
+				this.resultMarkers[id].infoWindow.isOpen = true;
+				this.resultMarkers[id].marker.setMap(this.map);
+				this.resultMarkers[id].polygon.setMap(this.map);
+				this.resultMarkers[id].polygon.setVisible(true);
+			}
 
 			//Do not trigger a new search when we pan
 			this.allowSearch = false;
@@ -1384,33 +1298,44 @@ define(['jquery',
 			//Pan the map
 			this.map.panTo(position);	
 		},
-	/*	
-		closeMarker: function(e){
+	
+		/**
+		 * Hide the marker, infoWindow, and bounding coordinates polygon on the map when the user stops hovering on the marker icon in the result list
+		 */
+		hideResultOnMap: function(e){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
 				return false;
 			}
 			
-			var id = $(e.target).attr('data-id');
+			//Get the attributes about this dataset
+			var resultRow = e.target,
+				id = $(resultRow).attr("data-id");
 			
-			//The mouseout event might be triggered by a nested element, so loop through the parents to find the id
+			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
 			if(typeof id == "undefined"){
 				$(e.target).parents().each(function(){
 					if(typeof $(this).attr('data-id') != "undefined"){
 						id = $(this).attr('data-id');
+						resultRow = this;
 					}
 				});
 			}		
 			
-			//Trigger the mouseout event
-			gmaps.event.trigger(this.markers[id], 'mouseout');
+			//Find the marker, polygon, and infoWindow in the view for this result item and close it
+			if(this.resultMarkers[id]){
+				this.resultMarkers[id].infoWindow.close();
+				this.resultMarkers[id].infoWindow.isOpen = false;
+				this.resultMarkers[id].polygon.setMap(null);
+				this.resultMarkers[id].polygon.setVisible(false);
+				this.resultMarkers[id].marker.setMap(null);
+			}
 			
 			//Pan back to the map center so the map will reflect the current spatial filter bounding box
 			var mapCenter = mapModel.get('center');			
 			if(mapCenter !== null){
 				var viewRef = this;
-			
-				
+
 				// Set a delay on the panning in case we hover over another openMarker item right away.
 				// Without this delay the map will recenter quickly, then move to the next marker, etc. and it is very jarring
 				var recenter = function(){
@@ -1425,124 +1350,9 @@ define(['jquery',
 			
 		},
 		
-		showMarkers: function() {
-			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
-				return false;
-			}
-			
-			var i = 1;
-			_.each(_.values(this.markers), function(marker) {
-				setTimeout(function() {
-					marker.setVisible(true);
-				}, i++ * 1);
-			});
-		},
-		
-		// removes any existing markers that are not in the new search results
-		mergeMarkers: function() {
-			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
-				return false;
-			}
-			
-			var searchPids =
-			_.map(appSearchResults.models, function(element, index, list) {
-				return element.get("id");
-			});
-			var diff = _.difference(_.keys(this.markers), searchPids);
-			var viewRef = this;
-			_.each(diff, function(pid, index, list) {
-				var marker = viewRef.markers[pid];
-				marker.setMap(null);
-				delete viewRef.markers[pid];
-			});
-		},
-*/
-		// Add a single SolrResult item to the list by creating a view for it, and
-		// appending its element to the DOM.
-		addOne: function (result) {
-			//Get the view and package service URL's
-			this.$view_service = appModel.get('viewServiceUrl');
-			this.$package_service = appModel.get('packageServiceUrl');
-			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
-			
-			//Create a new result item
-			var view = new SearchResultView({ model: result });
-			
-			//Add this item to the list
-			this.$results.append(view.render().el);
-			
-			// map it
-		/*	if(gmaps && (appModel.get('searchMode') == 'map')){
-				this.addObjectMarker(result);	
-			}
-		*/
-		},
-
-		/** Add all items in the **SearchResults** collection
-		 * This loads the first 25, then waits for the map to be 
-		 * fully loaded and then loads the remaining items.
-		 * Without this delay, the app waits until all records are processed
-		*/
-		addAll: function () {
-			console.log("Adding all the results to the list and map");
-			
-			// do this first to indicate coming results
-			this.updateStats();
-						
-			//reset the master bounds
-			this.masterBounds = null;
-			
-			//Clear the results list before we start adding new rows
-			this.$results.html('');
-			
-			//Remove all the existing tiles on the map
-			this.removeTiles();
-			this.removeMarkers();
-			
-			//If there are no results, display so
-			var numFound = appSearchResults.models.length;
-			if (numFound == 0){
-				this.$results.html('<p id="no-results-found">No results found.</p>');
-			}
-			
-			//Remove the loading class and styling
-			this.$results.removeClass('loading');
-			
-			//After the map is done loading, then load the rest of the results into the list
-			var viewRef = this;
-			var intervalId = setInterval(function() {
-				if (viewRef.ready) {
-					clearInterval(intervalId);
-										
-					//--First map all the results--
-					if(gmaps){
-						//Draw all the tiles on the map to represent the datasets
-						viewRef.drawTiles();	
-						
-						//Remove the loading styles from the map
-						$("#map-container").removeClass("loading");
-					}
-					
-					//--- Add all the results to the list ---
-					for (i = 0; i < numFound; i++) {
-						var element = appSearchResults.models[i];
-						viewRef.addOne(element);
-					};
-					
-					// Initialize any tooltips within the result item
-					$(".tooltip-this").tooltip();
-					$(".popover-this").popover();
-
-				}
-				
-			}, 500);
-			
-			//After all the results are loaded, query for our facet counts in the background
-			this.getAutoCompletes();
-		},
-		
+		/**
+		 * Create a tile for each geohash facet. A separate tile label is added to the map with the count of the facet.
+		 **/
 		drawTiles: function(){
 			
 			this.removeTiles();
@@ -1650,6 +1460,7 @@ define(['jquery',
 					tileCount	   = geohashes[i+1],
 					percent		   = tileCount/maxCount,
 					useBins		   = (total > 200) ? true : false,
+					drawMarkers    = mapModel.get("drawMarkers"),
 					marker,
 					count,
 					color;
@@ -1665,58 +1476,41 @@ define(['jquery',
 						if(geohash9Values[x].indexOf(geohashes[i]) == 0){
 							//This is the most exact geohash location
 							exactLocation = geohash9Values[x];
-							var decodedLocation = nGeohash.decode(exactLocation),
-							     latLngLocation = new google.maps.LatLng(decodedLocation.latitude, decodedLocation.longitude);
-							
+							//Save the geohash
 							viewRef.markerGeohashes.push(exactLocation);
 							
 							break; //Stop looking
 						}
 					}
 					
-					//Draw the marker
-					var marker = this.drawMarker(latLngLocation);
-					
-					//Save this marker in the view
-					this.markers.push({marker: marker, geohash: exactLocation});
+					if(drawMarkers){
+						//Draw the marker
+						var decodedLocation = nGeohash.decode(exactLocation),
+					     	latLngLocation = new google.maps.LatLng(decodedLocation.latitude, decodedLocation.longitude);
+						var marker = this.drawMarker(latLngLocation);
+						
+						//Save this marker in the view
+						this.markers.push({marker: marker, geohash: exactLocation});
+					}
 				}
 				else{
 					if(!useBins){
 						//Determine the style of the tile depending on the percentage of datasets
-						if (percent < .20){
-							color = mapModel.get("tileColors").level1; 
-						}
-						else if (percent < .40){
-							color = mapModel.get("tileColors").level2; 
-						}
-						else if (percent < .70){
-							color = mapModel.get("tileColors").level3; 
-						}
-						else if (percent < .80) {
-							color = mapModel.get("tileColors").level4; 
-						}
-						else{
-							color = mapModel.get("tileColors").level5; 
-						}
+							 if (percent < .20) color = mapModel.get("tileColors").level1;
+						else if (percent < .40) color = mapModel.get("tileColors").level2; 
+						else if (percent < .70) color = mapModel.get("tileColors").level3; 
+						else if (percent < .80) color = mapModel.get("tileColors").level4; 
+						else 					color = mapModel.get("tileColors").level5; 
 					}
 					else{
 						//Determine the style of the tile depending on the number of datasets
-						if (tileCount < 10){
-							color = mapModel.get("tileColors").level1; 
-						}
-						else if (tileCount < 50){
-							color = mapModel.get("tileColors").level2; 
-						}
-						else if (tileCount < 100){
-							color = mapModel.get("tileColors").level3; 
-						}
-						else if (tileCount < 1000) {
-							color = mapModel.get("tileColors").level4; 
-						}
-						else{
-							color = mapModel.get("tileColors").level5; 
-						}
-				}
+						     if (tileCount < 10)   color = mapModel.get("tileColors").level1; 
+						else if (tileCount < 50)   color = mapModel.get("tileColors").level2; 
+						else if (tileCount < 100)  color = mapModel.get("tileColors").level3; 
+						else if (tileCount < 1000) color = mapModel.get("tileColors").level4; 
+						else                       color = mapModel.get("tileColors").level5; 
+					}
+					
 					//Add the count to the tile
 					var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
 									
@@ -1757,7 +1551,10 @@ define(['jquery',
 			if(this.markerGeohashes.length > 0) this.addMarkerInfoWindows();
 			if(mapModel.isMaxZoom(this.map)) this.addTileInfoWindows();
 		},
-					
+			
+		/**
+		 * With the options and label object given, add a single tile to the map and set its event listeners
+		 **/
 		drawTile: function(options, label){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
@@ -1811,6 +1608,9 @@ define(['jquery',
 			return tile;
 		},
 		
+		/**
+		 * With the Latitude,Longitude Google Maps object given, add a single marker to the map.
+		 */
 		drawMarker: function(latLng){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
@@ -1916,7 +1716,7 @@ define(['jquery',
 						infoWindow.isOpen = false;
 					});
 				});
-			});
+			}, "json");
 		},
 		
 		/**
@@ -2069,6 +1869,9 @@ define(['jquery',
 			this.tileInfoWindows = [];
 		},
 		
+		/**
+		 * Iterate over all the markers in the view and remove them from the map and view
+		 */
 		removeMarkers: function(){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
@@ -2084,6 +1887,154 @@ define(['jquery',
 			this.markers = [];
 			this.markerGeohashes = [];
 			this.markerInfoWindows = [];
+		},
+		
+		
+		/**
+		 * ==================================================================================================
+		 * 											ADDING RESULTS 
+		 * ==================================================================================================
+		**/
+
+		/** Add all items in the **SearchResults** collection
+		 * This loads the first 25, then waits for the map to be 
+		 * fully loaded and then loads the remaining items.
+		 * Without this delay, the app waits until all records are processed
+		*/
+		addAll: function () {
+			console.log("Adding all the results to the list and map");
+			
+			// do this first to indicate coming results
+			this.updateStats();
+						
+			//reset the master bounds
+			this.masterBounds = null;
+			
+			//Clear the results list before we start adding new rows
+			this.$results.html('');
+			
+			//Remove all the existing tiles on the map
+			this.removeTiles();
+			this.removeMarkers();
+			
+			//If there are no results, display so
+			var numFound = appSearchResults.models.length;
+			if (numFound == 0){
+				this.$results.html('<p id="no-results-found">No results found.</p>');
+			}
+			
+			//Remove the loading class and styling
+			this.$results.removeClass('loading');
+			
+			//After the map is done loading, then load the rest of the results into the list
+			var viewRef = this;
+			var intervalId = setInterval(function() {
+				if (viewRef.ready) {
+					clearInterval(intervalId);
+										
+					//--First map all the results--
+					if(gmaps){
+						//Draw all the tiles on the map to represent the datasets
+						viewRef.drawTiles();	
+						
+						//Remove the loading styles from the map
+						$("#map-container").removeClass("loading");
+					}
+					
+					//--- Add all the results to the list ---
+					for (i = 0; i < numFound; i++) {
+						var element = appSearchResults.models[i];
+						viewRef.addOne(element);
+					};
+					
+					// Initialize any tooltips within the result item
+					$(".tooltip-this").tooltip();
+					$(".popover-this").popover();
+
+				}
+				
+			}, 500);
+			
+			//After all the results are loaded, query for our facet counts in the background
+			this.getAutoCompletes();
+		},
+		
+		/**
+		 * Add a single SolrResult item to the list by creating a view for it and appending its element to the DOM.
+		 */
+		addOne: function (result) {
+			//Get the view and package service URL's
+			this.$view_service = appModel.get('viewServiceUrl');
+			this.$package_service = appModel.get('packageServiceUrl');
+			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
+			
+			//Create a new result item
+			var view = new SearchResultView({ model: result });
+			
+			//Add this item to the list
+			this.$results.append(view.render().el);
+			
+			// map it
+			if(gmaps && (result.northBoundCoord)){
+				
+				//Set up the options for our polygon and marker
+				var north = result.northBoundCoord,
+					south = result.southBoundCoord,
+					east  = result.eastBoundCoord,
+					west  = result.westBoundCoord,
+					title = result.title,
+					centerGeohash = result.geohash_9[0],	
+					decodedGeohash = nGeohash.decode(centerGeohash),
+					position = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
+					latLngSW = new gmaps.LatLng(south, west),
+					latLngNE = new gmaps.LatLng(north, east),
+					latLngNW = new gmaps.LatLng(north, west),
+					latLngSE = new gmaps.LatLng(south, east),
+					//Create a polygon representing the bounding coordinates of this data
+					polygon = new gmaps.Polygon({
+						paths: [latLngNW, latLngNE, latLngSE, latLngSW],
+						strokeColor: '#FFFFFF',
+						strokeWeight: 2,
+						fillColor: '#FFFFFF',
+						fillOpacity: '0.3'
+					}),
+					//Create a marker at the center of this data
+					marker = new gmaps.Marker({
+						position: position,
+						icon: mapModel.get("markerImage"),
+						zIndex: 99999
+					}),
+					// A small info window with just the title for each marker
+					infoWindow = new gmaps.InfoWindow({
+						content: title,
+						disableAutoPan: true,
+						maxWidth: 250
+					});
+				
+				this.resultMarkers[result.id] = {polygon: polygon, marker: marker, infoWindow: infoWindow}
+			}
+		
+		},
+		
+		
+		/**
+		 * ==================================================================================================
+		 * 											STYLING THE UI 
+		 * ==================================================================================================
+		**/
+		toggleMapMode: function(){	
+			if(gmaps){
+				$('body').toggleClass('mapMode');	
+			}
+			
+			if(appModel.get('searchMode') == 'map'){
+				appModel.set('searchMode', 'list');
+			}
+			else if (appModel.get('searchMode') == 'list'){
+				appModel.set('searchMode', 'map');
+				this.renderMap();
+				this.getResults();
+			}
 		},
 		
 		// Communicate that the page is loading
@@ -2135,49 +2086,6 @@ define(['jquery',
 				}
 			}
 			
-		},
-		
-		toggleMapMode: function(){	
-			if(gmaps){
-				$('body').toggleClass('mapMode');	
-			}
-			
-			if(appModel.get('searchMode') == 'map'){
-				appModel.set('searchMode', 'list');
-			}
-			else if (appModel.get('searchMode') == 'list'){
-				appModel.set('searchMode', 'map');
-				this.renderMap();
-				this.showResults();
-			}
-		},
-		
-		routeToMetadata: function(e){
-			var id = $(e.target).attr('data-id');
-			
-			//If the user clicked on the download button or any element with the class 'stop-route', we don't want to navigate to the metadata
-			if ($(e.target).hasClass('stop-route')){
-				return;
-			}
-			
-			if(typeof id == "undefined"){
-				$(e.target).parents().each(function(){
-					if(typeof $(this).attr('data-id') != "undefined"){
-						id = $(this).attr('data-id');
-					}
-				});
-			}
-			
-			uiRouter.navigate('view/'+id, true);
-		},
-		
-		postRender: function() {
-			if((gmaps) && (appModel.get('searchMode') == 'map')){
-				console.log("Resizing the map");
-				var center = this.map.getCenter(); 
-				google.maps.event.trigger(this.map, 'resize'); 
-				this.map.setCenter(center);	
-			}
 		},
 		
 		onClose: function () {			

@@ -14,7 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		initialize: function(models, options) {
 		    this.currentquery = options.query   || '*:*';
 		    this.fields 	  = options.fields  || "id,title";
-		    this.rows 		  = options.rows    || 10;
+		    this.rows 		  = options.rows    || 25;
 		    this.start 		  = options.start   || 0;
 		    this.sort 		  = options.sort    || 'dateUploaded+desc';
 		    this.facet 		  = options.facet   || ['keywords'];

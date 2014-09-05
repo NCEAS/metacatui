@@ -21,10 +21,10 @@ define(['jquery', 'underscore', 'backbone'],
 			west: null,
 			north: null,
 			south: null,
-			//geohashBBoxes: [],
-			//geohashLevel: 9,
+			geohashes: [],
+			geohashLevel: 9,
 			spatial: [],
-			attribute: [],
+			//attribute: [],
 			//characteristic: [],
 			//standard: [],
 			additionalCriteria: [],
@@ -55,6 +55,16 @@ define(['jquery', 'underscore', 'backbone'],
 				return changedKeys.length;
 			}
 			return 0;
+		},
+		
+		//Function filterIsAvailable will check if a filter is available in this search index - 
+		//if the filter name if included in the defaults of this model, it is marked as available. 
+		//Comment out or remove defaults that are not in the index or should not be included in queries
+		filterIsAvailable: function(name){
+			//Get the keys for this model as a way to list the filters that are available
+			var defaults = _.keys(this.defaults);
+			if(_.indexOf(defaults, name) >= 0) return true;
+			else return false;
 		},
 		
 		/*
@@ -88,15 +98,8 @@ define(['jquery', 'underscore', 'backbone'],
 				return false;
 			};
 			
-			//Star the query string
+			//Start the query string
 			var query = "";
-			
-			//Get the keys for this model as a way to list the filters that are available
-			var defaults = _.keys(this.defaults),
-				available = function(filterName){
-					if(_.indexOf(defaults, filterName) >= 0) return true;
-					else return false;
-				};
 			
 			//See if we are looking for a sub-query or a query for all filters
 			if(typeof filter == "undefined"){
@@ -106,12 +109,12 @@ define(['jquery', 'underscore', 'backbone'],
 			else var getAll = false;
 			
 			//---resourceMap---
-			if(available("resourceMap") && ((filter == "resourceMap") || getAll)){
+			if(this.filterIsAvailable("resourceMap") && ((filter == "resourceMap") || getAll)){
 				if(this.get('resourceMap')) query += this.fieldNameMap["resourceMap"] + ':*';
 			}
 			
 			//---Taxon---
-			if(available("taxon") && ((filter == "taxon") || getAll)){
+			if(this.filterIsAvailable("taxon") && ((filter == "taxon") || getAll)){
 				var taxon = this.get('taxon');
 				var thisTaxon = null;
 				for (var i=0; i < taxon.length; i++){
@@ -140,7 +143,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//------Pub Year-----
-			if(available("pubYear") && ((filter == "pubYear") || getAll)){
+			if(this.filterIsAvailable("pubYear") && ((filter == "pubYear") || getAll)){
 				//Get the types of year to be searched first
 				var pubYear  = this.get('pubYear');
 				if (pubYear){
@@ -154,7 +157,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Data year------
-			if(available("dataYear") && ((filter == "dataYear") || getAll)){
+			if(this.filterIsAvailable("dataYear") && ((filter == "dataYear") || getAll)){
 				var dataYear = this.get('dataYear');
 				
 				if(dataYear){
@@ -168,14 +171,14 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Geohashes-----
-			if(available("geohashLevel") && (((filter == "geohash") || getAll) && (this.get('north') != null))){
-				var geohashBBoxes = this.get("geohashBBoxes");
+			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll) && (this.get('north') != null))){
+				var geohashes = this.get("geohashes");
 				
-				if((typeof geohashBBoxes === undefined) || (geohashBBoxes.length == 0)) return "";
+				if((typeof geohashes === undefined) || (geohashes.length == 0)) return "";
 				
 				var query = "+geohash_" + this.get("geohashLevel") + ":(";
 				
-				_.each(geohashBBoxes, function(geohash, key, list){
+				_.each(geohashes, function(geohash, key, list){
 					query += geohash + "%20OR%20";
 				});
 				
@@ -184,33 +187,8 @@ define(['jquery', 'underscore', 'backbone'],
 				query += ")";
 			}
 			
-			//Map
-			if(this.get('north') != null){
-				query += "+southBoundCoord:%7B" + this.get('south') + "%20TO%20" + this.get('north') + "%7D" + 
-						 "+northBoundCoord:%7B" + this.get('south') + "%20TO%20" + this.get('north') + "%7D";
-				
-				if (this.get('west') > this.get('east')) {
-					query += 
-						"+eastBoundCoord:("
-						+ "%7B" + this.get('west') + "%20TO%20" + "180" + "%7D"
-						+ "%20OR%20"
-						+ "%7B" + "-180" + "%20TO%20" + this.get('east') + "%7D"
-						+ ")"
-						+ "+westBoundCoord:(" 
-						+ "%7B" + this.get('west') + "%20TO%20" + "180" + "%7D"
-						+ "%20OR%20"
-						+ "%7B" + "-180" + "%20TO%20" + this.get('east') + "%7D"
-						+ ")"
-						;
-				} else {
-					query += 
-						"+eastBoundCoord:%7B" + this.get('west') + "%20TO%20" + this.get('east') + "%7D" +
-						"+westBoundCoord:%7B" + this.get('west') + "%20TO%20" + this.get('east') + "%7D";
-				}
-			}
-			
 			//-----Excluded fields-----
-			if(available("exclude") && ((filter == "exclude") || getAll)){
+			if(this.filterIsAvailable("exclude") && ((filter == "exclude") || getAll)){
 				var exclude = this.get("exclude");
 				_.each(exclude, function(excludeField, key, list){
 					query += "+-" + excludeField.field + ":" + excludeField.value;
@@ -218,7 +196,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Additional criteria - both field and value are provided-----
-			if(available("additionalCriteria") && ((filter == "additionalCriteria") || getAll)){
+			if(this.filterIsAvailable("additionalCriteria") && ((filter == "additionalCriteria") || getAll)){
 				var additionalCriteria = this.get('additionalCriteria');
 				for (var i=0; i < additionalCriteria.length; i++){
 					var value;
@@ -231,7 +209,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----All (full text search) -----
-			if(available("all") && ((filter == "all") || getAll)){
+			if(this.filterIsAvailable("all") && ((filter == "all") || getAll)){
 				var all = this.get('all');
 				for (var i=0; i < all.length; i++){
 					var value;
@@ -254,7 +232,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			_.each(otherFilters, function(filterName, key, list){
-				if(available(filterName) && ((filter == filterName) || getAll)){
+				if(model.filterIsAvailable(filterName) && ((filter == filterName) || getAll)){
 					var filterValue = null;
 					var filterValues = model.get(filterName);
 					
@@ -275,6 +253,29 @@ define(['jquery', 'underscore', 'backbone'],
 			});
 						
 			return query;
+		},
+		
+		getFacetQuery: function(){
+			
+			var facetQuery = "&facet=true" +
+							 "&facet.sort=count" +
+							 "&facet.mincount=1" +
+							 "&facet.limit=-1" +
+							 "&facet.field=keywords" +
+							 "&facet.field=origin" +
+							 "&facet.field=family" +
+							 "&facet.field=species" +
+							 "&facet.field=genus" +
+							 "&facet.field=kingdom" + 
+							 "&facet.field=phylum" + 
+							 "&facet.field=order" +
+							 "&facet.field=class" +
+							 "&facet.field=site";
+			if(this.filterIsAvailable("attribute")) facetQuery += "&facet.field=attributeName&facet.field=attributeLabel";
+			if(this.filterIsAvailable("characteristic")) facetQuery += "&facet.field=characteristic_sm";
+			if(this.filterIsAvailable("standard")) facetQuery += "&facet.field=standard_sm";
+			
+			return facetQuery;
 		},
 		
 		clear: function() {

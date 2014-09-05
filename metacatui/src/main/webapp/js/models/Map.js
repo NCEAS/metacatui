@@ -31,6 +31,9 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				    mapTypeId: google.maps.MapTypeId.TERRAIN
 			},
 			
+			//Set to true to draw markers where tile counts are equal to 1. If set to false, a tile with the count "1" will be drawn instead.
+			drawMarkers: false,
+			
 			//If this theme doesn't have an image in this location, Google maps will use their default marker image
 			markerImage: "./js/themes/" + theme + "/img/map-marker.png",
 			

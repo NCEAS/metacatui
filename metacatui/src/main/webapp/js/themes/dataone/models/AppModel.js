@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 			}
 			
-			this.set('baseUrl', 'https://cn-stage.test.dataone.org');
+			this.set('baseUrl', 'https://cn.dataone.org');
 			
 			// these are pretty standard, but can be customized if needed
 			//this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
