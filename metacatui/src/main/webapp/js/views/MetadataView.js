@@ -213,8 +213,6 @@ define(['jquery',
 						viewRef.insertVisuals(images, "image");
 						viewRef.insertVisuals(pdfs, "pdf");
 						
-						//Replace Ecogrid Links with DataONE API links
-						viewRef.replaceEcoGridLinks(pids);
 										
 						//Now go through all of our objects and add them to our map
 						_.each(objects, function(object){
@@ -228,14 +226,26 @@ define(['jquery',
 						//For each resource map package, add a table of its contents to the page 
 						var count = 0;
 						_.each(maps, function(thisMap){
+							var dataWithDetailsOnPage = [];
+							//If a data object in this package is mentioned in the metadata, insert a link to its details
+							_.each(packages[thisMap.id], function(object){
+								if(viewRef.$el.find(":contains(" + object.id + ")").length){
+									dataWithDetailsOnPage.push(object.id);
+								}
+							});
+							
 							$('#downloadContents').append(viewRef.downloadContentsTemplate({
 								objects: packages[thisMap.id],
 								resourceMap: thisMap,
 								package_service: packageServiceUrl,
 								object_service: objectServiceUrl,
-								EMLRoute: EMLRoute
-							}));	
+								EMLRoute: EMLRoute,
+								dataWithDetailsOnPage: dataWithDetailsOnPage
+							}));
 						}); 
+						
+						//Replace Ecogrid Links with DataONE API links
+						viewRef.replaceEcoGridLinks(pids);
 						
 						//Move the download button to our download content list area
 					    $("#downloadPackage").detach();
@@ -283,7 +293,6 @@ define(['jquery',
 						var labelEl = $(parentEl).find('label:contains("' + direction + '")');
 						if(labelEl){
 							var coordinate = $(labelEl).next().html();
-							console.log('coordinate: ' + coordinate);
 							coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
 							coordinates.push(coordinate);	
 						}
@@ -678,9 +687,13 @@ define(['jquery',
 							$(thisLink).attr('href', appModel.get('objectServiceUrl') + encodeURIComponent(pids[i]));
 							$(thisLink).text(pids[i]);
 							
-							//Insert an anchor near this spot in the DOM
-							$(thisLink).parents().find('.dataTableContainer').prepend('<a name="' + pids[i] + '"></a>');
-							
+							//Insert an anchor at the parent element that contains the data object detials
+							var parents = $(thisLink).parents();
+							_.each(parents, function(parent){
+								if($(parent).hasClass("dataTableContainer"))
+									$(parent).prepend('<a name="' + pids[i] + '"></a>');
+							});
+														
 							//We can stop looking at the pids now
 							i = pids.length;
 						}

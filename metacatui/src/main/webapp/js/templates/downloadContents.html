@@ -119,7 +119,10 @@ else{
 				readCount = object.read_count_i + " downloads";
 			}			
 			formatType = '<i class="icon-table"></i>' + formatType;
-			moreInfo = '<a href="#' + object.id + '">Details <i class="icon-info-sign"></i></a>';
+			if(_.indexOf(dataWithDetailsOnPage, object.id) > -1)
+				moreInfo = '<a href="#' + object.id + '">Details <i class="icon-info-sign"></i></a>';
+			else
+				moreInfo = null;
 		}
 				
 		
@@ -128,10 +131,10 @@ else{
 		print('<td class="id">' + id + '</td>');		
 		print('<td class="file-type">' + fileType + '</td>');		
 		print('<td class="size">' + size + '</td>');
-		if(readCount.length > 0){
+		if(readCount.length > 0)
 			print('<td class="readCount">' + readCount + '</td>');
-		}
-		print('<td class="more-info">' + moreInfo + '</td>');
+		if(moreInfo)
+			print('<td class="more-info">' + moreInfo + '</td>');
 		print('</tr>');
 		
 	});
