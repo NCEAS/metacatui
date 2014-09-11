@@ -66,10 +66,10 @@ define(['jquery',
 			// get the pid to render
 			var pid = appModel.get('pid');
 			
-			//URL encode the pid
+			// URL encode the pid
 			this.encodedPid = encodeURIComponent(pid);
 			
-			//Check for a view service in this appModel
+			// Check for a view service in this appModel
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) var endpoint = appModel.get('viewServiceUrl') + pid + ' #Metadata';
 					
 			if(endpoint && (endpoint !== undefined)){
@@ -93,9 +93,7 @@ define(['jquery',
 								
 								viewRef.insertResourceMapContents(appModel.get('pid'));
 								if(gmaps) viewRef.insertSpatialCoverageMap();
-
-							}
-												
+							}							
 						});
 			}
 			else this.renderMetadataFromIndex();

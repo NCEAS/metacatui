@@ -50,7 +50,12 @@ define(['jquery',
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){ 
 
 				if(data.response.numFound == 0){
-					var msg = "<h4>That ID does not exist.</h4>";
+					var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
+							  "<ul class='indent'>" +
+								  "<li>The content was removed because it was invalid or inappropriate.</li>" +
+								  "<li>You do not have permission to view this content.</li>" +
+								  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
+							  "</ul>";
 					view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
 				}
 				else{
