@@ -147,6 +147,12 @@
     .tooltip{
     	min-width: 60px;
     }
+    
+   	.ellipsis{
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
 
  /* HEADER
 -------------------------------------------------- */ 

@@ -159,6 +159,12 @@ Bold 700
      	margin: 0px;
      }
      
+     .ellipsis{
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+     
     /* For full-screen background image */
 	img.bg{
 		min-height: 100%;

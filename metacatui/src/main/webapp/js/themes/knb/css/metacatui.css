@@ -141,6 +141,12 @@ Bold 700 Italic
     	min-height: 0px;
     }
     
+    .ellipsis{
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+    
 	/* Offsets the anchor links by the same height as the fixed header */
 	#About a[name],
 	#Tools a[name],
