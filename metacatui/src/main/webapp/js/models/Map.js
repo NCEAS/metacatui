@@ -11,25 +11,27 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 			map: null,
 			
 			//The options for the map using the Google Maps API MapOptions syntax
-			mapOptions: {
-				    zoom: 3,
-					minZoom: 3,
-				    center: new gmaps.LatLng(0, -70),
-					disableDefaultUI: true,
-				    zoomControl: true,
-				    zoomControlOptions: {
-					          style: google.maps.ZoomControlStyle.SMALL,
-					          position: google.maps.ControlPosition.TOP_LEFT
-					        },
-					panControl: false,
-					scaleControl: false,
-					streetViewControl: false,
-					mapTypeControl: true,
-					mapTypeControlOptions:{
-							position: google.maps.ControlPosition.TOP_LEFT
-					},
-				    mapTypeId: google.maps.MapTypeId.TERRAIN
-			},
+			mapOptions: 
+				(gmaps)? 
+					{   zoom: 3,
+						minZoom: 3,
+					    center: new gmaps.LatLng(0, -70),
+						disableDefaultUI: true,
+					    zoomControl: true,
+					    zoomControlOptions: {
+						          style: google.maps.ZoomControlStyle.SMALL,
+						          position: google.maps.ControlPosition.TOP_LEFT
+						        },
+						panControl: false,
+						scaleControl: false,
+						streetViewControl: false,
+						mapTypeControl: true,
+						mapTypeControlOptions:{
+								position: google.maps.ControlPosition.TOP_LEFT
+						},
+					    mapTypeId: google.maps.MapTypeId.TERRAIN
+					} 
+				: null,
 			
 			//Set to true to draw markers where tile counts are equal to 1. If set to false, a tile with the count "1" will be drawn instead.
 			drawMarkers: false,

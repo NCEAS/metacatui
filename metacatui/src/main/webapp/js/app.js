@@ -9,13 +9,18 @@ console.log("Using themeMap: " + themeMap);
 console.log("Using metacatContext: " + metacatContext);
 
 var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
-var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
-define('gmaps', 
-		['async!' + gmapsURL], 
-		function() {
-			return google.maps;
-		}
-	);
+if(mapKey){
+	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+	define('gmaps', 
+			['async!' + gmapsURL], 
+			function() {
+				return google.maps;
+			}
+		);
+}
+else{
+	define('gmaps', null);
+}
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
@@ -75,41 +80,6 @@ require.config({
 	}
   }
 });
-
-
-/** 
- * Define Google Maps API if we can load the first script for it
- * Allows running without internet connection
- *
-if (mapKey){
-	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
-	require([gmapsURL],
-		function(gmapsAPI) {
-			console.log("Loaded gmapsAPI...continuing with asynchronous load");
-			define('gmaps', 
-					['async!' + gmapsURL], 
-					function() {
-						return google.maps;
-					}
-				);
-		},
-		function(err) {
-			console.log("Error loading gmapsAPI, falling back to placeholder");
-			define('gmaps', 
-					[null], 
-					function() {
-						return null;
-					}
-				);
-		}
-	);
-}
-else{
-	define('gmaps', null);
-}
-*/
-
-
 
 var appModel = appModel || {};
 var appView = appView || {};
