@@ -95,8 +95,7 @@ define(['jquery',
 			
 			//Populate the search template with some model attributes
 			var cel = this.template(
-					{
-						sortOrder: searchModel.get('sortOrder'),
+					{	sortOrder: searchModel.get('sortOrder'),
 						yearMin: searchModel.get('yearMin'),
 						yearMax: searchModel.get('yearMax'),
 						pubYear: searchModel.get('pubYear'),
@@ -1213,6 +1212,9 @@ define(['jquery',
 						//Add a new visual 'current filter' to the DOM for the spatial search
 						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
 					}
+					
+					//Reset to the first page
+					appModel.set("page", 0);
 					
 					//Trigger a new search
 					viewRef.triggerSearch();	
