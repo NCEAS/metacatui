@@ -243,8 +243,7 @@ define(['jquery', 'underscore', 'backbone'],
 						
 						// Does this need to be wrapped in quotes?
 						if (needsQuotes(filterValue)){
-							filterValue = filterValue.replace(" ", "%20");
-							filterValue = "%22" + filterValue + "%22";
+							filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
 						}
 						// TODO: surround with **?
 						query += "+" + model.fieldNameMap[filterName] + ":" + filterValue;			
