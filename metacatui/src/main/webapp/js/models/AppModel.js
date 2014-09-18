@@ -30,7 +30,8 @@ define(['jquery', 'underscore', 'backbone'],
 			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
-			objectServiceUrl: null
+			objectServiceUrl: null,
+			bioportalServiceUrl: null
 		},
 		
 		initialize: function() {
@@ -41,7 +42,7 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				this.set('baseUrl', baseUrl);
 			}
-			//this.set('baseUrl', 'https://knb.ecoinformatics.org');
+			//this.set('baseUrl', 'https://dev.nceas.ucsb.edu');
 			
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
