@@ -50,6 +50,7 @@ require.config({
 	markerClusterer: '../components/markerclustererplus_2.1.2',
 	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
+    annotator: '../components/annotator/v1.2.9/annotator-full.min',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: ['../components/d3.v3.min', null],
 	LineChart: ['views/LineChartView', null],
@@ -71,6 +72,9 @@ require.config({
     },
     registry: {
     	exports: 'Registry'
+    },
+    annotator: {
+    	exports: 'Annotator'
     },
     markerClusterer: {
 		exports: "MarkerClusterer"

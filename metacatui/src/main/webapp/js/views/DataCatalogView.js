@@ -1468,7 +1468,7 @@ define(['jquery',
 					color;
 								
 				//When there is only one dataset in this tile, we will display a marker
-				if ((tileCount == 1) && (currentZoom >= 7)){
+				if ((tileCount == 1) && ((currentZoom >= 7) || drawMarkers)){
 					//Find a more exact location for this marker, by looking in the geohash_9 facets
 					var geohash9Values = appSearchResults.facetCounts.geohash_9,
 						exactLocation;
