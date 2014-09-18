@@ -848,7 +848,13 @@ define(['jquery',
 			
 			// set up annotator
 			// TODO: include fragment selector for particular element?
-			$(div).annotator();
+			var loggedIn = false;
+			if (appModel.get('username')) {
+				loggedIn = true;
+			}
+			$(div).annotator({
+		        readOnly: !loggedIn
+		    });
 			$(div).annotator().annotator('setupPlugins', {}, {
 				Tags: false,
 				Store: {
