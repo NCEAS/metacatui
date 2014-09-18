@@ -89,7 +89,7 @@ Bold 700
     }
 
 		
-    body > section > article {
+    body  section > article {
       background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
       background-color: rgba(255, 255, 255, 0.9);
       border-radius: 4px;		

@@ -1,5 +1,7 @@
 /*global define */
 define(['jquery',
+        'jqueryui',
+        'annotator',
 		'underscore', 
 		'backbone',
 		'gmaps',
@@ -15,7 +17,7 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, _, Backbone, gmaps, fancybox, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
+	function($, $ui, Annotator, _, Backbone, gmaps, fancybox, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
 	'use strict';
 
 	
@@ -93,6 +95,8 @@ define(['jquery',
 								
 								viewRef.insertResourceMapContents(appModel.get('pid'));
 								if(gmaps) viewRef.insertSpatialCoverageMap();
+								
+								viewRef.setUpAnnotator('body');
 							}							
 						});
 			}
@@ -819,7 +823,72 @@ define(['jquery',
 		
 		onClose: function () {			
 			console.log('Closing the metadata view');
-		}				
+		},
+		
+		setUpAnnotator: function(div) {
+			
+			var bioportalServiceUrl = appModel.get('bioportalServiceUrl');
+			if (!bioportalServiceUrl) {
+				// do not use annotator
+				console.log("bioportalServiceUrl is not configured, annotation is disabled");
+				return;
+			}
+			
+			// get the pid
+			var pid = appModel.get('pid');
+			
+			var route = window.location.href;
+			//route = route + "#" + Backbone.history.fragment;
+			
+			// destroy and recreate
+			if ($(div).data('annotator')) {
+				$(div).annotator('destroy');
+				//$(div).destroy();
+			}
+			
+			// set up annotator
+			// TODO: include fragment selector for particular element?
+			$(div).annotator();
+			$(div).annotator().annotator('setupPlugins', {}, {
+				Tags: false,
+				Store: {
+					annotationData: {
+						'uri': route,
+						'pid': pid
+					},
+					loadFromSearch: {
+						'limit': 20,
+						'uri': route 
+					}
+				}
+			});
+			
+			var availableTags = [];
+			$.get(bioportalServiceUrl, function(data, textStatus, xhr) {
+			
+				_.each(data.collection, function(obj) {
+					var choice = {};
+					choice.label = obj['prefLabel'];
+					choice.value = obj['@id'];
+					availableTags.push(choice);
+				});
+				
+				
+			});
+			
+			                     
+			$(div).annotator().annotator('addPlugin', 'Tags');
+			$(div).data('annotator').plugins.Tags.input.autocomplete({
+				source: availableTags,
+				position: {
+					my: "left top",
+					at: "right bottom",
+					collision: "fit"
+				}
+			});
+		}
+		
+		
 	});
 	
 	return MetadataView;		
