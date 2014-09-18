@@ -94,9 +94,22 @@ define(['jquery', 'underscore', 'backbone'],
 			//Query for the earliest beginDate
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
 				if(!data.response.numFound){
-					//Save some falsey values if none are found
-					model.set('firstBeginDate', null);
+					//There were no begin dates found
 					model.set('totalBeginDates', 0);
+					
+					var endDateQuery = query.replace(/beginDate/g, "endDate");
+					
+					//Find the earliest endDate if there are no beginDates
+					$.get(appModel.get('queryServiceUrl') + endDateQuery, function(endDateData, textStatus, xhr) {
+						//If not endDates or beginDates are found, there is no temporal data in the index, so save falsey values
+						if(!endDateData.response.numFound){
+							model.set('firstBeginDate', null);
+							model.set('lastEndDate', null);
+						}
+						else{
+							model.set('firstBeginDate', new Date.fromISO(endDateData.response.docs[0].endDate));
+						}
+					});
 				}
 				else{
 					// Save the earliest beginDate and total found in our model
@@ -318,8 +331,8 @@ define(['jquery', 'underscore', 'backbone'],
 		getCollectionYearFacets: function(){
 			
 			//How many years back should we look for temporal coverage?
-			var lastYear = this.get('lastEndDate').getUTCFullYear(),
-				firstYear = this.get('firstBeginDate').getUTCFullYear(),
+			var lastYear =  this.get('lastEndDate') ? this.get('lastEndDate').getUTCFullYear() : new Date().getUTCFullYear(),
+				firstYear = this.get('firstBeginDate')? this.get('firstBeginDate').getUTCFullYear() : new Date().getUTCFullYear(),
 				totalYears = lastYear - firstYear,
 				today = new Date().getUTCFullYear(),
 				yearsFromToday = { fromBeginning: today - firstYear, 

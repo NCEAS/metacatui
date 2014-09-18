@@ -89,6 +89,7 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		// Send a Solr query to get the earliest beginDate, latest endDate, and facets of data collection years
+		// Send a Solr query to get the earliest beginDate, latest endDate, and facets of data collection years
 		getFirstBeginDate: function(){
 			var model = this;
 			
@@ -105,9 +106,22 @@ define(['jquery', 'underscore', 'backbone'],
 			//Query for the earliest beginDate
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
 				if(!data.response.numFound){
-					//Save some falsey values if none are found
-					model.set('firstBeginDate', null);
+					//There were no begin dates found
 					model.set('totalBeginDates', 0);
+					
+					var endDateQuery = query.replace(/beginDate/g, "endDate");
+					
+					//Find the earliest endDate if there are no beginDates
+					$.get(appModel.get('queryServiceUrl') + endDateQuery, function(endDateData, textStatus, xhr) {
+						//If not endDates or beginDates are found, there is no temporal data in the index, so save falsey values
+						if(!endDateData.response.numFound){
+							model.set('firstBeginDate', null);
+							model.set('lastEndDate', null);
+						}
+						else{
+							model.set('firstBeginDate', new Date.fromISO(endDateData.response.docs[0].endDate));
+						}
+					});
 				}
 				else{
 					// Save the earliest beginDate and total found in our model
@@ -145,6 +159,7 @@ define(['jquery', 'underscore', 'backbone'],
 				
 			}, "json");
 		},
+		
 		
 		/**
 		** getFormatTypes will send three Solr queries to get the formatTypes and formatID statistics and will update the  model 
