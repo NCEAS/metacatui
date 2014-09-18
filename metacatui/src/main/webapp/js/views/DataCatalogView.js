@@ -1148,14 +1148,16 @@ define(['jquery',
 			}
 			
 			$("body").addClass("mapMode");				
-				
+			
+			//Get the map options and create the map
 			gmaps.visualRefresh = true;
 			var mapOptions = mapModel.get('mapOptions');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
 
+			//Store references
 			var mapRef = this.map;
 			var viewRef = this;
-
+			
 			google.maps.event.addListener(mapRef, "idle", function(){
 			
 				viewRef.ready = true;
@@ -1164,9 +1166,8 @@ define(['jquery',
 					
 					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
 					if(viewRef.map.getZoom() == mapOptions.minZoom){
-						if(!viewRef.hasZoomed){
-							return;
-						}	
+						if(!viewRef.hasZoomed) return; 
+						
 						viewRef.resetMap();	
 					}
 					else{
@@ -1656,6 +1657,7 @@ define(['jquery',
 			
 			//Now run a query to get a list of documents that are represented by our tiles
 			var query = "q=" + searchModelClone.getQuery() + 
+						"+geohash_9:*" +
 						"&wt=json" +
 						"&fl=id,title,geohash_9,abstract" +
 						"&rows=1000";
