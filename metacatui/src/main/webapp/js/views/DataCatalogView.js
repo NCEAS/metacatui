@@ -238,9 +238,7 @@ define(['jquery',
 			
 			//Get the query
 			var query = searchModel.getQuery();
-			
-			console.log("query: " + query);
-			
+						
 			//Specify which facets to retrieve
 			if(gmaps){ //If we have Google Maps enabled
 				var geohashes = ["geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9"]
@@ -1185,7 +1183,7 @@ define(['jquery',
 						//Determine the precision of geohashes to search for
 						var zoom = mapRef.getZoom(),
 							precision;
-						
+												
 						if(zoom <= 5) precision = 2;
 						else if(zoom <= 7) precision = 3;
 						else if (zoom <= 11) precision = 4;
@@ -1274,7 +1272,12 @@ define(['jquery',
 			
 			//Get the attributes about this dataset
 			var resultRow = e.target,
-				id = $(resultRow).attr("data-id");
+				id = $(resultRow).attr("data-id"),
+				position = nGeohash.decode( $(resultRow).attr("data-geohash") ),
+				positionLatLng = new google.maps.LatLng(position.latitude, position.longitude);
+			
+			
+			console.log(e.target);
 			
 			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
 			if(typeof id == "undefined"){
@@ -1299,7 +1302,7 @@ define(['jquery',
 			this.allowSearch = false;
 			
 			//Pan the map
-			this.map.panTo(position);	
+			this.map.panTo(positionLatLng);	
 		},
 	
 		/**
@@ -1335,7 +1338,7 @@ define(['jquery',
 			}
 			
 			//Pan back to the map center so the map will reflect the current spatial filter bounding box
-			var mapCenter = mapModel.get('center');			
+			var mapCenter = mapModel.get('mapOptions').center;			
 			if(mapCenter !== null){
 				var viewRef = this;
 
@@ -1344,6 +1347,8 @@ define(['jquery',
 				var recenter = function(){
 					//Do not trigger a new search when we pan
 					viewRef.allowSearch = false;
+					
+					console.log(mapCenter);
 					
 					viewRef.map.panTo(mapCenter);
 				}
