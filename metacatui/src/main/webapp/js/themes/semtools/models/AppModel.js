@@ -31,9 +31,9 @@ define(['jquery', 'underscore', 'backbone'],
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
-			// NOTE: include your bioportal apikey here
+			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			//bioportalServiceUrl: "http://data.bioontology.org/ontologies/OBOE-SBC/classes?apikey=YOUR_KEY_HERE"
+			bioportalServiceUrl: "http://data.bioontology.org/ontologies/OBOE-SBC/classes?apikey=YOUR_KEY_HERE"
 
 		},
 		
