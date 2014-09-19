@@ -171,20 +171,21 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//-----Geohashes-----
-			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll) && (this.get('north') != null))){
+			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll))){
 				var geohashes = this.get("geohashes");
 				
-				if((typeof geohashes === undefined) || (geohashes.length == 0)) return "";
+				if ((typeof geohashes != undefined) && (geohashes.length > 0)){ 
 				
-				var query = "+geohash_" + this.get("geohashLevel") + ":(";
-				
-				_.each(geohashes, function(geohash, key, list){
-					query += geohash + "%20OR%20";
-				});
-				
-				//Remove the last "OR"
-				query = query.substr(0, (query.length-8));
-				query += ")";
+					var query = "+geohash_" + this.get("geohashLevel") + ":(";
+					
+					_.each(geohashes, function(geohash, key, list){
+						query += geohash + "%20OR%20";
+					});
+					
+					//Remove the last "OR"
+					query = query.substr(0, (query.length-8));
+					query += ")";
+				}
 			}
 			
 			//-----Excluded fields-----

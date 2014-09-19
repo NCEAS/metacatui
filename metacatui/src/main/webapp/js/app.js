@@ -47,7 +47,6 @@ require.config({
     domReady: '../components/domready',
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
-	markerClusterer: '../components/markerclustererplus_2.1.2',
 	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
     annotator: '../components/annotator/v1.2.9/annotator-full.min',
@@ -76,9 +75,6 @@ require.config({
     annotator: {
     	exports: 'Annotator'
     },
-    markerClusterer: {
-		exports: "MarkerClusterer"
-	},
 	nGeohash: {
 		exports: "geohash"
 	}

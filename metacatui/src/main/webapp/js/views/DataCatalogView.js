@@ -10,10 +10,9 @@ define(['jquery',
 				'text!templates/mainContent.html',
 				'text!templates/currentFilter.html',
 				'gmaps',
-				'nGeohash',
-				'markerClusterer'
+				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps, nGeohash, MarkerClusterer) {
+	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -39,23 +38,26 @@ define(['jquery',
 		hasZoomed: false,
 				
 		markers: {},
-		
-		markerClusterer: {},
-		
+				
 		tiles: [],
 		
 		tileCounts: [],
 		
+		//Contains the geohashes for all the markers on the map (if turned on in the Map model)
 		markerGeohashes: [],
 		
+		//Contains all the info windows for all the markers on the map (if turned on in the Map model)
 		markerInfoWindows: [],
 		
+		//Contains all the info windows for each document in the search result list - to display on hover
 		tileInfoWindows: [],
 		
-		tileGeohashes: [],
-		
+		//Contains all the markers for each document in the search result list - to display on hover
 		resultMarkers: [],
 		
+		//The geohash value for each tile drawn on the map
+		tileGeohashes: [],
+	
 		reservedMapPhrase: 'Only results with all spatial coverage inside the map',
 		
 		// Delegated events for creating new items, and clearing completed ones.
@@ -1182,14 +1184,7 @@ define(['jquery',
 						
 						//Determine the precision of geohashes to search for
 						var zoom = mapRef.getZoom(),
-							precision;
-												
-						if(zoom <= 5) precision = 2;
-						else if(zoom <= 7) precision = 3;
-						else if (zoom <= 11) precision = 4;
-						else if (zoom <= 13) precision = 5;
-						else if (zoom <= 15) precision = 6;
-						else if (zoom <= 19) precision = 7;
+							precision = mapModel.determineGeohashLevel(zoom);
 						
 						//Encode the Google Map bounding box into geohash
 						var geohashNorth = boundingBox.getNorthEast().lat(),
@@ -1275,10 +1270,7 @@ define(['jquery',
 				id = $(resultRow).attr("data-id"),
 				position = nGeohash.decode( $(resultRow).attr("data-geohash") ),
 				positionLatLng = new google.maps.LatLng(position.latitude, position.longitude);
-			
-			
-			console.log(e.target);
-			
+						
 			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
 			if(typeof id == "undefined"){
 				$(resultRow).parents().each(function(){
@@ -1362,6 +1354,10 @@ define(['jquery',
 		 * Create a tile for each geohash facet. A separate tile label is added to the map with the count of the facet.
 		 **/
 		drawTiles: function(){
+			//Exit if maps are not in use
+			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+				return false;
+			}
 			
 			this.removeTiles();
 			
@@ -1459,9 +1455,10 @@ define(['jquery',
 			for(var i=0; i<geohashes.length-1; i+=2){
 				
 				//Convert this geohash to lat,long values 
-				var decodedGeohash = nGeohash.decode(geohashes[i]),
+				var tileGeohash	   = geohashes[i],
+					decodedGeohash = nGeohash.decode(tileGeohash),
 					latLngCenter   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
-					geohashBox 	   = nGeohash.decode_bbox(geohashes[i]),
+					geohashBox 	   = nGeohash.decode_bbox(tileGeohash),
 					swLatLng	   = new google.maps.LatLng(geohashBox[0], geohashBox[1]),
 					neLatLng	   = new google.maps.LatLng(geohashBox[2], geohashBox[3]),
 					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
@@ -1473,32 +1470,46 @@ define(['jquery',
 					count,
 					color;
 								
-				//When there is only one dataset in this tile, we will display a marker
+				//When there is only one dataset in this tile, we might display a marker
 				if ((tileCount == 1) && ((currentZoom >= 7) || drawMarkers)){
 					//Find a more exact location for this marker, by looking in the geohash_9 facets
-					var geohash9Values = appSearchResults.facetCounts.geohash_9,
+			/*		var geohash9Values = appSearchResults.facetCounts.geohash_9,
 						exactLocation;
 					
 					//We can start at the index from this geohash array since they are sorted by index - this will save time for geohash values towards the end of the array
 					for(var x = i; x < geohash9Values.length; x+=2){
-						if(geohash9Values[x].indexOf(geohashes[i]) == 0){
+						
+						//The geohash_9 will be the starting substring of it's associated tile since there is only one dataset in that tile
+						if(geohash9Values[x].indexOf(tileGeohash == 0)){
+							
 							//This is the most exact geohash location
 							exactLocation = geohash9Values[x];
+
 							//Save the geohash
-							viewRef.markerGeohashes.push(exactLocation);
+							if(drawMarkers)	viewRef.markerGeohashes.push(exactLocation);
 							
-							break; //Stop looking
+							//Stop looking
+							break; 
 						}
 					}
+			
 					
 					if(drawMarkers){
 						//Draw the marker
 						var decodedLocation = nGeohash.decode(exactLocation),
-					     	latLngLocation = new google.maps.LatLng(decodedLocation.latitude, decodedLocation.longitude);
-						var marker = this.drawMarker(latLngLocation);
+					     	latLngLocation 	= new google.maps.LatLng(decodedLocation.latitude, decodedLocation.longitude),
+					     	marker 			= this.drawMarker(latLngLocation);
 						
 						//Save this marker in the view
-						this.markers.push({marker: marker, geohash: exactLocation});
+						this.markers.push({
+							marker: marker, 
+							geohash: exactLocation
+							});
+					}
+				*/
+					if(drawMarkers){
+						//Save the geohash tile
+						viewRef.markerGeohashes.push(tileGeohash);
 					}
 				}
 				else{
@@ -1555,8 +1566,13 @@ define(['jquery',
 				}
 			}
 			
-			//After all the tiles and markers are added, retrieve details about them
-			if(this.markerGeohashes.length > 0) this.addMarkerInfoWindows();
+			//Create an info window for each result item in the list that has spatial data, to display when it is hovered over
+			
+			
+			//Create an info window for each marker that is on the map, to display when it is clicked on
+			if(this.markerGeohashes.length > 0) this.addMarkers();
+			
+			//If the map is zoomed all the way in, draw info windows for each tile that will be displayed when they are clicked on
 			if(mapModel.isMaxZoom(this.map)) this.addTileInfoWindows();
 		},
 			
@@ -1617,33 +1633,10 @@ define(['jquery',
 		},
 		
 		/**
-		 * With the Latitude,Longitude Google Maps object given, add a single marker to the map.
-		 */
-		drawMarker: function(latLng){
-			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
-				return false;
-			}
-			
-			//Set up the options for each marker
-			var markerOptions = {
-				position: latLng,
-				icon: mapModel.get("markerImage"),
-				zIndex: 99999,
-				map: this.map
-			};
-			
-			//Create the marker and add to the map
-			var marker = new google.maps.Marker(markerOptions);
-		
-			return marker;
-		},
-		
-		/**
 		 * Get the details on each marker
 		 * And create an infowindow for that marker
 		 */		
-		addMarkerInfoWindows: function(){
+		addMarkers: function(){
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
 				return false;
@@ -1651,7 +1644,9 @@ define(['jquery',
 			
 			//Clone the Search model
 			var searchModelClone = searchModel.clone(),
-				geohashLevel = 9,
+				//geohashLevel = 9,
+				currentZoom = this.map.getZoom(),
+				geohashLevel = mapModel.determineGeohashLevel(currentZoom),
 				viewRef = this,
 				infoWindows = [],
 				markers = this.markers;
@@ -1660,71 +1655,87 @@ define(['jquery',
 			searchModelClone.set("geohashLevel", geohashLevel);
 			searchModelClone.set("geohashes", this.markerGeohashes);
 			
-			//Now run a query to get a list of documents that are represented by our tiles
+			//Now run a query to get a list of documents that are represented by our markers
 			var query = "q=" + searchModelClone.getQuery() + 
-						"+geohash_9:*" +
 						"&wt=json" +
-						"&fl=id,title,geohash_9,abstract" +
+						"&fl=id,title,geohash_9,abstract,geohash_" + geohashLevel +
 						"&rows=1000";
+			
+			var 						totalMarkers = 0;
 			
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){
 				var docs = data.response.docs;
+				var uniqueGeohashes = viewRef.markerGeohashes;
 				
-				//Create an infoWindow for each document
+				//Create a marker and infoWindow for each document
 				_.each(docs, function(doc, key, list){
 					
-					var marker;
+					var marker,
+						drawMarkersAt = [];
 					
-					//Find the marker for this document				
-					for(var i=0; i<markers.length; i++){
-						//Is this the marker for this document?
-						if(markers[i].geohash == doc.geohash_9[0]){
-							marker = markers[i];
-							break;
+					// Find the tile place that this document belongs to
+					// For each geohash value at the current geohash level for this document,
+					_.each(doc.geohash_9, function(geohash, key, list){
+						// Loop through each unique tile location to find its match
+						for(var i=0; i <= uniqueGeohashes.length; i++){
+							if(uniqueGeohashes[i] == geohash.substr(0, geohashLevel)){
+								drawMarkersAt.push(geohash);
+								uniqueGeohashes = _.without(uniqueGeohashes, geohash);
+							}
 						}
-					}
-					
-					//Create the infoWindow
-					if(!marker) return;
-					
-					var decodedGeohash = nGeohash.decode(marker.geohash),
-						position 	   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
-					
-					//The infowindow
-					var infoWindow = new gmaps.InfoWindow({
-						content:
-							'<div class="gmaps-infowindow">'
-							+ "<h4>" + doc.title + "</h4>"
-							+ "<a href='#view/" + doc.id + "'>" + doc.id + "</a>"
-							+ "<p>" + doc.abstract + "</p>"
-							+ "<p><a href='#view/" + doc.id + "'>Read more</a></p>"
-							+ '</div>',
-						isOpen: false,
-						disableAutoPan: true,
-						maxWidth: 250,
-						position: position
-					});	
-					
-					//Store this infowindow in the view
-					viewRef.markerInfoWindows.push(infoWindow);
-					
-					marker = marker.marker;
-					
-					//Show the info window upon marker click
-					gmaps.event.addListener(marker, 'click', function() {
-						infoWindow.open(viewRef.map, marker);
-						infoWindow.isOpen = true;
-						
-						//Close all other infowindows 
-						viewRef.closeInfoWindows(infoWindow);
 					});
 					
-					//Close the infowindow upon any click on the map
-					gmaps.event.addListener(viewRef.map, 'click', function() {
-						infoWindow.close();
-						infoWindow.isOpen = false;
+					_.each(drawMarkersAt, function(markerGeohash, key, list){
+
+						var decodedGeohash = nGeohash.decode(markerGeohash),
+							latLng   	   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);	
+						
+						//Set up the options for each marker
+						var markerOptions = {
+							position: latLng,
+							icon: mapModel.get("markerImage"),
+							zIndex: 99999,
+							map: viewRef.map
+						};
+						
+						//Create the marker and add to the map
+						var marker = new google.maps.Marker(markerOptions);
+						
+						//The infowindow
+						var infoWindow = new gmaps.InfoWindow({
+							content:
+								'<div class="gmaps-infowindow">'
+								+ "<h4>" + doc.title + "</h4>"
+								+ "<a href='#view/" + doc.id + "'>" + doc.id + "</a>"
+								+ "<p>" + doc.abstract + "</p>"
+								+ "<p><a href='#view/" + doc.id + "'>Read more</a></p>"
+								+ '</div>',
+							isOpen: false,
+							disableAutoPan: false,
+							maxWidth: 250,
+							position: latLng
+						});
+						
+						//Store this infowindow in the view
+						viewRef.markerInfoWindows.push(infoWindow);
+						
+						//Show the info window upon marker click
+						gmaps.event.addListener(marker, 'click', function() {
+							infoWindow.open(viewRef.map, marker);
+							infoWindow.isOpen = true;
+							
+							//Close all other infowindows 
+							viewRef.closeInfoWindows(infoWindow);
+						});
+						
+						//Close the infowindow upon any click on the map
+						gmaps.event.addListener(viewRef.map, 'click', function() {
+							infoWindow.close();
+							infoWindow.isOpen = false;
+						});
 					});
 				});
+
 			}, "json");
 		},
 		
@@ -1984,15 +1995,15 @@ define(['jquery',
 			this.$results.append(view.render().el);
 			
 			// map it
-			if(gmaps && (result.northBoundCoord)){
+			if(gmaps && (typeof result.get("northBoundCoord") != "undefined")){
 				
 				//Set up the options for our polygon and marker
-				var north = result.northBoundCoord,
-					south = result.southBoundCoord,
-					east  = result.eastBoundCoord,
-					west  = result.westBoundCoord,
-					title = result.title,
-					centerGeohash = result.geohash_9[0],	
+				var north = result.get("northBoundCoord"),
+					south = result.get("southBoundCoord"),
+					east  = result.get("eastBoundCoord"),
+					west  = result.get("westBoundCoord"),
+					title = result.get("title"),
+					centerGeohash = result.get("geohash_9")[0],	
 					decodedGeohash = nGeohash.decode(centerGeohash),
 					position = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
 					latLngSW = new gmaps.LatLng(south, west),
@@ -2020,7 +2031,11 @@ define(['jquery',
 						maxWidth: 250
 					});
 				
-				this.resultMarkers[result.id] = {polygon: polygon, marker: marker, infoWindow: infoWindow}
+				this.resultMarkers[result.get("id")] = {
+						polygon: polygon, 
+						marker: marker, 
+						infoWindow: infoWindow
+						}
 			}
 		
 		},
