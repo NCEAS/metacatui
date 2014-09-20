@@ -44,6 +44,9 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				satellite : 19
 			},
 			
+			//Keep track of the geohash level used to draw tiles on this map
+			tileGeohashLevel: 1,
+			
 			///****** MAP TILE OPTIONS **********//
 			//The options for the tiles. Using Google Maps Web API
 			tileOptions: {

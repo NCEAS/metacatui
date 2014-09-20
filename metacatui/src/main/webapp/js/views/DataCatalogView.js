@@ -1184,7 +1184,14 @@ define(['jquery',
 						
 						//Determine the precision of geohashes to search for
 						var zoom = mapRef.getZoom(),
-							precision = mapModel.determineGeohashLevel(zoom);
+							precision;
+												
+						if(zoom <= 5) precision = 2;
+						else if(zoom <= 7) precision = 3;
+						else if (zoom <= 11) precision = 4;
+						else if (zoom <= 13) precision = 5;
+						else if (zoom <= 15) precision = 6;
+						else if (zoom <= 19) precision = 7;
 						
 						//Encode the Google Map bounding box into geohash
 						var geohashNorth = boundingBox.getNorthEast().lat(),
@@ -1358,9 +1365,7 @@ define(['jquery',
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
 				return false;
 			}
-			
-			this.removeTiles();
-			
+						
 			TextOverlay.prototype = new google.maps.OverlayView();
 			
 			/** @constructor */
@@ -1444,83 +1449,81 @@ define(['jquery',
 				geohashLevelNum	= mapModel.determineGeohashLevel(currentZoom),
 				geohashLevel    = "geohash_" + geohashLevelNum,
 				geohashes       = appSearchResults.facetCounts[geohashLevel];
-						
+			
+			//Save the current geohash level in the map model
+			mapModel.set("tileGeohashLevel", geohashLevelNum);
+			
+			//Get all the geohashes contained in the map
+			var mapBBoxes = searchModel.get("geohashes");
+			
+			//Geohashes may be returned that are part of datasets with multiple geographic areas. Some of these may be outside this map.
+			//So we will want to filter out geohashes that are not contained in this map. 
+			if(mapBBoxes.length == 0){
+				var filteredTileGeohashes = geohashes;
+			}
+			else{
+				var filteredTileGeohashes = [];
+				for(var i=0; i<geohashes.length-1; i+=2){
+					
+					//Get the geohash for this tile
+					var tileGeohash	= geohashes[i],
+						isInsideMap = false,
+						index		= 0;
+					
+					//Find if any of the bounding boxes/geohashes inside our map contain this tile geohash
+					while((!isInsideMap) && (index < mapBBoxes.length)){
+						if(tileGeohash.substring(0, mapBBoxes[index].length) == mapBBoxes[index]) isInsideMap = true;
+						index++;
+					}
+					
+					if(isInsideMap){
+						filteredTileGeohashes.push(tileGeohash);
+						filteredTileGeohashes.push(geohashes[i+1]);
+					}
+				}
+			}
+			
 			//Find the totals of our geohash tiles
-			var total      = appSearchResults.header.get("numFound"),
-				totalTiles = geohashes.length,
-				maxCount   = _.max(geohashes),
+			var totalTiles = filteredTileGeohashes.length/2,
+				maxCount   = _.max(filteredTileGeohashes),
 				viewRef	   = this;
 			
 			//Now draw a tile for each geohash facet
-			for(var i=0; i<geohashes.length-1; i+=2){
+			for(var i=0; i<filteredTileGeohashes.length-1; i+=2){
 				
 				//Convert this geohash to lat,long values 
-				var tileGeohash	   = geohashes[i],
+				var tileGeohash	   = filteredTileGeohashes[i],
 					decodedGeohash = nGeohash.decode(tileGeohash),
 					latLngCenter   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
 					geohashBox 	   = nGeohash.decode_bbox(tileGeohash),
 					swLatLng	   = new google.maps.LatLng(geohashBox[0], geohashBox[1]),
 					neLatLng	   = new google.maps.LatLng(geohashBox[2], geohashBox[3]),
 					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
-					tileCount	   = geohashes[i+1],
+					tileCount	   = filteredTileGeohashes[i+1],
 					percent		   = tileCount/maxCount,
-					useBins		   = (total > 200) ? true : false,
+					//useBins		   = (total > 200) ? true : false,
 					drawMarkers    = mapModel.get("drawMarkers"),
 					marker,
 					count,
 					color;
 								
 				//When there is only one dataset in this tile, we might display a marker
-				if ((tileCount == 1) && ((currentZoom >= 7) || drawMarkers)){
+				if ((tileCount == 1) && drawMarkers){
 					//Find a more exact location for this marker, by looking in the geohash_9 facets
-			/*		var geohash9Values = appSearchResults.facetCounts.geohash_9,
-						exactLocation;
-					
-					//We can start at the index from this geohash array since they are sorted by index - this will save time for geohash values towards the end of the array
-					for(var x = i; x < geohash9Values.length; x+=2){
-						
-						//The geohash_9 will be the starting substring of it's associated tile since there is only one dataset in that tile
-						if(geohash9Values[x].indexOf(tileGeohash == 0)){
-							
-							//This is the most exact geohash location
-							exactLocation = geohash9Values[x];
-
-							//Save the geohash
-							if(drawMarkers)	viewRef.markerGeohashes.push(exactLocation);
-							
-							//Stop looking
-							break; 
-						}
-					}
-			
-					
-					if(drawMarkers){
-						//Draw the marker
-						var decodedLocation = nGeohash.decode(exactLocation),
-					     	latLngLocation 	= new google.maps.LatLng(decodedLocation.latitude, decodedLocation.longitude),
-					     	marker 			= this.drawMarker(latLngLocation);
-						
-						//Save this marker in the view
-						this.markers.push({
-							marker: marker, 
-							geohash: exactLocation
-							});
-					}
-				*/
 					if(drawMarkers){
 						//Save the geohash tile
 						viewRef.markerGeohashes.push(tileGeohash);
 					}
 				}
 				else{
-					if(!useBins){
+					//if(!useBins){
 						//Determine the style of the tile depending on the percentage of datasets
 							 if (percent < .20) color = mapModel.get("tileColors").level1;
 						else if (percent < .40) color = mapModel.get("tileColors").level2; 
 						else if (percent < .70) color = mapModel.get("tileColors").level3; 
 						else if (percent < .80) color = mapModel.get("tileColors").level4; 
 						else 					color = mapModel.get("tileColors").level5; 
-					}
+				/*	}
 					else{
 						//Determine the style of the tile depending on the number of datasets
 						     if (tileCount < 10)   color = mapModel.get("tileColors").level1; 
@@ -1529,7 +1532,7 @@ define(['jquery',
 						else if (tileCount < 1000) color = mapModel.get("tileColors").level4; 
 						else                       color = mapModel.get("tileColors").level5; 
 					}
-					
+				*/	
 					//Add the count to the tile
 					var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
 									
@@ -1559,10 +1562,10 @@ define(['jquery',
 					var tile = this.drawTile(tileOptions, count);
 					
 					//Save the geohashes for tiles in the view for later
-					this.tileGeohashes.push(geohashes[i]);
+					this.tileGeohashes.push(tileGeohash);
 					
 					//Save our tiles in the view
-					this.tiles.push({text: count, shape: tile, geohash: geohashes[i]});
+					this.tiles.push({text: count, shape: tile, geohash: tileGeohash});
 				}
 			}
 			
@@ -1644,9 +1647,7 @@ define(['jquery',
 			
 			//Clone the Search model
 			var searchModelClone = searchModel.clone(),
-				//geohashLevel = 9,
-				currentZoom = this.map.getZoom(),
-				geohashLevel = mapModel.determineGeohashLevel(currentZoom),
+				geohashLevel = mapModel.get("tileGeohashLevel"),
 				viewRef = this,
 				infoWindows = [],
 				markers = this.markers;
@@ -1751,7 +1752,7 @@ define(['jquery',
 			
 			//Clone the Search model
 			var searchModelClone = searchModel.clone(),
-				geohashLevel = mapModel.determineGeohashLevel(this.map.getZoom()),
+				geohashLevel = mapModel.get("tileGeohashLevel"),
 				geohashName	 = "geohash_" + geohashLevel,
 				viewRef = this,
 				infoWindows = [];
@@ -1778,7 +1779,7 @@ define(['jquery',
 					_.each(docs, function(doc, key, list){
 						
 						//Is this document in this tile?
-						for(var i=0; i<doc[geohashName].length; i++){
+						for(var i=0; i < doc[geohashName].length; i++){
 							if(doc[geohashName][i] == tile.geohash){
 								//Add this doc to the infoWindow content
 								infoWindowContent += "<a href='#view/" + doc.id + "'>" + doc.title +"</a> (" + doc.id +") <br/>"
@@ -1799,7 +1800,7 @@ define(['jquery',
 							+ "<p>" + infoWindowContent + "</p>"
 							+ '</div>',
 						isOpen: false,
-						disableAutoPan: true,
+						disableAutoPan: false,
 						maxWidth: 250,
 						position: tileCenter
 					});

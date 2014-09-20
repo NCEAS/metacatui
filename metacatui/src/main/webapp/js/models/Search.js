@@ -179,7 +179,7 @@ define(['jquery', 'underscore', 'backbone'],
 					var query = "+geohash_" + this.get("geohashLevel") + ":(";
 					
 					_.each(geohashes, function(geohash, key, list){
-						query += geohash + "%20OR%20";
+						if(query.length < 1900)query += geohash + "%20OR%20";
 					});
 					
 					//Remove the last "OR"
