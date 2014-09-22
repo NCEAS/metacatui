@@ -1209,10 +1209,12 @@ define(['jquery',
 							zoom: viewRef.map.getZoom(), 
 							center: viewRef.map.getCenter()
 							});
-						
+												
 						//Add a new visual 'current filter' to the DOM for the spatial search
 						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
 					}
+					
+					viewRef.mapCenter = viewRef.map.getCenter();
 					
 					//Reset to the first page
 					appModel.set("page", 0);
@@ -1337,8 +1339,9 @@ define(['jquery',
 			}
 			
 			//Pan back to the map center so the map will reflect the current spatial filter bounding box
-			var mapCenter = mapModel.get('mapOptions').center;			
-			if(mapCenter !== null){
+			var mapCenter = this.mapCenter;
+			
+			if((typeof mapCenter != "undefined") && (mapCenter !== null)){
 				var viewRef = this;
 
 				// Set a delay on the panning in case we hover over another openMarker item right away.
@@ -1346,9 +1349,7 @@ define(['jquery',
 				var recenter = function(){
 					//Do not trigger a new search when we pan
 					viewRef.allowSearch = false;
-					
-					console.log(mapCenter);
-					
+										
 					viewRef.map.panTo(mapCenter);
 				}
 
@@ -1483,10 +1484,16 @@ define(['jquery',
 				}
 			}
 			
-			//Find the totals of our geohash tiles
+			//Get some stats on our tile counts so we can normalize them to create a color scale
 			var totalTiles = filteredTileGeohashes.length/2,
-				maxCount   = _.max(filteredTileGeohashes),
-				viewRef	   = this;
+				maxCount = _.max(filteredTileGeohashes, function(value){
+					var reg = new RegExp('^\\d+$');
+					if(!reg.test(value)) return 0;
+					return value;
+				}),
+				ratio = maxCount / 100;
+			
+			var viewRef = this;
 			
 			//Now draw a tile for each geohash facet
 			for(var i=0; i<filteredTileGeohashes.length-1; i+=2){
@@ -1500,8 +1507,8 @@ define(['jquery',
 					neLatLng	   = new google.maps.LatLng(geohashBox[2], geohashBox[3]),
 					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
 					tileCount	   = filteredTileGeohashes[i+1],
-					percent		   = tileCount/maxCount,
-					//useBins		   = (total > 200) ? true : false,
+					weight 		   = Math.round( tileCount / ratio ),
+					useBins		   = (maxCount > 200) ? true : false,
 					drawMarkers    = mapModel.get("drawMarkers"),
 					marker,
 					count,
@@ -1516,14 +1523,15 @@ define(['jquery',
 					}
 				}
 				else{
-					//if(!useBins){
+					if(!useBins){
 						//Determine the style of the tile depending on the percentage of datasets
 							 if (percent < .20) color = mapModel.get("tileColors").level1;
 						else if (percent < .40) color = mapModel.get("tileColors").level2; 
 						else if (percent < .70) color = mapModel.get("tileColors").level3; 
 						else if (percent < .80) color = mapModel.get("tileColors").level4; 
 						else 					color = mapModel.get("tileColors").level5; 
-				/*	}
+						
+					}
 					else{
 						//Determine the style of the tile depending on the number of datasets
 						     if (tileCount < 10)   color = mapModel.get("tileColors").level1; 
@@ -1532,7 +1540,7 @@ define(['jquery',
 						else if (tileCount < 1000) color = mapModel.get("tileColors").level4; 
 						else                       color = mapModel.get("tileColors").level5; 
 					}
-				*/	
+					 
 					//Add the count to the tile
 					var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
 									
@@ -1661,9 +1669,7 @@ define(['jquery',
 						"&wt=json" +
 						"&fl=id,title,geohash_9,abstract,geohash_" + geohashLevel +
 						"&rows=1000";
-			
-			var 						totalMarkers = 0;
-			
+						
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){
 				var docs = data.response.docs;
 				var uniqueGeohashes = viewRef.markerGeohashes;

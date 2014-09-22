@@ -73,9 +73,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				level3: "#186E91",
 				level4: "#12536D",
 				level5: "#092F3E"
-			}
-			
-		
+			}		
 		},
 		
 		isMaxZoom: function(map){
