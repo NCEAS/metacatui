@@ -1152,6 +1152,7 @@ define(['jquery',
 			//Get the map options and create the map
 			gmaps.visualRefresh = true;
 			var mapOptions = mapModel.get('mapOptions');
+			$("#map-container").html('<div id="map-canvas"></div>');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
 
 			//Store references
@@ -1159,7 +1160,6 @@ define(['jquery',
 			var viewRef = this;
 			
 			google.maps.event.addListener(mapRef, "idle", function(){
-			
 				viewRef.ready = true;
 				
 				if(viewRef.allowSearch){
@@ -1507,7 +1507,7 @@ define(['jquery',
 					neLatLng	   = new google.maps.LatLng(geohashBox[2], geohashBox[3]),
 					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
 					tileCount	   = filteredTileGeohashes[i+1],
-					weight 		   = Math.round( tileCount / ratio ),
+					percent 		   = Math.round( tileCount / ratio ),
 					useBins		   = (maxCount > 200) ? true : false,
 					drawMarkers    = mapModel.get("drawMarkers"),
 					marker,
@@ -1516,11 +1516,7 @@ define(['jquery',
 								
 				//When there is only one dataset in this tile, we might display a marker
 				if ((tileCount == 1) && drawMarkers){
-					//Find a more exact location for this marker, by looking in the geohash_9 facets
-					if(drawMarkers){
-						//Save the geohash tile
 						viewRef.markerGeohashes.push(tileGeohash);
-					}
 				}
 				else{
 					if(!useBins){
@@ -2125,6 +2121,7 @@ define(['jquery',
 			if(gmaps){
 				// unset map mode
 				$("body").removeClass("mapMode");
+				$("#map-canvas").remove();
 			}
 			
 			// remove everything so we don't get a flicker
