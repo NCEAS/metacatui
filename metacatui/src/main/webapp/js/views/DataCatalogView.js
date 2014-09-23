@@ -1361,7 +1361,7 @@ define(['jquery',
 		/**
 		 * Create a tile for each geohash facet. A separate tile label is added to the map with the count of the facet.
 		 **/
-		drawTiles: function(){
+		drawTiles: function(){			
 			//Exit if maps are not in use
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
 				return false;
@@ -1425,7 +1425,6 @@ define(['jquery',
 				  // We'll use these coordinates to resize the DIV.
 				  var sw = overlayProjection.fromLatLngToDivPixel(this.bounds_.getSouthWest());
 				  var ne = overlayProjection.fromLatLngToDivPixel(this.bounds_.getNorthEast());
-				  
 				  // Resize the image's DIV to fit the indicated dimensions.
 				  var div = this.div_;
 				  var width = this.width;
@@ -1591,7 +1590,7 @@ define(['jquery',
 			if((appModel.get('searchMode') != 'map') || (!gmaps)){
 				return false;
 			}
-			
+						
 			// Add the tile for these datasets to the map
 			var tile = new google.maps.Rectangle(options);
 					

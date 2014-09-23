@@ -21,6 +21,8 @@ if(mapKey){
 else{
 	define('gmaps', null);
 }
+if(useD3) var d3URL = '../components/d3.v3.min';
+else 	  var d3URL = null;
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
@@ -49,9 +51,8 @@ require.config({
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
 	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
-    annotator: '../components/annotator/v1.2.9/annotator-full.min',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
-	d3: ['../components/d3.v3.min', null],
+	d3: d3URL,
 	LineChart: ['views/LineChartView', null],
 	BarChart: ['views/BarChartView', null],
 	CircleBadge: ['views/CircleBadgeView', null],
@@ -71,9 +72,6 @@ require.config({
     },
     registry: {
     	exports: 'Registry'
-    },
-    annotator: {
-    	exports: 'Annotator'
     },
 	nGeohash: {
 		exports: "geohash"
