@@ -897,6 +897,42 @@ Bold 700
 		padding: 2%;
 		width: 96%;
 	}
+	
+	/** Data Display & Thumbnails **/
+	.entitydetails{
+		background-color: #FFFFFF;
+		padding: 10px;
+	}
+	.data-display{
+		clear: both;
+		margin-bottom: 20px;
+	}
+	.data-display .thumbnail{
+		width: 150px;
+		height: 150px;
+		border: 5px solid #999999;
+		float: left;
+		overflow: hidden;
+		padding: 0px;
+	}
+	.data-display .thumbnail img{
+		max-width: 1500px;
+		min-width: 150px;
+		margin-left: auto;
+		margin-right: auto;
+		width: auto;
+	}
+	.data-display .additional-info{
+		float: left;
+		margin-left: 10px;
+	}
+	.data-display .title{
+		margin-bottom: 20px;
+	}
+	.data-display .provenance i{
+		font-size: 2em;
+		margin-right: 10px;
+	}
     
 /* Registry CSS
 -------------------------------------------------- */

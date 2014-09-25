@@ -194,7 +194,8 @@ define(['jquery',
 								
 						var pids   = [], //Keep track of each object pid
 							images = [], //Keep track of each data object that is an image
-							pdfs   = []; //Keep track of each data object that is a PDF 
+							pdfs   = [], //Keep track of each data object that is a PDF 
+							other = []; //Keep track of all non-metadata and non-resource map objects
 							
 						//Separate the resource maps from the data/metadata objects
 						_.each(moreData.response.docs, function(doc){
@@ -205,16 +206,12 @@ define(['jquery',
 								objects.push(doc);
 								pids.push(doc.id);
 								
-								//Keep track of each data object that is an image
+								//Keep track of each data objects so we can display them later
 								if(viewRef.isImage(doc)) images.push(doc);
-								else if(viewRef.isPDF(doc)) pdfs.push(doc); 
+								else if(viewRef.isPDF(doc)) pdfs.push(doc);
+								else if(doc.formatType != "METADATA") other.push(doc);
 							}
 						});
-						
-						//Display data objects if they are visual
-						viewRef.insertVisuals(images, "image");
-						viewRef.insertVisuals(pdfs, "pdf");
-						
 										
 						//Now go through all of our objects and add them to our map
 						_.each(objects, function(object){
@@ -248,6 +245,11 @@ define(['jquery',
 						
 						//Replace Ecogrid Links with DataONE API links
 						viewRef.replaceEcoGridLinks(pids);
+						
+						//Display data objects if they are visual
+						viewRef.insertVisuals(images, "image");
+						viewRef.insertVisuals(pdfs, "pdf");
+						viewRef.insertVisuals(other);
 						
 						//Move the download button to our download content list area
 					    $("#downloadPackage").detach();
@@ -491,13 +493,16 @@ define(['jquery',
 		 */
 		insertVisuals: function(visuals, type){
 			var html = "",
-				viewRef = this;
+				viewRef = this,
+				entityDetailsContainers = this.$el.find(".entitydetails");
+			
+			if(typeof type == "undefined") var type = null;
 			
 			//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
 			for(var i=0; i<visuals.length; i++){
 				
 				//Find the part of the HTML Metadata view that describes this data object
-				var container = this.$el.find("td:contains('" + visuals[i].id + "')").parents(".controls-well");
+				var container = $(entityDetailsContainers).find("td:contains('" + visuals[i].id + "')").parents(".entitydetails");
 				
 				//Harvest the Object Name for a lightbox caption 
 				if(container !== undefined) var title = container.find("label:contains('Object Name')").next().text();
@@ -514,7 +519,7 @@ define(['jquery',
 				});
 	
 				// Insert the HTML into the DOM
-				$(container).append(html);				
+				$(container).prepend(html);				
 			}
 			
 			//==== Initialize the fancybox images =====

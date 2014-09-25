@@ -1,24 +1,36 @@
-<div class="row">
-  <div class="col-sm-6 col-md-4">
-    <div class="thumbnail">
+<div class="data-display">
     
 <%
-if(src === undefined) var src = "";
+if(src === undefined)   var src = "";
 if(title === undefined) var title = "";
 if(group === undefined) var group = "group";
-if(type === undefined) var type = null;
+if(type === undefined)  var type = null;
+if(provenance === undefined)  var provenance = null;
+%>
 
+<%
 if(type == "pdf")
 	print('<a class="fancybox btn" data-fancybox-iframe="iframe" href="' + src + '"><i class="icon-file file-type"></i> <span class="file-type">PDF</span> Preview </a></div>');
 else if(type == "image")
 	print('<a href="' + src + '" rel="' + group + '" class="fancybox thumbnail" data-fancybox-type="image" title="' + title + '"><img src="' + src + '"  class="metadata-img img-thumbnail"/></a>');
-		
+else
+	print('<a href="" class="thumbnail"></a>');		
 %>
-
-      <div class="caption">
-        <h3><%=title%></h3>
-        <span class="label label-default">views</span>
-      </div>
-    </div>
-  </div>
+<div class="additional-info">
+	<div class="title">
+		<h3><%=title%></h3>
+		<a class="btn" href="<%=src%>">Download</a>
+	</div>
+	
+<% 
+if(provenance){
+print('<div class="provenance alert">' +
+		'<i class="icon-code-fork"></i>' +
+		'<span></span>' +
+	  '</div>'
+	 );
+}
+%>
+</div>
+<div class="clearfix"></div>
 </div>
