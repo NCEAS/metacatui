@@ -19,18 +19,19 @@ else
 <div class="additional-info">
 	<div class="title">
 		<h3><%=title%></h3>
-		<a class="btn" href="<%=src%>">Download</a>
 	</div>
 	
 <% 
 if(provenance){
-print('<div class="provenance alert">' +
+print('<div class="provenance alert alert-info">' +
 		'<i class="icon-code-fork"></i>' +
-		'<span></span>' +
+		'<span>' + provenance + '</span>' +
+		'<div class="clearfix"></div>' +
 	  '</div>'
 	 );
 }
 %>
+	<a class="btn" href="<%=src%>">Download</a>
 </div>
 <div class="clearfix"></div>
 </div>
