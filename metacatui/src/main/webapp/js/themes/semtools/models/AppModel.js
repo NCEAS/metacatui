@@ -47,7 +47,7 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				this.set('baseUrl', baseUrl);
 			}
-			this.set('baseUrl', 'https://dev.nceas.ucsb.edu');
+			//this.set('baseUrl', 'https://dev.nceas.ucsb.edu');
 			
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
@@ -61,7 +61,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
-			
+
 		}
 	
 		
