@@ -40,6 +40,10 @@ Bold 700
     	text-decoration: none;
     }
     
+    .obvious-link{
+    	border-bottom: 1px dotted #166194;
+    }
+    
     body, h1, h2, h3, h4, h5, h6{
     	color: #555;
     }
@@ -181,6 +185,14 @@ Bold 700
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
+	}
+	
+	.expand-collapse .collapsed{
+		font-size: 0px;
+	}
+	.expand-collapse .teaser,
+	.expand-collapse .expanded{
+		font-size: inherit;
 	}
 
     
@@ -931,7 +943,7 @@ Bold 700
 		display: inline-block;
 		float: left;
 	}
-	.data-display .provenance span{
+	.data-display .provenance .provenance-statement{
 		display: inline-block;
 		float: left;
 		width: 90%;
