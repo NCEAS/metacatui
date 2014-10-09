@@ -899,8 +899,10 @@ define(['jquery',
 			// get the pid
 			var pid = appModel.get('pid');
 			
-			var route = window.location.href;
-			//route = route + "#" + Backbone.history.fragment;
+			// what URI are we annotating?
+			var uri = window.location.href;
+			// TODO: use a more stable URI?
+			//uri = "https://cn.dataone.org/cn/v1/resolve/" + pid;
 			
 			// destroy and recreate
 			if ($(div).data('annotator')) {
@@ -909,24 +911,24 @@ define(['jquery',
 			}
 			
 			// set up annotator
-			// TODO: include fragment selector for particular element?
-			var loggedIn = false;
-			if (appModel.get('username')) {
-				loggedIn = true;
-			}
-			$(div).annotator({
-		        readOnly: !loggedIn
-		    });
+			var tokenUrl = appModel.get('tokenUrl');
+
+			$(div).annotator();
 			$(div).annotator().annotator('setupPlugins', {}, {
 				Tags: false,
+				Auth: {
+					//tokenUrl: tokenUrl,
+					//token: 'eyJhbGciOiJIUzI1NiJ9.eyJjb25zdW1lcktleSI6ImY3ODBmM2UzOThjZjQ1Y2JiNGU4NGVkOWVjOTE2MjJhIiwiaXNzdWVkQXQiOiIyMDE0LTA5LTI0VDAwOjA5OjU3LjIxMyswMDowMCIsInVzZXJJZCI6InRlc3QiLCJ0dGwiOjg2NDAwfQ.RFwfp5Zsfq60wMyY-r7UK9ONJLQoL0f6E8K4r7BSJgQ'
+				},
 				Store: {
+					//prefix: "http://127.0.0.1:5000",
 					annotationData: {
-						'uri': route,
+						'uri': uri,
 						'pid': pid
 					},
 					loadFromSearch: {
 						'limit': 20,
-						'uri': route 
+						'uri': uri 
 					}
 				}
 			});
@@ -954,6 +956,22 @@ define(['jquery',
 					collision: "fit"
 				}
 			});
+			
+			// subscribe to annotation events, to get the exact resource being annotated
+			$(div).annotator('subscribe', 'beforeAnnotationCreated', function(annotation, arg0, arg1) {
+				var annotator = $(div).data('annotator');
+				var selectedElement = annotator.selectedRanges[0].commonAncestor;
+				
+				// find the first parent with a "resource" attribute
+				var resource = $(selectedElement).parents('[resource]');
+				if (resource) {
+					// add the resource identifier to the annotation
+					$.extend(annotation, {resource: $(resource).attr('resource')});
+					
+					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
+				}
+				
+			})
 		}
 		
 		
