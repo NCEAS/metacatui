@@ -5,7 +5,6 @@ if(src === undefined)   var src = "";
 if(title === undefined) var title = "";
 if(group === undefined) var group = "group";
 if(type === undefined)  var type = null;
-if(provenance === undefined)  var provenance = null;
 %>
 
 <%
@@ -20,17 +19,7 @@ else
 	<div class="title">
 		<h3><%=title%></h3>
 	</div>
-	
-<% 
-if(provenance){
-print('<div class="provenance alert alert-info">' +
-		'<i class="icon-code-fork"></i>' +
-		'<div class="provenance-statement">' + provenance + '</div>' +
-		'<div class="clearfix"></div>' +
-	  '</div>'
-	 );
-}
-%>
+	<div class="provenance-container"></div>
 	<a class="btn" href="<%=src%>"><i class="icon-arrow-down"></i> Download</a>
 </div>
 <div class="clearfix"></div>

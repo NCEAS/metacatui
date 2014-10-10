@@ -189,10 +189,20 @@ Bold 700
 	
 	.expand-collapse .collapsed{
 		font-size: 0px;
+		transition: .5s;
+	}
+	.expand-collapse .teaser{
+		margin-right: 2px;
 	}
 	.expand-collapse .teaser,
 	.expand-collapse .expanded{
 		font-size: inherit;
+		transition: .5s;
+		display: inline-block;
+	}
+	
+	.expand-collapse.expanded .teaser{
+		color: #597F99;
 	}
 
     

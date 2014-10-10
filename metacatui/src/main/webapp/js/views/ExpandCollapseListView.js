@@ -6,16 +6,20 @@ define(['jquery', 'underscore', 'backbone'],
 	var ExpandCollapseListView = Backbone.View.extend({
 		
 		initialize: function(options){
-			this.max  		= options.max  		 || 3;
-			this.list 		= options.list 		 || [];
-			this.id   		= options.id	 	 || null;
-			this.attributes = options.attributes || null;
-			this.className += options.className  || "";
+			if((options === undefined) || (!options)) var options = {};
+
+			this.max  		 = options.max  		 || 3;
+			this.list 		 = options.list 		 || [];
+			this.prependText = options.prependText   || "";
+			this.appendText  = options.appendText    || "";
+			this.id   		 = options.id	 	     || null;
+			this.attributes  = options.attributes    || null;
+			this.className  += options.className     || "";
 		},
 		
 		tagName : "span",
 		
-		className : "",
+		className : "expand-collapse",
 		
 		events: {
 			"click .teaser" : "toggle"
@@ -29,16 +33,17 @@ define(['jquery', 'underscore', 'backbone'],
 				text = "",
 				collapsed = false;
 			
+			text += this.prependText;
+			
 			_.each(view.list, function(id, i){
 				
-				//If there are more than 4, hide the rest of the list in a collapsable element
+				//If there are more than the max, hide the rest of the list in a collapsable element
 				if(i == view.max){
-					text +=  "<span class='expand-collapse'>" +
-							 "<span class='teaser'>" +
-							 "<a class='obvious-link teaser'> (and " +
-							 (view.list.length - i) + " more...) </a>" +
-							 "</span>" +
-							 "<span class='collapsed'>";
+					text +=  '<span class="teaser">' +
+							 '<a href="#" class="obvious-link teaser"> (and ' +
+							 (view.list.length - i) + ' more...) </a>' +
+							 '</span>' +
+							 '<span class="collapsed">';
 					collapsed = true;
 				}
 				
@@ -53,9 +58,11 @@ define(['jquery', 'underscore', 'backbone'],
 				if(i == (view.list.length-1)) text += " ";
 				
 				//Close the collapsable element at the last item in the list
-				if((i = (view.list.length - 1)) && collapsed)
-					text += "</span></span>";
+				if((i == (view.list.length - 1)) && collapsed)
+					text += '</span>';
 			});
+			
+			text += this.appendText;
 			
 			this.$el.append(text);
 			
@@ -71,19 +78,35 @@ define(['jquery', 'underscore', 'backbone'],
 				   "</a>";
 		},
 		
-		toggle: function(){
+		toggle: function(e){
 			e.preventDefault();
+			
+			var view = this;
 			
 			var collapsed = this.$el.find(".collapsed");
 			var expanded  = this.$el.find(".expanded");
+			var container = this.$el;
 			
+			//Expand any currently-expanded items
 			_.each(collapsed, function(element, i){
-				element.removeClass("collapsed");
-				element.addClass("expanded");
+				$(element).removeClass("collapsed");
+				$(element).addClass("expanded");
+				
+				if(i==0){
+					$(container).removeClass("collapsed");
+					$(container).addClass("expanded");
+				}
 			});
+			
+			//Collapse any currently-collapsed items
 			_.each(expanded, function(element, i){
-				element.removeClass("expanded");
-				element.addClass("collapsed");
+				$(element).removeClass("expanded");
+				$(element).addClass("collapsed");
+				
+				if(i==0){
+					$(container).removeClass("expanded");
+					$(container).addClass("collapsed");
+				}
 			});
 			
 			return false;
