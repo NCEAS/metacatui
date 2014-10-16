@@ -9,6 +9,7 @@ define(['jquery',
 		'views/MetadataIndexView',
 		'views/ExpandCollapseListView',
 		'views/ProvStatementView',
+		'views/PackageTableView',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html',
@@ -19,7 +20,7 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, $ui, Annotator, _, Backbone, gmaps, fancybox, MetadataIndex, ExpandCollapseList, ProvStatement, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
+	function($, $ui, Annotator, _, Backbone, gmaps, fancybox, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
 	'use strict';
 
 	
@@ -123,7 +124,7 @@ define(['jquery',
 			}
 		},
 		
-		// this will insert the ORE package download link if available
+		// Insert a table describing each of the items in this dataset with download links
 		insertResourceMapContents: function(pid) {
 			var viewRef = this;
 
@@ -144,142 +145,16 @@ define(['jquery',
 			});
 			
 			if(!this.citationEl){
-				//Otherwise, just find the first element with a citation class - useful for when we display the metadata from the indeed fields
-				viewRef.citationEl = viewRef.$('.citation')[0];
+				//Otherwise, just find the first element with a citation class - useful for when we display the metadata from the indexed fields
+				this.citationEl = this.$('.citation')[0];
 			}
 			
-			//Keep a map of resource map ID <-> objects in that resource map 
-			var packages = new Array();
-			//Keep a list of all resource map objects
-			var maps = new Array();
-			var objects = new Array();
-
-			var resourceMapQuery = "";
+			//Insert the container div for the download contents
+			var table = new PackageTable().render(pid).el;
+			$(this.citationEl).after(table);
 			
-			// Grab all of our URLs
-			var queryServiceUrl = appModel.get('queryServiceUrl');
-			var packageServiceUrl = appModel.get('packageServiceUrl') || appModel.get('objectServiceUrl');
-			var objectServiceUrl = appModel.get('objectServiceUrl');
-			//Does a route to an EML info page exist?
-			var routes = Object.keys(uiRouter.routes),
-				EMLRoute = false;
-			for(var i=0; i<routes.length; i++){
-				if(routes[i].indexOf("tools") > -1){
-					EMLRoute = true;
-					i = routes.length;
-				}
-			}
-						
-			//*** Find each resource map that this metadata is a part of 
-			// surround pid value in "" so that doi characters do not affect solr query
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&rows=100&q=formatType:METADATA+-obsoletedBy:*+id:"' + pid + '"';
-
-			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
-				
-				//Insert the container div for the download contents
-				if ($('#downloadContents').length == 0) $(viewRef.citationEl).after("<div id='downloadContents'></div>");
-						
-				var resourceMap = data.response.docs[0].resourceMap;
-						
-				// Is this metadata part of a resource map?
-				if(resourceMap !== undefined){
-					
-					//Add to our list and map of resource maps if there is at least one
-					_.each(resourceMap, function(resourceMapID){
-						packages[resourceMapID] = new Array();
-						resourceMapQuery += 'resourceMap:"' + encodeURIComponent(resourceMapID) + '"%20OR%20id:"' + encodeURIComponent(resourceMapID) + '"%20OR%20';
-					});
-
-					//*** Find all the files that are a part of those resource maps
-					var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,wasDerivedFrom,wasGeneratedBy,used,wasInformedBy&wt=json&rows=100&q=-obsoletedBy:*+%28' + resourceMapQuery + 'id:"' + encodeURIComponent(pid) + '"%29';
-					$.get(queryServiceUrl + query, function(moreData, textStatus, xhr) {
-								
-						var pids   = [], //Keep track of each object pid
-							images = [], //Keep track of each data object that is an image
-							pdfs   = [], //Keep track of each data object that is a PDF 
-							other = []; //Keep track of all non-metadata and non-resource map objects
-							
-						//Separate the resource maps from the data/metadata objects
-						_.each(moreData.response.docs, function(doc){
-							if(doc.formatType == "RESOURCE"){											
-								maps.push(doc);
-							}
-							else{
-								objects.push(doc);
-								pids.push(doc.id);
-								
-								//Keep track of each data objects so we can display them later
-								if(viewRef.isImage(doc)) images.push(doc);
-								else if(viewRef.isPDF(doc)) pdfs.push(doc);
-								else if(doc.formatType != "METADATA") other.push(doc);
-							}
-						});
-										
-						//Now go through all of our objects and add them to our map
-						_.each(objects, function(object){
-							_.each(object.resourceMap, function(resourceMapId){
-								if (packages[resourceMapId]) {
-									packages[resourceMapId].push(object);												
-								}												
-							});
-						});
-											
-						//For each resource map package, add a table of its contents to the page 
-						var count = 0;
-						_.each(maps, function(thisMap){
-							var dataWithDetailsOnPage = [];
-							//If a data object in this package is mentioned in the metadata, insert a link to its details
-							_.each(packages[thisMap.id], function(object){
-								if(viewRef.$el.find(":contains(" + object.id + ")").length){
-									dataWithDetailsOnPage.push(object.id);
-								}
-							});
-							
-							$('#downloadContents').append(viewRef.downloadContentsTemplate({
-								objects: packages[thisMap.id],
-								resourceMap: thisMap,
-								package_service: packageServiceUrl,
-								object_service: objectServiceUrl,
-								EMLRoute: EMLRoute,
-								dataWithDetailsOnPage: dataWithDetailsOnPage
-							}));
-						}); 
-						
-						//Replace Ecogrid Links with DataONE API links
-						viewRef.replaceEcoGridLinks(pids);
-						
-						//Display data objects if they are visual
-						viewRef.insertVisuals(images, "image");
-						viewRef.insertVisuals(pdfs, "pdf");
-						viewRef.insertVisuals(other);
-						
-						//Move the download button to our download content list area
-					    $("#downloadPackage").detach();
-					    
-					}, "json").error(function(){
-						console.warn(reponse);
-					});
-				}	
-				//If this is just a metadata object, just send that info alone
-				else{
-					$('#downloadContents').append(viewRef.downloadContentsTemplate({
-						objects: data.response.docs,
-						resourceMap: null,
-						package_service: packageServiceUrl,
-						object_service: objectServiceUrl,
-						EMLRoute: EMLRoute
-					}));
-					
-					//Move the download button to our download content list area
-				    $("#downloadPackage").detach();
-				}
-										
-				//Initialize any popovers
-				$('.popover-this').popover();
-						
-			}, "json").error(function(){
-				console.warn(repsonse);
-			});
+			//Move the download button to our download content list area
+		    $("#downloadPackage").detach();
 					
 			// is this the latest version? (includes DOI link when needed)
 			viewRef.showLatestVersion(pid);		
