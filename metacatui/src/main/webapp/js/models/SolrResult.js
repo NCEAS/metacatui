@@ -15,7 +15,10 @@ define(['jquery', 'underscore', 'backbone'],
 			resourceMap: null,
 			downloads: 0,
 			citations: 0,
-			selected: false
+			bytes: 0,
+			selected: false,
+			formatId: null,
+			formatType: null
 		},
 		
 		// Toggle the `selected` state of the result

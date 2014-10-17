@@ -155,6 +155,9 @@ define(['jquery',
 			
 			//Move the download button to our download content list area
 		    $("#downloadPackage").detach();
+		    var citationText = $(this.citationEl).find(".span10");
+		    				   $(citationText).removeClass("span10");
+		    				   $(citationText).addClass("span12");
 					
 			// is this the latest version? (includes DOI link when needed)
 			viewRef.showLatestVersion(pid);		

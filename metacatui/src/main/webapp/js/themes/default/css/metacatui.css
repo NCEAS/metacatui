@@ -427,6 +427,7 @@ Bold 700
     	background-position: 0 -50px;
     	color: #FFF;
     	text-shadow: 0 1px 1px rgba(127, 127, 127, 0.75);
+    	border: 1px solid transparent;
     }
     .btn:hover i{
     	color: #2299D4;
@@ -434,6 +435,7 @@ Bold 700
     .btn-primary:hover{
     	background-color: #0377DD;
     	background-position: 0 -50px;
+    	border-color: #0377DD;
     }
 
     .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
@@ -859,8 +861,10 @@ Bold 700
 	.download-contents.container{
 		width: 100%;
 		background-color: #FFFFFF;
-		border: 1px solid #DDDDDD;
-		border-radius: 3px;
+		border: 0px solid #DDDDDD;
+		border-radius: 4px;
+		overflow: hidden;
+		margin-bottom: 20px;
 	}
 	 
     table.download-contents {
@@ -888,16 +892,15 @@ Bold 700
     .download-contents td{
     	overflow-wrap: break-word;
     }
-    .format-type{
-    	text-transform: lowercase;
-    }
-    .format-type i {
+    .table .format-type i {
     	margin-right: 5px;
     	font-size: 1.4em;
     	vertical-align: middle;
+    	color:#68707C;
     }
-    .format-type {
+    .table .format-type {
     	text-transform: capitalize;
+    	text-align: center;
     }
     
     .file-type i {

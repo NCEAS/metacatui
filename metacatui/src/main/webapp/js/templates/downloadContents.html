@@ -55,7 +55,8 @@ else{
 		fileTypePopover = null;
 		fileType = object.formatId;
 		if(fileType.substr(0, 3) == "eml"){
-			fileTypePopover = '<i class="icon-question-sign popover-this" data-trigger="hover" data-placement="top" data-html="true" data-content="<h5>EML version:</h5>' + fileType + '"></i>';
+			//fileTypePopover = '<i class="icon-question-sign popover-this" data-trigger="hover" data-placement="top" data-html="true" data-content="<h5>EML version:</h5>' + fileType + '"></i>';
+			fileTypePopover = "";
 			if(EMLRoute) fileType = '.xml (<a href="#tools/eml">EML '+fileTypePopover+'</a>)';
 			else fileType = '.xml (EML' + fileTypePopover + ')';
 		}
