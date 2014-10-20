@@ -734,8 +734,10 @@ define(['jquery',
 			// get the pid
 			var pid = appModel.get('pid');
 			
-			// what URI are we annotating?
-			var uri = window.location.href;
+			// which URI are we annotating?
+			var uri = null;
+			//uri = window.location.href;
+			uri = appModel.get("objectServiceUrl") + pid;
 			// TODO: use a more stable URI?
 			//uri = "https://cn.dataone.org/cn/v1/resolve/" + pid;
 			
@@ -852,13 +854,13 @@ define(['jquery',
 						$(div).data('annotator').plugins.Tags.input.autocomplete({
 							source: orcidSearch
 						});
-						
 						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
 
 					} else {
 						$(div).data('annotator').plugins.Tags.input.autocomplete({
 							source: bioportalSearch
 						});
+						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
 					}
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
