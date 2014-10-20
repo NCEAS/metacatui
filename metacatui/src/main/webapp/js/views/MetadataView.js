@@ -768,29 +768,72 @@ define(['jquery',
 				}
 			});
 			
-			var availableTags = [];
-			$.get(bioportalServiceUrl, function(data, textStatus, xhr) {
-			
-				_.each(data.collection, function(obj) {
-					var choice = {};
-					choice.label = obj['prefLabel'];
-					choice.value = obj['@id'];
-					availableTags.push(choice);
+			var bioportalSearch = function(request, response) {
+				
+				var query = appModel.get('bioportalServiceUrl') + request.term;
+				var availableTags = [];
+				$.get(query, function(data, textStatus, xhr) {
+				
+					_.each(data.collection, function(obj) {
+						var choice = {};
+						choice.label = obj['prefLabel'];
+						choice.value = obj['@id'];
+						availableTags.push(choice);
+					});
+					
+					response(availableTags);
+					
 				});
-				
-				
-			});
+			};
 			
+			var orcidSearch = function(request, response) {
+				var people = [];
+				var query = appModel.get('orcidServiceUrl') + request.term;
+				$.get(query, function(data, status, xhr) {
+					// get the orcid info
+					var profile = $(data).find("orcid-profile");
+
+					_.each(profile, function(obj) {
+						var choice = {};
+						choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
+						choice.value = $(obj).find("orcid-identifier > uri").text();
+						people.push(choice);
+					});
+					
+					// callback with answers
+					response(people);
+				})
+			};
 			                     
+			// set up tags with bioportal suggestions as default
 			$(div).annotator().annotator('addPlugin', 'Tags');
 			$(div).data('annotator').plugins.Tags.input.autocomplete({
-				source: availableTags,
+				source: bioportalSearch,
 				position: {
 					my: "left top",
 					at: "right bottom",
 					collision: "fit"
 				}
 			});
+			
+			// set up rejection field
+			$(div).data('annotator').editor.addField({
+		        type: 'checkbox',
+		        label: '<strong>Reject</strong> this annotation?',
+		        load: function(field, annotation) {
+		        	$(field).find('input').removeAttr("checked");
+		            if (annotation.reject) {
+			            $(field).find('input').prop("checked", "checked");
+		            }
+		            return $(field).find('input').is(":checked");
+		          },
+		          submit: function(field, annotation) {
+		        	  var input = $(field).find('input');
+		        	  var val = input.is(":checked");
+		        	  return annotation.reject = val;
+		          }
+		          
+		      });
 			
 			// subscribe to annotation events, to get the exact resource being annotated
 			$(div).annotator('subscribe', 'beforeAnnotationCreated', function(annotation, arg0, arg1) {
@@ -803,31 +846,18 @@ define(['jquery',
 					// add the resource identifier to the annotation
 					$.extend(annotation, {resource: $(resourceElem).attr('resource')});
 					
+					// change the autocomplete depending on type of element being annotated
 					var type = $(resourceElem).attr('type');
-					if (type == "ORCID") {
+					if (type == "party") {
 						$(div).data('annotator').plugins.Tags.input.autocomplete({
-							source: function(request, response) {
-								var people = [];
-								var query = appModel.get('orcidServiceUrl') + request.term;
-								$.get(query, function(data, status, xhr) {
-									// get the orcid info
-									var profile = $(data).find("orcid-profile");
-
-									_.each(profile, function(obj) {
-										var choice = {};
-										choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
-										choice.value = $(obj).find("orcid-identifier > uri").text();
-										people.push(choice);
-									});
-									
-									// callback with answers
-									response(people);
-								})
-							}
+							source: orcidSearch
 						});
+						
+						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
+
 					} else {
 						$(div).data('annotator').plugins.Tags.input.autocomplete({
-							source: availableTags
+							source: bioportalSearch
 						});
 					}
 					
