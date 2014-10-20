@@ -798,10 +798,38 @@ define(['jquery',
 				var selectedElement = annotator.selectedRanges[0].commonAncestor;
 				
 				// find the first parent with a "resource" attribute
-				var resource = $(selectedElement).parents('[resource]');
-				if (resource) {
+				var resourceElem = $(selectedElement).parents('[resource]');
+				if (resourceElem) {
 					// add the resource identifier to the annotation
-					$.extend(annotation, {resource: $(resource).attr('resource')});
+					$.extend(annotation, {resource: $(resourceElem).attr('resource')});
+					
+					var type = $(resourceElem).attr('type');
+					if (type == "ORCID") {
+						$(div).data('annotator').plugins.Tags.input.autocomplete({
+							source: function(request, response) {
+								var people = [];
+								var query = appModel.get('orcidServiceUrl') + request.term;
+								$.get(query, function(data, status, xhr) {
+									// get the orcid info
+									var profile = $(data).find("orcid-profile");
+
+									_.each(profile, function(obj) {
+										var choice = {};
+										choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
+										choice.value = $(obj).find("orcid-identifier > uri").text();
+										people.push(choice);
+									});
+									
+									// callback with answers
+									response(people);
+								})
+							}
+						});
+					} else {
+						$(div).data('annotator').plugins.Tags.input.autocomplete({
+							source: availableTags
+						});
+					}
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
 				}

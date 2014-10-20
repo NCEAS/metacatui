@@ -31,7 +31,9 @@ define(['jquery', 'underscore', 'backbone'],
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
-			bioportalServiceUrl: null
+			bioportalServiceUrl: null,
+			orcidServiceUrl: null
+
 		},
 		
 		initialize: function() {
