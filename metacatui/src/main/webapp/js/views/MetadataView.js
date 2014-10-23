@@ -828,6 +828,7 @@ define(['jquery',
 						var choice = {};
 						choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
 						choice.value = $(obj).find("orcid-identifier > uri").text();
+						choice.desc = $(obj).find("orcid-bio > personal-details").text();
 						people.push(choice);
 					});
 					
