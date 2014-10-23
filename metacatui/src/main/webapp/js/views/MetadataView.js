@@ -755,10 +755,10 @@ define(['jquery',
 				Tags: false,
 				Auth: {
 					//tokenUrl: tokenUrl,
-					//token: 'eyJhbGciOiJIUzI1NiJ9.eyJjb25zdW1lcktleSI6ImY3ODBmM2UzOThjZjQ1Y2JiNGU4NGVkOWVjOTE2MjJhIiwiaXNzdWVkQXQiOiIyMDE0LTA5LTI0VDAwOjA5OjU3LjIxMyswMDowMCIsInVzZXJJZCI6InRlc3QiLCJ0dGwiOjg2NDAwfQ.RFwfp5Zsfq60wMyY-r7UK9ONJLQoL0f6E8K4r7BSJgQ'
+					//token: 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJpc3N1ZWRBdCI6ICIyMDE0LTEwLTIxVDE4OjUyOjUwKzAwOjAwIiwgInR0bCI6IDg2NDAwLCAiY29uc3VtZXJLZXkiOiAiYW5ub3RhdGVpdCIsICJ1c2VySWQiOiAibGVpbmZlbGRlciJ9.jh3RBTXNJis8697lCtPylShzj9O2oNN_ec11s9tbkTc'
 				},
 				Store: {
-					//prefix: "http://127.0.0.1:5000",
+					//prefix: "http://dev.nceas.ucsb.edu:5000",
 					annotationData: {
 						'uri': uri,
 						'pid': pid
@@ -770,6 +770,27 @@ define(['jquery',
 				}
 			});
 			
+		    // Autocomplete widget extension to provide description
+		    // tooltips.
+		    $.widget( "app.hoverAutocomplete", $.ui.autocomplete, {
+		        
+		        // Set the title attribute as the "item.desc" value.
+		        // This becomes the tooltip content.
+		        _renderItem: function( ul, item ) {
+		        	var element = this._super( ul, item )
+	                .attr( "data-title", item.value )
+	                .attr( "data-content", item.desc );
+		        	element.popover(
+		        			{
+		        				placement: "right",
+		        				trigger: "hover",
+		        				container: 'body'
+		        				
+		        			});
+		            return element;
+		        }
+		    });
+			
 			var bioportalSearch = function(request, response) {
 				
 				var query = appModel.get('bioportalServiceUrl') + request.term;
@@ -780,12 +801,20 @@ define(['jquery',
 						var choice = {};
 						choice.label = obj['prefLabel'];
 						choice.value = obj['@id'];
+						choice.desc = obj['definition']
 						availableTags.push(choice);
 					});
 					
 					response(availableTags);
 					
 				});
+			};
+			
+			var focus = function(event, ui) {
+				console.log("This is the value focused: " + ui.item.value);
+				
+				//TODO: connect keyboard focus event to show the hover popover 
+				
 			};
 			
 			var orcidSearch = function(request, response) {
@@ -809,14 +838,16 @@ define(['jquery',
 			                     
 			// set up tags with bioportal suggestions as default
 			$(div).annotator().annotator('addPlugin', 'Tags');
-			$(div).data('annotator').plugins.Tags.input.autocomplete({
+			$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
 				source: bioportalSearch,
+				focus: focus,
 				position: {
 					my: "left top",
 					at: "right bottom",
 					collision: "fit"
 				}
 			});
+			
 			
 			// set up rejection field
 			$(div).data('annotator').editor.addField({
@@ -851,14 +882,16 @@ define(['jquery',
 					// change the autocomplete depending on type of element being annotated
 					var type = $(resourceElem).attr('type');
 					if (type == "party") {
-						$(div).data('annotator').plugins.Tags.input.autocomplete({
-							source: orcidSearch
+						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
+							source: orcidSearch,
+							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
 
 					} else {
-						$(div).data('annotator').plugins.Tags.input.autocomplete({
-							source: bioportalSearch
+						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
+							source: bioportalSearch,
+							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
 					}
