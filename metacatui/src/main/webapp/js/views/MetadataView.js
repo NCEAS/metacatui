@@ -900,7 +900,28 @@ define(['jquery',
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
 				}
 				
-			})
+			});
+			
+			// make sure we have hyper links for this value
+			var updateAnnotationLinks = function(editor) {
+				
+				var annotation = editor.annotation;
+				if (annotation.tags) {
+					
+					var value = annotation.tags[0];
+					// TODO: test for valid URI
+					
+					// add the uri as a link
+					$.extend(annotation, 
+						{links: [{
+						        	  type: "text/html",
+						        	  href: value,
+						        	  rel: "alternate"
+						          }]
+						});
+				}
+			};
+			$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
 		}
 		
 		

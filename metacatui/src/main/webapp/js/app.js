@@ -51,7 +51,7 @@ require.config({
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
 	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
-    annotator: '../components/annotator/v1.2.9/annotator-full.min',
+    annotator: '../components/annotator/v1.2.9/annotator-full',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: d3URL,
 	LineChart: ['views/LineChartView', null],
