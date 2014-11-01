@@ -888,6 +888,7 @@ define(['jquery',
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
+						$.extend(annotation, {"field": "orcid_sm"});
 
 					} else {
 						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
@@ -895,6 +896,7 @@ define(['jquery',
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
+						$.extend(annotation, {"field": "characteristic_sm"});
 					}
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
