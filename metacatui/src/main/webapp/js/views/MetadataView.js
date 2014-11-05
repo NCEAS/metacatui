@@ -924,6 +924,19 @@ define(['jquery',
 				}
 			};
 			$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
+
+			// reindex when an annotation is updated
+			var reindexPid = function() {
+				var query = appModel.get('metacatServiceUrl') + "?action=reindex&pid=" + pid;
+				$.get(query, function(data, status, xhr) {
+					// TODO: check for any success?
+					//we are done now
+				});
+			};
+			$(div).annotator('subscribe', 'annotationCreated', reindexPid);
+			$(div).annotator('subscribe', 'annotationUpdated', reindexPid);
+			$(div).annotator('subscribe', 'annotationDeleted', reindexPid);
+
 		}
 		
 		
