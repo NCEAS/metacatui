@@ -923,7 +923,8 @@ define(['jquery',
 						});
 				}
 			};
-			$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
+			// show the annotateit.org links for now
+			//$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
 
 			// reindex when an annotation is updated
 			var reindexPid = function() {
