@@ -889,7 +889,7 @@ define(['jquery',
 					for (var i=0; i < Math.min(originSuggestions.length-1, facetLimit); i+=2) {
 						rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
 					}
-					$('#creator_input').autocomplete({
+					$('#creator_input').hoverAutocomplete({
 						source: function (request, response) {
 				            var term = $.ui.autocomplete.escapeRegex(request.term)
 				                , startsWithMatcher = new RegExp("^" + term, "i")
@@ -902,7 +902,11 @@ define(['jquery',
 				                        containsMatcher.test(value.label || value.value || value);
 				                });
 				            
-				            response(startsWith.concat(contains));
+				            // use local values from facet
+				            var localValues = startsWith.concat(contains);
+				            
+				            // pass to orcid search to complete the list and do the call back
+				            lookupModel.orcidSearch(request, response, localValues);
 				        },
 						select: function(event, ui) {
 							// set the text field

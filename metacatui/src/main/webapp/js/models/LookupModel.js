@@ -54,7 +54,7 @@ define(['jquery', 'underscore', 'backbone'],
 			});
 		},
 		
-		orcidSearch: function(request, response) {
+		orcidSearch: function(request, response, more) {
 				var people = [];
 				var query = appModel.get('orcidServiceUrl') + request.term;
 				$.get(query, function(data, status, xhr) {
@@ -68,6 +68,11 @@ define(['jquery', 'underscore', 'backbone'],
 						choice.desc = $(obj).find("orcid-bio > personal-details").text();
 						people.push(choice);
 					});
+					
+					// add more if called that way
+					if (more) {
+						people = more.concat(people);
+					}
 					
 					// callback with answers
 					response(people);
