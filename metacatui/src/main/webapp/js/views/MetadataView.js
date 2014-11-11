@@ -770,77 +770,16 @@ define(['jquery',
 				}
 			});
 			
-		    // Autocomplete widget extension to provide description
-		    // tooltips.
-		    $.widget( "app.hoverAutocomplete", $.ui.autocomplete, {
-		        
-		        // Set the title attribute as the "item.desc" value.
-		        // This becomes the tooltip content.
-		        _renderItem: function( ul, item ) {
-		        	var element = this._super( ul, item )
-	                .attr( "data-title", item.value )
-	                .attr( "data-content", item.desc );
-		        	element.popover(
-		        			{
-		        				placement: "right",
-		        				trigger: "hover",
-		        				container: 'body'
-		        				
-		        			});
-		            return element;
-		        }
-		    });
-			
-			var bioportalSearch = function(request, response) {
-				
-				var query = appModel.get('bioportalServiceUrl') + request.term;
-				var availableTags = [];
-				$.get(query, function(data, textStatus, xhr) {
-				
-					_.each(data.collection, function(obj) {
-						var choice = {};
-						choice.label = obj['prefLabel'];
-						choice.value = obj['@id'];
-						choice.desc = obj['definition']
-						availableTags.push(choice);
-					});
-					
-					response(availableTags);
-					
-				});
-			};
-			
 			var focus = function(event, ui) {
 				console.log("This is the value focused: " + ui.item.value);
-				
 				//TODO: connect keyboard focus event to show the hover popover 
-				
-			};
-			
-			var orcidSearch = function(request, response) {
-				var people = [];
-				var query = appModel.get('orcidServiceUrl') + request.term;
-				$.get(query, function(data, status, xhr) {
-					// get the orcid info
-					var profile = $(data).find("orcid-profile");
-
-					_.each(profile, function(obj) {
-						var choice = {};
-						choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
-						choice.value = $(obj).find("orcid-identifier > uri").text();
-						choice.desc = $(obj).find("orcid-bio > personal-details").text();
-						people.push(choice);
-					});
-					
-					// callback with answers
-					response(people);
-				})
 			};
 			                     
+			// NOTE: using the extended hover auto-complete defined in lookup model
 			// set up tags with bioportal suggestions as default
 			$(div).annotator().annotator('addPlugin', 'Tags');
 			$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
-				source: bioportalSearch,
+				source: lookupModel.bioportalSearch,
 				focus: focus,
 				position: {
 					my: "left top",
@@ -884,7 +823,7 @@ define(['jquery',
 					var type = $(resourceElem).attr('type');
 					if (type == "party") {
 						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
-							source: orcidSearch,
+							source: lookupModel.orcidSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
@@ -892,7 +831,7 @@ define(['jquery',
 
 					} else {
 						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
-							source: bioportalSearch,
+							source: lookupModel.bioportalSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});

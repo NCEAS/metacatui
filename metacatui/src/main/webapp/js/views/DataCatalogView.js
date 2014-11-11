@@ -425,7 +425,11 @@ define(['jquery',
 			}
 			
 			//Close the autocomplete box
-			$('#' + category + '_input').autocomplete("close");
+			if (e.type == "hoverautocompleteselect") {
+				$('#' + category + '_input').hoverAutocomplete("close");
+			} else {
+				$('#' + category + '_input').autocomplete("close");
+			}
 				
 			//Get the current searchModel array for this category
 			var filtersArray = _.clone(searchModel.get(category));
@@ -805,8 +809,10 @@ define(['jquery',
 					for (var i=0; i < Math.min(characteristicSuggestions.length-1, facetLimit); i+=2) {
 						rankedCharacteristicSuggestions.push({value: characteristicSuggestions[i], label: characteristicSuggestions[i].substring(characteristicSuggestions[i].indexOf("#")) });
 					}
-					$('#characteristic_input').autocomplete({
-						source: function (request, response) {
+					$('#characteristic_input').hoverAutocomplete({
+						source: lookupModel.bioportalSearch 
+						// TODO: restrict to facet values
+						/**function (request, response) {
 				            var term = $.ui.autocomplete.escapeRegex(request.term)
 				                , startsWithMatcher = new RegExp("^" + term, "i")
 				                , startsWith = $.grep(rankedCharacteristicSuggestions, function(value) {
@@ -819,7 +825,8 @@ define(['jquery',
 				                });
 				            
 				            response(startsWith.concat(contains));
-				        },
+				        }**/
+						,
 						select: function(event, ui) {
 							// set the text field
 							$('#characteristic_input').val(ui.item.value);
@@ -842,8 +849,10 @@ define(['jquery',
 					for (var i=0; i < Math.min(standardSuggestions.length-1, facetLimit); i+=2) {
 						rankedStandardSuggestions.push({value: standardSuggestions[i], label: standardSuggestions[i].substring(standardSuggestions[i].indexOf("#")) });
 					}
-					$('#standard_input').autocomplete({
-						source: function (request, response) {
+					$('#standard_input').hoverAutocomplete({
+						source: lookupModel.bioportalSearch
+							/**
+							function (request, response) {
 				            var term = $.ui.autocomplete.escapeRegex(request.term)
 				                , startsWithMatcher = new RegExp("^" + term, "i")
 				                , startsWith = $.grep(rankedStandardSuggestions, function(value) {
@@ -856,7 +865,8 @@ define(['jquery',
 				                });
 				            
 				            response(startsWith.concat(contains));
-				        },
+				        }**/
+						,
 						select: function(event, ui) {
 							// set the text field
 							$('#standard_input').val(ui.item.value);
