@@ -747,16 +747,24 @@ define(['jquery',
 				//$(div).destroy();
 			}
 			
-			// set up annotator
-			var tokenUrl = appModel.get('tokenUrl');
+			
 
+			// only use authentication plugin when logged in
+			var authOptions = false;
+			if (appModel.get('username')) {
+				// check if we are using our own token generator
+				var tokenUrl = appModel.get('tokenUrl');
+				authOptions = {
+					//tokenUrl: tokenUrl,
+					//token: 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJpc3N1ZWRBdCI6ICIyMDE0LTEwLTIxVDE4OjUyOjUwKzAwOjAwIiwgInR0bCI6IDg2NDAwLCAiY29uc3VtZXJLZXkiOiAiYW5ub3RhdGVpdCIsICJ1c2VySWQiOiAibGVpbmZlbGRlciJ9.jh3RBTXNJis8697lCtPylShzj9O2oNN_ec11s9tbkTc'
+				}
+			}
+			
+			// set up the annotator
 			$(div).annotator();
 			$(div).annotator().annotator('setupPlugins', {}, {
 				Tags: false,
-				Auth: {
-					//tokenUrl: tokenUrl,
-					//token: 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJpc3N1ZWRBdCI6ICIyMDE0LTEwLTIxVDE4OjUyOjUwKzAwOjAwIiwgInR0bCI6IDg2NDAwLCAiY29uc3VtZXJLZXkiOiAiYW5ub3RhdGVpdCIsICJ1c2VySWQiOiAibGVpbmZlbGRlciJ9.jh3RBTXNJis8697lCtPylShzj9O2oNN_ec11s9tbkTc'
-				},
+				Auth: authOptions,
 				Store: {
 					//prefix: "http://dev.nceas.ucsb.edu:5000",
 					annotationData: {
@@ -770,6 +778,7 @@ define(['jquery',
 				}
 			});
 			
+			// need connect keyboard navigation to the hover
 			var focus = function(event, ui) {
 				console.log("This is the value focused: " + ui.item.value);
 				//TODO: connect keyboard focus event to show the hover popover 
@@ -843,26 +852,25 @@ define(['jquery',
 				
 			});
 			
-			// make sure we have hyper links for this value
+			// Use tag as hyperlink in the annotation
 			var updateAnnotationLinks = function(editor) {
-				
 				var annotation = editor.annotation;
 				if (annotation.tags) {
-					
 					var value = annotation.tags[0];
 					// TODO: test for valid URI
-					
 					// add the uri as a link
 					$.extend(annotation, 
 						{links: [{
-						        	  type: "text/html",
-						        	  href: value,
-						        	  rel: "alternate"
-						          }]
-						});
+						        	type: "text/html",
+						        	href: value,
+						        	rel: "alternate"
+								}]
+						}
+					);
 				}
 			};
-			// show the annotateit.org links for now
+			
+			// NOTE: just using the annotateit.org links for now
 			//$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
 
 			// reindex when an annotation is updated
