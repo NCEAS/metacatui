@@ -755,7 +755,7 @@ define(['jquery',
 				// check if we are using our own token generator
 				var tokenUrl = appModel.get('tokenUrl');
 				authOptions = {
-					//tokenUrl: tokenUrl,
+					tokenUrl: tokenUrl,
 					//token: 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJpc3N1ZWRBdCI6ICIyMDE0LTEwLTIxVDE4OjUyOjUwKzAwOjAwIiwgInR0bCI6IDg2NDAwLCAiY29uc3VtZXJLZXkiOiAiYW5ub3RhdGVpdCIsICJ1c2VySWQiOiAibGVpbmZlbGRlciJ9.jh3RBTXNJis8697lCtPylShzj9O2oNN_ec11s9tbkTc'
 				}
 			}
