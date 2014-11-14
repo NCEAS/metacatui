@@ -132,7 +132,7 @@ define(['jquery',
 			this.updateYearRange(); 
 			
 			//Iterate through each search model text attribute and show UI filter for each
-			var categories = ['all', 'creator', 'taxon', 'characteristic', 'standard'];
+			var categories = ['all', 'creator', 'taxon', 'annotation'];
 			var thisTerm = null;
 			
 			for (var i=0; i<categories.length; i++){
@@ -802,24 +802,24 @@ define(['jquery',
 					});
 				}
 				
-				// suggest characteristics
-				var characteristicSuggestions = facetCounts.characteristic_sm;
-				if(characteristicSuggestions){
-					var rankedCharacteristicSuggestions = new Array();
-					for (var i=0; i < Math.min(characteristicSuggestions.length-1, facetLimit); i+=2) {
-						rankedCharacteristicSuggestions.push({value: characteristicSuggestions[i], label: characteristicSuggestions[i].substring(characteristicSuggestions[i].indexOf("#")) });
+				// suggest annotation concepts
+				var annotationSuggestions = facetCounts.annotation_sm;
+				if(annotationSuggestions){
+					var rankedAnnotationSuggestions = new Array();
+					for (var i=0; i < Math.min(annotationSuggestions.length-1, facetLimit); i+=2) {
+						rankedAnnotationSuggestions.push({value: annotationSuggestions[i], label: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")) });
 					}
-					$('#characteristic_input').hoverAutocomplete({
+					$('#annotation_input').hoverAutocomplete({
 						source: lookupModel.bioportalSearch 
 						// TODO: restrict to facet values
 						/**function (request, response) {
 				            var term = $.ui.autocomplete.escapeRegex(request.term)
 				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedCharacteristicSuggestions, function(value) {
+				                , startsWith = $.grep(rankedAnnotationSuggestions, function(value) {
 				                    return startsWithMatcher.test(value.label || value.value || value);
 				                })
 				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedCharacteristicSuggestions, function (value) {
+				                , contains = $.grep(rankedAnnotationSuggestions, function (value) {
 				                    return $.inArray(value, startsWith) < 0 && 
 				                        containsMatcher.test(value.label || value.value || value);
 				                });
@@ -829,7 +829,7 @@ define(['jquery',
 						,
 						select: function(event, ui) {
 							// set the text field
-							$('#characteristic_input').val(ui.item.value);
+							$('#annotation_input').val(ui.item.value);
 							// add to the filter immediately
 							viewRef.updateTextFilters(event);
 							// prevent default action
@@ -842,45 +842,6 @@ define(['jquery',
 					});
 				}
 				
-				// suggest standards
-				var standardSuggestions = facetCounts.standard_sm;
-				if(standardSuggestions){
-					var rankedStandardSuggestions = new Array();
-					for (var i=0; i < Math.min(standardSuggestions.length-1, facetLimit); i+=2) {
-						rankedStandardSuggestions.push({value: standardSuggestions[i], label: standardSuggestions[i].substring(standardSuggestions[i].indexOf("#")) });
-					}
-					$('#standard_input').hoverAutocomplete({
-						source: lookupModel.bioportalSearch
-							/**
-							function (request, response) {
-				            var term = $.ui.autocomplete.escapeRegex(request.term)
-				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedStandardSuggestions, function(value) {
-				                    return startsWithMatcher.test(value.label || value.value || value);
-				                })
-				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedStandardSuggestions, function (value) {
-				                    return $.inArray(value, startsWith) < 0 && 
-				                        containsMatcher.test(value.label || value.value || value);
-				                });
-				            
-				            response(startsWith.concat(contains));
-				        }**/
-						,
-						select: function(event, ui) {
-							// set the text field
-							$('#standard_input').val(ui.item.value);
-							// add to the filter immediately
-							viewRef.updateTextFilters(event);
-							// prevent default action
-							return false;
-						},
-						position: {
-							my: "left top",
-							at: "left bottom"				
-						}
-					});
-				}
 				
 				// suggest creator names/organizations
 				var originSuggestions = facetCounts.origin;

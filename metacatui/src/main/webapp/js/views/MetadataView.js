@@ -844,7 +844,7 @@ define(['jquery',
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
-						$.extend(annotation, {"field": "characteristic_sm"});
+						$.extend(annotation, {"field": "annotation_sm"});
 					}
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
