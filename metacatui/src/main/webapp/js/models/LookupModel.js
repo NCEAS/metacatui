@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 		},
 		
-		bioportalSearch: function(request, response) {
+		bioportalSearch: function(request, response, more) {
 			
 			var query = appModel.get('bioportalServiceUrl') + request.term;
 			var availableTags = [];
@@ -48,6 +48,11 @@ define(['jquery', 'underscore', 'backbone'],
 					choice.desc = obj['definition']
 					availableTags.push(choice);
 				});
+				
+				// add more if called that way
+				if (more) {
+					availableTags = more.concat(availableTags);
+				}
 				
 				response(availableTags);
 				

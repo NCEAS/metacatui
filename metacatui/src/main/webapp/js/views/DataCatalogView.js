@@ -810,22 +810,26 @@ define(['jquery',
 						rankedAnnotationSuggestions.push({value: annotationSuggestions[i], label: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")) });
 					}
 					$('#annotation_input').hoverAutocomplete({
-						source: lookupModel.bioportalSearch 
-						// TODO: restrict to facet values
-						/**function (request, response) {
-				            var term = $.ui.autocomplete.escapeRegex(request.term)
-				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedAnnotationSuggestions, function(value) {
-				                    return startsWithMatcher.test(value.label || value.value || value);
-				                })
-				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedAnnotationSuggestions, function (value) {
-				                    return $.inArray(value, startsWith) < 0 && 
-				                        containsMatcher.test(value.label || value.value || value);
-				                });
-				            
-				            response(startsWith.concat(contains));
-				        }**/
+						source: 
+							function (request, response) {
+					            var term = $.ui.autocomplete.escapeRegex(request.term)
+					                , startsWithMatcher = new RegExp("^" + term, "i")
+					                , startsWith = $.grep(rankedAnnotationSuggestions, function(value) {
+					                    return startsWithMatcher.test(value.label || value.value || value);
+					                })
+					                , containsMatcher = new RegExp(term, "i")
+					                , contains = $.grep(rankedAnnotationSuggestions, function (value) {
+					                    return $.inArray(value, startsWith) < 0 && 
+					                        containsMatcher.test(value.label || value.value || value);
+					                });
+					            					            
+					            // use local values from facet
+					            var localValues = startsWith.concat(contains);
+					            
+					            // pass to bioportal search to complete the list and do the call back
+					            lookupModel.bioportalSearch(request, response, localValues);
+					            
+				        }
 						,
 						select: function(event, ui) {
 							// set the text field
