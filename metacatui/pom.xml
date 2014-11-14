@@ -3,7 +3,7 @@
     <groupId>edu.ucsb.nceas</groupId>
     <artifactId>metacatui</artifactId>
     <packaging>war</packaging>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.7.0-SNAPSHOT</version>
     <name>metacatui</name>
     <dependencies>
         <dependency>
