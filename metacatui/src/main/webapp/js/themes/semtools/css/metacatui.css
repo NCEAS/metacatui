@@ -1698,7 +1698,6 @@ Bold 700
       display: block;
       padding: 4px 1%;
       width: 98%;
-      font: 400 14px/18px "Source Sans Pro" Arial, sans-serif;
     }
     
     .result-row:nth-child(odd){

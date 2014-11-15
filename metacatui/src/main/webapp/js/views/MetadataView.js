@@ -99,6 +99,13 @@ define(['jquery',
 								viewRef.insertResourceMapContents(appModel.get('pid'));
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 								
+								//Create provenance statements about this document if there are any prov annotations
+								//var provenance = this.getProvenance(visuals[i]);
+								//var provenanceEl = new ProvStatement().render(doc).el;
+										
+								//Insert the provenance statements
+								//$(container).find(".provenance-container").prepend(provenanceEl);
+								
 								viewRef.setUpAnnotator('body');
 							}							
 						});
@@ -407,12 +414,6 @@ define(['jquery',
 				// Insert the HTML into the DOM
 				$(container).prepend(dataDisplay);	
 				
-				//Create provenance statements about this document if there are any prov annotations
-				//var provenance = this.getProvenance(visuals[i]);
-				var provenanceEl = new ProvStatement().render(visuals[i]).el;
-						
-				//Insert the provenance statements
-				$(container).find(".provenance-container").prepend(provenanceEl);
 			}
 			
 			//==== Initialize the fancybox images =====
@@ -734,8 +735,10 @@ define(['jquery',
 			// get the pid
 			var pid = appModel.get('pid');
 			
-			// what URI are we annotating?
-			var uri = window.location.href;
+			// which URI are we annotating?
+			var uri = null;
+			//uri = window.location.href;
+			uri = appModel.get("objectServiceUrl") + pid;
 			// TODO: use a more stable URI?
 			//uri = "https://cn.dataone.org/cn/v1/resolve/" + pid;
 			
@@ -745,18 +748,26 @@ define(['jquery',
 				//$(div).destroy();
 			}
 			
-			// set up annotator
-			var tokenUrl = appModel.get('tokenUrl');
+			
 
+			// only use authentication plugin when logged in
+			var authOptions = false;
+			if (appModel.get('username')) {
+				// check if we are using our own token generator
+			var tokenUrl = appModel.get('tokenUrl');
+				authOptions = {
+					tokenUrl: tokenUrl,
+					//token: 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJpc3N1ZWRBdCI6ICIyMDE0LTEwLTIxVDE4OjUyOjUwKzAwOjAwIiwgInR0bCI6IDg2NDAwLCAiY29uc3VtZXJLZXkiOiAiYW5ub3RhdGVpdCIsICJ1c2VySWQiOiAibGVpbmZlbGRlciJ9.jh3RBTXNJis8697lCtPylShzj9O2oNN_ec11s9tbkTc'
+				}
+			}
+
+			// set up the annotator
 			$(div).annotator();
 			$(div).annotator().annotator('setupPlugins', {}, {
 				Tags: false,
-				Auth: {
-					//tokenUrl: tokenUrl,
-					//token: 'eyJhbGciOiJIUzI1NiJ9.eyJjb25zdW1lcktleSI6ImY3ODBmM2UzOThjZjQ1Y2JiNGU4NGVkOWVjOTE2MjJhIiwiaXNzdWVkQXQiOiIyMDE0LTA5LTI0VDAwOjA5OjU3LjIxMyswMDowMCIsInVzZXJJZCI6InRlc3QiLCJ0dGwiOjg2NDAwfQ.RFwfp5Zsfq60wMyY-r7UK9ONJLQoL0f6E8K4r7BSJgQ'
-				},
+				Auth: authOptions,
 				Store: {
-					//prefix: "http://127.0.0.1:5000",
+					//prefix: "http://dev.nceas.ucsb.edu:5000",
 					annotationData: {
 						'uri': uri,
 						'pid': pid
@@ -768,23 +779,18 @@ define(['jquery',
 				}
 			});
 			
-			var availableTags = [];
-			$.get(bioportalServiceUrl, function(data, textStatus, xhr) {
+			// need connect keyboard navigation to the hover
+			var focus = function(event, ui) {
+				console.log("This is the value focused: " + ui.item.value);
+				//TODO: connect keyboard focus event to show the hover popover 
+			};
 			
-				_.each(data.collection, function(obj) {
-					var choice = {};
-					choice.label = obj['prefLabel'];
-					choice.value = obj['@id'];
-					availableTags.push(choice);
-				});
-				
-				
-			});
-			
-			                     
+			// NOTE: using the extended hover auto-complete defined in lookup model
+			// set up tags with bioportal suggestions as default
 			$(div).annotator().annotator('addPlugin', 'Tags');
-			$(div).data('annotator').plugins.Tags.input.autocomplete({
-				source: availableTags,
+			$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
+				source: lookupModel.bioportalSearch,
+				focus: focus,
 				position: {
 					my: "left top",
 					at: "right bottom",
@@ -792,21 +798,94 @@ define(['jquery',
 				}
 			});
 			
+			
+			// set up rejection field
+			$(div).data('annotator').editor.addField({
+		        type: 'checkbox',
+		        label: '<strong>Reject</strong> this annotation?',
+		        load: function(field, annotation) {
+		        	$(field).find('input').removeAttr("checked");
+		            if (annotation.reject) {
+			            $(field).find('input').prop("checked", "checked");
+		            }
+		            return $(field).find('input').is(":checked");
+		          },
+		          submit: function(field, annotation) {
+		        	  var input = $(field).find('input');
+		        	  var val = input.is(":checked");
+		        	  return annotation.reject = val;
+		          }
+		          
+		      });
+			
 			// subscribe to annotation events, to get the exact resource being annotated
 			$(div).annotator('subscribe', 'beforeAnnotationCreated', function(annotation, arg0, arg1) {
 				var annotator = $(div).data('annotator');
 				var selectedElement = annotator.selectedRanges[0].commonAncestor;
 				
 				// find the first parent with a "resource" attribute
-				var resource = $(selectedElement).parents('[resource]');
-				if (resource) {
+				var resourceElem = $(selectedElement).parents('[resource]');
+				if (resourceElem) {
 					// add the resource identifier to the annotation
-					$.extend(annotation, {resource: $(resource).attr('resource')});
+					$.extend(annotation, {resource: $(resourceElem).attr('resource')});
+					
+					// change the autocomplete depending on type of element being annotated
+					var type = $(resourceElem).attr('type');
+					if (type == "party") {
+						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
+							source: lookupModel.orcidSearch,
+							//focus: focus
+						});
+						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
+						$.extend(annotation, {"field": "orcid_sm"});
+
+					} else {
+						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
+							source: lookupModel.bioportalSearch,
+							//focus: focus
+						});
+						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
+						$.extend(annotation, {"field": "annotation_sm"});
+					}
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
 				}
 				
-			})
+			});
+			
+			// Use tag as hyperlink in the annotation
+			var updateAnnotationLinks = function(editor) {
+				var annotation = editor.annotation;
+				if (annotation.tags) {
+					var value = annotation.tags[0];
+					// TODO: test for valid URI
+					// add the uri as a link
+					$.extend(annotation, 
+						{links: [{
+						        	type: "text/html",
+						        	href: value,
+						        	rel: "alternate"
+								}]
+						}
+					);
+				}
+			};
+			
+			// NOTE: just using the annotateit.org links for now
+			//$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
+
+			// reindex when an annotation is updated
+			var reindexPid = function() {
+				var query = appModel.get('metacatServiceUrl') + "?action=reindex&pid=" + pid;
+				$.get(query, function(data, status, xhr) {
+					// TODO: check for any success?
+					//we are done now
+				});
+			};
+			$(div).annotator('subscribe', 'annotationCreated', reindexPid);
+			$(div).annotator('subscribe', 'annotationUpdated', reindexPid);
+			$(div).annotator('subscribe', 'annotationDeleted', reindexPid);
+
 		}
 		
 		

@@ -25,8 +25,7 @@ define(['jquery', 'underscore', 'backbone'],
 			geohashLevel: 9,
 			spatial: [],
 			attribute: [],
-			characteristic: [],
-			standard: [],
+			annotation: [],
 			additionalCriteria: [],
 			formatType: ["METADATA"],
 			exclude: [{
@@ -38,8 +37,7 @@ define(['jquery', 'underscore', 'backbone'],
 		//Map the filter names to their index field names
 		fieldNameMap: {
 					 attribute : "attribute",
-				characteristic : "characteristic_sm",
-					  standard : "standard_sm",
+				annotation : "annotation_sm",
 					formatType : "formatType",
 						   all : "",
 					   creator : "origin",
@@ -75,7 +73,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "characteristic", "standard", "formatType", "creator", "spatial"];
+			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial"];
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var needsQuotes = function(entry){
@@ -202,8 +200,8 @@ define(['jquery', 'underscore', 'backbone'],
 				for (var i=0; i < additionalCriteria.length; i++){
 					var value;
 					
-					if(needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
-					else value = encodeURIComponent(additionalCriteria[i]);
+					//if(needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
+					value = encodeURIComponent(additionalCriteria[i]);
 					
 					query += "+" + value;
 				}
@@ -272,8 +270,7 @@ define(['jquery', 'underscore', 'backbone'],
 							 "&facet.field=class" +
 							 "&facet.field=site";
 			if(this.filterIsAvailable("attribute")) facetQuery += "&facet.field=attributeName&facet.field=attributeLabel";
-			if(this.filterIsAvailable("characteristic")) facetQuery += "&facet.field=characteristic_sm";
-			if(this.filterIsAvailable("standard")) facetQuery += "&facet.field=standard_sm";
+			if(this.filterIsAvailable("annotation")) facetQuery += "&facet.field=annotation_sm";
 			
 			return facetQuery;
 		},

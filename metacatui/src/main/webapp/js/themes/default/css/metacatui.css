@@ -62,6 +62,8 @@ Bold 700
 		font-weight: 600;
 	}
 	
+	p:empty{ display: none; }
+	
     /*.bold-header{
     	background-color: #333;
     	color: #DDD;
@@ -163,8 +165,9 @@ Bold 700
     }
 
      #Content{
-     	width: 80%;
+     	width: 90%;
      	margin: 20px auto;
+     	max-width: 1200px;
      }
      
      .mapMode #Content{
@@ -239,9 +242,8 @@ Bold 700
 
 .controls-well {
 	    padding: 4px;
-	    backgorund-color: #FFFFFF; /*IE 8 fallback */
-	    background: rgba(255, 255, 255, 0.3);
-	   	border: 1px solid #fff;
+	    background-color: #FFFFFF; 
+	   	border: 1px solid #DEE1EA;
 		border-radius: 3px;
 		-webkit-border-radius: 3px;
 		-moz-border-radius: 3px;
@@ -429,7 +431,8 @@ Bold 700
     	text-shadow: 0 1px 1px rgba(127, 127, 127, 0.75);
     	border: 1px solid transparent;
     }
-    .btn:hover i{
+    .btn:hover i,
+    .download-contents .download .btn-primary:hover i{
     	color: #2299D4;
     }
     .btn-primary:hover{
@@ -884,7 +887,7 @@ Bold 700
     }
     
     .download-contents .download .btn-primary i{
-        color: #1983CA;
+        color: #4B7EA1;
 		text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 		font-size: 1.6em;
     }
