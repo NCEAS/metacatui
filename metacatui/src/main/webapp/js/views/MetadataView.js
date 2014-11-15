@@ -761,6 +761,13 @@ define(['jquery',
 				}
 			}
 
+				var tokenUrl = appModel.get('tokenUrl');
+				authOptions = {
+					tokenUrl: tokenUrl,
+					//token: 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJpc3N1ZWRBdCI6ICIyMDE0LTEwLTIxVDE4OjUyOjUwKzAwOjAwIiwgInR0bCI6IDg2NDAwLCAiY29uc3VtZXJLZXkiOiAiYW5ub3RhdGVpdCIsICJ1c2VySWQiOiAibGVpbmZlbGRlciJ9.jh3RBTXNJis8697lCtPylShzj9O2oNN_ec11s9tbkTc'
+				}
+			}
+			
 			// set up the annotator
 			$(div).annotator();
 			$(div).annotator().annotator('setupPlugins', {}, {
@@ -784,7 +791,7 @@ define(['jquery',
 				console.log("This is the value focused: " + ui.item.value);
 				//TODO: connect keyboard focus event to show the hover popover 
 			};
-			
+
 			// NOTE: using the extended hover auto-complete defined in lookup model
 			// set up tags with bioportal suggestions as default
 			$(div).annotator().annotator('addPlugin', 'Tags');

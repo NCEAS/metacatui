@@ -51,7 +51,7 @@ require.config({
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
 	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
-    annotator: '../components/annotator/v1.2.9/annotator-full.min',
+    annotator: '../components/annotator/v1.2.9/annotator-full',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: d3URL,
 	LineChart: ['views/LineChartView', null],
@@ -91,6 +91,7 @@ var searchModel = searchModel || {};
 var registryModel = registryModel || {};
 var statsModel = statsModel || {};
 var mapModel = mapModel || {};
+var lookupModel = lookupModel || {};
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
@@ -102,8 +103,9 @@ function(Bootstrap, AppView, AppModel) {
 	appView = new AppView();
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map'],
-	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel) {
+	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map', 'models/LookupModel',
+],
+	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel, LookupModel) {
 		'use strict';  
 	    		
 		appSearchResults = new SolrResultList([], {});
@@ -116,6 +118,8 @@ function(Bootstrap, AppView, AppModel) {
 		
 		mapModel = new MapModel();
 		
+		lookupModel = new LookupModel();
+	
 		// Initialize routing and start Backbone.history()
 		uiRouter = new UIRouter();
 		Backbone.history.start();
