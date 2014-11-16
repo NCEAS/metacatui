@@ -108,7 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 						
 						var pkg = new Package();
 						pkg.id = "r_test_pkg.2014100615271412634444.1";
-						pkg.getPackage();
+						pkg.getMembers();
 											
 						//For each resource map package, add a table of its contents to the page 
 						var count = 0;

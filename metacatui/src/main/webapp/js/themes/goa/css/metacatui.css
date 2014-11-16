@@ -88,6 +88,23 @@
 		white-space: nowrap;
 	 }
 
+	.expand-collapse .collapsed{
+		font-size: 0px;
+		transition: .5s;
+	}
+	.expand-collapse .teaser{
+		margin-right: 2px;
+	}
+	.expand-collapse .teaser,
+	.expand-collapse .expanded{
+		font-size: inherit;
+		transition: .5s;
+		display: inline-block;
+	}
+	
+	.expand-collapse.expanded .teaser{
+		color: #597F99;
+	}
     
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 
@@ -1037,6 +1054,56 @@ svg .point:hover ~ .line-chart-label{
 	.metadata-index {
 		padding: 2%;
 		width: 96%;
+	}
+	
+	/** Data Display & Thumbnails **/
+	.entitydetails{
+		background-color: #FFFFFF;
+		padding: 10px;
+	}
+	.data-display{
+		clear: both;
+		margin-bottom: 20px;
+	}
+	.data-display .thumbnail{
+		width: 300px;
+		height: 300px;
+		border: 5px solid #999999;
+		float: left;
+		overflow: hidden;
+		padding: 0px;
+	}
+	.data-display .thumbnail img{
+		max-width: 1000px;
+		min-width: 150px;
+		margin-left: auto;
+		margin-right: auto;
+		width: auto;
+		min-height: 300px;
+		max-height: 100%;
+	}
+	.data-display .additional-info{
+		max-width: 100%;
+		width: 100%;
+		float: left;
+		margin-left: 10px;
+	}
+	.data-display .thumbnail + .additional-info{
+		max-width: 360px;
+	}
+	.data-display .provenance{
+		margin-bottom: 10px;
+	}
+	.data-display .provenance i{
+		font-size: 2em;
+		margin: 10px;
+		display: inline-block;
+		float: left;
+	}
+	.data-display .provenance .provenance-statement{
+		display: inline-block;
+		float: left;
+		width: 87%;
 	}
     
 	/* Registry CSS

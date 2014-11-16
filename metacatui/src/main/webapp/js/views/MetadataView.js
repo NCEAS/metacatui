@@ -6,6 +6,7 @@ define(['jquery',
 		'backbone',
 		'gmaps',
 		'fancybox',
+		'models/PackageModel',
 		'views/MetadataIndexView',
 		'views/ExpandCollapseListView',
 		'views/ProvStatementView',
@@ -20,7 +21,7 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, $ui, Annotator, _, Backbone, gmaps, fancybox, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
+	function($, $ui, Annotator, _, Backbone, gmaps, fancybox, Package, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
 	'use strict';
 
 	
@@ -99,12 +100,9 @@ define(['jquery',
 								viewRef.insertResourceMapContents(appModel.get('pid'));
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 								
-								//Create provenance statements about this document if there are any prov annotations
-								//var provenance = this.getProvenance(visuals[i]);
-								//var provenanceEl = new ProvStatement().render(doc).el;
-										
-								//Insert the provenance statements
-								//$(container).find(".provenance-container").prepend(provenanceEl);
+								viewRef.packageModel = new Package();
+								viewRef.packageModel.on('change:members', viewRef.showPackageDetails, viewRef);
+								viewRef.packageModel.getMembersByMemberID(appModel.get('pid'));
 								
 								viewRef.setUpAnnotator('body');
 							}							
@@ -113,6 +111,26 @@ define(['jquery',
 			else this.renderMetadataFromIndex();
 						
 			return this;
+		},
+		
+		showPackageDetails: function(){
+			console.log('have packge ');
+			console.log(this.packageModel);
+			
+			var packageMembers = this.packageModel.get('members');
+			var view = this;
+			
+			//Display the images in this package
+			this.insertVisuals(packageMembers);
+						
+			_.each(packageMembers, function(member){
+				//Create provenance statements about this document if there are any prov annotations
+				var provenanceEl = new ProvStatement().render(member).el;
+						
+				//Insert the provenance statements
+				$('[data-obj-id=' + member.id + ']').find(".provenance-container").prepend(provenanceEl);
+			});
+			
 		},
 
 		renderMetadataFromIndex: function(){
@@ -344,7 +362,7 @@ define(['jquery',
 		},
 		
 		/*
-		 * param dataObject - an object representing the data object returned from the index
+		 * param dataObject - a SolrResult representing the data object returned from the index
 		 * returns - true if this data object is an image, false if it is other
 		 */
 		isImage: function(dataObject){
@@ -359,37 +377,60 @@ define(['jquery',
 			                "image/bmp"];
 			
 			//Does this data object match one of these IDs?
-			if(_.indexOf(imageIds, dataObject.formatId) == -1) return false;			
+			if(_.indexOf(imageIds, dataObject.get('formatId')) == -1) return false;			
 			else return true;
 			
 		},
 		
+		/*
+		 * param dataObject - a SolrResult representing the data object returned from the index
+		 * returns - true if this data object is a pdf, false if it is other
+		 */
 		isPDF: function(dataObject){
 			//The list of formatIds that are images
 			var ids = ["application/pdf"];
 			
 			//Does this data object match one of these IDs?
-			if(_.indexOf(ids, dataObject.formatId) == -1) return false;			
+			if(_.indexOf(ids, dataObject.get('formatId')) == -1) return false;			
 			else return true;			
 		},
 		
 		/*
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
-		 * param images - an array of objects that represent the data objects returned from the index. Each should be an image
-		 * param type - a string that defines the type of visual content - either "image" or "pdf"
+		 * param objects - an array of SolrResults that represent the data objects returned from the index. Each should be an image
 		 */
-		insertVisuals: function(visuals, type){
+		insertVisuals: function(objects){
 			var dataDisplay = "",
 				viewRef = this,
+				images = [],
+				pdfs = [],
+				other = [],
 				entityDetailsContainers = this.$el.find(".entitydetails");
-			
-			if(typeof type == "undefined") var type = null;
-			
+						
 			//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
-			for(var i=0; i<visuals.length; i++){
+			for(var i=0; i<objects.length; i++){
+				var type = "";
+				
+				//Make sure this is a visual object (image or PDF)
+				if(this.isImage(objects[i])){
+					type = "image";
+					images.push(objects[i]);
+				}
+				else if(this.isPDF(objects[i])){
+					type = "pdf";
+					pdfs.push(objects[i]);
+				}
+				else if (objects[i].get('formatType') == "METADATA"){
+					continue;
+				}
+				else{
+					type = "other";
+					other.push(objects[i]);
+				}
+				
 				
 				//Find the part of the HTML Metadata view that describes this data object
-				var container = $(entityDetailsContainers).find(".object-name:contains('" + visuals[i].id + "')").parents(".entitydetails");
+				var container = $(entityDetailsContainers).find(":contains('" + objects[i].id + "')").parents(".entitydetails");
 				
 				var title = "";
 				
@@ -403,11 +444,14 @@ define(['jquery',
 				if(!title)
 					container = viewRef.el;
 				
+				var objID = objects[i].id;
+				
 				//Create HTML for the visuals using the dataDisplay template
 				dataDisplay = this.dataDisplayTemplate({
 						 type : type,
-						  src : appModel.get('objectServiceUrl') + visuals[i].id,
-						title : title
+						  src : appModel.get('objectServiceUrl') + objects[i].id,
+						title : title,
+					   objID : objID
 				});
 				
 	
@@ -418,10 +462,8 @@ define(['jquery',
 			
 			//==== Initialize the fancybox images =====
 			// We will be checking every half-second if all the HTML has been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
-			var numVisuals  = visuals.length,
-				numChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load 
-				lightboxSelector = (type == "image") ? "a[class^='fancybox'][data-fancybox-type='image']" : "a[class^='fancybox'][data-fancybox-iframe]",
-				intervalID = window.setInterval(initializeLightboxes, 500),
+			var numImages  = images.length,
+				numPDFS	   = pdfs.length,
 				//The shared lightbox options for both images and PDFs
 				lightboxOptions = {
 						prevEffect	: 'elastic',
@@ -441,42 +483,79 @@ define(['jquery',
 						}
 				};
 			
-			if(type == "image"){
-				//Add additional options for images
-				lightboxOptions.type = "image";
-				lightboxOptions.perload = 1;
-			}
-			else if(type == "pdf"){		
+			if(numPDFS > 0){
+				var numPDFChecks  = 0,
+					lightboxPDFSelector = "a[class^='fancybox'][data-fancybox-iframe]",
+					pdfIntervalID = window.setInterval(initializePDFLightboxes, 500);
+				
 				//Add additional options for PDFs
-				lightboxOptions.type = "iframe";
-				lightboxOptions.iframe = { preload: false };
-				lightboxOptions.height = "98%";
-			}
-			
-			function initializeLightboxes(){
-				numChecks++;
+				var pdfLightboxOptions = lightboxOptions;
+				pdfLightboxOptions.type = "iframe";
+				pdfLightboxOptions.iframe = { preload: false };
+				pdfLightboxOptions.height = "98%";
 				
-				//Initialize what images have loaded so far after 5 seconds
-				if(numChecks == 10){ 
-					$(lightboxSelector).fancybox(lightboxOptions);
-				}
-				//When 15 seconds have passed, stop checking so we don't blow up the browser
-				else if(numChecks > 30){
-					window.clearInterval(intervalID);
-					return;
-				}
-				
-				//Are all of our images loaded yet?
-				if(viewRef.$(lightboxSelector).length < numVisuals) return;
-				else{					
-					//Initialize our lightboxes
-					$(lightboxSelector).fancybox(lightboxOptions);
+				var initializePDFLightboxes = function(){
+					numPDFChecks++;
 					
-					//We're done - clear the interval
-					window.clearInterval(intervalID);
-				}				
+					//Initialize what images have loaded so far after 5 seconds
+					if(numPDFChecks == 10){ 
+						$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
+					}
+					//When 15 seconds have passed, stop checking so we don't blow up the browser
+					else if(numPDFChecks > 30){
+						window.clearInterval(pdfIntervalID);
+						return;
+					}
+					
+					//Are all of our pdfs loaded yet?
+					if(viewRef.$(lightboxPDFSelector).length < numPDFs) return;
+					else{					
+						//Initialize our lightboxes
+						$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
+						
+						//We're done - clear the interval
+						window.clearInterval(pdfIntervalID);
+					}				
+				}
+				
 			}
 			
+			if(numImages > 0){
+				var numImgChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load
+					lightboxImgSelector = "a[class^='fancybox'][data-fancybox-type='image']";
+					
+				//Add additional options for images
+				var imgLightboxOptions = lightboxOptions;
+				imgLightboxOptions.type = "image";
+				imgLightboxOptions.perload = 1;
+				
+				var initializeImgLightboxes = function(){
+					numImgChecks++;
+					
+					//Initialize what images have loaded so far after 5 seconds
+					if(numImgChecks == 10){ 
+						$(lightboxImgSelector).fancybox(imgLightboxOptions);
+					}
+					//When 15 seconds have passed, stop checking so we don't blow up the browser
+					else if(numImgChecks > 30){
+						$(lightboxImgSelector).fancybox(imgLightboxOptions);
+						window.clearInterval(imgIntervalID);
+						return;
+					}
+					
+					//Are all of our images loaded yet?
+					if(viewRef.$(lightboxImgSelector).length < numImages) return;
+					else{					
+						//Initialize our lightboxes
+						$(lightboxImgSelector).fancybox(imgLightboxOptions);
+						
+						//We're done - clear the interval
+						window.clearInterval(imgIntervalID);
+					}				
+				}
+				
+				var imgIntervalID = window.setInterval(initializeImgLightboxes, 500);
+			}
 		},
 		
 		/*
@@ -754,13 +833,6 @@ define(['jquery',
 			var authOptions = false;
 			if (appModel.get('username')) {
 				// check if we are using our own token generator
-			var tokenUrl = appModel.get('tokenUrl');
-				authOptions = {
-					tokenUrl: tokenUrl,
-					//token: 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJpc3N1ZWRBdCI6ICIyMDE0LTEwLTIxVDE4OjUyOjUwKzAwOjAwIiwgInR0bCI6IDg2NDAwLCAiY29uc3VtZXJLZXkiOiAiYW5ub3RhdGVpdCIsICJ1c2VySWQiOiAibGVpbmZlbGRlciJ9.jh3RBTXNJis8697lCtPylShzj9O2oNN_ec11s9tbkTc'
-				}
-			}
-
 				var tokenUrl = appModel.get('tokenUrl');
 				authOptions = {
 					tokenUrl: tokenUrl,

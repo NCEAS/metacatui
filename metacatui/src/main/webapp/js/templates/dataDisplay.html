@@ -1,19 +1,18 @@
-<div class="data-display">
-    
 <%
 if(src === undefined)   var src = "";
 if(title === undefined) var title = "";
 if(group === undefined) var group = "group";
 if(type === undefined)  var type = null;
+if(objID === undefined)  var objID = "";
 %>
+
+<div class="data-display" data-obj-id="<%=objID%>">
 
 <%
 if(type == "pdf")
 	print('<a class="fancybox btn" data-fancybox-iframe="iframe" href="' + src + '"><i class="icon-file file-type"></i> <span class="file-type">PDF</span> Preview </a></div>');
 else if(type == "image")
-	print('<a href="' + src + '" rel="' + group + '" class="fancybox thumbnail" data-fancybox-type="image" title="' + title + '"><img src="' + src + '"  class="metadata-img img-thumbnail"/></a>');
-else
-	print('<a href="" class="thumbnail"></a>');		
+	print('<a href="' + src + '" rel="' + group + '" class="fancybox thumbnail" data-fancybox-type="image" title="' + title + '"><img src="' + src + '"  class="metadata-img img-thumbnail"/></a>');		
 %>
 <div class="additional-info">
 	<div class="title">
