@@ -24,7 +24,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
 			'tools(/:anchorId)'         : 'renderTools',  // tools page
-			'data(/page/:page)(/mode=:mode)(/query=:query)' : 'renderData',    // data search page
+			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',    // metadata page
 			'profile(/*query)'			: 'renderProfile',
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
@@ -81,12 +81,19 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			console.log('Called UIRouter.renderData()');
 			this.routeHistory.push("data");
 			appModel.set('page', page);
+			
+			//If a search mode parameter is given
 			if(mode){
 				appModel.set('searchMode', mode)
 			}
+			
+			//If a query parameter is given
 			if(query){
-				searchModel.set('customQuery', query);
+				var customQuery = searchModel.get('additionalCriteria');
+				customQuery.push(query);
+				searchModel.set('additionalCriteria', customQuery);
 			}
+			
 			appView.showView(dataCatalogView);
 		},
 		
