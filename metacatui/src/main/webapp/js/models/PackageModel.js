@@ -30,8 +30,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr) {
 				var doc = data.response.docs[0];
 				if(typeof doc != "undefined"){
-					//collection.set('id', doc.resourceMap[0]);
-					model.set('id', doc.resourceMap[0]);
+					if(typeof doc.resourceMap == "undefined")
+						model.set('id', null);
+					else
+						model.set('id', doc.resourceMap[0]);
 				}
 			});
 		},
