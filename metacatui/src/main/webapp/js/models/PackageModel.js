@@ -38,6 +38,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			});
 		},
 		
+		/* Get all the members of a resource map/package based on the id attribute of this model. 
+		 * Create a SolrResult model for each member and save it in the members[] attribute of this model. */
 		getMembers: function(){
 			var model = this,
 				members = [],
@@ -63,11 +65,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						pids.push(doc.id);
 						
 						members.push(new SolrResult(doc));
-						
-						//Keep track of each data objects so we can display them later
-						//if(view.isImage(doc)) images.push(doc);
-						//else if(view.isPDF(doc)) pdfs.push(doc);
-						//else if(doc.formatType != "METADATA") other.push(doc);
 					}
 				});
 				
