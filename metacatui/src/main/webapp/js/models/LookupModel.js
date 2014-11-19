@@ -37,6 +37,12 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		bioportalSearch: function(request, response, more) {
 			
+			// make sure we have something to lookup
+			if (!appModel.get('bioportalServiceUrl')) {
+				response(more);
+				return;
+			}
+			
 			var query = appModel.get('bioportalServiceUrl') + request.term;
 			var availableTags = [];
 			$.get(query, function(data, textStatus, xhr) {
@@ -60,6 +66,13 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		orcidSearch: function(request, response, more) {
+			
+				// make sure we have something to lookup
+				if (!appModel.get('orcidServiceUrl')) {
+					response(more);
+					return;
+				}
+				
 				var people = [];
 				var query = appModel.get('orcidServiceUrl') + request.term;
 				$.get(query, function(data, status, xhr) {
