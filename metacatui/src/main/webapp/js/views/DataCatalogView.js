@@ -399,7 +399,7 @@ define(['jquery',
 		      }
 		},
 		
-		updateTextFilters : function(e){
+		updateTextFilters : function(e, item){
 			//Get the search/filter category
 			var category = $(e.target).attr('data-category');
 			
@@ -465,7 +465,7 @@ define(['jquery',
 			searchModel.set(category, filtersArray);
 			
 			//Show the UI filter
-			this.showFilter(category, term);
+			this.showFilter(category, term, false, item.label);
 			
 			//Clear the input
 			input.val('');
@@ -580,7 +580,7 @@ define(['jquery',
 		},
 		
 		//Adds a specified filter node to the DOM
-		showFilter : function(category, term, checkForDuplicates){
+		showFilter : function(category, term, checkForDuplicates, label){
 			
 			var viewRef = this;
 			
@@ -605,10 +605,13 @@ define(['jquery',
 			}
 			
 							
-			// is it a semantic concept?
+			// is it a semantic concept, or do we have a label for it?
 			var termLabel = null;
 			if (term.indexOf("#") > 0) {
 				termLabel = term.substring(term.indexOf("#"));
+			}
+			if (label) {
+				termLabel = label;
 			}
 			//Add a filter node to the DOM
 			e.prepend(viewRef.currentFilterTemplate({filterTerm: term, termLabel: termLabel}));	
@@ -745,7 +748,7 @@ define(['jquery',
 						// set the text field
 						$('#all_input').val(ui.item.value);
 						// add to the filter immediately
-						viewRef.updateTextFilters(event);
+						viewRef.updateTextFilters(event, ui.item);
 						// prevent default action
 						return false;
 					},
@@ -791,7 +794,7 @@ define(['jquery',
 							// set the text field
 							$('#attribute_input').val(ui.item.value);
 							// add to the filter immediately
-							viewRef.updateTextFilters(event);
+							viewRef.updateTextFilters(event, ui.item);
 							// prevent default action
 							return false;
 						},
@@ -835,7 +838,7 @@ define(['jquery',
 							// set the text field
 							$('#annotation_input').val(ui.item.value);
 							// add to the filter immediately
-							viewRef.updateTextFilters(event);
+							viewRef.updateTextFilters(event, ui.item);
 							// prevent default action
 							return false;
 						},
@@ -877,7 +880,7 @@ define(['jquery',
 							// set the text field
 							$('#creator_input').val(ui.item.value);
 							// add to the filter immediately
-							viewRef.updateTextFilters(event);
+							viewRef.updateTextFilters(event, ui.item);
 							// prevent default action
 							return false;
 						},
@@ -935,7 +938,7 @@ define(['jquery',
 						// set the text field
 						$('#taxon_input').val(ui.item.value);
 						// add to the filter immediately
-						viewRef.updateTextFilters(event);
+						viewRef.updateTextFilters(event, ui.item);
 						// prevent default action
 						return false;
 					}
@@ -966,7 +969,7 @@ define(['jquery',
 						// set the text field
 						$('#spatial_input').val(ui.item.value);
 						// add to the filter immediately
-						viewRef.updateTextFilters(event);
+						viewRef.updateTextFilters(event, ui.item);
 						// prevent default action
 						return false;
 					},
