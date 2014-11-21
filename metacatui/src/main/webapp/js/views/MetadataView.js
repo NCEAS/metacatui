@@ -170,8 +170,8 @@ define(['jquery',
 			});
 			
 			if(!this.citationEl){
-				//Otherwise, just find the first element with a citation class - useful for when we display the metadata from the indexed fields
-				this.citationEl = this.$('.citation')[0];
+				//Otherwise, just find the first element with a citation class or just use the first well - useful for when we display the metadata from the indexed fields
+				this.citationEl = this.$('.citation')[0] || wells[0];
 			}
 			
 			//Insert the container div for the download contents
