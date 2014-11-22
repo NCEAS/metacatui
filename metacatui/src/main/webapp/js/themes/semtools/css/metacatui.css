@@ -2889,3 +2889,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #loading-app{
 	display: none;
 }
+
+/** sidr overrides **/
+	.sidr {
+		top: 96px;
+	}
+

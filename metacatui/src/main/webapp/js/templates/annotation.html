@@ -1,0 +1,21 @@
+<ul>
+<li>Annotations</li>
+
+<% _.each(annotations, function(annotation) {
+%>
+	
+	<h4><%=annotation.id %></h4>
+	<p>
+		Who: <%=annotation.user %> <br/>
+		About: <%=annotation.resource %> <br/>
+		Where: <%=annotation.quote %> <br/>
+		Comment: <%=annotation.text %> <br/>
+		Tags: <%=annotation.tags[0] %> 
+	</p>
+<%
+} )
+%>
+</ul>
+
+
+

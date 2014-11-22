@@ -1,6 +1,7 @@
 /*global define */
 define(['jquery',
 				'underscore', 
+				'jquerysidr',
 				'backbone',
 				'views/NavbarView',
 				'views/AltHeaderView',
@@ -8,7 +9,7 @@ define(['jquery',
 				'text!templates/appHead.html',
 				'text!templates/app.html'
 				], 				
-	function($, _, Backbone, NavbarView, AltHeaderView, FooterView, AppHeadTemplate, AppTemplate) {
+	function($, _, jQuerySidr, Backbone, NavbarView, AltHeaderView, FooterView, AppHeadTemplate, AppTemplate) {
 	'use strict';
 	
 	var app = app || {};
