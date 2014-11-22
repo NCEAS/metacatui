@@ -1,21 +1,24 @@
-<ul>
-<li>Annotations</li>
+<h2>Annotations</h2>
 
 <% _.each(annotations, function(annotation) {
 %>
 	
-	<h4><%=annotation.id %></h4>
-	<p>
-		Who: <%=annotation.user %> <br/>
-		About: <%=annotation.resource %> <br/>
-		Where: <%=annotation.quote %> <br/>
-		Comment: <%=annotation.text %> <br/>
-		Tags: <%=annotation.tags[0] %> 
-	</p>
+	<a href="<%=annotation.links[0].href %>"><%=annotation.id %></a>
+	<div class="control-group">
+		<label class="control-label">Who: </label> 
+		<div class="controls controls-well"><%=annotation.user %> </div>
+		<label class="control-label">About: </label> 
+		<div class="controls controls-well"><%=annotation.resource %> </div>
+		<label class="control-label">Where: </label> 
+		<div class="controls controls-well"><%=annotation.quote %> </div>
+		<label class="control-label">Comment: </label> 
+		<div class="controls controls-well"><%=annotation.text %> </div>
+		<label class="control-label">Tags: </label> 
+		<div class="controls controls-well"> <span class="badge" title="<%=annotation.tags[0] %>">#<%=annotation.tags[0].split("#")[1] %> </span></div>
+	</div>
 <%
 } )
 %>
-</ul>
 
 
 
