@@ -989,6 +989,10 @@ define(['jquery',
 				//viewRef.$el.append(viewRef.annotationTemplate({
 					annotations: annotations
 				}));
+				
+				//Initialize the tooltips
+				$('.tooltip-this').tooltip();
+				$('.popover-this').popover();
 			}
 			$(div).annotator('subscribe', 'annotationsLoaded', showSidr);
 

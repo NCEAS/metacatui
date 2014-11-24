@@ -1,21 +1,29 @@
-<h2>Annotations</h2>
-
 <% _.each(annotations, function(annotation) {
 %>
 	
-	<a href="<%=annotation.links[0].href %>"><%=annotation.id %></a>
-	<div class="control-group">
-		<label class="control-label">Who: </label> 
-		<div class="controls controls-well"><%=annotation.user %> </div>
-		<label class="control-label">About: </label> 
-		<div class="controls controls-well"><%=annotation.resource %> </div>
-		<label class="control-label">Where: </label> 
-		<div class="controls controls-well"><%=annotation.quote %> </div>
-		<label class="control-label">Comment: </label> 
-		<div class="controls controls-well"><%=annotation.text %> </div>
-		<label class="control-label">Tags: </label> 
-		<div class="controls controls-well"> <span class="badge" title="<%=annotation.tags[0] %>">#<%=annotation.tags[0].split("#")[1] %> </span></div>
+	<div 
+		class="badge popover-this" 
+		data-trigger="hover"
+		data-html="true"
+		data-container="body" data-toggle="popover" data-placement="left" 
+		data-content='
+			<div class="popover-this">
+				<a href="<%=annotation.links[0].href %>"><%=annotation.id %></a>
+				<label class="control-label">Who: </label> 
+				<div class="controls controls-well"><%=annotation.user %> </div>
+				<label class="control-label">About: </label> 
+				<div class="controls controls-well"><%=annotation.resource %> </div>
+				<label class="control-label">Where: </label> 
+				<div class="controls controls-well"><%=annotation.quote %> </div>
+				<label class="control-label">Comment: </label> 
+				<div class="controls controls-well"><%=annotation.text %> </div>
+			</div>'
+		
+		data-title="<%=annotation.tags[0] %>">
+		#<%=annotation.tags[0].split("#")[1] %>
 	</div>
+	<br/>
+
 <%
 } )
 %>
