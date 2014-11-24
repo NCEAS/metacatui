@@ -2893,5 +2893,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 /** sidr overrides **/
 	.sidr {
 		top: 96px;
+		width: 150px;
+		background: none;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+		
 	}
 
