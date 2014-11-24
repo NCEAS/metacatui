@@ -35,6 +35,7 @@ require.config({
     jquery: '../components/jquery',
     jqueryui: '../components/jquery-ui-1.10.3.custom.min',
     jqueryform: '../components/jquery.form',
+    jquerysidr: '../components/jquery.sidr.min',
     underscore: '../components/underscore',
     backbone: '../components/backbone',
     bootstrap: '../components/bootstrap.min',

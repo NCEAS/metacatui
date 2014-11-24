@@ -19,9 +19,10 @@ define(['jquery',
 		'text!templates/alert.html',
 		'text!templates/editMetadata.html',
 		'text!templates/dataDisplay.html',
-		'text!templates/map.html'
+		'text!templates/map.html',
+		'text!templates/annotation.html'
 		], 				
-	function($, $ui, Annotator, _, Backbone, gmaps, fancybox, Package, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
+	function($, $ui, Annotator, _, Backbone, gmaps, fancybox, Package, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
 	'use strict';
 
 	
@@ -50,6 +51,8 @@ define(['jquery',
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
 		
 		mapTemplate: _.template(MapTemplate),
+		
+		annotationTemplate: _.template(AnnotationTemplate),
 		
 		objectIds: [],
 		
@@ -964,6 +967,31 @@ define(['jquery',
 			$(div).annotator('subscribe', 'annotationCreated', reindexPid);
 			$(div).annotator('subscribe', 'annotationUpdated', reindexPid);
 			$(div).annotator('subscribe', 'annotationDeleted', reindexPid);
+			
+
+			// init the sidr on annotation load
+			var viewRef = this;
+			var showSidr = function(annotations) {
+				
+				
+				$("#view_annotations").sidr({
+					name: "gutter",
+					side: "right",
+					displace: false
+				})
+				// default to open
+				$.sidr("open", "gutter");
+				
+				var gutter = $("#gutter");
+				//alert(gutter);
+				// render the annotations in the gutter
+				gutter.append(viewRef.annotationTemplate({
+				//viewRef.$el.append(viewRef.annotationTemplate({
+					annotations: annotations
+				}));
+			}
+			$(div).annotator('subscribe', 'annotationsLoaded', showSidr);
+
 
 		}
 		
