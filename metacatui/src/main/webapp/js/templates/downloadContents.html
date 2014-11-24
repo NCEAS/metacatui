@@ -31,12 +31,13 @@ else{
 	size = "";
 	readCount = "";
 }
-	print('<tr><th colspan="6" class="table-header">Files in this dataset</th></tr>');
+	print('<tr><th colspan="7" class="table-header">Files in this dataset</th></tr>');
 	print('<tr>');
 	print('<th class="format-type"><i class="icon-folder-open"></i></th>');
 	print('<th class="id ellipsis">Id</th>');
 	print('<th class="fileType">File type</th>');
 	print('<th class="size">Size</th>');
+	print('<th class="read">Downloads</th>');
 	print('<th class="download">' + downloadButton + '</th>');
 	print('<th class="more-info"></th>');
 	print('</tr>');
@@ -73,13 +74,19 @@ else{
 			else
 				moreInfo = null;
 		}
-				
+		
+		var readType = " downloads";
+		if(object.formatType == "METADATA")
+			readType = " views";
+		
+		var read = object.read_count_i + readType;
 		
 		print('<tr>');
 		print('<td class="format-type">' + formatType + '</td>');
 		print('<td class="id ellipsis">' + id + '</td>');		
 		print('<td class="file-type">' + fileType + '</td>');		
 		print('<td class="size">' + object.formattedSize + '</td>');
+		print('<td class="size">' + read + '</td>');
 		print('<td class="download">' + downloadButton + '</td>');
 		if(moreInfo)
 			print('<td class="more-info">' + moreInfo + '</td>');
