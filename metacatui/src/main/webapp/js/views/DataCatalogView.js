@@ -417,7 +417,9 @@ define(['jquery',
 			
 			//Get the value of the associated input
 			var input = this.$el.find($('#' + category + '_input'));
-			var term = input.val();
+			var term = item.value || input.val();
+			var label 		= item.filterLabel || null;
+			var filterDesc  = item.description || null;
 			
 			//Check that something was actually entered
 			if((term == "") || (term == " ")){
@@ -437,7 +439,7 @@ define(['jquery',
 			//Check if this entry is a duplicate
 			var duplicate = (function(){
 				for(var i=0; i < filtersArray.length; i++){
-					if(filtersArray[i] === term){ return true; }
+					if(filtersArray[i].value === term){ return true; }
 				}
 			})();
 			
@@ -457,15 +459,19 @@ define(['jquery',
 				
 				return false; 
 			}
-				
+			
 			//Add the new entry to the array of current filters
-			filtersArray.push(term);
+			filtersArray.push({
+				value: term,
+				filterLabel: label,
+				description: filterDesc
+			});
 			
 			//Replace the current array with the new one in the search model
 			searchModel.set(category, filtersArray);
 			
 			//Show the UI filter
-			this.showFilter(category, term, false, item.label);
+			this.showFilter(category, term, false, label);
 			
 			//Clear the input
 			input.val('');
@@ -496,7 +502,7 @@ define(['jquery',
 			}
 			else{
 				//Remove this filter term from the searchModel
-				this.removeFromModel(category, term);				
+				searchModel.removeFromModel(category, term);				
 			}
 			
 			//Hide the filter from the UI
@@ -562,21 +568,6 @@ define(['jquery',
 			$(filterNode).fadeOut("slow", function(){
 				filterNode.remove();
 			});	
-		},
-		
-		//Removes a specified filter from the search model
-		removeFromModel : function(category, term){			
-			//Remove this filter term from the searchModel
-			if (category){
-				
-				//Get the current filter terms array
-				var currentTerms = searchModel.get(category);
-				//Remove this filter term from the array
-				var newTerms = _.without(currentTerms, term);
-				//Set the new value
-				searchModel.set(category, newTerms);	
-				
-			}
 		},
 		
 		//Adds a specified filter node to the DOM
@@ -832,8 +823,7 @@ define(['jquery',
 					            // pass to bioportal search to complete the list and do the call back
 					            lookupModel.bioportalSearch(request, response, localValues);
 					            
-				        }
-						,
+				        },
 						select: function(event, ui) {
 							// set the text field
 							$('#annotation_input').val(ui.item.value);
