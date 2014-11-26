@@ -101,6 +101,13 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 		},
 		
+		/*
+		 * Resets the geoashes and geohashLevel filters to default
+		 */
+		resetGeohash : function(){
+			this.set("geohashes",    this.defaults.geohashes);
+			this.set("geohashLevel", this.defaults.geohashLevel);
+		},
 		
 		/*
 		 * Builds the query string to send to the query engine. Goes over each filter specified in this model and adds to the query string.

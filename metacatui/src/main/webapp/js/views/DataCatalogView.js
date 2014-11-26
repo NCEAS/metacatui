@@ -1226,10 +1226,10 @@ define(['jquery',
 			}
 			
 			//Reset the map settings
+			searchModel.resetGeohash();
 			mapModel.clear();
 			
 			this.allowSearch = false;
-			
 			
 			//Remove the map filter in the UI
 			this.hideFilter($('#current-spatial-filters').find('[data-term="'+ this.reservedMapPhrase +'"]'));
