@@ -1,11 +1,11 @@
 <% _.each(annotations, function(annotation) {
 %>
 	
-	<div id="<%= annotation.id %>" 
+	<a id="<%= annotation.id %>" 
 		class="hover-proxy badge <% if (annotation.reject) { print(' badge-warning') } %>" 
 		title="<%=annotation.tags[0] %>">
 		#<%=annotation.tags[0].split("#")[1] %>
-	</div>
+	</a>
 	<br/>
 
 <%

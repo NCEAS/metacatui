@@ -237,7 +237,7 @@ define(['jquery',
 					
 					// scroll the location in page
 					var highlightLocation = highlight.position();
-					$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "slow");
+					$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "fast");
 					
 					// trigger the hover
 					highlight.trigger({
