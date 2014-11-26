@@ -956,21 +956,9 @@ define(['jquery',
 			// NOTE: just using the annotateit.org links for now
 			//$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
 
-			// reindex when an annotation is updated
-			var reindexPid = function() {
-				var query = appModel.get('metacatServiceUrl') + "?action=reindex&pid=" + pid;
-				$.get(query, function(data, status, xhr) {
-					// TODO: check for any success?
-					//we are done now
-				});
-			};
-			$(div).annotator('subscribe', 'annotationCreated', reindexPid);
-			$(div).annotator('subscribe', 'annotationUpdated', reindexPid);
-			$(div).annotator('subscribe', 'annotationDeleted', reindexPid);
-			
-
 			// init the sidr on annotation load
 			var viewRef = this;
+			
 			var showSidr = function(annotations) {
 				
 				// sort the annotations by xpath
@@ -988,7 +976,7 @@ define(['jquery',
 				
 				// render the annotations in the gutter
 				var gutter = $("#gutter");
-				gutter.append(viewRef.annotationTemplate({
+				gutter.html(viewRef.annotationTemplate({
 					annotations: annotations
 				}));
 				
@@ -1021,8 +1009,30 @@ define(['jquery',
 				
 				$(".hover-proxy").bind("click", hoverAnnotation);
 			}
+						
+			// reindex when an annotation is updated
+			var reindexPid = function() {
+				var query = appModel.get('metacatServiceUrl') + "?action=reindex&pid=" + pid;
+				$.get(query, function(data, status, xhr) {
+					// TODO: check for any success?
+					//we are done now
+				});
+				
+				// re load the annotations
+				showSidr($(div).data('annotator').plugins.Store.annotations);
+				
+			};
+			
+			$(div).annotator('subscribe', 'annotationCreated', reindexPid);
+			$(div).annotator('subscribe', 'annotationUpdated', reindexPid);
+			$(div).annotator('subscribe', 'annotationDeleted', reindexPid);
 			
 			$(div).annotator('subscribe', 'annotationsLoaded', showSidr);
+
+			
+
+			
+
 
 		}
 		
