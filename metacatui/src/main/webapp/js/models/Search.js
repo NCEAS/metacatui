@@ -121,6 +121,10 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var needsQuotes = function(entry){
+				
+				if(entry.startsWith('"') || entry.startsWith("%22") || entry.startsWith("'"))
+					return false;
+					
 				//Check for spaces
 				var space = null;
 				
