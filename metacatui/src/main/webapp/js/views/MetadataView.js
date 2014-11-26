@@ -803,6 +803,10 @@ define(['jquery',
 		
 		onClose: function () {			
 			console.log('Closing the metadata view');
+			
+			// hide the gutter for other views
+			$.sidr("close", "gutter");
+			
 		},
 		
 		setUpAnnotator: function(div) {
@@ -829,7 +833,6 @@ define(['jquery',
 				$(div).annotator('destroy');
 				//$(div).destroy();
 			}
-			
 			
 
 			// only use authentication plugin when logged in
@@ -1028,11 +1031,6 @@ define(['jquery',
 			$(div).annotator('subscribe', 'annotationDeleted', reindexPid);
 			
 			$(div).annotator('subscribe', 'annotationsLoaded', showSidr);
-
-			
-
-			
-
 
 		}
 		
