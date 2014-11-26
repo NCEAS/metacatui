@@ -85,7 +85,7 @@ define(['jquery',
 				var viewRef = this;
 				this.$el.load(endpoint,
 						function(response, status, xhr) {
-							if(status=="error"){
+							if (status=="error"){
 								//Our fallback is to show the metadata details from the Solr index
 								viewRef.renderMetadataFromIndex();
 							}
@@ -104,12 +104,16 @@ define(['jquery',
 								viewRef.packageModel.on('change:members', viewRef.showPackageDetails, viewRef);
 								viewRef.packageModel.getMembersByMemberID(appModel.get('pid'));
 								
-								viewRef.setUpAnnotator();
-								
-							}							
+							}
+							// render annotator either way
+							viewRef.setUpAnnotator();
 						});
 			}
-			else this.renderMetadataFromIndex();
+			else {
+				this.renderMetadataFromIndex();
+				// render annotator from index content, too
+				this.setUpAnnotator();
+			}
 						
 			return this;
 		},

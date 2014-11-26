@@ -10,6 +10,7 @@ var themeMap =
 		'templates/alert.html' : 'themes/' + theme + '/templates/alert.html',
 		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html',
 		'templates/profile.html' : 'themes/' + theme + '/templates/profile.html',
+		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
 		'models/Stats' : 'js/themes/' + theme + '/models/Stats.js',
 		'models/Search' : 'js/themes/' + theme + '/models/Search.js',

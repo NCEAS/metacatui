@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone'],
 			geohashLevel: 9,
 			spatial: [],
 			//attribute: [],
-			//annotation: [],
+			annotation: [],
 			additionalCriteria: [],
 			formatType: [{
 				value: "METADATA",
