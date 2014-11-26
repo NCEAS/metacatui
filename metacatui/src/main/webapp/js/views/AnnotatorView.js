@@ -251,7 +251,8 @@ define(['jquery',
 			}
 						
 			// reindex when an annotation is updated
-			var reindexPid = function() {
+			var reindexPid = function(annotation, isDelete) {
+				
 				var query = appModel.get('metacatServiceUrl') + "?action=reindex&pid=" + pid;
 				$.get(query, function(data, status, xhr) {
 					// TODO: check for any success?
@@ -259,13 +260,21 @@ define(['jquery',
 				});
 				
 				// re load the annotations
-				showSidr($(div).data('annotator').plugins.Store.annotations);
-				
+				var annotations = $(div).data('annotator').plugins.Store.annotations;
+				if (isDelete) {
+					annotations.splice(annotations.indexOf(annotation), 1);
+				}
+				showSidr(annotations);
+
 			};
+			
+			var handleDelete = function(annotation) {
+				reindexPid(annotation, true);
+			}
 			
 			$(div).annotator('subscribe', 'annotationCreated', reindexPid);
 			$(div).annotator('subscribe', 'annotationUpdated', reindexPid);
-			$(div).annotator('subscribe', 'annotationDeleted', reindexPid);
+			$(div).annotator('subscribe', 'annotationDeleted', handleDelete);
 			$(div).annotator('subscribe', 'annotationsLoaded', showSidr);
 
 		}
