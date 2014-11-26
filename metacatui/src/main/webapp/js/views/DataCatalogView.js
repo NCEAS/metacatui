@@ -417,9 +417,9 @@ define(['jquery',
 			
 			//Get the value of the associated input
 			var input = this.$el.find($('#' + category + '_input'));
-			var term = item.value || input.val();
-			var label 		= item.filterLabel || null;
-			var filterDesc  = item.description || null;
+			var term 		= (!item || item.value) ? input.val() : item.value;
+			var label 		= (!item || item.filterLabel) ? null : item.filterLabel;
+			var filterDesc  = (!item || item.description) ? null : item.description;
 			
 			//Check that something was actually entered
 			if((term == "") || (term == " ")){
