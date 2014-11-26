@@ -973,6 +973,10 @@ define(['jquery',
 			var viewRef = this;
 			var showSidr = function(annotations) {
 				
+				// sort the annotations by xpath
+				annotations = _.sortBy(annotations, function(ann) {
+					return ann.resource;
+				});
 				
 				$("#view_annotations").sidr({
 					name: "gutter",
@@ -982,23 +986,45 @@ define(['jquery',
 				// default to open
 				$.sidr("open", "gutter");
 				
-				var gutter = $("#gutter");
-				//alert(gutter);
 				// render the annotations in the gutter
+				var gutter = $("#gutter");
 				gutter.append(viewRef.annotationTemplate({
-				//viewRef.$el.append(viewRef.annotationTemplate({
 					annotations: annotations
 				}));
 				
-				//Initialize the tooltips
-				$('.tooltip-this').tooltip();
-				$('.popover-this').popover();
+				// define hover action to mimic hovering the highlight
+				var hoverAnnotation = function(event) {
+					
+					// figure out the annotation being selected
+					var annotationId = $(event.target).attr("id");
+					
+					// trigger as if a hover on highlight
+					var highlight = $("[data-annotation-id='" + annotationId + "']");
+					var target = $(event.target);
+					var targetLoc = target.offset();
+					
+					// make sure the highlight is viewable in active tab
+					var tabId = $(highlight).parents(".tab-pane").attr("id");
+					$("a[href='#" + tabId + "']").trigger("click");
+					
+					// scroll the location in page
+					var highlightLocation = highlight.position();
+					$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "slow");
+					
+					// trigger the hover
+					highlight.trigger({
+						type: "mouseover",
+						pageY: highlightLocation.top + 50,
+						pageX: highlightLocation.left + highlight.width() + 100,
+					});
+				};
+				
+				$(".hover-proxy").bind("click", hoverAnnotation);
 			}
+			
 			$(div).annotator('subscribe', 'annotationsLoaded', showSidr);
 
-
 		}
-		
 		
 	});
 	
