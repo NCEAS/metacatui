@@ -88,7 +88,7 @@ define(['jquery', 'underscore', 'backbone'],
 				//Remove this filter term from the array
 				var newFilterValues = _.without(currentFilterValues, filterValueToRemove);
 				_.each(currentFilterValues, function(currentFilterValue, key){
-					if(currentFilterValue.value = filterValueToRemove){
+					if(currentFilterValue.value == filterValueToRemove){
 						newFilterValues = _.without(newFilterValues, currentFilterValue);
 					}
 				});
@@ -121,9 +121,6 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var needsQuotes = function(entry){
-				
-				if(entry.startsWith('"') || entry.startsWith("%22") || entry.startsWith("'"))
-					return false;
 					
 				//Check for spaces
 				var space = null;
