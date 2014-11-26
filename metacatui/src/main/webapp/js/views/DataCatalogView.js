@@ -1135,6 +1135,8 @@ define(['jquery',
 			google.maps.event.addListener(mapRef, "idle", function(){
 				viewRef.ready = true;
 				
+				google.maps.event.trigger(mapRef, 'resize');
+				
 				if(viewRef.allowSearch){
 					
 					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
