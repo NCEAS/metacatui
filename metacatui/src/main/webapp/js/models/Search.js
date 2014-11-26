@@ -7,6 +7,13 @@ define(['jquery', 'underscore', 'backbone'],
 	// ------------------
 	var Search = Backbone.Model.extend({
 		// This model contains all of the search/filter terms
+		/*
+		 * Search filters can be either plain text or a filter object with the following options:
+		 * filterLabel - text that will be displayed in the filter element in the UI
+		 * label - text that will be displayed in the autocomplete  list
+		 * value - the value that will be included in the query
+		 * description - a longer text description of the filter value
+		 */
 		defaults: {
 			all: [],
 			creator: [],
@@ -27,7 +34,11 @@ define(['jquery', 'underscore', 'backbone'],
 			attribute: [],
 			annotation: [],
 			additionalCriteria: [],
-			formatType: ["METADATA"],
+			formatType: [{
+				value: "METADATA",
+				label: "science metadata",
+				description: null
+			}],
 			exclude: [{
 				field: "obsoletedBy",
 				value: "*"
@@ -63,6 +74,31 @@ define(['jquery', 'underscore', 'backbone'],
 			var defaults = _.keys(this.defaults);
 			if(_.indexOf(defaults, name) >= 0) return true;
 			else return false;
+		},
+		
+		/*
+		 * Removes a specified filter from the search model
+		 */
+		removeFromModel : function(category, filterValueToRemove){			
+			//Remove this filter term from the model
+			if (category){				
+				//Get the current filter terms array
+				var currentFilterValues = this.get(category);
+				
+				//Remove this filter term from the array
+				var newFilterValues = _.without(currentFilterValues, filterValueToRemove);
+				_.each(currentFilterValues, function(currentFilterValue, key){
+					if(currentFilterValue.value = filterValueToRemove){
+						newFilterValues = _.without(newFilterValues, currentFilterValue);
+					}
+				});
+				
+				//Remove this filter term from the array
+				//var newFilterValues = _.without(currentFilterValues, filterValue);
+				//Set the new value
+				this.set(category, newFilterValues);	
+				
+			}
 		},
 		
 		/*
@@ -114,10 +150,14 @@ define(['jquery', 'underscore', 'backbone'],
 			//---Taxon---
 			if(this.filterIsAvailable("taxon") && ((filter == "taxon") || getAll)){
 				var taxon = this.get('taxon');
-				var thisTaxon = null;
 				for (var i=0; i < taxon.length; i++){
+					var thisTaxon = taxon[i];
+					
 					//Trim the spaces off
-					thisTaxon = taxon[i].trim();
+					if(typeof thisTaxon == "object")
+						thisTaxon = thisTaxon.value.trim();
+					else
+						thisTaxon = thisTaxon.trim();
 					
 					if(needsQuotes(thisTaxon)) value = "%22" + encodeURIComponent(thisTaxon) + "%22";
 					else value = encodeURIComponent(thisTaxon);
@@ -211,12 +251,15 @@ define(['jquery', 'underscore', 'backbone'],
 			if(this.filterIsAvailable("all") && ((filter == "all") || getAll)){
 				var all = this.get('all');
 				for (var i=0; i < all.length; i++){
-					var value;
+					var filterValue = all[i];
 					
-					if(needsQuotes(all[i])) value = "%22" + encodeURIComponent(all[i]) + "%22";
-					else value = encodeURIComponent(all[i]);
+					if(typeof filterValue == "object")
+						filterValue = filterValue.value;
 					
-					query += "+" + value;
+					if(needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+					else filterValue = encodeURIComponent(filterValue);
+					
+					query += "+" + filterValue;
 				}
 			}
 			
@@ -238,7 +281,11 @@ define(['jquery', 'underscore', 'backbone'],
 					for (var i=0; i < filterValues.length; i++){
 						
 						//Trim the spaces off
-						filterValue = filterValues[i].trim();
+						var filterValue = filterValues[i];
+						if(typeof filterValue == "object"){
+							filterValue = filterValue.value;
+						}
+						filterValue = filterValue.trim();
 						
 						// Does this need to be wrapped in quotes?
 						if (needsQuotes(filterValue)){
