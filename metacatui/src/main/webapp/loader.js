@@ -64,6 +64,21 @@ function preventCompatibilityIssues(){
 		  });
 		}
 	
+	/* Polyfill for endsWith() */
+	if (!String.prototype.endsWith) {
+		  Object.defineProperty(String.prototype, 'endsWith', {
+		    value: function(searchString, position) {
+		      var subjectString = this.toString();
+		      if (position === undefined || position > subjectString.length) {
+		        position = subjectString.length;
+		      }
+		      position -= searchString.length;
+		      var lastIndex = subjectString.indexOf(searchString, position);
+		      return lastIndex !== -1 && lastIndex === position;
+		    }
+		  });
+		}
+	
 	/**
 	 * Protect window.console method calls, e.g. console is not defined on IE
 	 * unless dev tools are open, and IE doesn't define console.debug
