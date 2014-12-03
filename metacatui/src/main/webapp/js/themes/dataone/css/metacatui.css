@@ -914,7 +914,6 @@ Bold 700
 	}
 	
 	.metadata-index .text,
-	.metadata-index .attribute,
 	.metadata-index .attributeDescription,
 	.metadata-index .checksum,
 	.metadata-index .dataUrl,
@@ -937,6 +936,17 @@ Bold 700
 	
 	.download-this-package{
 		display: none;
+	}
+	
+	
+	/** Gutter/Annotation/Sidr ****/
+	#gutter .comment{
+		float: left;
+		width: 100px;
+		margin-left: 5px;
+	}
+	#gutter .icon{
+		float: left;
 	}
 
     
