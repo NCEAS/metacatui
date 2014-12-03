@@ -147,6 +147,7 @@ Bold 700
      #Content{
      	width: 80%;
      	margin: 20px auto;
+     	background-color: rgba(255,255,255,0.9);
      }
      
      .mapMode #Content{
