@@ -944,6 +944,7 @@ Bold 700
 		float: left;
 		width: 100px;
 		margin-left: 5px;
+		cursor: pointer;
 	}
 	#gutter .icon{
 		float: left;
