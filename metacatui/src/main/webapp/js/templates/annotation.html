@@ -1,14 +1,27 @@
 <% _.each(annotations, function(annotation) {
+	if (annotation.tags[0]) {
 %>
-	
-	<a id="<%= annotation.id %>" 
-		class="hover-proxy badge <% if (annotation.reject) { print(' badge-warning') } %>" 
-		title="<%=annotation.tags[0] %>">
-		#<%=annotation.tags[0].split("#")[1] %>
-	</a>
-	<br/>
-
+		<i class="icon-tag"></i>
+		<a id="<%= annotation.id %>" 
+			class="hover-proxy badge <% if (annotation.reject) { print(' badge-warning') } %>" 
+			title="<%=annotation.tags[0] %>">
+			#<%=annotation.tags[0].split("#")[1] %>
+		</a>
+		<br/>
 <%
+	} else {
+%>	
+		<i class="icon-comment"></i>
+		<div
+			id="<%= annotation.id %>" 
+			class="hover-proxy ellipsis" 
+			style="{width:30px}"
+			title="<%=annotation.text %>" >
+			<%=annotation.text %>
+		</div>
+	<br/>
+<%	
+	}
 } )
 %>
 
