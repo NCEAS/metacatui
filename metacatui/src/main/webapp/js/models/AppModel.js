@@ -32,7 +32,8 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
 			bioportalServiceUrl: null,
-			orcidServiceUrl: null
+			orcidServiceUrl: null,
+			tokenUrl: null
 
 		},
 		

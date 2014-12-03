@@ -3,13 +3,14 @@ define(['jquery',
 				'underscore', 
 				'jquerysidr',
 				'backbone',
+				'jws',
 				'views/NavbarView',
 				'views/AltHeaderView',
 				'views/FooterView',
 				'text!templates/appHead.html',
 				'text!templates/app.html'
 				], 				
-	function($, _, jQuerySidr, Backbone, NavbarView, AltHeaderView, FooterView, AppHeadTemplate, AppTemplate) {
+	function($, _, jQuerySidr, Backbone, JWS, NavbarView, AltHeaderView, FooterView, AppHeadTemplate, AppTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -78,22 +79,56 @@ define(['jquery',
 			// look up the URL
 			var metacatUrl = appModel.get('metacatServiceUrl');
 			
-			console.log('Checking user status in AppView');
+			if (metacatUrl) {
+				console.log('Checking Metacat user status in AppView');
 
-			// ajax call to validate the session/get the user info
+				// ajax call to validate the session/get the user info
+				$.ajax({
+					type: "POST",
+					xhrFields: {
+						withCredentials: true
+					},
+					url: metacatUrl,
+					data: { action: "validatesession" },
+					success: function(data, textStatus, xhr) {
+						
+						// the Metacat (XML) response should have a fullName element
+						var fullName = $(data).find("fullName").text();
+						var username = $(data).find("name").text();
+						console.log('fullName: ' + fullName);
+						console.log('username: ' + username);
+						// set in the model
+						appModel.set('fullName', fullName);
+						appModel.set('username', username);
+						
+					}
+				});
+			} else {
+				// use the token method for checking authentication
+				this.checkToken();
+			}
+			
+			return false;
+		},
+		
+		checkToken: function() {
+			var tokenUrl = appModel.get('tokenUrl');
+			var viewRef = this;
+			
+			// ajax call to get token
 			$.ajax({
-				type: "POST",
+				type: "GET",
 				xhrFields: {
 					withCredentials: true
 				},
-				url: metacatUrl,
-				data: { action: "validatesession" },
+				url: tokenUrl,
+				data: {},
 				success: function(data, textStatus, xhr) {
 					
 					// the Metacat (XML) response should have a fullName element
-					var fullName = $(data).find("fullName").text();
-					var username = $(data).find("name").text();
-					console.log('fullName: ' + fullName);
+					var payload = viewRef.parseToken(data);
+					var username = payload.userId;
+					var fullName = payload.fullName;
 					console.log('username: ' + username);
 					// set in the model
 					appModel.set('fullName', fullName);
@@ -101,8 +136,23 @@ define(['jquery',
 					
 				}
 			});
+		},
+		
+		parseToken: function(token) {
 			
-			return false;
+			var jws = new KJUR.jws.JWS();
+			var result = 0;
+			try {
+				result = jws.parseJWS(token);
+			} catch (ex) {
+				console.log("JWT warning: " + ex);
+			    result = 0;
+			}
+			
+			var payload = $.parseJSON(jws.parsedJWS.payloadS);
+			console.log("token payload: " + payload);
+			return payload;
+			
 		},
 		
 		// the currently rendered view

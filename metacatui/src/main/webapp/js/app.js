@@ -41,6 +41,8 @@ require.config({
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
     moment: '../components/moment',
+    jws: '../components/jws-2.0',
+    jsrasign: '../components/jsrsasign-4.7.0-all-min',    
     registry: [ 
                // use the path fallback in case there is no metacat installed here
                //'/' + metacatContext + '/style/common/templates/metacatui/entryForm',
@@ -77,6 +79,10 @@ require.config({
     },
     annotator: {
     	exports: 'Annotator'
+    },
+    jws: {
+    	exports: 'JWS',
+        deps: ['jsrasign'],
     },
 	nGeohash: {
 		exports: "geohash"

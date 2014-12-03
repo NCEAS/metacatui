@@ -79,7 +79,7 @@ define(['jquery',
 				var tokenUrl = appModel.get('tokenUrl');
 				authOptions = {
 					tokenUrl: tokenUrl,
-					//token: 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJpc3N1ZWRBdCI6ICIyMDE0LTEwLTIxVDE4OjUyOjUwKzAwOjAwIiwgInR0bCI6IDg2NDAwLCAiY29uc3VtZXJLZXkiOiAiYW5ub3RhdGVpdCIsICJ1c2VySWQiOiAibGVpbmZlbGRlciJ9.jh3RBTXNJis8697lCtPylShzj9O2oNN_ec11s9tbkTc'
+					//token: 'eyJhbGciOiJIUzI1NiJ9.eyJjb25zdW1lcktleSI6ImY3ODBmM2UzOThjZjQ1Y2JiNGU4NGVkOWVjOTE2MjJhIiwiaXNzdWVkQXQiOiIyMDE0LTEyLTAzVDIwOjQ3OjA3LjA5MSswMDowMCIsInVzZXJJZCI6IkNOPUJlbmphbWluIExlaW5mZWxkZXIgQTUxNSxPPVVuaXZlcnNpdHkgb2YgQ2hpY2FnbyxDPVVTLERDPWNpbG9nb24sREM9b3JnIiwiZnVsbE5hbWUiOm51bGwsInR0bCI6ODY0MDB9.vWfjKg-gtCLafoKazNZe3wAII8DeR3FqqZmQukNMNE8'
 				}
 			}
 			

@@ -61,8 +61,13 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			
+			// use portal to  retrieve token
+			//this.set('tokenUrl', 'http://localhost:8080/metacat/d1/mn/v1/token');
+			//this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
+			this.set('tokenUrl', this.get('baseUrl') + '/portal/identity?action=getToken');
+
 			//this.set('d1LogServiceUrl', this.get('baseUrl') + this.get('d1Service') + 'logsolr');
-			this.set('d1LogServiceUrl', 'https://cn.dataone.org/solr/d1-cn-log/select/?');
+			this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
 			
 		}
 	
