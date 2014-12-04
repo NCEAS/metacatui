@@ -36,7 +36,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 					this.template( 
 							{
 								username: appModel.get('username'),
-								fullName: appModel.get('fullName')
+								fullName: appModel.get('fullName'),
+								baseUrl: appModel.get('baseUrl'),
+								currentUrl: window.location.href,
 							} 
 					)
 			);
