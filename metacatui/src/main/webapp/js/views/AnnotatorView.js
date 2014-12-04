@@ -34,7 +34,7 @@ define(['jquery',
 		render: function () {
 
 			console.log('Rendering the Annotator view');
-			this.setUpAnnotator("body");			
+			this.setUpAnnotator();			
 			return this;
 		},
 		
@@ -44,9 +44,16 @@ define(['jquery',
 			// hide the gutter for other views
 			$.sidr("close", "gutter");
 			
+			// destroy the annotator
+			if ($("body").data('annotator')) {
+				$("body").annotator('destroy');
+			}
+			
 		},
 		
-		setUpAnnotator: function(div) {
+		setUpAnnotator: function() {
+			
+			var div = "body";
 			
 			var bioportalServiceUrl = appModel.get('bioportalServiceUrl');
 			if (!bioportalServiceUrl) {
