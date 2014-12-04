@@ -1,0 +1,60 @@
+<article id="Profile" class="profile">
+<h1 class="profile-title"><%
+if(query && query=="*:*"){
+	print("Summary of holdings");
+}
+//Is the query for a user only? If so, treat the general info as a user profile
+else if(query && query.indexOf("rightsHolder") > -1){
+	//Extract the uid string from the query string 
+	var uid = query.substring(query.indexOf("uid="));
+	uid = uid.substring(4, uid.indexOf(","));
+
+	//Display the name of the person
+	print(uid);
+}%></h1>
+<section class="charts-container">
+	<section class="stripe">
+		<section class="charts">
+			<section class="chart-title">
+				<div id="uploads-title"></div>
+				<h2>Files uploaded</h2>
+				<p>The number of individual metadata and data files uploaded over time. Only the first version of each file is counted.</p>
+			</section>
+			<div class="upload-chart chart"></div>
+		</section>
+	</section>
+	<section class="stripe">
+		<section class="charts">
+			<section class="chart-title">
+				<div id="downloads-title"></div>
+				<h2>Downloads</h2>
+				<p>The number of metadata and data downloads over time.</p>
+			</section>
+			<div class="download-chart chart"></div>
+		</section>
+	</section>
+	<section class="stripe format-charts-container">
+		<section class="charts">
+			<section class="chart-title">	
+				<div id="formats-title"></div>
+				<h2>File formats</h2>
+				<p>We breakdown the types of metadata and data files uploaded. Only the most recent version of each file is included.</p>
+			</section>
+			<div class="format-charts">
+				<div class="format-charts-metadata chart"></div>
+				<div class="format-charts-data chart"></div>
+			</div>
+		</section>
+	</section>
+	<section class="stripe">
+		<section class="charts">
+			<section class="chart-title">
+				<div id="coverage-title"></div>
+				<h2>Time period of data <span id="data-coverage-year-range" class="packages"></span></h2>
+				<p>The years in which data was collected, regardless of upload date. Only the most recent version of the data package is counted.</p>
+			</section>
+			<div class="temporal-coverage-chart chart"></div>
+		</section>
+	</section>
+</section>
+</article>

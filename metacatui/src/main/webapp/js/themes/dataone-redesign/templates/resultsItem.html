@@ -1,0 +1,89 @@
+
+<% 
+	if (typeof southBoundCoord != "undefined"){
+		print('<div class="result-row view-link pointer" data-id="'+id+'">');
+	}
+	else{
+		print('<div class="result-row view-link pointer" data-id="'+id+'">');
+	}
+%>
+        <div class="span2 info-icons">
+			
+        	<div class="row-fluid">
+        		            
+	            <% if((typeof abstract == 'undefined') || (abstract == "")){ 
+           			print('<div class="show-abstract span6">');
+           			print('<i class="icon-info-sign inactive"></i>');
+           			print('</div>');
+           		} 
+           		else{	        
+           			var safeAbstract = abstract.replace(/\"/g, "'");  
+           			safeAbstract = "<div class='abstract-popover'>"+safeAbstract+"</div>"; 
+           					
+           			print('<div class="show-abstract span6 popover-this stop-route prevent-popover-runoff" data-placement="left" data-trigger="hover" data-title="Abstract" data-container="#Content" data-html="true" data-content="' + safeAbstract + '">');
+           			print('<i class="icon-info-sign show-abstract more-info stop-route"></i>');
+           			print('</div>');
+           		 } 
+              %>
+        		<div class="on-map span6">
+					<% 
+						if (typeof southBoundCoord != "undefined"){
+		               		print('<i class="icon-map-marker on-map open-marker" data-id="'+id+'"></i>');
+		               }
+		               else{
+		               		print('<i class="icon-map-marker inactive"></i>');
+		               }
+		            %>
+	            </div>
+            </div>  
+              <div class="row-fluid stop-route download">             
+	               <%
+		           if (resourceMap) {
+						print('<i class="icon-folder-open download"></i>');
+					}
+	           		%>
+	           
+        	</div>
+	       
+	   </div>      
+        <div class="result-citation span9">
+              <span class="result-author">
+              <% var count=0; _.each(origin, function(author) {
+                   count++;
+                   if (count > 1) {
+                       print(", ")
+             }
+                   if (count > 1 && count == origin.length) {
+                       print("and ")
+             }
+                   print(author)
+                   if (count == origin.length) {
+                       print(". ")
+             }
+               }) %></span>
+               <span class="result-pubdate"> 
+               <%
+                if(pubDate) { 
+                   var pubDateFormatted = moment(pubDate).format('YYYY');
+                   if(!isNaN(pubDateFormatted)) print(pubDateFormatted, '. ');
+                }
+                if(dateUploaded && isNaN(pubDateFormatted)){
+                	var dateUploadedFormatted = moment(dateUploaded).format('YYYY');
+                    if(!isNaN(dateUploadedFormatted)) print(dateUploadedFormatted, '. ');
+               } 
+               %></span>
+               <span class="result-title"> <% if (title) { print('<a class=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
+               <span class="result-id subtle"> <%- id %></span>
+        </div>
+        
+		<div class="span1 stats">
+			<% 
+			
+			if (typeof read_count_i != "undefined"){
+				print('<span class="count">', read_count_i, '</span><label class="subtle">views</label>');
+			}
+			%>
+		</div>
+
+</div>
+<div class="clear"></div>
