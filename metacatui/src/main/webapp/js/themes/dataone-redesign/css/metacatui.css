@@ -1890,13 +1890,11 @@ svg .point:hover ~ .line-chart-label{
 
 /* MAPS 
 --------------------------------- */
-#map-canvas{
-	height: 100%;
-	width: 100%;
-}
 
-#map-container{
-	height: 300px;
+#map-container,
+#map-canvas{
+	height: 400px;
+	width: 300px;
 }
 
 .gmaps-infowindow{

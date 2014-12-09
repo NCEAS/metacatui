@@ -13,6 +13,7 @@ var themeMap =
 		'templates/profile.html' : 'themes/' + theme + '/templates/profile.html',
 		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
+		'models/MapModel' : 'js/themes/' + theme + '/models/Map.js',
 		'models/Stats' : 'js/themes/' + theme + '/models/Stats.js',
 		'models/Search' : 'js/themes/' + theme + '/models/Search.js',
 		//'views/DataCatalogView' : 'js/themes/' + theme + '/views/DataCatalogView.js',

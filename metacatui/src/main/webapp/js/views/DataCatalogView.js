@@ -1166,29 +1166,25 @@ define(['jquery',
 						var boundingBox = mapRef.getBounds();
 						
 						//Set the search model spatial filters
-						searchModel.set('north', boundingBox.getNorthEast().lat());
-						searchModel.set('west',  boundingBox.getSouthWest().lng());
-						searchModel.set('south', boundingBox.getSouthWest().lat());
-						searchModel.set('east',  boundingBox.getNorthEast().lng());
+						//Encode the Google Map bounding box into geohash
+						var north = boundingBox.getNorthEast().lat(),
+							west  = boundingBox.getSouthWest().lng(),
+							south = boundingBox.getSouthWest().lat(),
+							east  = boundingBox.getNorthEast().lng();
+							
+						searchModel.set('north', north);
+						searchModel.set('west',  west);
+						searchModel.set('south', south);
+						searchModel.set('east',  east);
 						
 						//Determine the precision of geohashes to search for
-						var zoom = mapRef.getZoom(),
-							precision;
+						var zoom = mapRef.getZoom();												
+						
+						var precision = mapModel.getSearchPrecision(zoom);
+						
+						//Get all the geohash tiles contained in the map bounds
+						var geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
 												
-						if(zoom <= 5) precision = 2;
-						else if(zoom <= 7) precision = 3;
-						else if (zoom <= 11) precision = 4;
-						else if (zoom <= 13) precision = 5;
-						else if (zoom <= 15) precision = 6;
-						else if (zoom <= 19) precision = 7;
-						
-						//Encode the Google Map bounding box into geohash
-						var geohashNorth = boundingBox.getNorthEast().lat(),
-							geohashWest  = boundingBox.getSouthWest().lng(),
-							geohashSouth = boundingBox.getSouthWest().lat(),
-							geohashEast	 = boundingBox.getNorthEast().lng(),
-							geohashBBoxes = nGeohash.bboxes(geohashSouth, geohashWest, geohashNorth, geohashEast, precision);
-						
 						//Save our geohash search settings
 						searchModel.set('geohashes', geohashBBoxes);
 						searchModel.set('geohashLevel', precision);
@@ -1611,16 +1607,64 @@ define(['jquery',
 			
 			//If we are at the max zoom, we will display an info window. If not, we will zoom in.
 			if(!mapModel.isMaxZoom(viewRef.map)){
+				
+				/** Set up some helper functions for zooming in on the map **/
+				var myFitBounds = function(myMap, bounds) {
+				    myMap.fitBounds(bounds); // calling fitBounds() here to center the map for the bounds
+
+				    var overlayHelper = new google.maps.OverlayView();
+				    overlayHelper.draw = function () {
+				        if (!this.ready) {
+				            var extraZoom = getExtraZoom(this.getProjection(), bounds, myMap.getBounds());
+				            if (extraZoom > 0) {
+				                myMap.setZoom(myMap.getZoom() + extraZoom);
+				            }
+				            this.ready = true;
+				            google.maps.event.trigger(this, 'ready');
+				        }
+				    };
+				    overlayHelper.setMap(myMap);
+				}
+				 var getExtraZoom = function(projection, expectedBounds, actualBounds) {
+
+				    // in: LatLngBounds bounds -> out: height and width as a Point
+				    var getSizeInPixels = function(bounds) {
+				        var sw = projection.fromLatLngToContainerPixel(bounds.getSouthWest());
+				        var ne = projection.fromLatLngToContainerPixel(bounds.getNorthEast());
+				        return new google.maps.Point(Math.abs(sw.y - ne.y), Math.abs(sw.x - ne.x));
+				    }
+
+				    var expectedSize = getSizeInPixels(expectedBounds),
+				        actualSize = getSizeInPixels(actualBounds);
+
+				    if (Math.floor(expectedSize.x) == 0 || Math.floor(expectedSize.y) == 0) {
+				        return 0;
+				    }
+
+				    var qx = actualSize.x / expectedSize.x;
+				    var qy = actualSize.y / expectedSize.y;
+				    var min = Math.min(qx, qy);
+
+				    if (min < 1) {
+				        return 0;
+				    }
+
+				    return Math.floor(Math.log(min) / Math.LN2 /* = log2(min) */);
+				}
+				
 				//Zoom in when the tile is clicked on
 				gmaps.event.addListener(tile, 'click', function(clickEvent) {
 					//Change the center
 					viewRef.map.panTo(clickEvent.latLng);
 					
 					//Get this tile's bounds
-					var bounds = tile.getBounds();
+					var tileBounds = tile.getBounds();
+					//Get the current map bounds
+					var mapBounds = viewRef.map.getBounds();
 								
 					//Change the zoom
-					viewRef.map.fitBounds(bounds);	
+					//viewRef.map.fitBounds(tileBounds);
+					myFitBounds(viewRef.map, tileBounds);
 				});
 			}
 			
