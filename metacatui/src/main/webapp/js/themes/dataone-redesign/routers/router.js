@@ -18,7 +18,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''                          : 'renderIndex', // the default route
+			''                          : 'renderData', // the default route
 			'about'                     : 'renderAbout',  // about page
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			//'plans'                     : 'renderPlans',  // plans page

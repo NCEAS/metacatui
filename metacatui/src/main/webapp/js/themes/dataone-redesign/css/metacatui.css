@@ -242,58 +242,12 @@ Bold 700
 /* FOOTER CSS
 -------------------------------------------------- */    
     footer{
-    	background-color: #CCC;
-    }
-    footer#Footer h2 {
-      font-size: 15px;
-      line-height: 15px;
-      color: #BBB;
-      padding: 0;
-      display: inline;
-      margin-left: 2%;
+    	font-size: .8em;
+    	padding: 20px;
+    	border-top: 3px solid #660033;
+    	margin-top: 20px;
     }
     
-    footer#Footer .helpitems {
-      list-style: none;
-    }
-    
-    footer#Footer .helpitems li{
-      margin: 0px 0px 0px 5px;                 
-    }
-    
-    ul.helpitems a {
-      color: #CCC;
-      font-weight: 400;
-      font-size: 13px;
-           
-    }
-    
-    ul.helpitems a:hover{
-    	color: #3399CC;
-    	text-decoration: none; 
-    }
-    
-
-    #Footer img {
-      opacity: .6;
-    }
-    
-    #Footer img:hover{
-    	opacity: 1;
-    	transition: opacity 1s;
-    }
-    .nceas{
-    	width: 60px;
-    }
-    .metacat{
-    	width: 60px;
-    	margin-left: 10px;
-    }
-    
-    .dataone{
-    	width: 100px;
-    	margin-left: 10px;
-    }
     
     
  /* BUTTONS CSS
@@ -375,6 +329,24 @@ Bold 700
     
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
+	.navbar-inner{
+		background: rgba(102,0,51,1);
+		background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+		background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(102,0,51,1)), color-stop(44%, rgba(77,0,39,1)), color-stop(100%, rgba(51,0,26,1)));
+		background: -webkit-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+		background: -o-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+		background: -ms-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+		background: linear-gradient(to bottom, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#660033', endColorstr='#33001a', GradientType=0 );
+		border-radius: 0px;
+		border-width: 0px;
+	}
+	
+	.navbar .nav > li > a {
+      text-transform: uppercase;
+      text-shadow: 0 1px 0 #000000;
+      color: #FFF;
+    }
     
     /*Share Your Data button */
     #share-data-view{
@@ -424,9 +396,6 @@ Bold 700
 		max-height: 32px;
 		margin-top: -10px;
 	}
-    .navbar .nav > li > a {
-      text-transform: uppercase;
-    }
     
 	 #Navbar form {
       margin: 0px 0px 0px 0px;
@@ -881,9 +850,8 @@ Bold 700
 		-moz-border-top-right-radius: 4px;
 		-moz-border-bottom-right-radius: 4px;
     	height: 30px;
-    	padding: 0px;
+    	padding: 0px 7px;
     	display: inline-block;
-    	width: 15%;
     }
     
     /*-- Inputs for search filters --*/
@@ -897,11 +865,6 @@ Bold 700
 		-webkit-border-bottom-right-radius: 0px;
     	-moz-border-top-right-radius: 0px;
 		-moz-border-bottom-right-radius: 0px;
-    	border: 1px solid #AAA;
-    	height: 20px;
-    	background-color: #FFF;
-    	background-image: none;
-    	width: 140px;
     	margin-left: 10px;
     	-moz-box-shadow: inset 0 0 10px -1px #CCC;
 		-webkit-box-shadow: inset 0 0 10px -1px #CCC;
@@ -909,8 +872,12 @@ Bold 700
 		color: #555;
     }
     
+    input.filter.no-border{
+    	border-width: 0px;
+    }
+    
     #all_input{
-    	width: 96%;
+    	width: 126%;
     	margin-left: 0px;
     }
     
@@ -955,6 +922,7 @@ Bold 700
 	/*-- The 'Year' filter elements --*/
 	#filter-year .left-padding{
 		padding-left: 10px;
+		width: 87%;
 	}
     
     #data-year-label{
@@ -1005,7 +973,7 @@ Bold 700
     	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
-    	width: 87%;
+    	width: 93%;
     }
     
     #year-range.disabled,
@@ -1223,9 +1191,6 @@ Bold 700
 		border-radius: 3px;
 		-moz-border-radius: 3px;
 		-webkit-border-radius: 3px;
-		position: absolute;
-		top: 10px;
-		left: 77px;
     }
     
     #clear-all > i{
@@ -1894,7 +1859,7 @@ svg .point:hover ~ .line-chart-label{
 #map-container,
 #map-canvas{
 	height: 400px;
-	width: 300px;
+	width: 280px;
 }
 
 .gmaps-infowindow{

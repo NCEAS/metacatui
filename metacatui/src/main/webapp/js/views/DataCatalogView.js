@@ -253,7 +253,7 @@ define(['jquery',
 			
 			//Show or hide the reset filters button
 			if(searchModel.filterCount() > 0){
-				$('#clear-all').css('display', 'block');
+				$('#clear-all').css('display', 'inline-block');
 			}
 			else{
 				$('#clear-all').css('display', 'none');
@@ -282,7 +282,7 @@ define(['jquery',
 			searchModel.set(category, state);
 			
 			//Show the reset button
-			$('#clear-all').css('display', 'block');
+			$('#clear-all').css('display', 'inline-block');
 			
 			//Route to page 1
 			this.updatePageNumber(0);

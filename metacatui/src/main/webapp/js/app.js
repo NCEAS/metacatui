@@ -126,11 +126,11 @@ function(Bootstrap, AppView, AppModel) {
 		mapModel = new MapModel();
 		
 		lookupModel = new LookupModel();
+		
 	
 		// Initialize routing and start Backbone.history()
 		uiRouter = new UIRouter();
 		Backbone.history.start();
-		
 	  
 	});
     	
