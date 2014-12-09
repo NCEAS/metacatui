@@ -35,7 +35,8 @@ define(['jquery', 'underscore', 'backbone'],
 			// see: http://bioportal.bioontology.org/account
 			bioportalServiceUrl: "http://data.bioontology.org/search?ontologies=OBOE-SBC&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
 			orcidServiceUrl: "http://pub.orcid.org/v1.1/search/orcid-bio?q=",
-			tokenUrl: null
+			tokenUrl: null,
+			annotatorUrl: null
 
 
 		},
@@ -62,6 +63,8 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
+			this.set('annotatorUrl', this.get('baseUrl') + this.get('context') + '/annotator');
+
 
 		}
 	

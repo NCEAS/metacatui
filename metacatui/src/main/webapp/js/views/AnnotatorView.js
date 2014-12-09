@@ -96,7 +96,7 @@ define(['jquery',
 				Tags: false,
 				Auth: authOptions,
 				Store: {
-					//prefix: "http://dev.nceas.ucsb.edu:5000",
+					prefix: appModel.get('annotatorUrl'),
 					annotationData: {
 						'uri': uri,
 						'pid': pid
