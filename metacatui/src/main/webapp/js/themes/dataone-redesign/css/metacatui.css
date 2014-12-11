@@ -348,6 +348,10 @@ Bold 700
       color: #FFF;
     }
     
+    .navbar-inner > ul > li img{
+		max-height: 22px;
+	}
+    
     /*Share Your Data button */
     #share-data-view{
     	display: none;
@@ -391,11 +395,6 @@ Bold 700
     .navbar-inner > ul{
     	margin: 0px;
     }
-
-	.navbar-inner > ul > li img{
-		max-height: 32px;
-		margin-top: -10px;
-	}
     
 	 #Navbar form {
       margin: 0px 0px 0px 0px;
@@ -781,6 +780,11 @@ Bold 700
   /* SIDEBAR CSS
   -------------------------------------------------- */
     
+    #sidebar{
+    	max-width: 280px;
+    	float: left;
+    }
+    
  	aside > div{
  		margin-bottom: 10px;		
  	}
@@ -814,6 +818,7 @@ Bold 700
     .filter-contain{
    	  border-bottom: 1px solid #DDD;
    	  padding: 10px 0px;
+   	  width: 100%;
    }
    .filter-contain > i{
    		color: #999;
@@ -872,12 +877,12 @@ Bold 700
 		color: #555;
     }
     
-    input.filter.no-border{
+    .filter-contain.no-border{
     	border-width: 0px;
     }
     
     #all_input{
-    	width: 126%;
+    	width: 241px;
     	margin-left: 0px;
     }
     
@@ -1237,6 +1242,12 @@ Bold 700
 
 /* RESULTS CSS
 -------------------------------------------------- */
+	#results-container{
+		width: 40%; /*fallback*/
+		width: calc(100% - 320px);
+		float: right;
+	}
+	
     /*-- Results header --*/
     #results-view{
     	background-color: #FFF;
@@ -1277,13 +1288,14 @@ Bold 700
     
     .result-row {
       display: block;
-      padding: 4px 1%;
-      width: 98%;
+      padding: 5px;
+      width: 98%; /*fallback */
+      width: calc(100% - 10px);
     }
     
     .result-row:nth-child(odd){
     	background-color: #CCCCCC; /*IE 8 fallback */
-    	background-color: rgba(185, 185, 185, 0.3);
+    	background-color: rgba(185, 185, 185, 0.2);
     }
     
     .result-row:nth-child(even){
@@ -1306,7 +1318,10 @@ Bold 700
     }
     
     .result-citation{
-    	padding-left: 3%;
+    	margin-left: 5px;
+    	float: left;
+    	width: 90%; /*fallback */
+    	width: calc(100% - 3em - 10px);
     }
     
     .result-title{
@@ -1333,7 +1348,8 @@ Bold 700
     /*-- Results List Icons --*/
     
     .info-icons{
-    	max-width: 14%;
+    	width: 3em;
+    	float: left;
     }
     
     .info-icons > div:first-child{
@@ -1354,11 +1370,6 @@ Bold 700
     .info-icons .download{
     	color: #999999;
     }
-    
-    .info-icons .download{
-    	
-    }
-    
     .info-icons .on-map > i{
     	font-size: 19px;
     }
@@ -1494,13 +1505,6 @@ Bold 700
     /*-- Pagination widget --*/
     .pagination{
     	margin: 0px;
-    }
-    
-    #resultspager{
-    	float: left;
-    	padding-left: 2%;
-    	margin-top:10px;
-    	width: 100%;
     }
 
 	.pagination ul{
