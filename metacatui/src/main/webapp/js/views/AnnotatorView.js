@@ -260,12 +260,6 @@ define(['jquery',
 			// reindex when an annotation is updated
 			var reindexPid = function(annotation, isDelete) {
 				
-				var query = appModel.get('metacatServiceUrl') + "?action=reindex&pid=" + pid;
-				$.get(query, function(data, status, xhr) {
-					// TODO: check for any success?
-					//we are done now
-				});
-				
 				// re load the annotations
 				var annotations = $(div).data('annotator').plugins.Store.annotations;
 				if (isDelete) {
