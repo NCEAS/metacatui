@@ -27,9 +27,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if(d3){
 				this.listenTo(statsModel, 'change:dataUploadDates',   this.drawUploadChart);
 				this.listenTo(statsModel, 'change:temporalCoverage',  this.drawCoverageChart);
+				//TODO: Relook at this once formatType is indexed
+				this.listenTo(statsModel, 'change:dataDownloadDates',    this.drawDownloadsChart);
 			}
 			
 			this.listenTo(statsModel, 'change:dataUploads', 	  this.drawUploadTitle);
+			//TODO: Change this from totalDownloads to dataDownloadDates once formatType is indexed
+			this.listenTo(statsModel, 'change:totalDownloads', 	  this.drawDownloadTitle);
 			this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			this.listenTo(statsModel, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
@@ -57,7 +61,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 
 			//Start retrieving data from Solr
-			statsModel.getAll();	
+			statsModel.getAll();
 		
 			return this;
 		},
@@ -150,6 +154,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		
 		//drawUploadChart will get the upload stats from the stats model and draw a time series cumulative chart
 		drawUploadChart: function(){
+			//Get the width of the chart by using the parent container width
+			var parentEl = this.$('.upload-chart');
+			var width = parentEl.width() || null;
 			
 			//If there was no first upload, draw a blank chart and exit
 			if(!statsModel.get('firstUpload')){
@@ -157,7 +164,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var lineChartView = new LineChart(
 						{	  id: "upload-chart",
 						 	yLabel: "files uploaded",
-						 frequency: 0
+						 frequency: 0,
+						 	 width: width
 						});
 				
 				this.$('.upload-chart').html(lineChartView.render().el);
@@ -184,7 +192,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 						 	yLabel: "files uploaded",
 						labelValue: "Metadata: ",
 						 frequency: frequency, 
-							radius: 4
+							radius: 4,
+							width: width
 						});
 				
 				this.$('.upload-chart').html(lineChartView.render().el);
@@ -207,12 +216,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							 	yLabel: "files uploaded",
 							labelValue: "Data: ",
 							 frequency: frequency, 
-								radius: 4
+								radius: 4,
+								 width: width
 							 });
 					
 					this.$('.upload-chart').html(lineChartView.render().el);
 
-					//If no data files were uploaded, we don't want to draw the data file line
+					//If no metadata files were uploaded, we don't want to draw the data file line
 					if(statsModel.get("metadataUploads")){
 						//Add a line to our chart for metadata uploads
 						lineChartView.className = "metadata";
@@ -271,9 +281,164 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.$('#uploads-title').prepend(uploadChartTitle.render().el);
 		},
 		
+		/*
+		 * drawDownloadsChart - draws a line chart representing the downloads over time
+		 */
+		drawDownloadsChart: function(){
+			//Get the width of the chart by using the parent container width
+			var parentEl = this.$('.download-chart');
+			var width = parentEl.width() || null;
+			
+			//If there are no download stats, draw a blank chart and exit
+			if(!statsModel.get('totalDownloads')){
+				
+				var lineChartView = new LineChart(
+						{	  id: "download-chart",
+						 	yLabel: "downloads",
+						 frequency: 0,
+						cumulative: false,
+						 	 width: width
+						});
+				
+				parentEl.html(lineChartView.render().el);
+					
+				return;
+			}
+			
+			//Set the frequency of our points
+			var frequency = 1;
+									
+			//Check which line we should draw first since the scale will be based off the first line
+			if(statsModel.get("metadataDownloads") > statsModel.get("dataUploads") ){
+				
+				//If there isn't a lot of point to graph, draw points more frequently on the line
+				if(statsModel.get("metadataDownloadDates").length < 40) frequency = 1;
+				
+				//Create the line chart and draw the metadata line
+				var lineChartView = new LineChart(
+						{	  data: statsModel.get('metadataDownloadDates'),
+			  formatFromSolrFacets: true,
+						cumulative: false,
+								id: "download-chart",
+						 className: "metadata",
+						 	yLabel: "downloads",
+						 labelDate: "M y",
+						labelValue: "Metadata: ",
+						 frequency: frequency, 
+							radius: 2,
+							width: width
+						});
+				
+				parentEl.html(lineChartView.render().el);
+			
+				//Only draw the data file line if there was at least one uploaded
+				if(statsModel.get("dataDownloads")){
+					//Add a line to our chart for data uploads
+					lineChartView.className = "data";
+					lineChartView.labelValue ="Data: ";
+					lineChartView.addLine(statsModel.get('dataDownloadDates'));
+				}
+			}
+			else{
+					var lineChartView = new LineChart(
+							{	  data: statsModel.get('dataDownloadDates'),
+				  formatFromSolrFacets: true,
+							cumulative: false,
+									id: "download-chart",
+							 className: "data",
+							 	yLabel: "downloads",
+							labelValue: "Downloads: ",
+							labelWidth: 150,
+							 labelDate: "M y",
+							 frequency: frequency, 
+								radius: 2,
+								width: width
+							 });
+					
+					parentEl.html(lineChartView.render().el);
+
+					//If no metadata files were downloaded, we don't want to draw the data file line
+					if(statsModel.get("metadataDownloads")){
+						//Add a line to our chart for metadata uploads
+						lineChartView.className = "metadata";
+						lineChartView.labelValue = "Metadata: ";
+						lineChartView.addLine(statsModel.get('metadataDownloadDates'));
+					}
+				}
+
+		},
+		
+		//drawDownloadTitle will draw a circle badge title for the downloads time series chart
+		drawDownloadTitle: function(){
+			
+			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
+			if(!d3){
+				this.$('#downloads-title').html("<h2 class='packages fallback'>" + this.commaSeparateNumber(statsModel.get('totalDownloads')) + "</h2>");
+				
+				return;
+			}
+			
+			//If there are 0 downloads, draw a default/blank chart title
+			if(!statsModel.get('totalDownloads')){
+				var downloadChartTitle = new CircleBadge({
+					id: "download-chart-title",
+					globalR: 40
+				});
+				
+				this.$('#downloads-title').prepend(downloadChartTitle.render().el);
+				
+				return;
+			}
+		/*	TODO: Uncomment out this code to draw metadata and data separately once formatType is indexed
+			//Get information for our download chart title
+			var titleChartData = [],
+				metadataDownloads = statsModel.get("metadataDownloads"),
+				dataDownloads = statsModel.get("dataDownloads"),
+				metadataClass = "metadata",
+				dataClass = "data";						
+			
+			if(metadataDownloads == 0) metadataClass = "default";
+			if(dataDownloads == 0) dataClass = "default";
+			
+			
+			var titleChartData = [
+			                      {count: statsModel.get("metadataDownloads"), label: "metadata", className: metadataClass},
+							      {count: statsModel.get("dataDownloads"), 	   label: "data", 	  className: dataClass}
+								 ];
+			
+			*/
+			
+			/** ------ temporary code until formatType is indexed -----*/
+			/** TODO: Remove this code once formatType is indexed **/
+			//Get information for our download chart title
+			var titleChartData = [],
+				downloads = statsModel.get("totalDownloads"),
+				dataClass = "data";									
+			
+			var titleChartData = [
+			                      {count: statsModel.get("totalDownloads"), label: "downloads", className: dataClass}
+								 ];
+			/**------------------------------------------------**/
+			
+			
+			//Draw the download chart title
+			var downloadChartTitle = new CircleBadge({
+				id: "download-chart-title",
+				data: titleChartData,
+				className: "chart-title",
+				useGlobalR: true,
+				globalR: 60
+			});
+			
+			this.$('#downloads-title').prepend(downloadChartTitle.render().el);
+		},
 		
 		//Draw a bar chart for the temporal coverage 
 		drawCoverageChart: function(e, data){
+			
+			//Get the width of the chart by using the parent container width
+			var parentEl = this.$('.temporal-coverage-chart');
+			var width = parentEl.width() || null;
 			
 			// If results were found but none have temporal coverage, draw a default chart
 			if(!statsModel.get('firstBeginDate')){
@@ -281,9 +446,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				//Draw a default bar chart
 				var barChart = new BarChart({
 					id: "temporal-coverage-chart",
-					yLabel: "data packages"
+					yLabel: "data packages",
+					width: width
 				});
-				this.$('.temporal-coverage-chart').html(barChart.render().el);
+				parentEl.html(barChart.render().el);
 									
 				return;
 			}
@@ -297,11 +463,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 						barClass: "packages",
 						roundedRect: true,
 						roundedRadius: 10,
-						barLabelClass: "packages"
+						barLabelClass: "packages",
+						width: width
 					};
 			
 			var barChart = new BarChart(options);
-			this.$('.temporal-coverage-chart').html(barChart.render().el);
+			parentEl.html(barChart.render().el);
 			
 		},
 		

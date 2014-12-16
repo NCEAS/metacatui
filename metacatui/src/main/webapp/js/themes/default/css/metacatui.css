@@ -2186,7 +2186,7 @@ svg .default{
 }
   
   /* Donut charts */  
-  #metadata-chart,
+#metadata-chart,
 #data-chart{
 	height: 300px;
 	width: 420px;

@@ -329,6 +329,11 @@ Bold 700
     
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
+	.navbar .nav{
+		width: 960px;
+		margin: 0 auto;
+		float: none;
+	}
 	.navbar-inner{
 		background: rgba(102,0,51,1);
 		background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
@@ -1559,7 +1564,7 @@ Bold 700
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	width: 900px;
+  	width: 960px;
   	clear: both;
   }
   
@@ -1569,16 +1574,13 @@ Bold 700
     	background-color: #FFFFFF; /*IE 8 fallback */
     	background-color: rgba(255, 255, 255, 0.9);
     	border-radius: 5px;
-    	padding: 20px;
   }
   
   .profile h1{
     margin: 20px auto;
-    padding: 0px 20px;
 	line-height: 90px;
 	background-color: #FFF;
 	border-radius: 5px;
-	padding: 0px 20px;
 	color: #555;
   }
   
@@ -1603,7 +1605,7 @@ Bold 700
 
 .profile .chart{
 	float: left;
-	width: 650px;
+	width: 735px;
 	margin-left: 20px;
 	margin-top: 30px;
 }
@@ -1777,8 +1779,12 @@ svg .domain{
 	stroke: #555555;
 }
 svg .point{
-	fill: #FFFFFF;
+	stroke: #FFFFFF;
 	stroke-width: 2px;
+}
+#download-chart .point{
+	fill: #FFFFFF;
+	stroke:	#660033;
 }
 .line-chart-label{
 	font-weight: bold;
@@ -1863,9 +1869,13 @@ svg .point:hover ~ .line-chart-label{
 #map-container,
 #map-canvas{
 	height: 400px;
-	width: 280px;
+	width: 274px;
 }
-
+#map-container{
+	border: 1px solid #CCC;
+	border-radius: 4px;
+	padding: 3px;	
+}
 .gmaps-infowindow{
 	max-height: 400px;
 	overflow-y:scroll;	
