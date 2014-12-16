@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					else
 						model.set('id', doc.resourceMap[0]);
 				}
-			});
+			}, "json");
 		},
 		
 		/* Get all the members of a resource map/package based on the id attribute of this model. 
@@ -69,7 +69,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 				
 				model.set('members', members);
-			});
+			}, "json");
 			
 			return this;
 		}
