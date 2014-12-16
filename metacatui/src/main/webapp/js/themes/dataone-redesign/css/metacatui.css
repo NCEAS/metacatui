@@ -157,10 +157,52 @@ Bold 700
 	  }
 	}
 	
+	/** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
 	.ellipsis{
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
+	}
+	.multi-line-ellipsis {
+  		overflow: hidden;
+  		height: 50px;
+		line-height: 25px;
+ 	}
+	.multi-line-ellipsis:before {
+		content:"";
+		float: left;
+		width: 5px; height: 50px; }
+	
+	.multi-line-ellipsis > *:first-child {
+		float: right;
+		width: 100%;
+		margin-left: -5px; }		
+	
+	.multi-line-ellipsis:after {
+		content: "\02026";  
+	
+		box-sizing: content-box;
+		-webkit-box-sizing: content-box;
+		-moz-box-sizing: content-box;
+	
+		float: right; position: relative;
+		top: -25px; left: 100%; 
+		width: 3em; margin-left: -3em;
+		padding-right: 5px;
+		
+		text-align: right;
+	
+	  
+	  	background-size: 100% 100%;
+	  	/* 512x1 image, gradient for IE9. Transparent at 0% -> white at 50% -> white at 100%.*/
+		background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAABCAMAAACfZeZEAAAABGdBTUEAALGPC/xhBQAAAwBQTFRF////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wDWRdwAAAP90Uk5TgsRjMZXhS30YrvDUP3Emow1YibnM9+ggOZxrBtpRRo94gxItwLOoX/vsHdA2yGgL8+TdKUK8VFufmHSGgAQWJNc9tk+rb5KMCA8aM0iwpWV6dwP9+fXuFerm3yMs0jDOysY8wr5FTldeoWKabgEJ8RATG+IeIdsn2NUqLjQ3OgBDumC3SbRMsVKsValZplydZpZpbJOQco2KdYeEe36BDAL8/vgHBfr2CvTyDu8R7esU6RcZ5ecc4+Af3iLcJSjZ1ivT0S/PMs3LNck4x8U7wz7Bv0G9RLtHuEq1TbJQr1OtVqqnWqRdoqBhnmSbZ5mXapRtcJGOc4t2eYiFfH9AS7qYlgAAARlJREFUKM9jqK9fEGS7VNrDI2+F/nyB1Z4Fa5UKN4TbbeLY7FW0Tatkp3jp7mj7vXzl+4yrDsYoVx+JYz7mXXNSp/a0RN25JMcLPP8umzRcTZW77tNyk63tdprzXdmO+2ZdD9MFe56Y9z3LUG96mcX02n/CW71JH6Qmf8px/cw77ZvVzB+BCj8D5vxhn/vXZh6D4uzf1rN+Cc347j79q/zUL25TPrJMfG/5LvuNZP8rixeZz/mf+vU+Vut+5NL5gPOeb/sd1dZbTs03hBuvmV5JuaRyMfk849nEM7qnEk6IHI8/qn049hB35QGHiv0yZXuMdkXtYC3ebrglcqvYxoj1muvC1nDlrzJYGbpcdHHIMo2FwYv+j3QAAOBSfkZYITwUAAAAAElFTkSuQmCC);
+	  
+		background: -webkit-gradient(linear, left top, right top,
+			from(rgba(255, 255, 255, 0)), to(white), color-stop(50%, white));
+		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);			
+		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
+		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
+		background: linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
 	}
 
     
@@ -573,13 +615,8 @@ Bold 700
     
     table.download-contents {
     	float: left;
-    	width: auto;
+    	width: 100%;
     }
-    
-    table.download-contents td{
-    	min-width: 90px;
-    }
-    
     .download-contents td{
     	overflow-wrap: break-word;
     }
@@ -591,7 +628,9 @@ Bold 700
     .download-contents .more-info{
     	display: none;
     }
-    
+    .download .btn i{
+    	margin-left: 5px;
+    }
     .format-type i {
     	margin-right: 5px;
     }
@@ -602,12 +641,6 @@ Bold 700
     .file-type i {
   		  color: #999;
   		  margin-left: 5px;
-    }
-    
-    th.id, td.id {
-    	min-width: 180px;
-    	max-width: 180px;
-		display: block;
     }
     
     .controls-well img{
@@ -661,46 +694,46 @@ Bold 700
 	}
 	
 	/** Metadata rendering via the Index **/
-	.metadata-index {
+	#metadata-index-details {
 		padding: 2%;
 		width: 96%;
 	}
 	
-	.metadata-index .citation{
+	#metadata-index-details .citation{
 		font-size: 1.3em;
 		line-height: 2em;
 	}
 	
-	.metadata-index .controls-well .controls-well{
+	#metadata-index-details .controls-well .controls-well{
 		margin-left: 0px;
 	}
 	
-	.metadata-index .controls-well .control-label{
+	#metadata-index-details .controls-well .control-label{
 		display: none;
 	}
 	
-	.metadata-index .controls-well > .control-group{
+	#metadata-index-details .controls-well > .control-group{
 		margin-bottom: 5px;
 	}
 	
-	.metadata-index .text,
-	.metadata-index .attributeDescription,
-	.metadata-index .checksum,
-	.metadata-index .dataUrl,
-	.metadata-index .fileID,
-	.metadata-index .size,
-	.metadata-index .resourceMap,
-	.metadata-index .presentationCat,
-	.metadata-index .checksumAlgorithm,
-	.metadata-index .author,
-	.metadata-index .authorGivenName,
-	.metadata-index .authorGivenNameSort,
-	.metadata-index .authorSurName,	
-	.metadata-index .authorSurNameSort,
-	.metadata-index .authorLastName,
-	.metadata-index .replicaVerifiedDate,
-	.metadata-index .sku,
-	.metadata-index .identifier{
+	#metadata-index-details .text,
+	#metadata-index-details .attributeDescription,
+	#metadata-index-details .checksum,
+	#metadata-index-details .dataUrl,
+	#metadata-index-details .fileID,
+	#metadata-index-details .size,
+	#metadata-index-details .resourceMap,
+	#metadata-index-details .presentationCat,
+	#metadata-index-details .checksumAlgorithm,
+	#metadata-index-details .author,
+	#metadata-index-details .authorGivenName,
+	#metadata-index-details .authorGivenNameSort,
+	#metadata-index-details .authorSurName,	
+	#metadata-index-details .authorSurNameSort,
+	#metadata-index-details .authorLastName,
+	#metadata-index-details .replicaVerifiedDate,
+	#metadata-index-details .sku,
+	#metadata-index-details .identifier{
 		display: none;
 	}
 	
@@ -795,7 +828,11 @@ Bold 700
     
     #sidebar{
     	max-width: 280px;
-    	float: left;
+		float: left;
+		padding: 0px 15px 10px 15px;
+		border-radius: 3px;
+		-webkit-border-radius: 3px;
+		-moz-border-radius: 3px;
     }
     
  	aside > div{
@@ -1257,8 +1294,9 @@ Bold 700
 -------------------------------------------------- */
 	#results-container{
 		width: 40%; /*fallback*/
-		width: calc(100% - 320px);
-		float: right;
+		width: calc(100% - 350px - 20px);
+		float: left;
+		margin-left: 20px;
 	}
 	
     /*-- Results header --*/
@@ -1300,102 +1338,79 @@ Bold 700
     }
     
     .result-row {
-      display: block;
-      padding: 5px;
-      width: 98%; /*fallback */
-      width: calc(100% - 10px);
+	      display: block;
+	      padding: 13px;
+	      width: 98%; /*fallback */
+	      width: calc(100% - 30px);
+	      cursor: pointer;
+	      transition: background-color .5s;
     }
     
     .result-row:nth-child(odd){
-    	background-color: #CCCCCC; /*IE 8 fallback */
-    	background-color: rgba(185, 185, 185, 0.2);
+    	background-color: #F5FAFB;
     }
-    
+    .result-row:nth-child(odd) .multi-line-ellipsis:after{
+  		background: -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0)), to(#F5FAFB), color-stop(50%, #F5FAFB));
+  		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), #F5FAFB 50%, #F5FAFB);
+  		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), #F5FAFB 50%, #F5FAFB);
+  		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), #F5FAFB 50%, #F5FAFB);
+  		background: linear-gradient(to right, rgba(255, 255, 255, 0), #F5FAFB 50%, #F5FAFB);
+  	}
     .result-row:nth-child(even){
     	background-color: transparent;
-    }
-    
-    .result-row .result-row,
-    .result-row:hover .result-row{
-    	background-color: transparent;
-    }
+	}
     
     .result-row:hover { 
-    background-color: #DAEBF7; /* IE 8 fallback */
-    background-color: rgba(28, 110, 132, 0.18);
+    	background-color: #FFF8EB; 
   	}
-  
+  	.result-row .multi-line-ellipsis:after{
+  		transition: background-color 0s;
+  	}
+  	.result-row:hover .multi-line-ellipsis:after{
+  		background: -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0)), to(#FFF8EB), color-stop(50%, #FFF8EB));
+  		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
+  		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
+  		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
+  		background: linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
+  	}
+  	.result-row .abstract{
+    	font-size: 0.9em;
+    }  
+    
+    .result-citation{
+    	color: #1C6E84;
+    }
     
     .result-author {
       font-weight: normal;
-    }
-    
-    .result-citation{
-    	margin-left: 5px;
-    	float: left;
-    	width: 90%; /*fallback */
-    	width: calc(100% - 3em - 10px);
     }
     
     .result-title{
     	font-weight: 600;
     	color: #1C6E84;
     }
-    
-    .result-row .abstract{
-    	padding: 0px 2%;
-    	width: 96%;
-    	border: 0px;
-    	font-size: 0.9em;
-    	clear: both;
-    	display: none;
-    }
-    
-    .result-row:hover .abstract{
-   		display:block;
-    }
     .result-row .dropdown-menu{
   		left: -320%;
   	}
     
     /*-- Results List Icons --*/
-    
-    .info-icons{
-    	width: 3em;
+    .info-icons .icons{
     	float: left;
-    }
-    
-    .info-icons > div:first-child{
-    	max-width: 45px;
-    }
-    
-    .info-icons i.more-info{
-    	cursor: help;
-    }   
-    
-    .info-icons .show-abstract > i{
-    	font-size: 19px;
-    	margin-left: -2px;
-    	margin-top: -1px;
-    }
-    
-    .info-icons .show-abstract > i.show-abstract,
-    .info-icons .download{
-    	color: #999999;
+    	margin-right: 1em;
     }
     .info-icons .on-map > i{
     	font-size: 19px;
     }
-    
-    .info-icons .on-map > i.on-map{
+    .info-icons i{
     	color: #660033;
+    }
+    .info-icons .on-map > i.on-map{
     	cursor: default;
     }
     
     
     .info-icons i.inactive{
-    	color: #EEE;
-    	cursor: default;
+    	visibility: hidden;
     }
     
     .result-row:hover .info-icons .inactive{
@@ -1538,15 +1553,15 @@ Bold 700
     }
 	
 	.pagination ul > li > a:hover{
-		background-color: #DDD;
-		color: #1C6E84;
+		color: #FFF;
+		background-color: #1C6E84;
 	}
 	
 	
 	.pagination ul > .active > a,
 	.pagination ul > .active > a:hover{
 		color: #FFF;
-		background-color: #AAA;
+		background-color: #1C6E84;
 	}
 	
 	.pagination .sort-by{

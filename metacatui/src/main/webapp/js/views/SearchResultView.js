@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'text!templates/resultsIte
 	// The DOM element for a SearchResult item...
 	var SearchResultView = Backbone.View.extend({
 		tagName:  'div',
-		className: 'row-fluid result-row',
+		className: 'row-fluid view-link result-row',
 
 		// Cache the template function for a single item.
 		//template: _.template($('#result-template').html()),
@@ -40,6 +40,8 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'text!templates/resultsIte
 			var json = this.model.toJSON();
 			var ri = this.template(json);
 			this.$el.html(ri);
+			var id = json.id;
+			this.$el.attr("data-id", id);
 			//this.$el.toggleClass('selected', this.model.get('selected'));
 			//this.toggleVisible();
 			//this.$input = this.$('.edit');

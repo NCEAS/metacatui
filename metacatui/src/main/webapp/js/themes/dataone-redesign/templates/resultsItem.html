@@ -1,51 +1,5 @@
 
-<% 
-	if (typeof southBoundCoord != "undefined"){
-		print('<div class="result-row view-link pointer" data-id="'+id+'">');
-	}
-	else{
-		print('<div class="result-row view-link pointer" data-id="'+id+'">');
-	}
-%>
-        <div class="info-icons">
-			
-        	<div class="row-fluid">
-        		            
-	            <% if((typeof abstract == 'undefined') || (abstract == "")){ 
-           			print('<div class="show-abstract span6">');
-           			print('<i class="icon-info-sign inactive"></i>');
-           			print('</div>');
-           		} 
-           		else{	        
-           			var safeAbstract = abstract.replace(/\"/g, "'");  
-           			safeAbstract = "<div class='abstract-popover'>"+safeAbstract+"</div>"; 
-           					
-           			print('<div class="show-abstract span6 popover-this stop-route prevent-popover-runoff" data-placement="left" data-trigger="hover" data-title="Abstract" data-container="#Content" data-html="true" data-content="' + safeAbstract + '">');
-           			print('<i class="icon-info-sign show-abstract more-info stop-route"></i>');
-           			print('</div>');
-           		 } 
-              %>
-        		<div class="on-map span6">
-					<% 
-						if (typeof southBoundCoord != "undefined"){
-		               		print('<i class="icon-map-marker on-map open-marker" data-id="'+id+'"></i>');
-		               }
-		               else{
-		               		print('<i class="icon-map-marker inactive"></i>');
-		               }
-		            %>
-	            </div>
-            </div>  
-              <div class="row-fluid stop-route download">             
-	               <%
-		           if (resourceMap) {
-						print('<i class="icon-folder-open download"></i>');
-					}
-	           		%>
-	           
-        	</div>
-	       
-	   </div>      
+<div class="view-link pointer" data-id="<%=id%>">     
         <div class="result-citation">
               <span class="result-author">
               <% var count=0; _.each(origin, function(author) {
@@ -74,16 +28,42 @@
                %></span>
                <span class="result-title"> <% if (title) { print('<a class=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
                <span class="result-id subtle"> <%- id %></span>
-        </div>
-        
-		<div class="span1 stats">
-			<% 
-			
-			if (typeof read_count_i != "undefined"){
-				print('<span class="count">', read_count_i, '</span><label class="subtle">views</label>');
-			}
-			%>
-		</div>
-
+        </div> 
+        <div class="clear"></div>
+<%
+	if(typeof abstract != "undefined"){
+	    var safeAbstract = abstract.replace(/\"/g, "'");
+	    var classes = "abstract view-link";  
+	    if(safeAbstract.length > 200) classes += " multi-line-ellipsis";
+	    
+		print('<div class="' + classes + '" data-doi="' + id + '"><div>');
+		print('<p>' + safeAbstract + '<i></i></p>');
+		print('</div>');
+		print('</div>');
+	}
+	%>
+        <div class="info-icons">        		      
+        		<div class="on-map icons">
+					<% 
+						if (typeof southBoundCoord != "undefined"){
+		               		print('<i class="icon-map-marker on-map open-marker tooltip-this" data-id="'+id+'" data-toggle="tooltip" data-placement="top" title="This result includes spatial metadata"></i>');
+		               }
+		               else{
+		               		print('<i class="icon-map-marker inactive"></i>');
+		               }
+		            %>
+	            </div>
+              <div class="resource-map icons">             
+	               <%
+		           if (resourceMap) {
+						print('<i class="icon-folder-open tooltip-this"  data-toggle="tooltip" data-placement="top" title="This result includes data files"></i>');
+					}
+					else{
+						print('<i class="icon-folder-open inactive"></i>');
+					}
+	           		%>
+	           
+        	</div>
+	       
+	   </div>
 </div>
-<div class="clear"></div>
