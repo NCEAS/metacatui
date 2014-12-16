@@ -77,15 +77,14 @@ Bold 700
       display:block;   
     }
 
-		
-    body > section > article {
-      background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
-      background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 4px;		
-      -webkit-border-radius: 4px;
-	  -moz-border-radius: 4px;			
-    }
-    
+	#Content > article{
+	  	width: 960px;
+	  	margin: auto;
+		background-color: #FFFFFF;  	
+	}
+	.DataCatalog #Content > article{
+		width: 100%;
+	}	
      .container{
     	width: 100%;
     }
@@ -334,6 +333,10 @@ Bold 700
 		margin: 0 auto;
 		float: none;
 	}
+	.navbar .nav{
+		transition: width 1s;
+		-webkit-transition: width 1s;
+	}
 	.navbar-inner{
 		background: rgba(102,0,51,1);
 		background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
@@ -432,6 +435,11 @@ Bold 700
     
     #SignIn {
       float: right;
+    }
+    
+    /** Specific to the DataCatalogView **/
+    .DataCatalog .nav{
+    	width: 100%;
     }
  
     
@@ -1555,12 +1563,6 @@ Bold 700
 	    
 /* Stats styles 
   -------------------------------------------------- */ 
-  
-  #Profile{
-  	width: 960px;
-  	margin: auto;
-  	background-color: transparent;
-  }
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;

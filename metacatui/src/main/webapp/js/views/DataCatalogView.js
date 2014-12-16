@@ -94,7 +94,7 @@ define(['jquery',
 
 			console.log('Rendering the DataCatalog view');
 			appModel.set('headerType', 'default');
-		
+			this.toggleViewClass("DataCatalog");
 			
 			//Populate the search template with some model attributes
 			var cel = this.template(
@@ -176,6 +176,10 @@ define(['jquery',
 			this.getResults();		
 
 			return this;
+		},
+		
+		toggleViewClass: function(name){
+			$('body').toggleClass(name);
 		},
 		
 		/**
@@ -2149,6 +2153,8 @@ define(['jquery',
 		
 		onClose: function () {			
 			console.log('Closing the data view');
+			
+			this.toggleViewClass("DataCatalog");
 			
 			if(gmaps){
 				// unset map mode
