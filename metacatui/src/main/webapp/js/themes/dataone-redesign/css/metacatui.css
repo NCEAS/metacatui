@@ -733,7 +733,10 @@ Bold 700
 	#metadata-index-details .authorLastName,
 	#metadata-index-details .replicaVerifiedDate,
 	#metadata-index-details .sku,
-	#metadata-index-details .identifier{
+	#metadata-index-details .identifier,
+	#metadata-index-details [class*=" geohash_"],
+	#metadata-index-details [class^="geohash_"]
+	{
 		display: none;
 	}
 	

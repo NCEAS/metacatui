@@ -913,27 +913,29 @@ Bold 700
 		margin-bottom: 5px;
 	}
 	
-	.metadata-index .text,
-	.metadata-index .attributeDescription,
-	.metadata-index .checksum,
-	.metadata-index .dataUrl,
-	.metadata-index .fileID,
-	.metadata-index .size,
-	.metadata-index .resourceMap,
-	.metadata-index .presentationCat,
-	.metadata-index .checksumAlgorithm,
-	.metadata-index .author,
-	.metadata-index .authorGivenName,
-	.metadata-index .authorGivenNameSort,
-	.metadata-index .authorSurName,	
-	.metadata-index .authorSurNameSort,
-	.metadata-index .authorLastName,
-	.metadata-index .replicaVerifiedDate,
-	.metadata-index .sku,
-	.metadata-index .identifier{
+		#metadata-index-details .text,
+	#metadata-index-details .attributeDescription,
+	#metadata-index-details .checksum,
+	#metadata-index-details .dataUrl,
+	#metadata-index-details .fileID,
+	#metadata-index-details .size,
+	#metadata-index-details .resourceMap,
+	#metadata-index-details .presentationCat,
+	#metadata-index-details .checksumAlgorithm,
+	#metadata-index-details .author,
+	#metadata-index-details .authorGivenName,
+	#metadata-index-details .authorGivenNameSort,
+	#metadata-index-details .authorSurName,	
+	#metadata-index-details .authorSurNameSort,
+	#metadata-index-details .authorLastName,
+	#metadata-index-details .replicaVerifiedDate,
+	#metadata-index-details .sku,
+	#metadata-index-details .identifier,
+	#metadata-index-details [class*=" geohash_"],
+	#metadata-index-details [class^="geohash_"]
+	{
 		display: none;
 	}
-	
 	.download-this-package{
 		display: none;
 	}
