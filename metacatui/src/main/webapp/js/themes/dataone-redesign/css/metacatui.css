@@ -335,6 +335,7 @@ Bold 700
      .download .btn{
      	width: 112px; /* IE fallback */
      	width: calc(100% - 30px);
+     	max-width: 8em;
      }
      #downloadPackage a.btn {
     	width: 100px;
@@ -501,16 +502,6 @@ tr, th, td{
     	font-size: 15px;
     	width: 5px;
     }
-    
-    #Navbar .dropdown-menu{
-    	left: -90px;
-    }
-    
-    #Navbar .dropdown-menu:before,
-    #Navbar .dropdown-menu:after{
-    	left: 80%;
-    }
-    
     #Navbar .dropdown-menu > li > a:hover{
     	background-color: #1C6E84;
     	background-image: none;
@@ -602,6 +593,26 @@ tr, th, td{
 
 /* METADATA VIEW CSS
 -------------------------------------------------- */
+	.metadata-index {
+		border: 1px solid #1C6E84;
+		padding: 20px;
+		max-width: 940px;
+		border-radius: 7px;
+		-moz-border-radius: 7px;
+		-webkit-border-radius: 7px;
+		-o-border-radius: 7px;
+	}
+	.citation {
+		font-size: 1.5em;
+		line-height: 1.5em;
+		color: #1C6E84;
+		margin-bottom: 20px;
+		background-color: transparent;
+		border-width: 0px;
+		padding: 0px;
+		box-shadow: none;
+		-webkit-box-shadow: none;
+	}
 	label.control-label{
 		font-weight: 400;
 		font-size: 15px;
