@@ -134,11 +134,7 @@
 					<!-- count stats -->
 					<div class="result-header-count">
 						<div id="statcounts" class="span10"></div>
-						
-						<!-- pager -->
-						<div class="row-fluid pagination pagination-centered">
-							<div id="resultspager" class="span8"></div>
-							<div class="sort-by span4">
+							<div class="sort-by">
 								<label for="sortOrder">Sort by</label>
 								<select id="sortOrder">
 									<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
@@ -148,12 +144,16 @@
 									<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
 								</select>
 							</div>
-						</div>
 					</div>
 				</div>
 				
 				<!-- search results here -->
 				<div id="results" class="search-results"></div>
+				
+				<!-- pager -->
+						<div class="row-fluid pagination pagination-centered">
+							<div id="resultspager" class="span8"></div>
+						</div>
 			</div>
 			<div id="metadata-view" class="container-fluid"></div>
 		</div>

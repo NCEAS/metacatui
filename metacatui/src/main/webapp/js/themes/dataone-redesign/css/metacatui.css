@@ -1598,9 +1598,6 @@ tr, th, td{
   	}
   	
     /*-- Pagination widget --*/
-    .pagination{
-    	margin: 0px;
-    }
 
 	.pagination ul{
 		border: none;
