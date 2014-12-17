@@ -39,7 +39,7 @@ Bold 700
     	text-decoration: none;
     }
     
-    body, h1, h2, h3, h4, h5, h6, i{
+    body, h1, h2, h3, h4, h5, h6{
     	color: #555;
     }
     
@@ -306,7 +306,14 @@ Bold 700
   box-shadow: none;
 
 }
-    
+.btn-primary{
+	background-color: rgba(99, 28, 63, 1);
+	background-image: none;
+	transition: background-color .7s;
+}
+.btn-primary:hover{
+	background-color: rgba(102,0,51,1);
+}    
     .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
 		background-color: #999999;
 		color: #FFFFFF;
@@ -325,6 +332,10 @@ Bold 700
 	}
 	
      /* Download  and Publish buttons */
+     .download .btn{
+     	width: 112px; /* IE fallback */
+     	width: calc(100% - 30px);
+     }
      #downloadPackage a.btn {
     	width: 100px;
     	margin-bottom: 8px;
@@ -367,27 +378,53 @@ Bold 700
       opacity: 1;
     }
    
-    
-/* CUSTOMIZE THE NAVBAR
+
+/* TABLES 
 -------------------------------------------------- */
-	.navbar .nav{
+thead tr{
+	background-color: #a1b3c2;
+	color: #FFF;
+}
+.table th{
+	border-top: 0px;
+}
+tr.table-header{
+	background-color: #1C6E84;
+}
+tr.table-header th{
+	text-align: center;
+}
+tr, th, td{
+	border-width: 0px;
+}
+
+  
+/* THE NAVBAR
+-------------------------------------------------- */
+	.navbar .nav,
+	.upper-nav{
 		width: 960px;
 		margin: 0 auto;
 		float: none;
 	}
-	.navbar .nav{
+	.navbar .nav,
+	.upper-nav{
 		transition: width 1s;
 		-webkit-transition: width 1s;
 	}
+	.upper-nav .logo {
+		margin: 10px;
+		max-height: 28px;
+	}
 	.navbar-inner{
 		background: rgba(102,0,51,1);
-		background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+		/*background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
 		background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(102,0,51,1)), color-stop(44%, rgba(77,0,39,1)), color-stop(100%, rgba(51,0,26,1)));
 		background: -webkit-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
 		background: -o-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
 		background: -ms-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
 		background: linear-gradient(to bottom, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#660033', endColorstr='#33001a', GradientType=0 );
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#660033', endColorstr='#33001a', GradientType=0 );*/
 		border-radius: 0px;
 		border-width: 0px;
 	}
@@ -397,7 +434,11 @@ Bold 700
       text-shadow: 0 1px 0 #000000;
       color: #FFF;
     }
-    
+    .navbar .nav li.dropdown.open>.dropdown-toggle, .navbar .nav li.dropdown.active>.dropdown-toggle, .navbar .nav li.dropdown.open.active>.dropdown-toggle,
+    .navbar .nav>li>a:focus, .navbar .nav>li>a:hover{
+    	background-color: #440029;
+    	color: #FFF;
+    }
     .navbar-inner > ul > li img{
 		max-height: 22px;
 	}
@@ -480,10 +521,13 @@ Bold 700
     }
     
     /** Specific to the DataCatalogView **/
-    .DataCatalog .nav{
+    .DataCatalog .nav,
+    .DataCatalog .upper-nav{
     	width: 100%;
     }
- 
+    .DataCatalog .upper-nav .logo{
+    	margin-left: 35px;
+    }
     
     /* Search bar in nav bar */
     
@@ -613,14 +657,23 @@ Bold 700
     	overflow-x: scroll;
     }
     
+    .download-contents.container{
+    	border: 1px solid #CCC;
+    }
     table.download-contents {
-    	float: left;
     	width: 100%;
+    	margin-bottom: 0px;
     }
     .download-contents td{
     	overflow-wrap: break-word;
     }
-    
+    .download-contents i{
+    	font-size: 1.3em;
+    	margin-left: 5px;
+    }
+    .download-contents .btn i{
+    	font-size: 1em;
+    }
     .download-contents a[href="#tools/eml"]{
     	color: inherit;
     }
@@ -1242,7 +1295,7 @@ Bold 700
 		font-size: 14px;
 		color: #931D1D;
 		display: none;
-		background-color: #931d1d;
+		background-color: #660033;
 		color: #FFF;
 		font-weight: 500;
 		padding: 0px 5px;
@@ -1350,7 +1403,7 @@ Bold 700
     }
     
     .result-row:nth-child(odd){
-    	background-color: #F5FAFB;
+    	background-color: #F4F6F8;
     }
     .result-row:nth-child(odd) .multi-line-ellipsis:after{
   		background: -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0)), to(#F5FAFB), color-stop(50%, #F5FAFB));

@@ -68,11 +68,11 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 			
 			//The tile colors - there are 5 levels of color, with level1 representing tiles with a relatively LOW count of datasets and level5 representing tiles with the HIGHEST amount of datasets
 			tileColors: {
-				level1: "#24ADE3",
-				level2: "#1E92CB",
-				level3: "#186E91",
-				level4: "#12536D",
-				level5: "#092F3E"
+				level1: "#15a2a9",
+				level2: "#167f8a",
+				level3: "#1c6e84",
+				level4: "#1a435e",
+				level5: "#660033"
 			}		
 		},
 		
