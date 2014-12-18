@@ -336,6 +336,7 @@ Bold 700
      	width: 112px; /* IE fallback */
      	width: calc(100% - 30px);
      	max-width: 8em;
+     	min-width: 7em;
      }
      #downloadPackage a.btn {
     	width: 100px;

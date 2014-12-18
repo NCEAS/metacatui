@@ -150,8 +150,11 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 						console.warn(reponse);
 					});
 				}	
-				//If this is just a metadata object, just send that info alone
+				//If this is just one metadata object, just send that info alone
 				else{
+					var object = data.response.docs[0];
+					object.formattedSize = view.bytesToSize(object.size, 2);
+					
 					view.$el.append(view.template({
 						objects: data.response.docs,
 						resourceMap: null,
