@@ -1226,7 +1226,22 @@ Bold 700
 		max-width: 100%;
 		margin: 5px 5px 0px 0px;
     }  
-    
+        .filter-contain .checkbox-list{
+    	margin-left: 36px;
+    }
+    ul.checkbox-list{
+    	list-style: none;
+    }
+    .checkbox-list > li > input{
+    	float: left;
+    	margin-right: 10px;
+    }
+    .checkbox-list > li > input{
+    	float: left; 	
+    }
+    .checkbox-list label{
+    	font-size: .9em;
+    }
 
     
 	/*-- The 'Year' filter elements --*/

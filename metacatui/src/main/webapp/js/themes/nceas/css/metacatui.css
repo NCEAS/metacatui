@@ -196,6 +196,24 @@ input[type="password"]{
 		color: #999;
 		margin: 0;
   }
+  
+  /*Filter checkboxes */
+      .filter-contain .checkbox-list{
+    	margin-left: 36px;
+    }
+    ul.checkbox-list{
+    	list-style: none;
+    }
+    .checkbox-list > li > input{
+    	float: left;
+    	margin-right: 10px;
+    }
+    .checkbox-list > li > input{
+    	float: left; 	
+    }
+    .checkbox-list label{
+    	font-size: .9em;
+    }
 
 
     

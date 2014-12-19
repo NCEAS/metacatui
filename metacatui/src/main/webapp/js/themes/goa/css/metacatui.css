@@ -1336,6 +1336,24 @@ svg .point:hover ~ .line-chart-label{
     	color: #3399CC;
     }
     
+    /* Filter checkboxes */
+    .filter-contain .checkbox-list{
+    	margin-left: 36px;
+    }
+    ul.checkbox-list{
+    	list-style: none;
+    }
+    .checkbox-list > li > input{
+    	float: left;
+    	margin-right: 10px;
+    }
+    .checkbox-list > li > input{
+    	float: left; 	
+    }
+    .checkbox-list label{
+    	font-size: .9em;
+    }
+    
     /*-- Inputs for search filters --*/
     input.filter{
     	border-radius: 5px 0px 0px 5px;

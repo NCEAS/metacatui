@@ -1111,6 +1111,9 @@ tr, th, td{
     .checkbox-list > li > input{
     	float: left; 	
     }
+    .checkbox-list label{
+    	font-size: .9em;
+    }
     
 
     

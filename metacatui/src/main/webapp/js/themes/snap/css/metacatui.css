@@ -1421,6 +1421,7 @@ svg .point:hover ~ .line-chart-label{
     	margin-bottom: 0px;
     }
     
+    /* Filter checkboxes */
 	#filter-year input.filter[type="checkbox"]{
 		width: 15px;
 		height: 20px;
@@ -1434,6 +1435,22 @@ svg .point:hover ~ .line-chart-label{
 		height: 20px;
 		width: 15px;
 	}
+	    .filter-contain .checkbox-list{
+    	margin-left: 36px;
+    }
+    ul.checkbox-list{
+    	list-style: none;
+    }
+    .checkbox-list > li > input{
+    	float: left;
+    	margin-right: 10px;
+    }
+    .checkbox-list > li > input{
+    	float: left; 	
+    }
+    .checkbox-list label{
+    	font-size: .9em;
+    }
 	
 	#includes_data,
 	label[for="includes_data"]{

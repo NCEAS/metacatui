@@ -659,21 +659,25 @@ define(['jquery',
 				var listItem = document.createElement("li"),
 					input = document.createElement("input"),
 					label = document.createElement("label");
-				
-					input.setAttribute("type", "checkbox");
-					input.setAttribute("data-category", "memberNode");
-					input.setAttribute("id", member.identifier);
-					input.setAttribute("name", member.identifier);
-					input.setAttribute("value", member.identifier);
-					label.innerHTML = member.name;
 					
-					input = listItem.appendChild(input);
-					label = listItem.appendChild(label);
-					listItem = list.appendChild(listItem);
+					$(label).addClass("ellipsis tooltip-this")
+							.attr("data-trigger", "hover")
+							.attr("title", member.description)
+							.attr("data-placement", "top")
+							.html(member.name);
+					$(input).attr("type", "checkbox")
+							.attr("data-category", "memberNode")
+							.attr("id", member.identifier)
+							.attr("name", member.identifier)
+							.attr("value", member.identifier);
+					
+					$(listItem).append(input).append(label);
+					$(list).append(listItem);
 			});
 			
 			var container = $('.member-nodes-placeholder');
 			$(container).html(list);
+			$(".tooltip-this").tooltip();
 		},
 		
 		// highlights anything additional that has been selected
