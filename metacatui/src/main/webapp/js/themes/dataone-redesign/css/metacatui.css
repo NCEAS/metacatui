@@ -404,19 +404,22 @@ tr, th, td{
 /* THE NAVBAR
 -------------------------------------------------- */
 	.navbar .nav,
-	.upper-nav{
+	.navbar-upper .nav,
+	.navbar-lower .nav{
 		width: 960px;
 		margin: 0 auto;
 		float: none;
 	}
 	.navbar .nav,
-	.upper-nav{
+	.navbar-upper,
+	.navbar-lower .nav{
 		transition: width 1s;
 		-webkit-transition: width 1s;
 	}
-	.upper-nav .logo {
-		margin: 10px;
-		max-height: 28px;
+	.DataCatalog .navbar .nav,
+	.DataCatalog .navbar-upper .nav,
+	.DataCatalog .navbar-lower .nav{
+		width: 100%;
 	}
 	.navbar-inner{
 		background: rgba(102,0,51,1);
@@ -430,20 +433,51 @@ tr, th, td{
 		border-radius: 0px;
 		border-width: 0px;
 	}
-	
 	.navbar .nav > li > a {
-      text-transform: uppercase;
-      text-shadow: 0 1px 0 #000000;
-      color: #FFF;
+        color: #FFF;
+		text-shadow: none;
+		font-size: 1.2em;
+		font-weight: normal;
     }
-    .navbar .nav li.dropdown.open>.dropdown-toggle, .navbar .nav li.dropdown.active>.dropdown-toggle, .navbar .nav li.dropdown.open.active>.dropdown-toggle,
-    .navbar .nav>li>a:focus, .navbar .nav>li>a:hover{
+    .navbar .nav > li > a:hover,
+    .navbar .nav > li > a:focus{
+    	color: rgb(0,255,255);
+    }
+    .navbar .nav li.dropdown.open>.dropdown-toggle, .navbar .nav li.dropdown.active>.dropdown-toggle, .navbar .nav li.dropdown.open.active>.dropdown-toggle{
     	background-color: #440029;
     	color: #FFF;
     }
     .navbar-inner > ul > li img{
 		max-height: 22px;
 	}
+	.navbar-lower{
+		width: 100%;
+		width: calc(100% - 40px);
+		min-height: 40px;
+		background-color: rgba(63, 0, 31, 1);
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+	.navbar-lower .nav > li > a {
+		font-size: 1em;
+		font-weight: bold;
+	}
+	.navbar .nav > .label{
+		font-size: .8em;
+		color: #FFF;
+		font-weight: bold;
+		text-transform: uppercase;
+		line-height: 40px;
+		margin-left: 14px;
+		margin-right: 14px;
+	}
+    .navbar-upper{
+    	padding-left: 20px;
+    	padding-right: 20px;
+    }
+    .nav li.right{
+    	float: right;
+    }
     
     /*Share Your Data button */
     #share-data-view{
@@ -481,7 +515,18 @@ tr, th, td{
     .show-new-dataCatalogView{
     	cursor: pointer;
     }
-
+	.soc-media{
+		float: right;
+	}
+	.soc-media h5{
+		border-bottom: 1px solid #999;
+		font-weight: normal;
+	}
+	.navbar-upper > .logo {
+		margin: 10px;
+		max-height: 83px;
+		float: left;
+	}
     
     /* Depending on the headerType, these classes apply */
     
@@ -512,15 +557,6 @@ tr, th, td{
       float: right;
     }
     
-    /** Specific to the DataCatalogView **/
-    .DataCatalog .nav,
-    .DataCatalog .upper-nav{
-    	width: 100%;
-    }
-    .DataCatalog .upper-nav .logo{
-    	margin-left: 35px;
-    }
-    
     /* Search bar in nav bar */
     
     .navbar .input-append{
@@ -528,15 +564,20 @@ tr, th, td{
     }
     #search_txt{
 		margin-top: 5px;	
+		float: left;
     }  
     #search_btn{
-    	margin-top: 5px;
-    	height: 30px;
-    	line-height: 18px;
-    	border-radius: 0px 4px 4px 0px;
-    	-webkit-border-radius: 0px 4px 4px 0px;
+		height: 16px;
+		border-radius: 0px 4px 4px 0px;
+		-webkit-border-radius: 0px 4px 4px 0px;
 		-moz-border-radius: 0px 4px 4px 0px;
-    	padding: 5px 7px 7px 7px;
+		padding: 5px 7px 7px 7px;
+		float: left;
+		margin-left: -5px;
+    }
+    #search_btn i{
+    	font-size: .8em;
+    	color: #999;
     }
 
 
