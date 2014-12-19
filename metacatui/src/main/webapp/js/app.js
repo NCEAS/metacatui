@@ -99,6 +99,7 @@ var registryModel = registryModel || {};
 var statsModel = statsModel || {};
 var mapModel = mapModel || {};
 var lookupModel = lookupModel || {};
+var coordNodeModel = coordNodeModel || {};
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
@@ -110,9 +111,12 @@ function(Bootstrap, AppView, AppModel) {
 	appView = new AppView();
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map', 'models/LookupModel',
-],
-	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel, LookupModel) {
+	require(['backbone', 
+	         'routers/router', 
+	         'collections/SolrResults', 
+	         'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map', 'models/LookupModel', 'models/CoordNode'
+	         ],
+	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel, LookupModel, CoordNode) {
 		'use strict';  
 	    		
 		appSearchResults = new SolrResultList([], {});
@@ -127,7 +131,8 @@ function(Bootstrap, AppView, AppModel) {
 		
 		lookupModel = new LookupModel();
 		
-	
+		coordNodeModel = new CoordNode();
+			
 		// Initialize routing and start Backbone.history()
 		uiRouter = new UIRouter();
 		Backbone.history.start();

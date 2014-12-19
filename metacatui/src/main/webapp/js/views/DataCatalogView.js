@@ -9,10 +9,11 @@ define(['jquery',
 				'text!templates/pager.html',
 				'text!templates/mainContent.html',
 				'text!templates/currentFilter.html',
+				'text!templates/loading.html',
 				'gmaps',
 				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -28,6 +29,8 @@ define(['jquery',
 		mainContentTemplate: _.template(MainContentTemplate),
 		
 		currentFilterTemplate: _.template(CurrentFilterTemplate),
+		
+		loadingTemplate: _.template(LoadingTemplate),
 		
 		map: null,
 		
@@ -97,6 +100,9 @@ define(['jquery',
 			this.toggleViewClass("DataCatalog");
 			
 			//Populate the search template with some model attributes
+			var loadingHTML = this.loadingTemplate({
+				msg: "Retrieving member nodes..."
+			});
 			var cel = this.template(
 					{	sortOrder: searchModel.get('sortOrder'),
 						yearMin: searchModel.get('yearMin'),
@@ -105,7 +111,8 @@ define(['jquery',
 						dataYear: searchModel.get('dataYear'),
 						resourceMap: searchModel.get('resourceMap'),
 						searchOptions: registryModel.get('searchOptions'),
-						username: appModel.get('username')
+						username: appModel.get('username'),
+						loading: loadingHTML
 					}
 			);
 			
@@ -157,6 +164,7 @@ define(['jquery',
 			this.stopListening(appSearchResults);
 			this.listenTo(appSearchResults, 'add', this.addOne);
 			this.listenTo(appSearchResults, 'reset', this.addAll);
+			this.listenTo(coordNodeModel,   'change:members', this.listMemberNodes);
 			
 			//Listen to changes in the searchModel
 			this.stopListening(searchModel);
@@ -634,6 +642,38 @@ define(['jquery',
 			e.prepend(viewRef.currentFilterTemplate({filterTerm: term, termLabel: termLabel}));	
 				
 			return;
+		},
+		
+		/*
+		 * Get the member node list from the model and list the members in the filter list
+		 */
+		listMemberNodes: function(){
+			//Get the member nodes
+			var members = coordNodeModel.get("members");
+			
+			//Create an HTML list
+			var list = document.createElement("ul");
+			$(list).addClass("checkbox-list");
+			
+			_.each(members, function(member){
+				var listItem = document.createElement("li"),
+					input = document.createElement("input"),
+					label = document.createElement("label");
+				
+					input.setAttribute("type", "checkbox");
+					input.setAttribute("data-category", "memberNode");
+					input.setAttribute("id", member.identifier);
+					input.setAttribute("name", member.identifier);
+					input.setAttribute("value", member.identifier);
+					label.innerHTML = member.name;
+					
+					input = listItem.appendChild(input);
+					label = listItem.appendChild(label);
+					listItem = list.appendChild(listItem);
+			});
+			
+			var container = $('.member-nodes-placeholder');
+			$(container).html(list);
 		},
 		
 		// highlights anything additional that has been selected
@@ -1969,7 +2009,6 @@ define(['jquery',
 		 * Without this delay, the app waits until all records are processed
 		*/
 		addAll: function () {
-			console.log("Adding all the results to the list and map");
 			
 			// do this first to indicate coming results
 			this.updateStats();

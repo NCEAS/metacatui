@@ -238,23 +238,35 @@ Bold 700
 
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
-  section#Notification {
+  .notification {
     position: relative;
     top: 95px;
     margin: 50px auto;
     font-size: 40px;
   }
   
-  #Notification i{
+  .notification i{
   	font-size: 40px;
   	margin-left: 43%;
   }
   
-  #Notification p{
+  .notification p{
   	font-size: 20px;
   	width: 350px;
   	margin: 20px auto;
   	display: block;
+  }
+    .filter-contain .notification i{
+  	color: #999;
+  	font-size: .5em;
+  }
+  .filter-contain .notification p{
+		font-size: .3em;
+		line-height: 3em;
+		text-align: center;
+		width: auto;
+		color: #999;
+		margin: 0;
   }
 
   

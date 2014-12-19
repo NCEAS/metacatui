@@ -260,23 +260,34 @@ Bold 700
 
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
-  section#Notification {
-    position: relative;
-    top: 95px;
+  .notification {
     margin: 50px auto;
     font-size: 40px;
   }
   
-  #Notification i{
+  .notification i{
   	font-size: 40px;
   	margin-left: 43%;
   }
   
-  #Notification p{
-  	font-size: 20px;
+  .notification p{
+  	font-size: 1em;
   	width: 350px;
   	margin: 20px auto;
   	display: block;
+  }
+  
+  .filter-contain .notification i{
+  	color: #999;
+  	font-size: .5em;
+  }
+  .filter-contain .notification p{
+		font-size: .3em;
+		line-height: 3em;
+		text-align: center;
+		width: auto;
+		color: #999;
+		margin: 0;
   }
 
   
@@ -982,6 +993,7 @@ tr, th, td{
    .filter-contain > i{
    		color: #999;
    		font-size: 20px;
+   		float: left;
    }
    
    .filter-contain > i.icon-map-marker{
@@ -1002,6 +1014,11 @@ tr, th, td{
     	float: left;
     }
     
+    .filter-contain > label{
+    	margin-left: 15px;
+    	float: left;
+    }
+    	
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
     	border-radius: 0px;
@@ -1080,6 +1097,20 @@ tr, th, td{
 		max-width: 100%;
 		margin: 5px 5px 0px 0px;
     }  
+    
+    .filter-contain .checkbox-list{
+    	margin-left: 36px;
+    }
+    ul.checkbox-list{
+    	list-style: none;
+    }
+    .checkbox-list > li > input{
+    	float: left;
+    	margin-right: 10px;
+    }
+    .checkbox-list > li > input{
+    	float: left; 	
+    }
     
 
     

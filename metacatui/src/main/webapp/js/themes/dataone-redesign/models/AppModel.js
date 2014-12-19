@@ -31,6 +31,7 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
 			d1LogServiceUrl: null,
+			nodeServiceUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
 			//bioportalServiceUrl: "http://data.bioontology.org/search?ontologies=OBOE-SBC&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
@@ -47,6 +48,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 			}
 			
+			this.set('baseUrl', 'https://cn-dev.test.dataone.org');
 			
 			// these are pretty standard, but can be customized if needed
 			//this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
@@ -59,6 +61,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
+			this.set('nodeServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/node');
 			
 			// use portal to  retrieve token
 			//this.set('tokenUrl', 'http://localhost:8080/metacat/d1/mn/v1/token');
@@ -67,6 +70,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//this.set('d1LogServiceUrl', this.get('baseUrl') + this.get('d1Service') + 'logsolr');
 			this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
+			
+			
 			
 		}
 	

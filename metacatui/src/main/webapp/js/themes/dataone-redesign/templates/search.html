@@ -2,9 +2,7 @@
 	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar">
-		<h5 id="filters-header">
-			Filters
-		</h5>
+			<h5 id="filters-header">Filters</h5>
 			<a id="clear-all">Clear all filters<i class="icon-remove"></i></a>
     		<div class="filter-container">
 				<div class="input-append filter-contain">
@@ -39,6 +37,15 @@
 					<div class="clear"></div>
 				</div>
 				
+				<div class="filter-contain" id="member-nodes-container">
+					<i class="icon-group"></i>
+					<label>Member Node</label>
+					<div class="clear"></div>
+					<div class="member-nodes-placeholder">
+						<%=loading%>
+					</div>
+				</div>
+				
 				<div class="input-append filter-contain">
 					<i class="icon-user span1"></i>
 					<div class="span11">
@@ -56,8 +63,7 @@
 				    	</ul>
 			    	</div>
 			    	<div class="clear"></div>
-			    </div>
-	
+			    </div>	
 				
 				<div id="filter-year" class="filter-contain" data-category="year">
 					<i class="icon-calendar span1"></i>
@@ -140,9 +146,9 @@
 				<div id="results" class="search-results"></div>
 				
 				<!-- pager -->
-						<div class="row-fluid pagination pagination-centered">
-							<div id="resultspager" class="span8"></div>
-						</div>
+				<div class="row-fluid pagination pagination-centered">
+					<div id="resultspager" class="span8"></div>
+				</div>
 			</div>
 			<div id="metadata-view" class="container-fluid"></div>
 		</div>
