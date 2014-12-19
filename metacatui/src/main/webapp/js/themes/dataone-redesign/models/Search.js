@@ -31,7 +31,7 @@ define(['jquery', 'underscore', 'backbone'],
 			geohashes: [],
 			geohashLevel: 9,
 			spatial: [],
-			//attribute: [],
+			attribute: [],
 			annotation: [],
 			additionalCriteria: [],
 			formatType: [{
@@ -47,7 +47,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		//Map the filter names to their index field names
 		fieldNameMap: {
-					 attribute : "attribute",
+					 attribute : "attributeName",
 					annotation : "annotation_sm",
 					formatType : "formatType",
 						   all : "",

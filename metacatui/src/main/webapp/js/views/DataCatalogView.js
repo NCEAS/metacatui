@@ -405,7 +405,8 @@ define(['jquery',
 		
 		updateTextFilters : function(e, item){
 			//Get the search/filter category
-			var category = $(e.target).attr('data-category');
+			var category = $(e.target).attr('data-category'),
+				inputEl = $('#' + category + '_input');
 			
 			//Try the parent elements if not found
 			if(!category){
@@ -420,7 +421,7 @@ define(['jquery',
 			if(!category){ return false; }
 			
 			//Get the value of the associated input
-			var input = this.$el.find($('#' + category + '_input'));
+			var input = this.$el.find($(inputEl));
 			var term 		= (!item || item.value) ? input.val() : item.value;
 			var label 		= (!item || item.filterLabel) ? null : item.filterLabel;
 			var filterDesc  = (!item || item.description) ? null : item.description;
@@ -446,13 +447,20 @@ define(['jquery',
 			
 			//Close the autocomplete box
 			if (e.type == "hoverautocompleteselect") {
-				$('#' + category + '_input').hoverAutocomplete("close");
-			} else {
-				$('#' + category + '_input').autocomplete("close");
+				$(inputEl).hoverAutocomplete("close");
+			} 
+			else if($(inputEl).data('ui-autocomplete') != undefined){
+				//If the autocomplete has been initialized, then close it
+				$(inputEl).autocomplete("close");
 			}
 				
 			//Get the current searchModel array for this category
 			var filtersArray = _.clone(searchModel.get(category));
+			
+			if(typeof filtersArray == "undefined"){
+				console.error("The filter category '" + category + "' does not exist in the Search model. Not sending this search term.");
+				return false;
+			}
 				
 			//Check if this entry is a duplicate
 			var duplicate = (function(){
