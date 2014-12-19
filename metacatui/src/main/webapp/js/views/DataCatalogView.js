@@ -164,7 +164,7 @@ define(['jquery',
 			this.stopListening(appSearchResults);
 			this.listenTo(appSearchResults, 'add', this.addOne);
 			this.listenTo(appSearchResults, 'reset', this.addAll);
-			this.listenTo(coordNodeModel,   'change:members', this.listMemberNodes);
+			this.listenTo(nodeModel,   'change:members', this.listMemberNodes);
 			
 			//Listen to changes in the searchModel
 			this.stopListening(searchModel);
@@ -649,7 +649,7 @@ define(['jquery',
 		 */
 		listMemberNodes: function(){
 			//Get the member nodes
-			var members = coordNodeModel.get("members");
+			var members = nodeModel.get("members");
 			
 			//Create an HTML list
 			var list = document.createElement("ul");
