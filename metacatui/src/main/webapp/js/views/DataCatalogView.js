@@ -283,15 +283,75 @@ define(['jquery',
 		 * 											FILTERS
 		 * ==================================================================================================
 		**/
-		updateBooleanFilters : function(e){
-			//Get the category
-			var category = $(e.target).attr('data-category');
-			
-			//Get the check state
-			var state = $(e.target).prop('checked');
+		updateCheckboxFilter : function(e, category, value){
+			var checkbox = e.target;
+			var checked = $(checkbox).prop("checked");
 
-			//Update the model
-			searchModel.set(category, state);
+			if(typeof category == "undefined") var category = $(checkbox).attr('data-category');
+			if(typeof value == "undefined") var value = $(checkbox).attr("value");
+			
+			//If the user just unchecked the box, then remove this filter
+			if(!checked){
+				searchModel.removeFromModel(category, value);
+			}
+			//If the user just checked the box, then add this filter
+			else{
+				var currentValue = searchModel.get(category);
+
+				//Get the description
+				var desc = $(checkbox).attr("data-description") || $(checkbox).attr("title");
+				if(typeof desc == "undefined" || !desc) desc = "";
+				//Get the label
+				var labl = $(checkbox).attr("data-label");
+				if(typeof labl == "undefined" || !labl) labl = "";
+					
+				//Make the filter object 
+				var filter = {
+						description: desc,
+						label: labl,
+						value: value
+				}
+				
+				//If this filter category is an array, add this value to the array 
+				if(Array.isArray(currentValue)){
+					currentValue.push(filter);
+					searchModel.set(category, currentValue);
+				}
+				else{
+					//If it isn't an array, then just update the model with a simple value
+					searchModel.set(category, filter);				
+				}
+				
+				//Show the reset button
+				$('#clear-all').css('display', 'inline-block');	
+			}
+			
+			//Route to page 1
+			this.updatePageNumber(0);
+			
+			//Trigger a new search
+			this.triggerSearch();
+		},
+		
+		updateBooleanFilters : function(e){
+			var checkbox = e.target;
+			
+			//Get the category
+			var category = $(checkbox).attr('data-category');
+			var currentValue = searchModel.get(category);
+			
+			//If this filter is not available, exit this function
+			if(!searchModel.filterIsAvailable(category)) return false;
+			
+			//If the checkbox has a value, then update as a string value not boolean
+			var value = $(checkbox).attr("value");
+			if(value){
+				this.updateCheckboxFilter(e, category, value);
+				return;
+			}
+			else value = $(checkbox).prop('checked');
+
+			searchModel.set(category, value);
 			
 			//Show the reset button
 			$('#clear-all').css('display', 'inline-block');
@@ -665,7 +725,8 @@ define(['jquery',
 							.attr("title", member.description)
 							.attr("data-placement", "top")
 							.html(member.name);
-					$(input).attr("type", "checkbox")
+					$(input).addClass("filter")
+							.attr("type", "checkbox")
 							.attr("data-category", "memberNode")
 							.attr("id", member.identifier)
 							.attr("name", member.identifier)

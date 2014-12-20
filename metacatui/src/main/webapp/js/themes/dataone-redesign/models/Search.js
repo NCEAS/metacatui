@@ -34,6 +34,7 @@ define(['jquery', 'underscore', 'backbone'],
 			attribute: [],
 			annotation: [],
 			additionalCriteria: [],
+			memberNode: [],
 			formatType: [{
 				value: "METADATA",
 				label: "science metadata",
@@ -54,7 +55,8 @@ define(['jquery', 'underscore', 'backbone'],
 					   creator : "origin",
 					   spatial : "site",
 				   resourceMap : "resourceMap",
-				   	   pubYear : "dateUploaded"
+				   	   pubYear : "dateUploaded",
+				   	memberNode : "datasource"
 		},
 		
 		filterCount: function() {
@@ -88,7 +90,7 @@ define(['jquery', 'underscore', 'backbone'],
 				//Remove this filter term from the array
 				var newFilterValues = _.without(currentFilterValues, filterValueToRemove);
 				_.each(currentFilterValues, function(currentFilterValue, key){
-					if(currentFilterValue.value = filterValueToRemove){
+					if(currentFilterValue.value == filterValueToRemove){
 						newFilterValues = _.without(newFilterValues, currentFilterValue);
 					}
 				});
@@ -264,6 +266,30 @@ define(['jquery', 'underscore', 'backbone'],
 					
 					query += "+" + filterValue;
 				}
+			}
+			
+			//----- Member Nodes - Multiple selections will look for either (OR) -----
+			if(this.filterIsAvailable("memberNode") && ((filter == "memberNode") || getAll)){
+				var memberNode = this.get('memberNode'),
+					fieldName = this.fieldNameMap["memberNode"];
+				
+				for (var i=0; i < memberNode.length; i++){
+					var filterValue = memberNode[i];
+					
+					if(typeof filterValue == "object")
+						filterValue = filterValue.value;
+					
+					filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+					
+					if(i==0 && memberNode.length==1)
+						query += "+" + filterValue;
+					else if(i==0)
+						query += "+" + fieldName + ":(" + filterValue + "%20OR%20";
+					else if(i == memberNode.length-1)
+						query += filterValue + ")";					
+					else
+						query += filterValue + "%20OR%20";
+				}				
 			}
 			
 			//-----Theme restrictions from Registry Model-----
