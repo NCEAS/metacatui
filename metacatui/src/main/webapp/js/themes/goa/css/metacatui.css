@@ -82,6 +82,10 @@
      	clear:both;
      }
      
+     .hidden{
+    	display: none;
+    }
+     
      .ellipsis{
 		text-overflow: ellipsis;
 		overflow: hidden;
@@ -1353,7 +1357,11 @@ svg .point:hover ~ .line-chart-label{
     .checkbox-list label{
     	font-size: .9em;
     }
-    
+    .checkbox-list .more-link{
+  		font-weight: normal;
+  		font-size: .9em;
+  	} 
+  	
     /*-- Inputs for search filters --*/
     input.filter{
     	border-radius: 5px 0px 0px 5px;

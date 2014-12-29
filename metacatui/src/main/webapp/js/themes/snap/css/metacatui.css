@@ -109,7 +109,9 @@
     .clear{
     	clear: both;
     }
-    
+    .hidden{
+    	display: none;
+    }
     .left{
     	float: left;
     }
@@ -1451,7 +1453,11 @@ svg .point:hover ~ .line-chart-label{
     .checkbox-list label{
     	font-size: .9em;
     }
-	
+	.checkbox-list .more-link{
+  		font-weight: normal;
+  		font-size: .9em;
+  	} 
+  	
 	#includes_data,
 	label[for="includes_data"]{
 		float:left;

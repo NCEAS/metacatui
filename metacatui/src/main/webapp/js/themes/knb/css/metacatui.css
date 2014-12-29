@@ -1979,7 +1979,10 @@ svg .domain{
     .checkbox-list label{
     	font-size: .9em;
     }
-    
+    .checkbox-list .more-link{
+  		font-weight: normal;
+  		font-size: .9em;
+  	} 
 	
 	label.ui-state-active i{
 		color: #8DBCDD;

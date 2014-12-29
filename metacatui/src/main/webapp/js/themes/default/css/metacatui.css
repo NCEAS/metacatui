@@ -80,6 +80,10 @@ Bold 700
     	font-weight: 400;
     }
     
+        .hidden{
+    	display: none;
+    }
+    
     .mapMode .collapse-me{
     	cursor: pointer;
     }
@@ -1364,7 +1368,10 @@ Bold 700
     .checkbox-list label{
     	font-size: .9em;
     }
-
+    .checkbox-list .more-link{
+  		font-weight: normal;
+  		font-size: .9em;
+  	} 
     
 	/*-- The 'Year' filter elements --*/
 	#filter-year .left-padding{

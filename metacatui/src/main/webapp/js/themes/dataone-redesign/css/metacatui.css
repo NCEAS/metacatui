@@ -73,6 +73,10 @@ Bold 700
     	font-weight: 400;
     }
     
+    .hidden{
+    	display: none;
+    }
+    
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block;   
     }
@@ -1114,7 +1118,10 @@ tr, th, td{
     .checkbox-list label{
     	font-size: .9em;
     }
-    
+    .checkbox-list .more-link{
+  		font-weight: normal;
+  		font-size: .9em;
+  	}    
 
     
 	/*-- The 'Year' filter elements --*/

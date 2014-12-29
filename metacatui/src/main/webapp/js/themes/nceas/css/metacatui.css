@@ -214,7 +214,10 @@ input[type="password"]{
     .checkbox-list label{
     	font-size: .9em;
     }
-
+    .checkbox-list .more-link{
+  		font-weight: normal;
+  		font-size: .9em;
+  	} 
 
     
 /* Registry CSS

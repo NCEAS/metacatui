@@ -85,6 +85,7 @@ define(['jquery',
 				   			 'click .collapse-me' : 'collapse',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			   'click .view-link' : 'routeToMetadata',
+				   			   'click .more-link' : 'showMoreList',
 				   		 'mouseover .open-marker' : 'showResultOnMap',
 				   	      'mouseout .open-marker' : 'hideResultOnMap',
 		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
@@ -712,10 +713,14 @@ define(['jquery',
 			var members = nodeModel.get("members");
 			
 			//Create an HTML list
-			var list = document.createElement("ul");
+			var listMax = 4,
+				numHidden = members.length - listMax,
+				list = document.createElement("ul");
+			
 			$(list).addClass("checkbox-list");
 			
-			_.each(members, function(member){
+			//Add a checkbox and label for each member node in the node model
+			_.each(members, function(member, i){
 				var listItem = document.createElement("li"),
 					input = document.createElement("input"),
 					label = document.createElement("label");
@@ -731,14 +736,38 @@ define(['jquery',
 							.attr("id", member.identifier)
 							.attr("name", member.identifier)
 							.attr("value", member.identifier);
+										
+					if(i > (listMax - 1)){
+						$(listItem).addClass("hidden");
+					}
+					
+					if(i == listMax){
+						var moreLink = document.createElement("a");
+						$(moreLink).html("Show " + numHidden + " more member nodes")
+								   .addClass("more-link pointer");
+						$(list).append(moreLink);
+					} 
 					
 					$(listItem).append(input).append(label);
 					$(list).append(listItem);
 			});
 			
+			//Add the list of checkboxes to the placeholder
 			var container = $('.member-nodes-placeholder');
 			$(container).html(list);
 			$(".tooltip-this").tooltip();
+		},
+		
+		showMoreList: function(e){
+			var link = e.target,
+				hiddenListItems = $(link).parent().find("li.hidden");
+			
+			_.each(hiddenListItems, function(listItem){
+				$(listItem).fadeIn();
+				$(listItem).removeClass("hidden");
+			});
+			
+			$(link).addClass("hidden");
 		},
 		
 		// highlights anything additional that has been selected
