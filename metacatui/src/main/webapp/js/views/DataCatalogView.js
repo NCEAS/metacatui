@@ -165,7 +165,8 @@ define(['jquery',
 			this.stopListening(appSearchResults);
 			this.listenTo(appSearchResults, 'add', this.addOne);
 			this.listenTo(appSearchResults, 'reset', this.addAll);
-			this.listenTo(nodeModel,   'change:members', this.listMemberNodes);
+			if(nodeModel.get("members").length > 0) this.listMemberNodes();
+			else this.listenTo(nodeModel,   'change:members', this.listMemberNodes);
 			
 			//Listen to changes in the searchModel
 			this.stopListening(searchModel);
