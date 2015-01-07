@@ -1185,10 +1185,12 @@ define(['jquery',
 					this.$results.html('<p id="no-results-found">No results found.</p>');
 					
 					this.$('#resultspager').html("");
+					this.$('.resultspager').html("");
 				}
 				//Do not display the pagination if there is only one page
 				else if(pageCount == 1){
 					this.$('#resultspager').html("");
+					this.$('.resultspager').html("");
 				}
 				else{
 					var pages = new Array(pageCount);
@@ -1200,15 +1202,19 @@ define(['jquery',
 					} catch (ex) {
 						console.log("Exception when calculating pages:" + ex.message);
 					}
-					
-					this.$resultspager = this.$('#resultspager');
-					
+
 					//Populate the pagination element in the UI
-					this.$resultspager.html(
+					this.$('.resultspager').html(
 						this.pagerTemplate({
 							pages: pages,
 							currentPage: currentPage
 						})
+					);
+					this.$('#resultspager').html(
+							this.pagerTemplate({
+								pages: pages,
+								currentPage: currentPage
+							})
 					);
 				}
 			}

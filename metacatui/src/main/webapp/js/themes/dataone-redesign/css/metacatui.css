@@ -1453,6 +1453,10 @@ tr, th, td{
 		float: left;
 	}
 	
+	#results{
+		margin-bottom: 10px;
+	}
+	
     /*-- Results header --*/
     #results-view{
     	background-color: #FFF;
@@ -1465,9 +1469,12 @@ tr, th, td{
     	height: auto;
     }
     
+	.result-header-count{
+		padding: 0px 10px;
+	}   
     
-    .result-header-count > .result-header-count > span{
-    	color: #CCCCCC;
+    h5.result-header-count{
+    	padding-left: 0px;
     }
     
     .result-header-count > .result-header-count:after{
@@ -1685,6 +1692,10 @@ tr, th, td{
   	}
   	
     /*-- Pagination widget --*/
+	.pagination{
+		padding-left: 10px;
+		margin: 0px 0px 10px;
+	}
 
 	.pagination ul{
 		border: none;
@@ -1715,15 +1726,16 @@ tr, th, td{
 		background-color: #1C6E84;
 	}
 	
-	.pagination .sort-by{
-		width: 200px;
-		float: right;
-		margin-right: 10px;
+	.sort-by label{
+		display: inline-block;
+		margin-right: 5px;
+		line-height: 30px;
+		font-size: 13px;
 	}
-
 	
-	.pagination .sort-by label{
-		display: inline;
+	.sort-by select{
+		font-size: 13px;
+		height: 28px;
 	}
 	
 	    
