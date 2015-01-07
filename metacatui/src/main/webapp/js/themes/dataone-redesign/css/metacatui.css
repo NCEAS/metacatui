@@ -436,6 +436,10 @@ tr, th, td{
 	.DataCatalog .navbar-lower .nav{
 		width: 100%;
 	}
+	.DataCatalog .navbar{
+		margin-bottom: 0px;
+	}
+	
 	.navbar-inner{
 		background: rgba(102,0,51,1);
 		/*background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
@@ -951,17 +955,15 @@ tr, th, td{
   -------------------------------------------------- */
     
     #sidebar{
-    	max-width: 280px;
+		padding: 0px 10px;
+		width: 200px;
+		height: 700px;
 		float: left;
-		padding: 0px 15px 10px 15px;
-		border-radius: 3px;
-		-webkit-border-radius: 3px;
-		-moz-border-radius: 3px;
+		clear: left;
+		overflow-x: hidden;
+		overflow-y: scroll;
+ 		background-color: #FFF;
     }
-    
- 	aside > div{
- 		margin-bottom: 10px;		
- 	}
     
     .subset-choice{
     background-color: rgba(23, 97, 146, 0.46);
@@ -995,13 +997,10 @@ tr, th, td{
    	  width: 100%;
    }
    .filter-contain > i{
-   		color: #999;
-   		font-size: 20px;
+   		color: #888;
+   		font-size: 17px;
    		float: left;
-   }
-   
-   .filter-contain > i.icon-map-marker{
-   		font-size: 23px;
+   		margin: 0px;
    }
    
    .filter-contain label i{
@@ -1019,8 +1018,25 @@ tr, th, td{
     }
     
     .filter-contain > label{
-    	margin-left: 15px;
     	float: left;
+    	font-size: 13px;
+    	font-weight: bold;
+    	color: #666;
+    	margin-left: 5px;    	
+    }
+    
+    #filters-header{
+    	padding: 0px;
+    	margin-bottom: 0px;
+    }
+    
+    .filter-input-contain{
+    	clear: both;
+    }
+    
+    .filter-input-contain input.filter{
+    	width: 68%;
+    	margin-left: 3px;
     }
     	
     /*-- Search buttons next to text inputs --*/
@@ -1062,7 +1078,8 @@ tr, th, td{
     }
     
     #all_input{
-    	width: 241px;
+    	width: 135px;
+    	width: calc(100% - 30px - 10px);
     	margin-left: 0px;
     }
     
@@ -1092,18 +1109,9 @@ tr, th, td{
     #includes-files input[type="checkbox"]{
     	display: none;
     }
-    
-    #filter-year label,
     #includes-files label{
-   		padding: 0px 5px 0px 5px;
-		min-height: 1.5em;
-		width: auto;
-		max-width: 100%;
-		margin: 5px 5px 0px 0px;
-    }  
-    
-    .filter-contain .checkbox-list{
-    	margin-left: 36px;
+    	font-size: 13px;
+    	margin-right: 8px;
     }
     ul.checkbox-list{
     	list-style: none;
@@ -1111,9 +1119,7 @@ tr, th, td{
     .checkbox-list > li > input{
     	float: left;
     	margin-right: 10px;
-    }
-    .checkbox-list > li > input{
-    	float: left; 	
+    	margin-left: 3px;
     }
     .checkbox-list label{
     	font-size: .9em;
@@ -1125,15 +1131,9 @@ tr, th, td{
 
     
 	/*-- The 'Year' filter elements --*/
-	#filter-year .left-padding{
-		padding-left: 10px;
-		width: 87%;
-	}
-    
-    #data-year-label{
-    	margin-left: 10px;
+    #filter-year .filter-input-contain{
+    	margin-top: 30px;
     }
-
    
     #filter-year  input[type="number"]{
    		background: #FFF;
@@ -1149,7 +1149,6 @@ tr, th, td{
 		margin-bottom: 0px;
 		width: 56px;
 		margin-top: 10px;
-		margin-bottom: 10px;
 		-moz-box-shadow: inset 0 0 10px -1px #CCC;
 		-webkit-box-shadow: inset 0 0 10px -1px #CCC;
 		box-shadow: inset 0 0 10px -1px #CCC;
@@ -1203,8 +1202,8 @@ tr, th, td{
     	top: -0.4em;
     	position: absolute;
     	z-index: 2;
-    	width: 1.2em;
-    	height: 1.2em;
+    	width: 1em;
+    	height: 1em;
     	cursor: default;
     	border-radius: 1.2em;
     	-moz-border-radius: 1.2em;
@@ -1217,7 +1216,7 @@ tr, th, td{
 		list-style: none;
 		color: #FFFFFF;
 		font-weight: 400;
-		margin-left: 10px;
+		margin-left: 3px;
 		min-height: 0px;
 	}
 	
@@ -1240,13 +1239,21 @@ tr, th, td{
 		height: auto;
 		line-height: 21px;
 		width: auto;
-		max-width: 100%;
+		max-width: 175px;
 		margin: 5px 5px 0px 0px;
 		float:left;
 		border-radius: 3px;
 		-webkit-border-radius: 3px;
 		-moz-border-radius: 3px;
 		font-size: 14px;
+	}
+	
+	.current-filter > span{
+		max-width: 90%;
+		overflow: hidden;
+		white-space: normal;
+		word-break: break-word;
+		display: inline-block;
 	}
 	
 	 #includes-files label,
@@ -1257,17 +1264,13 @@ tr, th, td{
     	height: 21px;
     } 
     
-    #filter-year label#data-year-label{
+    #filter-year label{
     	margin-top:0px;
+    	display: inline-block;
+    	float: left;
+    	margin-right: 10px;
+    	font-size: 13px;
     }
-	
-	.current-filters > li > span{
-		float: left;
-		margin-right: 5px;
-		line-height: 1.5em;
-		white-space: normal;
-		max-width: 90%;
-	}
 	
 	.current-filters > li > i{
 		float: right;
@@ -1443,10 +1446,11 @@ tr, th, td{
 /* RESULTS CSS
 -------------------------------------------------- */
 	#results-container{
-		width: 40%; /*fallback*/
-		width: calc(100% - 350px);
+		width: 300px;
+		overflow-x: hidden;
+		overflow-y: scroll;
+		height: 700px;
 		float: left;
-		margin-left: 20px;
 	}
 	
     /*-- Results header --*/
@@ -2030,15 +2034,15 @@ svg .point:hover ~ .line-chart-label{
 /* MAPS 
 --------------------------------- */
 
-#map-container,
-#map-canvas{
-	height: 400px;
-	width: 274px;
-}
 #map-container{
-	border: 1px solid #CCC;
-	border-radius: 4px;
-	padding: 3px;	
+	height: 500px;
+	width: 400px;
+	width: calc(100% - 220px - 300px);	
+	float: left;
+}
+#map-canvas{
+	height: 100%;
+	width: 100%;
 }
 .gmaps-infowindow{
 	max-height: 400px;

@@ -1,7 +1,6 @@
 <article id="mainBody">
-	<section class="row-fluid">
 		<!--SIDEBAR AREA-->
-		<aside id="sidebar">
+		<aside id="sidebar" class="auto-height">
 			<h5 id="filters-header">Filters</h5>
 			<a id="clear-all">Clear all filters<i class="icon-remove"></i></a>
     		<div class="filter-container">
@@ -14,24 +13,26 @@
 				
 				<div class="input-append filter-contain">
 					<i class="icon-table span1"></i>
-					<div class="span11">
-						<input class="filter" type="text" placeholder="Data attribute (density, length, etc.)" id="attribute_input" data-category="attribute">
+					<label>Data attribute</label>
+					<div class="filter-input-contain">
+						<input class="filter" type="text" placeholder="density, length, etc." id="attribute_input" data-category="attribute">
 						<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
-				    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
-				    	</ul>
-				    </div>
+					</div>
+			    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
+			    	</ul>
 				    <div class="clear"></div>
 			    </div>
 			    
 				<div class="filter-contain" id="includes-files">
-					<i class="icon-folder-open span1"></i>
-					<div class="span11" id="includes-files-buttonset">
+					<i class="icon-folder-open"></i>
+					<label>Data files</label>
+					<div class="filter-input-contain" id="includes-files-buttonset">
 						<label for="includes_data">
-							Only results with data
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>
+							Only results with data
 						</label>
-						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
+						<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
 						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
 					</div>
 					<div class="clear"></div>
@@ -47,46 +48,46 @@
 				</div>
 				
 				<div class="input-append filter-contain">
-					<i class="icon-user span1"></i>
-					<div class="span11">
-						<input class="filter" type="text" placeholder="Creator" id="creator_input" data-category="creator">
-						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
-			    		<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
-			    		</ul>
-			    		<ul id="current-attribute-filters" class="current-filters span12" data-category="additionalCriteria">
-			    			<li class="current-filter keyword-search-link" data-category="additionalCriteria" data-term="+rightsHolder:<%=username%>">
-								<span>
-								Me
-								</span>
-								<i class="icon-remove remove-filter"></i>
-							</li>
-				    	</ul>
+					<i class="icon-user"></i>
+					<label>Creator</label>
+					<div class="filter-input-contain">
+						<input class="filter" type="text" placeholder="First name, last name, etc." id="creator_input" data-category="creator">
+						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>				    	
 			    	</div>
-			    	<div class="clear"></div>
+			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
+			    	</ul>
+			    	<ul id="current-attribute-filters" class="current-filters span12" data-category="additionalCriteria">
+			    		<li class="current-filter keyword-search-link" data-category="additionalCriteria" data-term="+rightsHolder:<%=username%>">
+							<span>Me</span>
+							<i class="icon-remove remove-filter"></i>
+						</li>
+				    </ul>
 			    </div>	
 				
 				<div id="filter-year" class="filter-contain" data-category="year">
-					<i class="icon-calendar span1"></i>
-					<div class="span11 left-padding">
+					<i class="icon-calendar"></i>
+					<label>Year</label>
+					<div class="filter-input-contain">
 						<div id="year-range"></div>
 						<div class="clear"></div>
 						<input class="span3"  type="number" id="min_year"  value="<%=yearMin%>"/>
 						<input class="span3"  type="number" id="max_year"  value="<%=yearMax%>"/>
 						<div class="clear"></div>
 						
-						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
-						<label class="span11 left" for="data_year" id="data-year-label">
-							Data covers
+						<input class="left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
+						<label for="data_year" id="data-year-label">
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>
+							Data covers
 						</label>					
 						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top"></i>	
+						<div class="clear"></div>
 						
-						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-						<label class="span11 left" id="pub-year-label" for="publish_year">
-							Published between
+						<input class="left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
+						<label id="pub-year-label" for="publish_year">
 							<i class="icon-check"></i>
 							<i class="icon-check-empty"></i>
+							Published between
 						</label>
 						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top"></i>	
 						<div class="clear"></div>
@@ -97,31 +98,31 @@
 				
 				<div class="input-append filter-contain">
 					<i class="icon-sitemap span1"></i>
-					<div class="span11">
-						<input class="filter" type="text" placeholder="Taxon" id="taxon_input" data-category="taxon">
+					<label>Taxon</label>
+					<div class="filter-input-contain">
+						<input class="filter" type="text" placeholder="Class, family, etc." id="taxon_input" data-category="taxon">
 						<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
-						<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
-						</ul>
 					</div>
-					<div class="clear"></div>
+					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
+					</ul>				
 				</div>
 				
 				<div class="input-append filter-contain no-border">
 					<i class="icon-map-marker span1"></i>
-					<div class="span11">
-						<input class="filter" type="text" placeholder="Location" id="spatial_input" data-category="spatial">
+					<label>Location</label>
+					<div class="filter-input-contain">
+						<input class="filter" type="text" placeholder="Geographic region, city, etc." id="spatial_input" data-category="spatial">
 						<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
-						<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
-						</ul>
 					</div>
+					<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
+					</ul>
 				</div>
-
-				<div id="map-container"></div>
+				
 			</div>
 		</aside>
-
+		
 		<!--CONTENT AREA-->
-		<div id="results-container">
+		<div id="results-container" class="auto-height">
 
 			<div id="results-view">
 				<div id="results-header" class="row-fluid result-header">
@@ -152,6 +153,10 @@
 			</div>
 			<div id="metadata-view" class="container-fluid"></div>
 		</div>
-	</section>
+		
+		<div id="map-container" class="auto-height"></div>
+		
+		<div class="clear"></div>
+		
 </article>
 

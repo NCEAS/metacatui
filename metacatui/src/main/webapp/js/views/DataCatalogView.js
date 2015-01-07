@@ -121,7 +121,6 @@ define(['jquery',
 			this.$el.html(cel);
 			this.updateStats();		
 			
-
 			//Render the Google Map
 			this.renderMap();	
 			
@@ -183,9 +182,31 @@ define(['jquery',
 			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
 			
 			// and go to a certain page if we have it
-			this.getResults();		
+			this.getResults();	
+			
+			//Set a custom height on any elements that have the .auto-height class
+			if($(".auto-height").length > 0) this.setAutoHeight();
 
 			return this;
+		},
+		
+		/*
+		 * Sets the height on elements in the main content area to fill up the entire area minus header and footer
+		 */
+		setAutoHeight: function(){
+			//Get the heights of the header, navbar, and footer
+			var navbarHeight = ($("#Navbar").length > 0) ? $("#Navbar").outerHeight(true) : 0;
+			var headerHeight = ($("#Header").length > 0) ? $("#Header").outerHeight(true) : 0;
+			var footerHeight = ($("#Footer").length > 0) ? $("#Footer").outerHeight(true) : 0;
+			var totalHeight = navbarHeight + headerHeight + footerHeight;
+			
+			//Get the remaining height left based on the window size
+			var remainingHeight = $(window).outerHeight(true) - totalHeight;
+			
+			//Adjust all elements with the .auto-height class
+			$(".auto-height").height(remainingHeight);
+			
+			$(window).resize(this.setAutoHeight);
 		},
 		
 		toggleViewClass: function(name){
