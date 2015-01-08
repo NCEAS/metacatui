@@ -203,12 +203,55 @@ Bold 700
 	  }
 	}
 	
+	/** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
 	.ellipsis{
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
 	}
+	.multi-line-ellipsis {
+  		overflow: hidden;
+  		height: 50px;
+		line-height: 25px;
+ 	}
+	.multi-line-ellipsis:before {
+		content:"";
+		float: left;
+		width: 5px; height: 50px; }
 	
+	.multi-line-ellipsis > *:first-child {
+		float: right;
+		width: 100%;
+		margin-left: -5px; }		
+	
+	.multi-line-ellipsis:after {
+		content: "\02026";  
+	
+		box-sizing: content-box;
+		-webkit-box-sizing: content-box;
+		-moz-box-sizing: content-box;
+	
+		float: right; position: relative;
+		top: -25px; left: 100%; 
+		width: 3em; margin-left: -3em;
+		padding-right: 5px;
+		
+		text-align: right;
+	
+	  
+	  	background-size: 100% 100%;
+	  	/* 512x1 image, gradient for IE9. Transparent at 0% -> white at 50% -> white at 100%.*/
+		background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAABCAMAAACfZeZEAAAABGdBTUEAALGPC/xhBQAAAwBQTFRF////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wDWRdwAAAP90Uk5TgsRjMZXhS30YrvDUP3Emow1YibnM9+ggOZxrBtpRRo94gxItwLOoX/vsHdA2yGgL8+TdKUK8VFufmHSGgAQWJNc9tk+rb5KMCA8aM0iwpWV6dwP9+fXuFerm3yMs0jDOysY8wr5FTldeoWKabgEJ8RATG+IeIdsn2NUqLjQ3OgBDumC3SbRMsVKsValZplydZpZpbJOQco2KdYeEe36BDAL8/vgHBfr2CvTyDu8R7esU6RcZ5ecc4+Af3iLcJSjZ1ivT0S/PMs3LNck4x8U7wz7Bv0G9RLtHuEq1TbJQr1OtVqqnWqRdoqBhnmSbZ5mXapRtcJGOc4t2eYiFfH9AS7qYlgAAARlJREFUKM9jqK9fEGS7VNrDI2+F/nyB1Z4Fa5UKN4TbbeLY7FW0Tatkp3jp7mj7vXzl+4yrDsYoVx+JYz7mXXNSp/a0RN25JMcLPP8umzRcTZW77tNyk63tdprzXdmO+2ZdD9MFe56Y9z3LUG96mcX02n/CW71JH6Qmf8px/cw77ZvVzB+BCj8D5vxhn/vXZh6D4uzf1rN+Cc347j79q/zUL25TPrJMfG/5LvuNZP8rixeZz/mf+vU+Vut+5NL5gPOeb/sd1dZbTs03hBuvmV5JuaRyMfk849nEM7qnEk6IHI8/qn049hB35QGHiv0yZXuMdkXtYC3ebrglcqvYxoj1muvC1nDlrzJYGbpcdHHIMo2FwYv+j3QAAOBSfkZYITwUAAAAAElFTkSuQmCC);
+	  
+		background: -webkit-gradient(linear, left top, right top,
+			from(rgba(255, 255, 255, 0)), to(white), color-stop(50%, white));
+		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);			
+		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
+		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
+		background: linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
+	}
+
+	/* Expand/Collapse elements */
 	.expand-collapse .collapsed{
 		font-size: 0px;
 		transition: .5s;
@@ -1721,8 +1764,8 @@ Bold 700
     #statcounts .result-header-count{
 	    font-weight: 500;
 		font-size: 15px;
-		line-height: 20px;
-		min-height: 20px;
+		line-height: 1.5em;
+		min-height: 1.5em;
 	}
     
      .mapMode .result-header > .result-header-count{
@@ -1805,7 +1848,7 @@ Bold 700
     #statcounts{
     	float: none;
     	padding-top: 5px;
-    	min-height: 20px;
+    	min-height: 3em;
     }
  	
  	.mapMode #statcounts{
@@ -1821,7 +1864,7 @@ Bold 700
    
    /*-- Results rows --*/
    .mapMode #results{
-   		margin-top: 16px;
+   		margin-top: 2.8em;
    		width: 100%;
    		overflow-x: hidden;
    		float: right;
@@ -1868,7 +1911,10 @@ Bold 700
     	background-color: #CCCCCC; /*IE 8 fallback */
     	background-color: rgba(185, 185, 185, 0.3);
     }
-    
+    .result-row:nth-child(odd) .multi-line-ellipsis:after{
+        background-color: #CCCCCC; /*IE 8 fallback */
+  		background: rgba(185, 185, 185, 0.1);
+  	}
     .result-row:nth-child(even){
     	background-color: transparent;
     }
@@ -1879,8 +1925,18 @@ Bold 700
     }
     
     .result-row:hover { 
-    background-color: #DAEBF7; /* IE 8 fallback */
-    background-color: rgba(178, 202, 221, 0.8);
+    	background-color: #DAEBF7; /* IE 8 fallback */
+    	background-color: rgba(227, 243, 255, 0.8);
+  	}
+  	.result-row .multi-line-ellipsis:after{
+  		transition: background-color 0s;
+  	}
+  	.result-row:hover .multi-line-ellipsis:after{
+  		background: -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0)), to(rgba(227, 243, 255, 0.8)), color-stop(50%, rgba(227, 243, 255, 0.8)));
+  		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 243, 255, 0.8) 50%, rgba(227, 243, 255, 0.8));
+  		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 243, 255, 0.8) 50%, rgba(227, 243, 255, 0.8));
+  		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 243, 255, 0.8) 50%, rgba(227, 243, 255, 0.8));
+  		background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 243, 255, 0.8) 50%, rgba(227, 243, 255, 0.8));
   	}
   
     
@@ -1888,56 +1944,39 @@ Bold 700
       font-weight: normal;
     }
     
-    .result-citation{
-    	padding-left: 3%;
+    .row-fluid .result-citation{
+    	padding-left: 0px;
     }
     
     .result-title{
     	font-weight: 600;
     	color: #166194;
     }
-    
-    .result-row .abstract{
-    	padding: 0px 2%;
-    	width: 96%;
-    	border: 0px;
-    	font-size: 0.9em;
-    	clear: both;
-    	display: none;
-    }
-    
-    .result-row:hover .abstract{
-   		display:block;
-    }
+
     .result-row .dropdown-menu{
   		left: -320%;
   	}
+  	
+  	.result-row .abstract{
+  		font-size: .9em;
+  		margin-top: 10px;
+  		margin-bottom: 10px;
+  		line-height: 1.5em;
+  	}
+  	
+  	.abstract.multi-line-ellipsis{
+  		line-height: 25px;
+  	}
+  	
+  	.result-row .tooltip{
+  		z-index: 999999999;
+  	}
     
     /*-- Results List Icons --*/
-    
-    .info-icons{
-    	max-width: 14%;
-    }
-    
-    .info-icons > div:first-child{
-    	max-width: 45px;
-    }
-    
     .info-icons i.more-info{
-    	cursor: help;
+    	cursor: pointer;
     }   
-    
-    .info-icons .show-abstract > i{
-    	font-size: 19px;
-    	margin-left: -2px;
-    	margin-top: -1px;
-    }
-    
-    .info-icons .show-abstract > i.show-abstract,
-    .info-icons .download{
-    	color: #999999;
-    }
-    
+
     .info-icons .on-map > i{
     	font-size: 19px;
     }
@@ -1946,13 +1985,22 @@ Bold 700
     	color: #00ADEF;
     	cursor: default;
     }
-    
-    
-    .info-icons i.inactive{
-    	color: #EEE;
-    	cursor: default;
+    .info-icons .on-map > i.on-map:nth-child(n+2){
+    	margin-left: 3px;
     }
     
+	.info-icons .icons{
+    	float: left;
+    	margin-right: 1em;
+    }
+    
+    .resource-map.icons{
+    	color: #777;
+    }
+    
+    .info-icons i.inactive{
+    	visibility: hidden;
+    }
     .result-row:hover .info-icons .inactive{
     	color: rgba(178, 202, 221, 1);
     }
@@ -1961,15 +2009,7 @@ Bold 700
     	font-size: 13px;
     }
     
-     .abstract-popover{
-    	max-height: 500px;
-    	min-height: 10px;
-    	width: 250px;
-		overflow: hidden;
-    	word-break: keep-all;
-    	text-overflow: ellipsis;
-    }
-  	
+   
   	/** View count **/
     .result-row .stats .count{
     	font-size: 16px;
@@ -1984,99 +2024,34 @@ Bold 700
     
 	/** Download button **/   
 
-    
-    a.download{
-    	width: 77%;
-    	min-width: 56px;
-    	max-width: 79px;
-    	display:inline-block;
-		color: #888888;
-		padding-right: 5px;
-		padding-left: 5px;
-		margin-left: -6px;
-		transition: all 0.3s;
-		-webkit-transition: all 0.3s;
-    }
-
-    
-    .result-row a.download > .icon-caret-down {
-    	margin-left: 3px;
-    	font-size: 12px;
-    	float: left;
-    } 
-    
-    
-    .result-row:hover a.download{
-    background-image: none;
-    color: #555555;
-	padding: 4px 4px;
-	margin-bottom: 0;
-	width: 100%;
-	font-size: 14px;
-	line-height: 20px;
-	text-align: center;
-	text-shadow: 0 1px 1px rgba(255,255,255,0.75);
-	vertical-align: middle;
-	cursor: pointer;
-	background-color: #f5f5f5;
-	background-repeat: repeat-x;
-	border: 1px solid #ccc;
-	border-color: #e6e6e6 #e6e6e6 #bfbfbf;
-	border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
-	border-bottom-color: #b3b3b3;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff',endColorstr='#ffe6e6e6',GradientType=0);
-	filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
-	-webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-	-moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-	box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-	-webkit-transition: all 0.3s;
-	transition: all 0.3s;
-    }
-    
-    .result-row a.download:hover{
-    	background-color: #e6e6e6;
-    }
-    
-	.result-row i.download{
-		font-size: 16px;
-		cursor: pointer;
-		float: left;
-		transition: all 0.3s;
-		-webkit-transition: all 0.3s;
-		margin-right: 0px;
+    .info-icons .btn {
+		height: 1em;
+		font-size: .9em;
+		font-weight: normal;
+		line-height: .9em;
+		margin-bottom: 5px;
+		background-color: #FFF;
+		background-image: none;
 	}
-	
-	.result-row .download label{
-		font-size: 12px;
-		line-height: 17px;
-		margin-left: -10px;
-		margin-bottom: 0px;
-		float: right;
-		opacity: 0;
-		display:inline;
-		transition: all 0.3s;
-		-webkit-transition: all 0.3s;
+	.info-icons .btn:hover{
+		background-color: #166194;
 	}
-	
-	.result-row:hover .download label{
-		opacity: 1;
+	.info-icons .btn > i{
+		font-size: 1.1em;
+		margin-right: 5px;
+		color: #777;
+	}
+	.info-icons .btn:hover > i{
+		color: #FFF;
 	}
 
-  	
-  	.result-row .download:hover i{
-  		text-decoration: none;
-  	}
-  	
     /*-- Pagination widget --*/
     .pagination{
     	margin: 0px;
     }
     .mapMode .pagination {
     	cursor: pointer;
-    	margin: 25px auto;
+    	margin: 3.4em auto;
     	padding-bottom: 2px;
     	width: 70%;
     	left: 30%;

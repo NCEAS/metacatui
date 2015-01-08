@@ -1568,7 +1568,9 @@ tr, th, td{
     .info-icons .on-map > i.on-map{
     	cursor: default;
     }
-    
+    .info-icons .on-map > i.on-map:nth-child(n+2){
+    	margin-left: 3px;
+    }
     
     .info-icons i.inactive{
     	visibility: hidden;
