@@ -11,6 +11,7 @@ var themeMap =
 
 		// Templates include extension
 		'templates/app.html' : 'themes/' + theme + '/templates/app.html',
-		'templates/search.html' : 'themes/' + theme + '/templates/search.html'
+		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
+		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html'
 		}
 };
