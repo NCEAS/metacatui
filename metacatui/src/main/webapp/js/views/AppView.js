@@ -115,6 +115,8 @@ define(['jquery',
 			var tokenUrl = appModel.get('tokenUrl');
 			var viewRef = this;
 			
+			if(!tokenUrl) return false;
+			
 			// ajax call to get token
 			$.ajax({
 				type: "GET",
