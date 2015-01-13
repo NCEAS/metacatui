@@ -73,7 +73,8 @@ Bold 700
     	font-weight: 400;
     }
     
-    .hidden{
+    .hidden,
+    #clear-all.hidden{
     	display: none;
     }
     

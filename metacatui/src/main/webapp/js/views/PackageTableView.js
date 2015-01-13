@@ -11,6 +11,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.id   		= options.id	 	 || null;
 			this.attributes = options.attributes || null;
 			this.className += options.className  || "";
+			
 		},
 		
 		template: _.template(Template),
@@ -166,12 +167,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 										
 				//Initialize any popovers
 				$('.popover-this').popover();
+				
+				view.trigger("rendered");
 						
-			}, "json").error(function(){
-				console.warn(repsonse);
-			});
-			
-			return this;
+			}, "json");
 		},
 		
 		/**

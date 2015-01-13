@@ -179,9 +179,21 @@ define(['jquery',
 				this.citationEl = this.$('.citation')[0] || wells[0];
 			}
 			
-			//Insert the container div for the download contents
-			var table = new PackageTable().render(pid).el;
-			$(this.citationEl).after(table);
+			//Create a new Package-contents table 
+			var tableView = new PackageTable();
+			//When the view is done rendering, add the table to the page
+			this.listenTo(tableView, "rendered", function(){
+				$("#downloadContents").html(tableView.el);
+				
+				//Move the download button to our download content list area
+			    $("#downloadPackage").detach();
+			    var citationText = $(this.citationEl).find(".span10");
+			    				   $(citationText).removeClass("span10");
+			    				   $(citationText).addClass("span12");
+			});
+			//Call the render function
+			tableView.render(pid);
+			
 			
 			//Move the download button to our download content list area
 		    $("#downloadPackage").detach();
@@ -293,6 +305,7 @@ define(['jquery',
 
 			// look up the SystemMetadata
 			var metaServiceUrl = appModel.get('metaServiceUrl');
+			if((typeof metaServiceUrl === "undefined") || !metaServiceUrl) return;
 
 			// systemMetadata to render
 			var identifier = null;
@@ -303,7 +316,7 @@ define(['jquery',
 			var submitter = null;
 			
 			var viewRef = this;
-			
+						
 			// get the /meta for the pid
 			$.get(
 				metaServiceUrl + encodedPid,
