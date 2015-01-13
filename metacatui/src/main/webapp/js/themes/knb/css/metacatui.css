@@ -120,7 +120,8 @@ Bold 700 Italic
     	color: #888888;
     }
     
-    .hidden{
+    .hidden,
+    #clear-all.hidden{
     	display: none;
     }
     

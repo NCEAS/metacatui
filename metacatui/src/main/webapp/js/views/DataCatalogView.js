@@ -288,10 +288,10 @@ define(['jquery',
 			
 			//Show or hide the reset filters button
 			if(searchModel.filterCount() > 0){
-				$('#clear-all').css('display', 'inline-block');
+				this.showClearButton();
 			}
 			else{
-				$('#clear-all').css('display', 'none');
+				this.hideClearButton();
 			}				
 			
 			// go to the page
@@ -346,7 +346,7 @@ define(['jquery',
 				}
 				
 				//Show the reset button
-				$('#clear-all').css('display', 'inline-block');	
+				this.showClearButton();
 			}
 			
 			//Route to page 1
@@ -377,7 +377,7 @@ define(['jquery',
 			searchModel.set(category, value);
 			
 			//Show the reset button
-			$('#clear-all').css('display', 'inline-block');
+			this.showClearButton();
 			
 			//Route to page 1
 			this.updatePageNumber(0);
@@ -397,8 +397,8 @@ define(['jquery',
 			var maxVal = $('#max_year').val();
 			  
 			//Get the default minimum and maximum values
-			var defaultMinYear = searchModel.defaults.yearMin;
-			var defaultMaxYear = searchModel.defaults.yearMax;
+			var defaultMinYear = searchModel.defaults().yearMin;
+			var defaultMaxYear = searchModel.defaults().yearMax;
 			
 			// If either of the year type selectors is what brought us here, then determine whether the user
 			// is completely removing both (reset both year filters) or just one (remove just that one filter)
@@ -449,8 +449,8 @@ define(['jquery',
 			$('#year-range').slider({
 			    range: true,
 			    disabled: false,
-			    min: searchModel.defaults.yearMin,	//sets the minimum on the UI slider on initialization
-			    max: searchModel.defaults.yearMax, 	//sets the maximum on the UI slider on initialization
+			    min: searchModel.defaults().yearMin,	//sets the minimum on the UI slider on initialization
+			    max: searchModel.defaults().yearMax, 	//sets the maximum on the UI slider on initialization
 			    values: [ searchModel.get('yearMin'), searchModel.get('yearMax') ], //where the left and right slider handles are
 			    stop: function( event, ui ) {
 			    	
@@ -636,9 +636,7 @@ define(['jquery',
 		//Clear all the currently applied filters
 		resetFilters : function(){			
 			var viewRef = this;
-			
-			console.log('Resetting the filters');
-			
+						
 			this.allowSearch = true;
 			
 			//Clear all the filters in the UI
@@ -646,8 +644,11 @@ define(['jquery',
 				viewRef.hideFilter(this);
 			});
 			
+			//Hide the clear button
+			this.hideClearButton();
+			
 			//Then reset the model
-			searchModel.clear().set(searchModel.defaults);		
+			searchModel.clear();		
 			
 			//Reset the year slider handles
 			$("#year-range").slider("values", [searchModel.get('yearMin'), searchModel.get('yearMax')])
@@ -661,13 +662,11 @@ define(['jquery',
 			$("#data_year").prop("checked", searchModel.get("dataYear"));
 			$("#publish_year").prop("checked", searchModel.get("pubYear"));
 			$("#filter-year").buttonset("refresh");
+			this.resetMemberNodeList();
 			
 			//Zoom out the Google Map
 			this.resetMap();	
 			this.renderMap();
-		
-			//Hide the reset button again
-			$('#clear-all').css('display', 'none');
 			
 			// reset any filter links
 			this.showAdditionalCriteria();
@@ -757,7 +756,9 @@ define(['jquery',
 							.attr("data-category", "memberNode")
 							.attr("id", member.identifier)
 							.attr("name", member.identifier)
-							.attr("value", member.identifier);
+							.attr("value", member.identifier)
+							.attr("data-label", member.name)
+							.attr("data-description", member.description);
 										
 					if(i > (listMax - 1)){
 						$(listItem).addClass("hidden");
@@ -778,6 +779,33 @@ define(['jquery',
 			var container = $('.member-nodes-placeholder');
 			$(container).html(list);
 			$(".tooltip-this").tooltip();
+		},
+		
+		resetMemberNodeList: function(){
+			//Reset the Member Nodes checkboxes
+			var mnFilterContainer = $("#member-nodes-container"),
+				defaultMNs = searchModel.get("memberNode");
+			
+			//Make sure the member node filter exists
+			if(!mnFilterContainer || mnFilterContainer.length == 0) return false;
+			if((typeof defaultMNs === "undefined") || !defaultMNs) return false;
+			
+			//Reset each member node checkbox
+			$(mnFilterContainer).find("checkbox.filter").prop("checked", false);
+			
+			//Check the member node checkboxes that are defaults in the search model
+			_.each(defaultMNs, function(member, i){
+				var value = null;
+				
+				//Allow for string search model filter values and object filter values
+				if((typeof member !== "object") && member) value = member;
+				else if((typeof member.value === "undefined") || !member.value) value = "";
+				else value = member.value;
+				
+				$(mnFilterContainer).find("checkbox[value='" + value + "']").prop("checked", true);	
+			});
+			
+			return true;
 		},
 		
 		showMoreList: function(e){
@@ -1152,6 +1180,16 @@ define(['jquery',
 					}
 				});
 			}, "json");
+		},
+		
+		hideClearButton: function(){
+			//Hide the reset button
+			$('#clear-all').addClass("hidden");
+		},
+		
+		showClearButton: function(){
+			//Show the reset button
+			$("#clear-all").removeClass("hidden");
 		},
 		
 		/**

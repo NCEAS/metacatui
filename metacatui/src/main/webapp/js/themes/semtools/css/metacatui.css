@@ -79,7 +79,8 @@ Bold 700
     	color: #8D703D;
     	padding: 5px;
     }
-    .hidden{
+    .hidden,
+    #clear-all.hidden{
     	display: none;
     }
     .mapMode .collapse-me{
@@ -1520,7 +1521,7 @@ Bold 700
 		cursor: pointer;
 		font-size: 14px;
 		color: #931D1D;
-		display: none;
+		display: inline-block;
 		background-color: #931d1d;
 		color: #FFF;
 		padding: 0px 5px;

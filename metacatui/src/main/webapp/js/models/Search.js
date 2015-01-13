@@ -14,35 +14,38 @@ define(['jquery', 'underscore', 'backbone'],
 		 * value - the value that will be included in the query
 		 * description - a longer text description of the filter value
 		 */
-		defaults: {
-			all: [],
-			creator: [],
-			taxon: [],
-			resourceMap: false,
-			yearMin: 1900, //The user-selected minimum year
-			yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
-			pubYear: false,
-			dataYear: false,
-			sortOrder: 'dateUploaded+desc',
-			east: null,
-			west: null,
-			north: null,
-			south: null,
-			geohashes: [],
-			geohashLevel: 9,
-			spatial: [],
-			attribute: [],
-			annotation: [],
-			additionalCriteria: [],
-			formatType: [{
-				value: "METADATA",
-				label: "science metadata",
-				description: null
-			}],
-			exclude: [{
-				field: "obsoletedBy",
-				value: "*"
-			}]
+		defaults: function(){
+			return {
+				all: [],
+				creator: [],
+				taxon: [],
+				resourceMap: false,
+				yearMin: 1900, //The user-selected minimum year
+				yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
+				pubYear: false,
+				dataYear: false,
+				sortOrder: 'dateUploaded+desc',
+				east: null,
+				west: null,
+				north: null,
+				south: null,
+				geohashes: [],
+				geohashLevel: 9,
+				memberNode: null,
+				spatial: [],
+				attribute: [],
+				annotation: [],
+				additionalCriteria: [],
+				formatType: [{
+					value: "METADATA",
+					label: "science metadata",
+					description: null
+				}],
+				exclude: [{
+					field: "obsoletedBy",
+					value: "*"
+				}]
+			}
 		},
 		
 		//Map the filter names to their index field names
@@ -58,7 +61,7 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		filterCount: function() {
-			var changedAttr = this.changedAttributes(_.clone(this.defaults));
+			var changedAttr = this.changedAttributes(_.clone(this.defaults()));
 			if (changedAttr) {
 				var changedKeys = _.keys(changedAttr);
 				return changedKeys.length;
@@ -71,7 +74,7 @@ define(['jquery', 'underscore', 'backbone'],
 		//Comment out or remove defaults that are not in the index or should not be included in queries
 		filterIsAvailable: function(name){
 			//Get the keys for this model as a way to list the filters that are available
-			var defaults = _.keys(this.defaults);
+			var defaults = _.keys(this.defaults());
 			if(_.indexOf(defaults, name) >= 0) return true;
 			else return false;
 		},
@@ -105,8 +108,8 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Resets the geoashes and geohashLevel filters to default
 		 */
 		resetGeohash : function(){
-			this.set("geohashes",    this.defaults.geohashes);
-			this.set("geohashLevel", this.defaults.geohashLevel);
+			this.set("geohashes",    this.defaults().geohashes);
+			this.set("geohashLevel", this.defaults().geohashLevel);
 		},
 		
 		/*
@@ -333,7 +336,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		clear: function() {
 			console.log('Clear the filters');
-		    return this.set(_.clone(this.defaults));
+		    return this.set(_.clone(this.defaults()));
 		  }
 		
 	});

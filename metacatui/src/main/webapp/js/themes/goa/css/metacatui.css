@@ -82,7 +82,8 @@
      	clear:both;
      }
      
-     .hidden{
+     .hidden,
+     #clear-all.hidden{
     	display: none;
     }
      

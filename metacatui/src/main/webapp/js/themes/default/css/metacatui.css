@@ -80,7 +80,8 @@ Bold 700
     	font-weight: 400;
     }
     
-        .hidden{
+    .hidden,
+    #clear-all.hidden{
     	display: none;
     }
     
@@ -1686,7 +1687,7 @@ Bold 700
 		cursor: pointer;
 		font-size: 14px;
 		color: #931D1D;
-		display: none;
+		display: inline-block;
 		background-color: #931d1d;
 		color: #FFF;
 		padding: 0px 5px;

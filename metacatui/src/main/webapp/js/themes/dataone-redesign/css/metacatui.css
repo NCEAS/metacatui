@@ -1391,7 +1391,7 @@ tr, th, td{
 		cursor: pointer;
 		font-size: 14px;
 		color: #931D1D;
-		display: none;
+		display: inline-block;
 		background-color: #660033;
 		color: #FFF;
 		font-weight: 500;
