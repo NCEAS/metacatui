@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
 			//bioportalServiceUrl: "http://data.bioontology.org/search?ontologies=OBOE-SBC&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
-			orcidServiceUrl: "http://pub.orcid.org/v1.1/search/orcid-bio?q=",
+			//orcidServiceUrl: "http://pub.orcid.org/v1.1/search/orcid-bio?q=",
 			tokenUrl: null
 		},
 		
@@ -47,16 +47,14 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				this.set('baseUrl', baseUrl);
 			}
-			
-			this.set('baseUrl', 'https://cn-dev.test.dataone.org');
-			
+						
 			// these are pretty standard, but can be customized if needed
 			//this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/?');
-			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
+			//this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
 			//this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');

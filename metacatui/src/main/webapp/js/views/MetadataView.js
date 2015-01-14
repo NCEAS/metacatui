@@ -775,9 +775,11 @@ define(['jquery',
 		showLatestVersion: function(pid, traversing) {
 			var obsoletedBy = null,
 				encodedPid = encodeURIComponent(pid);
-			// look up the metadata
+			
+			// look up the metadata service URL. It may be turned off
 			var metaServiceUrl = appModel.get('metaServiceUrl');			
-
+			if((typeof metaServiceUrl === "undefined") || !metaServiceUrl) return;
+			
 			// look up the meta
 			var viewRef = this;
 			$.get(metaServiceUrl + encodedPid, function(data, textStatus, xhr) {

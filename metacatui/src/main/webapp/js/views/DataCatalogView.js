@@ -691,6 +691,8 @@ define(['jquery',
 			
 			var viewRef = this;
 			
+			if((typeof term === "undefined") || !term) return false;
+			
 			//Get the element to add the UI filter node to 
 			//The pattern is #current-<category>-filters
 			var e = this.$el.find('#current-' + category + '-filters');
@@ -710,18 +712,37 @@ define(['jquery',
 				//If there is a duplicate, exit without adding it
 				if(duplicate){ return; }				
 			}
+			 
+			var	value = null, 
+				desc  = null;
 			
-							
-			// is it a semantic concept, or do we have a label for it?
-			var termLabel = null;
-			if (term.indexOf("#") > 0) {
-				termLabel = term.substring(term.indexOf("#"));
+			//See if this filter is an object and extract the filter attributes
+			if(typeof term === "object"){
+				if(typeof  term.description !== "undefined") desc = term.description;
+				if((typeof term.filterLabel !== "undefined") && ((typeof label === "undefined") || !label))
+					label = term.filterLabel;
+				else
+					var label = null;
+				if(typeof  term.value !== "undefined") value = term.value;
 			}
-			if (label) {
-				termLabel = label;
+			else{
+				//Find the filter label
+				if((typeof label === "undefined") || !label) var label = null;
+				value = term;
+				desc = label;
 			}
+			
+			//Use the filter value for the label, sans any leading # character
+			if(value.indexOf("#") > 0) label = value.substring(value.indexOf("#"));
+			
+			
 			//Add a filter node to the DOM
-			e.prepend(viewRef.currentFilterTemplate({filterTerm: term, termLabel: termLabel}));	
+			e.prepend(viewRef.currentFilterTemplate({
+				value: value, 
+				label: label,
+				description: desc
+				}
+			));	
 				
 			return;
 		},

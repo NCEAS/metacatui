@@ -1036,7 +1036,7 @@ tr, th, td{
     }
     
     .filter-input-contain input.filter{
-    	width: 68%;
+    	width: 77%;
     	margin-left: 3px;
     }
     	
@@ -1238,7 +1238,7 @@ tr, th, td{
 		color: #FFF;
 		padding: 0px 5px 0px 5px;
 		height: auto;
-		line-height: 21px;
+		line-height: 1.5em;
 		width: auto;
 		max-width: 175px;
 		margin: 5px 5px 0px 0px;
@@ -1255,6 +1255,7 @@ tr, th, td{
 		white-space: normal;
 		word-break: break-word;
 		display: inline-block;
+		float: left;
 	}
 	
 	 #includes-files label,
@@ -1279,6 +1280,7 @@ tr, th, td{
 		line-height: 1.5em;
 		font-size: 1em;
 		color: #71A9BD;
+		margin-left: 5px;
 	}
 	
 	

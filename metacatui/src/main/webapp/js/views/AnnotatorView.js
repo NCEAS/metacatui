@@ -38,7 +38,9 @@ define(['jquery',
 			return this;
 		},
 		
-		onClose: function () {			
+		onClose: function () {	
+			if(this.disabled) return;
+			
 			console.log('Closing the Annotator view');
 			
 			// hide the gutter for other views
@@ -59,6 +61,7 @@ define(['jquery',
 			if (!bioportalServiceUrl) {
 				// do not use annotator
 				console.log("bioportalServiceUrl is not configured, annotation is disabled");
+				this.disabled = true;
 				return;
 			}
 			

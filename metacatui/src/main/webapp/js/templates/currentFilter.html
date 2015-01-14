@@ -1,12 +1,16 @@
-<li class="current-filter" data-term="<% if(filterTerm){ print(filterTerm); }%>" title="<% if(filterTerm){ print(filterTerm); }%>">
+<li class="current-filter" 
+    data-term="<% if(value){ print(value); }%>" 
+    title="<% if(label){ print(label); }%>"
+    data-description="<% if(description){ print(description); }%>"
+    data-label="<% if(label){ print(label); }%>">
 <span>
 <%
 	
-	if (termLabel) {
-		print(termLabel);
+	if (label) {
+		print(label);
 	}
-	else if (filterTerm) {
-		print(filterTerm);
+	else if (value) {
+		print(value);
 	}
 %>
 </span>
