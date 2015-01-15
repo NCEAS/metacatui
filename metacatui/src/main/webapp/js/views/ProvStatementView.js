@@ -15,7 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 		
 		template: _.template(ProvTemplate),
 		
-		tagName : "div",
+		tagName : "section",
 		
 		className : "provenance alert alert-info",
 		

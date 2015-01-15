@@ -14,12 +14,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.className += options.className  || "";
 			
 			//Set up the Package model
-			this.model = new Package();
-			this.model.set("memberId", this.memberId);
-			this.model.set("packageId", this.packageId);
+			if((typeof options.model === "undefined") || !options.model){
+				this.model = new Package();
+				this.model.set("memberId", this.memberId);
+				this.model.set("packageId", this.packageId);
+			}
 			
 			//Set up a listener for when the model is ready to work with
-			this.listenTo(this.model, "complete", this.render);
+			//this.listenTo(this.model, "complete", this.render);
 			
 			//Get the members
 			if(this.packageId)    this.model.getMembers();
@@ -32,7 +34,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		
 		tagName : "div",
 		
-		className : "download-contents container",
+		className : "download-contents",
 		
 		/*
 		 * Creates a table of package/download contents that this metadata doc is a part of
@@ -73,7 +75,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				//Create a row for this member of the data package
 				var tr = $(document.createElement("tr"));
 				
-				//Create an icon to represent this object type
+				//Icon cell (based on formatType)
 				var iconCell = $(document.createElement("td")).addClass("format-type");
 				var formatTypeIcon = document.createElement("i");
 				if(formatType == "METADATA") $(formatTypeIcon).addClass("icon-file-text");
@@ -81,17 +83,17 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(iconCell).html(formatTypeIcon);
 				$(tr).append(iconCell);
 				
-				//Make the id with a link
+				//Id cell
 				//TODO: When titles for objects are indexed, use that for display instead of the id
-				var idCell = $(document.createElement("td")).addClass("id ellipsis");				
+				var idCell = $(document.createElement("td")).addClass("id wrap-contents");				
 				var idLink = document.createElement("a");
 				$(idLink).attr("href", objectServiceUrl + encodeURIComponent(id))
 						 .text(id);
 				$(idCell).html(idLink);
 				$(tr).append(idCell);
 
-				//Make an element for the file type
-				var fileTypeCell = $(document.createElement("td")).addClass("file-type");				
+				//Format type cell
+				var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents");				
 				var fileTypePopover = "";
 				var fileType = solrResult.get("formatId");
 				if(fileType.substr(0, 3) == "eml"){
@@ -100,16 +102,16 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					else fileType = ".xml (EML" + fileTypePopover + ")";
 				}
 				else if(fileType == "application/pdf") fileType = "PDF"; //Friendlier-looking...
-				$(fileTypeCell).text(fileType);
+				$(fileTypeCell).html(fileType);
 				$(tr).append(fileTypeCell);
 				
-				//Add the file size
+				//File size cell
 				var sizeCell = $(document.createElement("td")).addClass("size");
 				var size = view.bytesToSize(solrResult.get("size"));
 				$(sizeCell).text(size);
 				$(tr).append(sizeCell);
 
-				//The number of reads/downloads
+				//The number of reads/downloads cell
 				var reads = solrResult.get("downloads");
 				if((typeof reads !== "undefined") && (reads !== null)){ 
 					var readsCell = $(document.createElement("td")).addClass("downloads");				
@@ -121,14 +123,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				}
 				else readsEnabled = false;
 				
-				//Make a download button for this item
-				var downloadBtnCell = $(document.createElement("td")).addClass("download-btn");				
+				//Download button cell
+				var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");				
 				var downloadButtonHTML = view.downloadButtonTemplate({ href: objectServiceUrl + encodeURIComponent(id) });
 				$(downloadBtnCell).append(downloadButtonHTML);
 				$(tr).append(downloadBtnCell);
 				
-				//Add a "Preview" link
-				var moreInfoCell = $(document.createElement("td")).addClass("more-info");				
+				//"Preview" link cell
+				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");				
 				var moreInfo = $(document.createElement("a"))
 								.attr("href", "#" + id)
 								.addClass("btn")
@@ -139,6 +141,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(moreInfoCell).append(moreInfo);
 				$(tr).append(moreInfoCell);
 				
+				//Add this row to the table body
 				$(tbody).append(tr);
 					
 			});
@@ -147,7 +150,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var downloadButtonHTML = "";
 			if(packageServiceUrl){
 				downloadButtonHTML = this.downloadButtonTemplate({ 
-					href: packageServiceUrl + encodeURIComponent(id), 
+					href: packageServiceUrl + encodeURIComponent(this.model.get("id")), 
 					text: "Download all",
 					className: "btn btn-primary "
 				});	
@@ -157,7 +160,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				readsEnabled: readsEnabled
 			}));
 			this.$("thead").after(tbody);
-		
+			
+			return this;
 		},
 		
 		/**

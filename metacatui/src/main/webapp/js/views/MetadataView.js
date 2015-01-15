@@ -60,8 +60,10 @@ define(['jquery',
 			"click #publish" : "publish"
 		},
 		
-		initialize: function () {
-			
+		initialize: function (options) {
+			if((options === undefined) || (!options)) var options = {};
+
+			this.pid = options.pid || options.id || appModel.get("pid") || null;
 		},
 				
 		// Render the main metadata view
@@ -71,7 +73,11 @@ define(['jquery',
 			appModel.set('headerType', 'default');
 			
 			// get the pid to render
-			var pid = appModel.get('pid');
+			if(!this.pid){
+				var pid = appModel.get("pid");
+				this.pid = pid;
+			}
+			else var pid = this.pid;
 			
 			// URL encode the pid
 			this.encodedPid = encodeURIComponent(pid);
@@ -90,21 +96,14 @@ define(['jquery',
 								//Our fallback is to show the metadata details from the Solr index
 								viewRef.renderMetadataFromIndex();
 							}
-							else{
-								//HTML was successfully loaded from a view service
-															
+							else{															
 								//Find the taxonomic range and give it a class for styling
 								$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomic-range');
 								
 								viewRef.$el.fadeIn("slow");
 								
-								viewRef.insertResourceMapContents(appModel.get('pid'));
+								viewRef.getPackageDetails();
 								if(gmaps) viewRef.insertSpatialCoverageMap();
-								
-								viewRef.packageModel = new Package();
-								viewRef.packageModel.on('change:members', viewRef.showPackageDetails, viewRef);
-								viewRef.packageModel.getMembersByMemberID(appModel.get('pid'));
-								
 							}
 							// render annotator either way
 							viewRef.setUpAnnotator();
@@ -112,36 +111,21 @@ define(['jquery',
 			}
 			else {
 				this.renderMetadataFromIndex();
+				this.getPackageDetails();
 				// render annotator from index content, too
 				this.setUpAnnotator();
 			}
+			
+			
+			// is this the latest version? (includes DOI link when needed)
+			this.showLatestVersion(pid);		
 						
 			return this;
-		},
-		
-		showPackageDetails: function(){
-			console.log('have packge ');
-			console.log(this.packageModel);
-			
-			var packageMembers = this.packageModel.get('members');
-			var view = this;
-			
-			//Display the images in this package
-			this.insertVisuals(packageMembers);
-						
-			_.each(packageMembers, function(member){
-				//Create provenance statements about this document if there are any prov annotations
-				var provenanceEl = new ProvStatement().render(member).el;
-						
-				//Insert the provenance statements
-				$('[data-obj-id=' + member.id + ']').find(".provenance-container").prepend(provenanceEl);
-			});
-			
 		},
 
 		renderMetadataFromIndex: function(){
 			this.subviews.metadataFromIndex = new MetadataIndex({ 
-					pid: appModel.get('pid'), 
+					pid: this.pid, 
 					parentView: this 
 					});
 			this.$el.append(this.subviews.metadataFromIndex.render().el);
@@ -155,10 +139,27 @@ define(['jquery',
 			}
 		},
 		
-		// Insert a table describing each of the items in this dataset with download links
-		insertResourceMapContents: function(pid) {
+		/*
+		 * Creates a package model and retrieves the info about all members of that package 
+		 */
+		getPackageDetails: function(pid) {
 			var viewRef = this;
-
+			
+			//If no id is passed, used the one in the appModel
+			if((typeof pid === "undefined") || !pid) var pid = this.pid;
+			
+			//Create a model representing the data package
+			this.packageModel = new Package();
+			this.listenTo(this.packageModel, 'complete', this.insertPackageDetails);
+			this.packageModel.getMembersByMemberID(pid);
+		},
+		
+		/*
+		 * Inserts a table with all the data package member information and sends the call to display annotations
+		 */
+		insertPackageDetails: function(){	
+			var viewRef = this;
+			
 			//*** Find the DOM element to append the HTML to. We want to create a new div underneath the first well with the citation
 			var wells = viewRef.$el.find('.well');
 		
@@ -174,25 +175,20 @@ define(['jquery',
 					
 				}
 			});
+
+			//Otherwise, just find the first element with a citation class or just use the first well - useful for when we display the metadata from the indexed fields
+			if(!this.citationEl) this.citationEl = this.$('.citation')[0] || wells[0];
 			
-			if(!this.citationEl){
-				//Otherwise, just find the first element with a citation class or just use the first well - useful for when we display the metadata from the indexed fields
-				this.citationEl = this.$('.citation')[0] || wells[0];
+			//Draw the package table	
+			var tableView = new PackageTable({ model: this.packageModel });
+			//Get the package table container
+			var tableContainer = this.$("#downloadContents");
+			if(!$(tableContainer).length){
+				tableContainer = $(document.createElement("div")).attr("id", "downloadContents");
+				$(this.citationEl).after(tableContainer);
 			}
+			$(tableContainer).html(tableView.render().el);
 			
-			//Create a new Package-contents table
-			var tableView = new PackageTable({ memberId: pid });
-			this.listenTo(tableView.model, "complete", function(){
-				//Save the Package Model so we can retrieve more information about it later
-				this.packageModel = tableView.model;
-				
-				//Draw the package table
-				$("#downloadContents").html(tableView.el);				
-				
-				//Add the Data details to the page 
-				this.trigger("addDataDetails"); //The MetadataIndexView is listening for this
-				
-			});
 						
 			//Move the download button to our download content list area
 		    $("#downloadPackage").detach();
@@ -200,9 +196,8 @@ define(['jquery',
 		    				   $(citationText).removeClass("span10");
 		    				   $(citationText).addClass("span12");
 		    				   
-					
-			// is this the latest version? (includes DOI link when needed)
-			viewRef.showLatestVersion(pid);		
+		    //Show annotations about this package
+		    this.showProvenance();			
 		},
 				
 		insertSpatialCoverageMap: function(coordinates){
@@ -276,6 +271,30 @@ define(['jquery',
 			
 			return true;
 
+		},
+		
+		/*
+		 * showProvenance
+		 * Display details about the package
+		 */
+		showProvenance: function(){
+
+			var packageMembers = this.packageModel.get('members');
+			var view = this;
+			
+			//Display the images in this package
+			this.insertVisuals(packageMembers);
+						
+			_.each(packageMembers, function(member){
+				//Create provenance statements about this document if there are any prov annotations
+				var provenanceEl = new ProvStatement().render(member).el;
+						
+				//Insert the provenance statements
+				var container = $('[data-obj-id=" + member.id + "]').find(".provenance-container");
+				if($(container).length == 0) view.$el.append(provenanceEl);
+				else $(container).prepend(provenanceEl);
+			});
+			
 		},
 		
 		// checks if the pid is already a DOI
@@ -458,9 +477,6 @@ define(['jquery',
 					
 				if((container !== undefined) && (!title)) 
 					title = container.find("label:contains('Object Name')").next().text();
-	
-				if(!title)
-					container = viewRef.el;
 				
 				var objID = objects[i].id;
 				
@@ -472,9 +488,9 @@ define(['jquery',
 					   objID : objID
 				});
 				
-	
-				// Insert the HTML into the DOM
-				$(container).prepend(dataDisplay);	
+				// Insert the HTML into the DOM 
+				if(!title) $(entityDetailsContainers).after(dataDisplay);	
+				else 	   $(container).prepend(dataDisplay);	
 				
 			}
 			
@@ -818,19 +834,20 @@ define(['jquery',
 			return false;
 		},
 		
+		setUpAnnotator: function() {
+			this.subviews.annotator = new AnnotatorView({ 
+				parentView: this 
+				});
+			this.subviews.annotator.render();
+		},
+		
 		onClose: function () {			
 			console.log('Closing the metadata view');
 			_.each(this.subviews, function(subview) {
 				subview.onClose();
 			});
 			
-		},
-		
-		setUpAnnotator: function() {
-			this.subviews.annotator = new AnnotatorView({ 
-				parentView: this 
-				});
-			this.subviews.annotator.render();
+			this.pid = null;
 		}
 		
 	});

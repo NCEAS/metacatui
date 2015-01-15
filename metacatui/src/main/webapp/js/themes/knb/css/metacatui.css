@@ -1616,53 +1616,43 @@ svg .domain{
     #downloadContents .controls-well{
     	overflow-x: scroll;
     }
-    
-    table.download-contents{
-    	float: left;
-    	width: auto;
+    table.download-contents {
+    	width: 100%;
+    	margin-bottom: 0px;
     }
-    
-    table.download-contents td{
-    	min-width: 90px;
-    }
-    
-    .download-contents .id{
-    	max-width: 100px;
-    }
-    
-    .download-contents td,
-    .download-contents .id{
+    .download-contents td{
     	overflow-wrap: break-word;
     }
-    
-    .format-type i{
-    	margin-right: 5px;
+    .download-contents i{
+    	font-size: 1.5em;
     }
-    td.format-type {
-    	text-transform: lowercase;
+    .download-contents .btn i{
+    	font-size: 1em;
+    	margin-left: 5px;
     }
+    .download-contents a[href="#tools/eml"]{
+    	color: inherit;
+    }
+    .download .btn i{
+    	margin-left: 5px;
+    }
+    .download-contents .size{
+    	max-width: 1px;
+    }
+    .download-contents .format-type{
+    	text-align: center;
+    	width: 1px;
+    }
+	.download-contents td{
+	    vertical-align: middle; /*Oh tables, good for one thing...*/
+	} 
     
-    .file-type i{
+    .file-type i {
   		  color: #999;
   		  margin-left: 5px;
     }
+    /**----------------------------------------**/
     
-    th.id{
-    	min-width: 180px;
-    }
-    
-    /*Details link*/
-    .download-contents .more-info{
-    	padding-left: 20px;
-    	max-width: 65px;
-    	color: #999;
-    	font-size: 12px;
-    }
-    
-    .download-contents .more-info i{
-    	margin-left: 3px;
-    	font-size: 14px;
-    }
     
     /*Taxonomic range*/
     .taxonomic-range .control-group{

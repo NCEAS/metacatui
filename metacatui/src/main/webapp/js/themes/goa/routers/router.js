@@ -104,6 +104,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			console.log('Called UIRouter.renderMetadata()');
 			this.routeHistory.push('metadata');
 			appModel.set('pid', pid);
+			metadataView.pid = pid;
 			appView.showView(metadataView);
 		},
 		
