@@ -61,6 +61,7 @@ define(['jquery',
 		},
 		
 		initialize: function () {
+			
 		},
 				
 		// Render the main metadata view
@@ -179,27 +180,26 @@ define(['jquery',
 				this.citationEl = this.$('.citation')[0] || wells[0];
 			}
 			
-			//Create a new Package-contents table 
-			var tableView = new PackageTable();
-			//When the view is done rendering, add the table to the page
-			this.listenTo(tableView, "rendered", function(){
-				$("#downloadContents").html(tableView.el);
+			//Create a new Package-contents table
+			var tableView = new PackageTable({ memberId: pid });
+			this.listenTo(tableView.model, "complete", function(){
+				//Save the Package Model so we can retrieve more information about it later
+				this.packageModel = tableView.model;
 				
-				//Move the download button to our download content list area
-			    $("#downloadPackage").detach();
-			    var citationText = $(this.citationEl).find(".span10");
-			    				   $(citationText).removeClass("span10");
-			    				   $(citationText).addClass("span12");
+				//Draw the package table
+				$("#downloadContents").html(tableView.el);				
+				
+				//Add the Data details to the page 
+				this.trigger("addDataDetails"); //The MetadataIndexView is listening for this
+				
 			});
-			//Call the render function
-			tableView.render(pid);
-			
-			
+						
 			//Move the download button to our download content list area
 		    $("#downloadPackage").detach();
 		    var citationText = $(this.citationEl).find(".span10");
 		    				   $(citationText).removeClass("span10");
 		    				   $(citationText).addClass("span12");
+		    				   
 					
 			// is this the latest version? (includes DOI link when needed)
 			viewRef.showLatestVersion(pid);		

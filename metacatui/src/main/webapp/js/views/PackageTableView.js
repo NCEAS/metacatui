@@ -1,5 +1,5 @@
-define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templates/downloadContents.html'], 				
-	function($, _, Backbone, Package, Template) {
+define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templates/downloadContents.html', 'text!templates/downloadButton.html'], 				
+	function($, _, Backbone, Package, Template, DownloadButtonTemplate) {
 	'use strict';
 
 	
@@ -8,42 +8,50 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		initialize: function(options){
 			if((options === undefined) || (!options)) var options = {};
 			
-			this.id   		= options.id	 	 || null;
+			this.packageId  = options.packageId	 || null;
+			this.memberId	= options.memberId	 || null;
 			this.attributes = options.attributes || null;
 			this.className += options.className  || "";
 			
+			//Set up the Package model
+			this.model = new Package();
+			this.model.set("memberId", this.memberId);
+			this.model.set("packageId", this.packageId);
+			
+			//Set up a listener for when the model is ready to work with
+			this.listenTo(this.model, "complete", this.render);
+			
+			//Get the members
+			if(this.packageId)    this.model.getMembers();
+			else if(this.memberId) this.model.getMembersByMemberID(this.memberId);
 		},
 		
 		template: _.template(Template),
+		
+		downloadButtonTemplate: _.template(DownloadButtonTemplate),
 		
 		tagName : "div",
 		
 		className : "download-contents container",
 		
-		events: {
-			
-		},
-		
 		/*
 		 * Creates a table of package/download contents that this metadata doc is a part of
 		 */
-		render: function(pid){
-			var view = this;
+		render: function(){
+			var view = this,
+				members = this.model.get("members");
 			
-			//Keep a map of resource map ID <-> objects in that resource map 
-			var packages = new Array();
-			//Keep a list of all resource map objects
-			var maps = new Array();
-			var objects = new Array();
+			//If the model isn't complete, we may be still waiting on a response from the index so don't render anything yet
+			if(!this.model.complete) return false;
 
-			var resourceMapQuery = "";
-			
 			// Grab all of our URLs
 			var queryServiceUrl   = appModel.get('queryServiceUrl');
-			var packageServiceUrl = appModel.get('packageServiceUrl') || appModel.get('objectServiceUrl');
+			var packageServiceUrl = appModel.get('packageServiceUrl');
 			var objectServiceUrl  = appModel.get('objectServiceUrl');
 			
-			//Does a route to an EML info page exist?
+			var readsEnabled = false;
+
+			//Does a route to an EML info page exist? If not, don't insert any links to EML info
 			var routes = Object.keys(uiRouter.routes),
 				EMLRoute = false;
 			for(var i=0; i<routes.length; i++){
@@ -52,125 +60,104 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					i = routes.length;
 				}
 			}
-						
-			//*** Find each resource map that this metadata is a part of 
-			// surround pid value in "" so that doi characters do not affect solr query
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id' +
-						'&wt=json' +
-						'&rows=100' +
-						'&q=formatType:METADATA+-obsoletedBy:*+id:"' + pid + '"';
-
-			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
-						
-				var resourceMap = data.response.docs[0].resourceMap;
-						
-				// Is this metadata part of a resource map?
-				if(resourceMap !== undefined){
-					
-					//Add to our list and map of resource maps if there is at least one
-					_.each(resourceMap, function(resourceMapID){
-						packages[resourceMapID] = new Array();
-						resourceMapQuery += 'resourceMap:"' + encodeURIComponent(resourceMapID) + '"%20OR%20id:"' + encodeURIComponent(resourceMapID) + '"%20OR%20';
-					});
-
-					//*** Find all the files that are a part of those resource maps
-					var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,wasDerivedFrom,wasGeneratedBy,used,wasInformedBy&wt=json&rows=100&q=-obsoletedBy:*+%28' + resourceMapQuery + 'id:"' + encodeURIComponent(pid) + '"%29';
-					$.get(queryServiceUrl + query, function(moreData, textStatus, xhr) {
-								
-						var pids   = [], //Keep track of each object pid
-							images = [], //Keep track of each data object that is an image
-							pdfs   = [], //Keep track of each data object that is a PDF 
-							other = []; //Keep track of all non-metadata and non-resource map objects
-							
-						//Separate the resource maps from the data/metadata objects
-						_.each(moreData.response.docs, function(doc){
-							if(doc.formatType == "RESOURCE"){											
-								maps.push(doc);
-							}
-							else{
-								objects.push(doc);
-								pids.push(doc.id);
-								
-								//Keep track of each data objects so we can display them later
-								//if(view.isImage(doc)) images.push(doc);
-								//else if(view.isPDF(doc)) pdfs.push(doc);
-								//else if(doc.formatType != "METADATA") other.push(doc);
-							}
-						});
-										
-						//Now go through all of our objects and add them to our map
-						_.each(objects, function(object){
-							_.each(object.resourceMap, function(resourceMapId){
-								if (packages[resourceMapId]) {
-									packages[resourceMapId].push(object);												
-								}												
-							});
-						});
-						
-						var pkg = new Package();
-						pkg.id = "r_test_pkg.2014100615271412634444.1";
-						pkg.getMembers();
-											
-						//For each resource map package, add a table of its contents to the page 
-						var count = 0;
-						_.each(maps, function(thisMap){
-							var dataWithDetailsOnPage = [],
-								packageSize			  = 0;
-							
-							//If a data object in this package is mentioned in the metadata, insert a link to its details
-							_.each(packages[thisMap.id], function(object){
-								if(view.$el.find(":contains(" + object.id + ")").length){
-									dataWithDetailsOnPage.push(object.id);
-								}
-								
-								packageSize += object.size;								
-								object.formattedSize = view.bytesToSize(object.size, 2);
-							});
-							
-							thisMap.formattedSize = view.bytesToSize(packageSize, 2);
-							
-							view.$el.append(view.template({
-								objects: packages[thisMap.id],
-								resourceMap: thisMap,
-								package_service: packageServiceUrl,
-								object_service: objectServiceUrl,
-								EMLRoute: EMLRoute,
-								dataWithDetailsOnPage: dataWithDetailsOnPage
-							}));
-						}); 
-						
-						//Replace Ecogrid Links with DataONE API links
-						//view.replaceEcoGridLinks(pids);
-						
-						//Display data objects if they are visual
-						//view.insertVisuals(images, "image");
-						//view.insertVisuals(pdfs, "pdf");
-						//view.insertVisuals(other);
-					    
-					}, "json").error(function(){
-						console.warn(reponse);
-					});
-				}	
-				//If this is just one metadata object, just send that info alone
-				else{
-					var object = data.response.docs[0];
-					object.formattedSize = view.bytesToSize(object.size, 2);
-					
-					view.$el.append(view.template({
-						objects: data.response.docs,
-						resourceMap: null,
-						package_service: packageServiceUrl,
-						object_service: objectServiceUrl,
-						EMLRoute: EMLRoute
-					}));
-				}
-										
-				//Initialize any popovers
-				$('.popover-this').popover();
+			
+			//Start the HTML for the rows
+			var	tbody = $(document.createElement("tbody"));
+		
+			//Create the HTML for each row
+			_.each(members, function(solrResult){
 				
-				view.trigger("rendered");
-						
-			}, "json");
+				var formatType = solrResult.get("formatType"),
+					id		   = solrResult.get("id");
+				
+				//Create a row for this member of the data package
+				var tr = $(document.createElement("tr"));
+				
+				//Create an icon to represent this object type
+				var iconCell = $(document.createElement("td")).addClass("format-type");
+				var formatTypeIcon = document.createElement("i");
+				if(formatType == "METADATA") $(formatTypeIcon).addClass("icon-file-text");
+				else 						 $(formatTypeIcon).addClass("icon-table");
+				$(iconCell).html(formatTypeIcon);
+				$(tr).append(iconCell);
+				
+				//Make the id with a link
+				//TODO: When titles for objects are indexed, use that for display instead of the id
+				var idCell = $(document.createElement("td")).addClass("id ellipsis");				
+				var idLink = document.createElement("a");
+				$(idLink).attr("href", objectServiceUrl + encodeURIComponent(id))
+						 .text(id);
+				$(idCell).html(idLink);
+				$(tr).append(idCell);
+
+				//Make an element for the file type
+				var fileTypeCell = $(document.createElement("td")).addClass("file-type");				
+				var fileTypePopover = "";
+				var fileType = solrResult.get("formatId");
+				if(fileType.substr(0, 3) == "eml"){
+					//If the file type is EML, we may want to show a popover element for more info
+					if(EMLRoute) fileType = '.xml (<a href="#tools/eml">EML ' + fileTypePopover + '</a>)';
+					else fileType = ".xml (EML" + fileTypePopover + ")";
+				}
+				else if(fileType == "application/pdf") fileType = "PDF"; //Friendlier-looking...
+				$(fileTypeCell).text(fileType);
+				$(tr).append(fileTypeCell);
+				
+				//Add the file size
+				var sizeCell = $(document.createElement("td")).addClass("size");
+				var size = view.bytesToSize(solrResult.get("size"));
+				$(sizeCell).text(size);
+				$(tr).append(sizeCell);
+
+				//The number of reads/downloads
+				var reads = solrResult.get("downloads");
+				if((typeof reads !== "undefined") && (reads !== null)){ 
+					var readsCell = $(document.createElement("td")).addClass("downloads");				
+					if(formatType == "METADATA") reads += " views";
+					else 						 reads += " downloads";
+					$(readsCell).text(reads);
+					$(tr).append(readsCell);
+					readsEnabled = true;
+				}
+				else readsEnabled = false;
+				
+				//Make a download button for this item
+				var downloadBtnCell = $(document.createElement("td")).addClass("download-btn");				
+				var downloadButtonHTML = view.downloadButtonTemplate({ href: objectServiceUrl + encodeURIComponent(id) });
+				$(downloadBtnCell).append(downloadButtonHTML);
+				$(tr).append(downloadBtnCell);
+				
+				//Add a "Preview" link
+				var moreInfoCell = $(document.createElement("td")).addClass("more-info");				
+				var moreInfo = $(document.createElement("a"))
+								.attr("href", "#" + id)
+								.addClass("btn")
+								.text("Preview");
+				var moreInfoIcon = $(document.createElement("i"))
+									.addClass("icon icon-info-sign");
+				$(moreInfo).append(moreInfoIcon);
+				$(moreInfoCell).append(moreInfo);
+				$(tr).append(moreInfoCell);
+				
+				$(tbody).append(tr);
+					
+			});
+
+			//Draw and insert the HTML table
+			var downloadButtonHTML = "";
+			if(packageServiceUrl){
+				downloadButtonHTML = this.downloadButtonTemplate({ 
+					href: packageServiceUrl + encodeURIComponent(id), 
+					text: "Download all",
+					className: "btn btn-primary "
+				});	
+			}
+			this.$el.append(this.template({
+				downloadButton: downloadButtonHTML,
+				readsEnabled: readsEnabled
+			}));
+			this.$("thead").after(tbody);
+		
 		},
 		
 		/**

@@ -1,102 +1,15 @@
-
 <table class="download-contents table-striped table-condensed table">
-<thead>
-<%
-
-var id = "",
-	encodedId = "",
-	size = "",
-	fileType = "",
-	fileTypePopover = null,
-	downloadsTitle = "",
-	downloadButton = "";
-	
-if(resourceMap){
-	id = '<a href="' + package_service + encodeURIComponent(resourceMap.id) + '">' + resourceMap.id + '</a>';
-	encodedId = encodeURIComponent(resourceMap.id);
-	
-	size = resourceMap.formattedSize;
-	fileType = ".zip";
-	fileTypePopover = null;
-	
-	if(typeof resourceMap.read_count_i != "undefined"){
-		downloadsTitle = "Downloads";
-	}
-	
-	downloadButton = '<a class="btn btn-primary" href="' + package_service + encodedId + '"><span>Download All</span><i class="icon-cloud-download"></i></a>';
-}		
-else{
-	id = "ID";
-	fileType = "File type";
-	size = "";
-	readCount = "";
-}
-	print('<tr class="table-header"><th colspan="7" class="table-header">Files in this dataset</th></tr>');
-	print('<tr>');
-	print('<th class="format-type"><i class="icon-folder-open"></i></th>');
-	print('<th class="fileType">File type</th>');
-	print('<th class="id ellipsis">Identifier</th>');
-	print('<th class="size">Size</th>');
-	print('<th class="downloads">' + downloadsTitle + '</th>');
-	print('<th class="download">' + downloadButton + '</th>');
-	print('<th class="more-info"></th>');
-	print('</tr>');
-%>
-</thead>
-<tbody>
-<%
-	
-	_.each(objects, function(object){
-		formatType = object.formatType;
-		
-		downloadButton = '<a class="btn" href="' + object_service + encodeURIComponent(object.id) + '">Download<i class="icon-cloud-download"></i></a>'; 	
-		
-		id = '<a href="' + object_service + encodeURIComponent(object.id) + '">' + object.id + '</a>';
-				
-		fileTypePopover = null;
-		fileType = object.formatId;
-		if(fileType.substr(0, 3) == "eml"){
-			//fileTypePopover = '<i class="icon-question-sign popover-this" data-trigger="hover" data-placement="top" data-html="true" data-content="<h5>EML version:</h5>' + fileType + '"></i>';
-			fileTypePopover = "";
-			if(EMLRoute) fileType = '.xml (<a href="#tools/eml">EML '+fileTypePopover+'</a>)';
-			else fileType = '.xml (EML' + fileTypePopover + ')';
-		}
-		else if(fileType == "application/pdf") fileType = "PDF";
-		
-		if(formatType == "METADATA"){
-			formatType = '<i class="icon-file-text"></i>';
-			moreInfo = "";
-		}
-		else{		
-			formatType = '<i class="icon-table"></i>';
-			if(_.indexOf(dataWithDetailsOnPage, object.id) > -1)
-				moreInfo = '<a href="#' + object.id + '">Details <i class="icon-info-sign"></i></a>';
-			else
-				moreInfo = null;
-		}
-		
-		var readType = " downloads";
-		if(object.formatType == "METADATA")
-			readType = " views";
-		
-		var read = object.read_count_i;
-		if(typeof read == "undefined"){ read = ""; }
-		else read += readType;
-		
-		print('<tr>');
-		print('<td class="format-type">' + formatType + '</td>');
-		print('<td class="file-type">' + fileType + '</td>');		
-		print('<td class="id ellipsis">' + id + '</td>');		
-		print('<td class="size">' + object.formattedSize + '</td>');
-		print('<td class="downloads">' + read + '</td>');
-		print('<td class="download">' + downloadButton + '</td>');
-		print('<td class="more-info">' + moreInfo + '</td>');
-		print('</tr>');
-		
-	});
-	
-	
-
-%>
-</tbody>
+	<thead>
+		<tr class="table-header">
+			<th colspan="7" class="table-header">Files in this dataset</th>
+		</tr>
+		<tr>
+			<th><i class="icon icon-folder-open"></i></th>
+			<th>Id</th>
+			<th>File type</th>
+			<th>Size</th>
+			<% if(readsEnabled){ print("<th>Downloads</th>"); } %>
+			<th colspan="2"><%=downloadButton%></th>
+		</tr>
+	</thead>	
 </table>

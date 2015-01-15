@@ -36,6 +36,8 @@ define(['jquery',
 			this.pid = options.pid || null;
 			this.el.id = this.id + "-" + this.pid; //Give this element a specific ID in case multiple MetadataIndex views are on one page
 			this.parentView = options.parentView || null;
+			
+			this.listenTo(this.parentView, "addDataDetails", this.addDataDetails);
 		},
 				
 		render: function(){
@@ -75,7 +77,7 @@ define(['jquery',
 						var generalInfoKeys = ["title", "id", "abstract", "pubDate", "keywords"];
 						keys = _.difference(keys, generalInfoKeys);
 						metadataHTML += view.formatAttributeSection(doc, generalInfoKeys, "General");
-						
+
 						//Extract Spatial details
 						var spatialKeys = ["site", "southBoundCoord", "northBoundCoord", "westBoundCoord", "eastBoundCoord"];
 						keys = _.difference(keys, spatialKeys);
@@ -131,11 +133,12 @@ define(['jquery',
 			return this;
 		},
 		
-		formatAttributeSection: function(doc, keys, title){
+		formatAttributeSection: function(doc, keys, title, className){
 			if(keys.length == 0) return "";
 			
 			var html = "",
-				titleHTML = (title === undefined) ? "" : "<h4>" + title + "</h4>",
+				titleHTML = (typeof title === "undefined") ? "" : "<h4>" + title + "</h4>",
+				sectionClass = (typeof className === "undefined") ? "" : className,
 				view = this,
 				populated = false;
 			
@@ -146,7 +149,7 @@ define(['jquery',
 				}
 			});
 			
-			if(populated) html = "<section>" + titleHTML + html + "</section>";
+			if(populated) html = '<section class="' + sectionClass + '">' + titleHTML + html + '</section>';
 						
 			return html;
 		},
@@ -180,6 +183,27 @@ define(['jquery',
 			var finalResult = result.charAt(0).toUpperCase() + result.slice(1);
 			
 			return finalResult;
+		},
+		
+		addDataDetails: function(){
+			
+			//Get the Package Model - it is attached with the parent Metadata View
+			var pkg = this.parentView.packageModel;
+			
+			//Start some html
+			var html = "";
+			
+			/*
+			_.each(pkg.get("members"), function(solrResult, i){
+				if(solrResult.get("formatType") != "DATA") return;
+				
+				//Add a section for the data details, just like the other attribute sections
+				var keys = ["id", "size", "views", "pubDate", "memberNode", "formatId"];
+				html += this.formatAttributeSection(solrResult, keys, "Data Table, Image, or Other Data Details");				
+			})
+			*/
+
+			this.$el.append(html);
 		},
 		
 		onClose: function(){

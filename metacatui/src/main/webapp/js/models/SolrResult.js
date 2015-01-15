@@ -13,12 +13,12 @@ define(['jquery', 'underscore', 'backbone'],
 			pubDate: '',
 			id: '',
 			resourceMap: null,
-			downloads: 0,
+			downloads: null,
 			citations: 0,
-			bytes: 0,
 			selected: false,
 			formatId: null,
-			formatType: null
+			formatType: null,
+			memberNode: null
 		},
 		
 		// Toggle the `selected` state of the result
