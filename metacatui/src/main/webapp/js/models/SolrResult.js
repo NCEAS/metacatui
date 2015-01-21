@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone'],
 			formatId: null,
 			formatType: null,
 			memberNode: null,
-			instanceOfClass: null,			
+			instanceOfClass: null,
 			//Provenance index fields
 			generatedByDataONEDN: null,
 			generatedByExecution: null,
@@ -66,7 +66,9 @@ define(['jquery', 'underscore', 'backbone'],
 				"wasExecutedBy");		
 		},
 
-		//Returns true if this provenance field points to a source of this data or metadata object 
+		/*
+		 * Returns true if this provenance field points to a source of this data or metadata object 
+		 */
 		isSourceField: function(field){
 			if((typeof field == "undefined") || !field) return false;
 			if(!_.contains(this.getProvFields(), field)) return false;			
@@ -78,7 +80,9 @@ define(['jquery', 'underscore', 'backbone'],
 			return false;
 		},
 		
-		//Returns true if this provenance field points to a derivation of this data or metadata object 		
+		/*
+		 * Returns true if this provenance field points to a derivation of this data or metadata object 		 
+		 */		
 		isDerivationField: function(field){
 			if((typeof field == "undefined") || !field) return false;
 			if(!!_.contains(this.getProvFields(), field)) return false;
@@ -88,15 +92,48 @@ define(['jquery', 'underscore', 'backbone'],
 			return false;
 		},
 		
+		/*
+		 * Returns true if this SolrResult has a provenance trace (i.e. has either sources or derivations)
+		 */
 		hasProvTrace: function(){
 			var model = this,
 				fieldNames = this.getProvFields();
 			
 			for(var i=0; i<= fieldNames.length; i++){
-				if(model.get(fieldNames[i])) return true;
+				if(model.has(fieldNames[i])) return true;
 			}
 			
 			return false;
+		},
+		
+		/* 
+		 * Returns an array of all the IDs of objects that are sources of this object 
+		 */
+		getSources: function(){
+			var sources = new Array(),
+				model = this;
+			
+			_.each(this.getProvFields(), function(provField, i){
+				if(model.isSourceField(provField))
+					sources.push(model.get(provField));
+			});
+			
+			return sources;
+		},
+		
+		/* 
+		 * Returns an array of all the IDs of objects that are derivations of this object 
+		 */		
+		getDerivations: function(){
+			var derivations = new Array(),
+				model = this;
+		
+			_.each(this.getProvFields(), function(provField, i){
+				if(model.isDerivationField(provField))
+					derivations.push(model.get(provField));
+			});	
+			
+			return derivations;
 		}
 		/****************************/
 

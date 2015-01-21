@@ -13,10 +13,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			indexDoc: null, //A SolrResult object representation of the resource map 
 			size: 0, //The number of items aggregated in this package
 			formattedSize: "",
-			members: []
+			members: [],
+			sources: [],
+			derivations: []
 		},
 		
 		complete: false,
+		
+		type: "Package",
 		
 		initialize: function(options){
 			//When the members attribute of this model is set, it is assumed to be complete. 
@@ -81,7 +85,68 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					}
 				});
 				
+				model.set('memberIds', _.uniq(pids));
 				model.set('members', members);
+			}, "json");
+			
+			return this;
+		},
+		
+		/*
+		 * Will get the sources and derivations of each member of this dataset and group them into packages  
+		 */
+		getProvTrace: function(){
+			//See if there are any prov fields in our index before continuing
+			var solrResult 	 = new SolrResult(),
+			if(!solrResult.getProvFields()) return this;
+			
+			var sources 		   = new Array(),
+				derivations 	   = new Array(),
+				sourcePackages	   = new Array(),
+				derivationPackages = new Array();
+			
+			//Make arrays of unique IDs of objects that are sources or derivations of this package.
+			_.each(this.get("members"), function(member, i){
+				if(member.hasProvTrace()){
+					_.union(sources, member.getSources());					
+					_.union(derivations, member.getDerivations());
+				}
+			});
+			//Compact our list of ids that are in the prov trace by combining the sources and derivations and removing ids of members of this package
+			var externalProvEntities = _.difference(_.union(sources, derivations), this.get("memberIds"));
+			
+			//If there are no sources or derivations, then we do not need to find resource map ids for anything
+			if(!externalProvEntities.length) var idQuery = "";
+			else{
+				//Create a query where we retrieve the ID of the resource map of each source and derivation
+				var idQuery = searchModel.getGroupedQuery("id", externalProvEntities, "OR");
+			}
+			
+			//Create a query to find all the other objects in the index that have a provenance field pointing to a member of this package
+			var provQuery 	 = "",
+				memberIds 	 = this.get("memberIds");
+			_.each(solrResult.getProvFields(), function(fieldName, i, list){
+				provQuery += searchModel.getGroupedQuery(fieldName, memberIds, "OR");
+				if(i < list.length-1) provQuery += "%20OR%20";
+			});
+			
+			//Make a comma-separated list of the provenance field names 
+			var provFieldList = "";
+			_.each(solrResult.getProvFields(), function(fieldName, i, list){
+				provFieldList += fieldName;
+				if(i < list.length-1) provFieldList += ",";
+			});
+			
+			//Combine the two queries with an OR operator
+			if(idQuery.length && provQuery.length) var combinedQuery = idQuery + "%20OR%20" + provQuery;
+			else var combinedQuery = "";
+			
+			//the full and final query in Solr syntax
+			var query = "q=" + combinedQuery + "&fl=resourceMap," + provFieldList + "&wt=json";
+			
+			//Send the query to the query service
+			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr){
+				console.log("got data");
 			}, "json");
 			
 			return this;
