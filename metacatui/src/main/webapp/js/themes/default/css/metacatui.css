@@ -910,7 +910,9 @@ Bold 700
 	}
 	
 	/* Resource map contents table */
-	
+	#downloadContents{
+		overflow-x: overlay;
+	}
 	span.file-type{
 		font-weight: 600;
 		font-size: 1.1em;

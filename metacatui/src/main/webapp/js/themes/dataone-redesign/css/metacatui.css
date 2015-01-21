@@ -82,12 +82,12 @@ Bold 700
       display:block;   
     }
 
-	#Content > article{
+	#Content{
 	  	width: 960px;
 	  	margin: auto;
 		background-color: #FFFFFF;  	
 	}
-	.DataCatalog #Content > article{
+	.DataCatalog #Content{
 		width: 100%;
 	}	
      .container{
@@ -427,6 +427,10 @@ table td.btn-container,
 table th.btn-container{
    width: 1px; /*This will make the cell just as big as the button itself  since hte button will overflow and still be visible*/
 }
+table td.btn-container .btn,
+table th.btn-container .btn{
+	min-width: 90px;
+}
 
   
 /* THE NAVBAR
@@ -693,7 +697,6 @@ table th.btn-container{
 		line-height: 18px;
 		cursor: default;
 	}
-		
 	#Metadata > a[href="#data"]{
 		display: block;
 		font-size: 13px;
@@ -704,10 +707,8 @@ table th.btn-container{
 		font-size: 23px;
 		line-height: 30px;
 		font-weight: 400;
-		border: 1px solid #CCCCCC;
 		box-shadow: none;
-		-moz-box-shadow: none;
-		
+		-moz-box-shadow: none;		
 	}
 	
 	#Metadata .well strong{
@@ -775,8 +776,17 @@ table th.btn-container{
     .file-type i {
   		  color: #999;
   		  margin-left: 5px;
-    }
+    }    
     /**----------------------------------------**/
+    
+    /** Prov charts **/
+    .prov-chart,
+    .prov-chart .node,
+    .prov-chart .connecter{
+    	border-color: #1C6E84;
+    }
+   /**----------------------------------------**/
+      
     
     .controls-well img{
 		max-width: 90%;
@@ -814,6 +824,8 @@ table th.btn-container{
     .taxonomic-range .controls {
 		margin-left: 0px;
 	}
+	/**----------------------------------------**/
+	
 	
 	/** Metadata rendering via the Index **/
 	#metadata-index-details {
@@ -865,6 +877,7 @@ table th.btn-container{
 	.download-this-package{
 		display: none;
 	}
+	/**----------------------------------------**/
 	
 	
 	/** Gutter/Annotation/Sidr ****/
@@ -877,6 +890,7 @@ table th.btn-container{
 	#gutter .icon{
 		float: left;
 	}
+    /**----------------------------------------**/
 
     
 /* Registry CSS

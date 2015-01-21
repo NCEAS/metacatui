@@ -1,0 +1,81 @@
+/** Provenance flow-charts ***/
+.prov-chart{
+    width: 60px;
+    padding-left: 20px;
+    padding-right: 20px;
+   	margin-top: 67px;
+   	display: inline-block;
+   	vertical-align: top;
+   	position: relative;
+}
+.prov-chart.sources{
+   	margin-right: 15px;
+   	padding-right: 10px;
+	border-right-width: 1px;
+   	border-right-style: solid;
+}
+.prov-chart.derivations{
+   	margin-left: 15px;
+   	padding-left: 10px;
+	border-left-width: 1px;
+   	border-left-style: solid;	
+}
+.prov-chart .node{
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 50%;
+	-moz-border-radius: 50%;
+	-webkit-border-radius: 50%;
+	background-color: #FFF;
+	width: 25px;
+	padding: 15px;
+	font-size: 25px;
+	margin-bottom: 10px;
+	color: #666;
+	position: absolute;
+	z-index: 2;
+}
+aside.prov-chart.derivation .node{
+	float: right;
+}
+.prov-chart .connecter{
+	border-top-width: 1px;
+	border-top-style: solid;
+	position: absolute;
+	top: 0px;
+	height: 10px;
+	width: 15px;
+	left: 0px;
+}
+.prov-chart.sources .connecter{
+	left: 45px; /* fallback */
+	left: calc(100% - 15px);
+}
+.prov-chart .pointer{
+	width: 15px;
+	height: 15px;
+	position: absolute;
+	top: 50%; /* fallback */
+	top: calc(50% - 7px);
+}
+.prov-chart.sources .pointer{
+	right: -15px;
+}
+.prov-chart.derivations .pointer{
+	left: -15px;
+}
+.prov-chart h3{
+	font-size: 1em;
+	width: 90px;
+	line-height: 1em;
+	top: -70px;
+	position: absolute;
+}
+.prov-chart .metadata.node i{
+	margin-left: 5px;
+}
+aside + #Metadata{ /*The metadata gets narrowed when there are prov charts next to it*/
+	width: 660px; /* IE fallback */
+	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - padding - borders*/
+	display: inline-block;
+}

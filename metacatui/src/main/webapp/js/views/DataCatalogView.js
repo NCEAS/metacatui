@@ -812,7 +812,7 @@ define(['jquery',
 			if((typeof defaultMNs === "undefined") || !defaultMNs) return false;
 			
 			//Reset each member node checkbox
-			$(mnFilterContainer).find("checkbox.filter").prop("checked", false);
+			var boxes = $(mnFilterContainer).find(".filter").prop("checked", false);
 			
 			//Check the member node checkboxes that are defaults in the search model
 			_.each(defaultMNs, function(member, i){
