@@ -85,7 +85,7 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		createPointer: function(type){
-			return $(document.createElement("img")).attr("src", "./img/" + this.type + "_arrow.gif").addClass("pointer");
+			return $(document.createElement("img")).attr("src", "./img/" + this.type + "_arrow.gif").addClass("prov-pointer");
 		}
 	});
 	

@@ -51,17 +51,17 @@ aside.prov-chart.derivation .node{
 	left: 45px; /* fallback */
 	left: calc(100% - 15px);
 }
-.prov-chart .pointer{
+.prov-chart .prov-pointer{
 	width: 15px;
 	height: 15px;
 	position: absolute;
 	top: 50%; /* fallback */
 	top: calc(50% - 7px);
 }
-.prov-chart.sources .pointer{
+.prov-chart.sources .prov-pointer{
 	right: -15px;
 }
-.prov-chart.derivations .pointer{
+.prov-chart.derivations .prov-pointer{
 	left: -15px;
 }
 .prov-chart h3{
