@@ -6,6 +6,8 @@ define(['jquery',
 		'gmaps',
 		'fancybox',
 		'models/PackageModel',
+		'models/SolrResult',
+		'views/ProvChartView',
 		'views/MetadataIndexView',
 		'views/ExpandCollapseListView',
 		'views/ProvStatementView',
@@ -21,7 +23,7 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, $ui, _, Backbone, gmaps, fancybox, Package, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
+	function($, $ui, _, Backbone, gmaps, fancybox, Package, SolrResult, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
 	'use strict';
 
 	
@@ -69,7 +71,6 @@ define(['jquery',
 		// Render the main metadata view
 		render: function () {
 
-			console.log('Rendering the Metadata view');
 			appModel.set('headerType', 'default');
 			
 			// get the pid to render
@@ -86,36 +87,27 @@ define(['jquery',
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) var endpoint = appModel.get('viewServiceUrl') + pid + ' #Metadata';
 					
 			if(endpoint && (endpoint !== undefined)){
-				// load the document view from the server
-				console.log('calling view endpoint: ' + endpoint);
-	
 				var viewRef = this;
 				this.$el.load(endpoint,
 						function(response, status, xhr) {
-							if (status=="error"){
-								//Our fallback is to show the metadata details from the Solr index
-								viewRef.renderMetadataFromIndex();
-							}
+							//Our fallback is to show the metadata details from the Solr index
+							if (status=="error") viewRef.renderMetadataFromIndex();
 							else{															
 								//Find the taxonomic range and give it a class for styling
 								$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomic-range');
 								
 								viewRef.$el.fadeIn("slow");
-								
+
+								//Get the package details from the index, too
 								viewRef.getPackageDetails();
+								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 							}
 							// render annotator either way
 							viewRef.setUpAnnotator();
 						});
 			}
-			else {
-				this.renderMetadataFromIndex();
-				this.getPackageDetails();
-				// render annotator from index content, too
-				this.setUpAnnotator();
-			}
-			
+			else this.renderMetadataFromIndex();
 			
 			// is this the latest version? (includes DOI link when needed)
 			this.showLatestVersion(pid);		
@@ -123,13 +115,27 @@ define(['jquery',
 			return this;
 		},
 
+		/* If there is no view service available, then display the metadata fields from the index */
 		renderMetadataFromIndex: function(){
 			this.subviews.metadataFromIndex = new MetadataIndex({ 
 					pid: this.pid, 
 					parentView: this 
 					});
-			this.$el.append(this.subviews.metadataFromIndex.render().el);
+
+			//Get the package details from the index, too
+			this.getPackageDetails();
 			
+			//Add the package details once the metadata from the index is drawn 
+			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.insertPackageDetails);
+
+			//Add the metadata HTML
+			this.$el.append(this.subviews.metadataFromIndex.render().el);	
+			
+			//Add a map of the spatial coverage
+			if(gmaps) this.insertSpatialCoverageMap();
+			
+			// render annotator from index content, too
+			this.setUpAnnotator();
 		},
 		
 		insertBackLink: function(){
@@ -150,7 +156,7 @@ define(['jquery',
 			
 			//Create a model representing the data package
 			this.packageModel = new Package();
-			this.listenTo(this.packageModel, 'complete', this.insertPackageDetails);
+			this.listenToOnce(this.packageModel, 'complete', this.insertPackageDetails);
 			this.packageModel.getMembersByMemberID(pid);
 		},
 		
@@ -160,9 +166,14 @@ define(['jquery',
 		insertPackageDetails: function(){	
 			var viewRef = this;
 			
+			// There are two different events that are calling this function - when the MetadataIndexView is complete
+			// and when the Package model is complete. We need to make sure both are done before inserting the package details.
+			// If we are not rendering the metadata from the index and the package model is complete, we can continue.
+			if((this.subviews.metadataFromIndex) && !this.subviews.metadataFromIndex.complete) return this;
+			if(!this.packageModel.complete) return this;
+				
 			//*** Find the DOM element to append the HTML to. We want to create a new div underneath the first well with the citation
-			var wells = viewRef.$el.find('.well');
-		
+			var wells = viewRef.$el.find('.well');		
 			//Find the div.well with the citation. If we never find it, we don't insert the list of contents
 			_.each(wells, function(well){
 				if($(well).find('#viewMetadataCitationLink').length > 0){
@@ -175,11 +186,10 @@ define(['jquery',
 					
 				}
 			});
-
 			//Otherwise, just find the first element with a citation class or just use the first well - useful for when we display the metadata from the indexed fields
 			if(!this.citationEl) this.citationEl = this.$('.citation')[0] || wells[0];
 			
-			//Draw the package table	
+			//** Draw the package table **//	
 			var tableView = new PackageTable({ model: this.packageModel });
 			//Get the package table container
 			var tableContainer = this.$("#downloadContents");
@@ -187,17 +197,23 @@ define(['jquery',
 				tableContainer = $(document.createElement("div")).attr("id", "downloadContents");
 				$(this.citationEl).after(tableContainer);
 			}
+			//Insert the package table HTML 
 			$(tableContainer).html(tableView.render().el);
 			
 						
-			//Move the download button to our download content list area
+			//** Move the download button to our download content list area **//
 		    $("#downloadPackage").detach();
 		    var citationText = $(this.citationEl).find(".span10");
 		    				   $(citationText).removeClass("span10");
 		    				   $(citationText).addClass("span12");
+		    				
 		    				   
+		    //Display the images in this package
+		    this.insertDataDetails();
 		    //Show annotations about this package
-		    this.showProvenance();			
+		    this.showProvenance();
+		    
+		    return this;
 		},
 				
 		insertSpatialCoverageMap: function(coordinates){
@@ -281,20 +297,40 @@ define(['jquery',
 
 			var packageMembers = this.packageModel.get('members');
 			var view = this;
-			
-			//Display the images in this package
-			this.insertVisuals(packageMembers);
-						
+
+			//Create provenance statements about this document if there are any prov annotations
 			_.each(packageMembers, function(member){
-				//Create provenance statements about this document if there are any prov annotations
 				var provenanceEl = new ProvStatement().render(member).el;
 						
 				//Insert the provenance statements
 				var container = $('[data-obj-id=" + member.id + "]').find(".provenance-container");
-				if($(container).length == 0) view.$el.append(provenanceEl);
-				else $(container).prepend(provenanceEl);
+				if($(container).length > 0) $(container).prepend(provenanceEl);
 			});
 			
+			//this.listenToOnce(this.packageModel, "change:provenance", this.testProvChart);
+			//this.packageModel.getProvTrace();
+			//TODO: For development only... remove when index is updated
+			this.testProvChart();
+		},
+		
+		//Seperate out the development provenance chart-drawing stuff for now... "faking" some data until the index is populated
+		testProvChart: function(){
+			var sources = new Array(new Package()); 
+			var derivations = new Array(new Package(), new Package(), new SolrResult({ formatType: "METADATA"})); 
+			var context = this.packageModel;
+				
+			//Draw a flow chart to represent the sources and derivations
+			var sourceProvChart = new ProvChart({
+				sources: sources,
+				context: context
+			});
+			var derivationProvChart = new ProvChart({
+				derivations: derivations,
+				context: context
+			});
+			
+			this.$("#Metadata").before(sourceProvChart.render().el);			
+			this.$("#Metadata").after(derivationProvChart.render().el);
 		},
 		
 		// checks if the pid is already a DOI
@@ -434,9 +470,9 @@ define(['jquery',
 		
 		/*
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
-		 * param objects - an array of SolrResults that represent the data objects returned from the index. Each should be an image
 		 */
-		insertVisuals: function(objects){
+		insertDataDetails: function(){
+			return;
 			var dataDisplay = "",
 				viewRef = this,
 				images = [],

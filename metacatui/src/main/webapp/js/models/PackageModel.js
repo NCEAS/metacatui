@@ -14,8 +14,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			size: 0, //The number of items aggregated in this package
 			formattedSize: "",
 			members: [],
+			memberIds: [],
 			sources: [],
-			derivations: []
+			derivations: [],
+			provenance: null
 		},
 		
 		complete: false,
@@ -25,7 +27,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		initialize: function(options){
 			//When the members attribute of this model is set, it is assumed to be complete. 
 			//Since this attribute is an array, do not iteratively push new items to it or this will be triggered each time.
-			this.on("change:members", this.flagComplete);
+			this.on("change:members", this.flagComplete);			
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */
@@ -48,6 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					//If there is no resource map, then this is the only document to in this package
 					if((typeof doc.resourceMap === "undefined") || !doc.resourceMap){
 						model.set('id', null);
+						model.set('memberIds', new Array(doc.id));
 						model.set('members', [new SolrResult(doc)]);
 					}
 					else{
@@ -96,8 +99,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		 * Will get the sources and derivations of each member of this dataset and group them into packages  
 		 */
 		getProvTrace: function(){
+			var model = this;
+			
 			//See if there are any prov fields in our index before continuing
-			var solrResult 	 = new SolrResult(),
+			var solrResult 	 = new SolrResult();
 			if(!solrResult.getProvFields()) return this;
 			
 			var sources 		   = new Array(),
@@ -139,7 +144,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Combine the two queries with an OR operator
 			if(idQuery.length && provQuery.length) var combinedQuery = idQuery + "%20OR%20" + provQuery;
-			else var combinedQuery = "";
+			else return this;
 			
 			//the full and final query in Solr syntax
 			var query = "q=" + combinedQuery + "&fl=resourceMap," + provFieldList + "&wt=json";
@@ -147,6 +152,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Send the query to the query service
 			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr){
 				console.log("got data");
+				
+				model.set("provenance", "complete");
+				
 			}, "json");
 			
 			return this;

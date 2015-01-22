@@ -122,28 +122,6 @@ define(['jquery', 'underscore', 'backbone'],
 			//----All other filters with a basic name:value pair pattern----
 			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial"];
 			
-			//Function here to check for spaces in a string - we'll use this to url encode the query
-			var needsQuotes = function(entry){
-					
-				//Check for spaces
-				var space = null;
-				
-				space = entry.indexOf(" ");
-				
-				if(space >= 0){
-					return true;
-				}
-				
-				//Check for the colon : character
-				var colon = null;
-				colon = entry.indexOf(":");
-				if(colon >= 0){
-					return true;
-				}
-				
-				return false;
-			};
-			
 			//Start the query string
 			var query = "";
 			
@@ -171,7 +149,7 @@ define(['jquery', 'underscore', 'backbone'],
 					else
 						thisTaxon = thisTaxon.trim();
 					
-					if(needsQuotes(thisTaxon)) value = "%22" + encodeURIComponent(thisTaxon) + "%22";
+					if(this.needsQuotes(thisTaxon)) value = "%22" + encodeURIComponent(thisTaxon) + "%22";
 					else value = encodeURIComponent(thisTaxon);
 					
 					query += "+(" +
@@ -252,7 +230,7 @@ define(['jquery', 'underscore', 'backbone'],
 				for (var i=0; i < additionalCriteria.length; i++){
 					var value;
 					
-					//if(needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
+					//if(this.needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
 					value = encodeURIComponent(additionalCriteria[i]);
 					
 					query += "+" + value;
@@ -268,7 +246,7 @@ define(['jquery', 'underscore', 'backbone'],
 					if(typeof filterValue == "object")
 						filterValue = filterValue.value;
 					
-					if(needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+					if(this.needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
 					else filterValue = encodeURIComponent(filterValue);
 					
 					query += "+" + filterValue;
@@ -300,7 +278,7 @@ define(['jquery', 'underscore', 'backbone'],
 						filterValue = filterValue.trim();
 						
 						// Does this need to be wrapped in quotes?
-						if (needsQuotes(filterValue)){
+						if (model.needsQuotes(filterValue)){
 							filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
 						}
 						// TODO: surround with **?
@@ -334,10 +312,57 @@ define(['jquery', 'underscore', 'backbone'],
 			return facetQuery;
 		},
 		
+		//Check for spaces in a string - we'll use this to url encode the query
+		needsQuotes: function(entry){
+				
+			//Check for spaces
+			var space = null;
+			
+			space = entry.indexOf(" ");
+			
+			if(space >= 0){
+				return true;
+			}
+			
+			//Check for the colon : character
+			var colon = null;
+			colon = entry.indexOf(":");
+			if(colon >= 0){
+				return true;
+			}
+			
+			return false;
+		},
+		
+		/*
+		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
+		 * Example:  title:(resistance OR salmon OR "pink salmon")
+		 */
+		getGroupedQuery: function(fieldName, values, operator){
+			var query = "",
+				numValues = values.length,
+				model = this;
+			
+			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) var operator = "OR";
+			
+			if(numValues == 1) query = fieldName + ":" + values[0];
+			else{
+				_.each(values, function(value, i){
+					if(model.needsQuotes(value)) value = '"' + value + '"';
+						
+					if((i == 0) && (numValues > 1)) 	   query += "id:(" + value;
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
+				});
+			}
+			
+			return query;
+		},
+		
 		clear: function() {
 			console.log('Clear the filters');
 		    return this.set(_.clone(this.defaults()));
-		  }
+		}
 		
 	});
 	return Search;

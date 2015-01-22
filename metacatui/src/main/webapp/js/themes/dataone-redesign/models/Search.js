@@ -354,6 +354,31 @@ define(['jquery', 'underscore', 'backbone'],
 			return facetQuery;
 		},
 		
+		/*
+		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
+		 * Example:  title:(resistance OR salmon OR "pink salmon")
+		 */
+		getGroupedQuery: function(fieldName, values, operator){
+			var query = "",
+				numValues = values.length,
+				model = this;
+			
+			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) var operator = "OR";
+			
+			if(numValues == 1) query = fieldName + ":" + values[0];
+			else{
+				_.each(values, function(value, i){
+					if(model.needsQuotes(value)) value = '"' + value + '"';
+						
+					if((i == 0) && (numValues > 1)) 	   query += "id:(" + value;
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
+				});
+			}
+			
+			return query;
+		},
+		
 		clear: function() {
 			console.log('Clear the filters');
 		    return this.set(_.clone(this.defaults()));

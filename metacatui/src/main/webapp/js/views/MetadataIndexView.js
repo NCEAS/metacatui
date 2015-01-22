@@ -13,7 +13,7 @@ define(['jquery',
 		
 	var MetadataIndexView = Backbone.View.extend({
 		
-		id: 'MetadataIndex',
+		id: 'Metadata',
 		
 		className: "metadata-index", 
 		
@@ -34,10 +34,10 @@ define(['jquery',
 		
 		initialize: function (options) {
 			this.pid = options.pid || null;
-			this.el.id = this.id + "-" + this.pid; //Give this element a specific ID in case multiple MetadataIndex views are on one page
+			//this.el.id = this.id + "-" + this.pid; //Give this element a specific ID in case multiple MetadataIndex views are on one page
 			this.parentView = options.parentView || null;
 			
-			this.listenTo(this.parentView, "addDataDetails", this.addDataDetails);
+			this.listenTo(this.parentView, "addDataDetails", this.addDataDetails);			
 		},
 				
 		render: function(){
@@ -113,16 +113,12 @@ define(['jquery',
 							pubDate: pubDate,
 							dateUploaded: dateUploaded,
 							title: title
-						}));
-
-						if(view.parentView){
-							view.parentView.insertResourceMapContents(view.pid);
-							if(gmaps && doc.northBoundCoord) view.parentView.insertSpatialCoverageMap([doc.northBoundCoord, doc.southBoundCoord, doc.eastBoundCoord, doc.westBoundCoord]);	
-						}
-						
+						}));					
 					});
 										
 				}
+				
+				view.flagComplete();
 
 			}, "json")
 			.error(function(){
@@ -138,7 +134,7 @@ define(['jquery',
 			
 			var html = "",
 				titleHTML = (typeof title === "undefined") ? "" : "<h4>" + title + "</h4>",
-				sectionClass = (typeof className === "undefined") ? "" : className,
+				sectionClass = (typeof className === "undefined") ? title.replace(/ /g, "") : className,
 				view = this,
 				populated = false;
 			
@@ -204,6 +200,11 @@ define(['jquery',
 			*/
 
 			this.$el.append(html);
+		},
+		
+		flagComplete: function(){
+			this.complete = true;
+			this.trigger("complete");
 		},
 		
 		onClose: function(){
