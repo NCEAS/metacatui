@@ -3,12 +3,13 @@ define(['jquery',
 		'underscore', 
 		'backbone',
 		'gmaps',
+		'models/SolrResult',
 		'text!templates/loading.html',
 		'text!templates/alert.html',
 		'text!templates/attribute.html',
 		'text!templates/metadataIndex.html'
 	 ], 				
-	function($, _, Backbone, gmaps, LoadingTemplate, alertTemplate, AttributeTemplate, MetadataIndexTemplate) {
+	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, MetadataIndexTemplate) {
 	'use strict';
 		
 	var MetadataIndexView = Backbone.View.extend({
@@ -35,9 +36,7 @@ define(['jquery',
 		initialize: function (options) {
 			this.pid = options.pid || null;
 			//this.el.id = this.id + "-" + this.pid; //Give this element a specific ID in case multiple MetadataIndex views are on one page
-			this.parentView = options.parentView || null;
-			
-			this.listenTo(this.parentView, "addDataDetails", this.addDataDetails);			
+			this.parentView = options.parentView || null;			
 		},
 				
 		render: function(){
@@ -64,47 +63,48 @@ define(['jquery',
 					view.docs = data.response.docs;
 					
 					_.each(data.response.docs, function(doc, i, list){
-												
+						
 						var metadataHTML = "",
 							id = doc.id,
 							creator = doc.origin,
 							title = doc.title,
 							pubDate = doc.pubDate,
 							dateUploaded = doc.dateUploaded,
-							keys = Object.keys(doc);
+							keys = Object.keys(doc),
+							docModel = new SolrResult(doc);
 							
 						//Extract General Info details that we want to list first
 						var generalInfoKeys = ["title", "id", "abstract", "pubDate", "keywords"];
 						keys = _.difference(keys, generalInfoKeys);
-						metadataHTML += view.formatAttributeSection(doc, generalInfoKeys, "General");
+						metadataHTML += view.formatAttributeSection(docModel, generalInfoKeys, "General");
 
 						//Extract Spatial details
 						var spatialKeys = ["site", "southBoundCoord", "northBoundCoord", "westBoundCoord", "eastBoundCoord"];
 						keys = _.difference(keys, spatialKeys);
-						metadataHTML += view.formatAttributeSection(doc, spatialKeys, "Geographic Region");
+						metadataHTML += view.formatAttributeSection(docModel, spatialKeys, "Geographic Region");
 						
 						//Extract Temporal Coverage details
 						var temporalKeys = ["beginDate", "endDate"];
 						keys = _.difference(keys, temporalKeys);
-						metadataHTML += view.formatAttributeSection(doc, temporalKeys, "Temporal Coverage");
+						metadataHTML += view.formatAttributeSection(docModel, temporalKeys, "Temporal Coverage");
 						
 						//Extract Taxonomic Coverage details
 						var taxonKeys = ["order", "phylum", "family", "genus", "species", "scientificName"];
 						keys = _.difference(keys, taxonKeys);
-						metadataHTML += view.formatAttributeSection(doc, taxonKeys, "Taxonomic Coverage");
+						metadataHTML += view.formatAttributeSection(docModel, taxonKeys, "Taxonomic Coverage");
 						
 						//Extract People details
 						var peopleKeys = ["origin", "investigator", "contactOrganization", "project"];
 						keys = _.difference(keys, peopleKeys);
-						metadataHTML += view.formatAttributeSection(doc, peopleKeys, "People and Associated Parties");
+						metadataHTML += view.formatAttributeSection(docModel, peopleKeys, "People and Associated Parties");
 						
 						//Extract Access Control details
 						var accessKeys = ["isPublic", "submitter", "rightsHolder", "writePermission", "readPermission", "changePermission", "authoritativeMN"];
 						keys = _.difference(keys, accessKeys);
-						metadataHTML += view.formatAttributeSection(doc, accessKeys, "Access Control");
+						metadataHTML += view.formatAttributeSection(docModel, accessKeys, "Access Control");
 						
 						//Add the rest of the metadata
-						metadataHTML += view.formatAttributeSection(doc, keys, "Other");
+						metadataHTML += view.formatAttributeSection(docModel, keys, "Other");
 						
 						view.$el.html(view.metadataIndexTemplate({ 
 							metadata: metadataHTML,
@@ -139,8 +139,8 @@ define(['jquery',
 				populated = false;
 			
 			_.each(keys, function(key, keyNum, list){
-				if(doc[key]){
-					html += view.formatAttribute(key, doc[key]);
+				if(doc.get(key)){
+					html += view.formatAttribute(key, doc.get(key));
 					populated = true;
 				}
 			});
@@ -181,7 +181,8 @@ define(['jquery',
 			return finalResult;
 		},
 		
-		addDataDetails: function(){
+		insertDataDetails: function(){
+			var view = this;
 			
 			//Get the Package Model - it is attached with the parent Metadata View
 			var pkg = this.parentView.packageModel;
@@ -189,17 +190,15 @@ define(['jquery',
 			//Start some html
 			var html = "";
 			
-			/*
 			_.each(pkg.get("members"), function(solrResult, i){
 				if(solrResult.get("formatType") != "DATA") return;
 				
 				//Add a section for the data details, just like the other attribute sections
 				var keys = ["id", "size", "views", "pubDate", "memberNode", "formatId"];
-				html += this.formatAttributeSection(solrResult, keys, "Data Table, Image, or Other Data Details");				
-			})
-			*/
+				html += view.formatAttributeSection(solrResult, keys, "Data Table, Image, or Other Data Details", "entityDetails");				
+			});
 
-			this.$el.append(html);
+			this.$(".General").after(html);
 		},
 		
 		flagComplete: function(){

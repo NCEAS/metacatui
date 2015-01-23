@@ -182,8 +182,7 @@ define(['jquery',
 					viewRef.citationEl = well;
 					
 					//Mark this in the DOM for CSS styling
-					$(well).addClass('citation');
-					
+					$(well).addClass('citation');					
 				}
 			});
 			//Otherwise, just find the first element with a citation class or just use the first well - useful for when we display the metadata from the indexed fields
@@ -207,7 +206,7 @@ define(['jquery',
 		    				   $(citationText).removeClass("span10");
 		    				   $(citationText).addClass("span12");
 		    				
-		    				   
+		    	   
 		    //Display the images in this package
 		    this.insertDataDetails();
 		    //Show annotations about this package
@@ -472,54 +471,55 @@ define(['jquery',
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
 		 */
 		insertDataDetails: function(){
-			return;
+			//If there is a metadataIndex subview, render from there.
+			if(this.subviews.metadataFromIndex) this.subviews.metadataFromIndex.insertDataDetails();
+
 			var dataDisplay = "",
 				viewRef = this,
 				images = [],
 				pdfs = [],
 				other = [],
-				entityDetailsContainers = this.$el.find(".entitydetails");
+				entityDetailsContainers = this.$el.find(".entitydetails"),
+				packageMembers = this.packageModel.get("members");
 						
 			//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
-			for(var i=0; i<objects.length; i++){
+			for(var i=0; i<packageMembers.length; i++){
 				var type = "";
 				
 				//Make sure this is a visual object (image or PDF)
-				if(this.isImage(objects[i])){
+				if(this.isImage(packageMembers[i])){
 					type = "image";
-					images.push(objects[i]);
+					images.push(packageMembers[i]);
 				}
-				else if(this.isPDF(objects[i])){
+				else if(this.isPDF(packageMembers[i])){
 					type = "pdf";
-					pdfs.push(objects[i]);
+					pdfs.push(packageMembers[i]);
 				}
-				else if (objects[i].get('formatType') == "METADATA"){
+				else if (packageMembers[i].get('formatType') == "METADATA"){
 					continue;
 				}
 				else{
 					type = "other";
-					other.push(objects[i]);
+					other.push(packageMembers[i]);
 				}
 				
-				
 				//Find the part of the HTML Metadata view that describes this data object
-				var container = $(entityDetailsContainers).find(":contains('" + objects[i].id + "')").parents(".entitydetails");
-				
+				var container = $(entityDetailsContainers).find(":contains('" + packageMembers[i].get("id") + "')").parents(".entitydetails");					
 				var title = "";
-				
-				//Harvest the Entity Name for a lightbox caption 
-				if(container !== undefined)
-					title = container.find("label:contains('Entity Name')").next().text();
 					
-				if((container !== undefined) && (!title)) 
-					title = container.find("label:contains('Object Name')").next().text();
-				
-				var objID = objects[i].id;
-				
+				//Harvest the Entity Name for a lightbox caption 
+				if(!container.length)
+					title = $(entityDetailsContainers).find("label:contains('Entity Name')").next().text();
+						
+				if(!container.length && !title) 
+					title = $(entityDetailsContainers).find("label:contains('Object Name')").next().text();
+					
+				var objID = packageMembers[i].get("id");
+					
 				//Create HTML for the visuals using the dataDisplay template
 				dataDisplay = this.dataDisplayTemplate({
 						 type : type,
-						  src : appModel.get('objectServiceUrl') + objects[i].id,
+						  src : appModel.get('objectServiceUrl') + packageMembers[i].get("id"),
 						title : title,
 					   objID : objID
 				});
@@ -527,9 +527,8 @@ define(['jquery',
 				// Insert the HTML into the DOM 
 				if(!title) $(entityDetailsContainers).after(dataDisplay);	
 				else 	   $(container).prepend(dataDisplay);	
-				
 			}
-			
+						
 			//==== Initialize the fancybox images =====
 			// We will be checking every half-second if all the HTML has been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
 			var numImages  = images.length,
