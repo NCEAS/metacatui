@@ -1,3 +1,8 @@
+/** Icons **/
+.btn > i{
+	margin-left: 5px;
+}
+
 /** Provenance flow-charts ***/
 .prov-chart{
     width: 60px;
@@ -80,7 +85,7 @@ aside + #Metadata{ /*The metadata gets narrowed when there are prov charts next 
 	display: inline-block;
 }
 
-/** The MetadataIndex View **/
+/** The Metadata and MetadataIndex View **/
 	
 	#metadata-index-details .text,
 	#metadata-index-details .attributeDescription,
@@ -107,4 +112,25 @@ aside + #Metadata{ /*The metadata gets narrowed when there are prov charts next 
 	}
 	#metadata-index-details .entityDetails .size{
 		display: inherit;
+	}
+	
+	/** The Data Details box in the Metadata View**/
+	.entityDetails > h4 > *{
+		float: left;
+		margin-bottom: 20px;
+	}
+	.entityDetails > h4 > i{
+		font-size: 1.5em;
+	}
+	.entityDetails > h4 > .title{
+		width: 80%;
+		width: calc(100% - 200px);
+		margin-left: 20px;
+		word-wrap: break-word;
+	}
+	.entityDetails > h4 > .btn{
+		float: right;
+	}
+	.entityDetails > .control-group{
+		clear: both;
 	}

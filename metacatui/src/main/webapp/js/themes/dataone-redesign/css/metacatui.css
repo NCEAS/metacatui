@@ -797,6 +797,10 @@ table th.btn-container .btn{
     	padding: 20px;
     }
     
+    .entityDetails h4{
+    	color: #1C6E84;
+    }
+    
     .controls-well img{
 		max-width: 90%;
 		max-height: 900px;

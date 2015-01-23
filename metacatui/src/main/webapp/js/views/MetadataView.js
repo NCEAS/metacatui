@@ -330,6 +330,8 @@ define(['jquery',
 			
 			this.$("#Metadata").before(sourceProvChart.render().el);			
 			this.$("#Metadata").after(derivationProvChart.render().el);
+			this.$(".entityDetails").before(sourceProvChart.el.cloneNode(true));			
+			this.$(".entityDetails").after(derivationProvChart.el.cloneNode(true));
 		},
 		
 		// checks if the pid is already a DOI

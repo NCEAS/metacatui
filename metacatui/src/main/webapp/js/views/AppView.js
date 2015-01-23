@@ -203,7 +203,6 @@ define(['jquery',
 				var oldView = this.currentView;
 				
 				this.currentView.$el.fadeOut('slow', function() {
-					console.log('complete with fadeout');
 					// clean up old view
 					if (oldView.onClose){
 						oldView.onClose();
@@ -236,7 +235,12 @@ define(['jquery',
 		
 		// scroll to top of page
 		scrollToTop: function() {
-			$("html, body").animate({ scrollTop: 0 }, "slow");
+			this.$el.animate({ scrollTop: 0 }, "slow");
+			return false;
+		},
+		
+		scrollTo: function(pageElement){
+			this.$el.animate({ scrollTop: $(pageElement).offset().top - 40}, 1000);
 			return false;
 		}
 				

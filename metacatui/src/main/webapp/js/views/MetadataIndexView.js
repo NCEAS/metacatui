@@ -7,9 +7,10 @@ define(['jquery',
 		'text!templates/loading.html',
 		'text!templates/alert.html',
 		'text!templates/attribute.html',
+		'text!templates/downloadButton.html',
 		'text!templates/metadataIndex.html'
 	 ], 				
-	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, MetadataIndexTemplate) {
+	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, MetadataIndexTemplate) {
 	'use strict';
 		
 	var MetadataIndexView = Backbone.View.extend({
@@ -25,6 +26,8 @@ define(['jquery',
 		loadingTemplate: _.template(LoadingTemplate),
 		
 		attributeTemplate: _.template(AttributeTemplate),
+		
+		downloadButtonTemplate: _.template(DownloadButtonTemplate),
 		
 		alertTemplate: _.template(alertTemplate),
 		
@@ -64,7 +67,7 @@ define(['jquery',
 					
 					_.each(data.response.docs, function(doc, i, list){
 						
-						var metadataHTML = "",
+						var metadataEl = $(document.createElement("section")).attr("id", "metadata-index-details"),
 							id = doc.id,
 							creator = doc.origin,
 							title = doc.title,
@@ -76,44 +79,45 @@ define(['jquery',
 						//Extract General Info details that we want to list first
 						var generalInfoKeys = ["title", "id", "abstract", "pubDate", "keywords"];
 						keys = _.difference(keys, generalInfoKeys);
-						metadataHTML += view.formatAttributeSection(docModel, generalInfoKeys, "General");
+						$(metadataEl).append(view.formatAttributeSection(docModel, generalInfoKeys, "General"));
 
 						//Extract Spatial details
 						var spatialKeys = ["site", "southBoundCoord", "northBoundCoord", "westBoundCoord", "eastBoundCoord"];
 						keys = _.difference(keys, spatialKeys);
-						metadataHTML += view.formatAttributeSection(docModel, spatialKeys, "Geographic Region");
+						$(metadataEl).append(view.formatAttributeSection(docModel, spatialKeys, "Geographic Region"));
 						
 						//Extract Temporal Coverage details
 						var temporalKeys = ["beginDate", "endDate"];
 						keys = _.difference(keys, temporalKeys);
-						metadataHTML += view.formatAttributeSection(docModel, temporalKeys, "Temporal Coverage");
+						$(metadataEl).append(view.formatAttributeSection(docModel, temporalKeys, "Temporal Coverage"));
 						
 						//Extract Taxonomic Coverage details
 						var taxonKeys = ["order", "phylum", "family", "genus", "species", "scientificName"];
 						keys = _.difference(keys, taxonKeys);
-						metadataHTML += view.formatAttributeSection(docModel, taxonKeys, "Taxonomic Coverage");
+						$(metadataEl).append(view.formatAttributeSection(docModel, taxonKeys, "Taxonomic Coverage"));
 						
 						//Extract People details
 						var peopleKeys = ["origin", "investigator", "contactOrganization", "project"];
 						keys = _.difference(keys, peopleKeys);
-						metadataHTML += view.formatAttributeSection(docModel, peopleKeys, "People and Associated Parties");
+						$(metadataEl).append(view.formatAttributeSection(docModel, peopleKeys, "People and Associated Parties"));
 						
 						//Extract Access Control details
 						var accessKeys = ["isPublic", "submitter", "rightsHolder", "writePermission", "readPermission", "changePermission", "authoritativeMN"];
 						keys = _.difference(keys, accessKeys);
-						metadataHTML += view.formatAttributeSection(docModel, accessKeys, "Access Control");
+						$(metadataEl).append(view.formatAttributeSection(docModel, accessKeys, "Access Control"));
 						
 						//Add the rest of the metadata
-						metadataHTML += view.formatAttributeSection(docModel, keys, "Other");
+						$(metadataEl).append(view.formatAttributeSection(docModel, keys, "Other"));
 						
 						view.$el.html(view.metadataIndexTemplate({ 
-							metadata: metadataHTML,
 							creator: creator,
 							id: id,
 							pubDate: pubDate,
 							dateUploaded: dateUploaded,
 							title: title
-						}));					
+						}));
+						
+						view.$("#downloadContents").after(metadataEl);
 					});
 										
 				}
@@ -132,9 +136,21 @@ define(['jquery',
 		formatAttributeSection: function(doc, keys, title, className){
 			if(keys.length == 0) return "";
 			
+			if(typeof title === "string") {
+				var titleHTML = $(document.createElement("h4")).text(title);
+				var titleText = title;
+			}
+			else if(typeof title === "undefined"){
+				var titleHTML =  $(document.createElement("h4"));
+				var titleText = "";
+			}
+			else{
+				var titleHTML = title;
+				var titleText = titleHTML.text();
+			}
+				
 			var html = "",
-				titleHTML = (typeof title === "undefined") ? "" : "<h4>" + title + "</h4>",
-				sectionClass = (typeof className === "undefined") ? title.replace(/ /g, "") : className,
+				sectionClass = (typeof className === "undefined") ? titleText.replace(/ /g, "") : className,
 				view = this,
 				populated = false;
 			
@@ -145,9 +161,15 @@ define(['jquery',
 				}
 			});
 			
-			if(populated) html = '<section class="' + sectionClass + '">' + titleHTML + html + '</section>';
-						
-			return html;
+			if(populated){
+				var section = $(document.createElement("section"))
+								  .addClass(sectionClass)
+								  .append(titleHTML)
+								  .append(html);
+				
+				return section;
+			}
+			else return null;
 		},
 		
 		formatAttribute: function(attribute, value){
@@ -187,18 +209,34 @@ define(['jquery',
 			//Get the Package Model - it is attached with the parent Metadata View
 			var pkg = this.parentView.packageModel;
 			
+			if(pkg.get("members").length <= 1) return;
+			
 			//Start some html
-			var html = "";
+			var html = $(document.createElement("section"));
 			
 			_.each(pkg.get("members"), function(solrResult, i){
 				if(solrResult.get("formatType") != "DATA") return;
 				
 				//Add a section for the data details, just like the other attribute sections
-				var keys = ["id", "size", "views", "pubDate", "memberNode", "formatId"];
-				html += view.formatAttributeSection(solrResult, keys, "Data Table, Image, or Other Data Details", "entityDetails");				
+				var keys  = ["id", "size", "views", "pubDate", "memberNode", "formatId"];
+				
+				//Create a header for this data object
+				var icon   = $(document.createElement("i")).addClass("icon-table"),
+					title  = $(document.createElement("span")).text(solrResult.get("id")).addClass("title"),
+					downloadBtn = view.downloadButtonTemplate({ href: appModel.get("objectServiceUrl") + encodeURIComponent(solrResult.get("id")), className: "btn btn-primary" }),
+					anchor = $(document.createElement("a")).attr("name", encodeURIComponent(solrResult.get("id"))),
+					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn);
+				
+				//Create the section
+				$(html).append(view.formatAttributeSection(solrResult, keys, header, "entityDetails"));	
 			});
-
-			this.$(".General").after(html);
+			
+			//Glue together the header and attribute info section
+			var header = $(document.createElement("h4")).text("Data Table, Image, and Other Data Details");						
+			var section = $(html).prepend(header);
+			
+			//Insert into the DOM right after the "general" information
+			this.$(".General").after(section);
 		},
 		
 		flagComplete: function(){

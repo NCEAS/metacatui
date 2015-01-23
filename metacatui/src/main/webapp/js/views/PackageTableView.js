@@ -36,6 +36,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		
 		className : "download-contents",
 		
+		events: {
+			"click .btn.preview" : "previewData"
+		},
+		
 		/*
 		 * Creates a table of package/download contents that this metadata doc is a part of
 		 */
@@ -132,8 +136,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				//"Preview" link cell
 				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");				
 				var moreInfo = $(document.createElement("a"))
-								.attr("href", "#" + id)
-								.addClass("btn")
+								.attr("href", "#view/" + id)
+								.addClass("btn preview")
+								.attr("data-id", encodeURIComponent(id))
 								.text("Preview");
 				var moreInfoIcon = $(document.createElement("i"))
 									.addClass("icon icon-info-sign");
@@ -162,6 +167,29 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.$("thead").after(tbody);
 			
 			return this;
+		},
+		
+		/**
+		 * When the "Preview" button in the table is clicked while we are on the Metadata view, 
+		 * we want to scroll to the anchor tag of this data object within the page instead of navigating
+		 * to the metadata page again, which refreshes the page and re-renders (more loading time)
+		 **/
+		previewData: function(e){
+			//Don't go anywhere yet...
+			e.preventDefault();
+			
+			//Get the target of the click
+			var button = $(e.target);
+			
+			//Are we on the Metadata view? If not, navigate to the link href
+			var hash  = window.location.hash;
+			var page = hash.substring(hash.indexOf("#")+1, 5);
+			if(page != "view") window.location = $(button).attr("href");  
+			
+			//If we are on the Metadata view, then let's scroll to the anchor
+			var id = $(button).attr("data-id");
+			var anchor = $("a[name='" + id + "']");
+			if(anchor.length) appView.scrollTo(anchor[0]);
 		},
 		
 		/**
