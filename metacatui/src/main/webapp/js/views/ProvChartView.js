@@ -70,7 +70,7 @@ define(['jquery', 'underscore', 'backbone'],
 			if(type == "metadata") icon = "icon-file-text"
 				
 			var nodeEl = $(document.createElement("div"))
-						 .addClass(type + " node")
+						 .addClass(type + " node pointer")
 						 .css("top", (position * this.nodeHeight) - (this.nodeHeight/2));
 			var iconEl = $(document.createElement("i"))
 						 .addClass(icon);

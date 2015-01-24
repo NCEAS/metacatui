@@ -328,6 +328,10 @@ define(['jquery',
 				context: context
 			});
 			
+			//Indicate that the context has a provenance chart next to it by adding a class (used for styling)
+			this.$("#Metadata").addClass("hasProv");
+			this.$(".entityDetails").addClass("hasProv");
+			
 			this.$("#Metadata").before(sourceProvChart.render().el);			
 			this.$("#Metadata").after(derivationProvChart.render().el);
 			this.$(".entityDetails").before(sourceProvChart.el.cloneNode(true));			

@@ -3,7 +3,9 @@
 	margin-left: 5px;
 }
 
-/** Provenance flow-charts ***/
+/****************************************** 
+** Provenance flow-charts ***
+******************************************/
 .prov-chart{
     width: 60px;
     padding-left: 20px;
@@ -79,58 +81,65 @@ aside.prov-chart.derivation .node{
 .prov-chart .metadata.node i{
 	margin-left: 5px;
 }
-aside + #Metadata{ /*The metadata gets narrowed when there are prov charts next to it*/
+article.hasProv{ /*The metadata gets narrowed when there are prov charts next to it*/
 	width: 660px; /* IE fallback */
 	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - padding - borders*/
 	display: inline-block;
 }
 
-/** The Metadata and MetadataIndex View **/
+/****************************************** 
+** The Metadata and MetadataIndex View **
+******************************************/	
+#metadata-index-details .text,
+#metadata-index-details .attributeDescription,
+#metadata-index-details .checksum,
+#metadata-index-details .dataUrl,
+#metadata-index-details .fileID,
+#metadata-index-details .size,
+#metadata-index-details .resourceMap,
+#metadata-index-details .presentationCat,
+#metadata-index-details .checksumAlgorithm,
+#metadata-index-details .author,
+#metadata-index-details .authorGivenName,
+#metadata-index-details .authorGivenNameSort,
+#metadata-index-details .authorSurName,	
+#metadata-index-details .authorSurNameSort,
+#metadata-index-details .authorLastName,
+#metadata-index-details .replicaVerifiedDate,
+#metadata-index-details .sku,
+#metadata-index-details .identifier,
+#metadata-index-details [class*=" geohash_"],
+#metadata-index-details [class^="geohash_"]
+{
+	display: none;
+}
+#metadata-index-details .entityDetails .size{
+	display: inherit;
+}
 	
-	#metadata-index-details .text,
-	#metadata-index-details .attributeDescription,
-	#metadata-index-details .checksum,
-	#metadata-index-details .dataUrl,
-	#metadata-index-details .fileID,
-	#metadata-index-details .size,
-	#metadata-index-details .resourceMap,
-	#metadata-index-details .presentationCat,
-	#metadata-index-details .checksumAlgorithm,
-	#metadata-index-details .author,
-	#metadata-index-details .authorGivenName,
-	#metadata-index-details .authorGivenNameSort,
-	#metadata-index-details .authorSurName,	
-	#metadata-index-details .authorSurNameSort,
-	#metadata-index-details .authorLastName,
-	#metadata-index-details .replicaVerifiedDate,
-	#metadata-index-details .sku,
-	#metadata-index-details .identifier,
-	#metadata-index-details [class*=" geohash_"],
-	#metadata-index-details [class^="geohash_"]
-	{
-		display: none;
-	}
-	#metadata-index-details .entityDetails .size{
-		display: inherit;
-	}
-	
-	/** The Data Details box in the Metadata View**/
-	.entityDetails > h4 > *{
-		float: left;
-		margin-bottom: 20px;
-	}
-	.entityDetails > h4 > i{
-		font-size: 1.5em;
-	}
-	.entityDetails > h4 > .title{
-		width: 80%;
-		width: calc(100% - 200px);
-		margin-left: 20px;
-		word-wrap: break-word;
-	}
-	.entityDetails > h4 > .btn{
-		float: right;
-	}
-	.entityDetails > .control-group{
-		clear: both;
-	}
+/****************************************** 
+* The Data Details box in the Metadata View
+********************************************/
+.entityDetails.hasProv{
+	display: inline-block;
+	width: 62%;
+}
+.entityDetails > h4 > *{
+	float: left;
+	margin-bottom: 20px;
+}
+.entityDetails > h4 > i{
+	font-size: 1.5em;
+}
+.entityDetails > h4 > .title{
+	width: 80%;
+	width: calc(100% - 175px);
+	margin-left: 20px;
+	word-wrap: break-word;
+}
+.entityDetails > h4 > .btn{
+	float: right;
+}
+.entityDetails > .control-group{
+	clear: both;
+}

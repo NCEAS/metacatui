@@ -786,6 +786,12 @@ table th.btn-container .btn{
     .prov-chart .connecter{
     	border-color: #1C6E84;
     }
+    .prov-chart .node:hover{
+    	background-color:#BDF6EC;
+    }
+    .prov-chart .node:hover  i{
+    	color: #1C6E84;
+    }
    /**----------------------------------------**/
       
     .entityDetails{
