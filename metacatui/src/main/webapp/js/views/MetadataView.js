@@ -314,8 +314,8 @@ define(['jquery',
 		
 		//Seperate out the development provenance chart-drawing stuff for now... "faking" some data until the index is populated
 		testProvChart: function(){
-			var sources = new Array(new Package()); 
-			var derivations = new Array(new Package(), new Package(), new SolrResult({ formatType: "METADATA"})); 
+			var sources = new Array(new Package(), new Package()); 
+			var derivations = new Array(new Package()); 
 			var context = this.packageModel;
 				
 			//Draw a flow chart to represent the sources and derivations

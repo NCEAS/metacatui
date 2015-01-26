@@ -14,17 +14,17 @@ define(['jquery', 'underscore', 'backbone'],
 			this.title = options.title || "";
 			
 			if(!this.derivations && this.sources){
-				this.className = this.className + " sources";
-				this.title 	   = this.sources.length + " sources";
+				this.type = "sources";
+				this.title 	   = this.sources.length + " " + this.type;
 				this.provEntities  = this.sources;
-				this.type = "source";
 			}
 			if(!this.sources && this.derivations){
-				this.className = this.className + " derivations";
-				this.title 	   = this.derivations.length + " derivations";
+				this.type = "derivations";
+				this.title 	   = this.derivations.length + " " + this.type;
 				this.provEntities  = this.derivations;
-				this.type = "derivation";
 			}
+			
+			this.className = this.className + " " + this.type;
 		},
 		
 		tagName: "aside",
@@ -33,7 +33,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		render: function(){
 			//First add the title
-			this.$el.append($(document.createElement("h3")).text(this.title));
+			this.$el.append($(document.createElement("h3")).addClass("title").text(this.title));
 			
 			var view = this;
 			
@@ -51,15 +51,20 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 				
 				//Create the HTML node and line connecter
-				view.$el.append(view.createNode(type, i));
-				view.$el.append(view.createConnecter(i));				
+				view.$el.append(view.createNode(type, i));	
+				
+				//Derivation charts have a pointer for each node
+				if(view.type == "derivations") view.$el.append(view.createPointer(i));
+				//Source charts have a connector for each node and one pointer
+				if(view.type == "sources")	view.$el.append(view.createConnecter(i));
 			});	
 			
 			//Add classes again to make sure they are all added
 			this.$el.addClass(this.className)
 					.css("height", ((this.provEntities.length-1) * this.nodeHeight) + "px");
 			
-			this.$el.append(this.createPointer());
+			if(this.type == "derivations") this.$el.append(this.createConnecter());
+			if(this.type == "sources")     this.$el.append(this.createPointer());
 						
 			return this;
 		},
@@ -70,22 +75,38 @@ define(['jquery', 'underscore', 'backbone'],
 			if(type == "metadata") icon = "icon-file-text"
 				
 			var nodeEl = $(document.createElement("div"))
-						 .addClass(type + " node pointer")
+						 .addClass(type + " node pointer popover-this")
 						 .css("top", (position * this.nodeHeight) - (this.nodeHeight/2));
 			var iconEl = $(document.createElement("i"))
 						 .addClass(icon);
 			
 			$(nodeEl).append(iconEl);
 			
+			//Add a popover to the node that will show the citation for this dataset and a provenance statement
+			$(nodeEl).popover({
+				html: true,
+				placement: "top",
+				trigger: "click",
+				container: this.el,
+				title: "test",
+				content: function(){ return "return the citation from solrResult"; }
+			});
+			
 			return nodeEl;
 		},
 		
 		createConnecter: function(position){
-			return $(document.createElement("div")).addClass("connecter").css("top", this.nodeHeight * position);
+			if(typeof position == "undefined") var top = "50%";
+			else var top = this.nodeHeight * position;
+			
+			return $(document.createElement("div")).addClass("connecter").css("top", top);
 		},
 		
-		createPointer: function(type){
-			return $(document.createElement("img")).attr("src", "./img/" + this.type + "_arrow.gif").addClass("prov-pointer");
+		createPointer: function(position){			
+			var pointer =  $(document.createElement("img")).attr("src", "./img/arrow.gif").addClass("prov-pointer");
+			if(typeof position !== "undefined") $(pointer).css("top", ((this.nodeHeight * position) - 7.5) + "px");
+			
+			return pointer;
 		}
 	});
 	

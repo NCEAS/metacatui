@@ -22,8 +22,8 @@
    	border-right-style: solid;
 }
 .prov-chart.derivations{
-   	margin-left: 15px;
-   	padding-left: 10px;
+   	margin-left: 10px;
+   	padding-left: 16px;
 	border-left-width: 1px;
    	border-left-style: solid;	
 }
@@ -42,9 +42,6 @@
 	position: absolute;
 	z-index: 2;
 }
-aside.prov-chart.derivation .node{
-	float: right;
-}
 .prov-chart .connecter{
 	border-top-width: 1px;
 	border-top-style: solid;
@@ -53,6 +50,11 @@ aside.prov-chart.derivation .node{
 	height: 10px;
 	width: 15px;
 	left: 0px;
+}
+.prov-chart.derivations .connecter{
+	width: 11px;
+	left: -11px;
+	top: 50%;
 }
 .prov-chart.sources .connecter{
 	left: 45px; /* fallback */
@@ -69,9 +71,9 @@ aside.prov-chart.derivation .node{
 	right: -15px;
 }
 .prov-chart.derivations .prov-pointer{
-	left: -15px;
+	left: 0px;
 }
-.prov-chart h3{
+.prov-chart .title{
 	font-size: 1em;
 	width: 90px;
 	line-height: 1em;
