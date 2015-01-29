@@ -888,6 +888,8 @@ define(['jquery',
 				subview.onClose();
 			});
 			
+			this.$el.empty();
+			
 			this.pid = null;
 		}
 		
