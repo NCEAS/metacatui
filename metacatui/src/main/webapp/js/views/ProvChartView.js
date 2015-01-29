@@ -1,5 +1,5 @@
-define(['jquery', 'underscore', 'backbone'], 				
-	function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', "views/CitationView"], 				
+	function($, _, Backbone, CitationView) {
 	'use strict';
 
 	
@@ -7,23 +7,28 @@ define(['jquery', 'underscore', 'backbone'],
 		initialize: function(options){
 			if((typeof options === "undefined") || !options) var options = {};
 			
-			this.sources = options.sources || null;
-			this.derivations = options.derivations || null;
-			this.context = options.context || null;
-			this.nodeHeight = options.nodeHeight || 67; //Pixel height of the node including padding and margins
-			this.title = options.title || "";
+			this.sources 	   = options.sources || null;
+			this.derivations   = options.derivations || null;
+			this.context 	   = options.context || null;
+			this.nodeHeight    = options.nodeHeight || 67; 	  //Pixel height of the node including padding and margins
+			this.pointerHeight = options.pointerHeight || 15; //Pixel height of the pointer/arrow image
+			this.title 		   = options.title || "";
 			
+			//For Sources charts
 			if(!this.derivations && this.sources){
-				this.type = "sources";
-				this.title 	   = this.sources.length + " " + this.type;
+				this.type 		   = "sources";
+				this.title 	   	   = this.sources.length + " " + this.type;
 				this.provEntities  = this.sources;
 			}
+			
+			//For Derivations charts
 			if(!this.sources && this.derivations){
-				this.type = "derivations";
-				this.title 	   = this.derivations.length + " " + this.type;
+				this.type 	   	   = "derivations";
+				this.title 	       = this.derivations.length + " " + this.type;
 				this.provEntities  = this.derivations;
 			}
 			
+			//Add the chart type of the class list
 			this.className = this.className + " " + this.type;
 		},
 		
@@ -37,21 +42,9 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			var view = this;
 			
-			_.each(this.provEntities, function(entity, i){
-				//Determine which type of object this is
-				var type = "package";
-
-				if(entity.type == "SolrResult"){
-					if(entity.get("formatType") == "DATA"){
-						type = "data";
-					}
-					else if(entity.get("formatType") == "METADATA"){
-						type = "metadata";
-					}
-				}
-				
+			_.each(this.provEntities, function(entity, i){				
 				//Create the HTML node and line connecter
-				view.$el.append(view.createNode(type, i));	
+				view.$el.append(view.createNode(entity, i));	
 				
 				//Derivation charts have a pointer for each node
 				if(view.type == "derivations") view.$el.append(view.createPointer(i));
@@ -69,27 +62,58 @@ define(['jquery', 'underscore', 'backbone'],
 			return this;
 		},
 		
-		createNode: function(type, position){
-			var icon = "icon-folder-open";
-			if(type == "data") 	   icon = "icon-table";
-			if(type == "metadata") icon = "icon-file-text"
-				
+		createNode: function(provEntity, position){
+			//What kind of icon will visually represent this object type?
+			var icon = "",
+				type = null;
+			
+			if(provEntity.type == "SolrResult"){
+				if(provEntity.get("formatType") == "DATA"){
+					icon = "icon-table";
+					type = "data";
+				}
+				if(provEntity.get("formatType") == "METADATA"){
+					icon = "icon-file-text";
+					type = "metadata";
+				}
+			}
+			else if(provEntity.type == "Package"){
+				icon = "icon-folder-open",
+				type = "package";
+			}
+			
+			//Create a DOM element to represent the node	
 			var nodeEl = $(document.createElement("div"))
 						 .addClass(type + " node pointer popover-this")
 						 .css("top", (position * this.nodeHeight) - (this.nodeHeight/2));
+			//Create a DOM element for the icon inside the node
 			var iconEl = $(document.createElement("i"))
 						 .addClass(icon);
-			
+			//Put the icon in the node
 			$(nodeEl).append(iconEl);
+		
+			//The placement and title of the popover depends on what type of chart this is
+			if(this.type == "derivations"){
+				var placement = "left";
+				var title = "Derived dataset";
+			}
+			else{
+				var placement = "right";		
+				var title = "Source dataset";
+			}
+			
+			var popoverContent = new CitationView({model: provEntity}).render().el;
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			$(nodeEl).popover({
 				html: true,
-				placement: "top",
+				placement: placement,
 				trigger: "click",
 				container: this.el,
-				title: "test",
-				content: function(){ return "return the citation from solrResult"; }
+				title: title,
+				content: function(){ 
+					return 	popoverContent;
+				}
 			});
 			
 			return nodeEl;
@@ -104,7 +128,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		createPointer: function(position){			
 			var pointer =  $(document.createElement("img")).attr("src", "./img/arrow.gif").addClass("prov-pointer");
-			if(typeof position !== "undefined") $(pointer).css("top", ((this.nodeHeight * position) - 7.5) + "px");
+			if(typeof position !== "undefined") $(pointer).css("top", ((this.nodeHeight * position) - (this.pointerHeight/2)) + "px");
 			
 			return pointer;
 		}

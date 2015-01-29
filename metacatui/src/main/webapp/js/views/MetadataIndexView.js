@@ -228,7 +228,7 @@ define(['jquery',
 					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn);
 				
 				//Create the section
-				$(html).append(view.formatAttributeSection(solrResult, keys, header, "entityDetails"));	
+				$(html).append(view.formatAttributeSection(solrResult, keys, header, "entityDetails").attr("data-id", solrResult.get("id")));	
 			});
 			
 			//Glue together the header and attribute info section

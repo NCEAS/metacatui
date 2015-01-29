@@ -681,7 +681,7 @@ table th.btn-container .btn{
 		-webkit-border-radius: 7px;
 		-o-border-radius: 7px;
 	}
-	.citation {
+	#Metadata .well.citation {
 		font-size: 1.5em;
 		line-height: 1.5em;
 		color: #1C6E84;
@@ -710,10 +710,6 @@ table th.btn-container .btn{
 		font-weight: 400;
 		box-shadow: none;
 		-moz-box-shadow: none;		
-	}
-	
-	#Metadata .well strong{
-		font-weight: 400;
 	}
 	
 	#Metadata h4{
@@ -792,6 +788,12 @@ table th.btn-container .btn{
     .prov-chart .node:hover  i{
     	color: #1C6E84;
     }
+    .prov-chart .popover-title{
+		background-color: #1C6E84;
+		color: white;
+		font-weight: bold;
+		text-align: center;
+    }
    /**----------------------------------------**/
       
     .entityDetails{
@@ -852,11 +854,6 @@ table th.btn-container .btn{
 		width: 96%;
 	}
 	
-	#metadata-index-details .citation{
-		font-size: 1.3em;
-		line-height: 2em;
-	}
-	
 	#metadata-index-details .controls-well .controls-well{
 		margin-left: 0px;
 	}
@@ -868,7 +865,6 @@ table th.btn-container .btn{
 	#metadata-index-details .controls-well > .control-group{
 		margin-bottom: 5px;
 	}
-
 	
 	.download-this-package{
 		display: none;

@@ -73,12 +73,15 @@
 .prov-chart.derivations .prov-pointer{
 	left: 0px;
 }
-.prov-chart .title{
+.prov-chart > .title{
 	font-size: 1em;
 	width: 90px;
 	line-height: 1em;
 	top: -70px;
 	position: absolute;
+}
+.prov-chart.derivations > .title{
+	left: 0px;
 }
 .prov-chart .metadata.node i{
 	margin-left: 5px;
@@ -88,30 +91,39 @@ article.hasProv{ /*The metadata gets narrowed when there are prov charts next to
 	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - padding - borders*/
 	display: inline-block;
 }
+.prov-chart .popover{
+	min-width: 300px;
+}
+.prov-chart .popover .id{
+	display: block;
+	margin-top: 10px;
+	word-wrap: break-word;
+	word-break: break-all;
+}
 
 /****************************************** 
 ** The Metadata and MetadataIndex View **
 ******************************************/	
-#metadata-index-details .text,
-#metadata-index-details .attributeDescription,
-#metadata-index-details .checksum,
-#metadata-index-details .dataUrl,
-#metadata-index-details .fileID,
-#metadata-index-details .size,
-#metadata-index-details .resourceMap,
-#metadata-index-details .presentationCat,
-#metadata-index-details .checksumAlgorithm,
-#metadata-index-details .author,
-#metadata-index-details .authorGivenName,
-#metadata-index-details .authorGivenNameSort,
-#metadata-index-details .authorSurName,	
-#metadata-index-details .authorSurNameSort,
-#metadata-index-details .authorLastName,
-#metadata-index-details .replicaVerifiedDate,
-#metadata-index-details .sku,
-#metadata-index-details .identifier,
-#metadata-index-details [class*=" geohash_"],
-#metadata-index-details [class^="geohash_"]
+#metadata-index-details .Other .text,
+#metadata-index-details .Other .attributeDescription,
+#metadata-index-details .Other .checksum,
+#metadata-index-details .Other .dataUrl,
+#metadata-index-details .Other .fileID,
+#metadata-index-details .Other .size,
+#metadata-index-details .Other .resourceMap,
+#metadata-index-details .Other .presentationCat,
+#metadata-index-details .Other .checksumAlgorithm,
+#metadata-index-details .Other .author,
+#metadata-index-details .Other .authorGivenName,
+#metadata-index-details .Other .authorGivenNameSort,
+#metadata-index-details .Other .authorSurName,	
+#metadata-index-details .Other .authorSurNameSort,
+#metadata-index-details .Other .authorLastName,
+#metadata-index-details .Other .replicaVerifiedDate,
+#metadata-index-details .Other .sku,
+#metadata-index-details .Other .identifier,
+#metadata-index-details .Other [class*=" geohash_"],
+#metadata-index-details .Other [class^="geohash_"]
 {
 	display: none;
 }

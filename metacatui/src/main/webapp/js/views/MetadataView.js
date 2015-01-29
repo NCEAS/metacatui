@@ -314,28 +314,69 @@ define(['jquery',
 		
 		//Seperate out the development provenance chart-drawing stuff for now... "faking" some data until the index is populated
 		testProvChart: function(){
-			var sources = new Array(new Package(), new Package()); 
-			var derivations = new Array(new Package()); 
-			var context = this.packageModel;
-				
+			var view = this;
+			
+			var solrResultSource = new SolrResult({
+				pubDate: "2015-06-30T00:00:00Z",
+				id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/5804/2",
+				title: "Florida Coastal Everglades site, station Taylor Slough Trexler Site CPC, study of animal abundance of Elassoma evergladei in units of numberPerEffort on a yearly timescale",
+				origin: ["Joel Trexler", "Florida Coastal Everglades", "EcoTrends Project"],
+				formatType: "METADATA"
+			});
+			var solrResultDer = new SolrResult({
+				pubDate: "2015-01-01T08:00:00Z",
+				id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/4470/2",
+				title: "Coweeta site, station Watershed 27 flume, study of mean daily streamflow in units of litersPerSecond on a yearly timescale",
+				origin: ["Coweeta", "Climate and Hydrology Database Projects (CLIMDB/HYDRODB)", "EcoTrends Project"],
+				formatType: "METADATA"
+			});
+			
+			//TODO: Take out this test data
+			var sources 	= new Array(new Package({members: [solrResultSource]})); 
+			var derivations = new Array(new Package({members: [solrResultDer]})); 
+			var dataSources = new Array(solrResultSource);
+			var dataDerivations = new Array(solrResultDer);
+							
 			//Draw a flow chart to represent the sources and derivations
 			var sourceProvChart = new ProvChart({
 				sources: sources,
-				context: context
+				context: this.packageModel
 			});
 			var derivationProvChart = new ProvChart({
 				derivations: derivations,
-				context: context
+				context: this.packageModel
+			});
+			
+			_.each(this.packageModel.get("members"), function(member, i){
+				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
+
+				//Make the source chart for this member
+				var memberSources = member.getSources();				
+				var memberSourcesProvChart = new ProvChart({
+					sources: dataSources, //TODO: memberSources
+					context: member
+				});
+				
+				//Make the derivation chart for this member
+				var memberDerivations = member.getDerivations();
+				var memberDerivationsProvChart = new ProvChart({
+					derivations: dataDerivations, //TODO: memberDerivations
+					context: member
+				});
+				
+				//Add the charts to the page
+				$(entityDetailsSection).before(memberSourcesProvChart.render().el);
+				$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
+				$(entityDetailsSection).addClass("hasProv");
 			});
 			
 			//Indicate that the context has a provenance chart next to it by adding a class (used for styling)
-			this.$("#Metadata").addClass("hasProv");
-			this.$(".entityDetails").addClass("hasProv");
-			
+			this.$("#Metadata").addClass("hasProv");			
 			this.$("#Metadata").before(sourceProvChart.render().el);			
 			this.$("#Metadata").after(derivationProvChart.render().el);
-			this.$(".entityDetails").before(sourceProvChart.el.cloneNode(true));			
-			this.$(".entityDetails").after(derivationProvChart.el.cloneNode(true));
+			
+			//this.$(".entityDetails").before(sourceProvChart.el.cloneNode(true));			
+			//this.$(".entityDetails").after(derivationProvChart.el.cloneNode(true));
 		},
 		
 		// checks if the pid is already a DOI
