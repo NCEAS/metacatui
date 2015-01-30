@@ -2,6 +2,9 @@
 .btn > i{
 	margin-left: 5px;
 }
+.result-row .icons.provenance i{
+	font-size: 1.5em;
+}
 
 /****************************************** 
 ** Provenance flow-charts ***

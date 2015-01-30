@@ -27,6 +27,7 @@ define(['jquery', 'underscore', 'backbone'],
 			generatedByOrcid: null,
 			generatedByProgram: null,
 			generatedByUser: null,
+			hasDerivation: null,
 			used: null,
 			usedByDataONEDN: null,
 			usedByExecution: null,
@@ -43,6 +44,26 @@ define(['jquery', 'underscore', 'backbone'],
 		// Toggle the `selected` state of the result
 		toggle: function () {
 			this.selected = !this.get('selected');
+		},
+		
+		//Returns a plain-english version of the formatType and formatId
+		getType: function(){
+			//The list of formatIds that are images
+			var imageIds = ["image/gif",
+			                "image/jp2",
+			                "image/jpeg",
+			                "image/png",
+			                "image/svg xml",
+			                "image/svg+xml",
+			                "image/tiff",
+			                "image/bmp"];
+			//The list of formatIds that are images
+			var pdfIds = ["application/pdf"];
+			
+			if(this.get("formatType") == "METADATA") return "metadata";
+			if(_.contains(imageIds, this.get("id"))) return "image";
+			if(_.contains(pdfIds, this.get("id")))   return "PDF";
+			else return "data";
 		},
 		
 		/**** Provenance-related functions ****/

@@ -22,16 +22,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		
 		complete: false,
 		
+		pending: false,
+		
 		type: "Package",
 		
 		initialize: function(options){
 			//When the members attribute of this model is set, it is assumed to be complete. 
 			//Since this attribute is an array, do not iteratively push new items to it or this will be triggered each time.
-			this.on("change:members", this.flagComplete);			
+			this.on("change:members", this.flagComplete);	
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */
 		getMembersByMemberID: function(id){
+			this.pending = true;
+			
 			if((typeof id === "undefined") || !id) var id = this.memberId;
 			
 			var model = this;
@@ -64,6 +68,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		/* Get all the members of a resource map/package based on the id attribute of this model. 
 		 * Create a SolrResult model for each member and save it in the members[] attribute of this model. */
 		getMembers: function(){
+			this.pending = true;
+			
 			var model   = this,
 				members = [],
 				pids    = []; //Keep track of each object pid
@@ -160,8 +166,22 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			return this;
 		},
 		
+		/* Returns the SolrResult that represents the metadata doc */
+		getMetadata: function(){
+			var members = this.get("members");
+			for(var i=0; i<members.length; i++){
+				if(members[i].get("formatType") == "METADATA") return members[i];
+			}
+			
+			//If there are no metadata objects in this package, make sure we have searched for them already
+			if(!this.complete && !this.pending) this.getMembers();
+			
+			return false;
+		},
+		
 		flagComplete: function(){
 			this.complete = true;
+			this.pending = false;
 			this.trigger("complete");
 		}
 		

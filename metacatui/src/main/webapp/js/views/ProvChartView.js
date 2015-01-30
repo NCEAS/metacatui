@@ -65,7 +65,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 		createNode: function(provEntity, position){
 			//What kind of icon will visually represent this object type?
 			var icon = "",
-				type = null;
+				type = null,
+				titleType = "dataset";
 			
 			if(provEntity.type == "SolrResult"){
 				if(provEntity.get("formatType") == "DATA"){
@@ -76,6 +77,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 					icon = "icon-file-text";
 					type = "metadata";
 				}
+				titleType = provEntity.getType();
 			}
 			else if(provEntity.type == "Package"){
 				icon = "icon-folder-open",
@@ -95,11 +97,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 			//The placement and title of the popover depends on what type of chart this is
 			if(this.type == "derivations"){
 				var placement = "left";
-				var title = "Derived dataset";
+				var title = "Derived " + titleType;
 			}
 			else{
 				var placement = "right";		
-				var title = "Source dataset";
+				var title = "Source " + titleType;
 			}
 			
 			var popoverContent = new CitationView({model: provEntity}).render().el;

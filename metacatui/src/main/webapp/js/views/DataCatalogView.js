@@ -268,7 +268,7 @@ define(['jquery',
 			appSearchResults.setSort(sortOrder);
 			
 			//Specify which fields to retrieve
-			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9";
+			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,wasDerivedFrom,hasDerivation";
 			if(gmaps){
 				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}
