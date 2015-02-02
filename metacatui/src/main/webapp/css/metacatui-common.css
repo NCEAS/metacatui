@@ -176,3 +176,9 @@ article.hasProv{ /*The metadata gets narrowed when there are prov charts next to
 .popover .citation-container a > i{
 	margin-left: 5px;
 }
+#results .popover{
+	min-width: 300px;
+	max-width: 300px;
+	font-size: .9em;
+	line-height: 1.3em;
+}

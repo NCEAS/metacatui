@@ -103,10 +103,11 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 					$(citations).append(moreLink);
 					
 					//Make a popover
+					this.$el.find(".provenance.active").attr("tabIndex", 99);
 					this.$el.find(".provenance.active").popover({
 						html: true,
 						placement: "top",
-						trigger: "click",
+						trigger: "focus",
 						container: this.el,
 						title: title,
 						content: citations
