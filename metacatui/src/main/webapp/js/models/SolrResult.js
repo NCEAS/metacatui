@@ -139,7 +139,7 @@ define(['jquery', 'underscore', 'backbone'],
 					sources.push(model.get(provField));
 			});
 			
-			return sources;
+			return _.uniq(sources);
 		},
 		
 		/* 
@@ -154,7 +154,7 @@ define(['jquery', 'underscore', 'backbone'],
 					derivations.push(model.get(provField));
 			});	
 			
-			return derivations;
+			return _.uniq(derivations);
 		}
 		/****************************/
 

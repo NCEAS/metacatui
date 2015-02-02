@@ -1,5 +1,3 @@
-
-<div class="view-link pointer" data-id="<%=id%>">     
         <div class="result-citation">
               <span class="result-author">
               <% var count=0; _.each(origin, function(author) {
@@ -70,12 +68,15 @@
 	           		%>
 	           
         	</div>
-        	<div class="icons provenance">
-        		<% if(wasDerivedFrom || hasDerivation){
-        				print('<i class="icon-code-fork"></i>');
-        			}
-        		%>
+        	<% if(hasProv || appModel.provDev){
+        			print('<div class="icons provenance active">');
+        			print('<i class="icon-code-fork active"></i>');
+        		}
+        		else{
+        		    print('<div class="icons provenance inactive">');
+        			print('<i class="icon-code-fork inactive"></i>');
+        		}
+        	%>
         	</div>
 	       
 	   </div>
-</div>

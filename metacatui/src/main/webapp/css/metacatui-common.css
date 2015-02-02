@@ -97,12 +97,6 @@ article.hasProv{ /*The metadata gets narrowed when there are prov charts next to
 .prov-chart .popover{
 	min-width: 300px;
 }
-.prov-chart .popover .id{
-	display: block;
-	margin-top: 10px;
-	word-wrap: break-word;
-	word-break: break-all;
-}
 
 /****************************************** 
 ** The Metadata and MetadataIndex View **
@@ -159,4 +153,26 @@ article.hasProv{ /*The metadata gets narrowed when there are prov charts next to
 }
 .entityDetails > .control-group{
 	clear: both;
+}
+
+/****************************************** 
+* Citations and Citation Popovers
+********************************************/
+.popover .citation .id{
+	display: block;
+	margin-top: 10px;
+	word-wrap: break-word;
+	word-break: break-all;
+}
+.popover .citation-container.multiple .citation{
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #999;
+}
+.popover .citation-container a{
+	margin-top: 10px;
+	display: block;
+}
+.popover .citation-container a > i{
+	margin-left: 5px;
 }

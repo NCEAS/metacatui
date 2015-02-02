@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone'],
 			pid: null,
 			anchorId: null,
 			page: null,
-			baseUrl: window.location.origin,
+			baseUrl: "https://cn-sandbox-2.test.dataone.org", //window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: 'cn/v1',
@@ -38,6 +38,9 @@ define(['jquery', 'underscore', 'backbone'],
 			//orcidServiceUrl: "http://pub.orcid.org/v1.1/search/orcid-bio?q=",
 			tokenUrl: null
 		},
+
+		provDev: true,
+
 		
 		initialize: function() {
 			
@@ -47,6 +50,7 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				this.set('baseUrl', baseUrl);
 			}
+			
 						
 			// these are pretty standard, but can be customized if needed
 			//this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
@@ -54,8 +58,8 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/?');
-			//this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
-			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
+			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
+			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/resolve/');
 			//this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');

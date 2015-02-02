@@ -35,8 +35,9 @@ define(['jquery', 'underscore', 'backbone'],
 			orcidServiceUrl: null,
 			tokenUrl: null,
 			annotatorUrl: null
-
 		},
+		
+		provDev: false,
 		
 		initialize: function() {
 			
@@ -46,9 +47,7 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				this.set('baseUrl', baseUrl);
 			}
-			
-			//this.set('baseUrl', 'https://dev.nceas.ucsb.edu');
-			
+						
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');

@@ -309,7 +309,8 @@ define(['jquery',
 			//this.listenToOnce(this.packageModel, "change:provenance", this.testProvChart);
 			//this.packageModel.getProvTrace();
 			//TODO: For development only... remove when index is updated
-			this.testProvChart();
+			if(appModel.provDev)
+				this.testProvChart();
 		},
 		
 		//Seperate out the development provenance chart-drawing stuff for now... "faking" some data until the index is populated
