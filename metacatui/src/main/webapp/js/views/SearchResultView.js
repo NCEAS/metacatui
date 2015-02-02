@@ -52,33 +52,49 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 					
 					//Get the sources and derivations of this dataset
 					var sources = this.model.getSources(),
-						derivations = this.model.getDerivations(),
-						numSources = sources.length,
+						derivations = this.model.getDerivations();
+					
+					if(appModel.provDev){
+						 sources = new Array(new SolrResult({
+								pubDate: "2015-06-30T00:00:00Z",
+								id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/5804/2",
+								title: "Florida Coastal Everglades site, station Taylor Slough Trexler Site CPC, study of animal abundance of Elassoma evergladei in units of numberPerEffort on a yearly timescale",
+								origin: ["Joel Trexler", "Florida Coastal Everglades", "EcoTrends Project"],
+								formatType: "METADATA"
+							}));
+						 derivations = new Array(new SolrResult({
+								pubDate: "2015-01-01T08:00:00Z",
+								id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/4470/2",
+								title: "Coweeta site, station Watershed 27 flume, study of mean daily streamflow in units of litersPerSecond on a yearly timescale",
+								origin: ["Coweeta", "Climate and Hydrology Database Projects (CLIMDB/HYDRODB)", "EcoTrends Project"],
+								formatType: "METADATA"
+							}));	
+					}
+					
+					var numSources = sources.length,
 						numDerivations = derivations.length,
 						multiple = false;
 					if(numSources + numDerivations > 1) multiple = true;
 					if(appModel.provDev) multiple = true;
 					
-					var solrResultSource = new SolrResult({
-						pubDate: "2015-06-30T00:00:00Z",
-						id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/5804/2",
-						title: "Florida Coastal Everglades site, station Taylor Slough Trexler Site CPC, study of animal abundance of Elassoma evergladei in units of numberPerEffort on a yearly timescale",
-						origin: ["Joel Trexler", "Florida Coastal Everglades", "EcoTrends Project"],
-						formatType: "METADATA"
-					});
-					var solrResultDer = new SolrResult({
-						pubDate: "2015-01-01T08:00:00Z",
-						id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/4470/2",
-						title: "Coweeta site, station Watershed 27 flume, study of mean daily streamflow in units of litersPerSecond on a yearly timescale",
-						origin: ["Coweeta", "Climate and Hydrology Database Projects (CLIMDB/HYDRODB)", "EcoTrends Project"],
-						formatType: "METADATA"
-					});
+					//Create the title of the popover
+					var title = "This dataset";
+					if(numSources > 0) title += " was created using " + numSources + " source";
+					if(numSources > 1) title += "s";
+					if(numSources > 0 && numDerivations > 0) title += " and";
+					if(numDerivations > 0) title += " has been used by " + numDerivations + " other dataset";
+					if(numDerivations > 1) title += "s";
+					title += ".";
 					
 					//Create the citation						
 					var citations = $(document.createElement("div")).addClass("citation-container");
 					if(multiple) $(citations).addClass("multiple");
-					$(citations).append(new CitationView({model: solrResultSource}).render().el);
-					$(citations).append(new CitationView({model: solrResultDer}).render().el);
+					_.each(sources, function(source, i){
+						$(citations).append(new CitationView({model: source}).render().el);						
+					});
+					_.each(derivations, function(derivation, i){
+						$(citations).append(new CitationView({model: derivation}).render().el);						
+					});
 					
 					//Add a more link to view the full provenance details
 					var moreLink = $(document.createElement("a")).text("More").attr("href", "#view/" + encodeURIComponent(id));
@@ -92,7 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 						placement: "top",
 						trigger: "click",
 						container: this.el,
-						title: "title",
+						title: title,
 						content: citations
 					});
 				}
