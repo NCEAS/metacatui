@@ -36,6 +36,7 @@ define(['jquery', 'underscore', 'backbone'],
 				annotation: [],
 				additionalCriteria: [],
 				memberNode: [],
+				id: [],
 				formatType: [{
 					value: "METADATA",
 					label: "science metadata",
@@ -58,7 +59,8 @@ define(['jquery', 'underscore', 'backbone'],
 					   spatial : "site",
 				   resourceMap : "resourceMap",
 				   	   pubYear : "dateUploaded",
-				   	memberNode : "datasource"
+				   	memberNode : "datasource",
+				   			id : "id"
 		},
 		
 		filterCount: function() {
@@ -122,7 +124,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial"];
+			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id"];
 			
 			//Function here to check for spaces in a string - we'll use this to url encode the query
 			var needsQuotes = function(entry){

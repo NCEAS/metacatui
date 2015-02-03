@@ -496,8 +496,7 @@ define(['jquery',
 		
 		updateTextFilters : function(e, item){
 			//Get the search/filter category
-			var category = $(e.target).attr('data-category'),
-				inputEl = $('#' + category + '_input');
+			var category = $(e.target).attr('data-category');
 			
 			//Try the parent elements if not found
 			if(!category){
@@ -511,8 +510,10 @@ define(['jquery',
 			
 			if(!category){ return false; }
 			
+			//Get the input element
+			var input = this.$el.find('#' + category + '_input');
+			
 			//Get the value of the associated input
-			var input = this.$el.find($(inputEl));
 			var term 		= (!item || item.value) ? input.val() : item.value;
 			var label 		= (!item || item.filterLabel) ? null : item.filterLabel;
 			var filterDesc  = (!item || item.description) ? null : item.description;
@@ -538,11 +539,11 @@ define(['jquery',
 			
 			//Close the autocomplete box
 			if (e.type == "hoverautocompleteselect") {
-				$(inputEl).hoverAutocomplete("close");
+				$(input).hoverAutocomplete("close");
 			} 
-			else if($(inputEl).data('ui-autocomplete') != undefined){
+			else if($(input).data('ui-autocomplete') != undefined){
 				//If the autocomplete has been initialized, then close it
-				$(inputEl).autocomplete("close");
+				$(input).autocomplete("close");
 			}
 				
 			//Get the current searchModel array for this category

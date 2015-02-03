@@ -36,6 +36,7 @@ define(['jquery', 'underscore', 'backbone'],
 				attribute: [],
 				annotation: [],
 				additionalCriteria: [],
+				id: [],
 				formatType: [{
 					value: "METADATA",
 					label: "science metadata",
@@ -51,13 +52,14 @@ define(['jquery', 'underscore', 'backbone'],
 		//Map the filter names to their index field names
 		fieldNameMap: {
 					 attribute : "attribute",
-				annotation : "annotation_sm",
+					annotation : "annotation_sm",
 					formatType : "formatType",
 						   all : "",
 					   creator : "origin",
 					   spatial : "site",
 				   resourceMap : "resourceMap",
-				   	   pubYear : "dateUploaded"
+				   	   pubYear : "dateUploaded",
+				   	   		id : "id"
 		},
 		
 		filterCount: function() {
@@ -120,7 +122,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial"];
+			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id"];
 			
 			//Start the query string
 			var query = "";
