@@ -39,6 +39,8 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		provDev: false,
 		
+		defaultView: "data",
+		
 		initialize: function() {
 			
 			//For IE
@@ -47,7 +49,7 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				this.set('baseUrl', baseUrl);
 			}
-						
+			
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');

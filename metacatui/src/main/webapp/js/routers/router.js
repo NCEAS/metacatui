@@ -33,6 +33,10 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
 		
+		initialize: function(){
+			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+		},
+		
 		routeHistory: new Array(),
 		
 		// Will return the last route, which is actually the second to last item in the route history, 
@@ -75,13 +79,18 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.routeHistory.push("data");
 			appModel.set('page', page);
 			
+			///Check for the URL parameters
+			if(typeof page === "undefined")
+				appModel.set("page", 0);
+			else
+				appModel.set('page', page);
+			
 			//If a search mode parameter is given
-			if(mode){
+			if((typeof mode !== "undefined") && mode)
 				appModel.set('searchMode', mode)
-			}
 			
 			//If a query parameter is given
-			if(query){
+			if((typeof query !== "undefined") && query){
 				var customQuery = searchModel.get('additionalCriteria');
 				customQuery.push(query);
 				searchModel.set('additionalCriteria', customQuery);
@@ -139,6 +148,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.routeHistory.push("external");
 			externalView.url = url;
 			appView.showView(externalView);
+		},
+		
+		navigateToDefault: function(){
+			//Navigate to the default view
+			this.navigate(appModel.defaultView, {trigger: true});
 		}
 		
 	});

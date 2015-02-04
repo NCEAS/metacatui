@@ -19,7 +19,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''             				: 'routeToData', // the default route
+			''             				: 'navigateToDefault', // the default route
 			'about'                     : 'renderAbout',  // about page
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
@@ -32,6 +32,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'signup'          			: 'renderLdap',    // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',    // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
+		},
+		
+		
+		initialize: function(){
+			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
 		},
 		
 		routeHistory: new Array(),
@@ -147,6 +152,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.routeHistory.push("external");
 			externalView.url = url;
 			appView.showView(externalView);
+		},
+		
+		navigateToDefault: function(){
+			//Navigate to the default view
+			this.navigate(appModel.defaultView, {trigger: true});
 		}
 		
 	});
