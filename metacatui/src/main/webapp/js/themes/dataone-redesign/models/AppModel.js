@@ -40,6 +40,8 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 
 		provDev: true,
+		
+		defaultView: "data",
 
 		
 		initialize: function() {
