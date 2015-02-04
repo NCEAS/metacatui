@@ -19,12 +19,12 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''             				: 'routeToData', // the default route
+			''             				: 'navigateToDefault', // the default route
 			'about'                     : 'renderAbout',  // about page
 			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
 			'plans'                     : 'renderPlans',  // plans page
 			'tools(/:anchorId)'         : 'renderTools',  // tools page
-			'data(/page/:page)(/mode=:mode)(/query=:query)' : 'renderData',    // data search page
+			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',    // metadata page
 			'profile(/*query)'			: 'renderProfile',
 			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
@@ -32,6 +32,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'signup'          			: 'renderLdap',    // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',    // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
+		},
+		
+		
+		initialize: function(){
+			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
 		},
 		
 		routeHistory: new Array(),
@@ -81,9 +86,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			console.log('Called UIRouter.renderData()');
 			this.routeHistory.push("data");
 			appModel.set('page', page);
+			
+			//If a search mode parameter is given
 			if(mode){
 				appModel.set('searchMode', mode)
 			}
+			
+			//If a query parameter is given
 			if(query){
 				searchModel.set('customQuery', query);
 			}
@@ -139,6 +148,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.routeHistory.push("external");
 			externalView.url = url;
 			appView.showView(externalView);
+		},
+		
+		navigateToDefault: function(){
+			//Navigate to the default view
+			this.navigate(appModel.defaultView, {trigger: true});
 		}
 		
 	});

@@ -37,6 +37,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 		},
 		
+		defaultView: "data",
+		
 		initialize: function() {
 			
 			//For IE

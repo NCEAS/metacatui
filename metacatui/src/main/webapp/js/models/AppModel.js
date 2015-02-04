@@ -33,6 +33,8 @@ define(['jquery', 'underscore', 'backbone'],
 			objectServiceUrl: null,
 			bioportalServiceUrl: null
 		},
+				
+		defaultView: "data",
 		
 		initialize: function() {
 			

@@ -18,19 +18,23 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''                          : 'renderIndex', // the default route
-			'about'                     : 'renderAbout',  // about page
-			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
-			'plans'                     : 'renderPlans',  // plans page
-			'tools(/:anchorId)'         : 'renderTools',  // tools page
-			'data(/page/:page)(/mode=:mode)(/query=:query)' : 'renderData',    // data search page
-			'view/*pid'                 : 'renderMetadata',    // metadata page
+			''                          : 'renderIndex',    // the default route
+			'about'                     : 'renderAbout',    // about page
+			'about(/:anchorId)'         : 'renderAbout',    // about page anchors
+			'plans'                     : 'renderPlans',    // plans page
+			'tools(/:anchorId)'         : 'renderTools',    // tools page
+			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
+			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*query)'			: 'renderProfile',
-			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
-			'logout'                    : 'logout',    // logout the user
-			'signup'          			: 'renderLdap',    // use ldapweb for registration
-			'account(/:stage)'          : 'renderLdap',    // use ldapweb for different stages
-			'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
+			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
+			'logout'                    : 'logout',    		// logout the user
+			'signup'          			: 'renderLdap',     // use ldapweb for registration
+			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
+			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
+		},
+		
+		initialize: function(){
+			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
 		},
 		
 		routeHistory: new Array(),
@@ -70,18 +74,23 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(toolsView);
 		},
 		
-		renderData: function (page, mode, query) {
+		renderData: function (mode, query, page) {
 			console.log('Called UIRouter.renderData()');
 			this.routeHistory.push("data");
 			appModel.set('page', page);
 			
+			///Check for the URL parameters
+			if(typeof page === "undefined")
+				appModel.set("page", 0);
+			else
+				appModel.set('page', page);
+			
 			//If a search mode parameter is given
-			if(mode){
+			if((typeof mode !== "undefined") && mode)
 				appModel.set('searchMode', mode)
-			}
 			
 			//If a query parameter is given
-			if(query){
+			if((typeof query !== "undefined") && query){
 				var customQuery = searchModel.get('additionalCriteria');
 				customQuery.push(query);
 				searchModel.set('additionalCriteria', customQuery);
@@ -138,6 +147,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.routeHistory.push("external");
 			externalView.url = url;
 			appView.showView(externalView);
+		},
+		
+		navigateToDefault: function(){
+			//Navigate to the default view
+			this.navigate(appModel.defaultView, {trigger: true});
 		}
 		
 	});

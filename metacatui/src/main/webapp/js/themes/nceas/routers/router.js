@@ -33,6 +33,10 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
 		},
 		
+		initialize: function(){
+			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+		},
+		
 		routeHistory: new Array(),
 		
 		// Will return the last route, which is actually the second to last item in the route history, 
@@ -131,6 +135,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.routeHistory.push("external");
 			externalView.url = url;
 			appView.showView(externalView);
+		},
+		
+		navigateToDefault: function(){
+			//Navigate to the default view
+			this.navigate("share", {trigger: true});
 		}
 		
 	});
