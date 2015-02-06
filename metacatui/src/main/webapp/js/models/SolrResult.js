@@ -19,24 +19,24 @@ define(['jquery', 'underscore', 'backbone'],
 			formatId: null,
 			formatType: null,
 			memberNode: null,
-			instanceOfClass: null,
+			instanceOfClass_sm: null,
 			//Provenance index fields
-			generatedByDataONEDN: null,
-			generatedByExecution: null,
-			generatedByFoafName: null,
-			generatedByOrcid: null,
-			generatedByProgram: null,
-			generatedByUser: null,
-			hasDerivation: null,
-			used: null,
-			usedByDataONEDN: null,
-			usedByExecution: null,
-			usedByFoafName: null,
-			usedByOrcid: null,
-			usedByProgram: null,
-			usedByUser: null,
-			wasDerivedFrom: null,
-			wasExecutedBy: null
+			generatedByDataONEDN_sm: null,
+			generatedByExecution_sm: null,
+			generatedByFoafName_sm: null,
+			generatedByOrcid_sm: null,
+			generatedByProgram_sm: null,
+			generatedByUser_sm: null,
+			hasDerivation_sm: null,
+			used_sm: null,
+			usedByDataONEDN_sm: null,
+			usedByExecution_sm: null,
+			usedByFoafName_sm: null,
+			usedByOrcid_sm: null,
+			usedByProgram_sm: null,
+			usedByUser_sm: null,
+			wasDerivedFrom_sm: null,
+			wasExecutedBy_sm: null
 		},
 		
 		type: "SolrResult",
@@ -65,34 +65,14 @@ define(['jquery', 'underscore', 'backbone'],
 			if(_.contains(pdfIds, this.get("id")))   return "PDF";
 			else return "data";
 		},
-		
-		/**** Provenance-related functions ****/
-		// Returns which fields are provenance-related in this model
-		// Useful for querying the index and such
-		getProvFields: function(){
-			return new Array(			
-				"generatedByDataONEDN",
-				"generatedByExecution",
-				"generatedByFoafName",
-				"generatedByOrcid",
-				"generatedByProgram",
-				"generatedByUser",
-				"usedByDataONEDN",
-				"usedByExecution",
-				"usedByFoafName",
-				"usedByOrcid",
-				"usedByProgram",
-				"usedByUser",
-				"wasDerivedFrom",
-				"wasExecutedBy");		
-		},
 
+		/**** Provenance-related functions ****/
 		/*
 		 * Returns true if this provenance field points to a source of this data or metadata object 
 		 */
 		isSourceField: function(field){
 			if((typeof field == "undefined") || !field) return false;
-			if(!_.contains(this.getProvFields(), field)) return false;			
+			if(!_.contains(searchModel.getProvFields(), field)) return false;			
 			
 			if(field.indexOf("generatedBy") > -1)    return true;
 			if(field.indexOf("wasDerivedFrom") > -1) return true;
@@ -106,7 +86,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 */		
 		isDerivationField: function(field){
 			if((typeof field == "undefined") || !field) return false;
-			if(!!_.contains(this.getProvFields(), field)) return false;
+			if(!!_.contains(searchModel.getProvFields(), field)) return false;
 			
 			if(field.indexOf("usedBy") > -1) return true;
 			
@@ -134,7 +114,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var sources = new Array(),
 				model = this;
 			
-			_.each(this.getProvFields(), function(provField, i){
+			_.each(searchModel.getProvFields(), function(provField, i){
 				if(model.isSourceField(provField))
 					sources.push(model.get(provField));
 			});
@@ -149,7 +129,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var derivations = new Array(),
 				model = this;
 		
-			_.each(this.getProvFields(), function(provField, i){
+			_.each(searchModel.getProvFields(), function(provField, i){
 				if(model.isDerivationField(provField))
 					derivations.push(model.get(provField));
 			});	

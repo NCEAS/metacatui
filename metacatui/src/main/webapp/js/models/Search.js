@@ -361,6 +361,38 @@ define(['jquery', 'underscore', 'backbone'],
 			return query;
 		},
 		
+		/**** Provenance-related functions ****/
+		// Returns which fields are provenance-related in this model
+		// Useful for querying the index and such
+		getProvFields: function(){
+			return new Array(			
+				"generatedByDataONEDN_sm",
+				"generatedByExecution_sm",
+				"generatedByFoafName_sm",
+				"generatedByOrcid_sm",
+				"generatedByProgram_sm",
+				"generatedByUser_sm",
+				"usedByDataONEDN_sm",
+				"usedByExecution_sm",
+				"usedByFoafName_sm",
+				"usedByOrcid_sm",
+				"usedByProgram_sm",
+				"usedByUser_sm",
+				"wasDerivedFrom_sm",
+				"wasExecutedBy_sm");		
+		},
+		
+		getProvFlList: function(){
+			var provFields = this.getProvFields(),
+			provFl = "";
+			_.each(provFields, function(provField, i){
+				provFl += provField;
+				if(i < provFields.length-1) provFl += ","; 
+			});
+			
+			return provFl;
+		},
+		
 		clear: function() {
 			console.log('Clear the filters');
 		    return this.set(_.clone(this.defaults()));

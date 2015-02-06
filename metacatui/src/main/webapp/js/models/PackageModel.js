@@ -41,10 +41,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var model = this;
 			
 			//Get the id of the resource map for this member
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,wasDerivedFrom,wasGeneratedBy,used,wasInformedBy' +
+			var provFlList = searchModel.getProvFlList();
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,' + provFlList +
 						'&wt=json' +
 						'&rows=1' +
-						'&q=-obsoletedBy:*+id:%22' + encodeURIComponent(id) + '%22';
+						'&q=id:%22' + encodeURIComponent(id) + '%22';
 
 			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr) {
 				//There should be only one response since we searched by id
@@ -75,7 +76,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				pids    = []; //Keep track of each object pid
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,wasDerivedFrom,wasGeneratedBy,used,wasInformedBy' +
+			var provFlList = searchModel.getProvFlList();
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,' + provFlList +
 						'&wt=json' +
 						'&rows=100' +
 						'&q=-obsoletedBy:*+%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29';
@@ -131,6 +133,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else{
 				//Create a query where we retrieve the ID of the resource map of each source and derivation
 				var idQuery = searchModel.getGroupedQuery("id", externalProvEntities, "OR");
+				
+				//TODO: Also create a query where we retrieve the metadata for this object (so we can know its title, authors, etc.)
+				//TODO: Will look like "OR (documents:id OR id OR id)"
+				var metadataQuery = "";
 			}
 			
 			//Create a query to find all the other objects in the index that have a provenance field pointing to a member of this package
@@ -158,6 +164,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Send the query to the query service
 			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr){
 				console.log("got data");
+				
+				//TODO: Separate the results into derivations and sources and group by their package.
 				
 				model.set("provenance", "complete");
 				
