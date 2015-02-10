@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone'], 				
-	function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
+	function($, _, Backbone, SolrResult) {
 	'use strict';
 
 	// Search Model 
@@ -364,21 +364,12 @@ define(['jquery', 'underscore', 'backbone'],
 		// Returns which fields are provenance-related in this model
 		// Useful for querying the index and such
 		getProvFields: function(){
-			return new Array(			
-				"generatedByDataONEDN_sm",
-				"generatedByExecution_sm",
-				"generatedByFoafName_sm",
-				"generatedByOrcid_sm",
-				"generatedByProgram_sm",
-				"generatedByUser_sm",
-				"usedByDataONEDN_sm",
-				"usedByExecution_sm",
-				"usedByFoafName_sm",
-				"usedByOrcid_sm",
-				"usedByProgram_sm",
-				"usedByUser_sm",
-				"wasDerivedFrom_sm",
-				"wasExecutedBy_sm");		
+			var defaultFields = Object.keys(new SolrResult().defaults);
+			var provFields = _.filter(defaultFields, function(fieldName){ 
+				if(fieldName.indexOf("prov_") == 0) return true; 
+			});
+
+			return provFields;	
 		},
 		
 		getProvFlList: function(){

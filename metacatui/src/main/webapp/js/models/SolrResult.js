@@ -21,22 +21,25 @@ define(['jquery', 'underscore', 'backbone'],
 			memberNode: null,
 			instanceOfClass_sm: null,
 			//Provenance index fields
-			generatedByDataONEDN_sm: null,
-			generatedByExecution_sm: null,
-			generatedByFoafName_sm: null,
-			generatedByOrcid_sm: null,
-			generatedByProgram_sm: null,
-			generatedByUser_sm: null,
-			hasDerivation_sm: null,
-			used_sm: null,
-			usedByDataONEDN_sm: null,
-			usedByExecution_sm: null,
-			usedByFoafName_sm: null,
-			usedByOrcid_sm: null,
-			usedByProgram_sm: null,
-			usedByUser_sm: null,
-			wasDerivedFrom_sm: null,
-			wasExecutedBy_sm: null
+			prov_generatedByDataONEDN: null, 
+			prov_generatedByExecution: null,
+			prov_generatedByFoafName: null,
+			prov_generatedByOrcid: null,
+			prov_generatedByProgram: null,
+			prov_generatedByUser: null,
+			prov_hasDerivations: null,
+			prov_used: null,
+			prov_usedByDataONEDN: null,
+			prov_usedByExecution: null,
+			prov_usedByFoafName: null,
+			prov_usedByOrcid: null,
+			prov_usedByProgram: null,
+			prov_usedByUser: null,
+			prov_wasDerivedFrom: null,
+			prov_wasExecutedByExecution: null,
+			prov_wasExecutedByUser: null,
+			prov_wasGeneratedBy: null,
+			prov_wasInformedBy: null
 		},
 		
 		type: "SolrResult",
@@ -74,9 +77,13 @@ define(['jquery', 'underscore', 'backbone'],
 			if((typeof field == "undefined") || !field) return false;
 			if(!_.contains(searchModel.getProvFields(), field)) return false;			
 			
-			if(field.indexOf("generatedBy") > -1)    return true;
-			if(field.indexOf("wasDerivedFrom") > -1) return true;
-			if(field.indexOf("wasExecutedBy") > -1)  return true;
+			if(field.indexOf("prov_wasGeneratedBy") > -1)    return true;
+			if(field.indexOf("prov_wasDerivedFrom") > -1) return true;
+			if(field.indexOf("prov_wasExecutedByExecution") > -1)  return true;
+			if(field.indexOf("prov_used") > -1)  return true;
+			if(field.indexOf("prov_usedByExecution") > -1)  return true;
+			if(field.indexOf("prov_usedByProgram") > -1)  return true;
+			if(field.indexOf("prov_usedByUser") > -1)  return true;
 
 			return false;
 		},

@@ -17,7 +17,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			memberIds: [],
 			sources: [],
 			derivations: [],
-			provenance: null
+			provenanceFlag: null,
+			sourcePackages: [],
+			derivationPackages: []
 		},
 		
 		complete: false,
@@ -207,11 +209,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 				
 				//We now have an array of source packages and an array of derivation packages.
-				model.sourcePackages.set(sourcePackages);
-				model.derivationPackages.set(derPackages);
+				model.set("sourcePackages", sourcePackages);
+				model.set("derivationPackages", derPackages);
 				
 				//Flag that the provenance trace is complete
-				model.set("provenance", "complete");
+				model.set("provenanceFlag", "complete");
 				
 			}, "json");
 			

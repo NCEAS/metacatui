@@ -306,7 +306,7 @@ define(['jquery',
 				if($(container).length > 0) $(container).prepend(provenanceEl);
 			});
 			
-			this.listenToOnce(this.packageModel, "change:provenance", this.drawProvChart);
+			this.listenToOnce(this.packageModel, "change:provenanceFlag", this.drawProvChart);
 			this.packageModel.getProvTrace();
 		},
 		
@@ -360,14 +360,14 @@ define(['jquery',
 				//Make the source chart for this member
 				var memberSources = member.getSources();				
 				var memberSourcesProvChart = new ProvChart({
-					sources: dataSources, //TODO: memberSources
+					sources: memberSources,
 					context: member
 				});
 				
 				//Make the derivation chart for this member
 				var memberDerivations = member.getDerivations();
 				var memberDerivationsProvChart = new ProvChart({
-					derivations: dataDerivations, //TODO: memberDerivations
+					derivations: memberDerivations,
 					context: member
 				});
 				
