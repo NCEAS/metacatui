@@ -97,11 +97,12 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Returns true if this SolrResult has a provenance trace (i.e. has either sources or derivations)
 		 */
 		hasProvTrace: function(){
-			var model = this,
-				fieldNames = this.getProvFields();
+			var fieldNames = searchModel.getProvFields(),
+				currentField = "";
 			
 			for(var i=0; i<= fieldNames.length; i++){
-				if(model.has(fieldNames[i])) return true;
+				currentField = fieldNames[i];
+				if(this.has(currentField)) return true;
 			}
 			
 			return false;
@@ -115,11 +116,11 @@ define(['jquery', 'underscore', 'backbone'],
 				model = this;
 			
 			_.each(searchModel.getProvFields(), function(provField, i){
-				if(model.isSourceField(provField))
+				if(model.isSourceField(provField) && model.has(provField))
 					sources.push(model.get(provField));
 			});
 			
-			return _.uniq(sources);
+			return _.uniq(_.flatten(sources));
 		},
 		
 		/* 
@@ -134,7 +135,7 @@ define(['jquery', 'underscore', 'backbone'],
 					derivations.push(model.get(provField));
 			});	
 			
-			return _.uniq(derivations);
+			return _.uniq(_.flatten(derivations));
 		}
 		/****************************/
 

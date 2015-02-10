@@ -110,8 +110,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var model = this;
 			
 			//See if there are any prov fields in our index before continuing
-			var solrResult 	 = new SolrResult();
-			if(!solrResult.getProvFields()) return this;
+			if(!searchModel.getProvFields()) return this;
 			
 			var sources 		   = new Array(),
 				derivations 	   = new Array(),
@@ -121,52 +120,97 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Make arrays of unique IDs of objects that are sources or derivations of this package.
 			_.each(this.get("members"), function(member, i){
 				if(member.hasProvTrace()){
-					_.union(sources, member.getSources());					
-					_.union(derivations, member.getDerivations());
+					sources 	= _.union(sources, member.getSources());					
+					derivations = _.union(derivations, member.getDerivations());
 				}
 			});
 			//Compact our list of ids that are in the prov trace by combining the sources and derivations and removing ids of members of this package
 			var externalProvEntities = _.difference(_.union(sources, derivations), this.get("memberIds"));
 			
 			//If there are no sources or derivations, then we do not need to find resource map ids for anything
-			if(!externalProvEntities.length) var idQuery = "";
+			if(!externalProvEntities.length) return this;
 			else{
 				//Create a query where we retrieve the ID of the resource map of each source and derivation
 				var idQuery = searchModel.getGroupedQuery("id", externalProvEntities, "OR");
 				
 				//TODO: Also create a query where we retrieve the metadata for this object (so we can know its title, authors, etc.)
 				//TODO: Will look like "OR (documents:id OR id OR id)"
-				var metadataQuery = "";
+				var metadataQuery = searchModel.getGroupedQuery("documents", externalProvEntities, "OR");
 			}
 			
+			//TODO: Once inverses are indexed, this may not be necessary
 			//Create a query to find all the other objects in the index that have a provenance field pointing to a member of this package
-			var provQuery 	 = "",
+		/*	var provQuery 	 = "",
 				memberIds 	 = this.get("memberIds");
-			_.each(solrResult.getProvFields(), function(fieldName, i, list){
+			_.each(searchModel.getProvFields(), function(fieldName, i, list){
 				provQuery += searchModel.getGroupedQuery(fieldName, memberIds, "OR");
 				if(i < list.length-1) provQuery += "%20OR%20";
 			});
+		*/
 			
 			//Make a comma-separated list of the provenance field names 
 			var provFieldList = "";
-			_.each(solrResult.getProvFields(), function(fieldName, i, list){
+			_.each(searchModel.getProvFields(), function(fieldName, i, list){
 				provFieldList += fieldName;
 				if(i < list.length-1) provFieldList += ",";
 			});
 			
 			//Combine the two queries with an OR operator
-			if(idQuery.length && provQuery.length) var combinedQuery = idQuery + "%20OR%20" + provQuery;
+			if(idQuery.length && metadataQuery.length) var combinedQuery = idQuery + "%20OR%20" + metadataQuery;
 			else return this;
 			
 			//the full and final query in Solr syntax
-			var query = "q=" + combinedQuery + "&fl=resourceMap," + provFieldList + "&wt=json";
+			var query = "q=" + combinedQuery + "%20-obsoletedBy:*" + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId" + provFieldList + "&wt=json";
+			
+			//Start an array to hold the packages in the prov trace
+			var sourcePackages   = new Array(),
+				derPackages      = new Array();
 			
 			//Send the query to the query service
-			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr){
-				console.log("got data");
+			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr){				
 				
-				//TODO: Separate the results into derivations and sources and group by their package.
+				//Separate the results into derivations and sources and group by their package.
+				_.each(data.response.docs, function(doc, i){
+					if(typeof doc.resourceMap === "undefined") return;
+					else if(doc.resourceMap){						
+						var id = doc.id,
+							mapId = doc.resourceMap;
+						
+						//Is this a source object?
+						if(_.contains(sources, id)){
+							//Have we encountered this source package yet?
+							if(!sourcePackages[mapId]){
+								//Now make a new package model for it
+								var p = new PackageModel({
+									id: mapId,
+									members: new Array(new SolrResult(doc))
+								});
+								//Add to the array of source packages
+								sourcePackages[mapId] = p;	
+							}
+						}
+						
+						//Is this a derivation object?
+						if(_.contains(derivations, id)){
+							//Have we encountered this derivation package yet?
+							if(!derPackages[mapId]){
+								//Now make a new package model for it
+								var p = new PackageModel({
+									id: mapId,
+									members: new Array(new SolrResult(doc))
+								});
+								//Add to the array of source packages
+								derPackages[mapId] = p;	
+							}
+						}
+					}
+				});
 				
+				//We now have an array of source packages and an array of derivation packages.
+				model.sourcePackages.set(sourcePackages);
+				model.derivationPackages.set(derPackages);
+				
+				//Flag that the provenance trace is complete
 				model.set("provenance", "complete");
 				
 			}, "json");

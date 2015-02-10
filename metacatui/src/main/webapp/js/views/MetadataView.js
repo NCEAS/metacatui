@@ -306,18 +306,15 @@ define(['jquery',
 				if($(container).length > 0) $(container).prepend(provenanceEl);
 			});
 			
-			//this.listenToOnce(this.packageModel, "change:provenance", this.testProvChart);
-			//this.packageModel.getProvTrace();
-			//TODO: For development only... remove when index is updated
-			if(appModel.provDev)
-				this.testProvChart();
+			this.listenToOnce(this.packageModel, "change:provenance", this.drawProvChart);
+			this.packageModel.getProvTrace();
 		},
 		
 		//Seperate out the development provenance chart-drawing stuff for now... "faking" some data until the index is populated
-		testProvChart: function(){
+		drawProvChart: function(){
 			var view = this;
 			
-			var solrResultSource = new SolrResult({
+			/*var solrResultSource = new SolrResult({
 				pubDate: "2015-06-30T00:00:00Z",
 				id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/5804/2",
 				title: "Florida Coastal Everglades site, station Taylor Slough Trexler Site CPC, study of animal abundance of Elassoma evergladei in units of numberPerEffort on a yearly timescale",
@@ -337,17 +334,26 @@ define(['jquery',
 			var derivations = new Array(new Package({members: [solrResultDer]})); 
 			var dataSources = new Array(solrResultSource);
 			var dataDerivations = new Array(solrResultDer);
-							
-			//Draw a flow chart to represent the sources and derivations
-			var sourceProvChart = new ProvChart({
-				sources: sources,
-				context: this.packageModel
-			});
-			var derivationProvChart = new ProvChart({
-				derivations: derivations,
-				context: this.packageModel
-			});
+			*/
 			
+			var sources = this.packageModel.get("sourcePackages");
+			var derivations = this.packageModel.get("derivationPackages");
+
+			//Draw a flow chart to represent the sources and derivations at a package level
+			if(sources.length){
+				var sourceProvChart = new ProvChart({
+					sources: sources,
+					context: this.packageModel
+				});				
+			}
+			if(derivations.length){
+				var derivationProvChart = new ProvChart({
+					derivations: derivations,
+					context: this.packageModel
+				});	
+			}
+			
+			//Draw the provenance chart for each member of this package at a object level
 			_.each(this.packageModel.get("members"), function(member, i){
 				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
 

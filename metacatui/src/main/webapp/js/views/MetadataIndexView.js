@@ -50,7 +50,7 @@ define(['jquery',
 			this.$el.html(this.loadingTemplate());
 			
 			//Get all the fields from the Solr index
-			var query = 'q=id:"' + this.pid + '"&wt=json&rows=1&start=0&fl=*';
+			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&wt=json&rows=1&start=0&fl=*';
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){ 
 
 				if(data.response.numFound == 0){
