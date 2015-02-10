@@ -19,15 +19,15 @@ define(['jquery', 'underscore', 'backbone'],
 			formatId: null,
 			formatType: null,
 			memberNode: null,
-			instanceOfClass_sm: null,
 			//Provenance index fields
-			prov_generatedByDataONEDN: null, 
+			prov_generatedByDataONEDN: null,
 			prov_generatedByExecution: null,
 			prov_generatedByFoafName: null,
 			prov_generatedByOrcid: null,
 			prov_generatedByProgram: null,
 			prov_generatedByUser: null,
-			prov_hasDerivations: null,
+ 			prov_hasDerivations: null,
+			prov_hasSources: null,
 			prov_used: null,
 			prov_usedByDataONEDN: null,
 			prov_usedByExecution: null,
@@ -77,15 +77,15 @@ define(['jquery', 'underscore', 'backbone'],
 			if((typeof field == "undefined") || !field) return false;
 			if(!_.contains(searchModel.getProvFields(), field)) return false;			
 			
-			if(field.indexOf("prov_wasGeneratedBy") > -1)    return true;
-			if(field.indexOf("prov_wasDerivedFrom") > -1) return true;
-			if(field.indexOf("prov_wasExecutedByExecution") > -1)  return true;
-			if(field.indexOf("prov_used") > -1)  return true;
-			if(field.indexOf("prov_usedByExecution") > -1)  return true;
-			if(field.indexOf("prov_usedByProgram") > -1)  return true;
-			if(field.indexOf("prov_usedByUser") > -1)  return true;
-
-			return false;
+			if(field == "prov_generatedByExecution" ||
+			   field == "prov_generatedByProgram"   ||
+			   field == "prov_used" 		  		||
+			   field == "prov_wasDerivedFrom" 		||
+			   field == "prov_wasGeneratedBy" 		||
+			   field == "prov_wasInformedBy") 
+				return true;
+			else
+				return false;
 		},
 		
 		/*
@@ -95,9 +95,11 @@ define(['jquery', 'underscore', 'backbone'],
 			if((typeof field == "undefined") || !field) return false;
 			if(!!_.contains(searchModel.getProvFields(), field)) return false;
 			
-			if(field.indexOf("usedBy") > -1) return true;
-			
-			return false;
+			if(field == "prov_usedByExecution" ||
+			   field == "prov_usedByProgram")
+				return true;
+			else
+				return false;			
 		},
 		
 		/*
