@@ -190,6 +190,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 								//Add to the array of source packages
 								sourcePackages[mapId] = p;	
 							}
+							//If so, add this member to its package model
+							else{
+								var currentMembers = sourcePackages[mapId].get("members");
+								sourcePackages[mapId].set("members", currentMembers.push(new SolrResult(doc)));
+							}
 						}
 						
 						//Is this a derivation object?
@@ -203,6 +208,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 								});
 								//Add to the array of source packages
 								derPackages[mapId] = p;	
+							}
+							//If so, add this member to its package model
+							else{
+								var currentMembers = derPackages[mapId].get("members");
+								derPackages[mapId].set("members", currentMembers.push(new SolrResult(doc)));
 							}
 						}
 					}

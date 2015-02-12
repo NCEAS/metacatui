@@ -312,6 +312,8 @@ define(['jquery',
 		
 		//Seperate out the development provenance chart-drawing stuff for now... "faking" some data until the index is populated
 		drawProvChart: function(){
+			if(this.packageModel.provenanceFlag != "complete") return false;
+			
 			var view = this;
 			
 			/*var solrResultSource = new SolrResult({
@@ -336,19 +338,19 @@ define(['jquery',
 			var dataDerivations = new Array(solrResultDer);
 			*/
 			
-			var sources = this.packageModel.get("sourcePackages");
-			var derivations = this.packageModel.get("derivationPackages");
+			var packageSources = this.packageModel.get("sourcePackages");
+			var packageDerivations = this.packageModel.get("derivationPackages");
 
 			//Draw a flow chart to represent the sources and derivations at a package level
-			if(sources.length){
+			if(packageSources.length){
 				var sourceProvChart = new ProvChart({
-					sources: sources,
+					sources: packageSources,
 					context: this.packageModel
 				});				
 			}
-			if(derivations.length){
+			if(packageDerivations.length){
 				var derivationProvChart = new ProvChart({
-					derivations: derivations,
+					derivations: packageDerivations,
 					context: this.packageModel
 				});	
 			}
@@ -357,15 +359,27 @@ define(['jquery',
 			_.each(this.packageModel.get("members"), function(member, i){
 				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
 
+				//Find the sources for this members
+				var memberSources = new Array(),
+					memberDerivations = new Array(),
+					externalMemberSources = new Array(),
+					externalMemberDerivations = new Array();
+				
+				/*
+				//Find the package model with a SolrResult that has a source prov_ field that == this id
+				_.each(packageDerivations, function(packge, i){
+					_.each(packge.get("members"), function(packgeMember, ii){
+						externalMemberSources.push(packgeMember.getSources());
+					});
+				});*/
+				
 				//Make the source chart for this member
-				var memberSources = member.getSources();				
 				var memberSourcesProvChart = new ProvChart({
 					sources: memberSources,
 					context: member
 				});
 				
 				//Make the derivation chart for this member
-				var memberDerivations = member.getDerivations();
 				var memberDerivationsProvChart = new ProvChart({
 					derivations: memberDerivations,
 					context: member

@@ -81,7 +81,6 @@ define(['jquery', 'underscore', 'backbone'],
 			   field == "prov_generatedByProgram"   ||
 			   field == "prov_used" 		  		||
 			   field == "prov_wasDerivedFrom" 		||
-			   field == "prov_wasGeneratedBy" 		||
 			   field == "prov_wasInformedBy") 
 				return true;
 			else
