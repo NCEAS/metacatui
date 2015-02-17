@@ -202,8 +202,8 @@ define(['jquery', 'underscore', 'backbone'],
 				for (var i=0; i < additionalCriteria.length; i++){
 					var value;
 					
-					if(needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
-					else value = encodeURIComponent(additionalCriteria[i]);
+					//if(needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
+					value = encodeURIComponent(additionalCriteria[i]);
 					
 					query += "+" + value;
 				}
