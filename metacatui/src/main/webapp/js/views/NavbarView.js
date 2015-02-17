@@ -86,7 +86,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			searchModel.clear().set(searchModel.defaults);
 			
 			// Create a new array with the new search term
-			var newSearch = ["+rightsHolder:" + username];
+			var newSearch = ["rightsHolder:" + username];
 			
 			//Set up the search model for this new term
 			searchModel.set('additionalCriteria', newSearch);
