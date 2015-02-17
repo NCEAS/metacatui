@@ -34,9 +34,10 @@ define(['jquery', 'underscore', 'backbone'],
 			nodeServiceUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			//bioportalServiceUrl: "http://data.bioontology.org/search?ontologies=OBOE-SBC&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
-			//orcidServiceUrl: "http://pub.orcid.org/v1.1/search/orcid-bio?q=",
-			tokenUrl: null
+			bioportalServiceUrl: "http://data.bioontology.org/search?ontologies=OBOE-SBC&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
+			orcidServiceUrl: "http://pub.orcid.org/v1.1/search/orcid-bio?q=",
+			tokenUrl: null,
+			annotatorUrl: null
 		},
 
 		provDev: true,
@@ -67,15 +68,15 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set('nodeServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/node');
 			
-			// use portal to  retrieve token
-			//this.set('tokenUrl', 'http://localhost:8080/metacat/d1/mn/v1/token');
-			//this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
-			//this.set('tokenUrl', this.get('baseUrl') + '/portal/identity?action=getToken');
-
 			//this.set('d1LogServiceUrl', this.get('baseUrl') + this.get('d1Service') + 'logsolr');
 			this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
 			
-			
+			// use portal to  retrieve token and annotate metadata
+			this.set('tokenUrl', this.get('baseUrl') + '/portal/identity?action=getToken');
+			this.set('annotatorUrl', this.get('baseUrl') + '/portal/annotator');
+			//this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
+			//this.set('annotatorUrl', this.get('baseUrl') + this.get('context') + '/annotator');
+
 			
 		}
 	
