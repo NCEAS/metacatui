@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone'], 				
-	function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
+	function($, _, Backbone, SolrResult) {
 	'use strict';
 
 	// Search Model 
@@ -14,52 +14,59 @@ define(['jquery', 'underscore', 'backbone'],
 		 * value - the value that will be included in the query
 		 * description - a longer text description of the filter value
 		 */
-		defaults: {
-			all: [],
-			creator: [],
-			taxon: [],
-			resourceMap: false,
-			yearMin: 1900, //The user-selected minimum year
-			yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
-			pubYear: false,
-			dataYear: false,
-			sortOrder: 'dateUploaded+desc',
-			east: null,
-			west: null,
-			north: null,
-			south: null,
-			geohashes: [],
-			geohashLevel: 9,
-			spatial: [],
-			//attribute: [],
-			annotation: [],
-			additionalCriteria: [],
-			formatType: [{
-				value: "METADATA",
-				label: "science metadata",
-				description: null
-			}],
-			exclude: [{
-				field: "obsoletedBy",
-				value: "*"
-			}]
+		defaults: function(){ 
+			return {
+				all: [],
+				creator: [],
+				taxon: [],
+				resourceMap: false,
+				yearMin: 1900, //The user-selected minimum year
+				yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
+				pubYear: false,
+				dataYear: false,
+				sortOrder: 'dateUploaded+desc',
+				east: null,
+				west: null,
+				north: null,
+				south: null,
+				geohashes: [],
+				geohashLevel: 9,
+				spatial: [],
+				attribute: [],
+				annotation: [],
+				additionalCriteria: [],
+				memberNode: [],
+				id: [],
+				formatType: [{
+					value: "METADATA",
+					label: "science metadata",
+					description: null
+				}],
+				exclude: [{
+					field: "obsoletedBy",
+					value: "*"
+				}]
+			}
 		},
 		
 		//Map the filter names to their index field names
 		fieldNameMap: {
-					 attribute : "attribute",
+					 attribute : "attributeName",
 					annotation : "annotation_sm",
 					formatType : "formatType",
 						   all : "",
 					   creator : "origin",
 					   spatial : "site",
 				   resourceMap : "resourceMap",
-				   	   pubYear : "dateUploaded"
+				   	   pubYear : "dateUploaded",
+				   	memberNode : "datasource",
+				   			id : "id"
 		},
 		
 		filterCount: function() {
-			var changedAttr = this.changedAttributes(_.clone(this.defaults));
+			var changedAttr = this.changedAttributes(_.clone(this.defaults()));
 			if (changedAttr) {
+				console.log(changedAttr);
 				var changedKeys = _.keys(changedAttr);
 				return changedKeys.length;
 			}
@@ -71,7 +78,7 @@ define(['jquery', 'underscore', 'backbone'],
 		//Comment out or remove defaults that are not in the index or should not be included in queries
 		filterIsAvailable: function(name){
 			//Get the keys for this model as a way to list the filters that are available
-			var defaults = _.keys(this.defaults);
+			var defaults = _.keys(this.defaults());
 			if(_.indexOf(defaults, name) >= 0) return true;
 			else return false;
 		},
@@ -88,7 +95,7 @@ define(['jquery', 'underscore', 'backbone'],
 				//Remove this filter term from the array
 				var newFilterValues = _.without(currentFilterValues, filterValueToRemove);
 				_.each(currentFilterValues, function(currentFilterValue, key){
-					if(currentFilterValue.value = filterValueToRemove){
+					if(currentFilterValue.value == filterValueToRemove){
 						newFilterValues = _.without(newFilterValues, currentFilterValue);
 					}
 				});
@@ -105,8 +112,8 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Resets the geoashes and geohashLevel filters to default
 		 */
 		resetGeohash : function(){
-			this.set("geohashes",    this.defaults.geohashes);
-			this.set("geohashLevel", this.defaults.geohashLevel);
+			this.set("geohashes",    this.defaults().geohashes);
+			this.set("geohashLevel", this.defaults().geohashLevel);
 		},
 		
 		/*
@@ -117,28 +124,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial"];
-			
-			//Function here to check for spaces in a string - we'll use this to url encode the query
-			var needsQuotes = function(entry){
-				//Check for spaces
-				var space = null;
-				
-				space = entry.indexOf(" ");
-				
-				if(space >= 0){
-					return true;
-				}
-				
-				//Check for the colon : character
-				var colon = null;
-				colon = entry.indexOf(":");
-				if(colon >= 0){
-					return true;
-				}
-				
-				return false;
-			};
+			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id"];
 			
 			//Start the query string
 			var query = "";
@@ -163,7 +149,7 @@ define(['jquery', 'underscore', 'backbone'],
 					//Trim the spaces off
 					thisTaxon = taxon[i].trim();
 					
-					if(needsQuotes(thisTaxon)) value = "%22" + encodeURIComponent(thisTaxon) + "%22";
+					if(this.needsQuotes(thisTaxon)) value = "%22" + encodeURIComponent(thisTaxon) + "%22";
 					else value = encodeURIComponent(thisTaxon);
 					
 					query += "+(" +
@@ -243,7 +229,7 @@ define(['jquery', 'underscore', 'backbone'],
 				for (var i=0; i < additionalCriteria.length; i++){
 					var value;
 					
-					if(needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
+					if(this.needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
 					else value = encodeURIComponent(additionalCriteria[i]);
 					
 					query += "+" + value;
@@ -259,11 +245,35 @@ define(['jquery', 'underscore', 'backbone'],
 					if(typeof filterValue == "object")
 						filterValue = filterValue.value;
 					
-					if(needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+					if(this.needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
 					else filterValue = encodeURIComponent(filterValue);
 					
 					query += "+" + filterValue;
 				}
+			}
+			
+			//----- Member Nodes - Multiple selections will look for either (OR) -----
+			if(this.filterIsAvailable("memberNode") && ((filter == "memberNode") || getAll)){
+				var memberNode = this.get('memberNode'),
+					fieldName = this.fieldNameMap["memberNode"];
+				
+				for (var i=0; i < memberNode.length; i++){
+					var filterValue = memberNode[i];
+					
+					if(typeof filterValue == "object")
+						filterValue = filterValue.value;
+					
+					filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+					
+					if(i==0 && memberNode.length==1)
+						query += "+" + fieldName + ":" + filterValue;
+					else if(i==0)
+						query += "+" + fieldName + ":(" + filterValue + "%20OR%20";
+					else if(i == memberNode.length-1)
+						query += filterValue + ")";					
+					else
+						query += filterValue + "%20OR%20";
+				}				
 			}
 			
 			//-----Theme restrictions from Registry Model-----
@@ -291,7 +301,7 @@ define(['jquery', 'underscore', 'backbone'],
 						filterValue = filterValue.trim();
 						
 						// Does this need to be wrapped in quotes?
-						if (needsQuotes(filterValue)){
+						if (model.needsQuotes(filterValue)){
 							filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
 						}
 						// TODO: surround with **?
@@ -325,9 +335,79 @@ define(['jquery', 'underscore', 'backbone'],
 			return facetQuery;
 		},
 		
+		/*
+		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
+		 * Example:  title:(resistance OR salmon OR "pink salmon")
+		 */
+		getGroupedQuery: function(fieldName, values, operator){
+			var query = "",
+				numValues = values.length,
+				model = this;
+			
+			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) var operator = "OR";
+			
+			if(numValues == 1) query = fieldName + ":" + values[0];
+			else{
+				_.each(values, function(value, i){
+					if(model.needsQuotes(value)) value = '"' + value + '"';
+						
+					if((i == 0) && (numValues > 1)) 	   query += "id:(" + value;
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
+				});
+			}
+			
+			return query;
+		},
+		
+		/**** Provenance-related functions ****/
+		// Returns which fields are provenance-related in this model
+		// Useful for querying the index and such
+		getProvFields: function(){
+			var defaultFields = Object.keys(new SolrResult().defaults);
+			var provFields = _.filter(defaultFields, function(fieldName){ 
+				if(fieldName.indexOf("prov_") == 0) return true; 
+			});
+
+			return provFields;	
+		},
+		
+		getProvFlList: function(){
+			var provFields = this.getProvFields(),
+			provFl = "";
+			_.each(provFields, function(provField, i){
+				provFl += provField;
+				if(i < provFields.length-1) provFl += ","; 
+			});
+			
+			return provFl;
+		},
+		
+		//Check for spaces in a string - we'll use this to url encode the query
+		needsQuotes: function(entry){
+				
+			//Check for spaces
+			var space = null;
+			
+			space = entry.indexOf(" ");
+			
+			if(space >= 0){
+				return true;
+			}
+			
+			//Check for the colon : character
+			var colon = null;
+			colon = entry.indexOf(":");
+			if(colon >= 0){
+				return true;
+			}
+			
+			return false;
+		},
+		
 		clear: function() {
 			console.log('Clear the filters');
-		    return this.set(_.clone(this.defaults));
+		    return this.set(_.clone(this.defaults()));
 		  }
 		
 	});

@@ -1,44 +1,82 @@
 <div class="navbar">
-  <div class="navbar-inner">
-
-      <ul class="nav">
-        <li><input type="text" id="search_txt" placeholder="Search for data" /><a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-large"></i></a></li>
-      	<li> <a href="."><img alt="DataONE" class="dataone" src="./img/dataone-logo-white.png"></a></li>
-       <li class="dropdown">
-        	<a class="show-new-dataCatalogView dropdown-toggle" data-toggle="dropdown">Data</a>
-        	<ul class="dropdown-menu">
-        		<li class="dropdown-header">Data</li>
-        		<li class="divider"></li>       		
-        		<li><a class="show-new-dataCatalogView">Search</a></li>
-        		<li><a href="#profile">Summary</a></li>
-        	</ul>
+  <div class="navbar-upper">
+  	<ul class="nav">
+	  	<li>
+	  		<a href="." class="logo"><img alt="DataONE" class="dataone logo" src="./js/themes/dataone-redesign/img/d1-logo-v3.jpeg"></a>
+	  	</li>
+	  	<li class="soc-media right">
+			<h5>Connect</h5>	            
+		    <div class="clear">
+					<a href="http://vimeo.com/channels/dataone" target="_blank"> <img src="https://www.dataone.org/sites/all/images/vimeo-icon.jpg" alt="Vimeo" class="left"></a>
+					<a href="http://www.youtube.com/user/DataONEorg" target="_blank"> <img src="https://www.dataone.org/sites/all/images/youTube-icon.jpg" alt="Youtube" class="left"></a>
+					<a href="http://www.linkedin.com/groups?gid=1872174&amp;mostPopular=&amp;trk=tyah" target="_blank"> <img src="https://www.dataone.org/sites/all/images/linkedIn-icon.jpg" alt="Linked In" class="left"></a>
+					<a href="http://twitter.com/#!/Dataoneorg" target="_blank"> <img src="https://www.dataone.org/sites/all/images/twitter-icon.jpg" alt="Twitter" class="left"></a>
+					<a href="http://www.facebook.com/pages/DataONE/156940701015997" target="_blank"><img src="https://www.dataone.org/sites/all/images/fb-icon.jpg" alt="Facebook" class="left"></a>
+					<a href="feed://www.dataone.org/rss"><img src="https://www.dataone.org/sites/all/images/rss-icon.jpg" alt="RSS" class="left"></a>
+					<a href="http://www.slideshare.net/DataONEorg" target="_blank"><img src="https://www.dataone.org/sites/all/images/slideshare-plum.jpg" alt="Slideshare" class="left"></a>
+					<a href="https://plus.google.com/107602550656223730556/posts" target="_blank"><img src="https://www.dataone.org/sites/all/images/google-plus-plum-dataone.jpg" alt="Google Plus" class="left"></a>
+		    </div>
+	  	</li>
+	 </ul>
+  </div>
+  <div class="navbar-inner clear">
+  	<ul class="nav">
+  		<li>
+  			<a href="https://www.dataone.org/about">About</a>
+  		</li>
+  		<li>
+  			<a href="https://www.dataone.org/participate">Participate</a>
+  		</li>
+  		<li>
+  			<a href="https://www.dataone.org/resources">Resources</a>
+  		</li>
+  		<li>
+  			<a href="https://www.dataone.org/education">Education</a>
+  		</li>
+  		<li>
+  			<a href="https://www.dataone.org/data">Data</a>
+  		</li>
+  	</ul>
+  </div><!-- /.navbar-inner -->
+  
+  <div class="navbar-lower">
+  	<ul class="nav">
+  		<li class="label">
+  			Data Catalog:
+  		</li>
+       <li>
+        	<a class="show-new-dataCatalogView dropdown-toggle">Search</a>
         </li>
-        <li><a href="#about">About</a></li>
+        <li>
+        	<a href="#profile">Summary</a>
+        </li>
+       <li>
+       		<input type="text" id="search_txt" placeholder="Search for data" /><a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-large"></i></a>
+       	</li> 
         <% 
         if (username) { 
-        %>
-        	<li class="dropdown">
-				<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-					<i class="icon-user"></i><b class="icon-sort-down"></b>
-				</a>
-				<ul class="dropdown-menu">
-					<li class="dropdown-header"><%=username%></li>
-					<li class="divider"></li>
-					<!--<li><a href="#share">Register data</a></li>-->
-					<li><a href="#data" id="myData">My packages</a></li>
-					<!-- <li><a href="#">My account</a></li>-->
-					<li class="divider"></li>
-					<li><a href="<%=baseUrl%>/portal/identity?action=logout&target=<%=currentUrl%>">Logout</a></li>
-				</ul>
-			</li>
-		<%
+        	print(
+        	'<li class="dropdown">',
+				'<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
+					'<i class="icon-user"></i><b class="icon-sort-down"></b>',
+				'</a>',
+				'<ul class="dropdown-menu">',
+					'<li class="dropdown-header">', username, '</li>',
+					'<li class="divider"></li>',  
+					//'<li><a href="#share">Register data</a></li>',
+					'<li><a href="#data" id="myData">My packages</a></li>',
+					//'<li><a href="#">My account</a></li>',
+					'<li class="divider"></li>',
+					'<li><a href="#logout">Logout</a></li>',
+				'</ul>',
+			'</li>'
+        	);
         } else {
-       	%>
-        		<li class="share-feature"><a href="<%=baseUrl%>/portal/startRequest?target=<%=currentUrl%>">Sign In</a></li>
-       	<%
-        }  
-        %>
+      /*  	print(
+        		'<li id="SignIn" class="share-feature"><a href="#share">Sign In</a></li>'
+        	); */
+        }  %>
         	
-      </ul>
-  </div><!-- /.navbar-inner -->
+  	</ul>
+  </div><!-- /.navbar-lower -->
 </div><!-- /.navbar -->
