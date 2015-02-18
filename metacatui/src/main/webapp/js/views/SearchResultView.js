@@ -50,6 +50,24 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 				//If this object has a provenance trace, we want to display information about it
 				if(json.hasProv || appModel.provDev){
 					
+					var numSources = this.model.get("prov_hasSources"),
+						numDerivations = this.model.get("prov_hasDerivations");
+					
+					if(appModel.provDev){
+						numSources = 2;
+						numDerivations = 2;
+					}
+					
+					//Create the title of the popover
+					var title = "This dataset";
+					if(numSources > 0) title += " was created using " + numSources + " source";
+					if(numSources > 1) title += "s";
+					if(numSources > 0 && numDerivations > 0) title += " and";
+					if(numDerivations > 0) title += " has been used by " + numDerivations + " other dataset";
+					if(numDerivations > 1) title += "s";
+					title += ".";
+					
+					/*
 					//Get the sources and derivations of this dataset
 					var sources = this.model.getSources(),
 						derivations = this.model.getDerivations();
@@ -102,7 +120,8 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 					$(moreLink).append(moreIcon);
 					$(citations).append(moreLink);
 					
-					//Make a popover
+					
+					//Make a popover with all the prov details
 					this.$el.find(".provenance.active").attr("tabIndex", 99);
 					this.$el.find(".provenance.active").popover({
 						html: true,
@@ -111,6 +130,15 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 						container: this.el,
 						title: title,
 						content: citations
+					});
+					*/
+					
+					//Make a tooltip with basic info for mouseover
+					this.$el.find(".provenance.active").tooltip({
+						placement: "top",
+						trigger: "hover",
+						container: this.el,
+						title: title
 					});
 				}
 			

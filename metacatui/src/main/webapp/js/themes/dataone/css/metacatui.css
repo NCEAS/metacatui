@@ -1569,9 +1569,10 @@ table th.btn-container .btn{
     }
     .info-icons i{
     	color: #660033;
+    	cursor: pointer;
     }
-    .info-icons .on-map > i.on-map{
-    	cursor: default;
+    .info-icons i:hover{
+    	color: #CE0060;
     }
     .info-icons .on-map > i.on-map:nth-child(n+2){
     	margin-left: 3px;
