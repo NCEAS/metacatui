@@ -162,65 +162,90 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else return this;
 			
 			//the full and final query in Solr syntax
-			var query = "q=" + combinedQuery + "%20-obsoletedBy:*" + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId" + provFieldList + "&wt=json";
+			var query = "q=" + combinedQuery + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId" + provFieldList + "&wt=json";
 			
 			//Start an array to hold the packages in the prov trace
 			var sourcePackages   = new Array(),
-				derPackages      = new Array();
+				derPackages      = new Array(),
+				sourceDocs		 = new Array(),
+				derDocs	 		 = new Array();
 			
 			//Send the query to the query service
 			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr){				
 				
-				//Separate the results into derivations and sources and group by their package.
+				//Separate the results into derivations and sources and group by their metadata doc.
 				_.each(data.response.docs, function(doc, i){
-					if(typeof doc.resourceMap === "undefined") return;
+					if((typeof doc.resourceMap === "undefined") && (doc.formatType == "DATA") && (typeof doc.isDocumentedBy === "undefined")){
+						//If this object is not in a resource map and does not have metadata, it is a "naked" data doc, so save it by itself
+						if(_.contains(sources, doc.id))
+							sourceDocs.push(new SolrResult(doc));
+						if(_.contains(derivations, doc.id))
+							derDocs.push(new SolrResult(doc));
+					}
+					else if((typeof doc.resourceMap === "undefined") && (doc.formatType == "DATA") && doc.isDocumentedBy){
+						//If this data doc has a resource map and has a metadata doc that documents it, create a blank package model and save it
+						var p = new PackageModel({
+							members: new Array(new SolrResult(doc))
+						});
+						//Add this package model to the sources and/or derivations packages list
+						if(_.contains(sources, doc.id))
+							sourcePackages[doc.id] = p;
+						if(_.contains(derivations, doc.id))
+							derPackages[doc.id] = p;
+					}
 					else if(doc.resourceMap){						
+						//If this doc has a resource map, create a package model and SolrResult model and store it
 						var id = doc.id,
-							mapId = doc.resourceMap;
+							mapIds = doc.resourceMap;
 						
-						//Is this a source object?
-						if(_.contains(sources, id)){
-							//Have we encountered this source package yet?
-							if(!sourcePackages[mapId]){
-								//Now make a new package model for it
-								var p = new PackageModel({
-									id: mapId,
-									members: new Array(new SolrResult(doc))
-								});
-								//Add to the array of source packages
-								sourcePackages[mapId] = p;	
+						//Some of these objects may have multiple resource maps
+						_.each(mapIds, function(mapId, i, list){
+							//Is this a source object?
+							if(_.contains(sources, id)){
+								//Have we encountered this source package yet?
+								if(!sourcePackages[mapId]){
+									//Now make a new package model for it
+									var p = new PackageModel({
+										id: mapId,
+										members: new Array(new SolrResult(doc))
+									});
+									//Add to the array of source packages
+									sourcePackages[mapId] = p;	
+								}
+								//If so, add this member to its package model
+								else{
+									var currentMembers = sourcePackages[mapId].get("members");
+									sourcePackages[mapId].set("members", currentMembers.push(new SolrResult(doc)));
+								}
 							}
-							//If so, add this member to its package model
-							else{
-								var currentMembers = sourcePackages[mapId].get("members");
-								sourcePackages[mapId].set("members", currentMembers.push(new SolrResult(doc)));
+							
+							//Is this a derivation object?
+							if(_.contains(derivations, id)){
+								//Have we encountered this derivation package yet?
+								if(!derPackages[mapId]){
+									//Now make a new package model for it
+									var p = new PackageModel({
+										id: mapId,
+										members: new Array(new SolrResult(doc))
+									});
+									//Add to the array of source packages
+									derPackages[mapId] = p;	
+								}
+								//If so, add this member to its package model
+								else{
+									var currentMembers = derPackages[mapId].get("members");
+									derPackages[mapId].set("members", currentMembers.push(new SolrResult(doc)));
+								}
 							}
-						}
-						
-						//Is this a derivation object?
-						if(_.contains(derivations, id)){
-							//Have we encountered this derivation package yet?
-							if(!derPackages[mapId]){
-								//Now make a new package model for it
-								var p = new PackageModel({
-									id: mapId,
-									members: new Array(new SolrResult(doc))
-								});
-								//Add to the array of source packages
-								derPackages[mapId] = p;	
-							}
-							//If so, add this member to its package model
-							else{
-								var currentMembers = derPackages[mapId].get("members");
-								derPackages[mapId].set("members", currentMembers.push(new SolrResult(doc)));
-							}
-						}
+						});				
 					}
 				});
 				
 				//We now have an array of source packages and an array of derivation packages.
 				model.set("sourcePackages", sourcePackages);
 				model.set("derivationPackages", derPackages);
+				model.set("sourceDocs", sourceDocs);
+				model.set("derivationDocs", derDocs);
 				
 				//Flag that the provenance trace is complete
 				model.set("provenanceFlag", "complete");

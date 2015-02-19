@@ -312,7 +312,7 @@ define(['jquery',
 		
 		//Seperate out the development provenance chart-drawing stuff for now... "faking" some data until the index is populated
 		drawProvChart: function(){
-			if(this.packageModel.provenanceFlag != "complete") return false;
+			if(this.packageModel.get("provenanceFlag") != "complete") return false;
 			
 			var view = this;
 			
@@ -340,6 +340,7 @@ define(['jquery',
 			
 			var packageSources = this.packageModel.get("sourcePackages");
 			var packageDerivations = this.packageModel.get("derivationPackages");
+			var hasProv = (packageSources.length || packageDerivations.length) ? true : false;
 
 			//Draw a flow chart to represent the sources and derivations at a package level
 			if(packageSources.length){
@@ -391,10 +392,12 @@ define(['jquery',
 				$(entityDetailsSection).addClass("hasProv");
 			});
 			
-			//Indicate that the context has a provenance chart next to it by adding a class (used for styling)
-			this.$("#Metadata").addClass("hasProv");			
-			this.$("#Metadata").before(sourceProvChart.render().el);			
-			this.$("#Metadata").after(derivationProvChart.render().el);
+			if(hasProv){
+				//Indicate that the context has a provenance chart next to it by adding a class (used for styling)
+				this.$("#Metadata").addClass("hasProv");			
+				this.$("#Metadata").before(sourceProvChart.render().el);			
+				this.$("#Metadata").after(derivationProvChart.render().el);
+			}
 			
 			//this.$(".entityDetails").before(sourceProvChart.el.cloneNode(true));			
 			//this.$(".entityDetails").after(derivationProvChart.el.cloneNode(true));

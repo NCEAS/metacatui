@@ -351,7 +351,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				_.each(values, function(value, i){
 					if(model.needsQuotes(value)) value = '"' + value + '"';
 						
-					if((i == 0) && (numValues > 1)) 	   query += "id:(" + value;
+					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + value;
 					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
 					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
 				});
