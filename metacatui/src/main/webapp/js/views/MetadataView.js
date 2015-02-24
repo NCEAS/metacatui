@@ -327,6 +327,9 @@ define(['jquery',
 				});	
 				this.$("#Metadata").before(sourceProvChart.render().el);	
 				this.$("#Metadata").addClass("hasProvLeft");
+				var chartHeight = sourceProvChart.$el.height() + sourceProvChart.nodeHeight;
+				if(this.$("#Metadata").height() < chartHeight)
+					this.$("#Metadata").height((chartHeight));
 			}
 			if(packageDerivations.length){
 				var derivationProvChart = new ProvChart({
@@ -335,6 +338,9 @@ define(['jquery',
 				});		
 				this.$("#Metadata").after(derivationProvChart.render().el);
 				this.$("#Metadata").addClass("hasProvRight");
+				var chartHeight = derivationProvChart.$el.height() + derivationProvChart.nodeHeight;
+				if(this.$("#Metadata").height() < chartHeight)
+					this.$("#Metadata").height((chartHeight));			
 			}			
 			
 			//Draw the provenance chart for each member of this package at an object level
@@ -353,6 +359,9 @@ define(['jquery',
 					});	
 					$(entityDetailsSection).before(memberSourcesProvChart.render().el);
 					$(entityDetailsSection).addClass("hasProvLeft");
+					var chartHeight = memberSourcesProvChart.$el.height() + memberSourcesProvChart.nodeHeight;
+					if($(entityDetailsSection).height() < chartHeight)
+						$(entityDetailsSection).height((chartHeight));	
 				}
 				if(memberDerivations.length){
 					//Make the derivation chart for this member
@@ -362,7 +371,9 @@ define(['jquery',
 					});	
 					$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
 					$(entityDetailsSection).addClass("hasProvRight");	
-				}
+					var chartHeight = memberDerivationsProvChart.$el.height() + memberDerivationsProvChart.nodeHeight;
+					if($(entityDetailsSection).height() < chartHeight)
+						$(entityDetailsSection).height((chartHeight));				}
 			});
 		},
 		

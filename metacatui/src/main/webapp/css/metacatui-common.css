@@ -141,10 +141,10 @@ article.hasProvLeft.hasProvRight{
 .entityDetails.hasProvLeft,
 .entityDetails.hasProvRight{
 	display: inline-block;
-	width: 62%;
+	width: 83%;
 }
 .entityDetails.hasProvLeft.hasProvRight{
-	width: 83%;
+	width: 62%;
 }
 .entityDetails > h4 > *{
 	float: left;
