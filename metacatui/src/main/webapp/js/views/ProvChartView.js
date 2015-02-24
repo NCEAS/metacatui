@@ -36,6 +36,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 		
 		className: "prov-chart",
 		
+		events: {
+			"click .node" : "toggleActive"
+		},
+		
 		render: function(){
 			if((this.type == "derivations") && (!this.derivations.length)) return false;
 			if((this.type == "sources") && (!this.sources.length)) return false;
@@ -136,6 +140,19 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 			if(typeof position !== "undefined") $(pointer).css("top", ((this.nodeHeight * position) - (this.pointerHeight/2)) + "px");
 			
 			return pointer;
+		},
+		
+		/*
+		 * Toggle the "active" class on the node element
+		 */
+		toggleActive: function(e){
+			var nodeEl = e.target;
+			
+			while(!$(nodeEl).hasClass("node")){
+				nodeEl = $(nodeEl).parent();
+			}
+			
+			$(nodeEl).toggleClass("active");
 		}
 	});
 	
