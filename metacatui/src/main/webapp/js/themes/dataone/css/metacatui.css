@@ -337,7 +337,7 @@ Bold 700
 	transition: background-color .7s;
 }
 .btn-primary:hover{
-	background-color: rgba(102,0,51,1);
+	background-color: rgba(157, 3, 80, 1);
 }    
     .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
 		background-color: #999999;

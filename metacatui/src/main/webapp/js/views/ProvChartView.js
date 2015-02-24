@@ -36,10 +36,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 		
 		className: "prov-chart",
 		
-		events: {
-			"click .node" : "toggleActive"
-		},
-		
 		render: function(){
 			if((this.type == "derivations") && (!this.derivations.length)) return false;
 			if((this.type == "sources") && (!this.sources.length)) return false;
@@ -94,6 +90,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 			//Create a DOM element to represent the node	
 			var nodeEl = $(document.createElement("div"))
 						 .addClass(type + " node pointer popover-this")
+						 .attr("tabindex", 0)
 						 .css("top", (position * this.nodeHeight) - (this.nodeHeight/2));
 			//Create a DOM element for the icon inside the node
 			var iconEl = $(document.createElement("i"))
@@ -117,7 +114,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 			$(nodeEl).popover({
 				html: true,
 				placement: placement,
-				trigger: "click",
+				trigger: "focus",
 				container: this.el,
 				title: title,
 				content: function(){ 
@@ -140,19 +137,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 			if(typeof position !== "undefined") $(pointer).css("top", ((this.nodeHeight * position) - (this.pointerHeight/2)) + "px");
 			
 			return pointer;
-		},
-		
-		/*
-		 * Toggle the "active" class on the node element
-		 */
-		toggleActive: function(e){
-			var nodeEl = e.target;
-			
-			while(!$(nodeEl).hasClass("node")){
-				nodeEl = $(nodeEl).parent();
-			}
-			
-			$(nodeEl).toggleClass("active");
 		}
 	});
 	

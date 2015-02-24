@@ -45,6 +45,9 @@
 	position: absolute;
 	z-index: 2;
 }
+.prov-chart .node:focus{
+	outline: none;
+}
 .prov-chart .connecter{
 	border-top-width: 1px;
 	border-top-style: solid;
