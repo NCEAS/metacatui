@@ -19,6 +19,8 @@ define(['jquery', 'underscore', 'backbone'],
 			formatId: null,
 			formatType: null,
 			memberNode: null,
+			provSources: [],
+			provDerivations: [],
 			//Provenance index fields
 			prov_generatedByDataONEDN: null,
 			prov_generatedByExecution: null,

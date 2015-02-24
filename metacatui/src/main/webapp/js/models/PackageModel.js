@@ -19,7 +19,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			derivations: [],
 			provenanceFlag: null,
 			sourcePackages: [],
-			derivationPackages: []
+			derivationPackages: [],
+			sourceDocs: [],
+			derivationDocs: []
 		},
 		
 		complete: false,
@@ -162,7 +164,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else return this;
 			
 			//the full and final query in Solr syntax
-			var query = "q=" + combinedQuery + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId" + provFieldList + "&wt=json";
+			var query = "q=" + combinedQuery + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId" + provFieldList + "&wt=json&rows=100";
 			
 			//Start an array to hold the packages in the prov trace
 			var sourcePackages   = new Array(),
@@ -173,7 +175,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Send the query to the query service
 			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr){				
 				
-				//Separate the results into derivations and sources and group by their metadata doc.
+				//Separate the results into derivations and sources and group by their resource map.
 				_.each(data.response.docs, function(doc, i){
 					if((typeof doc.resourceMap === "undefined") && (doc.formatType == "DATA") && (typeof doc.isDocumentedBy === "undefined")){
 						//If this object is not in a resource map and does not have metadata, it is a "naked" data doc, so save it by itself
@@ -247,12 +249,61 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				model.set("sourceDocs", sourceDocs);
 				model.set("derivationDocs", derDocs);
 				
+				//Save this prov trace on a package-member/document/object level.
+				model.setMemberProvTrace();
+				
 				//Flag that the provenance trace is complete
 				model.set("provenanceFlag", "complete");
 				
 			}, "json");
 			
 			return this;
+		},
+		
+		setMemberProvTrace: function(){
+			var model = this;
+			
+			//Now for each doc, we want to find which member it is related to
+			_.each(this.get("members"), function(member, i,members){
+				//Get the sources and derivations of this member
+				var memberSourceIDs = member.getSources();
+				var memberDerIDs    = member.getDerivations();
+				
+				//Look through each source package, derivation package, source doc, and derivation doc.
+				_.each(model.get("sourcePackages"), function(pkg, i){
+					_.each(pkg.get("members"), function(sourcePkgMember, i){
+						//Is this package member a direct source of this package member?
+						if(_.contains(memberSourceIDs, sourcePkgMember.get("id")))
+							//Save this source package member as a source of this member
+							member.set("provSources", _.union(member.get("provSources"), sourcePkgMember));
+					});
+				});
+				_.each(model.get("derivationPackages"), function(pkg, i){
+					_.each(pkg.get("members"), function(derPkgMember, i){
+						//Is this package member a direct source of this package member?
+						if(_.contains(memberDerIDs, derPkgMember.get("id")))
+							//Save this derivation package member as a derivation of this member
+							member.set("provDerivations", _.union(member.get("provDerivations"), derPkgMember));								
+					});
+				});
+				_.each(model.get("sourceDocs"), function(doc, i){
+					//Is this package member a direct source of this package member?
+					if(_.contains(memberSourceIDs, doc.get("id")))
+						//Save this source package member as a source of this member
+						member.set("provSources", _.union(member.get("provSources"), doc));
+				});
+				_.each(model.get("derivationDocs"), function(doc, i){
+					//Is this package member a direct derivation of this package member?
+					if(_.contains(memberSourceIDs, doc.get("id")))
+						//Save this derivation package member as a derivation of this member
+						member.set("provDerivations", _.union(member.get("provDerivations"), doc));
+				});
+
+				//Clear out any duplicates
+				member.set("provSources", _.uniq(member.get("provSources")));
+				member.set("provDerivations", _.uniq(member.get("provDerivations")));
+			});
+			
 		},
 		
 		/* Returns the SolrResult that represents the metadata doc */

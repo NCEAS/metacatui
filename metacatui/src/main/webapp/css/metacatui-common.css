@@ -89,10 +89,17 @@
 .prov-chart .metadata.node i{
 	margin-left: 5px;
 }
-article.hasProv{ /*The metadata gets narrowed when there are prov charts next to it*/
+/*The metadata gets narrowed when there is one prov chart next to it*/
+article.hasProvLeft,
+article.hasProvRight{ 
+	width: 800px; /* IE fallback */
+	width: calc(100% - 110px - 40px - 6px); /* 100% - prov-chart width - padding - borders*/
+	display: inline-block;
+}
+/*The metadata gets narrowed even more when there are two prov charts next to it*/
+article.hasProvLeft.hasProvRight{
 	width: 660px; /* IE fallback */
 	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - padding - borders*/
-	display: inline-block;
 }
 .prov-chart .popover{
 	min-width: 300px;
@@ -131,9 +138,13 @@ article.hasProv{ /*The metadata gets narrowed when there are prov charts next to
 /****************************************** 
 * The Data Details box in the Metadata View
 ********************************************/
-.entityDetails.hasProv{
+.entityDetails.hasProvLeft,
+.entityDetails.hasProvRight{
 	display: inline-block;
 	width: 62%;
+}
+.entityDetails.hasProvLeft.hasProvRight{
+	width: 83%;
 }
 .entityDetails > h4 > *{
 	float: left;

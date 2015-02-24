@@ -37,6 +37,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 		className: "prov-chart",
 		
 		render: function(){
+			if((this.type == "derivations") && (!this.derivations.length)) return false;
+			if((this.type == "sources") && (!this.sources.length)) return false;
+					
 			//First add the title
 			this.$el.append($(document.createElement("h3")).addClass("title").text(this.title));
 			

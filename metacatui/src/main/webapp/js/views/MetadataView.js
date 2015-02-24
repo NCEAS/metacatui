@@ -316,91 +316,54 @@ define(['jquery',
 			
 			var view = this;
 			
-			/*var solrResultSource = new SolrResult({
-				pubDate: "2015-06-30T00:00:00Z",
-				id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/5804/2",
-				title: "Florida Coastal Everglades site, station Taylor Slough Trexler Site CPC, study of animal abundance of Elassoma evergladei in units of numberPerEffort on a yearly timescale",
-				origin: ["Joel Trexler", "Florida Coastal Everglades", "EcoTrends Project"],
-				formatType: "METADATA"
-			});
-			var solrResultDer = new SolrResult({
-				pubDate: "2015-01-01T08:00:00Z",
-				id: "https://pasta.lternet.edu/package/metadata/eml/ecotrends/4470/2",
-				title: "Coweeta site, station Watershed 27 flume, study of mean daily streamflow in units of litersPerSecond on a yearly timescale",
-				origin: ["Coweeta", "Climate and Hydrology Database Projects (CLIMDB/HYDRODB)", "EcoTrends Project"],
-				formatType: "METADATA"
-			});
-			
-			//TODO: Take out this test data
-			var sources 	= new Array(new Package({members: [solrResultSource]})); 
-			var derivations = new Array(new Package({members: [solrResultDer]})); 
-			var dataSources = new Array(solrResultSource);
-			var dataDerivations = new Array(solrResultDer);
-			*/
-			
-			var packageSources = this.packageModel.get("sourcePackages");
-			var packageDerivations = this.packageModel.get("derivationPackages");
-			var hasProv = (packageSources.length || packageDerivations.length) ? true : false;
+			var packageSources     = this.packageModel.get("sourcePackages"),
+				packageDerivations = this.packageModel.get("derivationPackages");
 
-			//Draw a flow chart to represent the sources and derivations at a package level
 			if(packageSources.length){
+				//Draw a flow chart to represent the sources and derivations at a package level
 				var sourceProvChart = new ProvChart({
 					sources: packageSources,
 					context: this.packageModel
-				});				
+				});	
+				this.$("#Metadata").before(sourceProvChart.render().el);	
+				this.$("#Metadata").addClass("hasProvLeft");
 			}
 			if(packageDerivations.length){
 				var derivationProvChart = new ProvChart({
 					derivations: packageDerivations,
 					context: this.packageModel
-				});	
-			}
+				});		
+				this.$("#Metadata").after(derivationProvChart.render().el);
+				this.$("#Metadata").addClass("hasProvRight");
+			}			
 			
-			//Draw the provenance chart for each member of this package at a object level
+			//Draw the provenance chart for each member of this package at an object level
 			_.each(this.packageModel.get("members"), function(member, i){
 				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
 
 				//Find the sources for this members
-				var memberSources = new Array(),
-					memberDerivations = new Array(),
-					externalMemberSources = new Array(),
-					externalMemberDerivations = new Array();
+				var memberSources = member.get("provSources"),
+					memberDerivations = member.get("provDerivations");
 				
-				/*
-				//Find the package model with a SolrResult that has a source prov_ field that == this id
-				_.each(packageDerivations, function(packge, i){
-					_.each(packge.get("members"), function(packgeMember, ii){
-						externalMemberSources.push(packgeMember.getSources());
-					});
-				});*/
-				
-				//Make the source chart for this member
-				var memberSourcesProvChart = new ProvChart({
-					sources: memberSources,
-					context: member
-				});
-				
-				//Make the derivation chart for this member
-				var memberDerivationsProvChart = new ProvChart({
-					derivations: memberDerivations,
-					context: member
-				});
-				
-				//Add the charts to the page
-				$(entityDetailsSection).before(memberSourcesProvChart.render().el);
-				$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
-				$(entityDetailsSection).addClass("hasProv");
+				if(memberSources.length){
+					//Make the source chart for this member
+					var memberSourcesProvChart = new ProvChart({
+						sources: memberSources,
+						context: member
+					});	
+					$(entityDetailsSection).before(memberSourcesProvChart.render().el);
+					$(entityDetailsSection).addClass("hasProvLeft");
+				}
+				if(memberDerivations.length){
+					//Make the derivation chart for this member
+					var memberDerivationsProvChart = new ProvChart({
+						derivations: memberDerivations,
+						context: member
+					});	
+					$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
+					$(entityDetailsSection).addClass("hasProvRight");	
+				}
 			});
-			
-			if(hasProv){
-				//Indicate that the context has a provenance chart next to it by adding a class (used for styling)
-				this.$("#Metadata").addClass("hasProv");			
-				this.$("#Metadata").before(sourceProvChart.render().el);			
-				this.$("#Metadata").after(derivationProvChart.render().el);
-			}
-			
-			//this.$(".entityDetails").before(sourceProvChart.el.cloneNode(true));			
-			//this.$(".entityDetails").after(derivationProvChart.el.cloneNode(true));
 		},
 		
 		// checks if the pid is already a DOI
