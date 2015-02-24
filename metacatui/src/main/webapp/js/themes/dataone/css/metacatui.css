@@ -84,6 +84,7 @@ Bold 700
 
 	#Content{
 	  	width: 960px;
+	  	min-height: 700px;
 	  	margin: auto;
 		background-color: #FFFFFF;  	
 	}

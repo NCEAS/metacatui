@@ -65,7 +65,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 			return this;
 		},
 		
-		createNode: function(provEntity, position){
+		createNode: function(provEntity, position, metadata){
 			//What kind of icon will visually represent this object type?
 			var icon = "",
 				type = null,
@@ -108,13 +108,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 				var title = "Source " + titleType;
 			}
 			
-			var popoverContent = new CitationView({model: provEntity}).render().el;
+			if(metadata) var citationModel = metadata;
+			else var citationModel = provEntity;
+			
+			var popoverContent = new CitationView({model: citationModel}).render().el;
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			$(nodeEl).popover({
 				html: true,
 				placement: placement,
-				trigger: "focus",
+				trigger: "click", //"focus",
 				container: this.el,
 				title: title,
 				content: function(){ 

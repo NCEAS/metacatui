@@ -190,6 +190,11 @@ article.hasProvLeft.hasProvRight{
 .popover .citation-container a > i{
 	margin-left: 5px;
 }
+.citation .label{
+	display: inline;
+	font-weight: bolder;
+	text-shadow: none;	
+}
 #results .popover{
 	min-width: 300px;
 	max-width: 300px;

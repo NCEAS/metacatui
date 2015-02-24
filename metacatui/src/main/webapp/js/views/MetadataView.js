@@ -373,7 +373,8 @@ define(['jquery',
 					$(entityDetailsSection).addClass("hasProvRight");	
 					var chartHeight = memberDerivationsProvChart.$el.height() + memberDerivationsProvChart.nodeHeight;
 					if($(entityDetailsSection).height() < chartHeight)
-						$(entityDetailsSection).height((chartHeight));				}
+						$(entityDetailsSection).height((chartHeight));				
+				}
 			});
 		},
 		

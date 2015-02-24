@@ -164,7 +164,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else return this;
 			
 			//the full and final query in Solr syntax
-			var query = "q=" + combinedQuery + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId" + provFieldList + "&wt=json&rows=100";
+			var query = "q=" + combinedQuery + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId,dateUploaded,rightsHolder," + provFieldList + "&wt=json&rows=100";
 			
 			//Start an array to hold the packages in the prov trace
 			var sourcePackages   = new Array(),
