@@ -52,7 +52,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		//Map the filter names to their index field names
 		fieldNameMap: {
 					 attribute : "attribute",
-					annotation : "annotation_sm",
+					annotation : "sem_annotation",
 					formatType : "formatType",
 						   all : "",
 					   creator : "origin",
@@ -309,7 +309,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 							 "&facet.field=class" +
 							 "&facet.field=site";
 			if(this.filterIsAvailable("attribute")) facetQuery += "&facet.field=attributeName&facet.field=attributeLabel";
-			if(this.filterIsAvailable("annotation")) facetQuery += "&facet.field=annotation_sm";
+			if(this.filterIsAvailable("annotation")) facetQuery += "&facet.field=sem_annotation";
 			
 			return facetQuery;
 		},
