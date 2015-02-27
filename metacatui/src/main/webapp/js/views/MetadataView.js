@@ -209,8 +209,10 @@ define(['jquery',
 		    	   
 		    //Display the images in this package
 		    this.insertDataDetails();
-		    //Show annotations about this package
-		    this.showProvenance();
+		    
+		    //Show the provenance trace for this package			
+			this.listenToOnce(this.packageModel, "change:provenanceFlag", this.drawProvCharts);
+			this.packageModel.getProvTrace();
 		    
 		    return this;
 		},
@@ -286,17 +288,6 @@ define(['jquery',
 			
 			return true;
 
-		},
-		
-		/*
-		 * showProvenance
-		 * Display details about the package
-		 */
-		showProvenance: function(){
-			var packageMembers = this.packageModel.get('members');
-			
-			this.listenToOnce(this.packageModel, "change:provenanceFlag", this.drawProvCharts);
-			this.packageModel.getProvTrace();
 		},
 		
 		/*
@@ -556,7 +547,7 @@ define(['jquery',
 						 type : type,
 						  src : appModel.get('objectServiceUrl') + packageMembers[i].get("id"),
 						title : title,
-					   objID : objID
+					    objID : objID
 				});
 				
 				// Insert the HTML into the DOM 
