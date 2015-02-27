@@ -293,40 +293,32 @@ define(['jquery',
 		 * Display details about the package
 		 */
 		showProvenance: function(){
-
 			var packageMembers = this.packageModel.get('members');
-			var view = this;
-
-			//Create provenance statements about this document if there are any prov annotations
-			_.each(packageMembers, function(member){
-				var provenanceEl = new ProvStatement().render(member).el;
-						
-				//Insert the provenance statements
-				var container = $('[data-obj-id=" + member.id + "]').find(".provenance-container");
-				if($(container).length > 0) $(container).prepend(provenanceEl);
-			});
 			
-			this.listenToOnce(this.packageModel, "change:provenanceFlag", this.drawProvChart);
+			this.listenToOnce(this.packageModel, "change:provenanceFlag", this.drawProvCharts);
 			this.packageModel.getProvTrace();
 		},
 		
-		//Seperate out the development provenance chart-drawing stuff for now... "faking" some data until the index is populated
-		drawProvChart: function(){
+		/*
+		 * Renders ProvChartViews on the page to display provenance on a package level and on an individual object level.
+		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations 
+		 */
+		drawProvCharts: function(){
+			//Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn 
 			if(this.packageModel.get("provenanceFlag") != "complete") return false;
 			
 			var view = this;
 			
+			//Draw two flow charts to represent the sources and derivations at a package level			
 			var packageSources     = this.packageModel.get("sourcePackages"),
 				packageDerivations = this.packageModel.get("derivationPackages");
 
 			if(packageSources.length){
-				//Draw a flow chart to represent the sources and derivations at a package level
 				var sourceProvChart = new ProvChart({
 					sources: packageSources,
 					context: this.packageModel
 				});	
-				this.$("#Metadata").before(sourceProvChart.render().el);	
-				this.$("#Metadata").addClass("hasProvLeft");
+				this.$("#Metadata").before(sourceProvChart.render().el).addClass("hasProvLeft");	
 				var chartHeight = sourceProvChart.$el.height() + sourceProvChart.nodeHeight;
 				if(this.$("#Metadata").height() < chartHeight)
 					this.$("#Metadata").height((chartHeight));
@@ -336,29 +328,27 @@ define(['jquery',
 					derivations: packageDerivations,
 					context: this.packageModel
 				});		
-				this.$("#Metadata").after(derivationProvChart.render().el);
-				this.$("#Metadata").addClass("hasProvRight");
+				this.$("#Metadata").after(derivationProvChart.render().el).addClass("hasProvRight");
 				var chartHeight = derivationProvChart.$el.height() + derivationProvChart.nodeHeight;
 				if(this.$("#Metadata").height() < chartHeight)
 					this.$("#Metadata").height((chartHeight));			
 			}			
 			
-			//Draw the provenance chart for each member of this package at an object level
+			//Draw the provenance charts for each member of this package at an object level
 			_.each(this.packageModel.get("members"), function(member, i){
 				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
 
-				//Find the sources for this members
-				var memberSources = member.get("provSources"),
+				//Retrieve the sources and derivations for this member
+				var memberSources 	  = member.get("provSources"),
 					memberDerivations = member.get("provDerivations");
-				
+
+				//Make the source chart for this member
 				if(memberSources.length){
-					//Make the source chart for this member
 					var memberSourcesProvChart = new ProvChart({
 						sources: memberSources,
 						context: member
 					});	
-					$(entityDetailsSection).before(memberSourcesProvChart.render().el);
-					$(entityDetailsSection).addClass("hasProvLeft");
+					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
 					var chartHeight = memberSourcesProvChart.$el.height() + memberSourcesProvChart.nodeHeight;
 					if($(entityDetailsSection).height() < chartHeight)
 						$(entityDetailsSection).height((chartHeight));	
@@ -369,8 +359,7 @@ define(['jquery',
 						derivations: memberDerivations,
 						context: member
 					});	
-					$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
-					$(entityDetailsSection).addClass("hasProvRight");	
+					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");
 					var chartHeight = memberDerivationsProvChart.$el.height() + memberDerivationsProvChart.nodeHeight;
 					if($(entityDetailsSection).height() < chartHeight)
 						$(entityDetailsSection).height((chartHeight));				

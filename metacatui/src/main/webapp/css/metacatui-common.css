@@ -5,6 +5,10 @@
 .result-row .icons.provenance i{
 	font-size: 1.5em;
 }
+.provenance-statement-container i{
+	font-size: 1.2em;
+	margin-right: 5px;
+}
 
 /****************************************** 
 ** Provenance flow-charts ***
@@ -91,6 +95,11 @@
 }
 .prov-chart .metadata.node i{
 	margin-left: 5px;
+}
+.provenance-statement a{
+	/*Keep the icons and links right by each other */
+	display: inline-block;
+	word-break: break-all; 
 }
 /*The metadata gets narrowed when there is one prov chart next to it*/
 article.hasProvLeft,

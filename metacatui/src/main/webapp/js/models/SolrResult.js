@@ -63,11 +63,12 @@ define(['jquery', 'underscore', 'backbone'],
 			                "image/tiff",
 			                "image/bmp"];
 			//The list of formatIds that are images
-			var pdfIds = ["application/pdf"];
+			var pdfIds = ["application/pdf"];			
 			
 			if(this.get("formatType") == "METADATA") return "metadata";
 			if(_.contains(imageIds, this.get("id"))) return "image";
 			if(_.contains(pdfIds, this.get("id")))   return "PDF";
+			if((typeof this.get("prov_instanceOfClass") != "undefined") && (this.get("prov_instanceOfClass").indexOf("#Program") > -1)) return "program";
 			else return "data";
 		},
 

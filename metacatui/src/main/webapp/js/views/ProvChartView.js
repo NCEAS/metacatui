@@ -1,5 +1,5 @@
-define(['jquery', 'underscore', 'backbone', "views/CitationView"], 				
-	function($, _, Backbone, CitationView) {
+define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvStatementView"], 				
+	function($, _, Backbone, CitationView, ProvStatement) {
 	'use strict';
 
 	
@@ -68,23 +68,30 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 		createNode: function(provEntity, position, metadata){
 			//What kind of icon will visually represent this object type?
 			var icon = "",
-				type = null,
-				titleType = "dataset";
+				type = null;
 			
 			if(provEntity.type == "SolrResult"){
-				if(provEntity.get("formatType") == "DATA"){
+				type = provEntity.getType();
+				
+				if(type == "program")
+					icon = "icon-code";
+				else if(type == "data")
 					icon = "icon-table";
-					type = "data";
-				}
-				if(provEntity.get("formatType") == "METADATA"){
+				else if(type == "metadata")
 					icon = "icon-file-text";
-					type = "metadata";
-				}
-				titleType = provEntity.getType();
+				else if (type == "image")
+					icon = "icon-picture";
+				else if (type == "pdf")
+					icon = "icon-file pdf";
 			}
 			else if(provEntity.type == "Package"){
 				icon = "icon-folder-open",
 				type = "package";
+			}
+			
+			if(!type){
+				type = "data";
+				icon = "icon-table";
 			}
 			
 			//Create a DOM element to represent the node	
@@ -101,17 +108,19 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView"],
 			//The placement and title of the popover depends on what type of chart this is
 			if(this.type == "derivations"){
 				var placement = "left";
-				var title = "Derived " + titleType;
+				var title = "Derived " + type;
 			}
 			else{
 				var placement = "right";		
-				var title = "Source " + titleType;
+				var title = "Source " + type;
 			}
 			
 			if(metadata) var citationModel = metadata;
 			else var citationModel = provEntity;
 			
-			var popoverContent = new CitationView({model: citationModel}).render().el;
+			var citationEl = new CitationView({model: citationModel}).render().el;
+			var provStatementEl = new ProvStatement({model: provEntity, relatedModels: new Array(this.context) }).render().el;
+			var popoverContent = $(document.createElement("div")).append(provStatementEl, citationEl);
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			$(nodeEl).popover({
