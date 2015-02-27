@@ -58,6 +58,10 @@
       overflow: visible;  
     }
 
+	article.container{
+		padding: 2%;
+		width: 96%;
+	}
     
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
@@ -441,6 +445,9 @@ header {
       -moz-border-radius: 0px 0px 0px 0px;
     }
     
+    .btn-primary{
+    	background-color: #840C11;
+    }
     
     .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
 		background-color: #999999;
@@ -1211,6 +1218,9 @@ svg .point:hover ~ .line-chart-label{
  		color: #FFFFFF;
     }
     /*** Download contents table **/
+    .download-contents{
+    	margin-top: 20px;
+    }
    	.download-contents .format-type i{
    		margin-right: 10px;
    	}
