@@ -16,7 +16,7 @@ define(['jquery',
 	var app = app || {};
 	
 	var theme = document.getElementById("loader").getAttribute("data-theme");
-	
+		
 	// Our overall **AppView** is the top-level piece of UI.
 	var AppView = Backbone.View.extend({
 
@@ -27,16 +27,15 @@ define(['jquery',
 		template: _.template(AppTemplate),
 		
 		appHeadTemplate: _.template(AppHeadTemplate),
-		
+				
 		initialize: function () {
-			console.log('Rendering fixed subviews within the AppView');
-			
-			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
-			console.log("Setting up app head");
-			$("head").prepend(this.appHeadTemplate({theme: theme}));
-			
+			//Change the document title when the app changes the appModel title at any time
+			this.listenTo(appModel, "change:title", this.changeTitle);
+
+			// set up the head - make sure to prepend, otherwise the CSS may be out of order!			
+			$("head").prepend(this.appHeadTemplate({theme: theme, themeTitle: themeTitle}));
+									
 			// set up the body
-			console.log("Setting up app body");
 			this.$el.append(this.template());
 			
 			// check the user status whenever we render the main application
@@ -63,13 +62,16 @@ define(['jquery',
 			}
 
 		},
+		
+		//Changes the web document's title
+		changeTitle: function(){
+			document.title = appModel.get("title");
+		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
-		render: function () {
-			console.log('Rendering dynamic subviews within the AppView');
-									
+		render: function () {									
 			return this;
 		},
 		
@@ -80,8 +82,6 @@ define(['jquery',
 			var metacatUrl = appModel.get('metacatServiceUrl');
 			
 			if (metacatUrl) {
-				console.log('Checking Metacat user status in AppView');
-
 				// ajax call to validate the session/get the user info
 				$.ajax({
 					type: "POST",
@@ -95,8 +95,6 @@ define(['jquery',
 						// the Metacat (XML) response should have a fullName element
 						var fullName = $(data).find("fullName").text();
 						var username = $(data).find("name").text();
-						console.log('fullName: ' + fullName);
-						console.log('username: ' + username);
 						// set in the model
 						appModel.set('fullName', fullName);
 						appModel.set('username', username);
@@ -131,7 +129,7 @@ define(['jquery',
 					var payload = viewRef.parseToken(data);
 					var username = payload.userId;
 					var fullName = payload.fullName;
-					console.log('username: ' + username);
+
 					// set in the model
 					appModel.set('fullName', fullName);
 					appModel.set('username', username);
@@ -152,7 +150,6 @@ define(['jquery',
 			}
 			
 			var payload = $.parseJSON(jws.parsedJWS.payloadS);
-			console.log("token payload: " + payload);
 			return payload;
 			
 		},

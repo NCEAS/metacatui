@@ -1554,22 +1554,6 @@ svg .domain{
 		font-size: 13px;
 	}
 	
-	.citation{
-		font-size: 20px;
-		line-height: 30px;
-		margin-bottom: 40px;
-		border: 0px;
-		box-shadow: none;
-		-webkit-box-shadow: none;
-		-moz-box-shadow: none;
-		padding: 0px;
-		background-color: transparent;
-	}
-	
-	.citation .span10{
-		width: 100%;
-	}
-	
 	.controls-well img{
 		max-width: 90%;
 		max-height: 900px;
@@ -1618,7 +1602,7 @@ svg .domain{
     }
     table.download-contents {
     	width: 100%;
-    	margin-bottom: 0px;
+    	margin-bottom: 20px;
     }
     .download-contents td{
     	overflow-wrap: break-word;

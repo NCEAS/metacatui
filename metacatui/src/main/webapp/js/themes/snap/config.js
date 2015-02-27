@@ -1,4 +1,5 @@
 var theme = theme || "snap";
+var themeTitle = "SNAP | Data";
 var themeMap = 
 {
 	'*': {

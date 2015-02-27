@@ -1,4 +1,16 @@
-/** Icons **/
+/****************************************** 
+** General Structure ***
+******************************************/
+article > .container,
+article.container {
+	padding: 2%;
+	width: 96%;
+}
+
+
+/****************************************** 
+** Icons ***
+******************************************/
 .btn > i{
 	margin-left: 5px;
 }
@@ -145,6 +157,19 @@ article.hasProvLeft.hasProvRight{
 }
 #metadata-index-details .entityDetails .size{
 	display: inherit;
+}
+
+.citation{
+	font-size: 1.3em;
+	line-height: 1.7em;
+	margin-bottom: 40px;
+	border: 0px;
+	box-shadow: none;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	padding: 0px;
+	background-color: transparent;
+	display: block;
 }
 	
 /****************************************** 

@@ -1,4 +1,5 @@
 var theme = theme || "default";
+var themeTitle = "NCEAS Data Catalog";
 var themeMap = 
 {
 	'*': {

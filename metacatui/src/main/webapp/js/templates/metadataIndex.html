@@ -1,7 +1,5 @@
 <form class="form-horizontal">
-	<div class="well citation">
-		<div class="row-fluid">
-			<div>
+	<cite class="citation">
 				<% var count=0; _.each(creator, function(author) {
                    count++;
                    if (count > 1) {
@@ -28,9 +26,7 @@
                %></span> 
 				<strong><%=title%></strong>
 				(<%=id%>)
-			</div>
-		</div>
-	</div>
+	</cite>
 	<div id="downloadContents">
 	</div>
 </form>

@@ -998,10 +998,6 @@ svg .point:hover ~ .line-chart-label{
     #downloadContents .controls-well{
     	overflow-x: scroll;
     }
-    table.download-contents {
-    	width: 100%;
-    	margin-bottom: 0px;
-    }
     .download-contents td{
     	overflow-wrap: break-word;
     }

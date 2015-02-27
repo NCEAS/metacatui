@@ -1,4 +1,5 @@
 var theme = theme || "goa";
+var themeTitle = "Gulf of Alaska Data Portal";
 var themeMap = 
 {
 	'*': {
@@ -11,7 +12,6 @@ var themeMap =
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
 		'templates/alert.html' : 'themes/' + theme + '/templates/alert.html',
 		'routers/router' : 'themes/' + theme + '/routers/router',
-		'templates/appHead.html' : 'themes/' + theme + '/templates/appHead.html',
 		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html'
 		}
 };

@@ -66,6 +66,7 @@ define(['jquery',
 			if((options === undefined) || (!options)) var options = {};
 
 			this.pid = options.pid || options.id || appModel.get("pid") || null;
+			this.citationEl = this.el;
 		},
 				
 		// Render the main metadata view
@@ -97,7 +98,10 @@ define(['jquery',
 								$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomic-range');
 								
 								viewRef.$el.fadeIn("slow");
-
+								
+								//Get the citation element
+								viewRef.getCitation();
+								
 								//Get the package details from the index, too
 								viewRef.getPackageDetails();
 								//Add a map of the spatial coverage
@@ -127,7 +131,8 @@ define(['jquery',
 			
 			//Add the package details once the metadata from the index is drawn 
 			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.insertPackageDetails);
-
+			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.getCitation);
+			
 			//Add the metadata HTML
 			this.$el.append(this.subviews.metadataFromIndex.render().el);	
 			
@@ -136,6 +141,49 @@ define(['jquery',
 			
 			// render annotator from index content, too
 			this.setUpAnnotator();
+		},
+		
+		getCitation: function(){
+			var citation = "",
+				citationEl = this.el;
+			
+			//Find the citation element
+			if(this.$(".citation").length > 0){
+				//Get the text for the citation
+				citation = this.$(".citation").text();
+				
+				//Save this element in the view
+				citationEl = this.$(".citation");
+			}
+			//Older versions of Metacat (v2.4.3 and older) will not have the citation class in the XSLT. Find the citation another way 
+			else{
+				//Find the DOM element with the citation
+				var wells = this.$('.well'),
+					viewRef = this;		
+				
+				//Find the div.well with the citation. If we never find it, we don't insert the list of contents
+				_.each(wells, function(well){
+					if($(well).find('#viewMetadataCitationLink').length > 0){
+						
+						//Save this element in the view
+						citationEl = well;
+						
+						//Mark this in the DOM for CSS styling
+						$(well).addClass('citation');	
+						
+						//Save the text of the citation
+						citation = $(well).text();
+					}
+				});
+				
+		    	//Remove the unnecessary classes that are used in older versions of Metacat (2.4.3 and older)
+		    	var citationText = $(this.citationEl).find(".span10");
+				$(citationText).removeClass("span10").addClass("span12");
+			}
+			
+			//Set the document title to the citation
+			appModel.set("title", citation);	
+			this.citationEl = citationEl;
 		},
 		
 		insertBackLink: function(){
@@ -172,40 +220,23 @@ define(['jquery',
 			if((this.subviews.metadataFromIndex) && !this.subviews.metadataFromIndex.complete) return this;
 			if(!this.packageModel.complete) return this;
 				
-			//*** Find the DOM element to append the HTML to. We want to create a new div underneath the first well with the citation
-			var wells = viewRef.$el.find('.well');		
-			//Find the div.well with the citation. If we never find it, we don't insert the list of contents
-			_.each(wells, function(well){
-				if($(well).find('#viewMetadataCitationLink').length > 0){
-					
-					//Save this element in the view
-					viewRef.citationEl = well;
-					
-					//Mark this in the DOM for CSS styling
-					$(well).addClass('citation');					
-				}
-			});
-			//Otherwise, just find the first element with a citation class or just use the first well - useful for when we display the metadata from the indexed fields
-			if(!this.citationEl) this.citationEl = this.$('.citation')[0] || wells[0];
-			
 			//** Draw the package table **//	
 			var tableView = new PackageTable({ model: this.packageModel });
+			
 			//Get the package table container
 			var tableContainer = this.$("#downloadContents");
+			
+			//Older versions of Metacat will not have this container
 			if(!$(tableContainer).length){
 				tableContainer = $(document.createElement("div")).attr("id", "downloadContents");
 				$(this.citationEl).after(tableContainer);
 			}
-			//Insert the package table HTML 
-			$(tableContainer).html(tableView.render().el);
 			
+			//Insert the package table HTML 
+			$(tableContainer).html(tableView.render().el);			
 						
-			//** Move the download button to our download content list area **//
+			//Remove the extra download button returned from the XSLT since the package table will have all the download links
 		    $("#downloadPackage").detach();
-		    var citationText = $(this.citationEl).find(".span10");
-		    				   $(citationText).removeClass("span10");
-		    				   $(citationText).addClass("span12");
-		    				
 		    	   
 		    //Display the images in this package
 		    this.insertDataDetails();
@@ -328,6 +359,10 @@ define(['jquery',
 			//Draw the provenance charts for each member of this package at an object level
 			_.each(this.packageModel.get("members"), function(member, i){
 				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
+				
+				//Display the prov statement for this package member in it's entity details section
+				var statement = new ProvStatement({model: member, relatedModels: new Array(packageSources, packageDerivations, view.packageModel.get("members"))}).render().el;
+				$(entityDetailsSection).append(statement);
 
 				//Retrieve the sources and derivations for this member
 				var memberSources 	  = member.get("provSources"),
@@ -907,6 +942,9 @@ define(['jquery',
 			_.each(this.subviews, function(subview) {
 				subview.onClose();
 			});
+			
+			//Put the document title back to the default
+			appModel.set("title", appModel.defaults.title);
 			
 			this.$el.empty();
 			

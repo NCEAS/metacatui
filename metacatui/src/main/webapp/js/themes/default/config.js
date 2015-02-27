@@ -1,4 +1,5 @@
 var theme = theme || "default";
+var themeTitle = "Metacat Data Catalog";
 var themeMap = 
 {
 	'*': {

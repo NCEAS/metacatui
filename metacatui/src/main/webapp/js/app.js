@@ -4,10 +4,6 @@
 
 /** NOTE: The theme name and themeMap are specified in the loader.js file **/
 
-console.log("Using theme: " + theme);
-console.log("Using themeMap: " + themeMap);
-console.log("Using metacatContext: " + metacatContext);
-
 var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if(mapKey){
 	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;

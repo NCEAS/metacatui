@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes for the Application
 		defaults: {
 			headerType: 'default',
+			title: window.themeTitle || "Metacat Data Catalog",
 			searchMode: 'map',
 			username: null,
 			fullName: null,

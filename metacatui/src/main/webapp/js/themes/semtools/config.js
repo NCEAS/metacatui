@@ -1,4 +1,5 @@
 var theme = theme || "semtools";
+var themeTitle = "Metacat Data Catalog";
 var themeMap = 
 {
 	'*': {

@@ -497,12 +497,12 @@ table th.btn-container .btn{
 	}
 	.navbar-lower .nav > li > a {
 		font-size: 1em;
-		font-weight: bold;
+		font-weight: light;
 	}
 	.navbar .nav > .label{
 		font-size: .8em;
 		color: #FFF;
-		font-weight: bold;
+		font-weight: light;
 		text-transform: uppercase;
 		line-height: 40px;
 		margin-left: 14px;

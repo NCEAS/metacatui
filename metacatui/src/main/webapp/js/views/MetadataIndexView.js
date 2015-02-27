@@ -17,7 +17,7 @@ define(['jquery',
 		
 		id: 'Metadata',
 		
-		className: "metadata-index", 
+		className: "metadata-index container", 
 		
 		tagName: 'article',
 		
