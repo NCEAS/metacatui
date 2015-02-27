@@ -984,30 +984,6 @@ Bold 700
     	font-size: 14px;
     }
 	
-	/*Taxonomic range*/
-    .taxonomic-range .control-group{
-    	margin-bottom: 20px;
-    	width: auto;
-    }
-    .taxonomic-range > .control-group{
-    	margin-left: 180px;
-    }
-    .taxonomic-range .control-label{
-    	width: auto;
-    	padding: 0px 10px;
-    }
-    
-    .taxonomic-range .controls > .control-group:nth-child(2n){
-    	margin-left: 107px;
-    }
-    
-    .taxonomic-range .control-label{
-    	color: #999;
-    }
-    
-    .taxonomic-range .controls {
-		margin-left: 0px;
-	}
 	
 	.metadata-index {
 		padding: 2%;

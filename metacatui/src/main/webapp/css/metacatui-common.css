@@ -171,6 +171,28 @@ article.hasProvLeft.hasProvRight{
 	background-color: transparent;
 	display: block;
 }
+/*Taxonomic range*/
+.taxonomicCoverage .control-group{
+   	margin-bottom: 20px;
+    width: auto;
+}
+.taxonomicCoverage > .control-group{
+    margin-left: 180px;
+}
+.taxonomicCoverage .control-label{
+    width: auto;
+    padding: 0px 10px;
+}    
+.taxonomicCoverage .controls > .control-group:nth-child(2n){
+    margin-left: 107px;
+}    
+.taxonomicCoverage .control-label{
+   color: #999;
+}    
+.taxonomicCoverage .controls {
+	margin-left: 0px;
+}
+/**----------------------------------------**/
 	
 /****************************************** 
 * The Data Details box in the Metadata View

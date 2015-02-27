@@ -94,8 +94,9 @@ define(['jquery',
 							//Our fallback is to show the metadata details from the Solr index
 							if (status=="error") viewRef.renderMetadataFromIndex();
 							else{															
-								//Find the taxonomic range and give it a class for styling
-								$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomic-range');
+								//Find the taxonomic range and give it a class for styling - for older versions of Metacat only (v2.4.3 and older)
+								if(!viewRef.$(".taxonomicCoverage").length)
+									$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomicCoverage');
 								
 								viewRef.$el.fadeIn("slow");
 								
@@ -250,21 +251,38 @@ define(['jquery',
 				
 		insertSpatialCoverageMap: function(coordinates){
 			
-			var georegionEls = this.$el.find('h4:contains("Geographic Region")');
+			//Find the geographic region container. Older versions of Metacat (v2.4.3 and less) will not have it classified so look for the header text
+			if(!this.$(".geographicCoverage").length){
+				var georegionEls = this.$('h4:contains("Geographic Region")').parents();
+				var parseText = true;
+				var directions = new Array('North', 'South', 'East', 'West');
+			}
+			else{
+				var georegionEls = this.$(".geographicCoverage");
+				var directions = new Array('north', 'south', 'east', 'west');
+			}
+			
 			for(var i=0; i<georegionEls.length; i++){
-				var parentEl = $(georegionEls[i]).parent();
+				var georegion = georegionEls[i];
 				
 				if(coordinates === undefined){
 					var coordinates = new Array();
-					var directions = new Array('North', 'South', 'East', 'West');
 					
 					_.each(directions, function(direction){
-						var labelEl = $(parentEl).find('label:contains("' + direction + '")');
-						if(labelEl){
-							var coordinate = $(labelEl).next().html();
-							coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
-							coordinates.push(coordinate);	
+						//Parse text for older versions of Metacat (v2.4.3 and earlier)
+						if(parseText){
+							var labelEl = $(georegionEls).find('label:contains("' + direction + '")');
+							if(labelEl){
+								var coordinate = $(labelEl).next().html();
+								coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
+							}
 						}
+						else{
+							var coordinate = $(georegion).find("." + direction + "BoundingCoordinate").attr("data-value");
+						}
+						
+						//Save our coordinate value
+						coordinates.push(coordinate);	
 					});
 				}
 				
@@ -301,8 +319,9 @@ define(['jquery',
 							  "&key=" + mapKey + "'/>";
 
 				//Find the spot in the DOM to insert our map image
-				var lastEl = ($(parentEl).find('label:contains("West")').parent().parent().length) ? $(parentEl).find('label:contains("West")').parent().parent() :  parentEl; //The last coordinate listed
-				lastEl.append(this.mapTemplate({
+				if(parseText) var insertAfter = ($(georegion).find('label:contains("West")').parent().parent().length) ? $(georegion).find('label:contains("West")').parent().parent() :  georegion; //The last coordinate listed
+				else 	      var insertAfter = georegion;
+				$(insertAfter).append(this.mapTemplate({
 					map: mapHTML,
 					url: url
 				}));
