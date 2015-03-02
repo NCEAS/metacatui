@@ -5,6 +5,9 @@ var mapKey 		   = document.getElementById("loader").getAttribute("data-map-key")
 if ((mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!mapKey)) mapKey = null;
 var useD3 = true; 
 
+//This version of Metacat UI - used for cache busting
+window.metacatUIVersion = "1.7.0";
+
 // Step 2: let everything else be taken care of by the app
 preventCompatibilityIssues();
 loadTheme(theme);
@@ -14,11 +17,11 @@ initApp();
 function loadTheme(theme) {
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", "js/themes/" + theme + "/config.js");
+    script.setAttribute("src", "js/themes/" + theme + "/config.js?v=" + window.metacatUIVersion);
     document.getElementsByTagName("body")[0].appendChild(script);
 }
 function loadIcons(theme) {
-	var url = "./js/themes/" + theme + "/img/favicon-32.png";
+	var url = "./js/themes/" + theme + "/img/favicon-32.png?v=" + window.metacatUIVersion;
     var link = document.createElement("link");
     link.type = "image/png";
     link.rel = "shortcut icon";
@@ -27,7 +30,7 @@ function loadIcons(theme) {
 }
 function initApp() {
     var script = document.createElement("script");
-    script.setAttribute("data-main", "js/app.js");
+    script.setAttribute("data-main", "js/app.js?v=" + window.metacatUIVersion);
     script.src = "components/require.js";
     document.getElementsByTagName("body")[0].appendChild(script);
 }

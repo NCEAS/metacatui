@@ -3,7 +3,6 @@
 'use strict';
 
 /** NOTE: The theme name and themeMap are specified in the loader.js file **/
-
 var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if(mapKey){
 	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
@@ -27,6 +26,7 @@ require.config({
   baseUrl: 'js/',
   waitSeconds: 180, //wait 3 minutes before throwing a timeout error
   map: themeMap,
+  urlArgs: "v=" + window.metacatUIVersion,
   paths: {
     jquery: '../components/jquery',
     jqueryui: '../components/jquery-ui-1.10.3.custom.min',
