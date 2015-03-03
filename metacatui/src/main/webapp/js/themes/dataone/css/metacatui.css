@@ -646,7 +646,7 @@ table th.btn-container .btn{
 	}
 	
 	.navbar .sub-menu:before {
-	    border-bottom: 7px solid transparent;
+	    border-bottom: 7px solid trans	parent;
 	    border-left: none;
 	    border-right: 7px solid rgba(0, 0, 0, 0.2);
 	    border-top: 7px solid transparent;
@@ -681,16 +681,8 @@ table th.btn-container .btn{
 		-webkit-border-radius: 7px;
 		-o-border-radius: 7px;
 	}
-	#Metadata .well.citation {
-		font-size: 1.5em;
-		line-height: 1.5em;
+	#Metadata > form > cite.citation {
 		color: #1C6E84;
-		margin-bottom: 20px;
-		background-color: transparent;
-		border-width: 0px;
-		padding: 0px;
-		box-shadow: none;
-		-webkit-box-shadow: none;
 	}
 	label.control-label{
 		font-weight: 400;

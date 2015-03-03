@@ -46,7 +46,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Get the id of the resource map for this member
 			var provFlList = searchModel.getProvFlList();
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,' + provFlList +
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,' + provFlList +
 						'&wt=json' +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22';
@@ -81,7 +81,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = searchModel.getProvFlList();
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,' + provFlList +
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,' + provFlList +
 						'&wt=json' +
 						'&rows=100' +
 						'&q=-obsoletedBy:*+%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29';
@@ -164,7 +164,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else return this;
 			
 			//the full and final query in Solr syntax
-			var query = "q=" + combinedQuery + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId,dateUploaded,rightsHolder," + provFieldList + "&wt=json&rows=100";
+			var query = "q=" + combinedQuery + "&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId,dateUploaded,rightsHolder,datasource," + provFieldList + "&wt=json&rows=100";
 			
 			//Start an array to hold the packages in the prov trace
 			var sourcePackages   = new Array(),

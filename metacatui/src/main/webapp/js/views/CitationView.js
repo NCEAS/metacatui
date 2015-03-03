@@ -43,7 +43,8 @@ define(['jquery', 'underscore', 'backbone'],
 					pubDate 	 = this.metadata.get("pubDate"),
 					dateUploaded = this.metadata.get("dateUploaded"),
 					title 		 = this.metadata.get("title"),
-					id 			 = this.metadata.get("id");
+					id 			 = this.metadata.get("id"),
+					memberNode	 = this.metadata.get("datasource");
 			
 				//Format the author text
 				var count=0,
@@ -64,7 +65,8 @@ define(['jquery', 'underscore', 'backbone'],
 			else{
 				var author 	 	 = this.model.get("rightsHolder"),
 					dateUploaded = this.model.get("dateUploaded"),
-					id 			 = this.model.get("id");
+					id 			 = this.model.get("id"),
+					datasource	 = this.model.get("datasource");
 				
 				//Format the author text
 				var authorText = author.substring(3, author.indexOf(",O=")) + ". ";				
@@ -84,7 +86,17 @@ define(['jquery', 'underscore', 'backbone'],
 	            if(!isNaN(dateUploadedFormatted)) pubDateText += dateUploadedFormatted;
 	        }
 			var pubDateEl = $(document.createElement("span")).addClass("pubdate").text("(" + pubDateText + "): ");
-	        
+			
+			//The publisher (source member node)
+			var publisherText = "";
+			if(typeof datasource !== "undefined"){ 
+				var memberNode = _.find(nodeModel.get("members"), function(member){
+					return (member.identifier == datasource);
+				});
+				if(typeof memberNode !== "undefined") publisherText = memberNode.name + ". "; 
+			}	
+			var publisherEl = $(document.createElement("span")).text(publisherText);
+			
 	        //The title will be clickable for citations with science metadata
 	        if(typeof title !== "undefined"){
 				var titleEl = $(document.createElement("a")).addClass("title view-link").attr("href", "#view/" + encodeURIComponent(id)).attr("pid", id).text(title + ". ");
@@ -95,6 +107,8 @@ define(['jquery', 'underscore', 'backbone'],
 				var linkEl = $(document.createElement("a")).attr("href", appModel.get("objectServiceUrl") + id).append(authorEl).append(pubDateEl);
 	        	this.$el.append(linkEl);
 	        }
+	        
+	        this.$el.append(publisherEl);
 	        
 	        //The ID
 	        var idEl = $(document.createElement("span")).addClass("id").text(id + ".");

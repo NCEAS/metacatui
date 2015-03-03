@@ -120,7 +120,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			var citationEl = new CitationView({model: citationModel}).render().el;
 			var provStatementEl = new ProvStatement({model: provEntity, relatedModels: new Array(this.context) }).render().el;
-			var popoverContent = $(document.createElement("details")).append(citationEl, provStatementEl);
+			var popoverContent = $(document.createElement("div")).append(citationEl, provStatementEl);
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			$(nodeEl).popover({
