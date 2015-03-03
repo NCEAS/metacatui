@@ -22,7 +22,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.metadata = this.model;			
 		},
 				
-		tagName : "div",
+		tagName : "cite",
 		
 		className : "citation",
 		

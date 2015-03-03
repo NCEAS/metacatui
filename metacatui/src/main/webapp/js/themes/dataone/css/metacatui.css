@@ -726,47 +726,6 @@ table th.btn-container .btn{
 		font-weight: 700;
 	}
 	
-	/* Resource map contents table */
-    
-    #downloadContents .controls-well{
-    	overflow-x: scroll;
-    }
-    table.download-contents {
-    	width: 100%;
-    	margin-bottom: 0px;
-    }
-    .download-contents td{
-    	overflow-wrap: break-word;
-    }
-    .download-contents i{
-    	font-size: 1.5em;
-    }
-    .download-contents .btn i{
-    	font-size: 1em;
-    	margin-left: 5px;
-    }
-    .download-contents a[href="#tools/eml"]{
-    	color: inherit;
-    }
-    .download .btn i{
-    	margin-left: 5px;
-    }
-    .download-contents .size{
-    	max-width: 1px;
-    }
-    .download-contents .format-type{
-    	text-align: center;
-    	width: 1px;
-    }
-	.download-contents td{
-	    vertical-align: middle; /*Oh tables, good for one thing...*/
-	} 
-    
-    .file-type i {
-  		  color: #999;
-  		  margin-left: 5px;
-    }    
-    /**----------------------------------------**/
     
     /** Prov charts **/
     .prov-chart,

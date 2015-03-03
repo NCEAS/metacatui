@@ -41,7 +41,7 @@ define(['jquery', 'underscore', 'backbone'],
 			annotatorUrl: null
 		},
 
-		provDev: true,
+		provDev: false,
 		
 		defaultView: "data",
 

@@ -44,7 +44,7 @@ define(['jquery', 'underscore', 'backbone'],
 				collapseIcon  = $(document.createElement("i")).addClass("icon-collapse-alt"),
 			    expandedList  = $(document.createElement("span")),
 			    collapsedList = $(document.createElement("span")).addClass("collapsed"),
-			    comma = $(document.createElement("span")).text(", "),
+			    comma = $(document.createElement("span")).addClass("spacer").text(", "),
 			    space = $(document.createElement("span")).text("  ");
 			
 			$(expandLink).append(expandIcon).append($(document.createElement("span")).text(" )"));
