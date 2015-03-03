@@ -704,14 +704,6 @@ table th.btn-container .btn{
 		padding: 10px;
 	}
 	
-	#Metadata .well{
-		font-size: 23px;
-		line-height: 30px;
-		font-weight: 400;
-		box-shadow: none;
-		-moz-box-shadow: none;		
-	}
-	
 	#Metadata h4{
 		font-weight: 600;
 	}

@@ -19,95 +19,87 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		tagName : "span",
 		
-		className : "expand-collapse",
+		className : "expand-collapse well",
 		
 		events: {
-			"click .teaser" : "toggle"
+			"click .control" : "toggle"
 		},
 		
 		/*
 		 * Makes a list of object ID links that collapses after a max X amount
 		 */
 		render: function(){
+			//If there is nothing in the list, there is nothing to make
+			if(this.list.length == 0) return this;
+			
 			var view = this,
 				text = "",
-				collapsed = false;
+				collapse = (this.list.length > this.max) ? true : false,
+				numCollapsed = this.list.length - this.max,
+				containerEl = this.el;
 			
-			text += this.prependText;
+			var expandLink    = $(document.createElement("a")).attr("href", "#").addClass("control expand").text(" (and " + numCollapsed + " more "),
+				collapseLink  = $(document.createElement("a")).attr("href", "#").addClass("control collapse").text(" (collapse "),
+				expandIcon	  = $(document.createElement("i")).addClass("icon-expand-alt"),
+				collapseIcon  = $(document.createElement("i")).addClass("icon-collapse-alt"),
+			    expandedList  = $(document.createElement("span")),
+			    collapsedList = $(document.createElement("span")).addClass("collapsed"),
+			    comma = $(document.createElement("span")).text(", "),
+			    space = $(document.createElement("span")).text("  ");
 			
-			_.each(view.list, function(id, i){
+			$(expandLink).append(expandIcon).append($(document.createElement("span")).text(" )"));
+			$(collapseLink).append(collapseIcon).append($(document.createElement("span")).text(" )"));
+									
+			_.each(this.list, function(listItem, i){
 				
-				//If there are more than the max, hide the rest of the list in a collapsable element
-				if(i == view.max){
-					text +=  '<span class="teaser">' +
-							 '<a href="#" class="obvious-link teaser"> (and ' +
-							 (view.list.length - i) + ' more...) </a>' +
-							 '</span>' +
-							 '<span class="collapsed">';
-					collapsed = true;
-				}
+				//Put the link in the collapsed list if this is past the max to be displayed
+				var listEl = (i+1 > view.max) ? collapsedList : expandedList;
+
+				//Make an anchor tag out of strings (assuming its an ID)
+				if(typeof listItem === "string")
+					$(listEl).append(view.makeIDLink(listItem));
+				else
+					$(listEl).append(listItem);
 				
 				//Do we need a comma?
-				if((view.list.length > 1) && (i < view.list.length) && (i > 0)) 
-					text += ", ";
-				
-				//Make an anchor tag
-				text += view.makeIDLink(id);
-				
-				//Put spaces where they are needed
-				if(i == (view.list.length-1)) text += " ";
-				
-				//Close the collapsable element at the last item in the list
-				if((i == (view.list.length - 1)) && collapsed)
-					text += '</span>';
+				if((view.list.length > 1) && (i < view.list.length-1)) 
+					$(listEl).append($(comma).clone());
 			});
 			
-			text += this.appendText;
-			
-			this.$el.append(text);
-			
+			this.$el.append(expandedList);
+
+			if(numCollapsed > 0){
+				$(collapsedList).append(collapseLink);
+				this.$el.append(expandLink, collapsedList);
+			}
+						
+			if(this.prependText) this.$el.prepend($(document.createElement("span")).text(this.prependText));
+			if(this.appendText) this.$el.append($(document.createElement("span")).text(this.appendText));
+												
 			return this;
 		},
 		
-		makeIDLink: function(id){
-			return "<a class='obvious-link'" +
-				   "href='" + 
-				   appModel.get('objectServiceUrl') + encodeURIComponent(id) + 
-				   "'>" + 
-				   id + 
-				   "</a>";
+		makeIDLink: function(id){	
+			return $(document.createElement("a")).attr("href", appModel.get('objectServiceUrl') + encodeURIComponent(id)).text(id);
 		},
 		
 		toggle: function(e){
 			e.preventDefault();
 			
-			var view = this;
+			var collapsed = this.$(".collapsed");
+			var expanded = this.$(".expanded");
 			
-			var collapsed = this.$el.find(".collapsed");
-			var expanded  = this.$el.find(".expanded");
-			var container = this.$el;
+			if($(collapsed).length > 0){
+				$(collapsed).fadeIn();
+				$(collapsed).removeClass("collapsed").addClass("expanded");
+			}
 			
-			//Expand any currently-expanded items
-			_.each(collapsed, function(element, i){
-				$(element).removeClass("collapsed");
-				$(element).addClass("expanded");
-				
-				if(i==0){
-					$(container).removeClass("collapsed");
-					$(container).addClass("expanded");
-				}
-			});
-			
-			//Collapse any currently-collapsed items
-			_.each(expanded, function(element, i){
-				$(element).removeClass("expanded");
-				$(element).addClass("collapsed");
-				
-				if(i==0){
-					$(container).removeClass("expanded");
-					$(container).addClass("collapsed");
-				}
-			});
+			if($(expanded).length > 0){
+				$(expanded).fadeOut();
+				$(expanded).removeClass("expanded").addClass("collapsed");				
+			}
+
+			this.$(".control.expand").toggleClass("hidden");
 			
 			return false;
 		}

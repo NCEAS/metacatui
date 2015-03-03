@@ -21,6 +21,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			this.className    += options.className     || "";
 			this.model		   = options.model		   || null;
 			this.relatedModels = options.relatedModels || new Array();
+			this.relatedModels = _.flatten(this.relatedModels);
 		},
 		
 		template: _.template(ProvTemplate),
@@ -28,6 +29,9 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 		tagName : "p",
 		
 		className : "provenance-statement-container",
+		
+		//Prov fields / predicates in the prov statements that we do not want to display
+		skipPredicates: ["prov_generatedByExecution", "prov_generatedByUser", "prov_wasGeneratedBy"],
 		
 		events: {
 			
@@ -55,7 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			var allTriples = new Array();
 			
 			//Make a list of predicates that we want to use in the prov statements
-			var predicates = searchModel.getProvFields();
+			var predicates = _.difference(searchModel.getProvFields(), this.skipPredicates);			
 			
 			//Look for prov traces in all the models
 			var allModels = _.union(this.model, this.relatedModels);
@@ -92,11 +96,12 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			//Go through this array of triples, sorted by predicate
 			_.each(populatedPredicates, function(predicate, i){
 				//Start the statement/sentence when this model is the subject
-				var subjStatementEl = $(document.createElement("p")).text("This " + noun + " " + view.getPredicate(predicate)),
-					addSubjStatement = false;
+				var subjStatementBegin = "This " + noun + " " + view.getPredicate(predicate),
+					subjList		   = new Array();
+				
 				//State the statement/sentence when this model is the object
-				var objStatementEl = $(document.createElement("p")).text("This " + noun + " " + view.getPredicate(predicate, true)),
-					addObjStatement = false;
+				var objStatementBegin = "This " + noun + " " + view.getPredicate(predicate, true),
+					objList           = new Array();
 
 				//Go through each triple type, based on predicate, in order to make prov statements
 				_.each(allTriples[predicate], function(triple, ii){
@@ -110,15 +115,12 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						
 						//Make a link out of the object ID
 						var objectId = (typeof triple.object === "string") ? triple.object : triple.object.get("id");
-						$(subjStatementEl).append($(document.createElement("a"))
+						subjList.push($(document.createElement("a"))
 							                                .attr("href", appModel.get("objectServiceUrl") + objectId)
 							                                .text(objectId)
 				                                            .prepend(
 						                                            $(document.createElement("i"))
 						                                                      .attr("class", "icon " + view.getIconType(type))));
-						
-						//Flag that there is a statement with subjects
-						addSubjStatement = true;
 					}
 					//If the object of this triple equals the id of this model, then structure the sentence as so
 					else if((triple.object == id) || ((typeof triple.object === "object") && (triple.object.get("id") == id))){
@@ -128,27 +130,23 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						
 						//Make a link of the subject ID
 						var subjectId = (typeof triple.subject === "string") ? triple.subject : triple.subject.get("id");
-						$(objStatementEl).append(
-												$(document.createElement("a"))
+						objList.push($(document.createElement("a"))
 													      .attr("href", appModel.get("objectServiceUrl") + subjectId)
 										                  .text(subjectId)
 										                  .prepend(
 												                  $(document.createElement("i"))
 												                            .attr("class", "icon " + view.getIconType(type))));
-												                  
-
-						//Flag that there is a statement with objects
-						addObjStatement = true;
+												                            
 					}
 				});
 				
 				//Add these statements to our element
-				if(addSubjStatement) $(statementEl).append(subjStatementEl);
-				if(addObjStatement)  $(statementEl).append(objStatementEl);
+				if(subjList.length > 0) $(statementEl).append(new ExpandCollapseList({list: subjList, prependText: subjStatementBegin, appendText: ". "}).render().el);
+				if(objList.length > 0)  $(statementEl).append(new ExpandCollapseList({list: objList,  prependText: objStatementBegin, appendText: ". "}).render().el); 			
 			});
 			
 			//Insert the list element into the DOM
-			view.$el.find(".provenance-statement").append($(statementEl).html());
+			view.$el.find(".provenance-statement").append($(statementEl));
 							
 			return this;
 		},

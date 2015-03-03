@@ -67,10 +67,7 @@ define(['jquery', 'underscore', 'backbone'],
 					id 			 = this.model.get("id");
 				
 				//Format the author text
-				var authorText = author.substring(3, author.indexOf(",O=")) + ". ";
-				
-				if(this.model.get("formatType") == "DATA") 
-					var formatId = this.model.get("formatId");				
+				var authorText = author.substring(3, author.indexOf(",O=")) + ". ";				
 			}		
    
 	        //The author
@@ -80,17 +77,17 @@ define(['jquery', 'underscore', 'backbone'],
 			var pubDateText = "";
 			if(typeof pubDate !== "undefined") { 
 				var pubDateFormatted = moment(pubDate).format('YYYY');
-	            if(!isNaN(pubDateFormatted)) pubDateText += pubDateFormatted + '. ';
+	            if(!isNaN(pubDateFormatted)) pubDateText += pubDateFormatted;
 	        }
 	        if(dateUploaded && (isNaN(pubDateFormatted) || !pubDate)){
 	        	var dateUploadedFormatted = moment(dateUploaded).format('YYYY');
-	            if(!isNaN(dateUploadedFormatted)) pubDateText += dateUploadedFormatted + '. ';
+	            if(!isNaN(dateUploadedFormatted)) pubDateText += dateUploadedFormatted;
 	        }
-			var pubDateEl = $(document.createElement("span")).addClass("pubdate").text(pubDateText);
+			var pubDateEl = $(document.createElement("span")).addClass("pubdate").text("(" + pubDateText + "): ");
 	        
 	        //The title will be clickable for citations with science metadata
 	        if(typeof title !== "undefined"){
-				var titleEl = $(document.createElement("a")).addClass("title view-link").attr("href", "#view/" + encodeURIComponent(id)).attr("pid", id).text(title);
+				var titleEl = $(document.createElement("a")).addClass("title view-link").attr("href", "#view/" + encodeURIComponent(id)).attr("pid", id).text(title + ". ");
 	        	this.$el.append(authorEl).append(pubDateEl).append(titleEl);
 	        }
 	        //The author and pubDate will be clickable for citations without science metadata
@@ -100,18 +97,8 @@ define(['jquery', 'underscore', 'backbone'],
 	        }
 	        
 	        //The ID
-	        var idEl = $(document.createElement("span")).addClass("id").text(id),
-				idElLabel = $(document.createElement("h6")).addClass("label").text("ID: ");
-	        $(idEl).prepend(idElLabel);
+	        var idEl = $(document.createElement("span")).addClass("id").text(id + ".");
 	        this.$el.append(idEl);
-	        
-	        //Append the formatID (for data objects only)
-			if(typeof formatId !== "undefined"){
-				var formatEl = $(document.createElement("span")).addClass("formatType").text(formatId),
-					formatElLabel = $(document.createElement("h6")).addClass("label").text("Format: ");	
-		        $(formatEl).prepend(formatElLabel);
-		        this.$el.append(formatEl);
-		   }
 	            
 	        return this;         
 		}

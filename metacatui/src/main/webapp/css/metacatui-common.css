@@ -129,6 +129,30 @@ article.hasProvLeft.hasProvRight{
 	min-width: 300px;
 }
 
+/* Expand/Collapse elements */
+.expand-collapse .collapsed{
+	display: none;
+}
+.expand-collapse .control{
+	margin-right: 2px;
+	border-bottom: 1px dotted #999;
+}
+.expand-collapse .control,
+.expand-collapse .expanded{
+	display: inline-block;
+}	
+.expand-collapse .control.collapse{
+	overflow: visible;
+	margin-left: 5px;
+	display: inline;
+}
+.provenance-statement .expand-collapse{
+	display: block;
+}
+.expand-collapse .control.hidden{
+	display: none;
+}
+
 /****************************************** 
 ** The Metadata and MetadataIndex View **
 ******************************************/	
@@ -159,7 +183,7 @@ article.hasProvLeft.hasProvRight{
 	display: inherit;
 }
 
-.citation{
+#Metadata > form > .citation{
 	font-size: 1.3em;
 	line-height: 1.7em;
 	margin-bottom: 40px;
@@ -229,8 +253,6 @@ article.hasProvLeft.hasProvRight{
 * Citations and Citation Popovers
 ********************************************/
 .popover .citation .id{
-	display: block;
-	margin-top: 10px;
 	word-wrap: break-word;
 	word-break: break-all;
 }
