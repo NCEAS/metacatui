@@ -1458,17 +1458,6 @@ table th.btn-container .btn{
   		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
   		background: linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
   	}
-  	.result-row .abstract{
-    	font-size: 0.9em;
-    }  
-    
-    .result-citation{
-    	color: #1C6E84;
-    }
-    
-    .result-author {
-      font-weight: normal;
-    }
     
     .result-title{
     	font-weight: 600;

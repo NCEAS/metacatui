@@ -18,11 +18,8 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 
 		// The DOM events specific to an item.
 		events: {
-			'click .result-selection': 'toggleSelected'
-			//'dblclick label': 'edit',
-			//'click .destroy': 'clear',
-			//'keypress .edit': 'updateOnEnter',
-			//'blur .edit': 'close'
+			'click .result-selection' : 'toggleSelected',
+			'click'                   : 'routeToMetadata'
 		},
 
 		// The SearchResultView listens for changes to its model, re-rendering. Since there's
@@ -41,7 +38,13 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 			var json = this.model.toJSON();
 			json.hasProv = this.model.hasProvTrace();
 			var resultRow = this.template(json);
-			this.$el.html(resultRow);
+			this.$el.append(resultRow);
+			
+			//Create the citation
+			var citation = new CitationView({metadata: this.model}).render().el;
+			var placeholder = this.$(".citation");
+			if(placeholder.length < 1) this.$el.append(citation);
+			else $(placeholder).replaceWith(citation);
 						
 			//Save the id in the DOM for later use
 			var id = json.id;
@@ -83,10 +86,25 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 		toggleSelected: function () {
 			this.model.toggle();
 		},
+		
+		routeToMetadata: function(e){			
+			//If the user clicked on a download button or any element with the class 'stop-route', we don't want to navigate to the metadata
+			if ($(e.target).hasClass('stop-route')){
+				return;
+			}
+			
+			var id = this.model.get("id");
+			
+			uiRouter.navigate('view/'+id, true);
+		},
 
 		// Remove the item, destroy the model from *localStorage* and delete its view.
 		clear: function () {
 			this.model.destroy();
+		},
+		
+		onClose: function(){
+			this.clear();
 		}
 	});
 	return SearchResultView;

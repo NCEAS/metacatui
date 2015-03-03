@@ -14,8 +14,10 @@ define(['jquery', 'underscore', 'backbone'],
 			this.model 		= options.model 	 || null;
 			this.metadata   = options.metadata	 || null;
 			
-			//If the model is a Package, then get the metadata doc in this package
-			if(this.model.type == "Package") 
+			//If a metadata doc was passed but no data or package model, then save the metadata as our model, too
+			if(!this.model && this.metadata) this.model = this.metadata;			
+			//If the model is a Package, then get the metadata doc in this package				
+			else if(this.model.type == "Package") 
 				this.metadata = this.model.getMetadata();
 			//If the model is a metadata doc and there was no other metadata specified, then use the model
 			else if((this.model.get("formatType") == "METADATA") && !this.metadata) 
@@ -44,7 +46,7 @@ define(['jquery', 'underscore', 'backbone'],
 					dateUploaded = this.metadata.get("dateUploaded"),
 					title 		 = this.metadata.get("title"),
 					id 			 = this.metadata.get("id"),
-					memberNode	 = this.metadata.get("datasource");
+					datasource	 = this.metadata.get("datasource");
 			
 				//Format the author text
 				var count=0,
@@ -77,7 +79,7 @@ define(['jquery', 'underscore', 'backbone'],
 	        
 	        //The publication date
 			var pubDateText = "";
-			if(typeof pubDate !== "undefined") { 
+			if((typeof pubDate !== "undefined") && pubDate) { 
 				var pubDateFormatted = moment(pubDate).format('YYYY');
 	            if(!isNaN(pubDateFormatted)) pubDateText += pubDateFormatted;
 	        }
@@ -111,7 +113,7 @@ define(['jquery', 'underscore', 'backbone'],
 	        this.$el.append(publisherEl);
 	        
 	        //The ID
-	        var idEl = $(document.createElement("span")).addClass("id").text(id + ".");
+	        var idEl = $(document.createElement("span")).addClass("id").text("ID: " + id + ".");
 	        this.$el.append(idEl);
 	            
 	        return this;         

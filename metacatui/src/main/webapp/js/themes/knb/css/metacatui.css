@@ -2505,13 +2505,10 @@ svg .domain{
     /** View count **/
     .result-row .stats .count{
     	font-size: 16px;
-    	text-align: center; 
-    	display: block;
     }
     
     .result-row .stats label{
     	font-size: 12px;
-    	text-align: center;
     }
 
 	/** Download button **/   

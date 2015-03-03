@@ -84,7 +84,6 @@ define(['jquery',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
 				   			  'click #toggle-map' : 'toggleMapMode',
-				   			   //'click .view-link' : 'routeToMetadata',
 				   			   'click .more-link' : 'showMoreList',
 				   		 'mouseover .open-marker' : 'showResultOnMap',
 				   	      'mouseout .open-marker' : 'hideResultOnMap',
@@ -268,7 +267,7 @@ define(['jquery',
 			appSearchResults.setSort(sortOrder);
 			
 			//Specify which fields to retrieve
-			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,wasDerivedFrom,hasDerivation";
+			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,prov_hasSources,prov_hasDerivations";
 			if(gmaps){
 				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}
@@ -1327,25 +1326,6 @@ define(['jquery',
 			this.$resultsview.show();
 			this.updateStats();	
 			this.updatePageNumber(page);
-		},
-		
-		routeToMetadata: function(e){
-			var id = $(e.target).attr('data-id');
-			
-			//If the user clicked on the download button or any element with the class 'stop-route', we don't want to navigate to the metadata
-			if ($(e.target).hasClass('stop-route')){
-				return;
-			}
-			
-			if(typeof id == "undefined"){
-				$(e.target).parents().each(function(){
-					if(typeof $(this).attr('data-id') != "undefined"){
-						id = $(this).attr('data-id');
-					}
-				});
-			}
-			
-			uiRouter.navigate('view/'+id, true);
 		},
 		
 		/**

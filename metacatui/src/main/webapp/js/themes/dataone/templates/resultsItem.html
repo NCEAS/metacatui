@@ -1,31 +1,4 @@
-        <div class="result-citation">
-              <span class="result-author">
-              <% var count=0; _.each(origin, function(author) {
-                   count++;
-                   if (count > 1) {
-                       print(", ")
-             }
-                   if (count > 1 && count == origin.length) {
-                       print("and ")
-             }
-                   print(author)
-                   if (count == origin.length) {
-                       print(". ")
-             }
-               }) %></span>
-               <span class="result-pubdate"> 
-               <%
-                if(pubDate) { 
-                   var pubDateFormatted = moment(pubDate).format('YYYY');
-                   if(!isNaN(pubDateFormatted)) print(pubDateFormatted, '. ');
-                }
-                if(dateUploaded && isNaN(pubDateFormatted)){
-                	var dateUploadedFormatted = moment(dateUploaded).format('YYYY');
-                    if(!isNaN(dateUploadedFormatted)) print(dateUploadedFormatted, '. ');
-               } 
-               %></span>
-               <span class="result-title"> <% if (title) { print('<a class=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
-               <span class="result-id subtle"> <%- id %></span>
+        <div class="citation">
         </div> 
         <div class="clear"></div>
 <%

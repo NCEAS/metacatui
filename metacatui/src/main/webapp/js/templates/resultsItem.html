@@ -7,120 +7,92 @@
 		    return val;
 		 }
 %>     
-        <div class="result-citation span11">
-              <span class="result-author">
-              <% var count=0; _.each(origin, function(author) {
-                   count++;
-                   if (count > 1) {
-                       print(", ")
-             }
-                   if (count > 1 && count == origin.length) {
-                       print("and ")
-             }
-                   print(author)
-                   if (count == origin.length) {
-                       print(". ")
-             }
-               }) %></span>
-               <span class="result-pubdate"> 
-               <%
-                if(pubDate) { 
-                   var pubDateFormatted = moment(pubDate).format('YYYY');
-                   if(!isNaN(pubDateFormatted)) print(pubDateFormatted, '. ');
-                }
-                if(dateUploaded && isNaN(pubDateFormatted)){
-                	var dateUploadedFormatted = moment(dateUploaded).format('YYYY');
-                    if(!isNaN(dateUploadedFormatted)) print(dateUploadedFormatted, '. ');
-               } 
-               %></span>
-               <span class="result-title"> <% if (title) { print('<a class=\"view_link\" href=\"#view/', id, '\" pid=\"', id, '\">', title, '.</a> '); } %></span>
-               <span class="result-id subtle"> <%- id %></span>
-        </div>
-        
-		<div class="span1 stats">
-			<% 
-			
-			if (typeof read_count_i != "undefined"){
-				print('<span class="count">', commaSeparateNumber(read_count_i), '</span><label class="subtle">views</label>');
+<div class="citation">
+</div>
+      
+<div class="stats">
+	<% 
+	
+	if (typeof read_count_i !== "undefined"){
+		print('<span class="count">', commaSeparateNumber(read_count_i), '</span><label class="subtle">views</label>');
+	}
+	%>
+</div>
+<div class="clear"></div>
+<%
+	if(typeof abstract != "undefined"){
+	    var safeAbstract = abstract.replace(/\"/g, "'");
+	    var classes = "abstract view-link";  
+	    if(safeAbstract.length > 200) classes += " multi-line-ellipsis";
+	    
+		print('<div class="' + classes + '" data-doi="' + id + '"><div>');
+		print('<p>' + safeAbstract + '<i></i></p>');
+		print('</div>');
+		print('</div>');
+	}
+%>
+<div class="info-icons">        		      
+	<div class="on-map icons">
+		<% 
+		if (typeof southBoundCoord != "undefined"){
+            		if((typeof geohash_9 != "undefined") && (geohash_9.length > 1)){
+            			for(var i=0; i < geohash_9.length; i++){
+            				print('<i class="icon-map-marker on-map open-marker tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
+            			}
+            		}
+            		else
+            			print('<i class="icon-map-marker on-map open-marker tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has one geographic region on the map"></i>');
+            }
+            else{
+            		print('<i class="icon-map-marker inactive"></i>');
+            }
+         %>
+    </div>
+    <div class="resource-map icons">             
+           <%
+           if (resourceMap) {
+				print('<i class="icon-folder-open tooltip-this"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
 			}
-			%>
-		</div>
-		<div class="clear"></div>
-		<%
-			if(typeof abstract != "undefined"){
-			    var safeAbstract = abstract.replace(/\"/g, "'");
-			    var classes = "abstract view-link";  
-			    if(safeAbstract.length > 200) classes += " multi-line-ellipsis";
-			    
-				print('<div class="' + classes + '" data-doi="' + id + '"><div>');
-				print('<p>' + safeAbstract + '<i></i></p>');
-				print('</div>');
-				print('</div>');
+			else{
+				print('<i class="icon-folder-open inactive"></i>');
 			}
-		%>
-		<div class="info-icons">        		      
-        		<div class="on-map icons">
-					<% 
-						if (typeof southBoundCoord != "undefined"){
-		               		if((typeof geohash_9 != "undefined") && (geohash_9.length > 1)){
-		               			for(var i=0; i < geohash_9.length; i++){
-		               				print('<i class="icon-map-marker on-map open-marker tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
-		               			}
-		               		}
-		               		else
-		               			print('<i class="icon-map-marker on-map open-marker tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has one geographic region on the map"></i>');
-		               }
-		               else{
-		               		print('<i class="icon-map-marker inactive"></i>');
-		               }
-		            %>
-	            </div>
-              <div class="resource-map icons">             
-	               <%
-		           if (resourceMap) {
-						print('<i class="icon-folder-open tooltip-this"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
-					}
-					else{
-						print('<i class="icon-folder-open inactive"></i>');
-					}
-	           		%>
-	           
-        	</div>
-	       <div class="icons stop-route download">             
-	               <%
-		           if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
-		           	  
-		           	  // handle multiple resourceMaps
-						print('<a class="dropdown-toggle download stop-route" data-toggle="dropdown" title="Download">');
-						print('<i class="icon-caret-down stop-route"></i>');
-						print('</a>');
-						print('<ul class="dropdown-menu download stop-route">');
-						var cnt = 1;
-						_.each(resourceMap, function(resourceMapId) {
-							print('<li class="stop-route">');
-							print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" class="stop-route">', 'Package ', cnt, '</a>');
-							print('</li>'); 	 
-						});
-						print('</ul>'); 
-					}
-					else{
-						var URLid = resourceMap || id;
-						print('<a class="download stop-route btn" title="Download" href="', package_service, URLid, '"><i class="icon-cloud-download"></i>Download</a>');
-					}
-					
-	           		%>
-	           
-        	</div>
-        	<% if(hasProv || appModel.provDev){
-        			print('<div class="icons provenance active">');
-        			print('<i class="icon-code-fork active"></i>');
-        		}
-        		else{
-        		    print('<div class="icons provenance inactive">');
-        			print('<i class="icon-code-fork inactive"></i>');
-        		}
-        	%>
-        	</div>
-        	<div class="clear"></div>
-	   </div><!-- END info-icons -->
+            %>
+          
+    </div>
+    <div class="icons stop-route download">             
+           <%
+           if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
+           	  
+           	  // handle multiple resourceMaps
+				print('<a class="dropdown-toggle download stop-route" data-toggle="dropdown" title="Download">');
+				print('<i class="icon-caret-down stop-route"></i>');
+				print('</a>');
+				print('<ul class="dropdown-menu download stop-route">');
+				var cnt = 1;
+				_.each(resourceMap, function(resourceMapId) {
+					print('<li class="stop-route">');
+					print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" class="stop-route">', 'Package ', cnt, '</a>');
+					print('</li>'); 	 
+				});
+				print('</ul>'); 
+			}
+			else{
+				var URLid = resourceMap || id;
+				print('<a class="download stop-route btn" title="Download" href="', package_service, URLid, '"><i class="icon-cloud-download"></i>Download</a>');
+			}			
+          	%>
+          
+      	</div>
+      	<% if(hasProv || appModel.provDev){
+      			print('<div class="icons provenance active">');
+      			print('<i class="icon-code-fork active"></i>');
+      		}
+      		else{
+      		    print('<div class="icons provenance inactive">');
+      			print('<i class="icon-code-fork inactive"></i>');
+      		}
+      	%>
+      	</div>
+      	<div class="clear"></div>
+  </div><!-- END info-icons -->
 <div class="clear"></div>

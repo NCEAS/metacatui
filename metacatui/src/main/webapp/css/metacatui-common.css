@@ -23,6 +23,15 @@ article.container {
 }
 
 /****************************************** 
+** Result Rows ***
+******************************************/
+
+.result-row .abstract{
+	margin-top: 15px;
+	font-size: .9em;
+}
+
+/****************************************** 
 ** Provenance flow-charts ***
 ******************************************/
 .prov-chart{
@@ -129,7 +138,9 @@ article.hasProvLeft.hasProvRight{
 	min-width: 300px;
 }
 
-/* Expand/Collapse elements */
+/****************************************** 
+** Collapsable Lists (ExpandCollapseView) **
+******************************************/	
 .expand-collapse .collapsed{
 	display: none;
 }
@@ -333,4 +344,10 @@ table.download-contents {
 	display: block;
 	margin-bottom: 20px; 
 }
-
+.citation .id{
+	color: #888;
+	font-size: .9em;
+}
+.result-row .citation{
+	font-weight: light;
+}
