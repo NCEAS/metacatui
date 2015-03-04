@@ -858,21 +858,6 @@ Bold 700
 		margin-bottom: 20px;
 		font-size: 13px;
 	}
-	
-	#Metadata .well{
-		font-size: 23px;
-		line-height: 30px;
-		font-weight: 400;
-		border: 1px solid #CCCCCC;
-		box-shadow: none;
-		-moz-box-shadow: none;
-		
-	}
-	
-	#Metadata .well strong{
-		font-weight: 400;
-	}
-	
 	.controls-well img{
 		max-width: 90%;
 		max-height: 900px;
@@ -900,6 +885,23 @@ Bold 700
 	
 	.fancybox.btn{
 		margin-left:180px;
+	}
+	
+	/* Prov charts */
+	.entityDetails,
+	.prov-chart .node,
+	.prov-chart{
+		border-color: #166194;
+	}
+	.prov-chart .node > i{
+		color: #166194;
+	}
+	.prov-chart .node:hover,
+	.prov-chart .node:focus,
+	.prov-chart .node:hover > i,
+	.prov-chart .node:focus > i{
+		background-color: #0377DD;
+		color: white;
 	}
 	
 	/* Resource map contents table */

@@ -63,12 +63,14 @@ article.container {
 	-webkit-border-radius: 50%;
 	background-color: #FFF;
 	width: 25px;
+	height: 25px;
 	padding: 15px;
 	font-size: 25px;
 	margin-bottom: 10px;
 	color: #666;
 	position: absolute;
 	z-index: 2;
+	cursor: pointer;
 }
 .prov-chart .node:focus{
 	outline: none;
@@ -113,6 +115,9 @@ article.container {
 }
 .prov-chart.derivations > .title{
 	left: 0px;
+}
+.prov-chart .node > i{
+	vertical-align: text-top;
 }
 .prov-chart .metadata.node i{
 	margin-left: 5px;
@@ -235,6 +240,15 @@ article.hasProvLeft.hasProvRight{
 /****************************************** 
 * The Data Details box in the Metadata View
 ********************************************/
+.entityDetails{
+    	border-width: 1px;
+    	border-style: solid;
+    	border-radius: 4px;
+    	-moz-border-radius: 4px;
+    	-webkit-border-radius: 4px;
+    	margin-bottom: 20px;
+    	padding: 20px;
+}
 .entityDetails.hasProvLeft,
 .entityDetails.hasProvRight{
 	display: inline-block;
@@ -276,7 +290,6 @@ table.download-contents {
 }
 .download-contents td{
 	overflow-wrap: break-word;
-	font-weight: lighter;
 }
 .download-contents th{
 	font-weight: normal;

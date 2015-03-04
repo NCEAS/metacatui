@@ -29,11 +29,6 @@ Bold 700
 	overflow: hidden;
 }
 
-i{
-	margin-left: 5px;
-	margin-right: 5px;
-}
-
 #navbar{
 	list-style: none;
 }
@@ -1170,33 +1165,6 @@ h2 {
  ============================================================================
  Imported CSS from NCEAS website  - grid.css
  ============================================================================
- **/
- /*	12 COLUMN : RESPONSIVE GRID SYSTEM
-	DEVELOPER : DENIS LEBLANC
-	URL : http://responsive.gs
-	VERSION : 3.0
-	LICENSE : GPL & MIT */
-
-
-/* 	SET ALL ELEMENTS TO BOX-SIZING : BORDER-BOX */
-* { 
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	*behavior: url(/scripts/boxsizing.htc); 
-	/*	If you need support for IE7 and lower make 
-		sure the boxsizing.htc file is linked properly.
-		More info here:  https://github.com/Schepp/box-sizing-polyfill */
-}
-
-
-/*	MAIN CONTAINER 
-	Set the width to whatever you want the width of your site to be. */
-.container { 
-	max-width: 800px;
-	margin: 0 auto; 
-}
-
 
 
 /*	SELF CLEARING FLOATS - CLEARFIX METHOD */
@@ -1638,9 +1606,6 @@ section {
 }
 
 /* HTML elements */
-body {
-  line-height: 1.5;
-}
 img {
   max-width: 100%;
   height: auto;

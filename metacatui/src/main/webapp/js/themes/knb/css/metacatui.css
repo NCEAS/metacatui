@@ -1564,6 +1564,22 @@ svg .domain{
 	.controls-well > .btn{
 		margin-left: 180px;
 	}
+	
+	.entityDetails{
+		border-color: #999;
+	}
+	.entityDetails > h4 > .title{
+		font-weight: 100;
+	}	
+	
+	.prov-chart,
+	.prov-chart .node
+	.prov-chart .connecter{
+		border-color: #006699;
+	}
+	.prov-chart .node{
+		color: #006699;
+	}
     
     /* Google Map Images for Geographic Region */
     .georegion-map{
@@ -3576,31 +3592,6 @@ iframe classes
     font-size: 1.1em;
 }
 
-/**
-* For EML spec styling
-**/
-div.book {
-	margin: 20px;	
-}
-
-div.title {
-    background-color:           #ffffff;
-    padding:                    0;
-    font-size:                  16pt;
-    font-style:                 normal;
-    font-weight:                bold;
-    text-decoration:            none;
-}
-
-div.sectiontitle {
-    color:                      #003366;
-    background-color:           #ffffff;
-    padding:                    0;
-    font-size:                  14pt;
-    font-style:                 normal;
-    font-weight:                700;
-    text-decoration:            none;
-}
 
     
 #loading-app{
