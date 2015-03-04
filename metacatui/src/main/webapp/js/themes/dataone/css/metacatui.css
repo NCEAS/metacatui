@@ -339,12 +339,6 @@ Bold 700
 .btn-primary:hover{
 	background-color: rgba(157, 3, 80, 1);
 }    
-    .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
-		background-color: #999999;
-		color: #FFFFFF;
-		text-shadow: none;
-		border: none;
-    }
         
     
     .btn-group > .dropdown-toggle {
