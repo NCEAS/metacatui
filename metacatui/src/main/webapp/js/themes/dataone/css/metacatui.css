@@ -339,12 +339,6 @@ Bold 700
 .btn-primary:hover{
 	background-color: rgba(157, 3, 80, 1);
 }    
-    .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
-		background-color: #999999;
-		color: #FFFFFF;
-		text-shadow: none;
-		border: none;
-    }
         
     
     .btn-group > .dropdown-toggle {
@@ -432,7 +426,9 @@ table td.btn-container .btn,
 table th.btn-container .btn{
 	min-width: 90px;
 }
-
+.download-contents td{
+	font-weight: lighter;
+}
   
 /* THE NAVBAR
 -------------------------------------------------- */
@@ -743,11 +739,6 @@ table th.btn-container .btn{
       
     .entityDetails{
     	border: 1px solid #1C6E84;
-    	border-radius: 4px;
-    	-moz-border-radius: 4px;
-    	-webkit-border-radius: 4px;
-    	margin-bottom: 20px;
-    	padding: 20px;
     }
     
     .entityDetails h4{

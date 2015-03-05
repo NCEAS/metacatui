@@ -7,7 +7,6 @@ var themeMap =
 		//'views/AboutView' : 'themes/' + theme + '/views/AboutView',
 		//'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html'
 		'templates/app.html' : 'themes/' + theme + '/templates/app.html',
-		'templates/appHead.html' : 'themes/' + theme + '/templates/appHead.html',
 		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
 		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
 		'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',

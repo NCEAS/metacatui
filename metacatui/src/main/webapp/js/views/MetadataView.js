@@ -222,7 +222,7 @@ define(['jquery',
 			if(!this.packageModel.complete) return this;
 				
 			//** Draw the package table **//	
-			var tableView = new PackageTable({ model: this.packageModel });
+			var tableView = new PackageTable({ model: this.packageModel, currentlyViewing: this.pid });
 			
 			//Get the package table container
 			var tableContainer = this.$("#downloadContents");

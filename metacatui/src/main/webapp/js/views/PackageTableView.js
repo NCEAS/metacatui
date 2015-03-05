@@ -12,6 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.memberId	= options.memberId	 || null;
 			this.attributes = options.attributes || null;
 			this.className += options.className  || "";
+			this.currentlyViewing = options.currentlyViewing || null;
 			
 			//Set up the Package model
 			if((typeof options.model === "undefined") || !options.model){
@@ -134,17 +135,25 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(tr).append(downloadBtnCell);
 				
 				//"Preview" link cell
-				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");				
-				var moreInfo = $(document.createElement("a"))
-								.attr("href", "#view/" + id)
-								.addClass("btn preview")
-								.attr("data-id", encodeURIComponent(id))
-								.text("Preview");
+				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
+				var moreInfo     = $(document.createElement("a"))
+									.attr("href", "#view/" + id)
+									.addClass("btn preview")
+									.attr("data-id", encodeURIComponent(id))
+									.text("Preview");
 				var moreInfoIcon = $(document.createElement("i"))
 									.addClass("icon icon-info-sign");
-				$(moreInfo).append(moreInfoIcon);
+				$(moreInfo).append(moreInfoIcon);					
 				$(moreInfoCell).append(moreInfo);
 				$(tr).append(moreInfoCell);
+				
+				//If we are already viewing this object, display the button as disabled with a tooltip
+				if(view.currentlyViewing == solrResult.get("id")){
+					$(moreInfo).attr("disabled", "disabled").tooltip({
+						title: "You are currently viewing this metadata document",
+						trigger: "hover"
+					});
+				}
 				
 				//Add this row to the table body
 				$(tbody).append(tr);
