@@ -25,15 +25,20 @@
   simpleXPathJQuery = function(relativeRoot) {
     var jq;
     jq = this.map(function() {
-      var elem, idx, path, tagName;
+      var elem, id, idx, path, tagName;
       path = '';
       elem = this;
       while ((elem != null ? elem.nodeType : void 0) === Node.ELEMENT_NODE && elem !== relativeRoot) {
-        tagName = elem.tagName.replace(":", "\\:");
-        idx = $(elem.parentNode).children(tagName).index(elem) + 1;
-        idx = "[" + idx + "]";
-        path = "/" + elem.tagName.toLowerCase() + idx + path;
-        elem = elem.parentNode;
+        if (id = elem.id) {
+          path = ("//*[@id='" + id + "']") + path;
+          break;
+        } else {
+          tagName = elem.tagName.replace(":", "\\:");
+          idx = $(elem.parentNode).children(tagName).index(elem) + 1;
+          idx = "[" + idx + "]";
+          path = "/" + elem.tagName.toLowerCase() + idx + path;
+          elem = elem.parentNode;
+        }
       }
       return path;
     });
@@ -2349,10 +2354,7 @@
         headers: this.element.data('annotator:headers'),
         dataType: "json",
         success: onSuccess || function() {},
-        error: this._onError,
-        xhrFields: {
-        	withCredentials: true
-        }
+        error: this._onError
       };
       if (this.options.emulateHTTP && (method === 'PUT' || method === 'DELETE')) {
         opts.headers = $.extend(opts.headers, {
