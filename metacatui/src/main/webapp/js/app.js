@@ -76,6 +76,10 @@ require.config({
     annotator: {
     	exports: 'Annotator'
     },
+    jquerysidr: {
+    	deps: ['jquery'],
+    	exports: 'jquerysidr'
+    },
     jws: {
     	exports: 'JWS',
         deps: ['jsrasign'],
