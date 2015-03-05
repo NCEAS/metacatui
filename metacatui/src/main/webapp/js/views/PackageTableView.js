@@ -150,13 +150,16 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				//If we are already viewing this object, display the button as disabled with a tooltip
 				if(view.currentlyViewing == solrResult.get("id")){
 					$(moreInfo).attr("disabled", "disabled").tooltip({
-						title: "You are currently viewing this metadata document",
-						trigger: "hover"
+						title: "You are currently viewing this",
+						trigger: "hover focus"
 					});
+					
+					//List this row first if it is the current item
+					$(tbody).prepend(tr);
 				}
-				
-				//Add this row to the table body
-				$(tbody).append(tr);
+				else
+					//Add this row to the table body
+					$(tbody).append(tr);
 					
 			});
 
