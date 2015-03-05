@@ -84,6 +84,24 @@ article.container {
 	width: 15px;
 	left: 0px;
 }
+.prov-chart.expand-collapse .collapsed{
+	display: none;
+}
+.prov-chart.expand-collapse .expand-control,
+.prov-chart.expand-collapse .collapse-control{
+	font-size: .9em;
+	position: absolute;
+	top: 100%;
+	top: calc(100% + 30px);
+	left: 10px;
+	width: 90px;
+	cursor: pointer;
+}
+.prov-chart.expand-collapse .control .icon{
+	margin-left: 5px;
+	font-size: 1.5em;
+	vertical-align: sub;
+}
 .prov-chart.derivations .connecter{
 	width: 11px;
 	left: -11px;
@@ -127,7 +145,8 @@ article.container {
 	display: inline;
 	word-break: break-all; 
 }
-/*The metadata gets narrowed when there is one prov chart next to it*/
+
+/*The context sections gets narrowed when there is one prov chart next to it*/
 article.hasProvLeft,
 article.hasProvRight{ 
 	width: 800px; /* IE fallback */

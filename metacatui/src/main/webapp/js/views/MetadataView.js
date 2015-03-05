@@ -356,23 +356,19 @@ define(['jquery',
 
 			if(packageSources.length){
 				var sourceProvChart = new ProvChart({
-					sources: packageSources,
-					context: this.packageModel
+					sources   : packageSources,
+					context   : this.packageModel,
+					contextEl : this.$("#Metadata")
 				});	
 				this.$("#Metadata").before(sourceProvChart.render().el).addClass("hasProvLeft");	
-				var chartHeight = sourceProvChart.$el.height() + sourceProvChart.nodeHeight;
-				if(this.$("#Metadata").height() < chartHeight)
-					this.$("#Metadata").height((chartHeight));
 			}
 			if(packageDerivations.length){
 				var derivationProvChart = new ProvChart({
-					derivations: packageDerivations,
-					context: this.packageModel
+					derivations : packageDerivations,
+					context     : this.packageModel,
+					contextEl   : this.$("#Metadata")
 				});		
-				this.$("#Metadata").after(derivationProvChart.render().el).addClass("hasProvRight");
-				var chartHeight = derivationProvChart.$el.height() + derivationProvChart.nodeHeight;
-				if(this.$("#Metadata").height() < chartHeight)
-					this.$("#Metadata").height((chartHeight));			
+				this.$("#Metadata").after(derivationProvChart.render().el).addClass("hasProvRight");			
 			}			
 			
 			//Draw the provenance charts for each member of this package at an object level
@@ -390,24 +386,20 @@ define(['jquery',
 				//Make the source chart for this member
 				if(memberSources.length){
 					var memberSourcesProvChart = new ProvChart({
-						sources: memberSources,
-						context: member
+						sources   : memberSources, 
+						context   : member,
+						contextEl : entityDetailsSection
 					});	
 					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
-					var chartHeight = memberSourcesProvChart.$el.height() + memberSourcesProvChart.nodeHeight;
-					if($(entityDetailsSection).height() < chartHeight)
-						$(entityDetailsSection).height((chartHeight));	
 				}
 				if(memberDerivations.length){
 					//Make the derivation chart for this member
 					var memberDerivationsProvChart = new ProvChart({
-						derivations: memberDerivations,
-						context: member
+						derivations : memberDerivations,
+						context     : member,
+						contextEl   : entityDetailsSection
 					});	
-					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");
-					var chartHeight = memberDerivationsProvChart.$el.height() + memberDerivationsProvChart.nodeHeight;
-					if($(entityDetailsSection).height() < chartHeight)
-						$(entityDetailsSection).height((chartHeight));				
+					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
 				}
 			});
 		},
