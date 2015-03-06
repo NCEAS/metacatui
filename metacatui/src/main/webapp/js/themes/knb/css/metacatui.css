@@ -1557,57 +1557,50 @@ svg .domain{
     }
     
     /* Resource map contents table */
-    
-    #downloadContents .controls-well{
-    	overflow-x: scroll;
-    }
-    
     table.download-contents{
-    	float: left;
-    	width: auto;
+    	width: 100%;
+    	margin-bottom: 0px;
     }
-    
-    table.download-contents td{
-    	min-width: 90px;
+    thead tr{
+    	background-color:#a1b3c2;
+    	color: white;
     }
-    
-    .download-contents .id{
-    	max-width: 100px;
+    .table th{
+    	border-width: 0px;
+    	color: white;
     }
-    
-    .download-contents td,
-    .download-contents .id{
-    	overflow-wrap: break-word;
+    .download-contents th{
+    	font-weight: bold;
+    	color: white;
     }
-    
-    .format-type i{
-    	margin-right: 5px;
+    .download-contents .wrap-contents{
+   		max-width: 150px;
     }
-    td.format-type {
-    	text-transform: lowercase;
+    tr.table-header{
+    	background-color: #992222;
     }
-    
-    .file-type i{
-  		  color: #999;
-  		  margin-left: 5px;
+    tr.table-header th{
+    	text-align: center;
+    	font-weight: bold;
+    	color: white;
     }
-    
-    th.id{
-    	min-width: 180px;
-    }
-    
-    /*Details link*/
-    .download-contents .more-info{
-    	padding-left: 20px;
-    	max-width: 65px;
-    	color: #999;
-    	font-size: 12px;
-    }
-    
-    .download-contents .more-info i{
-    	margin-left: 3px;
-    	font-size: 14px;
-    }
+    .download-contents td {
+		vertical-align: middle;
+		overflow-wrap: break-word;
+	}
+    .download-contents .format-type {
+		text-align: center;
+		width: 1px;
+	}
+	.download-contents .btn i{
+		margin-left: 5px;
+	}
+    .download-contents .size {
+		max-width: 1px;
+	}
+	table td.btn-container, table th.btn-container {
+		width: 1px;
+	}
     
     /*Taxonomic range*/
     .taxonomic-range .control-group{

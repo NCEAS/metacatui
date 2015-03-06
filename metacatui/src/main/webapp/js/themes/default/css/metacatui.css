@@ -386,6 +386,9 @@ Bold 700
       text-shadow: none;
       color: #FFFFFF;
     }
+    .btn-primary{
+    	background-color: #01AFD5;
+    }
     
     .btn:hover{
     	background-color: #0377DD;
@@ -803,70 +806,51 @@ Bold 700
 		margin-left:180px;
 	}
 	
-	/* Resource map contents table */
-	
-	span.file-type{
-		font-weight: 600;
-		font-size: 1.1em;
+    /* Resource map contents table */
+    table.download-contents{
+    	width: 100%;
+    	margin-bottom: 0px;
+    }
+    thead tr{
+    	background-color:#a1b3c2;
+    	color: white;
+    }
+    .table th{
+    	border-width: 0px;
+    	color: white;
+    }
+    .download-contents th{
+    	font-weight: bold;
+    	color: white;
+    }
+    .download-contents .wrap-contents{
+   		max-width: 150px;
+    }
+    tr.table-header{
+    	background-color: #166194;
+    }
+    tr.table-header th{
+    	text-align: center;
+    	font-weight: bold;
+    	color: white;
+    }
+    .download-contents td {
+		vertical-align: middle;
+		overflow-wrap: break-word;
 	}
-	
-	i.file-type{
-		font-size: 1.2em;
-		font-weight: 600;
+    .download-contents .format-type {
+		text-align: center;
+		width: 1px;
 	}
-
-    #downloadContents .controls-well{
-    	overflow-x: overlay;
-    }
-    
-    table.download-contents {
-    	float: left;
-    	width: auto;
-    }
-    
-    table.download-contents td{
-    	min-width: 90px;
-    }
-    
-        .download-contents .id{
-    	max-width: 100px;
-    }
-    
-    .download-contents td{
-    	overflow-wrap: break-word;
-    }
-    .format-type{
-    	text-transform: lowercase;
-    }
-    .format-type i {
-    	margin-right: 5px;
-    }
-    .format-type {
-    	text-transform: capitalize;
-    }
-    
-    .file-type i {
-  		  color: #999;
-  		  margin-left: 5px;
-    }
-    
-    th.id {
-    	min-width: 180px;
-    	overflow-wrap: break-word;
-    }
-    
-    /*Details link*/
-    .download-contents .more-info{
-    	padding-left: 20px;
-    	max-width: 65px;
-    	color: #999;
-    	font-size: 12px;
-    }
-    
-    .download-contents .more-info i{
-    	margin-left: 3px;
-    	font-size: 14px;
-    }
+	.download-contents .btn i{
+		margin-left: 5px;
+	}
+    .download-contents .size {
+		max-width: 1px;
+	}
+	table td.btn-container, table th.btn-container {
+		width: 1px;
+	}
 	
 	/*Taxonomic range*/
     .taxonomic-range .control-group{

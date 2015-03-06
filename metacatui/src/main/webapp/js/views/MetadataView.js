@@ -5,6 +5,7 @@ define(['jquery',
 		'gmaps',
 		'fancybox',
 		'views/MetadataIndexView',
+		'views/PackageTableView',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html',
@@ -15,7 +16,7 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, _, Backbone, gmaps, fancybox, MetadataIndex, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
+	function($, _, Backbone, gmaps, fancybox, MetadataIndex, PackageTableView, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate) {
 	'use strict';
 
 	
@@ -232,14 +233,21 @@ define(['jquery',
 								}
 							});
 							
-							$('#downloadContents').append(viewRef.downloadContentsTemplate({
+						/*	$('#downloadContents').append(viewRef.downloadContentsTemplate({
 								objects: packages[thisMap.id],
 								resourceMap: thisMap,
 								package_service: packageServiceUrl,
 								object_service: objectServiceUrl,
 								EMLRoute: EMLRoute,
 								dataWithDetailsOnPage: dataWithDetailsOnPage
-							}));
+							}));*/
+							
+							var packageTable = new PackageTableView({
+								members          : packages[thisMap.id],
+								packageId        : thisMap.id,
+								currentlyViewing : appModel.get("pid")
+							});
+							$('#downloadContents').append(packageTable.render().el);
 						}); 
 						
 						//Replace Ecogrid Links with DataONE API links
@@ -254,13 +262,20 @@ define(['jquery',
 				}	
 				//If this is just a metadata object, just send that info alone
 				else{
-					$('#downloadContents').append(viewRef.downloadContentsTemplate({
+					/*$('#downloadContents').append(viewRef.downloadContentsTemplate({
 						objects: data.response.docs,
 						resourceMap: null,
 						package_service: packageServiceUrl,
 						object_service: objectServiceUrl,
 						EMLRoute: EMLRoute
-					}));
+					}));*/
+					
+					var packageTable = new PackageTableView({
+						members          : data.response.docs,
+						packageId        : null,
+						currentlyViewing : appModel.get("pid")
+					});
+					$('#downloadContents').append(packageTable.render().el);
 					
 					//Move the download button to our download content list area
 				    $("#downloadPackage").detach();
