@@ -91,6 +91,7 @@ input[type="password"]{
 		display: block;
 	}
 	
+	/* Download contents table */
 	th.id,
 	td.id{
 		overflow-wrap: break-word;
@@ -101,6 +102,9 @@ input[type="password"]{
 	
 	.fancybox.btn{
 		margin-left: 180px;
+	}
+	.download-contents tfoot th{
+		text-align: center;
 	}
 
 /* FORM/INPUT CUSTOMIZATIONS

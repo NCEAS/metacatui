@@ -851,6 +851,19 @@ Bold 700
 	table td.btn-container, table th.btn-container {
 		width: 1px;
 	}
+	.download-contents tfoot th{
+    	text-align: center;
+    	background-color: white;
+    }
+    .download-contents tfoot th .expand-control,
+    .download-contents tfoot th .collapse-control{
+    	border-bottom: 1px dotted #1C6E84;
+    	cursor: pointer;
+    }
+    .download-contents tfoot th i{
+      	margin-left: 5px;
+   		color: #1C6E84;
+    }
 	
 	/*Taxonomic range*/
     .taxonomic-range .control-group{

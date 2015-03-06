@@ -991,9 +991,6 @@ svg .point:hover ~ .line-chart-label{
     	margin-left: 3px;
     	font-size: 14px;
     }
-    table.download-contents td{
-    	min-width: 90px;
-    }
     
      .download-contents .id{
     	max-width: 100px;
@@ -1005,7 +1002,31 @@ svg .point:hover ~ .line-chart-label{
     }
     
     .download-contents td.format-type{
-    	text-transform: lowercase;
+    	width: 1px;
+    	font-size: 1.3em;
+    	vertical-align: middle;
+    }
+    .download-contents .btn-container{
+    	max-width: 65px;
+    }
+    .download-contents .download-btn > .btn{
+    	float: right;
+    }
+    .download-contents .btn i{
+    	margin-left: 5px;
+    }
+    .download-contents tfoot th{
+    	text-align: center;
+    	background-color: #f9f9f9;
+    }
+    .download-contents tfoot th .expand-control,
+    .download-contents tfoot th .collapse-control{
+    	border-bottom: 1px dotted #1C6E84;
+    	cursor: pointer;
+    }
+    .download-contents tfoot th i{
+      	margin-left: 5px;
+   		color: #1C6E84;
     }
    	
    	/*Taxonomic range*/

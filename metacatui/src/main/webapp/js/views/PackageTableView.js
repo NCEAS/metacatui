@@ -12,7 +12,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 			this.attributes = options.attributes || null;
 			this.className += options.className  || "";
 			this.currentlyViewing = options.currentlyViewing || null;
-			this.members    = options.members    || null;
+			this.members    = options.members    || null;			
+			this.numVisible = options.numVisible || 4;
+			this.numHidden = this.members.length - this.numVisible;
 			
 			//Set up a listener for when the model is ready to work with
 			//this.listenTo(this.model, "complete", this.render);
@@ -27,7 +29,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 		className : "download-contents",
 		
 		events: {
-			"click .btn.preview" : "previewData"
+			"click .btn.preview"      : "previewData",
+			"click .expand-control"   : "expand",
+			"click .collapse-control" : "collapse"
 		},
 		
 		/*
@@ -58,13 +62,16 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 			var	tbody = $(document.createElement("tbody"));
 		
 			//Create the HTML for each row
-			_.each(members, function(member){
+			_.each(members, function(member, i){
 				
 				var formatType = member.formatType,
 					id		   = member.id;
 				
 				//Create a row for this member of the data package
 				var tr = $(document.createElement("tr"));
+				
+				if(i >= view.numVisible)
+					$(tr).addClass("collapse").css("display", "none");
 				
 				//Icon cell (based on formatType)
 				var iconCell = $(document.createElement("td")).addClass("format-type");
@@ -146,9 +153,25 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				else
 					//Add this row to the table body
 					$(tbody).append(tr);
-					
 			});
+			
+			//Draw the footer which will have an expandable/collapsable control
+			if(this.numHidden > 0){
+				var tfoot = $(document.createElement("tfoot")),
+					tfootRow = $(document.createElement("tr")),
+					tfootCell = $(document.createElement("th")).attr("colspan", 7),
+					expandLink = $(document.createElement("a")).addClass("expand-control control").text("View " + this.numHidden + " more"),
+					expandIcon = $(document.createElement("i")).addClass("icon-expand-alt"),
+					collapseLink = $(document.createElement("a")).addClass("collapse-control control").text("View less").css("display", "none"),
+					collapseIcon = $(document.createElement("i")).addClass("icon-collapse-alt");
 
+				$(tfoot).append(tfootRow);
+				$(tfootRow).append(tfootCell);
+				$(tfootCell).append(expandLink, collapseLink);
+				$(expandLink).append(expandIcon);
+				$(collapseLink).append(collapseIcon);
+			}
+			
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
 			if(packageServiceUrl){
@@ -162,7 +185,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				downloadButton: downloadButtonHTML,
 				readsEnabled: readsEnabled
 			}));
+			
+			//Add the table body and footer
 			this.$("thead").after(tbody);
+			if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
 			
 			return this;
 		},
@@ -188,6 +214,30 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 			var id = $(button).attr("data-id");
 			var anchor = $("a[name='" + id + "']");
 			if(anchor.length) appView.scrollTo(anchor[0]);
+		},
+		
+		expand: function(e){
+			//Don't do anything...
+			e.preventDefault();
+			
+			var view = this;
+
+			this.$("tr.collapse").fadeIn();
+			this.$(".expand-control").fadeOut(function(){
+				view.$(".collapse-control").fadeIn();				
+			});
+		},
+		
+		collapse: function(e){
+			//Don't do anything...
+			e.preventDefault();
+			
+			var view = this;
+
+			this.$("tr.collapse").fadeOut();
+			this.$(".collapse-control").fadeOut(function(){
+				view.$(".expand-control").fadeIn();				
+			});			
 		},
 		
 		/**

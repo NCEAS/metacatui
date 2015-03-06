@@ -799,10 +799,6 @@ Bold 700
     	width: 100%;
     	margin-bottom: 0px;
     }
-    thead tr{
-    	background-color:#a1b3c2;
-    	color: white;
-    }
     .table th{
     	border-width: 0px;
     	color: white;
@@ -810,18 +806,34 @@ Bold 700
     .download-contents th{
     	font-weight: bold;
     	color: white;
+    	background-color: #a1b3c2;
+    }
+    .download-contents tfoot th{
+    	text-align: center;
+    	background-color: white;
+    }
+    .download-contents tfoot th .expand-control,
+    .download-contents tfoot th .collapse-control{
+    	border-bottom: 1px dotted #1C6E84;
+    	cursor: pointer;
+    }
+    .download-contents tfoot th i{
+      	margin-left: 5px;
+   		color: #1C6E84;
+    }
+    .download-contents thead th i{
+    	color: white;
     }
     .download-contents .wrap-contents{
    		max-width: 150px;
     }
-    tr.table-header{
-    	background-color: #166194;
-    }
     tr.table-header th{
-    	text-align: center;
+    	background-color: #166194;
+		text-align: center;
     	font-weight: bold;
     	color: white;
     }
+
     .download-contents td {
 		vertical-align: middle;
 		overflow-wrap: break-word;

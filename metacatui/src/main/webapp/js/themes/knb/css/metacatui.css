@@ -1577,7 +1577,7 @@ svg .domain{
    		max-width: 150px;
     }
     tr.table-header{
-    	background-color: #992222;
+    	background-color: #006699;
     }
     tr.table-header th{
     	text-align: center;
@@ -1601,6 +1601,23 @@ svg .domain{
 	table td.btn-container, table th.btn-container {
 		width: 1px;
 	}
+	.download-contents tfoot{
+		border-top: 1px solid #ddd;
+		border-bottom: 1px solid #ddd;
+	}
+	.download-contents tfoot th{
+    	text-align: center;
+    	background-color: #f9f9f9;
+    }
+    .download-contents tfoot th .expand-control,
+    .download-contents tfoot th .collapse-control{
+    	border-bottom: 1px dotted #1C6E84;
+    	cursor: pointer;
+    }
+    .download-contents tfoot th i{
+      	margin-left: 5px;
+   		color: #1C6E84;
+    }
     
     /*Taxonomic range*/
     .taxonomic-range .control-group{
