@@ -339,7 +339,19 @@ table.download-contents {
 .file-type i {
   color: #999;
   margin-left: 5px;
-}    
+}  
+/* The footer / expand-collapse control */
+.table tfoot th{ 
+	text-align: center; 
+}
+tfoot .control{
+	border-bottom-width: 1px;
+	border-bottom-style: dotted;
+	cursor: pointer;	
+}
+tfoot .control i{
+	margin-left: 5px;
+}
 /**----------------------------------------**/
 
 /****************************************** 

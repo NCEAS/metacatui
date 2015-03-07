@@ -429,6 +429,9 @@ table th.btn-container .btn{
 .download-contents td{
 	font-weight: lighter;
 }
+.table-striped tfoot>tr>th{
+	background-color:#f9f9f9;
+}
   
 /* THE NAVBAR
 -------------------------------------------------- */
