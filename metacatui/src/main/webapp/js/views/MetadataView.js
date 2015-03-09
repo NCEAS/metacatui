@@ -226,6 +226,9 @@ define(['jquery',
 									container = $(onlineDistLink).parents("table");
 								
 								if(container.length > 0){
+									//Insert an anchor tag to mark this spot on the page (used by the "Preview" button in the download contents table)
+									$(container).prepend($(document.createElement("a")).attr("id", object.id.replace(/\./g, "-")));
+									
 									var objectName = $(container).find(".objectName").attr("data-object-name");
 									if((typeof objectName !== "undefined") && (objectName)) 
 										object.objectName = objectName;

@@ -136,7 +136,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				var moreInfo     = $(document.createElement("a"))
 									.attr("href", "#view/" + id)
 									.addClass("btn preview")
-									.attr("data-id", encodeURIComponent(id))
+									.attr("data-id", id)
 									.text("Preview");
 				var moreInfoIcon = $(document.createElement("i"))
 									.addClass("icon icon-info-sign");
@@ -214,16 +214,20 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 			
 			//Get the target of the click
 			var button = $(e.target);
-			
+			if(!$(button).hasClass("preview")) 
+				button = $(button).parents("a.preview");
+			if(button.length < 1) 
+				button = $(button).parents("[href]");
+	
 			//Are we on the Metadata view? If not, navigate to the link href
 			var hash  = window.location.hash;
 			var page = hash.substring(hash.indexOf("#")+1, 5);
 			if(page != "view") window.location = $(button).attr("href");  
-			
+
 			//If we are on the Metadata view, then let's scroll to the anchor
 			var id = $(button).attr("data-id");
-			var anchor = $("a[name='" + id + "']");
-			if(anchor.length) appView.scrollTo(anchor[0]);
+			var anchor = $("#" + id.replace(/\./g, "-"));
+			if(anchor.length) appView.scrollTo(anchor);
 		},
 		
 		expand: function(e){

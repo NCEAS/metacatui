@@ -183,7 +183,15 @@ define(['jquery',
 		
 		// scroll to top of page
 		scrollToTop: function() {
-			$("html, body").animate({ scrollTop: 0 }, "slow");
+			this.$el.animate({ scrollTop: 0 }, "slow");
+			return false;
+		},
+		
+		scrollTo: function(pageElement){
+			//Find the header height if it is a fixed element
+			var headerOffset = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
+			
+			this.$el.animate({ scrollTop: $(pageElement).offset().top - 40 - headerOffset}, 1000);
 			return false;
 		}
 				
