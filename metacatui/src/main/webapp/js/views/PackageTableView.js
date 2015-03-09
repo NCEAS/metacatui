@@ -70,9 +70,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				//Create a row for this member of the data package
 				var tr = $(document.createElement("tr"));
 				
-				if(i >= view.numVisible)
-					$(tr).addClass("collapse").css("display", "none");
-				
 				//Icon cell (based on formatType)
 				var iconCell = $(document.createElement("td")).addClass("format-type");
 				var formatTypeIcon = document.createElement("i");
@@ -154,6 +151,12 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 					//Add this row to the table body
 					$(tbody).append(tr);
 			});
+			
+			//After all the rows are added, hide the first X rows. We wait until after all rows are added because their order may be changed around during rendering.
+			var bodyRows = $(tbody).find("tr");
+			if(bodyRows.length > this.numVisible)
+				//Get the first X rows
+				$(_.last(bodyRows, this.numHidden)).addClass("collapse").css("display", "none"); 
 			
 			//Draw the footer which will have an expandable/collapsable control
 			if(this.numHidden > 0){
