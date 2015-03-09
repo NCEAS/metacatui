@@ -1651,6 +1651,9 @@ svg .domain{
   		  color: #999;
   		  margin-left: 5px;
     }
+    .table-striped tfoot>tr>th{
+    	background-color: #f9f9f9;
+    }
     /**----------------------------------------**/
 
 	.metadata-index {
@@ -3370,7 +3373,6 @@ table.right {
     }
 
 th {
-    border-bottom:              #006666 solid 1px;
     color:                      #555555;
     padding:                    0;
     margin:                     0;

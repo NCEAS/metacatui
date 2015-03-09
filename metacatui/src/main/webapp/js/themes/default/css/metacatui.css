@@ -142,7 +142,9 @@ Bold 700
     	clear: both;
     }
     
-    .table-striped tbody>tr:nth-child(odd)>td, .table-striped tbody>tr:nth-child(odd)>th{
+    .table-striped tbody>tr:nth-child(odd)>td, 
+    .table-striped tbody>tr:nth-child(odd)>th,
+    .table-striped tfoot>tr>th{
     	background-color: #E9E9E9;
     }
     

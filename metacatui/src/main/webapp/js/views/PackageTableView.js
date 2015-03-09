@@ -13,6 +13,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.attributes = options.attributes || null;
 			this.className += options.className  || "";
 			this.currentlyViewing = options.currentlyViewing || null;
+			this.numVisible = options.numVisible || 4;
+			this.numHidden = this.model.get("members").length - this.numVisible;
 			
 			//Set up the Package model
 			if((typeof options.model === "undefined") || !options.model){
@@ -38,7 +40,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		className : "download-contents",
 		
 		events: {
-			"click .btn.preview" : "previewData"
+			"click .btn.preview"      : "previewData",
+			"click .expand-control"   : "expand",
+			"click .collapse-control" : "collapse"
 		},
 		
 		/*
@@ -72,7 +76,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var	tbody = $(document.createElement("tbody"));
 		
 			//Create the HTML for each row
-			_.each(members, function(solrResult){
+			_.each(members, function(solrResult, i){
 				
 				var formatType = solrResult.get("formatType"),
 					id		   = solrResult.get("id");
@@ -118,12 +122,12 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 
 				//The number of reads/downloads cell
 				var reads = solrResult.get("downloads");
-				if((typeof reads !== "undefined") && (reads !== null)){ 
-					var readsCell = $(document.createElement("td")).addClass("downloads");				
+				var readsCell = $(document.createElement("td")).addClass("downloads");				
+				$(tr).append(readsCell);
+				if((typeof reads !== "undefined") && reads){ 
 					if(formatType == "METADATA") reads += " views";
 					else 						 reads += " downloads";
 					$(readsCell).text(reads);
-					$(tr).append(readsCell);
 					readsEnabled = true;
 				}
 				else readsEnabled = false;
@@ -160,9 +164,31 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				else
 					//Add this row to the table body
 					$(tbody).append(tr);
-					
 			});
+			
+			//After all the rows are added, hide the first X rows. We wait until after all rows are added because their order may be changed around during rendering.
+			var bodyRows = $(tbody).find("tr");
+			if(bodyRows.length > this.numVisible)
+				//Get the first X rows
+				$(_.last(bodyRows, this.numHidden)).addClass("collapse").css("display", "none"); 
+			
+			//Draw the footer which will have an expandable/collapsable control
+			if(this.numHidden > 0){
+				var tfoot        = $(document.createElement("tfoot")),
+					tfootRow     = $(document.createElement("tr")),
+					tfootCell    = $(document.createElement("th")).attr("colspan", 7),
+					expandLink   = $(document.createElement("a")).addClass("expand-control control").text("View " + this.numHidden + " more"),
+					expandIcon   = $(document.createElement("i")).addClass("icon-expand-alt"),
+					collapseLink = $(document.createElement("a")).addClass("collapse-control control").text("View less").css("display", "none"),
+					collapseIcon = $(document.createElement("i")).addClass("icon-collapse-alt");
 
+				$(tfoot).append(tfootRow);
+				$(tfootRow).append(tfootCell);
+				$(tfootCell).append(expandLink, collapseLink);
+				$(expandLink).append(expandIcon);
+				$(collapseLink).append(collapseIcon);
+			}
+			
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
 			if(packageServiceUrl){
@@ -176,7 +202,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				downloadButton: downloadButtonHTML,
 				readsEnabled: readsEnabled
 			}));
+			
+			//Add the table body and footer
 			this.$("thead").after(tbody);
+			if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
 			
 			return this;
 		},
@@ -202,6 +231,30 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var id = $(button).attr("data-id");
 			var anchor = $("a[name='" + id + "']");
 			if(anchor.length) appView.scrollTo(anchor[0]);
+		},
+		
+		expand: function(e){
+			//Don't do anything...
+			e.preventDefault();
+			
+			var view = this;
+
+			this.$("tr.collapse").fadeIn();
+			this.$(".expand-control").fadeOut(function(){
+				view.$(".collapse-control").fadeIn();				
+			});
+		},
+		
+		collapse: function(e){
+			//Don't do anything...
+			e.preventDefault();
+			
+			var view = this;
+
+			this.$("tr.collapse").fadeOut();
+			this.$(".collapse-control").fadeOut(function(){
+				view.$(".expand-control").fadeIn();				
+			});			
 		},
 		
 		/**
