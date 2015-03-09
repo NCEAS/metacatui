@@ -1,5 +1,4 @@
-<div class="row">
-  <div class="col-sm-6 col-md-4">
+
     <div class="thumbnail">
     
 <%
@@ -11,7 +10,7 @@ if(type === undefined) var type = null;
 if(type == "pdf")
 	print('<a class="fancybox btn" data-fancybox-iframe="iframe" href="' + src + '"><i class="icon-file file-type"></i> <span class="file-type">PDF</span> Preview </a></div>');
 else if(type == "image")
-	print('<a href="' + src + '" rel="' + group + '" class="fancybox thumbnail" data-fancybox-type="image" title="' + title + '"><img src="' + src + '"  class="metadata-img img-thumbnail"/></a>');
+	print('<a href="' + src + '" rel="' + group + '" class="fancybox" data-fancybox-type="image" title="' + title + '"><img src="' + src + '"  class="metadata-img img-thumbnail"/></a>');
 		
 %>
 
@@ -20,5 +19,3 @@ else if(type == "image")
         <span class="label label-default">views</span>
       </div>
     </div>
-  </div>
-</div>

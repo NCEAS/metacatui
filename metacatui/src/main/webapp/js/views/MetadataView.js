@@ -84,12 +84,11 @@ define(['jquery',
 								//Our fallback is to show the metadata details from the Solr index
 								viewRef.renderMetadataFromIndex();
 							}
-							else{
-								//HTML was successfully loaded from a view service
+							else{ //HTML was successfully loaded from a view service
 															
 								//Find the taxonomic range and give it a class for styling
 								$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomic-range');
-								
+																
 								viewRef.$el.fadeIn("slow");
 								
 								viewRef.insertResourceMapContents(appModel.get('pid'));
@@ -118,7 +117,7 @@ define(['jquery',
 			}
 		},
 		
-		// this will insert the ORE package download link if available
+		// this will insert information about the data package
 		insertResourceMapContents: function(pid) {
 			var viewRef = this;
 
@@ -167,7 +166,7 @@ define(['jquery',
 						
 			//*** Find each resource map that this metadata is a part of 
 			// surround pid value in "" so that doi characters do not affect solr query
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&rows=100&q=formatType:METADATA+-obsoletedBy:*+id:"' + pid + '"';
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&rows=100&q=formatType:METADATA+id:"' + pid + '"';
 
 			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
 				
@@ -186,7 +185,7 @@ define(['jquery',
 					});
 
 					//*** Find all the files that are a part of those resource maps
-					var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&rows=100&q=-obsoletedBy:*+%28' + resourceMapQuery + 'id:"' + encodeURIComponent(pid) + '"%29';
+					var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,title&wt=json&rows=100&q=%28' + resourceMapQuery + 'id:"' + encodeURIComponent(pid) + '"%29';
 					$.get(queryServiceUrl + query, function(moreData, textStatus, xhr) {
 								
 						var pids   = [], //Keep track of each object pid
@@ -213,8 +212,33 @@ define(['jquery',
 						viewRef.insertVisuals(pdfs, "pdf");
 						
 										
-						//Now go through all of our objects and add them to our map
+						//Now go through all of our objects, find their entity name on the page, and add them to our map
 						_.each(objects, function(object){
+							//Find the entity name on the page (from the science metadata), if it is there
+							var onlineDistLink = viewRef.$("[data-pid='" + object.id + "']");
+							if(onlineDistLink.length < 1) //backup
+								onlineDistLink = viewRef.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + object.id + "']");
+							
+							if(onlineDistLink.length > 0){
+								//Get the container element
+								var container  = $(onlineDistLink).parents(".entitydetails"); 
+								if(container.length < 1) //backup
+									container = $(onlineDistLink).parents("table");
+								
+								if(container.length > 0){
+									var objectName = $(container).find(".objectName").attr("data-object-name");
+									if((typeof objectName !== "undefined") && (objectName)) 
+										object.objectName = objectName;
+									else{
+										objectName = $(container).find(".control-label:contains('Object Name') + .controls-well").text();
+										if((typeof objectName !== "undefined") && (objectName)) 
+											object.objectName = objectName;
+										else
+											objectName = null;
+									}
+								}
+							}
+							
 							_.each(object.resourceMap, function(resourceMapId){
 								if (packages[resourceMapId]) {
 									packages[resourceMapId].push(object);												
@@ -232,15 +256,6 @@ define(['jquery',
 									dataWithDetailsOnPage.push(object.id);
 								}
 							});
-							
-						/*	$('#downloadContents').append(viewRef.downloadContentsTemplate({
-								objects: packages[thisMap.id],
-								resourceMap: thisMap,
-								package_service: packageServiceUrl,
-								object_service: objectServiceUrl,
-								EMLRoute: EMLRoute,
-								dataWithDetailsOnPage: dataWithDetailsOnPage
-							}));*/
 							
 							var packageTable = new PackageTableView({
 								members          : packages[thisMap.id],
@@ -262,13 +277,6 @@ define(['jquery',
 				}	
 				//If this is just a metadata object, just send that info alone
 				else{
-					/*$('#downloadContents').append(viewRef.downloadContentsTemplate({
-						objects: data.response.docs,
-						resourceMap: null,
-						package_service: packageServiceUrl,
-						object_service: objectServiceUrl,
-						EMLRoute: EMLRoute
-					}));*/
 					
 					var packageTable = new PackageTableView({
 						members          : data.response.docs,

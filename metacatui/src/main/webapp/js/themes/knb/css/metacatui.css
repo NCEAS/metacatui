@@ -96,9 +96,7 @@ Bold 700 Italic
     }
     
     h3{
-    	font-weight: 400;
-    	line-height: 47px;
-    	font-size: 26.5px;
+    	font-size: 1.5em;
     }
     
     h1{
@@ -1493,6 +1491,17 @@ svg .domain{
 		width: 100%;
 	}
 	
+	#Metadata cite.citation {
+		font-size: 1.5em;
+		line-height: 1.5em;
+		margin-bottom: 20px;
+		display: block;
+	}
+	
+	#downloadContents{
+		margin-bottom: 20px;
+	}
+	
 	#Metadata > a[href="#data"]{
 		display: block;
 		margin-bottom: 20px;
@@ -1524,6 +1533,20 @@ svg .domain{
 	
 	.controls-well > .btn{
 		margin-left: 180px;
+	}
+	
+	.entitydetails .thumbnail{
+		margin-left: 180px;
+	}
+	.thumbnail{
+		width: 300px;
+		padding: 20px;
+		margin-bottom: 20px;
+		clear: both;
+	}
+	.thumbnail img{
+		min-width: 100%;
+		height: auto;
 	}
     
     /* Google Map Images for Geographic Region */

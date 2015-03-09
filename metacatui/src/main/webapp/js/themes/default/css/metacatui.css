@@ -152,6 +152,9 @@ Bold 700
      	width: 80%;
      	margin: 20px auto;
      }
+     #Content > .container{
+     	padding: 20px;
+     }
      
      .mapMode #Content{
      	width: 100%;
@@ -775,6 +778,13 @@ Bold 700
 	
 	#Metadata .well strong{
 		font-weight: 400;
+	}
+	
+	#Metadata cite.citation {
+		font-size: 1.5em;
+		line-height: 1.5em;
+		margin-bottom: 20px;
+		display: block;
 	}
 	
 	.controls-well img{
