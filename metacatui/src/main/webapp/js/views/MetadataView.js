@@ -205,6 +205,7 @@ define(['jquery',
 			
 			//Create a model representing the data package
 			this.packageModel = new Package();
+			this.listenToOnce(this.packageModel, 'complete', this.getEntityNames);
 			this.listenToOnce(this.packageModel, 'complete', this.insertPackageDetails);
 			this.packageModel.getMembersByMemberID(pid);
 		},
@@ -539,12 +540,54 @@ define(['jquery',
 			else return true;			
 		},
 		
+		getEntityNames: function(){
+			var viewRef = this;
+			
+			_.each(this.packageModel.get("members"), function(solrResult, i){
+				var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
+				if(container && container.length > 0){
+					var entityName = $(container).find(".entityName").attr("data-entity-name");
+					if((typeof entityName === "undefined") || (!entityName)){
+						entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
+						if((typeof entityName === "undefined") || (!entityName)) 
+							entityName = null;
+					}
+				}
+				else
+					entityName = null;
+
+				//Set the entityName, even if it's null
+				solrResult.set("entityName", entityName);
+			});
+		},
+		
+		findEntityDetailsContainer: function(id){
+			var onlineDistLink = this.$("[data-pid='" + id + "']");
+			if(onlineDistLink.length < 1) //backup
+				onlineDistLink = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
+			
+			if(onlineDistLink.length > 0){
+				//Get the container element
+				var container  = $(onlineDistLink).parents(".entitydetails"); 
+				if(container.length < 1) 
+					//backup - find the parent of this link that is a direct child of the form element
+					container = _.intersection($(onlineDistLink).parents("form").children(), $(onlineDistLink).parents());
+				
+				return container;
+			}	
+			
+			return false;
+		},
+		
 		/*
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
 		 */
 		insertDataDetails: function(){
 			//If there is a metadataIndex subview, render from there.
-			if(this.subviews.metadataFromIndex) this.subviews.metadataFromIndex.insertDataDetails();
+			if(this.subviews.metadataFromIndex){
+				this.subviews.metadataFromIndex.insertDataDetails();
+				return;
+			}
 
 			var dataDisplay = "",
 				viewRef = this,
@@ -556,49 +599,47 @@ define(['jquery',
 						
 			//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
 			for(var i=0; i<packageMembers.length; i++){
+				var solrResult = packageMembers[i],
+					objID      = solrResult.get("id");
+				
+				var container = this.findEntityDetailsContainer(objID) || this.$el;
+				
+				//Insert an anchor tag to mark this spot on the page (used by the "Preview" button in the download contents table)
+				$(container).prepend($(document.createElement("a")).attr("id", objID.replace(/\./g, "-")));
+				
 				var type = "";
 				
-				//Make sure this is a visual object (image or PDF)
-				if(this.isImage(packageMembers[i])){
-					type = "image";
-					images.push(packageMembers[i]);
-				}
-				else if(this.isPDF(packageMembers[i])){
-					type = "pdf";
-					pdfs.push(packageMembers[i]);
-				}
-				else if (packageMembers[i].get('formatType') == "METADATA"){
+				//Is this a visual object (image or PDF)?
+				if(solrResult.get('formatType') == "METADATA"){
 					continue;
+				}
+				else if(this.isImage(solrResult)){
+					type = "image";
+					images.push(solrResult);
+				}
+				else if(this.isPDF(solrResult)){
+					type = "pdf";
+					pdfs.push(solrResult);
 				}
 				else{
 					type = "other";
-					other.push(packageMembers[i]);
+					other.push(solrResult);
 				}
 				
 				//Find the part of the HTML Metadata view that describes this data object
-				var container = $(entityDetailsContainers).find(":contains('" + packageMembers[i].get("id") + "')").parents(".entitydetails");					
-				var title = "";
-					
-				//Harvest the Entity Name for a lightbox caption 
-				if(!container.length)
-					title = $(entityDetailsContainers).find("label:contains('Entity Name')").next().text();
-						
-				if(!container.length && !title) 
-					title = $(entityDetailsContainers).find("label:contains('Object Name')").next().text();
-					
-				var objID = packageMembers[i].get("id");
+				var entityName = solrResult.get("entityName") || objID;
 					
 				//Create HTML for the visuals using the dataDisplay template
 				dataDisplay = this.dataDisplayTemplate({
 						 type : type,
-						  src : appModel.get('objectServiceUrl') + packageMembers[i].get("id"),
-						title : title,
+						  src : appModel.get('objectServiceUrl') + objID,
+						title : entityName,
 					    objID : objID
 				});
 				
 				// Insert the HTML into the DOM 
-				if(!title) $(entityDetailsContainers).after(dataDisplay);	
-				else 	   $(container).prepend(dataDisplay);	
+				if(container == this.el) $(container).append(dataDisplay);	
+				else 	   			     $(container).prepend(dataDisplay);	
 			}
 						
 			//==== Initialize the fancybox images =====

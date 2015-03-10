@@ -79,7 +79,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			_.each(members, function(solrResult, i){
 				
 				var formatType = solrResult.get("formatType"),
-					id		   = solrResult.get("id");
+					id		   = solrResult.get("id"),
+					entityName = solrResult.get("entityName");
+				
+				//Use the metadata title instead of the ID
+				if(formatType == "METADATA") entityName = solrResult.get("title");
+
+				//Display the id in the table if not name is present
+				if((typeof entityName === "undefined") || !entityName) entityName = id;
 				
 				//Create a row for this member of the data package
 				var tr = $(document.createElement("tr"));
@@ -92,14 +99,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(iconCell).html(formatTypeIcon);
 				$(tr).append(iconCell);
 				
-				//Id cell
-				//TODO: When titles for objects are indexed, use that for display instead of the id
-				var idCell = $(document.createElement("td")).addClass("id wrap-contents");				
-				var idLink = document.createElement("a");
-				$(idLink).attr("href", objectServiceUrl + encodeURIComponent(id))
-						 .text(id);
-				$(idCell).html(idLink);
-				$(tr).append(idCell);
+				//Name cell
+				var nameCell = $(document.createElement("td")).addClass("name wrap-contents");				
+				var nameLink = document.createElement("a");
+				$(nameLink).attr("href", objectServiceUrl + encodeURIComponent(id))
+						  .text(entityName)
+						  .addClass("ellipsis");
+				$(nameCell).html(nameLink);
+				$(tr).append(nameCell);
 
 				//Format type cell
 				var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents");				
@@ -107,8 +114,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				var fileType = solrResult.get("formatId");
 				if(fileType.substr(0, 3) == "eml"){
 					//If the file type is EML, we may want to show a popover element for more info
-					if(EMLRoute) fileType = '.xml (<a href="#tools/eml">EML ' + fileTypePopover + '</a>)';
-					else fileType = ".xml (EML" + fileTypePopover + ")";
+					if(EMLRoute) fileType = '.xml <a href="#tools/eml">(EML ' + fileTypePopover + ')</a>';
+					else         fileType = ".xml (EML" + fileTypePopover + ")";
 				}
 				else if(fileType == "application/pdf") fileType = "PDF"; //Friendlier-looking...
 				$(fileTypeCell).html(fileType);
@@ -121,7 +128,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(tr).append(sizeCell);
 
 				//The number of reads/downloads cell
-				var reads = solrResult.get("downloads");
+				var reads = solrResult.get("read_count_i");
 				var readsCell = $(document.createElement("td")).addClass("downloads");				
 				$(tr).append(readsCell);
 				if((typeof reads !== "undefined") && reads){ 
@@ -143,7 +150,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				var moreInfo     = $(document.createElement("a"))
 									.attr("href", "#view/" + id)
 									.addClass("btn preview")
-									.attr("data-id", encodeURIComponent(id))
+									.attr("data-id", id)
 									.text("Preview");
 				var moreInfoIcon = $(document.createElement("i"))
 									.addClass("icon icon-info-sign");
@@ -221,7 +228,11 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Get the target of the click
 			var button = $(e.target);
-			
+			if(!$(button).hasClass("preview")) 
+				button = $(button).parents("a.preview");
+			if(button.length < 1) 
+				button = $(button).parents("[href]");
+	
 			//Are we on the Metadata view? If not, navigate to the link href
 			var hash  = window.location.hash;
 			var page = hash.substring(hash.indexOf("#")+1, 5);
@@ -229,8 +240,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//If we are on the Metadata view, then let's scroll to the anchor
 			var id = $(button).attr("data-id");
-			var anchor = $("a[name='" + id + "']");
-			if(anchor.length) appView.scrollTo(anchor[0]);
+			var anchor = $("#" + id.replace(/\./g, "-"));
+			if(anchor.length) appView.scrollTo(anchor);
 		},
 		
 		expand: function(e){
