@@ -72,7 +72,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				if(formatType == "METADATA") entityName = member.title;
 
 				//Display the id in the table if not name is present
-				if((typeof objectName === undefined) || !entityName) entityName = id;
+				if((typeof entityName === "undefined") || !entityName) entityName = id;
 				
 				//Create a row for this member of the data package
 				var tr = $(document.createElement("tr"));
