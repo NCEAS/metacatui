@@ -83,7 +83,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					entityName = solrResult.get("entityName");
 				
 				//Use the metadata title instead of the ID
-				if(formatType == "METADATA") entityName = solrResult.get("title");
+				if(!entityName && (formatType == "METADATA")) entityName = solrResult.get("title");
 
 				//Display the id in the table if not name is present
 				if((typeof entityName === "undefined") || !entityName) entityName = id;

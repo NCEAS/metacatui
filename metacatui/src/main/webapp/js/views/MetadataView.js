@@ -544,18 +544,24 @@ define(['jquery',
 			var viewRef = this;
 			
 			_.each(this.packageModel.get("members"), function(solrResult, i){
-				var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
-				if(container && container.length > 0){
-					var entityName = $(container).find(".entityName").attr("data-entity-name");
-					if((typeof entityName === "undefined") || (!entityName)){
-						entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
-						if((typeof entityName === "undefined") || (!entityName)) 
-							entityName = null;
+				
+				if(solrResult.get("formatType") == "METADATA") 
+					entityName = solrResult.get("title");
+				else{
+					var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
+					if(container && container.length > 0){
+						var entityName = $(container).find(".entityName").attr("data-entity-name");
+						if((typeof entityName === "undefined") || (!entityName)){
+							entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
+							if((typeof entityName === "undefined") || (!entityName)) 
+								entityName = null;
+						}
 					}
+					else
+						entityName = null;
+	
 				}
-				else
-					entityName = null;
-
+				
 				//Set the entityName, even if it's null
 				solrResult.set("entityName", entityName);
 			});
@@ -594,7 +600,6 @@ define(['jquery',
 				images = [],
 				pdfs = [],
 				other = [],
-				entityDetailsContainers = this.$el.find(".entitydetails"),
 				packageMembers = this.packageModel.get("members");
 						
 			//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
