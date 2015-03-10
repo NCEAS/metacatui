@@ -9,6 +9,13 @@ article.container {
 
 
 /****************************************** 
+** Titles ***
+******************************************/
+h3{
+	font-size: 1.5em;
+}
+
+/****************************************** 
 ** Icons ***
 ******************************************/
 .btn > i{
@@ -294,6 +301,21 @@ article.hasProvLeft.hasProvRight{
 }
 .entityDetails > .control-group{
 	clear: both;
+}
+
+/** Images and other visuals **/
+.thumbnail{
+	height: auto;
+	width: 250px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+.entitydetails .thumbnail{
+	margin-left: 180px;
+}
+.thumbnail  img{
+	min-width: 100%;
+	height: auto;
 }
 
 /****************************************** 

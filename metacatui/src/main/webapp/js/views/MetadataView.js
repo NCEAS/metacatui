@@ -223,7 +223,7 @@ define(['jquery',
 			if(!this.packageModel.complete) return this;
 				
 			//** Draw the package table **//	
-			var tableView = new PackageTable({ model: this.packageModel, currentlyViewing: this.pid });
+			var tableView = new PackageTable({ model: this.packageModel, currentlyViewing: this.pid, parentView: this});
 			
 			//Get the package table container
 			var tableContainer = this.$("#downloadContents");
@@ -627,8 +627,7 @@ define(['jquery',
 					pdfs.push(solrResult);
 				}
 				else{
-					type = "other";
-					other.push(solrResult);
+					continue;
 				}
 				
 				//Find the part of the HTML Metadata view that describes this data object
@@ -636,10 +635,10 @@ define(['jquery',
 					
 				//Create HTML for the visuals using the dataDisplay template
 				dataDisplay = this.dataDisplayTemplate({
-						 type : type,
-						  src : appModel.get('objectServiceUrl') + objID,
-						title : entityName,
-					    objID : objID
+					 type : type,
+					  src : appModel.get('objectServiceUrl') + objID,
+					title : entityName,
+				    objID : objID
 				});
 				
 				// Insert the HTML into the DOM 
@@ -974,7 +973,7 @@ define(['jquery',
 		
 		showLoading: function(message) {
 			this.hideLoading();
-			this.scrollToTop();
+			appView.scrollToTop();
 			this.$el.prepend(this.loadingTemplate({msg: message}));
 		},
 		
@@ -982,16 +981,32 @@ define(['jquery',
 			$("#Notification").remove();
 		},
 		
-		scrollToTop: function() {
-			$("html, body").animate({ scrollTop: 0 }, "slow");
-			return false;
-		},
-		
 		setUpAnnotator: function() {
 			this.subviews.annotator = new AnnotatorView({ 
 				parentView: this 
 				});
 			this.subviews.annotator.render();
+		},
+		
+		/**
+		 * When the "Preview" button in the table is clicked while we are on the Metadata view, 
+		 * we want to scroll to the anchor tag of this data object within the page instead of navigating
+		 * to the metadata page again, which refreshes the page and re-renders (more loading time)
+		 **/
+		previewData: function(e){
+			//Don't go anywhere yet...
+			e.preventDefault();
+			
+			//Get the target of the click
+			var button = $(e.target),
+				id     = $(button).attr("data-id");
+			if((typeof id === "undefined") || !id) 
+				return false; //This will make the app defualt to the PackageTableView previewData function
+			
+			//If we are on the Metadata view, then let's scroll to the anchor
+			appView.scrollTo(this.findEntityDetailsContainer(id));	
+			
+			return true;
 		},
 		
 		onClose: function () {			

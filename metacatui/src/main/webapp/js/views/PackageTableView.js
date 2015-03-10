@@ -15,6 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.currentlyViewing = options.currentlyViewing || null;
 			this.numVisible = options.numVisible || 4;
 			this.numHidden = this.model.get("members").length - this.numVisible;
+			this.parentView = options.parentView || null;
 			
 			//Set up the Package model
 			if((typeof options.model === "undefined") || !options.model){
@@ -40,7 +41,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		className : "download-contents",
 		
 		events: {
-			"click .btn.preview"      : "previewData",
+			"click  .preview"         : "previewData",
 			"click .expand-control"   : "expand",
 			"click .collapse-control" : "collapse"
 		},
@@ -226,22 +227,24 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Don't go anywhere yet...
 			e.preventDefault();
 			
+			if(this.parentView){
+				if(this.parentView.previewData(e))
+					return;
+			}
+			
 			//Get the target of the click
 			var button = $(e.target);
 			if(!$(button).hasClass("preview")) 
 				button = $(button).parents("a.preview");
 			if(button.length < 1) 
 				button = $(button).parents("[href]");
-	
-			//Are we on the Metadata view? If not, navigate to the link href
-			var hash  = window.location.hash;
-			var page = hash.substring(hash.indexOf("#")+1, 5);
-			if(page != "view") window.location = $(button).attr("href");  
 			
 			//If we are on the Metadata view, then let's scroll to the anchor
 			var id = $(button).attr("data-id");
 			var anchor = $("#" + id.replace(/\./g, "-"));
+			
 			if(anchor.length) appView.scrollTo(anchor);
+			else window.location = $(button).attr("href");  //navigate to the link href
 		},
 		
 		expand: function(e){
