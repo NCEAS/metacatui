@@ -859,7 +859,7 @@ Bold 700
 		max-width: 1px;
 	}
 	table td.btn-container, table th.btn-container {
-		width: 1px;
+		min-width: 130px;
 	}
 	.download-contents tfoot th{
     	text-align: center;

@@ -183,7 +183,8 @@ define(['jquery',
 		
 		// scroll to top of page
 		scrollToTop: function() {
-			this.$el.animate({ scrollTop: 0 }, "slow");
+			$("body,html").stop(true,true) //stop first for it to work in FF
+						  .animate({ scrollTop: 0 }, "slow");
 			return false;
 		},
 		
@@ -191,7 +192,8 @@ define(['jquery',
 			//Find the header height if it is a fixed element
 			var headerOffset = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
 			
-			this.$el.animate({ scrollTop: $(pageElement).offset().top - 40 - headerOffset}, 1000);
+			$("body,html").stop(true,true) //stop first for it to work in FF
+						  .animate({ scrollTop: $(pageElement).offset().top - 40 - headerOffset}, 1000);
 			return false;
 		}
 				

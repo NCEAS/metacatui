@@ -100,7 +100,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				var fileType = member.formatId;
 				if(fileType.substr(0, 3) == "eml"){
 					//If the file type is EML, we may want to show a popover element for more info
-					if(EMLRoute) fileType = '.xml (<a href="#tools/eml">EML ' + fileTypePopover + '</a>)';
+					if(EMLRoute) fileType = '.xml <a href="#tools/eml">(EML ' + fileTypePopover + ')</a>';
 					else fileType = ".xml (EML" + fileTypePopover + ")";
 				}
 				else if(fileType == "application/pdf") fileType = "PDF"; //Friendlier-looking...

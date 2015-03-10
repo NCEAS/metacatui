@@ -1596,9 +1596,6 @@ svg .domain{
     	font-weight: bold;
     	color: white;
     }
-    .download-contents .wrap-contents{
-   		max-width: 150px;
-    }
     tr.table-header{
     	background-color: #006699;
     }
@@ -1621,8 +1618,8 @@ svg .domain{
     .download-contents .size {
 		max-width: 1px;
 	}
-	table td.btn-container, table th.btn-container {
-		width: 1px;
+	.download-contents td.btn-container{
+		min-width: 120px;
 	}
 	.download-contents tfoot{
 		border-top: 1px solid #ddd;

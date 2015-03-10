@@ -795,9 +795,14 @@ Bold 700
 	}
 	
 	/* Resource map contents table */
+        /* Resource map contents table */
     table.download-contents{
     	width: 100%;
     	margin-bottom: 0px;
+    }
+    thead tr{
+    	background-color:#a1b3c2;
+    	color: white;
     }
     .table th{
     	border-width: 0px;
@@ -806,34 +811,15 @@ Bold 700
     .download-contents th{
     	font-weight: bold;
     	color: white;
-    	background-color: #a1b3c2;
     }
-    .download-contents tfoot th{
-    	text-align: center;
-    	background-color: white;
-    }
-    .download-contents tfoot th .expand-control,
-    .download-contents tfoot th .collapse-control{
-    	border-bottom: 1px dotted #1C6E84;
-    	cursor: pointer;
-    }
-    .download-contents tfoot th i{
-      	margin-left: 5px;
-   		color: #1C6E84;
-    }
-    .download-contents thead th i{
-    	color: white;
-    }
-    .download-contents .wrap-contents{
-   		max-width: 150px;
+    tr.table-header{
+    	background-color: #006699;
     }
     tr.table-header th{
-    	background-color: #166194;
-		text-align: center;
+    	text-align: center;
     	font-weight: bold;
     	color: white;
     }
-
     .download-contents td {
 		vertical-align: middle;
 		overflow-wrap: break-word;
@@ -848,6 +834,28 @@ Bold 700
     .download-contents .size {
 		max-width: 1px;
 	}
+	.download-contents td.btn-container{
+		min-width: 120px;
+	}
+	.download-contents tfoot{
+		border-top: 1px solid #ddd;
+		border-bottom: 1px solid #ddd;
+	}
+	.download-contents tfoot th{
+    	text-align: center;
+    	background-color: #f9f9f9;
+    }
+    .download-contents tfoot th .expand-control,
+    .download-contents tfoot th .collapse-control{
+    	border-bottom: 1px dotted #1C6E84;
+    	cursor: pointer;
+    }
+    .download-contents tfoot th i{
+      	margin-left: 5px;
+   		color: #1C6E84;
+    }
+    
+    
     .controls-well img{
 		max-width: 90%;
 		max-height: 900px;
@@ -862,10 +870,7 @@ Bold 700
     
     /*Details link*/
     .download-contents .more-info{
-    	padding-left: 20px;
-    	max-width: 65px;
-    	color: #999;
-    	font-size: 12px;
+    	display: none;
     }
     
     .download-contents .more-info i{
@@ -928,7 +933,7 @@ Bold 700
 	.metadata-index .checksum,
 	.metadata-index .dataUrl,
 	.metadata-index .fileID,
-	.metadata-index .size,
+	.metadata-index .control-group.size,
 	.metadata-index .resourceMap,
 	.metadata-index .presentationCat,
 	.metadata-index .checksumAlgorithm,
@@ -1151,10 +1156,7 @@ Bold 700
    }
     
     .filter-contain i.more-info{
-    	font-size: 14px;
-    	line-height: 23px;
-    	top: 5px;
-    	float: left;
+    	display: none;
     }
     
     /*-- Search buttons next to text inputs --*/
