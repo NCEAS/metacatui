@@ -66,13 +66,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				
 				var formatType = member.formatType,
 					id		   = member.id,
-					objectName = member.objectName;
+					entityName = member.entityName;
 				
 				//Use the metadata title instead of the ID
-				if(formatType == "METADATA") objectName = member.title;
+				if(formatType == "METADATA") entityName = member.title;
 
 				//Display the id in the table if not name is present
-				if((typeof objectName === undefined) || !objectName) objectName = id;
+				if((typeof objectName === undefined) || !entityName) entityName = id;
 				
 				//Create a row for this member of the data package
 				var tr = $(document.createElement("tr"));
@@ -90,7 +90,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				var idCell = $(document.createElement("td")).addClass("id wrap-contents");				
 				var idLink = document.createElement("a");
 				$(idLink).attr("href", objectServiceUrl + encodeURIComponent(id))
-						 .text(objectName);
+						 .text(entityName);
 				$(idCell).html(idLink);
 				$(tr).append(idCell);
 

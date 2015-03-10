@@ -229,15 +229,15 @@ define(['jquery',
 									//Insert an anchor tag to mark this spot on the page (used by the "Preview" button in the download contents table)
 									$(container).prepend($(document.createElement("a")).attr("id", object.id.replace(/\./g, "-")));
 									
-									var objectName = $(container).find(".objectName").attr("data-object-name");
-									if((typeof objectName !== "undefined") && (objectName)) 
-										object.objectName = objectName;
+									var entityName = $(container).find(".entityName").attr("data-entity-name");
+									if((typeof entityName !== "undefined") && (entityName)) 
+										object.entityName = entityName;
 									else{
-										objectName = $(container).find(".control-label:contains('Object Name') + .controls-well").text();
-										if((typeof objectName !== "undefined") && (objectName)) 
-											object.objectName = objectName;
+										entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
+										if((typeof entityName !== "undefined") && (entityName)) 
+											object.entityName = entityName;
 										else
-											objectName = null;
+											entityName = null;
 									}
 								}
 							}
