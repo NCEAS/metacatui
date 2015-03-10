@@ -222,8 +222,9 @@ define(['jquery',
 							if(onlineDistLink.length > 0){
 								//Get the container element
 								var container  = $(onlineDistLink).parents(".entitydetails"); 
-								if(container.length < 1) //backup
-									container = $(onlineDistLink).parents("table");
+								if(container.length < 1) 
+									//backup - find the parent of this link that is a direct child of the form element
+									container = _.intersection($(onlineDistLink).parents("form").children(), $(onlineDistLink).parents());
 								
 								if(container.length > 0){
 									//Insert an anchor tag to mark this spot on the page (used by the "Preview" button in the download contents table)
