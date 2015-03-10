@@ -971,14 +971,6 @@ svg .point:hover ~ .line-chart-label{
 	}
    	
    	/*** Download contents table **/
-
-    
-    #downloadContents .controls-well{
-    	overflow-x: scroll;
-    }
-   	.download-contents .format-type i{
-   		margin-right: 10px;
-   	}
    	/*Details link*/
     .download-contents .more-info{
     	padding-left: 20px;
@@ -991,18 +983,16 @@ svg .point:hover ~ .line-chart-label{
     	margin-left: 3px;
     	font-size: 14px;
     }
-    
-     .download-contents .id{
-    	max-width: 100px;
-    }
-    
     .download-contents td,
     .download-contents th{
     	overflow-wrap: break-word;
+    	width: 10%;
     }
+    .download-contents .format-type{
+   		width: 1%;
+   	}
     
-    .download-contents td.format-type{
-    	width: 1px;
+    .download-contents td.format-type i{
     	font-size: 1.3em;
     	vertical-align: middle;
     }
@@ -1027,6 +1017,10 @@ svg .point:hover ~ .line-chart-label{
     .download-contents tfoot th i{
       	margin-left: 5px;
    		color: #1C6E84;
+    }
+    .download-contents td .ellipsis{
+    	display: block;
+    	max-width: 250px;
     }
    	
    	/*Taxonomic range*/

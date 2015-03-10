@@ -92,10 +92,6 @@ input[type="password"]{
 	}
 	
 	/* Download contents table */
-	th.id,
-	td.id{
-		overflow-wrap: break-word;
-	}
 	td.format-type{
 		text-transform: lowercase;
 	}
@@ -105,6 +101,9 @@ input[type="password"]{
 	}
 	.download-contents tfoot th{
 		text-align: center;
+	}
+	.download-contents .btn-container{
+		min-width: 130px;
 	}
 
 /* FORM/INPUT CUSTOMIZATIONS
@@ -852,10 +851,6 @@ h2 {
 .mainContent {
 	float: left;
 	border-right: #aab090 1px solid;
-}
-.caption {
-	position: absolute;
-	bottom: 10px;
 }
 .quickNav {
 	height: 55px;

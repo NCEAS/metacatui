@@ -85,14 +85,14 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				$(iconCell).html(formatTypeIcon);
 				$(tr).append(iconCell);
 				
-				//Id cell
-				//TODO: When titles for objects are indexed, use that for display instead of the id
-				var idCell = $(document.createElement("td")).addClass("id wrap-contents");				
-				var idLink = document.createElement("a");
-				$(idLink).attr("href", objectServiceUrl + encodeURIComponent(id))
-						 .text(entityName);
-				$(idCell).html(idLink);
-				$(tr).append(idCell);
+				//Name cell
+				var nameCell = $(document.createElement("td")).addClass("name wrap-contents");				
+				var nameLink = document.createElement("a");
+				$(nameLink).attr("href", objectServiceUrl + encodeURIComponent(id))
+						  .text(entityName)
+						  .addClass("ellipsis");
+				$(nameCell).html(nameLink);
+				$(tr).append(nameCell);
 
 				//Format type cell
 				var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents");				

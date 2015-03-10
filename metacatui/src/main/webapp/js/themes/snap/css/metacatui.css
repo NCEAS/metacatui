@@ -1129,6 +1129,10 @@ svg .point:hover ~ .line-chart-label{
 		
 	}
 	
+	#Metadata .citation{
+		margin-top: 20px;
+	}
+	
 	#Metadata .well strong{
 		font-weight: 400;
 	}
@@ -1200,8 +1204,9 @@ svg .point:hover ~ .line-chart-label{
    		margin-right: 10px;
    	}
    	
-   	    .download-contents .id{
-    	max-width: 100px;
+   	.download-contents .ellipsis{
+    	max-width: 250px;
+    	display: block;
     }
     
     .download-contents td{

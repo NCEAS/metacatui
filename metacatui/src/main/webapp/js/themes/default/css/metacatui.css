@@ -847,10 +847,14 @@ Bold 700
     .download-contents td {
 		vertical-align: middle;
 		overflow-wrap: break-word;
+		width: 10%;
 	}
     .download-contents .format-type {
 		text-align: center;
-		width: 1px;
+		width: 1%;
+	}
+	.download-contents td.name{
+		max-width: 250px;
 	}
 	.download-contents .btn i{
 		margin-left: 5px;
@@ -873,6 +877,10 @@ Bold 700
     .download-contents tfoot th i{
       	margin-left: 5px;
    		color: #1C6E84;
+    }
+    .download-contents .name .ellipsis{
+    	max-width: 250px;
+    	display: block;
     }
 	
 	/*Taxonomic range*/
