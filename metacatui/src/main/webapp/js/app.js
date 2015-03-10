@@ -31,6 +31,7 @@ require.config({
   baseUrl: 'js/',
   waitSeconds: 180, //wait 3 minutes before throwing a timeout error
   map: themeMap,
+  urlArgs: "v=" + window.metacatUIVersion,
   paths: {
     jquery: '../components/jquery',
     jqueryui: '../components/jquery-ui-1.10.3.custom.min',
