@@ -7,7 +7,7 @@
     			<!-- filter by working groups -->
 				<div class="subsets row-fluid">
 						<% if(username){
-							print('<a class="subset-choice alt keyword-search-link" href="#" data-category="additionalCriteria" data-term="+rightsHolder:' + username + '"> My packages <i class="icon-caret-right"></i> </a>');    			
+							print('<a class="subset-choice alt keyword-search-link" href="#" data-category="additionalCriteria" data-term="rightsHolder:' + username + '"> My packages <i class="icon-caret-right"></i> </a>');    			
 			    		}
 						_.each(searchOptions, function(value, key) {
 							print('<a href="" class="subset-choice keyword-search-link" data-category="additionalCriteria" data-term="', value, '">', key);
