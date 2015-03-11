@@ -2354,7 +2354,10 @@
         headers: this.element.data('annotator:headers'),
         dataType: "json",
         success: onSuccess || function() {},
-        error: this._onError
+        error: this._onError,
+        xhrFields: {
+        	withCredentials: true
+        }
       };
       if (this.options.emulateHTTP && (method === 'PUT' || method === 'DELETE')) {
         opts.headers = $.extend(opts.headers, {
