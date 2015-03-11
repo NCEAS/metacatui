@@ -72,9 +72,15 @@
 			'</li>'
         	);
         } else {
-      /*  	print(
-        		'<li id="SignIn" class="share-feature"><a href="#share">Sign In</a></li>'
-        	); */
+        	if (signInUrl) {
+        		print(
+	        		'<li id="SignIn" class="share-feature"><a href="', signInUrl ,'">Sign In</a></li>'
+	        	);
+        	} else {
+	        	print(
+	        		'<li id="SignIn" class="share-feature"><a href="#share">Sign In</a></li>'
+	        	);
+	        }
         }  %>
         	
   	</ul>
