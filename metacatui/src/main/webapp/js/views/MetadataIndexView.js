@@ -32,6 +32,8 @@ define(['jquery',
 		alertTemplate: _.template(alertTemplate),
 		
 		metadataIndexTemplate: _.template(MetadataIndexTemplate),
+		
+		semanticFields: null,
 										
 		events: {
 		},
@@ -39,7 +41,18 @@ define(['jquery',
 		initialize: function (options) {
 			this.pid = options.pid || null;
 			//this.el.id = this.id + "-" + this.pid; //Give this element a specific ID in case multiple MetadataIndex views are on one page
-			this.parentView = options.parentView || null;			
+			this.parentView = options.parentView || null;	
+			
+			// use these to tailor the annotation ui widget
+			this.semanticFields = {
+					attribute: "sem_annotation",
+					attributeName: "sem_annotation",
+					attributeLabel: "sem_annotation",
+					attributeDescription: "sem_annotation",
+					attributeUnit: "sem_annotation",
+					origin: "orcid_sm",
+					investigator: "orcid_sm"
+			}
 		},
 				
 		render: function(){
@@ -175,7 +188,13 @@ define(['jquery',
 		formatAttribute: function(attribute, value){
 			var html = "",
 				view = this,
-				embeddedAttributes = "";
+				embeddedAttributes = "",
+				type = "sem_annotation";
+			
+			// see if there is special handling for this field
+			if (this.semanticFields[attribute]) {
+				type = this.semanticFields[attribute];
+			}
 			
 			//If this is a multi-valued field from Solr, the attribute value is actually multiple embedded attribute templates
 			var numAttributes = (Array.isArray(value) && (value.length > 1)) ? value.length : 0;
@@ -183,14 +202,20 @@ define(['jquery',
 				embeddedAttributes += view.attributeTemplate({
 					attribute: "",
 					formattedAttribute: view.transformCamelCase(attribute),
-					value: value[i]
+					value: value[i],
+					id: attribute + "_" + (i+1),
+					type: type,
+					resource: "#xpointer(//" + attribute + "[" + (i+1) + "])"
 				});
 			}
 			
 			html += view.attributeTemplate({
 				attribute: attribute,
 				formattedAttribute: view.transformCamelCase(attribute),
-				value: embeddedAttributes || value
+				value: embeddedAttributes || value,
+				id: attribute,
+				type: type,
+				resource: "#xpointer(//" + attribute + ")"
 			});
 			
 			return html;

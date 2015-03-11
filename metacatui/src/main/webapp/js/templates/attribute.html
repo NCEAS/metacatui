@@ -2,7 +2,7 @@
 if(!formattedAttribute || (formattedAttribute === undefined)) var formattedAttribute = attribute;
 %>
 
-	<div class="control-group <%=attribute%>">
+	<div class="control-group <%=attribute%>" id="<%=id%>" type="<%=type%>" resource="<%=resource%>">
 		<label class="control-label <%=attribute%>"><%=formattedAttribute%></label>
 		<div class="controls controls-well"><%=value%></div>
 	</div>

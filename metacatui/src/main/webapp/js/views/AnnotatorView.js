@@ -164,13 +164,13 @@ define(['jquery',
 					
 					// change the autocomplete depending on type of element being annotated
 					var type = $(resourceElem).attr('type');
-					if (type == "party") {
+					if (type == "orcid_sm" || type == "party") {
 						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
 							source: lookupModel.orcidSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
-						$.extend(annotation, {"field": "sem_orcid"});
+						$.extend(annotation, {"field": "orcid_sm"});
 
 					} else {
 						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
