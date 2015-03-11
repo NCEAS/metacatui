@@ -109,6 +109,23 @@ define(['jquery',
 			return false;
 		},
 		
+		logout: function() {
+			
+			var portalUrl = appModel.get('baseUrl') + "/portal/identity?action=logout";
+			var target = Backbone.history.location.href;
+			// DO NOT include the route otherwise we have an infinite redirect
+			target  = target.split("#")[0];
+			
+			// make sure to include the target
+			portalUrl += "&target=" + target;
+			
+			// do it!
+			window.location = portalUrl;
+			
+			return;
+			
+		},
+		
 		checkToken: function() {
 			var tokenUrl = appModel.get('tokenUrl');
 			var viewRef = this;
@@ -125,7 +142,7 @@ define(['jquery',
 				data: {},
 				success: function(data, textStatus, xhr) {
 					
-					// the Metacat (XML) response should have a fullName element
+					// the response should have the token
 					var payload = viewRef.parseToken(data);
 					var username = payload.userId;
 					var fullName = payload.fullName;

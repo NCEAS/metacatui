@@ -26,8 +26,8 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',     // metadata page
 			'profile(/*query)'			: 'renderProfile',		// Statistics/profile page
-			'external(/*url)'           : 'renderExternal'     // renders the content of the given url in our UI
-			//'logout'                    : 'logout',           // logout the user
+			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
+			'logout'                    : 'logout'           // logout the user
 			//'signup'          			: 'renderLdap',     // use ldapweb for registration
 			//'account(/:stage)'          : 'renderLdap',       // use ldapweb for different stages
 			//'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
@@ -137,7 +137,8 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
 			console.log('Called UIRouter.logout()');
-			registryView.logout();
+			//registryView.logout();
+			appView.logout();
 			//appView.showView(indexView);
 		},
 		
