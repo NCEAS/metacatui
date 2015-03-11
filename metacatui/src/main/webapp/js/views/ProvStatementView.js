@@ -87,8 +87,12 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			});
 			
 			//Basic info about our context model
-			var noun = this.model.getType(),
-				id   = this.model.get("id");
+			if(this.model.type == "Package")
+				var noun = "package";
+			else
+				var noun = this.model.getType();
+			
+			var id = this.model.get("id");
 			
 			//Get a list of the predicates that we saved earlier
 			var populatedPredicates = Object.keys(allTriples); 

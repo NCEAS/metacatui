@@ -355,7 +355,7 @@ define(['jquery',
 			var packageSources     = this.packageModel.get("sourcePackages"),
 				packageDerivations = this.packageModel.get("derivationPackages");
 
-			if(packageSources.length){
+			if(Object.keys(packageSources).length){
 				var sourceProvChart = new ProvChart({
 					sources   : packageSources,
 					context   : this.packageModel,
@@ -363,7 +363,7 @@ define(['jquery',
 				});	
 				this.$("#Metadata").before(sourceProvChart.render().el).addClass("hasProvLeft");	
 			}
-			if(packageDerivations.length){
+			if(Object.keys(packageDerivations).length){
 				var derivationProvChart = new ProvChart({
 					derivations : packageDerivations,
 					context     : this.packageModel,

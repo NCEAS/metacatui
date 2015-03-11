@@ -155,15 +155,18 @@ h3{
 
 /*The context sections gets narrowed when there is one prov chart next to it*/
 article.hasProvLeft,
-article.hasProvRight{ 
-	width: 800px; /* IE fallback */
-	width: calc(100% - 110px - 40px - 6px); /* 100% - prov-chart width - padding - borders*/
+article.hasProvRight,
+section.hasProvLeft,
+section.hasProvRight{ 
+	width: 75%; /* IE fallback */
+	width: calc(100% - 106px - 43px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;
 }
 /*The metadata gets narrowed even more when there are two prov charts next to it*/
-article.hasProvLeft.hasProvRight{
-	width: 660px; /* IE fallback */
-	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - padding - borders*/
+article.hasProvLeft.hasProvRight,
+section.hasProvLeft.hasProvRight{
+	width: 60%; /* IE fallback */
+	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - (padding + borders)*/
 }
 .prov-chart .popover{
 	min-width: 300px;
@@ -274,14 +277,6 @@ article.hasProvLeft.hasProvRight{
     	-webkit-border-radius: 4px;
     	margin-bottom: 20px;
     	padding: 20px;
-}
-.entityDetails.hasProvLeft,
-.entityDetails.hasProvRight{
-	display: inline-block;
-	width: 83%;
-}
-.entityDetails.hasProvLeft.hasProvRight{
-	width: 62%;
 }
 .entityDetails > h4 > *{
 	float: left;

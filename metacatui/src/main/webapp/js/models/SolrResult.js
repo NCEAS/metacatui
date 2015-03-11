@@ -95,7 +95,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 */		
 		isDerivationField: function(field){
 			if((typeof field == "undefined") || !field) return false;
-			if(!!_.contains(searchModel.getProvFields(), field)) return false;
+			if(!_.contains(searchModel.getProvFields(), field)) return false;
 			
 			if(field == "prov_usedByExecution" ||
 			   field == "prov_usedByProgram")
@@ -147,7 +147,7 @@ define(['jquery', 'underscore', 'backbone'],
 				model = this;
 		
 			_.each(searchModel.getProvFields(), function(provField, i){
-				if(model.isDerivationField(provField))
+				if(model.isDerivationField(provField) && model.get(provField))
 					derivations.push(model.get(provField));
 			});	
 			

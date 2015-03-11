@@ -15,26 +15,31 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			this.pointerHeight = options.pointerHeight || 15;     //Pixel height of the pointer/arrow image
 			this.offsetTop     = options.offsetTop     || this.nodeHeight; //The top margin of the chart, in pixels
 			this.title 		   = options.title         || "";
-			
+
 			//For Sources charts
 			if(!this.derivations && this.sources){
-				this.type 		   = "sources";
-				this.title 	   	   = this.sources.length + " " + this.type;
-				this.provEntities  = this.sources;
+				this.type 		    = "sources";
+				this.provEntities   = this.sources;
+				this.numSources     = this.sources.length;
+				this.numProvEntities = this.numSources;
+				this.numDerivations = 0;
 			}
 			
 			//For Derivations charts
 			if(!this.sources && this.derivations){
-				this.type 	   	   = "derivations";
-				this.title 	       = this.derivations.length + " " + this.type;
-				this.provEntities  = this.derivations;
+				this.type 	   	     = "derivations";
+				this.provEntities    = this.derivations;
+				this.numDerivations  = this.derivations.length;
+				this.numProvEntities = this.numDerivations;
+				this.numSources      = 0;
 			}
 			
-			//Add the chart type to the class list
+			//Add the chart type to the class list and create a title
 			this.className = this.className + " " + this.type;
+			this.title 	   = this.numProvEntities + " " + this.type;
 			
 			//The default height of the chart when all nodes are visible/expanded
-			this.height = ((this.provEntities.length-1) * this.nodeHeight) + this.offsetTop;
+			this.height = (this.numProvEntities * this.nodeHeight) - this.offsetTop;
 
 		},
 		
@@ -48,17 +53,19 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		},
 		
 		render: function(){
-			if((this.type == "derivations") && (!this.derivations.length)) return false;
-			if((this.type == "sources") && (!this.sources.length)) return false;
+			if(!this.numProvEntities) return false;
 					
 			//First add the title
 			this.$el.append($(document.createElement("h3")).addClass("title").text(this.title));
 			
 			var view = this;
 			
-			_.each(this.provEntities, function(entity, i){				
+			_.each(this.provEntities, function(entity, i){	
 				//Create the HTML node and line connecter
-				view.$el.append(view.createNode(entity, i));	
+				if(entity.type == "Package")
+					view.$el.append(view.createNode(entity, i, _.find(entity.get("members"), function(member){ return member.get("formatType") == "METADATA"; })));	
+				else
+					view.$el.append(view.createNode(entity, i));	
 				
 				//Derivation charts have a pointer for each node
 				if(view.type == "derivations") view.$el.append(view.createPointer(i));
@@ -86,6 +93,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				        		          .append(collapseIcon));
 				this.collapseNodes(false);
 			}
+			else
+				this.$el.css("height", this.height);
 						
 			return this;
 		},
