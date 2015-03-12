@@ -160,7 +160,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//the full and final query in Solr syntax
 			var query = "q=" + combinedQuery + 
-						"&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId,dateUploaded,rightsHolder,datasource,prov_instanceOfClass" + 
+						"&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId,dateUploaded,rightsHolder,datasource,prov_instanceOfClass," + 
 						provFieldList + 
 						"&wt=json&rows=100";
 			

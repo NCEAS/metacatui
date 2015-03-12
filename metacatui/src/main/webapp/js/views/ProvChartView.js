@@ -156,8 +156,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			if(metadata) var citationModel = metadata;
 			else var citationModel = provEntity;
 			
+			var relatedModels = _.uniq(_.flatten(new Array(this.context, this.provEntities)));
+			
 			var citationEl = new CitationView({model: citationModel}).render().el;
-			var provStatementEl = new ProvStatement({model: provEntity, relatedModels: new Array(this.context) }).render().el;
+			var provStatementEl = new ProvStatement({
+				model         : provEntity, 
+				relatedModels : relatedModels }).render().el;
 			var popoverContent = $(document.createElement("div")).append(citationEl, provStatementEl);
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
