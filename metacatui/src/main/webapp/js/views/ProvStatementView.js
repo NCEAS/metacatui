@@ -21,7 +21,8 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			this.className    += options.className     || "";
 			this.model		   = options.model		   || null;
 			this.relatedModels = options.relatedModels || new Array();
-			this.relatedModels = _.flatten(this.relatedModels);
+			
+			this.relatedModels = _.uniq(_.flatten(this.relatedModels));
 		},
 		
 		template: _.template(ProvTemplate),
@@ -115,12 +116,16 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 					
 					//If the subject of this triple equals the id of this model, then structure the sentence as so
 					if((triple.subject == id) || ((typeof triple.subject === "object") && (triple.subject.get("id") == id))){
-						//Make an icon for this data object type
-						var objectModel = _.find(view.relatedModels, function(m){ return(m.get("id") == objectId); });
+						//Get information about the object of this triple
+						var objectId = (typeof triple.object === "string") ? triple.object : triple.object.get("id");
+						var objectModel = _.find(view.relatedModels, function(m){ 
+							return(m.get("id") == objectId); 
+						});
+						
+						//Get the type of object this is so we can make an icon out of it
 						if(typeof objectModel !== "undefined") type = objectModel.getType();
 						
 						//Make a link out of the object ID
-						var objectId = (typeof triple.object === "string") ? triple.object : triple.object.get("id");
 						subjList.push($(document.createElement("a"))
 							                                .attr("href", appModel.get("objectServiceUrl") + objectId)
 							                                .text(objectId)
@@ -130,12 +135,16 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 					}
 					//If the object of this triple equals the id of this model, then structure the sentence as so
 					else if((triple.object == id) || ((typeof triple.object === "object") && (triple.object.get("id") == id))){
-						//Make an icon for this data object type
-						var subjectModel = _.find(view.relatedModels, function(m){ return(m.get("id") == subjectId); });
+						//Get information about the subject of this triple
+						var subjectId = (typeof triple.subject === "string") ? triple.subject : triple.subject.get("id");
+						var subjectModel = _.find(view.relatedModels, function(m){ 
+							return(m.get("id") == subjectId); 
+						});
+						
+						//Get the type of object this is so we can make an icon out of it
 						if(typeof subjectModel !== "undefined") type = subjectModel.getType();
 						
 						//Make a link of the subject ID
-						var subjectId = (typeof triple.subject === "string") ? triple.subject : triple.subject.get("id");
 						objList.push($(document.createElement("a"))
 													      .attr("href", appModel.get("objectServiceUrl") + subjectId)
 										                  .text(subjectId)

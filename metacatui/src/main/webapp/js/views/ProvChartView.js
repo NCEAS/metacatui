@@ -11,6 +11,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			this.derivations   = options.derivations   || null;
 			this.context 	   = options.context       || null;
 			this.contextEl     = options.contextEl     || $("body");
+			this.packageModel  = options.packageModel  || null;
 			this.nodeHeight    = options.nodeHeight    || 67; 	  //Pixel height of the node including padding and margins
 			this.pointerHeight = options.pointerHeight || 15;     //Pixel height of the pointer/arrow image
 			this.offsetTop     = options.offsetTop     || this.nodeHeight; //The top margin of the chart, in pixels
@@ -156,7 +157,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			if(metadata) var citationModel = metadata;
 			else var citationModel = provEntity;
 			
-			var relatedModels = _.uniq(_.flatten(new Array(this.context, this.provEntities)));
+			var relatedModels = this.packageModel.get("relatedModels");
 			
 			var citationEl = new CitationView({model: citationModel}).render().el;
 			var provStatementEl = new ProvStatement({
@@ -168,7 +169,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			$(nodeEl).popover({
 				html: true,
 				placement: placement,
-				trigger: "focus",
+				trigger: "click",
 				container: this.el,
 				title: title,
 				content: function(){ 

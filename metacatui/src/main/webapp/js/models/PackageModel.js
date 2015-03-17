@@ -21,7 +21,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			sourcePackages: [],
 			derivationPackages: [],
 			sourceDocs: [],
-			derivationDocs: []
+			derivationDocs: [],
+			relatedModels: [] //A condensed list of all SolrResult models related to this package in some way
 		},
 		
 		complete: false,
@@ -106,6 +107,24 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			return this;
 		},
+		
+		/*
+		 * Get a flattened array of all models related to this package via provenance 
+		 */
+		getAllRelatedModels: function(){
+			//Go through all the packages in this prov trace and extract all the members
+			var packageSources     = this.get("sourcePackages"),
+			    packageDerivations = this.get("derivationPackages"),
+			    allPackages        = _.flatten([packageSources, packageDerivations]),
+			    allPackageMembers     = new Array();
+			
+			_.each(allPackages, function(pkg){
+				allPackageMembers.push(pkg.get("members"));
+		    });
+			
+			this.set("relatedModels", allPackageMembers);
+		},
+		
 		
 		/*
 		 * Will get the sources and derivations of each member of this dataset and group them into packages  
@@ -212,37 +231,40 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Separate the results into derivations and sources and group by their resource map.
 			_.each(docs, function(doc, i){
-				if((typeof doc.resourceMap === "undefined") && (doc.formatType == "DATA") && (typeof doc.isDocumentedBy === "undefined")){
+				
+				var docModel = new SolrResult(doc);
+				
+				if((typeof docModel.get("resourceMap") === "undefined") && (docModel.get("formatType") == "DATA") && (typeof docModel.get("isDocumentedBy") === "undefined")){
 					//If this object is not in a resource map and does not have metadata, it is a "naked" data doc, so save it by itself
 					if(_.contains(sources, doc.id))
-						sourceDocs.push(new SolrResult(doc));
+						sourceDocs.push(docModel);
 					if(_.contains(derivations, doc.id))
-						derDocs.push(new SolrResult(doc));
+						derDocs.push(docModel);
 				}
-				else if((typeof doc.resourceMap === "undefined") && (doc.formatType == "DATA") && doc.isDocumentedBy){
+				else if((typeof docModel.get("resourceMap") === "undefined") && (docModel.get("formatType") == "DATA") && docModel.get("isDocumentedBy")){
 					//If this data doc has a resource map and has a metadata doc that documents it, create a blank package model and save it
 					var p = new PackageModel({
-						members: new Array(new SolrResult(doc))
+						members: new Array(docModel)
 					});
 					//Add this package model to the sources and/or derivations packages list
-					if(_.contains(sources, doc.id))
-						sourcePackages[doc.id] = p;
-					if(_.contains(derivations, doc.id))
-						derPackages[doc.id] = p;
+					if(_.contains(sources, docModel.get("id")))
+						sourcePackages[docModel.get("id")] = p;
+					if(_.contains(derivations, docModel.get("id")))
+						derPackages[docModel.get("id")] = p;
 				}
-				else if(doc.resourceMap){						
+				else if(docModel.get("resourceMap")){						
 					//If this doc has a resource map, create a package model and SolrResult model and store it
-					var id = doc.id,
-						mapIds = doc.resourceMap;
+					var id = docModel.get("id"),
+						mapIds = docModel.get("resourceMap");
 
 					//Some of these objects may have multiple resource maps
 					_.each(mapIds, function(mapId, i, list){	
 						
 						if(!_.contains(model.obsoletedResourceMaps, mapId)){
 							var documentsSource, documentsDerivation;
-							if(doc.formatType == "METADATA"){
-								if(_.intersection(doc.documents, sources).length)     documentsSource = true; 
-								if(_.intersection(doc.documents, derivations).length) documentsDerivation = true;
+							if(docModel.get("formatType") == "METADATA"){
+								if(_.intersection(docModel.get("documents"), sources).length)     documentsSource = true; 
+								if(_.intersection(docModel.get("documents"), derivations).length) documentsDerivation = true;
 							}
 							
 							//Is this a source object?
@@ -252,7 +274,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 									//Now make a new package model for it
 									var p = new PackageModel({
 										id: mapId,
-										members: new Array(new SolrResult(doc))
+										members: new Array(docModel)
 									});
 									//Add to the array of source packages
 									sourcePackages[mapId] = p;	
@@ -260,7 +282,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 								//If so, add this member to its package model
 								else{
 									var memberList = sourcePackages[mapId].get("members");
-									memberList.push(new SolrResult(doc));
+									memberList.push(docModel);
 									sourcePackages[mapId].set("members", memberList);
 								}
 							}
@@ -272,7 +294,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 									//Now make a new package model for it
 									var p = new PackageModel({
 										id: mapId,
-										members: new Array(new SolrResult(doc))
+										members: new Array(docModel)
 									});
 									//Add to the array of source packages
 									derPackages[mapId] = p;	
@@ -280,7 +302,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 								//If so, add this member to its package model
 								else{
 									var memberList = derPackages[mapId].get("members");
-									memberList.push(new SolrResult(doc));
+									memberList.push(docModel);
 									derPackages[mapId].set("members", memberList);
 								}
 							}	
@@ -304,7 +326,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			model.set("derivationPackages", newArrays[1]);
 			model.set("sourceDocs", newArrays[2]);
 			model.set("derivationDocs", newArrays[3]);
-			
+						
 			//Save this prov trace on a package-member/document/object level.
 			model.setMemberProvTrace();
 			
@@ -313,14 +335,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		},
 		
 		setMemberProvTrace: function(){
-			var model = this;
-			
+			var model = this,
+				relatedModels = this.get("relatedModels");
+
 			//Now for each doc, we want to find which member it is related to
-			_.each(this.get("members"), function(member, i,members){
+			_.each(this.get("members"), function(member, i, members){
 				//Get the sources and derivations of this member
 				var memberSourceIDs = member.getSources();
 				var memberDerIDs    = member.getDerivations();
-				
+								
 				//Look through each source package, derivation package, source doc, and derivation doc.
 				_.each(model.get("sourcePackages"), function(pkg, i){
 					_.each(pkg.get("members"), function(sourcePkgMember, i){
@@ -328,6 +351,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						if(_.contains(memberSourceIDs, sourcePkgMember.get("id")))
 							//Save this source package member as a source of this member
 							member.set("provSources", _.union(member.get("provSources"), sourcePkgMember));
+						
+						//Save this in the list of related models
+						relatedModels.push(sourcePkgMember);
 					});
 				});
 				_.each(model.get("derivationPackages"), function(pkg, i){
@@ -335,7 +361,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						//Is this package member a direct source of this package member?
 						if(_.contains(memberDerIDs, derPkgMember.get("id")))
 							//Save this derivation package member as a derivation of this member
-							member.set("provDerivations", _.union(member.get("provDerivations"), derPkgMember));								
+							member.set("provDerivations", _.union(member.get("provDerivations"), derPkgMember));	
+						
+						//Save this in the list of related models
+						relatedModels.push(derPkgMember);
 					});
 				});
 				_.each(model.get("sourceDocs"), function(doc, i){
@@ -343,18 +372,30 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(_.contains(memberSourceIDs, doc.get("id")))
 						//Save this source package member as a source of this member
 						member.set("provSources", _.union(member.get("provSources"), doc));
+					
+					//Save this in the list of related models
+					relatedModels.push(doc);
 				});
 				_.each(model.get("derivationDocs"), function(doc, i){
 					//Is this package member a direct derivation of this package member?
 					if(_.contains(memberSourceIDs, doc.get("id")))
 						//Save this derivation package member as a derivation of this member
 						member.set("provDerivations", _.union(member.get("provDerivations"), doc));
+					
+					//Save this in the list of related models
+					relatedModels.push(doc);
 				});
+				
+				//Add this member to the list of related models
+				relatedModels.push(member);
 
 				//Clear out any duplicates
 				member.set("provSources", _.uniq(member.get("provSources")));
 				member.set("provDerivations", _.uniq(member.get("provDerivations")));
 			});
+
+			//Update the list of related models
+			this.set("relatedModels", _.uniq(relatedModels));
 			
 		},
 		

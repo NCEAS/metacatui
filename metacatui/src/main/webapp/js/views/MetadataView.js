@@ -357,17 +357,19 @@ define(['jquery',
 
 			if(Object.keys(packageSources).length){
 				var sourceProvChart = new ProvChart({
-					sources   : packageSources,
-					context   : this.packageModel,
-					contextEl : this.$("#Metadata")
+					sources      : packageSources,
+					context      : this.packageModel,
+					contextEl    : this.$("#Metadata"),
+					packageModel : this.packageModel
 				});	
 				this.$("#Metadata").before(sourceProvChart.render().el).addClass("hasProvLeft");	
 			}
 			if(Object.keys(packageDerivations).length){
 				var derivationProvChart = new ProvChart({
-					derivations : packageDerivations,
-					context     : this.packageModel,
-					contextEl   : this.$("#Metadata")
+					derivations  : packageDerivations,
+					context      : this.packageModel,
+					contextEl    : this.$("#Metadata"),
+					packageModel : this.packageModel
 				});		
 				this.$("#Metadata").after(derivationProvChart.render().el).addClass("hasProvRight");			
 			}			
@@ -377,7 +379,7 @@ define(['jquery',
 				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
 				
 				//Display the prov statement for this package member in it's entity details section
-				var statement = new ProvStatement({model: member, relatedModels: new Array(packageSources, packageDerivations, view.packageModel.get("members"))}).render().el;
+				var statement = new ProvStatement({model: member, relatedModels: view.packageModel.get("relatedModels")}).render().el;
 				$(entityDetailsSection).append(statement);
 
 				//Retrieve the sources and derivations for this member
@@ -387,18 +389,20 @@ define(['jquery',
 				//Make the source chart for this member
 				if(memberSources.length){
 					var memberSourcesProvChart = new ProvChart({
-						sources   : memberSources, 
-						context   : member,
-						contextEl : entityDetailsSection
+						sources      : memberSources, 
+						context      : member,
+						contextEl    : entityDetailsSection,
+						packageModel : view.packageModel
 					});	
 					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
 				}
 				if(memberDerivations.length){
 					//Make the derivation chart for this member
 					var memberDerivationsProvChart = new ProvChart({
-						derivations : memberDerivations,
-						context     : member,
-						contextEl   : entityDetailsSection
+						derivations  : memberDerivations,
+						context      : member,
+						contextEl    : entityDetailsSection,
+						packageModel : view.packageModel
 					});	
 					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
 				}
