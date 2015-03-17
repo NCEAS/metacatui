@@ -169,7 +169,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			$(nodeEl).popover({
 				html: true,
 				placement: placement,
-				trigger: "click",
+				trigger: "focus",
 				container: this.el,
 				title: title,
 				content: function(){ 
