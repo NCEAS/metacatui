@@ -74,8 +74,8 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			if(this.get("formatType") == "METADATA") return "metadata";
-			if(_.contains(imageIds, this.get("id"))) return "image";
-			if(_.contains(pdfIds, this.get("id")))   return "PDF";
+			if(_.contains(imageIds, this.get("formatId"))) return "image";
+			if(_.contains(pdfIds, this.get("formatId")))   return "PDF";
 						
 			else return "data";
 		},
