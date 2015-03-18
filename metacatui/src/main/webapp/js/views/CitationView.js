@@ -99,22 +99,24 @@ define(['jquery', 'underscore', 'backbone'],
 			}	
 			var publisherEl = $(document.createElement("span")).text(publisherText);
 			
-	        //The title will be clickable for citations with science metadata
-	        if(typeof title !== "undefined"){
-				var titleEl = $(document.createElement("a")).addClass("title view-link").attr("href", "#view/" + encodeURIComponent(id)).attr("pid", id).text(title + ". ");
-	        	this.$el.append(authorEl).append(pubDateEl).append(titleEl);
-	        }
-	        //The author and pubDate will be clickable for citations without science metadata
-	        else{
-				var linkEl = $(document.createElement("a")).attr("href", appModel.get("objectServiceUrl") + id).append(authorEl).append(pubDateEl);
-	        	this.$el.append(linkEl);
-	        }
-	        
-	        this.$el.append(publisherEl);
-	        
 	        //The ID
 	        var idEl = $(document.createElement("span")).addClass("id").text("ID: " + id + ".");
-	        this.$el.append(idEl);
+			
+			//Create a link
+			var linkEl = $(document.createElement("a"));
+			
+	        //The title will be clickable for citations with science metadata
+	        if((typeof title !== "undefined") && title){
+				$(linkEl).addClass("title view-link").attr("href", "#view/" + encodeURIComponent(id)).attr("pid", id).text(title + ". ");
+
+				//Put together all the citation parts
+				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
+	        }
+	        //The entire citation will be clickable for citations without a title/science metadata
+	        else{
+	        	$(linkEl).attr("href", appModel.get("objectServiceUrl") + id).append(authorEl, pubDateEl, publisherEl, idEl);
+	        	this.$el.append(linkEl);
+	        }
 	            
 	        return this;         
 		}
