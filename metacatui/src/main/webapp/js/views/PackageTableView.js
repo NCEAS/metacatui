@@ -80,6 +80,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			_.each(members, function(solrResult, i){
 				
 				var formatType = solrResult.get("formatType"),
+					type       = solrResult.getType(),
 					id		   = solrResult.get("id"),
 					entityName = solrResult.get("entityName");
 				
@@ -93,12 +94,26 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				var tr = $(document.createElement("tr"));
 				
 				//Icon cell (based on formatType)
-				var iconCell = $(document.createElement("td")).addClass("format-type");
-				var formatTypeIcon = document.createElement("i");
-				if(formatType == "METADATA") $(formatTypeIcon).addClass("icon-file-text");
-				else 						 $(formatTypeIcon).addClass("icon-table");
+				var iconCell = $(document.createElement("td")).addClass("format-type"),
+					formatTypeIcon = document.createElement("i"),
+					icon = "icon-table";
+				
+				//Determine the icon type based on format id
+				if(type == "program")
+					icon = "icon-code";
+				else if(type == "data")
+					icon = "icon-table";
+				else if(type == "metadata")
+					icon = "icon-file-text";
+				else if (type == "image")
+					icon = "icon-picture";
+				else if (type == "pdf")
+					icon = "icon-file pdf";
+				
+				$(formatTypeIcon).addClass(icon);
 				$(iconCell).html(formatTypeIcon);
 				$(tr).append(iconCell);
+				
 				
 				//Name cell
 				var nameCell = $(document.createElement("td")).addClass("name wrap-contents");				
