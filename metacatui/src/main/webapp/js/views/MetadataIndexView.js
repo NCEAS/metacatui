@@ -246,7 +246,22 @@ define(['jquery',
 				var keys  = ["id", "size", "views", "pubDate", "memberNode", "formatId"];
 				
 				//Create a header for this data object
-				var icon   = $(document.createElement("i")).addClass("icon-table"),
+				
+				//Determine the icon type based on format id
+				var type = solrResult.getType(),
+					icon = "";
+				if(type == "program")
+					icon = "icon-code";
+				else if(type == "metadata")
+					icon = "icon-file-text";
+				else if (type == "image")
+					icon = "icon-picture";
+				else if (type == "pdf")
+					icon = "icon-file pdf";
+				else 
+					icon = "data-table";
+				
+				var icon   = $(document.createElement("i")).addClass(icon),
 					title  = $(document.createElement("span")).text(solrResult.get("id")).addClass("title"),
 					downloadBtn = view.downloadButtonTemplate({ href: appModel.get("objectServiceUrl") + encodeURIComponent(solrResult.get("id")), className: "btn btn-primary" }),
 					anchor = $(document.createElement("a")).attr("name", encodeURIComponent(solrResult.get("id"))),
