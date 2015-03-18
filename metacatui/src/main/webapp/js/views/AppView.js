@@ -27,6 +27,10 @@ define(['jquery',
 		template: _.template(AppTemplate),
 		
 		appHeadTemplate: _.template(AppHeadTemplate),
+		
+		events: {
+			"click" : "closePopovers"
+		},
 				
 		initialize: function () {
 			//Change the document title when the app changes the appModel title at any time
@@ -244,6 +248,11 @@ define(['jquery',
 			
 			// track the current view
 			this.currentView = view;
+		},		
+		
+		closePopovers: function(e){
+			if(this.currentView.closePopovers)
+				this.currentView.closePopovers(e);
 		},
 		
 		// scroll to top of page

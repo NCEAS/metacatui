@@ -175,6 +175,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				content: function(){ 
 					return 	popoverContent;
 				}
+			}).on("show.bs.popover", function(){
+				//Close the last open node popover
+				$(".node.popover-this.active").popover("hide");
+				
+				//Toggle the active class
+				$(this).toggleClass("active");
+				
+			}).on("hide.bs.popover", function(){
+				//Toggle the active class
+				$(this).toggleClass("active");
 			});
 			
 			return nodeEl;

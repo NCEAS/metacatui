@@ -1011,6 +1011,16 @@ define(['jquery',
 			return true;
 		},
 		
+		closePopovers: function(e){
+			if($(e.target).hasClass("popover-this") || 
+			  ($(e.target).parents(".popover-this").length > 0)  || 
+			  ($(e.target).parents(".popover").length > 0) ||
+			  $(e.target).hasClass("popover")) return;
+			
+			//Close all active popovers
+			this.$(".popover-this.active").popover("hide");
+		},
+		
 		onClose: function () {			
 			_.each(this.subviews, function(subview) {
 				subview.onClose();
