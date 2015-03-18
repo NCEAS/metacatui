@@ -171,7 +171,6 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 		},
 		
 		clear: function() {
-			console.log('Clear the filters');
 		    return this.set(_.clone(this.defaults));
 		  }
 		

@@ -57,8 +57,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 						
 		render: function () {	
 			if(!d3){ console.log('SVG is not supported'); return null; }
-
-			console.log('Rendering a donut chart');
 			
 			var viewRef = this;				
 			

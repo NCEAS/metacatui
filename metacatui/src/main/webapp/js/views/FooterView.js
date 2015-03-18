@@ -14,7 +14,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/footer.html'],
 		},
 				
 		render: function () {
-			console.log('Rendering the footer');
 			this.$el.html(this.template());
 			
 		}	

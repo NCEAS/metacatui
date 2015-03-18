@@ -56,7 +56,6 @@ define(['jquery',
 			if ($(imageEl).length > 0) {
 				// only show the image when it is completely done loading
 				$(imageEl).load(function() {
-					console.log("Showing IMAGE AFTER LOAD()");
 					$(imageEl).fadeIn('slow');
 				});
 			}

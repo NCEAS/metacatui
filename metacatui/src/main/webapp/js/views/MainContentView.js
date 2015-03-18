@@ -20,9 +20,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'],
 			'keypress #search_txt_main': 'triggerOnEnter'
 		},
 				
-		render: function () {
-			console.log('Rendering the main content section');
-			
+		render: function () {			
 			this.$el.html(this.template());
 			
 			return this;

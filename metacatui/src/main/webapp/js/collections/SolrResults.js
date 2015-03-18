@@ -56,9 +56,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 						   "&start=" + this.start + 
 						   "&facet=true&facet.sort=index" + facetFields + 
 						   stats;		
-			
-			console.log(endpoint);
-			
+						
 			return endpoint;
 		},
 		  

@@ -425,7 +425,6 @@ define(['jquery',
 						
 			// first check if already a DOI
 			if (this.isDOI(pid)) {
-				console.log(pid + " is already a DOI");
 				return;
 			}
 			
@@ -902,7 +901,6 @@ define(['jquery',
 							// the response should have new identifier in it
 							identifier = $(data).find("d1\\:identifier, identifier").text();
 						
-							console.log('identifier: ' + identifier);
 							if (identifier) {
 								viewRef.hideLoading();
 								var msg = "Published package '" + identifier + "'";
@@ -1014,7 +1012,6 @@ define(['jquery',
 		},
 		
 		onClose: function () {			
-			console.log('Closing the metadata view');
 			_.each(this.subviews, function(subview) {
 				subview.onClose();
 			});

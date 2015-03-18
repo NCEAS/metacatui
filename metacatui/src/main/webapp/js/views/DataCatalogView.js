@@ -95,7 +95,6 @@ define(['jquery',
 		// and event handling to sub views
 		render: function () {
 
-			console.log('Rendering the DataCatalog view');
 			appModel.set('headerType', 'default');
 			this.toggleViewClass("DataCatalog");
 			
@@ -177,9 +176,6 @@ define(['jquery',
 			this.$resultsview = this.$('#results-view');
 			this.$results = this.$('#results');
 			
-			// show the results by default
-			console.log("Backbone.history.fragment=" + Backbone.history.fragment);
-			
 			// and go to a certain page if we have it
 			this.getResults();	
 			
@@ -217,9 +213,7 @@ define(['jquery',
 		 * 										PERFORMING SEARCH
 		 * ==================================================================================================
 		**/
-		triggerSearch: function() {	
-			console.log('Search triggered');			
-			
+		triggerSearch: function() {				
 			//Set the sort order 
 			var sortOrder = $("#sortOrder").val();
 			searchModel.set('sortOrder', sortOrder);
@@ -250,9 +244,7 @@ define(['jquery',
 		/** 
 		 * getResults gets all the current search filters from the searchModel, creates a Solr query, and runs that query.
 		 */
-		getResults: function (page) {
-			console.log('showing results');
-			
+		getResults: function (page) {			
 			//Get the page number
 			var page = appModel.get("page");
 			if (page == null) {
@@ -610,7 +602,6 @@ define(['jquery',
 			
 			//Get the filter term
 			var term = $(filterNode).attr('data-term');
-			console.log('removing '+ term);	
 			
 			//Check if this is the reserved phrase for the map filter
 			if((category == "spatial") && (term == this.reservedMapPhrase)){
@@ -1373,9 +1364,7 @@ define(['jquery',
 						
 						viewRef.resetMap();	
 					}
-					else{
-						console.log("zoom level " + viewRef.map.getZoom());
-						
+					else{						
 						//Get the Google map bounding box
 						var boundingBox = mapRef.getBounds();
 						
@@ -2360,9 +2349,7 @@ define(['jquery',
 			
 		},
 		
-		onClose: function () {			
-			console.log('Closing the data view');
-			
+		onClose: function () {						
 			this.toggleViewClass("DataCatalog");
 			
 			if(gmaps){

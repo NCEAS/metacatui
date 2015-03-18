@@ -25,10 +25,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/altHeader.html', 'te
 			// then render it
 			this.$el.hide();
 			if (headerType == "alt") {
-				console.log('Rendering the alternative header');
 				this.$el.html(this.template());
 			} else {
-				console.log('Rendering the default header');
 				this.$el.html(this.defaultTemplate());
 			}
 			this.$el.fadeIn('slow');

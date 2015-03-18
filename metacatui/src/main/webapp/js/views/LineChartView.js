@@ -100,7 +100,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 * This function draws a line time series chart
 		 */
 		render: function () {			
-			console.log('Rendering a line chart');
 						
 			/*
 			* ========================================================================
@@ -206,9 +205,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		/*
 		 * This function will add another line to the chart, using the same scales
 		 */
-		addLine: function(data){
-			console.log('add a line');
-							
+		addLine: function(data){							
 			var viewRef = this;
 			
 			if(this.formatFromSolrFacets){

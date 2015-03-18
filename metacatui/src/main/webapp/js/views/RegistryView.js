@@ -51,10 +51,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			
 			// request a smaller header
 			appModel.set('headerType', 'default');
-			
-			console.log('Calling the registry to display');
-			console.log('Calling the registry URL: ' + this.registryUrl);
-			console.log('Registry stage: ' + this.stage + " and pid " + this.pid);
+
 			var stageParams = '';
 			if (this.stage) {
 				stageParams = "&stage=" + this.stage + "&pid=" + this.pid;
@@ -89,10 +86,6 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 				});
 						
 			return this;
-		},
-		
-		onClose: function () {			
-			console.log('Closing the registry view');
 		},
 		
 		verifyLoginStatus: function() {
@@ -306,7 +299,6 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 							success: function(data1, textStatus1, xhr1) {
 								// browser has the JSESSIONID cookie now
 								//var allHeaders = xhr1.getAllResponseHeaders();
-								console.log("Got headers, JSESSIONID cookie");
 								
 								// set the username in the appModel, that's all we have
 								appModel.set("username", username);
@@ -378,7 +370,6 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 							data: logoutFormData,
 							success: function(data1, textStatus1, xhr1) {
 								// don't really do anything with this - browser has the JSESSIONID cookie now
-								console.log("Logged out, this JSESSIONID cookie is invalid now");
 								
 								// set the username to null in the appModel
 								appModel.set("username", null);
@@ -464,7 +455,6 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 		},
 		
 		submitOnEnter: function(e) {
-			console.log('Pressed enter');
 			if (e.keyCode != 13) return;
 			this.submitLoginForm();
 		}

@@ -53,37 +53,31 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		
 		routeToData: function () {
 			this.routeHistory.push("data");
-			console.log('Called UIRouter.routeToData()');
 			this.navigate("data", {trigger: true});
 		},
 		
 		renderIndex: function (param) {
 			this.routeHistory.push("index");
-			console.log('Called UIRouter.renderIndex()');
 			appView.showView(indexView);
 		},
 		
 		renderAbout: function (anchorId) {
-			console.log('Called UIRouter.renderAbout()');
 			this.routeHistory.push("about");
 			appModel.set('anchorId', anchorId);
 			appView.showView(aboutView);
 		},
 		
 		renderPlans: function (param) {
-			console.log('Called UIRouter.renderPlans()');
 			this.routeHistory.push("plans");
 		},
 		
 		renderTools: function (anchorId) {
-			console.log('Called UIRouter.renderTools()');
 			this.routeHistory.push("tools");
 			appModel.set('anchorId', anchorId);
 			appView.showView(toolsView);
 		},
 		
 		renderData: function (page, mode, query) {
-			console.log('Called UIRouter.renderData()');
 			this.routeHistory.push("data");
 			appModel.set('page', page);
 			
@@ -103,7 +97,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderMetadata: function (pid) {
-			console.log('Called UIRouter.renderMetadata()');
 			this.routeHistory.push("metadata");
 			appModel.set('pid', pid);
 			metadataView.pid = pid;
@@ -111,7 +104,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderProfile: function(query){
-			console.log('Called UIRouter.renderProfile()');
 			this.routeHistory.push("profile");
 			
 			//Reset the profile model first
@@ -123,7 +115,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderRegistry: function (stage, pid) {
-			console.log('Called UIRouter.renderRegistry()');
 			this.routeHistory.push("registry");
 			registryView.stage = stage;
 			registryView.pid = pid;
@@ -131,14 +122,12 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderLdap: function (stage) {
-			console.log('Called UIRouter.renderLdap()');
 			this.routeHistory.push("ldap");
 			ldapView.stage = stage;
 			appView.showView(ldapView);
 		},
 		
 		logout: function (param) {
-			console.log('Called UIRouter.logout()');
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
 			
@@ -148,7 +137,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
-			console.log('Called UIRouter.renderExternal()');
 			this.routeHistory.push("external");
 			externalView.url = url;
 			appView.showView(externalView);

@@ -62,8 +62,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 * This function draws a simple bar chart
 		 */
 		render: function () {			
-			console.log('Rendering a bar chart');
-					
 			var viewRef = this;
 			
 			/*

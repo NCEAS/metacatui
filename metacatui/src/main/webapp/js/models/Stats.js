@@ -182,7 +182,6 @@ define(['jquery', 'underscore', 'backbone'],
 				}	
 				//If no data or metadata objects were found, draw blank charts
 				else if(formats.length == 0){
-					console.warn('No metadata or data objects found. Draw some blank charts.');
 					
 					//Store falsey data
 					model.set('dataCount', 0);

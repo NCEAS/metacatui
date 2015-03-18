@@ -31,7 +31,6 @@ define(['jquery', 'underscore', 'backbone'],
 				// just follow the link
 				return true;
 			} else {
-				console.log('Loading href: ' + href)
 				this.url = href;
 				this.render();
 			}
@@ -169,7 +168,6 @@ define(['jquery', 'underscore', 'backbone'],
 			} 
 			
 			// load the URL
-			console.log('Loading the external URL: ' + computedUrl);
 			var viewRef = this;
 			this.$el.html(viewRef.containerTemplate);
 			var contentArea = this.$("#DynamicContent");
@@ -194,7 +192,6 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		onClose: function () {			
-			console.log('Closing the external view');
 			// stop listening to the click events
 			this.undelegateEvents();
 		},
@@ -217,7 +214,6 @@ define(['jquery', 'underscore', 'backbone'],
 			if (anchorTag.length == 0){
 				anchorTag = $("div[id='" + anchorId + "']" );
 			}
-			console.log('Scrolling ' + anchorId + ' to offset.top: ' + anchorTag.offset().top);
 			$('html,body').animate({scrollTop: anchorTag.offset().top}, 'slow');
 		},
 		
@@ -229,7 +225,6 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		// Change the src of all images so they'll load
 		loadImages: function(computedUrl){	
-			console.log("Loading images...");
 			var newSrc = null;
 			
 			this.$el.find('img').each( function(){

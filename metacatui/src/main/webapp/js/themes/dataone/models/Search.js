@@ -405,7 +405,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		},
 		
 		clear: function() {
-			console.log('Clear the filters');
 		    return this.set(_.clone(this.defaults()));
 		  }
 		

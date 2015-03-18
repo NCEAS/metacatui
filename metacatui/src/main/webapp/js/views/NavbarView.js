@@ -28,9 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);
 		},
 				
-		render: function () {
-			console.log('Rendering the navbar');
-			
+		render: function () {			
 			var target = Backbone.history.location.href;
 			var signInUrl = appModel.get('baseUrl') + "/portal/startRequest?target=" + target;
 			
@@ -94,9 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			
 			//Set up the search model for this new term
 			searchModel.set('additionalCriteria', newSearch);
-			
-			console.log(searchModel);
-			
+						
 			// make sure the browser knows where we are
 			uiRouter.navigate("data", {trigger: true});
 			

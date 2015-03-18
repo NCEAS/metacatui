@@ -32,7 +32,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 			// request a smaller header
 			appModel.set('headerType', 'default');
 			
-			console.log('Calling the ldapweb to display');
 			// show the loading icon
 			this.showLoading();
 			
@@ -41,7 +40,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 			if (this.stage) {
 				completeUrl += "&stage=" + this.stage;
 			}
-			console.log('Calling the ldapweb URL: ' + completeUrl);
 			
 			// load all the ldapweb content so all the js can run in what gets loaded
 			var viewRef = this;
@@ -63,10 +61,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 			//this.$(".label").removeClass("label");
 			this.$(":submit").addClass("btn");
 
-		},
-		
-		onClose: function () {			
-			console.log('Closing the ldapweb view');
 		},
 		
 		events: {

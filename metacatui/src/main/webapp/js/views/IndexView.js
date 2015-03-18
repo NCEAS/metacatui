@@ -24,13 +24,8 @@ define(['jquery',
 		// Render the main view and/or re-render subviews. Don't call .html() here
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
-		render: function () {
-			console.log('Rendering dynamic subviews within the IndexView');
-			
+		render: function () {			
 			appModel.set('headerType', 'alt');
-			
-			// Add in the main content section
-			console.log("el: " + this.el);
 						
 			this.$el.html('<section id="mainContent" /><section id="FeaturedData" />');			
 			var maincontentView = new MainContentView();
@@ -49,7 +44,6 @@ define(['jquery',
 		},
 		
 		onClose: function () {			
-			console.log('Closing the index view');
 			if (this.featuredDataView.onClose) {
 				this.featuredDataView.onClose();
 			}

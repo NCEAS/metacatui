@@ -51,9 +51,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				
 		tagName: "svg",
 					
-		render: function () {						
-			console.log("drawing a circle badge");
-			
+		render: function () {									
 			var viewRef = this;
 			
 			/*

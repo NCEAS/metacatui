@@ -18,14 +18,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/tools.html'],
 			// request a smaller header
 			appModel.set('headerType', 'default');
 			
-			console.log('Rendering the tools view');
 			this.$el.html(this.template());
 			
 			return this;
-		},
-		
-		onClose: function () {			
-			console.log('Closing the tools view');
 		},
 		
 		postRender: function() {
@@ -40,7 +35,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/tools.html'],
 		// scroll to the anchor given to the render function
 		scrollToAnchor: function(anchorId) {
 			var anchorTag = $("a[name='" + anchorId + "']" );
-			console.log('Scrolling ' + anchorId + ' to offset.top: ' + anchorTag.offset().top);
 			$('html,body').animate({scrollTop: anchorTag.offset().top}, 'slow');
 		},
 		

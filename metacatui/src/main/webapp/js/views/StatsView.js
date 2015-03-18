@@ -18,7 +18,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 				
 		render: function () {
-			console.log('Rendering the stats view');
 			
 			//Clear the page first
 			this.$el.html("");
@@ -495,9 +494,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.$el.html("");
 			
 			//Stop listening to changes in the model
-			this.stopListening(statsModel);
-			
-			console.log('Closing the stats view');
+			this.stopListening(statsModel);			
 		}
 		
 	});
