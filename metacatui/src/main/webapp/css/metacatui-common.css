@@ -231,7 +231,8 @@ section.hasProvLeft.hasProvRight{
 	display: inherit;
 }
 
-#Metadata  .citation{
+#Metadata  > .citation,
+#Metadata  > form > .citation{
 	font-size: 1.5em;
 	line-height: 1.7em;
 	margin-bottom: 40px;

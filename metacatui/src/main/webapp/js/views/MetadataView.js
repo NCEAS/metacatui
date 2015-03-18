@@ -379,8 +379,8 @@ define(['jquery',
 				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
 				
 				//Display the prov statement for this package member in it's entity details section
-				var statement = new ProvStatement({model: member, relatedModels: view.packageModel.get("relatedModels")}).render().el;
-				$(entityDetailsSection).append(statement);
+				//var statement = new ProvStatement({model: member, relatedModels: view.packageModel.get("relatedModels")}).render().el;
+				//$(entityDetailsSection).append(statement);
 
 				//Retrieve the sources and derivations for this member
 				var memberSources 	  = member.get("provSources"),
