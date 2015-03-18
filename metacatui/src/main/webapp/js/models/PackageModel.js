@@ -7,22 +7,24 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 	// ------------------
 	var PackageModel = Backbone.Model.extend({
 		// This model contains information about a package/resource map
-		defaults: {
-			id: null, //The id of the resource map/package itself
-			memberId: null, //An id of a member of the data package
-			indexDoc: null, //A SolrResult object representation of the resource map 
-			size: 0, //The number of items aggregated in this package
-			formattedSize: "",
-			members: [],
-			memberIds: [],
-			sources: [],
-			derivations: [],
-			provenanceFlag: null,
-			sourcePackages: [],
-			derivationPackages: [],
-			sourceDocs: [],
-			derivationDocs: [],
-			relatedModels: [] //A condensed list of all SolrResult models related to this package in some way
+		defaults: function(){
+			return {
+				id: null, //The id of the resource map/package itself
+				memberId: null, //An id of a member of the data package
+				indexDoc: null, //A SolrResult object representation of the resource map 
+				size: 0, //The number of items aggregated in this package
+				formattedSize: "",
+				members: [],
+				memberIds: [],
+				sources: [],
+				derivations: [],
+				provenanceFlag: null,
+				sourcePackages: [],
+				derivationPackages: [],
+				sourceDocs: [],
+				derivationDocs: [],
+				relatedModels: [] //A condensed list of all SolrResult models related to this package in some way
+			}
 		},
 		
 		complete: false,
@@ -34,7 +36,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		initialize: function(options){
 			//When the members attribute of this model is set, it is assumed to be complete. 
 			//Since this attribute is an array, do not iteratively push new items to it or this will be triggered each time.
-			this.on("change:members", this.flagComplete);	
+			this.on("change:members", this.flagComplete);				
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */
@@ -107,24 +109,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			return this;
 		},
-		
-		/*
-		 * Get a flattened array of all models related to this package via provenance 
-		 */
-		getAllRelatedModels: function(){
-			//Go through all the packages in this prov trace and extract all the members
-			var packageSources     = this.get("sourcePackages"),
-			    packageDerivations = this.get("derivationPackages"),
-			    allPackages        = _.flatten([packageSources, packageDerivations]),
-			    allPackageMembers     = new Array();
-			
-			_.each(allPackages, function(pkg){
-				allPackageMembers.push(pkg.get("members"));
-		    });
-			
-			this.set("relatedModels", allPackageMembers);
-		},
-		
 		
 		/*
 		 * Will get the sources and derivations of each member of this dataset and group them into packages  
@@ -336,7 +320,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		
 		setMemberProvTrace: function(){
 			var model = this,
-				relatedModels = this.get("relatedModels");
+				relatedModels = this.get("relatedModels"),
+				relatedModelIDs = new Array();
 
 			//Now for each doc, we want to find which member it is related to
 			_.each(this.get("members"), function(member, i, members){
@@ -353,7 +338,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 							member.set("provSources", _.union(member.get("provSources"), sourcePkgMember));
 						
 						//Save this in the list of related models
-						relatedModels.push(sourcePkgMember);
+						if(!_.contains(relatedModelIDs, sourcePkgMember.get("id"))){
+							relatedModels.push(sourcePkgMember);
+							relatedModelIDs.push(sourcePkgMember.get("id"));
+						}
 					});
 				});
 				_.each(model.get("derivationPackages"), function(pkg, i){
@@ -364,7 +352,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 							member.set("provDerivations", _.union(member.get("provDerivations"), derPkgMember));	
 						
 						//Save this in the list of related models
-						relatedModels.push(derPkgMember);
+						if(!_.contains(relatedModelIDs, derPkgMember.get("id"))){
+							relatedModels.push(derPkgMember);
+							relatedModelIDs.push(derPkgMember.get("id"));
+						}
 					});
 				});
 				_.each(model.get("sourceDocs"), function(doc, i){
@@ -374,7 +365,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						member.set("provSources", _.union(member.get("provSources"), doc));
 					
 					//Save this in the list of related models
-					relatedModels.push(doc);
+					if(!_.contains(relatedModelIDs, doc.get("id"))){
+						relatedModels.push(doc);
+						relatedModelIDs.push(doc.get("id"));
+					}
 				});
 				_.each(model.get("derivationDocs"), function(doc, i){
 					//Is this package member a direct derivation of this package member?
@@ -383,11 +377,17 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						member.set("provDerivations", _.union(member.get("provDerivations"), doc));
 					
 					//Save this in the list of related models
-					relatedModels.push(doc);
+					if(!_.contains(relatedModelIDs, doc.get("id"))){
+						relatedModels.push(doc);
+						relatedModelIDs.push(doc.get("id"));
+					}
 				});
 				
 				//Add this member to the list of related models
-				relatedModels.push(member);
+				if(!_.contains(relatedModelIDs, member.get("id"))){
+					relatedModels.push(member);
+					relatedModelIDs.push(member.get("id"));
+				}
 
 				//Clear out any duplicates
 				member.set("provSources", _.uniq(member.get("provSources")));
@@ -395,7 +395,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			});
 
 			//Update the list of related models
-			this.set("relatedModels", _.uniq(relatedModels));
+			this.set("relatedModels", relatedModels);
 			
 		},
 		
