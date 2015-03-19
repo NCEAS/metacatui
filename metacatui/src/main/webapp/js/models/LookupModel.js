@@ -52,10 +52,17 @@ define(['jquery', 'underscore', 'backbone'],
 					choice.label = obj['prefLabel'];
 					choice.value = obj['@id'];
 					choice.desc = obj['definition']
+					
+					// mark items that we know we have matches for
+					if (more && (more.indexOf(choice.value) != -1)) {
+						choice.label += "*";
+					}
+					
 					availableTags.push(choice);
+
 				});
 				
-				// add more if called that way
+				// combine the lists if called that way
 				if (more) {
 					availableTags = more.concat(availableTags);
 				}
