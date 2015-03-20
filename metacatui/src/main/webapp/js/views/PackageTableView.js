@@ -119,8 +119,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				var nameCell = $(document.createElement("td")).addClass("name wrap-contents");				
 				var nameLink = document.createElement("a");
 				$(nameLink).attr("href", objectServiceUrl + encodeURIComponent(id))
-						  .text(entityName)
-						  .addClass("ellipsis");
+						  .text(entityName);
 				$(nameCell).html(nameLink);
 				$(tr).append(nameCell);
 
