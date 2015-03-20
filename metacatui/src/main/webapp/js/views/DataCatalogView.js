@@ -1037,7 +1037,13 @@ define(['jquery',
 				if(annotationSuggestions){
 					var rankedAnnotationSuggestions = new Array();
 					for (var i=0; i < Math.min(annotationSuggestions.length-1, facetLimit); i+=2) {
-						rankedAnnotationSuggestions.push({value: annotationSuggestions[i], label: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")) });
+						rankedAnnotationSuggestions.push({
+							value: annotationSuggestions[i], 
+							label: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")), 
+							filterLabel: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")),
+							desc: annotationSuggestions[i], 
+
+						});
 					}
 					$('#annotation_input').hoverAutocomplete({
 						source: 
