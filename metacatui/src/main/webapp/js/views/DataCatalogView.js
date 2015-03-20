@@ -1043,7 +1043,7 @@ define(['jquery',
 					            var localValues = startsWith.concat(contains);
 					            
 					            // pass to bioportal search to complete the list and do the call back
-					            lookupModel.bioportalSearch(request, response, localValues);
+					            lookupModel.bioportalSearch(request, response, localValues, rankedAnnotationSuggestions);
 					            
 				        },
 						select: function(event, ui) {

@@ -35,11 +35,11 @@ define(['jquery', 'underscore', 'backbone'],
 			
 		},
 		
-		bioportalSearch: function(request, response, more) {
+		bioportalSearch: function(request, response, localValues, allValues) {
 			
 			// make sure we have something to lookup
 			if (!appModel.get('bioportalServiceUrl')) {
-				response(more);
+				response(localValues);
 				return;
 			}
 			
@@ -52,12 +52,22 @@ define(['jquery', 'underscore', 'backbone'],
 					choice.label = obj['prefLabel'];
 					choice.value = obj['@id'];
 					choice.desc = obj['definition']
+					
+					// mark items that we know we have matches for
+					if (allValues) {
+						var matchingChoice = _.findWhere(allValues, {value: choice.value});
+						if (matchingChoice) {
+							choice.label = "*" + choice.label;
+						}
+					}
+					
 					availableTags.push(choice);
+
 				});
 				
-				// add more if called that way
-				if (more) {
-					availableTags = more.concat(availableTags);
+				// combine the lists if called that way
+				if (localValues) {
+					availableTags = localValues.concat(availableTags);
 				}
 				
 				response(availableTags);
