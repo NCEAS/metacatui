@@ -244,6 +244,7 @@ define(['jquery',
 							
 							// bind after rendering
 							$(".hover-proxy").bind("click", hoverAnnotation);
+							$('.popover-this').popover();
 						};
 						lookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
 					}
