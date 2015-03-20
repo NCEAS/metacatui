@@ -2,9 +2,12 @@
 %>
 		<i class="icon-tag"></i>
 		<a id="<%= annotation.id %>" 
-			class="hover-proxy badge <% if (annotation.reject) { print(' badge-warning') } %>" 
+			class="hover-proxy popover-this badge <% if (annotation.reject) { print(' badge-warning') } %>" 
 			title="<%=concept.value %>"
-			data-popup="<%=concept.desc %>">
+			data-content="<%=concept.desc %>"
+			data-trigger="hover"
+			data-placement="bottom"
+			>
 			<%=concept.label %>
 		</a>
 		<br/>
