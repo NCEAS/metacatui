@@ -336,7 +336,7 @@ table.download-contents {
 }
 .download-contents td{
 	overflow-wrap: break-word;
-	width: 10%;
+	vertical-align: middle; /*Oh tables, good for one thing...*/
 }
 .download-contents th{
 	font-weight: normal;
@@ -354,16 +354,9 @@ table.download-contents {
 .download .btn i{
 	margin-left: 5px;
 }
-.download-contents .size{
-	max-width: 1px;
-}
 .download-contents .format-type{
 	text-align: center;
-	width: 1%;
-}
-.download-contents td{
-    vertical-align: middle; /*Oh tables, good for one thing...*/
-}    
+}   
 .download-contents .file-type i {
   color: #999;
   margin-left: 5px;
@@ -372,6 +365,13 @@ table.download-contents {
 	display: block;
 	max-width: 250px;
 }
+table.download-contents .name{
+	min-width: 325px;
+}
+table.download-contents .btn-container,
+table.download-contents .btn-container .btn{
+	width: 90px;
+} 
 /* The footer / expand-collapse control */
 .table tfoot th{ 
 	text-align: center; 
