@@ -795,6 +795,10 @@ table th.btn-container .btn{
 		overflow-x: visible;
 		overflow-y: visible; 
 	}
+	#gutter .hover-proxy {
+		width: 100px;
+	}
+	
     /**----------------------------------------**/
 
     
