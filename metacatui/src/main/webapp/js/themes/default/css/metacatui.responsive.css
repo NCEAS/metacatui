@@ -1,0 +1,13 @@
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 480px) {
+
+	#Navbar{
+		background-color: #166194;
+	}
+	
+	#Navbar .navbar li{
+		border-bottom: 1px solid #1D8EDC;
+	}
+}

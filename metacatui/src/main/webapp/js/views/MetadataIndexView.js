@@ -259,7 +259,7 @@ define(['jquery',
 				else if (type == "pdf")
 					icon = "icon-file pdf";
 				else 
-					icon = "data-table";
+					icon = "icon-table";
 				
 				var icon   = $(document.createElement("i")).addClass(icon),
 					title  = $(document.createElement("span")).text(solrResult.get("id")).addClass("title"),

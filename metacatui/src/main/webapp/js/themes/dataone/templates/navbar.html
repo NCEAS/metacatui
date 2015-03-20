@@ -39,7 +39,7 @@
   	</ul>
   </div><!-- /.navbar-inner -->
   
-  <div class="navbar-lower">
+  <div class="navbar-lower navbar-inner">
   	<ul class="nav">
   		<li class="label">
   			Data Catalog:
@@ -51,14 +51,17 @@
         	<a href="#profile">Summary</a>
         </li>
        <li>
-       		<input type="text" id="search_txt" placeholder="Search for data" /><a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-large"></i></a>
+       		<div class="input-append">
+	       		<input type="text" id="search_txt" placeholder="Search for data" /><a href="#data" type="button" class="btn" id="search_btn"><i class="icon-search icon-large"></i></a>
+       		</div>
        	</li> 
         <% 
         if (username) { 
         	print(
-        	'<li class="dropdown">',
+        	'<li class="dropdown right">',
 				'<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
-					'<i class="icon-user"></i><b class="icon-sort-down"></b>',
+					firstName,
+					' <i class="icon-user"></i><b class="icon-sort-down"></b>',
 				'</a>',
 				'<ul class="dropdown-menu">',
 					'<li class="dropdown-header">', username, '</li>',

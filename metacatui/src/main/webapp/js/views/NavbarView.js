@@ -33,11 +33,18 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			var signInUrl = appModel.get('baseUrl') + "/portal/startRequest?target=" + target;
 			
 			// set the username in the template (can be null if not logged in)
+			var username = appModel.get("username");
+			if(username && (username.indexOf(" ") > -1) && (username.indexOf("CN=") > -1))
+				var firstName = username.substring(username.indexOf("CN=") + 3, username.indexOf(" "));
+			else
+				var firstName = "";
+			
 			this.$el.html(
 					this.template( 
 							{
-								username: appModel.get('username'),
+								username: username,
 								fullName: appModel.get('fullName'),
+								firstName: firstName,
 								baseUrl: appModel.get('baseUrl'),
 								signInUrl: signInUrl,
 								currentUrl: window.location.href,

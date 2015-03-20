@@ -163,17 +163,6 @@ Bold 700
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
-
-     #Content{
-     	width: 90%;
-     	margin: 20px auto;
-     	max-width: 1200px;
-     }
-     
-     .mapMode #Content{
-     	width: 100%;
-     	margin: 0px;
-     }
      
     /* For full-screen background image */
 	img.bg{
@@ -293,12 +282,6 @@ Bold 700
 	}
 	.control-label {
 		cursor: default;
-	}
-	.form-horizontal .control-label{
-		width: 110px;
-	}
-	.form-horizontal .controls{
-		margin-left: 130px;
 	}
 	
 	select{

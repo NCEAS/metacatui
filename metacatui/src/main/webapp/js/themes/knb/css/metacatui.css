@@ -50,9 +50,8 @@ Bold 700 Italic
     }
         
     body > #Content {
-    	position: relative;
-    	margin: 115px 0px auto 0px;
-    	min-height: 900px;
+    	max-width: 100%;
+    	width: 100%;
     }
 		
     body > section > article {
@@ -218,16 +217,6 @@ Bold 700 Italic
 
 /* HEADER CSS
 -------------------------------------------------- */    
-  #Header {
-    position: fixed;
-    top: 0px;
-    z-index: 100;
-    height: 95px;
-    background-color: transparent;
-    background-image: none;
-    overflow: hidden;
-    opacity: 1.0;   
-  }
   
   .mapModw #Header{
   		z-index: 0;
@@ -898,16 +887,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
       margin: 0 auto;
     }
     
-    nav#Navbar {
-      position: fixed;
-      top: 0px;
-      z-index: 200;
-      left: 50%;
-      width: 960px;
-      margin: 0px 0px 0px -480px;
-      float: none;      
-    }
-    
     .show-new-dataCatalogView{
     	cursor: pointer;
     }
@@ -922,10 +901,8 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
     .navbar {
       position: relative;
-      top: 20px;
-      border: none;
-      z-index: 210;
-      height: 55px;    
+      border: none;   
+      margin-top: 20px;
     }
 
     .navbar-inner {
@@ -933,16 +910,14 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
       z-index: 220;
     }
     
-    .navbar .brand {
+    .navbar .nav > li > a.brand {
       font-size: 48px;
       font-weight: 300;
       font-family: "Lato", Helvetica, sans-serif;
       color: #992222;
       letter-spacing: -3px;
-      margin: 7px 5px 7px 5px;
-      padding: 10px 40px 10px 0px;
-      float: left;
-      
+      padding: 10px 10px 10px 0px;
+      text-transform: none;
     }
   
     .navbar .nav > li > * {
@@ -1003,7 +978,6 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     }
     
     .navbar .nav {
-      width: 85%;
       margin-top: 8px;
     }
     

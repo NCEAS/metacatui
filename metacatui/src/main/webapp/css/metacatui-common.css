@@ -6,6 +6,15 @@ article.container {
 	padding: 2%;
 	width: 96%;
 }
+#Content{
+	width: 90%;
+	max-width: 960px;
+	margin: 20px auto;
+}
+.mapMode #Content{
+	width: 100%;
+   	margin: 0px;
+}
 
 
 /****************************************** 

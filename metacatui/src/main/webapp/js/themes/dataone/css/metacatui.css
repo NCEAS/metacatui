@@ -83,8 +83,6 @@ Bold 700
     }
 
 	#Content{
-	  	width: 960px;
-	  	margin: auto;
 		background-color: #FFFFFF;  	
 	}
 	.DataCatalog #Content{
@@ -213,9 +211,6 @@ Bold 700
 	/** A word-wrap style, similar to ellipsis **/
 	.wrap-contents{
 		word-wrap: break-word;
-	}
-	.download-contents .wrap-contents{
-		max-width: 150px;
 	}
 
     
@@ -435,18 +430,18 @@ table th.btn-container .btn{
   
 /* THE NAVBAR
 -------------------------------------------------- */
-	.navbar .nav,
-	.navbar-upper .nav,
-	.navbar-lower .nav{
-		width: 960px;
-		margin: 0 auto;
-		float: none;
+	.navbar .nav{
+		width: 100%;
 	}
 	.navbar .nav,
 	.navbar-upper,
 	.navbar-lower .nav{
 		transition: width 1s;
 		-webkit-transition: width 1s;
+	}
+	.navbar-lower .input-append{
+		margin-top: 5px;
+		margin-bottom: 5px;
 	}
 	.DataCatalog .navbar .nav,
 	.DataCatalog .navbar-upper .nav,
@@ -599,7 +594,6 @@ table th.btn-container .btn{
     	margin-bottom: 0px;
     }
     #search_txt{
-		margin-top: 5px;	
 		float: left;
     }  
     #search_btn{

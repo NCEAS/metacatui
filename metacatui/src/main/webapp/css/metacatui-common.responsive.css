@@ -1,0 +1,136 @@
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 480px) {
+	#Content{
+		width: 100%;
+	}
+	
+	/** Metadata View **/
+	.form-horizontal .control-label{
+		float: none;
+		text-align: left;
+		width: 100%;
+		font-weight: bold; /*Because labels/titles become less apparent when in the mobile design*/
+	}
+	.form-horizontal .controls{
+		margin-left: 0px;
+	}
+	.form-horizontal .controls-well .table td{
+		display: block;
+		padding: 4px;
+	}
+	.attributeList .span2{
+		width: 40%;
+		overflow: hidden;
+	}
+	.attributeList .tab-content{
+		width: 55%;
+		overflow: visible;
+	}
+	.entityDetails > h4 > .title{
+		width: 83%;
+	}
+	.entityDetails > h4 > i{
+		width: 10%;
+	}
+	.entityDetails > h4 > .btn{
+		float: none;
+	}
+	
+	/** Navbar **/
+	#Navbar{
+		width: 100%;
+		position: relative;
+		margin: 0px;
+	}
+	.navbar,
+	.navbar-inner{
+		padding: 0px;
+		margin: 0px;
+	}
+	.nav{
+		width: 100%;
+	}
+	.navbar .home > a:after{
+		content: " Home";
+	}
+	.navbar li{
+		width: 100%;
+		text-align: center;
+		border-bottom: 1px solid #FFF;
+	}
+	#Header{
+		position: relative;
+	}
+}
+ 
+/* Smartphones (landscape) ----------- */
+@media only screen
+and (min-width : 321px) {
+/* STYLES GO HERE */
+}
+ 
+/* Smartphones (portrait) ----------- */
+@media only screen
+and (max-width : 320px) {
+/* STYLES GO HERE */
+}
+ 
+/* iPads (portrait and landscape) ----------- */
+@media only screen
+and (min-device-width : 768px)
+and (max-device-width : 1024px) {
+/* STYLES GO HERE */
+}
+ 
+/* iPads (landscape) ----------- */
+@media only screen
+and (min-device-width : 768px)
+and (max-device-width : 1024px)
+and (orientation : landscape) {
+/* STYLES GO HERE */
+}
+ 
+/* iPads (portrait) ----------- */
+@media only screen
+and (min-device-width : 768px)
+and (max-device-width : 1024px)
+and (orientation : portrait) {
+/* STYLES GO HERE */
+}
+ 
+/* Desktops and laptops ----------- */
+@media only screen
+and (min-width : 1224px) {
+/* STYLES GO HERE */
+}
+ 
+/* Large screens ----------- */
+@media only screen
+and (min-width : 1824px) {
+/* STYLES GO HERE */
+}
+ 
+/* iPhone 5 (portrait &amp; landscape)----------- */
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 568px) {
+/* STYLES GO HERE */
+}
+ 
+/* iPhone 5 (landscape)----------- */
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 568px)
+and (orientation : landscape) {
+/* STYLES GO HERE */
+}
+ 
+/* iPhone 5 (portrait)----------- */
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 568px)
+and (orientation : portrait) {
+/* STYLES GO HERE */
+}
