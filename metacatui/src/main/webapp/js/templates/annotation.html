@@ -1,5 +1,15 @@
-<% _.each(annotations, function(annotation) {
-	if (annotation.tags[0]) {
+<% if (concept) {
+%>
+		<i class="icon-tag"></i>
+		<a id="<%= annotation.id %>" 
+			class="hover-proxy badge <% if (annotation.reject) { print(' badge-warning') } %>" 
+			title="<%=concept.value %>"
+			data-popup="<%=concept.desc %>">
+			<%=concept.label %>
+		</a>
+		<br/>
+<%
+} else if (annotation.tags[0]) {
 %>
 		<i class="icon-tag"></i>
 		<a id="<%= annotation.id %>" 
@@ -9,7 +19,7 @@
 		</a>
 		<br/>
 <%
-	} else {
+} else {
 %>	
 		<i class="icon-comment icon"></i>
 		<div
@@ -20,8 +30,7 @@
 		</div>
 	<br/>
 <%	
-	}
-} )
+}
 %>
 
 

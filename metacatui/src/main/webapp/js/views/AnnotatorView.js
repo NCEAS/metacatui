@@ -227,10 +227,28 @@ define(['jquery',
 				
 				// render the annotations in the gutter
 				var gutter = $("#gutter");
-				gutter.html(viewRef.annotationTemplate({
-					annotations: annotations
-				}));
 				
+				//look up the concept details for each annotation
+				_.each(annotations, function(annotation) {
+					if (annotation.tags[0]) {
+						var conceptUri = annotation.tags[0];
+						var renderAnnotation = function(concepts) {
+							
+							var concept = _.findWhere(concepts, {value: conceptUri});
+							
+							// render it
+							gutter.append(viewRef.annotationTemplate({
+								annotation: annotation,
+								concept: concept
+							}));
+							
+							// bind after rendering
+							$(".hover-proxy").bind("click", hoverAnnotation);
+						};
+						lookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
+					}
+				});
+
 				// define hover action to mimic hovering the highlight
 				var hoverAnnotation = function(event) {
 					
@@ -257,8 +275,6 @@ define(['jquery',
 						pageX: highlightLocation.left + highlight.width() + 100,
 					});
 				};
-				
-				$(".hover-proxy").bind("click", hoverAnnotation);
 			}
 						
 			// reindex when an annotation is updated

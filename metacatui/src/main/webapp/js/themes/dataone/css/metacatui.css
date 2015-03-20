@@ -2460,7 +2460,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 /** sidr overrides **/
 	.sidr {
-		top: 500px;
+		top: 220px;
 		width: 150px;
 		background: none;
 		-webkit-box-shadow: none;

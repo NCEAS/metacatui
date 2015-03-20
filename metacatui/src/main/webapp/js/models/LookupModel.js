@@ -75,6 +75,33 @@ define(['jquery', 'underscore', 'backbone'],
 			});
 		},
 		
+		bioportalGetConcepts: function(uri, callback) {
+			
+			var concepts = [];
+
+			// make sure we have something to lookup
+			if (!appModel.get('bioportalServiceUrl')) {
+				return;
+			}
+			
+			var query = appModel.get('bioportalServiceUrl') + encodeURIComponent(uri);
+			var availableTags = [];
+			$.get(query, function(data, textStatus, xhr) {
+			
+				_.each(data.collection, function(obj) {
+					var concept = {};
+					concept.label = obj['prefLabel'];
+					concept.value = obj['@id'];
+					concept.desc = obj['definition']
+					
+					concepts.push(concept);
+
+				});
+				
+				callback(concepts);
+			});
+		},
+		
 		orcidSearch: function(request, response, more) {
 			
 				// make sure we have something to lookup
