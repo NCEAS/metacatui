@@ -266,14 +266,14 @@ define(['jquery',
 					$("a[href='#" + tabId + "']").trigger("click");
 					
 					// scroll the location in page
-					var highlightLocation = highlight.position();
+					var highlightLocation = highlight.offset();
 					$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "fast");
 					
 					// trigger the hover
 					highlight.trigger({
 						type: "mouseover",
-						pageY: highlightLocation.top + 50,
-						pageX: highlightLocation.left + highlight.width() + 100,
+						pageY: highlightLocation.top + 0,
+						pageX: highlightLocation.left + highlight.width() + 0,
 					});
 				};
 			}
