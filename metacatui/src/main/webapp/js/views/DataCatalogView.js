@@ -505,9 +505,9 @@ define(['jquery',
 			var input = this.$el.find('#' + category + '_input');
 			
 			//Get the value of the associated input
-			var term 		= (!item || item.value) ? input.val() : item.value;
-			var label 		= (!item || item.filterLabel) ? null : item.filterLabel;
-			var filterDesc  = (!item || item.description) ? null : item.description;
+			var term 		= (!item || !item.value) ? input.val() : item.value;
+			var label 		= (!item || !item.filterLabel) ? null : item.filterLabel;
+			var filterDesc  = (!item || !item.description) ? null : item.description;
 			
 			//Check that something was actually entered
 			if((term == "") || (term == " ")){
@@ -717,15 +717,19 @@ define(['jquery',
 				if(typeof  term.value !== "undefined") value = term.value;
 			}
 			else{
-				//Find the filter label
-				if((typeof label === "undefined") || !label) var label = null;
 				value = term;
+				
+				//Find the filter label
+				if((typeof label === "undefined") || !label) {
+					
+					//Use the filter value for the label, sans any leading # character
+					if (value.indexOf("#") > 0) {
+						label = value.substring(value.indexOf("#"));
+					}
+				}
+				
 				desc = label;
 			}
-			
-			//Use the filter value for the label, sans any leading # character
-			if(value.indexOf("#") > 0) label = value.substring(value.indexOf("#"));
-			
 			
 			//Add a filter node to the DOM
 			e.prepend(viewRef.currentFilterTemplate({

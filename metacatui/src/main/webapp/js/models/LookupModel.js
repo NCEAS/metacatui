@@ -50,6 +50,7 @@ define(['jquery', 'underscore', 'backbone'],
 				_.each(data.collection, function(obj) {
 					var choice = {};
 					choice.label = obj['prefLabel'];
+					choice.filterLabel = obj['prefLabel'];
 					choice.value = obj['@id'];
 					choice.desc = obj['definition']
 					
