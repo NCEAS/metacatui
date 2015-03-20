@@ -109,7 +109,7 @@ define(['jquery', 'underscore', 'backbone'],
 					concept.label = obj['prefLabel'];
 					concept.value = obj['@id'];
 					if (obj['definition']) {
-						choice.desc = obj['definition'][0];
+						concept.desc = obj['definition'][0];
 					}
 					
 					concepts.push(concept);
