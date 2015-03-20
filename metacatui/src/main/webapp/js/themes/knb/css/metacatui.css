@@ -1955,19 +1955,16 @@ svg .domain{
 	.current-filters,
 	.current-filters[class*="span"]{
 		list-style: none;
-		color: #FFFFFF;
 		margin: 0px;
 		min-height: 0px;
-		font-size: 14px;
 		width: auto;
 	}
-	
+
 	.current-filters > li,
 	.current-filters > li[class*="span"],
 	#filter-year label.ui-state-active, 
 	#includes-files label.ui-state-active{
 		background-color: #006699;
-		color: #FFFFFF;
 		padding: 0px 5px 0px 5px;
 		border-radius: 2px;
 		-moz-border-radius: 2px;
@@ -1979,6 +1976,12 @@ svg .domain{
 		text-shadow: none;
 		float:left;
 	}
+	
+	.current-filters .current-filter{
+		color: #FFFFFF;
+		font-size: 14px;
+	}
+	
 	
 	.current-filters > li > span{
 		float: left;

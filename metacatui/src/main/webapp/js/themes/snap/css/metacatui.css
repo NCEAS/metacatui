@@ -1507,7 +1507,6 @@ svg .point:hover ~ .line-chart-label{
 	.current-filters,
 	.current-filters[class*="span"]{
 		list-style: none;
-		color: #FFFFFF;
 		margin-left: 0px;
 		min-height: 0px;
 	}
@@ -1515,7 +1514,6 @@ svg .point:hover ~ .line-chart-label{
 	.current-filters > li,
 	.current-filters > li[class*="span"]{
 		background-color: #127180;
-		color: #FFFFFF;
 		padding: 0px 2px 0px 5px;
 		border-radius: 0px;
 		-moz-border-radius: 0px;
@@ -1528,6 +1526,12 @@ svg .point:hover ~ .line-chart-label{
 		line-height: 0.9em;
 		display: inline-block;
 	}
+	
+	.current-filters .current-filter{
+		color: #FFFFFF;
+		font-size: 14px;
+	}
+	
 	
 	.current-filters > li > span{
 		float: left;

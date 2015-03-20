@@ -1442,9 +1442,12 @@ Bold 700
 	.current-filters,
 	.current-filters[class*="span"]{
 		list-style: none;
-		color: #FFFFFF;
 		margin-left: 10px;
 		min-height: 0px;
+	}
+	
+	.current-filters .current-filter{
+		color: #FFFFFF;
 	}
 	
 	.current-filters .alert{

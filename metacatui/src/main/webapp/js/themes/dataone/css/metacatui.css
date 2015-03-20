@@ -87,6 +87,7 @@ Bold 700
 	}
 	.DataCatalog #Content{
 		width: 100%;
+		max-width: 100%;
 	}	
      .container{
     	width: 100%;
@@ -1124,10 +1125,13 @@ table th.btn-container .btn{
 	.current-filters,
 	.current-filters[class*="span"]{
 		list-style: none;
-		color: #FFFFFF;
-		font-weight: 400;
 		margin-left: 3px;
 		min-height: 0px;
+	}
+	
+	.current-filters .current-filter{
+		color: #FFFFFF;
+		font-weight: 400;
 	}
 	
 	.current-filters .alert{
