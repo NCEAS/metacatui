@@ -1,8 +1,12 @@
-<li class="current-filter" 
+<li class="current-filter popover-this" 
     data-term="<% if(value){ print(value); }%>" 
     title="<% if(label){ print(label); }%>"
     data-description="<% if(description){ print(description); }%>"
-    data-label="<% if(label){ print(label); }%>">
+    data-label="<% if(label){ print(label); }%>"
+    data-trigger="hover"
+    data-content="<% if(description){ print(description); }%>"
+    data-placement="top"
+    >
 <span>
 <%
 	

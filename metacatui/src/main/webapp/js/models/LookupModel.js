@@ -52,7 +52,9 @@ define(['jquery', 'underscore', 'backbone'],
 					choice.label = obj['prefLabel'];
 					choice.filterLabel = obj['prefLabel'];
 					choice.value = obj['@id'];
-					choice.desc = obj['definition']
+					if (obj['definition']) {
+						choice.desc = obj['definition'][0];
+					}
 					
 					// mark items that we know we have matches for
 					if (allValues) {
@@ -93,7 +95,9 @@ define(['jquery', 'underscore', 'backbone'],
 					var concept = {};
 					concept.label = obj['prefLabel'];
 					concept.value = obj['@id'];
-					concept.desc = obj['definition']
+					if (obj['definition']) {
+						choice.desc = obj['definition'][0];
+					}
 					
 					concepts.push(concept);
 

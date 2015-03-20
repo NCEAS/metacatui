@@ -507,7 +507,7 @@ define(['jquery',
 			//Get the value of the associated input
 			var term 		= (!item || !item.value) ? input.val() : item.value;
 			var label 		= (!item || !item.filterLabel) ? null : item.filterLabel;
-			var filterDesc  = (!item || !item.description) ? null : item.description;
+			var filterDesc  = (!item || !item.desc) ? null : item.desc;
 			
 			//Check that something was actually entered
 			if((term == "") || (term == " ")){
@@ -570,17 +570,19 @@ define(['jquery',
 			}
 			
 			//Add the new entry to the array of current filters
-			filtersArray.push({
-				value: term,
-				filterLabel: label,
-				description: filterDesc
-			});
+			var filter = {
+					value: term,
+					filterLabel: label,
+					label: label,
+					description: filterDesc
+				};
+			filtersArray.push(filter);
 			
 			//Replace the current array with the new one in the search model
 			searchModel.set(category, filtersArray);
 			
 			//Show the UI filter
-			this.showFilter(category, term, false, label);
+			this.showFilter(category, filter, false, label);
 			
 			//Clear the input
 			input.val('');
@@ -709,12 +711,19 @@ define(['jquery',
 			
 			//See if this filter is an object and extract the filter attributes
 			if(typeof term === "object"){
-				if(typeof  term.description !== "undefined") desc = term.description;
-				if((typeof term.filterLabel !== "undefined") && ((typeof label === "undefined") || !label))
+				if (typeof  term.description !== "undefined") {
+					desc = term.description;
+				}
+				if (typeof term.filterLabel !== "undefined") {
 					label = term.filterLabel;
-				else
-					var label = null;
-				if(typeof  term.value !== "undefined") value = term.value;
+				} else if (label) {
+					// just keep it
+				} else {
+					label = null;
+				}
+				if (typeof  term.value !== "undefined") {
+					value = term.value;
+				}
 			}
 			else{
 				value = term;
@@ -738,7 +747,8 @@ define(['jquery',
 				description: desc
 				}
 			));	
-				
+						
+			
 			return;
 		},
 		
