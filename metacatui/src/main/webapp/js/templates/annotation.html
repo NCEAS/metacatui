@@ -37,7 +37,7 @@ if (annotation.text) {
 		<i class="icon-comment icon"></i>
 		<div
 			id="<%= annotation.id %>" 
-			class="hover-proxy popover-this ellipsis comment" 
+			class="hover-proxy popover-this ellipsis comment badge <% if (annotation.reject) { print(' badge-warning') } %>" 
 			title="Comment" 
 			data-content="<%=annotation.text %>"
 			data-trigger="hover"
