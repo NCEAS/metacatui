@@ -227,8 +227,9 @@ define(['jquery',
 									container = _.intersection($(onlineDistLink).parents("form").children(), $(onlineDistLink).parents());
 								
 								if(container.length > 0){
-									//Insert an anchor tag to mark this spot on the page (used by the "Preview" button in the download contents table)
-									$(container).prepend($(document.createElement("a")).attr("id", object.id.replace(/\./g, "-")));
+									//Insert an anchor tag to mark this spot on the page (used by the "Metadata" button in the download contents table)
+									var escapedID = object.id.replace(/(:|\.|\[|\]|,|\(|\))/g, "-");
+									$(container).prepend($(document.createElement("a")).attr("id", escapedID));
 									
 									var entityName = $(container).find(".entityName").attr("data-entity-name");
 									if((typeof entityName !== "undefined") && (entityName)) 
@@ -266,7 +267,14 @@ define(['jquery',
 								packageId        : thisMap.id,
 								currentlyViewing : appModel.get("pid")
 							});
+							
 							$('#downloadContents').append(packageTable.render().el);
+							
+							//Hide the Metadata buttons that have no matching entity details section
+							_.each($("#downloadContents .preview"), function(btn){
+								var selector = $(btn).attr("data-id").replace(/(:|\.|\[|\]|,|\(|\))/g, "-");
+								if($("#" + selector).length == 0) $(btn).addClass("hidden");
+							});
 						}); 
 						
 						//Replace Ecogrid Links with DataONE API links

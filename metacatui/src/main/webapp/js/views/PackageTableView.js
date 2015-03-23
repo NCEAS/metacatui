@@ -62,7 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 			var	tbody = $(document.createElement("tbody"));
 		
 			//Create the HTML for each row
-			_.each(members, function(member, i){
+			_.each(members, function(member, i, members){
 				
 				var formatType = member.formatType,
 					id		   = member.id,
@@ -131,18 +131,20 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				$(downloadBtnCell).append(downloadButtonHTML);
 				$(tr).append(downloadBtnCell);
 				
-				//"Preview" link cell
-				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
-				var moreInfo     = $(document.createElement("a"))
-									.attr("href", "#view/" + id)
-									.addClass("btn preview")
-									.attr("data-id", id)
-									.text("Preview");
-				var moreInfoIcon = $(document.createElement("i"))
-									.addClass("icon icon-info-sign");
-				$(moreInfo).append(moreInfoIcon);					
-				$(moreInfoCell).append(moreInfo);
-				$(tr).append(moreInfoCell);
+				//"Metadata" button cell
+				if(members.length > 1){
+					var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
+					var moreInfo     = $(document.createElement("a"))
+										.attr("href", "#view/" + id)
+										.addClass("btn preview")
+										.attr("data-id", id)
+										.text("Metadata");
+					var moreInfoIcon = $(document.createElement("i"))
+										.addClass("icon icon-info-sign");
+					$(moreInfo).append(moreInfoIcon);					
+					$(moreInfoCell).append(moreInfo);
+					$(tr).append(moreInfoCell);	
+				}
 				
 				//If we are already viewing this object, display the button as disabled with a tooltip
 				if(view.currentlyViewing == member.id){
@@ -226,7 +228,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 
 			//If we are on the Metadata view, then let's scroll to the anchor
 			var id = $(button).attr("data-id");
-			var anchor = $("#" + id.replace(/\./g, "-"));
+			var anchor = $("#" + id.replace(/(:|\.|\[|\]|,|\(|\))/g, "-"));
 			if(anchor.length) appView.scrollTo(anchor);
 		},
 		
