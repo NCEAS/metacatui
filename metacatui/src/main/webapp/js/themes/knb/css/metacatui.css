@@ -1548,6 +1548,9 @@ svg .domain{
 		min-width: 100%;
 		height: auto;
 	}
+	.thumbnail.map{
+		width: auto;
+	}
     
     /* Google Map Images for Geographic Region */
     .georegion-map{
