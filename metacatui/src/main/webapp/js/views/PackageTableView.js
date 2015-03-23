@@ -235,7 +235,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		},
 		
 		/**
-		 * When the "Preview" button in the table is clicked while we are on the Metadata view, 
+		 * When the "Metadata" button in the table is clicked while we are on the Metadata view, 
 		 * we want to scroll to the anchor tag of this data object within the page instead of navigating
 		 * to the metadata page again, which refreshes the page and re-renders (more loading time)
 		 **/
@@ -257,7 +257,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//If we are on the Metadata view, then let's scroll to the anchor
 			var id = $(button).attr("data-id");
-			var anchor = $("#" + id.replace(/\./g, "-"));
+			var anchor = $("#" + id.replace(/(:|\.|\[|\]|,|\(|\))/g, "-"));
 			
 			if(anchor.length) appView.scrollTo(anchor);
 			else window.location = $(button).attr("href");  //navigate to the link href
