@@ -2,11 +2,13 @@
 %>
 		<i class="icon-tag"></i>
 		<a id="<%= annotation.id %>" 
-			class="hover-proxy popover-this badge <% if (annotation.reject) { print(' badge-warning') } %>" 
+			class="hover-proxy popover-this ellipsis badge <% if (annotation.reject) { print(' badge-warning') } %>" 
 			title="<%=concept.value %>"
 			data-content="<%=concept.desc %>"
 			data-trigger="hover"
-			data-placement="bottom"
+			data-placement="left"
+			data-container="body"
+			data-viewport="{ selector: 'body', padding: 0 }"
 			>
 			<%=concept.label %>
 		</a>
@@ -16,19 +18,33 @@
 %>
 		<i class="icon-tag"></i>
 		<a id="<%= annotation.id %>" 
-			class="hover-proxy badge <% if (annotation.reject) { print(' badge-warning') } %>" 
-			title="<%=annotation.tags[0] %>">
+			class="hover-proxy popover-this ellipsis badge <% if (annotation.reject) { print(' badge-warning') } %>" 
+			title="<%=annotation.tags[0] %>"
+			data-content=""
+			data-trigger="hover"
+			data-placement="left"
+			data-container="body"
+			data-viewport="{ selector: 'body', padding: 0 }"
+			>
 			#<%=annotation.tags[0].split("#")[1] %>
 		</a>
 		<br/>
 <%
-} else {
+}
+
+if (annotation.text) {
 %>	
 		<i class="icon-comment icon"></i>
 		<div
 			id="<%= annotation.id %>" 
-			class="hover-proxy ellipsis comment" 
-			title="<%=annotation.text %>" >
+			class="hover-proxy popover-this ellipsis comment badge <% if (annotation.reject) { print(' badge-warning') } %>" 
+			title="Comment" 
+			data-content="<%=annotation.text %>"
+			data-trigger="hover"
+			data-placement="left"
+			data-container="body"
+			data-viewport="{ selector: 'body', padding: 0 }"
+			>
 			<%=annotation.text %>
 		</div>
 	<br/>

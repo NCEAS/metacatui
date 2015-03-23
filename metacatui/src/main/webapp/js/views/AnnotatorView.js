@@ -227,10 +227,13 @@ define(['jquery',
 				
 				// render the annotations in the gutter
 				var gutter = $("#gutter");
+				gutter.html("");
 				
 				//look up the concept details for each annotation
 				_.each(annotations, function(annotation) {
+					
 					if (annotation.tags[0]) {
+						// look up concepts where we can
 						var conceptUri = annotation.tags[0];
 						var renderAnnotation = function(concepts) {
 							
@@ -246,8 +249,22 @@ define(['jquery',
 							$(".hover-proxy").bind("click", hoverAnnotation);
 							$('.popover-this').popover();
 						};
+						
+						// look it up and provide the callback
 						lookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
+						
+					} else {
+						// just render the annotation
+						gutter.append(viewRef.annotationTemplate({
+							annotation: annotation,
+							concept: null
+						}));
+						// bind after rendering
+						$(".hover-proxy").bind("click", hoverAnnotation);
+						$('.popover-this').popover();
 					}
+					
+					
 				});
 
 				// define hover action to mimic hovering the highlight
@@ -266,14 +283,14 @@ define(['jquery',
 					$("a[href='#" + tabId + "']").trigger("click");
 					
 					// scroll the location in page
-					var highlightLocation = highlight.position();
+					var highlightLocation = highlight.offset();
 					$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "fast");
 					
 					// trigger the hover
 					highlight.trigger({
 						type: "mouseover",
-						pageY: highlightLocation.top + 50,
-						pageX: highlightLocation.left + highlight.width() + 100,
+						pageY: highlightLocation.top + 0,
+						pageX: highlightLocation.left + highlight.width() + 0,
 					});
 				};
 			}

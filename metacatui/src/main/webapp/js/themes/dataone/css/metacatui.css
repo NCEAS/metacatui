@@ -791,6 +791,15 @@ table th.btn-container .btn{
 	#gutter .icon{
 		float: left;
 	}
+	#gutter {
+		z-index: 500;
+		overflow-x: visible;
+		overflow-y: visible; 
+	}
+	#gutter .hover-proxy {
+		width: 100px;
+	}
+	
     /**----------------------------------------**/
 
     
@@ -1489,6 +1498,14 @@ table th.btn-container .btn{
     
     .popover{
     	font-size: 13px;
+    }
+    
+    .popover-title {
+    	word-break: break-word;
+    }
+    
+    .popover-content {
+    	word-break: break-word;
     }
     
      .abstract-popover{
