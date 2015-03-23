@@ -322,6 +322,9 @@ section.hasProvLeft.hasProvRight{
 	min-width: 100%;
 	height: auto;
 }
+.thumbnail.map{
+	width: auto;
+}
 
 /****************************************** 
 * Download / Resource Map contents table

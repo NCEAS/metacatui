@@ -254,7 +254,7 @@ define(['jquery',
 			
 			//Find the geographic region container. Older versions of Metacat (v2.4.3 and less) will not have it classified so look for the header text
 			if(!this.$(".geographicCoverage").length){
-				var georegionEls = this.$('h4:contains("Geographic Region")').parents();
+				var georegionEls = this.$('h4:contains("Geographic Region")').parent();
 				var parseText = true;
 				var directions = new Array('North', 'South', 'East', 'West');
 			}
