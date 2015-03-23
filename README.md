@@ -5,7 +5,7 @@ MetacatUI is a client-side web interface for querying Metacat servers and other 
 
 * Contributors: Matthew Jones, Chris Jones, Ben Leinfelder, Lauren Walker
 * Developed at: [National Center for Ecological Analysis and Synthesis](http://www.nceas.ucsb.edu/ecoinfo)
-* Bug reports: http://projects.ecoinformatics.org/metacatui
+* Bug reports: https://projects.ecoinformatics.org/ecoinfo/projects/metacatui/
 * Discussion list: metacat-dev@ecoinformatics.org
 
 MetacatUI is an open source, community project.  We welcome contributions in many forms, including code, graphics, documentation, bug reports, testing, etc.  Use the discussion list to discuss these contributions with project contributors.  
