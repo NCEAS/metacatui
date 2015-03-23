@@ -358,7 +358,7 @@ table.download-contents {
 	margin-left: 5px;
 }
 .download-contents .format-type{
-	text-align: center;
+	text-align: left;
 }   
 .download-contents .file-type i {
   color: #999;
@@ -373,7 +373,7 @@ table.download-contents .name{
 }
 table.download-contents .btn-container,
 table.download-contents .btn-container .btn{
-	width: 90px;
+	width: 105px;
 } 
 /* The footer / expand-collapse control */
 .table tfoot th{ 

@@ -235,7 +235,15 @@ define(['jquery',
 			}
 			
 			//Insert the package table HTML 
-			$(tableContainer).html(tableView.render().el);			
+			$(tableContainer).html(tableView.render().el);
+			
+			//Hide the Metadata buttons that have no matching entity details section
+			_.each($("#downloadContents .preview"), function(btn){
+				//var selector = $(btn).attr("data-id").replace(/(:|\.|\[|\]|,|\(|\))/g, "-");
+				//if($("#" + selector).length == 0) $(btn).addClass("hidden");
+				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id")))
+					$(btn).addClass("hidden");
+			});
 						
 			//Remove the extra download button returned from the XSLT since the package table will have all the download links
 		    $("#downloadPackage").detach();
@@ -572,6 +580,8 @@ define(['jquery',
 		
 		findEntityDetailsContainer: function(id){
 			var onlineDistLink = this.$("[data-pid='" + id + "']");
+			if(onlineDistLink.length < 1)
+				this.$("a#" + id.replace(/(:|\.|\[|\]|,|\(|\))/g, "-"));
 			if(onlineDistLink.length < 1) //backup
 				onlineDistLink = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
 			
@@ -612,8 +622,8 @@ define(['jquery',
 				
 				var container = this.findEntityDetailsContainer(objID) || this.$el;
 				
-				//Insert an anchor tag to mark this spot on the page (used by the "Preview" button in the download contents table)
-				$(container).prepend($(document.createElement("a")).attr("id", objID.replace(/\./g, "-")));
+				//Insert an anchor tag to mark this spot on the page (used by the "Metadata" button in the download contents table)
+				$(container).prepend($(document.createElement("a")).attr("id", objID));
 				
 				var type = "";
 				
@@ -991,7 +1001,7 @@ define(['jquery',
 		},
 		
 		/**
-		 * When the "Preview" button in the table is clicked while we are on the Metadata view, 
+		 * When the "Metadata" button in the table is clicked while we are on the Metadata view, 
 		 * we want to scroll to the anchor tag of this data object within the page instead of navigating
 		 * to the metadata page again, which refreshes the page and re-renders (more loading time)
 		 **/
