@@ -731,6 +731,7 @@ table th.btn-container .btn{
 		background-color: #1C6E84;
 		color: white;
 		font-weight: bold;
+		padding: 6px;
 		text-align: center;
     }
    /**----------------------------------------**/
