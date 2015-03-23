@@ -74,6 +74,13 @@ define(['jquery', 'underscore', 'backbone'],
 						var matchingChoice = _.findWhere(allValues, {value: choice.value});
 						if (matchingChoice) {
 							choice.label = "*" + choice.label;
+							
+							// remove it from the local value - why have two?
+							if (localValues) {
+								localValues = _.reject(localValues, function(obj) {
+									return obj.value == matchingChoice.value;
+								});
+							}
 						}
 					}
 					
