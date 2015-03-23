@@ -77,7 +77,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var	tbody = $(document.createElement("tbody"));
 		
 			//Create the HTML for each row
-			_.each(members, function(solrResult, i){
+			_.each(members, function(solrResult, i, members){
 				
 				var formatType = solrResult.get("formatType"),
 					type       = solrResult.getType(),
@@ -160,18 +160,20 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(downloadBtnCell).append(downloadButtonHTML);
 				$(tr).append(downloadBtnCell);
 				
-				//"Preview" link cell
-				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
-				var moreInfo     = $(document.createElement("a"))
-									.attr("href", "#view/" + id)
-									.addClass("btn preview")
-									.attr("data-id", id)
-									.text("Preview");
-				var moreInfoIcon = $(document.createElement("i"))
-									.addClass("icon icon-info-sign");
-				$(moreInfo).append(moreInfoIcon);					
-				$(moreInfoCell).append(moreInfo);
-				$(tr).append(moreInfoCell);
+				//"Metadata" button cell
+				if(members.length > 1){
+					var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
+					var moreInfo     = $(document.createElement("a"))
+										.attr("href", "#view/" + id)
+										.addClass("btn preview")
+										.attr("data-id", id)
+										.text("Metadata");
+					var moreInfoIcon = $(document.createElement("i"))
+										.addClass("icon icon-info-sign");
+					$(moreInfo).append(moreInfoIcon);					
+					$(moreInfoCell).append(moreInfo);
+					$(tr).append(moreInfoCell);
+				}
 				
 				//If we are already viewing this object, display the button as disabled with a tooltip
 				if(view.currentlyViewing == solrResult.get("id")){

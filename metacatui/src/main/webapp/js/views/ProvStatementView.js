@@ -18,9 +18,10 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 		initialize: function(options){
 			if((options === undefined) || (!options)) var options = {};
 			
-			this.className    += options.className     || "";
-			this.model		   = options.model		   || null;
-			this.relatedModels = options.relatedModels || new Array();
+			this.className       += options.className        || "";
+			this.model		      = options.model		     || null;
+			this.relatedModels    = options.relatedModels    || new Array();
+			this.currentlyViewing = options.currentlyViewing || null;
 			
 			this.relatedModels = _.uniq(_.flatten(this.relatedModels));
 		},
@@ -142,15 +143,22 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						});
 						
 						//Get the type of object this is so we can make an icon out of it
-						if(typeof subjectModel !== "undefined") type = subjectModel.getType();
+						if(typeof subjectModel !== "undefined") 
+							type = subjectModel.getType();
+						var icon = $(document.createElement("i")).attr("class", "icon " + view.getIconType(type));
 						
+						var linkText = $(document.createElement("span")).text(subjectId);
+												
 						//Make a link of the subject ID
-						objList.push($(document.createElement("a"))
-													      .attr("href", appModel.get("objectServiceUrl") + subjectId)
-										                  .text(subjectId)
-										                  .prepend(
-												                  $(document.createElement("i"))
-												                            .attr("class", "icon " + view.getIconType(type))));
+						var link = $(document.createElement("a")).attr("href", appModel.get("objectServiceUrl") + subjectId).prepend(icon, linkText);
+						
+						//Is the subject the entity the user is currently viewing?
+						if(view.currentlyViewing && (view.currentlyViewing.get("id") == subjectId)){
+							var linkContainer = $(document.createElement("span")).prepend($(document.createElement("span")).text("the data you are currently viewing, "), link);
+							objList.push(linkContainer);
+						}
+						else
+							objList.push(link);
 												                            
 					}
 				});
