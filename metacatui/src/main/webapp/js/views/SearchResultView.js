@@ -87,13 +87,12 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 			this.model.toggle();
 		},
 		
-		routeToMetadata: function(e){			
-			//If the user clicked on a download button or any element with the class 'stop-route', we don't want to navigate to the metadata
-			if ($(e.target).hasClass('stop-route')){
-				return;
-			}
-			
+		routeToMetadata: function(e){	
 			var id = this.model.get("id");
+			
+			//If the user clicked on a download button or any element with the class 'stop-route', we don't want to navigate to the metadata
+			if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
+				return;
 			
 			uiRouter.navigate('view/'+id, true);
 		},

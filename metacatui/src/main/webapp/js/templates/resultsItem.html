@@ -31,30 +31,30 @@
 		print('</div>');
 	}
 %>
-<div class="info-icons">        		      
-	<div class="on-map icons">
+<div class="info-icons  stop-route">        		      
+	<div class="on-map icons  stop-route">
 		<% 
 		if (typeof southBoundCoord != "undefined"){
             		if((typeof geohash_9 != "undefined") && (geohash_9.length > 1)){
             			for(var i=0; i < geohash_9.length; i++){
-            				print('<i class="icon-map-marker on-map open-marker tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
+            				print('<i class="icon-map-marker on-map open-marker stop-route tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
             			}
             		}
             		else
-            			print('<i class="icon-map-marker on-map open-marker tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has one geographic region on the map"></i>');
+            			print('<i class="icon-map-marker on-map open-marker  stop-routetooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has one geographic region on the map"></i>');
             }
             else{
-            		print('<i class="icon-map-marker inactive"></i>');
+            		print('<i class="icon-map-marker inactive stop-route"></i>');
             }
          %>
     </div>
-    <div class="resource-map icons">             
+    <div class="resource-map icons stop-route">             
            <%
            if (resourceMap) {
-				print('<i class="icon-folder-open tooltip-this"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
+				print('<i class="icon-folder-open tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
 			}
 			else{
-				print('<i class="icon-folder-open inactive"></i>');
+				print('<i class="icon-folder-open inactive stop-route"></i>');
 			}
             %>
           
@@ -84,12 +84,12 @@
           
       	</div>
       	<% if(hasProv || appModel.provDev){
-      			print('<div class="icons provenance active">');
-      			print('<i class="icon-code-fork active"></i>');
+      			print('<div class="icons provenance active stop-route">');
+      			print('<i class="icon-code-fork active stop-route"></i>');
       		}
       		else{
-      		    print('<div class="icons provenance inactive">');
-      			print('<i class="icon-code-fork inactive"></i>');
+      		    print('<div class="icons provenance inactive stop-route">');
+      			print('<i class="icon-code-fork inactive stop-route"></i>');
       		}
       	%>
       	</div>

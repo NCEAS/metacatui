@@ -137,12 +137,13 @@ define(['jquery',
 			//Add the package details once the metadata from the index is drawn 
 			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.insertPackageDetails);
 			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.getCitation);
+			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.insertBreadcrumbs);
 			
 			//Add the metadata HTML
 			this.$el.append(this.subviews.metadataFromIndex.render().el);
 			
 			//Insert the breadcrumb navigation
-			this.insertBreadcrumbs();
+			//this.insertBreadcrumbs();
 			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
