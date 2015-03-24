@@ -116,6 +116,7 @@ define(['jquery',
 						if(view.parentView){
 							view.parentView.insertResourceMapContents(view.pid);
 							if(gmaps && doc.northBoundCoord) view.parentView.insertSpatialCoverageMap([doc.northBoundCoord, doc.southBoundCoord, doc.eastBoundCoord, doc.westBoundCoord]);	
+							view.parentView.insertBreadcrumbs();
 						}
 						
 					});

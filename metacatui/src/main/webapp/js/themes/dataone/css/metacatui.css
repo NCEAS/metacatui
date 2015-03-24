@@ -742,7 +742,31 @@ Bold 700
 	text-transform: uppercase;
 }
     
-
+/****************************************** 
+** Navigation ***
+******************************************/
+.breadcrumb>li+li:before {
+  padding: 0 5px;
+  color: #ccc;
+  content: "/\00a0";
+}
+.breadcrumb>li>a{
+	font-weight: normal;
+}
+.breadcrumb>li>a.active{
+	color: #555;
+}
+.breadcrumb .back{
+	margin-right: 20px;
+	display: inline;
+	border-right: 1px solid #999;
+	padding-right: 20px;
+}
+.breadcrumb > .home,
+.breadcrumb > li.home + li:before{ /*Hide the "Home" breadcrumb link and its divider */
+	display: none;
+}
+ 
 /* METADATA VIEW CSS
 -------------------------------------------------- */
 	label.control-label{

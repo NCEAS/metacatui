@@ -42,33 +42,28 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		// Will return the last route, which is actually the second to last item in the route history, 
 		// since the last item is the route being currently viewed
 		lastRoute: function(){
-			if((this.routeHistory === undefined) || (this.routeHistory.length <= 1)){
+			if((typeof this.routeHistory === "undefined") || (this.routeHistory.length <= 1))
 				return false;
-			}
-			
-			return this.routeHistory[this.routeHistory.length-2];
+			else
+				return this.routeHistory[this.routeHistory.length-2];
 		},
 
 		renderIndex: function (param) {
-			console.log('Called UIRouter.renderIndex()');
 			this.routeHistory.push("index");
 			appView.showView(indexView);
 		},
 		
 		renderAbout: function (anchorId) {
-			console.log('Called UIRouter.renderAbout()');
 			this.routeHistory.push("about");
 			appModel.set('anchorId', anchorId);
 			appView.showView(aboutView);
 		},
 		
 		renderPlans: function (param) {
-			console.log('Called UIRouter.renderPlans()');
 			this.routeHistory.push("plans");
 		},
 		
 		renderTools: function (anchorId) {
-			console.log('Called UIRouter.renderTools()');
 			this.routeHistory.push("tools");
 			appModel.set('anchorId', anchorId);
 			appView.showView(toolsView);
@@ -100,14 +95,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderMetadata: function (pid) {
-			console.log('Called UIRouter.renderMetadata()');
 			this.routeHistory.push("metadata");
 			appModel.set('pid', pid);
+			metadataView.pid = pid;
 			appView.showView(metadataView);
 		},
 		
 		renderProfile: function(query){
-			console.log('Called UIRouter.renderProfile()');
 			this.routeHistory.push("profile");
 			
 			//Reset the stats model first
@@ -119,7 +113,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderRegistry: function (stage, pid) {
-			console.log('Called UIRouter.renderRegistry()');
 			this.routeHistory.push("registry");
 			registryView.stage = stage;
 			registryView.pid = pid;
@@ -127,7 +120,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderLdap: function (stage) {
-			console.log('Called UIRouter.renderLdap()');
 			this.routeHistory.push("ldap");
 			ldapView.stage = stage;
 			appView.showView(ldapView);
@@ -136,14 +128,12 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-			console.log('Called UIRouter.logout()');
 			registryView.logout();
 			//appView.showView(indexView);
 		},
 		
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
-			console.log('Called UIRouter.renderExternal()');
 			this.routeHistory.push("external");
 			externalView.url = url;
 			appView.showView(externalView);

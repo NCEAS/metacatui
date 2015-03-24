@@ -92,6 +92,9 @@ define(['jquery',
 								viewRef.$el.fadeIn("slow");
 								
 								viewRef.insertResourceMapContents(appModel.get('pid'));
+								
+								viewRef.insertBreadcrumbs();
+								
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 							}							
 						});
@@ -107,14 +110,43 @@ define(['jquery',
 					parentView: this 
 					});
 			this.$el.append(this.subviews.metadataFromIndex.render().el);
-			
+						
 		},
 		
-		insertBackLink: function(){
-			if(uiRouter.lastRoute() == "data") {
-				var insertInto = this.$el.children()[0] || this.el;
-				$(insertInto).prepend('<a href="#data" title="Back"><i class="icon-angle-left"></i> Back to search</a>');
+		insertBreadcrumbs: function(){
+			
+			var breadcrumbs = $(document.createElement("ol"))
+						      .addClass("breadcrumb")
+						      .append($(document.createElement("li"))
+						    		  .addClass("home")
+						    		  .append($(document.createElement("a"))
+						    				  .attr("href", "#")
+						    				  .addClass("home")
+						    				  .text("Home")))
+		    				  .append($(document.createElement("li"))
+		    						  .addClass("search")
+						    		  .append($(document.createElement("a"))
+						    				  .attr("href", "#data")
+						    				  .addClass("search")
+						    				  .text("Search")))
+		    				  .append($(document.createElement("li"))
+						    		  .append($(document.createElement("a"))
+						    				  .attr("href", "#" + Backbone.history.fragment)
+						    				  .addClass("active")
+						    				  .text("Metadata")));
+			
+			if(uiRouter.lastRoute() == "data"){
+				$(breadcrumbs).prepend($(document.createElement("a"))
+						         .attr("href", "#data")
+						         .attr("title", "Back")
+						         .addClass("back")
+						         .text(" Back to search")
+						         .prepend($(document.createElement("i"))
+						        		  .addClass("icon-angle-left")));
 			}
+			
+			if(this.$("#Metadata").length > 0) this.$("#Metadata").prepend(breadcrumbs);
+			else this.$el.children().first().prepend(breadcrumbs);
 		},
 		
 		// this will insert information about the data package
