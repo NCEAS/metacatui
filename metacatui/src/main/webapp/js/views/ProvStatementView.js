@@ -154,7 +154,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						
 						//Is the subject the entity the user is currently viewing?
 						if(view.currentlyViewing && (view.currentlyViewing.get("id") == subjectId)){
-							var linkContainer = $(document.createElement("span")).prepend($(document.createElement("span")).text("the data you are currently viewing, "), link);
+							var linkContainer = $(document.createElement("span")).prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), link);
 							objList.push(linkContainer);
 						}
 						else
