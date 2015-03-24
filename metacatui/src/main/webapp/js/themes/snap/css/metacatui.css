@@ -1114,6 +1114,9 @@ svg .point:hover ~ .line-chart-label{
 /****************************************** 
 ** Navigation ***
 ******************************************/
+.breadcrumb{
+	margin-top: 20px;
+}
 .breadcrumb>li+li:before {
   padding: 0 5px;
   color: #ccc;
