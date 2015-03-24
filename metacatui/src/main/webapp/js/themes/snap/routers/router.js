@@ -81,7 +81,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(toolsView);
 		},
 		
-		renderData: function (page, mode, query) {
+		renderData: function (mode, query, page) {
 			console.log('Called UIRouter.renderData()');
 			this.routeHistory.push("data");
 			appModel.set('page', page);

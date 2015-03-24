@@ -30,22 +30,22 @@
          </div>
          
 	    <% if (resourceMap) {
-				print('<span class="span1 download">');
+				print('<span class="span1 download stop-route">');
 	
-				print('<a data-toggle="dropdown" href="#"><i class="icon-download-alt"></i><i class="icon-caret-down"></i></a>');
-			        print('<ul class="dropdown-menu">');
+				print('<a data-toggle="dropdown" href="#"><i class="icon-download-alt stop-route"></i><i class="icon-caret-down"></i></a>');
+			        print('<ul class="dropdown-menu stop-route">');
 			        var cnt = 1;
 			        _.each(resourceMap, function(resourceMapId) {
 						print('<li>');
-						print('<a class="btn" href="', package_service, resourceMapId, '" title="', resourceMapId ,'" >', 'Package ', cnt, '</a>');
+						print('<a class="btn stop-route" href="', package_service, resourceMapId, '" title="', resourceMapId ,'" >', 'Package ', cnt, '</a>');
 						print('</li>'); 
 						 
 					})
 			        print('</ul></span>');
 			    }
 		    else {
-		    	print('<span class="span1">');
-				print('<a href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a></span>'); 
+		    	print('<span class="span1 stop-route">');
+				print('<a href=\"', package_service, id, '\"><i class="icon-download-alt stop-route"></i></a></span>'); 
 			}
 		%>
 		

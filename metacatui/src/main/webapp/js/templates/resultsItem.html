@@ -17,29 +17,29 @@
 %>
         <div class="span2 info-icons">
 			
-        	<div class="row-fluid">
+        	<div class="row-fluid stop-route">
         		            
 	            <% if((typeof abstract == 'undefined') || (abstract == "")){ 
-           			print('<div class="show-abstract span6">');
-           			print('<i class="icon-info-sign inactive"></i>');
+           			print('<div class="show-abstract span6 stop-route">');
+           			print('<i class="icon-info-sign inactive stop-route"></i>');
            			print('</div>');
            		} 
            		else{	        
            			var safeAbstract = abstract.replace(/\"/g, "'");  
-           			safeAbstract = "<div class='abstract-popover'>"+safeAbstract+"</div>"; 
+           			safeAbstract = "<div class='abstract-popover stop-route'>"+safeAbstract+"</div>"; 
            					
            			print('<div class="show-abstract span6 popover-this stop-route prevent-popover-runoff" data-placement="left" data-trigger="hover" data-title="Abstract" data-container="#Content" data-html="true" data-content="' + safeAbstract + '">');
            			print('<i class="icon-info-sign show-abstract more-info stop-route"></i>');
            			print('</div>');
            		 } 
               %>
-        		<div class="on-map span6">
+        		<div class="on-map span6 stop-route">
 					<% 
 						if (typeof southBoundCoord != "undefined"){
-		               		print('<i class="icon-map-marker on-map open-marker" data-id="'+id+'" data-geohash="' + geohash_9 + '"></i>');
+		               		print('<i class="icon-map-marker on-map open-marker stop-route" data-id="'+id+'" data-geohash="' + geohash_9 + '"></i>');
 		               }
 		               else{
-		               		print('<i class="icon-map-marker inactive"></i>');
+		               		print('<i class="icon-map-marker inactive stop-route"></i>');
 		               }
 		            %>
 	            </div>
