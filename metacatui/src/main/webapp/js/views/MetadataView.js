@@ -142,9 +142,6 @@ define(['jquery',
 			//Add the metadata HTML
 			this.$el.append(this.subviews.metadataFromIndex.render().el);
 			
-			//Insert the breadcrumb navigation
-			//this.insertBreadcrumbs();
-			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
 			
@@ -228,7 +225,7 @@ define(['jquery',
 						        		  .addClass("icon-angle-left")));
 			}
 			
-			this.$("#Metadata").prepend(breadcrumbs);
+			this.$el.prepend(breadcrumbs);
 		},
 		
 		/*
