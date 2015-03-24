@@ -953,6 +953,13 @@ svg .point:hover ~ .line-chart-label{
 	display: block;
 }
 
+/* OTHER NAVIGATION
+-------------------------------------------------- */
+.breadcrumb > .home,
+.breadcrumb > li.home + li:before{ /*Hide the "Home" breadcrumb link and its divider */
+	display: none;
+}
+
   /* Metadata rendering CSS
   -------------------------------------------------- */
     #Metadata {
@@ -1735,6 +1742,7 @@ svg .point:hover ~ .line-chart-label{
 	float: left;
 	margin: 38px 10px;
 }
+
 
 /* RELATED/NAVIGATION CSS
 ---------------------------------------------------- */

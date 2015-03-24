@@ -52,6 +52,7 @@ Bold 700 Italic
     body > #Content {
     	max-width: 100%;
     	width: 100%;
+    	margin-top: 100px;
     }
 		
     body > section > article {
@@ -957,6 +958,12 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
          -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
+    
+    .navbar .nav > li > a.brand:focus,
+    .navbar .nav > li > a.brand:hover {
+    	color: #992222;
+    	background-color: transparent;
+    }
 
     /* Offset the responsive button for proper vertical alignment */
     .navbar .btn-navbar {
@@ -1509,7 +1516,7 @@ svg .domain{
     #Metadata {
 		min-height: 800px;
 		width: 90%;
-		margin-top: 125px;
+		margin-top: 100px;
     }
     
     #Metadata > .container{

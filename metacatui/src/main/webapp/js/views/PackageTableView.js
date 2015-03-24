@@ -257,7 +257,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//If we are on the Metadata view, then let's scroll to the anchor
 			var id = $(button).attr("data-id");
-			var anchor = $("#" + id.replace(/(:|\.|\[|\]|,|\(|\))/g, "-"));
+			var anchor = $("#" + id.replace(/(:|\.|\[|\]|,|\(|\)|\/|\\)/g, "-"));
 			
 			if(anchor.length) appView.scrollTo(anchor);
 			else window.location = $(button).attr("href");  //navigate to the link href

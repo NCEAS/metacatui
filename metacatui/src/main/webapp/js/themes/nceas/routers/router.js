@@ -42,11 +42,10 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		// Will return the last route, which is actually the second to last item in the route history, 
 		// since the last item is the route being currently viewed
 		lastRoute: function(){
-			if((this.routeHistory === undefined) || (this.routeHistory.length <= 1)){
+			if((typeof this.routeHistory === "undefined") || (this.routeHistory.length <= 1))
 				return false;
-			}
-			
-			return this.routeHistory[this.routeHistory.length-2];
+			else
+				return this.routeHistory[this.routeHistory.length-2];
 		},
 
 		renderIndex: function (param) {

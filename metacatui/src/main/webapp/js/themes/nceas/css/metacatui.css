@@ -73,6 +73,12 @@ input[type="password"]{
 	height: 30px;
 }
 
+/* OTHER NAVIGATION
+-------------------------------------------------- */
+.breadcrumb > .search{ /*Hide the "Search" breadcrumb link and its divider */
+	display: none;
+}
+
 /* METADATA VIEW SERVICE */
 	.metadata-index {
 		padding: 2%;

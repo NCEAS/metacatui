@@ -8,9 +8,10 @@ define(['jquery',
 		'text!templates/alert.html',
 		'text!templates/attribute.html',
 		'text!templates/downloadButton.html',
-		'text!templates/metadataIndex.html'
+		'text!templates/metadataIndex.html',
+		'text!templates/dataDisplay.html',
 	 ], 				
-	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, MetadataIndexTemplate) {
+	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, MetadataIndexTemplate, DataDisplayTemplate) {
 	'use strict';
 		
 	var MetadataIndexView = Backbone.View.extend({
@@ -33,6 +34,8 @@ define(['jquery',
 		
 		metadataIndexTemplate: _.template(MetadataIndexTemplate),
 		
+		dataDisplayTemplate: _.template(DataDisplayTemplate),
+
 		semanticFields: null,
 										
 		events: {
@@ -244,9 +247,7 @@ define(['jquery',
 				
 				//Add a section for the data details, just like the other attribute sections
 				var keys  = ["id", "size", "views", "pubDate", "memberNode", "formatId"];
-				
-				//Create a header for this data object
-				
+								
 				//Determine the icon type based on format id
 				var type = solrResult.getType(),
 					icon = "";
@@ -268,7 +269,16 @@ define(['jquery',
 					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn);
 				
 				//Create the section
-				$(html).append(view.formatAttributeSection(solrResult, keys, header, "entityDetails").attr("data-id", solrResult.get("id")));	
+				var entityDetailsSection = view.formatAttributeSection(solrResult, keys, header, "entityDetails")
+										        .attr("data-id", solrResult.get("id"));
+				
+				//Create an image thumbnail, if this is an image
+				if(type == "image"){
+					//var thumbnail = view.parentView.createThumbnail(solrResult.get("id"));
+					//$(entityDetailsSection).prepend(thumbnail);
+				}
+						
+				$(html).append(entityDetailsSection);
 			});
 			
 			//Glue together the header and attribute info section

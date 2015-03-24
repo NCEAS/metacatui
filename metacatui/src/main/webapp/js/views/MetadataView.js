@@ -92,7 +92,8 @@ define(['jquery',
 				this.$el.load(endpoint,
 						function(response, status, xhr) {
 							//Our fallback is to show the metadata details from the Solr index
-							if (status=="error") viewRef.renderMetadataFromIndex();
+							if (status=="error") 
+								viewRef.renderMetadataFromIndex();
 							else{															
 								//Find the taxonomic range and give it a class for styling - for older versions of Metacat only (v2.4.3 and older)
 								if(!viewRef.$(".taxonomicCoverage").length)
@@ -107,6 +108,9 @@ define(['jquery',
 								viewRef.getPackageDetails();
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
+								
+								//Insert the breadcrumbs
+								viewRef.insertBreadcrumbs();
 							}
 							// render annotator either way
 							viewRef.setUpAnnotator();
@@ -135,13 +139,17 @@ define(['jquery',
 			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.getCitation);
 			
 			//Add the metadata HTML
-			this.$el.append(this.subviews.metadataFromIndex.render().el);	
+			this.$el.append(this.subviews.metadataFromIndex.render().el);
+			
+			//Insert the breadcrumb navigation
+			this.insertBreadcrumbs();
 			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
 			
 			// render annotator from index content, too
 			this.setUpAnnotator();
+			
 		},
 		
 		getCitation: function(){
@@ -187,11 +195,39 @@ define(['jquery',
 			this.citationEl = citationEl;
 		},
 		
-		insertBackLink: function(){
-			if(uiRouter.lastRoute() == "data") {
-				var insertInto = this.$el.children()[0] || this.el;
-				$(insertInto).prepend('<a href="#data" title="Back"><i class="icon-angle-left"></i> Back to search</a>');
+		insertBreadcrumbs: function(){
+			
+			var breadcrumbs = $(document.createElement("ol"))
+						      .addClass("breadcrumb")
+						      .append($(document.createElement("li"))
+						    		  .addClass("home")
+						    		  .append($(document.createElement("a"))
+						    				  .attr("href", "#")
+						    				  .addClass("home")
+						    				  .text("Home")))
+		    				  .append($(document.createElement("li"))
+		    						  .addClass("search")
+						    		  .append($(document.createElement("a"))
+						    				  .attr("href", "#data")
+						    				  .addClass("search")
+						    				  .text("Search")))
+		    				  .append($(document.createElement("li"))
+						    		  .append($(document.createElement("a"))
+						    				  .attr("href", "#" + Backbone.history.fragment)
+						    				  .addClass("active")
+						    				  .text("Metadata")));
+			
+			if(uiRouter.lastRoute() == "data"){
+				$(breadcrumbs).prepend($(document.createElement("a"))
+						         .attr("href", "#data")
+						         .attr("title", "Back")
+						         .addClass("back")
+						         .text(" Back to search")
+						         .prepend($(document.createElement("i"))
+						        		  .addClass("icon-angle-left")));
 			}
+			
+			this.$("#Metadata").prepend(breadcrumbs);
 		},
 		
 		/*
@@ -238,12 +274,20 @@ define(['jquery',
 			$(tableContainer).html(tableView.render().el);
 			
 			//Hide the Metadata buttons that have no matching entity details section
+			var count = 0;
 			_.each($("#downloadContents .preview"), function(btn){
 				//var selector = $(btn).attr("data-id").replace(/(:|\.|\[|\]|,|\(|\))/g, "-");
 				//if($("#" + selector).length == 0) $(btn).addClass("hidden");
-				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id")))
+				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
 					$(btn).addClass("hidden");
+					count++;
+				}
 			});
+			if(count == $("#downloadContents .preview").length){
+				$("td.more-info").addClass("hidden");
+				$("th.more-info").addClass("hidden");
+			}
+			
 						
 			//Remove the extra download button returned from the XSLT since the package table will have all the download links
 		    $("#downloadPackage").detach();
@@ -581,7 +625,7 @@ define(['jquery',
 		findEntityDetailsContainer: function(id){
 			var onlineDistLink = this.$("[data-pid='" + id + "']");
 			if(onlineDistLink.length < 1)
-				this.$("a#" + id.replace(/(:|\.|\[|\]|,|\(|\))/g, "-"));
+				this.$("a#" + id.replace(/(:|\.|\[|\]|,|\(|\)|\/|\\)/g, "-"));
 			if(onlineDistLink.length < 1) //backup
 				onlineDistLink = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
 			
@@ -616,7 +660,7 @@ define(['jquery',
 				packageMembers = this.packageModel.get("members");
 						
 			//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
-			for(var i=0; i<packageMembers.length; i++){
+			for(var i=0; i < packageMembers.length; i++){
 				var solrResult = packageMembers[i],
 					objID      = solrResult.get("id");
 				
@@ -625,23 +669,14 @@ define(['jquery',
 				//Insert an anchor tag to mark this spot on the page (used by the "Metadata" button in the download contents table)
 				$(container).prepend($(document.createElement("a")).attr("id", objID));
 				
-				var type = "";
-				
 				//Is this a visual object (image or PDF)?
-				if(solrResult.get('formatType') == "METADATA"){
-					continue;
-				}
-				else if(this.isImage(solrResult)){
-					type = "image";
+				var type = solrResult.getType();
+				if(type == "image")
 					images.push(solrResult);
-				}
-				else if(this.isPDF(solrResult)){
-					type = "pdf";
+				else if(type == "PDF")
 					pdfs.push(solrResult);
-				}
-				else{
+				else
 					continue;
-				}
 				
 				//Find the part of the HTML Metadata view that describes this data object
 				var entityName = solrResult.get("entityName") || objID;
@@ -840,6 +875,26 @@ define(['jquery',
 					window.clearInterval(intervalID);
 				}				
 			}
+		},
+		
+		createThumbnail: function(id){
+			//Does the appModel point to a resolve URL from a DataONE CN?
+		/*	if(appModel.get("objectServiceUrl").indexOf("/resolve/") > -1){
+				
+				//Get the correct image URL from the HTTP response header
+				$.get(appModel.get("objectServiceUrl") + encodeURIComponent(id), function(data, textStatus, xhr){
+					var img = $(document.createElement("img"))
+	         				  .attr("src", appModel.get("objectServiceUrl") + encodeURIComponent(id))
+	         				  .addClass("thumbnail");
+		
+					
+					return "done";
+				});
+			}
+			else{
+				return "not needed";
+			}	
+*/
 		},
 		
 		replaceEcoGridLinks: function(pids){
