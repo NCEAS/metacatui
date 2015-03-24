@@ -73,7 +73,7 @@ define(['jquery',
 			//uri = window.location.href;
 			uri = appModel.get("objectServiceUrl") + pid;
 			// TODO: use a more stable URI?
-			//uri = "https://cn.dataone.org/cn/v1/resolve/" + pid;
+			//uri = "https://cn.dataone.org/cn/v2/resolve/" + pid;
 			
 			// destroy and recreate
 			if ($(div).data('annotator')) {

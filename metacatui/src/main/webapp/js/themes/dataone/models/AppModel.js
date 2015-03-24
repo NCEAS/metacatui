@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone'],
 			baseUrl: "https://cn-sandbox-2.test.dataone.org", //window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
-			d1Service: 'cn/v1',
+			d1Service: 'cn/v2',
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
