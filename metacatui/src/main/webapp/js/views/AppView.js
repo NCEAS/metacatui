@@ -262,7 +262,7 @@ define(['jquery',
 			return false;
 		},
 		
-		scrollTo: function(pageElement){
+		scrollTo: function(pageElement, offsetTop){
 			//Find the header height if it is a fixed element
 			var headerOffset = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
 			

@@ -1551,10 +1551,10 @@ svg .domain{
 		margin-left: 180px;
 	}
 	
-	.entityDetails{
+	.entitydetails{
 		border-color: #999;
 	}
-	.entityDetails > h4 > .title{
+	.entitydetails > h4 > .title{
 		font-weight: 100;
 	}	
 	

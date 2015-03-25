@@ -259,7 +259,7 @@ section.hasProvLeft.hasProvRight{
 {
 	display: none;
 }
-#metadata-index-details .entityDetails .size{
+#metadata-index-details .entitydetails .size{
 	display: inherit;
 }
 
@@ -302,7 +302,7 @@ section.hasProvLeft.hasProvRight{
 /****************************************** 
 * The Data Details box in the Metadata View
 ********************************************/
-.entityDetails{
+.entitydetails{
     	border-width: 1px;
     	border-style: solid;
     	border-radius: 4px;
@@ -311,23 +311,23 @@ section.hasProvLeft.hasProvRight{
     	margin-bottom: 20px;
     	padding: 20px;
 }
-.entityDetails > h4 > *{
+.entitydetails > h4 > *{
 	float: left;
 	margin-bottom: 20px;
 }
-.entityDetails > h4 > i{
+.entitydetails > h4 > i{
 	font-size: 1.5em;
 }
-.entityDetails > h4 > .title{
+.entitydetails > h4 > .title{
 	width: 80%;
 	width: calc(100% - 175px);
 	margin-left: 20px;
 	word-wrap: break-word;
 }
-.entityDetails > h4 > .btn{
+.entitydetails > h4 > .btn{
 	float: right;
 }
-.entityDetails > .control-group{
+.entitydetails > .control-group{
 	clear: both;
 }
 

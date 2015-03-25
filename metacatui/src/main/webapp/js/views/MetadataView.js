@@ -272,24 +272,23 @@ define(['jquery',
 			$(tableContainer).html(tableView.render().el);
 			
 			//Hide the Metadata buttons that have no matching entity details section
-			var count = 0;
-			_.each($("#downloadContents .preview"), function(btn){
-				//var selector = $(btn).attr("data-id").replace(/(:|\.|\[|\]|,|\(|\))/g, "-");
-				//if($("#" + selector).length == 0) $(btn).addClass("hidden");
-				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
-					$(btn).addClass("hidden");
-					count++;
+			if(!this.subviews.metadataFromIndex){
+				var count = 0;
+				_.each($("#downloadContents .preview"), function(btn){
+					if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
+						$(btn).addClass("hidden");
+						count++;
+					}
+				});
+				if(count == $("#downloadContents .preview").length){
+					$("td.more-info").addClass("hidden");
+					$("th.more-info").addClass("hidden");
 				}
-			});
-			if(count == $("#downloadContents .preview").length){
-				$("td.more-info").addClass("hidden");
-				$("th.more-info").addClass("hidden");
+							
+				//Remove the extra download button returned from the XSLT since the package table will have all the download links
+			    $("#downloadPackage").detach();
 			}
 			
-						
-			//Remove the extra download button returned from the XSLT since the package table will have all the download links
-		    $("#downloadPackage").detach();
-		    	   
 		    //Display the images in this package
 		    this.insertDataDetails();
 		    
@@ -426,7 +425,7 @@ define(['jquery',
 			
 			//Draw the provenance charts for each member of this package at an object level
 			_.each(this.packageModel.get("members"), function(member, i){
-				var entityDetailsSection = view.$('.entityDetails[data-id="' + member.get("id") + '"]');
+				var entityDetailsSection = view.$('.entitydetails[data-id="' + member.get("id") + '"]');
 				
 				//Display the prov statement for this package member in it's entity details section
 				//var statement = new ProvStatement({model: member, relatedModels: view.packageModel.get("relatedModels")}).render().el;
@@ -621,10 +620,15 @@ define(['jquery',
 		},
 		
 		findEntityDetailsContainer: function(id){
+			//Metacat 2.4.2 and up will have the online distribution link marked 
 			var onlineDistLink = this.$("[data-pid='" + id + "']");
+			
+			//Otherwise, look for an anchor with the id matching this object's id
 			if(onlineDistLink.length < 1)
 				onlineDistLink = this.$("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
-			if(onlineDistLink.length < 1) //backup
+
+			//Otherwise, find the Online Distribution Link the hard way 
+			if((onlineDistLink.length < 1) && (!this.subviews.metadataFromIndex))
 				onlineDistLink = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
 			
 			if(onlineDistLink.length > 0){
@@ -636,8 +640,8 @@ define(['jquery',
 				
 				return container;
 			}	
-			
-			return false;
+			else
+				return false;
 		},
 		
 		/*
@@ -1067,6 +1071,9 @@ define(['jquery',
 				id     = $(button).attr("data-id");
 			if((typeof id === "undefined") || !id) 
 				return false; //This will make the app defualt to the PackageTableView previewData function
+			
+			//Get the height of the hidden elements since they will affect the position of the 
+			$(".download-contents .collapsed").outerHeight
 			
 			//If we are on the Metadata view, then let's scroll to the anchor
 			appView.scrollTo(this.findEntityDetailsContainer(id));	

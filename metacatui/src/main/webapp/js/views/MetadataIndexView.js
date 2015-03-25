@@ -171,7 +171,11 @@ define(['jquery',
 				populated = false;
 			
 			_.each(keys, function(key, keyNum, list){
-				if(doc.get(key)){
+				if((typeof key === "object") && (doc.get(key.field))){
+					html += view.formatAttribute(key.display, doc.get(key.field));
+					populated = true;
+				}
+				else if(doc.get(key)){
 					html += view.formatAttribute(key, doc.get(key));
 					populated = true;
 				}
@@ -245,8 +249,10 @@ define(['jquery',
 			_.each(pkg.get("members"), function(solrResult, i){
 				if(solrResult.get("formatType") != "DATA") return;
 				
+				solrResult.set("formattedSize", solrResult.bytesToSize());
+				
 				//Add a section for the data details, just like the other attribute sections
-				var keys  = ["id", "size", "views", "pubDate", "memberNode", "formatId"];
+				var keys  = ["id", {field: "formattedSize", display: "size"}, "views", "pubDate", "memberNode", "formatId"];
 								
 				//Determine the icon type based on format id
 				var type = solrResult.getType(),
@@ -269,7 +275,7 @@ define(['jquery',
 					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn);
 				
 				//Create the section
-				var entityDetailsSection = view.formatAttributeSection(solrResult, keys, header, "entityDetails")
+				var entityDetailsSection = view.formatAttributeSection(solrResult, keys, header, "entitydetails")
 										        .attr("data-id", solrResult.get("id"));
 				
 				//Create an image thumbnail, if this is an image
@@ -277,12 +283,15 @@ define(['jquery',
 					//var thumbnail = view.parentView.createThumbnail(solrResult.get("id"));
 					//$(entityDetailsSection).prepend(thumbnail);
 				}
+				
+				//Mark this section with an anchor tag with the doc id
+				$(entityDetailsSection).prepend($(document.createElement("a")).attr("id", solrResult.get("id").replace(/[^A-Za-z0-9]/g, "-")));
 						
 				$(html).append(entityDetailsSection);
 			});
 			
 			//Glue together the header and attribute info section
-			var header = $(document.createElement("h4")).text("Data Table, Image, and Other Data Details");						
+			var header = $(document.createElement("h4")).text("Data Table, Image, and Other Data Details");
 			var section = $(html).prepend(header);
 			
 			//Insert into the DOM right after the "general" information

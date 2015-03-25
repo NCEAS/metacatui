@@ -28,13 +28,13 @@ and (max-device-width : 480px) {
 		width: 55%;
 		overflow: visible;
 	}
-	.entityDetails > h4 > .title{
+	.entitydetails > h4 > .title{
 		width: 83%;
 	}
-	.entityDetails > h4 > i{
+	.entitydetails > h4 > i{
 		width: 10%;
 	}
-	.entityDetails > h4 > .btn{
+	.entitydetails > h4 > .btn{
 		float: none;
 	}
 	

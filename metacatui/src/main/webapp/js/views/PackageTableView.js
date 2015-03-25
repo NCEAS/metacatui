@@ -85,7 +85,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					entityName = solrResult.get("entityName");
 				
 				//Use the metadata title instead of the ID
-				if(!entityName && (formatType == "METADATA")) entityName = "Metadata: " + solrResult.get("title");
+				if(!entityName && (formatType == "METADATA")) entityName = solrResult.get("title");
+				if(formatType == "METADATA") entityName =  "Metadata: " + entityName;
 
 				//Display the id in the table if not name is present
 				if((typeof entityName === "undefined") || !entityName) entityName = id;
@@ -138,7 +139,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				
 				//File size cell
 				var sizeCell = $(document.createElement("td")).addClass("size");
-				var size = view.bytesToSize(solrResult.get("size"));
+				var size = solrResult.bytesToSize();
 				$(sizeCell).text(size);
 				$(tr).append(sizeCell);
 
@@ -161,7 +162,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(tr).append(downloadBtnCell);
 				
 				//"Metadata" button cell
-				if(members.length > 1){
+				if((members.length > 1) && (view.currentlyViewing != solrResult.get("id")) && (formatType != "METADATA")){
 					var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
 					var moreInfo     = $(document.createElement("a"))
 										.attr("href", "#view/" + id)
@@ -176,12 +177,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				}
 				
 				//If we are already viewing this object, display the button as disabled with a tooltip
-				if(view.currentlyViewing == solrResult.get("id")){
-					$(moreInfo).attr("disabled", "disabled").tooltip({
-						title: "You are currently viewing this",
-						trigger: "hover focus"
-					});
-					
+				if(view.currentlyViewing == solrResult.get("id")){					
 					//List this row first if it is the current item
 					$(tbody).prepend(tr);
 				}
@@ -285,39 +281,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.$(".collapse-control").fadeOut(function(){
 				view.$(".expand-control").fadeIn();				
 			});			
-		},
-		
-		/**
-		 * Convert number of bytes into human readable format
-		 *
-		 * @param integer bytes     Number of bytes to convert
-		 * @param integer precision Number of digits after the decimal separator
-		 * @return string
-		 */
-		bytesToSize: function(bytes, precision){  
-		    var kilobyte = 1024;
-		    var megabyte = kilobyte * 1024;
-		    var gigabyte = megabyte * 1024;
-		    var terabyte = gigabyte * 1024;
-		   
-		    if ((bytes >= 0) && (bytes < kilobyte)) {
-		        return bytes + ' B';
-		 
-		    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-		        return (bytes / kilobyte).toFixed(precision) + ' KB';
-		 
-		    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-		        return (bytes / megabyte).toFixed(precision) + ' MB';
-		 
-		    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-		        return (bytes / gigabyte).toFixed(precision) + ' GB';
-		 
-		    } else if (bytes >= terabyte) {
-		        return (bytes / terabyte).toFixed(precision) + ' TB';
-		 
-		    } else {
-		        return bytes + ' B';
-		    }
 		}
 	});
 	
