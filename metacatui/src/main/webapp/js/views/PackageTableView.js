@@ -118,10 +118,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				
 				//Name cell
 				var nameCell = $(document.createElement("td")).addClass("name wrap-contents");				
-				var nameLink = document.createElement("a");
-				$(nameLink).attr("href", objectServiceUrl + encodeURIComponent(id))
-						  .text(entityName);
-				$(nameCell).html(nameLink);
+				if((formatType == "METADATA") && (id != view.currentlyViewing))
+					var nameEl = $(document.createElement("a")).attr("href", "#view/" + encodeURIComponent(id)); //Route to the metadata view for metadata docs
+				else if(id == view.currentlyViewing)
+					var nameEl = $(document.createElement("span"));
+				else
+					var nameEl = $(document.createElement("a")).attr("href", objectServiceUrl + encodeURIComponent(id));
+				$(nameEl).text(entityName);	
+				$(nameCell).html(nameEl);
 				$(tr).append(nameCell);
 
 				//Format type cell
@@ -162,8 +166,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(tr).append(downloadBtnCell);
 				
 				//"Metadata" button cell
+				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
 				if((members.length > 1) && (view.currentlyViewing != solrResult.get("id")) && (formatType != "METADATA")){
-					var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
 					var moreInfo     = $(document.createElement("a"))
 										.attr("href", "#view/" + id)
 										.addClass("btn preview")
@@ -173,8 +177,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 										.addClass("icon icon-info-sign");
 					$(moreInfo).append(moreInfoIcon);					
 					$(moreInfoCell).append(moreInfo);
-					$(tr).append(moreInfoCell);
 				}
+				$(tr).append(moreInfoCell);
 				
 				//If we are already viewing this object, display the button as disabled with a tooltip
 				if(view.currentlyViewing == solrResult.get("id")){					

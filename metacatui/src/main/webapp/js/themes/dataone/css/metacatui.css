@@ -422,9 +422,6 @@ table td.btn-container .btn,
 table th.btn-container .btn{
 	min-width: 90px;
 }
-.download-contents td{
-	font-weight: lighter;
-}
 .table-striped tfoot>tr>th{
 	background-color:#f9f9f9;
 }
