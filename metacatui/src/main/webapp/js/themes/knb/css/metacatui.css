@@ -1481,6 +1481,10 @@ svg .domain{
 /****************************************** 
 ** Navigation ***
 ******************************************/
+.breadcrumb{
+	width: 90%;
+	margin: 0px auto;
+}
 .breadcrumb>li+li:before {
   padding: 0 5px;
   color: #ccc;
@@ -1504,7 +1508,7 @@ svg .domain{
     #Metadata {
 		min-height: 800px;
 		width: 90%;
-		margin-top: 125px;
+		margin-top: 20px;
     }
     
     #Metadata > .container{
@@ -1630,7 +1634,6 @@ svg .domain{
     .download-contents td {
 		vertical-align: middle;
 		overflow-wrap: break-word;
-		width: 10%;
 	}
     .download-contents .format-type {
 		text-align: center;
@@ -1640,7 +1643,8 @@ svg .domain{
 		margin-left: 5px;
 	}
 	.download-contents td.btn-container{
-		min-width: 120px;
+		min-width: 133px;
+		width: 133px;
 	}
 	.download-contents tfoot{
 		border-top: 1px solid #ddd;

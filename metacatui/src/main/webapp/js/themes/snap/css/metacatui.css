@@ -1115,7 +1115,10 @@ svg .point:hover ~ .line-chart-label{
 ** Navigation ***
 ******************************************/
 .breadcrumb{
-	margin-top: 20px;
+	margin: 20px auto 0px auto;
+	background-color: transparent;
+	max-width: 1170px;
+	font-size: .8em;
 }
 .breadcrumb>li+li:before {
   padding: 0 5px;

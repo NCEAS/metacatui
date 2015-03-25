@@ -69,7 +69,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 					entityName = member.entityName;
 				
 				//Use the metadata title instead of the ID
-				if(formatType == "METADATA") entityName = member.title;
+				if(formatType == "METADATA") entityName = "Metadata: " + member.title;
 
 				//Display the id in the table if not name is present
 				if((typeof entityName === "undefined") || !entityName) entityName = id;
@@ -89,8 +89,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				var nameCell = $(document.createElement("td")).addClass("name wrap-contents");				
 				var nameLink = document.createElement("a");
 				$(nameLink).attr("href", objectServiceUrl + encodeURIComponent(id))
-						  .text(entityName)
-						  .addClass("ellipsis");
+						  .text(entityName);
 				$(nameCell).html(nameLink);
 				$(tr).append(nameCell);
 
@@ -148,7 +147,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 				
 				//If we are already viewing this object, display the button as disabled with a tooltip
 				if(view.currentlyViewing == member.id){
-					$(moreInfo).attr("disabled", "disabled").tooltip({
+					$(moreInfo).attr("disabled", "disabled").addClass("hidden").tooltip({
 						title: "You are currently viewing this",
 						trigger: "hover focus"
 					});
@@ -186,13 +185,14 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 			
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
-			if(packageServiceUrl){
+			if(packageServiceUrl && this.packageId){
 				downloadButtonHTML = this.downloadButtonTemplate({ 
 					href: packageServiceUrl + encodeURIComponent(this.packageId), 
 					text: "Download all",
 					className: "btn btn-primary "
 				});	
 			}
+			
 			this.$el.append(this.template({
 				downloadButton: downloadButtonHTML,
 				readsEnabled: readsEnabled
@@ -228,7 +228,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 
 			//If we are on the Metadata view, then let's scroll to the anchor
 			var id = $(button).attr("data-id");
-			var anchor = $("#" + id.replace(/(:|\.|\[|\]|,|\(|\))/g, "-"));
+			var anchor = $("#" + id.replace(/(:|\.|\[|\]|,|\(|\)|\\|\/)/g, "-"));
 			if(anchor.length) appView.scrollTo(anchor);
 		},
 		

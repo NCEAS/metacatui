@@ -923,6 +923,11 @@ svg .point:hover ~ .line-chart-label{
 /****************************************** 
 ** Navigation ***
 ******************************************/
+.breadcrumb{
+	max-width: 940px;
+	margin: 10px auto 20px auto;
+	background-color: transparent;
+}
 .breadcrumb>li+li:before {
   padding: 0 5px;
   color: #ccc;
@@ -970,7 +975,7 @@ svg .point:hover ~ .line-chart-label{
    	}
    	
    	#Metadata .well .span10{
-		font-size: 30px;
+		font-size: 1.5em;
 		margin: 10px 0;
 		font-family: inherit;
 		line-height: 1;
@@ -1022,7 +1027,9 @@ svg .point:hover ~ .line-chart-label{
     	vertical-align: middle;
     }
     .download-contents .btn-container{
-    	max-width: 65px;
+    	max-width: 133px;
+    	min-width: 133px;
+    	width: 133px;
     }
     .download-contents .download-btn > .btn{
     	float: right;

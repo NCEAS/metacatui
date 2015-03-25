@@ -145,8 +145,9 @@ define(['jquery',
 						        		  .addClass("icon-angle-left")));
 			}
 			
-			if(this.$("#Metadata").length > 0) this.$("#Metadata").prepend(breadcrumbs);
-			else this.$el.children().first().prepend(breadcrumbs);
+			//if(this.$("#Metadata").length > 0) this.$("#Metadata").prepend(breadcrumbs);
+			//else this.$el.children().first().prepend(breadcrumbs);
+			this.$el.prepend(breadcrumbs);
 		},
 		
 		// this will insert information about the data package
@@ -198,7 +199,7 @@ define(['jquery',
 						
 			//*** Find each resource map that this metadata is a part of 
 			// surround pid value in "" so that doi characters do not affect solr query
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id&wt=json&rows=100&q=formatType:METADATA+id:"' + pid + '"';
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,title&wt=json&rows=100&q=formatType:METADATA+id:"' + pid + '"';
 
 			$.get(queryServiceUrl + query, function(data, textStatus, xhr) {
 				
@@ -260,7 +261,7 @@ define(['jquery',
 								
 								if(container.length > 0){
 									//Insert an anchor tag to mark this spot on the page (used by the "Metadata" button in the download contents table)
-									var escapedID = object.id.replace(/(:|\.|\[|\]|,|\(|\))/g, "-");
+									var escapedID = object.id.replace(/(:|\.|\[|\]|,|\(|\)|\\|\/)/g, "-");
 									$(container).prepend($(document.createElement("a")).attr("id", escapedID));
 									
 									var entityName = $(container).find(".entityName").attr("data-entity-name");
@@ -304,7 +305,7 @@ define(['jquery',
 							
 							//Hide the Metadata buttons that have no matching entity details section
 							_.each($("#downloadContents .preview"), function(btn){
-								var selector = $(btn).attr("data-id").replace(/(:|\.|\[|\]|,|\(|\))/g, "-");
+								var selector = $(btn).attr("data-id").replace(/(:|\.|\[|\]|,|\(|\)|\\|\/)/g, "-");
 								if($("#" + selector).length == 0) $(btn).addClass("hidden");
 							});
 						}); 

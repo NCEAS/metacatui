@@ -104,6 +104,10 @@ Bold 700
 		padding: 2%;
 		width: 96%;
 	}
+	
+	.hidden{
+		display: none;
+	}
     
     
     .center{
@@ -855,9 +859,7 @@ Bold 700
     	font-weight: bold;
     	color: white;
     }
-    .download-contents .wrap-contents{
-   		max-width: 150px;
-    }
+
     tr.table-header{
     	background-color: #166194;
     }
@@ -869,15 +871,12 @@ Bold 700
     .download-contents td {
 		vertical-align: middle;
 		overflow-wrap: break-word;
-		width: 10%;
 	}
     .download-contents .format-type {
 		text-align: center;
 		width: 1%;
 	}
-	.download-contents td.name{
-		max-width: 250px;
-	}
+
 	.download-contents .btn i{
 		margin-left: 5px;
 	}
@@ -886,6 +885,7 @@ Bold 700
 	}
 	table td.btn-container, table th.btn-container {
 		min-width: 130px;
+		width: 130px;
 	}
 	.download-contents tfoot th{
     	text-align: center;
