@@ -682,7 +682,7 @@ table th.btn-container .btn{
 		-o-border-radius: 7px;
 	}
 	#Metadata > form > cite.citation {
-		color: #1C6E84;
+		/*color: #1C6E84;*/
 	}
 	label.control-label{
 		font-weight: 400;

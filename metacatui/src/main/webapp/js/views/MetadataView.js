@@ -623,7 +623,7 @@ define(['jquery',
 		findEntityDetailsContainer: function(id){
 			var onlineDistLink = this.$("[data-pid='" + id + "']");
 			if(onlineDistLink.length < 1)
-				onlineDistLink = this.$("a#" + id.replace(/(:|\.|\[|\]|,|\(|\)|\/|\\)/g, "-"));
+				onlineDistLink = this.$("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
 			if(onlineDistLink.length < 1) //backup
 				onlineDistLink = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
 			
