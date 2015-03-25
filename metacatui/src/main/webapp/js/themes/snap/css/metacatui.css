@@ -1917,12 +1917,6 @@ svg .point:hover ~ .line-chart-label{
     	margin-left: 5px;
     	font-size: 16px;
     } 
-    
-    .view-link{
-    	cursor: pointer;
-    }
-    
-
     .pagination {
     	cursor: pointer;
     	margin: auto;

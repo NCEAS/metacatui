@@ -206,7 +206,7 @@ define(['jquery',
 		    				  .append($(document.createElement("li"))
 		    						  .addClass("search")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#data")
+						    				  .attr("href", "#data/page/" + appModel.get("page"))
 						    				  .addClass("search")
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
@@ -217,7 +217,7 @@ define(['jquery',
 			
 			if(uiRouter.lastRoute() == "data"){
 				$(breadcrumbs).prepend($(document.createElement("a"))
-						         .attr("href", "#data")
+						         .attr("href", "#data/page/" + appModel.get("page"))
 						         .attr("title", "Back")
 						         .addClass("back")
 						         .text(" Back to search")
@@ -623,7 +623,7 @@ define(['jquery',
 		findEntityDetailsContainer: function(id){
 			var onlineDistLink = this.$("[data-pid='" + id + "']");
 			if(onlineDistLink.length < 1)
-				this.$("a#" + id.replace(/(:|\.|\[|\]|,|\(|\)|\/|\\)/g, "-"));
+				onlineDistLink = this.$("a#" + id.replace(/(:|\.|\[|\]|,|\(|\)|\/|\\)/g, "-"));
 			if(onlineDistLink.length < 1) //backup
 				onlineDistLink = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
 			

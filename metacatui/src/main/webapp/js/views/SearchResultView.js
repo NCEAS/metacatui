@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 	// The DOM element for a SearchResult item...
 	var SearchResultView = Backbone.View.extend({
 		tagName:  'div',
-		className: 'row-fluid view-link result-row pointer',
+		className: 'row-fluid result-row pointer',
 
 		// Cache the template function for a single item.
 		//template: _.template($('#result-template').html()),
@@ -94,7 +94,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 			if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
 				return;
 			
-			uiRouter.navigate('view/'+id, true);
+			uiRouter.navigate('view/'+id, {trigger: true});
 		},
 
 		// Remove the item, destroy the model from *localStorage* and delete its view.

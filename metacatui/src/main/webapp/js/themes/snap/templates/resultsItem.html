@@ -1,6 +1,6 @@
         <!-- <div class="result-selection span1"><input type="checkbox" <%= selected ? 'checked' : '' %>></div> -->
  <div class="citation-row">
-        <div class="result-citation span10 view-link" data-id="<%= id %>">
+        <div class="result-citation span10" data-id="<%= id %>">
               <span class="result-author"><% var count=0; _.each(origin, function(author) {
                    count++;
                    if (count > 1) {
@@ -51,11 +51,11 @@
 		
 
 
-	<i class="icon-caret-right view-link" data-doi="<%- id %>"></i>
+	<i class="icon-caret-right" data-doi="<%- id %>"></i>
 </div>
 	<%
 	if(abstract !==undefined){
-		print('<div class="abstract view-link" data-doi="' + id + '">');
+		print('<div class="abstract" data-doi="' + id + '">');
 		print(abstract);
 		print('</div>');
 	}

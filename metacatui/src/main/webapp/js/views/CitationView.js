@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone'],
 		className : "citation",
 		
 		events: {
-			
+			"click .route-to-metadata" : "routeToMetadata"
 		},
 		
 		/*
@@ -103,11 +103,11 @@ define(['jquery', 'underscore', 'backbone'],
 	        var idEl = $(document.createElement("span")).addClass("id").text("ID: " + id + ".");
 			
 			//Create a link
-			var linkEl = $(document.createElement("a")).attr("href", "#view/" + encodeURIComponent(id));
+			var linkEl = $(document.createElement("a")).addClass("route-to-metadata").attr("data-pid", id);
 			
 	        //The title will be clickable for citations with science metadata
 	        if((typeof title !== "undefined") && title){
-				$(linkEl).addClass("title view-link").attr("pid", id).text(title + ". ");
+				$(linkEl).addClass("title").attr("data-pid", id).text(title + ". ");
 
 				//Put together all the citation parts
 				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
@@ -119,6 +119,16 @@ define(['jquery', 'underscore', 'backbone'],
 	        }
 	            
 	        return this;         
+		},
+		
+		routeToMetadata: function(e){
+			var id = this.model.get("id");
+			
+			//If the user clicked on a download button or any element with the class 'stop-route', we don't want to navigate to the metadata
+			if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
+				return;
+			
+			uiRouter.navigate('view/'+id, {trigger: true});
 		}
 	});
 	

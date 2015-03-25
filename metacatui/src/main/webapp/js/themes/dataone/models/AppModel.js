@@ -16,11 +16,11 @@ define(['jquery', 'underscore', 'backbone'],
 			sortOrder: 'dateUploaded+desc',
 			pid: null,
 			anchorId: null,
-			page: null,
-			baseUrl: "https://cn-sandbox-2.test.dataone.org", //window.location.origin,
+			page: 0,
+			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
-			d1Service: 'cn/v1',
+			d1Service: 'cn/v2',
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
@@ -55,6 +55,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 			}
 			
+			this.set("baseUrl", "https://cn-sandbox-2.test.dataone.org");
 						
 			// these are pretty standard, but can be customized if needed
 			//this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');

@@ -22,7 +22,7 @@
 <%
 	if(typeof abstract != "undefined"){
 	    var safeAbstract = abstract.replace(/\"/g, "'");
-	    var classes = "abstract view-link";  
+	    var classes = "abstract";  
 	    if(safeAbstract.length > 200) classes += " multi-line-ellipsis";
 	    
 		print('<div class="' + classes + '" data-doi="' + id + '"><div>');
