@@ -192,7 +192,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 							
 							model.sortProvTrace(data.response.docs);
 						}, "json");	
-					}	
+					}
+					else
+						model.sortProvTrace(data.response.docs);
 				}
 				else
 					model.sortProvTrace(data.response.docs);

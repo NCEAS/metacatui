@@ -194,6 +194,15 @@ section.hasProvRight{
 	width: calc(100% - 106px - 43px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;
 }
+article.hasProvLeft table.download-contents .name,
+article.hasProvRight table.download-contents .name{
+	min-width: 100px;
+	max-width: 350px;
+}
+article.hasProvLeft.hasProvRight table.download-contents .name{
+	min-width: 100px;
+	max-width: 250px;
+}
 /*The metadata gets narrowed even more when there are two prov charts next to it*/
 article.hasProvLeft.hasProvRight,
 section.hasProvLeft.hasProvRight{

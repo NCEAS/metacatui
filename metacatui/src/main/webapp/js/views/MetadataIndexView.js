@@ -4,6 +4,7 @@ define(['jquery',
 		'backbone',
 		'gmaps',
 		'models/SolrResult',
+		'views/CitationView',
 		'text!templates/loading.html',
 		'text!templates/alert.html',
 		'text!templates/attribute.html',
@@ -11,7 +12,7 @@ define(['jquery',
 		'text!templates/metadataIndex.html',
 		'text!templates/dataDisplay.html',
 	 ], 				
-	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, MetadataIndexTemplate, DataDisplayTemplate) {
+	function($, _, Backbone, gmaps, SolrResult, CitationView, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, MetadataIndexTemplate, DataDisplayTemplate) {
 	'use strict';
 		
 	var MetadataIndexView = Backbone.View.extend({
@@ -126,12 +127,11 @@ define(['jquery',
 						$(metadataEl).append(view.formatAttributeSection(docModel, keys, "Other"));
 						
 						view.$el.html(view.metadataIndexTemplate({ 
-							creator: creator,
-							id: id,
-							pubDate: pubDate,
-							dateUploaded: dateUploaded,
-							title: title
+							id: id
 						}));
+						
+						var citation = new CitationView({model: docModel, metadata: docModel}).render().el;
+						view.$(".citation").replaceWith(citation);
 						
 						view.$("#downloadContents").after(metadataEl);
 					});
