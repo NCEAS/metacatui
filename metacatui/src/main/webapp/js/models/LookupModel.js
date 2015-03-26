@@ -127,37 +127,63 @@ define(['jquery', 'underscore', 'backbone'],
 			});
 		},
 		
+		orcidGetConcepts: function(uri, callback) {
+			
+			// make sure we have something to lookup
+			if (!appModel.get('orcidServiceUrl')) {
+				return;
+			}
+			
+			var people = [];
+			var query = appModel.get('orcidBaseUrl')  + uri.substring(uri.lastIndexOf("/"));
+			$.get(query, function(data, status, xhr) {
+				// get the orcid info
+				var profile = $(data).find("orcid-profile");
+
+				_.each(profile, function(obj) {
+					var choice = {};
+					choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
+					choice.value = $(obj).find("orcid-identifier > uri").text();
+					choice.desc = $(obj).find("orcid-bio > personal-details").text();
+					people.push(choice);
+				});
+				
+				// callback with answers
+				callback(people);
+			})
+		},
+		
 		orcidSearch: function(request, response, more) {
 			
-				// make sure we have something to lookup
-				if (!appModel.get('orcidServiceUrl')) {
-					response(more);
-					return;
+			// make sure we have something to lookup
+			if (!appModel.get('orcidServiceUrl')) {
+				response(more);
+				return;
+			}
+			
+			var people = [];
+			var query = appModel.get('orcidServiceUrl') + request.term;
+			$.get(query, function(data, status, xhr) {
+				// get the orcid info
+				var profile = $(data).find("orcid-profile");
+
+				_.each(profile, function(obj) {
+					var choice = {};
+					choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
+					choice.value = $(obj).find("orcid-identifier > uri").text();
+					choice.desc = $(obj).find("orcid-bio > personal-details").text();
+					people.push(choice);
+				});
+				
+				// add more if called that way
+				if (more) {
+					people = more.concat(people);
 				}
 				
-				var people = [];
-				var query = appModel.get('orcidServiceUrl') + request.term;
-				$.get(query, function(data, status, xhr) {
-					// get the orcid info
-					var profile = $(data).find("orcid-profile");
-
-					_.each(profile, function(obj) {
-						var choice = {};
-						choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
-						choice.value = $(obj).find("orcid-identifier > uri").text();
-						choice.desc = $(obj).find("orcid-bio > personal-details").text();
-						people.push(choice);
-					});
-					
-					// add more if called that way
-					if (more) {
-						people = more.concat(people);
-					}
-					
-					// callback with answers
-					response(people);
-				})
-			}
+				// callback with answers
+				response(people);
+			})
+		}
 	
 		
 	});
