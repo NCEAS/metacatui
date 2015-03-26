@@ -251,7 +251,11 @@ define(['jquery',
 						};
 						
 						// look it up and provide the callback
-						lookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
+						if (annotation["oa:Motivation"] == "prov:wasAttributedTo") {
+							lookupModel.orcidGetConcepts(conceptUri, renderAnnotation);	
+						} else {
+							lookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
+						}
 						
 					} else {
 						// just render the annotation
