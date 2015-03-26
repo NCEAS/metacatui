@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = searchModel.getProvFlList();
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,title,prov_instanceOfClass,' + provFlList +
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,prov_instanceOfClass,' + provFlList +
 						'&wt=json' +
 						'&rows=100' +
 						'&q=-obsoletedBy:*+%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29';
@@ -253,10 +253,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 								if(_.intersection(docModel.get("documents"), derivations).length) documentsDerivation = true;
 							}
 							
-							//Is this a source object?
+							//Is this a source object or a metadata doc of a source object?
 							if(_.contains(sources, id) || documentsSource){
 								//Have we encountered this source package yet?
-								if(!sourcePackages[mapId]){
+								if(!sourcePackages[mapId] || (mapId != model.get("id"))){
 									//Now make a new package model for it
 									var p = new PackageModel({
 										id: mapId,
@@ -266,17 +266,17 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 									sourcePackages[mapId] = p;	
 								}
 								//If so, add this member to its package model
-								else{
+								else if(mapId != model.get("id")){
 									var memberList = sourcePackages[mapId].get("members");
 									memberList.push(docModel);
 									sourcePackages[mapId].set("members", memberList);
 								}
 							}
 							
-							//Is this a derivation object?
+							//Is this a derivation object or a metadata doc of a derivation object?
 							if(_.contains(derivations, id) || documentsDerivation){
 								//Have we encountered this derivation package yet?
-								if(!derPackages[mapId]){
+								if(!derPackages[mapId] || (mapId != model.get("id"))){
 									//Now make a new package model for it
 									var p = new PackageModel({
 										id: mapId,
@@ -286,7 +286,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 									derPackages[mapId] = p;	
 								}
 								//If so, add this member to its package model
-								else{
+								else if(mapId != model.get("id")){
 									var memberList = derPackages[mapId].get("members");
 									memberList.push(docModel);
 									derPackages[mapId].set("members", memberList);
@@ -374,7 +374,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 				_.each(model.get("derivationDocs"), function(doc, i){
 					//Is this package member a direct derivation of this package member?
-					if(_.contains(memberSourceIDs, doc.get("id")))
+					if(_.contains(memberDerIDs, doc.get("id")))
 						//Save this derivation package member as a derivation of this member
 						member.set("provDerivations", _.union(member.get("provDerivations"), doc));
 					
@@ -383,6 +383,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						relatedModels.push(doc);
 						relatedModelIDs.push(doc.get("id"));
 					}
+				});
+				_.each(members, function(doc, i){
+					//Is this package member a direct derivation of this package member?
+					if(_.contains(memberDerIDs, doc.get("id")))
+						//Save this derivation package member as a derivation of this member
+						member.set("provDerivations", _.union(member.get("provDerivations"), doc));
+					//Is this package member a direct source of this package member?
+					if(_.contains(memberSourceIDs, doc.get("id")))
+						//Save this source package member as a source of this member
+						member.set("provSources", _.union(member.get("provSources"), doc));
 				});
 				
 				//Add this member to the list of related models
