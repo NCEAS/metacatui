@@ -56,9 +56,14 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			
 			//Make a triple for each prov property
 			function Triple(s, p, o){
-				this.subject = s;
+				this.subject   = s;
 				this.predicate = p;
-				this.object  = o;
+				this.object    = o;
+				
+				if(typeof s === "object") this.subjectID = s.get("id");
+				else this.subjectID = s;
+				if(typeof o === "object") this.objectID = o.get("id");
+				else this.objectID = o;
 			}
 			var allTriples = new Array();
 			
@@ -71,7 +76,10 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			_.each(allModels, function(model, i, list){
 				_.each(predicates, function(p, ii){
 					if((typeof model.get(p) !== "undefined") && model.get(p)){
-						var predicateValues = model.get(p);
+						
+						var predicateValues = model.get(p),
+							inversePredicate = view.getInversePredicate(p);
+						
 						_.each(predicateValues, function(value, iii){
 							
 							//Find a model in the "relatedModels" option if there is one that matches
@@ -81,10 +89,30 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 							if(typeof modelFromID === "undefined") tripleObject = value;
 							else                                   tripleObject = modelFromID;
 							
-							if((typeof allTriples[p] === "undefined") || (!allTriples[p])) 
-								allTriples[p] = new Array(new Triple(model, p, tripleObject));
-							else
-								allTriples[p].push(new Triple(model, p, tripleObject));							
+							//Create the Triple
+							var triple = new Triple(model, p, tripleObject);							
+							
+							//Make sure this triple does not already exist as an inverse
+							var hasInverse = false, 
+							    x = 0;
+							if((typeof allTriples[inversePredicate] !== "undefined")){
+								while (!hasInverse && (x < allTriples[inversePredicate].length-1)){
+									var inverseTriple = allTriples[inversePredicate][x];
+									
+									//If the triples match, then this triple's subject == its inverse's object AND this triple's object == its inverse's subject.
+									if((inverseTriple.subjectID == triple.objectID) && (inverseTriple.objectID == triple.subjectID))
+										hasInverse = true;
+									
+									x++;
+								}
+							}
+							
+							if(!hasInverse){
+								if((typeof allTriples[p] === "undefined") || (!allTriples[p])) 
+									allTriples[p] = new Array(triple);
+								else
+									allTriples[p].push(triple);		
+							}						
 						});
 					}
 				});				
@@ -124,15 +152,23 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						});
 						
 						//Get the type of object this is so we can make an icon out of it
-						if(typeof objectModel !== "undefined") type = objectModel.getType();
+						if(typeof objectModel !== "undefined") 
+							type = objectModel.getType();
+						var icon = $(document.createElement("i")).attr("class", "icon " + view.getIconType(type));
+						
+						var linkText = $(document.createElement("span")).text(objectId);
 						
 						//Make a link out of the object ID
-						subjList.push($(document.createElement("a"))
-							                                .attr("href", appModel.get("objectServiceUrl") + objectId)
-							                                .text(objectId)
-				                                            .prepend(
-						                                            $(document.createElement("i"))
-						                                                      .attr("class", "icon " + view.getIconType(type))));
+						var link = $(document.createElement("a")).attr("href", "#view/" + objectId)
+				                                                 .prepend(icon, linkText);
+						
+						//Is the triple object the entity the user is currently viewing?
+						if(view.currentlyViewing && (view.currentlyViewing.get("id") == objectId)){
+							var linkContainer = $(document.createElement("span")).prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), link);
+							subjList.push(linkContainer);
+						}
+						else
+							subjList.push(link);
 					}
 					//If the object of this triple equals the id of this model, then structure the sentence as so
 					else if((triple.object == id) || ((typeof triple.object === "object") && (triple.object.get("id") == id))){
@@ -150,7 +186,8 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						var linkText = $(document.createElement("span")).text(subjectId);
 												
 						//Make a link of the subject ID
-						var link = $(document.createElement("a")).attr("href", appModel.get("objectServiceUrl") + subjectId).prepend(icon, linkText);
+						var link = $(document.createElement("a")).attr("href", "#view/" + subjectId)
+															     .prepend(icon, linkText);
 						
 						//Is the subject the entity the user is currently viewing?
 						if(view.currentlyViewing && (view.currentlyViewing.get("id") == subjectId)){
@@ -182,11 +219,21 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			
 			if(provFieldName == "prov_wasDerivedFrom"          && !inverse) return "was derived from ";
 			else if(provFieldName == "prov_wasDerivedFrom"     && inverse)  return "was used as a source to create ";
-			else if(provFieldName == "prov_generatedByProgram" && !inverse) return "was generated by the program ";
+			else if(provFieldName == "prov_generatedByProgram" && !inverse) return "was generated by ";
 			else if(provFieldName == "prov_generatedByProgram" && inverse)  return "generated ";
-			else if(provFieldName == "prov_usedByProgram"      && !inverse) return "was used by the program ";
+			else if(provFieldName == "prov_generated"          && !inverse)  return "generated ";
+			else if(provFieldName == "prov_generated"          && inverse)  return "was generated by ";
+			else if(provFieldName == "prov_usedByProgram"      && !inverse) return "was used by ";
 			else if(provFieldName == "prov_usedByProgram"      && inverse)  return "used ";
 			else return provFieldName + " ";
+		},
+		
+		getInversePredicate: function(p){
+			if(p == "prov_generated")               return "prov_generatedByProgram";
+			else if(p == "prov_generatedByProgram") return "prov_generated";
+			else if(p == "prov_usedByProgram")      return "prov_used";
+			else if(p == "prov_used")               return "prov_usedByProgram";
+			else                                    return false;
 		},
 		
 		getIconType: function(type){
