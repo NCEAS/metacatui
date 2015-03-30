@@ -212,36 +212,37 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				derPackages      = new Array(),
 				sourceDocs		 = new Array(),
 				derDocs	 		 = new Array(),
-				sources          = this.get("sources"),
-				derivations      = this.get("derivations");
+				sourceIDs        = this.get("sources"),
+				derivationIDs    = this.get("derivations");
 			
 			//Separate the results into derivations and sources and group by their resource map.
 			_.each(docs, function(doc, i){
 				
-				var docModel = new SolrResult(doc);
+				var docModel = new SolrResult(doc),
+				      mapIds = docModel.get("resourceMap");
+
 				
-				if((typeof docModel.get("resourceMap") === "undefined") && (docModel.get("formatType") == "DATA") && (typeof docModel.get("isDocumentedBy") === "undefined")){
+				if(((typeof mapIds === "undefined") || !mapIds) && (docModel.get("formatType") == "DATA") && (typeof docModel.get("isDocumentedBy") === "undefined")){
 					//If this object is not in a resource map and does not have metadata, it is a "naked" data doc, so save it by itself
-					if(_.contains(sources, doc.id))
+					if(_.contains(sourceIDs, doc.id))
 						sourceDocs.push(docModel);
-					if(_.contains(derivations, doc.id))
+					if(_.contains(derivationIDs, doc.id))
 						derDocs.push(docModel);
 				}
-				else if((typeof docModel.get("resourceMap") === "undefined") && (docModel.get("formatType") == "DATA") && docModel.get("isDocumentedBy")){
-					//If this data doc has a resource map and has a metadata doc that documents it, create a blank package model and save it
+				else if(((typeof mapIds === "undefined") || !mapIds) && (docModel.get("formatType") == "DATA") && docModel.get("isDocumentedBy")){
+					//If this data doc does not have a resource map but has a metadata doc that documents it, create a blank package model and save it
 					var p = new PackageModel({
 						members: new Array(docModel)
 					});
 					//Add this package model to the sources and/or derivations packages list
-					if(_.contains(sources, docModel.get("id")))
+					if(_.contains(sourceIDs, docModel.get("id")))
 						sourcePackages[docModel.get("id")] = p;
-					if(_.contains(derivations, docModel.get("id")))
+					if(_.contains(derivationIDs, docModel.get("id")))
 						derPackages[docModel.get("id")] = p;
 				}
-				else if(docModel.get("resourceMap")){						
+				else if(mapIds.length){						
 					//If this doc has a resource map, create a package model and SolrResult model and store it
-					var id = docModel.get("id"),
-						mapIds = docModel.get("resourceMap");
+					var id     = docModel.get("id");
 
 					//Some of these objects may have multiple resource maps
 					_.each(mapIds, function(mapId, i, list){	
@@ -249,14 +250,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						if(!_.contains(model.obsoletedResourceMaps, mapId)){
 							var documentsSource, documentsDerivation;
 							if(docModel.get("formatType") == "METADATA"){
-								if(_.intersection(docModel.get("documents"), sources).length)     documentsSource = true; 
-								if(_.intersection(docModel.get("documents"), derivations).length) documentsDerivation = true;
+								if(_.intersection(docModel.get("documents"), sourceIDs).length)     documentsSource = true; 
+								if(_.intersection(docModel.get("documents"), derivationIDs).length) documentsDerivation = true;
 							}
 							
 							//Is this a source object or a metadata doc of a source object?
-							if(_.contains(sources, id) || documentsSource){
+							if(_.contains(sourceIDs, id) || documentsSource){
 								//Have we encountered this source package yet?
-								if(!sourcePackages[mapId] || (mapId != model.get("id"))){
+								if(!sourcePackages[mapId] && (mapId != model.get("id"))){
 									//Now make a new package model for it
 									var p = new PackageModel({
 										id: mapId,
@@ -274,9 +275,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 							}
 							
 							//Is this a derivation object or a metadata doc of a derivation object?
-							if(_.contains(derivations, id) || documentsDerivation){
+							if(_.contains(derivationIDs, id) || documentsDerivation){
 								//Have we encountered this derivation package yet?
-								if(!derPackages[mapId] || (mapId != model.get("id"))){
+								if(!derPackages[mapId] && (mapId != model.get("id"))){
 									//Now make a new package model for it
 									var p = new PackageModel({
 										id: mapId,
@@ -330,7 +331,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//Get the sources and derivations of this member
 				var memberSourceIDs = member.getSources();
 				var memberDerIDs    = member.getDerivations();
-								
+				
 				//Look through each source package, derivation package, source doc, and derivation doc.
 				_.each(model.get("sourcePackages"), function(pkg, i){
 					_.each(pkg.get("members"), function(sourcePkgMember, i){

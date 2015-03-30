@@ -87,7 +87,7 @@ define(['jquery',
 			// Check for a view service in this appModel
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) var endpoint = appModel.get('viewServiceUrl') + pid + ' #Metadata';
 					
-			if(endpoint && (endpoint !== undefined)){
+			if(endpoint && (typeof endpoint !== "undefined")){
 				var viewRef = this;
 				this.$el.load(endpoint,
 						function(response, status, xhr) {
@@ -425,7 +425,8 @@ define(['jquery',
 			
 			//Draw the provenance charts for each member of this package at an object level
 			_.each(this.packageModel.get("members"), function(member, i){
-				var entityDetailsSection = view.$('.entitydetails[data-id="' + member.get("id") + '"]');
+				//var entityDetailsSection = view.$('.entitydetails[data-id="' + member.get("id") + '"]');
+				var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
 				
 				//Display the prov statement for this package member in it's entity details section
 				//var statement = new ProvStatement({model: member, relatedModels: view.packageModel.get("relatedModels")}).render().el;
@@ -620,23 +621,30 @@ define(['jquery',
 		},
 		
 		findEntityDetailsContainer: function(id){
-			//Metacat 2.4.2 and up will have the online distribution link marked 
-			var onlineDistLink = this.$("[data-pid='" + id + "']");
+			//Are we looking for the main object that this MetadataView is displaying?
+			if(id == this.pid){
+				if(this.$("#Metadata").length > 0) return this.$("#Metadata");
+				else return this.el;
+			}
+			else{
+				//Metacat 2.4.2 and up will have the Online Distribution Link marked 
+				var link = this.$(".entitydetails a[data-pid='" + id + "']");
+			}
 			
-			//Otherwise, look for an anchor with the id matching this object's id
-			if(onlineDistLink.length < 1)
-				onlineDistLink = this.$("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
+			//Otherwise, try looking for an anchor with the id matching this object's id
+			if(link.length < 1)
+				link = this.$("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
 
 			//Otherwise, find the Online Distribution Link the hard way 
-			if((onlineDistLink.length < 1) && (!this.subviews.metadataFromIndex))
-				onlineDistLink = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
-			
-			if(onlineDistLink.length > 0){
+			if((link.length < 1) && (!this.subviews.metadataFromIndex))
+				link = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
+						
+			if(link.length > 0){
 				//Get the container element
-				var container  = $(onlineDistLink).parents(".entitydetails"); 
+				var container  = $(link).parents(".entitydetails"); 
 				if(container.length < 1) 
 					//backup - find the parent of this link that is a direct child of the form element
-					container = _.intersection($(onlineDistLink).parents("form").children(), $(onlineDistLink).parents());
+					container = _.intersection($(link).parents("form").children(), $(link).parents());
 				
 				return container;
 			}	
