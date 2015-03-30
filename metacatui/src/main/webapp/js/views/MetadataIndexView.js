@@ -130,7 +130,7 @@ define(['jquery',
 							id: id
 						}));
 						
-						var citation = new CitationView({model: docModel, metadata: docModel}).render().el;
+						var citation = new CitationView({model: docModel}).render().el;
 						view.$(".citation").replaceWith(citation);
 						
 						view.$("#downloadContents").after(metadataEl);
