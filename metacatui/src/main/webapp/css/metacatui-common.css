@@ -263,6 +263,7 @@ section.hasProvLeft.hasProvRight{
 #metadata-index-details .Other .replicaVerifiedDate,
 #metadata-index-details .Other .sku,
 #metadata-index-details .Other .identifier,
+#metadata-index-details .Other [class*=" prov_"],
 #metadata-index-details .Other [class*=" geohash_"],
 #metadata-index-details .Other [class^="geohash_"]
 {

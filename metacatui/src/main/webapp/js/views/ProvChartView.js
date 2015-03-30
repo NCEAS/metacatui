@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			this.title 	   = this.numProvEntities + " " + this.type;
 			
 			//The default height of the chart when all nodes are visible/expanded
-			this.height = (this.numProvEntities * this.nodeHeight) - this.offsetTop;
+			this.height = (this.numProvEntities * this.nodeHeight);
 
 		},
 		
@@ -95,7 +95,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				this.collapseNodes(false);
 			}
 			else
-				this.$el.css("height", this.height);
+				this.$el.css("height", this.height - this.offsetTop);
 						
 			return this;
 		},
@@ -222,7 +222,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		 */
 		expandNodes: function(){
 			//Change the context element (accompanying metadata section) and the chart itself to the full expanded height
-			$(this.contextEl).height(this.height);
+			$(this.contextEl).height(this.height + this.offsetTop);
 			this.$el.height(this.height - this.offsetTop);
 			
 			//Hide the expand control and show the hidden nodes
@@ -242,7 +242,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				if(typeof lastConnecter !== "undefined") 
 					this.$el.height(parseInt(lastConnecter.style.top));
 				else
-					this.$el.height(this.height - this.offsetTop);
+					this.$el.height(this.height);
 				
 				//Find the pointer and move to the half-way point of the chart height
 				this.$(".prov-pointer").css("top", "50%");
@@ -254,7 +254,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				if(typeof lastPointer !== "undefined")
 					this.$el.height(parseInt(lastPointer.style.top) + this.pointerHeight/2);
 				else
-					this.$el.height(this.height = this.offsetTop);
+					this.$el.height(this.height);
 					
 				this.$(".connecter").css("top", "50%");	
 			}
@@ -268,11 +268,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var chartEl = this.$el,
 				i = 0,
 				numAnimations = this.$(".collapsed").length;
-			this.$(".collapsed").fadeOut(function(){
+			this.$(".collapsed").fadeOut(/*function(){
 				i++;
 				if(scroll && numAnimations == i)
 					appView.scrollTo(chartEl);
-			});			
+			}*/);			
 		}
 		
 	});
