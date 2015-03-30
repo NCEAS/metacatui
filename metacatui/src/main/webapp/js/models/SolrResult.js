@@ -24,6 +24,7 @@ define(['jquery', 'underscore', 'backbone'],
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
+			prov_generated: null,
 			prov_generatedByDataONEDN: null,
 			prov_generatedByExecution: null,
 			prov_generatedByFoafName: null,
@@ -108,7 +109,8 @@ define(['jquery', 'underscore', 'backbone'],
 			if(!_.contains(searchModel.getProvFields(), field)) return false;
 			
 			if(field == "prov_usedByExecution" ||
-			   field == "prov_usedByProgram")
+			   field == "prov_usedByProgram"   ||
+			   field == "prov_generated")
 				return true;
 			else
 				return false;			
