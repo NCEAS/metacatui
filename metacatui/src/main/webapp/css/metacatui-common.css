@@ -57,6 +57,12 @@ h3{
 	font-size: 1.2em;
 	margin-right: 5px;
 }
+.icon-on-right{
+	margin-left: 5px;
+}
+.icon-on-left{
+	margin-right: 5px;
+}
 
 /****************************************** 
 ** Result Rows ***
@@ -216,8 +222,17 @@ section.hasProvLeft.hasProvRight{
 	width: 60%; /* IE fallback */
 	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - (padding + borders)*/
 }
+
+/* Prov chart popovers */
 .prov-chart .popover{
 	min-width: 300px;
+}
+.prov-chart .popover .citation{
+	font-size: 1.1em;
+}
+.prov-chart .popover .btn{
+	display: block;
+	margin-bottom: 10px;
 }
 
 /****************************************** 

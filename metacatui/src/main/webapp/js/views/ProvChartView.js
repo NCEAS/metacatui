@@ -160,12 +160,15 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			var relatedModels = this.packageModel.get("relatedModels");
 			
+			//Create all the elements that will go inside the popover
 			var citationEl = new CitationView({model: citationModel}).render().el;
 			var provStatementEl = new ProvStatement({
 				model         : provEntity, 
 				relatedModels : relatedModels,
 				currentlyViewing : this.context}).render().el;
-			var popoverContent = $(document.createElement("div")).append(citationEl, provStatementEl);
+			var arrowIcon = $(document.createElement("i")).addClass("icon-double-angle-right icon-on-right");
+			var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
+			var popoverContent = $(document.createElement("div")).append(citationEl, provStatementEl, linkEl);
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			$(nodeEl).popover({
