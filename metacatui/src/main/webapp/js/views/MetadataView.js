@@ -272,22 +272,20 @@ define(['jquery',
 			$(tableContainer).html(tableView.render().el);
 			
 			//Hide the Metadata buttons that have no matching entity details section
-			if(!this.subviews.metadataFromIndex){
-				var count = 0;
-				_.each($("#downloadContents .preview"), function(btn){
-					if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
-						$(btn).addClass("hidden");
-						count++;
-					}
-				});
-				if(count == $("#downloadContents .preview").length){
-					$("td.more-info").addClass("hidden");
-					$("th.more-info").addClass("hidden");
+			var count = 0;
+			_.each($("#downloadContents .preview"), function(btn){
+				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
+					$(btn).addClass("hidden");
+					count++;
 				}
-							
-				//Remove the extra download button returned from the XSLT since the package table will have all the download links
-			    $("#downloadPackage").detach();
+			});
+			if(count == $("#downloadContents .preview").length){
+				$("td.more-info").addClass("hidden");
+				$("th.more-info").addClass("hidden");
 			}
+							
+			//Remove the extra download button returned from the XSLT since the package table will have all the download links
+			$("#downloadPackage").detach();
 			
 		    //Display the images in this package
 		    this.insertDataDetails();
