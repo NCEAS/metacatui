@@ -137,6 +137,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var nodeEl = $(document.createElement("div"))
 						 .addClass(type + " node pointer popover-this " + isCollapsed)
 						 .attr("tabindex", 0)
+						 .attr("data-pid", provEntity.get("id"))
 						 .css("top", top);
 			//Create a DOM element for the icon inside the node
 			var iconEl = $(document.createElement("i"))

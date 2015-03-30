@@ -40,6 +40,11 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 		                 "prov_usedByUser",
 		                 "prov_wasExecutedByExecution",
 		                 "prov_wasExecutedByUser"],
+		                 
+		events: {
+			"mouseover .highlight-node" : "highlightNode",
+			"mouseout .highlight-node" : "highlightNode"
+		},
 		
 		/*
 		 * Creates a provenance statement and inserts it into the template
@@ -160,11 +165,13 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						
 						//Make a link out of the object ID
 						var link = $(document.createElement("a")).attr("href", "#view/" + objectId)
-				                                                 .prepend(icon, linkText);
+				                                                 .prepend(icon, linkText)
+				                                                 .attr("data-pid", objectId)
+															     .addClass("highlight-node");
 						
 						//Is the triple object the entity the user is currently viewing?
 						if(view.currentlyViewing && (view.currentlyViewing.get("id") == objectId)){
-							$(linkText).addClass("currently-viewing");
+							$(linkText).addClass("currently-viewing pointer highlight-node").attr("data-pid", objectId);
 							var linkContainer = $(document.createElement("span"))
 													.prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), icon, linkText);
 							subjList.push(linkContainer);
@@ -189,11 +196,13 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 												
 						//Make a link of the subject ID
 						var link = $(document.createElement("a")).attr("href", "#view/" + subjectId)
-															     .prepend(icon, linkText);
+															     .prepend(icon, linkText)
+															     .attr("data-pid", subjectId)
+															     .addClass("highlight-node");
 						
 						//Is the subject the entity the user is currently viewing?
 						if(view.currentlyViewing && (view.currentlyViewing.get("id") == subjectId)){
-							$(linkText).addClass("currently-viewing");
+							$(linkText).addClass("currently-viewing pointer highlight-node").attr("data-pid", subjectId);
 							var linkContainer = $(document.createElement("span"))
 													.prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), icon, linkText);
 							objList.push(linkContainer);
@@ -255,6 +264,23 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 				return "icon-file pdf";
 			else if(type == "package")
 				return "icon-folder-open";
+		},
+		
+		highlightNode: function(e){
+			//Find the id
+			var id = $(e.target).attr("data-pid");
+			
+			if((typeof id === "undefined") || (!id))
+				id = $(e.target).parents("[data-pid]").attr("data-pid");
+			
+			//If there is no id, return
+			if(typeof id === "undefined") return false;
+			
+			//Find its node
+			$(".node[data-pid='" + id + "']").toggleClass("active");
+			
+			if(appModel.get("pid") == id)
+				$("#Metadata").toggleClass("active");
 		}
 	});
 	
