@@ -164,7 +164,9 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						
 						//Is the triple object the entity the user is currently viewing?
 						if(view.currentlyViewing && (view.currentlyViewing.get("id") == objectId)){
-							var linkContainer = $(document.createElement("span")).prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), link);
+							$(linkText).addClass("currently-viewing");
+							var linkContainer = $(document.createElement("span"))
+													.prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), icon, linkText);
 							subjList.push(linkContainer);
 						}
 						else
@@ -191,7 +193,9 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						
 						//Is the subject the entity the user is currently viewing?
 						if(view.currentlyViewing && (view.currentlyViewing.get("id") == subjectId)){
-							var linkContainer = $(document.createElement("span")).prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), link);
+							$(linkText).addClass("currently-viewing");
+							var linkContainer = $(document.createElement("span"))
+													.prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), icon, linkText);
 							objList.push(linkContainer);
 						}
 						else

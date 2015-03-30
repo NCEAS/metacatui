@@ -184,6 +184,9 @@ h3{
 	display: inline;
 	word-break: break-all; 
 }
+.provenance-statement .currently-viewing{
+	font-weight: bold;	
+}
 
 /*The context sections gets narrowed when there is one prov chart next to it*/
 article.hasProvLeft,
