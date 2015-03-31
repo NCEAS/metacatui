@@ -13,6 +13,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.className += options.className  || "";
 			this.model 		= options.model 	 || null;
 			this.metadata   = options.metadata	 || null;
+			this.createLink = (options.createLink == false) ? false : true;
 			
 			//If a metadata doc was passed but no data or package model, then save the metadata as our model, too
 			if(!this.model && this.metadata) this.model = this.metadata;			
@@ -103,7 +104,10 @@ define(['jquery', 'underscore', 'backbone'],
 	        var idEl = $(document.createElement("span")).addClass("id").text("ID: " + id + ".");
 			
 			//Create a link
-			var linkEl = $(document.createElement("a")).addClass("route-to-metadata").attr("data-pid", id);
+	        if(this.createLink)
+	        	var linkEl = $(document.createElement("a")).addClass("route-to-metadata").attr("data-pid", id);
+	        else
+	        	var linkEl = document.createElement("span");
 			
 	        //The title will be clickable for citations with science metadata
 	        if((typeof title !== "undefined") && title){

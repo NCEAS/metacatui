@@ -154,7 +154,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				var placement = "right";		
 				var title = "Source " + type;
 			}
-			
+						
 			if(metadata) var citationModel = metadata;
 			else var citationModel = provEntity;
 			
@@ -162,6 +162,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			//Create all the elements that will go inside the popover
 			var citationEl = new CitationView({model: citationModel}).render().el;
+			var titleEl = $(document.createElement("span")).append($(document.createElement("i")).addClass(icon + " icon-on-left"), title);
 			var provStatementEl = new ProvStatement({
 				model         : provEntity, 
 				relatedModels : relatedModels,
@@ -176,7 +177,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				placement: placement,
 				trigger: "click",
 				container: this.el,
-				title: title,
+				title: titleEl,
 				content: function(){ 
 					return 	popoverContent;
 				}

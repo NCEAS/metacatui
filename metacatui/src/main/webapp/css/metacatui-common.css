@@ -234,6 +234,9 @@ section.hasProvLeft.hasProvRight{
 	display: block;
 	margin-bottom: 10px;
 }
+.prov-chart .popover-title i{
+	font-size: 1.2em;
+} 
 
 /****************************************** 
 ** Collapsable Lists (ExpandCollapseView) **
@@ -297,7 +300,7 @@ section.hasProvLeft.hasProvRight{
 
 #Metadata  > .citation,
 #Metadata  > form > .citation{
-	font-size: 1.5em;
+	font-size: 1.8em;
 	line-height: 1.7em;
 	margin-bottom: 40px;
 	border: 0px;
@@ -307,6 +310,7 @@ section.hasProvLeft.hasProvRight{
 	padding: 0px;
 	background-color: transparent;
 	display: block;
+	font-weight: lighter;
 }
 /*Taxonomic range*/
 .taxonomicCoverage .control-group{

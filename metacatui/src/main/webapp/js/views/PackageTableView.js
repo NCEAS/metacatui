@@ -111,7 +111,12 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				else if (type == "pdf")
 					icon = "icon-file pdf";
 				
-				$(formatTypeIcon).addClass(icon);
+				$(formatTypeIcon).addClass(icon).tooltip({
+					placement: "top",
+					trigger: "hover focus",
+					title: type.charAt(0).toUpperCase() + type.slice(1)
+					
+				});
 				$(iconCell).html(formatTypeIcon);
 				$(tr).append(iconCell);
 				

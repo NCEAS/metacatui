@@ -729,7 +729,7 @@ table th.btn-container .btn{
     .prov-chart .popover-title{
 		background-color: #1C6E84;
 		color: white;
-		font-weight: bold;
+		font-weight: light;
 		padding: 6px;
 		text-align: center;
     }
