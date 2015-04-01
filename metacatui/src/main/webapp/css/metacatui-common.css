@@ -197,6 +197,10 @@ h3{
 .provenance-statement .currently-viewing{
 	font-weight: bold;	
 }
+.prov-chart .image.node{
+	background-size: cover;
+	background-position: 50% 50%;
+}
 
 /*The context sections gets narrowed when there is one prov chart next to it*/
 article.hasProvLeft,
@@ -237,6 +241,11 @@ section.hasProvLeft.hasProvRight{
 .prov-chart .popover-title i{
 	font-size: 1.2em;
 } 
+.prov-chart .popover .thumbnail{
+	margin-bottom: 20px;
+	max-height: 100px;
+	width: auto;
+}
 
 /****************************************** 
 ** Collapsable Lists (ExpandCollapseView) **

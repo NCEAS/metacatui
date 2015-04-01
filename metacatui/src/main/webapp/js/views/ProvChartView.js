@@ -139,11 +139,17 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 						 .attr("tabindex", 0)
 						 .attr("data-pid", provEntity.get("id"))
 						 .css("top", top);
-			//Create a DOM element for the icon inside the node
-			var iconEl = $(document.createElement("i"))
-						 .addClass(icon);
-			//Put the icon in the node
-			$(nodeEl).append(iconEl);
+			
+			if(type == "image"){
+				$(nodeEl).css("background-image", "url('" + provEntity.getURL() + "')");
+			}
+			else{
+				//Create a DOM element for the icon inside the node
+				var iconEl = $(document.createElement("i"))
+							 .addClass(icon);
+				//Put the icon in the node
+				$(nodeEl).append(iconEl);		
+			}
 		
 			//The placement and title of the popover depends on what type of chart this is
 			if(this.type == "derivations"){
@@ -170,6 +176,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var arrowIcon = $(document.createElement("i")).addClass("icon-double-angle-right icon-on-right");
 			var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
 			var popoverContent = $(document.createElement("div")).append(citationEl, provStatementEl, linkEl);
+			
+			if(type == "image"){
+				var img = $(document.createElement("img")).attr("src", provEntity.getURL()).addClass("thumbnail");
+				$(citationEl).after(img);
+			}
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			$(nodeEl).popover({

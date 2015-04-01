@@ -82,6 +82,13 @@ define(['jquery', 'underscore', 'backbone'],
 						
 			else return "data";
 		},
+		
+		getURL: function(){
+			var memberNode = _.where(nodeModel.get("members"), {identifier: this.get("datasource")})[0];
+			var url = memberNode.baseURL + "/v2/object/" + this.get("id");
+			
+			return url;
+		},
 
 		/**** Provenance-related functions ****/
 		/*
