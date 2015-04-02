@@ -55,9 +55,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		
 		render: function(){
 			if(!this.numProvEntities) return false;
-					
-			//First add the title
-			this.$el.append($(document.createElement("h3")).addClass("title").text(this.title));
 			
 			var view = this;
 			
@@ -72,7 +69,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				if(view.type == "derivations") view.$el.append(view.createPointer(i));
 				//Source charts have a connector for each node and one pointer
 				if(view.type == "sources")	view.$el.append(view.createConnecter(i));
-			});				
+			});	
+			
+			//Move the last-viewed prov node to the top of the chart so it is always displayed first
+			if(this.$(".node.previous").length > 0)
+				this.switchNodes(this.$(".node.previous").first(), this.$(".node").first());
 	
 			this.$el.addClass(this.className);
 			
@@ -96,6 +97,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			}
 			else
 				this.$el.css("height", this.height - this.offsetTop);
+			
+			//Lastly, add the title
+			this.$el.prepend($(document.createElement("h3")).addClass("title").text(this.title));
 						
 			return this;
 		},
@@ -183,7 +187,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				var img = $(document.createElement("img")).attr("src", provEntity.getURL()).addClass("thumbnail");
 				$(citationEl).after(img);
 			}
-			
+
 			//Mark the node that was last viewed, if any
 			if(appModel.get("previousPid") == provEntity.get("id")){
 				$(nodeEl).addClass("previous");
@@ -297,6 +301,17 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				if(scroll && numAnimations == i)
 					appView.scrollTo(chartEl);
 			}*/);			
+		},
+		
+		switchNodes: function(nodeA, nodeB){
+			if(nodeA == nodeB) return;
+			
+			var oldPosition =  $(nodeA).css("top");
+			var isCollapsed =  $(nodeA).hasClass("collapsed");
+			
+			$(nodeA).css("top", (this.nodeHeight/2) * -1).removeClass("collapsed");
+			$(nodeB).first().css("top", oldPosition);
+			if(isCollapsed) $(nodeB).first().addClass("collapsed");
 		}
 		
 	});
