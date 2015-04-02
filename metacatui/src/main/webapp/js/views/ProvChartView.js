@@ -140,11 +140,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 						 .attr("data-pid", provEntity.get("id"))
 						 .css("top", top);
 			
+			//Display images in the prov chart node
 			if(type == "image"){
 				$(nodeEl).css("background-image", "url('" + provEntity.getURL() + "')");
 			}
+			//Create an icon inside the node for other format types
 			else{
-				//Create a DOM element for the icon inside the node
 				var iconEl = $(document.createElement("i"))
 							 .addClass(icon);
 				//Put the icon in the node
@@ -177,9 +178,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
 			var popoverContent = $(document.createElement("div")).append(citationEl, provStatementEl, linkEl);
 			
+			//Display images in the prov chart node popover 
 			if(type == "image"){
 				var img = $(document.createElement("img")).attr("src", provEntity.getURL()).addClass("thumbnail");
 				$(citationEl).after(img);
+			}
+			
+			//Mark the node that was last viewed, if any
+			if(appModel.get("previousPid") == provEntity.get("id")){
+				$(nodeEl).addClass("previous");
+				$(citationEl).before($(document.createElement("h7")).text("Last viewed"));
 			}
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement

@@ -15,6 +15,7 @@ define(['jquery', 'underscore', 'backbone'],
 			fullName: null,
 			sortOrder: 'dateUploaded+desc',
 			pid: null,
+			previousPid: null,
 			anchorId: null,
 			page: 0,
 			baseUrl: window.location.origin,
@@ -82,8 +83,11 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
-
-			
+			this.on("change:pid", this.changePid);
+		},
+		
+		changePid: function(model, name){			
+			this.set("previousPid", model.previous("pid"));
 		}
 	
 		

@@ -124,6 +124,9 @@ h3{
 #Metadata.active{
 	box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
 }
+.prov-chart .node.previous{
+	border-width: 3px;
+}
 .prov-chart .connecter{
 	border-top-width: 1px;
 	border-top-style: solid;
@@ -232,7 +235,8 @@ section.hasProvLeft.hasProvRight{
 	min-width: 300px;
 }
 .prov-chart .popover .citation{
-	font-size: 1.1em;
+	font-size: 1.2em;
+	line-height: 1.7em;
 }
 .prov-chart .popover .btn{
 	display: block;
@@ -245,6 +249,12 @@ section.hasProvLeft.hasProvRight{
 	margin-bottom: 20px;
 	max-height: 100px;
 	width: auto;
+}
+.prov-chart .popover h7{
+	font-style: italic;
+	margin-bottom: 10px;
+	display: block;
+	color: #888;
 }
 
 /****************************************** 

@@ -14,7 +14,8 @@ define(['jquery', 'underscore', 'backbone'],
 			username: null,
 			fullName: null,
 			sortOrder: 'dateUploaded+desc',
-			pid: null,
+			previousPid: null,
+			lastPid: null,
 			anchorId: null,
 			page: 0,
 			profileQuery: null,
@@ -62,10 +63,13 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
-			
-		}
-	
 		
+			this.on("change:pid", this.changePid);
+		},
+		
+		changePid: function(model, name){			
+			this.set("previousPid", model.previous("pid"));
+		}
 	});
 	return AppModel;		
 });

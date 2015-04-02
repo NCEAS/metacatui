@@ -95,6 +95,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
+			appModel.set('lastPid', appModel.get("pid"));
 			appModel.set('pid', pid);
 			metadataView.pid = pid;
 			appView.showView(metadataView);
