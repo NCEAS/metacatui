@@ -244,6 +244,12 @@ header {
 	.input-append{
 		font-size: 1em;
 	}
+	.label.text-error{
+		color: red;
+		font-weight: bold;
+		display: block;
+		margin-bottom: 10px;
+	}
 
 
 /* SHARE/UPLOAD, AND LOGIN FEATURES 

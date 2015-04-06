@@ -219,7 +219,12 @@ Bold 700
     	font: 400 14px/14px "Source Sans Pro", Arial, sans-serif;
     	width: auto;
     }
-
+.label.text-error{
+		color: red;
+		font-weight: bold;
+		display: block;
+		margin-bottom: 10px;
+	}
 
 	
 

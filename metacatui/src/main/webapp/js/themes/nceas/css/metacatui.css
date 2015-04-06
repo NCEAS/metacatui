@@ -160,6 +160,12 @@ input[type="password"]{
     	font-size: 14px;
     	line-height: 14px;
     }
+    .label.text-error{
+		color: red;
+		font-weight: bold;
+		display: block;
+		margin-bottom: 10px;
+	}
 
 /* SHARE/UPLOAD, AND LOGIN FEATURES 
 * Choose to hide these features

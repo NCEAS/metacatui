@@ -169,6 +169,12 @@ Bold 700 Italic
 	.control-label {
 		cursor: default;
 	}
+	.label.text-error{
+		color: red;
+		font-weight: bold;
+		display: block;
+		margin-bottom: 10px;
+	}
 
 /* EML CUSTOMIZATIONS
 -------------------------------------------------- */

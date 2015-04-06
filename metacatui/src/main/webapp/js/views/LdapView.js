@@ -25,7 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 		},
 				
 		render: function () {
-			
+
 			// look up the url from the main application model
 			this.ldapwebUrl = appModel.get('ldapwebServiceUrl');
 			
@@ -77,10 +77,10 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 				
 		},
 		
-		submitForm: function(formId) {
+		submitForm: function(e) {
 			
 			// which form?
-			var form = $(event.target).parents("form");
+			var form = $(e.target).parents("form");
 			
 			// get the form data before replacing everything with the loading icon!
 			var formData = $(form).serialize()

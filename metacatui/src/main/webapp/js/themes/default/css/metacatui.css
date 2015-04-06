@@ -234,7 +234,12 @@ Bold 700
 	select{
     	width: auto;
     }
-
+.label.text-error{
+		color: red;
+		font-weight: bold;
+		display: block;
+		margin-bottom: 10px;
+	}
 
 	
 
