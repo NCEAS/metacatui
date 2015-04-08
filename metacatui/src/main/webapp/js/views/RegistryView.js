@@ -54,10 +54,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			
 			console.log('Calling the registry to display');
 			console.log('Calling the registry URL: ' + this.registryUrl);
-			console.log('Registry stage: ' + this.stage + " and pid " + this.pid);
+			console.log('Registry stage: ' + registryModel.get("stage") + " and pid " + this.pid);
 			var stageParams = '';
-			if (this.stage) {
-				stageParams = "&stage=" + this.stage + "&pid=" + this.pid;
+			if (registryModel.get("stage")) {
+				stageParams = "&stage=" + registryModel.get("stage") + "&pid=" + this.pid;
 			}
 			
 			// show the loading icon
@@ -396,6 +396,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					viewRef.$('#tempMetacatContainer').remove();
 					
 					// do we want to load the registry, or just let other controller decide the next view?
+					registryModel.set("stage", "insert");
+					uiRouter.navigate("share", {trigger: true});
 					viewRef.render();
 
 				}
