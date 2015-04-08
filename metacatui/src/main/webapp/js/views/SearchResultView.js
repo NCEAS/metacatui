@@ -51,15 +51,10 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 			this.$el.attr("data-id", id);
 			
 				//If this object has a provenance trace, we want to display information about it
-				if(json.hasProv || appModel.provDev){
+				if(json.hasProv){
 					
 					var numSources = this.model.get("prov_hasSources"),
 						numDerivations = this.model.get("prov_hasDerivations");
-					
-					if(appModel.provDev){
-						numSources = 2;
-						numDerivations = 2;
-					}
 					
 					//Create the title of the popover
 					var title = "This dataset";

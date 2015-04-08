@@ -42,11 +42,8 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			annotatorUrl: null
 		},
-
-		provDev: false,
 		
 		defaultView: "data",
-
 		
 		initialize: function() {
 			
