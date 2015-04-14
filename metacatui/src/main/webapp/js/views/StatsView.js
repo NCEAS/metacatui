@@ -12,14 +12,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		alertTemplate: _.template(AlertTemplate),
 		
 		loadingTemplate: _.template(LoadingTemplate),
-				
-		initialize: function(){
-
+						
+		initialize: function(options){
+			if(!options) options = {};
+			
+			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
+			if(typeof options.el === "undefined")
+				this.el = options.el;
 		},
 				
 		render: function () {
 			
-			//Clear the page first
+			//Reset the stats model first
+			statsModel.clear().set(statsModel.defaults);
+			
+			//Clear the page 
 			this.$el.html("");
 			
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
@@ -43,7 +50,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Insert the template
 			this.$el.html(this.template({
-				query: statsModel.get('query')
+				query: statsModel.get('query'),
+				title: this.title
 			}));
 			
 			//Insert the loading template into the space where the charts will go
@@ -56,7 +64,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					classes: "alert-info",
 					msg: "Please upgrade your browser or use a different browser to view graphs of these statistics.",
 					email: false
-				}))
+				}));
 			}
 
 			//Start retrieving data from Solr

@@ -17,12 +17,15 @@ define(['jquery', 'underscore', 'backbone'],
 			previousPid: null,
 			lastPid: null,
 			anchorId: null,
+			profileUsername: null,
 			page: 0,
 			profileQuery: null,
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v1',
+			d1CNBaseUrl: "https://cn-stage-2.test.dataone.org/",
+			d1CNService: "cn/v1",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
@@ -36,7 +39,8 @@ define(['jquery', 'underscore', 'backbone'],
 			bioportalServiceUrl: null,
 			orcidServiceUrl: null,
 			tokenUrl: null,
-			annotatorUrl: null
+			annotatorUrl: null,
+			accountsUrl: null
 		},
 				
 		defaultView: "data",
@@ -61,6 +65,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
+			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 		
 			this.on("change:pid", this.changePid);
 		},

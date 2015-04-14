@@ -17,11 +17,14 @@ define(['jquery', 'underscore', 'backbone'],
 			pid: null,
 			previousPid: null,
 			anchorId: null,
+			profileUsername: null,
 			page: 0,
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
-			d1Service: 'cn/v2',
+			d1Service: "cn/v2",
+			d1CNBaseUrl: "https://cn-sandbox-2.test.dataone.org",
+			d1CNService: "cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
@@ -40,7 +43,8 @@ define(['jquery', 'underscore', 'backbone'],
 			orcidBaseUrl: "https://pub.orcid.org",
 			orcidServiceUrl: "https://pub.orcid.org/v1.1/search/orcid-bio?q=",
 			tokenUrl: null,
-			annotatorUrl: null
+			annotatorUrl: null,
+			accountsUrl: null
 		},
 		
 		defaultView: "data",
@@ -68,7 +72,8 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set('nodeServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/node');
-			
+			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+
 			//this.set('d1LogServiceUrl', this.get('baseUrl') + this.get('d1Service') + 'logsolr');
 			this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
 			
