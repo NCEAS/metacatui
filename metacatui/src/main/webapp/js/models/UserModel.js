@@ -24,9 +24,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
-			$.get(url, function(data, textStatus, xhr){
-				console.log(data);
-				
+			$.get(url, function(data, textStatus, xhr){				
 				model.set("firstName", $(data).find("person givenName").text());
 				model.set("lastName", $(data).find("person familyName").text());
 				model.set("verified", $(data).find("person verified").text());

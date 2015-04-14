@@ -103,6 +103,9 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderProfile: function(username){
+			//Reset the stats model first
+			statsModel.clear().set(statsModel.defaults);
+			
 			if(!username){
 				this.routeHistory.push("summary");
 				appView.showView(statsView);

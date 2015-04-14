@@ -36,7 +36,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 *  xTickFormat = d3.time.format() argument for formatting x-axis tick marks
 			 */
 			
-			this.data 	   = options.data 	   || [{date: "00-00-1900", count: 0}];
+			if(!options.data) return;
+			
+			this.data 	   = options.data;
 			this.id 	   = options.id 	   || "";
 			this.className = options.className || "";
 			this.frequency = options.frequency || 1; 	//Use 0 to not add any points
@@ -107,6 +109,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			* ========================================================================
 			*/
 			
+			if(!this.data) return this;
+			
 			var margin = {top: 20, right: 50, bottom: 30, left: 80};
 			this.margin = margin;
 			this.width  = this.width - margin.left - margin.right;
@@ -169,7 +173,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		      .text(this.yLabel)
 		      .attr("class", "title")
 		  	  .attr("transform", "translate(-5, " + (this.height/2) + ") rotate(-90)");
-		  
+		  		  
 		  /*
 			* ========================================================================
 		    * Draw the line path

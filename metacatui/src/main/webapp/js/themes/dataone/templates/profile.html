@@ -1,17 +1,5 @@
 <article id="Profile" class="profile">
-<h1 class="profile-title"><%
-if(query && query=="*:*"){
-	print("Summary of holdings");
-}
-//Is the query for a user only? If so, treat the general info as a user profile
-else if(query && query.indexOf("rightsHolder") > -1){
-	//Extract the uid string from the query string 
-	var uid = query.substring(query.indexOf("uid="));
-	uid = uid.substring(4, uid.indexOf(","));
-
-	//Display the name of the person
-	print(uid);
-}%></h1>
+<h1 class="profile-title"><%=title%></h1>
 <section class="charts-container">
 	<section class="stripe">
 		<section class="charts">

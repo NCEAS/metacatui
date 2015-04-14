@@ -31,7 +31,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.$el.html(this.template());
 			
 			//Render the Stats View for this person
-			statsModel.set("query", "rightsHolder:" + encodeURIComponent(username) + " OR " + "submitter:" + encodeURIComponent(username));
+			statsModel.set("query", 'rightsHolder:"' + username + '"');
 			var statsView = new StatsView({
 				title: "",
 				el: this.$("#user-stats")

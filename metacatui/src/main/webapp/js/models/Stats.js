@@ -109,7 +109,7 @@ define(['jquery', 'underscore', 'backbone'],
 						else{
 							model.set('firstBeginDate', new Date.fromISO(endDateData.response.docs[0].endDate));
 						}
-					});
+					}, "json");
 				}
 				else{
 					// Save the earliest beginDate and total found in our model

@@ -23,9 +23,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				
 		render: function () {
 			
-			//Reset the stats model first
-			statsModel.clear().set(statsModel.defaults);
-			
 			//Clear the page 
 			this.$el.html("");
 			

@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, StatsView, ExternalView, LdapView, DataDetailsView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView, DataDetailsView) {
 
 	var indexView = new IndexView();
 	var aboutView = aboutView || new AboutView();
@@ -11,6 +11,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 	//var registryView = new RegistryView();
 	var metadataView = new MetadataView();
 	var statsView = new StatsView();
+	var userView = new UserView();
 	var externalView = new ExternalView();
 	//var ldapView = new LdapView();
 	
@@ -25,7 +26,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			//'tools(/:anchorId)'         : 'renderTools',      // tools page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',     // metadata page
-			'profile(/*query)'			: 'renderProfile',		// Statistics/profile page
+			'profile(/*username)'		: 'renderProfile',
 			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
 			'logout'                    : 'logout'           // logout the user
 			//'signup'          			: 'renderLdap',     // use ldapweb for registration
@@ -99,15 +100,19 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(metadataView);
 		},
 		
-		renderProfile: function(query){
-			this.routeHistory.push("profile");
-			
+		renderProfile: function(username){
 			//Reset the stats model first
-			statsModel.clear().set(statsModel.defaults);			
-			if(query){
-				statsModel.set('query', query);				
+			statsModel.clear().set(statsModel.defaults);
+			
+			if(!username){
+				this.routeHistory.push("summary");
+				appView.showView(statsView);
 			}
-			appView.showView(statsView);
+			else{
+				this.routeHistory.push("profile");
+				appModel.set("profileUsername", username);
+				appView.showView(userView);
+			}
 		},
 		
 		renderRegistry: function (stage, pid) {
