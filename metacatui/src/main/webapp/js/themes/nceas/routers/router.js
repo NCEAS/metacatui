@@ -53,53 +53,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(indexView);
 		},
 		
-		renderAbout: function (anchorId) {
-			this.routeHistory.push("about");
-			appModel.set('anchorId', anchorId);
-			appView.showView(aboutView);
-		},
-		
-		renderPlans: function (param) {
-			this.routeHistory.push("plans");
-		},
-		
-		renderTools: function (anchorId) {
-			this.routeHistory.push("tools");
-			appModel.set('anchorId', anchorId);
-			appView.showView(toolsView);
-		},
-		
-		renderData: function (page, mode, query) {
-			this.routeHistory.push("data");
-			appModel.set('page', page);
-			if(mode){
-				appModel.set('searchMode', mode)
-			}
-			if(query){
-				searchModel.set('customQuery', query);
-			}
-			appView.showView(dataCatalogView);
-		},
-		
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('pid', pid);
 			metadataView.pid = pid;
 			appView.showView(metadataView);
-		},
-		
-		renderProfile: function(username){
-			this.closeLastView();
-			
-			if(!username){
-				this.routeHistory.push("summary");
-				appView.showView(statsView);
-			}
-			else{
-				this.routeHistory.push("profile");
-				appModel.set("profileUsername", username);
-				appView.showView(userView);
-			}
 		},
 		
 		renderRegistry: function (stage, pid) {
@@ -124,26 +82,9 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			//appView.showView(indexView);
 		},
 		
-		renderExternal: function(url) {
-			// use this for rendering "external" content pulled in dynamically
-			this.routeHistory.push("external");
-			externalView.url = url;
-			appView.showView(externalView);
-		},
-		
 		navigateToDefault: function(){
 			//Navigate to the default view
 			this.navigate("share", {trigger: true});
-		},
-		
-		closeLastView: function(){
-			//Get the last route and close the view
-			var lastRoute = _.last(this.routeHistory);
-			
-			if(lastRoute == "summary")
-				statsView.onClose();				
-			else if(lastRoute == "profile")
-				userView.onClose();
 		}
 		
 	});
