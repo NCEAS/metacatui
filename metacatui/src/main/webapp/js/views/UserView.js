@@ -30,6 +30,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Insert the template
 			this.$el.html(this.template());
 			
+			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
+			
 			//Render the Stats View for this person
 			statsModel.set("query", '(rightsHolder:"' + username + '" OR submitter:"' + username + '")');
 			this.statsView = new StatsView({
@@ -60,6 +62,22 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 			//Insert the name into this page
 			this.$("#fullname").text(name);
+		},
+		
+		/*
+		 * Insert the first year of contribution for this user
+		 */
+		insertFirstUpload: function(){
+			var firstUpload = new Date(statsModel.get("firstUpload"));
+			
+			var monthNames = [ "January", "February", "March", "April", "May", "June",
+				                 "July", "August", "September", "October", "November", "December" ];
+			
+			var m = monthNames[firstUpload.getUTCMonth()],
+				y = firstUpload.getUTCFullYear(),
+				d = firstUpload.getUTCDate();
+			
+			this.$("#first-upload").text("Contributor since " + m + ", " + d + " " + y);
 		},
 		
 		onClose: function () {			

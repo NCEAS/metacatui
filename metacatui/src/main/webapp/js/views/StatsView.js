@@ -40,7 +40,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			this.listenTo(statsModel, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
-
 			
 			// set the header type
 			appModel.set('headerType', 'default');
