@@ -4,6 +4,7 @@ define(['jquery',
 				'underscore', 
 				'backbone',
 				'views/SearchResultView',
+				'views/SearchResultListView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
 				'text!templates/pager.html',
@@ -13,14 +14,14 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, SearchResultView, SearchResultListView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
 
 		el: '#Content',
 		
-		searchModel: searchModel,
+		searchModel: window.searchModel,
 		
 		template: _.template(CatalogTemplate),
 		
@@ -108,7 +109,9 @@ define(['jquery',
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
 		render: function () {
-
+			//Use the global search model if there is no other search model specified
+			if(typeof window.searchModel !== "undefined" && (Object.keys(this.searchModel).length == 0)) this.searchModel = window.searchModel;
+			
 			appModel.set('headerType', 'default');
 			this.toggleViewClass("DataCatalog");
 			
@@ -117,11 +120,11 @@ define(['jquery',
 				msg: "Retrieving member nodes..."
 			});
 			var cel = this.template(
-					{	sortOrder: this.searchModel.get('sortOrder'),
-						yearMin: this.searchModel.get('yearMin'),
-						yearMax: this.searchModel.get('yearMax'),
-						pubYear: this.searchModel.get('pubYear'),
-						dataYear: this.searchModel.get('dataYear'),
+					{	sortOrder:   this.searchModel.get('sortOrder'),
+						yearMin:     this.searchModel.get('yearMin'),
+						yearMax:     this.searchModel.get('yearMax'),
+						pubYear:     this.searchModel.get('pubYear'),
+						dataYear:    this.searchModel.get('dataYear'),
 						resourceMap: this.searchModel.get('resourceMap'),
 						searchOptions: registryModel.get('searchOptions'),
 						username: appModel.get('username'),
