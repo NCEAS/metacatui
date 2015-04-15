@@ -32,6 +32,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				geohashes: [],
 				geohashLevel: 9,
 				memberNode: null,
+				rightsHolder: [],
+				submitter: [],
 				spatial: [],
 				attribute: [],
 				//annotation: [],
@@ -59,7 +61,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					   spatial : "site",
 				   resourceMap : "resourceMap",
 				   	   pubYear : "dateUploaded",
-				   	   		id : "id"
+				   	   		id : "id",
+				  rightsHolder : "rightsHolder",
+				     submitter : "submitter"
 		},
 		
 		filterCount: function() {
@@ -122,7 +126,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id"];
+			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id", "rightsHolder", "submitter"];
 			
 			//Start the query string
 			var query = "";

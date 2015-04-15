@@ -20,6 +20,8 @@ define(['jquery',
 
 		el: '#Content',
 		
+		searchModel: searchModel,
+		
 		template: _.template(CatalogTemplate),
 		
 		statsTemplate: _.template(CountTemplate),
@@ -89,6 +91,18 @@ define(['jquery',
 				   	      'mouseout .open-marker' : 'hideResultOnMap',
 		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
 		},
+		
+		initialize: function(options){
+			var view = this;
+			
+			//Get all the options and apply them to this view
+			if(options){
+				var optionKeys = Object.keys(options);
+				_.each(optionKeys, function(key, i){
+					view[key] = options[key];
+				});
+			}
+		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
@@ -103,12 +117,12 @@ define(['jquery',
 				msg: "Retrieving member nodes..."
 			});
 			var cel = this.template(
-					{	sortOrder: searchModel.get('sortOrder'),
-						yearMin: searchModel.get('yearMin'),
-						yearMax: searchModel.get('yearMax'),
-						pubYear: searchModel.get('pubYear'),
-						dataYear: searchModel.get('dataYear'),
-						resourceMap: searchModel.get('resourceMap'),
+					{	sortOrder: this.searchModel.get('sortOrder'),
+						yearMin: this.searchModel.get('yearMin'),
+						yearMax: this.searchModel.get('yearMax'),
+						pubYear: this.searchModel.get('pubYear'),
+						dataYear: this.searchModel.get('dataYear'),
+						resourceMap: this.searchModel.get('resourceMap'),
 						searchOptions: registryModel.get('searchOptions'),
 						username: appModel.get('username'),
 						loading: loadingHTML
@@ -141,7 +155,7 @@ define(['jquery',
 			var thisTerm = null;
 			
 			for (var i=0; i<categories.length; i++){
-				thisTerm = searchModel.get(categories[i]);
+				thisTerm = this.searchModel.get(categories[i]);
 				
 				if(thisTerm === undefined) break;
 				
@@ -153,8 +167,8 @@ define(['jquery',
 			this.showAdditionalCriteria();
 			
 			// Add the custom query under the "Anything" filter
-			if(searchModel.get('customQuery')){
-				this.showFilter("all", searchModel.get('customQuery'));
+			if(this.searchModel.get('customQuery')){
+				this.showFilter("all", this.searchModel.get('customQuery'));
 			}
 			
 			// Register listeners; this is done here in render because the HTML
@@ -166,7 +180,7 @@ define(['jquery',
 			else this.listenTo(nodeModel,   'change:members', this.listMemberNodes);
 			
 			//Listen to changes in the searchModel
-			this.stopListening(searchModel);
+			this.stopListening(this.searchModel);
 			
 			// listen to the appModel for the search trigger
 			this.stopListening(appModel);
@@ -216,7 +230,7 @@ define(['jquery',
 		triggerSearch: function() {				
 			//Set the sort order 
 			var sortOrder = $("#sortOrder").val();
-			searchModel.set('sortOrder', sortOrder);
+			this.searchModel.set('sortOrder', sortOrder);
 			
 			//Trigger a search to load the results
 			appModel.trigger('search');
@@ -255,7 +269,7 @@ define(['jquery',
 			this.loading();
 			
 			//Set the sort order based on user choice
-			var sortOrder = searchModel.get('sortOrder');
+			var sortOrder = this.searchModel.get('sortOrder');
 			appSearchResults.setSort(sortOrder);
 			
 			//Specify which fields to retrieve
@@ -266,7 +280,7 @@ define(['jquery',
 			appSearchResults.setfields(fields);
 			
 			//Get the query
-			var query = searchModel.getQuery();
+			var query = this.searchModel.getQuery();
 						
 			//Specify which facets to retrieve
 			if(gmaps){ //If we have Google Maps enabled
@@ -278,7 +292,7 @@ define(['jquery',
 			appSearchResults.setQuery(query);
 			
 			//Show or hide the reset filters button
-			if(searchModel.filterCount() > 0){
+			if(this.searchModel.filterCount() > 0){
 				this.showClearButton();
 			}
 			else{
@@ -306,11 +320,11 @@ define(['jquery',
 			
 			//If the user just unchecked the box, then remove this filter
 			if(!checked){
-				searchModel.removeFromModel(category, value);
+				this.searchModel.removeFromModel(category, value);
 			}
 			//If the user just checked the box, then add this filter
 			else{
-				var currentValue = searchModel.get(category);
+				var currentValue = this.searchModel.get(category);
 
 				//Get the description
 				var desc = $(checkbox).attr("data-description") || $(checkbox).attr("title");
@@ -329,11 +343,11 @@ define(['jquery',
 				//If this filter category is an array, add this value to the array 
 				if(Array.isArray(currentValue)){
 					currentValue.push(filter);
-					searchModel.set(category, currentValue);
+					this.searchModel.set(category, currentValue);
 				}
 				else{
 					//If it isn't an array, then just update the model with a simple value
-					searchModel.set(category, filter);				
+					this.searchModel.set(category, filter);				
 				}
 				
 				//Show the reset button
@@ -352,10 +366,10 @@ define(['jquery',
 			
 			//Get the category
 			var category = $(checkbox).attr('data-category');
-			var currentValue = searchModel.get(category);
+			var currentValue = this.searchModel.get(category);
 			
 			//If this filter is not available, exit this function
-			if(!searchModel.filterIsAvailable(category)) return false;
+			if(!this.searchModel.filterIsAvailable(category)) return false;
 			
 			//If the checkbox has a value, then update as a string value not boolean
 			var value = $(checkbox).attr("value");
@@ -365,7 +379,7 @@ define(['jquery',
 			}
 			else value = $(checkbox).prop('checked');
 
-			searchModel.set(category, value);
+			this.searchModel.set(category, value);
 			
 			//Show the reset button
 			this.showClearButton();
@@ -388,8 +402,8 @@ define(['jquery',
 			var maxVal = $('#max_year').val();
 			  
 			//Get the default minimum and maximum values
-			var defaultMinYear = searchModel.defaults().yearMin;
-			var defaultMaxYear = searchModel.defaults().yearMax;
+			var defaultMinYear = this.searchModel.defaults().yearMin;
+			var defaultMaxYear = this.searchModel.defaults().yearMax;
 			
 			// If either of the year type selectors is what brought us here, then determine whether the user
 			// is completely removing both (reset both year filters) or just one (remove just that one filter)
@@ -401,10 +415,10 @@ define(['jquery',
 					//When both are unchecked, assume user wants to reset the year filter
 					if((!pubYearChecked) && (!dataYearChecked)){
 						//Reset the search model
-						searchModel.set('yearMin', defaultMinYear);
-						searchModel.set('yearMax', defaultMaxYear);
-						searchModel.set('dataYear', false);
-						searchModel.set('pubYear', false);
+						this.searchModel.set('yearMin', defaultMinYear);
+						this.searchModel.set('yearMax', defaultMaxYear);
+						this.searchModel.set('dataYear', false);
+						this.searchModel.set('pubYear', false);
 						
 						//Reset the number inputs
 						$('#min_year').val(defaultMinYear);
@@ -422,8 +436,8 @@ define(['jquery',
 			if((minVal != defaultMinYear) || (maxVal != defaultMaxYear)){
 				
 				//Update the search model to match what is in the text inputs
-			    searchModel.set('yearMin', $('#min_year').val());
-			    searchModel.set('yearMax', $('#max_year').val());	
+			    this.searchModel.set('yearMin', $('#min_year').val());
+			    this.searchModel.set('yearMax', $('#max_year').val());	
 			    
 			    //auto choose the year type for the user
 			    this.selectYearType();
@@ -437,12 +451,13 @@ define(['jquery',
 
 		      			
 			//jQueryUI slider 
+			var model = this.searchModel;
 			$('#year-range').slider({
 			    range: true,
 			    disabled: false,
-			    min: searchModel.defaults().yearMin,	//sets the minimum on the UI slider on initialization
-			    max: searchModel.defaults().yearMax, 	//sets the maximum on the UI slider on initialization
-			    values: [ searchModel.get('yearMin'), searchModel.get('yearMax') ], //where the left and right slider handles are
+			    min: this.searchModel.defaults().yearMin,	//sets the minimum on the UI slider on initialization
+			    max: this.searchModel.defaults().yearMax, 	//sets the maximum on the UI slider on initialization
+			    values: [ this.searchModel.get('yearMin'), this.searchModel.get('yearMax') ], //where the left and right slider handles are
 			    stop: function( event, ui ) {
 			    	
 			      // When the slider is changed, update the input values
@@ -450,8 +465,8 @@ define(['jquery',
 			      $('#max_year').val(ui.values[1]);
 			      
 			      //Also update the search model
-			      searchModel.set('yearMin', $('#min_year').val());
-			      searchModel.set('yearMax', $('#max_year').val());
+			      model.set('yearMin', $('#min_year').val());
+			      model.set('yearMax', $('#max_year').val());
 			      
 			      viewRef.selectYearType();
 			      
@@ -478,7 +493,7 @@ define(['jquery',
 		    	  $('#data_year').prop('checked', 'true');  
 			    	  
 		    	  //And update the search model
-		    	  searchModel.set('dataYear', true);
+		    	  this.searchModel.set('dataYear', true);
 		    	  
 		    	  //refresh the UI buttonset so it appears as checked/unchecked
 		    	  $("#filter-year").buttonset("refresh");
@@ -538,7 +553,7 @@ define(['jquery',
 			}
 				
 			//Get the current searchModel array for this category
-			var filtersArray = _.clone(searchModel.get(category));
+			var filtersArray = _.clone(this.searchModel.get(category));
 			
 			if(typeof filtersArray == "undefined"){
 				console.error("The filter category '" + category + "' does not exist in the Search model. Not sending this search term.");
@@ -579,7 +594,7 @@ define(['jquery',
 			filtersArray.push(filter);
 			
 			//Replace the current array with the new one in the search model
-			searchModel.set(category, filtersArray);
+			this.searchModel.set(category, filtersArray);
 			
 			//Show the UI filter
 			this.showFilter(category, filter, false, label);
@@ -612,7 +627,7 @@ define(['jquery',
 			}
 			else{
 				//Remove this filter term from the searchModel
-				searchModel.removeFromModel(category, term);				
+				this.searchModel.removeFromModel(category, term);				
 			}
 			
 			//Hide the filter from the UI
@@ -641,19 +656,19 @@ define(['jquery',
 			this.hideClearButton();
 			
 			//Then reset the model
-			searchModel.clear();		
+			this.searchModel.clear();		
 			
 			//Reset the year slider handles
-			$("#year-range").slider("values", [searchModel.get('yearMin'), searchModel.get('yearMax')])
+			$("#year-range").slider("values", [this.searchModel.get('yearMin'), this.searchModel.get('yearMax')])
 			//and the year inputs
-			$("#min_year").val(searchModel.get('yearMin'));
-			$("#max_year").val(searchModel.get('yearMax'));
+			$("#min_year").val(this.searchModel.get('yearMin'));
+			$("#max_year").val(this.searchModel.get('yearMax'));
 
 			//Reset the checkboxes
-			$("#includes_data").prop("checked", searchModel.get("resourceMap"));
+			$("#includes_data").prop("checked", this.searchModel.get("resourceMap"));
 			$("#includes-files-buttonset").buttonset("refresh");
-			$("#data_year").prop("checked", searchModel.get("dataYear"));
-			$("#publish_year").prop("checked", searchModel.get("pubYear"));
+			$("#data_year").prop("checked", this.searchModel.get("dataYear"));
+			$("#publish_year").prop("checked", this.searchModel.get("pubYear"));
 			$("#filter-year").buttonset("refresh");
 			this.resetMemberNodeList();
 			
@@ -810,7 +825,7 @@ define(['jquery',
 		resetMemberNodeList: function(){
 			//Reset the Member Nodes checkboxes
 			var mnFilterContainer = $("#member-nodes-container"),
-				defaultMNs = searchModel.get("memberNode");
+				defaultMNs = this.searchModel.get("memberNode");
 			
 			//Make sure the member node filter exists
 			if(!mnFilterContainer || mnFilterContainer.length == 0) return false;
@@ -848,6 +863,7 @@ define(['jquery',
 		
 		// highlights anything additional that has been selected
 		showAdditionalCriteria: function() {
+			var model = this.searchModel;
 			
 			// style the selection			
 			$(".keyword-search-link").each(function(index, targetNode){
@@ -858,7 +874,7 @@ define(['jquery',
 				
 				var dataCategory = $(targetNode).attr("data-category");
 				var dataTerm = $(targetNode).attr("data-term");
-				var terms = searchModel.get(dataCategory);
+				var terms = model.get(dataCategory);
 				if (_.contains(terms, dataTerm)) {
 					//Add the active class for styling
 					$(targetNode).addClass("active");
@@ -895,7 +911,7 @@ define(['jquery',
 			targetNode.parent().addClass("active");
 			
 			// Add this criteria to the search model
-			searchModel.set(category, [term]);
+			this.searchModel.set(category, [term]);
 			
 			// Trigger the search
 			this.triggerSearch();
@@ -910,6 +926,9 @@ define(['jquery',
 			// Get the clicked node
 			var targetNode = $(e.target);
 			
+			//Reference to model
+			var model = this.searchModel;
+			
 			// remove the styling
 			$(".keyword-search-link").removeClass("active");
 			$(".keyword-search-link").parent().removeClass("active");
@@ -918,12 +937,12 @@ define(['jquery',
 			var term = targetNode.attr('data-term');
 			
 			//Get the current search model additional criteria 
-			var current = searchModel.get('additionalCriteria');
+			var current = this.searchModel.get('additionalCriteria');
 			//If this term is in the current search model (should be)...
 			if(_.contains(current, term)){
 				//then remove it
 				var newTerms = _.without(current, term);
-				searchModel.set("additionalCriteria", newTerms);
+				model.set("additionalCriteria", newTerms);
 			}
 
 			//Route to page 1
@@ -941,7 +960,7 @@ define(['jquery',
 			var facetQuery = "q=" + appSearchResults.currentquery +
 							 "&wt=json" +
 							 "&rows=0" +
-							 searchModel.getFacetQuery();
+							 this.searchModel.getFacetQuery();
 
 			$.get(appModel.get('queryServiceUrl') + facetQuery, function(data, textStatus, xhr) {
 				
@@ -1395,10 +1414,10 @@ define(['jquery',
 							south = boundingBox.getSouthWest().lat(),
 							east  = boundingBox.getNorthEast().lng();
 							
-						searchModel.set('north', north);
-						searchModel.set('west',  west);
-						searchModel.set('south', south);
-						searchModel.set('east',  east);
+						viewRef.searchModel.set('north', north);
+						viewRef.searchModel.set('west',  west);
+						viewRef.searchModel.set('south', south);
+						viewRef.searchModel.set('east',  east);
 						
 						//Determine the precision of geohashes to search for
 						var zoom = mapRef.getZoom();												
@@ -1409,11 +1428,11 @@ define(['jquery',
 						var geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
 												
 						//Save our geohash search settings
-						searchModel.set('geohashes', geohashBBoxes);
-						searchModel.set('geohashLevel', precision);
+						viewRef.searchModel.set('geohashes', geohashBBoxes);
+						viewRef.searchModel.set('geohashLevel', precision);
 						
 						//Set the search model map filters
-						searchModel.set('map', {
+						viewRef.searchModel.set('map', {
 							zoom: viewRef.map.getZoom(), 
 							center: viewRef.map.getCenter()
 							});
@@ -1461,7 +1480,7 @@ define(['jquery',
 			}
 			
 			//Reset the map settings
-			searchModel.resetGeohash();
+			this.searchModel.resetGeohash();
 			mapModel.clear();
 			
 			this.allowSearch = false;
@@ -1662,7 +1681,7 @@ define(['jquery',
 			mapModel.set("tileGeohashLevel", geohashLevelNum);
 			
 			//Get all the geohashes contained in the map
-			var mapBBoxes = searchModel.get("geohashes");
+			var mapBBoxes = this.searchModel.get("geohashes");
 			
 			//Geohashes may be returned that are part of datasets with multiple geographic areas. Some of these may be outside this map.
 			//So we will want to filter out geohashes that are not contained in this map. 
@@ -1905,7 +1924,7 @@ define(['jquery',
 			}	
 			
 			//Clone the Search model
-			var searchModelClone = searchModel.clone(),
+			var searchModelClone = this.searchModel.clone(),
 				geohashLevel = mapModel.get("tileGeohashLevel"),
 				viewRef = this,
 				infoWindows = [],
@@ -2008,7 +2027,7 @@ define(['jquery',
 			}
 			
 			//Clone the Search model
-			var searchModelClone = searchModel.clone(),
+			var searchModelClone = this.searchModel.clone(),
 				geohashLevel = mapModel.get("tileGeohashLevel"),
 				geohashName	 = "geohash_" + geohashLevel,
 				viewRef = this,

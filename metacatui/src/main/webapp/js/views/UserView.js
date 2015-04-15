@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, UserModel, StatsView, userProfileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'models/Search', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, SearchModel, UserModel, StatsView, DataCatalogView, userProfileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
 			
 	var UserView = Backbone.View.extend({
@@ -44,9 +44,15 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Create a user model for this person
 			var user = new UserModel();
 			this.model = user;
-			this.listenTo(user, "change:completeFlag", this.insertUserInfo);
+			this.listenTo(user, "change:lastName", this.insertUserInfo);
 			user.getInfo();
 		
+			//Create a search model for this user's content
+			this.userSearchModel =  new SearchModel({
+				username: [this.model.get("username")]
+			});
+			this.insertContent();
+			
 			return this;
 		},
 		
@@ -55,7 +61,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		 */
 		insertUserInfo: function(){
 			//Don't try to insert anything if we haven't gotten all the user info yet
-			if(this.model.get("completeFlag") !== true) return;
+			if(!this.model.get("lastName") && !this.model.get("firstName")) return;
 				
 			//Construct the full name
 			var name = this.model.get("firstName") + " " + this.model.get("lastName");
@@ -79,6 +85,14 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 			this.$("#first-upload").text("Contributor since " + m + ", " + d + " " + y);
 		},
+		
+		insertContent: function(){				
+			var view = new DataCatalogView({
+				el: this.$("#data-list")[0],
+				searchModel: this.userSearchModel
+			});
+			view.render();
+		}, 
 		
 		onClose: function () {			
 			//Clear the template

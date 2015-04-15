@@ -32,8 +32,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				geohashes: [],
 				geohashLevel: 9,
 				spatial: [],
+				rightsHolder: [],
+				submitter: [],
+				username: [],
 				attribute: [],
-				annotation: [],
+				//annotation: [],
 				additionalCriteria: [],
 				memberNode: [],
 				id: [],
@@ -60,7 +63,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				   resourceMap : "resourceMap",
 				   	   pubYear : "dateUploaded",
 				   	memberNode : "datasource",
-				   			id : "id"
+				   			id : "id",
+				  rightsHolder : "rightsHolder",
+				     submitter : "submitter"
 		},
 		
 		filterCount: function() {
@@ -123,7 +128,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id"];
+			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id", "rightsHolder", "submitter"];
 			
 			//Start the query string
 			var query = "";
@@ -283,6 +288,24 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 			}
 			
+			//-----Username - used on User Profile -----
+			if(this.filterIsAvailable("username") && ((filter == "username") || getAll)){
+				var usernames = this.get('username');
+				//Get the field names for submitter and rightsHolder
+				var submitter    = this.fieldNameMap["submitter"],
+					rightsHolder = this.fieldNameMap["rightsHolder"];
+				
+				for (var i=0; i < usernames.length; i++){
+					var value;
+					
+					if(this.needsQuotes(usernames[i])) value = "%22" + encodeURIComponent(usernames[i]) + "%22";
+					else value = encodeURIComponent(usernames[i]);
+					
+					query += "+(" + submitter + ":" + value + "%20OR%20" + rightsHolder + ":" + value + ")"; 
+				}
+			}
+
+			//----- All Other Filters -----
 			var model = this;
 			
 			_.each(otherFilters, function(filterName, key, list){
