@@ -88,15 +88,18 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(metadataView);
 		},
 		
-		renderProfile: function(query){
-			this.routeHistory.push("profile");
+		renderProfile: function(username){
+			this.closeLastView();
 			
-			//Reset the stats model first
-			statsModel.clear().set(statsModel.defaults);			
-			if(query){
-				statsModel.set('query', query);				
+			if(!username){
+				this.routeHistory.push("summary");
+				appView.showView(statsView);
 			}
-			appView.showView(statsView);
+			else{
+				this.routeHistory.push("profile");
+				appModel.set("profileUsername", username);
+				appView.showView(userView);
+			}
 		},
 		
 		renderRegistry: function (stage, pid) {
@@ -131,6 +134,16 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		navigateToDefault: function(){
 			//Navigate to the default view
 			this.navigate("share", {trigger: true});
+		},
+		
+		closeLastView: function(){
+			//Get the last route and close the view
+			var lastRoute = _.last(this.routeHistory);
+			
+			if(lastRoute == "summary")
+				statsView.onClose();				
+			else if(lastRoute == "profile")
+				userView.onClose();
 		}
 		
 	});

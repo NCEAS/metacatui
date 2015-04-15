@@ -178,8 +178,7 @@ define(['jquery',
 		currentView: null,
 		
 		// Our view switcher for the whole app
-		showView: function(view) {
-			
+		showView: function(view) {			
 			//reference to appView
 			var thisAppViewRef = this;
 	

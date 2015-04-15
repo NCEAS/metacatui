@@ -500,6 +500,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Stop listening to changes in the model
 			this.stopListening(statsModel);			
+			
+			//Reset the stats model
+			statsModel.clear().set(statsModel.defaults);
 		}
 		
 	});

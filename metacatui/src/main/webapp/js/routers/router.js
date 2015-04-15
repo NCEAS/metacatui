@@ -103,8 +103,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderProfile: function(username){
-			//Reset the stats model first
-			statsModel.clear().set(statsModel.defaults);
+			this.closeLastView();
 			
 			if(!username){
 				this.routeHistory.push("summary");
@@ -147,6 +146,16 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		navigateToDefault: function(){
 			//Navigate to the default view
 			this.navigate(appModel.defaultView, {trigger: true});
+		},
+		
+		closeLastView: function(){
+			//Get the last route and close the view
+			var lastRoute = _.last(this.routeHistory);
+			
+			if(lastRoute == "summary")
+				statsView.onClose();				
+			else if(lastRoute == "profile")
+				userView.onClose();
 		}
 		
 	});

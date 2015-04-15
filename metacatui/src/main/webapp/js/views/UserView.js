@@ -12,9 +12,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		alertTemplate: _.template(AlertTemplate),
 		
 		loadingTemplate: _.template(LoadingTemplate),
-				
-		initialize: function(){
-
+								
+		initialize: function(){			
+			this.subviews = new Array();
 		},
 				
 		render: function () {
@@ -32,11 +32,12 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 			//Render the Stats View for this person
 			statsModel.set("query", '(rightsHolder:"' + username + '" OR submitter:"' + username + '")');
-			var statsView = new StatsView({
+			this.statsView = new StatsView({
 				title: "",
 				el: this.$("#user-stats")
 			});
-			statsView.render();
+			this.subviews.push(this.statsView);
+			this.statsView.render();
 			
 			//Create a user model for this person
 			var user = new UserModel();
@@ -65,8 +66,15 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Clear the template
 			this.$el.html("");
 			
-			//Stop listening to changes in the model
-			this.stopListening(statsModel);			
+			//Stop listening to changes in models
+			this.stopListening(statsModel);		
+			this.stopListening(this.model);
+			
+			//Close the subviews
+			_.each(this.subviews, function(view){
+				view.onClose();
+			});
+			this.subviews = new Array();
 		}
 		
 	});

@@ -34,8 +34,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.total		= options.total		 || 0;
 			this.formatLabel=options.formatLabel || function(d){ return d }
 			this.data	    = this.formatDonutData(options.data, options.total) || [{label: "", count: 0, perc: 0}];
-			
-
+			this.drawLabels = (this.data)
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -106,93 +105,98 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	         * Add labels next to each arc
 	         * ========================================================================
 	         */
-
-	        //Append a group to each arc group to contain the labels
-	        var labelGroups = arcs.append("svg:g")
-        						  .attr("class", "donut-labels");
+	        //If there was no data given and this is a blank chart, then do not draw any labels
+	        var drawLabels = true;	       
+	        if((this.data.length == 1) && !this.data[0].label) drawLabels = false;
 	        
-	        //Keep track of how many labels we rotate
-	        var rotatedLabels = [],
-	        	rotatedCounts = [],
-	        	rotateWidth = .5; //The max arc width/length to attach straight labels to. Anything under this gets rotated.
+	        if(drawLabels){
+		        //Append a group to each arc group to contain the labels
+		        var labelGroups = arcs.append("svg:g")
+	        						  .attr("class", "donut-labels");
+		        
+		        //Keep track of how many labels we rotate
+		        var rotatedLabels = [],
+		        	rotatedCounts = [],
+		        	rotateWidth = .5; //The max arc width/length to attach straight labels to. Anything under this gets rotated.
+		        
+		        // Append a text label to each arc
+	        	labelGroups.append("svg:text")
+	        				.attr("transform", function(d, i) { //Calculate the label position based on arc centroid
+				                var c = arc.centroid(d),
+				                    x = c[0],
+				                    y = c[1],
+				                    h = Math.sqrt(x*x + y*y), // pythagorean theorem for hypotenuse
+				                    width = d.endAngle - d.startAngle;
+				                
+				                    this.transformX = (x/h * labelr);
+				                    this.transformY = (y/h * labelr);
+				                    var transform = "translate(" + (this.transformX+5) + "," + this.transformY +  ")";
+				                
+				                //Rotate the labels if the arc width is below a certain threshold
+				                if(width < rotateWidth){
+				                	transform = "translate(" + this.transformX +  ',' + (this.transformY + 10 + (rotatedLabels.length*5)) +  ") rotate(30)";
+				                	rotatedLabels.push(this);
+				                }
+				               	                
+				                return transform; 
+				            })
+				        	.attr("class", "donut-arc-label")
+				            .attr("text-anchor", function(d) {
+				                // are we past the center?
+				                return (d.endAngle + d.startAngle)/2 > Math.PI ?
+				                    "end" : "start";
+				            })
+				            .text(function(d, i) { 
+				            	return d.data.label;
+				            });
+	        	
+	        	// Append a count label next to each arc
+		        var countLabels = labelGroups.append("svg:text");
+		        
+		        countLabels.attr("class", "donut-arc-count")
+		            .attr("text-anchor", function(d) {
+		                // are we past the center?
+		                return (d.endAngle + d.startAngle)/2 > Math.PI ?
+		                    "end" : "start";
+		            })
+		            .text(function(d, i) { 	         
+		            	return viewRef.commaSeparateNumber(d.data.count); 
+		            })
+		           .attr("transform", function(d, i) { //Calculate the label position based on arc centroid
+		                var c = arc.centroid(d),
+		                    x = c[0],
+		                    y = c[1],
+		                    h = Math.sqrt(x*x + y*y), // pythagorean theorem for hypotenuse
+		                    width = d.endAngle - d.startAngle;
+		                
+		                    this.transformX = (x/h * labelr);
+		                    this.transformY = (y/h * labelr); 
+		                    var transform = "translate(" + (this.transformX + 5) +  ',' + (this.transformY + 20) +  ")"; 
+	                    
+		                // Again, if the arc is below a certain width, we will rotate it. Just move down and to the left a bit to align it with its corresponding label 
+		                if(width < rotateWidth){
+		                	transform = "translate(" + (this.transformX-10) +  ',' + (this.transformY+20+(rotatedCounts.length*5)) +  ") rotate(30)";
+		                	
+		                	rotatedCounts.push(this);
+		                	
+		                	//Give it a rotated class for special styling
+			                var classes = d3.select(this).attr("class");	                
+			                d3.select(this).attr("class", classes + " rotated");
+		                }
+		                	                
+		                return transform; 
+		            });
+		        
+		        //If there is only one rotated label in the whole donut chart, we can safely assume this doesn't need to be rotated. So "un-rotate" it
+	        	if(rotatedLabels.length == 1) d3.select(rotatedLabels[0]).attr("transform", "translate(" + (rotatedLabels[0].transformX + 5) + "," +  (rotatedLabels[0].transformY-5) + ")");
+	        	if(rotatedCounts.length == 1){
+	        		d3.select(rotatedCounts[0]).attr("transform", "translate(" + rotatedCounts[0].transformX + "," + (rotatedCounts[0].transformY + 15) + ")");
+	        		
+	        		var classes = d3.select(rotatedCounts[0]).attr("class");	                
+	                d3.select(rotatedCounts[0]).attr("class", classes.replace("rotated", ""));
+	        	}
+	        }
 	        
-	        // Append a text label to each arc
-        	labelGroups.append("svg:text")
-        				.attr("transform", function(d, i) { //Calculate the label position based on arc centroid
-			                var c = arc.centroid(d),
-			                    x = c[0],
-			                    y = c[1],
-			                    h = Math.sqrt(x*x + y*y), // pythagorean theorem for hypotenuse
-			                    width = d.endAngle - d.startAngle;
-			                
-			                    this.transformX = (x/h * labelr);
-			                    this.transformY = (y/h * labelr);
-			                    var transform = "translate(" + (this.transformX+5) + "," + this.transformY +  ")";
-			                
-			                //Rotate the labels if the arc width is below a certain threshold
-			                if(width < rotateWidth){
-			                	transform = "translate(" + this.transformX +  ',' + (this.transformY + 10 + (rotatedLabels.length*5)) +  ") rotate(30)";
-			                	rotatedLabels.push(this);
-			                }
-			               	                
-			                return transform; 
-			            })
-			        	.attr("class", "donut-arc-label")
-			            .attr("text-anchor", function(d) {
-			                // are we past the center?
-			                return (d.endAngle + d.startAngle)/2 > Math.PI ?
-			                    "end" : "start";
-			            })
-			            .text(function(d, i) { 
-			            	return d.data.label;
-			            });
-        	
-        	// Append a count label next to each arc
-	        var countLabels = labelGroups.append("svg:text");
-	        
-	        countLabels.attr("class", "donut-arc-count")
-	            .attr("text-anchor", function(d) {
-	                // are we past the center?
-	                return (d.endAngle + d.startAngle)/2 > Math.PI ?
-	                    "end" : "start";
-	            })
-	            .text(function(d, i) { 	         
-	            	return viewRef.commaSeparateNumber(d.data.count); 
-	            })
-	           .attr("transform", function(d, i) { //Calculate the label position based on arc centroid
-	                var c = arc.centroid(d),
-	                    x = c[0],
-	                    y = c[1],
-	                    h = Math.sqrt(x*x + y*y), // pythagorean theorem for hypotenuse
-	                    width = d.endAngle - d.startAngle;
-	                
-	                    this.transformX = (x/h * labelr);
-	                    this.transformY = (y/h * labelr); 
-	                    var transform = "translate(" + (this.transformX + 5) +  ',' + (this.transformY + 20) +  ")"; 
-                    
-	                // Again, if the arc is below a certain width, we will rotate it. Just move down and to the left a bit to align it with its corresponding label 
-	                if(width < rotateWidth){
-	                	transform = "translate(" + (this.transformX-10) +  ',' + (this.transformY+20+(rotatedCounts.length*5)) +  ") rotate(30)";
-	                	
-	                	rotatedCounts.push(this);
-	                	
-	                	//Give it a rotated class for special styling
-		                var classes = d3.select(this).attr("class");	                
-		                d3.select(this).attr("class", classes + " rotated");
-	                }
-	                	                
-	                return transform; 
-	            });
-	        
-	        //If there is only one rotated label in the whole donut chart, we can safely assume this doesn't need to be rotated. So "un-rotate" it
-        	if(rotatedLabels.length == 1) d3.select(rotatedLabels[0]).attr("transform", "translate(" + (rotatedLabels[0].transformX + 5) + "," +  (rotatedLabels[0].transformY-5) + ")");
-        	if(rotatedCounts.length == 1){
-        		d3.select(rotatedCounts[0]).attr("transform", "translate(" + rotatedCounts[0].transformX + "," + (rotatedCounts[0].transformY + 15) + ")");
-        		
-        		var classes = d3.select(rotatedCounts[0]).attr("class");	                
-                d3.select(rotatedCounts[0]).attr("class", classes.replace("rotated", ""));
-        	}
-
 	        /*
 	         * ========================================================================
 	         * Add the title to the center of the donut chart

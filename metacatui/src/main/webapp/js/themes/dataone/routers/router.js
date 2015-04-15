@@ -34,7 +34,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			//'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
 		},
 		
-		
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
 		},
@@ -101,9 +100,8 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		},
 		
 		renderProfile: function(username){
-			//Reset the stats model first
-			statsModel.clear().set(statsModel.defaults);
-			
+			this.closeLastView();
+						
 			if(!username){
 				this.routeHistory.push("summary");
 				appView.showView(statsView);
@@ -147,6 +145,16 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			//Navigate to the default view
 			this.navigate(appModel.defaultView, {trigger: true});
 		},
+		
+		closeLastView: function(){
+			//Get the last route and close the view
+			var lastRoute = _.last(this.routeHistory);
+			
+			if(lastRoute == "summary")
+				statsView.onClose();				
+			else if(lastRoute == "profile")
+				userView.onClose();
+		}
 		
 	});
 
