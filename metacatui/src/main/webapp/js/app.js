@@ -94,7 +94,7 @@ var appModel = appModel || {};
 var appView = appView || {};
 var uiRouter = uiRouter || {};
 var appSearchResults = appSearchResults || {};
-var searchModel = searchModel || {};
+var appSearchModel = appSearchModel || {};
 var registryModel = registryModel || {};
 var statsModel = statsModel || {};
 var mapModel = mapModel || {};
@@ -121,7 +121,7 @@ function(Bootstrap, AppView, AppModel) {
 	    		
 		appSearchResults = new SolrResultList([], {});
 		
-		searchModel = new Search();
+		appSearchModel = new Search();
 		
 		registryModel = new RegistryModel();
 		

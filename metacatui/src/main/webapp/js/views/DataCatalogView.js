@@ -21,49 +21,39 @@ define(['jquery',
 
 		el: '#Content',
 		
-		searchModel: window.searchModel,
+		//The default global models for searching
+		searchModel: appSearchModel,		
+		searchResults: appSearchResults,
 		
-		template: _.template(CatalogTemplate),
-		
-		statsTemplate: _.template(CountTemplate),
-		
-		pagerTemplate: _.template(PagerTemplate),
-		
+		//Templates
+		template: _.template(CatalogTemplate),		
+		statsTemplate: _.template(CountTemplate),		
+		pagerTemplate: _.template(PagerTemplate),		
 		mainContentTemplate: _.template(MainContentTemplate),
-		
 		currentFilterTemplate: _.template(CurrentFilterTemplate),
-		
 		loadingTemplate: _.template(LoadingTemplate),
 		
+		//Search mode
+		mode: "map",
+		
+		//Map settings and storage
 		map: null,
-		
 		ready: false,
-		
 		allowSearch: true,
-		
 		hasZoomed: false,
-				
 		markers: {},
-				
 		tiles: [],
-		
-		tileCounts: [],
-		
+		tileCounts: [],		
 		//Contains the geohashes for all the markers on the map (if turned on in the Map model)
-		markerGeohashes: [],
-		
+		markerGeohashes: [],		
 		//Contains all the info windows for all the markers on the map (if turned on in the Map model)
-		markerInfoWindows: [],
-		
+		markerInfoWindows: [],		
 		//Contains all the info windows for each document in the search result list - to display on hover
 		tileInfoWindows: [],
-		
 		//Contains all the markers for each document in the search result list - to display on hover
 		resultMarkers: [],
-		
 		//The geohash value for each tile drawn on the map
 		tileGeohashes: [],
-	
 		reservedMapPhrase: 'Only results with all spatial coverage inside the map',
 		
 		// Delegated events for creating new items, and clearing completed ones.
@@ -101,7 +91,7 @@ define(['jquery',
 				var optionKeys = Object.keys(options);
 				_.each(optionKeys, function(key, i){
 					view[key] = options[key];
-				});
+				});				
 			}
 		},
 				
@@ -109,8 +99,12 @@ define(['jquery',
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
 		render: function () {
-			//Use the global search model if there is no other search model specified
-			if(typeof window.searchModel !== "undefined" && (Object.keys(this.searchModel).length == 0)) this.searchModel = window.searchModel;
+			//Use the global models if there are no other models specified at time of render
+			if(typeof appSearchModel !== "undefined" && (Object.keys(this.searchModel).length == 0)) this.searchModel = appSearchModel;
+			if(((typeof this.searchResults === "undefined") || (Object.keys(this.searchResults).length == 0)) && (appSearchResults && (Object.keys(appSearchResults).length > 0))) this.searchResults = appSearchResults;
+			
+			//Default to map mode
+			if((typeof this.mode === "undefined") || !this.mode) this.mode = "map";
 			
 			appModel.set('headerType', 'default');
 			this.toggleViewClass("DataCatalog");
@@ -119,19 +113,17 @@ define(['jquery',
 			var loadingHTML = this.loadingTemplate({
 				msg: "Retrieving member nodes..."
 			});
-			var cel = this.template(
-					{	sortOrder:   this.searchModel.get('sortOrder'),
-						yearMin:     this.searchModel.get('yearMin'),
-						yearMax:     this.searchModel.get('yearMax'),
-						pubYear:     this.searchModel.get('pubYear'),
-						dataYear:    this.searchModel.get('dataYear'),
-						resourceMap: this.searchModel.get('resourceMap'),
-						searchOptions: registryModel.get('searchOptions'),
-						username: appModel.get('username'),
-						loading: loadingHTML
-					}
-			);
-			
+			var cel = this.template({	
+				sortOrder:   this.searchModel.get('sortOrder'),
+				yearMin:     this.searchModel.get('yearMin'),
+				yearMax:     this.searchModel.get('yearMax'),
+				pubYear:     this.searchModel.get('pubYear'),
+				dataYear:    this.searchModel.get('dataYear'),
+				resourceMap: this.searchModel.get('resourceMap'),
+				searchOptions: registryModel.get('searchOptions'),
+				username: appModel.get('username'),
+				loading: loadingHTML
+			});
 			
 			this.$el.html(cel);
 			this.updateStats();		
@@ -176,9 +168,9 @@ define(['jquery',
 			
 			// Register listeners; this is done here in render because the HTML
 			// needs to be bound before the listenTo call can be made
-			this.stopListening(appSearchResults);
-			this.listenTo(appSearchResults, 'add', this.addOne);
-			this.listenTo(appSearchResults, 'reset', this.addAll);
+			this.stopListening(this.searchResults);
+			this.listenTo(this.searchResults, 'add', this.addOne);
+			this.listenTo(this.searchResults, 'reset', this.addAll);
 			if(nodeModel.get("members").length > 0) this.listMemberNodes();
 			else this.listenTo(nodeModel,   'change:members', this.listMemberNodes);
 			
@@ -273,14 +265,14 @@ define(['jquery',
 			
 			//Set the sort order based on user choice
 			var sortOrder = this.searchModel.get('sortOrder');
-			appSearchResults.setSort(sortOrder);
+			this.searchResults.setSort(sortOrder);
 			
 			//Specify which fields to retrieve
 			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,prov_hasSources,prov_hasDerivations";
 			if(gmaps){
 				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}
-			appSearchResults.setfields(fields);
+			this.searchResults.setfields(fields);
 			
 			//Get the query
 			var query = this.searchModel.getQuery();
@@ -288,11 +280,11 @@ define(['jquery',
 			//Specify which facets to retrieve
 			if(gmaps){ //If we have Google Maps enabled
 				var geohashes = ["geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9"]
-			    appSearchResults.facet = _.union(appSearchResults.facet, geohashes);
+			    this.searchResults.facet = _.union(this.searchResults.facet, geohashes);
 			}
 			
 			//Run the query
-			appSearchResults.setQuery(query);
+			this.searchResults.setQuery(query);
 			
 			//Show or hide the reset filters button
 			if(this.searchModel.filterCount() > 0){
@@ -315,6 +307,7 @@ define(['jquery',
 		 * ==================================================================================================
 		**/
 		updateCheckboxFilter : function(e, category, value){
+			
 			var checkbox = e.target;
 			var checked = $(checkbox).prop("checked");
 
@@ -397,7 +390,6 @@ define(['jquery',
 		//Update the UI year slider and input values
 		//Also update the model
 		updateYearRange : function(e) {
-			
 			var viewRef = this;
 			
 			// Get the minimum and maximum values from the input fields
@@ -485,22 +477,21 @@ define(['jquery',
 		},
 		
 		selectYearType : function(autoSelect){
-			
-		      var pubYearChecked  = $('#publish_year').prop('checked');
+			  var pubYearChecked  = $('#publish_year').prop('checked');
 			  var dataYearChecked = $('#data_year').prop('checked');
-		    
+			
 			  // If neither the publish year or data coverage year are checked
-		      if((!pubYearChecked) && (!dataYearChecked)){
-		    	  
-		    	  //We want to check the data coverage year on the user's behalf
-		    	  $('#data_year').prop('checked', 'true');  
-			    	  
-		    	  //And update the search model
-		    	  this.searchModel.set('dataYear', true);
-		    	  
-		    	  //refresh the UI buttonset so it appears as checked/unchecked
-		    	  $("#filter-year").buttonset("refresh");
-		      }
+			  if((!pubYearChecked) && (!dataYearChecked)){
+				  
+				  //We want to check the data coverage year on the user's behalf
+			  $('#data_year').prop('checked', 'true');  
+				  
+			  //And update the search model
+			  this.searchModel.set('dataYear', true);
+			  
+			  //refresh the UI buttonset so it appears as checked/unchecked
+			  $("#filter-year").buttonset("refresh");
+			  }
 		},
 		
 		updateTextFilters : function(e, item){
@@ -613,7 +604,8 @@ define(['jquery',
 		},
 		
 		//Removes a specific filter term from the searchModel
-		removeFilter : function(e){			
+		removeFilter : function(e){	
+
 			//Get the parent element that stores the filter term 
 			var filterNode = $(e.target).parent();
 			
@@ -960,7 +952,7 @@ define(['jquery',
 			var viewRef = this;
 			
 			//Create the facet query by using our current search query 
-			var facetQuery = "q=" + appSearchResults.currentquery +
+			var facetQuery = "q=" + this.searchResults.currentquery +
 							 "&wt=json" +
 							 "&rows=0" +
 							 this.searchModel.getFacetQuery();
@@ -1253,13 +1245,13 @@ define(['jquery',
 		**/
 		//Update all the statistics throughout the page
 		updateStats : function() {
-			if (appSearchResults.header != null) {
+			if (this.searchResults.header != null) {
 				this.$statcounts = this.$('#statcounts');
 				this.$statcounts.html(
 					this.statsTemplate({
-						start : appSearchResults.header.get("start") + 1,
-						end : appSearchResults.header.get("start") + appSearchResults.length,
-						numFound : appSearchResults.header.get("numFound")
+						start    : this.searchResults.header.get("start") + 1,
+						end      : this.searchResults.header.get("start") + this.searchResults.length,
+						numFound : this.searchResults.header.get("numFound")
 					})
 				);
 			}
@@ -1269,8 +1261,8 @@ define(['jquery',
 		},
 		
 		updatePager : function() {
-			if (appSearchResults.header != null) {
-				var pageCount = Math.ceil(appSearchResults.header.get("numFound") / appSearchResults.header.get("rows"));
+			if (this.searchResults.header != null) {
+				var pageCount = Math.ceil(this.searchResults.header.get("numFound") / this.searchResults.header.get("rows"));
 				
 				//If no results were found, display a message instead of the list and clear the pagination.
 				if(pageCount == 0){
@@ -1290,7 +1282,7 @@ define(['jquery',
 					// mark current page correctly, avoid NaN
 					var currentPage = -1;
 					try {
-						currentPage = Math.floor((appSearchResults.header.get("start") / appSearchResults.header.get("numFound")) * pageCount);
+						currentPage = Math.floor((this.searchResults.header.get("start") / this.searchResults.header.get("numFound")) * pageCount);
 					} catch (ex) {
 						console.log("Exception when calculating pages:" + ex.message);
 					}
@@ -1327,7 +1319,7 @@ define(['jquery',
 		// Next page of results
 		nextpage: function () {
 			this.loading();
-			appSearchResults.nextpage();
+			this.searchResults.nextpage();
 			this.$resultsview.show();
 			this.updateStats();
 			
@@ -1339,7 +1331,7 @@ define(['jquery',
 		// Previous page of results
 		prevpage: function () {
 			this.loading();
-			appSearchResults.prevpage();
+			this.searchResults.prevpage();
 			this.$resultsview.show();
 			this.updateStats();
 			
@@ -1355,7 +1347,7 @@ define(['jquery',
 		
 		showPage: function(page) {
 			this.loading();
-			appSearchResults.toPage(page);
+			this.searchResults.toPage(page);
 			this.$resultsview.show();
 			this.updateStats();	
 			this.updatePageNumber(page);
@@ -1678,7 +1670,7 @@ define(['jquery',
 			var currentZoom     = this.map.getZoom(),
 				geohashLevelNum	= mapModel.determineGeohashLevel(currentZoom),
 				geohashLevel    = "geohash_" + geohashLevelNum,
-				geohashes       = appSearchResults.facetCounts[geohashLevel];
+				geohashes       = this.searchResults.facetCounts[geohashLevel];
 			
 			//Save the current geohash level in the map model
 			mapModel.set("tileGeohashLevel", geohashLevelNum);
@@ -2217,7 +2209,7 @@ define(['jquery',
 			this.removeMarkers();
 			
 			//If there are no results, display so
-			var numFound = appSearchResults.models.length;
+			var numFound = this.searchResults.models.length;
 			if (numFound == 0){
 				this.$results.html('<p id="no-results-found">No results found.</p>');
 			}
@@ -2242,7 +2234,7 @@ define(['jquery',
 					
 					//--- Add all the results to the list ---
 					for (i = 0; i < numFound; i++) {
-						var element = appSearchResults.models[i];
+						var element = viewRef.searchResults.models[i];
 						viewRef.addOne(element);
 					};
 					
@@ -2392,7 +2384,7 @@ define(['jquery',
 		},
 		
 		onClose: function () {						
-			this.toggleViewClass("DataCatalog");
+			this.$el.removeClass("DataCatalog");
 			
 			if(gmaps){
 				// unset map mode

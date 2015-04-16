@@ -81,13 +81,14 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			
 			//If a search mode parameter is given
 			if((typeof mode !== "undefined") && mode)
-				appModel.set('searchMode', mode)
-			
+				//appModel.set('searchMode', mode)
+				dataCatalogView.mode = mode;
+
 			//If a query parameter is given
 			if((typeof query !== "undefined") && query){
-				var customQuery = searchModel.get('additionalCriteria');
+				var customQuery = appSearchModel.get('additionalCriteria');
 				customQuery.push(query);
-				searchModel.set('additionalCriteria', customQuery);
+				appSearchModel.set('additionalCriteria', customQuery);
 			}
 			
 			appView.showView(dataCatalogView);

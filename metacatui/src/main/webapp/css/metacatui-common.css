@@ -526,3 +526,11 @@ tfoot .control i{
 #user-profile{
 	padding-top: 20px;
 }
+.list-only #sidebar{
+	display: none;
+}
+.list-only #results-container{
+	width: 100%;
+	overflow-y: visible;
+	overflow-x: visible;
+}

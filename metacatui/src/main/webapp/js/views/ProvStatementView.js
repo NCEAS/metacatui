@@ -73,7 +73,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			var allTriples = new Array();
 			
 			//Make a list of predicates that we want to use in the prov statements
-			var predicates = _.difference(searchModel.getProvFields(), this.skipPredicates);			
+			var predicates = _.difference(appSearchModel.getProvFields(), this.skipPredicates);			
 			
 			//Look for prov traces in all the models
 			var allModels = _.union(this.model, this.relatedModels);			

@@ -62,13 +62,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			$("#search_txt").val('');
 			
 			//Clear the search model to start a fresh search
-			searchModel.clear().set(searchModel.defaults);
+			appSearchModel.clear().set(appSearchModel.defaults);
 			
 			//Create a new array with the new search term
 			var newSearch = [searchTerm];
 			
 			//Set up the search model for this new term
-			searchModel.set('all', newSearch);
+			appSearchModel.set('all', newSearch);
 			
 			// make sure the browser knows where we are
 			uiRouter.navigate("data", {trigger: true});
@@ -80,8 +80,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		
 		showNewSearch: function(){
 			// Clear the search model to start a fresh search
-			searchModel.clear();
-			searchModel.set(searchModel.defaults);
+			appSearchModel.clear();
+			appSearchModel.set(appSearchModel.defaults);
 			
 			uiRouter.navigate('data', {trigger: true});
 		},
@@ -92,13 +92,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			var username = appModel.get('username');
 			
 			// Clear the search model to start a fresh search
-			searchModel.clear().set(searchModel.defaults);
+			appSearchModel.clear().set(appSearchModel.defaults);
 			
 			// Create a new array with the new search term
 			var newSearch = ["rightsHolder:" + username];
 			
 			//Set up the search model for this new term
-			searchModel.set('additionalCriteria', newSearch);
+			appSearchModel.set('additionalCriteria', newSearch);
 						
 			// make sure the browser knows where we are
 			uiRouter.navigate("data", {trigger: true});

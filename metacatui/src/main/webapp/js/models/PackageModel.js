@@ -48,7 +48,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var model = this;
 			
 			//Get the id of the resource map for this member
-			var provFlList = searchModel.getProvFlList();
+			var provFlList = appSearchModel.getProvFlList();
 			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,title,prov_instanceOfClass,' + provFlList +
 						'&wt=json' +
 						'&rows=1' +
@@ -83,7 +83,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				pids    = []; //Keep track of each object pid
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
-			var provFlList = searchModel.getProvFlList();
+			var provFlList = appSearchModel.getProvFlList();
 			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,prov_instanceOfClass,' + provFlList +
 						'&wt=json' +
 						'&rows=100' +
@@ -140,11 +140,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(!externalProvEntities.length) return this;
 			else{
 				//Create a query where we retrieve the ID of the resource map of each source and derivation
-				var idQuery = searchModel.getGroupedQuery("id", externalProvEntities, "OR");
+				var idQuery = appSearchModel.getGroupedQuery("id", externalProvEntities, "OR");
 				
 				//TODO: Also create a query where we retrieve the metadata for this object (so we can know its title, authors, etc.)
 				//TODO: Will look like "OR (documents:id OR id OR id)"
-				var metadataQuery = searchModel.getGroupedQuery("documents", externalProvEntities, "OR");
+				var metadataQuery = appSearchModel.getGroupedQuery("documents", externalProvEntities, "OR");
 			}
 			
 			//TODO: Find the products of programs/executions
@@ -152,7 +152,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Make a comma-separated list of the provenance field names 
 			var provFieldList = "";
-			_.each(searchModel.getProvFields(), function(fieldName, i, list){
+			_.each(appSearchModel.getProvFields(), function(fieldName, i, list){
 				provFieldList += fieldName;
 				if(i < list.length-1) provFieldList += ",";
 			});
@@ -179,7 +179,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					var allMapIDs = _.uniq(_.flatten(_.pluck(hasMultipleMaps, "resourceMap")));
 					if(allMapIDs.length){
 						
-						var query = "q=+-obsoletedBy:*+" + searchModel.getGroupedQuery("id", allMapIDs, "OR") + 
+						var query = "q=+-obsoletedBy:*+" + appSearchModel.getGroupedQuery("id", allMapIDs, "OR") + 
 									"&fl=obsoletes,id" +
 									"&wt=json";
 						$.get(appModel.get("queryServiceUrl") + query, function(mapData, textStatus, xhr){	

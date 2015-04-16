@@ -96,7 +96,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		isSourceField: function(field){
 			if((typeof field == "undefined") || !field) return false;
-			if(!_.contains(searchModel.getProvFields(), field)) return false;			
+			if(!_.contains(appSearchModel.getProvFields(), field)) return false;			
 			
 			if(field == "prov_generatedByExecution" ||
 			   field == "prov_generatedByProgram"   ||
@@ -113,7 +113,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 */		
 		isDerivationField: function(field){
 			if((typeof field == "undefined") || !field) return false;
-			if(!_.contains(searchModel.getProvFields(), field)) return false;
+			if(!_.contains(appSearchModel.getProvFields(), field)) return false;
 			
 			if(field == "prov_usedByExecution" ||
 			   field == "prov_usedByProgram"   ||
@@ -132,7 +132,7 @@ define(['jquery', 'underscore', 'backbone'],
 					return true;
 			}
 				
-			var fieldNames = searchModel.getProvFields(),
+			var fieldNames = appSearchModel.getProvFields(),
 				currentField = "";
 			
 			for(var i=0; i<= fieldNames.length; i++){
@@ -150,7 +150,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var sources = new Array(),
 				model = this;
 			
-			_.each(searchModel.getProvFields(), function(provField, i){
+			_.each(appSearchModel.getProvFields(), function(provField, i){
 				if(model.isSourceField(provField) && model.has(provField))
 					sources.push(model.get(provField));
 			});
@@ -165,7 +165,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var derivations = new Array(),
 				model = this;
 		
-			_.each(searchModel.getProvFields(), function(provField, i){
+			_.each(appSearchModel.getProvFields(), function(provField, i){
 				if(model.isDerivationField(provField) && model.get(provField))
 					derivations.push(model.get(provField));
 			});	

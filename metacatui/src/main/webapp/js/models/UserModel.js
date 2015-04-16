@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone'], 				
-	function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrResults"], 				
+	function($, _, Backbone, SearchModel, SearchResults) {
 	'use strict';
 
 	// User Model
@@ -11,11 +11,19 @@ define(['jquery', 'underscore', 'backbone'],
 			firstName: null,
 			verified: null,
 			username: null,
-			completeFlag: false
+			searchModel: null,
+			searchResults: null
 		},
 		
 		initialize: function(){
-			this.set("username", appModel.get("profileUsername"));
+			if(!this.get("username"))
+				this.set("username", appModel.get("profileUsername"));
+			
+			this.set("searchModel", new SearchModel({
+				username: [this.get("username")]
+			}));
+			var searchResults = new SearchResults([], { rows: 3 });
+			this.set("searchResults", searchResults);
 		},
 		
 		getInfo: function(){

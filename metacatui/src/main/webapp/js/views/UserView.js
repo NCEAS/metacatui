@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/Search', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, SearchModel, UserModel, StatsView, DataCatalogView, userProfileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, UserModel, StatsView, DataCatalogView, userProfileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
 			
 	var UserView = Backbone.View.extend({
@@ -42,16 +42,17 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', 'models/UserModel',
 			this.statsView.render();
 			
 			//Create a user model for this person
-			var user = new UserModel();
+			var user = new UserModel({
+				username: username
+			});
 			this.model = user;
 			this.listenTo(user, "change:lastName", this.insertUserInfo);
 			user.getInfo();
 		
-			//Create a search model for this user's content
-			this.userSearchModel =  new SearchModel({
-				username: [this.model.get("username")]
-			});
+			//Insert this user's data content
 			this.insertContent();
+			
+			$("#metacatui-app").removeClass("DataCatalog");
 			
 			return this;
 		},
@@ -83,15 +84,20 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', 'models/UserModel',
 				y = firstUpload.getUTCFullYear(),
 				d = firstUpload.getUTCDate();
 			
-			this.$("#first-upload").text("Contributor since " + m + ", " + d + " " + y);
+			this.$("#first-upload").text("Contributor since " + m + " " + d + ", " + y);
 		},
 		
 		insertContent: function(){				
 			var view = new DataCatalogView({
-				el: this.$("#data-list")[0],
-				searchModel: this.userSearchModel
+				el            : this.$("#data-list")[0],
+				searchModel   : this.model.get("searchModel"),
+				searchResults : this.model.get("searchResults"),
+				mode          : "list"
 			});
+			this.subviews.push(view);
 			view.render();
+			view.$el.addClass("list-only");
+			view.$(".auto-height").removeClass("auto-height").css("height", "auto");
 		}, 
 		
 		onClose: function () {			
