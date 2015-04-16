@@ -4,7 +4,6 @@ define(['jquery',
 				'underscore', 
 				'backbone',
 				'views/SearchResultView',
-				'views/SearchResultListView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
 				'text!templates/pager.html',
@@ -14,7 +13,7 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, SearchResultListView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
