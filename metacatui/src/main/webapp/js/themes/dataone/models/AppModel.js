@@ -23,7 +23,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "cn/v1",
-			d1CNBaseUrl: "https://cn-stage.test.dataone.org/",
+			d1CNBaseUrl: "https://cn-sandbox-2.test.dataone.org/",
 			d1CNService: "cn/v1",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -58,7 +58,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 			}
 			
-			this.set("baseUrl", "https://cn-stage.test.dataone.org");
+			this.set("baseUrl", "https://cn-sandbox-2.test.dataone.org");
 						
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
@@ -91,7 +91,6 @@ define(['jquery', 'underscore', 'backbone'],
 		changePid: function(model, name){			
 			this.set("previousPid", model.previous("pid"));
 		}
-	
 		
 	});
 	return AppModel;		

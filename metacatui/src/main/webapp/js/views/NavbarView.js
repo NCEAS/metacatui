@@ -23,8 +23,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		
 		initialize: function () {
 			// listen to the appModel for changes in username
-			this.listenTo(appModel, 'change:username', this.render);
-			this.listenTo(appModel, 'change:fullName', this.render);
+			this.listenTo(appUserModel, 'change:username', this.render);
+			this.listenTo(appUserModel, 'change:loggedIn', this.render);
 			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);
 		},
 				
@@ -33,7 +33,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			var signInUrl = appModel.get('baseUrl') + "/portal/startRequest?target=" + target;
 			
 			// set the username in the template (can be null if not logged in)
-			var username = appModel.get("username");
+			var username = appUserModel.get("username");
 			if(username && (username.indexOf(" ") > -1) && (username.indexOf("CN=") > -1))
 				var firstName = username.substring(username.indexOf("CN=") + 3, username.indexOf(" "));
 			else
@@ -45,6 +45,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 								username: username,
 								fullName: appModel.get('fullName'),
 								firstName: firstName,
+								loggedIn: appUserModel.get("loggedIn"),
 								baseUrl: appModel.get('baseUrl'),
 								signInUrl: signInUrl,
 								currentUrl: window.location.href,

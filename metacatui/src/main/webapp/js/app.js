@@ -100,25 +100,26 @@ var statsModel = statsModel || {};
 var mapModel = mapModel || {};
 var lookupModel = lookupModel || {};
 var nodeModel = nodeModel || {};
+var appUserModel = appUserModel || {};
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
 function(Bootstrap, AppView, AppModel) {
 	'use strict';  
     		
-	// initialize the application to get the index.html scaffolding in place
+	// initialize the application
 	appModel = new AppModel({context: '/' + metacatContext});
-	appView = new AppView();
 	
 	/* Now require the rest of the libraries for the application */
 	require(['backbone', 
 	         'routers/router', 
 	         'collections/SolrResults', 
-	         'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel'
+	         'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', "models/UserModel"
 	         ],
-	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel, LookupModel, NodeModel) {
+	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel, LookupModel, NodeModel, UserModel) {
 		'use strict';  
 	    		
+		//Create all the other models first
 		appSearchResults = new SolrResultList([], {});
 		
 		appSearchModel = new Search();
@@ -132,6 +133,11 @@ function(Bootstrap, AppView, AppModel) {
 		lookupModel = new LookupModel();
 		
 		nodeModel = new NodeModel();
+		
+		appUserModel = new UserModel();
+		
+		//Load the App View now
+		appView = new AppView();
 			
 		// Initialize routing and start Backbone.history()
 		(function() {
@@ -162,6 +168,7 @@ function(Bootstrap, AppView, AppModel) {
 		}).call(this);
 		
 		//Make the router and begin the Backbone history
+		//The router will figure out which view to load first based on window location
 		uiRouter = new UIRouter();
 		Backbone.history.start();
 	  

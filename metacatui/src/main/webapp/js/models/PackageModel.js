@@ -117,7 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var model = this;
 			
 			//See if there are any prov fields in our index before continuing
-			if(!searchModel.getProvFields()) return this;
+			if(!appSearchModel.getProvFields()) return this;
 			
 			var sources 		   = new Array(),
 				derivations 	   = new Array();

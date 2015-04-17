@@ -1,45 +1,45 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/ExternalView', 'views/LdapView', 'views/StatsView', 'views/UserView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, ExternalView, LdapView, StatsView, UserView) {
-
-	var indexView = new IndexView();
-	var aboutView = aboutView || new AboutView();
-	var toolsView = toolsView || new ToolsView();
-	var dataCatalogView = new DataCatalogView();
-	var registryView = new RegistryView();
-	var metadataView = new MetadataView();
-	var externalView = new ExternalView();
-	var ldapView = new LdapView();
-	var statsView = new StatsView();
-	var userView = new UserView();
-	
-	// set the KNB as the only LDAP servicer for this theme
-	// NOTE: requires CORS configured on the web server
-	appModel.set('ldapwebServiceUrl', 'https://knb.ecoinformatics.org/knb/cgi-bin/ldapweb.cgi');
-	
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView) {
+		
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			'' 							: 'navigateToDefault',    // default is data search page
-			'about'                     : 'renderAbout',  // about page
-			'about(/:anchorId)'         : 'renderAbout',  // about page anchors
-			'plans'                     : 'renderPlans',  // plans page
-			'tools(/:anchorId)'         : 'renderTools',  // tools page
+			''                          : 'navigateToDefault',    // the default route
+			'about'                     : 'renderAbout',    // about page
+			'about(/:anchorId)'         : 'renderAbout',    // about page anchors
+			//'plans'                     : 'renderPlans',    // plans page
+			//'tools(/:anchorId)'         : 'renderTools',    // tools page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'view/*pid'                 : 'renderMetadata',    // metadata page
-			'profile(/*query)'			: 'renderProfile', //profile page
-			'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
-			'logout'                    : 'logout',    // logout the user
-			'signup'          			: 'renderLdap',    // use ldapweb for registration
-			'account(/:stage)'          : 'renderLdap',    // use ldapweb for different stages
-			'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
+			'view/*pid'                 : 'renderMetadata', // metadata page
+			'profile(/*username)'		: 'renderProfile',
+			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
+			'logout'                    : 'logout',    		// logout the user
+			//'signup'          			: 'renderLdap',     // use ldapweb for registration
+			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
+			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
 		
 		initialize: function(){
+			// set the KNB as the only LDAP servicer for this theme
+			// NOTE: requires CORS configured on the web server
+			appModel.set('ldapwebServiceUrl', 'https://knb.ecoinformatics.org/knb/cgi-bin/ldapweb.cgi');
+			
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+			
+			appView.indexView = new IndexView();
+			appView.aboutView = new AboutView();
+			appView.toolsView = new ToolsView();
+			appView.dataCatalogView = new DataCatalogView();
+			appView.registryView = new RegistryView();
+			appView.metadataView = new MetadataView();
+			appView.statsView = new StatsView();
+			appView.userView = new UserView();
+			appView.externalView = new ExternalView();
+			appView.ldapView = new LdapView();
 		},
 		
 		routeHistory: new Array(),
@@ -53,56 +53,58 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 				return this.routeHistory[this.routeHistory.length-2];
 		},
 
-		routeToData: function () {
-			this.routeHistory.push('data');
-			this.navigate("data", {trigger: true});
-		},
-		
 		renderIndex: function (param) {
-			this.routeHistory.push('index');
-			appView.showView(indexView);
+			this.routeHistory.push("index");
+			appView.showView(appView.indexView);
 		},
 		
 		renderAbout: function (anchorId) {
-			this.routeHistory.push('about');
+			this.routeHistory.push("about");
 			appModel.set('anchorId', anchorId);
-			appView.showView(aboutView);
+			appView.showView(appView.aboutView);
 		},
 		
 		renderPlans: function (param) {
-			this.routeHistory.push('plans');
+			this.routeHistory.push("plans");
 		},
 		
 		renderTools: function (anchorId) {
-			this.routeHistory.push('tools');
+			this.routeHistory.push("tools");
 			appModel.set('anchorId', anchorId);
-			appView.showView(toolsView);
+			appView.showView(appView.toolsView);
 		},
 		
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
 			appModel.set('page', page);
 			
+			///Check for the URL parameters
+			if(typeof page === "undefined")
+				appModel.set("page", 0);
+			else
+				appModel.set('page', page);
+			
 			//If a search mode parameter is given
-			if(mode){
-				appModel.set('searchMode', mode)
-			}
+			if((typeof mode !== "undefined") && mode)
+				//appModel.set('searchMode', mode)
+				appView.dataCatalogView.mode = mode;
 			
 			//If a query parameter is given
-			if(query){
+			if((typeof query !== "undefined") && query){
 				var customQuery = appSearchModel.get('additionalCriteria');
 				customQuery.push(query);
 				appSearchModel.set('additionalCriteria', customQuery);
 			}
 			
-			appView.showView(dataCatalogView);
+			appView.showView(appView.dataCatalogView);
 		},
 		
 		renderMetadata: function (pid) {
-			this.routeHistory.push('metadata');
+			this.routeHistory.push("metadata");
+			appModel.set('lastPid', appModel.get("pid"));
 			appModel.set('pid', pid);
-			metadataView.pid = pid;
-			appView.showView(metadataView);
+			appView.metadataView.pid = pid;
+			appView.showView(appView.metadataView);
 		},
 		
 		renderProfile: function(username){
@@ -110,40 +112,40 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			
 			if(!username){
 				this.routeHistory.push("summary");
-				appView.showView(statsView);
+				appView.showView(appView.statsView);
 			}
 			else{
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
-				appView.showView(userView);
+				appView.showView(appView.userView);
 			}
 		},
 		
 		renderRegistry: function (stage, pid) {
 			this.routeHistory.push("registry");
-			registryView.stage = stage;
-			registryView.pid = pid;
-			appView.showView(registryView);
+			appView.registryView.stage = stage;
+			appView.registryView.pid = pid;
+			appView.showView(appView.registryView);
 		},
 		
 		renderLdap: function (stage) {
-			this.routeHistory.push('ldap');
-			ldapView.stage = stage;
-			appView.showView(ldapView);
+			this.routeHistory.push("ldap");
+			appView.ldapView.stage = stage;
+			appView.showView(appView.ldapView);
 		},
 		
 		logout: function (param) {
-			//Clear out browsing history when we log out
+			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-			
-			registryView.logout();
+			appView.registryView.logout();
+			//appView.showView(appView.indexView);
 		},
 		
 		renderExternal: function(url) {
-			this.routeHistory.push('external');
 			// use this for rendering "external" content pulled in dynamically
-			externalView.url = url;
-			appView.showView(externalView);
+			this.routeHistory.push("external");
+			appView.externalView.url = url;
+			appView.showView(appView.externalView);
 		},
 		
 		navigateToDefault: function(){
@@ -156,12 +158,12 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			var lastRoute = _.last(this.routeHistory);
 			
 			if(lastRoute == "summary")
-				statsView.onClose();				
+				appView.statsView.onClose();				
 			else if(lastRoute == "profile")
-				userView.onClose();
+				appView.userView.onClose();
 		}
 		
 	});
 
 	return UIRouter;
-});
+});			

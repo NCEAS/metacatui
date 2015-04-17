@@ -17,8 +17,8 @@ define(['jquery',
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
-
-		el: '#Content',
+		
+		el: "#Content",
 		
 		//The default global models for searching
 		searchModel: appSearchModel,		
@@ -91,7 +91,7 @@ define(['jquery',
 				_.each(optionKeys, function(key, i){
 					view[key] = options[key];
 				});				
-			}
+			}			
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -427,7 +427,7 @@ define(['jquery',
 			}
 			
 			//If either of the year inputs have changed
-			if((minVal != defaultMinYear) || (maxVal != defaultMaxYear)){
+			if(((typeof minVal !== "undefined") && (minVal != defaultMinYear)) || ((typeof maxVal !== "undefined") && (maxVal != defaultMaxYear))){
 				
 				//Update the search model to match what is in the text inputs
 			    this.searchModel.set('yearMin', $('#min_year').val());

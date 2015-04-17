@@ -3,17 +3,6 @@
 
 define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
 function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView, DataDetailsView) {
-
-	var indexView = new IndexView();
-	var aboutView = aboutView || new AboutView();
-	//var toolsView = toolsView || new ToolsView();
-	var dataCatalogView = new DataCatalogView();
-	//var registryView = new RegistryView();
-	var metadataView = new MetadataView();
-	var statsView = new StatsView();
-	var userView = new UserView();
-	var externalView = new ExternalView();
-	//var ldapView = new LdapView();
 	
 	// MetacatUI Router
 	// ----------------
@@ -36,6 +25,17 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+			
+			appView.indexView = new IndexView();
+			appView.aboutView = new AboutView();
+			//appView.toolsView = toolsView || new ToolsView();
+			appView.dataCatalogView = new DataCatalogView();
+			//appView.registryView = new RegistryView();
+			appView.metadataView = new MetadataView();
+			appView.statsView = new StatsView();
+			appView.userView = new UserView();
+			appView.externalView = new ExternalView();
+			//appView.ldapView = new LdapView();
 		},
 		
 		routeHistory: new Array(),
@@ -51,13 +51,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 
 		renderIndex: function (param) {
 			this.routeHistory.push("index");
-			appView.showView(indexView);
+			appView.showView(appView.indexView);
 		},
 		
 		renderAbout: function (anchorId) {
 			this.routeHistory.push("about");
 			appModel.set('anchorId', anchorId);
-			appView.showView(aboutView);
+			appView.showView(appView.aboutView);
 		},
 		
 		renderPlans: function (param) {
@@ -67,7 +67,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 		renderTools: function (anchorId) {
 			this.routeHistory.push("tools");
 			appModel.set('anchorId', anchorId);
-			appView.showView(toolsView);
+			appView.showView(appView.toolsView);
 		},
 		
 		renderData: function (mode, query, page) {
@@ -82,7 +82,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			//If a search mode parameter is given
 			if((typeof mode !== "undefined") && mode)
 				//appModel.set('searchMode', mode)
-				dataCatalogView.mode = mode;
+				appView.dataCatalogView.mode = mode;
 
 			//If a query parameter is given
 			if((typeof query !== "undefined") && query){
@@ -91,13 +91,13 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 				appSearchModel.set('additionalCriteria', customQuery);
 			}
 			
-			appView.showView(dataCatalogView);
+			appView.showView(appView.dataCatalogView);
 		},
 		
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('pid', pid);
-			appView.showView(metadataView);
+			appView.showView(appView.metadataView);
 		},
 		
 		renderProfile: function(username){
@@ -105,41 +105,41 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 						
 			if(!username){
 				this.routeHistory.push("summary");
-				appView.showView(statsView);
+				appView.showView(appView.statsView);
 			}
 			else{
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
-				appView.showView(userView);
+				appView.showView(appView.userView);
 			}
 		},
 		
 		renderRegistry: function (stage, pid) {
 			this.routeHistory.push("registry");
-			registryView.stage = stage;
-			registryView.pid = pid;
-			appView.showView(registryView);
+			appView.registryView.stage = stage;
+			appView.registryView.pid = pid;
+			appView.showView(appView.registryView);
 		},
 		
 		renderLdap: function (stage) {
 			this.routeHistory.push("ldap");
-			ldapView.stage = stage;
-			appView.showView(ldapView);
+			appView.ldapView.stage = stage;
+			appView.showView(appView.ldapView);
 		},
 		
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-			//registryView.logout();
+			//appView.registryView.logout();
 			appView.logout();
-			//appView.showView(indexView);
+			//appView.showView(appView.indexView);
 		},
 		
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
 			this.routeHistory.push("external");
-			externalView.url = url;
-			appView.showView(externalView);
+			appView.externalView.url = url;
+			appView.showView(appView.externalView);
 		},
 		
 		navigateToDefault: function(){
@@ -152,9 +152,9 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			var lastRoute = _.last(this.routeHistory);
 			
 			if(lastRoute == "summary")
-				statsView.onClose();				
+				appView.statsView.onClose();				
 			else if(lastRoute == "profile")
-				userView.onClose();
+				appView.userView.onClose();
 		}
 		
 	});

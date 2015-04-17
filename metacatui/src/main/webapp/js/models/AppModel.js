@@ -24,7 +24,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v1',
-			d1CNBaseUrl: "https://cn-stage-2.test.dataone.org/",
+			d1CNBaseUrl: "https://cn-sandbox-2.test.dataone.org/",
 			d1CNService: "cn/v1",
 			viewServiceUrl: null,
 			packageServiceUrl: null,

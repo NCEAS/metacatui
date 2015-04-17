@@ -301,10 +301,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								//var allHeaders = xhr1.getAllResponseHeaders();
 								
 								// set the username in the appModel, that's all we have
-								appModel.set("username", username);
+								appUserModel.set("username", username);
 								
 								// trigger the check for logged in user
-								appView.checkUserStatus();
+								appUserModel.checkStatus();
 								
 								// then load the registry url again, now that we are logged in
 								viewRef.render();
@@ -372,10 +372,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								// don't really do anything with this - browser has the JSESSIONID cookie now
 								
 								// set the username to null in the appModel
-								appModel.set("username", null);
+								appUserModel.set("username", null);
 								
 								// trigger the check for logged in user
-								appView.checkUserStatus();
+								appUserModel.checkStatus();
 							}
 						});
 					} else {

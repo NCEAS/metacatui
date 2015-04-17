@@ -1,40 +1,41 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, StatsView, ExternalView, LdapView) {
-
-	var indexView = new IndexView();
-	var aboutView = aboutView || new AboutView();
-	var toolsView = toolsView || new ToolsView();
-	var dataCatalogView = new DataCatalogView();
-	var registryView = new RegistryView();
-	var metadataView = new MetadataView();
-	var statsView = new StatsView();
-	var externalView = new ExternalView();
-	var ldapView = new LdapView();
-	
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView) {
+		
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''                          : 'renderRegistry', // the default route
-			//'about'                     : 'renderAbout',  // about page
-			//'about(/:anchorId)'         : 'renderAbout',  // about page anchors
-			//'plans'                     : 'renderPlans',  // plans page
-			//'tools(/:anchorId)'         : 'renderTools',  // tools page
-			//'data(/page/:page)(/mode=:mode)(/query=:query)' : 'renderData',    // data search page
-			'view/*pid'                 : 'renderMetadata',    // metadata page
-			//'profile(/*query)'			: 'renderProfile',
-			//'external(/*url)'           : 'renderExternal',    // renders the content of the given url in our UI
-			'logout'                    : 'logout',    // logout the user
-			'signup'          			: 'renderLdap',    // use ldapweb for registration
-			'account(/:stage)'          : 'renderLdap',    // use ldapweb for different stages
-			'share(/:stage/*pid)'       : 'renderRegistry'    // registry page
+			''                          : 'navigateToDefault',    // the default route
+			//'about'                     : 'renderAbout',    // about page
+			//'about(/:anchorId)'         : 'renderAbout',    // about page anchors
+			//'plans'                     : 'renderPlans',    // plans page
+			//'tools(/:anchorId)'         : 'renderTools',    // tools page
+			//'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
+			'view/*pid'                 : 'renderMetadata', // metadata page
+			'profile(/*username)'		: 'renderProfile',
+			//'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
+			'logout'                    : 'logout',    		// logout the user
+			'signup'          			: 'renderLdap',     // use ldapweb for registration
+			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
+			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
 		
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+			
+			appView.indexView = new IndexView();
+			appView.aboutView = new AboutView();
+			appView.toolsView = new ToolsView();
+			appView.dataCatalogView = new DataCatalogView();
+			appView.registryView = new RegistryView();
+			appView.metadataView = new MetadataView();
+			appView.statsView = new StatsView();
+			appView.userView = new UserView();
+			appView.externalView = new ExternalView();
+			appView.ldapView = new LdapView();
 		},
 		
 		routeHistory: new Array(),
@@ -50,41 +51,112 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 
 		renderIndex: function (param) {
 			this.routeHistory.push("index");
-			appView.showView(indexView);
+			appView.showView(appView.indexView);
+		},
+		
+		renderAbout: function (anchorId) {
+			this.routeHistory.push("about");
+			appModel.set('anchorId', anchorId);
+			appView.showView(appView.aboutView);
+		},
+		
+		renderPlans: function (param) {
+			this.routeHistory.push("plans");
+		},
+		
+		renderTools: function (anchorId) {
+			this.routeHistory.push("tools");
+			appModel.set('anchorId', anchorId);
+			appView.showView(appView.toolsView);
+		},
+		
+		renderData: function (mode, query, page) {
+			this.routeHistory.push("data");
+			appModel.set('page', page);
+			
+			///Check for the URL parameters
+			if(typeof page === "undefined")
+				appModel.set("page", 0);
+			else
+				appModel.set('page', page);
+			
+			//If a search mode parameter is given
+			if((typeof mode !== "undefined") && mode)
+				//appModel.set('searchMode', mode)
+				appView.dataCatalogView.mode = mode;
+			
+			//If a query parameter is given
+			if((typeof query !== "undefined") && query){
+				var customQuery = appSearchModel.get('additionalCriteria');
+				customQuery.push(query);
+				appSearchModel.set('additionalCriteria', customQuery);
+			}
+			
+			appView.showView(appView.dataCatalogView);
 		},
 		
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
+			appModel.set('lastPid', appModel.get("pid"));
 			appModel.set('pid', pid);
-			metadataView.pid = pid;
-			appView.showView(metadataView);
+			appView.metadataView.pid = pid;
+			appView.showView(appView.metadataView);
+		},
+		
+		renderProfile: function(username){
+			this.closeLastView();
+			
+			if(!username){
+				this.routeHistory.push("summary");
+				appView.showView(appView.statsView);
+			}
+			else{
+				this.routeHistory.push("profile");
+				appModel.set("profileUsername", username);
+				appView.showView(appView.userView);
+			}
 		},
 		
 		renderRegistry: function (stage, pid) {
 			this.routeHistory.push("registry");
-			
-			registryView.stage = stage;
-			registryView.pid = pid;
-			
-			appView.showView(registryView);
+			appView.registryView.stage = stage;
+			appView.registryView.pid = pid;
+			appView.showView(appView.registryView);
 		},
 		
 		renderLdap: function (stage) {
 			this.routeHistory.push("ldap");
-			ldapView.stage = stage;
-			appView.showView(ldapView);
+			appView.ldapView.stage = stage;
+			appView.showView(appView.ldapView);
 		},
 		
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-			registryView.logout();
-			//appView.showView(indexView);
+			appView.registryView.logout();
+			//appView.showView(appView.indexView);
+		},
+		
+		renderExternal: function(url) {
+			// use this for rendering "external" content pulled in dynamically
+			this.routeHistory.push("external");
+			appView.externalView.url = url;
+			appView.showView(appView.externalView);
 		},
 		
 		navigateToDefault: function(){
 			//Navigate to the default view
-			this.navigate("share", {trigger: true});
+			this.navigate(appModel.defaultView, {trigger: true});
+		},
+		
+		closeLastView: function(){
+			//Get the last route and close the view
+			var lastRoute = _.last(this.routeHistory);
+			
+			if(lastRoute == "summary")
+				appView.statsView.onClose();				
+			else if(lastRoute == "profile")
+				appView.userView.onClose();
 		}
 		
 	});

@@ -42,9 +42,6 @@ define(['jquery',
 			// set up the body
 			this.$el.append(this.template());
 			
-			// check the user status whenever we render the main application
-			this.checkUserStatus();
-			
 			// render the nav
 			app.navbarView = new NavbarView();
 			app.navbarView.setElement($('#Navbar')).render();
@@ -63,7 +60,6 @@ define(['jquery',
 					$(imageEl).fadeIn('slow');
 				});
 			}
-
 		},
 		
 		//Changes the web document's title
@@ -76,40 +72,6 @@ define(['jquery',
 		// and event handling to sub views
 		render: function () {									
 			return this;
-		},
-		
-		// call Metacat to validate the session and tell us the user's name
-		checkUserStatus: function() {
-			
-			// look up the URL
-			var metacatUrl = appModel.get('metacatServiceUrl');
-			
-			if (metacatUrl) {
-				// ajax call to validate the session/get the user info
-				$.ajax({
-					type: "POST",
-					xhrFields: {
-						withCredentials: true
-					},
-					url: metacatUrl,
-					data: { action: "validatesession" },
-					success: function(data, textStatus, xhr) {
-						
-						// the Metacat (XML) response should have a fullName element
-						var fullName = $(data).find("fullName").text();
-						var username = $(data).find("name").text();
-						// set in the model
-						appModel.set('fullName', fullName);
-						appModel.set('username', username);
-						
-					}
-				});
-			} else {
-				// use the token method for checking authentication
-				this.checkToken();
-			}
-			
-			return false;
 		},
 		
 		logout: function() {
@@ -126,51 +88,6 @@ define(['jquery',
 			window.location = portalUrl;
 			
 			return;
-			
-		},
-		
-		checkToken: function() {
-			var tokenUrl = appModel.get('tokenUrl');
-			var viewRef = this;
-			
-			if(!tokenUrl) return false;
-			
-			// ajax call to get token
-			$.ajax({
-				type: "GET",
-				xhrFields: {
-					withCredentials: true
-				},
-				url: tokenUrl,
-				data: {},
-				success: function(data, textStatus, xhr) {
-					
-					// the response should have the token
-					var payload = viewRef.parseToken(data);
-					var username = payload.userId;
-					var fullName = payload.fullName;
-
-					// set in the model
-					appModel.set('fullName', fullName);
-					appModel.set('username', username);
-					
-				}
-			});
-		},
-		
-		parseToken: function(token) {
-			
-			var jws = new KJUR.jws.JWS();
-			var result = 0;
-			try {
-				result = jws.parseJWS(token);
-			} catch (ex) {
-				console.log("JWT warning: " + ex);
-			    result = 0;
-			}
-			
-			var payload = $.parseJSON(jws.parsedJWS.payloadS);
-			return payload;
 			
 		},
 		
