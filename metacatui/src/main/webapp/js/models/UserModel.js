@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		defaults: {
 			lastName: null,
 			firstName: null,
+			fullName: null,
 			verified: null,
 			username: null,
 			searchModel: null,
@@ -40,10 +41,14 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
-			$.get(url, function(data, textStatus, xhr){				
+			$.get(url, function(data, textStatus, xhr){
+				var firstName = $(data).find("person givenName").text();
+				var lastName = $(data).find("person familyName").text();
+				
 				model.set("verified",  $(data).find("person verified").text());
-				model.set("firstName", $(data).find("person givenName").text());
-				model.set("lastName",  $(data).find("person familyName").text());
+				model.set("firstName", firstName);
+				model.set("lastName",  lastName);
+				model.set("fullName",  firstName + " " + lastName);
 			});
 		},
 		
@@ -69,21 +74,19 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						var fullName = $(data).find("fullName").text();
 						var username = $(data).find("name").text();
 						// set in the model
-						appModel.set('fullName', fullName);
-						appModel.set('username', username);
+						model.set('fullName', fullName);
+						model.set('username', username);
 						model.set("loggedIn", true);
 					}
 				});
 			} else {
 				// use the token method for checking authentication
 				this.checkToken();
-			}
-			
-			return false;
+			}			
 		},
 		
 		checkToken: function() {
-			var tokenUrl = this.get('tokenUrl');
+			var tokenUrl = appModel.get('tokenUrl');
 			var model = this;
 			
 			if(!tokenUrl) return false;
@@ -104,9 +107,10 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					var fullName = payload.fullName;
 
 					// set in the model
-					appModel.set('fullName', fullName);
-					appModel.set('username', username);
+					model.set('fullName', fullName);
+					model.set('username', username);
 					model.set("loggedIn", true);
+					model.getInfo();
 				}
 			});
 		},

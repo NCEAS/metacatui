@@ -11,8 +11,6 @@ define(['jquery', 'underscore', 'backbone'],
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
 			searchMode: 'map',
-			username: null,
-			fullName: null,
 			sortOrder: 'dateUploaded+desc',
 			previousPid: null,
 			lastPid: null,
@@ -68,6 +66,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+			this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/annotator/token");
 		
 			this.on("change:pid", this.changePid);
 		},

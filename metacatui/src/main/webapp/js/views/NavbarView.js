@@ -32,19 +32,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			var target = Backbone.history.location.href;
 			var signInUrl = appModel.get('baseUrl') + "/portal/startRequest?target=" + target;
 			
-			// set the username in the template (can be null if not logged in)
-			var username = appUserModel.get("username");
-			if(username && (username.indexOf(" ") > -1) && (username.indexOf("CN=") > -1))
-				var firstName = username.substring(username.indexOf("CN=") + 3, username.indexOf(" "));
-			else
-				var firstName = "";
-			
+			//Insert the navbar template
 			this.$el.html(
 					this.template( 
 							{
-								username: username,
-								fullName: appModel.get('fullName'),
-								firstName: firstName,
+								username: appUserModel.get('username'),
+								fullName: appUserModel.get('fullName'),
+								firstName: appUserModel.get('firstName'),
 								loggedIn: appUserModel.get("loggedIn"),
 								baseUrl: appModel.get('baseUrl'),
 								signInUrl: signInUrl,

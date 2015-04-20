@@ -11,8 +11,6 @@ define(['jquery', 'underscore', 'backbone'],
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
 			searchMode: 'map',
-			username: null,
-			fullName: null,
 			sortOrder: 'dateUploaded+desc',
 			pid: null,
 			previousPid: null,
@@ -78,7 +76,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
 			
 			// use portal to  retrieve token and annotate metadata
-			this.set('tokenUrl', this.get('baseUrl') + '/portal/identity?action=getToken');
+			this.set('tokenUrl', this.get('baseUrl') + '/portal/annotator/token');
 			this.set('annotatorUrl', this.get('baseUrl') + '/portal/annotator');
 			//this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
 			//this.set('annotatorUrl', this.get('baseUrl') + this.get('context') + '/annotator');
