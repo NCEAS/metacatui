@@ -34,19 +34,15 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			
 			//Insert the navbar template
 			this.$el.html(
-					this.template( 
-							{
-								username: appUserModel.get('username'),
-								fullName: appUserModel.get('fullName'),
-								firstName: appUserModel.get('firstName'),
-								loggedIn: appUserModel.get("loggedIn"),
-								baseUrl: appModel.get('baseUrl'),
-								signInUrl: signInUrl,
-								currentUrl: window.location.href,
-							} 
-					)
-			);
-
+				this.template({
+					username:   appUserModel.get('username'),
+					fullName:   appUserModel.get('fullName'),
+					firstName:  appUserModel.get('firstName'),
+					loggedIn:   appUserModel.get("loggedIn"),
+					baseUrl:    appModel.get('baseUrl'),
+					signInUrl:  signInUrl,
+					currentUrl: window.location.href,
+				}));
 		},
 		
 		triggerSearch: function() {

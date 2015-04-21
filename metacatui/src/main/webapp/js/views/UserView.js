@@ -19,6 +19,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				
 		render: function () {
 			
+			this.stopListening();
+			
 			var username = appModel.get("profileUsername")
 			
 			//Clear the page first
@@ -41,18 +43,23 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.subviews.push(this.statsView);
 			this.statsView.render();
 			
-			//Create a user model for this person
-			var user = new UserModel({
-				username: username
-			});
-			this.model = user;
-			this.listenTo(user, "change:lastName", this.insertUserInfo);
-			user.getInfo();
-		
+			//Is this our currently-logged in user?
+			if(appModel.get("profileUsername") == appUserModel.get("username")){
+				this.model = appUserModel;
+				this.insertUserInfo();
+			}
+			else{
+				//Create a user model for this person
+				var user = new UserModel({
+					username: username
+				});
+				this.model = user;
+				this.listenTo(user, "change:lastName", this.insertUserInfo);
+				user.getInfo();				
+			}
+
 			//Insert this user's data content
-			this.insertContent();
-			
-			$("#metacatui-app").removeClass("DataCatalog");
+			this.insertContent();		
 			
 			return this;
 		},
@@ -92,12 +99,14 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				el            : this.$("#data-list")[0],
 				searchModel   : this.model.get("searchModel"),
 				searchResults : this.model.get("searchResults"),
-				mode          : "list"
+				mode          : "list",
+				isSubView     : true
 			});
 			this.subviews.push(view);
 			view.render();
 			view.$el.addClass("list-only");
 			view.$(".auto-height").removeClass("auto-height").css("height", "auto");
+			$("#metacatui-app").removeClass("DataCatalog");
 		}, 
 		
 		onClose: function () {			

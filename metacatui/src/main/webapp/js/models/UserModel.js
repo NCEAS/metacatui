@@ -30,9 +30,6 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Create a search results model for this person
 			var searchResults = new SearchResults([], { rows: 5, start: 0 });
 			this.set("searchResults", searchResults);
-			
-			//Check if this person is logged in
-			this.checkStatus();
 		},
 		
 		getInfo: function(){
@@ -71,12 +68,17 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					success: function(data, textStatus, xhr) {
 						
 						// the Metacat (XML) response should have a fullName element
-						var fullName = $(data).find("fullName").text();
-						var username = $(data).find("name").text();
+						var fullName = $(data).find("fullName").text(),
+							firstName = fullName.substring(fullName.indexOf(" "), fullName.indexOf(" ", fullName.indexOf(" "))),
+							username = $(data).find("name").text();
+						
 						// set in the model
 						model.set('fullName', fullName);
+						model.set('firstName', firstName);
 						model.set('username', username);
 						model.set("loggedIn", true);
+						
+						model.getInfo();
 					}
 				});
 			} else {

@@ -35,6 +35,9 @@ define(['jquery',
 		initialize: function () {
 			//Change the document title when the app changes the appModel title at any time
 			this.listenTo(appModel, "change:title", this.changeTitle);
+			
+			//Is there a logged-in user?
+			appUserModel.checkStatus();
 
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!			
 			$("head").prepend(this.appHeadTemplate({theme: theme, themeTitle: themeTitle}));
