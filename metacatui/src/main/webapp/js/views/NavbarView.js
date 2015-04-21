@@ -23,8 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		
 		initialize: function () {
 			// listen to the appModel for changes in username
-			this.listenTo(appUserModel, 'change:firstName', this.render);
-			this.listenTo(appUserModel, 'change:loggedIn', this.render);
+			this.listenTo(appUserModel, 'change', this.render);
 			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);
 		},
 				

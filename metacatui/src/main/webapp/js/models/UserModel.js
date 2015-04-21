@@ -45,7 +45,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				model.set("verified",  $(data).find("person verified").text());
 				model.set("firstName", firstName);
 				model.set("lastName",  lastName);
-				model.set("fullName",  firstName + " " + lastName);
+				if(!model.get("fullName")) model.set("fullName",  firstName + " " + lastName);
 			});
 		},
 		
@@ -68,13 +68,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					success: function(data, textStatus, xhr) {
 						
 						// the Metacat (XML) response should have a fullName element
-						var fullName = $(data).find("fullName").text(),
-							firstName = fullName.substring(fullName.indexOf(" "), fullName.indexOf(" ", fullName.indexOf(" "))),
-							username = $(data).find("name").text();
+						var username = $(data).find("name").text();
 						
 						// set in the model
-						model.set('fullName', fullName);
-						model.set('firstName', firstName);
 						model.set('username', username);
 						model.set("loggedIn", true);
 						
