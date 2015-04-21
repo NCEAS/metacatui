@@ -20,6 +20,8 @@ define(['jquery',
 		
 		el: "#Content",
 		
+		isSubView: false,
+		
 		//The default global models for searching
 		searchModel: appSearchModel,		
 		searchResults: appSearchResults,
@@ -253,11 +255,6 @@ define(['jquery',
 		 * getResults gets all the current search filters from the searchModel, creates a Solr query, and runs that query.
 		 */
 		getResults: function (page) {			
-			//Get the page number
-			var page = appModel.get("page");
-			if (page == null) {
-				page = 0;
-			}
 			
 			//Style the UI as loading
 			this.loading();
@@ -284,6 +281,17 @@ define(['jquery',
 			
 			//Run the query
 			this.searchResults.setQuery(query);
+			
+			//Get the page number
+			if(this.isSubView)
+				var page = 0;
+			else{
+				var page = appModel.get("page");
+				if (page == null) {
+					page = 0;
+				}
+			}
+			this.searchResults.start = page * this.searchResults.rows;	
 			
 			//Show or hide the reset filters button
 			if(this.searchModel.filterCount() > 0){
@@ -1304,15 +1312,18 @@ define(['jquery',
 		},
 		
 		updatePageNumber: function(page) {
-			var route = Backbone.history.fragment;
-			if (route.indexOf("/page/") >= 0) {
-				//replace the last number with the new one
-				route = route.replace(/\d+$/, page);
-			} else {
-				route += "/page/" + page;
-			}
 			appModel.set("page", page);
-			uiRouter.navigate(route);
+
+			if(!this.isSubView){
+				var route = Backbone.history.fragment;
+				if (route.indexOf("/page/") >= 0) {
+					//replace the last number with the new one
+					route = route.replace(/\d+$/, page);
+				} else {
+					route += "/page/" + page;
+				}
+				uiRouter.navigate(route);	
+			}
 		},
 
 		// Next page of results

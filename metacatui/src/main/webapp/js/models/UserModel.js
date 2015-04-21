@@ -28,7 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			}));
 			
 			//Create a search results model for this person
-			var searchResults = new SearchResults([], { rows: 5 });
+			var searchResults = new SearchResults([], { rows: 5, start: 0 });
 			this.set("searchResults", searchResults);
 			
 			//Check if this person is logged in
