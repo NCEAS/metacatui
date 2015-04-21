@@ -20,8 +20,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		render: function () {
 			
 			this.stopListening();
+			this.listenToOnce(appUserModel, "change:loggedIn", this.insertMenu);
 			
-			var username = appModel.get("profileUsername")
+			var username = appModel.get("profileUsername");
 			
 			//Clear the page first
 			this.$el.append("<div id='stats'></div>");
@@ -44,9 +45,14 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.statsView.render();
 			
 			//Is this our currently-logged in user?
-			if(appModel.get("profileUsername") == appUserModel.get("username")){
+			if(username == appUserModel.get("username")){
 				this.model = appUserModel;
 				this.insertUserInfo();
+				
+				//If the user is logged in, display the settings options
+				if(this.model.get("loggedIn")){
+					this.insertMenu();
+				}
 			}
 			else{
 				//Create a user model for this person
@@ -109,6 +115,28 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			$("#metacatui-app").removeClass("DataCatalog");
 		}, 
 		
+		/*
+		 * Displays a menu for the user to switch between different views of the user profile
+		 */
+		insertMenu: function(){
+			//If the user is not logged in, then remove the menu 
+			if(!appUserModel.get("loggedIn")){
+				this.$(".nav").detach();
+				return;
+			}
+			
+			//Otherwise, insert the menu
+			var menuItem = $(document.createElement("li")).attr("role", "presentation"),
+				link = $(document.createElement("a"));
+			
+			var profile = $(menuItem).clone().addClass("active").append($(link).clone().attr("href", "#profile/" + this.model.get("username")).text("My Data").prepend(
+					$(document.createElement("i")).addClass("icon-table"))),
+				settings = $(menuItem).clone().append($(link).clone().attr("href", "#").addClass("settings").text("Settings").prepend(
+						$(document.createElement("i")).addClass("icon-cog")));
+			
+			this.$(".nav").append(profile, settings).removeClass("hidden");
+		},
+		
 		onClose: function () {			
 			//Clear the template
 			this.$el.html("");
@@ -116,6 +144,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Stop listening to changes in models
 			this.stopListening(statsModel);		
 			this.stopListening(this.model);
+			this.stopListening(appUserModel);
 			
 			//Close the subviews
 			_.each(this.subviews, function(view){

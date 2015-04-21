@@ -47,6 +47,9 @@ article.container {
 	border-right: 1px solid #999;
 	padding-right: 20px;
 }
+.nav-tabs li i{
+	margin-right: 5px;
+}
 
 /****************************************** 
 ** Titles ***
