@@ -575,7 +575,10 @@ table th.btn-container .btn{
     #Navbar i .user {
       opacity: .6;
     }
-    
+    #SignIn {
+      float: right;
+    }
+    /** Backbone override for dropdowns so they dsplay on hover rather than click **/    
     #Navbar .dropdown-toggle > .icon-sort-down{
     	font-size: 15px;
     	width: 5px;
@@ -584,13 +587,39 @@ table th.btn-container .btn{
     	background-color: #1C6E84;
     	background-image: none;
     }
-    
-    #SignIn {
-      float: right;
+    .navbar .nav>li>.dropdown-menu:after{
+    	left: 80%;
     }
-    
-    /* Search bar in nav bar */
-    
+    .dropdown-menu .sub-menu {
+	    left: 100%;
+	    position: absolute;
+	    top: 0;
+	    visibility: hidden;
+	    margin-top: -1px;
+	}	
+	.dropdown-menu li:hover .sub-menu {
+	    visibility: visible;
+	}
+	.dropdown:hover .dropdown-menu{
+	    display: block;
+	}	
+	.dropdown:hover .dropdown-menu.hidden,
+	.dropdown-menu.hidden{
+		display: none;
+	}	
+	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
+	    margin-top: 0;
+	}
+	.navbar .right .dropdown-menu{
+	    left: -75px;
+	    max-width: 170px;
+	}
+    .dropdown-header{
+		margin-left: 20px;
+		font-size: 12px;
+		text-transform: uppercase;
+	}
+    /* Search bar in nav bar */   
     .navbar .input-append{
     	margin-bottom: 0px;
     }
@@ -610,34 +639,6 @@ table th.btn-container .btn{
     	font-size: .8em;
     	color: #999;
     }
-
-
-    
-    /** Backbone override for dropdowns so they dsplay on hover rather than click **/
-    .dropdown-menu .sub-menu {
-	    left: 100%;
-	    position: absolute;
-	    top: 0;
-	    visibility: hidden;
-	    margin-top: -1px;
-	}
-	
-	.dropdown-menu li:hover .sub-menu {
-	    visibility: visible;
-	}
-
-	.dropdown:hover .dropdown-menu{
-	    display: block;
-	}
-	
-	.dropdown:hover .dropdown-menu.hidden,
-	.dropdown-menu.hidden{
-		display: none;
-	}
-	
-	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
-	    margin-top: 0;
-	}
 	
 	.navbar .sub-menu:before {
 	    border-bottom: 7px solid trans	parent;
@@ -656,12 +657,6 @@ table th.btn-container .btn{
 	    top: 11px;
 	    left: -6px;
 	}
-	
-	.dropdown-header{
-	margin-left: 20px;
-	font-size: 12px;
-	text-transform: uppercase;
-}
     
 /* OTHER NAVIGATION
 -------------------------------------------------- */
