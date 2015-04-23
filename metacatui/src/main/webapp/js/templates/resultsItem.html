@@ -19,19 +19,10 @@
 	%>
 </div>
 <div class="clear"></div>
-<%
-	if(typeof abstract != "undefined"){
-	    var safeAbstract = abstract.replace(/\"/g, "'");
-	    var classes = "abstract";  
-	    if(safeAbstract.length > 200) classes += " multi-line-ellipsis";
-	    
-		print('<div class="' + classes + '" data-doi="' + id + '"><div>');
-		print('<p>' + safeAbstract + '<i></i></p>');
-		print('</div>');
-		print('</div>');
-	}
-%>
-<div class="info-icons  stop-route">        		      
+<div class="info-icons  stop-route">   
+    <% if(typeof abstract != "undefined"){  %>
+		<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract"></i></div>
+	<% } %>    		      
 	<div class="on-map icons  stop-route">
 		<% 
 		if (typeof southBoundCoord != "undefined"){

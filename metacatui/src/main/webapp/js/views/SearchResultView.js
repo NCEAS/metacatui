@@ -64,15 +64,32 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 					if(numDerivations > 0) title += " has been used by " + numDerivations + " other dataset";
 					if(numDerivations > 1) title += "s";
 					title += ".";
-					
+						
 					//Make a tooltip with basic info for mouseover
 					this.$el.find(".provenance.active").tooltip({
 						placement: "top",
 						trigger: "hover",
 						container: this.el,
 						title: title
-					});
+					});	
 				}
+				
+			if(this.model.get("abstract")){
+				var content = $(document.createElement("div"))
+							  .addClass("multi-line-ellipsis")
+							  .append($(document.createElement("div"))
+									  .append($(document.createElement("p"))
+											  .text(this.model.get("abstract"))
+											  .append($(document.createElement("i")))));			
+				this.$(".popover-this.abstract").popover({
+					trigger: "hover",
+					html: true,
+					content: content,
+					title: "Abstract",
+					placement: "top",
+					container: this.el
+				});
+			}
 			
 			return this;
 		},

@@ -171,8 +171,8 @@ Bold 700
 	}
 	.multi-line-ellipsis {
   		overflow: hidden;
-  		height: 50px;
-		line-height: 25px;
+  		height: 100px;
+		line-height: 20px;
  	}
 	.multi-line-ellipsis:before {
 		content:"";
@@ -192,7 +192,7 @@ Bold 700
 		-moz-box-sizing: content-box;
 	
 		float: right; position: relative;
-		top: -25px; left: 100%; 
+		top: 29px; left: 99%; 
 		width: 3em; margin-left: -3em;
 		padding-right: 5px;
 		
@@ -1452,17 +1452,7 @@ table th.btn-container .btn{
     .result-row:hover { 
     	background-color: #FFF8EB; 
   	}
-  	.result-row .multi-line-ellipsis:after{
-  		transition: background-color 0s;
-  	}
-  	.result-row:hover .multi-line-ellipsis:after{
-  		background: -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0)), to(#FFF8EB), color-stop(50%, #FFF8EB));
-  		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
-  		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
-  		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
-  		background: linear-gradient(to right, rgba(255, 255, 255, 0), #FFF8EB 50%, #FFF8EB);
-  	}
-    
+
     .result-title{
     	font-weight: 600;
     	color: #1C6E84;

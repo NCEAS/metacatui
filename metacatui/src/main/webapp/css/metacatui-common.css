@@ -82,12 +82,11 @@ h3{
 ** Result Rows ***
 ******************************************/
 
-.result-row .abstract{
-	margin-top: 15px;
-	font-size: .9em;
-}
 .result-row .route-to-metadata{
 	cursor: pointer;
+}
+.result-row .icons .icon-info-sign{
+	font-size: 1.2em;
 }
 
 /****************************************** 

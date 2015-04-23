@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'backbone'],
 	var SolrResult = Backbone.Model.extend({
 		// This model contains all of the attributes found in the SOLR 'docs' field inside of the SOLR response element
 		defaults: {
+			abstract: null,
 			origin: '',
 			title: '',
 			pubDate: '',
