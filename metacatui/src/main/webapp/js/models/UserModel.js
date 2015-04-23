@@ -39,10 +39,10 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
 			$.get(url, function(data, textStatus, xhr){
-				var firstName = $(data).find("person givenName").text();
-				var lastName = $(data).find("person familyName").text();
+				var firstName = $(data).find("person givenName").first().text();
+				var lastName = $(data).find("person familyName").first().text();
 				
-				model.set("verified",  $(data).find("person verified").text());
+				model.set("verified",  $(data).find("person verified").first().text());
 				model.set("firstName", firstName);
 				model.set("lastName",  lastName);
 				if(!model.get("fullName")) model.set("fullName",  firstName + " " + lastName);
