@@ -88,6 +88,8 @@ Bold 700
 	.DataCatalog #Content{
 		width: 100%;
 		max-width: 100%;
+		margin-top: 0px;
+		margin-bottom: 0px;
 	}	
      .container{
     	width: 100%;
@@ -305,9 +307,10 @@ Bold 700
 -------------------------------------------------- */    
     footer{
     	font-size: .8em;
-    	padding: 20px;
+    	line-height: 1em;
+    	padding: 10px;
     	border-top: 3px solid #660033;
-    	margin-top: 20px;
+    	margin-top: 0px;
     }
     
     
@@ -507,6 +510,9 @@ table th.btn-container .btn{
     .nav li.right{
     	float: right;
     }
+    .nav .logo > img{
+    	height: 36px;
+    }
     
     /*Share Your Data button */
     #share-data-view{
@@ -546,10 +552,7 @@ table th.btn-container .btn{
     }
 	.soc-media{
 		float: right;
-	}
-	.soc-media h5{
-		border-bottom: 1px solid #999;
-		font-weight: normal;
+		margin-top: 18px;
 	}
 	.navbar-upper > .logo {
 		margin: 10px;
@@ -1371,7 +1374,7 @@ table th.btn-container .btn{
 /* RESULTS CSS
 -------------------------------------------------- */
 	#results-container{
-		width: 300px;
+		width: 400px;
 		overflow-x: hidden;
 		overflow-y: scroll;
 		height: 700px;
@@ -1974,7 +1977,7 @@ svg .point:hover ~ .line-chart-label{
 #map-container{
 	height: 500px;
 	width: 400px;
-	width: calc(100% - 220px - 300px);	
+	width: calc(100% - 220px - 400px);	
 	float: left;
 }
 #map-canvas{
