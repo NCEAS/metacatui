@@ -1,41 +1,120 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, UserModel, StatsView, DataCatalogView, userProfileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html'], 				
+	function($, _, Backbone, UserModel, StatsView, DataCatalogView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate) {
 	'use strict';
 			
 	var UserView = Backbone.View.extend({
 
 		el: '#Content',
 		
-		template: _.template(userProfileTemplate),
+		//Templates
+		profileTemplate:  _.template(userProfileTemplate),
+		alertTemplate:    _.template(AlertTemplate),
+		loadingTemplate:  _.template(LoadingTemplate),
+		settingsTemplate: _.template(SettingsTemplate),		
+		menuTemplate:     _.template(ProfileMenuTemplate),
 		
-		alertTemplate: _.template(AlertTemplate),
+		events: {
+			"click .section-link" : "switchToSection"
+		},
 		
-		loadingTemplate: _.template(LoadingTemplate),
-								
 		initialize: function(){			
 			this.subviews = new Array();
 		},
 				
 		render: function () {
+			var view = this;
 			
 			this.stopListening();
-			this.listenToOnce(appUserModel, "change:loggedIn", this.insertMenu);
+			this.listenToOnce(appUserModel, "change:loggedIn", function(){
+				view.onClose();
+				view.render();
+			});
 			
-			var username = appModel.get("profileUsername");
+			//Switch to the section of the User View we want
+			this.sectionHolder = $(document.createElement("section")).addClass("user-view-section");
+			this.$el.html(this.sectionHolder);
 			
-			//Clear the page first
-			this.$el.append("<div id='stats'></div>");
-			
+			//Show the loading sign first
+			$(this.sectionHolder).html(this.loadingTemplate());
+						
 			// set the header type
 			appModel.set('headerType', 'default');
 			
-			//Insert the template
-			this.$el.html(this.template());
+			//Is this our currently-logged in user?
+			var username = appModel.get("profileUsername");
+			if(username == appUserModel.get("username")){
+				this.model = appUserModel;
+				
+				//If the user is logged in, display the settings options
+				if(this.model.get("loggedIn")){
+					this.insertMenu();
+				}
+			}
+			//Create a user model for this person
+			else{
+				var user = new UserModel({
+					username: username
+				});
+				this.model = user;				
+			}
 			
-			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
+			//Render all the sections of the User View
+			this.renderProfile();
+			this.renderSettings();
+			
+			//Hide all the sections first and display the default "profile" section first
+			$(this.sectionHolder).children().slideUp();
+			this.$("[data-section='profile']").slideDown();
+			
+			return this;
+		},
+		
+		switchToSection: function(e){
+			
+			e.preventDefault();
+			
+			//Hide all the sections first
+			$(this.sectionHolder).children().slideUp();
+
+			//Get the section name
+			var section = $(e.target).attr("data-section");
+			
+			//Display the specified section
+			this.$("[data-section='" + section + "']").slideDown();
+			this.$(".nav-tab").removeClass("active");
+			$(e.target).parents(".nav-tab").addClass("active");
+		},
+		
+		renderProfile: function(){
+			//Insert the template first
+			this.sectionHolder.append(this.profileTemplate());
+			
+			//Insert the user data statistics
+			this.insertStats();
+			
+			//Insert the user's basic information
+			if((this.model.get("username") == appUserModel.get("username")) && appUserModel.get("loggedIn"))
+				this.insertUserInfo();
+			else{
+				this.listenTo(this.model, "change:lastName", this.insertUserInfo);
+				this.model.getInfo();				
+			}
+
+			//Insert this user's data content
+			this.insertContent();
+		},
+		
+		renderSettings: function(){
+			//Insert the template first
+			this.sectionHolder.append(this.settingsTemplate());
+		},
+		
+		insertStats: function(){
+			var username = this.model.get("username");
 			
 			//Render the Stats View for this person
+			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
 			statsModel.set("query", '(rightsHolder:"' + username + '" OR submitter:"' + username + '")');
 			this.statsView = new StatsView({
 				title: "",
@@ -43,37 +122,16 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			});
 			this.subviews.push(this.statsView);
 			this.statsView.render();
-			
-			//Is this our currently-logged in user?
-			if(username == appUserModel.get("username")){
-				this.model = appUserModel;
-				this.insertUserInfo();
-				
-				//If the user is logged in, display the settings options
-				if(this.model.get("loggedIn")){
-					this.insertMenu();
-				}
-			}
-			else{
-				//Create a user model for this person
-				var user = new UserModel({
-					username: username
-				});
-				this.model = user;
-				this.listenTo(user, "change:lastName", this.insertUserInfo);
-				user.getInfo();				
-			}
-
-			//Insert this user's data content
-			this.insertContent();		
-			
-			return this;
 		},
 		
 		/*
 		 * Insert the name of the user
 		 */
 		insertUserInfo: function(){
+			
+			this.listenTo(this.model, "change:firstName", this.insertUserInfo);
+			this.listenTo(this.model, "change:lastName", this.insertUserInfo);
+
 			//Don't try to insert anything if we haven't gotten all the user info yet
 			if(!this.model.get("lastName") && !this.model.get("firstName")) return;
 				
@@ -100,6 +158,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.$("#first-upload").text("Contributor since " + m + " " + d + ", " + y);
 		},
 		
+		/*
+		 * Insert a list of this user's content
+		 */
 		insertContent: function(){				
 			var view = new DataCatalogView({
 				el            : this.$("#data-list")[0],
@@ -126,15 +187,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			}
 			
 			//Otherwise, insert the menu
-			var menuItem = $(document.createElement("li")).attr("role", "presentation"),
-				link = $(document.createElement("a"));
+			var menu = this.menuTemplate({
+				username: this.model.get("username")
+			});
 			
-			var profile = $(menuItem).clone().addClass("active").append($(link).clone().attr("href", "#profile/" + this.model.get("username")).text("My Data").prepend(
-					$(document.createElement("i")).addClass("icon-table"))),
-				settings = $(menuItem).clone().append($(link).clone().attr("href", "#").addClass("settings").text("Settings").prepend(
-						$(document.createElement("i")).addClass("icon-cog")));
-			
-			this.$(".nav").append(profile, settings).removeClass("hidden");
+			this.$el.prepend(menu);
 		},
 		
 		onClose: function () {			

@@ -22,14 +22,19 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			if(!this.get("username"))
 				this.set("username", appModel.get("profileUsername"));
 			
-			//Create a search model that will retrieve data created by this person
-			this.set("searchModel", new SearchModel({
-				username: [this.get("username")]
-			}));
+			this.on("change:username", this.createSearchModel);
+			this.createSearchModel();
 			
 			//Create a search results model for this person
 			var searchResults = new SearchResults([], { rows: 5, start: 0 });
 			this.set("searchResults", searchResults);
+		},
+		
+		createSearchModel: function(){
+			//Create a search model that will retrieve data created by this person
+			this.set("searchModel", new SearchModel({
+				username: [this.get("username")]
+			}));
 		},
 		
 		getInfo: function(){

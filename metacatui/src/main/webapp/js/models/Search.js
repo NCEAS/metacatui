@@ -54,7 +54,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		//Map the filter names to their index field names
 		fieldNameMap: {
 					 attribute : "attribute",
-					//annotation : "sem_annotation",
+					annotation : "sem_annotation",
 					formatType : "formatType",
 						   all : "",
 					   creator : "origin",
