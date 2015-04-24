@@ -270,7 +270,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			view.render();
 			view.$el.addClass("list-only");
 			view.$(".auto-height").removeClass("auto-height").css("height", "auto");
-			$("#metacatui-app").removeClass("DataCatalog");
+			$("#metacatui-app").removeClass("DataCatalog mapMode");
 		}, 
 		
 		/*
