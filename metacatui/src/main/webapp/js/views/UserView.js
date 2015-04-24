@@ -17,7 +17,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		events: {
 			"click .section-link"          : "switchToSection",
 			"click .subsection-link"       : "switchToSubSection",
-			"click .list-group-item.group" : "toggleMemberList"
+			"click .list-group-item.group" : "toggleMemberList",
+			"click .token-generator"       : "getToken"
 		},
 		
 		initialize: function(){			
@@ -178,6 +179,32 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Add to the page
 			$(groupList).find(".collapsed").hide();
 			this.$("#group-list-container").append(groupList);
+		},
+		
+		getToken: function(){		
+			var model = this.model;
+			
+			//When the token is retrieved, then show it
+			this.listenToOnce(this.model, "change:token", this.showToken);
+			
+			//Get the token from the CN
+			this.model.checkToken(function(data, textStatus, xhr){				
+				model.set("token", data);
+			});			
+		},
+		
+		showToken: function(){
+			var token = this.model.get("token");
+			
+			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "11").attr("disabled", "disabled").addClass("token").text(token),
+				copyButton = $(document.createElement("a")).attr("href", "#").addClass("btn").attr("type", "button").text("Copy");
+						
+			var	successMessage = this.alertTemplate({
+					msg: '<i class="icon icon-ok"></i>  <strong>Success!</strong> Copy your token: <br/>' + $(tokenInput)[0].outerHTML,
+					classes: "alert-success"
+				});
+			
+			this.$("#token-generator-container").html(successMessage);
 		},
 		
 		insertStats: function(){

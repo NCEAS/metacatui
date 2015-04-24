@@ -123,11 +123,28 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			}			
 		},
 		
-		checkToken: function() {
+		checkToken: function(customCallback) {
 			var tokenUrl = appModel.get('tokenUrl');
 			var model = this;
 			
 			if(!tokenUrl) return false;
+			
+			//Set up the function that will be called when we retrieve a token
+			var callback = (typeof customCallback === "function") ? customCallback : function(data, textStatus, xhr) {
+				
+				// the response should have the token
+				var payload = model.parseToken(data);
+				var username = payload.userId;
+				var fullName = payload.fullName;
+				var token    = data;
+
+				// set in the model
+				model.set('fullName', fullName);
+				model.set('username', username);
+				model.set("loggedIn", true);
+				model.set("token", token);
+				model.getInfo();
+			};
 			
 			// ajax call to get token
 			$.ajax({
@@ -137,21 +154,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				},
 				url: tokenUrl,
 				data: {},
-				success: function(data, textStatus, xhr) {
-					
-					// the response should have the token
-					var payload = model.parseToken(data);
-					var username = payload.userId;
-					var fullName = payload.fullName;
-					var token    = data;
-
-					// set in the model
-					model.set('fullName', fullName);
-					model.set('username', username);
-					model.set("loggedIn", true);
-					model.set("token", token);
-					model.getInfo();
-				}
+				success: callback
 			});
 		},
 		

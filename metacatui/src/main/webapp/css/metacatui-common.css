@@ -539,6 +539,10 @@ tfoot .control i{
 	overflow-y: visible;
 	overflow-x: visible;
 }
+textarea.token{
+	width: 100%;
+	margin-top: 20px;
+}
 
 /****************************************** 
 ** Panels ***
