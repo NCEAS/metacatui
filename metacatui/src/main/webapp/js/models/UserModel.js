@@ -6,15 +6,19 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 	// User Model
 	// ------------------
 	var UserModel = Backbone.Model.extend({
-		defaults: {
-			lastName: null,
-			firstName: null,
-			fullName: null,
-			verified: null,
-			username: null,
-			searchModel: null,
-			searchResults: null,
-			loggedIn: false
+		defaults: function(){
+			return{
+				lastName: null,
+				firstName: null,
+				fullName: null,
+				verified: null,
+				username: null,
+				searchModel: null,
+				searchResults: null,
+				loggedIn: false,
+				groups: [],
+				token: null
+			}
 		},
 		
 		initialize: function(){
@@ -43,14 +47,45 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
-			$.get(url, function(data, textStatus, xhr){
-				var firstName = $(data).find("person givenName").first().text();
-				var lastName = $(data).find("person familyName").first().text();
+			$.get(url, {session: this.get("token")}, function(data, textStatus, xhr){				
+				//Reset the group list so we don't just add it to it with push()
+				model.set("groups", model.defaults().groups);
 				
-				model.set("verified",  $(data).find("person verified").first().text());
+				//Get the person's name and verification status
+				var firstName = $(data).find("person givenName").first().text(),
+					lastName  = $(data).find("person familyName").first().text(),
+					fullName  = firstName + " " + lastName,
+					verified  = $(data).find("person verified").first().text(),
+					groups    = model.get("groups");
+
+				//For each group this user is in, create a group object and store it in this model
+				_.each($(data).find("group"), function(group, i){
+					//Get all the group information
+					var memberEls = $(group).find("hasMember"),
+						members   = new Array(),
+						groupName = $(group).find("groupName").first().text(),
+						subject   = $(group).find("subject").first().text();
+					
+					//Go through each member element and grab the member's name
+					_.each(memberEls, function(member, i){
+						members.push($(member).text());
+					});
+					
+					//Create the group object and add it to the model
+					groups.push({
+						groupName : groupName,
+						subject   : subject,
+						members   : members
+					});
+				});
+
+				//Save all these attributes in the model
+				model.set("groups",    groups);	
+				model.trigger("change:groups"); //Trigger the change event since it's an array and won't fire a change event on its own
+				model.set("verified",  verified);
 				model.set("firstName", firstName);
 				model.set("lastName",  lastName);
-				if(!model.get("fullName")) model.set("fullName",  firstName + " " + lastName);
+				model.set("fullName",  fullName);				
 			});
 		},
 		
@@ -108,11 +143,13 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					var payload = model.parseToken(data);
 					var username = payload.userId;
 					var fullName = payload.fullName;
+					var token    = data;
 
 					// set in the model
 					model.set('fullName', fullName);
 					model.set('username', username);
 					model.set("loggedIn", true);
+					model.set("token", token);
 					model.getInfo();
 				}
 			});

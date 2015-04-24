@@ -599,3 +599,13 @@ tfoot .control i{
 .panel>.list-group .list-group-item.active{
 	border-left-width: 5px;
 }
+.list-group-item > .list-group {
+  padding-left: 20px;
+  margin-bottom: 0px;
+}
+.list-group-item > .list-group > .list-group-item:last-child{
+	border-bottom-width: 0px;
+}
+.list-group-item a > .icon{
+	margin-right: 5px;
+}

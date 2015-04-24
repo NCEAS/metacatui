@@ -135,7 +135,6 @@ function(Bootstrap, AppView, AppModel) {
 		nodeModel = new NodeModel();
 		
 		appUserModel = new UserModel();
-		appUserModel.checkStatus();
 		
 		//Load the App View now
 		appView = new AppView();

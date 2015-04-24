@@ -15,8 +15,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		menuTemplate:     _.template(ProfileMenuTemplate),
 		
 		events: {
-			"click .section-link"    : "switchToSection",
-			"click .subsection-link" : "switchToSubSection"
+			"click .section-link"          : "switchToSection",
+			"click .subsection-link"       : "switchToSubSection",
+			"click .list-group-item.group" : "toggleMemberList"
 		},
 		
 		initialize: function(){			
@@ -32,7 +33,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				view.render();
 			});
 			
-			//Switch to the section of the User View we want
+			//Add the container element for our profile sections
 			this.sectionHolder = $(document.createElement("section")).addClass("user-view-section");
 			this.$el.html(this.sectionHolder);
 			
@@ -139,6 +140,44 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		renderSettings: function(){
 			//Insert the template first
 			this.sectionHolder.append(this.settingsTemplate());
+			
+			//Listen for the group list to draw the group list
+			this.listenTo(this.model, "change:groups", this.insertGroupList);
+		},
+		
+		insertGroupList: function(){
+			var groups = this.model.get("groups");
+			if(groups.length < 1) return;
+			
+			//Remove the group list if it was draw already so we don't do it twice
+			if(this.$("#group-list").length > 0) this.$("#group-list").detach();
+				
+			//Create the list element
+			var groupList = $(document.createElement("ul")).addClass("list-group").attr("id", "group-list");
+			
+			//Create a list item for each group
+			_.each(groups, function(group, i){
+				var listItem = $(document.createElement("li")).addClass("list-group-item group"),
+					link     = $(document.createElement("a")).attr("href", "#").attr("data-subject", group.subject).text(group.groupName),
+					icon     = $(document.createElement("i")).addClass("icon icon-expand-alt");
+				$(groupList).append($(listItem).append($(link).prepend(icon)));
+				
+				//Create a list of member names
+				var memberList     = $(document.createElement("ul")).addClass("list-group group-member-list collapsed");
+				_.each(group.members, function(member){
+					//Create a list item for this member
+					var memberListItem = $(document.createElement("li")).addClass("list-group-item member"),
+						memberLink     = $(document.createElement("a")).attr("href", "#").attr("data-username", member).text(member);
+					
+					$(memberList).append($(memberListItem).append(memberLink));
+				});
+				//Add the member list to the group list
+				$(listItem).append(memberList);
+			});
+			
+			//Add to the page
+			$(groupList).find(".collapsed").hide();
+			this.$("#group-list-container").append(groupList);
 		},
 		
 		insertStats: function(){
@@ -223,6 +262,19 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			});
 			
 			this.$el.prepend(menu);
+		},
+		
+		toggleMemberList: function(e){
+			e.preventDefault();
+			
+			var listItem = e.target;
+			
+			if(!$(listItem).hasClass("list-group-item")){
+				listItem = $(listItem).parents("li.list-group-item");
+			}
+			
+			$(listItem).find(".group-member-list").toggleClass("collapsed").slideToggle();
+			$(listItem).find(".icon").toggleClass("icon-expand-alt").toggleClass("icon-collapse-alt");
 		},
 		
 		onClose: function () {			
