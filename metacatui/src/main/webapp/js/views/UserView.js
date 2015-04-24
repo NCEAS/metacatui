@@ -15,7 +15,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		menuTemplate:     _.template(ProfileMenuTemplate),
 		
 		events: {
-			"click .section-link" : "switchToSection"
+			"click .section-link"    : "switchToSection",
+			"click .subsection-link" : "switchToSubSection"
 		},
 		
 		initialize: function(){			
@@ -66,6 +67,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Hide all the sections first and display the default "profile" section first
 			$(this.sectionHolder).children().slideUp();
 			this.$("[data-section='profile']").slideDown();
+			this.$(".subsection").hide();
 			
 			return this;
 		},
@@ -75,15 +77,44 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			e.preventDefault();
 			
 			//Hide all the sections first
-			$(this.sectionHolder).children().slideUp();
+			$(this.sectionHolder).children().slideUp().removeClass(".active");
 
 			//Get the section name
-			var section = $(e.target).attr("data-section");
+			var sectionName = $(e.target).attr("data-section");
 			
 			//Display the specified section
-			this.$("[data-section='" + section + "']").slideDown();
+			var activeSection = this.$(".section[data-section='" + sectionName + "']");
+			$(activeSection).addClass("active").slideDown();
 			this.$(".nav-tab").removeClass("active");
 			$(e.target).parents(".nav-tab").addClass("active");
+			
+			//Find all the subsections, if there are any
+			if($(activeSection).find(".subsection").length > 0){
+				//Find any item classified as "active"
+				var activeItem = $(activeSection).find(".active");
+				if(activeItem.length > 0){
+					//Find the data section this active item is referring to
+					if($(activeItem).children("[data-section]").length > 0){
+						//Get the section name
+						var subsectionName = $(activeItem).find("[data-section]").first().attr("data-section");
+						//If we found a section name, find the subsection element and display it
+						if(subsectionName) this.switchToSubSection(null, subsectionName);
+					}
+				}
+			}
+		},
+		
+		switchToSubSection: function(e, subsectionName){
+			if(e) e.preventDefault();
+			if(!subsectionName) var subsectionName = $(e.target).attr("data-section");
+						
+			//Mark its links as active
+			$(".section.active").find(".subsection-link").removeClass("active");
+			$(".section.active").find(".subsection-link[data-section='" + subsectionName + "']").addClass("active");
+			
+			//Hide all the other sections
+			$(".section.active").find(".subsection").hide();
+			$(".section.active").find(".subsection[data-section='" + subsectionName + "']").show();
 		},
 		
 		renderProfile: function(){
