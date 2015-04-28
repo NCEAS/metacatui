@@ -192,7 +192,8 @@ define(['jquery',
 			//Set a custom height on any elements that have the .auto-height class
 			if($(".auto-height").length > 0){
 				setTimeout(this.setAutoHeight, 900);
-				//this.setAutoHeight();
+				//Readjust the height whenever the window is resized
+				$(window).resize(this.setAutoHeight);
 			}
 
 			return this;
@@ -212,9 +213,7 @@ define(['jquery',
 			var remainingHeight = $(window).outerHeight(true) - totalHeight;
 			
 			//Adjust all elements with the .auto-height class
-			$(".auto-height").height(remainingHeight);
-			
-			$(window).resize(this.setAutoHeight);
+			$(".auto-height").height(remainingHeight);			
 		},
 		
 		toggleViewClass: function(name){
