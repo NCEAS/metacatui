@@ -78,6 +78,7 @@ define(['jquery',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
 				   			  'click #toggle-map' : 'toggleMapMode',
+				   			  'click .toggle-map' : 'toggleMapMode',
 				   			   'click .more-link' : 'showMoreList',
 				   		 'mouseover .open-marker' : 'showResultOnMap',
 				   	      'mouseout .open-marker' : 'hideResultOnMap',
@@ -115,15 +116,16 @@ define(['jquery',
 				msg: "Retrieving member nodes..."
 			});
 			var cel = this.template({	
-				sortOrder:   this.searchModel.get('sortOrder'),
-				yearMin:     this.searchModel.get('yearMin'),
-				yearMax:     this.searchModel.get('yearMax'),
-				pubYear:     this.searchModel.get('pubYear'),
-				dataYear:    this.searchModel.get('dataYear'),
-				resourceMap: this.searchModel.get('resourceMap'),
-				searchOptions: registryModel.get('searchOptions'),
-				username: appModel.get('username'),
-				loading: loadingHTML
+				sortOrder     : this.searchModel.get('sortOrder'),
+				yearMin       : this.searchModel.get('yearMin'),
+				yearMax       : this.searchModel.get('yearMax'),
+				pubYear       : this.searchModel.get('pubYear'),
+				dataYear      : this.searchModel.get('dataYear'),
+				resourceMap   : this.searchModel.get('resourceMap'),
+				searchOptions : registryModel.get('searchOptions'),
+				gmaps         : gmaps,
+				username      : appModel.get('username'),
+				loading       : loadingHTML
 			});
 			
 			this.$el.html(cel);
@@ -219,7 +221,11 @@ define(['jquery',
 			var remainingHeight = $(window).outerHeight(true) - totalHeight;
 			
 			//Adjust all elements with the .auto-height class
-			$(".auto-height").height(remainingHeight);			
+			$(".auto-height").height(remainingHeight);
+			
+			//Trigger a resize for the map so that all of the mapbackgorund images are loaded
+			if(gmaps && mapModel.get("map"))
+				google.maps.event.trigger(mapModel.get("map"), 'resize');
 		},
 		
 		/**
@@ -1394,6 +1400,7 @@ define(['jquery',
 			var mapOptions = mapModel.get('mapOptions');
 			$("#map-container").append('<div id="map-canvas"></div>');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
+			mapModel.set("map", this.map);
 
 			//Store references
 			var mapRef = this.map;
@@ -1402,6 +1409,7 @@ define(['jquery',
 			google.maps.event.addListener(mapRef, "idle", function(){
 				viewRef.ready = true;
 				
+				//Trigger a resize so the map background image tiles load completely
 				google.maps.event.trigger(mapRef, 'resize');
 				
 				if(viewRef.allowSearch){
@@ -2348,6 +2356,7 @@ define(['jquery',
 			else if (appModel.get('searchMode') == 'list'){
 				appModel.set('searchMode', 'map');
 				this.renderMap();
+				this.setAutoHeight();
 				this.getResults();
 			}
 		},

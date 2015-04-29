@@ -151,6 +151,11 @@
 		<div id="results-container" class="auto-height">
 
 			<div id="results-view">
+				<% if((typeof gmaps !== "undefined") && (gmaps)){ %>
+					<div class="map-toggle-container">
+						<a class="toggle-map" href="#data/mode=list"><i class="icon icon-double-angle-left"></i> Show Map</a>
+					</div>
+				<% } %>
 				<div id="results-header" class="row-fluid result-header">
 					
 					<!-- count stats -->
@@ -184,8 +189,8 @@
 		</div>
 		
 		<div id="map-container" class="auto-height">
-			<div class="map-header">
-				<a id="toggle-map" href="#data/mode=list">Hide Map <i class="icon icon-double-angle-right"></i></a>
+			<div class="map-toggle-container">
+				<a class="toggle-map" href="#data/mode=list">Hide Map <i class="icon icon-double-angle-right"></i></a>
 			</div>
 		</div>
 		
