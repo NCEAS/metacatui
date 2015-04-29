@@ -4,7 +4,28 @@
         <div class="info-icons  stop-route">  
         	<% if(typeof abstract != "undefined"){  %>
 				<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
-			<% } %>      		      
+			<% } %> 
+				<div class="resource-map icons stop-route">             
+		               <%
+			           if (resourceMap) {
+							print('<i class="icon-folder-open tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This result includes data files"></i>');
+						}
+						else{
+							print('<i class="icon-folder-open inactive stop-route"></i>');
+						}
+		           		%>
+		           
+	        	</div>
+	        	<% if(hasProv){
+	        			print('<a class="icons provenance active stop-route">');
+	        			print('<i class="icon-code-fork active stop-route"></i>');
+	        		}
+	        		else{
+	        		    print('<a class="icons provenance inactive stop-route">');
+	        			print('<i class="icon-code-fork inactive stop-route"></i>');
+	        		}
+	        	%>
+	        	</a>     		      
         		<div class="on-map icons stop-route">
 					<% 
 						if (typeof southBoundCoord != "undefined"){
@@ -21,26 +42,4 @@
 		               }
 		            %>
 	            </div>
-              <div class="resource-map icons stop-route">             
-	               <%
-		           if (resourceMap) {
-						print('<i class="icon-folder-open tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This result includes data files"></i>');
-					}
-					else{
-						print('<i class="icon-folder-open inactive stop-route"></i>');
-					}
-	           		%>
-	           
-        	</div>
-        	<% if(hasProv){
-        			print('<a class="icons provenance active stop-route">');
-        			print('<i class="icon-code-fork active stop-route"></i>');
-        		}
-        		else{
-        		    print('<a class="icons provenance inactive stop-route">');
-        			print('<i class="icon-code-fork inactive stop-route"></i>');
-        		}
-        	%>
-        	</a>
-	       
 	   </div>

@@ -23,22 +23,6 @@
     <% if(typeof abstract != "undefined"){  %>
 		<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract"></i></div>
 	<% } %>    		      
-	<div class="on-map icons  stop-route">
-		<% 
-		if (typeof southBoundCoord != "undefined"){
-            		if((typeof geohash_9 != "undefined") && (geohash_9.length > 1)){
-            			for(var i=0; i < geohash_9.length; i++){
-            				print('<i class="icon-map-marker on-map open-marker stop-route tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
-            			}
-            		}
-            		else
-            			print('<i class="icon-map-marker on-map open-marker  stop-routetooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has one geographic region on the map"></i>');
-            }
-            else{
-            		print('<i class="icon-map-marker inactive stop-route"></i>');
-            }
-         %>
-    </div>
     <div class="resource-map icons stop-route">             
            <%
            if (resourceMap) {
@@ -84,6 +68,22 @@
       		}
       	%>
       	</div>
+      	<div class="on-map icons  stop-route">
+		<% 
+		if (typeof southBoundCoord != "undefined"){
+            		if((typeof geohash_9 != "undefined") && (geohash_9.length > 1)){
+            			for(var i=0; i < geohash_9.length; i++){
+            				print('<i class="icon-map-marker on-map open-marker stop-route tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
+            			}
+            		}
+            		else
+            			print('<i class="icon-map-marker on-map open-marker  stop-routetooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This metadata has one geographic region on the map"></i>');
+            }
+            else{
+            		print('<i class="icon-map-marker inactive stop-route"></i>');
+            }
+         %>
+    </div>
       	<div class="clear"></div>
   </div><!-- END info-icons -->
 <div class="clear"></div>

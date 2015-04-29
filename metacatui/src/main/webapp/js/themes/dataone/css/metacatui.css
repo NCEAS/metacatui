@@ -875,16 +875,21 @@ table th.btn-container .btn{
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-    
     #sidebar{
-		padding: 0px 10px;
-		width: 200px;
-		height: 700px;
+    	width: 225px;
+    	padding: 0px 20px 0px 10px;
+    	height: auto;
+    	overflow-y: visible;
+    	overflow-x: visible;
 		float: left;
 		clear: left;
+    }
+    .mapMode #sidebar{
+		padding-right: 10px;
+		width: 200px;
+		height: 700px;
 		overflow-x: hidden;
 		overflow-y: scroll;
- 		background-color: #FFF;
     }
     
     .subset-choice{
@@ -1373,11 +1378,20 @@ table th.btn-container .btn{
 /* RESULTS CSS
 -------------------------------------------------- */
 	#results-container{
+		width: 75%;
+		width: calc(100% - 265px - 20px); /* 1 - sidebar width - this margin*/
+		overflow-y: visible;
+		overflow-x: visible;
+		height: auto;
+		float: left;
+		margin-left: 20px;
+	}	
+	.mapMode #results-container{
 		width: 400px;
 		overflow-x: hidden;
 		overflow-y: scroll;
 		height: 700px;
-		float: left;
+		margin-left: 0px;
 	}
 	
 	#results{
@@ -1429,7 +1443,7 @@ table th.btn-container .btn{
 	      display: block;
 	      padding: 13px;
 	      width: 98%; /*fallback */
-	      width: calc(100% - 30px);
+	      width: calc(100% - 16px);
 	      cursor: pointer;
 	      transition: background-color .5s;
     }
@@ -1469,7 +1483,7 @@ table th.btn-container .btn{
     	font-size: 19px;
     }
     .info-icons i{
-    	color: #660033;
+    	color: #6E3F57;
     	cursor: pointer;
     }
     .info-icons i:hover{
@@ -1999,7 +2013,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	background-color: #FFF;
 }
 
-/* MAIN CONTENT 
+/* MAIN CONTENT IN SEARCH VIEW 
 --------------------------------- */
 #mainContent{
 	height: 0px;
@@ -2065,6 +2079,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #search_btn_main > i{
 	color: #999999;
 }
+
 
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */

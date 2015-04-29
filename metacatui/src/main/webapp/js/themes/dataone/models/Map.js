@@ -20,14 +20,14 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 					    zoomControl: true,
 					    zoomControlOptions: {
 						          style: google.maps.ZoomControlStyle.SMALL,
-						          position: google.maps.ControlPosition.TOP_LEFT
+						          position: google.maps.ControlPosition.LEFT_BOTTOM
 						        },
 						panControl: false,
 						scaleControl: false,
 						streetViewControl: false,
 						mapTypeControl: true,
 						mapTypeControlOptions:{
-								position: google.maps.ControlPosition.TOP_LEFT
+								position: google.maps.ControlPosition.LEFT_BOTTOM
 						},
 					    mapTypeId: google.maps.MapTypeId.TERRAIN
 					} 

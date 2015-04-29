@@ -64,6 +64,9 @@ h3{
 .btn > i{
 	margin-left: 5px;
 }
+.result-row .info-icons{
+	margin-top: 10px;
+}
 .result-row .icons.provenance i{
 	font-size: 1.5em;
 }
@@ -612,4 +615,38 @@ textarea.token{
 }
 .list-group-item a > .icon{
 	margin-right: 5px;
+}
+/****************************************** 
+** Searching and Map ***
+******************************************/
+#map-container{
+	display: none;
+}
+.mapMode #map-container{
+	position: relative;
+	display: block;
+}
+.map-header{
+  background-color: #333333;
+  background-color: rgba(51,51,51,0.85);
+  padding: 5px;
+  position: absolute;
+  top: 0px;
+  z-index: 1;
+  width: 95%;
+  width: calc(100% - 10px);
+  height: auto;
+}
+.map-header > a{
+  font-size: 1em;
+  line-height: 1.3em;
+  color: white;
+  font-weight: normal;
+}
+.map-header > a:hover{
+	color: white;
+	font-weight: bold;
+}
+.map-header > a > .icon{
+	margin-left: 5px;
 }

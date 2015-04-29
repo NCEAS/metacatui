@@ -108,7 +108,7 @@ define(['jquery',
 			if((typeof this.mode === "undefined") || !this.mode) this.mode = "map";
 			
 			appModel.set('headerType', 'default');
-			this.toggleViewClass("DataCatalog");
+			$("body").addClass("DataCatalog");
 			
 			//Populate the search template with some model attributes
 			var loadingHTML = this.loadingTemplate({
@@ -203,6 +203,12 @@ define(['jquery',
 		 * Sets the height on elements in the main content area to fill up the entire area minus header and footer
 		 */
 		setAutoHeight: function(){
+			//If we are in list mode, don't determine the height of any elements because we are not "full screen"
+			if(appModel.get("searchMode") == "list"){
+				this.$(".auto-height").height("auto");
+				return;
+			}
+			
 			//Get the heights of the header, navbar, and footer
 			var navbarHeight = ($("#Navbar").length > 0) ? $("#Navbar").outerHeight(true) : 0;
 			var headerHeight = ($("#Header").length > 0) ? $("#Header").outerHeight(true) : 0;
@@ -214,10 +220,6 @@ define(['jquery',
 			
 			//Adjust all elements with the .auto-height class
 			$(".auto-height").height(remainingHeight);			
-		},
-		
-		toggleViewClass: function(name){
-			$('body').toggleClass(name);
 		},
 		
 		/**
@@ -1390,7 +1392,7 @@ define(['jquery',
 			//Get the map options and create the map
 			gmaps.visualRefresh = true;
 			var mapOptions = mapModel.get('mapOptions');
-			$("#map-container").html('<div id="map-canvas"></div>');
+			$("#map-container").append('<div id="map-canvas"></div>');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
 
 			//Store references
@@ -2329,13 +2331,19 @@ define(['jquery',
 		 * 											STYLING THE UI 
 		 * ==================================================================================================
 		**/
-		toggleMapMode: function(){	
+		toggleMapMode: function(e){	
+			if(typeof e === "object") 
+				e.preventDefault();
+			
 			if(gmaps){
 				$('body').toggleClass('mapMode');	
 			}
 			
 			if(appModel.get('searchMode') == 'map'){
 				appModel.set('searchMode', 'list');
+				this.$("#map-canvas").detach();
+				this.setAutoHeight();
+				this.getResults();
 			}
 			else if (appModel.get('searchMode') == 'list'){
 				appModel.set('searchMode', 'map');
