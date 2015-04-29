@@ -71,7 +71,7 @@ define(['jquery',
 			// which URI are we annotating?
 			var uri = null;
 			//uri = window.location.href;
-			uri = appModel.get("objectServiceUrl") + pid;
+			uri = appModel.get("resolveServiceUrl") + pid;
 			// TODO: use a more stable URI?
 			//uri = "https://cn.dataone.org/cn/v2/resolve/" + pid;
 			

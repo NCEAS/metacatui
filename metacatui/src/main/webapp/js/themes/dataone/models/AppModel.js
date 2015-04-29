@@ -20,9 +20,9 @@ define(['jquery', 'underscore', 'backbone'],
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
-			d1Service: "cn/v1",
+			d1Service: "cn/v2",
 			d1CNBaseUrl: "https://cn-sandbox-2.test.dataone.org/",
-			d1CNService: "cn/v1",
+			d1CNService: "cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
@@ -33,12 +33,13 @@ define(['jquery', 'underscore', 'backbone'],
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
+			resolveServiceUrl: null,			
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			//bioportalServiceUrl: "https://data.bioontology.org/search?ontologies=D1-CARBON-FLUX,PROV-ONE,ENVO,CHEBI,DATA-CITE,DC-TERMS,OWL-TIME&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
-			bioportalServiceUrl: null, // use this to deactivate the annotator view
+			bioportalServiceUrl: "https://data.bioontology.org/search?ontologies=D1-CARBON-FLUX,PROV-ONE,ENVO,CHEBI,DATA-CITE,DC-TERMS,OWL-TIME&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
+			//bioportalServiceUrl: null, // use this to deactivate the annotator view
 			orcidBaseUrl: "https://pub.orcid.org",
 			orcidServiceUrl: "https://pub.orcid.org/v1.1/search/orcid-bio?q=",
 			tokenUrl: null,
@@ -67,6 +68,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/?');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
+			this.set('resolveServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/resolve/');
 			//this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
