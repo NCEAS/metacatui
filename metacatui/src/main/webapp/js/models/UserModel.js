@@ -17,6 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				searchResults: null,
 				loggedIn: false,
 				groups: [],
+				identities: [],
 				token: null
 			}
 		},
@@ -50,13 +51,16 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			$.get(url, {session: this.get("token")}, function(data, textStatus, xhr){				
 				//Reset the group list so we don't just add it to it with push()
 				model.set("groups", model.defaults().groups);
+				//Reset the equivalent id list so we don't just add it to it with push()
+				model.set("identities", model.defaults().identities);
 				
 				//Get the person's name and verification status
 				var firstName = $(data).find("person givenName").first().text(),
 					lastName  = $(data).find("person familyName").first().text(),
 					fullName  = firstName + " " + lastName,
 					verified  = $(data).find("person verified").first().text(),
-					groups    = model.get("groups");
+					groups    = model.get("groups"),
+					identities    = model.get("identities");
 
 				//For each group this user is in, create a group object and store it in this model
 				_.each($(data).find("group"), function(group, i){
@@ -78,10 +82,20 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						members   : members
 					});
 				});
+				
+				//For each equiv id, store in the model
+				_.each($(data).find("person").first().find("equivalentIdentity"), function(identity, i){
+					//push onto the list
+					// TODO: include person details?
+					var id = $(identity).text();
+					identities.push(id);
+				});
 
 				//Save all these attributes in the model
 				model.set("groups",    groups);	
-				model.trigger("change:groups"); //Trigger the change event since it's an array and won't fire a change event on its own
+				model.trigger("change:groups"); //Trigger the change event since it's an array and won't fire a change event on its own				
+				model.set("identities", identities);	
+				model.trigger("change:identities"); //Trigger the change event
 				model.set("verified",  verified);
 				model.set("firstName", firstName);
 				model.set("lastName",  lastName);

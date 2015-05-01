@@ -144,6 +144,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 			//Listen for the group list to draw the group list
 			this.listenTo(this.model, "change:groups", this.insertGroupList);
+			
+			//Listen for the identity list
+			this.listenTo(this.model, "change:identities", this.insertIdentityList());
 		},
 		
 		insertGroupList: function(){
@@ -179,6 +182,32 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Add to the page
 			$(groupList).find(".collapsed").hide();
 			this.$("#group-list-container").append(groupList);
+		},
+		
+		insertIdentityList: function(){
+			var identities = this.model.get("identities");
+			if (identities.length < 1) {
+				return;
+			}
+			
+			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
+			if(this.$("#identity-list").length > 0) this.$("#identity-list").detach();
+				
+			//Create the list element
+			var identityList = $(document.createElement("ul")).addClass("list-identity").attr("id", "identity-list");
+			
+			//Create a list item for each identity
+			_.each(identities, function(identity, i){
+				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
+					link     = $(document.createElement("a")).attr("href", "#").attr("data-subject", identity).text(identity),
+					icon     = $(document.createElement("i")).addClass("icon icon-expand-alt");
+				$(identityList).append($(listItem).append($(link).prepend(icon)));
+				
+			});
+			
+			//Add to the page
+			//$(identityList).find(".collapsed").hide();
+			this.$("#identity-list-container").append(identityList);
 		},
 		
 		getToken: function(){		
