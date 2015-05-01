@@ -616,6 +616,32 @@ textarea.token{
 .list-group-item a > .icon{
 	margin-right: 5px;
 }
+
+.list-identity-item:first-child {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+.list-identity-item {
+  position: relative;
+  display: block;
+  padding: 10px 15px;
+  margin-bottom: -1px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+.panel>.list-identity .list-identity-item.active{
+	border-left-width: 5px;
+}
+.list-identity-item > .list-identity {
+  padding-left: 20px;
+  margin-bottom: 0px;
+}
+.list-identity-item > .list-identity > .list-identity-item:last-child{
+	border-bottom-width: 0px;
+}
+.list-identity-item a > .icon{
+	margin-right: 5px;
+}
 /****************************************** 
 ** Searching and Map ***
 ******************************************/

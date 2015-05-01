@@ -146,7 +146,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.listenTo(this.model, "change:groups", this.insertGroupList);
 			
 			//Listen for the identity list
-			this.listenTo(this.model, "change:identities", this.insertIdentityList());
+			this.listenTo(this.model, "change:identities", this.insertIdentityList);
 		},
 		
 		insertGroupList: function(){
@@ -199,8 +199,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Create a list item for each identity
 			_.each(identities, function(identity, i){
 				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
-					link     = $(document.createElement("a")).attr("href", "#").attr("data-subject", identity).text(identity),
-					icon     = $(document.createElement("i")).addClass("icon icon-expand-alt");
+					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),
+					icon     = $(document.createElement("i")).addClass("icon icon-user");
 				$(identityList).append($(listItem).append($(link).prepend(icon)));
 				
 			});
