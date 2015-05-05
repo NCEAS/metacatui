@@ -18,7 +18,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			"click .section-link"          : "switchToSection",
 			"click .subsection-link"       : "switchToSubSection",
 			"click .list-group-item.group" : "toggleMemberList",
-			"click .token-generator"       : "getToken"
+			"click .token-generator"       : "getToken",
+			"click #map-request-btn"			: "mapRequest"
 		},
 		
 		initialize: function(){			
@@ -234,6 +235,37 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				});
 			
 			this.$("#token-generator-container").html(successMessage);
+		},
+		
+		mapRequest: function() {
+
+			
+			var equivalentIdentity = this.$("#map-request-field").val();
+			if (!equivalentIdentity || equivalentIdentity.length < 1) {
+				return;
+			}
+			//equivalentIdentity = encodeURIComponent(equivalentIdentity);
+				
+			var mapUrl = appModel.get("accountsUrl") + "pendingmap";
+				
+			// ajax call to map
+			$.ajax({
+				type: "POST",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.model.get("token")
+			    },
+				url: mapUrl,
+				data: {
+					subject: equivalentIdentity
+				},
+				success: function(data, textStatus, xhr) {
+					// TODO: render alert in DOM
+					alert("Added mapping request for " + equivalentIdentity);
+				}
+			});
 		},
 		
 		insertStats: function(){
