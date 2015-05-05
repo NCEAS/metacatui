@@ -381,6 +381,8 @@ section.hasProvLeft.hasProvRight{
     	-webkit-border-radius: 4px;
     	margin-bottom: 20px;
     	padding: 20px;
+    	width: 85%;
+    	width: calc(100% - 40px);
 }
 .entitydetails > h4 > *{
 	float: left;
@@ -402,7 +404,7 @@ section.hasProvLeft.hasProvRight{
 	clear: both;
 }
 
-/** Images and other visuals **/
+/** Images, Maps, and other visuals **/
 .thumbnail{
 	height: auto;
 	width: 250px;
@@ -418,6 +420,10 @@ section.hasProvLeft.hasProvRight{
 }
 .thumbnail.map{
 	width: auto;
+}
+img[src*="gstatic.com/"].georegion-map, 
+img[src*="googleapis.com/"].georegion-map{
+	max-width: 100%;
 }
 
 /****************************************** 

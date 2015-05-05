@@ -302,7 +302,15 @@ define(['jquery',
 			
 			//Find the geographic region container. Older versions of Metacat (v2.4.3 and less) will not have it classified so look for the header text
 			if(!this.$(".geographicCoverage").length){
-				var georegionEls = this.$('h4:contains("Geographic Region")').parent();
+				//For EML
+				var title = this.$('h4:contains("Geographic Region")');
+				
+				//For FGDC
+				if(title.length == 0){
+					title = this.$('label:contains("Bounding Coordinates")');
+				}
+				
+				var georegionEls = $(title).parent();
 				var parseText = true;
 				var directions = new Array('North', 'South', 'East', 'West');
 			}
@@ -354,12 +362,12 @@ define(['jquery',
 				var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() + 
 						  "&spn=0.003833,0.010568" +
 						  "&t=h" +
-						  "&z=8";
+						  "&z=16";
 				//Create a google map image
 				var mapHTML = "<img class='georegion-map' " +
 							  "src='https://maps.googleapis.com/maps/api/staticmap?" +
 							  "center="+latLngCEN.lat()+","+latLngCEN.lng() +
-							  "&size=650x250" +
+							  "&size=800x350" +
 							  "&maptype=terrain" +
 							  "&markers=size:mid|color:0xDA4D3Aff|"+latLngCEN.lat()+","+latLngCEN.lng() +
 							  "&path=color:0xDA4D3Aff|weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
