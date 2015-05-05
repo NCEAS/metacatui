@@ -85,7 +85,8 @@ define(['jquery',
 			this.encodedPid = encodeURIComponent(pid);
 			
 			// Check for a view service in this appModel
-			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) var endpoint = appModel.get('viewServiceUrl') + pid + ' #Metadata';
+			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) 
+				var endpoint = appModel.get('viewServiceUrl') + pid;
 					
 			if(endpoint && (typeof endpoint !== "undefined")){
 				var viewRef = this;
@@ -671,12 +672,7 @@ define(['jquery',
 			for(var i=0; i < packageMembers.length; i++){
 				var solrResult = packageMembers[i],
 					objID      = solrResult.get("id");
-				
-				var container = this.findEntityDetailsContainer(objID) || this.$el;
-				
-				//Insert an anchor tag to mark this spot on the page (used by the "Metadata" button in the download contents table)
-				$(container).prepend($(document.createElement("a")).attr("id", objID));
-				
+								
 				//Is this a visual object (image or PDF)?
 				var type = solrResult.getType();
 				if(type == "image")
@@ -697,9 +693,19 @@ define(['jquery',
 				    objID : objID
 				});
 				
-				// Insert the HTML into the DOM 
-				if(container == this.el) $(container).append(dataDisplay);	
-				else 	   			     $(container).prepend(dataDisplay);	
+				//Insert an anchor tag to mark this spot on the page (used by the "Metadata" button in the download contents table)
+				//Insert the rest of the HTML too
+				var anchor = $(document.createElement("a")).attr("id", objID),
+					container = this.findEntityDetailsContainer(objID);
+
+				if(!container){
+					this.$(".form-horizontal").prepend(anchor);
+					this.$(".form-horizontal").append(dataDisplay);
+				}
+				else{
+					$(container).prepend(anchor);
+					$(container).prepend(dataDisplay);	
+				}
 			}
 						
 			//==== Initialize the fancybox images =====

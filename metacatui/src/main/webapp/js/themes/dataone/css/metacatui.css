@@ -717,7 +717,11 @@ table th.btn-container .btn{
 		font-weight: 700;
 	}
 	
-    
+    article.hasProvLeft, article.hasProvRight, section.hasProvLeft, section.hasProvRight{
+		border: 1px solid #1C6E84;
+	  	border-radius: 5px;
+	}
+	
     /** Prov charts **/
     .prov-chart,
     .prov-chart .node,

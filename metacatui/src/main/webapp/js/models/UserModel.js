@@ -48,7 +48,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
-			$.get(url, {session: this.get("token")}, function(data, textStatus, xhr){				
+			$.get(url, function(data, textStatus, xhr){				
 				//Reset the group list so we don't just add it to it with push()
 				model.set("groups", model.defaults().groups);
 				//Reset the equivalent id list so we don't just add it to it with push()
@@ -60,7 +60,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					fullName  = firstName + " " + lastName,
 					verified  = $(data).find("person verified").first().text(),
 					groups    = model.get("groups"),
-					identities    = model.get("identities");
+					identities = model.get("identities");
 
 				//For each group this user is in, create a group object and store it in this model
 				_.each($(data).find("group"), function(group, i){
