@@ -22,6 +22,7 @@ define(['jquery', 'underscore', 'backbone'],
 			memberNode: null,
 			rightsHolder: null,
 			size: 0,
+			url: null,
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
@@ -46,6 +47,10 @@ define(['jquery', 'underscore', 'backbone'],
 			prov_wasExecutedByUser: null,
 			prov_wasGeneratedBy: null,
 			prov_wasInformedBy: null
+		},
+		
+		initialize: function(){
+			this.getURL();
 		},
 		
 		type: "SolrResult",
@@ -84,11 +89,11 @@ define(['jquery', 'underscore', 'backbone'],
 			else return "data";
 		},
 		
-		getURL: function(){
-			var memberNode = _.where(nodeModel.get("members"), {identifier: this.get("datasource")})[0];
-			var url = memberNode.baseURL + "/v2/object/" + this.get("id");
-			
-			return url;
+		getURL: function(){			
+			if(appModel.get("resolveServiceUrl"))
+				this.set("url", appModel.get("resolveServiceUrl") + this.get("id"));
+			else
+				this.set("url", appModel.get("objectServiceUrl") + this.get("id"));		
 		},
 
 		/**** Provenance-related functions ****/

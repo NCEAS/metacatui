@@ -17,13 +17,14 @@ define(['jquery',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html',
 		'text!templates/usageStats.html',
+		'text!templates/downloadButton.html',
 		'text!templates/downloadContents.html',
 		'text!templates/alert.html',
 		'text!templates/editMetadata.html',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, $ui, _, Backbone, gmaps, fancybox, Package, SolrResult, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
+	function($, $ui, _, Backbone, gmaps, fancybox, Package, SolrResult, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadButtonTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
 	'use strict';
 
 	
@@ -45,6 +46,8 @@ define(['jquery',
 		
 		loadingTemplate: _.template(LoadingTemplate),
 		
+		downloadButtonTemplate: _.template(DownloadButtonTemplate),
+
 		downloadContentsTemplate: _.template(DownloadContentsTemplate),
 		
 		editMetadataTemplate: _.template(EditMetadataTemplate),
@@ -680,6 +683,8 @@ define(['jquery',
 			for(var i=0; i < packageMembers.length; i++){
 				var solrResult = packageMembers[i],
 					objID      = solrResult.get("id");
+				
+				if(objID == this.pid) continue;
 								
 				//Is this a visual object (image or PDF)?
 				var type = solrResult.getType();
@@ -687,33 +692,27 @@ define(['jquery',
 					images.push(solrResult);
 				else if(type == "PDF")
 					pdfs.push(solrResult);
-				else
-					continue;
 				
 				//Find the part of the HTML Metadata view that describes this data object
-				var entityName = solrResult.get("entityName") || objID;
-					
-				//Create HTML for the visuals using the dataDisplay template
-				dataDisplay = this.dataDisplayTemplate({
-					 type : type,
-					  src : appModel.get('objectServiceUrl') + objID,
-					title : entityName,
-				    objID : objID
-				});
-				
-				//Insert an anchor tag to mark this spot on the page (used by the "Metadata" button in the download contents table)
-				//Insert the rest of the HTML too
-				var anchor = $(document.createElement("a")).attr("id", objID),
-					container = this.findEntityDetailsContainer(objID);
+				var anchor         = $(document.createElement("a")).attr("id", objID),
+					downloadButton = this.downloadButtonTemplate({href: solrResult.get("url")}),
+					container      = this.findEntityDetailsContainer(objID),
+					dataDisplay = viewRef.dataDisplayTemplate({
+										 type : type,
+										  src : solrResult.get("url"), 
+									    objID : objID
+					});
 
-				if(!container){
-					this.$(".form-horizontal").prepend(anchor);
-					this.$(".form-horizontal").append(dataDisplay);
-				}
-				else{
+				//Insert the data display HTML and the anchor tag to mark this spot on the page 
+				if(container){
+					if((type == "image") || (type == "PDF")) $(container).prepend(dataDisplay);
 					$(container).prepend(anchor);
-					$(container).prepend(dataDisplay);	
-				}
+					
+					var nameLabel = $(container).find("label:contains('Entity Name')");
+					if(nameLabel.length > 0)
+						$(nameLabel).parent().after(downloadButton);
+					console.log(i);
+				}				
 			}
 						
 			//==== Initialize the fancybox images =====

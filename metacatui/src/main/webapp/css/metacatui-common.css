@@ -403,11 +403,14 @@ section.hasProvLeft.hasProvRight{
 .entitydetails > .control-group{
 	clear: both;
 }
-
+.entitydetails a.download{
+	margin-left: 180px;
+	margin-bottom: 20px;
+}
 /** Images, Maps, and other visuals **/
 .thumbnail{
 	height: auto;
-	width: 250px;
+	width: 350px;
 	padding: 20px;
 	margin-bottom: 20px;
 }

@@ -1541,7 +1541,7 @@ table th.btn-container .btn{
 	/** Download button **/   
 
     
-    a.download{
+    .result-row a.download{
     	width: 77%;
     	min-width: 56px;
     	max-width: 79px;
