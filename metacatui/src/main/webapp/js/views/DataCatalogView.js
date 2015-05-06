@@ -2413,7 +2413,7 @@ define(['jquery',
 		},
 		
 		onClose: function () {						
-			this.$el.removeClass("DataCatalog");
+			$(".DataCatalog").removeClass("DataCatalog");
 			
 			if(gmaps){
 				// unset map mode
