@@ -711,7 +711,6 @@ define(['jquery',
 					var nameLabel = $(container).find("label:contains('Entity Name')");
 					if(nameLabel.length > 0)
 						$(nameLabel).parent().after(downloadButton);
-					console.log(i);
 				}				
 			}
 						
