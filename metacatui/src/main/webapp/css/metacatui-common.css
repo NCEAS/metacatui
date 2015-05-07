@@ -250,7 +250,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	min-width: 300px;
 }
 .prov-chart .popover .citation{
-	font-size: 1.2em;
+	font-size: 1em;
 	line-height: 1.7em;
 }
 .prov-chart .popover .btn{
@@ -270,6 +270,15 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-bottom: 10px;
 	display: block;
 	color: #888;
+}
+.popover-content > div > h6 {
+  margin-bottom: 0px;
+  margin-top: 0px;
+  font-size: .9em;
+}
+.popover-content > div > .name {
+  margin-top: 0px;
+  font-size: 1em;
 }
 
 /****************************************** 

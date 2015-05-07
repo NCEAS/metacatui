@@ -49,8 +49,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		className: "prov-chart",
 		
 		events: {
-			"click .expand-control"   : "expandNodes",
-			"click .collapse-control" : "collapseNodes"
+			"click .expand.control"   : "expandNodes",
+			"click .collapse.control" : "collapseNodes"
 		},
 		
 		render: function(){
@@ -133,6 +133,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				icon = "icon-table";
 			}
 			
+			//Get the name of this object
+			var name = provEntity.get("entityName");
+			
 			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
 			var top = (position * this.nodeHeight) - (this.nodeHeight/2),
 				isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";			
@@ -172,15 +175,27 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var relatedModels = this.packageModel.get("relatedModels");
 			
 			//Create all the elements that will go inside the popover
+			var citationHeader = $(document.createElement("h6")).addClass("subtle").text("Citation");
 			var citationEl = new CitationView({model: citationModel}).render().el;
 			var titleEl = $(document.createElement("span")).append($(document.createElement("i")).addClass(icon + " icon-on-left"), title);
+			
+			if(name){
+				var nameHeader = $(document.createElement("h6")).addClass("subtle").text("Name");
+				var nameEl = $(document.createElement("h5")).addClass("name").text(name);
+			}
+			
 			var provStatementEl = new ProvStatement({
 				model         : provEntity, 
 				relatedModels : relatedModels,
 				currentlyViewing : this.context}).render().el;
 			var arrowIcon = $(document.createElement("i")).addClass("icon-double-angle-right icon-on-right");
 			var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
+			
 			var popoverContent = $(document.createElement("div")).append(citationEl, provStatementEl, linkEl);
+			$(popoverContent).prepend(citationHeader);
+			
+			if(name)
+				$(popoverContent).prepend(nameHeader, nameEl);
 			
 			//Display images in the prov chart node popover 
 			if(type == "image"){
