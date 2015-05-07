@@ -146,7 +146,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			//Display images in the prov chart node
 			if(type == "image"){
-				$(nodeEl).css("background-image", "url('" + provEntity.getURL() + "')");
+				$(nodeEl).css("background-image", "url('" + provEntity.get("url") + "')");
 			}
 			//Create an icon inside the node for other format types
 			else{

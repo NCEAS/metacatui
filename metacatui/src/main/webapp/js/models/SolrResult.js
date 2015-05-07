@@ -74,14 +74,21 @@ define(['jquery', 'underscore', 'backbone'],
 			//The list of formatIds that are images
 			var pdfIds = ["application/pdf"];	
 			
+			//Determine the type via provONE
 			var instanceOfClass = this.get("prov_instanceOfClass");
 			if(typeof instanceOfClass !== "undefined"){
 				var programClass = _.filter(instanceOfClass, function(className){
 					return (className.indexOf("#Program") > -1);
 				});
-			if((typeof programClass !== "undefined") && programClass.length) return "program";		
+				if((typeof programClass !== "undefined") && programClass.length) 
+					return "program";		
+			}
+			else{
+				if(this.get("prov_generated") || this.get("prov_used"))
+					return "program";					
 			}
 			
+			//Determine the type via file format
 			if(this.get("formatType") == "METADATA") return "metadata";
 			if(_.contains(imageIds, this.get("formatId"))) return "image";
 			if(_.contains(pdfIds, this.get("formatId")))   return "PDF";

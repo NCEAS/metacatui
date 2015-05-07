@@ -371,15 +371,17 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .form-horizontal .entitydetails > label{
 	text-align: left;
 	font-weight: bold;
-	width: 100%;
+	width: 98%;
+	width: calc(100% - 5px);
 	background-color: #CCCCCC;
 	padding: 5px;
 	color: white;
-	margin-bottom: 0px;	
+	margin-bottom: 20px;	
 	border-top-left-radius: 4px;
 	border-top-right-radius: 4px;
 	margin-left: -5px;
 	margin-top: -5px;
+	padding-left: 10px;
 }
 #Metadata .form-horizontal .controls.entitydetails{
 	margin-left: 0px;
