@@ -30,7 +30,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		render: function () {			
 			var target = Backbone.history.location.href;
 			var signInUrl = appModel.get('baseUrl') + "/portal/startRequest?target=" + target;
-			
+			var signInUrlOrcid = appModel.get('baseUrl') + "/portal/oauth?action=start&target=" + target;
+
 			//Insert the navbar template
 			this.$el.html(
 				this.template({
@@ -40,6 +41,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 					loggedIn:   appUserModel.get("loggedIn"),
 					baseUrl:    appModel.get('baseUrl'),
 					signInUrl:  signInUrl,
+					signInUrlOrcid:  signInUrlOrcid,
 					currentUrl: window.location.href,
 				}));
 		},
