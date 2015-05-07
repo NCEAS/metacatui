@@ -65,9 +65,12 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 				this.predicate = p;
 				this.object    = o;
 				
-				if(typeof s === "object") this.subjectID = s.get("id");
+				if(typeof s === "object")
+					this.subjectID = s.get("id");
 				else this.subjectID = s;
-				if(typeof o === "object") this.objectID = o.get("id");
+				
+				if(typeof o === "object")
+					this.objectID = o.get("id");
 				else this.objectID = o;
 			}
 			var allTriples = new Array();
@@ -151,7 +154,17 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 					//If the subject of this triple equals the id of this model, then structure the sentence as so
 					if((triple.subject == id) || ((typeof triple.subject === "object") && (triple.subject.get("id") == id))){
 						//Get information about the object of this triple
-						var objectId = (typeof triple.object === "string") ? triple.object : triple.object.get("id");
+						var objectId   = "",
+							objectName = "";
+						
+						if(typeof triple.object === "string"){
+							objectId   = triple.object;
+							objectName = triple.object;
+						}
+						else{
+							objectId   = triple.object.get("id");
+							objectName = triple.object.get("entityName");
+						}
 						var objectModel = _.find(view.relatedModels, function(m){ 
 							return(m.get("id") == objectId); 
 						});
@@ -161,7 +174,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 							type = objectModel.getType();
 						var icon = $(document.createElement("i")).attr("class", "icon " + view.getIconType(type));
 						
-						var linkText = $(document.createElement("span")).text(objectId);
+						var linkText = $(document.createElement("span")).text(objectName);
 						
 						//Make a link out of the object ID
 						var link = $(document.createElement("a")).attr("href", "#view/" + objectId)
@@ -182,7 +195,18 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 					//If the object of this triple equals the id of this model, then structure the sentence as so
 					else if((triple.object == id) || ((typeof triple.object === "object") && (triple.object.get("id") == id))){
 						//Get information about the subject of this triple
-						var subjectId = (typeof triple.subject === "string") ? triple.subject : triple.subject.get("id");
+						var subjectId   = "",
+							subjectName = "";
+					
+						if(typeof triple.subject === "string"){
+							subjectId   = triple.subject;
+							subjectName = triple.subject;
+						}
+						else{
+							subjectId   = triple.subject.get("id");
+							subjectName = triple.subject.get("entityName");
+						}
+						
 						var subjectModel = _.find(view.relatedModels, function(m){ 
 							return(m.get("id") == subjectId); 
 						});
@@ -192,7 +216,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 							type = subjectModel.getType();
 						var icon = $(document.createElement("i")).attr("class", "icon " + view.getIconType(type));
 						
-						var linkText = $(document.createElement("span")).text(subjectId);
+						var linkText = $(document.createElement("span")).text(subjectName);
 												
 						//Make a link of the subject ID
 						var link = $(document.createElement("a")).attr("href", "#view/" + subjectId)

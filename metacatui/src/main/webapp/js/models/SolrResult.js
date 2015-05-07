@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes found in the SOLR 'docs' field inside of the SOLR response element
 		defaults: {
 			abstract: null,
+			entityName: null,
 			origin: '',
 			title: '',
 			pubDate: '',
