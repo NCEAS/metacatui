@@ -137,7 +137,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var externalProvEntities = _.difference(_.union(sources, derivations), this.get("memberIds"));
 			
 			//If there are no sources or derivations, then we do not need to find resource map ids for anything
-			if(!externalProvEntities.length) return this;
+			if(!externalProvEntities.length){
+				//Save this prov trace on a package-member/document/object level.
+				this.setMemberProvTrace();
+				
+				//Flag that the provenance trace is complete
+				this.set("provenanceFlag", "complete");
+				
+				return this;
+			}
 			else{
 				//Create a query where we retrieve the ID of the resource map of each source and derivation
 				var idQuery = appSearchModel.getGroupedQuery("id", externalProvEntities, "OR");

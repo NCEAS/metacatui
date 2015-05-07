@@ -705,7 +705,12 @@ define(['jquery',
 
 				//Insert the data display HTML and the anchor tag to mark this spot on the page 
 				if(container){
-					if((type == "image") || (type == "PDF")) $(container).prepend(dataDisplay);
+					if((type == "image") || (type == "PDF")){
+						if($(container).children("label"))
+							$(container).children("label").first().after(dataDisplay);
+						else
+							$(container).prepend(dataDisplay);
+					}
 					$(container).prepend(anchor);
 					
 					var nameLabel = $(container).find("label:contains('Entity Name')");
