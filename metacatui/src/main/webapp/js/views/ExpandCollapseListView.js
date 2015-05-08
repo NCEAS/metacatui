@@ -44,6 +44,7 @@ define(['jquery', 'underscore', 'backbone'],
 				collapseIcon  = $(document.createElement("i")).addClass("icon-collapse-alt"),
 			    expandedList  = $(document.createElement("span")),
 			    collapsedList = $(document.createElement("span")).addClass("collapsed"),
+			    and = $(document.createElement("span")).text(" and  "),
 			    comma = $(document.createElement("span")).addClass("spacer").text(", "),
 			    space = $(document.createElement("span")).text("  ");
 			
@@ -61,8 +62,10 @@ define(['jquery', 'underscore', 'backbone'],
 				else
 					$(listEl).append(listItem);
 				
-				//Do we need a comma?
-				if((view.list.length > 1) && (i < view.list.length-1)) 
+				//Do we need a comma or and "and"?
+				if(i == view.list.length-2)
+					$(listEl).append($(and).clone());
+				else if((view.list.length > 1) && (i < view.list.length-1)) 
 					$(listEl).append($(comma).clone());
 			});
 			

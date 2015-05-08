@@ -72,7 +72,6 @@ h3{
 }
 .provenance-statement-container i{
 	font-size: 1.2em;
-	margin-right: 5px;
 }
 .icon-on-right{
 	margin-left: 5px;
@@ -211,7 +210,7 @@ h3{
 .provenance-statement a{
 	/*Keep the icons and links right by each other */
 	display: inline;
-	word-break: break-all; 
+	word-break: break-word; 
 }
 .provenance-statement .currently-viewing{
 	font-weight: bold;	
@@ -330,6 +329,9 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 .expand-collapse .spacer{
 	margin-right: 10px;
+}
+.expand-collapse.list-group-item a > .icon{
+	margin-right: 0px;
 }
 
 /****************************************** 
