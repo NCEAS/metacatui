@@ -155,6 +155,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 			//Listen for the pending list
 			this.listenTo(this.model, "change:pending", this.insertPendingList);
+			
+			// init autocomplete fields
+			this.setUpAutocomplete();
 		},
 		
 		insertGroupList: function(){
@@ -273,6 +276,44 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				});
 			
 			this.$("#token-generator-container").html(successMessage);
+		},
+		
+		setUpAutocomplete: function() {
+			
+			// look up registered identities 
+			$('#map-request-field').hoverAutocomplete({
+				source: function (request, response) {
+		            var term = $.ui.autocomplete.escapeRegex(request.term);
+		            
+		            var list = [];
+
+		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
+					$.get(url, function(data, textStatus, xhr) {
+						_.each($(data).find("person"), function(person, i){
+							var item = {};
+							item.value = $(person).find("subject").text();
+							item.label = $(person).find("givenName").text() + " " + $(person).find("familyName").text();
+							list.push(item);
+						});
+						
+			            response(list);
+
+					});
+		            
+		        },
+				select: function(event, ui) {
+					// set the text field
+					$('#map-request-field').val(ui.item.value);
+					// prevent default action
+					return false;
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					collision: "fit"
+				}
+			});
+			
 		},
 		
 		mapRequest: function() {
