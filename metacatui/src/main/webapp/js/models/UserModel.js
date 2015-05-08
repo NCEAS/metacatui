@@ -111,8 +111,11 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				//Reset the equivalent id list so we don't just add it to it with push()
 				model.set("pending", model.defaults().pending);
 				var pending = model.get("pending");
-				_.each($(data).find("person"), function(person, i){
-					pending.push($(person).find("subject").text());
+				_.each($(data).find("person"), function(person, i) {
+					var subject = $(person).find("subject").text();
+					if (subject != model.get("username")) {
+						pending.push(subject);
+					}
 				});
 				model.set("pending", pending);	
 				model.trigger("change:pending"); //Trigger the change event
