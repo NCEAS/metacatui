@@ -238,8 +238,16 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 				});
 				
 				//Add these statements to our element
-				if(subjList.length > 0) $(statementEl).append(new ExpandCollapseList({list: subjList, prependText: subjStatementBegin, appendText: ". "}).render().el);
-				if(objList.length > 0)  $(statementEl).append(new ExpandCollapseList({list: objList,  prependText: objStatementBegin, appendText: ". "}).render().el); 			
+				if(subjList.length > 0){
+					var idList = new ExpandCollapseList({list: subjList, prependText: subjStatementBegin, appendText: ". "}).render().el;
+					$(idList).addClass("list-group-item");
+					$(statementEl).append(idList);
+				}
+				if(objList.length > 0){
+					var idList = new ExpandCollapseList({list: objList,  prependText: objStatementBegin, appendText: ". "}).render().el;
+					$(idList).addClass("list-group-item");
+					$(statementEl).append(idList); 			
+				}
 			});
 			
 			//Insert the list element into the DOM

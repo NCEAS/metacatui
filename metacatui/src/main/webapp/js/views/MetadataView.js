@@ -419,7 +419,8 @@ define(['jquery',
 					sources      : packageSources,
 					context      : this.packageModel,
 					contextEl    : this.$("#Metadata"),
-					packageModel : this.packageModel
+					packageModel : this.packageModel,
+					parentView   : view
 				});	
 				this.$("#Metadata").before(sourceProvChart.render().el).addClass("hasProvLeft");	
 			}
@@ -428,7 +429,8 @@ define(['jquery',
 					derivations  : packageDerivations,
 					context      : this.packageModel,
 					contextEl    : this.$("#Metadata"),
-					packageModel : this.packageModel
+					packageModel : this.packageModel,
+					parentView   : view
 				});		
 				this.$("#Metadata").after(derivationProvChart.render().el).addClass("hasProvRight");			
 			}			
@@ -452,7 +454,8 @@ define(['jquery',
 						sources      : memberSources, 
 						context      : member,
 						contextEl    : entityDetailsSection,
-						packageModel : view.packageModel
+						packageModel : view.packageModel,
+						parentView   : view
 					});	
 					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
 				}
@@ -462,7 +465,8 @@ define(['jquery',
 						derivations  : memberDerivations,
 						context      : member,
 						contextEl    : entityDetailsSection,
-						packageModel : view.packageModel
+						packageModel : view.packageModel,
+						parentView   : view
 					});	
 					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
 				}

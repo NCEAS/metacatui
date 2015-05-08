@@ -249,6 +249,24 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .prov-chart .popover{
 	min-width: 300px;
 }
+.prov-chart .popover-content{
+	padding: 0px;
+}
+.popover-content .provenance-statement.list-group{
+	margin: 10px;
+}
+.popover-content .well.header{
+	margin-bottom: 0px;
+	border-radius: 0px;
+  	padding-bottom: 0px;
+	padding-top: 0px;
+}
+.prov-chart .popover-content .header > .name{
+	font-size: 1.2em;
+}
+.prov-chart .popover-content .header > .subtle{
+	margin-bottom: 0px;
+}
 .prov-chart .popover .citation{
 	font-size: 1em;
 	line-height: 1.7em;
@@ -257,13 +275,17 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	display: block;
 	margin-bottom: 10px;
 }
+.prov-chart .popover-title{
+	font-size: 1em;
+}
 .prov-chart .popover-title i{
 	font-size: 1.2em;
 } 
 .prov-chart .popover .thumbnail{
 	margin-bottom: 20px;
-	max-height: 100px;
-	width: auto;
+	height: auto;
+	width: 100%;
+	padding: 0px;
 }
 .prov-chart .popover h7{
 	font-style: italic;

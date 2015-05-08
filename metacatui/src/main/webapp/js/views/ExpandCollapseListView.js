@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		tagName : "span",
 		
-		className : "expand-collapse well",
+		className : "expand-collapse",
 		
 		events: {
 			"click .control" : "toggle"

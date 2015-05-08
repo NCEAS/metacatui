@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		initialize: function(options){
 			if((typeof options === "undefined") || !options) var options = {};
 			
+			this.parentView    = options.parentView    || null;
 			this.sources 	   = options.sources       || null;
 			this.derivations   = options.derivations   || null;
 			this.context 	   = options.context       || null;
@@ -50,7 +51,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		
 		events: {
 			"click .expand.control"   : "expandNodes",
-			"click .collapse.control" : "collapseNodes"
+			"click .collapse.control" : "collapseNodes",
+			"click  .preview"         : "previewData"
 		},
 		
 		render: function(){
@@ -174,32 +176,39 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			var relatedModels = this.packageModel.get("relatedModels");
 			
-			//Create all the elements that will go inside the popover
+			//The citation
 			var citationHeader = $(document.createElement("h6")).addClass("subtle").text("Citation");
 			var citationEl = new CitationView({model: citationModel}).render().el;
+			
+			//The title
 			var titleEl = $(document.createElement("span")).append($(document.createElement("i")).addClass(icon + " icon-on-left"), title);
 			
-			if(name){
-				var nameHeader = $(document.createElement("h6")).addClass("subtle").text("Name");
+			//The name
+			if(name)
 				var nameEl = $(document.createElement("h5")).addClass("name").text(name);
-			}
+
+			//The View link
+			var arrowIcon = $(document.createElement("i")).addClass("icon-double-angle-right icon-on-right");
+			if(_.contains(this.packageModel.get("memberIds"), provEntity.get("id")))
+				var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn preview").attr("data-id", provEntity.get("id")).text("View").append(arrowIcon);
+			else
+				var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
 			
+			//The provenance statements
 			var provStatementEl = new ProvStatement({
 				model         : provEntity, 
 				relatedModels : relatedModels,
 				currentlyViewing : this.context}).render().el;
-			var arrowIcon = $(document.createElement("i")).addClass("icon-double-angle-right icon-on-right");
-			var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
 			
-			var popoverContent = $(document.createElement("div")).append(citationEl, provStatementEl, linkEl);
-			$(popoverContent).prepend(citationHeader);
-			
+			//Glue all the parts together
+			var headerContainer = $(document.createElement("div")).addClass("well header").append(citationHeader, citationEl, linkEl);
+			var popoverContent = $(document.createElement("div")).append(headerContainer, provStatementEl);
 			if(name)
-				$(popoverContent).prepend(nameHeader, nameEl);
+				$(headerContainer).prepend(nameEl);
 			
 			//Display images in the prov chart node popover 
 			if(type == "image"){
-				var img = $(document.createElement("img")).attr("src", provEntity.getURL()).addClass("thumbnail");
+				var img = $(document.createElement("img")).attr("src", provEntity.get("url")).addClass("thumbnail");
 				$(citationEl).after(img);
 			}
 
@@ -327,6 +336,25 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			$(nodeA).css("top", (this.nodeHeight/2) * -1).removeClass("collapsed");
 			$(nodeB).first().css("top", oldPosition);
 			if(isCollapsed) $(nodeB).first().addClass("collapsed");
+		},
+		
+		previewData: function(e){
+			//Don't go anywhere yet...
+			e.preventDefault();
+			
+			if(this.parentView){
+				if(this.parentView.previewData(e))
+					return;
+			}
+			
+			//Get the target of the click
+			var button = $(e.target);
+			if(!$(button).hasClass("preview")) 
+				button = $(button).parents("a.preview");
+			if(button.length < 1) 
+				button = $(button).parents("[href]");
+			
+			window.location = $(button).attr("href");  //navigate to the link href
 		}
 		
 	});
