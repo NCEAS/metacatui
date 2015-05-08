@@ -79,13 +79,13 @@ define(['jquery',
 		
 		logout: function() {
 			
-			var portalUrl = appModel.get('baseUrl') + "/portal/identity?action=logout";
+			var portalUrl = appModel.get('baseUrl') + "/portal/logout";
 			var target = Backbone.history.location.href;
 			// DO NOT include the route otherwise we have an infinite redirect
 			target  = target.split("#")[0];
 			
 			// make sure to include the target
-			portalUrl += "&target=" + target;
+			portalUrl += "?target=" + target;
 			
 			// do it!
 			window.location = portalUrl;

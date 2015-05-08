@@ -70,8 +70,18 @@
         	);
         } else {
         	if (signInUrl) {
-        		print(
-	        		'<li id="SignIn" class="share-feature"><a href="', signInUrl ,'">Sign In</a></li>'
+        	
+        	print(
+	        	'<li class="dropdown right">',
+					'<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
+						'Sign-in',
+						' <i class="icon-unlock-alt"></i> <b class="icon-sort-down"></b>',
+					'</a>',
+					'<ul class="dropdown-menu">',
+						'<li id="SignIn" class="share-feature"><a href="', signInUrl ,'">with CILogon</a></li>',
+	        			'<li id="SignIn" class="share-feature"><a href="', signInUrlOrcid ,'">with ORCID</a></li>',
+					'</ul>',
+				'</li>'
 	        	);
         	} else {
 	        	print(
