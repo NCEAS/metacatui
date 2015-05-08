@@ -23,6 +23,7 @@ define(['jquery', 'underscore', 'backbone'],
 			memberNode: null,
 			rightsHolder: null,
 			size: 0,
+			type: null,
 			url: null,
 			provSources: [],
 			provDerivations: [],
@@ -52,6 +53,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		initialize: function(){
 			this.getURL();
+			this.set("type", this.getType());
 		},
 		
 		type: "SolrResult",

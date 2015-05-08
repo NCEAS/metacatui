@@ -75,6 +75,11 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
+			
+			//Sort the objects/rows by type (image, program, data, etc.) alphabetically
+			members = _.sortBy(members, function(m){
+				return m.get("type");
+			});
 		
 			//Create the HTML for each row
 			_.each(members, function(solrResult, i, members){
