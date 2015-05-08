@@ -52,7 +52,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		events: {
 			"click .expand.control"   : "expandNodes",
 			"click .collapse.control" : "collapseNodes",
-			"click  .preview"         : "previewData"
+			"click .preview"         : "previewData"
 		},
 		
 		render: function(){
@@ -170,7 +170,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var nodeEl = $(document.createElement("div"))
 						 .addClass(type + " node pointer popover-this " + isCollapsed)
 						 .attr("tabindex", 0)
-						 .attr("data-pid", provEntity.get("id"))
+						 .attr("data-id", provEntity.get("id"))
 						 .css("top", top);
 			
 			//Display images in the prov chart node
@@ -201,8 +201,15 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var relatedModels = this.packageModel.get("relatedModels");
 			
 			//The citation
+			var createLink = true;
+			if((provEntity.get("id") == appModel.get("pid")) || (citationModel.get("id") == appModel.get("pid")))
+				createLink = false;
+			
 			var citationHeader = $(document.createElement("h6")).addClass("subtle").text("Citation");
-			var citationEl = new CitationView({model: citationModel}).render().el;
+			var citationEl = new CitationView({
+				model: citationModel,
+				createLink: createLink
+			}).render().el;
 			
 			//The title
 			var titleEl = $(document.createElement("span")).append($(document.createElement("i")).addClass(icon + " icon-on-left"), title);

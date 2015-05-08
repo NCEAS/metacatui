@@ -33,7 +33,7 @@ define(['jquery',
 		subviews: {},
 
 		el: '#Content',
-		
+				
 		template: null,
 						
 		alertTemplate: _.template(AlertTemplate),
@@ -62,7 +62,9 @@ define(['jquery',
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
-			"click #publish" : "publish"
+			"click #publish" : "publish",
+			"mouseover .highlight-node"  : "highlightNode",
+			"mouseout  .highlight-node"  : "highlightNode"
 		},
 		
 		initialize: function (options) {
@@ -642,7 +644,7 @@ define(['jquery',
 			}
 			else{
 				//Metacat 2.4.2 and up will have the Online Distribution Link marked 
-				var link = this.$(".entitydetails a[data-pid='" + id + "']");
+				var link = this.$(".entitydetails a[data-id='" + id + "']");
 			}
 			
 			//Otherwise, try looking for an anchor with the id matching this object's id
@@ -1093,14 +1095,18 @@ define(['jquery',
 			//Don't go anywhere yet...
 			e.preventDefault();
 			
-			//Get the target of the click
-			var button = $(e.target),
-				id     = $(button).attr("data-id");
-			if((typeof id === "undefined") || !id) 
-				return false; //This will make the app defualt to the PackageTableView previewData function
-			
-			//Get the height of the hidden elements since they will affect the position of the 
-			$(".download-contents .collapsed").outerHeight
+			//Get the target and id of the click
+			var button = $(e.target);
+			if(!$(button).hasClass("preview")) 
+				button = $(button).parents("a.preview");
+
+			if(button){
+				var id = $(button).attr("data-id");
+				if((typeof id === "undefined") || !id) 
+					return false; //This will make the app defualt to the child view previewData function
+			}
+			else
+				return false;
 			
 			//If we are on the Metadata view, then let's scroll to the anchor
 			appView.scrollTo(this.findEntityDetailsContainer(id));	
@@ -1116,6 +1122,29 @@ define(['jquery',
 			
 			//Close all active popovers
 			this.$(".popover-this.active").popover("hide");
+		},
+		
+		highlightNode: function(e){
+			//Find the id
+			var id = $(e.target).attr("data-id");
+			
+			if((typeof id === "undefined") || (!id))
+				id = $(e.target).parents("[data-id]").attr("data-id");
+			
+			//If there is no id, return
+			if(typeof id === "undefined") return false;
+			
+			//Highlight its node
+			$(".prov-chart .node[data-id='" + id + "']").toggleClass("active");
+			
+			//Highlight its metadata section
+			if(appModel.get("pid") == id)
+				this.$("#Metadata").toggleClass("active");
+			else{
+				var entityDetails = this.findEntityDetailsContainer(id);
+				if(entityDetails)
+					entityDetails.toggleClass("active");
+			}
 		},
 		
 		onClose: function () {			

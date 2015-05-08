@@ -136,7 +136,8 @@ h3{
 	outline: none;
 }
 .prov-chart .node.active,
-#Metadata.active{
+#Metadata.active,
+.entitydetails.active{
 	box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
 }
 .prov-chart .node.previous{

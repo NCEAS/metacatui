@@ -105,13 +105,13 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Create a link
 	        if(this.createLink)
-	        	var linkEl = $(document.createElement("a")).addClass("route-to-metadata").attr("data-pid", id);
+	        	var linkEl = $(document.createElement("a")).addClass("route-to-metadata").attr("data-id", id);
 	        else
 	        	var linkEl = document.createElement("span");
 			
 	        //The title will be clickable for citations with science metadata
 	        if((typeof title !== "undefined") && title){
-				$(linkEl).addClass("title").attr("data-pid", id).text(title + ". ");
+				$(linkEl).addClass("title").attr("data-id", id).text(title + ". ");
 
 				//Put together all the citation parts
 				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
