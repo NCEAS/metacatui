@@ -64,8 +64,32 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				//Create the HTML node and line connecter
 				if(entity.type == "Package")
 					view.$el.append(view.createNode(entity, i, _.find(entity.get("members"), function(member){ return member.get("formatType") == "METADATA"; })));	
-				else
-					view.$el.append(view.createNode(entity, i));	
+				else{
+					//Find the id of the metadata that documents this object
+					var metadataID = entity.get("isDocumentedBy");
+					
+					if(Array.isArray(metadataID))
+						metadataID = metadataID[0];
+					
+					if(metadataID){
+						//The metadata doc for this object may be in the same package as the context of this prov chart
+						var metadata = _.find(view.packageModel.get("members"), function(member){ return member.get("id") == metadataID });
+						if(!metadata){
+						//Or it may be in any of the other packages related to that package
+							var potentialMatch;
+							_.each(view.packageModel.get("relatedModels"), function(model){
+								potentialMatch = _.find(model.get("members"), function(member){ return member.get("id") == metadataID });
+								if(potentialMatch)
+									metadata = potentialMatch;
+							});
+						}
+						//If we found the metadata doc that matches the ID, then draw the node using that metadata
+						if(metadata) 
+							view.$el.append(view.createNode(entity, i, metadata));						
+						else
+							view.$el.append(view.createNode(entity, i));
+					}
+				}
 				
 				//Derivation charts have a pointer for each node
 				if(view.type == "derivations") view.$el.append(view.createPointer(i));
