@@ -17,6 +17,8 @@ define(['jquery', 'underscore', 'backbone'],
 			this.className  += options.className     || "";
 		},
 		
+		name: "ExpandCollapseList",
+		
 		tagName : "span",
 		
 		className : "expand-collapse",
@@ -88,7 +90,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		toggle: function(e){
 			e.preventDefault();
-			
+						
 			var collapsed = this.$(".collapsed");
 			var expanded = this.$(".expanded");
 			

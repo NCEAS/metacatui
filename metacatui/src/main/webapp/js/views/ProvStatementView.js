@@ -40,6 +40,12 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 		                 "prov_usedByUser",
 		                 "prov_wasExecutedByExecution",
 		                 "prov_wasExecutedByUser"],
+		                 
+		subviews: new Array(),
+		
+		events: {
+			
+		},
 		
 		/*
 		 * Creates a provenance statement and inserts it into the template
@@ -234,11 +240,15 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 				
 				//Add these statements to our element
 				if(subjList.length > 0){
-					var singleStatement = new ExpandCollapseList({list: subjList, prependText: subjStatementBegin, appendText: ". "}).render().el;
+					var collapseListView = new ExpandCollapseList({list: subjList, prependText: subjStatementBegin, appendText: ". "});
+					view.subviews.push(collapseListView);
+					var singleStatement  = collapseListView.render().el;
 					$(singleStatement).addClass("list-group-item statement");
 				}
 				if(objList.length > 0){
-					var singleStatement = new ExpandCollapseList({list: objList,  prependText: objStatementBegin, appendText: ". "}).render().el;
+					var collapseListView = new ExpandCollapseList({list: objList,  prependText: objStatementBegin, appendText: ". "});
+					view.subviews.push(collapseListView);
+					var singleStatement = collapseListView.render().el;
 					$(singleStatement).addClass("list-group-item statement");
 				}
 				

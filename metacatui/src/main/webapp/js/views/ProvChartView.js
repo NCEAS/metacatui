@@ -55,6 +55,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			"click .preview"         : "previewData"
 		},
 		
+		subviews: new Array(),
+		
 		render: function(){
 			if(!this.numProvEntities) return false;
 			
@@ -226,10 +228,14 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
 			
 			//The provenance statements
-			var provStatementEl = new ProvStatement({
-				model         : provEntity, 
-				relatedModels : relatedModels,
-				currentlyViewing : this.context}).render().el;
+			var provStatementView = new ProvStatement({
+				model            : provEntity, 
+				relatedModels    : relatedModels,
+				currentlyViewing : this.context,
+				parentView       : this
+				});
+			var provStatementEl = provStatementView.render().el;
+			this.subviews.push(provStatementView);
 			
 			//Glue all the parts together
 			var headerContainer = $(document.createElement("div")).addClass("well header").append(citationHeader, citationEl, linkEl);
@@ -250,6 +256,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			}
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
+			var view = this;
 			$(nodeEl).popover({
 				html: true,
 				placement: placement,
@@ -270,6 +277,23 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				//Toggle the active class
 				$(this).toggleClass("active");
 			});
+			
+			// If the prov statement views in the popover content have an expand collapse list view, then we want to delegate events 
+			//  again when the popover is done displaying. This is because the ExpandCollapseList view hides/shows DOM elements, and each time
+			// the DOM elements are hidden, their events are detached.
+			if(provStatementView.subviews.length > 0){
+				//Get the ExpandCollapseList views
+				var expandCollapseLists = _.where(provStatementView.subviews, {name: "ExpandCollapseList"});
+				if(expandCollapseLists.length > 0){
+					//When the popover is *done* displaying
+					$(nodeEl).on("shown.bs.popover", function(){
+						//Delegate the events of each of the ExpandCollapseList views
+				  	    _.each(expandCollapseLists, function(subview){
+							subview.delegateEvents(subview.events);
+						});
+		 			});
+				}
+			}
 			
 			return nodeEl;
 		},
