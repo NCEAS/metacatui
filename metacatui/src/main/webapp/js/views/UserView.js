@@ -19,7 +19,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			"click .subsection-link"       : "switchToSubSection",
 			"click .list-group-item.group" : "toggleMemberList",
 			"click .token-generator"       : "getToken",
-			"click #map-request-btn"			: "mapRequest"
+			"click #map-request-btn"			: "mapRequest",
+			"click .confirm-request-btn"		: "confirmRequest",
+			"click .reject-request-btn"			: "rejectRequest",
+			"click .remove-identity-btn"		: "removeIdentity",
+			
 		},
 		
 		initialize: function(){			
@@ -148,6 +152,12 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 			//Listen for the identity list
 			this.listenTo(this.model, "change:identities", this.insertIdentityList);
+			
+			//Listen for the pending list
+			this.listenTo(this.model, "change:pending", this.insertPendingList);
+			
+			// init autocomplete fields
+			this.setUpAutocomplete();
 		},
 		
 		insertGroupList: function(){
@@ -200,15 +210,46 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Create a list item for each identity
 			_.each(identities, function(identity, i){
 				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
-					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),
-					icon     = $(document.createElement("i")).addClass("icon icon-user");
-				$(identityList).append($(listItem).append($(link).prepend(icon)));
+					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity);
+				var remove = "<a href='#' class='remove-identity-btn' data-identity='" + identity + "'><i class='icon icon-trash'/></a>";
+				$(identityList).append($(listItem).append($(link).prepend(remove)));
 				
 			});
 			
 			//Add to the page
 			//$(identityList).find(".collapsed").hide();
 			this.$("#identity-list-container").append(identityList);
+		},
+		
+		insertPendingList: function(){
+			var pending = this.model.get("pending");
+			if (pending.length < 1) {
+				return;
+			}
+			
+			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
+			if(this.$("#pending-list").length > 0) this.$("#pending-list").detach();
+				
+			//Create the list element
+			var pendingList = $(document.createElement("ul")).addClass("list-identity").attr("id", "pending-list");
+			
+			//Create a list item for each pending id
+			_.each(pending, function(identity, i){
+				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
+					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity);				
+				var confirm = "<a href='#' class='confirm-request-btn' data-identity='" + identity + "'><i class='icon icon-check-sign'/></a>";
+				var reject = "<a href='#' class='reject-request-btn' data-identity='" + identity + "'><i class='icon icon-trash'/></a>";
+
+				$(pendingList).append(
+						$(listItem).append($(link))
+						.prepend(confirm)
+						.prepend(reject)
+				);
+				
+			});
+			
+			//Add to the page
+			this.$("#pending-list-container").append(pendingList);
 		},
 		
 		getToken: function(){		
@@ -237,9 +278,48 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.$("#token-generator-container").html(successMessage);
 		},
 		
-		mapRequest: function() {
-
+		setUpAutocomplete: function() {
 			
+			// look up registered identities 
+			$('#map-request-field').hoverAutocomplete({
+				source: function (request, response) {
+		            var term = $.ui.autocomplete.escapeRegex(request.term);
+		            
+		            var list = [];
+
+		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
+					$.get(url, function(data, textStatus, xhr) {
+						_.each($(data).find("person"), function(person, i){
+							var item = {};
+							item.value = $(person).find("subject").text();
+							item.label = $(person).find("givenName").text() + " " + $(person).find("familyName").text();
+							list.push(item);
+						});
+						
+			            response(list);
+
+					});
+		            
+		        },
+				select: function(event, ui) {
+					// set the text field
+					$('#map-request-field').val(ui.item.value);
+					// prevent default action
+					return false;
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					collision: "fit"
+				}
+			});
+			
+		},
+		
+		mapRequest: function() {
+			
+			var model = this.model;
+
 			var equivalentIdentity = this.$("#map-request-field").val();
 			if (!equivalentIdentity || equivalentIdentity.length < 1) {
 				return;
@@ -264,6 +344,85 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				success: function(data, textStatus, xhr) {
 					// TODO: render alert in DOM
 					alert("Added mapping request for " + equivalentIdentity);
+					model.getInfo();
+				}
+			});
+		},
+		
+		confirmRequest: function(e) {
+			
+			var model = this.model;
+
+			e.preventDefault();
+			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
+			
+			var mapUrl = appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(equivalentIdentity);	
+			// ajax call to confirm map
+			$.ajax({
+				type: "PUT",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.model.get("token")
+			    },
+				url: mapUrl,
+				success: function(data, textStatus, xhr) {
+					// TODO: render alert in DOM
+					alert("Confirmed mapping request for " + equivalentIdentity);
+					model.getInfo();
+				}
+			});
+		},
+		
+		rejectRequest: function(e) {
+			
+			var model = this.model;
+			
+			e.preventDefault();
+			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
+			
+			var mapUrl = appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(equivalentIdentity);	
+			// ajax call to reject map
+			$.ajax({
+				type: "DELETE",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.model.get("token")
+			    },
+				url: mapUrl,
+				success: function(data, textStatus, xhr) {
+					// TODO: render alert in DOM
+					alert("Removed mapping request for " + equivalentIdentity);
+					model.getInfo();
+				}
+			});
+		},
+		
+		removeIdentity: function(e) {
+			
+			var model = this.model;
+
+			e.preventDefault();
+			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
+			
+			var mapUrl = appModel.get("accountsUrl") + "map/" + encodeURIComponent(equivalentIdentity);	
+			// ajax call to remove mapping
+			$.ajax({
+				type: "DELETE",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.model.get("token")
+			    },
+				url: mapUrl,
+				success: function(data, textStatus, xhr) {
+					// TODO: render alert in DOM
+					alert("Removed mapping for " + equivalentIdentity);
+					model.getInfo();
 				}
 			});
 		},
