@@ -113,7 +113,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				var pending = model.get("pending");
 				_.each($(data).find("person"), function(person, i) {
 					var subject = $(person).find("subject").text();
-					if (subject != model.get("username")) {
+					if (subject.toLowerCase() != model.get("username").toLowerCase()) {
 						pending.push(subject);
 					}
 				});
