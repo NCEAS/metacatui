@@ -59,7 +59,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			// Grab all of our URLs
 			var queryServiceUrl   = appModel.get('queryServiceUrl');
 			var packageServiceUrl = appModel.get('packageServiceUrl');
-			var objectServiceUrl  = appModel.get('objectServiceUrl');
 			
 			var readsEnabled = false;
 
@@ -87,7 +86,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				var formatType = solrResult.get("formatType"),
 					type       = solrResult.getType(),
 					id		   = solrResult.get("id"),
-					entityName = solrResult.get("entityName");
+					entityName = solrResult.get("entityName"),
+					url        = solrResult.get("url");
 				
 				//Use the metadata title instead of the ID
 				if(!entityName && (formatType == "METADATA")) entityName = solrResult.get("title");
@@ -133,7 +133,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				else if(id == view.currentlyViewing)
 					var nameEl = $(document.createElement("span"));
 				else
-					var nameEl = $(document.createElement("a")).attr("href", objectServiceUrl + encodeURIComponent(id));
+					var nameEl = $(document.createElement("a")).attr("href", url);
 				$(nameEl).text(entityName);	
 				$(nameCell).html(nameEl);
 				$(tr).append(nameCell);
@@ -171,7 +171,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				
 				//Download button cell
 				var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");				
-				var downloadButtonHTML = view.downloadButtonTemplate({ href: objectServiceUrl + encodeURIComponent(id) });
+				var downloadButtonHTML = view.downloadButtonTemplate({ href: url });
 				$(downloadBtnCell).append(downloadButtonHTML);
 				$(tr).append(downloadBtnCell);
 				

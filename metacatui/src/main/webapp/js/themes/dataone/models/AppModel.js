@@ -67,7 +67,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/isAuthorized/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/query/solr/?');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/meta/');
-			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
+			//this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
 			this.set('resolveServiceUrl', this.get('baseUrl') + this.get('context') + "cn/v1" + '/resolve/');
 			//this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');

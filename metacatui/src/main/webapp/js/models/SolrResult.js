@@ -52,7 +52,7 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		initialize: function(){
-			this.getURL();
+			this.setURL();
 			this.set("type", this.getType());
 		},
 		
@@ -99,7 +99,7 @@ define(['jquery', 'underscore', 'backbone'],
 			else return "data";
 		},
 		
-		getURL: function(){			
+		setURL: function(){			
 			if(appModel.get("resolveServiceUrl"))
 				this.set("url", appModel.get("resolveServiceUrl") + this.get("id"));
 			else
