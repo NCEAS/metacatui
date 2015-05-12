@@ -208,13 +208,14 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		
 		insertIdentityList: function(){
 			var identities = this.model.get("identities");
-			if (identities.length < 1) {
-				return;
-			}
 			
 			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
 			if(this.$("#identity-list").length > 0) this.$("#identity-list").detach();
 				
+			if (identities.length < 1) {
+				return;
+			}
+			
 			//Create the list element
 			var identityList = $(document.createElement("ul")).addClass("list-identity").attr("id", "identity-list");
 			
@@ -234,13 +235,14 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		
 		insertPendingList: function(){
 			var pending = this.model.get("pending");
-			if (pending.length < 1) {
-				return;
-			}
 			
 			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
 			if(this.$("#pending-list").length > 0) this.$("#pending-list").detach();
 				
+			if (pending.length < 1) {
+				return;
+			}
+			
 			//Create the list element
 			var pendingList = $(document.createElement("ul")).addClass("list-identity").attr("id", "pending-list");
 			
