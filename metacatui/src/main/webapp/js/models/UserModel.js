@@ -17,6 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				searchModel: null,
 				searchResults: null,
 				loggedIn: false,
+				registered: false,
 				groups: [],
 				identities: [],
 				pending: [],
@@ -104,6 +105,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				model.set("lastName",  lastName);
 				model.set("fullName",  fullName);
 				model.set("email",  email);
+				model.set("registered",  true);
 			});
 			
 			

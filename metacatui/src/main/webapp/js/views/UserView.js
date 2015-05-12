@@ -147,6 +147,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		renderSettings: function(){
 			//Insert the template first
 			this.sectionHolder.append(this.settingsTemplate());
+			this.updateModForm();
 			
 			//Listen for the group list to draw the group list
 			this.listenTo(this.model, "change:groups", this.insertGroupList);
@@ -161,6 +162,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.listenTo(this.model, "change:lastName", this.updateModForm);
 			this.listenTo(this.model, "change:firstName", this.updateModForm);
 			this.listenTo(this.model, "change:email", this.updateModForm);
+			this.listenTo(this.model, "change:registered", this.updateModForm);
 			
 			// init autocomplete fields
 			this.setUpAutocomplete();
@@ -262,6 +264,13 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.$("#mod-givenName").val(this.model.get("firstName"));
 			this.$("#mod-familyName").val(this.model.get("lastName"));
 			this.$("#mod-email").val(this.model.get("email"));
+			
+			if (this.model.get("registered")) {
+				this.$("#registered-user-container").show();
+			} else {
+				this.$("#registered-user-container").hide();
+			}
+			
 		},
 		
 		getToken: function(){		

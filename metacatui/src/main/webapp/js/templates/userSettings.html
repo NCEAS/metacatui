@@ -20,24 +20,34 @@
 	
 	<div class="span8 subsection" data-section="identity">
 		
-		<div class="panel panel-default" id="identity-list-container">
-		  <div class="panel-heading">
-		  	<h4 class="panel-title">My Other Identities</h4>
-		  </div>
-		</div>
+		<div id="registered-user-container">
+			
+			<div class="panel panel-default" id="identity-mod-container">
+			  <div class="panel-heading">
+			  	<h4 class="panel-title">Edit information</h4>
+			  	<div class="input-append">
+				  	<input class="input-medium" type="text" placeholder="Given Name" id="mod-givenName">
+				  	<input class="input-medium" type="text" placeholder="Surname" id="mod-familyName">
+				  	<input class="input-medium" type="text" placeholder="Email" id="mod-email">
+					<button class="btn" id="mod-save-btn"><i class="icon-save"></i></button>
+			  	</div>
+			  </div>
+			</div>
+			
+			<div class="panel panel-default" id="identity-list-container">
+			  <div class="panel-heading">
+			  	<h4 class="panel-title">My Other Identities</h4>
+			  </div>
+			</div>
+	
+			<div class="panel panel-default" id="pending-list-container">
+			  <div class="panel-heading">
+			  	<h4 class="panel-title">Pending Identities</h4>
+			  </div>
+			</div>	
 		
-		<div class="panel panel-default" id="identity-mod-container">
-		  <div class="panel-heading">
-		  	<h4 class="panel-title">Edit information</h4>
-		  	<div class="input-append">
-			  	<input class="input-medium" type="text" placeholder="Given Name" id="mod-givenName">
-			  	<input class="input-medium" type="text" placeholder="Surname" id="mod-familyName">
-			  	<input class="input-medium" type="text" placeholder="Email" id="mod-email">
-				<button class="btn" id="mod-save-btn"><i class="icon-save"></i></button>
-		  	</div>
-		  </div>
 		</div>
-		
+				
 		<div class="panel panel-default" id="identity-request-container">
 		  <div class="panel-heading">
 		  	<h4 class="panel-title">Add mapping</h4>
@@ -45,12 +55,6 @@
 			  	<input class="input-xlarge" type="text" placeholder="Equivalent Identity (cn=me, o=my org...)" id="map-request-field">
 				<button class="btn" id="map-request-btn"><i class="icon-plus"></i></button>
 		  	</div>
-		  </div>
-		</div>
-		
-		<div class="panel panel-default" id="pending-list-container">
-		  <div class="panel-heading">
-		  	<h4 class="panel-title">Pending Identities</h4>
 		  </div>
 		</div>
 		
