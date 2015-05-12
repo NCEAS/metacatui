@@ -11,11 +11,13 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				lastName: null,
 				firstName: null,
 				fullName: null,
+				email: null,
 				verified: null,
 				username: null,
 				searchModel: null,
 				searchResults: null,
 				loggedIn: false,
+				registered: false,
 				groups: [],
 				identities: [],
 				pending: [],
@@ -59,6 +61,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				var firstName = $(data).find("person givenName").first().text(),
 					lastName  = $(data).find("person familyName").first().text(),
 					fullName  = firstName + " " + lastName,
+					email  = $(data).find("person email").first().text(),
 					verified  = $(data).find("person verified").first().text(),
 					groups    = model.get("groups"),
 					identities = model.get("identities");
@@ -100,7 +103,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				model.set("verified",  verified);
 				model.set("firstName", firstName);
 				model.set("lastName",  lastName);
-				model.set("fullName",  fullName);				
+				model.set("fullName",  fullName);
+				model.set("email",  email);
+				model.set("registered",  true);
 			});
 			
 			
