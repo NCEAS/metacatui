@@ -201,6 +201,7 @@ h3{
 }
 .prov-chart.derivations > .title{
 	left: 0px;
+	text-align: center;
 }
 .prov-chart .node > i{
 	vertical-align: text-top;
@@ -221,6 +222,105 @@ h3{
 	background-position: 50% 50%;
 }
 
+/* The Prov Chart colors */		
+.prov-chart .node.uniqueNode1{
+	border-color: #a6cee3;
+}
+.prov-chart .node.uniqueNode1 .icon{
+	color: #a6cee3;
+}
+.prov-chart .node.uniqueNode2{
+	border-color: #1f78b4;
+}
+.prov-chart .node.uniqueNode2 .icon{
+	color: #1f78b4;
+}
+.prov-chart .node.uniqueNode3{
+	border-color: #b2df8a;
+}
+.prov-chart .node.uniqueNode3 .icon{
+	color: #b2df8a;
+}
+.prov-chart .node.uniqueNode4{
+	border-color: #33a02c;
+}
+.prov-chart .node.uniqueNode4 .icon{
+	color: #33a02c;
+}
+.prov-chart .node.uniqueNode5{
+	border-color: #fb9a99;
+}
+.prov-chart .node.uniqueNode5 .icon{
+	color: #fb9a99;
+}
+.prov-chart .node.uniqueNode6{
+	border-color: #e31a1c;
+}
+.prov-chart .node.uniqueNode6 .icon{
+	color: #e31a1c;
+}
+.prov-chart .node.uniqueNode7{
+	border-color: #fdbf6f;
+}
+.prov-chart .node.uniqueNode7 .icon{
+	color: #fdbf6f;
+}
+.prov-chart .node.uniqueNode8{
+	border-color: #ff7f00;
+}
+.prov-chart .node.uniqueNode8 .icon{
+	color: #ff7f00;
+}
+.prov-chart .node.uniqueNode9{
+	border-color: #cab2d6;
+}
+.prov-chart .node.uniqueNode9 .icon{
+	color: #cab2d6;
+}
+.prov-chart .node.uniqueNode10{
+	border-color: #6a3d9a;
+}
+.prov-chart .node.uniqueNode10 .icon{
+	color: #6a3d9a;
+}
+.prov-chart .node.uniqueNode11{
+	border-color: #ffff99;
+}
+.prov-chart .node.uniqueNode11 .icon{
+	color: #ffff99;
+}
+.prov-chart .node.uniqueNode12{
+	border-color:#b15928;
+}
+.prov-chart .node.uniqueNode12 .icon{
+	color: #b15928;
+}
+.prov-chart .node.uniqueNode13{
+	border-color: #66AA99;
+}
+.prov-chart .node.uniqueNode13 .icon{
+	color: #66AA99;
+}
+.prov-chart .node.uniqueNode14{
+	border-color:#BB9999;
+}
+.prov-chart .node.uniqueNode14 .icon{
+	color: #BB9999;
+}
+.prov-chart .node.uniqueNode15{
+	border-color: #EE5555;	
+}
+.prov-chart .node.uniqueNode15 .icon{
+	color: #EE5555;
+}
+.prov-chart .node.uniqueNode16{
+	border-color:#9977BB;
+} 
+.prov-chart .node.uniqueNode16 .icon{
+	color: #9977BB;
+}
+
+		
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .hasProvLeft,
 .hasProvRight,
@@ -239,12 +339,14 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	min-width: 100px;
 	max-width: 250px;
 }
+
 /*The metadata gets narrowed even more when there are two prov charts next to it*/
 .hasProvLeft.hasProvRight,
 .entitydetails.hasProvLeft.hasProvRight{
 	width: 60%; /* IE fallback */
 	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - (padding + borders)*/
 }
+
 /* Prov chart popovers */
 .prov-chart .popover{
 	min-width: 300px;

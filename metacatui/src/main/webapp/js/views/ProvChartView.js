@@ -36,9 +36,18 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				this.numSources      = 0;
 			}
 			
-			//Add the chart type to the class list and create a title
+			//Add the chart type to the class list
 			this.className = this.className + " " + this.type;
-			this.title 	   = this.numProvEntities + " " + this.type;
+			
+			//Create a title
+			if((this.context.get("type") == "program") && (this.type == "derivations")){
+				this.title = this.numProvEntities + " outputs";				
+			}
+			else if((this.context.get("type") == "program") && (this.type == "sources")){
+				this.title = this.numProvEntities + " inputs";				
+			}
+			else
+				this.title 	   = this.numProvEntities + " " + this.type;
 			
 			//The default height of the chart when all nodes are visible/expanded
 			this.height = (this.numProvEntities * this.nodeHeight);
@@ -163,6 +172,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			//Get the name of this object
 			var name = provEntity.get("entityName");
+			var id   = provEntity.get("id");
 			
 			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
 			var top = (position * this.nodeHeight) - (this.nodeHeight/2),
@@ -182,7 +192,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			//Create an icon inside the node for other format types
 			else{
 				var iconEl = $(document.createElement("i"))
-							 .addClass(icon);
+							 .addClass(icon + " icon");
 				//Put the icon in the node
 				$(nodeEl).append(iconEl);		
 			}

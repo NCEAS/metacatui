@@ -473,6 +473,28 @@ define(['jquery',
 					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
 				}
 			});
+			
+			//Make all of the prov chart nodes look different based on id
+			if(this.$(".prov-chart").length > 0){
+				var allNodes = this.$(".prov-chart .node"),
+				ids      = [],
+				view     = this,
+				i        = 1;
+			
+				$(allNodes).each(function(){ ids.push($(this).attr("data-id"))});
+				ids = _.uniq(ids);
+				
+				_.each(ids, function(id){					
+					var matchingNodes = view.$(".prov-chart .node[data-id='" + id + "']");
+					
+					//Don't use the unique class on images since they will look a lot different anyway by their image
+					if(!$(matchingNodes).first().hasClass("image")){						
+						//Add the unique class and up the iterator
+						$(matchingNodes).addClass("uniqueNode" + i);
+						i++;
+					}
+				});
+			}
 		},
 		
 		// checks if the pid is already a DOI
