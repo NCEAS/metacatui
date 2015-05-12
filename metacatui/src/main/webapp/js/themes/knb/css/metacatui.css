@@ -1710,6 +1710,38 @@ svg .domain{
 		padding: 20px 0px;
 		width: 90%;
 	}
+	.metadata-index .text,
+	.metadata-index .attribute,
+	.metadata-index .attributeName,
+	.metadata-index .attributeDescription,
+	.metadata-index .checksum,
+	.metadata-index .dataUrl,
+	.metadata-index .fileID,
+	.metadata-index .control-group.size,
+	.metadata-index .resourceMap,
+	.metadata-index .presentationCat,
+	.metadata-index .checksumAlgorithm,
+	.metadata-index .author,
+	.metadata-index .authorGivenName,
+	.metadata-index .authorGivenNameSort,
+	.metadata-index .authorSurName,	
+	.metadata-index .authorSurNameSort,
+	.metadata-index .authorLastName,
+	.metadata-index .replicaVerifiedDate,
+	.metadata-index .numberReplicas,
+	.metadata-index .sku,
+	.metadata-index .synchronization_failed_count_i,
+	.metadata-index .read_count_i,
+	.metadata-index .formatType,
+	.metadata-index .documents,
+	.metadata-index .replicaMN,
+	.metadata-index .replicationAllowed,
+	.metadata-index .dateModified,
+	.metadata-index .updateDate,
+	.metadata-index .authoritativeMN{
+		display: none;
+	}
+	
 	
 	/* Registry CSS
 	-------------------------------------------------- */
@@ -3012,8 +3044,6 @@ svg .domain{
  
  pre{
 	 padding: 10px;
-	background: rgba(22,97,148,0.7);
-	color: #FFFFFF;
 	font-size: 15px;
 	border-radius: 5px;
 	-moz-border-radius: 5px;
