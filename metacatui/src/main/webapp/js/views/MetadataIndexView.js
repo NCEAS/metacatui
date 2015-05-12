@@ -17,6 +17,8 @@ define(['jquery',
 		
 	var MetadataIndexView = Backbone.View.extend({
 		
+		type: "MetadataIndex",
+		
 		id: 'Metadata',
 		
 		className: "metadata-index container", 
