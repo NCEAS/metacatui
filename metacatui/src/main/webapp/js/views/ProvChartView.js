@@ -265,6 +265,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				$(citationEl).before($(document.createElement("h7")).text("Last viewed"));
 			}
 			
+			//Get the id->class name map for unique node colors
+			var classMap = this.parentView.classMap || null;
+			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			var view = this;
 			$(nodeEl).popover({
@@ -274,6 +277,22 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				container: this.el,
 				title: titleEl,
 				content: function(){ 
+					//Find the unique class name associated with this ID
+					if(classMap){
+						var allProvLinks = $(popoverContent).find(".provenance-statement .node-link[data-id]");
+						_.each(allProvLinks, function(provlink, i, allProvLinks){
+							var id      = $(provlink).attr("data-id"),
+								mapItem = _.findWhere(classMap, {id: id});
+						
+							if(typeof mapItem !== "undefined"){
+								var className = mapItem.className,
+									matchingProvLinks = $(allProvLinks).filter("[data-id='" + id + "']");
+								if(matchingProvLinks.length > 0)
+									$(matchingProvLinks).addClass(className);	
+							}
+						});					
+					}
+					
 					return 	popoverContent;
 				}
 			}).on("show.bs.popover", function(){
@@ -420,6 +439,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				button = $(button).parents("[href]");
 			
 			window.location = $(button).attr("href");  //navigate to the link href
+		},
+		
+		onClose: function() {			
+			this.remove();			
 		}
 		
 	});

@@ -30,9 +30,11 @@ define(['jquery',
 	
 	var MetadataView = Backbone.View.extend({
 		
-		subviews: {},
+		subviews: [],
 
 		el: '#Content',
+		
+		type: "Metadata",
 				
 		template: null,
 						
@@ -78,6 +80,10 @@ define(['jquery',
 		render: function () {
 
 			appModel.set('headerType', 'default');
+			
+			//Reset a new class map - for matching ids->class names in prov charts
+			this.classMap = new Array();
+			this.subviews = new Array();
 			
 			// get the pid to render
 			if(!this.pid){
@@ -132,21 +138,22 @@ define(['jquery',
 
 		/* If there is no view service available, then display the metadata fields from the index */
 		renderMetadataFromIndex: function(){
-			this.subviews.metadataFromIndex = new MetadataIndex({ 
-					pid: this.pid, 
-					parentView: this 
-					});
+			var metadataFromIndex = new MetadataIndex({ 
+				pid: this.pid, 
+				parentView: this 
+				});
+			this.subviews.push(metadataFromIndex);
 
 			//Get the package details from the index, too
 			this.getPackageDetails();
 			
 			//Add the package details once the metadata from the index is drawn 
-			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.insertPackageDetails);
-			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.getCitation);
-			this.listenToOnce(this.subviews.metadataFromIndex, 'complete', this.insertBreadcrumbs);
+			this.listenToOnce(metadataFromIndex, 'complete', this.insertPackageDetails);
+			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
+			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
 			
 			//Add the metadata HTML
-			this.$el.append(this.subviews.metadataFromIndex.render().el);
+			this.$el.append(metadataFromIndex.render().el);
 			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
@@ -256,10 +263,13 @@ define(['jquery',
 		insertPackageDetails: function(){	
 			var viewRef = this;
 			
+			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
+			if(typeof metadataFromIndex === "undefined") metadataFromIndex = null;
+			
 			// There are two different events that are calling this function - when the MetadataIndexView is complete
 			// and when the Package model is complete. We need to make sure both are done before inserting the package details.
 			// If we are not rendering the metadata from the index and the package model is complete, we can continue.
-			if((this.subviews.metadataFromIndex) && !this.subviews.metadataFromIndex.complete) return this;
+			if(metadataFromIndex && !metadataFromIndex.complete) return this;
 			if(!this.packageModel.complete) return this;
 				
 			//** Draw the package table **//	
@@ -424,6 +434,7 @@ define(['jquery',
 					packageModel : this.packageModel,
 					parentView   : view
 				});	
+				this.subviews.push(sourceProvChart);
 				this.$("#Metadata").before(sourceProvChart.render().el).addClass("hasProvLeft");	
 			}
 			if(Object.keys(packageDerivations).length){
@@ -434,6 +445,7 @@ define(['jquery',
 					packageModel : this.packageModel,
 					parentView   : view
 				});		
+				this.subviews.push(derivationProvChart);
 				this.$("#Metadata").after(derivationProvChart.render().el).addClass("hasProvRight");			
 			}			
 			
@@ -459,6 +471,7 @@ define(['jquery',
 						packageModel : view.packageModel,
 						parentView   : view
 					});	
+					view.subviews.push(memberSourcesProvChart);
 					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
 				}
 				if(memberDerivations.length){
@@ -470,6 +483,7 @@ define(['jquery',
 						packageModel : view.packageModel,
 						parentView   : view
 					});	
+					view.subviews.push(memberDerivationsProvChart);
 					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
 				}
 			});
@@ -486,11 +500,20 @@ define(['jquery',
 				
 				_.each(ids, function(id){					
 					var matchingNodes = view.$(".prov-chart .node[data-id='" + id + "']");
+					//var matchingEntityDetails = view.findEntityDetailsContainer(id);
 					
 					//Don't use the unique class on images since they will look a lot different anyway by their image
-					if(!$(matchingNodes).first().hasClass("image")){						
+					if(!$(matchingNodes).first().hasClass("image")){	
+						var className = "uniqueNode" + i;
 						//Add the unique class and up the iterator
-						$(matchingNodes).addClass("uniqueNode" + i);
+						$(matchingNodes).addClass(className);
+						
+					/*	if(matchingEntityDetails)
+							$(matchingEntityDetails).addClass(className);*/
+						
+						//Save this id->class mapping in this view
+						view.classMap.push({ id        : id, 
+											 className : className });
 						i++;
 					}
 				});
@@ -673,8 +696,12 @@ define(['jquery',
 			if(link.length < 1)
 				link = this.$("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
 
+			//Get metadata index view
+			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
+			if(typeof metadataFromIndex === "undefined") metadataFromIndex = null;
+			
 			//Otherwise, find the Online Distribution Link the hard way 
-			if((link.length < 1) && (!this.subviews.metadataFromIndex))
+			if((link.length < 1) && (!metadataFromIndex))
 				link = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
 						
 			if(link.length > 0){
@@ -695,8 +722,9 @@ define(['jquery',
 		 */
 		insertDataDetails: function(){
 			//If there is a metadataIndex subview, render from there.
-			if(this.subviews.metadataFromIndex){
-				this.subviews.metadataFromIndex.insertDataDetails();
+			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
+			if(typeof metadataFromIndex !== "undefined"){
+				metadataFromIndex.insertDataDetails();
 				return;
 			}
 

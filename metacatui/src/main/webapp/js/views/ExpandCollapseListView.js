@@ -107,6 +107,10 @@ define(['jquery', 'underscore', 'backbone'],
 			this.$(".control.expand").toggleClass("hidden");
 			
 			return false;
+		},
+		
+		onClose: function() {		
+			this.remove();			
 		}
 	});
 	

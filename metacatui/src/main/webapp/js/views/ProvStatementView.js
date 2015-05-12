@@ -175,19 +175,19 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 							type = objectModel.getType();
 						var icon = $(document.createElement("i")).attr("class", "icon " + view.getIconType(type));
 						
-						var linkText = $(document.createElement("span")).text(objectName);
+						var linkText = $(document.createElement("span")).text(objectName).prepend(icon);
 						
 						//Make a link out of the object ID
 						var link = $(document.createElement("a")).attr("href", "#view/" + objectId)
-				                                                 .prepend(icon, linkText)
+				                                                 .prepend(linkText)
 				                                                 .attr("data-id", objectId)
-															     .addClass("highlight-node preview");
+															     .addClass("highlight-node preview node-link");
 						
 						//Is the triple object the entity the user is currently viewing?
 						if(view.currentlyViewing && (view.currentlyViewing.get("id") == objectId)){
-							$(linkText).addClass("currently-viewing pointer highlight-node").attr("data-id", objectId);
+							$(linkText).addClass("currently-viewing pointer highlight-node node-link").attr("data-id", objectId);
 							var linkContainer = $(document.createElement("span"))
-													.prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), icon, linkText);
+													.prepend($(document.createElement("span")).text("the " + view.currentlyViewing.getType() + " you are currently viewing, "), linkText);
 							subjList.push(linkContainer);
 						}
 						else
@@ -315,6 +315,11 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 				return "icon-file pdf";
 			else if(type == "package")
 				return "icon-folder-open";
+		},
+		
+		onClose: function() {			
+			this.$el.remove();
+			this.remove();			
 		}
 	});
 	
