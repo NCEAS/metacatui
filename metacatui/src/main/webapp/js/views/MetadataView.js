@@ -78,18 +78,25 @@ define(['jquery',
 				console.log('calling view endpoint: ' + endpoint);
 	
 				var viewRef = this;
-				this.$el.load(endpoint,
+				$.get(endpoint,
 						function(response, status, xhr) {
 							if(status=="error"){
 								//Our fallback is to show the metadata details from the Solr index
 								viewRef.renderMetadataFromIndex();
 							}
-							else{ //HTML was successfully loaded from a view service
+							else{ 
+								//HTML was successfully loaded from a view service
 															
 								//Find the taxonomic range and give it a class for styling
 								$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomic-range');
 																
-								viewRef.$el.fadeIn("slow");
+								viewRef.$el.html(response).fadeIn("slow");
+								
+								//Check if the response returned an html or body tag and remove them
+								if((viewRef.$el.children().length == 1) && (viewRef.$el.children("pre").length == 1)){
+									viewRef.renderMetadataFromIndex();
+									return;
+								}
 								
 								viewRef.insertResourceMapContents(appModel.get('pid'));
 								
@@ -109,7 +116,7 @@ define(['jquery',
 					pid: appModel.get('pid'), 
 					parentView: this 
 					});
-			this.$el.append(this.subviews.metadataFromIndex.render().el);
+			this.$el.prepend(this.subviews.metadataFromIndex.render().el);
 						
 		},
 		

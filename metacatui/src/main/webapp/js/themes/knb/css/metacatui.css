@@ -1521,6 +1521,12 @@ svg .domain{
 		width: 100%;
 	}
 	
+	#Content > pre {
+	  width: 90%;
+	  margin-left: auto;
+	  margin-right: auto;
+	}
+	
 	#Metadata cite.citation {
 		font-size: 1.5em;
 		line-height: 1.5em;
@@ -1701,8 +1707,8 @@ svg .domain{
 	}
 	
 	.metadata-index {
-		padding: 2%;
-		width: 96%;
+		padding: 20px 0px;
+		width: 90%;
 	}
 	
 	/* Registry CSS
