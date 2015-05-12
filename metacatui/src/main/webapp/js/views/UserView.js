@@ -147,23 +147,26 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		renderSettings: function(){
 			//Insert the template first
 			this.sectionHolder.append(this.settingsTemplate());
-			this.updateModForm();
 			
 			//Listen for the group list to draw the group list
 			this.listenTo(this.model, "change:groups", this.insertGroupList);
+			this.insertGroupList();
 			
 			//Listen for the identity list
 			this.listenTo(this.model, "change:identities", this.insertIdentityList);
+			this.insertIdentityList();
 			
 			//Listen for the pending list
 			this.listenTo(this.model, "change:pending", this.insertPendingList);
+			this.insertPendingList();
 			
 			//Listen for updates to person details
 			this.listenTo(this.model, "change:lastName", this.updateModForm);
 			this.listenTo(this.model, "change:firstName", this.updateModForm);
 			this.listenTo(this.model, "change:email", this.updateModForm);
 			this.listenTo(this.model, "change:registered", this.updateModForm);
-			
+			this.updateModForm();
+
 			// init autocomplete fields
 			this.setUpAutocomplete();
 		},

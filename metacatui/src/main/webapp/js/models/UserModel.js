@@ -51,7 +51,17 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
-			$.get(url, function(data, textStatus, xhr){				
+			$.ajax(
+					{
+				type: "GET",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.get("token")
+			    },
+				url: url, 
+				success: function(data, textStatus, xhr) {				
 				//Reset the group list so we don't just add it to it with push()
 				model.set("groups", model.defaults().groups);
 				//Reset the equivalent id list so we don't just add it to it with push()
@@ -106,7 +116,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				model.set("fullName",  fullName);
 				model.set("email",  email);
 				model.set("registered",  true);
-			});
+			}});
 			
 			
 			//Get the pending requests
