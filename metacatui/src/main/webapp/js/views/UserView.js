@@ -20,6 +20,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			"click .list-group-item.group" : "toggleMemberList",
 			"click .token-generator"       : "getToken",
 			"click #map-request-btn"			: "mapRequest",
+			"click #mod-save-btn"				: "saveUser",
 			"click .confirm-request-btn"		: "confirmRequest",
 			"click .reject-request-btn"			: "rejectRequest",
 			"click .remove-identity-btn"		: "removeIdentity",
@@ -156,6 +157,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Listen for the pending list
 			this.listenTo(this.model, "change:pending", this.insertPendingList);
 			
+			//Listen for updates to person details
+			this.listenTo(this.model, "change:lastName", this.updateModForm);
+			this.listenTo(this.model, "change:firstName", this.updateModForm);
+			this.listenTo(this.model, "change:email", this.updateModForm);
+			
 			// init autocomplete fields
 			this.setUpAutocomplete();
 		},
@@ -252,6 +258,12 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.$("#pending-list-container").append(pendingList);
 		},
 		
+		updateModForm: function() {
+			this.$("#mod-givenName").val(this.model.get("firstName"));
+			this.$("#mod-familyName").val(this.model.get("lastName"));
+			this.$("#mod-email").val(this.model.get("email"));
+		},
+		
 		getToken: function(){		
 			var model = this.model;
 			
@@ -314,6 +326,53 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				}
 			});
 			
+		},
+		
+		saveUser: function() {
+			
+			var model = this.model;
+
+			var subject = this.model.get("username");
+			var givenName = this.$("#mod-givenName").val();
+			var familyName = this.$("#mod-familyName").val();
+			var email = this.$("#mod-email").val();
+			
+			var person = 
+				'<?xml version="1.0" encoding="UTF-8"?>'
+				+ '<d1:person xmlns:d1="http://ns.dataone.org/service/types/v1">'
+				+ '<subject>' + subject + '</subject>'
+				+ '<givenName>' + givenName + '</givenName>'
+				+ '<familyName>' + familyName + '</familyName>'
+				+ '<email>' + email + '</email>'
+				+ '</d1:person>';
+			
+			var xmlBlob = new Blob([person], {type : 'application/xml'});
+			var formData = new FormData();
+			formData.append("subject", subject);
+			formData.append("person", xmlBlob, "person");
+
+			var updateUrl = appModel.get("accountsUrl") + encodeURIComponent(subject);;
+			
+			// ajax call to update
+			$.ajax({
+				type: "PUT",
+				cache: false,
+			    contentType: false,
+			    processData: false,
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.model.get("token")
+			    },
+				url: updateUrl,
+				data: formData,
+				success: function(data, textStatus, xhr) {
+					// TODO: render alert in DOM
+					alert("Saved details for " + subject);
+					model.getInfo();
+				}
+			});
 		},
 		
 		mapRequest: function() {
