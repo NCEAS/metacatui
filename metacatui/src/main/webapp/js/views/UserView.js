@@ -367,6 +367,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 
 			var updateUrl = appModel.get("accountsUrl") + encodeURIComponent(subject);;
 			
+			var viewRef = this;
+			
 			// ajax call to update
 			$.ajax({
 				type: "PUT",
@@ -382,11 +384,28 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				url: updateUrl,
 				data: formData,
 				success: function(data, textStatus, xhr) {
-					// TODO: render alert in DOM
-					alert("Saved details for " + subject);
+					viewRef.showAlert("Saved details for " + subject);
+					model.getInfo();
+				},
+				error: function(data, textStatus, xhr) {
+					viewRef.showAlert(data.responseText, 'alert-error');
 					model.getInfo();
 				}
 			});
+		},
+		
+		showAlert: function(msg, clazz) {
+			var classes = 'alert-success';
+			if (clazz) {
+				classes = clazz;
+			}
+			
+			this.$el.prepend(
+					this.alertTemplate({
+						msg: msg,
+						classes: classes
+					})
+			);
 		},
 		
 		mapRequest: function() {
@@ -401,6 +420,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				
 			var mapUrl = appModel.get("accountsUrl") + "pendingmap";
 				
+			var viewRef = this;
+			
 			// ajax call to map
 			$.ajax({
 				type: "POST",
@@ -415,8 +436,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 					subject: equivalentIdentity
 				},
 				success: function(data, textStatus, xhr) {
-					// TODO: render alert in DOM
-					alert("Added mapping request for " + equivalentIdentity);
+					viewRef.showAlert("Added mapping request for " + equivalentIdentity);
+					model.getInfo();
+				},
+				error: function(data, textStatus, xhr) {
+					viewRef.showAlert(data.responseText, 'alert-error');
 					model.getInfo();
 				}
 			});
@@ -430,6 +454,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
 			
 			var mapUrl = appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(equivalentIdentity);	
+			
+			var viewRef = this;
+			
 			// ajax call to confirm map
 			$.ajax({
 				type: "PUT",
@@ -441,8 +468,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			    },
 				url: mapUrl,
 				success: function(data, textStatus, xhr) {
-					// TODO: render alert in DOM
-					alert("Confirmed mapping request for " + equivalentIdentity);
+					viewRef.showAlert("Confirmed mapping request for " + equivalentIdentity);
+					model.getInfo();
+				},
+				error: function(data, textStatus, xhr) {
+					viewRef.showAlert(data.responseText, 'alert-error');
 					model.getInfo();
 				}
 			});
@@ -455,7 +485,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			e.preventDefault();
 			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
 			
-			var mapUrl = appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(equivalentIdentity);	
+			var mapUrl = appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(equivalentIdentity);
+			
+			var viewRef = this;
+			
 			// ajax call to reject map
 			$.ajax({
 				type: "DELETE",
@@ -467,8 +500,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			    },
 				url: mapUrl,
 				success: function(data, textStatus, xhr) {
-					// TODO: render alert in DOM
-					alert("Removed mapping request for " + equivalentIdentity);
+					viewRef.showAlert("Removed mapping request for " + equivalentIdentity);
+					model.getInfo();
+				},
+				error: function(data, textStatus, xhr) {
+					viewRef.showAlert(data.responseText, 'alert-error');
 					model.getInfo();
 				}
 			});
@@ -482,6 +518,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
 			
 			var mapUrl = appModel.get("accountsUrl") + "map/" + encodeURIComponent(equivalentIdentity);	
+			
+			var viewRef = this;
+			
 			// ajax call to remove mapping
 			$.ajax({
 				type: "DELETE",
@@ -493,8 +532,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			    },
 				url: mapUrl,
 				success: function(data, textStatus, xhr) {
-					// TODO: render alert in DOM
-					alert("Removed mapping for " + equivalentIdentity);
+					viewRef.showAlert("Removed mapping for " + equivalentIdentity);
+					model.getInfo();
+				},
+				error: function(data, textStatus, xhr) {
+					viewRef.showAlert(data.responseText, 'alert-error');
 					model.getInfo();
 				}
 			});
