@@ -1710,6 +1710,10 @@ svg .domain{
 		padding: 20px 0px;
 		width: 90%;
 	}
+	.metadata-index .title{
+		font-size: 1em;
+		font-weight: normal;
+	}
 	.metadata-index .text,
 	.metadata-index .attribute,
 	.metadata-index .attributeName,
@@ -1738,7 +1742,8 @@ svg .domain{
 	.metadata-index .replicationAllowed,
 	.metadata-index .dateModified,
 	.metadata-index .updateDate,
-	.metadata-index .authoritativeMN{
+	.metadata-index .authoritativeMN,
+	.metadata-index .geohash_1, .metadata-index .geohash_2, .metadata-index .geohash_3, .metadata-index .geohash_4, .metadata-index .geohash_5, .metadata-index .geohash_6, .metadata-index .geohash_7, .metadata-index .geohash_8, .metadata-index .geohash_9{
 		display: none;
 	}
 	

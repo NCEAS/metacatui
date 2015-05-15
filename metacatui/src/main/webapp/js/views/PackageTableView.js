@@ -69,7 +69,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/downloadContents.htm
 					entityName = member.entityName;
 				
 				//Use the metadata title instead of the ID
-				if(formatType == "METADATA") entityName = "Metadata: " + member.title;
+				if((typeof member.title === "undefined") && (formatType == "METADATA")) entityName = "Metadata";
+				else if(formatType == "METADATA")                                       entityName = "Metadata: " + member.title;
 
 				//Display the id in the table if not name is present
 				if((typeof entityName === "undefined") || !entityName) entityName = id;
