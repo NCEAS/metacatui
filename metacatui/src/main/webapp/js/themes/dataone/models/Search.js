@@ -119,7 +119,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			this.set("geohashes",    this.defaults().geohashes);
 			this.set("geohashLevel", this.defaults().geohashLevel);
 		},
-		
 		/*
 		 * Builds the query string to send to the query engine. Goes over each filter specified in this model and adds to the query string.
 		 * Some filters have special rules on how to format the query, which are built first, then the remaining filters are tacked on to the
@@ -148,10 +147,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//---Taxon---
 			if(this.filterIsAvailable("taxon") && ((filter == "taxon") || getAll)){
 				var taxon = this.get('taxon');
-				var thisTaxon = null;
 				for (var i=0; i < taxon.length; i++){
+					var thisTaxon = taxon[i];
+					
 					//Trim the spaces off
-					thisTaxon = taxon[i].trim();
+					if(typeof thisTaxon == "object")
+						thisTaxon = thisTaxon.value.trim();
+					else
+						thisTaxon = thisTaxon.trim();
 					
 					if(this.needsQuotes(thisTaxon)) value = "%22" + encodeURIComponent(thisTaxon) + "%22";
 					else value = encodeURIComponent(thisTaxon);
@@ -203,20 +206,21 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			
 			//-----Geohashes-----
-			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll) && (this.get('north') != null))){
+			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll))){
 				var geohashes = this.get("geohashes");
 				
-				if((typeof geohashes === undefined) || (geohashes.length == 0)) return "";
+				if ((typeof geohashes != undefined) && (geohashes.length > 0)){ 
 				
-				var query = "+geohash_" + this.get("geohashLevel") + ":(";
-				
-				_.each(geohashes, function(geohash, key, list){
-					query += geohash + "%20OR%20";
-				});
-				
-				//Remove the last "OR"
-				query = query.substr(0, (query.length-8));
-				query += ")";
+					var query = "+geohash_" + this.get("geohashLevel") + ":(";
+					
+					_.each(geohashes, function(geohash, key, list){
+						if(query.length < 1900)query += geohash + "%20OR%20";
+					});
+					
+					//Remove the last "OR"
+					query = query.substr(0, (query.length-8));
+					query += ")";
+				}
 			}
 			
 			//-----Excluded fields-----
@@ -233,8 +237,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				for (var i=0; i < additionalCriteria.length; i++){
 					var value;
 					
-					if(this.needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
-					else value = encodeURIComponent(additionalCriteria[i]);
+					//if(this.needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
+					value = encodeURIComponent(additionalCriteria[i]);
 					
 					query += "+" + value;
 				}
@@ -256,30 +260,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				}
 			}
 			
-			//----- Member Nodes - Multiple selections will look for either (OR) -----
-			if(this.filterIsAvailable("memberNode") && ((filter == "memberNode") || getAll)){
-				var memberNode = this.get('memberNode'),
-					fieldName = this.fieldNameMap["memberNode"];
-				
-				for (var i=0; i < memberNode.length; i++){
-					var filterValue = memberNode[i];
-					
-					if(typeof filterValue == "object")
-						filterValue = filterValue.value;
-					
-					filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
-					
-					if(i==0 && memberNode.length==1)
-						query += "+" + fieldName + ":" + filterValue;
-					else if(i==0)
-						query += "+" + fieldName + ":(" + filterValue + "%20OR%20";
-					else if(i == memberNode.length-1)
-						query += filterValue + ")";					
-					else
-						query += filterValue + "%20OR%20";
-				}				
-			}
-			
 			//-----Theme restrictions from Registry Model-----
 			if((filter == "registryCriteria") || getAll){
 				var registryCriteria = registryModel.get('searchFields');
@@ -288,24 +268,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 			}
 			
-			//-----Username - used on User Profile -----
-			if(this.filterIsAvailable("username") && ((filter == "username") || getAll)){
-				var usernames = this.get('username');
-				//Get the field names for submitter and rightsHolder
-				var submitter    = this.fieldNameMap["submitter"],
-					rightsHolder = this.fieldNameMap["rightsHolder"];
-				
-				for (var i=0; i < usernames.length; i++){
-					var value;
-					
-					if(this.needsQuotes(usernames[i])) value = "%22" + encodeURIComponent(usernames[i]) + "%22";
-					else value = encodeURIComponent(usernames[i]);
-					
-					query += "+(" + submitter + ":" + value + "%20OR%20" + rightsHolder + ":" + value + ")"; 
-				}
-			}
-
-			//----- All Other Filters -----
 			var model = this;
 			
 			_.each(otherFilters, function(filterName, key, list){
@@ -357,6 +319,28 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			return facetQuery;
 		},
 		
+		//Check for spaces in a string - we'll use this to url encode the query
+		needsQuotes: function(entry){
+				
+			//Check for spaces
+			var space = null;
+			
+			space = entry.indexOf(" ");
+			
+			if(space >= 0){
+				return true;
+			}
+			
+			//Check for the colon : character
+			var colon = null;
+			colon = entry.indexOf(":");
+			if(colon >= 0){
+				return true;
+			}
+			
+			return false;
+		},
+		
 		/*
 		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
 		 * Example:  title:(resistance OR salmon OR "pink salmon")
@@ -405,31 +389,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			return provFl;
 		},
 		
-		//Check for spaces in a string - we'll use this to url encode the query
-		needsQuotes: function(entry){
-				
-			//Check for spaces
-			var space = null;
-			
-			space = entry.indexOf(" ");
-			
-			if(space >= 0){
-				return true;
-			}
-			
-			//Check for the colon : character
-			var colon = null;
-			colon = entry.indexOf(":");
-			if(colon >= 0){
-				return true;
-			}
-			
-			return false;
-		},
-		
 		clear: function() {
 		    return this.set(_.clone(this.defaults()));
-		  }
+		}
 		
 	});
 	return Search;
