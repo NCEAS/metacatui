@@ -21,7 +21,7 @@ function loadTheme(theme) {
     document.getElementsByTagName("body")[0].appendChild(script);
 }
 function loadIcons(theme) {
-	var url = "./js/themes/" + theme + "/img/favicon-32.png?v=" + window.metacatUIVersion;
+	var url = "./js/themes/" + theme + "/img/favicon.ico?v=" + window.metacatUIVersion;
     var link = document.createElement("link");
     link.type = "image/png";
     link.rel = "shortcut icon";
