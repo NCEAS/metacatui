@@ -1492,13 +1492,9 @@ table th.btn-container .btn{
 
    
    /*-- Results rows --*/
-    
-    #results.loading *{
-    	color: #CCCCCC;
-    	background-color: #DDDDDD;
-    	border: 0px;
-    }
-    
+   #results.loading > .notification{
+   	min-height: 500px;
+   }
     .result-row {
 	      display: block;
 	      padding: 13px;

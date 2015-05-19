@@ -81,7 +81,7 @@ h3{
 }
 
 /****************************************** 
-** Result Rows ***
+** Results and Result Rows ***
 ******************************************/
 
 .result-row .route-to-metadata{
@@ -89,6 +89,9 @@ h3{
 }
 .result-row .icons .icon-info-sign{
 	font-size: 1.2em;
+}
+#results.loading .notification{
+  margin-top: 20px;
 }
 
 /****************************************** 

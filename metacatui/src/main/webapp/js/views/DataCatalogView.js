@@ -2365,6 +2365,8 @@ define(['jquery',
 		loading: function () {
 			$("#map-container").addClass("loading");
 			this.$results.addClass("loading");
+			
+			this.$results.html(this.loadingTemplate());
 		},
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 
