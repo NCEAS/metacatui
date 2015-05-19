@@ -1410,6 +1410,7 @@ svg .point:hover ~ .line-chart-label{
 	}
 	
     h3.nav-header{
+    	text-align: left;
     	color: #777777;
     	padding: 0px;
     }
@@ -1423,7 +1424,7 @@ svg .point:hover ~ .line-chart-label{
     	height: 20px;
     }
     
-    .nav-header > i{
+    .nav-header > .icon{
     	margin-right: 5px;
     	font-size: 16px;
     }
@@ -1544,29 +1545,16 @@ svg .point:hover ~ .line-chart-label{
     }
     
     /*-- Results List Icons --*/
-    
-    .info-icons{
-    	max-width: 14%;
-    }
-    
-    .info-icons > div:first-child{
-    	max-width: 45px;
-    }
-    
+    .info-icons > .icons {
+  		float: left;
+	}
+	 .info-icons > .icons > .icon{
+	 	color: #888;
+	 }
     .info-icons .more-info{
     	cursor: help;
     }   
-    
-    .info-icons .show-abstract > i{
-    	font-size: 19px;
-    	margin-left: -2px;
-    	margin-top: -1px;
-    }
-    
-    .info-icons .show-abstract > i.show-abstract{
-    	color: #999999;
-    }
-    
+
     .info-icons .on-map > i{
     	font-size: 19px;
     	visibility: hidden;
@@ -1580,8 +1568,7 @@ svg .point:hover ~ .line-chart-label{
     
     
     i.inactive{
-    	color: #EEE;
-    	cursor: default;
+    	visibility: hidden;
     }
     
     .popover{
@@ -1630,57 +1617,11 @@ svg .point:hover ~ .line-chart-label{
 	/** Download button **/   
 
     
-    a.download{
-    	width: 77%;
-    	min-width: 56px;
-    	max-width: 79px;
-    	display:inline-block;
-		color: #888888;
-		padding-right: 5px;
-		padding-left: 5px;
-		margin-left: -6px;
-		transition: all 0.3s;
-		-webkit-transition: all 0.3s;
-    }
-
-    
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
     	font-size: 12px;
     	float: left;
     } 
-    
-    
-    .result-row:hover a.download{
-    background-image: none;
-    color: #555555;
-	padding: 4px 4px;
-	margin-bottom: 0;
-	width: 100%;
-	font-size: 14px;
-	line-height: 20px;
-	text-align: center;
-	text-shadow: 0 1px 1px rgba(255,255,255,0.75);
-	vertical-align: middle;
-	cursor: pointer;
-	background-color: #f5f5f5;
-	background-repeat: repeat-x;
-	border: 1px solid #ccc;
-	border-color: #e6e6e6 #e6e6e6 #bfbfbf;
-	border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
-	border-bottom-color: #b3b3b3;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff',endColorstr='#ffe6e6e6',GradientType=0);
-	filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
-	-webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-	-moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-	box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
-	-webkit-transition: all 0.3s;
-	transition: all 0.3s;
-    }
-    
     .result-row a.download:hover{
     	background-color: #e6e6e6;
     }

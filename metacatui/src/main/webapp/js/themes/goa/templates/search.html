@@ -1,37 +1,38 @@
 
-<article id="mainBody" class="container center">
+<article id="mainBody" class="container">
 	<section class="container-fluid">
 		<div class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span4 well">
 			<div class="row-fluid">
 				<a id="sidebar_share" class="btn btn-primary span10 offset1" href="#share">
-	        		<i class="icon-upload icon-white icon-large"></i>  Share Your Data
+	        		<i class="icon icon-upload icon-white icon-large"></i>  Share Your Data
 	      		</a>
       		</div>
       		<div class="clear"></div>
     	    <div class="filter-contain row-fluid">
     	    	<div class="row-fluid">
 		    		<h2 class="nav-header span4">Filters</h2>
-		    		<a class="span7" id="clear-all">Clear all <i class="icon-remove"></i></a>
+		    		<a class="span7" id="clear-all">Clear all <i class="icon-remove icon"></i></a>
 				</div>
 				<div class="input-append filter-contain">
 					<input class="span10 filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
-					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
+					<button class="filter btn" id="all_btn" data-category="all"><i class="icon icon-search"></i></button>
 			    	<ul id="current-all-filters" class="current-filters" data-category="all">
 			    	</ul>
 			    </div>
 			    
 			    <div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-table"></i><label>Data Attributes</label></h3>
+					<h3 class="nav-header"><i class="icon icon-table"></i><label>Data Attributes</label></h3>
 					<input class="span10 filter" type="text" placeholder="Variable or column name" id="attribute_input" data-category="attribute">
-					<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
+					<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon icon-search"></i></button>
 			    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
 			    	</ul>
 			    </div>
 				
 				<div class="filter-contain">
-					<h3 class="nav-header"><i class="icon-folder-open"></i>
+					<h3 class="nav-header">
+						<img src="img/data-table.png" class="icon" />
 						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
 						<label for="includes_data" class="popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top">
 						Only results with data
@@ -40,16 +41,16 @@
 				</div>
 				
 				<div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-user"></i><label>Created by</label></h3>
+					<h3 class="nav-header"><i class="icon icon-user"></i><label>Created by</label></h3>
 					<input class="span10 filter" type="text" placeholder="First or last name" id="creator_input" data-category="creator">
-					<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
+					<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon icon-search"></i></button>
 			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
 			    	</ul>
 			    </div>
 	
 				
 				<div id="filter-year" class="filter-contain" data-category="year">
-					<h3 class="nav-header"><i class="icon-calendar"></i><label>Year</label></h3>
+					<h3 class="nav-header"><i class="icon icon-calendar"></i><label>Year</label></h3>
 					<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
 					<label class="span11 left year-tooltip popover-this" for="data_year" id="data-year-label" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="right">Data covers</label>					
 					<div class="clear"></div>
@@ -64,25 +65,25 @@
 				</div>
 				
 				<div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-bullseye"></i><label>Identifier</label></h3>
+					<h3 class="nav-header"><i class="icon icon-bullseye"></i><label>Identifier</label></h3>
 					<input class="span10 filter" type="text" placeholder="Identifier" id="id_input" data-category="id">
-					<button class="filter btn" id="id_btn" data-category="id"><i class="icon-search"></i></button>
+					<button class="filter btn" id="id_btn" data-category="id"><i class="icon icon-search"></i></button>
 					<ul id="current-id-filters" class="current-filters" data-category="id">
 					</ul>
 				</div>
 				
 				<div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-sitemap"></i><label>Taxon</label></h3>
+					<h3 class="nav-header"><i class="icon icon-sitemap"></i><label>Taxon</label></h3>
 					<input class="span10 filter" type="text" placeholder="Phylum, class, order..." id="taxon_input" data-category="taxon">
-					<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
+					<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon icon-search"></i></button>
 					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
 					</ul>
 				</div>
 				
 				<div class="input-append filter-contain">
-					<h3 class="nav-header"><i class="icon-map-marker span1"></i><label>Location</label></h3>
+					<h3 class="nav-header"><i class="icon icon-map-marker span1"></i><label>Location</label></h3>
 					<input class="filter" type="text" placeholder="Location" id="spatial_input" data-category="spatial">
-					<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
+					<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon icon-search"></i></button>
 					<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
 					</ul>
 				</div>
@@ -91,7 +92,7 @@
 			<ul class="category-nav nav-list nav">
 				<li><h2 class="nav-header span12">Data Categories</h2><div class="clear"></div></li>
 			<% if(username){
-	    		print('<li class="nav-item my-packages" data-category="additionalCriteria" data-term="rightsHolder:'+ username +'"><i class="icon-remove span1 remove-addtl-criteria"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="+rightsHolder:'+ username +'">My packages</a><div class="clear"></div></li>');
+	    		print('<li class="nav-item my-packages" data-category="additionalCriteria" data-term="rightsHolder:'+ username +'"><i class="icon icon-remove span1 remove-addtl-criteria"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="+rightsHolder:'+ username +'">My packages</a><div class="clear"></div></li>');
 	    		}
 	    	%>
 			<%
@@ -119,7 +120,7 @@
 				];
 				
 				_.each(keywords, function(element, index){
-					print('<li class="nav-item" data-category="additionalCriteria" data-term="' + keywords[index].link + '"><i class="icon-remove span1 remove-addtl-criteria" data-category="additionalCriteria" data-term="' + keywords[index].link + '"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="' + keywords[index].link + '">' + keywords[index].display + '</a><div class="clear"></div></li>');
+					print('<li class="nav-item" data-category="additionalCriteria" data-term="' + keywords[index].link + '"><i class="icon icon-remove span1 remove-addtl-criteria" data-category="additionalCriteria" data-term="' + keywords[index].link + '"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="' + keywords[index].link + '">' + keywords[index].display + '</a><div class="clear"></div></li>');
 				});
 			%>
 			</ul>
@@ -149,7 +150,7 @@
 					<div class="result-header-menu span1">
 						<div class="dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
-								class="icon-cog"></i> <b class="caret"></b></a>
+								class="icon icon-cog"></i> <b class="caret"></b></a>
 							<ul class="dropdown-menu">
 								<li><a href="#">Settings...</a></li>
 							</ul>

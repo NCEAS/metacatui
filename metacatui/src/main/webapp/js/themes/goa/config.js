@@ -11,7 +11,7 @@ var themeMap =
 		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
 		'templates/alert.html' : 'themes/' + theme + '/templates/alert.html',
-		'routers/router' : 'themes/' + theme + '/routers/router',
-		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html'
+		'routers/router' : 'themes/' + theme + '/routers/router'
+		//'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html'
 		}
 };

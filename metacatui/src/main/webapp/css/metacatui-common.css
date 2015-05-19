@@ -79,6 +79,10 @@ h3{
 .icon-on-left{
 	margin-right: 5px;
 }
+.filter-contain img.icon{
+	float: left;
+	height: 20px;
+}
 
 /****************************************** 
 ** Results and Result Rows ***
