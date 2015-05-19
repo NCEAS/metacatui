@@ -1493,7 +1493,7 @@ define(['jquery',
 			
 			//Loop through each and remove the filters from the model
 			for(var i = 0; i < categories.length; i++){
-				searchModel.set(categories[i], null);				
+				this.searchModel.set(categories[i], null);				
 			}
 			
 			//Reset the map settings
