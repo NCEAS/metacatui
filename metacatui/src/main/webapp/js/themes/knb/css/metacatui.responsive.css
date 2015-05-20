@@ -4,7 +4,7 @@ and (min-width : 768px){
       position: fixed;
       top: 0px;
       left: 50%;
-      margin: 0px 0px 0px -480px;
+      margin: 0px 0px 0px -380px;
       z-index: 200;
       float: none;      
     }

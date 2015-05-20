@@ -9,31 +9,8 @@
 %>     
 <div class="citation">
 </div>
-      
-<div class="stats">
-	<% 
-	
-	if (typeof read_count_i !== "undefined"){
-		print('<span class="count">', commaSeparateNumber(read_count_i), '</span><label class="subtle">views</label>');
-	}
-	%>
-</div>
 <div class="clear"></div>
-<div class="info-icons  stop-route">   
-    <% if(typeof abstract != "undefined"){  %>
-		<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract"></i></div>
-	<% } %>    		      
-    <div class="resource-map icons stop-route">             
-           <%
-           if (resourceMap) {
-				print('<i class="icon-folder-open tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
-			}
-			else{
-				print('<i class="icon-folder-open inactive stop-route"></i>');
-			}
-            %>
-          
-    </div>
+<div class="info-icons  stop-route"> 
     <div class="icons stop-route download">             
            <%
            if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
@@ -53,11 +30,33 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route btn" title="Download" href="', package_service, URLid, '"><i class="icon-cloud-download"></i>Download</a>');
+				print('<a class="download stop-route btn" title="Download" href="', package_service, URLid, '">Download<i class="icon-cloud-download"></i></a>');
 			}			
           	%>
           
-      	</div>
+      </div>  
+	<div class="stats icons">
+		<% 
+		
+		if (typeof read_count_i !== "undefined"){
+			print('<span class="count">', commaSeparateNumber(read_count_i), '</span><label class="subtle">views</label>');
+		}
+		%>
+	</div>
+    <% if(typeof abstract != "undefined"){  %>
+		<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract"></i></div>
+	<% } %>    		      
+    <div class="resource-map icons stop-route">             
+           <%
+           if (resourceMap) {
+				print('<i class="icon-folder-open tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
+			}
+			else{
+				print('<i class="icon-folder-open inactive stop-route"></i>');
+			}
+            %>
+          
+    </div>
       	<% if(hasProv){
       			print('<div class="icons provenance active stop-route">');
       			print('<i class="icon-code-fork active stop-route"></i>');

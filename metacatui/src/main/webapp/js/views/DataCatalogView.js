@@ -209,13 +209,13 @@ define(['jquery',
 			}
 			
 			//Get the heights of the header, navbar, and footer
-			var navbarHeight = ($("#Navbar").length > 0) ? $("#Navbar").outerHeight(true) : 0;
-			var headerHeight = ($("#Header").length > 0) ? $("#Header").outerHeight(true) : 0;
-			var footerHeight = ($("#Footer").length > 0) ? $("#Footer").outerHeight(true) : 0;
-			var totalHeight = navbarHeight + headerHeight + footerHeight;
+			var otherHeight = 0;
+			$(".auto-height-member").each(function(i, el){
+				otherHeight += $(el).outerHeight(true);
+			});
 			
 			//Get the remaining height left based on the window size
-			var remainingHeight = $(window).outerHeight(true) - totalHeight;
+			var remainingHeight = $(window).outerHeight(true) - otherHeight;
 			
 			//Adjust all elements with the .auto-height class
 			$(".auto-height").height(remainingHeight);

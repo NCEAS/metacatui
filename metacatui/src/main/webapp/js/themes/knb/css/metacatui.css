@@ -29,10 +29,7 @@ Bold 700 Italic
       font-size: 14px;
       line-height: 20px;
     }
-    
-    body.mapMode{
-    	position: fixed;
-    }
+
 
     body p {
       font-weight: 400;
@@ -52,13 +49,16 @@ Bold 700 Italic
     body > #Content {
     	max-width: 100%;
     	width: 100%;
-    	margin-top: 100px;
+    	margin-top: 95px;
     }
 		
     body > section > article {
       min-height: 800px;
       margin: auto;
       padding-bottom: 40px;  			
+    }
+    .mapMode > section > article{
+    	padding-bottom: 0px;
     }
     
     a {
@@ -219,18 +219,10 @@ Bold 700 Italic
 /* HEADER CSS
 -------------------------------------------------- */    
   
-  .mapModw #Header{
-  		z-index: 0;
-  }
   
   #Header > img{
   	-webkit-transition: all 2s;
   	transition: all 2s;
-  }
-  
-  .mapMode #Header > img {
-	opacity: 0;
-	height: 0px;
   }
   
   header#altHeader {
@@ -279,9 +271,7 @@ Bold 700 Italic
     
     .mapMode #Footer h3,
     .mapMode #Footer h3 > span{
-    	font-size: 16px;
     	margin-top: 2px;
-    	transition-delay: .6s;
     }
     
     .mapMode #Footer:hover{
@@ -291,8 +281,8 @@ Bold 700 Italic
     
     .mapMode #Footer:hover h3,
     .mapMode #Footer:hover h3 > span{
-    	font-size: 19px;
-    	line-height: 19px;
+    	font-size: 1em;
+    	line-height: 1em;
     }
     
     footer#Footer {
@@ -310,9 +300,10 @@ Bold 700 Italic
     	position: fixed;
     	bottom: 0;
     	background-color: #3F3F3F;
-    	height: 22px;
-    	transition: all 1s ease-out;
-    	-webkit-transition: all 1s ease-out;
+    	color: #FFF;
+    	height: 1.2em;
+    	transition: min-height 1s ease-out;
+    	-webkit-transition: min-height 1s ease-out;
     	transition-delay: .5s;
     	-webkit-transition-delay: .5s;
     	z-index: 10;
@@ -333,8 +324,8 @@ Bold 700 Italic
     }
         
     footer#Footer h3 {
-      font-size: 19px;
-      line-height: 19px;
+      font-size: 1em;
+      line-height: 1em;
       font-weight: bold; 
       text-align: center;
       padding: 0px 0px 20px 0px;
@@ -344,7 +335,7 @@ Bold 700 Italic
     }
 
     footer#Footer h3 > span {
-      font: 400 20px/22px "Gentium Book Basic";
+      font: 400 1em/1em "Gentium Book Basic";
       font-style: italic;
     }
     
@@ -534,9 +525,8 @@ Bold 700 Italic
 	transition: all 1s;
 	display: none;
 	height: 100%;
-	width: 100%;
-	position: fixed;
-	top: 0px;
+	width: calc(100% - 220px - 400px);
+	position: relative;
 }
 
 #map-container.loading {
@@ -558,6 +548,8 @@ Bold 700 Italic
 	-webkit-box-shadow: 4px 2px 5px rgba(50, 50, 50, 0.4);
 	-moz-box-shadow:    4px 2px 5px rgba(50, 50, 50, 0.4);
 	box-shadow:         4px 2px 5px rgba(50, 50, 50, 0.4);
+	  width: auto;
+  display: inline-block;
 }
 
 #toggle-map{
@@ -621,12 +613,26 @@ Bold 700 Italic
 -------------------------------------------------- */
 #mainBody {
 	min-height: 800px;
-	margin-top: 150px;
-	padding-left: 50px;
+	margin-top: 0px;
+	padding-left: 10px;
 }
 
-.mapMode #mainBody{
-	margin-top: 0px;
+/* MAPS 
+--------------------------------- */
+
+#map-container{
+	height: 500px;
+	width: 400px;
+	width: calc(100% - 220px - 400px);	
+	float: left;
+}
+#map-canvas{
+	height: 100%;
+	width: 100%;
+}
+.gmaps-infowindow{
+	max-height: 400px;
+	overflow-y:scroll;	
 }
 
 /* Fixes Infowindow popup problem - interaction with bootstrap? */
@@ -634,44 +640,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     max-width: 99999px;
 }
 
-.gmaps-infowindow{
-	max-height: 400px;
-	overflow-y:scroll;
-}
-
-#content {
-	position: relative;
-	right: 0;
-	bottom: 30px;
-	background-color: #FFF;
-	height: auto;
-	max-width: 70%;
-	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
-	box-shadow: none;
-	-webkit-border-radius: 3px 0px 0px 0px;
-	-moz-border-radius: 3px 0px 0px 0px;
-	border-radius: 3px 0px 0px 0px;
-}
-
-.mapMode #content.collapsed{
-	height: 105px;
-}
 
 
-.mapMode #content{
-	margin-top: 0px;	
-	width: 45%;
-	max-height: 80%;	
-	position: fixed;
-	background-color: transparent;
-	overflow-y:scroll;
-	overflow-x: visible;
--webkit-box-shadow: -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
--moz-box-shadow:    -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
-box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
+#edit-map{
+	font-size: 14px;
+	line-height: 17px;
+	color: #1C6E84;
+	border-bottom: 1px dotted #1C6E84;
+	position: absolute;
+	top: 25px;
+	left: 160px;
 }
-    
 /* FEATURES CSS 
 -------------------------------------------------- */    
     
@@ -882,7 +861,10 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
     
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
-    
+
+    .mapMode #Header{
+    	position: relative;
+    }
     .center {
       float: none;
       margin: 0 auto;
@@ -904,6 +886,7 @@ box-shadow:         -2px 0px 10px 0px rgba(50, 50, 50, 0.55);
       position: relative;
       border: none;   
       margin-top: 20px;
+      margin-bottom: 15px;
     }
 
     .navbar-inner {
@@ -1690,121 +1673,26 @@ svg .domain{
   /* SIDEBAR CSS
   -------------------------------------------------- */
 	#sidebar {
-    	position: relative;
-    	bottom: 30px;
-		
-		width: 20%;
-		
-		padding: 0px;
-		margin-top: -10px;
-		
-		overflow-y: visible;	
-		overflow-x: visible;			
-		
-		background-color: #FFFFFF; 
-		
-		border-radius: 0px 4px 0px 0px;
-		-moz-border-radius: 0px 4px 0px 0px;
-		-webkit-border-radius: 0px 4px 0px 0px;
-		
-        -webkit-box-shadow: none;
-    	-moz-box-shadow: none;
-    	box-shadow: none;
-    	
-    } 
+  width: 225px;
+  padding: 0px 20px 0px 10px;
+  height: auto;
+  overflow-y: visible;
+  overflow-x: visible;
+  float: left;
+  clear: left;
+}
+
     
     .mapMode #sidebar.collapsed{
     	height: 40px;
     }
-    
-    .mapMode #sidebar{
-    	position: fixed;
-    	bottom: 30px;
-		left: 0px;
-		min-width: 270px;
-		max-width: 330px;
-    	
-    	webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  	-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  	box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  
-	    max-height: 70%;
-	    overflow-y: scroll;	
-		overflow-x: hidden;
-    }
-    
-    .minimize > i{
-        color: #888888;
-    	font-size: 20px;
-    	margin-top: 5px;
-    	display: none;
-    }
-    
-    .minimize > i.icon-check-minus{
-    	font-size: 17px;
-    }
-    
-    .mapMode .minimize > i{
-    	display: block;
-    	float: right;
-    }
-    
-    #sidebar .minimize > i{
-    	float: right;
-    	margin-right: 10px;
-    }
-    
-    #content div.minimize{
-    	position: absolute;
-    	right: 25px;
-    }
-    
-    .mapMode #sidebar.collapsed .minimize > i.minimize,
-    .mapMode #sidebar .minimize > i.maximize,
-    .mapMode #content.collapsed .minimize > i.minimize,
-    .mapMode #content .minimize > i.maximize{
-    	display: none;
-    }
-    
-     .mapMode #sidebar.collapsed .minimize > i.maximize,
-     .mapMode #sidebar .minimize > i.minimize,
-     .mapMode #content.collapsed .minimize > i.maximize,
-     .mapMode #content .minimize > i.minimize{
-    	display: block;
-    }
-
-    
-    /** Share Your Data button **/
-    #share-data-view{
-		position: fixed;
-		width: auto;
-		height: 20px;
-		left: -195px;
-		top: 100px;
-		margin-left: 0px;
-		font-size: 20px;
-		text-transform: uppercase;
-		text-shadow: none;
-		margin: 0px;
-		padding: 6px;
-		transition: .5s ease-out;
-		-webkit-transition: .5s ease-out;
-		cursor: pointer;
-		z-index: 999;
-		-webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-		-moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-		box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-		background-image: none;
-	}
-	
-	.mapMode #share-data-view{
-		top: 84px;
-	}
-
-
-	#share-data-view:hover{
-		left: -2px;
-	}
+    .mapMode #sidebar {
+	  padding-right: 10px;
+	  width: 200px;
+	  height: 700px;
+	  overflow-x: hidden;
+	  overflow-y: scroll;
+    }   
     
     
     /** Filter containers **/
@@ -1819,6 +1707,13 @@ svg .domain{
     .filter-contain .filter-contain{
    	  margin-top: 0px;  	  
    }
+   .filter-input-contain > label{
+   	float: left;
+   }
+   .filter-contain > label{
+   	font-size: .9em;
+   	font-weight: bold;
+   }
    
       
    aside > div{
@@ -1830,11 +1725,14 @@ svg .domain{
 	
 	
 	/** Filter icons **/
-   .filter-contain > i{
-		color: #AAA;
-		font-size: 20px;
-		margin-top: 5px;
-   }
+   .filter-contain > .icon,
+   .filter-input-contain > .icon {
+	  color: #888;
+	  font-size: 17px;
+	  float: left;
+	  margin: 0px;
+	  margin-right: 5px;
+	}
    
    #filter-year > i,
    #includes-files > i{
@@ -1888,11 +1786,7 @@ svg .domain{
     	border: 1px solid #AAAAAA;
     	border-right: 0px;
     	height: 20px;
-    	width: 84%;
-    }
-    
-    #all_input{
-    	width: 85%;
+    	width: 75%;
     }
     
     /* Filter checkboxes */
@@ -1993,6 +1887,7 @@ svg .domain{
 		display: inline-block;
 		text-shadow: none;
 		float:left;
+		color: #FFF;
 	}
 	
 	.current-filters .current-filter{
@@ -2024,29 +1919,17 @@ svg .domain{
 	
 	 #includes-files label,
      #includes-files label.ui-state-active{
-    	margin-top: 0px;
-    	line-height: 21px;
-    	height: 21px;
-    	padding-left: 5px;
-    	margin: 0px;
-    	float: left;
-    }
+    	  float: left;
+		  margin-bottom: 8px;
+		  margin-right: 5px;
+	 }
     
     #filter-year label#data-year-label,
     #filter-year label#pub-year-label{
-    	margin: 0px 0px 5px 0px;
+    	margin: 0px 5px 5px 0px;
     }
     
     	/*-- The 'Year' filter elements --*/
-    #filter-year label{
-   		margin-bottom: 5px;
-   		margin-top: 0px; 
-   		line-height: 18px;
-   		min-height: 18px;
-   		padding: 0px 0px 0px 5px;
-   		width: auto;
-   		clear: both;
-    }
    
     #filter-year > input[type="number"]{
    		color: #115E95;
@@ -2257,214 +2140,143 @@ svg .domain{
 	}
 
 
-/* RESULT CSS
+/* RESULTS CSS
 -------------------------------------------------- */
- 	/*-- Result List Header --*/
- 	.result-header{
- 		position: relative;
- 		border-bottom: 1px dashed #CCC;
- 		padding-bottom: 5px;
- 	}
- 	
- 	.mapMode .result-header{
- 		position: relative;
- 		background-color: #FFFFFF;
- 		width: 100%;
- 	}
- 	
- 	.mapMode .result-header > .result-header-count{
- 		position: fixed;
- 		background-color: #FFFFFF;
- 		border-bottom: 3px solid #DDDDDD;
- 		margin-left: 0px;
- 		width: 44.6%;
- 		cursor: pointer;
- 		z-index: 1;
- 		border-radius: 4px 0px 0px 4px;
- 		-moz-border-radius: 4px 0px 0px 4px;
- 		-webkit-border-radius: 4px 0px 0px 4px;
- 	}
- 	
- 	.mapMode .collapsed .result-header > .result-header-count{
- 		padding-left: 10px;
- 	}
- 	
- 	.mapMode .result-header > i{
- 		background-color: #FFFFFF;
- 		color: #CCCCCC;
- 		border-radius: 4px 0px 0px 4px;
- 		box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
- 	}
- 	
- 	#countstats{
+	#results-container{
+		width: 75%;
+		width: calc(100% - 265px - 20px); /* 1 - sidebar width - this margin*/
+		overflow-y: visible;
+		overflow-x: visible;
+		height: auto;
+		float: left;
+		margin-left: 20px;
+	}	
+	.mapMode #results-container{
+		width: 400px;
+		overflow-x: hidden;
+		overflow-y: scroll;
+		height: 700px;
+		margin-left: 0px;
+	}
+	
+	#results{
 		margin-bottom: 10px;
-		text-transform: none;
-		color: #999999;
 	}
 	
-	.mapMode #countstats{
-		margin-top: 5px;
-		font-size: 18px;
-	}
-	
-	#countstats > span{
-		text-transform: none;
-		color: #555555;
-	}
-	
-	#countstats:after{
-		content: " data packages";
-	}
-	
-	#countstats:before{
+    /*-- Results header --*/
+    #results-view{
+    	background-color: #FFF;
+    	border-radius: 5px;
+    	-moz-border-radius: 5px;
+    	-webkit-border-radius: 5px;
+    }
+    
+    .result-header{
+    	height: auto;
+    }
+    
+	.result-header-count{
+		padding: 0px 10px;
+	}   
+    
+    h5.result-header-count{
+    	padding-left: 0px;
+    }
+    
+    .result-header-count > .result-header-count:after{
+    	content: " data packages";
+    }
+    
+    #countstats:before{
 		content: "Datasets ";
 	}
-
-	#statcounts{
-		min-width: 500px;
-	}
- 	.pagination {
-    	cursor: pointer;
-    	margin: 0px;
-    	clear:both;
-    }
     
-    .pagination ul>li>a{
-    	padding: 4px;
-    	line-height: 12px;
-    }
-    
-    #resultspager{
-    	font-size: 12px;
-    	margin-left: 15px;
-    	width: 100%;
-    }
-    
-    .pagination .sort-by{
-    	min-width: 160px;
-    	max-width: 180px;
-    	float: right;
-    	margin-right: 10px;
+    .map-pointer{
+    	display: none;
     }
 
-    .sort-by label{
- 		display: inline;
- 		float: left;
- 		margin-right: 5px;
- 		margin-bottom: 0px;
- 		color: #999;
- 		font-size: 12px;
- 	}
-	 	
- 	.sort-by select{
- 		width: auto;
- 		height: 27px;
- 		float: left;
- 		z-index: 1;
- 		font-size: 12px;
- 	}
- 	
- 	.pagination ul{
- 		float: left;
- 	}
- 	
-    .pagination ul > li > a.unactive{
-    	font-size: 20px;
-    	color: #999999;
-    	cursor: default;
-    	padding-left: 4px;
-    	padding-right: 4px;
-    }
-    
-    /*-- Results List Rows--*/
-    #results.loading *{
-    	color: #DDD;
-    	border: 0px;
-    }
-    
-    .mapMode .search-results{
-    	margin-top: 109px;
-    	width: 100%;
-    	float: right;
-    	background-color: #FFFFFF;
-    	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-    	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-    	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-    	overflow-y: visible;
-    	overflow-x: visible;
-    }
-    
-    .search-results > p{
-    	text-align: center;
-    	padding-top: 5px;
-    }
-    
-    .result-row {
-      display: block;
-        border-bottom: 1px dashed #ccc;
-        padding: 5px 1%;
-        width: 98%;
-    }
-    
-    .result-row .result-row{
-    	border-bottom: 0px;
-    }
-    
-     .result-row:hover { 
-    background-color: #eee;
-  }
-  
-  .result-row .open > .dropdown-menu{
-  	position: relative;
-  }
-  .result-title{
-    	font-weight: 600;
+   
+   /*-- Results rows --*/
+   #results.loading > .notification{
+   	min-height: 500px;
    }
-  .result-title > a{ 
-  	color: #006699;
-  }
-    
-    .result-row > .expand{
-    	color: #999999;
+    .result-row {
+	      display: block;
+	   	  padding: 10px 10px 0px 10px;
+	      width: 98%; /*fallback */
+	      width: calc(100% - 16px);
+	      cursor: pointer;
+	      transition: background-color .5s;
     }
     
-    .result-row .abstract p{
-    	font-size: 0.9em;
-    	line-height: 1.8em;
+    .result-row:nth-child(odd){
+    	background-color: #F4F6F8;
     }
+    .result-row:nth-child(odd) .multi-line-ellipsis:after{
+  		background: -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0)), to(#F5FAFB), color-stop(50%, #F5FAFB));
+  		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), #F5FAFB 50%, #F5FAFB);
+  		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), #F5FAFB 50%, #F5FAFB);
+  		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), #F5FAFB 50%, #F5FAFB);
+  		background: linear-gradient(to right, rgba(255, 255, 255, 0), #F5FAFB 50%, #F5FAFB);
+  	}
+    .result-row:nth-child(even){
+    	background-color: transparent;
+	}
+    
+    .result-row:hover { 
+    	background-color: #FFF8EB; 
+  	}
+
+    .result-title{
+    	font-weight: 600;
+    	color: #1C6E84;
+    }
+    .result-row .dropdown-menu{
+  		left: -320%;
+  	}
     
     /*-- Results List Icons --*/
-    .info-icons i.more-info{
-    	cursor: pointer;
-    }   
-
+    .info-icons{
+    	display: inline-block;
+    }
+    .info-icons .icons{
+    	float: left;
+    	margin-right: 1em;
+    }
     .info-icons .on-map > i{
     	font-size: 19px;
     }
-    
-    .info-icons .on-map > i.on-map{
-    	color: #00ADEF;
-    	cursor: default;
+    .info-icons i{
+    	cursor: pointer;
+    }
+    .info-icons i:hover{
+    	color: #660000;
     }
     .info-icons .on-map > i.on-map:nth-child(n+2){
     	margin-left: 3px;
     }
     
-	.info-icons .icons{
-    	float: left;
-    	margin-right: 1em;
-    }
-    
-    .resource-map.icons{
-    	color: #777;
-    }
-    
     .info-icons i.inactive{
     	visibility: hidden;
+    }
+    .info-icons .btn{
+    	color: #555;
+    }
+    
+    .result-row:hover .info-icons .inactive{
+    	color: rgba(178, 202, 221, 1);
     }
     
     .popover{
     	font-size: 13px;
+    }
+    
+    .popover-title {
+    	word-break: break-word;
+    }
+    
+    .popover-content {
+    	word-break: break-word;
     }
     
      .abstract-popover{
@@ -2475,54 +2287,73 @@ svg .domain{
     	word-break: keep-all;
     	text-overflow: ellipsis;
     }
-    
-    /** View count **/
+  	
+  	/** View count **/
     .result-row .stats .count{
     	font-size: 16px;
+    	text-align: center; 
+    	display: block;
     }
     
     .result-row .stats label{
     	font-size: 12px;
+    	text-align: center;
     }
-
+    
 	/** Download button **/   
 
-    
-    .result-row .download.btn{
-		color: #0066BB;
-		font-size: .9em;
-		line-height: 1em;
-		height: 1em;
-		border: 0px;
-		font-weight: normal;
-    }
-	.result-row .download.btn > i{
-		margin-right: 5px;
-		font-size: 1.1em;
-	}
     
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
     	font-size: 12px;
     	float: left;
     } 
+    
+    /*-- Pagination widget --*/
+	.pagination{
+		padding-left: 10px;
+		margin: 0px 0px 10px;
+	}
 
-	.result-row i.download{
-		font-size: 16px;
-		cursor: pointer;
+	.pagination ul{
+		border: none;
 		float: left;
-		transition: all 0.3s;
-		-webkit-transition: all 0.3s;
-		margin-right: 0px;
 	}
 	
-	.result-row .download label{
-		font-size: 12px;
-		line-height: 17px;
-		margin-left: -10px;
-		margin-bottom: 0px;
-		float: right;
-		display:inline;
+	.pagination ul > li{
+		cursor: pointer;
+	}
+	
+	.pagination ul > li > a.unactive,
+	.pagination ul > li > a.unactive:hover{
+    	font-size: 20px;
+    	color: #999999;
+    	background-color: transparent;
+    	cursor: default;
+    }
+	
+	.pagination ul > li > a:hover{
+		color: #FFF;
+		background-color: #1C6E84;
+	}
+	
+	
+	.pagination ul > .active > a,
+	.pagination ul > .active > a:hover{
+		color: #FFF;
+		background-color: #1C6E84;
+	}
+	
+	.sort-by label{
+		display: inline-block;
+		margin-right: 5px;
+		line-height: 30px;
+		font-size: 13px;
+	}
+	
+	.sort-by select{
+		font-size: 13px;
+		height: 28px;
 	}
 
 
