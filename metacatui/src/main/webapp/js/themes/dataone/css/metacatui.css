@@ -854,12 +854,22 @@ table th.btn-container .btn{
 	}
 	#gutter {
 		z-index: 500;
-		max-height: 78%;
+		max-height: 65%;
 		overflow-x: visible;
 		overflow-y: overlay; 
 	}
 	#gutter .hover-proxy {
 		width: 100px;
+	}
+	
+	/** sidr overrides **/
+	.sidr {
+		top: 35%;
+		width: 150px;
+		background: none;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+		
 	}
 	
     /**----------------------------------------**/
@@ -2543,12 +2553,4 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	display: none;
 }
 
-/** sidr overrides **/
-	.sidr {
-		top: 35%;
-		width: 150px;
-		background: none;
-		-webkit-box-shadow: none;
-		box-shadow: none;
-		
-	}
+
