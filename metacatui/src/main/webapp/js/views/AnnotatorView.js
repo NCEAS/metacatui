@@ -84,8 +84,8 @@ define(['jquery',
 
 			// use authentication plugin if configured
 			var authOptions = false;
-			//if (appModel.get('username')) {
-			if (appModel.get('tokenUrl')) {
+			if (appUserModel.get('token')) {
+			//if (appModel.get('tokenUrl')) {
 				// check if we are using our own token generator
 				var tokenUrl = appModel.get('tokenUrl');
 				authOptions = {
