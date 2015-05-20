@@ -10,6 +10,7 @@ var themeMap =
 		'templates/footer.html' 	 	: 'themes/' + theme + '/templates/footer.html',
 		'templates/loginHeader.html' 	: 'themes/' + theme + '/templates/loginHeader.html',
 		'templates/registryFields.html' : 'themes/' + theme + '/templates/registryFields.html',
+		'models/AppModel'	     	    : 'js/themes/' + theme + '/models/AppModel.js',
 		'models/RegistryModel'	     	: 'js/themes/' + theme + '/models/RegistryModel.js',
 		'routers/router' 			 	: 'js/themes/' + theme + '/routers/router.js'
 		}
