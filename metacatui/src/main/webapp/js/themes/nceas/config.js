@@ -10,6 +10,7 @@ var themeMap =
 		'templates/loginHeader.html' 	: 'themes/' + theme + '/templates/loginHeader.html',
 		'templates/registryFields.html' : 'themes/' + theme + '/templates/registryFields.html',
 		'models/RegistryModel'	     	: 'js/themes/' + theme + '/models/RegistryModel.js',
+		'models/AppModel'	     	    : 'js/themes/' + theme + '/models/AppModel.js',
 		'routers/router' 			 	: 'js/themes/' + theme + '/routers/router.js'
 		}
 };
