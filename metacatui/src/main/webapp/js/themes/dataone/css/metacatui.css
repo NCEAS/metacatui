@@ -854,8 +854,9 @@ table th.btn-container .btn{
 	}
 	#gutter {
 		z-index: 500;
+		max-height: 78%;
 		overflow-x: visible;
-		overflow-y: visible; 
+		overflow-y: overlay; 
 	}
 	#gutter .hover-proxy {
 		width: 100px;
@@ -2544,7 +2545,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 /** sidr overrides **/
 	.sidr {
-		top: 220px;
+		top: 20%;
 		width: 150px;
 		background: none;
 		-webkit-box-shadow: none;
