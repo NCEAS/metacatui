@@ -145,9 +145,6 @@ define(['jquery',
 			$( "#filter-year" ).buttonset();
 			$( "#includes-files-buttonset" ).buttonset();
 			
-			//Update the year slider
-			this.updateYearRange(); 
-			
 			//Iterate through each search model text attribute and show UI filter for each
 			var categories = ['all', 'creator', 'taxon', 'annotation'];
 			var thisTerm = null;
@@ -407,108 +404,143 @@ define(['jquery',
 		//Update the UI year slider and input values
 		//Also update the model
 		updateYearRange : function(e) {
-			var viewRef = this;
+			var viewRef    = this,
+				userAction = !(typeof e === "undefined"),
+				model      = this.searchModel,
+				pubYearChecked  = $('#publish_year').prop('checked'),
+				dataYearChecked = $('#data_year').prop('checked');
 			
-			// Get the minimum and maximum values from the input fields
-			var minVal = $('#min_year').val();
-			var maxVal = $('#max_year').val();
-			  
-			//Get the default minimum and maximum values
-			var defaultMinYear = this.searchModel.defaults().yearMin;
-			var defaultMaxYear = this.searchModel.defaults().yearMax;
 			
+			//If the year range slider has not been created yet
+			if(!userAction && !$("#year-range").hasClass("ui-slider")){
+				//jQueryUI slider 
+				$('#year-range').slider({
+				    range: true,
+				    disabled: false,
+				    min: this.searchModel.defaults().yearMin,	//sets the minimum on the UI slider on initialization
+				    max: this.searchModel.defaults().yearMax, 	//sets the maximum on the UI slider on initialization
+				    values: [ this.searchModel.get('yearMin'), this.searchModel.get('yearMax') ], //where the left and right slider handles are
+				    stop: function( event, ui ) {
+				    	
+				      // When the slider is changed, update the input values
+				      $('#min_year').val(ui.values[0]);
+				      $('#max_year').val(ui.values[1]);
+				      
+				      //Also update the search model
+				      model.set('yearMin', ui.values[0]);
+				      model.set('yearMax', ui.values[1]);
+					
+					  // If neither the publish year or data coverage year are checked
+					  if(!$('#publish_year').prop('checked') && !$('#data_year').prop('checked')){
+						  
+						  //We want to check the data coverage year on the user's behalf
+						  $('#data_year').prop('checked', 'true');  
+							  
+						  //And update the search model
+						  model.set('dataYear', true);
+						  
+						  //refresh the UI buttonset so it appears as checked/unchecked
+						  $("#filter-year").buttonset("refresh");
+					  }
+				      
+					  //Route to page 1
+				      viewRef.updatePageNumber(0);
+					      
+					 //Trigger a new search
+					 viewRef.triggerSearch();
+				    } 
+				    
+				  });
+				
+				//Get the minimum and maximum years of this current search and use those as the min and max values in the slider
+				statsModel.set("query", this.searchModel.getQuery());
+				this.listenTo(statsModel, "change:firstBeginDate", function(){ 	
+					var year = new Date.fromISO(statsModel.get("firstBeginDate")).getUTCFullYear(); 
+					if(typeof year !== "undefined"){
+						$('#min_year').val(year);
+						$('#year-range').slider({ 
+							values: [year, $('#max_year').val()]
+						});
+						
+						//If the slider min is still at the default value, then update with the min value found at this search
+						if($("#year-range").slider("option", "min") == model.defaults().yearMin)
+							$('#year-range').slider({ min: year });
+					}
+				});
+				//Only when the first begin date is retrieved, set the slider min and max values	 
+				this.listenTo(statsModel, "change:lastEndDate", function(){ 	
+					var year = new Date.fromISO(statsModel.get("lastEndDate")).getUTCFullYear(); 
+					if(typeof year !== "undefined"){
+						$('#max_year').val(year);
+						$('#year-range').slider({ 
+							values: [$('#min_year').val(), year]
+						});
+						
+						//If the slider max is still at the default value, then update with the max value found at this search
+						if($("#year-range").slider("option", "max") == model.defaults().yearMax)
+							$('#year-range').slider({ max: year });
+					}
+				});
+				statsModel.getFirstBeginDate();
+				statsModel.getLastEndDate();
+			}
+			//If the year slider has been created and the user initiated a new search using other filters
+			else if(!userAction && (!this.searchModel.get("dataYear")) && (!this.searchModel.get("pubYear"))){
+				//Reset the min and max year based on this search
+				statsModel.set("query", this.searchModel.getQuery());
+				statsModel.getFirstBeginDate();
+				statsModel.getLastEndDate();
+			}
 			// If either of the year type selectors is what brought us here, then determine whether the user
 			// is completely removing both (reset both year filters) or just one (remove just that one filter)
-			if((e !== undefined)){
-				if(($(e.target).attr('id') == "data_year") || ($(e.target).attr('id') == "publish_year")){
-					var pubYearChecked  = $('#publish_year').prop('checked');
-					var dataYearChecked = $('#data_year').prop('checked');
+			else if(userAction){
+				//When both year types were unchecked, assume user wants to reset the year filter
+				if((($(e.target).attr('id') == "data_year") || ($(e.target).attr('id') == "publish_year")) && (!pubYearChecked && !dataYearChecked)){
+					//Reset the search model
+					this.searchModel.set('yearMin', this.searchModel.defaults().yearMin);
+					this.searchModel.set('yearMax', this.searchModel.defaults().yearMax);
+					this.searchModel.set('dataYear', false);
+					this.searchModel.set('pubYear', false);
 					
-					//When both are unchecked, assume user wants to reset the year filter
-					if((!pubYearChecked) && (!dataYearChecked)){
-						//Reset the search model
-						this.searchModel.set('yearMin', defaultMinYear);
-						this.searchModel.set('yearMax', defaultMaxYear);
-						this.searchModel.set('dataYear', false);
-						this.searchModel.set('pubYear', false);
-						
-						//Reset the number inputs
-						$('#min_year').val(defaultMinYear);
-						$('#max_year').val(defaultMaxYear);
-						
-						//Slide the handles back to the defaults
-						$('#year-range').slider("values", [defaultMinYear, defaultMaxYear]);
-						
-						return;
+					//Reset the min and max year based on this search
+					statsModel.set("query", this.searchModel.getQuery());
+					statsModel.getFirstBeginDate();
+					statsModel.getLastEndDate();
+
+					//Slide the handles back to the defaults
+					$('#year-range').slider("values", [this.searchModel.defaults().yearMin, this.searchModel.defaults().yearMax]);
+				}
+				//If either of the year inputs have changed or if just one of the year types were unchecked
+				else{
+					var minVal = $('#min_year').val();
+					var maxVal = $('#max_year').val();
+					
+					//Update the search model to match what is in the text inputs
+				    this.searchModel.set('yearMin', minVal);
+				    this.searchModel.set('yearMax', maxVal);	
+				    this.searchModel.set('dataYear', dataYearChecked);
+				    this.searchModel.set('pubYear',  pubYearChecked);
+				    
+				    // If neither the publish year or data coverage year are checked
+					if(!pubYearChecked && !dataYearChecked){
+						  
+					  //We want to check the data coverage year on the user's behalf
+					  $('#data_year').prop('checked', 'true');  
+						  
+					  //And update the search model
+					  model.set('dataYear', true);
+					  
+					  //refresh the UI buttonset so it appears as checked/unchecked
+					  $("#filter-year").buttonset("refresh");
 					}
-				}	
+				    
+					//Route to page 1
+				    this.updatePageNumber(0);
+					      
+				    //Trigger a new search
+					this.triggerSearch();
+				}
 			}
-			
-			//If either of the year inputs have changed
-			if(((typeof minVal !== "undefined") && (minVal != defaultMinYear)) || ((typeof maxVal !== "undefined") && (maxVal != defaultMaxYear))){
-				
-				//Update the search model to match what is in the text inputs
-			    this.searchModel.set('yearMin', $('#min_year').val());
-			    this.searchModel.set('yearMax', $('#max_year').val());	
-			    
-			    //auto choose the year type for the user
-			    this.selectYearType();
-			    
-				  //Route to page 1
-			      this.updatePageNumber(0);
-				      
-				 //Trigger a new search
-				 this.triggerSearch();
-			}
-
-		      			
-			//jQueryUI slider 
-			var model = this.searchModel;
-			$('#year-range').slider({
-			    range: true,
-			    disabled: false,
-			    min: this.searchModel.defaults().yearMin,	//sets the minimum on the UI slider on initialization
-			    max: this.searchModel.defaults().yearMax, 	//sets the maximum on the UI slider on initialization
-			    values: [ this.searchModel.get('yearMin'), this.searchModel.get('yearMax') ], //where the left and right slider handles are
-			    stop: function( event, ui ) {
-			    	
-			      // When the slider is changed, update the input values
-			      $('#min_year').val(ui.values[0]);
-			      $('#max_year').val(ui.values[1]);
-			      
-			      //Also update the search model
-			      model.set('yearMin', $('#min_year').val());
-			      model.set('yearMax', $('#max_year').val());
-			      
-			      viewRef.selectYearType();
-			      
-				  //Route to page 1
-			      viewRef.updatePageNumber(0);
-				      
-				 //Trigger a new search
-				 viewRef.triggerSearch();
-			    } 
-			    
-			  });
-
-		},
-		
-		selectYearType : function(autoSelect){
-			  var pubYearChecked  = $('#publish_year').prop('checked');
-			  var dataYearChecked = $('#data_year').prop('checked');
-			
-			  // If neither the publish year or data coverage year are checked
-			  if((!pubYearChecked) && (!dataYearChecked)){
-				  
-				  //We want to check the data coverage year on the user's behalf
-			  $('#data_year').prop('checked', 'true');  
-				  
-			  //And update the search model
-			  this.searchModel.set('dataYear', true);
-			  
-			  //refresh the UI buttonset so it appears as checked/unchecked
-			  $("#filter-year").buttonset("refresh");
-			  }
 		},
 		
 		updateTextFilters : function(e, item){
@@ -1371,6 +1403,7 @@ define(['jquery',
 			this.$resultsview.show();
 			this.updateStats();	
 			this.updatePageNumber(page);
+			this.updateYearRange();
 		},
 		
 		/**

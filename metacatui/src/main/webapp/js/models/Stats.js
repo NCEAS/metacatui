@@ -115,6 +115,9 @@ define(['jquery', 'underscore', 'backbone'],
 					// Save the earliest beginDate and total found in our model
 					model.set('firstBeginDate', new Date.fromISO(data.response.docs[0].beginDate));					
 					model.set('totalBeginDates', data.response.numFound);
+					
+					model.trigger("change:firstBeginDate");
+					model.trigger("change:totalBeginDates");
 				}
 				
 			}, "json");
@@ -143,6 +146,8 @@ define(['jquery', 'underscore', 'backbone'],
 					var now = new Date();
 					if(new Date.fromISO(data.response.docs[0].endDate).getUTCFullYear() > now.getUTCFullYear()) model.set('lastEndDate', now);
 					else model.set('lastEndDate', new Date.fromISO(data.response.docs[0].endDate));
+					
+					model.trigger("change:lastEndDate");
 				}	
 				
 			}, "json");
