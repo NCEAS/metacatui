@@ -988,40 +988,8 @@ table th.btn-container .btn{
 	}
     
     /***Filters ***/
-    
-    .filter-contain{
-   	  border-bottom: 1px solid #DDD;
-   	  padding: 10px 0px;
-   	  width: 100%;
-   }
-   .filter-contain > i{
-   		color: #888;
-   		font-size: 17px;
-   		float: left;
-   		margin: 0px;
-   }
-   
-   .filter-contain label i{
-   		font-size: 15px;
-   		margin-left: 3px;
-		top: 2px;	
-		position: relative;
-   }
-    
-    .filter-contain i.more-info{
-    	font-size: 14px;
-    	line-height: 23px;
-    	top: 5px;
-    	float: left;
-    }
-    
-    .filter-contain > label{
-    	float: left;
-    	font-size: 13px;
-    	font-weight: bold;
-    	color: #666;
-    	margin-left: 5px;    	
-    }
+
+  
     
     #filters-header{
     	padding: 0px;

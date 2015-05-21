@@ -1694,28 +1694,6 @@ svg .domain{
 	  overflow-y: scroll;
     }   
     
-    
-    /** Filter containers **/
-    
-    .filter-contain{
-    	width: 94%;
-    	margin-bottom: 10px;
-    	border-bottom: 1px dashed #CCC;
-    	padding: 0px 3% 10px 3%;
-    }
-    
-    .filter-contain .filter-contain{
-   	  margin-top: 0px;  	  
-   }
-   .filter-input-contain > label{
-   	float: left;
-   }
-   .filter-contain > label{
-   	font-size: .9em;
-   	font-weight: bold;
-   }
-   
-      
    aside > div{
    	margin: 0px 0px 10px 0px;
 	display: block;
@@ -1723,30 +1701,7 @@ svg .domain{
 	height: auto; 
 	}
 	
-	
-	/** Filter icons **/
-   .filter-contain > .icon,
-   .filter-input-contain > .icon {
-	  color: #888;
-	  font-size: 17px;
-	  float: left;
-	  margin: 0px;
-	  margin-right: 5px;
-	}
-   
-   #filter-year > i,
-   #includes-files > i{
-   	margin-top: 0px;
-   }
-   
-   .filter-contain > i.icon-sitemap{
-   		font-size: 18px;
-   }
-   
-   .filter-contain > i.icon-map-marker{
-   		font-size: 22px;
-   }
-   
+
 	
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
@@ -1916,18 +1871,6 @@ svg .domain{
 	.current-filters > li > i:hover{
 		color: #FFF;
 	}
-	
-	 #includes-files label,
-     #includes-files label.ui-state-active{
-    	  float: left;
-		  margin-bottom: 8px;
-		  margin-right: 5px;
-	 }
-    
-    #filter-year label#data-year-label,
-    #filter-year label#pub-year-label{
-    	margin: 0px 5px 5px 0px;
-    }
     
     	/*-- The 'Year' filter elements --*/
    

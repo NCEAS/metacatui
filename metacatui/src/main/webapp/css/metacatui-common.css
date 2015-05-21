@@ -953,3 +953,52 @@ textarea.token{
 	margin-left: 5px;
 	margin-right: 5px;
 }
+/****************************************** 
+** Searching and Map ***
+******************************************/
+.filter-contain{
+	border-bottom: 1px dashed #CCC;
+	padding: 10px 0px 5px 0px;
+	width: 100%;
+}
+.filter-contain > label{
+   	font-size: .9em;
+   	font-weight: bold;
+   	color: #666;
+}
+#includes-files label,
+#includes-files label.ui-state-active{
+  	float: left;
+    margin-bottom: 8px;
+    margin-right: 5px;
+}    
+#filter-year label#data-year-label,
+#filter-year label#pub-year-label{
+ 	margin: 0px 5px 5px 0px;
+ 	float: left;
+}
+/** Filter icons **/
+.filter-contain > label > .icon{
+	color: #888;
+	font-size: 17px;
+	float: left;
+	margin: 0px;
+	margin-right: 5px;
+}  
+.filter-contain .icon.more-info{
+   	font-size: 14px;
+   	line-height: 23px;
+   	top: 5px;
+   	float: left;
+}   
+#filter-year > i,
+#includes-files > i{
+  	margin-top: 0px;
+}  
+.filter-contain > i.icon-sitemap{
+  	font-size: 18px;
+}  
+.filter-contain > i.icon-map-marker{
+  	font-size: 22px;
+}
+   

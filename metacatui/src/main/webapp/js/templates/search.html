@@ -11,9 +11,8 @@
 			    	</ul>
 			    </div>
 				
-				<div class="filter-contain">
-					<i class="icon icon-table span1"></i>
-					<label>Data attribute</label>
+				<div class="filter-contain" data-category="attribute">
+					<label class="tooltip-this" data-trigger="hover" data-title="The attribute name/definition from a data table" data-placement="top"><i class="icon icon-table span1"></i>Data attribute</label>
 					<div class="filter-input-contain input-append">
 						<input class="filter" type="text" placeholder="density, length, etc." id="attribute_input" data-category="attribute">
 						<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
@@ -24,9 +23,8 @@
 			    </div>
 			    
 			    <% if(appSearchModel.filterIsAvailable("annotation")){ %>
-			    <div class="filter-contain">
-					<i class="icon icon-tag span1"></i>
-					<label>Annotation</label>
+			    <div class="filter-contain" data-category="annotation">
+					<label class="tooltip-this" data-trigger="hover" data-title="User-submitted semantic annotations or tags" data-placement="top"><i class="icon icon-tag span1"></i>Annotation</label>
 					<div class="filter-input-contain input-append ">
 						<input class="filter" type="text" placeholder="tags, concepts, etc." id="annotation_input" data-category="annotation">
 						<button class="filter btn" id="annotation_btn" data-category="annotation"><i class="icon-search"></i></button>
@@ -38,9 +36,8 @@
 			    
 			    <% } %>
 			    
-				<div class="filter-contain" id="includes-files">
-					<img src="img/data-table.png" class="icon"/>
-					<label>Data files</label>
+				<div class="filter-contain" id="includes-files" data-category="resourceMap">
+					<label class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top"><img src="img/data-table.png" class="icon"/>Data files</label>
 					<div class="filter-input-contain clear" id="includes-files-buttonset">
 						<label for="includes_data">
 							<i class="icon icon-check"></i>
@@ -54,9 +51,8 @@
 				</div>
 				
 				<% if(appSearchModel.filterIsAvailable("memberNode")){ %>
-					<div class="filter-contain" id="member-nodes-container">
-						<i class="icon icon-group"></i>
-						<label>Member Node</label>
+					<div class="filter-contain" id="member-nodes-container" data-category="creator">
+						<label  class="tooltip-this" data-trigger="hover" data-title="The name of the DataONE member node that a dataset originates from" data-placement="top"><i class="icon icon-group"></i>Member Node</label>
 						<div class="clear"></div>
 						<div class="member-nodes-placeholder">
 							<%=loading%>
@@ -65,8 +61,7 @@
 				<% } %>
 				
 				<div class="filter-contain">
-					<i class="icon icon-user"></i>
-					<label>Creator</label>
+					<label class="tooltip-this" data-trigger="hover" data-title="The name of the creator of a dataset" data-placement="top"><i class="icon icon-user"></i>Creator</label>
 					<div class="filter-input-contain input-append">
 						<input class="filter" type="text" placeholder="First name, last name, etc." id="creator_input" data-category="creator">
 						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>				    	
@@ -82,8 +77,7 @@
 			    </div>	
 				
 				<div id="filter-year" class="filter-contain" data-category="year">
-					<i class="icon icon-calendar"></i>
-					<label>Year</label>
+					<label class="tooltip-this" data-trigger="hover" data-title="Data coverage year and/or the year a dataset was published or uploaded" data-placement="top"><i class="icon icon-calendar"></i>Year</label>
 					<div class="filter-input-contain">
 						<div id="year-range"></div>
 						<div class="clear"></div>
@@ -97,7 +91,7 @@
 							<i class="icon icon-check-empty"></i>
 							Data covers
 						</label>					
-						<i class="icon icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top"></i>	
+						<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top"></i>	
 						<div class="clear"></div>
 						
 						<input class="left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
@@ -106,16 +100,15 @@
 							<i class="icon icon-check-empty"></i>
 							Published between
 						</label>
-						<i class="icon icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top"></i>	
+						<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top"></i>	
 						<div class="clear"></div>
 
 					</div>
 					<div class="clear"></div>
 				</div>
 				
-				<div class="filter-contain">
-					<i class="icon icon-bullseye span1"></i>
-					<label>Identifier</label>
+				<div class="filter-contain" data-category="id">
+					<label class="tooltip-this" data-trigger="hover" data-title="Find a dataset by its identifier" data-placement="top"><i class="icon icon-bullseye span1"></i>Identifier</label>
 					<div class="filter-input-contain input-append ">
 						<input class="filter" type="text" placeholder="Identifier" id="id_input" data-category="id">
 						<button class="filter btn" id="id_btn" data-category="id"><i class="icon-search"></i></button>
@@ -124,9 +117,8 @@
 					</ul>				
 				</div>
 				
-				<div class="filter-contain">
-					<i class="icon icon-sitemap span1"></i>
-					<label>Taxon</label>
+				<div class="filter-contain" data-category="taxon">
+					<label class="tooltip-this" data-trigger="hover" data-title="Any taxonomic rank provided by the submitter" data-placement="top"><i class="icon icon-sitemap span1"></i>Taxon</label>
 					<div class="filter-input-contain input-append">
 						<input class="filter" type="text" placeholder="Class, family, etc." id="taxon_input" data-category="taxon">
 						<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
@@ -135,9 +127,8 @@
 					</ul>				
 				</div>
 				
-				<div class="filter-contain no-border">
-					<i class="icon icon-map-marker span1"></i>
-					<label>Location</label>
+				<div class="filter-contain no-border" data-category="spatial">
+					<label class="tooltip-this" data-trigger="hover" data-title="The geographic region or site, as described by the submitter" data-placement="top"><i class="icon icon-map-marker span1"></i>Location</label>
 					<div class="filter-input-contain input-append">
 						<input class="filter" type="text" placeholder="Geographic region, city, etc." id="spatial_input" data-category="spatial">
 						<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
