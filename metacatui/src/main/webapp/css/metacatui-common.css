@@ -97,6 +97,9 @@ h3{
 #results.loading .notification{
   margin-top: 20px;
 }
+.result-row .info-icons img.icon{
+	height: 1.3em;
+}
 
 /****************************************** 
 ** Provenance flow-charts ***

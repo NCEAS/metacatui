@@ -1517,18 +1517,18 @@ table th.btn-container .btn{
     .info-icons .on-map > i{
     	font-size: 19px;
     }
-    .info-icons i{
+    .info-icons .icon{
     	color: #6E3F57;
     	cursor: pointer;
     }
-    .info-icons i:hover{
+    .info-icons .icon:hover{
     	color: #CE0060;
     }
     .info-icons .on-map > i.on-map:nth-child(n+2){
     	margin-left: 3px;
     }
     
-    .info-icons i.inactive{
+    .info-icons .icon.inactive{
     	visibility: hidden;
     }
     

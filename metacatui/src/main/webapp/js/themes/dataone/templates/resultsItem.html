@@ -8,21 +8,18 @@
 				<div class="resource-map icons stop-route">             
 		               <%
 			           if (resourceMap) {
-							print('<i class="icon-folder-open tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This result includes data files"></i>');
-						}
-						else{
-							print('<i class="icon-folder-open inactive stop-route"></i>');
+							print('<img src="js/themes/' + theme + '/img/data-file-icon-magenta-desat.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This result includes data files"></i>');
 						}
 		           		%>
 		           
 	        	</div>
 	        	<% if(hasProv){
 	        			print('<a class="icons provenance active stop-route">');
-	        			print('<i class="icon-code-fork active stop-route"></i>');
+	        			print('<i class="icon icon-code-fork active stop-route"></i>');
 	        		}
 	        		else{
 	        		    print('<a class="icons provenance inactive stop-route">');
-	        			print('<i class="icon-code-fork inactive stop-route"></i>');
+	        			print('<i class="icon icon-code-fork inactive stop-route"></i>');
 	        		}
 	        	%>
 	        	</a>     		      
@@ -31,14 +28,14 @@
 						if (typeof southBoundCoord != "undefined"){
 		               		if((typeof geohash_9 != "undefined") && (geohash_9.length > 1)){
 		               			for(var i=0; i < geohash_9.length; i++){
-		               				print('<i class="icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
+		               				print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
 		               			}
 		               		}
 		               		else
-		               			print('<i class="icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" title="This metadata has one geographic region on the map"></i>');
+		               			print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" title="This metadata has one geographic region on the map"></i>');
 		               }
 		               else{
-		               		print('<i class="icon-map-marker inactive stop-route"></i>');
+		               		print('<i class="icon icon-map-marker inactive stop-route"></i>');
 		               }
 		            %>
 	            </div>
