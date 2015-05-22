@@ -657,9 +657,7 @@ define(['jquery',
 		
 		getEntityNames: function(){
 			var viewRef = this;
-			
-			if(this.subviews.meta)
-			
+						
 			_.each(this.packageModel.get("members"), function(solrResult, i){
 				
 				if(solrResult.get("formatType") == "METADATA") 
