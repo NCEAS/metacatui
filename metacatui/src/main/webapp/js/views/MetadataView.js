@@ -123,9 +123,9 @@ define(['jquery',
 								
 								//Insert the breadcrumbs
 								viewRef.insertBreadcrumbs();
+								
+								viewRef.setUpAnnotator();
 							}
-							// render annotator either way
-							viewRef.setUpAnnotator();
 						});
 			}
 			else this.renderMetadataFromIndex();
@@ -148,19 +148,17 @@ define(['jquery',
 			this.getPackageDetails();
 			
 			//Add the package details once the metadata from the index is drawn 
-			this.listenToOnce(metadataFromIndex, 'complete', this.insertPackageDetails);
 			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
 			
 			//Add the metadata HTML
-			this.$el.append(metadataFromIndex.render().el);
+			this.$el.html(metadataFromIndex.render().el);
 			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
 			
 			// render annotator from index content, too
-			this.setUpAnnotator();
-			
+			this.setUpAnnotator();			
 		},
 		
 		getCitation: function(){
@@ -246,6 +244,9 @@ define(['jquery',
 		 */
 		getPackageDetails: function(pid) {
 			var viewRef = this;
+			
+			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"}) || null;
+			if(metadataFromIndex) return;
 			
 			//If no id is passed, used the one in the appModel
 			if((typeof pid === "undefined") || !pid) var pid = this.pid;
@@ -656,6 +657,8 @@ define(['jquery',
 		
 		getEntityNames: function(){
 			var viewRef = this;
+			
+			if(this.subviews.meta)
 			
 			_.each(this.packageModel.get("members"), function(solrResult, i){
 				

@@ -467,13 +467,12 @@ Bold 700 Italic
     }
     
     .btn-primary {
-      background-color: #992222;
-      color: #FFFFFF;
-      
+      background-color: #006699;
+      color: #FFFFFF;    
     }
     
     .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
-		background-color: #f5f5f5;
+		background-color: #132D77;
 		color: #555555;
 		text-shadow: none;
     }
@@ -484,7 +483,7 @@ Bold 700 Italic
     }
         
     .btn-primary:hover {
-      background-color: #882222;
+      background-color: #0093DD;
       color: #FDFDFD;
       background-image: none;
       background-repeat: none;
@@ -1581,7 +1580,16 @@ svg .domain{
     }
     
     /* Resource map contents table */
-    
+    .table tr > th{
+    	background-color: #DEDEDE;
+    	font-weight: bold;
+    }
+    .table .table-header{
+    	background-color: #006699;
+    	text-align: center;
+    	color: #FFF;
+    	font-weight: normal;
+    }
     .file-type i {
   		  color: #999;
   		  margin-left: 5px;

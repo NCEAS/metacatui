@@ -65,9 +65,7 @@ define(['jquery',
 			if(!this.pid) return false;
 			
 			var view = this;
-			
-			this.$el.html(this.loadingTemplate());
-			
+						
 			//Get all the fields from the Solr index
 			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&wt=json&rows=1&start=0&fl=*';
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){ 
@@ -80,11 +78,19 @@ define(['jquery',
 								  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
 							  "</ul>";
 					view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
+					view.flagComplete();
 				}
 				else{
 					view.docs = data.response.docs;
 					
 					_.each(data.response.docs, function(doc, i, list){
+						
+						//If this is a data object and there is a science metadata doc that describes it, then navigate to that Metadata View.
+						if((doc.formatType == "DATA") && (doc.isDocumentedBy.length > 0)){
+							view.onClose();
+							uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
+							return;
+						}
 						
 						var metadataEl = $(document.createElement("section")).attr("id", "metadata-index-details"),
 							id = doc.id,
@@ -136,12 +142,12 @@ define(['jquery',
 						view.$(".citation").replaceWith(citation);
 						
 						view.$("#downloadContents").after(metadataEl);
+						
+						view.flagComplete();
 					});
 										
 				}
 				
-				view.flagComplete();
-
 			}, "json")
 			.error(function(){
 				var msg = "<h4>Sorry, no dataset was found.</h4>";
@@ -306,7 +312,15 @@ define(['jquery',
 		},
 		
 		onClose: function(){
-			this.$el.html("");
+			this.$el.html(this.loadingTemplate());
+			this.pid = null;
+			
+			//Detach this view from its parent view
+			this.parentView.subviews = _.without(this.parentView.subviews, this);
+			this.parentView = null;
+			
+			//Remove listeners
+			this.stopListening();
 		}
 	});
 	return MetadataIndexView;		

@@ -12,6 +12,12 @@
 /****************************************** 
 ** General Structure ***
 ******************************************/
+body, html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
 article > .container,
 article.container {
 	padding: 2%;
@@ -21,10 +27,26 @@ article.container {
 	width: 90%;
 	max-width: 960px;
 	margin: 20px auto;
+	padding-bottom: 3em; /** Keeps the footer down **/
 }
 .mapMode #Content{
 	width: 100%;
    	margin: 0px;
+   	padding-bottom: 0px;
+}
+#Footer{
+	background-color: #FFFFFF;
+	height: 3em;        /** Keeps the footer down **/
+	position: absolute; /** Keeps the footer down **/
+	bottom: 0px;        /** Keeps the footer down **/
+}
+.mapMode #Footer{
+	position: relative;
+	height: auto;
+}
+.annotator-wrapper{
+	/** Keeps the footer down **/
+	min-height: 100%;
 }
 
 /****************************************** 

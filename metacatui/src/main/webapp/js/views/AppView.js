@@ -8,9 +8,10 @@ define(['jquery',
 				'views/AltHeaderView',
 				'views/FooterView',
 				'text!templates/appHead.html',
-				'text!templates/app.html'
+				'text!templates/app.html',
+				'text!templates/loading.html'
 				], 				
-	function($, _, jQuerySidr, Backbone, JWS, NavbarView, AltHeaderView, FooterView, AppHeadTemplate, AppTemplate) {
+	function($, _, jQuerySidr, Backbone, JWS, NavbarView, AltHeaderView, FooterView, AppHeadTemplate, AppTemplate, LoadingTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -24,9 +25,10 @@ define(['jquery',
 		// the App already present in the HTML.
 		el: '#metacatui-app',
 		
+		//Templates
 		template: _.template(AppTemplate),
-		
 		appHeadTemplate: _.template(AppHeadTemplate),
+		loadingTemplate: _.template(LoadingTemplate),
 		
 		events: {
 			"click" : "closePopovers"
@@ -130,22 +132,17 @@ define(['jquery',
 			
 			// close the current view
 			if (this.currentView){
-				//TODO: implement Backbone.View.protoype.close as:
-				//this.currentView.remove();
-				//this.currentView.unbind();
-				// OR: each view subclass can implement an onClose() method
-
 				// need reference to the old/current view for the callback method
 				var oldView = this.currentView;
 				
 				this.currentView.$el.fadeOut('slow', function() {
 					// clean up old view
-					if (oldView.onClose){
+					if (oldView.onClose)
 						oldView.onClose();
-					}	
 					
 					// render the new view
 					view.$el.hide();
+					view.$el.html(thisAppViewRef.loadingTemplate());
 					view.render();
 					view.$el.fadeIn('slow', function() {
 						
