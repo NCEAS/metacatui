@@ -56,15 +56,17 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 					var numSources = this.model.get("prov_hasSources"),
 						numDerivations = this.model.get("prov_hasDerivations");
 					
-					//Create the title of the popover
-					var title = "This dataset";
-					if(numSources > 0) title += " was created using " + numSources + " source";
+					//Create the title of the popover 
+					if(numSources) var title = "This is a derived dataset";
+					/*if(numSources) title += " was created using source";
 					if(numSources > 1) title += "s";
 					if(numSources > 0 && numDerivations > 0) title += " and";
 					if(numDerivations > 0) title += " has been used by " + numDerivations + " other dataset";
 					if(numDerivations > 1) title += "s";
 					title += ".";
-						
+									*/
+					if(numDerivations) var title = "This dataset was used as a source to create other datasets";
+					
 					//Make a tooltip with basic info for mouseover
 					this.$el.find(".provenance.active").tooltip({
 						placement: "top",

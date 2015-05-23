@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.rows 		  = options.rows    || 25;
 		    this.start 		  = options.start   || 0;
 		    this.sort 		  = options.sort    || 'dateUploaded+desc';
-		    this.facet 		  = options.facet   || ['keywords'];
+		    this.facet 		  = options.facet   || [];
 		    this.facetCounts  = "nothing";
 		    this.stats 		  = options.stats   || false;
 		    this.minYear 	  = options.minYear || 1900;
@@ -103,6 +103,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				}
 				this.header.set({"start" : this.start});
 			}
+			
+			//Get the results!
 			this.fetch({data: {start: this.start}, reset: true});
 		},
 		
@@ -142,7 +144,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		setStats: function(fields){
 			this.stats = fields;
 		}
-		
 	});
 
 	return SolrResultList;		

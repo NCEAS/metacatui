@@ -3,6 +3,8 @@ define(['jquery',
 				'jqueryui', 
 				'underscore', 
 				'backbone',
+				'collections/SolrResults',
+				'models/Search',
 				'views/SearchResultView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
@@ -13,7 +15,7 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, SearchResults, SearchModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -171,8 +173,9 @@ define(['jquery',
 			this.stopListening(this.searchResults);
 			this.listenTo(this.searchResults, 'add', this.addOne);
 			this.listenTo(this.searchResults, 'reset', this.addAll);
+			this.listenTo(this.searchResults, 'reset', this.checkForProv);
 			if(nodeModel.get("members").length > 0) this.listMemberNodes();
-			else this.listenTo(nodeModel,   'change:members', this.listMemberNodes);
+			else this.listenTo(nodeModel, 'change:members', this.listMemberNodes);
 			
 			//Listen to changes in the searchModel
 			this.stopListening(this.searchModel);
@@ -271,7 +274,7 @@ define(['jquery',
 			this.searchResults.setSort(sortOrder);
 			
 			//Specify which fields to retrieve
-			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,prov_hasSources,prov_hasDerivations";
+			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,";
 			if(gmaps){
 				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}
@@ -313,6 +316,68 @@ define(['jquery',
 			
 			// don't want to follow links
 			return false;
+		},
+		
+		/*
+		 * After the search results have been returned, check if any of them are derived data or have derivations
+		 */
+		checkForProv: function(){
+			var maps = [],
+				hasSources = [],
+				hasDerivations = [],
+				mainSearchResults = this.searchResults;
+
+			//Get a list of all the resource map IDs from the SolrResults collection
+			maps = this.searchResults.pluck("resourceMap");
+			maps = _.compact(_.flatten(maps));
+			
+			//Create a new Search model with a search that finds all members of these packages/resource maps
+			var provSearchModel   = new SearchModel({
+				formatType: [],
+				exclude: [],
+				resourceMap: maps
+			});
+			
+			//Create a new Solr Results model to store the results of this supplemental query
+			var provSearchResults = new SearchResults(null, { 
+				query: provSearchModel.getQuery(), 
+				rows: 150,
+				fields: provSearchModel.getProvFlList() + ",id,resourceMap"
+			});
+			
+			//Trigger a search on that Solr Results model
+			this.listenTo(provSearchResults, "reset", function(results){
+				if(results.models.length == 0) return;
+				
+				//See if any of the results have a value for a prov field				
+				results.forEach(function(result){
+					if((!result.getSources().length) || (!result.getDerivations())) return;
+					_.each(result.get("resourceMap"), function(rMapID){
+						if(_.contains(maps, rMapID)){
+							var match = mainSearchResults.filter(function(mainSearchResult){ return _.contains(mainSearchResult.get("resourceMap"), rMapID) });
+							if(match && (result.getSources().length > 0))     hasSources.push(match[0].get("id"));
+							if(match && (result.getDerivations().length > 0)) hasDerivations.push(match[0].get("id"));
+						}
+					});
+				});
+				
+				//Filter out the duplicates
+				hasSources     = _.uniq(hasSources);				
+				hasDerivations = _.uniq(hasDerivations);
+				
+				//If they do, find their corresponding result row here and add the prov icon (or just change the class to active)
+				_.each(hasSources, function(metadataID){
+					var metadataDoc = mainSearchResults.findWhere({id: metadataID});
+					if(metadataDoc)
+						metadataDoc.set("prov_hasSources", true);
+				});
+				_.each(hasDerivations, function(metadataID){
+					var metadataDoc = mainSearchResults.findWhere({id: metadataID});
+					if(metadataDoc)
+						metadataDoc.set("prov_hasDerivations", true);
+				});
+			});
+			provSearchResults.toPage(0);
 		},
 		
 		/**

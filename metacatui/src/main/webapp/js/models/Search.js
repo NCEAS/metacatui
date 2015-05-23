@@ -140,7 +140,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//---resourceMap---
 			if(this.filterIsAvailable("resourceMap") && ((filter == "resourceMap") || getAll)){
-				if(this.get('resourceMap')) query += this.fieldNameMap["resourceMap"] + ':*';
+				var resourceMap = this.get('resourceMap');
+				
+				//If the resource map search setting is a list of resource map IDs
+				if(Array.isArray(resourceMap))
+					query += this.getGroupedQuery(this.fieldNameMap["resourceMap"], resourceMap, "OR");				
+				//Otherwise, treat it as a binary setting
+				else if(resourceMap) 
+					query += this.fieldNameMap["resourceMap"] + ':*';
 			}
 			
 			//---Taxon---
