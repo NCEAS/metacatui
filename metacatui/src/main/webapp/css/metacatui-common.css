@@ -89,6 +89,12 @@ h3{
 .result-row .info-icons{
 	margin-top: 10px;
 }
+.result-row .info-icons .icons.resource-map{
+	width: 20px;
+}
+.result-row .info-icons .icons.download .icon{
+	font-size: 1.2em;
+}
 .result-row .icons.provenance i{
 	font-size: 1.5em;
 }
@@ -121,6 +127,9 @@ h3{
 }
 .result-row .info-icons img.icon{
 	height: 1.3em;
+}
+.result-row .info-icons .icons.download .tooltip{
+	width: 120px;
 }
 
 /****************************************** 

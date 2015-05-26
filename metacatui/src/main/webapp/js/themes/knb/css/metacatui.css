@@ -2182,9 +2182,6 @@ svg .domain{
     	font-weight: 600;
     	color: #1C6E84;
     }
-    .result-row .dropdown-menu{
-  		left: -320%;
-  	}
     
     /*-- Results List Icons --*/
     .info-icons{
@@ -2193,6 +2190,7 @@ svg .domain{
     .info-icons .icons{
     	float: left;
     	margin-right: 1em;
+    	position: relative;
     }
     .info-icons .on-map > i{
     	font-size: 19px;
@@ -2256,8 +2254,6 @@ svg .domain{
     
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
-    	font-size: 12px;
-    	float: left;
     } 
     
     /*-- Pagination widget --*/

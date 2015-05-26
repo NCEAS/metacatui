@@ -12,17 +12,7 @@
 						}
 		           		%>
 		           
-	        	</div>
-	        	<% if(prov_hasSources || prov_hasDerivations){
-	        			print('<a class="icons provenance active stop-route">');
-	        			print('<i class="icon icon-code-fork active stop-route"></i>');
-	        		}
-	        		else{
-	        		    print('<a class="icons provenance inactive stop-route">');
-	        			print('<i class="icon icon-code-fork inactive stop-route"></i>');
-	        		}
-	        	%>
-	        	</a>     		      
+	        	</div>    		      
         		<div class="on-map icons stop-route">
 					<% 
 						if (typeof southBoundCoord != "undefined"){
@@ -39,4 +29,14 @@
 		               }
 		            %>
 	            </div>
+	            <% if(prov_hasSources || prov_hasDerivations){
+	        			print('<a class="icons provenance active stop-route">');
+	        			print('<i class="icon icon-code-fork active stop-route"></i>');
+	        		}
+	        		else{
+	        		    print('<a class="icons provenance inactive stop-route">');
+	        			print('<i class="icon icon-code-fork inactive stop-route"></i>');
+	        		}
+	        	%>
+	        	</a> 
 	   </div>
