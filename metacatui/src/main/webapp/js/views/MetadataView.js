@@ -1131,10 +1131,14 @@ define(['jquery',
 		},
 		
 		setUpAnnotator: function() {
-			this.subviews.annotator = new AnnotatorView({ 
+			if(!appModel.get("annotatorUrl")) return;
+			
+			
+			var annotator = new AnnotatorView({ 
 				parentView: this 
 				});
-			this.subviews.annotator.render();
+			this.subviews.push(annotator);
+			annotator.render();
 		},
 		
 		/**

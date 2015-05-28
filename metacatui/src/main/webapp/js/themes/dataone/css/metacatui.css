@@ -82,6 +82,7 @@ Bold 700
 
 	#Content{
 		background-color: #FFFFFF;  	
+		padding-bottom: 60px; /** Keeps the footer down **/
 	}
 	.DataCatalog #Content{
 		width: 100%;
@@ -89,6 +90,9 @@ Bold 700
 		margin-top: 0px;
 		margin-bottom: 0px;
 	}	
+	#Footer{
+		height: 60px;
+	}
      .container{
     	width: 100%;
     }
