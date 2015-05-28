@@ -1,5 +1,5 @@
-@media only screen
-and (min-width : 768px){
+/* Tablets and large screens ----------- */
+@media only screen and (min-width : 768px){
 	#Navbar {
       position: fixed;
       top: 0px;
@@ -19,4 +19,49 @@ and (min-width : 768px){
 	    overflow: hidden;
 	    opacity: 1.0;   
   	}
+}
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (max-device-width : 480px) {
+	/************** General Structure ****************/
+	#Header{
+		display: none;
+	}
+	#Navbar .navbar-inner{
+		border-bottom: 2px solid #992222;
+	}
+	#Content{
+		padding-bottom: 785px; /* Keeps footer down */
+		margin-top: 0px;
+	}
+	
+	/************** Footer ****************/
+	#Footer{
+		height: 775px; /* Keeps footer down */
+	}
+	footer div.help-items,
+	footer .logos{
+		width: 100%;
+		min-width: 100%;
+		margin-top: 20px;
+	}
+	footer .logos .logo{
+		margin-bottom: 0px;
+		margin-top: 0px;
+	}
+	
+	/************** Search page ****************/
+	#sidebar{
+		width: 90%;
+	}
+	#results-container{
+		width: 90%;
+		margin-left: 10px;
+	}
+	.filter-contain > .filter-input-contain{
+		width: 100%;
+	}
+	.filter-contain > label{
+		font-size: 1.1em;
+	}
 }

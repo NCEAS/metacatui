@@ -46,10 +46,11 @@ Bold 700 Italic
       z-index: 10;
     }
         
-    body > #Content {
+    #Content {
     	max-width: 100%;
     	width: 100%;
     	margin-top: 95px;
+    	padding-bottom: 260px; /* Keeps footer down */
     }
 		
     body > section > article {
@@ -285,15 +286,14 @@ Bold 700 Italic
     	line-height: 1em;
     }
     
-    footer#Footer {
-      position: relative;
-      bottom: 0px;
+    #Footer {
       padding: 5px 1%;
       margin-top: 0px;
       color: #FDFDFD;
       background-color: #3F3F3F;
       width: 98%;
       z-index: 2;
+      height: 250px; /* Keeps footer down */
     }
     
     .mapMode #Footer{

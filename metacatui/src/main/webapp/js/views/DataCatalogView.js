@@ -107,8 +107,17 @@ define(['jquery',
 			if(typeof appSearchModel !== "undefined" && (Object.keys(this.searchModel).length == 0)) this.searchModel = appSearchModel;
 			if(((typeof this.searchResults === "undefined") || (Object.keys(this.searchResults).length == 0)) && (appSearchResults && (Object.keys(appSearchResults).length > 0))) this.searchResults = appSearchResults;
 			
-			//Default to map mode
-			if((typeof this.mode === "undefined") || !this.mode) this.mode = "map";
+			//Get the search mode - either "map" or "list"
+			this.mode = appModel.get("searchMode");
+			if((typeof this.mode === "undefined") || !this.mode){
+				this.mode = "map";
+				appModel.set("searchMode", "map");
+			}
+			if($(window).outerWidth() <= 600){ 
+				this.mode = "list"; 
+				appModel.set("searchMode", "list");
+				gmaps = null;
+			}
 			
 			appModel.set('headerType', 'default');
 			$("body").addClass("DataCatalog");
@@ -207,7 +216,7 @@ define(['jquery',
 		setAutoHeight: function(){
 			//If we are in list mode, don't determine the height of any elements because we are not "full screen"
 			if(appModel.get("searchMode") == "list"){
-				this.$(".auto-height").height("auto");
+				appView.$(".auto-height").height("auto");
 				return;
 			}
 			
@@ -1479,17 +1488,11 @@ define(['jquery',
 		renderMap: function() {
 			
 			//If gmaps isn't enabled or loaded with an error, use list mode
-			if (!gmaps) {
+			if (!gmaps ||  this.mode == "list") {
 				this.ready = true;
-				appModel.set('searchMode', 'list');
+				this.mode = "list";
 				return;
 			}		
-
-			// If the list mode is currently in use, no need to render the map
-			if(appModel.get('searchMode') == 'list'){
-				this.ready = true;
-				return;
-			}
 			
 			$("body").addClass("mapMode");				
 			
@@ -1609,7 +1612,7 @@ define(['jquery',
 		 */
 		showResultOnMap: function(e){
 			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+			if((this.mode != "map") || (!gmaps)){
 				return false;
 			}
 			
@@ -1653,7 +1656,7 @@ define(['jquery',
 		 */
 		hideResultOnMap: function(e){
 			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+			if((this.mode != "map") || (!gmaps)){
 				return false;
 			}
 			
@@ -1705,7 +1708,7 @@ define(['jquery',
 		 **/
 		drawTiles: function(){			
 			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+			if((this.mode != 'map') || (!gmaps)){
 				return false;
 			}
 						
@@ -1929,7 +1932,7 @@ define(['jquery',
 		 **/
 		drawTile: function(options, label){
 			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+			if((this.mode != 'map') || (!gmaps)){
 				return false;
 			}
 						
@@ -2034,7 +2037,7 @@ define(['jquery',
 		 */		
 		addMarkers: function(){
 			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+			if((this.mode != 'map') || (!gmaps)){
 				return false;
 			}	
 			
@@ -2137,7 +2140,7 @@ define(['jquery',
 		 */
 		addTileInfoWindows: function(){	
 			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+			if((this.mode != 'map') || (!gmaps)){
 				return false;
 			}
 			
@@ -2265,7 +2268,7 @@ define(['jquery',
 		 **/
 		removeTiles: function(){
 			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+			if((this.mode != 'map') || (!gmaps)){
 				return false;
 			}
 			
@@ -2286,7 +2289,7 @@ define(['jquery',
 		 */
 		removeMarkers: function(){
 			//Exit if maps are not in use
-			if((appModel.get('searchMode') != 'map') || (!gmaps)){
+			if((this.mode != 'map') || (!gmaps)){
 				return false;
 			}
 			
@@ -2445,14 +2448,16 @@ define(['jquery',
 				$('body').toggleClass('mapMode');	
 			}
 			
-			if(appModel.get('searchMode') == 'map'){
+			if(this.mode == 'map'){
 				appModel.set('searchMode', 'list');
+				this.mode = "list";
 				this.$("#map-canvas").detach();
 				this.setAutoHeight();
 				this.getResults();
 			}
-			else if (appModel.get('searchMode') == 'list'){
+			else if (this.mode == 'list'){
 				appModel.set('searchMode', 'map');
+				this.mode = "map";
 				this.renderMap();
 				this.setAutoHeight();
 				this.getResults();
@@ -2479,7 +2484,7 @@ define(['jquery',
 		preventPopoverRunoff: function(e){
 			
 			//In map view only (because all elements are fixed and you can't scroll)
-			if(appModel.get('searchMode') == 'map'){
+			if(this.mode == 'map'){
 				var viewportHeight = $('#map-container').outerHeight();
 			}
 			else{

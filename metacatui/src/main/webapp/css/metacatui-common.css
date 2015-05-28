@@ -12,7 +12,13 @@
 /****************************************** 
 ** General Structure ***
 ******************************************/
-body, html {
+html{
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
   min-height: 100%;
   width: 100%;
   margin: 0;
@@ -27,7 +33,8 @@ article.container {
 #Content{
 	width: 90%;
 	max-width: 960px;
-	margin: 20px auto;
+	margin-left: auto;
+	margin-right: auto;
 }
 .mapMode #Content{
 	width: 100%;

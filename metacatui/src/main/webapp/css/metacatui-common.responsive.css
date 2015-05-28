@@ -1,7 +1,5 @@
-/* Smartphones (portrait and landscape) ----------- */
-@media only screen
-and (min-device-width : 320px)
-and (max-device-width : 480px) {
+/* Smartphones (portrait) ----------- */
+@media only screen and (max-device-width : 480px) {
 	#Content{
 		width: 100%;
 	}
@@ -63,12 +61,20 @@ and (max-device-width : 480px) {
 	#Header{
 		position: relative;
 	}
+	
+	
+	/*************** General Structure ***********/
+	.row-fluid .span6.pagination-left {
+  		width: 100%;
+	}
 }
  
 /* Smartphones (landscape) ----------- */
-@media only screen
-and (min-width : 321px) {
-/* STYLES GO HERE */
+@media only screen and (min-width : 321px) and (max-width : 700px){
+	/*************** General Structure ***********/
+	.row-fluid .span6.pagination-left {
+  		width: 100%;
+	}
 }
  
 /* Smartphones (portrait) ----------- */
