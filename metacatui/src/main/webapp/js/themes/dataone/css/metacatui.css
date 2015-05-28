@@ -1701,6 +1701,9 @@ table th.btn-container .btn{
 		font-size: 13px;
 		height: 28px;
 	}
+	.sort-by [value='read_count_i+desc']{
+		display: none;
+	}
 	
 	    
 /* Stats styles 
