@@ -91,6 +91,7 @@ h3{
 }
 .result-row .info-icons .icons.resource-map{
 	width: 20px;
+	height: 1em;
 }
 .result-row .info-icons .icons.download .icon{
 	font-size: 1.2em;

@@ -14,13 +14,18 @@
 	<div class="stats icons">
 		<% 
 		
-		if (typeof read_count_i !== "undefined"){
-			print('<span class="count">', commaSeparateNumber(read_count_i), '</span><label class="subtle">views</label>');
-		}
+		if (typeof read_count_i !== "undefined"){ 
+			var readableCount = commaSeparateNumber(read_count_i); %>
+			<span class="count"><%=readableCount%></span><label class="subtle">views</label>
+		<% }
+		else{ 
+		%>
+			<span class="count">0</span><label class="subtle">views</label>
+		<% }
 		%>
 	</div>
     <% if(typeof abstract != "undefined"){  %>
-		<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract"></i></div>
+		<div class="abstract icons stop-route popover-this"><i class="icon icon-info-sign popover-this abstract"></i></div>
 	<% } %>    		      
     <div class="resource-map icons stop-route">             
            <%
@@ -66,7 +71,7 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route tooltip-this" title="Download" href="', package_service, URLid, '" data-title="Download" data-trigger="hover" data-placement="top"><i class="icon icon-cloud-download stop-route"></i></a>');
+				print('<a class="download stop-route tooltip-this" title="Download" href="', package_service, URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="top"><i class="icon icon-cloud-download stop-route"></i></a>');
 			}			
           	%>          
       </div>

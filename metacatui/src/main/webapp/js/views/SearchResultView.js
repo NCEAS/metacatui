@@ -77,12 +77,10 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 				}
 				
 			if(this.model.get("abstract")){
+				var abridgedAbstract = (this.model.get("abstract").indexOf(" ", 250) < 0) ? this.model.get("abstract") : this.model.get("abstract").substring(0, this.model.get("abstract").indexOf(" ", 250)) + "...";
 				var content = $(document.createElement("div"))
-							  .addClass("multi-line-ellipsis")
-							  .append($(document.createElement("div"))
-									  .append($(document.createElement("p"))
-											  .text(this.model.get("abstract"))
-											  .append($(document.createElement("i")))));			
+								.append($(document.createElement("p")).text(abridgedAbstract));
+												
 				this.$(".popover-this.abstract").popover({
 					trigger: "hover",
 					html: true,
@@ -91,6 +89,10 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 					placement: "top",
 					container: this.el
 				});
+			}
+			else{
+				this.$(".popover-this.abstract").addClass("inactive");
+				this.$(".icon.abstract").addClass("inactive");
 			}
 			
 			return this;
