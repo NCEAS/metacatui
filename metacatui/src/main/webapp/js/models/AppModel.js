@@ -22,7 +22,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v1',
-			d1CNBaseUrl: "https://cn-sandbox-2.test.dataone.org/",
+			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v1",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -52,7 +52,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 			}
 
-			this.set('baseUrl', "https://dev.nceas.ucsb.edu");
+			this.set('baseUrl', "https://knb.ecoinformatics.org");
 
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
@@ -67,6 +67,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 			this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
+			this.set('nodeServiceUrl', this.get("d1CNBaseUrl") + this.get('d1CNService') + '/node');
 		
 			this.on("change:pid", this.changePid);
 		},

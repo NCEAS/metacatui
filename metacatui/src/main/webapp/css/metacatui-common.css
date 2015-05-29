@@ -93,9 +93,6 @@ h3{
 .btn > i{
 	margin-left: 5px;
 }
-.result-row .info-icons{
-	margin-top: 10px;
-}
 .result-row .info-icons .icons.resource-map{
 	width: 20px;
 	height: 1em;
@@ -123,18 +120,26 @@ h3{
 /****************************************** 
 ** Results and Result Rows ***
 ******************************************/
-
+.result-row{
+	padding: 5px;
+	 cursor: pointer;
+	 width: 95%;
+	 width: calc(100% - 10px);
+}
 .result-row .route-to-metadata{
 	cursor: pointer;
 }
-.result-row .icons .icon-info-sign{
-	font-size: 1.2em;
+.result-row .icons .icon{
+	font-size: 1.1em;
 }
 #results.loading .notification{
   margin-top: 20px;
 }
+.result-row .info-icons{
+	margin-top: 10px;
+}
 .result-row .info-icons img.icon{
-	height: 1.3em;
+	height: 1em;
 }
 .result-row .info-icons .icons.download .tooltip{
 	width: 120px;
@@ -143,6 +148,7 @@ h3{
   width: 50px;
   float: left;
   margin-right: 10px;
+  margin-left: 5px;
 }
 .result-row > .logo.ORNLDAAC,
 .result-row > .logo.CDL,
@@ -151,6 +157,19 @@ h3{
 .result-row > .logo.EDACGSTORE,
 .result-row > .logo.GLEON{
 	width: 90px;
+}
+.result-row > .logo.KNB{
+	width: 30px;
+}
+.result-row > .logo.IARC,
+.result-row > .logo.LTER{
+	width: 40px;
+}
+.result-row .smaller{
+	font-size: .9em;
+}
+.result-row .label{
+	margin-right: 3px;
 }
 /****************************************** 
 ** Provenance flow-charts ***

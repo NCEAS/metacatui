@@ -1626,7 +1626,11 @@ svg .domain{
     }
     
     /* Inherit for these registry labels */
-	.label {
+	#RegistryEntryForm .label, 
+    #RegistryLogin .label, 
+    #RegistryResponse .label, 
+    #RegistryEntryReview .label, 
+    #RegistryGuide .label {
 	  display: inherit;
 	  padding: inherit;
 	  font: inherit;
@@ -2151,14 +2155,6 @@ svg .domain{
    #results.loading > .notification{
    	min-height: 500px;
    }
-    .result-row {
-	      display: block;
-	   	  padding: 10px 10px 0px 10px;
-	      width: 98%; /*fallback */
-	      width: calc(100% - 16px);
-	      cursor: pointer;
-	      transition: background-color .5s;
-    }
     
     .result-row:nth-child(odd){
     	background-color: #F4F6F8;
@@ -2208,9 +2204,6 @@ svg .domain{
     .info-icons i.inactive{
     	visibility: hidden;
     }
-    .info-icons .btn{
-    	color: #555;
-    }
     
     .result-row:hover .info-icons .inactive{
     	color: rgba(178, 202, 221, 1);
@@ -2237,17 +2230,6 @@ svg .domain{
     	text-overflow: ellipsis;
     }
   	
-  	/** View count **/
-    .result-row .stats .count{
-    	font-size: 16px;
-    	text-align: center; 
-    	display: block;
-    }
-    
-    .result-row .stats label{
-    	font-size: 12px;
-    	text-align: center;
-    }
     
 	/** Download button **/   
 

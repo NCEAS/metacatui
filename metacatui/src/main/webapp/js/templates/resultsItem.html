@@ -19,11 +19,11 @@
 		
 		if (typeof read_count_i !== "undefined"){ 
 			var readableCount = commaSeparateNumber(read_count_i); %>
-			<span class="count"><%=readableCount%></span><label class="subtle">views</label>
+			<span class="count label label-primary"><%=readableCount%></span><span class="smaller">views</span>
 		<% }
 		else{ 
 		%>
-			<span class="count">0</span><label class="subtle">views</label>
+			<span class="count label label-primary">0</span><span class="smaller">views</span>
 		<% }
 		%>
 	</div>
@@ -90,4 +90,3 @@
       	</div>  
       	<div class="clear"></div>
   </div><!-- END info-icons -->
-<div class="clear"></div>
