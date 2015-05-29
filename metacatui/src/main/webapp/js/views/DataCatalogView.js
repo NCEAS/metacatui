@@ -342,7 +342,11 @@ define(['jquery',
 			
 			//Create a new Search model with a search that finds all members of these packages/resource maps
 			var provSearchModel   = new SearchModel({
-				formatType: [],
+				formatType: [{
+					value: "DATA",
+					label: "data",
+					description: null
+				}],
 				exclude: [],
 				resourceMap: maps
 			});

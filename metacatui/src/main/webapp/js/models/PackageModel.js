@@ -64,6 +64,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						model.set('id', null);
 						model.set('memberIds', new Array(doc.id));
 						model.set('members', [new SolrResult(doc)]);
+						model.trigger("change:members");
 					}
 					else{
 						model.set('id', doc.resourceMap[0]);
@@ -105,6 +106,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				
 				model.set('memberIds', _.uniq(pids));
 				model.set('members', members);
+				model.trigger("change:members");
 			}, "json");
 			
 			return this;

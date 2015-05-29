@@ -13,6 +13,7 @@ define(['jquery',
 		'views/ProvStatementView',
 		'views/PackageTableView',
 		'views/AnnotatorView',
+		'text!templates/dataSource.html',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html',
@@ -24,7 +25,7 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, $ui, _, Backbone, gmaps, fancybox, Package, SolrResult, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadButtonTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
+	function($, $ui, _, Backbone, gmaps, fancybox, Package, SolrResult, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, DataSourceTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadButtonTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
 	'use strict';
 
 	
@@ -35,27 +36,19 @@ define(['jquery',
 		el: '#Content',
 		
 		type: "Metadata",
-				
+		
+		//Templates
 		template: null,
-						
 		alertTemplate: _.template(AlertTemplate),
-
 		doiTemplate: _.template(PublishDoiTemplate),
-		
 		usageTemplate: _.template(UsageTemplate),
-
 		versionTemplate: _.template(VersionTemplate),
-		
 		loadingTemplate: _.template(LoadingTemplate),
-		
+		dataSourceTemplate: _.template(DataSourceTemplate),
 		downloadButtonTemplate: _.template(DownloadButtonTemplate),
-
 		downloadContentsTemplate: _.template(DownloadContentsTemplate),
-		
 		editMetadataTemplate: _.template(EditMetadataTemplate),
-		
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
-		
 		mapTemplate: _.template(MapTemplate),
 				
 		objectIds: [],
@@ -118,6 +111,7 @@ define(['jquery',
 								
 								//Get the package details from the index, too
 								viewRef.getPackageDetails();
+								
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 								
@@ -143,13 +137,11 @@ define(['jquery',
 				parentView: this 
 				});
 			this.subviews.push(metadataFromIndex);
-
-			//Get the package details from the index, too
-			this.getPackageDetails();
 			
 			//Add the package details once the metadata from the index is drawn 
 			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
+			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageDetails);
 			
 			//Add the metadata HTML
 			this.$el.html(metadataFromIndex.render().el);
@@ -245,9 +237,6 @@ define(['jquery',
 		getPackageDetails: function(pid) {
 			var viewRef = this;
 			
-			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"}) || null;
-			if(metadataFromIndex) return;
-			
 			//If no id is passed, used the one in the appModel
 			if((typeof pid === "undefined") || !pid) var pid = this.pid;
 			
@@ -255,6 +244,8 @@ define(['jquery',
 			this.packageModel = new Package();
 			this.listenToOnce(this.packageModel, 'complete', this.getEntityNames);
 			this.listenToOnce(this.packageModel, 'complete', this.insertPackageDetails);
+			this.listenToOnce(this.packageModel, 'complete', this.insertDataSource);
+			this.listenToOnce(nodeModel, 'change:members',  this.insertDataSource);
 			this.packageModel.getMembersByMemberID(pid);
 		},
 		
@@ -264,13 +255,7 @@ define(['jquery',
 		insertPackageDetails: function(){	
 			var viewRef = this;
 			
-			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
-			if(typeof metadataFromIndex === "undefined") metadataFromIndex = null;
-			
-			// There are two different events that are calling this function - when the MetadataIndexView is complete
-			// and when the Package model is complete. We need to make sure both are done before inserting the package details.
-			// If we are not rendering the metadata from the index and the package model is complete, we can continue.
-			if(metadataFromIndex && !metadataFromIndex.complete) return this;
+			//If the package model is not complete, don't do anything
 			if(!this.packageModel.complete) return this;
 				
 			//** Draw the package table **//	
@@ -411,6 +396,22 @@ define(['jquery',
 			
 			return true;
 
+		},
+		
+		insertDataSource: function(){
+			if(!this.citationEl) this.getCitation();			
+			if(!this.packageModel || !nodeModel || !nodeModel.get("members").length) return;
+			
+			//Get this metadata doc from the package model
+			var thisDoc = _.findWhere(this.packageModel.get("members"), {id: this.pid});
+			if(!thisDoc) return;
+			
+			//Insert the data source template
+			$(this.citationEl).after(this.dataSourceTemplate({
+				node: _.findWhere(nodeModel.get("members"), {identifier: thisDoc.get("datasource")})
+			}));
+			this.$(".popover-this").popover();
+			this.$(".tooltip-this").tooltip();
 		},
 		
 		/*

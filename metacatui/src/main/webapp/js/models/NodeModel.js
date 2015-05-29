@@ -34,7 +34,8 @@ define(['jquery', 'underscore', 'backbone'],
 				"urn:node:NMEPSCOR"    : "img/node-logos/NMEPSCOR.png",
 				"urn:node:TERN"        : "img/node-logos/TERN.png",
 				"urn:node:NKN"         : "img/node-logos/NKN.png",
-				"urn:node:PPBio"       : "img/node-logos/PPBio.png"
+				"urn:node:PPBio"       : "img/node-logos/PPBio.png",
+				"urn:node:mnDemo2"     : "img/node-logos/KNB.png"
 		},
 		
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API

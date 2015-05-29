@@ -646,6 +646,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	background-color: transparent;
 	display: block;
 	font-weight: lighter;
+	width: 83%;
+	float: left;
 }
 .attributeList > .row-fluid > .span2 {
   min-width: 130px;
@@ -675,6 +677,15 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-left: 0px;
 }
 /**----------------------------------------**/
+.citation ~ .logo{
+  width: 15%;
+  display: inline-block;
+  float: right;
+  margin-bottom: 10px;
+}
+.citation ~ .logo.KNB{
+	max-width: 90px;
+}
 
 /****************************************** 
 * The Data Details box in the Metadata View
