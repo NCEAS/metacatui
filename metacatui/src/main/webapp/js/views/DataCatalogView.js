@@ -283,7 +283,7 @@ define(['jquery',
 			this.searchResults.setSort(sortOrder);
 			
 			//Specify which fields to retrieve
-			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,";
+			var fields = "id,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource";
 			if(gmaps){
 				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}
@@ -428,6 +428,7 @@ define(['jquery',
 				if(Array.isArray(currentValue)){
 					currentValue.push(filter);
 					this.searchModel.set(category, currentValue);
+					this.searchModel.trigger("change:" + category);
 				}
 				else{
 					//If it isn't an array, then just update the model with a simple value

@@ -127,7 +127,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id", "rightsHolder", "submitter"];
+			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id", "rightsHolder", "submitter", "memberNode"];
 			
 			//Start the query string
 			var query = "";

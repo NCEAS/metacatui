@@ -6,7 +6,10 @@
 		    }
 		    return val;
 		 }
-%>     
+%>
+<% if(memberNode && memberNode.logo){ %>
+	<img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%>" />
+<% } %>	     
 <div class="citation">
 </div>
 <div class="clear"></div>

@@ -139,7 +139,19 @@ h3{
 .result-row .info-icons .icons.download .tooltip{
 	width: 120px;
 }
-
+.result-row > .logo {
+  width: 50px;
+  float: left;
+  margin-right: 10px;
+}
+.result-row > .logo.ORNLDAAC,
+.result-row > .logo.CDL,
+.result-row > .logo.ONEShare,
+.result-row > .logo.CLOEBIRD,
+.result-row > .logo.EDACGSTORE,
+.result-row > .logo.GLEON{
+	width: 90px;
+}
 /****************************************** 
 ** Provenance flow-charts ***
 ******************************************/

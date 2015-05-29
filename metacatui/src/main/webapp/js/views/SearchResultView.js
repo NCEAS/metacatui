@@ -36,7 +36,9 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 		render: function () {
 			//Convert the model to JSON and create the result row from the template
 			var json = this.model.toJSON();
-			json.hasProv = this.model.hasProvTrace();
+			json.hasProv  = this.model.hasProvTrace();
+			json.memberNode = _.findWhere(nodeModel.get("members"), {identifier: this.model.get("datasource")});
+				
 			var resultRow = this.template(json);
 			this.$el.append(resultRow);
 			
