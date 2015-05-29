@@ -899,13 +899,16 @@ define(['jquery',
 			
 			//Create an HTML list
 			var listMax = 4,
-				numHidden = members.length - listMax,
+				hiddenNodes = ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
+				numHidden = members.length - listMax - hiddenNodes.length,
 				list = document.createElement("ul");
 			
 			$(list).addClass("checkbox-list");
 			
 			//Add a checkbox and label for each member node in the node model
 			_.each(members, function(member, i){
+				if(_.contains(hiddenNodes, member.identifier)) return;
+					
 				var listItem = document.createElement("li"),
 					input = document.createElement("input"),
 					label = document.createElement("label");
