@@ -49,19 +49,4 @@
 		margin-bottom: 0px;
 		margin-top: 0px;
 	}
-	
-	/************** Search page ****************/
-	#sidebar{
-		width: 90%;
-	}
-	#results-container{
-		width: 90%;
-		margin-left: 10px;
-	}
-	.filter-contain > .filter-input-contain{
-		width: 100%;
-	}
-	.filter-contain > label{
-		font-size: 1.1em;
-	}
 }

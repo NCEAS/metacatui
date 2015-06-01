@@ -1,10 +1,7 @@
 /* Smartphones (portrait) ----------- */
 @media only screen and (max-device-width : 480px) {
-	#Content{
-		width: 100%;
-	}
 	
-	/** Metadata View **/
+	/************** Metadata View ****************/
 	.form-horizontal .control-label{
 		float: none;
 		text-align: left;
@@ -35,8 +32,14 @@
 	.entitydetails > h4 > .btn{
 		float: none;
 	}
+	.breadcrumb{
+		margin-top: 20px;
+		margin-left: 10px;
+		width: 95%;
+		width: calc(100% - 50px);
+	}
 	
-	/** Navbar **/
+	/************** Navbar ****************/
 	#Navbar{
 		width: 100%;
 		position: relative;
@@ -66,6 +69,24 @@
 	/*************** General Structure ***********/
 	.row-fluid .span6.pagination-left {
   		width: 100%;
+	}
+	#Content{
+		width: 100%;
+	}
+	
+	/************** Search page ****************/
+	#sidebar{
+		width: 90%;
+	}
+	#results-container{
+		width: 90%;
+		margin-left: 10px;
+	}
+	.filter-contain > .filter-input-contain{
+		width: 100%;
+	}
+	.filter-contain > label{
+		font-size: 1.1em;
 	}
 }
  

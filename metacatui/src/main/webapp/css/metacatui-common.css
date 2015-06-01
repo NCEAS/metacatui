@@ -1085,4 +1085,6 @@ textarea.token{
 .filter-contain > i.icon-map-marker{
   	font-size: 22px;
 }
-   
+label.ui-state-active i.icon-check-empty, label.ui-state-default i.icon-check {
+  display: none;
+}
