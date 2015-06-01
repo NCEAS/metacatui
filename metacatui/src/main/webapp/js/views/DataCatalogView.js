@@ -135,7 +135,7 @@ define(['jquery',
 				resourceMap   : this.searchModel.get('resourceMap'),
 				searchOptions : registryModel.get('searchOptions'),
 				gmaps         : gmaps,
-				username      : appModel.get('username'),
+				username      : appUserModel.get('username'),
 				loading       : loadingHTML
 			});
 			
@@ -917,12 +917,13 @@ define(['jquery',
 							.attr("data-trigger", "hover")
 							.attr("title", member.description)
 							.attr("data-placement", "top")
-							.html(member.name);
+							.html(member.name)
+							.prepend($(document.createElement("i")).addClass("icon icon-check"), $(document.createElement("i")).addClass("icon icon-check-empty"));
 					$(input).addClass("filter")
 							.attr("type", "checkbox")
 							.attr("data-category", "memberNode")
 							.attr("id", member.identifier)
-							.attr("name", member.identifier)
+							.attr("name", "membernode")
 							.attr("value", member.identifier)
 							.attr("data-label", member.name)
 							.attr("data-description", member.description);
@@ -946,6 +947,7 @@ define(['jquery',
 			var container = $('.member-nodes-placeholder');
 			$(container).html(list);
 			$(".tooltip-this").tooltip();
+			$(list).buttonset();
 		},
 		
 		resetMemberNodeList: function(){

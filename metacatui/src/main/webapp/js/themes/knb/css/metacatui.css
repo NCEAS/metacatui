@@ -1973,22 +1973,9 @@ svg .domain{
     
     
     /** for showing "my packages" filter */
-	.keyword-search-link,
-	.current-filters > li.keyword-search-link {
-		display: none;
-	}
-	.current-filters.active {
-		background-color: inherit;
-		border-color: inherit;
-		display: block;
-	}
-	
 	.current-filters > li.keyword-search-link.active {
 		background-color: #006699; /*IE 8 fallback */
 		background-color: rgba(0, 102, 153, .8);
-		border-color: inherit;
-		display: block;
-		height: 20px;
 	}
 	
     /*-- Headers in sidebar --*/

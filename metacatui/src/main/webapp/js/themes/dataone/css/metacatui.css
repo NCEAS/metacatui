@@ -1275,19 +1275,8 @@ table th.btn-container .btn{
 	}
 	
 	/** for showing "my packages" filter */
-	.keyword-search-link {
-		display: none;
-	}
-	.current-filters.active {
-		background-color: inherit;
-		border-color: inherit;
-		display: inline-block;
-	}
 	.keyword-search-link.active {
 		background-color: #1C6E84;
-		border-color: inherit;
-		display: inline-block;
-		width: auto;
 	}
     
 	

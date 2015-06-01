@@ -1038,7 +1038,7 @@ textarea.token{
 	margin-right: 5px;
 }
 /****************************************** 
-** Searching and Map ***
+** Filters ***
 ******************************************/
 .filter-contain{
 	border-bottom: 1px dashed #CCC;
@@ -1087,4 +1087,21 @@ textarea.token{
 }
 label.ui-state-active i.icon-check-empty, label.ui-state-default i.icon-check {
   display: none;
+}
+.current-filters.active {
+  background-color: inherit;
+  border-color: inherit;
+  display: inline-block;
+  float: none;
+}
+/** For "My Packages" filter **/
+.keyword-search-link,
+.current-filters > li.keyword-search-link {
+	display: none;
+}
+.keyword-search-link.active,
+.current-filters > li.keyword-search-link.active{
+	border-color: inherit;
+	display: inline-block;
+	width: auto;
 }
