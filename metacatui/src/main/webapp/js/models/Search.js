@@ -31,7 +31,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				south: null,
 				geohashes: [],
 				geohashLevel: 9,
-				//memberNode: null,
+				//dataSource: null,
 				rightsHolder: [],
 				submitter: [],
 				spatial: [],
@@ -55,6 +55,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		fieldNameMap: {
 					 attribute : "attribute",
 					annotation : "sem_annotation",
+					dataSource : "datasource",
 					formatType : "formatType",
 						   all : "",
 					   creator : "origin",
@@ -162,7 +163,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					else
 						thisTaxon = thisTaxon.trim();
 					
-					if(this.needsQuotes(thisTaxon)) value = "%22" + encodeURIComponent(thisTaxon) + "%22";
+					if(this.needsQuotes(thisTaxon)) value = "%22" + thisTaxon + "%22";
 					else value = encodeURIComponent(thisTaxon);
 					
 					query += "+(" +
@@ -229,6 +230,17 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				}
 			}
 			
+			//-----Data Source--------
+			if(this.filterIsAvailable("dataSource") && ((filter == "dataSource") || getAll)){
+				var filterValue = null;
+				var filterValues = this.get("dataSource");
+				
+				if(filterValues.length > 0)
+					filterValues = _.pluck(filterValues, "value");
+				
+				query += "+" + this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues, "OR");				
+			}
+			
 			//-----Excluded fields-----
 			if(this.filterIsAvailable("exclude") && ((filter == "exclude") || getAll)){
 				var exclude = this.get("exclude");
@@ -259,7 +271,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(typeof filterValue == "object")
 						filterValue = filterValue.value;
 					
-					if(this.needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+					if(this.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
 					else filterValue = encodeURIComponent(filterValue);
 					
 					query += "+" + filterValue;
@@ -291,10 +303,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						filterValue = filterValue.trim();
 						
 						// Does this need to be wrapped in quotes?
-						if (model.needsQuotes(filterValue)){
-							filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
-						}
-						// TODO: surround with **?
+						if(model.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
+						else 							   filterValue = encodeURIComponent(filterValue);
+
+							// TODO: surround with **?
 						query += "+" + model.fieldNameMap[filterName] + ":" + filterValue;			
 					}
 				}
@@ -333,16 +345,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			space = entry.indexOf(" ");
 			
-			if(space >= 0){
+			if(space >= 0)
 				return true;
-			}
 			
 			//Check for the colon : character
-			var colon = null;
-			colon = entry.indexOf(":");
-			if(colon >= 0){
+			var colon = entry.indexOf(":");
+			if(colon >= 0)
 				return true;
-			}
 			
 			return false;
 		},
@@ -353,19 +362,27 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		 */
 		getGroupedQuery: function(fieldName, values, operator){
 			var query = "",
-				numValues = values.length,
-				model = this;
-			
+			numValues = values.length,
+			model = this;
+		
 			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) var operator = "OR";
 			
-			if(numValues == 1) query = fieldName + ":" + values[0];
+			if(numValues == 1){
+				var value = "";
+				
+				if(this.needsQuotes(values[0])) value = '"' + values[0] + '"';
+				else                            value = encodeURIComponent(values[0]);
+				
+				query = fieldName + ":" + value;
+			}
 			else{
 				_.each(values, function(value, i){
 					if(model.needsQuotes(value)) value = '"' + value + '"';
+					else                         value = encodeURIComponent(value);
 						
-					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + value;
-					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
-					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
+					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + encodeURIComponent(value);
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + encodeURIComponent(value);
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + encodeURIComponent(value) + ")";
 				});
 			}
 			

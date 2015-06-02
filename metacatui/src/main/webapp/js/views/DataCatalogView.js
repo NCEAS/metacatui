@@ -183,8 +183,8 @@ define(['jquery',
 			this.listenTo(this.searchResults, 'add', this.addOne);
 			this.listenTo(this.searchResults, 'reset', this.addAll);
 			this.listenTo(this.searchResults, 'reset', this.checkForProv);
-			if(nodeModel.get("members").length > 0) this.listMemberNodes();
-			else this.listenTo(nodeModel, 'change:members', this.listMemberNodes);
+			if(nodeModel.get("members").length > 0) this.listDataSources();
+			else this.listenTo(nodeModel, 'change:members', this.listDataSources);
 			
 			//Listen to changes in the searchModel
 			this.stopListening(this.searchModel);
@@ -789,11 +789,10 @@ define(['jquery',
 
 			//Reset the checkboxes
 			$("#includes_data").prop("checked", this.searchModel.get("resourceMap"));
-			$("#includes-files-buttonset").buttonset("refresh");
-			$("#data_year").prop("checked", this.searchModel.get("dataYear"));
-			$("#publish_year").prop("checked", this.searchModel.get("pubYear"));
-			$("#filter-year").buttonset("refresh");
-			this.resetMemberNodeList();
+			$("#data_year").prop("checked",     this.searchModel.get("dataYear"));
+			$("#publish_year").prop("checked",  this.searchModel.get("pubYear"));
+			this.listDataSources();
+			$(".filter-contain .ui-buttonset").buttonset("refresh");
 			
 			//Zoom out the Google Map
 			this.resetMap();	
@@ -893,9 +892,12 @@ define(['jquery',
 		/*
 		 * Get the member node list from the model and list the members in the filter list
 		 */
-		listMemberNodes: function(){
+		listDataSources: function(){
 			//Get the member nodes
 			var members = nodeModel.get("members");
+			
+			//Get the current search filters for data source
+			var currentFilters = this.searchModel.get("dataSource");
 			
 			//Create an HTML list
 			var listMax = 4,
@@ -912,21 +914,27 @@ define(['jquery',
 				var listItem = document.createElement("li"),
 					input = document.createElement("input"),
 					label = document.createElement("label");
+				
+				//If this member node is already a data source filter, then the checkbox is checked
+				var checked = _.findWhere(currentFilters, {value: member.identifier}) ? true : false;
 					
 					$(label).addClass("ellipsis tooltip-this")
 							.attr("data-trigger", "hover")
 							.attr("title", member.description)
+							.attr("for", member.identifier)
 							.attr("data-placement", "top")
 							.html(member.name)
 							.prepend($(document.createElement("i")).addClass("icon icon-check"), $(document.createElement("i")).addClass("icon icon-check-empty"));
 					$(input).addClass("filter")
 							.attr("type", "checkbox")
-							.attr("data-category", "memberNode")
+							.attr("data-category", "dataSource")
 							.attr("id", member.identifier)
-							.attr("name", "membernode")
+							.attr("name", "dataSource")
 							.attr("value", member.identifier)
 							.attr("data-label", member.name)
 							.attr("data-description", member.description);
+					
+					if(checked) $(input).attr("checked", "checked");
 										
 					if(i > (listMax - 1)){
 						$(listItem).addClass("hidden");
@@ -950,10 +958,10 @@ define(['jquery',
 			$(list).buttonset();
 		},
 		
-		resetMemberNodeList: function(){
+		resetDataSourceList: function(){
 			//Reset the Member Nodes checkboxes
 			var mnFilterContainer = $("#member-nodes-container"),
-				defaultMNs = this.searchModel.get("memberNode");
+				defaultMNs = this.searchModel.get("dataSource");
 			
 			//Make sure the member node filter exists
 			if(!mnFilterContainer || mnFilterContainer.length == 0) return false;

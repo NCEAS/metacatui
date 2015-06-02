@@ -1050,16 +1050,64 @@ textarea.token{
    	font-weight: bold;
    	color: #666;
 }
-#includes-files label,
-#includes-files label.ui-state-active{
-  	float: left;
-    margin-bottom: 8px;
-    margin-right: 5px;
-}    
-#filter-year label#data-year-label,
-#filter-year label#pub-year-label{
- 	margin: 0px 5px 5px 0px;
+.current-filters > li,
+.current-filters > li[class*="span"],
+.ui-buttonset label.ui-state-active{
+	padding: 0px 5px 0px 5px;
+	height: auto;
+	line-height: 1.5em;
+	width: auto;
+	max-width: 175px;
+	margin: 5px 5px 0px 0px;
+	float:left;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	font-size: 14px;
+}
+/*-- The filter checkboxes --*/
+#includes-files label{
+ 	font-size: 13px;
+ 	margin-right: 8px;
+}
+ul.checkbox-list{
+ 	list-style: none;
+}
+.checkbox-list > li > input{
  	float: left;
+ 	margin-right: 10px;
+ 	margin-left: 3px;
+}
+.checkbox-list label{
+ 	font-size: .9em;
+ 	clear: both;
+}
+.checkbox-list .more-link{
+	font-weight: normal;
+	font-size: .9em;
+} 
+/** UI Buttonsets **/
+.ui-buttonset label,
+.ui-buttonset label.ui-state-active{
+    float: none;
+}
+.ui-buttonset label#data-year-label,
+.ui-buttonset label#pub-year-label{
+ 	margin: 0px 5px 5px 0px;
+}
+.ui-buttonset input[type="checkbox"]{
+   	display: none;
+}
+.ui-buttonset .icon-check-empty, 
+.ui-buttonset .icon-check{
+	margin-right: 5px;
+}
+label.ui-state-active i.icon-check-empty, 
+label.ui-state-default i.icon-check {
+  display: none;
+}
+label.ui-state-active i.icon-check{
+	display: inline;
 }
 /** Filter icons **/
 .filter-contain > label > .icon{
@@ -1084,9 +1132,6 @@ textarea.token{
 }  
 .filter-contain > i.icon-map-marker{
   	font-size: 22px;
-}
-label.ui-state-active i.icon-check-empty, label.ui-state-default i.icon-check {
-  display: none;
 }
 .current-filters.active {
   background-color: inherit;

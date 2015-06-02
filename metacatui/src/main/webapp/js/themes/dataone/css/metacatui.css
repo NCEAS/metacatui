@@ -1071,31 +1071,7 @@ table th.btn-container .btn{
 		font-weight: normal;
 		text-shadow: none;
 	}
-
-	/*-- The filter checkboxes --*/
-	#filter-year input[type="checkbox"],
-    #includes-files input[type="checkbox"]{
-    	display: none;
-    }
-    #includes-files label{
-    	font-size: 13px;
-    	margin-right: 8px;
-    }
-    ul.checkbox-list{
-    	list-style: none;
-    }
-    .checkbox-list > li > input{
-    	float: left;
-    	margin-right: 10px;
-    	margin-left: 3px;
-    }
-    .checkbox-list label{
-    	font-size: .9em;
-    }
-    .checkbox-list .more-link{
-  		font-weight: normal;
-  		font-size: .9em;
-  	}    
+   
 
     
 	/*-- The 'Year' filter elements --*/
@@ -1202,21 +1178,9 @@ table th.btn-container .btn{
 	
 	.current-filters > li,
 	.current-filters > li[class*="span"],
-	#filter-year label.ui-state-active, 
-	#includes-files label.ui-state-active{
+	.ui-buttonset label.ui-state-active{
 		background-color: #1C6E84;
 		color: #FFF;
-		padding: 0px 5px 0px 5px;
-		height: auto;
-		line-height: 1.5em;
-		width: auto;
-		max-width: 175px;
-		margin: 5px 5px 0px 0px;
-		float:left;
-		border-radius: 3px;
-		-webkit-border-radius: 3px;
-		-moz-border-radius: 3px;
-		font-size: 14px;
 	}
 	
 	.current-filter > span{
@@ -1256,16 +1220,6 @@ table th.btn-container .btn{
 	
 	label.ui-state-active i{
 		color: #71A9BD;
-	}
-	
-	
-	label.ui-state-active i.icon-check-empty,
-	label.ui-state-default i.icon-check{
-		display: none;
-	}
-	
-	label.ui-state-active i.icon-check{
-		display: inline;
 	}
 	
 	.current-filters > li > i:hover{
