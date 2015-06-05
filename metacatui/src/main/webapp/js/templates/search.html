@@ -50,7 +50,7 @@
 				</div>
 				
 				<% if(appSearchModel.filterIsAvailable("dataSource")){ %>
-					<div class="filter-contain" id="member-nodes-container" data-category="creator">
+					<div class="filter-contain" id="member-nodes-container" data-category="dataSource">
 						<label  class="tooltip-this" data-trigger="hover" data-title="The name of the DataONE member node that a dataset originates from" data-placement="top"><i class="icon icon-group"></i>Member Node</label>
 						<div class="clear"></div>
 						<div class="member-nodes-placeholder">
@@ -60,7 +60,7 @@
 				<% } %>
 				
 				<div class="filter-contain">
-					<label class="tooltip-this" data-trigger="hover" data-title="The name of the creator of a dataset" data-placement="top"><i class="icon icon-user"></i>Creator</label>
+					<label class="tooltip-this" data-trigger="hover" data-title="The name of the creator or originator of a dataset" data-placement="top"><i class="icon icon-user"></i>Creator</label>
 					<div class="filter-input-contain input-append">
 						<input class="filter" type="text" placeholder="First name, last name, etc." id="creator_input" data-category="creator">
 						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>				    	

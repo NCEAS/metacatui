@@ -260,7 +260,7 @@ define(['jquery',
 				solrResult.set("formattedSize", solrResult.bytesToSize());
 				
 				//Add a section for the data details, just like the other attribute sections
-				var keys  = ["id", {field: "formattedSize", display: "size"}, "views", "pubDate", "memberNode", "formatId"];
+				var keys  = ["id", {field: "formattedSize", display: "size"}, "views", "pubDate", "dataSource", "formatId"];
 								
 				//Determine the icon type based on format id
 				var type = solrResult.getType(),

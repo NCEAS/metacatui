@@ -25,8 +25,8 @@ define(['jquery',
 		isSubView: false,
 		
 		//The default global models for searching
-		searchModel: appSearchModel,		
-		searchResults: appSearchResults,
+		searchModel: null,		
+		searchResults: null,
 		
 		//Templates
 		template: _.template(CatalogTemplate),		
@@ -103,10 +103,18 @@ define(['jquery',
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
 		render: function () {
-			//Use the global models if there are no other models specified at time of render
-			if(typeof appSearchModel !== "undefined" && (Object.keys(this.searchModel).length == 0)) this.searchModel = appSearchModel;
-			if(((typeof this.searchResults === "undefined") || (Object.keys(this.searchResults).length == 0)) && (appSearchResults && (Object.keys(appSearchResults).length > 0))) this.searchResults = appSearchResults;
 			
+			//Use the global models if there are no other models specified at time of render
+			if((appModel.get("searchHistory").length > 0) && (!this.searchModel || Object.keys(this.searchModel).length == 0)){
+				this.searchModel = appModel.get("searchHistory").pop().search.clone();
+				mapModel = appModel.get("searchHistory").pop().map.clone();
+			}
+			else if((typeof appSearchModel !== "undefined") && (!this.searchModel || Object.keys(this.searchModel).length == 0))
+				this.searchModel = appSearchModel;
+			
+		    if(((typeof this.searchResults === "undefined") || (!this.searchResults || Object.keys(this.searchResults).length == 0)) && (appSearchResults && (Object.keys(appSearchResults).length > 0))) 
+		    	this.searchResults = appSearchResults;
+		    
 			//Get the search mode - either "map" or "list"
 			this.mode = appModel.get("searchMode");
 			if((typeof this.mode === "undefined") || !this.mode){
@@ -180,17 +188,15 @@ define(['jquery',
 			// Register listeners; this is done here in render because the HTML
 			// needs to be bound before the listenTo call can be made
 			this.stopListening(this.searchResults);
+			this.stopListening(this.searchModel);
+			this.stopListening(appModel);
+			this.listenTo(this.searchResults, 'reset', this.cacheSearch);
 			this.listenTo(this.searchResults, 'add', this.addOne);
 			this.listenTo(this.searchResults, 'reset', this.addAll);
 			this.listenTo(this.searchResults, 'reset', this.checkForProv);
 			if(nodeModel.get("members").length > 0) this.listDataSources();
 			else this.listenTo(nodeModel, 'change:members', this.listDataSources);
-			
-			//Listen to changes in the searchModel
-			this.stopListening(this.searchModel);
-			
-			// listen to the appModel for the search trigger
-			this.stopListening(appModel);
+			// listen to the appModel for the search trigger			
 			this.listenTo(appModel, 'search', this.getResults);
 
 			// Store some references to key views that we use repeatedly
@@ -391,6 +397,14 @@ define(['jquery',
 				});
 			});
 			provSearchResults.toPage(0);
+		},
+		
+		cacheSearch: function(){
+			appModel.get("searchHistory").push({
+				search:  this.searchModel.clone(),
+				map:     mapModel.clone()
+			});
+			appModel.trigger("change:searchHistory");
 		},
 		
 		/**
@@ -779,7 +793,8 @@ define(['jquery',
 			this.hideClearButton();
 			
 			//Then reset the model
-			this.searchModel.clear();		
+			this.searchModel.clear();
+			mapModel.clear();
 			
 			//Reset the year slider handles
 			$("#year-range").slider("values", [this.searchModel.get('yearMin'), this.searchModel.get('yearMax')])
@@ -792,7 +807,7 @@ define(['jquery',
 			$("#data_year").prop("checked",     this.searchModel.get("dataYear"));
 			$("#publish_year").prop("checked",  this.searchModel.get("pubYear"));
 			this.listDataSources();
-			$(".filter-contain .ui-buttonset").buttonset("refresh");
+			$(".filter-container .ui-buttonset").buttonset("refresh");
 			
 			//Zoom out the Google Map
 			this.resetMap();	
@@ -1511,7 +1526,6 @@ define(['jquery',
 				this.mode = "list";
 				return;
 			}		
-			
 			$("body").addClass("mapMode");				
 			
 			//Get the map options and create the map
@@ -1531,15 +1545,19 @@ define(['jquery',
 				//Trigger a resize so the map background image tiles load completely
 				google.maps.event.trigger(mapRef, 'resize');
 				
+				//If we are doing a new search...
 				if(viewRef.allowSearch){
 					
 					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
 					if(viewRef.map.getZoom() == mapOptions.minZoom){
 						if(!viewRef.hasZoomed) return; 
 						
-						viewRef.resetMap();	
+						viewRef.resetMap();							
 					}
-					else{						
+					else{
+						if(!viewRef.hasZoomed)
+							mapModel.get("map").setCenter(mapModel.get("mapOptions").center);
+						
 						//Get the Google map bounding box
 						var boundingBox = mapRef.getBounds();
 						
@@ -1555,6 +1573,10 @@ define(['jquery',
 						viewRef.searchModel.set('south', south);
 						viewRef.searchModel.set('east',  east);
 						
+						//Save the center position and zoom level of the map
+						mapModel.get("mapOptions").center = mapRef.getCenter();
+						mapModel.get("mapOptions").zoom   = mapRef.getZoom();
+						
 						//Determine the precision of geohashes to search for
 						var zoom = mapRef.getZoom();												
 						
@@ -1566,36 +1588,38 @@ define(['jquery',
 						//Save our geohash search settings
 						viewRef.searchModel.set('geohashes', geohashBBoxes);
 						viewRef.searchModel.set('geohashLevel', precision);
-						
-						//Set the search model map filters
-						viewRef.searchModel.set('map', {
-							zoom: viewRef.map.getZoom(), 
-							center: viewRef.map.getCenter()
-							});
 												
 						//Add a new visual 'current filter' to the DOM for the spatial search
 						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
 					}
 					
-					viewRef.mapCenter = viewRef.map.getCenter();
-					
 					//Reset to the first page
-					appModel.set("page", 0);
-					
+					if(viewRef.hasZoomed)
+						appModel.set("page", 0);	
+
 					//Trigger a new search
-					viewRef.triggerSearch();	
+					viewRef.triggerSearch();
 				}
+				//Else, if this is the fresh map render on page load
 				else{
 					viewRef.allowSearch = true;
+					mapModel.get("map").setCenter(mapModel.get("mapOptions").center);
 				}
 				
 				viewRef.hasZoomed = false;
 			});
 			
-			//Let the view know we have zoomed on the map
+			//When the user has zoomed in or out on the map, we want to trigger a new search
 			google.maps.event.addListener(mapRef, "zoom_changed", function(){
 				viewRef.allowSearch = true;
 				viewRef.hasZoomed = true;
+			});
+			
+			//When the user has dragged the map to a new location, we don't want to load cached results.
+			//We still may not trigger a new search because the user has to zoom in first, after the map initially loads at full-world view
+			google.maps.event.addListener(mapRef, "dragend", function(){
+				if(viewRef.map.getZoom() > mapOptions.minZoom)
+					viewRef.hasZoomed = true;
 			});
 
 		},
@@ -1702,7 +1726,7 @@ define(['jquery',
 			}
 			
 			//Pan back to the map center so the map will reflect the current spatial filter bounding box
-			var mapCenter = this.mapCenter;
+			var mapCenter = mapModel.get("mapOptions").center;
 			
 			if((typeof mapCenter != "undefined") && (mapCenter !== null)){
 				var viewRef = this;
@@ -2376,7 +2400,7 @@ define(['jquery',
 					//--- Add all the results to the list ---
 					for (i = 0; i < numFound; i++) {
 						var element = viewRef.searchResults.models[i];
-						viewRef.addOne(element);
+						if(typeof element !== "undefined") viewRef.addOne(element);
 					};
 					
 					// Initialize any tooltips within the result item
@@ -2543,6 +2567,8 @@ define(['jquery',
 				$("body").removeClass("mapMode");
 				$("#map-canvas").remove();
 			}
+			
+			this.searchModel = null;
 			
 			// remove everything so we don't get a flicker
 			this.$el.html('')

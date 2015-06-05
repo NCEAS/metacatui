@@ -7,73 +7,86 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 	// ------------------
 	var Map = Backbone.Model.extend({
 		// This model contains all of the map settings used for searching datasets
-		defaults: {
-			map: null,
-			
-			//The options for the map using the Google Maps API MapOptions syntax
-			mapOptions: 
-				(gmaps)? 
-					{   zoom: 3,
-						minZoom: 3,
-					    center: new google.maps.LatLng(39.8, -98.57),
-						disableDefaultUI: true,
-					    zoomControl: true,
-					    zoomControlOptions: {
-						          style: google.maps.ZoomControlStyle.SMALL,
-						          position: google.maps.ControlPosition.LEFT_BOTTOM
-						        },
-						panControl: false,
-						scaleControl: false,
-						streetViewControl: false,
-						mapTypeControl: true,
-						mapTypeControlOptions:{
-								position: google.maps.ControlPosition.LEFT_BOTTOM
-						},
-					    mapTypeId: google.maps.MapTypeId.TERRAIN
-					} 
-				: null,
-			
-			//Set to true to draw markers where tile counts are equal to 1. If set to false, a tile with the count "1" will be drawn instead.
-			drawMarkers: false,
-			
-			//If this theme doesn't have an image in this location, Google maps will use their default marker image
-			markerImage: "./js/themes/" + theme + "/img/map-marker.png",
-			
-			maxZoom: {
-				terrain   : 15,
-				satellite : 19
-			},
-			
-			//Keep track of the geohash level used to draw tiles on this map
-			tileGeohashLevel: 1,
-			
-			///****** MAP TILE OPTIONS **********//
-			//The options for the tiles. Using Google Maps Web API
-			tileOptions: {
-			      strokeWeight: 0,
-			      fillOpacity: 0.6
-			},		
-			
-			//The options for the tiles when they are hovered on. Using Google Maps Web API
-			tileOnHover: {
-				opacity: 0.8,
-				strokeColor: "#FFFFFF",
-				fillColor: "#FFFFFF",
-				strokeWeight: 1
-			},			
-			
-			//The options for the tile text 
-			tileLabelColorOnHover: '#333333',			
-			tileLabelColor: '#FFFFFF',
-			
-			//The tile colors - there are 5 levels of color, with level1 representing tiles with a relatively LOW count of datasets and level5 representing tiles with the HIGHEST amount of datasets
-			tileColors: {
-				level1: "#24ADE3",
-				level2: "#1E92CB",
-				level3: "#186E91",
-				level4: "#12536D",
-				level5: "#092F3E"
-			}		
+		defaults: function(){
+			return {
+				map: null,
+				
+				//The options for the map using the Google Maps API MapOptions syntax
+				mapOptions: function(){
+					if(gmaps)
+						return {  
+							zoom: 3,
+							minZoom: 3,
+						    center: new google.maps.LatLng(44, -103),
+							disableDefaultUI: true,
+						    zoomControl: true,
+						    zoomControlOptions: {
+							          style: google.maps.ZoomControlStyle.SMALL,
+							          position: google.maps.ControlPosition.LEFT_BOTTOM
+							        },
+							panControl: false,
+							scaleControl: false,
+							streetViewControl: false,
+							mapTypeControl: true,
+							mapTypeControlOptions:{
+									position: google.maps.ControlPosition.LEFT_BOTTOM
+							},
+						    mapTypeId: google.maps.MapTypeId.TERRAIN
+						} 
+					else
+						return null;
+				}
+				
+				//Set to true to draw markers where tile counts are equal to 1. If set to false, a tile with the count "1" will be drawn instead.
+				drawMarkers: false,
+				
+				//If this theme doesn't have an image in this location, Google maps will use their default marker image
+				markerImage: "./js/themes/" + theme + "/img/map-marker.png",
+				
+				maxZoom: function(){
+					return {
+						terrain   : 15,
+						satellite : 19
+					}
+				},
+				
+				//Keep track of the geohash level used to draw tiles on this map
+				tileGeohashLevel: 1,
+				
+				///****** MAP TILE OPTIONS **********//
+				//The options for the tiles. Using Google Maps Web API
+				tileOptions: function(){
+					return {
+				      strokeWeight: 0,
+				      fillOpacity: 0.6
+					}
+				},		
+				
+				//The options for the tiles when they are hovered on. Using Google Maps Web API
+				tileOnHover: function(){
+					return {
+						opacity: 0.8,
+						strokeColor: "#FFFFFF",
+						fillColor: "#FFFFFF",
+						strokeWeight: 1
+					}
+				},			
+				
+				//The options for the tile text 
+				tileLabelColorOnHover: '#333333',			
+				tileLabelColor: '#FFFFFF',
+				
+				//The tile colors - there are 5 levels of color, with level1 representing tiles with a relatively LOW count of datasets and level5 representing tiles with the HIGHEST amount of datasets
+				tileColors: function(){
+					return {
+						level1: "#24ADE3",
+						level2: "#1E92CB",
+						level3: "#186E91",
+						level4: "#12536D",
+						level5: "#092F3E"
+					}
+				}
+			}
 		},
 		
 		isMaxZoom: function(map){
@@ -171,7 +184,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 		},
 		
 		clear: function() {
-		    return this.set(_.clone(this.defaults));
+		    return this.set(_.clone(this.defaults()));
 		  }
 		
 	});

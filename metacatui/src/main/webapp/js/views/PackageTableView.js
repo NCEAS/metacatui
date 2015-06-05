@@ -175,14 +175,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(downloadBtnCell).append(downloadButtonHTML);
 				$(tr).append(downloadBtnCell);
 				
-				//"Metadata" button cell
+				//"Description" button cell
 				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
 				if((members.length > 1) && (view.currentlyViewing != solrResult.get("id")) && (formatType != "METADATA")){
 					var moreInfo     = $(document.createElement("a"))
 										.attr("href", "#view/" + id)
 										.addClass("btn preview")
 										.attr("data-id", id)
-										.text("Metadata");
+										.text("Description");
 					var moreInfoIcon = $(document.createElement("i"))
 										.addClass("icon icon-info-sign");
 					$(moreInfo).append(moreInfoIcon);					
