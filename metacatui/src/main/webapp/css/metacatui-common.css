@@ -783,10 +783,11 @@ table.download-contents {
 .download-contents th{
 	font-weight: normal;
 }
-.download-contents i{
+.download-contents .icon{
 	font-size: 1.5em;
 }
-.download-contents .btn i{
+.download-contents .btn .icon,
+.download-contents .preview .icon{
 	font-size: 1em;
 	margin-left: 5px;
 }

@@ -180,7 +180,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				if((members.length > 1) && (view.currentlyViewing != solrResult.get("id")) && (formatType != "METADATA")){
 					var moreInfo     = $(document.createElement("a"))
 										.attr("href", "#view/" + id)
-										.addClass("btn preview")
+										.addClass("preview")
 										.attr("data-id", id)
 										.text("Description");
 					var moreInfoIcon = $(document.createElement("i"))
