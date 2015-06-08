@@ -11,6 +11,7 @@ define(['jquery', 'underscore', 'backbone'],
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
 			searchMode: 'map',
+			searchHistory: [],
 			sortOrder: 'dateUploaded+desc',
 			pid: null,
 			previousPid: null,
@@ -44,7 +45,8 @@ define(['jquery', 'underscore', 'backbone'],
 			orcidServiceUrl: "https://pub.orcid.org/v1.1/search/orcid-bio?q=",
 			tokenUrl: null,
 			annotatorUrl: null,
-			accountsUrl: null
+			accountsUrl: null,
+			prov: false
 		},
 		
 		defaultView: "data",
@@ -61,8 +63,11 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set("baseUrl", "https://cn.dataone.org");
 						
 			// these are pretty standard, but can be customized if needed
-			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
-			//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+			if(this.get("d1CNService").indexOf("v2") > -1){
+				this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
+				//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+			}
+			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/isAuthorized/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/query/solr/?');

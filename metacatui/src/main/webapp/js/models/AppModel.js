@@ -38,7 +38,8 @@ define(['jquery', 'underscore', 'backbone'],
 			orcidServiceUrl: null,
 			tokenUrl: null,
 			annotatorUrl: null,
-			accountsUrl: null
+			accountsUrl: null,
+			prov: false
 		},
 				
 		defaultView: "data",
@@ -51,8 +52,6 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				this.set('baseUrl', baseUrl);
 			}
-
-			this.set('baseUrl', "https://knb.ecoinformatics.org");
 
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
