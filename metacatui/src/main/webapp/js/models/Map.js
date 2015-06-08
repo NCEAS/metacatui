@@ -45,7 +45,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				
 				maxZoom: function(){
 					return {
-						terrain   : 15,
+						terrain   : 16,
 						satellite : 19
 					}
 				},
@@ -66,8 +66,8 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				tileOnHover: function(){
 					return {
 						opacity: 0.8,
-						strokeColor: "#FFFFFF",
-						fillColor: "#FFFFFF",
+						strokeColor: "#FFFF00",
+						fillColor: "#FFFF66",
 						strokeWeight: 1
 					}
 				},			

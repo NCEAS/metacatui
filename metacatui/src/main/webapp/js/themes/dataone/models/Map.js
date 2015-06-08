@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				markerImage: "./js/themes/" + theme + "/img/map-marker.png",
 				
 				maxZoom: {
-					terrain   : 15,
+					terrain   : 16,
 					satellite : 19
 				},
 				
@@ -59,8 +59,8 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				//The options for the tiles when they are hovered on. Using Google Maps Web API
 				tileOnHover: {
 					opacity: 0.8,
-					strokeColor: "#FFFFFF",
-					fillColor: "#FFFFFF",
+					strokeColor: "#FFFF00",
+					fillColor: "#FFFF66",
 					strokeWeight: 1
 				},			
 				

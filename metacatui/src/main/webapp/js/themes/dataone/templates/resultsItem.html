@@ -15,13 +15,7 @@
 	</div>    		      
 	<div class="on-map icons stop-route">
 		<% if (typeof southBoundCoord != "undefined"){
-	          		if((typeof geohash_9 != "undefined") && (geohash_9.length > 1)){
-	          			for(var i=0; i < geohash_9.length; i++){
-	          				print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-geohash="' + geohash_9[i]  + '" data-toggle="tooltip" data-placement="top" title="This metadata has ' + geohash_9.length + ' geographic regions on the map"></i>');
-	          			}
-	          		}
-	            	else
-	            		print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" title="This metadata has one geographic region on the map"></i>');
+	          print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-toggle="tooltip" data-placement="top" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
 	       }
 	       else{
 	          print('<i class="icon icon-map-marker inactive stop-route"></i>');

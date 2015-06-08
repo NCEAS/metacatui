@@ -5,6 +5,7 @@ define(['jquery',
 				'backbone',
 				'collections/SolrResults',
 				'models/Search',
+				'models/Stats',
 				'views/SearchResultView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
@@ -15,7 +16,7 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, SearchResults, SearchModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, SearchResults, SearchModel, StatsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -27,6 +28,7 @@ define(['jquery',
 		//The default global models for searching
 		searchModel: null,		
 		searchResults: null,
+		statsModel: new StatsModel(),
 		
 		//Templates
 		template: _.template(CatalogTemplate),		
@@ -53,7 +55,7 @@ define(['jquery',
 		markerInfoWindows: [],		
 		//Contains all the info windows for each document in the search result list - to display on hover
 		tileInfoWindows: [],
-		//Contains all the markers for each document in the search result list - to display on hover
+		//Contains all the currently visible markers on the map
 		resultMarkers: [],
 		//The geohash value for each tile drawn on the map
 		tileGeohashes: [],
@@ -546,9 +548,9 @@ define(['jquery',
 				  });
 				
 				//Get the minimum and maximum years of this current search and use those as the min and max values in the slider
-				statsModel.set("query", this.searchModel.getQuery());
-				this.listenTo(statsModel, "change:firstBeginDate", function(){ 	
-					var year = new Date.fromISO(statsModel.get("firstBeginDate")).getUTCFullYear(); 
+				this.statsModel.set("query", this.searchModel.getQuery());
+				this.listenTo(this.statsModel, "change:firstBeginDate", function(){ 	
+					var year = new Date.fromISO(this.statsModel.get("firstBeginDate")).getUTCFullYear(); 
 					if(typeof year !== "undefined"){
 						$('#min_year').val(year);
 						$('#year-range').slider({ 
@@ -561,8 +563,8 @@ define(['jquery',
 					}
 				});
 				//Only when the first begin date is retrieved, set the slider min and max values	 
-				this.listenTo(statsModel, "change:lastEndDate", function(){ 	
-					var year = new Date.fromISO(statsModel.get("lastEndDate")).getUTCFullYear(); 
+				this.listenTo(this.statsModel, "change:lastEndDate", function(){ 	
+					var year = new Date.fromISO(this.statsModel.get("lastEndDate")).getUTCFullYear(); 
 					if(typeof year !== "undefined"){
 						$('#max_year').val(year);
 						$('#year-range').slider({ 
@@ -574,15 +576,15 @@ define(['jquery',
 							$('#year-range').slider({ max: year });
 					}
 				});
-				statsModel.getFirstBeginDate();
-				statsModel.getLastEndDate();
+				this.statsModel.getFirstBeginDate();
+				this.statsModel.getLastEndDate();
 			}
 			//If the year slider has been created and the user initiated a new search using other filters
 			else if(!userAction && (!this.searchModel.get("dataYear")) && (!this.searchModel.get("pubYear"))){
 				//Reset the min and max year based on this search
-				statsModel.set("query", this.searchModel.getQuery());
-				statsModel.getFirstBeginDate();
-				statsModel.getLastEndDate();
+				this.statsModel.set("query", this.searchModel.getQuery());
+				this.statsModel.getFirstBeginDate();
+				this.statsModel.getLastEndDate();
 			}
 			// If either of the year type selectors is what brought us here, then determine whether the user
 			// is completely removing both (reset both year filters) or just one (remove just that one filter)
@@ -596,9 +598,9 @@ define(['jquery',
 					this.searchModel.set('pubYear', false);
 					
 					//Reset the min and max year based on this search
-					statsModel.set("query", this.searchModel.getQuery());
-					statsModel.getFirstBeginDate();
-					statsModel.getLastEndDate();
+					this.statsModel.set("query", this.searchModel.getQuery());
+					this.statsModel.getFirstBeginDate();
+					this.statsModel.getLastEndDate();
 
 					//Slide the handles back to the defaults
 					$('#year-range').slider("values", [this.searchModel.defaults().yearMin, this.searchModel.defaults().yearMax]);
@@ -1542,21 +1544,35 @@ define(['jquery',
 			google.maps.event.addListener(mapRef, "idle", function(){
 				viewRef.ready = true;
 				
+				//Remove all markers from the map
+				for(var i=0; i < viewRef.resultMarkers.length; i++){
+					viewRef.resultMarkers[i].setMap(null);
+				}
+				viewRef.resultMarkers = new Array();
+				
 				//Trigger a resize so the map background image tiles load completely
 				google.maps.event.trigger(mapRef, 'resize');
+				
+				var currentMapCenter = mapModel.get("map").getCenter(),
+					savedMapCenter   = mapModel.get("mapOptions").center,
+					needsRecentered  = (currentMapCenter != savedMapCenter);
 				
 				//If we are doing a new search...
 				if(viewRef.allowSearch){
 					
 					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
 					if(viewRef.map.getZoom() == mapOptions.minZoom){
-						if(!viewRef.hasZoomed) return; 
+						if(!viewRef.hasZoomed){
+							if(needsRecentered) mapModel.get("map").setCenter(savedMapCenter);
+							return; 
+						}
 						
-						viewRef.resetMap();							
+						viewRef.resetMap();
 					}
 					else{
-						if(!viewRef.hasZoomed)
-							mapModel.get("map").setCenter(mapModel.get("mapOptions").center);
+						//If the user has not zoomed or dragged to a new area of the map yet and our map is off-center, recenter it
+						if(!viewRef.hasZoomed && needsRecentered)
+							mapModel.get("map").setCenter(savedMapCenter);
 						
 						//Get the Google map bounding box
 						var boundingBox = mapRef.getBounds();
@@ -1599,11 +1615,12 @@ define(['jquery',
 
 					//Trigger a new search
 					viewRef.triggerSearch();
+					
+					viewRef.allowSearch = false;
 				}
 				//Else, if this is the fresh map render on page load
 				else{
-					viewRef.allowSearch = true;
-					mapModel.get("map").setCenter(mapModel.get("mapOptions").center);
+					if(needsRecentered) mapModel.get("map").setCenter(savedMapCenter);
 				}
 				
 				viewRef.hasZoomed = false;
@@ -1618,8 +1635,10 @@ define(['jquery',
 			//When the user has dragged the map to a new location, we don't want to load cached results.
 			//We still may not trigger a new search because the user has to zoom in first, after the map initially loads at full-world view
 			google.maps.event.addListener(mapRef, "dragend", function(){
-				if(viewRef.map.getZoom() > mapOptions.minZoom)
+				if(viewRef.map.getZoom() > mapOptions.minZoom){
 					viewRef.hasZoomed = true;
+					viewRef.allowSearch = true;
+				}
 			});
 
 		},
@@ -1641,7 +1660,7 @@ define(['jquery',
 			
 			//Reset the map settings
 			this.searchModel.resetGeohash();
-			mapModel.clear();
+			mapModel.set("mapOptions", mapModel.defaults().mapOptions);
 			
 			this.allowSearch = false;
 			
@@ -1658,15 +1677,9 @@ define(['jquery',
 				return false;
 			}
 			
-			//Clear the panning timeout
-			window.clearTimeout(this.centerTimeout);
-			
 			//Get the attributes about this dataset
 			var resultRow = e.target,
-				id = $(resultRow).attr("data-id"),
-				position = nGeohash.decode( $(resultRow).attr("data-geohash") ),
-				positionLatLng = new google.maps.LatLng(position.latitude, position.longitude);
-						
+				id = $(resultRow).attr("data-id");						
 			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
 			if(typeof id == "undefined"){
 				$(resultRow).parents().each(function(){
@@ -1677,20 +1690,30 @@ define(['jquery',
 				});
 			}
 			
-			//Open up the infoWindow, display the polygon, and display the marker for this dataset
-			if(this.resultMarkers[id]){
-				this.resultMarkers[id].infoWindow.open(this.map, this.resultMarkers[id].marker);
-				this.resultMarkers[id].infoWindow.isOpen = true;
-				this.resultMarkers[id].marker.setMap(this.map);
-				this.resultMarkers[id].polygon.setMap(this.map);
-				this.resultMarkers[id].polygon.setVisible(true);
+			//Find the tile for this data set and highlight it on the map
+			var resultGeohashes = this.searchResults.findWhere({id: id}).get("geohash_9");
+			for(var i=0; i < resultGeohashes.length; i++){
+				var thisGeohash = resultGeohashes[i],
+					latLong = nGeohash.decode(thisGeohash),
+					position = new google.maps.LatLng(latLong.latitude, latLong.longitude),
+					containingTileGeohash = _.find(this.tileGeohashes, function(g){ return thisGeohash.indexOf(g) == 0 }),
+					containingTile = _.findWhere(this.tiles, {geohash: containingTileGeohash });
+					
+				this.highlightTile(containingTile);
+				
+				//Set up the options for each marker
+				var markerOptions = {
+					position: position,
+					icon: mapModel.get("markerImage"),
+					zIndex: 99999,
+					map: this.map
+				};
+				
+				//Create the marker and add to the map
+				var marker = new google.maps.Marker(markerOptions);
+				
+				this.resultMarkers.push(marker);
 			}
-
-			//Do not trigger a new search when we pan
-			this.allowSearch = false;
-			
-			//Pan the map
-			this.map.panTo(positionLatLng);	
 		},
 	
 		/**
@@ -1704,8 +1727,7 @@ define(['jquery',
 			
 			//Get the attributes about this dataset
 			var resultRow = e.target,
-				id = $(resultRow).attr("data-id");
-			
+				id = $(resultRow).attr("data-id");			
 			//The mouseover event might be triggered by a nested element, so loop through the parents to find the id
 			if(typeof id == "undefined"){
 				$(e.target).parents().each(function(){
@@ -1716,33 +1738,18 @@ define(['jquery',
 				});
 			}		
 			
-			//Find the marker, polygon, and infoWindow in the view for this result item and close it
-			if(this.resultMarkers[id]){
-				this.resultMarkers[id].infoWindow.close();
-				this.resultMarkers[id].infoWindow.isOpen = false;
-				this.resultMarkers[id].polygon.setMap(null);
-				this.resultMarkers[id].polygon.setVisible(false);
-				this.resultMarkers[id].marker.setMap(null);
-			}
-			
-			//Pan back to the map center so the map will reflect the current spatial filter bounding box
-			var mapCenter = mapModel.get("mapOptions").center;
-			
-			if((typeof mapCenter != "undefined") && (mapCenter !== null)){
-				var viewRef = this;
-
-				// Set a delay on the panning in case we hover over another openMarker item right away.
-				// Without this delay the map will recenter quickly, then move to the next marker, etc. and it is very jarring
-				var recenter = function(){
-					//Do not trigger a new search when we pan
-					viewRef.allowSearch = false;
-										
-					viewRef.map.panTo(mapCenter);
-				}
-
-				this.centerTimeout = window.setTimeout(recenter, 500);
-			}
-			
+			//Get the map tile for this result and un-highlight it
+			var resultGeohashes = this.searchResults.findWhere({id: id}).get("geohash_9");
+			for(var i=0; i < resultGeohashes.length; i++){
+				var thisGeohash = resultGeohashes[i],
+					containingTileGeohash = _.find(this.tileGeohashes, function(g){ return thisGeohash.indexOf(g) == 0 }),
+					containingTile = _.findWhere(this.tiles, {geohash: containingTileGeohash });
+					
+				//Unhighlight the tile and remove the marker from the map
+				this.unhighlightTile(containingTile);
+				this.resultMarkers[i].setMap(null);
+			}			
+			this.resultMarkers = new Array();
 		},
 		
 		/**
@@ -1949,18 +1956,12 @@ define(['jquery',
 					}
 					
 					//Draw this tile
-					var tile = this.drawTile(tileOptions, count);
+					var tile = this.drawTile(tileOptions, tileGeohash, count);
 					
 					//Save the geohashes for tiles in the view for later
 					this.tileGeohashes.push(tileGeohash);
-					
-					//Save our tiles in the view
-					this.tiles.push({text: count, shape: tile, geohash: tileGeohash});
 				}
 			}
-			
-			//Create an info window for each result item in the list that has spatial data, to display when it is hovered over
-			
 			
 			//Create an info window for each marker that is on the map, to display when it is clicked on
 			if(this.markerGeohashes.length > 0) this.addMarkers();
@@ -1972,7 +1973,7 @@ define(['jquery',
 		/**
 		 * With the options and label object given, add a single tile to the map and set its event listeners
 		 **/
-		drawTile: function(options, label){
+		drawTile: function(options, geohash, label){
 			//Exit if maps are not in use
 			if((this.mode != 'map') || (!gmaps)){
 				return false;
@@ -1983,28 +1984,23 @@ define(['jquery',
 					
 			var viewRef = this;
 			
+			//Save our tiles in the view
+			var tileObject = {
+					 text: label, 
+					 shape: tile, 
+					 geohash: geohash,
+					 options: options
+			};
+			this.tiles.push(tileObject);
+			
 			//Change styles when the tile is hovered on
 			google.maps.event.addListener(tile, 'mouseover', function(event) {
-				
-				//Change the tile style on hover
-				tile.setOptions(mapModel.get('tileOnHover'));
-				
-				//Change the label color on hover
-				var div = label.div_;
-				div.style.color = mapModel.get("tileLabelColorOnHover");
-				label.div_ = div;
+				viewRef.highlightTile(tileObject);
 			});
 			
 			//Change the styles back after the tile is hovered on
 			google.maps.event.addListener(tile, 'mouseout', function(event) {
-								
-				//Change back the tile to it's original styling
-				tile.setOptions(options);
-				
-				//Change back the label color
-				var div = label.div_;
-				div.style.color = mapModel.get("tileLabelColor");
-				label.div_ = div;
+				viewRef.unhighlightTile(tileObject);
 			});
 			
 			//If we are at the max zoom, we will display an info window. If not, we will zoom in.
@@ -2073,6 +2069,26 @@ define(['jquery',
 			return tile;
 		},
 		
+		highlightTile: function(tile){
+			//Change the tile style on hover
+			tile.shape.setOptions(mapModel.get('tileOnHover'));
+			
+			//Change the label color on hover
+			var div = tile.text.div_;
+			div.style.color = mapModel.get("tileLabelColorOnHover");
+			tile.text.div_ = div;
+		},
+		
+		unhighlightTile: function(tile){
+			//Change back the tile to it's original styling
+			tile.shape.setOptions(tile.options);
+			
+			//Change back the label color
+			var div = tile.text.div_;
+			div.style.color = mapModel.get("tileLabelColor");
+			tile.text.div_ = div;
+		},
+		
 		/**
 		 * Get the details on each marker
 		 * And create an infowindow for that marker
@@ -2087,7 +2103,6 @@ define(['jquery',
 			var searchModelClone = this.searchModel.clone(),
 				geohashLevel = mapModel.get("tileGeohashLevel"),
 				viewRef = this,
-				infoWindows = [],
 				markers = this.markers;
 			
 			//Change the geohash filter to match our tiles 
@@ -2137,39 +2152,6 @@ define(['jquery',
 						
 						//Create the marker and add to the map
 						var marker = new google.maps.Marker(markerOptions);
-						
-						//The infowindow
-						var infoWindow = new gmaps.InfoWindow({
-							content:
-								'<div class="gmaps-infowindow">'
-								+ "<h4>" + doc.title + "</h4>"
-								+ "<a href='#view/" + doc.id + "'>" + doc.id + "</a>"
-								+ "<p>" + doc.abstract + "</p>"
-								+ "<p><a href='#view/" + doc.id + "'>Read more</a></p>"
-								+ '</div>',
-							isOpen: false,
-							disableAutoPan: false,
-							maxWidth: 250,
-							position: latLng
-						});
-						
-						//Store this infowindow in the view
-						viewRef.markerInfoWindows.push(infoWindow);
-						
-						//Show the info window upon marker click
-						gmaps.event.addListener(marker, 'click', function() {
-							infoWindow.open(viewRef.map, marker);
-							infoWindow.isOpen = true;
-							
-							//Close all other infowindows 
-							viewRef.closeInfoWindows(infoWindow);
-						});
-						
-						//Close the infowindow upon any click on the map
-						gmaps.event.addListener(viewRef.map, 'click', function() {
-							infoWindow.close();
-							infoWindow.isOpen = false;
-						});
 					});
 				});
 
@@ -2362,9 +2344,6 @@ define(['jquery',
 			
 			// do this first to indicate coming results
 			this.updateStats();
-						
-			//reset the master bounds
-			this.masterBounds = null;
 			
 			//Clear the results list before we start adding new rows
 			this.$results.html('');
@@ -2432,46 +2411,18 @@ define(['jquery',
 			
 			// map it
 			if(gmaps && (typeof result.get("northBoundCoord") != "undefined")){
+				var title = result.get("title");
 				
-				//Set up the options for our polygon and marker
-				var north = result.get("northBoundCoord"),
-					south = result.get("southBoundCoord"),
-					east  = result.get("eastBoundCoord"),
-					west  = result.get("westBoundCoord"),
-					title = result.get("title"),
-					centerGeohash = result.get("geohash_9")[0],	
-					decodedGeohash = nGeohash.decode(centerGeohash),
-					position = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
-					latLngSW = new gmaps.LatLng(south, west),
-					latLngNE = new gmaps.LatLng(north, east),
-					latLngNW = new gmaps.LatLng(north, west),
-					latLngSE = new gmaps.LatLng(south, east),
-					//Create a polygon representing the bounding coordinates of this data
-					polygon = new gmaps.Polygon({
-						paths: [latLngNW, latLngNE, latLngSE, latLngSW],
-						strokeColor: '#FFFFFF',
-						strokeWeight: 2,
-						fillColor: '#FFFFFF',
-						fillOpacity: '0.3'
-					}),
-					//Create a marker at the center of this data
-					marker = new gmaps.Marker({
-						position: position,
-						icon: mapModel.get("markerImage"),
-						zIndex: 99999
-					}),
-					// A small info window with just the title for each marker
-					infoWindow = new gmaps.InfoWindow({
-						content: title,
-						disableAutoPan: true,
-						maxWidth: 250
-					});
-				
-				this.resultMarkers[result.get("id")] = {
-						polygon: polygon, 
-						marker: marker, 
-						infoWindow: infoWindow
-						}
+				for(var i=0; i<result.get("geohash_9").length; i++){
+					var centerGeohash = result.get("geohash_9")[i],
+						decodedGeohash = nGeohash.decode(centerGeohash),
+						position = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
+						marker = new gmaps.Marker({
+							position: position,
+							icon: mapModel.get("markerImage"),
+							zIndex: 99999
+						});
+				}
 			}
 		
 		},
