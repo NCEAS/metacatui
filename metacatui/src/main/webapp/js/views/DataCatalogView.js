@@ -108,8 +108,8 @@ define(['jquery',
 			
 			//Use the global models if there are no other models specified at time of render
 			if((appModel.get("searchHistory").length > 0) && (!this.searchModel || Object.keys(this.searchModel).length == 0)){
-				this.searchModel = appModel.get("searchHistory").pop().search.clone();
-				mapModel = appModel.get("searchHistory").pop().map.clone();
+				this.searchModel = _.last(appModel.get("searchHistory")).search.clone();
+				mapModel = _.last(appModel.get("searchHistory")).map.clone();
 			}
 			else if((typeof appSearchModel !== "undefined") && (!this.searchModel || Object.keys(this.searchModel).length == 0))
 				this.searchModel = appSearchModel;
