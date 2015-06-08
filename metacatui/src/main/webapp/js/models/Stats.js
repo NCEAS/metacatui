@@ -160,7 +160,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			//Build the query to get the format types
-			var query = "q=" + statsModel.get('query') +
+			var query = "q=" + this.get('query') +
 								  "+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*" +
 								  "+readPermission:public" +
 								  "&wt=json" +
@@ -333,6 +333,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Get the temporal coverage of this query/user from Solr
 		 */
 		getCollectionYearFacets: function(){
+			var model = this;
 			
 			//How many years back should we look for temporal coverage?
 			var lastYear =  this.get('lastEndDate') ? this.get('lastEndDate').getUTCFullYear() : new Date().getUTCFullYear(),
@@ -399,7 +400,7 @@ define(['jquery', 'underscore', 'backbone'],
 			  fullFacetQuery;
 						
 			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				statsModel.set('temporalCoverage', data.facet_counts.facet_queries);
+				model.set('temporalCoverage', data.facet_counts.facet_queries);
 				
 				/* ---Save this logic in case we want total coverage years later on---
 				// Get the total number of years with coverage by counting the number of indices with a value
