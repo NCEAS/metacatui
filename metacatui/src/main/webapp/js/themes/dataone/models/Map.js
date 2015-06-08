@@ -17,12 +17,13 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 					(gmaps)? 
 						{   zoom: 3,
 							minZoom: 3,
+							maxZoom: 16,
 						    center: new google.maps.LatLng(44, -103),
 							disableDefaultUI: true,
 						    zoomControl: true,
 						    zoomControlOptions: {
-							          style: google.maps.ZoomControlStyle.SMALL,
-							          position: google.maps.ControlPosition.LEFT_BOTTOM
+							          style: google.maps.ZoomControlStyle.LARGE,
+							          position: google.maps.ControlPosition.LEFT_CENTER
 							        },
 							panControl: false,
 							scaleControl: false,
@@ -40,11 +41,6 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				
 				//If this theme doesn't have an image in this location, Google maps will use their default marker image
 				markerImage: "./js/themes/" + theme + "/img/map-marker.png",
-				
-				maxZoom: {
-					terrain   : 16,
-					satellite : 19
-				},
 				
 				//Keep track of the geohash level used to draw tiles on this map
 				tileGeohashLevel: 1,
@@ -83,7 +79,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 			var zoom = map.getZoom(),
 				type = map.getMapTypeId();
 			
-			if(zoom >= this.get("maxZoom")[type]) return true;
+			if(zoom >= this.get("mapOptions").maxZoom) return true;
 			else return false;
 		},
 		
