@@ -166,6 +166,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(this.needsQuotes(thisTaxon)) value = "%22" + thisTaxon + "%22";
 					else value = encodeURIComponent(thisTaxon);
 					
+					value = "*" + value + "*";
+					
 					query += "+(" +
 								   "family:" + value + 
 								   " OR " +
@@ -274,7 +276,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(this.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
 					else filterValue = encodeURIComponent(filterValue);
 					
-					query += "+" + filterValue;
+					query += "+*" + filterValue + "*";
 				}
 			}
 			
@@ -306,8 +308,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						if(model.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
 						else 							   filterValue = encodeURIComponent(filterValue);
 
-							// TODO: surround with **?
-						query += "+" + model.fieldNameMap[filterName] + ":" + filterValue;			
+						query += "+" + model.fieldNameMap[filterName] + ":*" + filterValue + "*";			
 					}
 				}
 			});
