@@ -8,6 +8,7 @@
 					<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
 			    	<ul id="current-all-filters" class="current-filters" data-category="all">
 			    	</ul>
+			    	<div class="clear"></div>
 			    </div>
 				
 				<div class="filter-contain" data-category="attribute">
@@ -16,7 +17,7 @@
 						<input class="filter" type="text" placeholder="density, length, etc." id="attribute_input" data-category="attribute">
 						<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
 					</div>
-			    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
+			    	<ul id="current-attribute-filters" class="current-filters" data-category="attribute">
 			    	</ul>
 				    <div class="clear"></div>
 			    </div>
@@ -28,7 +29,7 @@
 						<input class="filter" type="text" placeholder="tags, concepts, etc." id="annotation_input" data-category="annotation">
 						<button class="filter btn" id="annotation_btn" data-category="annotation"><i class="icon-search"></i></button>
 					</div>
-			    	<ul id="current-annotation-filters" class="current-filters span12" data-category="annotation">
+			    	<ul id="current-annotation-filters" class="current-filters" data-category="annotation">
 			    	</ul>
 				    <div class="clear"></div>
 			    </div>
@@ -65,14 +66,15 @@
 						<input class="filter" type="text" placeholder="First name, last name, etc." id="creator_input" data-category="creator">
 						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>				    	
 			    	</div>
-			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
+			    	<ul id="current-creator-filters" class="current-filters " data-category="creator">
 			    	</ul>
-			    	<ul id="current-additionalCriteria-filters" class="current-filters span12" data-category="additionalCriteria">
+			    	<ul id="current-additionalCriteria-filters" class="current-filters " data-category="additionalCriteria">
 			    		<li class="current-filter keyword-search-link" data-category="additionalCriteria" data-term="rightsHolder:<%=username%>">
 							<span>Me</span>
 							<i class="icon-remove remove-filter"></i>
 						</li>
 				    </ul>
+				    <div class="clear"></div>
 			    </div>	
 				
 				<div id="filter-year" class="filter-contain" data-category="year">
@@ -113,7 +115,8 @@
 						<button class="filter btn" id="id_btn" data-category="id"><i class="icon-search"></i></button>
 					</div>
 					<ul id="current-id-filters" class="current-filters" data-category="id">
-					</ul>				
+					</ul>
+					<div class="clear"></div>				
 				</div>
 				
 				<div class="filter-contain" data-category="taxon">
@@ -123,7 +126,8 @@
 						<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
 					</div>
 					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
-					</ul>				
+					</ul>	
+					<div class="clear"></div>			
 				</div>
 				
 				<div class="filter-contain no-border" data-category="spatial">
@@ -134,6 +138,7 @@
 					</div>
 					<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
 					</ul>
+					<div class="clear"></div>
 				</div>
 				
 			</div>

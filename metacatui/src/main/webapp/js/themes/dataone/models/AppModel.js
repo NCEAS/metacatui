@@ -84,12 +84,12 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
 			
 			// use portal to  retrieve token and annotate metadata
-			this.set('tokenUrl', this.get('baseUrl') + '/portal/token');
+			//this.set('tokenUrl', this.get('baseUrl') + '/portal/token');
 			//this.set('annotatorUrl', this.get('baseUrl') + '/portal/annotator');
 			//this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
 			//this.set('annotatorUrl', this.get('baseUrl') + this.get('context') + '/annotator');
 			
-			this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+			//this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
 			this.on("change:pid", this.changePid);
 		},

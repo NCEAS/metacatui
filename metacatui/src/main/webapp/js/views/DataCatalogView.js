@@ -210,7 +210,6 @@ define(['jquery',
 			
 			//Set a custom height on any elements that have the .auto-height class
 			if($(".auto-height").length > 0){
-				setTimeout(this.setAutoHeight, 900);
 				//Readjust the height whenever the window is resized
 				$(window).resize(this.setAutoHeight);
 			}
@@ -552,6 +551,10 @@ define(['jquery',
 				//Get the minimum and maximum years of this current search and use those as the min and max values in the slider
 				this.statsModel.set("query", this.searchModel.getQuery());
 				this.listenTo(this.statsModel, "change:firstBeginDate", function(){ 	
+					if(this.statsModel.get("firstBeginDate") == 0 || !this.statsModel.get("firstBeginDate")){
+						$('#year-range').slider({ min: model.defaults().yearMin });
+						return;
+					}
 					var year = new Date.fromISO(this.statsModel.get("firstBeginDate")).getUTCFullYear(); 
 					if(typeof year !== "undefined"){
 						$('#min_year').val(year);
@@ -566,6 +569,10 @@ define(['jquery',
 				});
 				//Only when the first begin date is retrieved, set the slider min and max values	 
 				this.listenTo(this.statsModel, "change:lastEndDate", function(){ 	
+					if(this.statsModel.get("lastEndDate") == 0 || !this.statsModel.get("lastEndDate")){
+						$('#year-range').slider({ max: model.defaults().yearMax });
+						return;
+					}					
 					var year = new Date.fromISO(this.statsModel.get("lastEndDate")).getUTCFullYear(); 
 					if(typeof year !== "undefined"){
 						$('#max_year').val(year);
@@ -1006,7 +1013,7 @@ define(['jquery',
 		
 		showMoreList: function(e){
 			var link = e.target,
-				hiddenListItems = $(link).parent().find("li.hidden");
+				hiddenListItems = $(link).parents("ul").find("li.hidden");
 			
 			_.each(hiddenListItems, function(listItem){
 				$(listItem).fadeIn();
@@ -1117,74 +1124,31 @@ define(['jquery',
 							 "&rows=0" +
 							 this.searchModel.getFacetQuery();
 
-			$.get(appModel.get('queryServiceUrl') + facetQuery, function(data, textStatus, xhr) {
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + facetQuery,
+				accepts: "json",
+				complete: function(data, textStatus, xhr) {
 				
-				var facetCounts = data.facet_counts.facet_fields,
-					facetLimit  = 999;
-								
-				//***Set up the autocomplete (jQueryUI) feature for each text input****//				
-				//For the 'all' filter, use keywords
-				var allSuggestions = facetCounts.keywords;
-				var rankedSuggestions = new Array();
-				for (var i=0; i < Math.min(allSuggestions.length-1, facetLimit); i+=2) {
-					rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + "+)"});
-				}
-
-				$('#all_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					select: function(event, ui) {
-						// set the text field
-						$('#all_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event, ui.item);
-						// prevent default action
-						return false;
-					},
-					position: {
-						my: "left top",
-						at: "left bottom",
-						collision: "fit"
+					var facetCounts = data.facet_counts.facet_fields,
+						facetLimit  = 999;
+									
+					//***Set up the autocomplete (jQueryUI) feature for each text input****//				
+					//For the 'all' filter, use keywords
+					var allSuggestions = facetCounts.keywords;
+					var rankedSuggestions = new Array();
+					for (var i=0; i < Math.min(allSuggestions.length-1, facetLimit); i+=2) {
+						rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + "+)"});
 					}
-				});
-				
-				// suggest attribute criteria
-				var attributeNameSuggestions = facetCounts.attributeName;
-				var attributeLabelSuggestions = facetCounts.attributeLabel;
-				// NOTE: only using attributeName for auto-complete suggestions.
-				attributeLabelSuggestions = null;
-				
-				if(attributeNameSuggestions){
-					var attributeSuggestions = [];
-					attributeSuggestions = 
-						attributeSuggestions.concat(
-							attributeNameSuggestions, 
-							attributeLabelSuggestions);
-					var rankedAttributeSuggestions = new Array();
-					for (var i=0; i < Math.min(attributeSuggestions.length-1, facetLimit); i+=2) {
-						rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
-					}
-					$('#attribute_input').autocomplete({
+	
+					$('#all_input').autocomplete({
 						source: function (request, response) {
 				            var term = $.ui.autocomplete.escapeRegex(request.term)
 				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
+				                , startsWith = $.grep(rankedSuggestions, function(value) {
 				                    return startsWithMatcher.test(value.label || value.value || value);
 				                })
 				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedAttributeSuggestions, function (value) {
+				                , contains = $.grep(rankedSuggestions, function (value) {
 				                    return $.inArray(value, startsWith) < 0 && 
 				                        containsMatcher.test(value.label || value.value || value);
 				                });
@@ -1193,7 +1157,7 @@ define(['jquery',
 				        },
 						select: function(event, ui) {
 							// set the text field
-							$('#attribute_input').val(ui.item.value);
+							$('#all_input').val(ui.item.value);
 							// add to the filter immediately
 							viewRef.updateTextFilters(event, ui.item);
 							// prevent default action
@@ -1201,90 +1165,225 @@ define(['jquery',
 						},
 						position: {
 							my: "left top",
-							at: "left bottom"				
+							at: "left bottom",
+							collision: "fit"
 						}
 					});
-				}
-				
-				// suggest annotation concepts
-				var annotationSuggestions = facetCounts.sem_annotation;
-				if(annotationSuggestions){
-					var rankedAnnotationSuggestions = new Array();
-					for (var i=0; i < Math.min(annotationSuggestions.length-1, facetLimit); i+=2) {
-						rankedAnnotationSuggestions.push({
-							value: annotationSuggestions[i], 
-							label: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")), 
-							filterLabel: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")),
-							desc: annotationSuggestions[i], 
-
-						});
-					}
-					$('#annotation_input').hoverAutocomplete({
-						source: 
-							function (request, response) {
+					
+					// suggest attribute criteria
+					var attributeNameSuggestions = facetCounts.attributeName;
+					var attributeLabelSuggestions = facetCounts.attributeLabel;
+					// NOTE: only using attributeName for auto-complete suggestions.
+					attributeLabelSuggestions = null;
+					
+					if(attributeNameSuggestions){
+						var attributeSuggestions = [];
+						attributeSuggestions = 
+							attributeSuggestions.concat(
+								attributeNameSuggestions, 
+								attributeLabelSuggestions);
+						var rankedAttributeSuggestions = new Array();
+						for (var i=0; i < Math.min(attributeSuggestions.length-1, facetLimit); i+=2) {
+							rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
+						}
+						$('#attribute_input').autocomplete({
+							source: function (request, response) {
 					            var term = $.ui.autocomplete.escapeRegex(request.term)
 					                , startsWithMatcher = new RegExp("^" + term, "i")
-					                , startsWith = $.grep(rankedAnnotationSuggestions, function(value) {
+					                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
 					                    return startsWithMatcher.test(value.label || value.value || value);
 					                })
 					                , containsMatcher = new RegExp(term, "i")
-					                , contains = $.grep(rankedAnnotationSuggestions, function (value) {
+					                , contains = $.grep(rankedAttributeSuggestions, function (value) {
 					                    return $.inArray(value, startsWith) < 0 && 
 					                        containsMatcher.test(value.label || value.value || value);
 					                });
-					            					            
+					            
+					            response(startsWith.concat(contains));
+					        },
+							select: function(event, ui) {
+								// set the text field
+								$('#attribute_input').val(ui.item.value);
+								// add to the filter immediately
+								viewRef.updateTextFilters(event, ui.item);
+								// prevent default action
+								return false;
+							},
+							position: {
+								my: "left top",
+								at: "left bottom"				
+							}
+						});
+					}
+					
+					// suggest annotation concepts
+					var annotationSuggestions = facetCounts.sem_annotation;
+					if(annotationSuggestions){
+						var rankedAnnotationSuggestions = new Array();
+						for (var i=0; i < Math.min(annotationSuggestions.length-1, facetLimit); i+=2) {
+							rankedAnnotationSuggestions.push({
+								value: annotationSuggestions[i], 
+								label: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")), 
+								filterLabel: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")),
+								desc: annotationSuggestions[i], 
+	
+							});
+						}
+						$('#annotation_input').hoverAutocomplete({
+							source: 
+								function (request, response) {
+						            var term = $.ui.autocomplete.escapeRegex(request.term)
+						                , startsWithMatcher = new RegExp("^" + term, "i")
+						                , startsWith = $.grep(rankedAnnotationSuggestions, function(value) {
+						                    return startsWithMatcher.test(value.label || value.value || value);
+						                })
+						                , containsMatcher = new RegExp(term, "i")
+						                , contains = $.grep(rankedAnnotationSuggestions, function (value) {
+						                    return $.inArray(value, startsWith) < 0 && 
+						                        containsMatcher.test(value.label || value.value || value);
+						                });
+						            					            
+						            // use local values from facet
+						            var localValues = startsWith.concat(contains);
+						            
+						            // pass to bioportal search to complete the list and do the call back
+						            lookupModel.bioportalSearch(request, response, localValues, rankedAnnotationSuggestions);
+						            
+					        },
+							select: function(event, ui) {
+								// set the text field
+								$('#annotation_input').val(ui.item.value);
+								// add to the filter immediately
+								viewRef.updateTextFilters(event, ui.item);
+								// prevent default action
+								return false;
+							},
+							position: {
+								my: "left top",
+								at: "left bottom"				
+							}
+						});
+					}
+					
+					
+					// suggest creator names/organizations
+					var originSuggestions = facetCounts.origin;
+					if(originSuggestions){
+						var rankedOriginSuggestions = new Array();
+						for (var i=0; i < Math.min(originSuggestions.length-1, facetLimit); i+=2) {
+							rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
+						}
+						$('#creator_input').hoverAutocomplete({
+							source: function (request, response) {
+					            var term = $.ui.autocomplete.escapeRegex(request.term)
+					                , startsWithMatcher = new RegExp("^" + term, "i")
+					                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
+					                    return startsWithMatcher.test(value.label || value.value || value);
+					                })
+					                , containsMatcher = new RegExp(term, "i")
+					                , contains = $.grep(rankedOriginSuggestions, function (value) {
+					                    return $.inArray(value, startsWith) < 0 && 
+					                        containsMatcher.test(value.label || value.value || value);
+					                });
+					            
 					            // use local values from facet
 					            var localValues = startsWith.concat(contains);
 					            
-					            // pass to bioportal search to complete the list and do the call back
-					            lookupModel.bioportalSearch(request, response, localValues, rankedAnnotationSuggestions);
-					            
-				        },
-						select: function(event, ui) {
-							// set the text field
-							$('#annotation_input').val(ui.item.value);
-							// add to the filter immediately
-							viewRef.updateTextFilters(event, ui.item);
-							// prevent default action
-							return false;
-						},
-						position: {
-							my: "left top",
-							at: "left bottom"				
-						}
-					});
-				}
-				
-				
-				// suggest creator names/organizations
-				var originSuggestions = facetCounts.origin;
-				if(originSuggestions){
-					var rankedOriginSuggestions = new Array();
-					for (var i=0; i < Math.min(originSuggestions.length-1, facetLimit); i+=2) {
-						rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
+					            // pass to orcid search to complete the list and do the call back
+					            lookupModel.orcidSearch(request, response, localValues);
+					        },
+							select: function(event, ui) {
+								// set the text field
+								$('#creator_input').val(ui.item.value);
+								// add to the filter immediately
+								viewRef.updateTextFilters(event, ui.item);
+								// prevent default action
+								return false;
+							},
+							position: {
+								my: "left top",
+								at: "left bottom"				
+							}
+						});
 					}
-					$('#creator_input').hoverAutocomplete({
+					
+					// suggest taxonomic criteria
+					var familySuggestions  = facetCounts.family;
+					var speciesSuggestions = facetCounts.species;
+					var genusSuggestions   = facetCounts.genus;
+					var kingdomSuggestions = facetCounts.kingdom;
+					var phylumSuggestions  = facetCounts.phylum;
+					var orderSuggestions   = facetCounts.order;
+					var classSuggestions   = facetCounts["class"];
+					
+					var taxonSuggestions = [];
+					taxonSuggestions = 
+						taxonSuggestions.concat(
+							familySuggestions, 
+							speciesSuggestions, 
+							genusSuggestions, 
+							kingdomSuggestions,
+							phylumSuggestions,
+							orderSuggestions,
+							classSuggestions);
+					var rankedTaxonSuggestions = new Array();
+					for (var i=0; i < Math.min(taxonSuggestions.length-1, facetLimit); i+=2) {
+						rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
+					}
+					$('#taxon_input').autocomplete({
 						source: function (request, response) {
 				            var term = $.ui.autocomplete.escapeRegex(request.term)
 				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
+				                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
 				                    return startsWithMatcher.test(value.label || value.value || value);
 				                })
 				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedOriginSuggestions, function (value) {
+				                , contains = $.grep(rankedTaxonSuggestions, function (value) {
 				                    return $.inArray(value, startsWith) < 0 && 
 				                        containsMatcher.test(value.label || value.value || value);
 				                });
 				            
-				            // use local values from facet
-				            var localValues = startsWith.concat(contains);
+				            response(startsWith.concat(contains));
+				        },
+						position: {
+							my: "left top",
+							at: "left bottom",
+							collision: "none"
+						},
+						select: function(event, ui) {
+							// set the text field
+							$('#taxon_input').val(ui.item.value);
+							// add to the filter immediately
+							viewRef.updateTextFilters(event, ui.item);
+							// prevent default action
+							return false;
+						}
+					});	
+					
+					// suggest location names
+					var spatialSuggestions = facetCounts.site;
+					var rankedSpatialSuggestions = new Array();
+					for (var i=0; i < Math.min(spatialSuggestions.length-1, facetLimit); i+=2) {
+						rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
+					}
+					$('#spatial_input').autocomplete({
+						source: function (request, response) {
+				            var term = $.ui.autocomplete.escapeRegex(request.term)
+				                , startsWithMatcher = new RegExp("^" + term, "i")
+				                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
+				                    return startsWithMatcher.test(value.label || value.value || value);
+				                })
+				                , containsMatcher = new RegExp(term, "i")
+				                , contains = $.grep(rankedSpatialSuggestions, function (value) {
+				                    return $.inArray(value, startsWith) < 0 && 
+				                        containsMatcher.test(value.label || value.value || value);
+				                });
 				            
-				            // pass to orcid search to complete the list and do the call back
-				            lookupModel.orcidSearch(request, response, localValues);
+				            response(startsWith.concat(contains));
 				        },
 						select: function(event, ui) {
 							// set the text field
-							$('#creator_input').val(ui.item.value);
+							$('#spatial_input').val(ui.item.value);
 							// add to the filter immediately
 							viewRef.updateTextFilters(event, ui.item);
 							// prevent default action
@@ -1292,100 +1391,12 @@ define(['jquery',
 						},
 						position: {
 							my: "left top",
-							at: "left bottom"				
+							at: "left bottom",
+							collision: "flip"
 						}
 					});
 				}
-				
-				// suggest taxonomic criteria
-				var familySuggestions  = facetCounts.family;
-				var speciesSuggestions = facetCounts.species;
-				var genusSuggestions   = facetCounts.genus;
-				var kingdomSuggestions = facetCounts.kingdom;
-				var phylumSuggestions  = facetCounts.phylum;
-				var orderSuggestions   = facetCounts.order;
-				var classSuggestions   = facetCounts["class"];
-				
-				var taxonSuggestions = [];
-				taxonSuggestions = 
-					taxonSuggestions.concat(
-						familySuggestions, 
-						speciesSuggestions, 
-						genusSuggestions, 
-						kingdomSuggestions,
-						phylumSuggestions,
-						orderSuggestions,
-						classSuggestions);
-				var rankedTaxonSuggestions = new Array();
-				for (var i=0; i < Math.min(taxonSuggestions.length-1, facetLimit); i+=2) {
-					rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
-				}
-				$('#taxon_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedTaxonSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					position: {
-						my: "left top",
-						at: "left bottom",
-						collision: "none"
-					},
-					select: function(event, ui) {
-						// set the text field
-						$('#taxon_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event, ui.item);
-						// prevent default action
-						return false;
-					}
-				});	
-				
-				// suggest location names
-				var spatialSuggestions = facetCounts.site;
-				var rankedSpatialSuggestions = new Array();
-				for (var i=0; i < Math.min(spatialSuggestions.length-1, facetLimit); i+=2) {
-					rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
-				}
-				$('#spatial_input').autocomplete({
-					source: function (request, response) {
-			            var term = $.ui.autocomplete.escapeRegex(request.term)
-			                , startsWithMatcher = new RegExp("^" + term, "i")
-			                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
-			                    return startsWithMatcher.test(value.label || value.value || value);
-			                })
-			                , containsMatcher = new RegExp(term, "i")
-			                , contains = $.grep(rankedSpatialSuggestions, function (value) {
-			                    return $.inArray(value, startsWith) < 0 && 
-			                        containsMatcher.test(value.label || value.value || value);
-			                });
-			            
-			            response(startsWith.concat(contains));
-			        },
-					select: function(event, ui) {
-						// set the text field
-						$('#spatial_input').val(ui.item.value);
-						// add to the filter immediately
-						viewRef.updateTextFilters(event, ui.item);
-						// prevent default action
-						return false;
-					},
-					position: {
-						my: "left top",
-						at: "left bottom",
-						collision: "flip"
-					}
-				});
-			}, "json");
+			});
 		},
 		
 		hideClearButton: function(){
@@ -2394,6 +2405,8 @@ define(['jquery',
 			
 			//After all the results are loaded, query for our facet counts in the background
 			this.getAutoCompletes();
+			//Set the autoheight
+			this.setAutoHeight();
 		},
 		
 		/**
