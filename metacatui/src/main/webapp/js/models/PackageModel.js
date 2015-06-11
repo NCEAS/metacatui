@@ -50,28 +50,35 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Get the id of the resource map for this member
 			var provFlList = appSearchModel.getProvFlList();
 			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,title,origin,prov_instanceOfClass,' + provFlList +
-						'&wt=json' +
 						'&rows=1' +
-						'&q=id:%22' + encodeURIComponent(id) + '%22';
+						'&q=id:%22' + encodeURIComponent(id) + '%22' +
+						'&wt=json' +
+						"&json.wrf=?";
+						
 
-			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr) {
-				//There should be only one response since we searched by id
-				if(typeof data.response.docs !== "undefined"){
-					var doc = data.response.docs[0];
-				
-					//If there is no resource map, then this is the only document to in this package
-					if((typeof doc.resourceMap === "undefined") || !doc.resourceMap){
-						model.set('id', null);
-						model.set('memberIds', new Array(doc.id));
-						model.set('members', [new SolrResult(doc)]);
-						model.trigger("change:members");
-					}
-					else{
-						model.set('id', doc.resourceMap[0]);
-						model.getMembers();
+			$.ajax({
+				url: appModel.get("queryServiceUrl") + query,
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
+					//There should be only one response since we searched by id
+					if(typeof data.response.docs !== "undefined"){
+						var doc = data.response.docs[0];
+					
+						//If there is no resource map, then this is the only document to in this package
+						if((typeof doc.resourceMap === "undefined") || !doc.resourceMap){
+							model.set('id', null);
+							model.set('memberIds', new Array(doc.id));
+							model.set('members', [new SolrResult(doc)]);
+							model.trigger("change:members");
+						}
+						else{
+							model.set('id', doc.resourceMap[0]);
+							model.getMembers();
+						}
 					}
 				}
-			}, "json");
+			});
 		},
 		
 		/* Get all the members of a resource map/package based on the id attribute of this model. 
@@ -86,28 +93,34 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = appSearchModel.getProvFlList();
 			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,' + provFlList +
-						'&wt=json' +
 						'&rows=100' +
-						'&q=-obsoletedBy:*+%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29';
+						'&q=-obsoletedBy:*+%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
+						'&wt=json' +
+						"&json.wrf=?";
 			
-			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr) {
+			$.ajax({
+				url: appModel.get("queryServiceUrl") + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
 				
-				//Separate the resource maps from the data/metadata objects
-				_.each(data.response.docs, function(doc){
-					if(doc.formatType == "RESOURCE"){											
-						model.indexDoc = doc;
-					}
-					else{
-						pids.push(doc.id);
-						
-						members.push(new SolrResult(doc));
-					}
-				});
-				
-				model.set('memberIds', _.uniq(pids));
-				model.set('members', members);
-				model.trigger("change:members");
-			}, "json");
+					//Separate the resource maps from the data/metadata objects
+					_.each(data.response.docs, function(doc){
+						if(doc.formatType == "RESOURCE"){											
+							model.indexDoc = doc;
+						}
+						else{
+							pids.push(doc.id);
+							
+							members.push(new SolrResult(doc));
+						}
+					});
+					
+					model.set('memberIds', _.uniq(pids));
+					model.set('members', members);
+					model.trigger("change:members");
+				}
+			});
 			
 			return this;
 		},
@@ -175,41 +188,51 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var query = "q=" + combinedQuery + 
 						"&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId,dateUploaded,rightsHolder,datasource,prov_instanceOfClass," + 
 						provFieldList + 
-						"&wt=json&rows=100";
+						"&rows=100&wt=json&json.wrf=?";
 			
 			//Send the query to the query service
-			$.get(appModel.get("queryServiceUrl") + query, function(data, textStatus, xhr){	
+			$.ajax({
+				url: appModel.get("queryServiceUrl") + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){	
 								
-				//Do any of our docs have multiple resource maps?
-				var hasMultipleMaps = _.filter(data.response.docs, function(doc){ 
-					return((typeof doc.resourceMap !== "undefined") && (doc.resourceMap.length > 1))
-					});
-				//If so, we want to find the latest version of each resource map and only represent that one in the Prov Chart
-				if(typeof hasMultipleMaps !== "undefined"){
-					var allMapIDs = _.uniq(_.flatten(_.pluck(hasMultipleMaps, "resourceMap")));
-					if(allMapIDs.length){
-						
-						var query = "q=+-obsoletedBy:*+" + appSearchModel.getGroupedQuery("id", allMapIDs, "OR") + 
-									"&fl=obsoletes,id" +
-									"&wt=json";
-						$.get(appModel.get("queryServiceUrl") + query, function(mapData, textStatus, xhr){	
+					//Do any of our docs have multiple resource maps?
+					var hasMultipleMaps = _.filter(data.response.docs, function(doc){ 
+						return((typeof doc.resourceMap !== "undefined") && (doc.resourceMap.length > 1))
+						});
+					//If so, we want to find the latest version of each resource map and only represent that one in the Prov Chart
+					if(typeof hasMultipleMaps !== "undefined"){
+						var allMapIDs = _.uniq(_.flatten(_.pluck(hasMultipleMaps, "resourceMap")));
+						if(allMapIDs.length){
 							
-							//Create a list of resource maps that are not obsoleted by any other resource map retrieved
-							var resourceMaps = mapData.response.docs;
-							
-							model.obsoletedResourceMaps = _.pluck(resourceMaps, "obsoletes");							
-							model.latestResourceMaps    = _.difference(resourceMaps, model.obsoletedResourceMaps);
-							
+							var query = "q=+-obsoletedBy:*+" + appSearchModel.getGroupedQuery("id", allMapIDs, "OR") + 
+										"&fl=obsoletes,id" +
+										"&wt=json&json.wrf=?";
+							$.ajax({
+								url: appModel.get("queryServiceUrl") + query, 
+								jsonp: "json.wrf",
+								dataType: "jsonp",
+								success: function(mapData, textStatus, xhr){	
+								
+									//Create a list of resource maps that are not obsoleted by any other resource map retrieved
+									var resourceMaps = mapData.response.docs;
+									
+									model.obsoletedResourceMaps = _.pluck(resourceMaps, "obsoletes");							
+									model.latestResourceMaps    = _.difference(resourceMaps, model.obsoletedResourceMaps);
+									
+									model.sortProvTrace(data.response.docs);
+								}
+							});	
+						}
+						else
 							model.sortProvTrace(data.response.docs);
-						}, "json");	
 					}
 					else
 						model.sortProvTrace(data.response.docs);
-				}
-				else
-					model.sortProvTrace(data.response.docs);
 				
-			}, "json");
+			}
+		});
 			
 			return this;
 		},

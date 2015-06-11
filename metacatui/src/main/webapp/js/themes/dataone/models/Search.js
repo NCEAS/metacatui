@@ -70,6 +70,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		
 		filterCount: function() {
 			var changedAttr = this.changedAttributes(_.clone(this.defaults()));
+			
 			if (changedAttr) {
 				var changedKeys = _.keys(changedAttr);
 				return changedKeys.length;

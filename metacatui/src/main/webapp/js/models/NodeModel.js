@@ -58,41 +58,67 @@ define(['jquery', 'underscore', 'backbone'],
 				memberList = this.get('members'),
 				coordList  = this.get('coordinators');
 			
-			$.get(appModel.get('nodeServiceUrl'),  function(data, textStatus, xhr) { 
-				
-				//Traverse the XML response to get the MN info
-				_.each(data.children, function(d1NodeList){
+			$.ajax({
+				url: appModel.get('nodeServiceUrl'),  
+				dataType: "text",
+				error: function(){
+					//Use backup node info
+					$.get("./resources/nodeInfo.xml", function(data, textStatus, xhr){
+						thisModel.saveNodeInfo(data);
+					});
+				},
+				success: function(data, textStatus, xhr) { 
 					
-					//The first (and only) child should be the d1NodeList
-					_.each(d1NodeList.children, function(thisNode){
-						//'node' will be a single node
-						var node = {};
-						
-						_.each(thisNode.children, function(child){
-							//Information about this node
-							node[child.nodeName] = child.textContent;
-						});
-						_.each(thisNode.attributes, function(attribute){
-							//Information about this node
-							node[attribute.nodeName] = attribute.nodeValue;
-						});
-						
-						node.logo = thisModel.memberLogos[node.identifier];
-						node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
-						
-						if(node.type == "mn") memberList.push(node);
-						if(node.type == "cn") coordList.push(node);
+					var xmlResponse = $.parseXML(data) || null;
+					if(!xmlResponse) return;
+					
+					thisModel.saveNodeInfo(xmlResponse);
+				}		
+			});
+		},
+		
+		saveNodeInfo: function(xml){
+			var thisModel = this,
+				memberList = this.get('members'),
+				coordList  = this.get('coordinators'),
+				children   = xml.children || xml.childNodes;
+				
+			
+			//Traverse the XML response to get the MN info
+			_.each(children, function(d1NodeList){
+				
+				var d1NodeListChildren = d1NodeList.children || d1NodeList.childNodes;
+				
+				//The first (and only) child should be the d1NodeList
+				_.each(d1NodeListChildren, function(thisNode){
+					//'node' will be a single node
+					var node = {},
+						thisNodeChildren = thisNode.children || thisNode.childNodes;
+					
+					_.each(thisNodeChildren, function(child){
+						//Information about this node
+						node[child.nodeName] = child.textContent;
+					});
+					_.each(thisNode.attributes, function(attribute){
+						//Information about this node
+						node[attribute.nodeName] = attribute.nodeValue;
 					});
 					
-					//Save the cn and mn lists in the model when all members have been added
-					thisModel.set('members', memberList);
-					thisModel.trigger('change:members');
-					thisModel.set('coordinators', coordList);
-					thisModel.trigger('change:coordinators');
+					node.logo = thisModel.memberLogos[node.identifier];
+					node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
+					
+					if(node.type == "mn") memberList.push(node);
+					if(node.type == "cn") coordList.push(node);
 				});
-			});			
+				
+				//Save the cn and mn lists in the model when all members have been added
+				thisModel.set('members', memberList);
+				thisModel.trigger('change:members');
+				thisModel.set('coordinators', coordList);
+				thisModel.trigger('change:coordinators');
+			});
 		}
-		
+				
 	});
 	return Node;
 });

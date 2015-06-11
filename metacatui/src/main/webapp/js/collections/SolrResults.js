@@ -51,11 +51,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 						   "fl=" + this.fields + 
 						   "&q=" + this.currentquery + 
 						   "&sort=" + this.sort + 
-						   "&wt=json" + 
 						   "&rows=" + this.rows + 
 						   "&start=" + this.start + 
 						   "&facet=true&facet.sort=index" + facetFields + 
-						   stats;		
+						   stats +		
+						   "&wt=json&json.wrf=?";
 						
 			return endpoint;
 		},
@@ -80,7 +80,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			if (this.header != null) {
 				this.header.set({"start" : this.start});
 			}
-			this.fetch({data: {start: this.start}, reset: true});
+			this.fetch({
+				data: {start: this.start}, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				reset: true});
 		},
 		
 		prevpage: function() {
@@ -91,7 +95,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			if (this.header != null) {
 				this.header.set({"start" : this.start});
 			}
-			this.fetch({data: {start: this.start}, reset: true});
+			this.fetch({
+				data: {start: this.start}, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				reset: true});
 		},
 		
 		toPage: function(page) {
@@ -105,7 +113,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			}
 			
 			//Get the results!
-			this.fetch({data: {start: this.start}, reset: true});
+			this.fetch({
+				data: {start: this.start}, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				reset: true});
 		},
 		
 		setrows: function(numrows) {

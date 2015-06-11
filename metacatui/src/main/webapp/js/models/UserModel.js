@@ -51,8 +51,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
-			$.ajax(
-					{
+			$.ajax({
 				type: "GET",
 				xhrFields: {
 					withCredentials: true
@@ -119,22 +118,24 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			}});
 			
 			
-			//Get the pending requests
-			url = appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(this.get("username"));
-			
-			$.get(url, function(data, textStatus, xhr){
-				//Reset the equivalent id list so we don't just add it to it with push()
-				model.set("pending", model.defaults().pending);
-				var pending = model.get("pending");
-				_.each($(data).find("person"), function(person, i) {
-					var subject = $(person).find("subject").text();
-					if (subject.toLowerCase() != model.get("username").toLowerCase()) {
-						pending.push(subject);
-					}
-				});
-				model.set("pending", pending);	
-				model.trigger("change:pending"); //Trigger the change event
-				
+			//Get the pending requests			
+			$.ajax({
+				url: appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(this.get("username")),
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){
+					//Reset the equivalent id list so we don't just add it to it with push()
+					model.set("pending", model.defaults().pending);
+					var pending = model.get("pending");
+					_.each($(data).find("person"), function(person, i) {
+						var subject = $(person).find("subject").text();
+						if (subject.toLowerCase() != model.get("username").toLowerCase()) {
+							pending.push(subject);
+						}
+					});
+					model.set("pending", pending);	
+					model.trigger("change:pending"); //Trigger the change event
+				}
 			});
 		},
 		

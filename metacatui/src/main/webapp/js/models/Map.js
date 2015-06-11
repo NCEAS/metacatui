@@ -77,7 +77,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 			var zoom = map.getZoom(),
 				type = map.getMapTypeId();
 			
-			if(zoom >= this.get("mapOptions").maxZoom return true;
+			if(zoom >= this.get("mapOptions").maxZoom) return true;
 			else return false;
 		},
 		

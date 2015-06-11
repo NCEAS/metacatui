@@ -1120,15 +1120,17 @@ define(['jquery',
 			
 			//Create the facet query by using our current search query 
 			var facetQuery = "q=" + this.searchResults.currentquery +
-							 "&wt=json" +
 							 "&rows=0" +
-							 this.searchModel.getFacetQuery();
+							 this.searchModel.getFacetQuery() +
+							 "&wt=json&json.wrf=?";
 
 			$.ajax({
 				url: appModel.get('queryServiceUrl') + facetQuery,
-				accepts: "json",
-				complete: function(data, textStatus, xhr) {
-				
+				jsonp: "jsonwrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
+					//var data = JSON.parse(data.responseText);
+					
 					var facetCounts = data.facet_counts.facet_fields,
 						facetLimit  = 999;
 									
@@ -1760,7 +1762,8 @@ define(['jquery',
 					
 				//Unhighlight the tile and remove the marker from the map
 				this.unhighlightTile(containingTile);
-				this.resultMarkers[i].setMap(null);
+				if(this.resultMarkers[i] && (typeof this.resultMarkers[i] !== "undefined"))
+					this.resultMarkers[i].setMap(null);
 			}			
 			this.resultMarkers = new Array();
 		},
@@ -2124,51 +2127,55 @@ define(['jquery',
 			
 			//Now run a query to get a list of documents that are represented by our markers
 			var query = "q=" + searchModelClone.getQuery() + 
-						"&wt=json" +
 						"&fl=id,title,geohash_9,abstract,geohash_" + geohashLevel +
-						"&rows=1000";
+						"&rows=1000" +
+						"&wt=json&json.wrf=?";
 						
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){
-				var docs = data.response.docs;
-				var uniqueGeohashes = viewRef.markerGeohashes;
-				
-				//Create a marker and infoWindow for each document
-				_.each(docs, function(doc, key, list){
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){
+					var docs = data.response.docs;
+					var uniqueGeohashes = viewRef.markerGeohashes;
 					
-					var marker,
-						drawMarkersAt = [];
-					
-					// Find the tile place that this document belongs to
-					// For each geohash value at the current geohash level for this document,
-					_.each(doc.geohash_9, function(geohash, key, list){
-						// Loop through each unique tile location to find its match
-						for(var i=0; i <= uniqueGeohashes.length; i++){
-							if(uniqueGeohashes[i] == geohash.substr(0, geohashLevel)){
-								drawMarkersAt.push(geohash);
-								uniqueGeohashes = _.without(uniqueGeohashes, geohash);
+					//Create a marker and infoWindow for each document
+					_.each(docs, function(doc, key, list){
+						
+						var marker,
+							drawMarkersAt = [];
+						
+						// Find the tile place that this document belongs to
+						// For each geohash value at the current geohash level for this document,
+						_.each(doc.geohash_9, function(geohash, key, list){
+							// Loop through each unique tile location to find its match
+							for(var i=0; i <= uniqueGeohashes.length; i++){
+								if(uniqueGeohashes[i] == geohash.substr(0, geohashLevel)){
+									drawMarkersAt.push(geohash);
+									uniqueGeohashes = _.without(uniqueGeohashes, geohash);
+								}
 							}
-						}
-					});
-					
-					_.each(drawMarkersAt, function(markerGeohash, key, list){
-
-						var decodedGeohash = nGeohash.decode(markerGeohash),
-							latLng   	   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);	
+						});
 						
-						//Set up the options for each marker
-						var markerOptions = {
-							position: latLng,
-							icon: mapModel.get("markerImage"),
-							zIndex: 99999,
-							map: viewRef.map
-						};
-						
-						//Create the marker and add to the map
-						var marker = new google.maps.Marker(markerOptions);
+						_.each(drawMarkersAt, function(markerGeohash, key, list){
+	
+							var decodedGeohash = nGeohash.decode(markerGeohash),
+								latLng   	   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);	
+							
+							//Set up the options for each marker
+							var markerOptions = {
+								position: latLng,
+								icon: mapModel.get("markerImage"),
+								zIndex: 99999,
+								map: viewRef.map
+							};
+							
+							//Create the marker and add to the map
+							var marker = new google.maps.Marker(markerOptions);
+						});
 					});
-				});
-
-			}, "json");
+				}
+			});
 		},
 		
 		/**
@@ -2194,90 +2201,93 @@ define(['jquery',
 			
 			//Now run a query to get a list of documents that are represented by our tiles
 			var query = "q=" + searchModelClone.getQuery() + 
-						"&wt=json" +
 						"&fl=id,title,geohash_9," + geohashName +
-						"&rows=1000";
+						"&rows=1000" +
+						"&wt=json&json.wrf=?";
 			
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){
-				//Make an infoWindow for each doc
-				var docs = data.response.docs;
-				
-				//For each tile, loop through the docs to find which ones to include in its infoWindow	
-				_.each(viewRef.tiles, function(tile, key, list){
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){
+					//Make an infoWindow for each doc
+					var docs = data.response.docs;
 					
-					var infoWindowContent = "";
-								
-					_.each(docs, function(doc, key, list){
+					//For each tile, loop through the docs to find which ones to include in its infoWindow	
+					_.each(viewRef.tiles, function(tile, key, list){
 						
-						//Is this document in this tile?
-						for(var i=0; i < doc[geohashName].length; i++){
-							if(doc[geohashName][i] == tile.geohash){
-								//Add this doc to the infoWindow content
-								infoWindowContent += "<a href='#view/" + doc.id + "'>" + doc.title +"</a> (" + doc.id +") <br/>"
-								break;
-							}	
-						}							
-					});
-						
-					//The center of the tile
-					var decodedGeohash = nGeohash.decode(tile.geohash),
-						tileCenter 	   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
-						
-					//The infowindow
-					var infoWindow = new gmaps.InfoWindow({
-						content:
-							'<div class="gmaps-infowindow">'
-							+ '<h4> Datasets located here </h4>'
-							+ "<p>" + infoWindowContent + "</p>"
-							+ '</div>',
-						isOpen: false,
-						disableAutoPan: false,
-						maxWidth: 250,
-						position: tileCenter
-					});
-					
-					viewRef.tileInfoWindows.push(infoWindow);
-					
-					//Zoom in when the tile is clicked on
-					gmaps.event.addListener(tile.shape, 'click', function(clickEvent) {
-						
-						//--- We are at max zoom, display an infowindow ----//
-						if(mapModel.isMaxZoom(viewRef.map)){
-							
-							//Find the infowindow that belongs to this tile in the view
-							infoWindow.open(viewRef.map);
-							infoWindow.isOpen = true;
-							
-							//Close all other infowindows 
-							viewRef.closeInfoWindows(infoWindow);
-						}
-						
-						//------ We are not at max zoom, so zoom into this tile ----//
-						else{
-							//Change the center
-							viewRef.map.panTo(clickEvent.latLng);
-							
-							//Get this tile's bounds
-							var bounds = tile.shape.getBounds();
+						var infoWindowContent = "";
 									
-							//Change the zoom
-							viewRef.map.fitBounds(bounds);	
-						}
+						_.each(docs, function(doc, key, list){
+							
+							//Is this document in this tile?
+							for(var i=0; i < doc[geohashName].length; i++){
+								if(doc[geohashName][i] == tile.geohash){
+									//Add this doc to the infoWindow content
+									infoWindowContent += "<a href='#view/" + doc.id + "'>" + doc.title +"</a> (" + doc.id +") <br/>"
+									break;
+								}	
+							}							
+						});
+							
+						//The center of the tile
+						var decodedGeohash = nGeohash.decode(tile.geohash),
+							tileCenter 	   = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
+							
+						//The infowindow
+						var infoWindow = new gmaps.InfoWindow({
+							content:
+								'<div class="gmaps-infowindow">'
+								+ '<h4> Datasets located here </h4>'
+								+ "<p>" + infoWindowContent + "</p>"
+								+ '</div>',
+							isOpen: false,
+							disableAutoPan: false,
+							maxWidth: 250,
+							position: tileCenter
+						});
+						
+						viewRef.tileInfoWindows.push(infoWindow);
+						
+						//Zoom in when the tile is clicked on
+						gmaps.event.addListener(tile.shape, 'click', function(clickEvent) {
+							
+							//--- We are at max zoom, display an infowindow ----//
+							if(mapModel.isMaxZoom(viewRef.map)){
+								
+								//Find the infowindow that belongs to this tile in the view
+								infoWindow.open(viewRef.map);
+								infoWindow.isOpen = true;
+								
+								//Close all other infowindows 
+								viewRef.closeInfoWindows(infoWindow);
+							}
+							
+							//------ We are not at max zoom, so zoom into this tile ----//
+							else{
+								//Change the center
+								viewRef.map.panTo(clickEvent.latLng);
+								
+								//Get this tile's bounds
+								var bounds = tile.shape.getBounds();
+										
+								//Change the zoom
+								viewRef.map.fitBounds(bounds);	
+							}
+						});
+						
+						//Close the infowindow upon any click on the map
+						gmaps.event.addListener(viewRef.map, 'click', function() {						
+							infoWindow.close();
+							infoWindow.isOpen = false;
+						});
+						
+						infoWindows[tile.geohash] = infoWindow;
 					});
 					
-					//Close the infowindow upon any click on the map
-					gmaps.event.addListener(viewRef.map, 'click', function() {						
-						infoWindow.close();
-						infoWindow.isOpen = false;
-					});
-					
-					infoWindows[tile.geohash] = infoWindow;
-				});
-				
-				viewRef.infoWindows = infoWindows;
-				
-			},
-			"json");
+					viewRef.infoWindows = infoWindows;
+				}		
+			});
 		},
 		
 		/**

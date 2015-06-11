@@ -142,7 +142,6 @@ define(['jquery',
 					
 					// render the new view
 					view.$el.hide();
-					view.$el.html(thisAppViewRef.loadingTemplate());
 					view.render();
 					view.$el.fadeIn('slow', function() {
 						

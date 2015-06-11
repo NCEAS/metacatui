@@ -87,40 +87,49 @@ define(['jquery', 'underscore', 'backbone'],
 					"+-obsoletedBy:*" +
 					"+readPermission:public" +
 					"&rows=1" +
-					"&wt=json" +	
 					"&fl=beginDate" +
-					"&sort=beginDate+asc";
+					"&sort=beginDate+asc" +
+					"&wt=json&json.wrf=?";	
 			
 			//Query for the earliest beginDate
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				if(!data.response.numFound){
-					//There were no begin dates found
-					model.set('totalBeginDates', 0);
-					
-					var endDateQuery = query.replace(/beginDate/g, "endDate");
-					
-					//Find the earliest endDate if there are no beginDates
-					$.get(appModel.get('queryServiceUrl') + endDateQuery, function(endDateData, textStatus, xhr) {
-						//If not endDates or beginDates are found, there is no temporal data in the index, so save falsey values
-						if(!endDateData.response.numFound){
-							model.set('firstBeginDate', null);
-							model.set('lastEndDate', null);
-						}
-						else{
-							model.set('firstBeginDate', new Date.fromISO(endDateData.response.docs[0].endDate));
-						}
-					}, "json");
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
+					if(!data.response.numFound){
+						//There were no begin dates found
+						model.set('totalBeginDates', 0);
+						
+						var endDateQuery = query.replace(/beginDate/g, "endDate");
+						
+						//Find the earliest endDate if there are no beginDates
+						$.ajax({
+							url: appModel.get('queryServiceUrl') + endDateQuery, 
+							jsonp: "json.wrf",
+							dataType: "jsonp",
+							success: function(endDateData, textStatus, xhr) {
+								//If not endDates or beginDates are found, there is no temporal data in the index, so save falsey values
+								if(!endDateData.response.numFound){
+									model.set('firstBeginDate', null);
+									model.set('lastEndDate', null);
+								}
+								else{
+									model.set('firstBeginDate', new Date.fromISO(endDateData.response.docs[0].endDate));
+								}
+							}
+						});
+					}
+					else{
+						// Save the earliest beginDate and total found in our model
+						model.set('firstBeginDate', new Date.fromISO(data.response.docs[0].beginDate));					
+						model.set('totalBeginDates', data.response.numFound);
+						
+						model.trigger("change:firstBeginDate");
+						model.trigger("change:totalBeginDates");
+					}
 				}
-				else{
-					// Save the earliest beginDate and total found in our model
-					model.set('firstBeginDate', new Date.fromISO(data.response.docs[0].beginDate));					
-					model.set('totalBeginDates', data.response.numFound);
-					
-					model.trigger("change:firstBeginDate");
-					model.trigger("change:totalBeginDates");
-				}
-				
-			}, "json");
+			});
 		},
 		
 		getLastEndDate: function(){
@@ -131,26 +140,33 @@ define(['jquery', 'underscore', 'backbone'],
 					"+(endDate:18*%20OR%20endDate:19*%20OR%20endDate:20*)+-obsoletedBy:*" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
 					"+readPermission:public" +
 					"&rows=1" +
-					"&wt=json" +	
 					"&fl=endDate" +
-					"&sort=endDate+desc";
+					"&sort=endDate+desc" +
+					"&wt=json" +
+					"&json.wrf=?";
 			
 			//Query for the latest endDate
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				if(!data.response.numFound){
-					//Save some falsey values if none are found
-					model.set('lastEndDate', null);
-				}
-				else{
-					// Save the earliest beginDate and total found in our model - but do not accept a year greater than this current year
-					var now = new Date();
-					if(new Date.fromISO(data.response.docs[0].endDate).getUTCFullYear() > now.getUTCFullYear()) model.set('lastEndDate', now);
-					else model.set('lastEndDate', new Date.fromISO(data.response.docs[0].endDate));
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
+					if(typeof data == "string") data = JSON.parse(data);
 					
-					model.trigger("change:lastEndDate");
-				}	
-				
-			}, "json");
+					if(!data.response.numFound){
+						//Save some falsey values if none are found
+						model.set('lastEndDate', null);
+					}
+					else{
+						// Save the earliest beginDate and total found in our model - but do not accept a year greater than this current year
+						var now = new Date();
+						if(new Date.fromISO(data.response.docs[0].endDate).getUTCFullYear() > now.getUTCFullYear()) model.set('lastEndDate', now);
+						else model.set('lastEndDate', new Date.fromISO(data.response.docs[0].endDate));
+						
+						model.trigger("change:lastEndDate");
+					}	
+				}
+			});
 		},
 		
 		/**
@@ -163,49 +179,50 @@ define(['jquery', 'underscore', 'backbone'],
 			var query = "q=" + this.get('query') +
 								  "+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*" +
 								  "+readPermission:public" +
-								  "&wt=json" +
 								  "&rows=2" +
 							 	  "&group=true" +
 								  "&group.field=formatType" +
 								  "&group.limit=0" +
-								  "&sort=formatType%20desc";			
+								  "&sort=formatType%20desc" +			
+								  "&wt=json&json.wrf=?";
 			
 			//Run the query
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				var formats = data.grouped.formatType.groups;
-				
-				if(formats.length == 1){	//Only one format type was found				
-					if(formats[0].groupValue == "METADATA"){ //That one format type is metadata
-						model.set('metadataCount', formats[0].doclist.numFound);
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
+
+					var formats = data.grouped.formatType.groups;
+					
+					if(formats.length == 1){	//Only one format type was found				
+						if(formats[0].groupValue == "METADATA"){ //That one format type is metadata
+							model.set('metadataCount', formats[0].doclist.numFound);
+							model.set('dataCount', 0);
+							model.set('dataFormatIDs', ["", 0]);
+						}else{
+							model.set('dataCount', formats[0].doclist.numFound);
+							model.set('metadataCount', 0);
+							model.set('metadataFormatIDs', ["", 0]);
+						}					
+					}	
+					//If no data or metadata objects were found, draw blank charts
+					else if(formats.length == 0){
+						
+						//Store falsey data
 						model.set('dataCount', 0);
-						model.set('dataFormatIDs', ["", 0]);
-					}else{
-						model.set('dataCount', formats[0].doclist.numFound);
 						model.set('metadataCount', 0);
 						model.set('metadataFormatIDs', ["", 0]);
-					}					
-				}	
-				//If no data or metadata objects were found, draw blank charts
-				else if(formats.length == 0){
-					
-					//Store falsey data
-					model.set('dataCount', 0);
-					model.set('metadataCount', 0);
-					model.set('metadataFormatIDs', ["", 0]);
-					model.set('dataFormatIDs', ["", 0]);
-					
-					return;
-				}
-				else{
-					//Extract the format types (because of filtering and sorting they will always return in this order)
-					model.set('metadataCount', formats[0].doclist.numFound);
-					model.set('dataCount', formats[1].doclist.numFound);
-				}	
+						model.set('dataFormatIDs', ["", 0]);
 						
-			//Display error when our original Solr query went wrong
-			}, "json")
-			.error(function(){
-				console.error('Solr query for format types returned error');
+						return;
+					}
+					else{
+						//Extract the format types (because of filtering and sorting they will always return in this order)
+						model.set('metadataCount', formats[0].doclist.numFound);
+						model.set('dataCount', formats[1].doclist.numFound);
+					}	
+				}
 			});
 		},
 		
@@ -219,18 +236,19 @@ define(['jquery', 'underscore', 'backbone'],
 			"&facet.field=formatId" +
 			"&facet.limit=-1" +
 			"&facet.mincount=1" +
-			"&wt=json" +
-			"&rows=0";
+			"&rows=0" +
+			"&wt=json&json.wrf=?";
 			
 			if(this.get('dataCount') > 0){					
 				//Now get facet counts of the data format ID's 
-				$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-					model.set('dataFormatIDs', data.facet_counts.facet_fields.formatId);
-				}, "json"
-				).error(function(){
-					console.warn('Solr query error for data formatIds - not vital to page, so we will keep going');
+				$.ajax({
+					url: appModel.get('queryServiceUrl') + query, 
+					jsonp: "json.wrf",
+					dataType: "jsonp",
+					success: function(data, textStatus, xhr) {
+						model.set('dataFormatIDs', data.facet_counts.facet_fields.formatId);
+					}
 				});
-				
 			}
 		},
 		
@@ -238,23 +256,25 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			var query = "q=" + this.get('query') +
-			"+formatType:METADATA+-obsoletedBy:*" +
-			"+readPermission:public" +
-			"&facet=true" +
-			"&facet.field=formatId" +
-			"&facet.limit=-1" +
-			"&facet.mincount=1" +
-			"&wt=json" +
-			"&rows=0";
+						"+formatType:METADATA+-obsoletedBy:*" +
+						"+readPermission:public" +
+						"&facet=true" +
+						"&facet.field=formatId" +
+						"&facet.limit=-1" +
+						"&facet.mincount=1" +
+						"&rows=0" +
+						"&wt=json&json.wrf=?";
 			
 			if(this.get('metadataCount') > 0){
 				
 				//Now get facet counts of the metadata format ID's 
-				$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-					model.set('metadataFormatIDs', data.facet_counts.facet_fields.formatId);
-				}, "json")
-				.error(function(){
-					console.warn('Solr query error for metadata formatIds - not vital to page, so we will keep going');
+				$.ajax({
+					url: appModel.get('queryServiceUrl') + query, 
+					jsonp: "json.wrf",
+					dataType: "jsonp",
+					success: function(data, textStatus, xhr) {
+						model.set('metadataFormatIDs', data.facet_counts.facet_fields.formatId);
+					}
 				});
 			}
 		},
@@ -271,14 +291,19 @@ define(['jquery', 'underscore', 'backbone'],
 								"+dateUploaded:*" +
 								"+-obsoletes:*"+    //Only count the first version
 								"+readPermission:public" +
-								"&wt=json" +
 								"&fl=dateUploaded" +
 								"&rows=1" +
-								"&sort=dateUploaded+asc";
+								"&sort=dateUploaded+asc" +
+								"&wt=json&json.wrf=?";
 			
 			//Run the query
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-						if(!data.response.numFound){
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
+
+					if(!data.response.numFound){
 							//Save some falsey values if none are found
 							model.set('firstUpload', null);
 							model.set('totalUploads', 0);
@@ -299,34 +324,39 @@ define(['jquery', 'underscore', 'backbone'],
 							var metadataQuery =  "q=" + model.get('query') +
 							  "+-obsoletes:*+formatType:METADATA+readPermission:public";
 							  
-							var facets =  "&wt=json" +
-										  "&rows=0" +
+							var facets =  "&rows=0" +
 										  "&facet=true" +
 										  "&facet.missing=true" + //Include months that have 0 uploads
 										  "&facet.limit=-1" +
 										  "&facet.range=dateUploaded" +
 										  "&facet.range.start=" + model.get('firstUpload') +
 										  "&facet.range.end=NOW" +
-										  "&facet.range.gap=%2B1MONTH";
+										  "&facet.range.gap=%2B1MONTH" +
+										  "&wt=json&json.wrf=?";
 				
 							//Run the query
-							$.get(appModel.get('queryServiceUrl') + metadataQuery+facets, function(data, textStatus, xhr) {
-								model.set("metadataUploads", data.response.numFound);
-								model.set("metadataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);		
-								
-								$.get(appModel.get('queryServiceUrl') + dataQuery+facets, function(data, textStatus, xhr) {
-									model.set("dataUploads", data.response.numFound);
-									model.set("dataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);		
-								}, "json")
-								.error(function(){
-									console.warn('Solr query for data upload info returned error.');
-								});
-							}, "json")
-							.error(function(){
-								console.warn('Solr query for metadata upload info returned error.');
+							$.ajax({
+								url: appModel.get('queryServiceUrl') + metadataQuery+facets, 
+								jsonp: "json.wrf",
+								dataType: "jsonp",
+								success: function(data, textStatus, xhr) {
+									model.set("metadataUploads", data.response.numFound);
+									model.set("metadataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);		
+									
+									$.ajax({
+										url: appModel.get('queryServiceUrl') + dataQuery+facets, 
+										jsonp: "json.wrf",
+										dataType: "jsonp",
+										success: function(data, textStatus, xhr) {
+											model.set("dataUploads", data.response.numFound);
+											model.set("dataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);	
+										}
+									});
+								}
 							});
 						}
-			}, "json");	
+				}
+			});	
 		},
 		
 		/* getTemporalCoverage
@@ -392,44 +422,45 @@ define(['jquery', 'underscore', 'backbone'],
 			  "+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
 			  "+-obsoletedBy:*" +
 			  "+readPermission:public" +
-			  "&wt=json" +
 			  "&rows=0" +
 			  "&facet=true" +
 			  "&facet.limit=30000" + //Put some reasonable limit here so we don't wait forever for this query
 			  "&facet.missing=true" + //We want to retrieve years with 0 results
-			  fullFacetQuery;
+			  fullFacetQuery + 
+			  "&wt=json&json.wrf=?";
 						
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr) {
-				model.set('temporalCoverage', data.facet_counts.facet_queries);
-				
-				/* ---Save this logic in case we want total coverage years later on---
-				// Get the total number of years with coverage by counting the number of indices with a value
-				// This method isn't perfect because summing by the bin doesn't guarantee each year in that bin is populated
-				var keys = Object.keys(data.facet_counts.facet_queries),
-					coverageYears = 0,
-					remainder = totalYears%binSize;
-				
-				for(var i=0; i<keys.length; i++){
-					if((i == keys.length-1) && data.facet_counts.facet_queries[keys[i]]){
-						coverageYears += remainder;
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
+					model.set('temporalCoverage', data.facet_counts.facet_queries);
+					
+					/* ---Save this logic in case we want total coverage years later on---
+					// Get the total number of years with coverage by counting the number of indices with a value
+					// This method isn't perfect because summing by the bin doesn't guarantee each year in that bin is populated
+					var keys = Object.keys(data.facet_counts.facet_queries),
+						coverageYears = 0,
+						remainder = totalYears%binSize;
+					
+					for(var i=0; i<keys.length; i++){
+						if((i == keys.length-1) && data.facet_counts.facet_queries[keys[i]]){
+							coverageYears += remainder;
+						}
+						else if(data.facet_counts.facet_queries[keys[i]]){
+							coverageYears += binSize;
+						}
 					}
-					else if(data.facet_counts.facet_queries[keys[i]]){
-						coverageYears += binSize;
+					
+					//If our bins are more than one year, we need to subtract one bin from our total since we are actually conting the number of years BETWEEN bins (i.e. count one less)
+					if(binSize > 1){
+						coverageYears -= binSize;
 					}
+													
+					statsModel.set('coverageYears',  coverageYears); */
 				}
 				
-				//If our bins are more than one year, we need to subtract one bin from our total since we are actually conting the number of years BETWEEN bins (i.e. count one less)
-				if(binSize > 1){
-					coverageYears -= binSize;
-				}
-												
-				statsModel.set('coverageYears',  coverageYears); */
-				
-			}, "json")
-			.error(function(){
-				//Log this warning and display a warning where the graph should be
-				console.warn("Solr query for temporal coverage failed.");
-			}); 
+			});
 		}
 	});
 	return Stats;

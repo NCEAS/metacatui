@@ -67,91 +67,95 @@ define(['jquery',
 			var view = this;
 						
 			//Get all the fields from the Solr index
-			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&wt=json&rows=1&start=0&fl=*';
-			$.get(appModel.get('queryServiceUrl') + query, function(data, textStatus, xhr){ 
+			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json&json.wrf=?';
+			$.ajax({
+				url: appModel.get('queryServiceUrl') + query, 
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){ 
 
-				if(data.response.numFound == 0){
-					var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
-							  "<ul class='indent'>" +
-								  "<li>The content was removed because it was invalid or inappropriate.</li>" +
-								  "<li>You do not have permission to view this content.</li>" +
-								  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
-							  "</ul>";
-					view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
-					view.flagComplete();
-				}
-				else{
-					view.docs = data.response.docs;
-					
-					_.each(data.response.docs, function(doc, i, list){
-						
-						//If this is a data object and there is a science metadata doc that describes it, then navigate to that Metadata View.
-						if((doc.formatType == "DATA") && (doc.isDocumentedBy.length > 0)){
-							view.onClose();
-							uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
-							return;
-						}
-						
-						var metadataEl = $(document.createElement("section")).attr("id", "metadata-index-details"),
-							id = doc.id,
-							creator = doc.origin,
-							title = doc.title,
-							pubDate = doc.pubDate,
-							dateUploaded = doc.dateUploaded,
-							keys = Object.keys(doc),
-							docModel = new SolrResult(doc);
-							
-						//Extract General Info details that we want to list first
-						var generalInfoKeys = ["title", "id", "abstract", "pubDate", "keywords"];
-						keys = _.difference(keys, generalInfoKeys);
-						$(metadataEl).append(view.formatAttributeSection(docModel, generalInfoKeys, "General"));
-
-						//Extract Spatial details
-						var spatialKeys = ["site", "southBoundCoord", "northBoundCoord", "westBoundCoord", "eastBoundCoord"];
-						keys = _.difference(keys, spatialKeys);
-						$(metadataEl).append(view.formatAttributeSection(docModel, spatialKeys, "Geographic Region"));
-						
-						//Extract Temporal Coverage details
-						var temporalKeys = ["beginDate", "endDate"];
-						keys = _.difference(keys, temporalKeys);
-						$(metadataEl).append(view.formatAttributeSection(docModel, temporalKeys, "Temporal Coverage"));
-						
-						//Extract Taxonomic Coverage details
-						var taxonKeys = ["order", "phylum", "family", "genus", "species", "scientificName"];
-						keys = _.difference(keys, taxonKeys);
-						$(metadataEl).append(view.formatAttributeSection(docModel, taxonKeys, "Taxonomic Coverage"));
-						
-						//Extract People details
-						var peopleKeys = ["origin", "investigator", "contactOrganization", "project"];
-						keys = _.difference(keys, peopleKeys);
-						$(metadataEl).append(view.formatAttributeSection(docModel, peopleKeys, "People and Associated Parties"));
-						
-						//Extract Access Control details
-						var accessKeys = ["isPublic", "submitter", "rightsHolder", "writePermission", "readPermission", "changePermission", "authoritativeMN"];
-						keys = _.difference(keys, accessKeys);
-						$(metadataEl).append(view.formatAttributeSection(docModel, accessKeys, "Access Control"));
-						
-						//Add the rest of the metadata
-						$(metadataEl).append(view.formatAttributeSection(docModel, keys, "Other"));
-						
-						view.$el.html(view.metadataIndexTemplate({ 
-							id: id
-						}));
-						
-						var citation = new CitationView({model: docModel, createLink: false}).render().el;
-						view.$(".citation").replaceWith(citation);
-						
-						view.$("#downloadContents").after(metadataEl);
-						
+					if(data.response.numFound == 0){
+						var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
+								  "<ul class='indent'>" +
+									  "<li>The content was removed because it was invalid or inappropriate.</li>" +
+									  "<li>You do not have permission to view this content.</li>" +
+									  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
+								  "</ul>";
+						view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
 						view.flagComplete();
-					});
+					}
+					else{
+						view.docs = data.response.docs;
+						
+						_.each(data.response.docs, function(doc, i, list){
+							
+							//If this is a data object and there is a science metadata doc that describes it, then navigate to that Metadata View.
+							if((doc.formatType == "DATA") && (doc.isDocumentedBy.length > 0)){
+								view.onClose();
+								uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
+								return;
+							}
+							
+							var metadataEl = $(document.createElement("section")).attr("id", "metadata-index-details"),
+								id = doc.id,
+								creator = doc.origin,
+								title = doc.title,
+								pubDate = doc.pubDate,
+								dateUploaded = doc.dateUploaded,
+								keys = Object.keys(doc),
+								docModel = new SolrResult(doc);
+								
+							//Extract General Info details that we want to list first
+							var generalInfoKeys = ["title", "id", "abstract", "pubDate", "keywords"];
+							keys = _.difference(keys, generalInfoKeys);
+							$(metadataEl).append(view.formatAttributeSection(docModel, generalInfoKeys, "General"));
+	
+							//Extract Spatial details
+							var spatialKeys = ["site", "southBoundCoord", "northBoundCoord", "westBoundCoord", "eastBoundCoord"];
+							keys = _.difference(keys, spatialKeys);
+							$(metadataEl).append(view.formatAttributeSection(docModel, spatialKeys, "Geographic Region"));
+							
+							//Extract Temporal Coverage details
+							var temporalKeys = ["beginDate", "endDate"];
+							keys = _.difference(keys, temporalKeys);
+							$(metadataEl).append(view.formatAttributeSection(docModel, temporalKeys, "Temporal Coverage"));
+							
+							//Extract Taxonomic Coverage details
+							var taxonKeys = ["order", "phylum", "family", "genus", "species", "scientificName"];
+							keys = _.difference(keys, taxonKeys);
+							$(metadataEl).append(view.formatAttributeSection(docModel, taxonKeys, "Taxonomic Coverage"));
+							
+							//Extract People details
+							var peopleKeys = ["origin", "investigator", "contactOrganization", "project"];
+							keys = _.difference(keys, peopleKeys);
+							$(metadataEl).append(view.formatAttributeSection(docModel, peopleKeys, "People and Associated Parties"));
+							
+							//Extract Access Control details
+							var accessKeys = ["isPublic", "submitter", "rightsHolder", "writePermission", "readPermission", "changePermission", "authoritativeMN"];
+							keys = _.difference(keys, accessKeys);
+							$(metadataEl).append(view.formatAttributeSection(docModel, accessKeys, "Access Control"));
+							
+							//Add the rest of the metadata
+							$(metadataEl).append(view.formatAttributeSection(docModel, keys, "Other"));
+							
+							view.$el.html(view.metadataIndexTemplate({ 
+								id: id
+							}));
+							
+							var citation = new CitationView({model: docModel, createLink: false}).render().el;
+							view.$(".citation").replaceWith(citation);
+							
+							view.$("#downloadContents").after(metadataEl);
+							
+							view.flagComplete();
+						});
 										
+					}
+				},
+				error: function(){
+					var msg = "<h4>Sorry, no dataset was found.</h4>";
+					view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
 				}
-				
-			}, "json")
-			.error(function(){
-				var msg = "<h4>Sorry, no dataset was found.</h4>";
-				view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
 			});
 						
 			return this;
