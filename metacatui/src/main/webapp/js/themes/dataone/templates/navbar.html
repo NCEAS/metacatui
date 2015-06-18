@@ -502,6 +502,13 @@
         <li>
         	<a href="#profile">Summary</a>
         </li> 
+        <li class="input input-append">
+        	<form id="direct-search" action="#">
+	        	<label>Jump to:</label> 
+	        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="direct-search" form="direct-search"/>
+	        	<button class="btn direct-search" form="direct-search">Go</button>
+	        </form>
+        </li>
         <% 
         if (username) { 
         	print(

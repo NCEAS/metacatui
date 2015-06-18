@@ -513,6 +513,40 @@ table th.btn-container .btn{
     	height: 36px;
     }
     
+    .navbar-lower > .nav > .input{
+    	margin-left: 40px;
+    }
+    .navbar-lower .input > form > label{
+	    color: rgba(203, 80, 138, 1);
+    }
+    .navbar-lower .input > form > input[type="text"]{
+    	background-image: url(../img/subtle-bg-magenta.png);
+    	background-repeat: repeat;
+    	background-size: 100%;
+    	background-color: transparent;
+    	border: 0px;
+    	color: white;
+    }
+	.navbar-lower .input > form > .btn {
+		background-color:#91285F;
+		color:#ffffff;
+		text-shadow:0px 1px 0px #3f0020;
+		border: 0px;
+		border-radius: 0px;
+	}  
+    .navbar-lower .input > form > input[type="text"]::-webkit-input-placeholder{
+    	color: rgba(203, 80, 138, 1);
+    }
+    .navbar-lower .input > form > input[type="text"]:-moz-placeholder{
+    	color: rgba(203, 80, 138, 1);
+    }
+    .navbar-lower .input > form > input[type="text"]::-moz-placeholder{
+    	color: rgba(203, 80, 138, 1);
+    }
+    .navbar-lower .input > form > input[type="text"]:-ms-input-placeholder{
+    	color: rgba(203, 80, 138, 1);
+    }
+    
     /*Share Your Data button */
     #share-data-view{
     	display: none;

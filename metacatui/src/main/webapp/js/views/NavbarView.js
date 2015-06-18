@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 							  'click #myData' : 'myDataSearch',
 			'click .show-new-dataCatalogView' : 'showNewSearch',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
-			 		 	'click .dropdown' : 'showDropdown',
+			 		 	    'click .dropdown' : 'showDropdown',
 			 		 		//'click .dropdown' : 'hideDropdown'
 		},
 		

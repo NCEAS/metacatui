@@ -85,9 +85,6 @@ Bold 700
     	display: none;
     }
     
-    .mapMode .collapse-me{
-    	cursor: pointer;
-    }
     
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block;   
@@ -610,6 +607,7 @@ Bold 700
     	z-index: 999;
     }
     
+    
     .mapMode .navbar .nav{
     	z-index: 999;
     }
@@ -717,67 +715,21 @@ Bold 700
     }
  
     
-    /* Search bar in nav bar */
-    
-    #search_txt{
-		border: 0px;
-		border-radius: 4px 0px 0px 4px;
-		-moz-border-radius: 4px 0px 0px 4px;
-		-webkit-border-radius: 4px 0px 0px 4px;
-		margin-top: 5px;
-		float: left;
-		background-color: #FFFFFF;
-		background-image: none;
-		color: #333;	
+    /* Search/ID Input bar in nav bar */
+    .nav > .input > form > input[type="text"],
+    .nav > .input > form > .btn{
+    	position: relative;
+    	top: 5px;
     }
-    .mapMode #search_txt,
-    .mapMode #search_btn{
-    	box-shadow: 0 1px 8px #666;
+    .nav > .input > form > .btn{
+    	background-color: #CCC;	
     }
-    	#search_txt::-webkit-input-placeholder {
-		   color: #666;
-		}
-		#search_txt:-moz-placeholder { /* Firefox 18- */
-		   color: #666;  
-		}
-		
-		#search_txt::-moz-placeholder {  /* Firefox 19+ */
-		   color: #666;  
-		}
-		
-		#search_txt:-ms-input-placeholder {  
-		   color: #666;  
-		}
-    
-    
-    #search_btn{
-    	margin-top: 5px;
-    	height: 16px;
-    	width: auto;
-    	float: left;
-    	background-image: none;
-    	background-color: #999;
-    	border-radius: 0px 4px 4px 0px;
-    	-webkit-border-radius: 0px 4px 4px 0px;
-		-moz-border-radius: 0px 4px 4px 0px;
-    	padding: 5px 7px 7px 7px;
-    	border: 0px;
+    .nav > .input > form > label{
+    	position: relative;
+    	top: 10px;
+    	font-weight: bold;
+    	color: white;
     }
-    
-    #search_btn > i:hover{
-    	color: #3399CC;
-    	transition: all .5s;
-    }
-    
-    #search_btn > i{
-    	font-size: 13px;
-    	color: #DDD;
-    	text-shadow: none;
-    	float: left;
-    	line-height: 18px;
-    }
-
-
     
     /** Backbone override for dropdowns so they dsplay on hover rather than click **/
     .dropdown-menu .sub-menu {
@@ -1091,91 +1043,11 @@ Bold 700
 	.select-editable input:focus { 
 		outline:none; 
 	}	  
-	
-	.minimize > i,
-	.result-header-count .minimize{
-		display: none;
-	}
 
-	.mapMode .minimize > i{
-		display: block;
-    	font-size: 20px;
-    	margin-top: 5px;
-    	float: right;
-    }
-    
-    .mapMode .minimize{
-    	display: block;
-    }
-    
-    .mapMode .minimize > i.icon-check-minus{
-    	font-size: 17px;
-    }
-    
-    .mapMode #sidebar .minimize > i{
-    	float: right;
-    	margin-right: 10px;
-    }
-    
-    .mapMode #content .minimize{
-    	position: fixed;
-    	right: 25px;
-    	z-index: 1;
-    }
-    
-     .mapMode #sidebar.collapsed .minimize > i.minimize,
-     .mapMode #sidebar .minimize > i.maximize,
-     .mapMode #content.collapsed .minimize > i.minimize,
-     .mapMode #content .minimize > i.maximize{
-    	display: none;
-    }
-    
-     .mapMode #sidebar.collapsed .minimize > i.maximize,
-     .mapMode #sidebar .minimize > i.minimize,
-     .mapMode #content.collapsed .minimize > i.maximize,
-     .mapMode #content .minimize > i.minimize{
-    	display: block;
-    }
     
   /* SIDEBAR CSS
   -------------------------------------------------- */
-  #sidebar{
-  		border-radius: 5px;
-  		-webkit-border-radius: 5px;
-  		-moz-border-radius: 5px;
-  		width: 252px;
-  		height: auto;
-  		position: fixed;
-  		background-color: #FFFFFF;
-  		background-color: rgba(255,255,255,0.9);
-  }
-    .mapMode #sidebar {
-      position: fixed;
-      width: 252px;
-      bottom: 0px;
-      left: 0px;
-      padding: 0px;
-      background-color: #FFFFFF;
-      background-color: rgba(255,255,255,0.8);
-      border-radius: 0px;
-      -moz-border-radius: 0px;
-      -webkit-border-radius: 0px;
-      border-top-right-radius:4px;
-      -moz-border-top-right-radius:4px;
-      -webkit-border-top-right-radius:4px;
-      margin: 0px;
-      -webkit-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  -moz-box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  box-shadow: 3px -4px 10px rgba(50, 50, 50, 0.44);
-	  max-height: 76%;
-	  overflow-y: visible;
-	  overflow-x: hidden;
-    } 
-    
-    .mapMode #sidebar.collapsed{
-    	height: 60px;
-    }
- 	
+
  	aside > div{
  		margin-bottom: 10px;		
  	}
@@ -1678,63 +1550,12 @@ Bold 700
 /* RESULTS CSS
 -------------------------------------------------- */
     /*-- Results header --*/
-    #results-view{
-    	background-color: #FFF;
-    	border-radius: 5px;
-    	-moz-border-radius: 5px;
-    	-webkit-border-radius: 5px;
-    }
-    
-    .mapMode  #results-view{
-    	border-radius: 0px;
-    	-moz-border-radius: 0px;
-    	-webkit-border-radius: 0px;
-    }
+
     
     .result-header{
     	height: auto;
     }
-    .mapMode .result-header {
-      position: relative;
-      z-index: 1;
-      height: 76px;
-    }
-    
-    #statcounts .result-header-count{
-	    font-weight: 500;
-		font-size: 15px;
-		line-height: 1.5em;
-		min-height: 1.5em;
-	}
-    
-     .mapMode .result-header > .result-header-count{
-    	position: relative;
-    	width: 100%;
-    }
-    
-    .mapMode .result-header-count > .result-header-count{
-    	position: fixed;
-    	width: 100%;
-    	margin-left: 0px;
-    	padding-left: 10px;
-    	padding-top: 5px;
-    	z-index: 1;
-    	color: #888888;
-    	text-transform: none;
-    }
-    
-    .mapMode .result-header-count > .result-header-count{
-    	padding-left: 50px;
-    }
-    
-    .collapsed .result-header-count > .result-header-count{
-    	padding-left: 10px;
-    }
-    
-    .mapMode .result-header-count > .result-header-count{
-    	width: 45%;
-    }
-    
+
     .result-header-count > .result-header-count > span{
     	color: #CCCCCC;
     }
@@ -1746,30 +1567,7 @@ Bold 700
     #countstats:before{
 		content: "Datasets ";
 	}
-    
-    .map-pointer{
-    	display: none;
-    }
-    
-    .mapMode .map-pointer{
-		display: block;
-		position: fixed;
-		font-size: 75px;
-		background-color: #333;
-		z-index: 1;
-		width: auto;
-		color: #777777;
-		padding-left: 5px;
-		padding-right: 11px;
-		border-radius: 0px;
-		-webkit-border-radius: 0px;
-		-moz-border-radius: 0px;
-	}
-	
-	.collapsed .map-pointer{
-		display: none;
-	}
-	
+ 
     #sortOrder{
     	border: 1px solid #CCC;
     	border-radius: 4px;
@@ -1782,41 +1580,9 @@ Bold 700
 		line-height: 15px;
 		font-size: 12px;
 		z-index: 1;
-    }
-    
-    #statcounts{
-    	float: none;
-    	padding-top: 5px;
-    	min-height: 3em;
-    }
- 	
- 	.mapMode #statcounts{
- 		position: fixed;
- 		margin-left: 0px;
- 		padding-left: 1%;
- 		background-color: #FFF;
- 	}
- 	
- 	.mapMode .pagination label{
- 		display: inline;
- 	}
+}
    
    /*-- Results rows --*/
-   .mapMode #results{
-   		margin-top: 2.8em;
-   		width: 100%;
-   		overflow-x: hidden;
-   		float: right;
-   		-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.4);
-		-moz-box-shadow:    -4px -2px 5px rgba(50, 50, 50, 0.4);
-		box-shadow:         -4px -2px 5px rgba(50, 50, 50, 0.4);
-   }
-   
-    .mapMode .search-results{
-    	background-color: #FFFFFF; /* IE 8 fallback */
-    	background-color: rgba(255,255,255,0.9);
-    	margin-top: 10px;
-    }
     
     .search-results > p{
     	display: block;
@@ -2376,91 +2142,16 @@ svg .point:hover ~ .line-chart-label{
 
 /* MAPS 
 --------------------------------- */
-#map-canvas{
-	height: 100%;
-	width: 100%;
-}
 
-#map-container{
-	display: none;
-	transition: all 1s;
-}
-
-.mapMode #map-container{
-	height: 100%;
-	width: 100%;
-	position: fixed;
-	top:0px;
-	display: block;
-	transition: all 1s;
-}
 
 .gmaps-infowindow{
 	max-height: 400px;
 	overflow-y:scroll;	
 }
 
-#toggle-map{
-	position: fixed;
-	left: -85px;
-	top: 100px;
-	z-index: 999;
-	border: 0px;
-	border-radius: 0px 5px 5px 0px;
-	-moz-border-radius: 0px 5px 5px 0px;
-	-webkit-border-radius: 0px 5px 5px 0px;
-	padding: 0px 5px;
-	-webkit-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
-	-moz-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
-	box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
-	background-color: #FFFFFF;
-	cursor: pointer;
-	transition: all 0.8s;
+.map-toggle-container{
+	line-height: 2em;
 }
-
-#toggle-map i{
-	font-size: 25px;
-	color: #666666;
-	transition: all 0.5s;
-}
-
-#toggle-map:hover i{
-	color: #3399CC;
-}
-
-#toggle-map span{
-	margin-right: 10px;
-	color: #666666;
-	text-transform: uppercase;
-	font-size: 20px;
-	line-height: 20px;
-}
-
-#show-map-control,
-.mapMode #hide-map-control{
-	display: block;
-}
-
-.mapMode #show-map-control,
-#hide-map-control{
-	display: none;
-}
-
-.mapMode #toggle-map{
-	left: -100px;
-}
-
-#toggle-map{
-	left: -120px;
-}
-
-#toggle-map:hover{
-	left: 0px;
-}
-
-
-
-
 
 
 
@@ -2491,30 +2182,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-left: 270px;
 }
 
-.mapMode #content {
-	position: fixed;
-	right: 0;
-	bottom: 28px;
-	background-color: transparent;
-	height: auto;
-	max-height: 90%;
-	max-width: 70%;
-	margin-top: 40px;
-	transition: width 1s;
-}
-
-.mapMode #content{
-	width: 45%;
-	overflow-y:scroll;
-	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
-	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
-	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
-}
-
-.mapMode #content.collapsed{
-	height: 80px;
-	position: fixed;
-}
 
 /* MAIN CONTENT 
 --------------------------------- */

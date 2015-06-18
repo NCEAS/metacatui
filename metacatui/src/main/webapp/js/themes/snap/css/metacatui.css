@@ -16,12 +16,6 @@
 
 /* Body CSS
 -------------------------------------------------- */
-    html, body {
-    	margin: 0;
-    	padding: 0;
-    	height: 100%;
-    }
-    
     body {
       color: #3C4043;
       background-color: #eae7e3;
@@ -62,7 +56,12 @@
 		padding: 2%;
 		width: 96%;
 	}
-    
+    #Content{
+    	padding: 20px;
+    	width: 100%;
+    	margin-left: 0px;
+    	margin-right: 0px;
+    }
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
@@ -164,7 +163,7 @@
  /* HEADER
 -------------------------------------------------- */ 
 header {
-	min-height: 35%;
+	min-height: 300px;
 	width: 100%;
 	overflow: hidden;
 	position: relative;	
@@ -187,35 +186,47 @@ header {
 	left: 10%;
 }
 
-#sidebar_share{
-	color: #fff;
+.header{
 	font-family: "Open Sans", Helvetica, Arial, sans-serif;
 	font-size: 0.7222em;
 	display: inline-block;
 	text-transform: uppercase;
 	background-repeat: no-repeat;
 	line-height: 1.25;
-	font-style: normal;
-	font-weight: bold;
 	position: absolute;
 	top: 65%;
 	left: 10%;
+	color: #FFF;
+	font-style: normal;
+	font-weight: bold;
+}
+.header .input label{
+	font-style: italic;
+	font-size: .9em;
+}
+.header .input .btn{
+	padding: 8px 8px 7px 8px;
+  	margin-left: -4px;
 }
 #sidebar_share:hover span,
-#sidebar_share span:hover
+#sidebar_share span:hover,
+.header .input label:hover
 {
 	opacity: 1;
 	color: #FFFFFF;
 	text-decoration: none;
 }
-#sidebar_share > span{
-	display: block;
-	margin-top: 5px;
-		opacity: 0.75;
+#sidebar_share > span,
+.header .input label{
+	opacity: 0.75;
+	color: white;
 }
-
+#sidebar_share{
+	display: block;
+	margin-bottom: 10px;
+}
 #sidebar_share > img{
-		opacity: 0.75;
+	opacity: 0.75;
 }
 
 /* FORM/INPUT CUSTOMIZATIONS
@@ -301,7 +312,7 @@ header {
       margin-top: 40px;
       background: rgba(0, 0, 0, 0.8);
       padding: 20px;
-      min-height: 400px;
+      min-height: 170px;
       width: 100%;
       color: #E2E5E7;
       font-size: 0.8em;
@@ -1257,7 +1268,8 @@ svg .point:hover ~ .line-chart-label{
     }
     
     label.inline {
-    	width: 40%;
+    	width: 55%;
+    	width: calc(100% - 73px);
     }
     
     /* Larger modal for guide content */
@@ -1428,10 +1440,10 @@ svg .point:hover ~ .line-chart-label{
 	
 	/*-- The 'Year' filter elements --*/
     #filter-year label{
-   		min-height: 18px;
    		margin-bottom: 0px;
    		line-height: 16px;
    		width: auto;
+   		width: calc(100% - 36px);
     }
    
     #filter-year > input[type="number"]{
@@ -1447,6 +1459,8 @@ svg .point:hover ~ .line-chart-label{
    		top: -5px;
    		position: relative;
    		margin-bottom: 0px;
+   		margin-top: 10px;
+   		border: 1px solid #BBB;
     }
     
     #filter-year > input[type="number"]:focus{
@@ -1586,7 +1600,6 @@ svg .point:hover ~ .line-chart-label{
     } 
     
     .filter-contain label.inline{
-    	width: 102px;
     	margin-left: 7px;
     }
     
@@ -1604,14 +1617,13 @@ svg .point:hover ~ .line-chart-label{
       color: inherit;
       text-transform: none;
     }
-       
+    
+    .filter-contain img.icon{
+    	margin-right: 10px;
+    }   
 
     .filter-contain h3 > i{
     	margin-right: 5px;
-    }
-    
-    .filter-contain h3 i{
-    	float: left;
     }
     
     /*-- Your Collections area --*/

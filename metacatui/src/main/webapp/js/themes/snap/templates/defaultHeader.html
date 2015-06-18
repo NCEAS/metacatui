@@ -3,11 +3,20 @@
 
 <div id="bg_image" data-image-count="4" class="row-fluid container">
       <h1>Data Catalog</h1>
-      <a id="sidebar_share" href="#share">
-      	<img src="./js/themes/snap/img/icon-plus.png" />  
-      	<span>Share Your Data</span>
-      </a>
+      <div class="header">
+	      <a id="sidebar_share" href="#share">
+	      	<img src="./js/themes/snap/img/icon-plus.png" />  
+	      	<span>Share Your Data</span>
+	      </a>
       
+	       <div class="input input-append">
+	        	<form id="direct-search" action="#">
+		        	<label>Jump to:</label> 
+		        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="direct-search" form="direct-search"/>
+		        	<button class="btn direct-search" form="direct-search">Go</button>
+		        </form>
+	       </div>
+	  </div>
       <a href="#sidr" id="sidr-click"><span></span></a>
       
 </div>

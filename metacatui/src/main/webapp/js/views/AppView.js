@@ -31,7 +31,9 @@ define(['jquery',
 		loadingTemplate: _.template(LoadingTemplate),
 		
 		events: {
-			"click" : "closePopovers"
+			"click" : "closePopovers",
+	 		'click .direct-search' : 'routeToMetadata',
+		 	'keypress .direct-search' : 'routeToMetadata'
 		},
 				
 		initialize: function () {
@@ -163,7 +165,33 @@ define(['jquery',
 			
 			// track the current view
 			this.currentView = view;
-		},		
+		},	
+		
+		routeToMetadata: function(e){			
+			//If the user pressed a key inside a text input, we only want to proceed if it was the Enter key
+			if((e.type == "keypress") && (e.keycode != 13)) return;
+			else if((e.type == "keypress") || ((e.type == "click") && (e.target.tagName == "BUTTON"))){
+				e.preventDefault();
+
+				//Get the value from the input element
+				var form = $(e.target).attr("form") || null,
+					val;
+				
+				if((e.target.tagName == "INPUT") && (e.target.type == "text")){
+					val = $(e.target).val();
+					$(e.target).val("");
+				}
+				else if(form){
+					val = this.$("#" + form).find("input[type=text]").val();
+					this.$("#" + form).find("input[type=text]").val("");
+				}
+				else
+					return false;
+				
+				
+				uiRouter.navigate('view/'+ encodeURIComponent(val), {trigger: true});
+			}
+		},
 		
 		closePopovers: function(e){
 			if(this.currentView.closePopovers)

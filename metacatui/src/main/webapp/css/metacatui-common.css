@@ -80,6 +80,29 @@ article.container {
 	margin-right: 5px;
 }
 
+.nav .input > form > label,
+.header .input > form > label{
+   	display: inline-block;
+    top: 5px;
+    position: relative;
+    margin-right: 10px;
+}
+.nav .input > form > input[type="text"],
+.header .input > form > input[type="text"]{
+   	display: inline-block;
+   	width: 120px;
+}
+.nav .input > form > .btn,
+.header .input > form > .btn {
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	background: none;
+	display:inline-block;
+	cursor:pointer;
+	text-decoration:none;
+}  
+
 /****************************************** 
 ** Titles ***
 ******************************************/

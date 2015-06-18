@@ -1030,7 +1030,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	    top: 11px;
 	    left: -6px;
 	}
-
+	
+	/** Inputs in the navbar **/
+	.nav .input > form > input[type="text"]{
+		border: 1px solid #CCC;
+  		border-right: 0px;
+	}
+	.nav .input > form > .btn{
+		background-color: #EEE;
+  		border: 1px solid #CBCBCB;
+	}
+	
     /* CAROUSEL CSS
     -------------------------------------------------- */
 
