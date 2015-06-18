@@ -993,10 +993,11 @@ table th.btn-container .btn{
     }
     .mapMode #sidebar{
 		padding-right: 10px;
-		width: 200px;
+		width: 199px;
 		height: 700px;
+		border-right: 1px solid #CCC;
 		overflow-x: hidden;
-		overflow-y: scroll;
+		overflow-y: overlay;
     }
     
     .subset-choice{

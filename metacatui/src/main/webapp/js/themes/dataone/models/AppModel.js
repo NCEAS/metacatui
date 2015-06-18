@@ -22,7 +22,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: null,
-			d1CNBaseUrl: "https://cn.dataone.org/",
+			d1CNBaseUrl: window.location.origin,
 			d1CNService: "cn/v1",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -58,10 +58,9 @@ define(['jquery', 'underscore', 'backbone'],
 				var baseUrl = window.location.protocol + "//" + window.location.host;
 				
 				this.set('baseUrl', baseUrl);
+				this.set('d1CNBaseUrl', baseUrl);
 			}
-			
-			this.set("baseUrl", "https://cn.dataone.org");
-						
+									
 			// these are pretty standard, but can be customized if needed
 			if(this.get("d1CNService").indexOf("v2") > -1){
 				this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
