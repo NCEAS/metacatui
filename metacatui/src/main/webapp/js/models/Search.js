@@ -219,16 +219,63 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var geohashes = this.get("geohashes");
 				
 				if ((typeof geohashes != undefined) && (geohashes.length > 0)){ 
-				
-					var query = "+geohash_" + this.get("geohashLevel") + ":(";
-					
-					_.each(geohashes, function(geohash, key, list){
-						if(query.length < 1900)query += geohash + "%20OR%20";
-					});
-					
-					//Remove the last "OR"
-					query = query.substr(0, (query.length-8));
-					query += ")";
+									
+					//Find out if there are any geohashes that can be combined together, by looking for all 32 geohashes within the same precision level
+					if(geohashes.length > 32){
+						var sortedGeohashes = geohashes;
+						sortedGeohashes.sort();
+						
+						var groupedGeohashes = _.groupBy(sortedGeohashes, function(n){
+													return n.substring(0, n.length-1);
+												});
+						var completeGroups   = _.filter(groupedGeohashes, function(n){ return n.length == 32; }),
+							uncompleteGroups = _.filter(groupedGeohashes, function(n){ return n.length < 32; });
+						
+						if((completeGroups.length > 0) && (uncompleteGroups.length > 0)){
+							query += "+(geohash_" + (this.get("geohashLevel") - 1) + ":(";
+							
+							//If there are 32 values in this geohash group, we can add this to the query now						
+							_.each(completeGroups, function(geohashGroup, key, list){								
+								query += geohashGroup[0].substring(0, geohashGroup[0].length-1) + "%20OR%20";
+							});
+							//Remove the last "OR"
+							query = query.substr(0, (query.length-8));
+							
+							//Group the geohash levels together with an OR
+							query += ")%20OR%20" + "geohash_" + this.get("geohashLevel") + ":(";
+							
+							var otherGeohashes = _.flatten(uncompleteGroups);	
+							//Now make the query string for all the other geohash levels
+							_.each(otherGeohashes, function(g, key, list){						
+								if(query.length < 1900) query += g + "%20OR%20";
+							});
+							//Remove the last "OR"
+							query = query.substr(0, (query.length-8));							
+							
+							query += "))";
+						}
+						else if(completeGroups.length > 0){
+							query += "+geohash_" + (this.get("geohashLevel") - 1) + ":(";
+							
+							//If there are 32 values in this geohash group, we can add this to the query now						
+							_.each(completeGroups, function(geohashGroup, key, list){
+								query += geohashGroup[0].substring(0, geohashGroup[0].length-1) + "%20OR%20";
+							});
+							//Remove the last "OR"
+							query = query.substr(0, (query.length-8));
+							query += ")";
+						}
+						else{
+							query += "+geohash_" + this.get("geohashLevel") + ":(";
+
+							_.each(geohashes, function(geohash, key, list){						
+								if(query.length < 1900) query += geohash + "%20OR%20";
+							});	
+							//Remove the last "OR"
+							query = query.substr(0, (query.length-8));
+							query += ")";
+						}
+					}
 				}
 			}
 			

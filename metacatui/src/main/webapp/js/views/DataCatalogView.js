@@ -1713,7 +1713,10 @@ define(['jquery',
 					position = new google.maps.LatLng(latLong.latitude, latLong.longitude),
 					containingTileGeohash = _.find(this.tileGeohashes, function(g){ return thisGeohash.indexOf(g) == 0 }),
 					containingTile = _.findWhere(this.tiles, {geohash: containingTileGeohash });
-					
+				
+				//If this is a geohash for a georegion outside the map, do not highlight a tile or display a marker
+				if(typeof containingTile === "undefined") continue;
+				
 				this.highlightTile(containingTile);
 				
 				//Set up the options for each marker
@@ -1728,6 +1731,7 @@ define(['jquery',
 				var marker = new google.maps.Marker(markerOptions);
 				
 				this.resultMarkers.push(marker);
+				
 			}
 		},
 	
@@ -1759,12 +1763,16 @@ define(['jquery',
 				var thisGeohash = resultGeohashes[i],
 					containingTileGeohash = _.find(this.tileGeohashes, function(g){ return thisGeohash.indexOf(g) == 0 }),
 					containingTile = _.findWhere(this.tiles, {geohash: containingTileGeohash });
-					
-				//Unhighlight the tile and remove the marker from the map
+
+				//If this is a geohash for a georegion outside the map, do not unhighlight a tile
+				if(typeof containingTile === "undefined") continue;
+
+				//Unhighlight the tile
 				this.unhighlightTile(containingTile);
-				if(this.resultMarkers[i] && (typeof this.resultMarkers[i] !== "undefined"))
-					this.resultMarkers[i].setMap(null);
-			}			
+			}	
+			
+			 //Remove all markers from the map
+			_.each(this.resultMarkers, function(marker){ marker.setMap(null); });
 			this.resultMarkers = new Array();
 		},
 		
@@ -1878,14 +1886,16 @@ define(['jquery',
 					//Get the geohash for this tile
 					var tileGeohash	= geohashes[i],
 						isInsideMap = false,
-						index		= 0;
+						index		= 0,
+						searchString = tileGeohash;
 					
 					//Find if any of the bounding boxes/geohashes inside our map contain this tile geohash
-					while((!isInsideMap) && (index < mapBBoxes.length)){
-						if(tileGeohash.substring(0, mapBBoxes[index].length) == mapBBoxes[index]) isInsideMap = true;
+					while((!isInsideMap) && (searchString.length > 0)){
+						searchString = tileGeohash.substring(0, tileGeohash.length-index);
+						if(_.contains(mapBBoxes, searchString)) isInsideMap = true;						
 						index++;
 					}
-					
+										
 					if(isInsideMap){
 						filteredTileGeohashes.push(tileGeohash);
 						filteredTileGeohashes.push(geohashes[i+1]);
@@ -2093,6 +2103,7 @@ define(['jquery',
 			var div = tile.text.div_;
 			div.style.color = mapModel.get("tileLabelColorOnHover");
 			tile.text.div_ = div;
+			$(div).css("color", mapModel.get("tileLabelColorOnHover"));
 		},
 		
 		unhighlightTile: function(tile){
@@ -2103,6 +2114,7 @@ define(['jquery',
 			var div = tile.text.div_;
 			div.style.color = mapModel.get("tileLabelColor");
 			tile.text.div_ = div;
+			$(div).css("color", mapModel.get("tileLabelColor"));
 		},
 		
 		/**

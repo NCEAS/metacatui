@@ -533,6 +533,8 @@ table th.btn-container .btn{
 		text-shadow:0px 1px 0px #3f0020;
 		border: 0px;
 		border-radius: 0px;
+		border-top-right-radius: 2px;
+  		border-bottom-right-radius: 2px;
 	}  
     .navbar-lower .input > form > input[type="text"]::-webkit-input-placeholder{
     	color: rgba(203, 80, 138, 1);
@@ -992,7 +994,7 @@ table th.btn-container .btn{
 		clear: left;
     }
     .mapMode #sidebar{
-		padding-right: 10px;
+		padding-right: 25px;
 		width: 199px;
 		height: 700px;
 		border-right: 1px solid #CCC;
@@ -1366,6 +1368,7 @@ table th.btn-container .btn{
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
+    	-webkit-transform: translate3d(0,0,0); 
     	max-height: 150px;
     }
     
@@ -1409,6 +1412,7 @@ table th.btn-container .btn{
 		width: 400px;
 		overflow-x: hidden;
 		overflow-y: scroll;
+		-webkit-transform: translate3d(0,0,0); 
 		height: 700px;
 		margin-left: 0px;
 	}
@@ -1998,7 +2002,7 @@ svg .point:hover ~ .line-chart-label{
 #map-container{
 	height: 500px;
 	width: 400px;
-	width: calc(100% - 220px - 400px);	
+	width: calc(100% - 235px - 400px);	/* 100% - sidebar - results */
 	float: left;
 }
 #map-canvas{
@@ -2008,6 +2012,7 @@ svg .point:hover ~ .line-chart-label{
 .gmaps-infowindow{
 	max-height: 400px;
 	overflow-y:scroll;	
+	-webkit-transform: translate3d(0,0,0); 
 }
 
 /* Fixes Infowindow popup problem - interaction with bootstrap? */

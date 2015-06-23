@@ -163,7 +163,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 		getSearchPrecision: function(zoom){
 			if(zoom <= 5) return 2;
 			else if(zoom <= 7) return 3;
-			else if (zoom <= 9) return 4;
+			else if (zoom <= 8) return 4;
 			else if (zoom <= 12) return 5;
 			else if (zoom <= 16) return 6;
 			else return 7;
