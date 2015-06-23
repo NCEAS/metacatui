@@ -46,6 +46,7 @@ define(['jquery',
 		ready: false,
 		allowSearch: true,
 		hasZoomed: false,
+		hasDragged: false,
 		markers: {},
 		tiles: [],
 		tileCounts: [],		
@@ -1578,7 +1579,7 @@ define(['jquery',
 					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
 					if(viewRef.map.getZoom() == mapOptions.minZoom){
 						if(!viewRef.hasZoomed){
-							if(needsRecentered) mapModel.get("map").setCenter(savedMapCenter);
+							if(needsRecentered && !viewRef.hasDragged) mapModel.get("map").setCenter(savedMapCenter);
 							return; 
 						}
 						
@@ -1650,6 +1651,8 @@ define(['jquery',
 			//When the user has dragged the map to a new location, we don't want to load cached results.
 			//We still may not trigger a new search because the user has to zoom in first, after the map initially loads at full-world view
 			google.maps.event.addListener(mapRef, "dragend", function(){
+				viewRef.hasDragged = true;
+
 				if(viewRef.map.getZoom() > mapOptions.minZoom){
 					viewRef.hasZoomed = true;
 					viewRef.allowSearch = true;
