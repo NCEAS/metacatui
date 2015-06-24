@@ -1107,10 +1107,18 @@ ul.checkbox-list{
  	font-size: .9em;
  	clear: both;
 }
-.checkbox-list .more-link{
+.checkbox-list .more-link,
+.checkbox-list .less-link{
 	font-weight: normal;
 	font-size: .9em;
 } 
+.checkbox-list .more-link  .icon,
+.checkbox-list .less-link  .icon{
+	margin-left: 5px;
+	font-size: 1.2em;
+	vertical-align: text-bottom;
+  	line-height: .9em;
+}
 /** UI Buttonsets **/
 .ui-buttonset label,
 .ui-buttonset label.ui-state-active{

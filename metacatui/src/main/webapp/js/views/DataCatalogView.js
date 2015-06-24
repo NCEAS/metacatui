@@ -84,7 +84,7 @@ define(['jquery',
 				   			 'click .collapse-me' : 'collapse',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			  'click .toggle-map' : 'toggleMapMode',
-				   			   'click .more-link' : 'showMoreList',
+				   			 'click .toggle-list' : 'toggleList',
 				   		 'mouseover .open-marker' : 'showResultOnMap',
 				   	      'mouseout .open-marker' : 'hideResultOnMap',
 		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
@@ -970,13 +970,23 @@ define(['jquery',
 					if(i == listMax){
 						var moreLink = document.createElement("a");
 						$(moreLink).html("Show " + numHidden + " more member nodes")
-								   .addClass("more-link pointer");
+								   .addClass("more-link pointer toggle-list")
+								   .append($(document.createElement("i")).addClass("icon icon-expand-alt"));
 						$(list).append(moreLink);
 					} 
 					
 					$(listItem).append(input).append(label);
 					$(list).append(listItem);
 			});
+				
+			if(numHidden > 0){
+				var lessLink = document.createElement("a");
+				$(lessLink).html("Collapse member nodes")
+				   		   .addClass("less-link toggle-list pointer hidden")
+				   		   .append($(document.createElement("i")).addClass("icon icon-collapse-alt"));
+				
+				$(list).append(lessLink);
+			}
 			
 			//Add the list of checkboxes to the placeholder
 			var container = $('.member-nodes-placeholder');
@@ -1011,17 +1021,15 @@ define(['jquery',
 			
 			return true;
 		},
-		
-		showMoreList: function(e){
-			var link = e.target,
-				hiddenListItems = $(link).parents("ul").find("li.hidden");
+
+		toggleList: function(e){
+			var link = e.target;
 			
-			_.each(hiddenListItems, function(listItem){
-				$(listItem).fadeIn();
-				$(listItem).removeClass("hidden");
-			});
+			//Hide/Show the list
+			$(link).parents("ul").find("li").slideToggle().toggleClass("hidden visible");
 			
-			$(link).addClass("hidden");
+			//Hide/Show the control link
+			$(link).parents("ul").find(".toggle-list").toggleClass("hidden");
 		},
 		
 		// highlights anything additional that has been selected
