@@ -794,6 +794,7 @@ img[src*="googleapis.com/"].georegion-map{
     
 #downloadContents .controls-well{
 	overflow-x: scroll;
+	-webkit-transform: translate3d(0,0,0); 
 }
 table.download-contents {
 	width: 100%;
@@ -1173,4 +1174,13 @@ label.ui-state-active i.icon-check{
 	border-color: inherit;
 	display: inline-block;
 	width: auto;
+}
+
+/*******************************************
+CSS library fixes
+******************************************/
+/* overflow-y:scroll fix for webkit browsers */
+.pre-scrollable, /*Bootstrap */
+.fancybox-lock .fancybox-overlay{ /* Fancybox */
+	-webkit-transform: translate3d(0,0,0); 
 }

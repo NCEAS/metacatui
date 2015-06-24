@@ -1682,6 +1682,7 @@ svg .point:hover ~ .line-chart-label{
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
+    	-webkit-transform: translate3d(0,0,0); 
     	max-height: 150px;
     }
     

@@ -895,6 +895,7 @@ table th.btn-container .btn{
 		max-height: 65%;
 		overflow-x: visible;
 		overflow-y: overlay; 
+		-webkit-transform: translate3d(0,0,0); 
 	}
 	#gutter .hover-proxy {
 		width: 100px;
@@ -1000,6 +1001,7 @@ table th.btn-container .btn{
 		border-right: 1px solid #CCC;
 		overflow-x: hidden;
 		overflow-y: overlay;
+		-webkit-transform: translate3d(0,0,0); 
     }
     
     .subset-choice{

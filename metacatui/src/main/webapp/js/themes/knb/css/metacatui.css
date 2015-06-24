@@ -631,7 +631,8 @@ Bold 700 Italic
 }
 .gmaps-infowindow{
 	max-height: 400px;
-	overflow-y:scroll;	
+	overflow-y:scroll;
+	-webkit-transform: translate3d(0,0,0); 	
 }
 
 /* Fixes Infowindow popup problem - interaction with bootstrap? */
@@ -1714,6 +1715,7 @@ svg .domain{
 	  height: 700px;
 	  overflow-x: hidden;
 	  overflow-y: scroll;
+	  -webkit-transform: translate3d(0,0,0); 
     }   
     
    aside > div{
@@ -2065,6 +2067,7 @@ svg .domain{
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
+    	-webkit-transform: translate3d(0,0,0); 
     	max-height: 150px;
     	z-index: 100;
     }
@@ -2107,6 +2110,7 @@ svg .domain{
 		width: 400px;
 		overflow-x: hidden;
 		overflow-y: scroll;
+		-webkit-transform: translate3d(0,0,0); 
 		height: 700px;
 		margin-left: 0px;
 	}

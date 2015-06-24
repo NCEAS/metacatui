@@ -811,6 +811,7 @@ Bold 700
     
     #downloadContents .controls-well{
     	overflow-x: scroll;
+    	-webkit-transform: translate3d(0,0,0); 
     }
     
     table.download-contents {
@@ -1498,6 +1499,7 @@ Bold 700
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
+    	-webkit-transform: translate3d(0,0,0); 
     	max-height: 150px;
     }
     
@@ -2312,7 +2314,8 @@ svg .point:hover ~ .line-chart-label{
 
 .gmaps-infowindow{
 	max-height: 400px;
-	overflow-y:scroll;	
+	overflow-y:scroll;
+	-webkit-transform: translate3d(0,0,0); 	
 }
 
 #toggle-map{
@@ -2421,6 +2424,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 .mapMode #content{
 	width: 45%;
 	overflow-y:scroll;
+	-webkit-transform: translate3d(0,0,0); 
 	box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
 	-webkit-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);
 	-moz-box-shadow: -4px -2px 5px rgba(50, 50, 50, 0.2);

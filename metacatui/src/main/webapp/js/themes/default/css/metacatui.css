@@ -844,6 +844,7 @@ Bold 700
 	/* Resource map contents table */
 	#downloadContents{
 		overflow-x: overlay;
+		-webkit-transform: translate3d(0,0,0); 
 	}
 	span.file-type{
 		font-weight: 600;
@@ -1523,6 +1524,7 @@ Bold 700
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
+    	-webkit-transform: translate3d(0,0,0); 
     	max-height: 150px;
     }
     
@@ -2147,6 +2149,7 @@ svg .point:hover ~ .line-chart-label{
 .gmaps-infowindow{
 	max-height: 400px;
 	overflow-y:scroll;	
+	-webkit-transform: translate3d(0,0,0); 
 }
 
 .map-toggle-container{
