@@ -47,6 +47,10 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 			var placeholder = this.$(".citation");
 			if(placeholder.length < 1) this.$el.append(citation);
 			else $(placeholder).replaceWith(citation);
+			
+			//Create the OpenURL COinS
+			var span = this.getOpenURLCOinS();
+			this.$el.append(span);
 						
 			//Save the id in the DOM for later use
 			var id = json.id;
@@ -59,15 +63,14 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 						numDerivations = this.model.get("prov_hasDerivations");
 					
 					//Create the title of the popover 
-					if(numSources) var title = "This is a derived dataset";
 					/*if(numSources) title += " was created using source";
 					if(numSources > 1) title += "s";
-					if(numSources > 0 && numDerivations > 0) title += " and";
+					if(numSources > 0 &amp;&amp; numDerivations > 0) title += " and";
 					if(numDerivations > 0) title += " has been used by " + numDerivations + " other dataset";
 					if(numDerivations > 1) title += "s";
 					title += ".";
 									*/
-					if(numDerivations) var title = "This dataset was used as a source to create other datasets";
+					if(numDerivations || numSources) var title = "This dataset contains provenance information";
 					
 					//Make a tooltip with basic info for mouseover
 					this.$el.find(".provenance.active").tooltip({
@@ -113,6 +116,31 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 				return;
 			
 			uiRouter.navigate('view/'+id, {trigger: true});
+		},
+		
+		getOpenURLCOinS: function(){
+			//Create the OpenURL COinS 
+			var spanTitle = "ctx_ver=Z39.88-2004&amp;rft_val_fmt=info:ofi/fmt:kev:mtx:dc&amp;rfr_id=info:sid/ocoins.info:generator&amp;rft.type=Dataset";
+
+			if(this.model.get("title")) 	 spanTitle += "&amp;rft.title=" + this.model.get("title");
+			if(this.model.get("origin")) 	 spanTitle += "&amp;rft.creator=" + this.model.get("origin");
+			if(this.model.get("keywords")) 	 spanTitle += "&amp;rft.subject=" + this.model.get("keywords");
+			if(this.model.get("abstract")) 	 spanTitle += "&amp;rft.description=" + this.model.get("abstract");
+			if(this.model.get("datasource")) spanTitle += "&amp;rft.publisher=" + this.model.get("datasource");
+			if(this.model.get("endDate")) 	 spanTitle += "&amp;rft.date=" + this.model.get("endDate");
+			if(this.model.get("formatID")) 	 spanTitle += "&amp;rft.format=" + this.model.get("formatID");
+			if(this.model.get("id"))         spanTitle += "&amp;rft.identifier=" + this.model.get("id");
+			if(this.model.get("url")) 		 spanTitle += "&amp;rft.source=" + this.model.get("url");
+			if(this.model.get("northBoundCoord")){					
+				spanTitle += "&amp;rft.coverage=POLYGON((" + this.model.get("southBoundCoord") + " " + this.model.get("westBoundCoord") + ", " + 
+														     this.model.get("northBoundCoord") + " " + this.model.get("westBoundCoord") + ", " +
+														     this.model.get("northBoundCoord") + " " + this.model.get("eastBoundCoord") + ", " +
+														     this.model.get("southBoundCoord") + " " + this.model.get("eastBoundCoord") + "))";
+			}
+			
+			spanTitle = encodeURI(spanTitle);
+			
+			return $(document.createElement("span")).attr("title", spanTitle).addClass("Z3988");
 		},
 
 		// Remove the item, destroy the model from *localStorage* and delete its view.
