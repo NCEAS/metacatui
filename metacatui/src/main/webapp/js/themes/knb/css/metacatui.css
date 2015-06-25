@@ -2110,7 +2110,7 @@ svg .domain{
 		width: 400px;
 		overflow-x: hidden;
 		overflow-y: scroll;
-		-webkit-transform: translate3d(0,0,0); 
+		-webkit-transform: translate3d(0,0,1); 
 		height: 700px;
 		margin-left: 0px;
 	}

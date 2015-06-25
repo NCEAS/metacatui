@@ -194,6 +194,9 @@ h3{
 .result-row .label{
 	margin-right: 3px;
 }
+.result-row .tooltip{
+	z-index: 99999;
+}
 /****************************************** 
 ** Provenance flow-charts ***
 ******************************************/
