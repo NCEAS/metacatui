@@ -13,8 +13,8 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				
 				//The options for the map using the Google Maps API MapOptions syntax
 				mapOptions: 
-					(gmaps) ?
-						{  zoom: 3,
+					(gmaps)? 
+						{   zoom: 3,
 							minZoom: 3,
 							maxZoom: 16,
 						    center: new google.maps.LatLng(44, -103),
@@ -22,17 +22,21 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 						    zoomControl: true,
 						    zoomControlOptions: {
 							          style: google.maps.ZoomControlStyle.LARGE,
-							          position: google.maps.ControlPosition.LEFT_BOTTOM
+							          position: google.maps.ControlPosition.LEFT_CENTER
 							        },
 							panControl: false,
-							scaleControl: false,
+							scaleControl: true,
 							streetViewControl: false,
 							mapTypeControl: true,
 							mapTypeControlOptions:{
+									style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+									mapTypeIds: [google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.TERRAIN],
 									position: google.maps.ControlPosition.LEFT_BOTTOM
 							},
-						    mapTypeId: google.maps.MapTypeId.TERRAIN
-						} : null,
+						    mapTypeId: google.maps.MapTypeId.TERRAIN,
+						    styles: [{"featureType":"water","stylers":[{"visibility":"on"},{"color":"#b5cbe4"}]},{"featureType":"landscape","stylers":[{"color":"#efefef"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#83a5b0"}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#bdcdd3"}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#ffffff"}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#e3eed3"}]},{"featureType":"administrative","stylers":[{"visibility":"on"},{"lightness":33}]},{"featureType":"road"},{"featureType":"poi.park","elementType":"labels","stylers":[{"visibility":"on"},{"lightness":20}]},{},{"featureType":"road","stylers":[{"lightness":20}]}]
+						} 
+					: null,
 				
 				//Set to true to draw markers where tile counts are equal to 1. If set to false, a tile with the count "1" will be drawn instead.
 				drawMarkers: false,
@@ -137,10 +141,10 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 					geohashLevel = 7;
 					break;
 				case 16:
-					geohashLevel = 8;
+					geohashLevel = 7;
 					break;
 				case 17:
-					geohashLevel = 9;
+					geohashLevel = 8;
 					break;
 				case 18:
 					geohashLevel = 9;

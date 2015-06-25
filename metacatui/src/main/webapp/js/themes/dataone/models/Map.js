@@ -26,13 +26,16 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 							          position: google.maps.ControlPosition.LEFT_CENTER
 							        },
 							panControl: false,
-							scaleControl: false,
+							scaleControl: true,
 							streetViewControl: false,
 							mapTypeControl: true,
 							mapTypeControlOptions:{
+									style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+									mapTypeIds: [google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.TERRAIN],
 									position: google.maps.ControlPosition.LEFT_BOTTOM
 							},
-						    mapTypeId: google.maps.MapTypeId.TERRAIN
+						    mapTypeId: google.maps.MapTypeId.TERRAIN,
+						    styles: [{"featureType":"water","stylers":[{"visibility":"on"},{"color":"#b5cbe4"}]},{"featureType":"landscape","stylers":[{"color":"#efefef"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#83a5b0"}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#bdcdd3"}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#ffffff"}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#e3eed3"}]},{"featureType":"administrative","stylers":[{"visibility":"on"},{"lightness":33}]},{"featureType":"road"},{"featureType":"poi.park","elementType":"labels","stylers":[{"visibility":"on"},{"lightness":20}]},{},{"featureType":"road","stylers":[{"lightness":20}]}]
 						} 
 					: null,
 				
@@ -139,10 +142,10 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 					geohashLevel = 7;
 					break;
 				case 16:
-					geohashLevel = 8;
+					geohashLevel = 7;
 					break;
 				case 17:
-					geohashLevel = 9;
+					geohashLevel = 8;
 					break;
 				case 18:
 					geohashLevel = 9;

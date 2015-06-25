@@ -1883,7 +1883,7 @@ define(['jquery',
 			mapModel.set("tileGeohashLevel", geohashLevelNum);
 			
 			//Get all the geohashes contained in the map
-			var mapBBoxes = this.searchModel.get("geohashes");
+			var mapBBoxes = _.flatten(_.values(this.searchModel.get("geohashGroups")));
 			
 			//Geohashes may be returned that are part of datasets with multiple geographic areas. Some of these may be outside this map.
 			//So we will want to filter out geohashes that are not contained in this map. 
@@ -1943,12 +1943,14 @@ define(['jquery',
 					marker,
 					count,
 					color;
-								
+				
+				
 				//When there is only one dataset in this tile, we might display a marker
 				if ((tileCount == 1) && drawMarkers){
 						viewRef.markerGeohashes.push(tileGeohash);
 				}
 				else{
+					
 					if(!useBins){
 						//Determine the style of the tile depending on the percentage of datasets
 							 if (percent < .20) color = mapModel.get("tileColors").level1;
@@ -1966,7 +1968,21 @@ define(['jquery',
 						else if (tileCount < 1000) color = mapModel.get("tileColors").level4; 
 						else                       color = mapModel.get("tileColors").level5; 
 					}
-					 
+					
+					
+					/*
+					 * Normalization technique that needs more work...
+					 * var minCount = _.min(filteredTileGeohashes, function(value){
+						var reg = new RegExp('^\\d+$');
+						if(!reg.test(value)) return 9999999;
+						return value;
+					});
+					var normal = (tileCount-minCount)/(maxCount-minCount);
+					var sat = normal * 182;
+					var color = "hsl("+sat+",77%,37%)";
+					console.log(tileCount + " : " + normal);
+					*/
+					
 					//Add the count to the tile
 					var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
 									

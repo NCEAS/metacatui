@@ -31,6 +31,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				south: null,
 				geohashes: [],
 				geohashLevel: 9,
+				geohashGroups: {},
 				spatial: [],
 				rightsHolder: [],
 				submitter: [],
@@ -50,6 +51,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					value: "*"
 				}]
 			}
+		},
+		
+		initialize: function(){
+			this.listenTo(this, "change:geohashes", this.groupGeohashes);
 		},
 		
 		//Map the filter names to their index field names
@@ -119,7 +124,37 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		resetGeohash : function(){
 			this.set("geohashes",    this.defaults().geohashes);
 			this.set("geohashLevel", this.defaults().geohashLevel);
+			this.set("geohashGroups", this.defaults().geohashGroups);
 		},
+		
+		groupGeohashes: function(){
+			//Find out if there are any geohashes that can be combined together, by looking for all 32 geohashes within the same precision level
+			var sortedGeohashes = this.get("geohashes");
+			sortedGeohashes.sort();
+			
+			var groupedGeohashes = _.groupBy(sortedGeohashes, function(n){
+										return n.substring(0, n.length-1);
+									});
+			
+			//Find groups of geohashes that makeup a complete geohash tile (32) so we can shorten the query
+			var completeGroups = _.filter(Object.keys(groupedGeohashes), function(n){ return (groupedGeohashes[n].length == 32) });
+			//Find the remaining incomplete geohash groupss
+			var incompleteGroups = [];
+			_.each(_.filter(Object.keys(groupedGeohashes), function(n){ return (groupedGeohashes[n].length < 32) }), function(n){ incompleteGroups.push(groupedGeohashes[n]); });
+			incompleteGroups = _.flatten(incompleteGroups);
+			
+			//Start a geohash group object
+			var geohashGroups = {};			
+			if((typeof incompleteGroups !== "undefined") && (incompleteGroups.length > 0))
+				geohashGroups[incompleteGroups[0].length.toString()] = incompleteGroups;							
+			if((typeof completeGroups !== "undefined") && (completeGroups.length > 0))
+				geohashGroups[completeGroups[0].length.toString()] = completeGroups;
+
+			//Save it
+			this.set("geohashGroups", geohashGroups);	
+			this.trigger("change", "geohashGroups");
+		},
+		
 		/*
 		 * Builds the query string to send to the query engine. Goes over each filter specified in this model and adds to the query string.
 		 * Some filters have special rules on how to format the query, which are built first, then the remaining filters are tacked on to the
@@ -215,71 +250,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				}
 			}
 			
-			//-----Geohashes-----
-			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll))){
-				var geohashes = this.get("geohashes");
-				
-				if ((typeof geohashes != undefined) && (geohashes.length > 0)){ 
-									
-					//Find out if there are any geohashes that can be combined together, by looking for all 32 geohashes within the same precision level
-					if(geohashes.length > 32){
-						var sortedGeohashes = geohashes;
-						sortedGeohashes.sort();
-						
-						var groupedGeohashes = _.groupBy(sortedGeohashes, function(n){
-													return n.substring(0, n.length-1);
-												});
-						var completeGroups   = _.filter(groupedGeohashes, function(n){ return n.length == 32; }),
-							uncompleteGroups = _.filter(groupedGeohashes, function(n){ return n.length < 32; });
-						
-						if((completeGroups.length > 0) && (uncompleteGroups.length > 0)){
-							query += "+(geohash_" + (this.get("geohashLevel") - 1) + ":(";
-							
-							//If there are 32 values in this geohash group, we can add this to the query now						
-							_.each(completeGroups, function(geohashGroup, key, list){								
-								query += geohashGroup[0].substring(0, geohashGroup[0].length-1) + "%20OR%20";
-							});
-							//Remove the last "OR"
-							query = query.substr(0, (query.length-8));
-							
-							//Group the geohash levels together with an OR
-							query += ")%20OR%20" + "geohash_" + this.get("geohashLevel") + ":(";
-							
-							var otherGeohashes = _.flatten(uncompleteGroups);	
-							//Now make the query string for all the other geohash levels
-							_.each(otherGeohashes, function(g, key, list){						
-								if(query.length < 1900) query += g + "%20OR%20";
-							});
-							//Remove the last "OR"
-							query = query.substr(0, (query.length-8));							
-							
-							query += "))";
-						}
-						else if(completeGroups.length > 0){
-							query += "+geohash_" + (this.get("geohashLevel") - 1) + ":(";
-							
-							//If there are 32 values in this geohash group, we can add this to the query now						
-							_.each(completeGroups, function(geohashGroup, key, list){
-								query += geohashGroup[0].substring(0, geohashGroup[0].length-1) + "%20OR%20";
-							});
-							//Remove the last "OR"
-							query = query.substr(0, (query.length-8));
-							query += ")";
-						}
-						else{
-							query += "+geohash_" + this.get("geohashLevel") + ":(";
-
-							_.each(geohashes, function(geohash, key, list){						
-								if(query.length < 1900) query += geohash + "%20OR%20";
-							});	
-							//Remove the last "OR"
-							query = query.substr(0, (query.length-8));
-							query += ")";
-						}
-					}
-				}
-			}
-			
 			//-----Data Source--------
 			if(this.filterIsAvailable("dataSource") && ((filter == "dataSource") || getAll)){
 				var filterValue = null;
@@ -336,6 +306,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 			}
 			
+			//-----Other Filters/Basic Filters-----
 			var model = this;
 			
 			_.each(otherFilters, function(filterName, key, list){
@@ -362,6 +333,40 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					}
 				}
 			});
+			
+			//-----Geohashes-----
+			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll))){
+				var geohashes = this.get("geohashes");
+				
+				if ((typeof geohashes != undefined) && (geohashes.length > 0)){ 
+					var groups = this.get("geohashGroups");					
+					
+					if((typeof groups !== "undefined") && (Object.keys(groups).length > 0)){
+						query += "+(";
+						
+						_.each(Object.keys(groups), function(level){
+							var geohashList = groups[level];
+							
+							query += "geohash_" + level + ":(";
+							
+							_.each(geohashList, function(g){
+								if(query.length < 7900) //Keep URI's from getting too long for Apache
+									query += g + "%20OR%20";
+							});
+							
+							//Remove the last "OR"
+							query = query.substr(0, (query.length-8));	
+							
+							query += ")%20OR%20";
+							
+						});
+						
+						//Remove the last "OR"
+						query = query.substr(0, (query.length-8));														
+						query += ")";
+					}
+				}
+			}
 						
 			return query;
 		},
