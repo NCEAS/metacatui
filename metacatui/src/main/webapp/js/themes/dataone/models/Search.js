@@ -78,6 +78,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			if (changedAttr) {
 				var changedKeys = _.keys(changedAttr);
+				changedKeys = _.without(changedKeys, "sortOrder"); //Don't count the sort order as a changed filter
 				return changedKeys.length;
 			}
 			return 0;
