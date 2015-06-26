@@ -1097,6 +1097,8 @@ textarea.token{
 #includes-files label{
  	font-size: 13px;
  	margin-right: 8px;
+ 	float: left;
+ 	display: inline;
 }
 ul.checkbox-list{
  	list-style: none;

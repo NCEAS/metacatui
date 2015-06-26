@@ -188,6 +188,7 @@ define(['jquery',
 				else
 					return false;
 				
+				if(!val) return false;
 				
 				uiRouter.navigate('view/'+ encodeURIComponent(val), {trigger: true});
 			}

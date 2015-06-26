@@ -1644,7 +1644,7 @@ define(['jquery',
 				}
 				//Else, if this is the fresh map render on page load
 				else{
-					if(needsRecentered) mapModel.get("map").setCenter(savedMapCenter);
+					if(needsRecentered && !viewRef.hasDragged) mapModel.get("map").setCenter(savedMapCenter);
 				}
 				
 				viewRef.hasZoomed = false;
@@ -1972,7 +1972,7 @@ define(['jquery',
 					
 					/*
 					 * Normalization technique that needs more work...
-					 * var minCount = _.min(filteredTileGeohashes, function(value){
+					 var minCount = _.min(filteredTileGeohashes, function(value){
 						var reg = new RegExp('^\\d+$');
 						if(!reg.test(value)) return 9999999;
 						return value;
