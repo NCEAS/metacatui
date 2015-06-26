@@ -355,22 +355,24 @@ define(['jquery',
 		insertSpatialCoverageMap: function(coordinates){
 			
 			var georegionEls = this.$el.find('h4:contains("Geographic Region")');
+			var directions = new Array('North', 'South', 'East', 'West');
+
 			for(var i=0; i<georegionEls.length; i++){
 				var parentEl = $(georegionEls[i]).parent();
 				
-				if(coordinates === undefined){
-					var coordinates = new Array();
-					var directions = new Array('North', 'South', 'East', 'West');
+				var coordinates = new Array();
+				
+				_.each(directions, function(direction){
+					//Find the element that contains this direction
+					var labelEl = $(parentEl).find('label:contains("' + direction + '")');
 					
-					_.each(directions, function(direction){
-						var labelEl = $(parentEl).find('label:contains("' + direction + '")');
-						if(labelEl){
-							var coordinate = $(labelEl).next().html();
-							coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
-							coordinates.push(coordinate);	
-						}
-					});
-				}
+					//Add the direction value to the coordinate array
+					if(labelEl){
+						var coordinate = $(labelEl).next().html();
+						coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
+						coordinates.push(coordinate);	
+					}
+				});
 				
 				//Extract the coordinates
 				var n = coordinates[0];
