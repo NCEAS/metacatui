@@ -299,7 +299,7 @@ define(['jquery',
 		    return this;
 		},
 				
-		insertSpatialCoverageMap: function(coordinates){
+		insertSpatialCoverageMap: function(customCoordinates){
 			
 			//Find the geographic region container. Older versions of Metacat (v2.4.3 and less) will not have it classified so look for the header text
 			if(!this.$(".geographicCoverage").length){
@@ -323,13 +323,20 @@ define(['jquery',
 			for(var i=0; i<georegionEls.length; i++){
 				var georegion = georegionEls[i];
 				
-				if(coordinates === undefined){
+				if(typeof customCoordinates !== "undefined"){
+					//Extract the coordinates
+					var n = customCoordinates[0];
+					var s = customCoordinates[1];
+					var e = customCoordinates[2];
+					var w = customCoordinates[3];
+				}
+				else{
 					var coordinates = new Array();
 					
 					_.each(directions, function(direction){
 						//Parse text for older versions of Metacat (v2.4.3 and earlier)
 						if(parseText){
-							var labelEl = $(georegionEls).find('label:contains("' + direction + '")');
+							var labelEl = $(georegion).find('label:contains("' + direction + '")');
 							if(labelEl){
 								var coordinate = $(labelEl).next().html();
 								coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
@@ -342,13 +349,13 @@ define(['jquery',
 						//Save our coordinate value
 						coordinates.push(coordinate);	
 					});
+					
+					//Extract the coordinates
+					var n = coordinates[0];
+					var s = coordinates[1];
+					var e = coordinates[2];
+					var w = coordinates[3];
 				}
-				
-				//Extract the coordinates
-				var n = coordinates[0];
-				var s = coordinates[1];
-				var e = coordinates[2];
-				var w = coordinates[3];
 				
 				//Create Google Map LatLng objects out of our coordinates
 				var latLngSW = new gmaps.LatLng(s, w);
