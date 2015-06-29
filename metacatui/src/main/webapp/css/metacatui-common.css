@@ -675,6 +675,11 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	width: 83%;
 	float: left;
 }
+
+#Metadata  > .citation .title,
+#Metadata  > form > .citation .title{
+	font-weight: bold;
+}
 .attributeList > .row-fluid > .span2 {
   min-width: 130px;
 }
@@ -798,6 +803,10 @@ img[src*="googleapis.com/"].georegion-map{
 #downloadContents .controls-well{
 	overflow-x: scroll;
 	-webkit-transform: translate3d(0,0,0); 
+}
+.download-contents{
+	float: none;
+	clear: both;
 }
 table.download-contents {
 	width: 100%;
@@ -1040,8 +1049,8 @@ textarea.token{
 	display: block;
 	width: 100%;
 }
-.mapMode .map-toggle-container{
-	display: none;
+.mapMode #results-view .map-toggle-container {
+  display: none;
 }
 .map-toggle-container > a{
   font-size: 1em;
@@ -1072,6 +1081,9 @@ textarea.token{
 /****************************************** 
 ** Filters ***
 ******************************************/
+.filter-container{
+	width: 205px;
+}
 .filter-contain{
 	border-bottom: 1px dashed #CCC;
 	padding: 10px 0px 5px 0px;
@@ -1164,6 +1176,7 @@ label.ui-state-active i.icon-check{
    	line-height: 23px;
    	top: 5px;
    	float: left;
+   	cursor: default;
 }   
 #filter-year > i,
 #includes-files > i{

@@ -996,7 +996,7 @@ table th.btn-container .btn{
     }
     .mapMode #sidebar{
 		padding-right: 25px;
-		width: 199px;
+		width: 205px;
 		height: 700px;
 		border-right: 1px solid #CCC;
 		overflow-x: hidden;
@@ -2004,7 +2004,7 @@ svg .point:hover ~ .line-chart-label{
 #map-container{
 	height: 500px;
 	width: 400px;
-	width: calc(100% - 235px - 400px);	/* 100% - sidebar - results */
+	width: calc(100% - 241px - 400px);	/* 100% - sidebar - results */
 	float: left;
 }
 #map-canvas{
