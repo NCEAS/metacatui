@@ -497,7 +497,7 @@
   			Data Catalog:
   		</li>
        <li>
-        	<a class="show-new-dataCatalogView dropdown-toggle">Search</a>
+        	<a class="show-new-dataCatalogView">Search</a>
         </li>
         <li>
         	<a href="#profile">Summary</a>
@@ -529,7 +529,7 @@
 			'</li>'
         	);
         } else {
-        	/* if (signInUrl) {
+        	 if (signInUrl) {
 %>        	
         		<li class="dropdown right">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -565,14 +565,10 @@
 	        			
 					</ul>
 				</li>
-<%				
-        	} else {
-	        	print(
-	        		'<li id="SignIn" class="share-feature"><a href="#share">Sign In</a></li>'
-	        	);
-	        }*/
-        }   %>
-        	
+		<%	} else if(signInUrlLdap) { %>
+	        	<li id="SignIn" class="share-feature"><a href="#share">Sign In</a></li>
+	   	<%  }
+        }   %>	
   	</ul>
   </div><!-- /.navbar-lower -->
 </div><!-- /.navbar -->

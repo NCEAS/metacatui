@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 							  'click #myData' : 'myDataSearch',
 			'click .show-new-dataCatalogView' : 'showNewSearch',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
-			 		 	    'click .dropdown' : 'showDropdown',
+			 		 	    'click .dropdown' : 'showDropdown'    
 			 		 		//'click .dropdown' : 'hideDropdown'
 		},
 		
@@ -28,11 +28,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);
 		},
 				
-		render: function () {			
-			var target = Backbone.history.location.href;
-			var signInUrl = appModel.get('baseUrl') + "/portal/startRequest?target=" + target;
-			var signInUrlOrcid = appModel.get('baseUrl') + "/portal/oauth?action=start&target=" + target;
-			var signInUrlLdap = appModel.get('baseUrl') + "/portal/ldap?target=" + target;
+		render: function () {		
+			if(appModel.get("signInUrl")){
+				var target = Backbone.history.location.href;
+				var signInUrl = appModel.get('signInUrl') + target;
+				var signInUrlOrcid = appModel.get('signInUrlOrcid') + target;
+				var signInUrlLdap = appModel.get('signInUrlLdap') + target;	
+			}
 
 			//Insert the navbar template
 			this.$el.html(

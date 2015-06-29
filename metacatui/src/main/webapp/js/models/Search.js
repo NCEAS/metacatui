@@ -33,6 +33,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				geohashLevel: 9,
 				geohashGroups: {},
 				//dataSource: null,
+				username: [],
 				rightsHolder: [],
 				submitter: [],
 				spatial: [],
@@ -180,6 +181,26 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//Otherwise, treat it as a binary setting
 				else if(resourceMap) 
 					query += this.fieldNameMap["resourceMap"] + ':*';
+			}
+			
+			//---Username: search for this username in rightsHolder and submitter ---
+			if(this.filterIsAvailable("username") && ((filter == "username") || getAll)){
+				var username = this.get('username');
+				for (var i=0; i < username.length; i++){
+					var thisUsername = username[i];
+
+					//Trim the spaces off
+					if(typeof thisUsername == "object")
+						thisUsername = thisUsername.value.trim();
+					else
+						thisUsername = thisUsername.trim();
+					
+					//URL encode the filter value
+					if(this.needsQuotes(thisUsername)) thisUsername = "%22" + thisUsername + "%22";
+					else thisUsername = encodeURIComponent(thisUsername);
+					
+					query += "+(" + this.fieldNameMap["rightsHolder"] + ":" + thisUsername + "%20OR%20" + this.fieldNameMap["submitter"] + ":" + thisUsername + ")";
+				}
 			}
 			
 			//---Taxon---

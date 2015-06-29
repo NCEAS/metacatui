@@ -907,14 +907,6 @@ tfoot .control i{
 #user-profile{
 	padding-top: 20px;
 }
-.list-only #sidebar{
-	display: none;
-}
-.list-only #results-container{
-	width: 100%;
-	overflow-y: visible;
-	overflow-x: visible;
-}
 textarea.token{
 	width: 100%;
 	margin-top: 20px;
@@ -1043,12 +1035,12 @@ textarea.token{
   width: calc(100% - 10px);
   height: auto;
 }
-#results-view .map-toggle-container{
+.map-toggle-container{
 	position: relative;
 	display: block;
 	width: 100%;
 }
-.mapMode #results-view .map-toggle-container{
+.mapMode .map-toggle-container{
 	display: none;
 }
 .map-toggle-container > a{
@@ -1064,6 +1056,18 @@ textarea.token{
 .map-toggle-container > a > .icon{
 	margin-left: 5px;
 	margin-right: 5px;
+}
+/* For list mode only */
+.list-only #sidebar{
+	display: none;
+}
+.list-only #results-container{
+	width: 100%;
+	overflow-y: visible;
+	overflow-x: visible;
+}
+.list-only .map-toggle-container{
+	display: none;
 }
 /****************************************** 
 ** Filters ***
