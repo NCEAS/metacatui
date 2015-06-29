@@ -27,10 +27,19 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		handleAnchor: function(event) {
 			var href = $(event.target).attr("href");
-			if (href.lastIndexOf("http", 0) >= 0) {
+			if(href.lastIndexOf("http", 0) >= 0) {
 				// just follow the link
 				return true;
-			} else {
+			} 
+			else if(href.lastIndexOf(".pdf") || href.lastIndexOf(".bin") || href.lastIndexOf(".exe") || href.lastIndexOf(".tar.gz") || href.lastIndexOf(".zip") || href.lastIndexOf(".tar")){
+				if(href.indexOf(this.url) > 0)
+					window.location = appModel.get("baseUrl") + href;
+				else
+					window.location = appModel.get("baseUrl") + this.url + "/" + href;
+				
+				return false;
+			}
+			else {
 				this.url = href;
 				this.render();
 			}
