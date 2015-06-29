@@ -194,6 +194,19 @@ define(['jquery',
 			}
 		},
 		
+		showNewSearch: function(){
+			// Clear the search and map model to start a fresh search
+			appSearchModel.clear();
+			appSearchModel.set(appSearchModel.defaults);
+			mapModel.clear();
+			mapModel.set(mapModel.defaults);
+			
+			//Clear the search history
+			appModel.set("searchHistory", new Array());
+			
+			uiRouter.navigate('data', {trigger: true});
+		},
+		
 		closePopovers: function(e){
 			if(this.currentView.closePopovers)
 				this.currentView.closePopovers(e);

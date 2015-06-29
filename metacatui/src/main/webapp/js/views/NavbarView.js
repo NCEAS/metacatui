@@ -75,14 +75,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			
 		},
 		
-		showNewSearch: function(){
-			// Clear the search model to start a fresh search
-			appSearchModel.clear();
-			appSearchModel.set(appSearchModel.defaults);
-			
-			uiRouter.navigate('data', {trigger: true});
-		},
-		
 		myDataSearch: function() {
 			
 			// Get the user name
@@ -103,6 +95,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// ...but don't want to follow links
 			return false;
 			
+		},
+		
+		showNewSearch: function(){ 
+			appView.showNewSearch(); 
 		},
 		
 		hideDropdown: function(){
