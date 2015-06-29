@@ -66,14 +66,11 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				tileLabelColorOnHover: '#333333',			
 				tileLabelColor: '#FFFFFF',
 				
-				//The tile colors - there are 5 levels of color, with level1 representing tiles with a relatively LOW count of datasets and level5 representing tiles with the HIGHEST amount of datasets
-				tileColors: {
-						level1: "#24ADE3",
-						level2: "#1E92CB",
-						level3: "#186E91",
-						level4: "#12536D",
-						level5: "#092F3E"
-				}
+				//The tile hue - the number of the hue that will be used to color tiles
+				//Tile lightness - percent range of lightness/brightness of this tile hue
+				tileHue: "192",
+				tileLightnessMax: 70,
+				tileLightnessMin: 20
 			}
 		},
 		

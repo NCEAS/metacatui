@@ -12,7 +12,6 @@ var themeMap =
 		'templates/alert.html' : 'themes/' + theme + '/templates/alert.html',
 		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
-		'models/Map' : 'js/themes/' + theme + '/models/Map.js',
 		'models/Search' : 'js/themes/' + theme + '/models/Search.js',
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
 		}

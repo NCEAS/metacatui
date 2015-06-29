@@ -1921,7 +1921,14 @@ define(['jquery',
 					if(!reg.test(value)) return 0;
 					return value;
 				}),
-				ratio = maxCount / 100;
+				minCount = _.min(filteredTileGeohashes, function(value){
+					var reg = new RegExp('^\\d+$');
+					if(!reg.test(value)) return 9999999;
+					return value;
+				}),
+				lightnessMin = mapModel.get("tileLightnessMin"),
+				lightnessMax = mapModel.get("tileLightnessMax"),
+				lightnessRange = lightnessMax - lightnessMin;
 			
 			var viewRef = this;
 			
@@ -1937,83 +1944,50 @@ define(['jquery',
 					neLatLng	   = new google.maps.LatLng(geohashBox[2], geohashBox[3]),
 					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
 					tileCount	   = filteredTileGeohashes[i+1],
-					percent 		   = Math.round( tileCount / ratio ),
-					useBins		   = (maxCount > 200) ? true : false,
 					drawMarkers    = mapModel.get("drawMarkers"),
 					marker,
 					count,
 					color;
+					
+					
+				//Normalize the range of tiles counts and convert them to a lightness domain of 20-70% lightness. 
+				if(maxCount - minCount == 0) 
+					var lightness = lightnessRange;
+				else
+					var lightness = (((tileCount-minCount)/(maxCount-minCount)) * lightnessRange) + lightnessMin;
 				
+				var color = "hsl(" + mapModel.get("tileHue") + ",100%,"+lightness+"%)";
 				
-				//When there is only one dataset in this tile, we might display a marker
-				if ((tileCount == 1) && drawMarkers){
-						viewRef.markerGeohashes.push(tileGeohash);
+				//Add the count to the tile
+				var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
+								
+				//Draw the tile label with the dataset count
+				count = new TextOverlay({
+					bounds: countLocation,
+					   map: this.map,
+					  text: tileCount,
+					 color: mapModel.get("tileLabelColor")
+				});
+				
+				//Set up the default tile options 
+				var tileOptions = {
+					      fillColor: color, 
+					      map: this.map,
+					      visible: true,
+					      bounds: bounds
+					    };
+				
+				//Merge these options with any tile options set in the map model
+				var modelTileOptions =  mapModel.get("tileOptions");					
+				for(var attr in modelTileOptions){
+					tileOptions[attr] = modelTileOptions[attr];
 				}
-				else{
-					
-					if(!useBins){
-						//Determine the style of the tile depending on the percentage of datasets
-							 if (percent < .20) color = mapModel.get("tileColors").level1;
-						else if (percent < .40) color = mapModel.get("tileColors").level2; 
-						else if (percent < .70) color = mapModel.get("tileColors").level3; 
-						else if (percent < .80) color = mapModel.get("tileColors").level4; 
-						else 					color = mapModel.get("tileColors").level5; 
-						
-					}
-					else{
-						//Determine the style of the tile depending on the number of datasets
-						     if (tileCount < 10)   color = mapModel.get("tileColors").level1; 
-						else if (tileCount < 50)   color = mapModel.get("tileColors").level2; 
-						else if (tileCount < 100)  color = mapModel.get("tileColors").level3; 
-						else if (tileCount < 1000) color = mapModel.get("tileColors").level4; 
-						else                       color = mapModel.get("tileColors").level5; 
-					}
-					
-					
-					/*
-					 * Normalization technique that needs more work...
-					 var minCount = _.min(filteredTileGeohashes, function(value){
-						var reg = new RegExp('^\\d+$');
-						if(!reg.test(value)) return 9999999;
-						return value;
-					});
-					var normal = (tileCount-minCount)/(maxCount-minCount);
-					var sat = normal * 182;
-					var color = "hsl("+sat+",77%,37%)";
-					console.log(tileCount + " : " + normal);
-					*/
-					
-					//Add the count to the tile
-					var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
-									
-					//Draw the tile label with the dataset count
-					count = new TextOverlay({
-						bounds: countLocation,
-						   map: this.map,
-						  text: tileCount,
-						 color: mapModel.get("tileLabelColor")
-					});
-					
-					//Set up the default tile options 
-					var tileOptions = {
-						      fillColor: color, 
-						      map: this.map,
-						      visible: true,
-						      bounds: bounds
-						    };
-					
-					//Merge these options with any tile options set in the map model
-					var modelTileOptions =  mapModel.get("tileOptions");					
-					for(var attr in modelTileOptions){
-						tileOptions[attr] = modelTileOptions[attr];
-					}
-					
-					//Draw this tile
-					var tile = this.drawTile(tileOptions, tileGeohash, count);
-					
-					//Save the geohashes for tiles in the view for later
-					this.tileGeohashes.push(tileGeohash);
-				}
+				
+				//Draw this tile
+				var tile = this.drawTile(tileOptions, tileGeohash, count);
+				
+				//Save the geohashes for tiles in the view for later
+				this.tileGeohashes.push(tileGeohash);
 			}
 			
 			//Create an info window for each marker that is on the map, to display when it is clicked on
