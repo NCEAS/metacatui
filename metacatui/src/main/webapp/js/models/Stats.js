@@ -288,7 +288,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Get the earliest upload date	
 			var query =  "q=" + this.get('query') +
-								"+dateUploaded:*" +
+								"+dateUploaded:(19*%20OR%2020*)" +
 								"+-obsoletes:*"+    //Only count the first version
 								"+readPermission:public" +
 								"&fl=dateUploaded" +
