@@ -138,16 +138,17 @@ define(['jquery',
 				msg: "Retrieving member nodes..."
 			});
 			var cel = this.template({	
-				sortOrder     : this.searchModel.get('sortOrder'),
-				yearMin       : this.searchModel.get('yearMin'),
-				yearMax       : this.searchModel.get('yearMax'),
-				pubYear       : this.searchModel.get('pubYear'),
-				dataYear      : this.searchModel.get('dataYear'),
-				resourceMap   : this.searchModel.get('resourceMap'),
-				searchOptions : registryModel.get('searchOptions'),
-				gmaps         : gmaps,
-				username      : appUserModel.get('username'),
-				loading       : loadingHTML
+				sortOrder       : this.searchModel.get('sortOrder'),
+				yearMin         : this.searchModel.get('yearMin'),
+				yearMax         : this.searchModel.get('yearMax'),
+				pubYear         : this.searchModel.get('pubYear'),
+				dataYear        : this.searchModel.get('dataYear'),
+				resourceMap     : this.searchModel.get('resourceMap'),
+				searchOptions   : registryModel.get('searchOptions'),
+				gmaps           : gmaps,
+				username        : appUserModel.get('username'),
+				loading         : loadingHTML,
+				dataSourceTitle : (window.theme == "dataone") ? "Member Node" : "Data source"
 			});
 			
 			this.$el.html(cel);
@@ -231,7 +232,8 @@ define(['jquery',
 			//Get the heights of the header, navbar, and footer
 			var otherHeight = 0;
 			$(".auto-height-member").each(function(i, el){
-				otherHeight += $(el).outerHeight(true);
+				if($(el).css("display") != "none")
+					otherHeight += $(el).outerHeight(true);
 			});
 			
 			//Get the remaining height left based on the window size
@@ -239,6 +241,17 @@ define(['jquery',
 			
 			//Adjust all elements with the .auto-height class
 			$(".auto-height").height(remainingHeight);
+			
+			if(($("#map-container.auto-height").length > 0) && ($("#map-canvas").length > 0)){
+				var otherHeight = 0;
+				$("#map-container.auto-height").children().each(function(i, el){
+					if($(el).attr("id") != "map-canvas")
+						otherHeight += $(el).outerHeight(true);
+				});
+				var newMapHeight = remainingHeight - otherHeight;
+				if(newMapHeight > 100)
+					$("#map-canvas").height(remainingHeight - otherHeight);
+			}
 			
 			//Trigger a resize for the map so that all of the mapbackgorund images are loaded
 			if(gmaps && mapModel.get("map"))
@@ -1222,7 +1235,8 @@ define(['jquery',
 							},
 							position: {
 								my: "left top",
-								at: "left bottom"				
+								at: "left bottom",
+								collision: "fit"
 							}
 						});
 					}
@@ -1271,7 +1285,8 @@ define(['jquery',
 							},
 							position: {
 								my: "left top",
-								at: "left bottom"				
+								at: "left bottom",
+								collision: "fit"
 							}
 						});
 					}
@@ -1313,7 +1328,8 @@ define(['jquery',
 							},
 							position: {
 								my: "left top",
-								at: "left bottom"				
+								at: "left bottom",
+								collision: "fit"
 							}
 						});
 					}
@@ -1403,7 +1419,7 @@ define(['jquery',
 						position: {
 							my: "left top",
 							at: "left bottom",
-							collision: "flip"
+							collision: "fit"
 						}
 					});
 				}
@@ -1413,11 +1429,13 @@ define(['jquery',
 		hideClearButton: function(){
 			//Hide the reset button
 			$('#clear-all').addClass("hidden");
+			this.setAutoHeight();
 		},
 		
 		showClearButton: function(){
 			//Show the reset button
 			$("#clear-all").removeClass("hidden");
+			this.setAutoHeight();
 		},
 		
 		/**
@@ -1949,13 +1967,12 @@ define(['jquery',
 					count,
 					color;
 					
-					
 				//Normalize the range of tiles counts and convert them to a lightness domain of 20-70% lightness. 
 				if(maxCount - minCount == 0) 
 					var lightness = lightnessRange;
 				else
 					var lightness = (((tileCount-minCount)/(maxCount-minCount)) * lightnessRange) + lightnessMin;
-				
+								
 				var color = "hsl(" + mapModel.get("tileHue") + ",100%,"+lightness+"%)";
 				
 				//Add the count to the tile

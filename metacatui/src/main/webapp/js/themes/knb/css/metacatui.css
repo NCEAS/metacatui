@@ -275,11 +275,6 @@ Bold 700 Italic
     	margin-top: 2px;
     }
     
-    .mapMode #Footer:hover{
-    	min-height: 240px;
-    	z-index: 10;
-    }
-    
     .mapMode #Footer:hover h3,
     .mapMode #Footer:hover h3 > span{
     	font-size: 1em;
@@ -1774,7 +1769,7 @@ svg .domain{
     } 
     
    .filter-contain .checkbox-list{
-    	margin-left: 36px;
+    	margin-left: 0px;
     }
     ul.checkbox-list{
     	list-style: none;
@@ -1820,7 +1815,8 @@ svg .domain{
 	#clear-all{
 		background-color: #992222;
 		color: #FFFFFF;
-		padding: 0px 5px 0px 5px;
+		cursor: pointer;
+	/*	padding: 0px 5px 0px 5px;
 		border-radius: 2px;
 		-moz-border-radius: 2px;
 		-webkit-border-radius: 2px;
@@ -1831,11 +1827,11 @@ svg .domain{
 		text-transform: none;
 		text-shadow: none;
 		font-size: 14px;
-		line-height: 20px;
+		line-height: 20px;*/
 	}
 	
 	#clear-all i{
-		margin-left: 5px;
+		margin-right: 5px;
 	}
 	
 	.current-filters .alert{
@@ -2051,13 +2047,6 @@ svg .domain{
    .row-fluid input[class*="span"].left{
    		float: left;
    }
-  
-    
-    #clear-all{
-    	float: left;
-    	margin-bottom: 5px;
-    	cursor: pointer;
-    }
     
          /* Autocomplete */
     ul.ui-autocomplete{
@@ -2196,8 +2185,12 @@ svg .domain{
     	cursor: pointer;
     }
     .info-icons i:hover{
-    	color: #660000;
+    	color: #00AAFF;
     }
+    .result-row .info-icons .label:hover{
+		color: #00AAFF;
+		background-color: #FFFFFF;
+	}
     .info-icons .on-map > i.on-map:nth-child(n+2){
     	margin-left: 3px;
     }
@@ -2261,17 +2254,13 @@ svg .domain{
     	background-color: transparent;
     	cursor: default;
     }
-	
+	.pagination ul > li.active > a{
+		background-color: #006699;
+		color: white;
+	}
 	.pagination ul > li > a:hover{
 		color: #FFF;
-		background-color: #1C6E84;
-	}
-	
-	
-	.pagination ul > .active > a,
-	.pagination ul > .active > a:hover{
-		color: #FFF;
-		background-color: #1C6E84;
+		background-color: #00AAFF;
 	}
 	
 	.sort-by label{

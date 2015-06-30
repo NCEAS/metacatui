@@ -1,7 +1,7 @@
+<a id="clear-all" class="auto-height-member"><i class="icon-remove"></i> Clear all filters</a>
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="auto-height">
 			<h5 id="filters-header">Filters</h5>
-			<a id="clear-all">Clear all filters<i class="icon-remove"></i></a>
     		<div class="filter-container">
 				<div class="input-append filter-contain">
 					<input class="filter" type="text" placeholder="Anything" id="all_input" data-category="all">
@@ -52,7 +52,7 @@
 				
 				<% if(appSearchModel.filterIsAvailable("dataSource")){ %>
 					<div class="filter-contain" id="member-nodes-container" data-category="dataSource">
-						<label  class="tooltip-this" data-trigger="hover" data-title="The name of the DataONE member node that a dataset originates from" data-placement="top"><i class="icon icon-group"></i>Member Node</label>
+						<label  class="tooltip-this" data-trigger="hover" data-title="The name of the DataONE member node that a dataset originates from" data-placement="top"><i class="icon icon-group"></i><%=dataSourceTitle%></label>
 						<div class="clear"></div>
 						<div class="member-nodes-placeholder">
 							<%=loading%>

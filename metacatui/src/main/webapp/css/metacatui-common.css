@@ -116,16 +116,6 @@ h3{
 .btn > i{
 	margin-left: 5px;
 }
-.result-row .info-icons .icons.resource-map{
-	width: 20px;
-	height: 1em;
-}
-.result-row .info-icons .icons.download .icon{
-	font-size: 1.2em;
-}
-.result-row .icons.provenance i{
-	font-size: 1.5em;
-}
 .provenance-statement-container i{
 	font-size: 1.2em;
 }
@@ -148,6 +138,7 @@ h3{
 	 cursor: pointer;
 	 width: 95%;
 	 width: calc(100% - 10px);
+	 border-top: 1px solid #EEE;
 }
 .result-row .route-to-metadata{
 	cursor: pointer;
@@ -161,11 +152,28 @@ h3{
 .result-row .info-icons{
 	margin-top: 10px;
 }
+.result-row .info-icons .icons.resource-map{
+	width: 20px;
+	height: 1em;
+}
+.result-row .info-icons .icons.download .icon{
+	font-size: 1.2em;
+}
+.result-row .info-icons .icon.views{
+  font-size: 1.3em;
+  margin-left: 5px;
+}
+.result-row .icons.provenance i{
+	font-size: 1.5em;
+}
 .result-row .info-icons img.icon{
 	height: 1em;
 }
 .result-row .info-icons .icons.download .tooltip{
 	width: 120px;
+}
+.result-row .info-icons .label{
+	background-color: #5E8497;
 }
 .result-row > .logo {
   width: 50px;
@@ -188,14 +196,15 @@ h3{
 .result-row > .logo.LTER{
 	width: 40px;
 }
-.result-row .smaller{
-	font-size: .9em;
-}
-.result-row .label{
-	margin-right: 3px;
-}
 .result-row .tooltip{
 	z-index: 99999;
+}
+.result-row .info-icons .label {
+  background-color: #D8DCE0;
+  color: inherit;
+  text-shadow: none;
+  padding: 2px 5px;
+  border: 1px solid #CCC;
 }
 /****************************************** 
 ** Provenance flow-charts ***
@@ -1023,6 +1032,16 @@ textarea.token{
 /****************************************** 
 ** Searching and Map ***
 ******************************************/
+#clear-all{
+  width: 95%;
+  width: calc(100% - 10px);
+  padding: 2px 5px;
+  margin-bottom: 0px;
+  font-size: 1.1em;
+  display: block;
+  float: none;
+  background-color: #992222;
+}
 #map-container{
 	display: none;
 }
@@ -1051,7 +1070,8 @@ textarea.token{
 .map-toggle-container{
 	position: relative;
 	display: block;
-	width: 100%;
+	width: 95%;
+	width: calc(100% - 10px);
 }
 .mapMode #results-view .map-toggle-container {
   display: none;
@@ -1086,7 +1106,7 @@ textarea.token{
 ** Filters ***
 ******************************************/
 .filter-container{
-	width: 205px;
+	width: 187px;
 }
 .filter-contain{
 	border-bottom: 1px dashed #CCC;
@@ -1152,6 +1172,8 @@ ul.checkbox-list{
 .ui-buttonset label#data-year-label,
 .ui-buttonset label#pub-year-label{
  	margin: 0px 5px 5px 0px;
+ 	float: left;
+ 	width: auto;
 }
 .ui-buttonset input[type="checkbox"]{
    	display: none;
@@ -1208,6 +1230,24 @@ label.ui-state-active i.icon-check{
 	border-color: inherit;
 	display: inline-block;
 	width: auto;
+}
+
+/*******************************************
+Registry
+******************************************/
+/* Do not use the .label Bootstrap styles on labels in forms */
+form .label,
+#DynamicContent .label {
+  background-color: inherit;
+  color: inherit;
+  text-shadow: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  display: inherit;
+  padding: inherit;
+  line-height: inherit;
+  white-space: inherit;
+  vertical-align: inherit;
 }
 
 /*******************************************

@@ -14,41 +14,7 @@
 </div>
 <div class="clear"></div>
 <div class="info-icons  stop-route"> 
-	<div class="stats icons">
-		<% 
-		
-		if (typeof read_count_i !== "undefined"){ 
-			var readableCount = commaSeparateNumber(read_count_i); %>
-			<span class="count label label-primary"><%=readableCount%></span><span class="smaller">views</span>
-		<% }
-		else{ 
-		%>
-			<span class="count label label-primary">0</span><span class="smaller">views</span>
-		<% }
-		%>
-	</div>
-    <% if(typeof abstract != "undefined"){  %>
-		<div class="abstract icons stop-route popover-this"><i class="icon icon-info-sign popover-this abstract"></i></div>
-	<% } %>    		      
-    <div class="resource-map icons stop-route">             
-           <%
-           if (resourceMap) {
-				print('<img src="img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
-			}
-            %>
-          
-    </div>
-      	<div class="on-map icons  stop-route">
-		<% 
-		if (typeof southBoundCoord != "undefined"){
-        	print('<i class="icon-map-marker on-map open-marker stop-route tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
-        }
-        else{
-           print('<i class="icon-map-marker inactive stop-route"></i>');
-        }
-         %>
-    </div>
-    <div class="icons stop-route download">             
+	<div class="icons stop-route download">             
            <%
            if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
            	  
@@ -68,10 +34,44 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route tooltip-this" title="Download" href="', package_service, URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="top"><i class="icon icon-cloud-download stop-route"></i></a>');
+				print('<a class="download stop-route tooltip-this" title="Click to Download" href="', package_service, URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
 			}			
           	%>          
       </div>
+	<div class="stats icons stop-route">
+		<% 
+		
+		if (typeof read_count_i !== "undefined"){ 
+			var readableCount = commaSeparateNumber(read_count_i); %>
+			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><%=readableCount%> <i class="icon icon-eye-open views stop-route"></i></span>
+		<% }
+		else{ 
+		%>
+			<span></span>
+		<% }
+		%>
+	</div>
+    <% if(typeof abstract != "undefined"){  %>
+		<div class="abstract icons stop-route popover-this"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
+	<% } %>    		      
+    <div class="resource-map icons stop-route">             
+           <%
+           if (resourceMap) {
+				print('<img src="img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
+			}
+            %>
+          
+    </div>
+      	<div class="on-map icons  stop-route">
+		<% 
+		if (typeof southBoundCoord != "undefined"){
+        	print('<i class="icon-map-marker on-map open-marker stop-route tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
+        }
+        else{
+           print('<i class="icon-map-marker inactive stop-route"></i>');
+        }
+         %>
+    </div>
             	<% if(hasProv){
       			print('<div class="icons provenance active stop-route">');
       			print('<i class="icon-code-fork active stop-route"></i>');

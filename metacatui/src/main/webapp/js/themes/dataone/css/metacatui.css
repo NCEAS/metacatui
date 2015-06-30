@@ -1345,15 +1345,8 @@ table th.btn-container .btn{
     #clear-all{
 		cursor: pointer;
 		font-size: 14px;
-		color: #931D1D;
-		display: inline-block;
-		background-color: #660033;
 		color: #FFF;
 		font-weight: 500;
-		padding: 0px 5px;
-		border-radius: 3px;
-		-moz-border-radius: 3px;
-		-webkit-border-radius: 3px;
     }
     
     #clear-all > i{
