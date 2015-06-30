@@ -31,7 +31,7 @@ define(['jquery', 'underscore', 'backbone'],
 				// just follow the link
 				return true;
 			} 
-			else if(href.lastIndexOf(".pdf") || href.lastIndexOf(".bin") || href.lastIndexOf(".exe") || href.lastIndexOf(".tar.gz") || href.lastIndexOf(".zip") || href.lastIndexOf(".tar")){
+			else if((href.lastIndexOf(".pdf") > 0) || (href.lastIndexOf(".bin") > 0) || (href.lastIndexOf(".exe") > 0) || (href.lastIndexOf(".tar.gz") > 0) || (href.lastIndexOf(".zip") > 0) || (href.lastIndexOf(".tar") > 0)){
 				if(href.indexOf(this.url) > 0)
 					window.location = appModel.get("baseUrl") + href;
 				else
