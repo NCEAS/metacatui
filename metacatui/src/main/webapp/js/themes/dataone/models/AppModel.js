@@ -60,12 +60,6 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('baseUrl', baseUrl);
 				this.set('d1CNBaseUrl', baseUrl);
 			}
-									
-			// these are pretty standard, but can be customized if needed
-			if(this.get("d1CNService").indexOf("v2") > -1){
-				this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
-				//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
-			}
 			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/isAuthorized/');
@@ -79,18 +73,27 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('nodeServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/node');
 			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 
-			//this.set('d1LogServiceUrl', this.get('baseUrl') + this.get('d1Service') + 'logsolr');
-			this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
+			this.set('d1LogServiceUrl', this.get('baseUrl') + this.get('d1Service') + 'logsolr');
+			//this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
 			
 			// use portal to  retrieve token and annotate metadata
-			//this.set('tokenUrl', this.get('baseUrl') + '/portal/token');
 			//this.set('annotatorUrl', this.get('baseUrl') + '/portal/annotator');
 			//this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
 			//this.set('annotatorUrl', this.get('baseUrl') + this.get('context') + '/annotator');
 			
 			//this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
-
+			
+			//Settings for the DataONE API v2 only
+			if(this.get("d1CNService").indexOf("v2") > -1){
+				this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
+				//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+				this.set('tokenUrl', this.get('baseUrl') + '/portal/token');
+				this.set("prov", true);
+				this.set('resolveServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
+			}
+			
 			this.on("change:pid", this.changePid);
+
 		},
 		
 		changePid: function(model, name){			

@@ -683,6 +683,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .attributeList > .row-fluid > .span2 {
   min-width: 130px;
 }
+.tab-content{
+	width: 76%;
+	width: calc(100% - 150px);
+}
 .attributeList > .tab-content{
 	width: calc(82% - 130px);
 }

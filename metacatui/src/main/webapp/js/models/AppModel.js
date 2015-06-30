@@ -69,8 +69,19 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
 			this.set('nodeServiceUrl', this.get("d1CNBaseUrl") + this.get('d1CNService') + '/node');
 		
+			//Settings for the DataONE API v2 only
+			if(this.get("d1CNService").indexOf("v2") > -1){
+				this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
+				//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+				this.set('tokenUrl', this.get('baseUrl') + '/portal/token');
+				this.set("prov", true);
+				this.set('resolveServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
+			}
+			
 			this.on("change:pid", this.changePid);
 		},
+		
+		
 		
 		changePid: function(model, name){			
 			this.set("previousPid", model.previous("pid"));
