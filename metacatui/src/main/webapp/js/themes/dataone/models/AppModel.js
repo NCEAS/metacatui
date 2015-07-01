@@ -43,6 +43,9 @@ define(['jquery', 'underscore', 'backbone'],
 			//bioportalServiceUrl: null, // use this to deactivate the annotator view
 			orcidBaseUrl: "https://pub.orcid.org",
 			orcidServiceUrl: "https://pub.orcid.org/v1.1/search/orcid-bio?q=",
+			signInUrl: null,
+			signInUrlOrcid: null,
+			signInUrlLdap: null,
 			tokenUrl: null,
 			annotatorUrl: null,
 			accountsUrl: null,
@@ -90,6 +93,9 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('tokenUrl', this.get('baseUrl') + '/portal/token');
 				this.set("prov", true);
 				this.set('resolveServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
+				this.set("signInUrl", this.get('baseUrl') + "/portal/startRequest?target=");
+				this.set("signInUrlOrcid", this.get('baseUrl') + "/portal/oauth?action=start&target=");
+				this.set("signInUrlLdap", this.get('baseUrl') + "/portal/ldap?target=");
 			}
 			
 			this.on("change:pid", this.changePid);
