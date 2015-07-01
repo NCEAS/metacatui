@@ -148,6 +148,7 @@ define(['jquery',
 				gmaps           : gmaps,
 				username        : appUserModel.get('username'),
 				loading         : loadingHTML,
+				searchModelRef  : this.searchModel, 
 				dataSourceTitle : (window.theme == "dataone") ? "Member Node" : "Data source"
 			});
 			

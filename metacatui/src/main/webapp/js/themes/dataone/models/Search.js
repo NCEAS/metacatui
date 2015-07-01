@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				submitter: [],
 				username: [],
 				attribute: [],
-				annotation: [],
+				//annotation: [],
 				additionalCriteria: [],
 				dataSource: [],
 				id: [],
@@ -164,7 +164,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "annotation", "formatType", "creator", "spatial", "id", "rightsHolder", "submitter"];
+			var otherFilters = ["attribute", "formatType", "creator", "spatial", "id", "rightsHolder", "submitter"];
 			
 			//Start the query string
 			var query = "";
@@ -175,6 +175,34 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var getAll = true;
 			}
 			else var getAll = false;
+			
+			var model = this;
+			
+			//-----Annotation-----
+			if(this.filterIsAvailable("annotation") && ((filter == "annotation") || getAll)){
+				var annotations = this.get("annotation");
+				_.each(annotations, function(annotationFilter, key, list){
+					var filterValue = "";
+					
+					//Get the filter value
+					if(typeof annotationFilter == "object"){
+						filterValue = annotationFilter.value || "";
+					}
+					else
+						filterValue = annotationFilter;
+
+					//Trim the spaces off
+					filterValue = filterValue.trim();
+					
+					// Does this need to be wrapped in quotes?
+					if(model.needsQuotes(filterValue))
+						filterValue = "%22" + filterValue + "%22";
+					else
+						filterValue = encodeURIComponent(filterValue);
+					
+					query += "+" + model.fieldNameMap["annotation"] + ":" + filterValue;			
+				});
+			}
 			
 			//---resourceMap---
 			if(this.filterIsAvailable("resourceMap") && ((filter == "resourceMap") || getAll)){
@@ -328,9 +356,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 			}
 			
-			//-----Other Filters/Basic Filters-----
-			var model = this;
-			
+			//-----Other Filters/Basic Filters-----			
 			_.each(otherFilters, function(filterName, key, list){
 				if(model.filterIsAvailable(filterName) && ((filter == filterName) || getAll)){
 					var filterValue = null;

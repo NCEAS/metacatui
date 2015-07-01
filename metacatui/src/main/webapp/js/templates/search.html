@@ -22,7 +22,7 @@
 				    <div class="clear"></div>
 			    </div>
 			    
-			    <% if(appSearchModel.filterIsAvailable("annotation")){ %>
+			    <% if(searchModelRef.filterIsAvailable("annotation")){ %>
 			    <div class="filter-contain" data-category="annotation">
 					<label class="tooltip-this" data-trigger="hover" data-title="User-submitted semantic annotations or tags" data-placement="top"><i class="icon icon-tag span1"></i>Annotation</label>
 					<div class="filter-input-contain input-append ">
@@ -50,7 +50,7 @@
 					<div class="clear"></div>
 				</div>
 				
-				<% if(appSearchModel.filterIsAvailable("dataSource")){ %>
+				<% if(searchModelRef.filterIsAvailable("dataSource")){ %>
 					<div class="filter-contain" id="member-nodes-container" data-category="dataSource">
 						<label  class="tooltip-this" data-trigger="hover" data-title="The name of the DataONE member node that a dataset originates from" data-placement="top"><i class="icon icon-group"></i><%=dataSourceTitle%></label>
 						<div class="clear"></div>
