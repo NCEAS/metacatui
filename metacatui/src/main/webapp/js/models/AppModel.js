@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
-			searchMode: 'map',
+			searchMode: mapKey ? 'map' : 'list',
 			searchHistory: [],
 			sortOrder: 'dateUploaded+desc',
 			previousPid: null,
