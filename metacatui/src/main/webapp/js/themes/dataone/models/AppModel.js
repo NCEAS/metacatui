@@ -61,6 +61,11 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('d1CNBaseUrl', baseUrl);
 			}
 			
+			// set to actual CN when using browsers that fully support CORS
+			var baseCnURL = "https://cn-sandbox-2.test.dataone.org";
+			this.set('baseUrl', baseCnURL);
+			this.set('d1CNBaseUrl', baseCnURL);
+			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/isAuthorized/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/query/solr/?');

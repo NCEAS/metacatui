@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				submitter: [],
 				username: [],
 				attribute: [],
-				//annotation: [],
+				annotation: [],
 				additionalCriteria: [],
 				dataSource: [],
 				id: [],
@@ -60,7 +60,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		//Map the filter names to their index field names
 		fieldNameMap: {
 					 attribute : "attributeName",
-					annotation : "sem_annotation",
+					annotation : "sem_annotation_bioportal_sm",
 					formatType : "formatType",
 						   all : "",
 					   creator : "origin",
@@ -410,7 +410,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 							 "&facet.field=class" +
 							 "&facet.field=site";
 			if(this.filterIsAvailable("attribute")) facetQuery += "&facet.field=attributeName&facet.field=attributeLabel";
-			if(this.filterIsAvailable("annotation")) facetQuery += "&facet.field=sem_annotation";
+			if(this.filterIsAvailable("annotation")) facetQuery += "&facet.field=sem_annotation_bioportal_sm";
 			
 			return facetQuery;
 		},
