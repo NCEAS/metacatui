@@ -178,7 +178,7 @@ define(['jquery',
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
-						$.extend(annotation, {"field": "sem_annotation"});
+						$.extend(annotation, {"field": "sem_annotation_bioportal_sm"});
 					}
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
