@@ -692,12 +692,16 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .attributeList > .row-fluid > .span2 {
   min-width: 130px;
 }
-.tab-content{
+.tab-content,
+.row-fluid .tab-content.span12{
 	width: 76%;
-	width: calc(100% - 150px);
+	width: calc(100% - 165px);
 }
-.attributeList > .tab-content{
-	width: calc(82% - 130px);
+.attributeList a{
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+	max-width: 100%;
 }
 /*Taxonomic range*/
 .taxonomicCoverage .control-group{
@@ -1041,6 +1045,12 @@ textarea.token{
   display: block;
   float: none;
   background-color: #992222;
+  color: #FFF;
+  font-weight: normal;
+  cursor: pointer;
+}
+#clear-all .icon{
+	color: #DB8080;
 }
 #map-container{
 	display: none;

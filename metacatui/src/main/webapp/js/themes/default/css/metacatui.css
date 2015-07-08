@@ -28,13 +28,16 @@ Bold 700
       background: rgba(0, 0, 0, .8);
       min-height: 100%;
       position: relative;
+      padding-bottom: 130px; /* Keeps footer down */
     }
-    
+    body.mapMode{
+    	padding-bottom: 0px;
+    }
     a {
       color: #166194;
       font-weight: 600;
     }
-        
+       
     a:hover{
     	color: #3399CC;
     	text-decoration: none;
@@ -345,37 +348,24 @@ Bold 700
 -------------------------------------------------- */    
     
     #Footer {
-      	position: absolute;
-		bottom: -125px;
 		background: #222;
 		background-color: rgba(0,0,0,0.8);
 		padding: 5px 2%;
-		height: 98px;
 		width: 96%;
+		height: 100px;
 		color: #DDD;
 		display: block;
-		transition: height 0.5s ease-out .5s;
-		z-index: 2;
     }
     
     .mapMode #Footer{
-		background: #222;
-	   	position: fixed;
-    	bottom: -80px;
+		height: 20px;
+  		overflow: hidden;
     }
-    
-    .mapMode #Footer:hover{
-    	height: 177px;
-    	z-index: 2;
-    }
-    
     #Footer .center{
     	width: 20%;
     	font-size: 13px;
     	margin-bottom: 10px;
     }
-
-
     footer#Footer h2 {
       font-size: 15px;
       line-height: 15px;
@@ -449,9 +439,6 @@ Bold 700
 		color: #444444;
 		box-shadow: none;
 		-webkit-box-shadow: none;
-	}
-	.btn i{
-		color: #AAA;
 	}
     .btn-primary {
       background-color: #166194;
@@ -795,6 +782,10 @@ Bold 700
 		margin-bottom: 20px;
 		font-size: 13px;
 	}
+	#Metadata .citation{
+		font-size: 1.3em;
+  		line-height: 1.6em;
+	}
 	.controls-well img{
 		max-width: 90%;
 		max-height: 900px;
@@ -843,8 +834,6 @@ Bold 700
 	
 	/* Resource map contents table */
 	#downloadContents{
-		overflow-x: overlay;
-		-webkit-transform: translate3d(0,0,0); 
 	}
 	span.file-type{
 		font-weight: 600;
@@ -876,11 +865,6 @@ Bold 700
     .download-contents .download .btn{
     	width: 130px;
     }
-    .download-contents .download i{
-    	float: right;
-    	font-size: 1.6em;
-    }
-    
     .download-contents .download .btn-primary i{
         color: #4B7EA1;
 		text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -1079,23 +1063,28 @@ Bold 700
 	}
     
     /***Filters ***/
-    
+    #sidebar{
+    	background-color: rgba(255, 255, 255, 0.8);
+    	width: 190px;
+	  padding: 0px 20px 0px 10px;
+	  height: auto;
+	  overflow-y: visible;
+	  overflow-x: visible;
+	  float: left;
+	  clear: left;
+	  border-right: 1px solid #999;
+    }
     .filter-contain{
-   	  width: 232px;
-   	  position: relative;
-   	  border-bottom: 1px solid #DDD;
-   	  padding: 10px;
+   	  border-bottom: 1px dashed #BBB;
+   	  padding: 10px 0px;
    }
-   
-   .filter-contain i{
-   		color: #999;
-   		font-size: 18px;
-   }
-   
    .filter-contain > i.icon-map-marker{
    		font-size: 23px;
    }
-   
+   .filter-contain > label > .icon{
+   		color: inherit;
+   		font-size: 1.3em;
+   }
    .filter-contain label i{
    		font-size: 15px;
    		margin-left: 3px;
@@ -1165,7 +1154,6 @@ Bold 700
     }
     
     #all_input{
-    	width: 72%;
     	margin-left: 0px;
     }
     
@@ -1234,7 +1222,9 @@ Bold 700
     	margin-left: 10px;
     }
 
-   
+   #filter-year .filter-input-contain{
+   		margin-top: 10px;
+   }
     #filter-year  input[type="number"]{
    		background: #FFF;
 		border: 1px solid #CCC;
@@ -1273,9 +1263,6 @@ Bold 700
     
     #year-range{
     	min-height: 6px;
-    	border-radius: 4px;
-    	border: 0px;
-    	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
     	width: 87%;
@@ -1493,26 +1480,7 @@ Bold 700
    .row-fluid input[class*="span"].left{
    		float: left;
    }  
-    
-    #clear-all{
-		cursor: pointer;
-		font-size: 14px;
-		color: #931D1D;
-		display: inline-block;
-		background-color: #931d1d;
-		color: #FFF;
-		padding: 0px 5px;
-		border-radius: 3px;
-		-moz-border-radius: 3px;
-		-webkit-border-radius: 3px;
-		position: absolute;
-		top: 7px;
-		left: 68px;
-    }
-    
     #clear-all > i{
-    	font-size: 15px;
-    	margin-left: 7px;
     	color: #DB8080;
     }
     
@@ -1526,6 +1494,7 @@ Bold 700
     	overflow-y: scroll;
     	-webkit-transform: translate3d(0,0,0); 
     	max-height: 150px;
+    	z-index: 2;
     }
     
     li.ui-menu-item{
@@ -1549,13 +1518,15 @@ Bold 700
     }
     
 
-/* RESULTS CSS
+/* SEARCH PAGE CSS
 -------------------------------------------------- */
-    /*-- Results header --*/
-
-    
+	.mapMode #Content{
+		max-width: 100%;
+	}
+    /*-- Results header --*/  
     .result-header{
     	height: auto;
+    	padding: 5px 10px;
     }
 
     .result-header-count > .result-header-count > span{
@@ -1569,23 +1540,46 @@ Bold 700
     #countstats:before{
 		content: "Datasets ";
 	}
- 
-    #sortOrder{
-    	border: 1px solid #CCC;
-    	border-radius: 4px;
-    	-webkit-border-radius: 4px;
-    	-moz-border-radius: 4px;
-    	background-color: #FFF;
-    	width: auto;
- 		right: 10px;
-		height: 22px;
-		line-height: 15px;
-		font-size: 12px;
-		z-index: 1;
-}
+ 	.sort-by > label{
+ 		display: inline;
+ 	}
+ 	.sort-by > input{
+ 		font-size: .9em;
+ 		height: 2em;
+ 		margin-bottom: 0px;
+ 	}
    
    /*-- Results rows --*/
-    
+   #results-container {
+	  width: 75%;
+	  width: calc(100% - 265px - 20px);
+	  overflow-y: visible;
+	  overflow-x: visible;
+	  height: auto;
+	  float: left;
+	  margin-left: 20px;
+	  background-color: rgba(255, 255, 255, 0.9);
+	}
+   .mapMode #results-container {
+	  width: 400px;
+	  overflow-x: hidden;
+	  overflow-y: scroll;
+	  -webkit-transform: translate3d(0,0,1);
+	  height: 700px;
+	  margin-left: 0px;
+	}
+	#map-container {
+	  -webkit-transition: all 1s;
+	  transition: all 1s;
+	  position: relative;
+	  height: 500px;
+	  width: 400px;
+	  width: calc(100% - 221px - 400px);
+	  float: left;
+	}
+	.mapMode #map-container {
+	  position: relative;
+	}   
     .search-results > p{
     	display: block;
 		width: 9%;
@@ -1607,16 +1601,15 @@ Bold 700
     	background-color: #DDDDDD;
     	border: 0px;
     }
-    
     .result-row {
-      display: block;
-      padding: 4px 1%;
-      width: 98%;
+      width: 90%;
+      width: calc(100% - 20px);
+      padding-left: 10px;
+      padding-right: 10px;
     }
-    
     .result-row:nth-child(odd){
     	background-color: #CCCCCC; /*IE 8 fallback */
-    	background-color: rgba(185, 185, 185, 0.3);
+    	background-color: rgba(255, 255, 255, 1);
     }
     .result-row:nth-child(odd) .multi-line-ellipsis:after{
         background-color: #CCCCCC; /*IE 8 fallback */
@@ -1663,18 +1656,6 @@ Bold 700
     .result-row .dropdown-menu{
   		left: -320%;
   	}
-  	
-  	.result-row .abstract{
-  		font-size: .9em;
-  		margin-top: 10px;
-  		margin-bottom: 10px;
-  		line-height: 1.5em;
-  	}
-  	
-  	.abstract.multi-line-ellipsis{
-  		line-height: 25px;
-  	}
-  	
   	.result-row .tooltip{
   		z-index: 999999999;
   	}
@@ -1683,28 +1664,13 @@ Bold 700
     .info-icons i.more-info{
     	cursor: pointer;
     }   
-
-    .info-icons .on-map > i{
-    	font-size: 19px;
-    }
-    
-    .info-icons .on-map > i.on-map{
-    	color: #00ADEF;
-    	cursor: default;
-    }
-    .info-icons .on-map > i.on-map:nth-child(n+2){
-    	margin-left: 3px;
-    }
-    
 	.info-icons .icons{
     	float: left;
     	margin-right: 1em;
     }
-    
     .resource-map.icons{
     	color: #777;
     }
-    
     .info-icons i.inactive{
     	visibility: hidden;
     }
@@ -1719,11 +1685,11 @@ Bold 700
    
   	/** View count **/
     .result-row .stats .count{
-    	font-size: 16px;
-    	text-align: center; 
-    	display: block;
+      font-size: .8em;
+	  border-radius: 2px;
+	  line-height: 1.5em;
+	  height: 1.5em;
     }
-    
     .result-row .stats label{
     	font-size: 12px;
     	text-align: center;
@@ -1754,49 +1720,21 @@ Bold 700
 
     /*-- Pagination widget --*/
     .pagination{
-    	margin: 0px;
-    }
-    .mapMode .pagination {
-    	cursor: pointer;
-    	margin: 3.4em auto;
-    	padding-bottom: 2px;
-    	width: 70%;
-    	left: 30%;
-    	position: fixed;
-    	background-color: #FFF;
-    	border-bottom: 1px solid #CCC;
-    }
-    
-    .mapMode .pagination{
-        width: 44%;
-    	left: 55%;
-    }
-    
-    #resultspager{
-    	float: left;
-    	padding-left: 2%;
-    	margin-top:5px;
-    	margin-bottom: 5px;
-    	width: 100%;
-    	min-height: 20px;
-    	height: 24px;
-    }
-
-	.pagination ul{
-		border: none;
-		float: left;
+    	margin: 10px 0px 0px 0px;
+    	text-align: left;
+    } 
+    .search-results ~ .pagination {
+  		margin-left: 10px;
+  		width: calc(100% - 10px);
 	}
-	
+    .resultspager > ul{
+    	background-color: #FFF;
+	}
 	.pagination ul > li{
 		cursor: pointer;
 	}
 	.pagination ul > li > a{
-		background-color: #EEE;
-		color: #555;
 		font-size: 12px;
-		font-weight: normal;
-		line-height: 14px;	
-		border: 1px solid #CCC;	
 	}
 	
 	.pagination ul > li > a.unactive,
@@ -1816,21 +1754,7 @@ Bold 700
 	.pagination ul > .active > a,
 	.pagination ul > .active > a:hover{
 		color: #FFF;
-		background-color: #AAA;
-	}
-	
-	.pagination .sort-by{
-		width: 180px;
-		float: right;
-		margin-right: 10px;
-		min-height: 20px;
-		height: 30px;
-	}
-	
-	.pagination .sort-by label{
-		display: inline;
-		font-size: 12px;
-		vertical-align: top;
+		background-color: #166194;
 	}
 	
 	    
@@ -2488,11 +2412,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
  .table .table-header{
- 	background-color: #168794;
+ 	background-color: #506A84;
  	text-align: center;
  	font-size: 1em;
  }
-
+ .table .btn{
+ 	min-width: 110px;
+ }
 
 /* HIGHLIGHTING
  -----------------------------------------------*/
