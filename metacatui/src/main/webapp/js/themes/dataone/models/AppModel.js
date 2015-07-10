@@ -64,11 +64,6 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('d1CNBaseUrl', baseUrl);
 			}
 			
-			// set to actual CN when using browsers that fully support CORS
-			//var baseCnURL = "https://cn-sandbox-2.test.dataone.org";
-			//this.set('baseUrl', baseCnURL);
-			//this.set('d1CNBaseUrl', baseCnURL);
-			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/isAuthorized/');
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/query/solr/?');
@@ -83,14 +78,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			this.set('d1LogServiceUrl', this.get('baseUrl') + this.get('d1Service') + 'logsolr');
 			//this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
-			
-			// use portal to  retrieve token and annotate metadata
-			//this.set('annotatorUrl', this.get('baseUrl') + '/portal/annotator');
-			//this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
-			//this.set('annotatorUrl', this.get('baseUrl') + this.get('context') + '/annotator');
-			
-			//this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
-			
+
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
 				this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
@@ -101,6 +89,14 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("signInUrl", this.get('baseUrl') + "/portal/startRequest?target=");
 				this.set("signInUrlOrcid", this.get('baseUrl') + "/portal/oauth?action=start&target=");
 				this.set("signInUrlLdap", this.get('baseUrl') + "/portal/ldap?target=");
+				
+				// use portal to  retrieve token and annotate metadata
+				//this.set('annotatorUrl', this.get('baseUrl') + '/portal/annotator');
+				//this.set('tokenUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/token');
+				//this.set('annotatorUrl', this.get('baseUrl') + this.get('context') + '/annotator');
+				
+				//this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+				
 			}
 			
 			this.on("change:pid", this.changePid);
