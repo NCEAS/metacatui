@@ -90,7 +90,7 @@ article.container {
 .nav .input > form > input[type="text"],
 .header .input > form > input[type="text"]{
    	display: inline-block;
-   	width: 120px;
+   	width: 85px;
 }
 .nav .input > form > .btn,
 .header .input > form > .btn {
@@ -633,9 +633,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .expand-collapse .spacer{
 	margin-right: 10px;
 }
-.expand-collapse.list-group-item a > .icon{
-	margin-right: 0px;
-}
+
 
 /****************************************** 
 ** The Metadata and MetadataIndex View **
@@ -669,7 +667,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 
 #Metadata  > .citation,
-#Metadata  > form > .citation{
+#Metadata  > form > .citation,
+#Metadata  > .container > .row-fluid > form > .citation{
 	font-size: 1.8em;
 	line-height: 1.7em;
 	margin-bottom: 40px;
