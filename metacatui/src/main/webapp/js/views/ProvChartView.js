@@ -171,7 +171,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			}
 			
 			//Get the name of this object
-			var name = provEntity.get("entityName");
+			var name = provEntity.get("entityName") || provEntity.get("id") || type;
 			var id   = provEntity.get("id");
 			
 			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element

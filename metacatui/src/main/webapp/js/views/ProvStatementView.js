@@ -173,7 +173,15 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						//Get the type of object this is so we can make an icon out of it
 						if(typeof objectModel !== "undefined") 
 							type = objectModel.getType();
+						
 						var icon = $(document.createElement("i")).attr("class", "icon " + view.getIconType(type));
+						
+						if(!objectName){
+							if(typeof objectModel !== "undefined") 
+								objectName = objectModel.get("id")
+							else
+								objectName = type || "";
+						}		
 						
 						var linkText = $(document.createElement("span")).text(objectName).prepend(icon);
 						
@@ -216,6 +224,13 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						if(typeof subjectModel !== "undefined") 
 							type = subjectModel.getType();
 						var icon = $(document.createElement("i")).attr("class", "icon " + view.getIconType(type));
+						
+						if(!subjectName){
+							if(typeof subjectModel !== "undefined") 
+								subjectName = subjectModel.get("id")
+							else
+								subjectName = type || "";
+						}	
 						
 						var linkText = $(document.createElement("span")).text(subjectName);
 												

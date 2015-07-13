@@ -633,9 +633,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .expand-collapse .spacer{
 	margin-right: 10px;
 }
-.expand-collapse.list-group-item a > .icon{
-	margin-right: 0px;
-}
+
 
 /****************************************** 
 ** The Metadata and MetadataIndex View **
