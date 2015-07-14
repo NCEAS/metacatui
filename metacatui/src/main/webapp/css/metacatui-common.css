@@ -1142,6 +1142,9 @@ textarea.token{
 	-moz-border-radius: 3px;
 	font-size: 14px;
 }
+.current-filter > .icon{
+	margin-left: 5px;
+}
 /*-- The filter checkboxes --*/
 #includes-files label{
  	font-size: 13px;
