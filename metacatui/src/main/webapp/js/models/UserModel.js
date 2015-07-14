@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//If no username was provided at time of initialization, then use the profile username (username sent to #profile view)
 			if(!this.get("username"))
 				this.set("username", appModel.get("profileUsername"));
-			
+						
 			this.on("change:username", this.createSearchModel);
 			this.createSearchModel();
 			
@@ -160,7 +160,12 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						
 						// set in the model
 						model.set('username', username);
-						model.set("loggedIn", true);
+						
+						//Are we logged in?
+						if(username)
+							model.set("loggedIn", true);
+						else
+							model.set("loggedIn", false);
 						
 						model.getInfo();
 					}
