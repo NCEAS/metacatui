@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			// listen to the appModel for changes in username
 			this.listenTo(appUserModel, 'change:username', this.render);
 			this.listenTo(appUserModel, 'change:firstName', this.render);
+			this.listenTo(appUserModel, 'change:loggedIn', this.render);
 			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);
 		},
 				
@@ -77,24 +78,16 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		
 		myDataSearch: function() {
 			
-			// Get the user name
-			var username = appUserModel.get('username');
+			//Make sure the user is logged in and there is a search model related to this user
+			if(!appUserModel.get("loggedIn") || !appUserModel.get("searchModel")) return false;
 			
-			// Clear the search model to start a fresh search
-			appSearchModel.clear().set(appSearchModel.defaults);
-			
-			// Create a new array with the new search term
-			var newSearch = ["rightsHolder:" + username];
-			
-			//Set up the search model for this new term
-			appSearchModel.set('additionalCriteria', newSearch);
-						
-			// make sure the browser knows where we are
+			//The Data Catalog View will use this user's search model
+			appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 
+				
+			//Navigate to the data catalog view and update the URL
 			uiRouter.navigate("data", {trigger: true});
 			
-			// ...but don't want to follow links
-			return false;
-			
+			return false;			
 		},
 		
 		showNewSearch: function(){ 

@@ -693,9 +693,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       /*min-height: 1200px;*/
     }
 
-    #FeaturedData > section {
+    #FeaturedData > section.row {
       border-top: 1px solid #878787;
       height: 554px;
+      position: relative;
     }
 	
 	#FeaturedData > section:nth-child(even){
@@ -710,76 +711,48 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	  	font-weight: 300;
       color: #FDFDFD;
       text-decoration: none;
-      width: 450px;
 	  }
         
     #FeaturedData h2 a {
       color: #FDFDFD;
       text-decoration: none;      
     }
-
+    #FeaturedData h2 a.dark{
+    	color: #333;
+    }
+    #FeaturedData .accordion{
+	  position: absolute;
+	  color: #FDFDFD;
+	  top: 0px;
+	  padding: 20px 20px 20px 40px;
+	  width: calc(100% - 60px);
+    }
+    #FeaturedData .accordion-heading{
+    	width: 50%;
+    }
+    #FeaturedData .accordion-body{
+    	clear: both;
+    }
     #FeaturedData .accordion-inner {
-      border-top: 0px;
-      padding-bottom: 40px;
-      margin: 20px 10px 20px 10px;
-      background-color: #555555; /*IE 8 fallback */
-      background: rgba(0,0,0,0.6);
-      color: #FFFFFF;
-      border-radius: 6px 6px 6px 6px;
+        border-top: 0px;
+		  background-color: #555555;
+		  background: rgba(0,0,0,0.6);
+		  color: #FFFFFF;
+		  border-radius: 6px 6px 6px 6px;
+		  width: 50%;
     }
-    
-    #featured01 {
-      position: relative;
-      top: 0px;
+     #FeaturedData > section.row:nth-child(even) .accordion-inner,
+     #FeaturedData > section.row:nth-child(even) .accordion-heading,
+     #FeaturedData > section.row:nth-child(even) .accordion-body .btn{
+     	float: right;
+     }
+    #FeaturedData .accordion-inner a{
+    	color: white;
+    	text-decoration: underline;
     }
-    
-    #featured02 {
-      position: relative;
-      top: 0px;
-    }
-    
-    #featured03 {
-      position: relative;
-      top: 0px;
-    }
-    
-    #featured01_info {
-      position: absolute;
-      top: 40px;
-      left: 80px;
-      width: 75%;
-    }
-    
-    #featured02_info {
-      position: absolute;
-      top: 40px;
-      left: 60%;
-    }
-    
-    #featured03_info {
-      position: absolute;
-      top: 40px;
-      left: 80px;
-      width: 75%;
-    }
-
-    #FeaturedData .collapse {
-      position: absolute;
-      top: 0px;
-    }
-
-    #collapse01, #collapse03 {
-      position: absolute;
-      left: 420px;
-      max-width: 600px;
-    }
-    
-    #collapse02 {
-      position: absolute;
-      left: -600px;
-      max-width: 600px;
-    }
-    
+     #FeaturedData .accordion-inner a.btn{
+     	text-decoration: none;
+     }
     /* Commenting these out for now. May not need them:
         
     .featured {

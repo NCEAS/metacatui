@@ -63,17 +63,17 @@
 				<div class="filter-contain">
 					<label class="tooltip-this" data-trigger="hover" data-title="The name of the creator or originator of a dataset" data-placement="top"><i class="icon icon-user"></i>Creator</label>
 					<div class="filter-input-contain input-append">
-						<input class="filter" type="text" placeholder="First name, last name, etc." id="creator_input" data-category="creator">
+						<input class="filter" type="text" placeholder="First name, last name, etc." id="creator_input" data-category="creator" />
 						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>				    	
 			    	</div>
 			    	<ul id="current-creator-filters" class="current-filters " data-category="creator">
+			    		<% if(isMySearch){ %>
+			    				<li class="current-filter" data-category="username" data-term="<%=username%>">
+			    					Me
+			    					<i class="icon icon-remove remove-filter"></i>
+			    				</li>
+			    		<% } %>
 			    	</ul>
-			    	<ul id="current-additionalCriteria-filters" class="current-filters " data-category="additionalCriteria">
-			    		<li class="current-filter keyword-search-link" data-category="additionalCriteria" data-term="rightsHolder:<%=username%>">
-							<span>Me</span>
-							<i class="icon-remove remove-filter"></i>
-						</li>
-				    </ul>
 				    <div class="clear"></div>
 			    </div>	
 				

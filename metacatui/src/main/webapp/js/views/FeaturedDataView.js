@@ -14,8 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/featuredData.html'],
 		},
 				
 		render: function () {
-			this.$el.html(this.template());	
-					
+			this.$el.html(this.template());						
 		}
 	});
 	return FeaturedDataView;		

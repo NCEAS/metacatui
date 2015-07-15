@@ -93,7 +93,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			var registryEntryForm = $("#RegistryEntryForm");
 			
 			// if we have the registry form but it doesn't look like we are logged in, force a logout
-			if (registryEntryForm.length && !appModel.get('username')) {
+			if (registryEntryForm.length && !appUserModel.get('username')) {
 				uiRouter.navigate("logout", {trigger: true});
 			}
 		},
@@ -307,7 +307,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								appUserModel.checkStatus();
 								
 								// then load the registry url again, now that we are logged in
-								viewRef.render();
+								uiRouter.navigate("share", {trigger: true});
 							}
 						});
 					} else {
@@ -371,7 +371,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 							success: function(data1, textStatus1, xhr1) {
 								// don't really do anything with this - browser has the JSESSIONID cookie now
 								
-								// set the username to null in the appModel
+								// Reset the user model username
 								appUserModel.set("username", null);
 								
 								// trigger the check for logged in user

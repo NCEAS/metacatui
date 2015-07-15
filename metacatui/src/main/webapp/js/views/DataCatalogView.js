@@ -147,6 +147,7 @@ define(['jquery',
 				searchOptions   : registryModel.get('searchOptions'),
 				gmaps           : gmaps,
 				username        : appUserModel.get('username'),
+				isMySearch      : (_.indexOf(this.searchModel.get("username"), appUserModel.get("username")) > -1),
 				loading         : loadingHTML,
 				searchModelRef  : this.searchModel, 
 				dataSourceTitle : (window.theme == "dataone") ? "Member Node" : "Data source"
@@ -778,7 +779,7 @@ define(['jquery',
 			var filterNode = $(e.target).parent();
 			
 			//Find this element's category in the data-category attribute of it's parent
-			var category = filterNode.parent().attr('data-category');
+			var category = filterNode.attr("data-category") || filterNode.parent().attr('data-category');
 			
 			//Get the filter term
 			var term = $(filterNode).attr('data-term');
@@ -2574,9 +2575,7 @@ define(['jquery',
 				$("body").removeClass("mapMode");
 				$("#map-canvas").remove();
 			}
-			
-			this.searchModel = null;
-			
+						
 			// remove everything so we don't get a flicker
 			this.$el.html('')
 		}				

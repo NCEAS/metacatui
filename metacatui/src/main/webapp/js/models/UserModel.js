@@ -160,7 +160,12 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						
 						// set in the model
 						model.set('username', username);
-						model.set("loggedIn", true);
+						
+						//Are we logged in?
+						if(username)
+							model.set("loggedIn", true);
+						else
+							model.set("loggedIn", false);
 						
 						model.getInfo();
 					}
