@@ -308,6 +308,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								
 								// then load the registry url again, now that we are logged in
 								uiRouter.navigate("share", {trigger: true});
+								viewRef.render();
 							}
 						});
 					} else {
