@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//If no username was provided at time of initialization, then use the profile username (username sent to #profile view)
 			if(!this.get("username"))
 				this.set("username", appModel.get("profileUsername"));
-			
+						
 			this.on("change:username", this.createSearchModel);
 			this.createSearchModel();
 			
@@ -51,90 +51,113 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
-			$.ajax({
+			var accountsRequestOptions = {
 				type: "GET",
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.get("token")
-			    },
 				url: url, 
-				success: function(data, textStatus, xhr) {				
-				//Reset the group list so we don't just add it to it with push()
-				model.set("groups", model.defaults().groups);
-				//Reset the equivalent id list so we don't just add it to it with push()
-				model.set("identities", model.defaults().identities);
-				
-				//Get the person's name and verification status
-				var firstName = $(data).find("person givenName").first().text(),
-					lastName  = $(data).find("person familyName").first().text(),
-					fullName  = firstName + " " + lastName,
-					email  = $(data).find("person email").first().text(),
-					verified  = $(data).find("person verified").first().text(),
-					groups    = model.get("groups"),
-					identities = model.get("identities");
-
-				//For each group this user is in, create a group object and store it in this model
-				_.each($(data).find("group"), function(group, i){
-					//Get all the group information
-					var memberEls = $(group).find("hasMember"),
-						members   = new Array(),
-						groupName = $(group).find("groupName").first().text(),
-						subject   = $(group).find("subject").first().text();
+				success: function(data, textStatus, xhr) {	
 					
-					//Go through each member element and grab the member's name
-					_.each(memberEls, function(member, i){
-						members.push($(member).text());
-					});
-					
-					//Create the group object and add it to the model
-					groups.push({
-						groupName : groupName,
-						subject   : subject,
-						members   : members
-					});
-				});
-				
-				//For each equiv id, store in the model
-				_.each($(data).find("person").first().find("equivalentIdentity"), function(identity, i){
-					//push onto the list
-					// TODO: include person details?
-					var id = $(identity).text();
-					identities.push(id);
-				});
-
-				//Save all these attributes in the model
-				model.set("groups",    groups);	
-				model.trigger("change:groups"); //Trigger the change event since it's an array and won't fire a change event on its own				
-				model.set("identities", identities);	
-				model.trigger("change:identities"); //Trigger the change event
-				model.set("verified",  verified);
-				model.set("firstName", firstName);
-				model.set("lastName",  lastName);
-				model.set("fullName",  fullName);
-				model.set("email",  email);
-				model.set("registered",  true);
-			}});
-			
-			
-			//Get the pending requests			
-			$.ajax({
-				url: appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(this.get("username")),
-				success: function(data, textStatus, xhr){
-					//Reset the equivalent id list so we don't just add it to it with push()
-					model.set("pending", model.defaults().pending);
-					var pending = model.get("pending");
-					_.each($(data).find("person"), function(person, i) {
-						var subject = $(person).find("subject").text();
-						if (subject.toLowerCase() != model.get("username").toLowerCase()) {
-							pending.push(subject);
+					//Get the pending requests			
+					$.ajax({
+						url: appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(this.get("username")),
+						success: function(data, textStatus, xhr){
+							//Reset the equivalent id list so we don't just add it to it with push()
+							model.set("pending", model.defaults().pending);
+							var pending = model.get("pending");
+							_.each($(data).find("person"), function(person, i) {
+								var subject = $(person).find("subject").text();
+								if (subject.toLowerCase() != model.get("username").toLowerCase()) {
+									pending.push(subject);
+								}
+							});
+							model.set("pending", pending);	
+							model.trigger("change:pending"); //Trigger the change event
 						}
 					});
-					model.set("pending", pending);	
-					model.trigger("change:pending"); //Trigger the change event
+					
+					
+					//Reset the group list so we don't just add it to it with push()
+					model.set("groups", model.defaults().groups);
+					//Reset the equivalent id list so we don't just add it to it with push()
+					model.set("identities", model.defaults().identities);
+					
+					//Get the person's name and verification status
+					var firstName = $(data).find("person givenName").first().text(),
+						lastName  = $(data).find("person familyName").first().text(),
+						fullName  = firstName + " " + lastName,
+						email  = $(data).find("person email").first().text(),
+						verified  = $(data).find("person verified").first().text(),
+						groups    = model.get("groups"),
+						identities = model.get("identities");
+	
+					//For each group this user is in, create a group object and store it in this model
+					_.each($(data).find("group"), function(group, i){
+						//Get all the group information
+						var memberEls = $(group).find("hasMember"),
+							members   = new Array(),
+							groupName = $(group).find("groupName").first().text(),
+							subject   = $(group).find("subject").first().text();
+						
+						//Go through each member element and grab the member's name
+						_.each(memberEls, function(member, i){
+							members.push($(member).text());
+						});
+						
+						//Create the group object and add it to the model
+						groups.push({
+							groupName : groupName,
+							subject   : subject,
+							members   : members
+						});
+					});
+					
+					//For each equiv id, store in the model
+					_.each($(data).find("person").first().find("equivalentIdentity"), function(identity, i){
+						//push onto the list
+						// TODO: include person details?
+						var id = $(identity).text();
+						identities.push(id);
+					});
+	
+					//Save all these attributes in the model
+					model.set("groups",    groups);	
+					model.trigger("change:groups"); //Trigger the change event since it's an array and won't fire a change event on its own				
+					model.set("identities", identities);	
+					model.trigger("change:identities"); //Trigger the change event
+					model.set("verified",  verified);
+					model.set("firstName", firstName);
+					model.set("lastName",  lastName);
+					model.set("fullName",  fullName);
+					model.set("email",  email);
+					model.set("registered",  true);
+				},
+				error: function(xhr, textStatus, errorThrown){
+					if(xhr.status == 404)
+						model.getNameFromSubject();
 				}
-			});
+			}
+			
+			//Send a token with the request if there is one
+			if(this.get("token")){
+				accountsRequestOptions.xhrFields = { withCredentials: true }
+				accountsRequestOptions.headers = { "Authorization": "Bearer " + this.get("token") }
+			}
+			
+			//Send the request
+			$.ajax(accountsRequestOptions);
+		},
+		
+		getNameFromSubject: function(){
+			var username  = this.get("username"),
+				fullName = "";
+			
+			if((username.indexOf("uid=") > -1) && (username.indexOf(",") > -1))
+				fullName = username.substring(username.indexOf("uid=") + 4, username.indexOf(","));
+			else if((username.indexOf("CN=") > -1) && (username.indexOf(",") > -1))
+				fullName = username.substring(username.indexOf("CN=") + 3, username.indexOf(","));
+			else
+				fullName = username;
+			
+			this.set("fullName", fullName);
 		},
 		
 		// call Metacat or the DataONE CN to validate the session and tell us the user's name

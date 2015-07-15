@@ -24,7 +24,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		initialize: function () {
 			// listen to the appModel for changes in username
 			this.listenTo(appUserModel, 'change:username', this.render);
-			this.listenTo(appUserModel, 'change:firstName', this.render);
+			this.listenTo(appUserModel, 'change:fullName', this.render);
 			this.listenTo(appUserModel, 'change:loggedIn', this.render);
 			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);
 		},
@@ -37,11 +37,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 				var signInUrlLdap = appModel.get('signInUrlLdap') + target;	
 			}
 
+			var name = appUserModel.get('fullName') ? appUserModel.get('fullName').charAt(0).toUpperCase() + appUserModel.get("fullName").substring(1) : appUserModel.get("username");
+			
 			//Insert the navbar template
 			this.$el.html(
 				this.template({
 					username:   appUserModel.get('username'),
-					fullName:   appUserModel.get('fullName'),
+					fullName:   name,
 					firstName:  appUserModel.get('firstName'),
 					loggedIn:   appUserModel.get("loggedIn"),
 					baseUrl:    appModel.get('baseUrl'),
