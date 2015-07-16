@@ -58,7 +58,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					
 					//Get the pending requests			
 					$.ajax({
-						url: appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(this.get("username")),
+						url: appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(model.get("username")),
 						success: function(data, textStatus, xhr){
 							//Reset the equivalent id list so we don't just add it to it with push()
 							model.set("pending", model.defaults().pending);

@@ -71,7 +71,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 				
 		},
 		
-		submitForm: function(formId) {
+		submitForm: function(event) {
 			
 			// which form?
 			var form = $(event.target).parents("form");
