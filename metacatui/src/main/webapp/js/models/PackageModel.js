@@ -49,7 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Get the id of the resource map for this member
 			var provFlList = appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,title,origin,prov_instanceOfClass,' + provFlList +
+			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,prov_instanceOfClass,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
 						'&wt=json' +

@@ -680,10 +680,17 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	background-color: transparent;
 	display: block;
 	font-weight: lighter;
+	width: 100%;
+	float: none;
+}
+#Metadata  > .citation.has-data-source,
+#Metadata  > form > .citation.has-data-source,
+#Metadata  > .container > .row-fluid > form > .citation.has-data-source{
 	width: 83%;
+	width: calc(100% - 95px);
 	float: left;
 }
-
+#Metadata  > .container > .row-fluid > form > .citation .title,
 #Metadata  > .citation .title,
 #Metadata  > form > .citation .title{
 	font-weight: bold;
@@ -725,13 +732,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 /**----------------------------------------**/
 .citation ~ .logo{
-  width: 15%;
+  max-width: 90px;
   display: inline-block;
   float: right;
   margin-bottom: 10px;
-}
-.citation ~ .logo.KNB{
-	max-width: 90px;
 }
 
 /****************************************** 

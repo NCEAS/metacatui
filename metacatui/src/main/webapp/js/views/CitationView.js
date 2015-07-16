@@ -88,7 +88,7 @@ define(['jquery', 'underscore', 'backbone'],
 	        	var dateUploadedFormatted = moment(dateUploaded).format('YYYY');
 	            if(!isNaN(dateUploadedFormatted)) pubDateText += dateUploadedFormatted;
 	        }
-			var pubDateEl = $(document.createElement("span")).addClass("pubdate").text("(" + pubDateText + "): ");
+			var pubDateEl = $(document.createElement("span")).addClass("pubdate").text(pubDateText + ". ");
 			
 			//The publisher (source member node)
 			var publisherText = "";
@@ -101,7 +101,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var publisherEl = $(document.createElement("span")).text(publisherText);
 			
 	        //The ID
-	        var idEl = $(document.createElement("span")).addClass("id").text("ID: " + id + ".");
+	        var idEl = $(document.createElement("span")).addClass("id").text("" + id + ". ");
 			
 			//Create a link
 	        if(this.createLink)
