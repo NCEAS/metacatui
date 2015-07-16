@@ -47,28 +47,38 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 			var contentArea = this.$("#DynamicContent");
 			contentArea.load(
 					completeUrl,
-					function() {
-						viewRef.cleanStyles();
-						viewRef.$el.hide();
-						viewRef.$el.fadeIn('slow');
+					function() {						
+						viewRef.show();
 					});
 			
 			return this;
 		},
 		
-		cleanStyles: function() {
-			// modify the classes to enhance the l+f without changing the ldapweb.cgi source
-			//this.$(".label").removeClass("label");
-			this.$(":submit").addClass("btn");
-
+		show: function(){
+			var view = this;
+			
+			this.$el.hide();
+			
+			this.$el.fadeIn({
+				duration: "slow",
+				done: function(){
+					//Add btn class
+					view.$(":submit").addClass("btn");
+					
+					//Find the captcha container and captcha function, if it exists (requires captcha API key in Metacat)
+					if((view.$("#captchaArea").length > 0) && (typeof showRecaptcha == "function")){
+						//Make sure the link doesn't already exist, too
+						if(view.$("#captchaArea").find("a").length == 0){
+							var link = $(document.createElement("a")).text("Show code").addClass("pointer").on("click", function(){ showRecaptcha("captchaArea") });
+							$("#captchaArea").append(link);
+						}
+					}
+				}
+			});
 		},
 		
 		events: {
-			"click input[type='submit']"   : "submitForm"
-			//,
-			//"click :submit"   : "submitForm"
-
-				
+			"click input[type='submit']" : "submitForm"	
 		},
 		
 		submitForm: function(event) {
@@ -93,14 +103,13 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 					url: this.ldapwebUrl,
 					data: formData,
 					success: function(data, textStatus, jqXHR) {
-						viewRef.$el.hide();
 						
 						viewRef.$el.html(viewRef.containerTemplate);
 						var contentArea = viewRef.$("#DynamicContent");
 						contentArea.html(data);
 						
-						viewRef.cleanStyles();
-						viewRef.$el.fadeIn('slow');
+						//Show the content
+						viewRef.show();
 					}
 			});
 			
