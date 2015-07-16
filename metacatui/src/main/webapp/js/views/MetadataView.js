@@ -13,6 +13,7 @@ define(['jquery',
 		'views/ProvStatementView',
 		'views/PackageTableView',
 		'views/AnnotatorView',
+		'views/CitationView',
 		'text!templates/dataSource.html',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
@@ -25,7 +26,7 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, $ui, _, Backbone, gmaps, fancybox, Package, SolrResult, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, DataSourceTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadButtonTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
+	function($, $ui, _, Backbone, gmaps, fancybox, Package, SolrResult, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, CitationView, DataSourceTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadButtonTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
 	'use strict';
 
 	
@@ -177,6 +178,7 @@ define(['jquery',
 						
 						//Save this element in the view
 						citationEl = well;
+						viewRef.citationEl = citationEl;
 						
 						//Mark this in the DOM for CSS styling
 						$(well).addClass('citation');	
@@ -244,6 +246,7 @@ define(['jquery',
 			this.packageModel = new Package();
 			this.listenToOnce(this.packageModel, 'complete', this.getEntityNames);
 			this.listenToOnce(this.packageModel, 'complete', this.insertPackageDetails);
+			this.listenToOnce(this.packageModel, 'complete', this.insertCitation);
 			this.listenToOnce(this.packageModel, 'complete', this.insertDataSource);
 			this.listenToOnce(nodeModel, 'change:members',  this.insertDataSource);
 			this.packageModel.getMembersByMemberID(pid);
@@ -405,20 +408,40 @@ define(['jquery',
 
 		},
 		
+		insertCitation: function(){
+			if(!this.citationEl || !this.packageModel) return false;
+			if(this.packageModel.get("members").length == 0) return false;
+						
+			//Get the model for this metadata doc
+			var metadataModel = _.findWhere(this.packageModel.get("members"), {id: this.pid});
+			if(!metadataModel) return false;
+			
+			//Create a citation element from the model attributes
+			var newCitationEl = new CitationView({
+									model: metadataModel, 
+									createLink: false }).render().el;
+			$(this.citationEl).replaceWith(newCitationEl);
+			this.citationEl = newCitationEl;
+		},
+		
 		insertDataSource: function(){
 			if(!this.citationEl) this.getCitation();			
 			if(!this.packageModel || !nodeModel || !nodeModel.get("members").length) return;
 			
 			//Get this metadata doc from the package model
 			var thisDoc = _.findWhere(this.packageModel.get("members"), {id: this.pid});
-			if(!thisDoc) return;
+			if(!thisDoc) return false;
 			
-			//Insert the data source template
-			$(this.citationEl).after(this.dataSourceTemplate({
-				node: _.findWhere(nodeModel.get("members"), {identifier: thisDoc.get("datasource")})
-			}));
-			this.$(".popover-this").popover();
-			this.$(".tooltip-this").tooltip();
+			var dataSource = _.findWhere(nodeModel.get("members"), {identifier: thisDoc.get("datasource")});
+			
+			if(dataSource && dataSource.logo){
+				//Insert the data source template
+				$(this.citationEl).after(this.dataSourceTemplate({
+					node : dataSource
+				})).addClass("has-data-source");
+				this.$(".popover-this").popover();
+				this.$(".tooltip-this").tooltip();
+			}
 		},
 		
 		/*
