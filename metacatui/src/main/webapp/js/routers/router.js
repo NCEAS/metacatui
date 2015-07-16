@@ -134,7 +134,6 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
 			appView.registryView.logout();
-			//appView.showView(appView.indexView);
 		},
 		
 		renderExternal: function(url) {

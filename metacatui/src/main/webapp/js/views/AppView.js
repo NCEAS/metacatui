@@ -81,23 +81,6 @@ define(['jquery',
 			return this;
 		},
 		
-		logout: function() {
-			
-			var portalUrl = appModel.get('baseUrl') + "/portal/logout";
-			var target = Backbone.history.location.href;
-			// DO NOT include the route otherwise we have an infinite redirect
-			target  = target.split("#")[0];
-			
-			// make sure to include the target
-			portalUrl += "?target=" + target;
-			
-			// do it!
-			window.location = portalUrl;
-			
-			return;
-			
-		},
-		
 		// the currently rendered view
 		currentView: null,
 		

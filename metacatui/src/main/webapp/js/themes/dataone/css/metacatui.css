@@ -610,9 +610,6 @@ table th.btn-container .btn{
     #Navbar i .user {
       opacity: .6;
     }
-    #SignIn {
-      float: right;
-    }
     /** Backbone override for dropdowns so they dsplay on hover rather than click **/    
     #Navbar .dropdown-toggle > .icon-sort-down{
     	font-size: 15px;
@@ -646,7 +643,7 @@ table th.btn-container .btn{
 	    margin-top: 0;
 	}
 	.navbar .right .dropdown-menu{
-	    left: -75px;
+	    left: -100px;
 	    max-width: 170px;
 	}
     .dropdown-header{
@@ -654,6 +651,19 @@ table th.btn-container .btn{
 		font-size: 12px;
 		text-transform: uppercase;
 	}
+	#SignInLdap{
+		padding: 10px;
+	}
+	#SignInLdap input{
+		width: 90%;
+		width: calc(100% - 20px);
+		margin-bottom: 5px;
+	}
+	#SignInLdap select{
+		width: calc(100% - 6px);
+		margin-bottom: 5px;
+	}
+	
     /* Search bar in nav bar */   
     .navbar .input-append{
     	margin-bottom: 0px;

@@ -509,60 +509,49 @@
 	        	<button class="btn direct-search" form="direct-search">Go</button>
 	        </form>
         </li>
-        <% 
-        if (username) { 
-        	print(
-        	'<li class="dropdown right">',
-				'<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
-					firstName,
-					' <i class="icon-user"></i><b class="icon-sort-down"></b>',
-				'</a>',
-				'<ul class="dropdown-menu">',
-					'<li class="dropdown-header">', fullName, '</li>',
-					'<li class="divider"></li>',  
-					//'<li><a href="#share">Register data</a></li>',
-					'<li><a href="#profile/' + username + '">My profile</a></li>',
-					'<li><a href="#data" id="myData">My packages</a></li>',
-					'<li class="divider"></li>',
-					'<li><a href="#logout">Logout</a></li>',
-				'</ul>',
-			'</li>'
-        	);
-        } else {
-        	 if (signInUrl) {
-%>        	
+        <% if (loggedIn && username) { %> 
+        	<li class="dropdown right">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown"> <%=formattedName%> <i class="icon-user icon"></i><i class="icon-sort-down icon"></i></a>
+				<ul class="dropdown-menu">
+					<li class="dropdown-header"><%=formattedName%></li>
+					<li class="divider"></li>
+					<!-- <li><a href="#share">Register data</a></li>-->
+					<li><a href="#profile/<%=username%>">My profile</a></li>
+					<li><a href="#data" id="myData">My packages</a></li>
+					<li class="divider"></li>
+					<li><a href="#logout">Logout</a></li>
+				</ul>
+			</li>
+		<% } else {
+        	 if (signInUrl) { %>        	
         		<li class="dropdown right">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 						Sign-in <i class="icon-unlock-alt"></i> <b class="icon-sort-down"></b>
 					</a>
 					<ul class="dropdown-menu">
 						
-						<li id="SignIn" class="share-feature"><a href="<%=signInUrl%>">with CILogon</a></li>
-	        			<li id="SignIn" class="share-feature"><a href="<%=signInUrlOrcid%>">with ORCID</a></li>
+						<li><a href="<%=signInUrl%>">use CILogon</a></li>
+	        			<li><a href="<%=signInUrlOrcid%>">use ORCID</a></li>
 	        			
-	        			<li class="divider"></li>	        			
-	        			
-	        			<li id="SignInLdap" class="share-feature">
-	        				<div>
-	        					<br/>
-		        				<form class="form-inline" 
-			        				action="<%=signInUrlLdap%>" 
-			        				method="post" 
-			        				onsubmit="if (this.username.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.username.value + this.rdn.value;} return true;">
-		        					
-		        					<input class="input-small" type="text" name="username" placeholder="Username"/>
-		        					<select class="input-medium" name="rdn">
-		        						<option value=",o=unaffiliated,dc=ecoinformatics,dc=org">unaffiliated</option>
-		        						<option value=",o=NCEAS,dc=ecoinformatics,dc=org">NCEAS</option>
-		        						<option value=",ou=Account,dc=ecoinformatics,dc=org">Account</option>
-		        					</select>
-		        					<input class="input-small" type="password" name="password" placeholder="Password"/>
-		        					<input type="submit" value="login"/>
-		        				</form>
-	        				</div>
-	        			</li>
-	        			
-	        			
+	        			<% if (signInUrlLdap) { %> 
+		        			<li class="divider"></li>	        					        			
+		        			<li id="SignInLdap">
+			        				<form class="form-inline input-group" 
+				        				action="<%=signInUrlLdap%>" 
+				        				method="post" 
+				        				onsubmit="if (this.username.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.username.value + this.rdn.value;} return true;">
+			        					
+			        					<input type="text" name="username" placeholder="Username"/>
+			        					<select name="rdn">
+			        						<option value=",o=unaffiliated,dc=ecoinformatics,dc=org">unaffiliated</option>
+			        						<option value=",o=NCEAS,dc=ecoinformatics,dc=org">NCEAS</option>
+			        						<option value=",ou=Account,dc=ecoinformatics,dc=org">Account</option>
+			        					</select>
+			        					<input type="password" name="password" placeholder="Password"/>
+			        					<input type="submit" value="Login" class="btn btn-primary"/>
+			        				</form>
+		        			</li>
+	        			<% } %>
 					</ul>
 				</li>
 		<%	} else if(signInUrlLdap) { %>

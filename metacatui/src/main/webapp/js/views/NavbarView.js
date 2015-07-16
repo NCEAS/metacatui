@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			this.$el.html(
 				this.template({
 					username:   appUserModel.get('username'),
-					fullName:   name,
+					formattedName:   name,
 					firstName:  appUserModel.get('firstName'),
 					loggedIn:   appUserModel.get("loggedIn"),
 					baseUrl:    appModel.get('baseUrl'),
