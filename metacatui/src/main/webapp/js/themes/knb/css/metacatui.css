@@ -2138,40 +2138,7 @@ svg .domain{
     	color: #1C6E84;
     }
     
-    /*-- Results List Icons --*/
-    .info-icons{
-    	display: inline-block;
-    }
-    .info-icons .icons{
-    	float: left;
-    	margin-right: 1em;
-    	position: relative;
-    }
-    .info-icons .on-map > i{
-    	font-size: 19px;
-    }
-    .info-icons i{
-    	cursor: pointer;
-    }
-    .info-icons i:hover{
-    	color: #00AAFF;
-    }
-    .result-row .info-icons .label:hover{
-		color: #00AAFF;
-		background-color: #FFFFFF;
-	}
-    .info-icons .on-map > i.on-map:nth-child(n+2){
-    	margin-left: 3px;
-    }
-    
-    .info-icons i.inactive{
-    	visibility: hidden;
-    }
-    
-    .result-row:hover .info-icons .inactive{
-    	color: rgba(178, 202, 221, 1);
-    }
-    
+    /*-- Popovers --*/
     .popover{
     	font-size: 13px;
     }

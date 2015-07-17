@@ -140,17 +140,20 @@ h3{
 	 width: calc(100% - 10px);
 	 border-top: 1px solid #EEE;
 }
-.result-row .route-to-metadata{
-	cursor: pointer;
-}
-.result-row .icons .icon{
-	font-size: 1.1em;
-}
-#results.loading .notification{
-  margin-top: 20px;
-}
 .result-row .info-icons{
 	margin-top: 10px;
+}
+.result-row .info-icons .icons{
+	float: left;
+    margin-right: 1em;
+   	position: relative;
+}
+.result-row .info-icons .icon{
+	cursor: pointer;
+	font-size: 1.1em;
+}
+.result-row .info-icons .icon.inactive{
+    visibility: hidden;
 }
 .result-row .info-icons .icons.resource-map{
 	width: 20px;
@@ -158,6 +161,14 @@ h3{
 }
 .result-row .info-icons .icons.download .icon{
 	font-size: 1.2em;
+}
+.result-row .info-icons .icons.download .tooltip{
+	width: 120px;
+}
+.result-row .info-icons .stats,
+.result-row .info-icons .abstract,
+.result-row .info-icons .icons.provenance{
+	cursor: default;
 }
 .result-row .info-icons .icon.views{
   font-size: 1.3em;
@@ -169,11 +180,14 @@ h3{
 .result-row .info-icons img.icon{
 	height: 1em;
 }
-.result-row .info-icons .icons.download .tooltip{
-	width: 120px;
-}
 .result-row .info-icons .label{
 	background-color: #5E8497;
+}
+#results.loading .notification{
+  margin-top: 20px;
+}
+.result-row .route-to-metadata{
+	cursor: pointer;
 }
 .result-row > .logo {
   width: 50px;
@@ -200,7 +214,7 @@ h3{
 	z-index: 99999;
 }
 .result-row .info-icons .label {
-  background-color: #D8DCE0;
+  background-color: #FFF;
   color: inherit;
   text-shadow: none;
   padding: 2px 5px;
