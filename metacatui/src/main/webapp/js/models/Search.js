@@ -159,7 +159,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "formatType", "creator", "spatial", "id", "rightsHolder", "submitter"];
+			var otherFilters = ["attribute", "formatType", "rightsHolder", "submitter"];
 			
 			//Start the query string
 			var query = "";
@@ -199,13 +199,23 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 			}
 			
+			//---Identifier---
+			if(this.filterIsAvailable("id") && ((filter == "id") || getAll)){
+				var identifiers = this.get('id');
+				
+				if(Array.isArray(identifiers))
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "OR", subtext: true });				
+				else if(identifiers) 
+					query += "+" + this.fieldNameMap["id"] + ':*' + encodeURIComponent(identifiers) + "*";
+			}
+			
 			//---resourceMap---
 			if(this.filterIsAvailable("resourceMap") && ((filter == "resourceMap") || getAll)){
 				var resourceMap = this.get('resourceMap');
 				
 				//If the resource map search setting is a list of resource map IDs
 				if(Array.isArray(resourceMap))
-					query += this.getGroupedQuery(this.fieldNameMap["resourceMap"], resourceMap, "OR");				
+					query += this.getGroupedQuery(this.fieldNameMap["resourceMap"], resourceMap,  { operator: "OR" });				
 				//Otherwise, treat it as a binary setting
 				else if(resourceMap) 
 					query += this.fieldNameMap["resourceMap"] + ':*';
@@ -302,9 +312,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				if(filterValues.length > 0)
 					filterValues = _.pluck(filterValues, "value");
 				
-				query += "+" + this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues, "OR");				
+				query += "+" + this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues,  { operator: "OR" });				
 			}
-			
+	
 			//-----Excluded fields-----
 			if(this.filterIsAvailable("exclude") && ((filter == "exclude") || getAll)){
 				var exclude = this.get("exclude");
@@ -338,7 +348,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(this.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
 					else filterValue = encodeURIComponent(filterValue);
 					
-					query += "+*" + filterValue + "*";
+					query += "+" + filterValue;
 				}
 			}
 			
@@ -369,7 +379,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						if(model.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
 						else 							   filterValue = encodeURIComponent(filterValue);
 
-						query += "+" + model.fieldNameMap[filterName] + ":*" + filterValue + "*";			
+						query += "+" + model.fieldNameMap[filterName] + ":" + filterValue;			
 					}
 				}
 			});
@@ -407,6 +417,26 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					}
 				}
 			}
+			
+			//---Spatial---
+			if(this.filterIsAvailable("spatial") && ((filter == "spatial") || getAll)){
+				var spatial = this.get('spatial');
+				
+				if(Array.isArray(spatial))
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, { operator: "OR", subtext: true });				
+				else if(spatial) 
+					query += "+" + this.fieldNameMap["spatial"] + ':*' + encodeURIComponent(spatial) + "*";
+			}
+			
+			//---Creator---
+			if(this.filterIsAvailable("creator") && ((filter == "creator") || getAll)){
+				var creator = this.get('creator');
+				
+				if(Array.isArray(creator))
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["creator"], creator, { operator: "OR", subtext: true });				
+				else if(creator) 
+					query += "+" + this.fieldNameMap["creator"] + ':*' + encodeURIComponent(creator) + "*";
+			}
 						
 			return query;
 		},
@@ -437,16 +467,21 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		needsQuotes: function(entry){
 				
 			//Check for spaces
-			var space = null;
+			var value = "";
 			
-			space = entry.indexOf(" ");
+			if(typeof entry == "object")
+				value = entry.value;
+			else if(typeof entry == "string")
+				value = entry;
+			else
+				return false;
 			
-			if(space >= 0)
+			//Check for a space character
+			if(value.indexOf(" ") >= 0)
 				return true;
 			
 			//Check for the colon : character
-			var colon = entry.indexOf(":");
-			if(colon >= 0)
+			if(value.indexOf(":") >= 0)
 				return true;
 			
 			return false;
@@ -456,29 +491,40 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
 		 * Example:  title:(resistance OR salmon OR "pink salmon")
 		 */
-		getGroupedQuery: function(fieldName, values, operator){
+		getGroupedQuery: function(fieldName, values, options){
 			var query = "",
-			numValues = values.length,
-			model = this;
+				numValues = values.length,
+				model = this;
+			
+			if(options && (typeof options == "object")){
+				var operator = options.operator,
+					subtext = options.subtext;
+			}
 		
 			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) var operator = "OR";
 			
 			if(numValues == 1){
-				var value = "";
+				var value = values[0],
+					queryAddition;
 				
-				if(this.needsQuotes(values[0])) value = '"' + values[0] + '"';
-				else                            value = encodeURIComponent(values[0]);
+				if((typeof value == "object") && (typeof value.value != "undefined"))
+					value = value.value;
 				
-				query = fieldName + ":" + value;
+				if(this.needsQuotes(values[0])) queryAddition = '"' + value + '"';
+				else if(subtext)                queryAddition = "*" + encodeURIComponent(value) + "*";
+				else							queryAddition = encodeURIComponent(value);
+					
+				query = fieldName + ":" + queryAddition;
 			}
-			else{
+			else{				
 				_.each(values, function(value, i){
 					if(model.needsQuotes(value)) value = '"' + value + '"';
+					else if(subtext)             value = "*" + encodeURIComponent(value) + "*";
 					else                         value = encodeURIComponent(value);
 						
-					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + encodeURIComponent(value);
-					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + encodeURIComponent(value);
-					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + encodeURIComponent(value) + ")";
+					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + value;
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
 				});
 			}
 			

@@ -100,7 +100,11 @@ define(['jquery',
 							//Our fallback is to show the metadata details from the Solr index
 							if (status=="error") 
 								viewRef.renderMetadataFromIndex();
-							else{															
+							else{
+								//Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
+								if(response.indexOf('id="Metadata"') == -1)
+									viewRef.$el.addClass("container no-stylesheet");
+								
 								//Find the taxonomic range and give it a class for styling - for older versions of Metacat only (v2.4.3 and older)
 								if(!viewRef.$(".taxonomicCoverage").length)
 									$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomicCoverage');
@@ -156,7 +160,7 @@ define(['jquery',
 		
 		getCitation: function(){
 			var citation = "",
-				citationEl = this.el;
+				citationEl = null;
 			
 			//Find the citation element
 			if(this.$(".citation").length > 0){
@@ -174,11 +178,10 @@ define(['jquery',
 				
 				//Find the div.well with the citation. If we never find it, we don't insert the list of contents
 				_.each(wells, function(well){
-					if($(well).find('#viewMetadataCitationLink').length > 0){
+					if(!citationEl && ($(well).find('#viewMetadataCitationLink').length > 0) || ($(well).children(".row-fluid > .span10 > a"))){
 						
 						//Save this element in the view
 						citationEl = well;
-						viewRef.citationEl = citationEl;
 						
 						//Mark this in the DOM for CSS styling
 						$(well).addClass('citation');	
@@ -189,13 +192,20 @@ define(['jquery',
 				});
 				
 		    	//Remove the unnecessary classes that are used in older versions of Metacat (2.4.3 and older)
-		    	var citationText = $(this.citationEl).find(".span10");
+		    	var citationText = $(citationEl).find(".span10");
 				$(citationText).removeClass("span10").addClass("span12");
 			}
 			
 			//Set the document title to the citation
-			appModel.set("title", citation);	
-			this.citationEl = citationEl;
+			appModel.set("title", citation);
+			
+			//Save the citation element in the view
+			if(!citationEl){
+				this.citationEl = $(document.createElement("div")).addClass("citation");
+				this.$el.prepend(this.citationEl);
+			}
+			else
+				this.citationEl = citationEl;
 		},
 		
 		insertBreadcrumbs: function(){
@@ -1240,6 +1250,9 @@ define(['jquery',
 			
 			//Put the document title back to the default
 			appModel.set("title", appModel.defaults.title);
+			
+			//Remove view-specific classes
+			this.$el.removeClass("container no-stylesheet");
 			
 			this.$el.empty();
 			
