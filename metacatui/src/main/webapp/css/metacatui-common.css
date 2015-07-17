@@ -668,6 +668,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 
 #Metadata  > .citation,
 #Metadata  > form > .citation,
+#Content.no-stylesheet > .citation,
+#Metadata  > .container > .row-fluid > .citation,
 #Metadata  > .container > .row-fluid > form > .citation{
 	font-size: 1.8em;
 	line-height: 1.7em;
@@ -685,6 +687,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 #Metadata  > .citation.has-data-source,
 #Metadata  > form > .citation.has-data-source,
+#Content.no-stylesheet > .citation.has-data-source,
+#Metadata  > .container > .row-fluid > .citation.has-data-source,
 #Metadata  > .container > .row-fluid > form > .citation.has-data-source{
 	width: 83%;
 	width: calc(100% - 95px);
@@ -695,6 +699,19 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 #Metadata  > form > .citation .title{
 	font-weight: bold;
 }
+
+/* Used in metadata view for metadata format types without stylesheet */
+#Content.no-stylesheet.container{ 
+	width: 86%;
+}
+#Content.no-stylesheet.container > .breadcrumb{ 
+	width: 100%;
+	margin-top: 20px;
+}
+#Content.no-stylesheet > .breadcrumb~.citation{
+	margin-top: 20px;
+}
+
 .attributeList > .row-fluid > .span2 {
   min-width: 130px;
 }
