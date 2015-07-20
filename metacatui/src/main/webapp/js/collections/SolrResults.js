@@ -12,6 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		model: SolrResult,
 
 		initialize: function(models, options) {
+			this.docsCache    = options.docsCache || null;
 		    this.currentquery = options.query   || '*:*';
 		    this.fields 	  = options.fields  || "id,title";
 		    this.rows 		  = options.rows    || 25;
@@ -46,6 +47,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 					stats += "&stats.field=" + this.stats[i];
 				}
 			}
+			
 			//create the query url
 			var endpoint = appModel.get('queryServiceUrl') + 
 						   "fl=" + this.fields + 
@@ -56,11 +58,17 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 						   "&facet=true&facet.sort=index" + facetFields + 
 						   stats +		
 						   "&wt=json&json.wrf=?";
-						
+									
 			return endpoint;
 		},
 		  
 		parse: function(solr) {
+			
+			//Is this our latest query? If not, use our last set of docs from the latest query
+			if((decodeURIComponent(this.currentquery).replace(/\+/g, " ") != solr.responseHeader.params.q) && this.docsCache)
+				return this.docsCache;
+			
+			//Save some stats
 			this.header = new SolrHeader(solr.responseHeader);			
 			this.header.set({"numFound" : solr.response.numFound});
 			this.header.set({"start" : solr.response.start});
@@ -68,6 +76,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			
 			//Get the facet counts and store them in this model
 			this.facetCounts = solr.facet_counts.facet_fields;
+			
+			//Cache this set of results
+			this.docsCache = solr.response.docs;
 			
 			return solr.response.docs;
 		},
