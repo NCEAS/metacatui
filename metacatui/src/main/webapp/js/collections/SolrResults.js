@@ -106,7 +106,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			if (this.header != null) {
 				this.header.set({"start" : this.start});
 			}
-			this.get("urlCache").push(this.url)
+
 			this.fetch({
 				data: {start: this.start}, 
 				jsonp: "json.wrf",
