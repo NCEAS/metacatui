@@ -240,6 +240,7 @@ define(['jquery',
 			
 			//Get the remaining height left based on the window size
 			var remainingHeight = $(window).outerHeight(true) - otherHeight;
+			if(remainingHeight <= 0) remainingHeight = $(window).outerHeight(true) || 300;
 			
 			//Adjust all elements with the .auto-height class
 			$(".auto-height").height(remainingHeight);
@@ -255,7 +256,7 @@ define(['jquery',
 					$("#map-canvas").height(remainingHeight - otherHeight);
 			}
 			
-			//Trigger a resize for the map so that all of the mapbackgorund images are loaded
+			//Trigger a resize for the map so that all of the map background images are loaded
 			if(gmaps && mapModel.get("map"))
 				google.maps.event.trigger(mapModel.get("map"), 'resize');
 		},
