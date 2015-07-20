@@ -82,21 +82,29 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			//Get the earliest temporal data coverage year
-			var query = "q=" + this.get('query') +
-					"+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
-					"+-obsoletedBy:*" +
-					"+readPermission:public" +
-					"&rows=1" +
-					"&fl=beginDate" +
-					"&sort=beginDate+asc" +
-					"&wt=json&json.wrf=?";	
+			var query = this.get('query') +
+						"+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+						"+-obsoletedBy:*";
+			
+			var otherParams = "&rows=1" +
+							  "&fl=beginDate" +
+							  "&sort=beginDate+asc" +
+							  "&wt=json&json.wrf=?";	
+			
+			//Save this
+			this.getFirstBeginDateQuery = query; 
 			
 			//Query for the earliest beginDate
 			$.ajax({
-				url: appModel.get('queryServiceUrl') + query, 
+				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
 				jsonp: "json.wrf",
 				dataType: "jsonp",
 				success: function(data, textStatus, xhr) {
+					
+					//Is this the latest query?
+					if(decodeURIComponent(model.getFirstBeginDateQuery).replace(/\+/g, " ") != data.responseHeader.params.q)
+						return;
+						
 					if(!data.response.numFound){
 						//There were no begin dates found
 						model.set('totalBeginDates', 0);
@@ -136,22 +144,27 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			//Get the latest temporal data coverage year
-			var query = "q=" + this.get('query') +
-					"+(endDate:18*%20OR%20endDate:19*%20OR%20endDate:20*)+-obsoletedBy:*" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
-					"+readPermission:public" +
-					"&rows=1" +
-					"&fl=endDate" +
-					"&sort=endDate+desc" +
-					"&wt=json" +
-					"&json.wrf=?";
+			var query = this.get('query') + "+(endDate:18*%20OR%20endDate:19*%20OR%20endDate:20*)+-obsoletedBy:*"; //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+			var otherParams = "&rows=1" +
+							  "&fl=endDate" +
+							  "&sort=endDate+desc" +
+							  "&wt=json" +
+							  "&json.wrf=?";
+			
+			//Save this query so we know what the most recent one is
+			this.getLastEndDateQuery = query;
 			
 			//Query for the latest endDate
 			$.ajax({
-				url: appModel.get('queryServiceUrl') + query, 
+				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
 				jsonp: "json.wrf",
 				dataType: "jsonp",
 				success: function(data, textStatus, xhr) {
 					if(typeof data == "string") data = JSON.parse(data);
+					
+					//Is this the latest query?
+					if(decodeURIComponent(model.getLastEndDateQuery).replace(/\+/g, " ") != data.responseHeader.params.q)
+						return;
 					
 					if(!data.response.numFound){
 						//Save some falsey values if none are found
@@ -176,19 +189,17 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			//Build the query to get the format types
-			var query = "q=" + this.get('query') +
-								  "+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*" +
-								  "+readPermission:public" +
-								  "&rows=2" +
-							 	  "&group=true" +
-								  "&group.field=formatType" +
-								  "&group.limit=0" +
-								  "&sort=formatType%20desc" +			
-								  "&wt=json&json.wrf=?";
-			
+			var query = this.get('query') + "+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*";
+			var otherParams = "&rows=2" +
+						 	  "&group=true" +
+							  "&group.field=formatType" +
+							  "&group.limit=0" +
+							  "&sort=formatType%20desc" +			
+							  "&wt=json&json.wrf=?";
+
 			//Run the query
 			$.ajax({
-				url: appModel.get('queryServiceUrl') + query, 
+				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
 				jsonp: "json.wrf",
 				dataType: "jsonp",
 				success: function(data, textStatus, xhr) {
