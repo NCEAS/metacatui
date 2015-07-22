@@ -17,8 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 							  'click #myData' : 'myDataSearch',
 			'click .show-new-dataCatalogView' : 'showNewSearch',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
-			 		 	    'click .dropdown' : 'showDropdown'    
-			 		 		//'click .dropdown' : 'hideDropdown'
+			 		 	    'click .dropdown' : 'showDropdown'
 		},
 		
 		initialize: function () {
@@ -52,6 +51,11 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 					signInUrlLdap:  signInUrlLdap,
 					currentUrl: window.location.href,
 				}));
+			
+			//Initialize the fancybox elements
+			this.$(".fancybox").fancybox({
+				transitionIn: "elastic"
+			});
 		},
 		
 		triggerSearch: function() {
@@ -110,7 +114,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			if (e.keyCode != 13) return;
 			this.triggerSearch();
 		},
-		
+
 		toggleHeaderType: function(){
 			// set the navbar class based on what the page requested
 			var headerType = appModel.get('headerType');

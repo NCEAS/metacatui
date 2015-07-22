@@ -155,9 +155,32 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			else if((username.indexOf("CN=") > -1) && (username.indexOf(",") > -1))
 				fullName = username.substring(username.indexOf("CN=") + 3, username.indexOf(","));
 			else
-				fullName = username;
+				fullName = this.get("fullname") || username;
 			
 			this.set("fullName", fullName);
+		},
+		
+		loginLdap: function(formData, success, error){
+			if(!formData || !appModel.get("signInUrlLdap")) return false;
+			
+			var model = this;
+			
+			$.ajax({
+				type: "POST",
+				url: appModel.get("signInUrlLdap"), 
+				data: formData, 
+				success: function(){
+					if(success)
+						success(this);
+					
+					//Direct to the Ldap sign in
+					window.location = appModel.get("signInUrlLdap") + window.location.href;
+				},
+				error: function(){
+					if(error)
+						error(this);
+				}
+			});
 		},
 		
 		// call Metacat or the DataONE CN to validate the session and tell us the user's name

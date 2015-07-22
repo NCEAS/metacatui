@@ -224,15 +224,21 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 		},
 		
 		// ported the login.js to this view
-		submitLoginForm: function () {
-
-			var formObj = $("#loginForm")[0];
-			if (this.trimString(formObj.elements["loginAction"].value) != "Login")
-				return true;
+		submitLoginForm: function (formObj) {
+			
+			if((typeof formObj === "undefined") || !formObj){
+				var formObj = ($("#loginForm").length > 0) ? $("#loginForm")[0] : null;
+				if(!formObj) return false;
+			}
+			
 			// trim username & passwd:
-			var username = this.trimString(formObj.elements["uid"].value);
-			var organization = this.trimString(formObj.elements["organization"].value);
-			var password = this.trimString(formObj.elements["password"].value);
+			var usernameInput = formObj.uid,
+				orgInput  = formObj.organization || null,
+				passInput = formObj.password || null;
+			
+			var username = this.trimString(usernameInput.value),
+				organization = this.trimString(orgInput.value),
+				password = this.trimString(passInput.value);
 
 			if (username == "") {
 				alert("You must type a username. \n");
@@ -267,7 +273,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 
 			// create an area for temporarily stashing returned form
 			viewRef.$el.append("<div id='tempMetacatContainer' />");
-			
+						
 			// ajax call to submit the given form and then render the results in the content area
 			// use post to prevent passwords in the URL
 			$.ajax({

@@ -524,23 +524,23 @@
 			</li>
 		<% } else {
         	 if (signInUrl) { %>        	
-        		<li class="dropdown right">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-						Sign-in <i class="icon-unlock-alt"></i> <b class="icon-sort-down"></b>
-					</a>
-					<ul class="dropdown-menu">
-						
-						<li><a href="<%=signInUrl%>">use CILogon</a></li>
-	        			<li><a href="<%=signInUrlOrcid%>">use ORCID</a></li>
+        		<li class="right login">
+					<a href="#loginPopup" class="fancybox btn">Sign-in</a>
+				</li>
+				<div id="loginPopup" class="fancybox-inline">
+					<h2>Login</h2>
+					<ul class="list-group nav">
+						<li class="list-group-item"><a href="<%=signInUrl%>">Login with CILogon</a></li>
+	        			<li class="list-group-item"><a href="<%=signInUrlOrcid%>"><img src="./img/orcid_64x64.png" /> Login with ORCID iD</a></li>
 	        			
 	        			<% if (signInUrlLdap) { %> 
-		        			<li class="divider"></li>	        					        			
-		        			<li id="SignInLdap">
-			        				<form class="form-inline input-group" 
+		        			<li class="list-group-item">
+			        				<form id="SignInLdap" class="form-inline input-group" 
 				        				action="<%=signInUrlLdap%>" 
 				        				method="post" 
 				        				onsubmit="if (this.username.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.username.value + this.rdn.value;} return true;">
-			        					
+
+		        					    <legend>Login with existing account</legend>			        					
 			        					<input type="text" name="username" placeholder="Username"/>
 			        					<select name="rdn">
 			        						<option value=",o=unaffiliated,dc=ecoinformatics,dc=org">unaffiliated</option>
@@ -551,9 +551,9 @@
 			        					<input type="submit" value="Login" class="btn btn-primary"/>
 			        				</form>
 		        			</li>
-	        			<% } %>
-					</ul>
-				</li>
+        				<% } %>
+		        	</ul>
+				</div>
 		<%	} else if(signInUrlLdap) { %>
 	        	<li id="SignIn" class="share-feature"><a href="#share">Sign In</a></li>
 	   	<%  }

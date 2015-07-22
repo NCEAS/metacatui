@@ -240,6 +240,7 @@ define(['jquery',
 			
 			//Get the remaining height left based on the window size
 			var remainingHeight = $(window).outerHeight(true) - otherHeight;
+			if(remainingHeight <= 0) remainingHeight = $(window).outerHeight(true) || 300;
 			
 			//Adjust all elements with the .auto-height class
 			$(".auto-height").height(remainingHeight);
@@ -2519,7 +2520,7 @@ define(['jquery',
 			$("#map-container").addClass("loading");
 			this.$results.addClass("loading");
 			
-			this.$results.html(this.loadingTemplate());
+			this.$results.html(this.loadingTemplate({ msg: "Searching data..." }));
 		},
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 

@@ -264,46 +264,6 @@ Bold 700
 .accordion-heading a.accordion-toggle {
 	display: inline-block; 
 } 
-
-/* SHARE/UPLOAD, AND LOGIN FEATURES 
-* Choose to hide these features
-* -----------------------------------------------------*/
-.share-feature{
-	/* display: none; */ 
-}
-
-/* NOTIFICATION AREA CSS
- * -------------------------------------------------- */    
-  .notification {
-    margin: 50px auto;
-    font-size: 40px;
-  }
-  
-  .notification i{
-  	font-size: 40px;
-  	margin-left: 43%;
-  }
-  
-  .notification p{
-  	font-size: 1em;
-  	width: 350px;
-  	margin: 20px auto;
-  	display: block;
-  }
-  
-  .filter-contain .notification i{
-  	color: #999;
-  	font-size: .5em;
-  }
-  .filter-contain .notification p{
-		font-size: .3em;
-		line-height: 3em;
-		text-align: center;
-		width: auto;
-		color: #999;
-		margin: 0;
-  }
-
   
 /* FOOTER CSS
 -------------------------------------------------- */    
@@ -433,331 +393,297 @@ table th.btn-container .btn{
   
 /* THE NAVBAR
 -------------------------------------------------- */
-	.navbar .nav{
-		width: 100%;
-	}
-	.navbar .nav,
-	.navbar-upper,
-	.navbar-lower .nav{
-		transition: width 1s;
-		-webkit-transition: width 1s;
-	}
-	.navbar-lower .input-append{
-		margin-top: 5px;
-		margin-bottom: 5px;
-	}
-	.DataCatalog .navbar .nav,
-	.DataCatalog .navbar-upper .nav,
-	.DataCatalog .navbar-lower .nav{
-		width: 100%;
-	}
-	.DataCatalog .navbar{
-		margin-bottom: 0px;
-	}
-	
-	.navbar-inner{
-		background: rgba(102,0,51,1);
-		/*background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-		background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(102,0,51,1)), color-stop(44%, rgba(77,0,39,1)), color-stop(100%, rgba(51,0,26,1)));
-		background: -webkit-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-		background: -o-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-		background: -ms-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-		background: linear-gradient(to bottom, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#660033', endColorstr='#33001a', GradientType=0 );*/
-		border-radius: 0px;
-		border-width: 0px;
-	}
-	.navbar .nav > li > a {
-        color: #FFF;
-		text-shadow: none;
-		font-size: 1.2em;
-		font-weight: normal;
-    }
-    .navbar .nav > li > a:hover,
-    .navbar .nav > li > a:focus{
-    	color: rgb(0,255,255);
-    }
-    .navbar .nav li.dropdown.open>.dropdown-toggle, .navbar .nav li.dropdown.active>.dropdown-toggle, .navbar .nav li.dropdown.open.active>.dropdown-toggle{
-    	background-color: #440029;
-    	color: #FFF;
-    }
-	.navbar-lower{
-		width: 100%;
-		width: calc(100% - 40px);
-		min-height: 40px;
-		background-color: rgba(63, 0, 31, 1);
-		padding-left: 20px;
-		padding-right: 20px;
-	}
-	.navbar-lower .nav > li > a {
-		font-size: 1em;
-		font-weight: light;
-	}
-	.navbar .nav > .label{
-		font-size: .8em;
-		color: #FFF;
-		font-weight: light;
-		text-transform: uppercase;
-		line-height: 40px;
-		margin-left: 14px;
-		margin-right: 14px;
-	}
-    .navbar-upper{
-    	padding-left: 20px;
-    	padding-right: 20px;
-    }
-    .nav li.right{
-    	float: right;
-    }
-    .nav .logo > img{
-    	height: 36px;
-    }
-    
-    .navbar-lower > .nav > .input{
-    	margin-left: 40px;
-    }
-    .navbar-lower .input > form > label{
-	    color: rgba(203, 80, 138, 1);
-    }
-    .navbar-lower .input > form > input[type="text"]{
-    	background-image: url(../img/subtle-bg-magenta.png);
-    	background-repeat: repeat;
-    	background-size: 100%;
-    	background-color: transparent;
-    	border: 0px;
-    	color: white;
-    }
-	.navbar-lower .input > form > .btn {
-		background-color:#91285F;
-		color:#ffffff;
-		text-shadow:0px 1px 0px #3f0020;
-		border: 0px;
-		border-radius: 0px;
-		border-top-right-radius: 2px;
-  		border-bottom-right-radius: 2px;
-	}  
-    .navbar-lower .input > form > input[type="text"]::-webkit-input-placeholder{
-    	color: rgba(203, 80, 138, 1);
-    }
-    .navbar-lower .input > form > input[type="text"]:-moz-placeholder{
-    	color: rgba(203, 80, 138, 1);
-    }
-    .navbar-lower .input > form > input[type="text"]::-moz-placeholder{
-    	color: rgba(203, 80, 138, 1);
-    }
-    .navbar-lower .input > form > input[type="text"]:-ms-input-placeholder{
-    	color: rgba(203, 80, 138, 1);
-    }
-    
-    /*Share Your Data button */
-    #share-data-view{
-    	display: none;
-    }
-    
-    #share{
-    	position: fixed;
-    	top: 60px;
-    	left: -160px;
-    	z-index: 999;
-    	width: auto;
-    	margin: 0px;
-    	border-radius: 0px;
-    	-webkit-border-radius: 0px;
-    	-moz-border-radius: 0px;
-    	padding: 0px 5px;
-    	line-height: 33px;
-    	-webkit-box-shadow: 3px -1px 15px rgba(50, 50, 50, 0.51);
-		-moz-box-shadow:    3px -1px 15px rgba(50, 50, 50, 0.51);
-		box-shadow:         3px -1px 15px rgba(50, 50, 50, 0.51);
-		transition: all .5s;
-    }
-    
-    #share > i{
-    	margin-left: 10px;
-    	font-size: 24px;
-    	color: #EEE;
-    }
-    
-    #share:hover{
-    	left: 0px;
-    }
-    
-    .show-new-dataCatalogView{
-    	cursor: pointer;
-    }
-	.soc-media{
-		float: right;
-		margin-top: 18px;
-	}
-	.navbar-upper > .logo {
-		margin: 10px;
-		max-height: 83px;
-		float: left;
-	}
-    
-    /* Depending on the headerType, these classes apply */
-    
-    .navbar-inner > ul{
-    	margin: 0px;
-    }
-    
-	 #Navbar form {
-      margin: 0px 0px 0px 0px;
-      padding: 0px 0px 0px 0px;
-    }
-    
-    /* Logged-in view and user controls in navbar */
-    #Navbar i .user {
-      opacity: .6;
-    }
-    /** Backbone override for dropdowns so they dsplay on hover rather than click **/    
-    #Navbar .dropdown-toggle > .icon-sort-down{
-    	font-size: 15px;
-    	width: 5px;
-    }
-    #Navbar .dropdown-menu > li > a:hover{
-    	background-color: #1C6E84;
-    	background-image: none;
-    }
-    .navbar .nav>li>.dropdown-menu:after{
-    	left: 80%;
-    }
-    .dropdown-menu .sub-menu {
-	    left: 100%;
-	    position: absolute;
-	    top: 0;
-	    visibility: hidden;
-	    margin-top: -1px;
-	}	
-	.dropdown-menu li:hover .sub-menu {
-	    visibility: visible;
-	}
-	.dropdown:hover .dropdown-menu{
-	    display: block;
-	}	
-	.dropdown:hover .dropdown-menu.hidden,
-	.dropdown-menu.hidden{
-		display: none;
-	}	
-	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
-	    margin-top: 0;
-	}
-	.navbar .right .dropdown-menu{
-	    left: -100px;
-	    max-width: 170px;
-	}
-    .dropdown-header{
-		margin-left: 20px;
-		font-size: 12px;
-		text-transform: uppercase;
-	}
-	#SignInLdap{
-		padding: 10px;
-	}
-	#SignInLdap input{
-		width: 90%;
-		width: calc(100% - 20px);
-		margin-bottom: 5px;
-	}
-	#SignInLdap select{
-		width: calc(100% - 6px);
-		margin-bottom: 5px;
-	}
-	
-    /* Search bar in nav bar */   
-    .navbar .input-append{
-    	margin-bottom: 0px;
-    }
-    #search_txt{
-		float: left;
-    }  
-    #search_btn{
-		height: 16px;
-		border-radius: 0px 4px 4px 0px;
-		-webkit-border-radius: 0px 4px 4px 0px;
-		-moz-border-radius: 0px 4px 4px 0px;
-		padding: 5px 7px 7px 7px;
-		float: left;
-		margin-left: -5px;
-    }
-    #search_btn i{
-    	font-size: .8em;
-    	color: #999;
-    }
-	
-	.navbar .sub-menu:before {
-	    border-bottom: 7px solid trans	parent;
-	    border-left: none;
-	    border-right: 7px solid rgba(0, 0, 0, 0.2);
-	    border-top: 7px solid transparent;
-	    left: -7px;
-	    top: 10px;
-	}
-	.navbar .sub-menu:after {
-	    border-top: 6px solid transparent;
-	    border-left: none;
-	    border-right: 6px solid #fff;
-	    border-bottom: 6px solid transparent;
-	    left: 10px;
-	    top: 11px;
-	    left: -6px;
-	}
-	
-	.dropdown-menu{
-		border-radius: 0px;
-		-moz-border-radius: 0px;
-		-webkit-border-radius: 0px;
-	}
-	.navbar .nav>li>.dropdown-menu:before,
-	.navbar .nav>li>.dropdown-menu:after{
-		display: none;
-	}
-	.mega-dropdown-menu .mega-nav > li > a,
-	.tb-megamenu .dropdown-menu a {
-	  display: block;
-	  padding: 3px 5px;
-	  clear: both;
-	  font-weight: normal;
-	  line-height: 1.5em;
-	  color: rgb(102, 0, 51);
-	  white-space: normal;
-	  font-size: .9em;
-	}
-	.mega-dropdown-menu .mega-nav > li > a:hover,
-	.tb-megamenu .dropdown-menu a:hover {
-		color: #1C6E84;
-		text-decoration: none;
-	}
-	.mega-dropdown-menu .mega-nav > li{
-	  list-style: none;
-	  border-bottom: 1px solid #EEE;
-	  padding-bottom: 3px;
-	  margin-bottom: 3px;
-	}
-	.mega-dropdown-menu .mega-nav > li:last-child{
-		border-bottom: 0px;
-	}
-	.mega-dropdown-menu .mega-nav > li > a.mega-group-title,
-	.tb-megamenu .dropdown-menu a.mega-group-title {
-	  color: #1C6E84;
-	  font-weight: bold;
-	  text-transform: uppercase;
-	  font-size: .9em;
-	  display: block;
-	}
-	.nav img.float-left-80 {
-	  float: left;
-	  padding: 1em;
-	  width: 120px;
-	}
-	.tb-megamenu .mega-inner {
-  		padding: 5px;
-	}
-	.tb-megamenu .nav li.dropdown.open .caret,
-	.navbar .nav li.dropdown>.dropdown-toggle .caret,
-	.tb-megamenu .dropdown-menu a.mega-group-title .caret{
-		display: none;
-	}
+.navbar .nav{
+	width: 100%;
+}
+.navbar .nav,
+.navbar-upper,
+.navbar-lower .nav{
+	transition: width 1s;
+	-webkit-transition: width 1s;
+}
+.navbar-lower .input-append{
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.DataCatalog .navbar .nav,
+.DataCatalog .navbar-upper .nav,
+.DataCatalog .navbar-lower .nav{
+	width: 100%;
+}
+.DataCatalog .navbar{
+	margin-bottom: 0px;
+}
+
+.navbar-inner{
+	background: rgba(102,0,51,1);
+	/*background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(102,0,51,1)), color-stop(44%, rgba(77,0,39,1)), color-stop(100%, rgba(51,0,26,1)));
+	background: -webkit-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+	background: -o-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+	background: -ms-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+	background: linear-gradient(to bottom, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#660033', endColorstr='#33001a', GradientType=0 );*/
+	border-radius: 0px;
+	border-width: 0px;
+}
+.navbar .nav > li > a {
+       color: #FFF;
+	text-shadow: none;
+	font-size: 1.2em;
+	font-weight: normal;
+   }
+   .navbar .nav > li > a:hover,
+   .navbar .nav > li > a:focus{
+   	color: rgb(0,255,255);
+   }
+   .navbar .nav li.dropdown.open>.dropdown-toggle, .navbar .nav li.dropdown.active>.dropdown-toggle, .navbar .nav li.dropdown.open.active>.dropdown-toggle{
+   	background-color: #440029;
+   	color: #FFF;
+   }
+.navbar-lower{
+	width: 100%;
+	width: calc(100% - 40px);
+	min-height: 40px;
+	background-color: rgba(63, 0, 31, 1);
+	padding-left: 20px;
+	padding-right: 20px;
+}
+.navbar-lower .nav > li > a {
+	font-size: 1em;
+	font-weight: light;
+}
+.navbar .nav > .label{
+	font-size: .8em;
+	color: #FFF;
+	font-weight: light;
+	text-transform: uppercase;
+	line-height: 40px;
+	margin-left: 14px;
+	margin-right: 14px;
+}
+   .navbar-upper{
+   	padding-left: 20px;
+   	padding-right: 20px;
+   }
+   .nav li.right{
+   	float: right;
+   }
+   .nav .logo > img{
+   	height: 36px;
+   }
+   
+   .navbar-lower > .nav > .input{
+   	margin-left: 40px;
+   }
+   .navbar-lower .input > form > label{
+    color: rgba(203, 80, 138, 1);
+   }
+   .navbar-lower .input > form > input[type="text"]{
+   	background-image: url(../img/subtle-bg-magenta.png);
+   	background-repeat: repeat;
+   	background-size: 100%;
+   	background-color: transparent;
+   	border: 0px;
+   	color: white;
+   }
+.navbar-lower .input > form > .btn,
+.navbar-lower .nav > li > a.btn {
+	background-color:#91285F;
+	background-image: none;
+	color:#ffffff;
+	text-shadow:0px 1px 0px #3f0020;
+	border: 0px;
+}  
+.navbar-lower .nav > li > a.btn{
+	padding: 5px 10px;
+}
+.navbar-lower .input-append > form > .btn{
+	border-radius: 0px;
+	border-top-right-radius: 2px;
+ 	border-bottom-right-radius: 2px;
+}
+   .navbar-lower .input > form > input[type="text"]::-webkit-input-placeholder{
+   	color: rgba(203, 80, 138, 1);
+   }
+   .navbar-lower .input > form > input[type="text"]:-moz-placeholder{
+   	color: rgba(203, 80, 138, 1);
+   }
+   .navbar-lower .input > form > input[type="text"]::-moz-placeholder{
+   	color: rgba(203, 80, 138, 1);
+   }
+   .navbar-lower .input > form > input[type="text"]:-ms-input-placeholder{
+   	color: rgba(203, 80, 138, 1);
+   }
+   
+.show-new-dataCatalogView{
+	cursor: pointer;
+}
+.soc-media{
+	float: right;
+	margin-top: 18px;
+}
+.navbar-upper > .logo {
+	margin: 10px;
+	max-height: 83px;
+	float: left;
+}
+   
+/* Depending on the headerType, these classes apply */
+
+.navbar-inner > ul{
+	margin: 0px;
+}
+
+/** Backbone override for dropdowns so they dsplay on hover rather than click **/    
+   #Navbar .dropdown-toggle > .icon-sort-down{
+   	font-size: 15px;
+   	width: 5px;
+   }
+   #Navbar .dropdown-menu > li > a:hover{
+   	background-color: transparent;
+   	background-image: none;
+   }
+   .navbar .nav>li>.dropdown-menu:after{
+   	left: 80%;
+   }
+   .dropdown-menu{
+	border-radius: 0px;
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
+}
+   .dropdown-menu .sub-menu {
+    left: 100%;
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+    margin-top: -1px;
+}	
+.dropdown-menu li:hover .sub-menu {
+    visibility: visible;
+}
+.dropdown:hover .dropdown-menu{
+    display: block;
+}	
+.dropdown:hover .dropdown-menu.hidden,
+.dropdown-menu.hidden{
+	display: none;
+}	
+.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
+    margin-top: 0;
+}
+   .dropdown-header{
+	margin-left: 20px;
+	font-size: 12px;
+	text-transform: uppercase;
+}
+.navbar .nav>li>.dropdown-menu:before,
+.navbar .nav>li>.dropdown-menu:after{
+	display: none;
+}
+/** The login form from the navbar **/
+.fancybox-inline{
+	width: 315px;
+}
+.fancybox-inline > a{
+	color: rgb(102, 0, 51);
+}
+.fancybox-inline .alert{
+	width: auto;
+	width: calc(100% - 73px);
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+	font-size: .9em;
+}
+.fancybox-inline form {
+ 	width: 92%;
+	left: 5%;
+ 	position: relative;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+.fancybox-inline form input{
+	width: 90%;
+	width: calc(100% - 20px);
+	margin-bottom: 5px;
+}
+.fancybox-inline form select{
+	width: calc(100% - 6px);
+	margin-bottom: 5px;
+}
+.fancybox-inline form input.btn{
+	width: 95%;
+	width: calc(100% - 5px);
+}
+.list-group > .divider {
+  list-style: none;
+  border-bottom: 1px solid #DDD;
+}
+.navbar .sub-menu:before {
+    border-bottom: 7px solid trans	parent;
+    border-left: none;
+    border-right: 7px solid rgba(0, 0, 0, 0.2);
+    border-top: 7px solid transparent;
+    left: -7px;
+    top: 10px;
+}
+.navbar .sub-menu:after {
+    border-top: 6px solid transparent;
+    border-left: none;
+    border-right: 6px solid #fff;
+    border-bottom: 6px solid transparent;
+    left: 10px;
+    top: 11px;
+    left: -6px;
+}
+.mega-dropdown-menu .mega-nav > li > a,
+.tb-megamenu .dropdown-menu a {
+  display: block;
+  padding: 3px 5px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.5em;
+  color: rgb(102, 0, 51);
+  white-space: normal;
+  font-size: .9em;
+}
+.mega-dropdown-menu .mega-nav > li > a:hover,
+.tb-megamenu .dropdown-menu a:hover,
+.navbar .dropdown-menu > li > a:hover {
+	color: #1C6E84;
+	text-decoration: none;
+}
+.mega-dropdown-menu .mega-nav > li{
+  list-style: none;
+  border-bottom: 1px solid #EEE;
+  padding-bottom: 3px;
+  margin-bottom: 3px;
+}
+.mega-dropdown-menu .mega-nav > li:last-child{
+	border-bottom: 0px;
+}
+.mega-dropdown-menu .mega-nav > li > a.mega-group-title,
+.tb-megamenu .dropdown-menu a.mega-group-title {
+  color: #1C6E84;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: .9em;
+  display: block;
+}
+.nav img.float-left-80 {
+  float: left;
+  padding: 1em;
+  width: 120px;
+}
+.tb-megamenu .mega-inner {
+ 		padding: 5px;
+}
+.tb-megamenu .nav li.dropdown.open .caret,
+.navbar .nav li.dropdown>.dropdown-toggle .caret,
+.tb-megamenu .dropdown-menu a.mega-group-title .caret{
+	display: none;
+}
     
 /* OTHER NAVIGATION
 -------------------------------------------------- */

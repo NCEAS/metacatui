@@ -9,6 +9,7 @@
 	color: #999;
 }
 
+
 /****************************************** 
 ** General Structure ***
 ******************************************/
@@ -79,7 +80,9 @@ article.container {
 .nav-tabs li i{
 	margin-right: 5px;
 }
-
+.nav > li > form{
+	margin-bottom: 0px;
+}
 .nav .input > form > label,
 .header .input > form > label{
    	display: inline-block;
@@ -102,12 +105,43 @@ article.container {
 	cursor:pointer;
 	text-decoration:none;
 }  
+.nav .right .dropdown-menu {
+  left: -20px;
+}
 
 /****************************************** 
 ** Titles ***
 ******************************************/
 h3{
 	font-size: 1.5em;
+}
+
+
+/****************************************** 
+** Notifications and Alerts ***
+******************************************/
+.notification i{
+	font-size: 40px;
+	margin-left: 43%;
+}
+.notification p{
+	font-size: 1em;
+	text-align: center;
+	width: 100%;
+	margin: 20px auto;
+	display: block;
+}
+.filter-contain .notification i{
+  	color: #999;
+  	font-size: .5em;
+}
+.filter-contain .notification p{
+	font-size: .3em;
+	line-height: 3em;
+	text-align: center;
+	width: auto;
+	color: #999;
+	margin: 0;
 }
 
 /****************************************** 
@@ -183,8 +217,9 @@ h3{
 .result-row .info-icons .label{
 	background-color: #5E8497;
 }
-#results.loading .notification{
+.search-results.loading .notification{
   margin-top: 20px;
+  min-height: 700px;
 }
 .result-row .route-to-metadata{
 	cursor: pointer;
@@ -647,8 +682,22 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .expand-collapse .spacer{
 	margin-right: 10px;
 }
-
-
+/****************************************** 
+************ Popup Login **************
+******************************************/	
+.fancybox-inline{
+	background-color: #FFF;
+	padding: 20px;
+	display: none;
+}
+.nav.list-group > .list-group-item img{
+	width: 32px;
+	height: auto;
+	padding: 16px;
+}
+.fancybox-inline .notification {
+  min-height: 150px;
+}
 /****************************************** 
 ** The Metadata and MetadataIndex View **
 ******************************************/	

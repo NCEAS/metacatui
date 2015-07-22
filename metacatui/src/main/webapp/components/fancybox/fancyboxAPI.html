@@ -1,0 +1,414 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="imagetoolbar" content="no" />
+	<title>Fancybox - Fancy jQuery lightbox alternative| API &amp; Options</title>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/fancybox-1.3.4/jquery.easing-1.3.pack.js"></script>
+	<script type="text/javascript" src="/js/fancybox-1.3.4/jquery.mousewheel-3.0.4.pack.js"></script>
+
+	<script type="text/javascript" src="/js/fancybox-1.3.4/jquery.fancybox-1.3.4.js"></script>
+	<link rel="stylesheet" type="text/css" href="/js/fancybox-1.3.4/jquery.fancybox-1.3.4.css" media="screen" />
+
+	<link rel="stylesheet" type="text/css" href="/css/style.css" media="screen" />
+	<script type="text/javascript" src="/js/web.js?m=20100203"></script>
+<!--[if IE 6]>
+	<script src="/js/DD_belatedPNG_0.0.8a-min.js"></script>
+	<script>
+		DD_belatedPNG.fix('.png_bg');
+	</script>
+<![endif]-->
+	<script src="/js/cufon-yui.js" type="text/javascript"></script>
+	<script src="/js/Museo_300_300.font.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		Cufon.replace('h1');
+	</script>
+</head>
+<body>
+	<div id="page">
+		<div id="header">
+		    <h1><a href="/">fancybox</a></h1>
+		    <ul>
+				<li><a  href="/home">Home</a></li>
+				<li><a  href="/howto">How to use</a></li>
+				<li><a class="active" href="/api">API &amp; Options</a></li>
+				<li><a  href="/blog">Tips &amp; Tricks</a></li>
+				<li><a  href="/faq">FAQ</a></li>
+				<li><a  href="/support">Support</a></li>
+			</ul>
+		</div>
+
+	 	<div id="col_wrap">
+	 		<div id="col_top"></div>
+			<div id="col_left">
+	            <div class="warn">
+	<h2>Warning!</h2>
+	<p>
+		These are options for 1.3+, for versions 1.2+ <a href="http://fancybox.net/api/126">look there</a>
+	</p>
+	<p style="font-size:130%;">
+		Documention for <b>fancyBox2</b> is available at <a href="http://fancyapps.com/fancybox/#docs">fancyapps.com</a>
+	</p>
+</div>
+
+
+<h1>Available options</h1>
+
+<p>
+	You can pass options as key/value object to fancybox() function or modify them at the bottom of FancyBox JS file.
+</p>
+ 
+<table width="100%" class="options" cellpadding="0" cellspacing="0">
+<thead>
+<tr>
+	<th width="120">Key</th>
+	<th width="80">Default value</th>
+	<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+	<td>padding</td>
+	<td>10</td>
+	<td>Space between FancyBox wrapper and content</td>
+</tr>
+<tr>
+	<td>margin</td>
+	<td>20</td>
+	<td>Space between viewport and FancyBox wrapper</td>
+</tr>
+<tr>
+	<td>opacity</td>
+	<td>false</td>
+	<td>When true, transparency of content is changed for elastic transitions</td>
+</tr>
+<tr>
+	<td>modal</td>
+	<td>false</td>
+	<td>When true, 'overlayShow' is set to 'true' and 'hideOnOverlayClick', 'hideOnContentClick', 'enableEscapeButton', 'showCloseButton' are set to 'false'</td>
+</tr>
+<tr>
+	<td>cyclic</td>
+	<td>false</td>
+	<td>When true, galleries will be cyclic, allowing you to keep pressing next/back.</td>
+</tr>
+<tr class="sep">
+	<td>scrolling</td>
+	<td>'auto'</td>
+	<td>Set the overflow CSS property to create or hide scrollbars. Can be set to 'auto', 'yes', or 'no'</td>
+</tr>
+
+<tr>
+	<td>width</td>
+	<td>560</td>
+	<td>Width for content types 'iframe' and 'swf'. Also set for inline content if 'autoDimensions' is set to 'false'</td>
+</tr>
+<tr class="sep">
+	<td>height</td>
+	<td>340</td>
+	<td>Height for content types 'iframe' and 'swf'. Also set for inline content if 'autoDimensions' is set to 'false'</td>
+</tr>
+
+<tr>
+	<td>autoScale</td>
+	<td>true</td>
+	<td>If true, FancyBox is scaled to fit in viewport </td>
+</tr>
+<tr>
+	<td>autoDimensions</td>
+	<td>true</td>
+	<td>For inline and ajax views, resizes the view to the element recieves. Make sure it has dimensions otherwise this will give unexpected results</td>
+</tr>
+<tr class="sep">
+	<td>centerOnScroll</td>
+	<td>false</td>
+	<td>When true, FancyBox is centered while scrolling page</td>
+</tr>
+
+
+<tr>
+	<td>ajax</td>
+	<td>{ }</td>
+	<td>Ajax options <br /><small> Note: 'error' and 'success' will be overwritten by FancyBox </small></td>
+</tr>
+<tr class="sep">
+	<td>swf</td>
+	<td>{wmode: 'transparent'}</td>
+	<td>Params to put on the swf object</td>
+</tr>
+
+
+<tr>
+	<td>hideOnOverlayClick</td>
+	<td>true</td>
+	<td>Toggle if clicking the overlay should close FancyBox</td>
+</tr>
+<tr class="sep">
+	<td>hideOnContentClick</td>
+	<td>false</td>
+	<td>Toggle if clicking the content should close FancyBox</td>
+</tr>
+
+<tr>
+	<td>overlayShow</td>
+	<td>true</td>
+	<td>Toggle overlay</td>
+</tr>
+<tr>
+	<td>overlayOpacity</td>
+	<td>0.3</td>
+	<td>Opacity of the overlay (from 0 to 1; default - 0.3)</td>
+</tr>
+<tr class="sep">
+	<td>overlayColor</td>
+	<td>'#666'</td>
+	<td>Color of the overlay</td>
+</tr>
+
+
+<tr>
+	<td>titleShow</td>
+	<td>true</td>
+	<td>Toggle title</td>
+</tr>
+<tr>
+	<td>titlePosition</td>
+	<td>'outside'</td>
+	<td>The position of title. Can be set to 'outside', 'inside' or 'over'</td>
+</tr>
+<tr class="sep">
+	<td>titleFormat</td>
+	<td>null</td>
+	<td>Callback to customize title area. You can set any html - custom image counter or even custom navigation</td>
+</tr>
+
+<tr>
+	<td>transitionIn, transitionOut</td>
+	<td>'fade'</td>
+	<td>The transition type. Can be set to 'elastic', 'fade' or 'none'</td>
+</tr>
+<tr>
+	<td>speedIn, speedOut</td>
+	<td>300</td>
+	<td>Speed of the fade and elastic transitions, in milliseconds</td>
+</tr>
+<tr>
+	<td>changeSpeed</td>
+	<td>300</td>
+	<td>Speed of resizing when changing gallery items, in milliseconds</td>
+</tr>
+<tr>
+	<td>changeFade</td>
+	<td>'fast'</td>
+	<td>Speed of the content fading while changing gallery items</td>
+</tr>
+<tr class="sep">
+	<td>easingIn, easingOut</td>
+	<td>'swing'</td>
+	<td>Easing used for elastic animations</td>
+</tr>
+<tr>
+	<td>showCloseButton</td>
+	<td>true</td>
+	<td>Toggle close button</td>
+</tr>
+<tr>
+	<td>showNavArrows</td>
+	<td>true</td>
+	<td>Toggle navigation arrows</td>
+</tr>
+<tr class="sep">
+	<td>enableEscapeButton</td>
+	<td>true</td>
+	<td>Toggle if pressing Esc button closes FancyBox</td>
+</tr>
+
+<tr>
+	<td>onStart</td>
+	<td>null</td>
+	<td>Will be called right before attempting to load the content</td>
+</tr>
+<tr>
+	<td>onCancel</td>
+	<td>null</td>
+	<td>Will be called after loading is canceled</td>
+</tr>
+<tr>
+	<td>onComplete</td>
+	<td>null</td>
+	<td>Will be called once the content is displayed</td>
+</tr>
+<tr>
+	<td>onCleanup</td>
+	<td>null</td>
+	<td>Will be called just before closing</td>
+</tr>
+<tr>
+	<td>onClosed</td>
+	<td>null</td>
+	<td>Will be called once FancyBox is closed</td>
+</tr>
+</tbody>
+</table>
+
+<h1>Advanced options</h1>
+
+<table width="100%" class="options" cellpadding="0" cellspacing="0">
+<thead>
+<tr>
+	<th width="120">Key</th>
+	<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+	<td>type</td>
+	<td>Forces content type. Can be set to 'image', 'ajax', 'iframe', 'swf' or 'inline'</td>
+</tr>
+<tr>
+	<td>href</td>
+	<td>Forces content source</td>
+</tr>
+<tr>
+	<td>title</td>
+	<td>Forces title</td>
+</tr>
+<tr>
+	<td>content</td>
+	<td>Forces content (can be any html data)</td>
+</tr>
+<tr>
+	<td>orig</td>
+	<td>Sets object whos position and dimensions will be used by 'elastic' transition</td>
+</tr>
+<tr>
+	<td>index</td>
+	<td>Custom start index of manually created gallery <small>(since 1.3.1)</small></td>
+</tr>
+</tbody>
+</table>
+
+
+<br />
+
+<h1>Public Methods</h1>
+
+<p>FancyBox provides some function to work with it</p>
+
+<table width="100%" class="options" cellpadding="0" cellspacing="0">
+<thead>
+<tr>
+	<th width="150">Method</th>
+	<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+	<td>$.fancybox.showActivity</td>
+	<td>Shows loading animation</td>
+</tr>
+<tr>
+	<td>$.fancybox.hideActivity</td>
+	<td>Hides loading animation</td>
+</tr>
+<tr>
+	<td>$.fancybox.next</td>
+	<td>Displays the next gallery item</td>
+</tr>
+<tr>
+	<td>$.fancybox.prev</td>
+	<td>Displays the previous gallery item</td>
+</tr>
+<tr>
+	<td>$.fancybox.pos</td>
+	<td>Displays item by index from gallery</td>
+</tr>
+<tr>
+	<td>$.fancybox.cancel</td>
+	<td>Cancels loading content</td>
+</tr>
+<tr>
+	<td>$.fancybox.close</td>
+	<td>Hides FancyBox <br /><small>Within an iframe use - parent.$.fancybox.close();</small></td>
+</tr>
+<tr>
+	<td>$.fancybox.resize</td>
+	<td>Auto-resizes FancyBox height to match height of content </td>
+</tr>
+<tr>
+	<td>$.fancybox.center</td>
+	<td>Centers FancyBox in viewport</td>
+</tr>
+</tbody>
+</table>
+			</div>
+
+			<div id="col_right">
+				<div id="col_sep">
+<p>
+	<b><a href="http://fancyapps.com/fancybox/">Download fancyBox2 from http://fancyapps.com</a></b>
+</p>
+<p><br /></p>
+
+					<!-- <a href="http://fancybox.googlecode.com/files/jquery.fancybox-1.3.4.zip"><img alt="Download" src="/img/download.gif" /></a> -->
+
+					<p><b>Past Release</b><br /><a href="http://fancybox.googlecode.com/files/jquery.fancybox-1.3.4.zip">Version</b> 1.3.4 (2010/11/11)</a></p>
+
+					<p><a href="/changelog/">Changelog</a></p>
+
+					<form id="donate_form" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+						<p>
+							<input type="hidden" name="cmd" value="_donations" />
+							<input type="hidden" name="business" value="janis.skarnelis@gmail.com" />
+							<input type="hidden" name="item_name" value="FancyBox" />
+							<input type="hidden" name="amount" value="10.00" />
+							<input type="hidden" name="no_shipping" value="0" />
+							<input type="hidden" name="no_note" value="1" />
+							<input type="hidden" name="currency_code" value="EUR" />
+							<input type="hidden" name="tax" value="0" />
+							<input type="hidden" name="lc" value="LV" />
+							<input type="hidden" name="bn" value="PP-DonationsBF" />
+
+
+										</p>
+						<p>
+							<b><a id="donate" href="javascript:;" style="font-size:120%">Donate</a></b>
+						</p>
+					</form>
+
+			   </div>
+
+			   <div id="adblock">
+
+					<h2>Our Sponsors</h2>
+
+<script type="text/javascript" src="http://cdn.adpacks.com/adpacks.js?legacyid=1255513&zoneid=1386&key=439877dd0926c71f4ca8c574860a4ef8&serve=C6SI42Y&placement=fancyboxnet&circle=dev" id="_adpacks_js"></script>
+
+
+
+
+	            </div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+
+		<div id="col_bottom"></div>
+
+		<div id="footer">
+		    <p>Contact: info <span>[at]</span>  fancybox <span>[dot]</span> net &nbsp;&nbsp; /please, don`t send emails for help, use <a href="http://groups.google.com/group/fancybox">support forum</a> instead</p>
+	        <p>(c) 2008 - 2015 / fancybox.net</p>
+		</div>
+	</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4230547-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
