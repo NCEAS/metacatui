@@ -17,12 +17,23 @@
 			<div class="panel panel-default" id="identity-mod-container">
 			  <div class="panel-heading">
 			  	<h4 class="panel-title">Edit information</h4>
-			  	<div class="input-append">
-				  	<input class="input-medium" type="text" placeholder="Given Name" id="mod-givenName">
-				  	<input class="input-medium" type="text" placeholder="Surname" id="mod-familyName">
-				  	<input class="input-medium" type="text" placeholder="Email" id="mod-email">
-					<button class="btn" id="mod-save-btn"><i class="icon-save"></i></button>
-			  	</div>
+			  	<form>
+				  	<div class="form-group">
+				  		<label class="control-group span2" for="mod-givenName">First name</label>
+					  	<input class="input-large" type="text" placeholder="First name" name="mod-givenName" id="mod-givenName">
+				  	</div>
+				  	<div class="form-group">
+				  		<label class="control-group span2" for="mod-familyName">Last name</label>
+					  	<input class="input-large" type="text" placeholder="Last name" name="mod-familyName" id="mod-familyName">
+				  	</div>
+				  	<div class="form-group">
+				  		<label class="control-group span2" for="mod-email">Email</label>
+					  	<input class="input-large" type="text" placeholder="Email" name="mod-email" id="mod-email">
+				  	</div>
+				  	<div class="form-group">
+				  		<button class="btn" id="mod-save-btn">Save <i class="icon-save"></i></button>
+				  	</div>				  	
+				</form>
 			  </div>
 			</div>
 			
