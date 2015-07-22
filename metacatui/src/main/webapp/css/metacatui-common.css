@@ -8,7 +8,10 @@
 .subtle{
 	color: #999;
 }
-
+.badge{
+	margin-left: 10px;
+	margin-right: 10px;
+}
 
 /****************************************** 
 ** General Structure ***
@@ -143,6 +146,13 @@ h3{
 	color: #999;
 	margin: 0;
 }
+.alert h4{
+	margin-top: 10px;
+}
+.alert .icon-left{
+	float: left; 
+	margin-right: 10px;
+}
 
 /****************************************** 
 ** Icons ***
@@ -163,7 +173,12 @@ h3{
 	float: left;
 	height: 20px;
 }
-
+.icon-positive{
+	color: green;
+}
+.icon-negative{
+	color: #FF0000;
+}
 /****************************************** 
 ** Results and Result Rows ***
 ******************************************/
@@ -1023,6 +1038,9 @@ textarea.token{
 	width: 100%;
 	margin-top: 20px;
 }
+.form-group{
+	clear: both;
+}
 
 /****************************************** 
 ** Panels ***
@@ -1034,6 +1052,16 @@ textarea.token{
   border-radius: 4px;
   -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
   box-shadow: 0 1px 1px rgba(0,0,0,.05);
+	transition: box-shadow 2s ease-out;
+	-o-transition: box-shadow 2s ease-out;
+	-moz-transition: box-shadow 2s ease-out;
+	-webkit-transition: box-shadow 2s ease-out;
+	-ms-transition: box-shadow 2s ease-out;
+	-kthtml-transition: box-shadow 2s ease-out;
+	transition: box-shadow 2s ease-out;
+}
+.panel.highlight{
+	box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
 }
 .panel-default {
   border-color: #ddd;
@@ -1053,6 +1081,12 @@ textarea.token{
 }
 .panel-body {
   padding: 15px;
+}
+.panel-body .panel{
+	margin-top: 30px;
+}
+.panel-body form{
+	margin-bottom: 0px;
 }
 .panel>.list-group, .panel>.panel-collapse>.list-group {
   margin-bottom: 0;
@@ -1081,8 +1115,8 @@ textarea.token{
 	border-left-width: 5px;
 }
 .list-group-item > .list-group {
-  padding-left: 20px;
-  margin-bottom: 0px;
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 .list-group-item > .list-group > .list-group-item:last-child{
 	border-bottom-width: 0px;

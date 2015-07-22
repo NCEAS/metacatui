@@ -4,20 +4,26 @@
 	  	Settings
 	  </div>
 	 	<ul class="list-group">
-	    	<li class="list-group-item active subsection-link" data-section="identity"><a href="#" class="subsection-link" data-section="identity">Identities</a></li>
+	    	<li class="list-group-item active subsection-link" data-section="account"><a href="#" class="subsection-link" data-section="account">My account</a></li>
 	    	<li class="list-group-item subsection-link" data-section="groups"><a href="#" class="subsection-link" data-section="groups">Groups</a></li>
 	    	<li class="list-group-item subsection-link" data-section="apps"><a href="#" class="subsection-link" data-section="apps">Apps</a></li>
 	  	</ul>
 	</div>
 	
-	<div class="span8 subsection" data-section="identity">
+	<div class="span8 subsection" data-section="account">
 		
 		<div id="registered-user-container">
 			
-			<div class="panel panel-default" id="identity-mod-container">
+			<div class="panel panel-default">
 			  <div class="panel-heading">
 			  	<h4 class="panel-title">Edit information</h4>
+			  </div>
+			  <div class="panel-body" id="identity-mod-container">
 			  	<form>
+			  		<div class="form-group">
+			  			<label class="control-group span2">Username</label>
+			  			<span class="span10" id="mod-username"><%=username%></span>
+			  		</div>
 				  	<div class="form-group">
 				  		<label class="control-group span2" for="mod-givenName">First name</label>
 					  	<input class="input-large" type="text" placeholder="First name" name="mod-givenName" id="mod-givenName">
@@ -31,42 +37,57 @@
 					  	<input class="input-large" type="text" placeholder="Email" name="mod-email" id="mod-email">
 				  	</div>
 				  	<div class="form-group">
+				  		<div class="span2"></div>
 				  		<button class="btn" id="mod-save-btn">Save <i class="icon-save"></i></button>
 				  	</div>				  	
 				</form>
 			  </div>
 			</div>
 			
-			<div class="panel panel-default" id="identity-list-container">
+			<div class="panel panel-default">
 			  <div class="panel-heading">
-			  	<h4 class="panel-title">My Other Identities</h4>
+			  	<h4 class="panel-title">My Other Accounts</h4>
+			  </div>
+			  <div class="panel-body">
+			  	<div id="identity-list-container"></div>
+			  
+			  	<div class="panel panel-default">
+				  <div class="panel-heading">
+				  	<h4 class="panel-title" id="pending-list-heading">Pending Requests</h4>
+				  </div>
+			 	  <div class="panel-body" id="pending-list-container">
+				  </div>
+			   </div>
+			   
+			   <div class="panel panel-default" data-subsection="add-account">
+				  <div class="panel-heading">
+				  	<h4 class="panel-title">Add Another Account</h4>
+				  </div>
+				  <div class="panel-body" id="identity-request-container">
+				  	<p>
+				  		If you have uploaded data with another account(s), you can link your accounts together so that you can log in with just one and view <strong>all</strong> your data.
+				  	</p>
+				  	<form>
+					  	<div class="input-append">
+					  		<label for="map-request-field">Other username</label>
+						  	<input class="input-xlarge" type="text" placeholder="Username or Name (cn=me, o=my org...)" id="map-request-field">
+							<button class="btn" id="map-request-btn"><i class="icon-plus"></i></button>
+					  	</div>
+					</form>
+				  </div>
+				</div>
+		   
 			  </div>
 			</div>
-	
-			<div class="panel panel-default" id="pending-list-container">
-			  <div class="panel-heading">
-			  	<h4 class="panel-title">Pending Identities</h4>
-			  </div>
-			</div>	
-		
 		</div>
-				
-		<div class="panel panel-default" id="identity-request-container">
-		  <div class="panel-heading">
-		  	<h4 class="panel-title">Add mapping</h4>
-		  	<div class="input-append">
-			  	<input class="input-xlarge" type="text" placeholder="Equivalent Identity (cn=me, o=my org...)" id="map-request-field">
-				<button class="btn" id="map-request-btn"><i class="icon-plus"></i></button>
-		  	</div>
-		  </div>
-		</div>
-		
 	</div>
 	
 	<div class="span8 subsection" data-section="groups">
-		<div class="panel panel-default" id="group-list-container">
+		<div class="panel panel-default">
 		  <div class="panel-heading">
 		  	<h4 class="panel-title">My Groups</h4>
+		  </div>
+		  <div class="panel-body" id="group-list-container">
 		  </div>
 		</div>
 	</div>
@@ -77,7 +98,7 @@
 		  	<h4 class="panel-title">Generate Token</h4>
 		  </div>
 		  <div class="panel-body" id="token-generator-container">
-		  	<button class="token-generator" type="button" name="token-generator">Generate Token</button>
+		  	<input class="token-generator btn" type="button" name="token-generator">Generate Token</input>
 		  </div>
 		</div>
 		  

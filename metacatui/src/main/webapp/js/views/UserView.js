@@ -19,12 +19,12 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			"click .subsection-link"       : "switchToSubSection",
 			"click .list-group-item.group" : "toggleMemberList",
 			"click .token-generator"       : "getToken",
-			"click #map-request-btn"			: "mapRequest",
-			"click #mod-save-btn"				: "saveUser",
-			"click .confirm-request-btn"		: "confirmRequest",
-			"click .reject-request-btn"			: "rejectRequest",
-			"click .remove-identity-btn"		: "removeIdentity",
-			
+			"click #map-request-btn"	   : "mapRequest",
+			"click #mod-save-btn"		   : "saveUser",
+			"click .confirm-request-btn"   : "confirmRequest",
+			"click .reject-request-btn"	   : "rejectRequest",
+			"click .remove-identity-btn"   : "removeIdentity",
+			"click [highlight-subsection]" : "highlightSubSection"
 		},
 		
 		initialize: function(){			
@@ -146,7 +146,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		
 		renderSettings: function(){
 			//Insert the template first
-			this.sectionHolder.append(this.settingsTemplate());
+			this.sectionHolder.append(this.settingsTemplate({
+				username: this.model.get("username")
+			}));
 			
 			//Listen for the group list to draw the group list
 			this.listenTo(this.model, "change:groups", this.insertGroupList);
@@ -171,21 +173,39 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.setUpAutocomplete();
 		},
 		
+		highlightSubSection: function(e){
+			e.preventDefault();
+			if(!e.target) return;
+			
+			//Get the subsection name
+			var subsectionName = $(e.target).attr("highlight-subsection");
+			if(!subsectionName) return;
+			
+			//Visually highlight the subsection
+			var subsection = this.$("[data-subsection='" + subsectionName + "']");
+			subsection.addClass("highlight");
+			appView.scrollTo(subsection);
+			//Wait about a second and then remove the highlight style
+			window.setTimeout(function(){ subsection.removeClass("highlight"); }, 1500);
+		},
+		
 		insertGroupList: function(){
 			var groups = this.model.get("groups");
-			if(groups.length < 1) return;
 			
-			//Remove the group list if it was draw already so we don't do it twice
-			if(this.$("#group-list").length > 0) this.$("#group-list").detach();
-				
+			//Empty the container first
+			this.$("#group-list-container").empty();
+
 			//Create the list element
-			var groupList = $(document.createElement("ul")).addClass("list-group").attr("id", "group-list");
+			if(groups.length < 1)
+				var groupList = $(document.createElement("p")).text("You are not a member of any groups.");
+			else
+				var groupList = $(document.createElement("ul")).addClass("list-group").attr("id", "group-list");
 			
 			//Create a list item for each group
 			_.each(groups, function(group, i){
 				var listItem = $(document.createElement("li")).addClass("list-group-item group"),
 					link     = $(document.createElement("a")).attr("href", "#").attr("data-subject", group.subject).text(group.groupName),
-					icon     = $(document.createElement("i")).addClass("icon icon-expand-alt");
+					icon     = $(document.createElement("i")).addClass("icon icon-expand-alt tooltip-this").attr("data-title", "Expand").attr("data-placement", "top").attr("data-trigger", "hover");
 				$(groupList).append($(listItem).append($(link).prepend(icon)));
 				
 				//Create a list of member names
@@ -210,14 +230,15 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			var identities = this.model.get("identities");
 			
 			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
-			if(this.$("#identity-list").length > 0) this.$("#identity-list").detach();
-				
-			if (identities.length < 1) {
-				return;
-			}
+			this.$("#identity-list-container").empty();
 			
 			//Create the list element
-			var identityList = $(document.createElement("ul")).addClass("list-identity").attr("id", "identity-list");
+			if (identities.length < 1){
+				var highlightLink = $(document.createElement("a")).attr("href", window.location.hash + "/settings/add-account").attr("highlight-subsection", "add-account").text("here."),
+					identityList = $(document.createElement("p")).text("Your account is not mapped to any other accounts. Send a request below, ").append(highlightLink);
+			}
+			else
+				var identityList = $(document.createElement("ul")).addClass("list-identity").attr("id", "identity-list");
 			
 			//Create a list item for each identity
 			_.each(identities, function(identity, i){
@@ -237,21 +258,26 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			var pending = this.model.get("pending");
 			
 			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
-			if(this.$("#pending-list").length > 0) this.$("#pending-list").detach();
-				
-			if (pending.length < 1) {
-				return;
-			}
-			
+			this.$("#pending-list-container").empty();
+	
 			//Create the list element
-			var pendingList = $(document.createElement("ul")).addClass("list-identity").attr("id", "pending-list");
+			if (pending.length < 1)
+				var pendingList = $(document.createElement("p")).text("You have no pending username map requests.");
+			else{
+				this.$("#pending-list-container").prepend($(document.createElement("p")).text("You have " + pending.length + " new request to map accounts. If these requests are from you, accept them below. If you do not recognize a username, reject the request."));
+				var pendingList = $(document.createElement("ul")).addClass("list-identity").attr("id", "pending-list");
+				var pendingCount = $(document.createElement("span")).addClass("badge").attr("id", "pending-count").text(pending.length);
+				this.$("#pending-list-heading").append(pendingCount);
+			}
 			
 			//Create a list item for each pending id
 			_.each(pending, function(identity, i){
 				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
-					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity);				
-				var confirm = "<a href='#' class='confirm-request-btn' data-identity='" + identity + "'><i class='icon icon-check-sign'/></a>";
-				var reject = "<a href='#' class='reject-request-btn' data-identity='" + identity + "'><i class='icon icon-trash'/></a>";
+					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),				
+				    acceptIcon = $(document.createElement("i")).addClass("icon icon-check-sign icon-large icon-positive tooltip-this").attr("data-title", "Accept Request").attr("data-trigger", "hover").attr("data-placement", "top"),
+				    rejectIcon = $(document.createElement("i")).addClass("icon icon-trash icon-large icon-negative tooltip-this").attr("data-title", "Reject Request").attr("data-trigger", "hover").attr("data-placement", "top"),
+					confirm = $(document.createElement("a")).attr("href", "#").addClass('confirm-request-btn').attr("data-identity", identity).append(acceptIcon),
+					reject = $(document.createElement("a")).attr("href", "#").addClass("reject-request-btn").attr("data-identity", identity).append(rejectIcon);
 
 				$(pendingList).append(
 						$(listItem).append($(link))
@@ -394,13 +420,14 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			});
 		},
 		
-		showAlert: function(msg, clazz) {
-			var classes = 'alert-success';
-			if (clazz) {
-				classes = clazz;
-			}
+		showAlert: function(msg, classes, container) {
+			if(!classes)
+				var classes = 'alert-success';
+			if(!container)
+				var container = this.$el;
+
 			
-			this.$el.prepend(
+			$(container).prepend(
 					this.alertTemplate({
 						msg: msg,
 						classes: classes
@@ -420,7 +447,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				
 			var mapUrl = appModel.get("accountsUrl") + "pendingmap";
 				
-			var viewRef = this;
+			var viewRef = this,
+				container = this.$("#identity-request-container");
 			
 			// ajax call to map
 			$.ajax({
@@ -436,11 +464,13 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 					subject: equivalentIdentity
 				},
 				success: function(data, textStatus, xhr) {
-					viewRef.showAlert("Added mapping request for " + equivalentIdentity);
+					var message = "A username map request has been sent to " + equivalentIdentity +
+								  "<h4>Next step:</h4><p>Login with your other account and approve this request.</p>"
+					viewRef.showAlert(message, null, container);
 					model.getInfo();
 				},
 				error: function(data, textStatus, xhr) {
-					viewRef.showAlert(data.responseText, 'alert-error');
+					viewRef.showAlert(data.responseText, 'alert-error', container);
 					model.getInfo();
 				}
 			});
