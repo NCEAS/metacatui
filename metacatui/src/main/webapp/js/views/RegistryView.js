@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html'], 				
-	function($, _, Backbone, Registry, BootStrap, jQueryForm, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate) {
+define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform', 'text!templates/alert.html', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html'], 				
+	function($, _, Backbone, Registry, BootStrap, jQueryForm, AlertTemplate, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -8,12 +8,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 
 		el: '#Content',
 		
-		template: _.template(RegistryFields),
-		
+		template: _.template(RegistryFields),		
+		alertTemplate: _.template(AlertTemplate),		
 		loadingTemplate: _.template(LoadingTemplate),
-		
 		ldapAccountToolsTemplate: _.template(LdapAccountToolsTemplate),
-		
 		loginHeaderTemplate: _.template(LoginHeaderTemplate),
 				
 		registryUrl: null,
@@ -81,14 +79,16 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 						viewRef.fixModalLinks();
 						viewRef.modifyLoginForm();
 						viewRef.$el.hide();
-						viewRef.$el.fadeIn('slow');
+						viewRef.$el.fadeIn('slow', function(){
+							viewRef.trigger("postRender");
+						});						
 					}
 				});
 						
 			return this;
 		},
 		
-		verifyLoginStatus: function() {
+		verifyLoginStatus: function() { 
 			// CGI can be logged in, but JSESSIONID has expired
 			var registryEntryForm = $("#RegistryEntryForm");
 			
@@ -224,12 +224,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 		},
 		
 		// ported the login.js to this view
-		submitLoginForm: function (formObj) {
+		submitLoginForm: function (e) {
 			
-			if((typeof formObj === "undefined") || !formObj){
-				var formObj = ($("#loginForm").length > 0) ? $("#loginForm")[0] : null;
-				if(!formObj) return false;
-			}
+			var formObj = ($("#loginForm").length > 0) ? $("#loginForm")[0] : null;
+			if(!formObj) return false;
 			
 			// trim username & passwd:
 			var usernameInput = formObj.uid,
@@ -309,12 +307,28 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								// set the username in the appModel, that's all we have
 								appUserModel.set("username", username);
 								
+								viewRef.listenToOnce(appUserModel, "change:loggedIn", function(){
+									if(!appUserModel.loggedIn){
+										viewRef.listenTo(viewRef, "postRender", function(){
+											viewRef.$("#RegistryLogin").children(".alert-container").detach();
+											viewRef.$("#RegistryLogin").prepend(viewRef.alertTemplate({ 
+												msg: "Login failed. Please try again. ",
+												classes: "alert-error"
+											}));											
+										});
+									}
+									
+									//Rerender the page
+									uiRouter.navigate("share", {trigger: true});
+									viewRef.render();
+								});
+								
 								// trigger the check for logged in user
 								appUserModel.checkStatus();
 								
 								// then load the registry url again, now that we are logged in
-								uiRouter.navigate("share", {trigger: true});
-								viewRef.render();
+								//uiRouter.navigate("share", {trigger: true});
+								//viewRef.render();
 							}
 						});
 					} else {

@@ -123,9 +123,10 @@ h3{
 /****************************************** 
 ** Notifications and Alerts ***
 ******************************************/
-.notification i{
+.notification .icon{
 	font-size: 40px;
 	margin-left: 43%;
+	margin-top: 20%;
 }
 .notification p{
 	font-size: 1em;

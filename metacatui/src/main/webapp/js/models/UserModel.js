@@ -167,15 +167,16 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			$.ajax({
 				type: "POST",
-				url: appModel.get("signInUrlLdap"), 
+				url: appModel.get("signInUrlLdap") + window.location.href, 
 				data: formData, 
-				success: function(){
+			/*	success: function(data, textStatus, xhr){
 					if(success)
 						success(this);
 					
+					$("#SignInLdap")
 					//Direct to the Ldap sign in
-					window.location = appModel.get("signInUrlLdap") + window.location.href;
-				},
+					//window.location = appModel.get("signInUrlLdap") + window.location.href;
+				},*/
 				error: function(){
 					if(error)
 						error(this);
@@ -214,6 +215,13 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 							model.set("loggedIn", false);
 						
 						model.getInfo();
+					},
+					error: function(data, textStatus, xhr){
+						//User is not logged in
+						//model.set("loggedIn", false);
+						//model.set("username", model.defaults().username);
+						model.reset();
+						model.trigger("change:loggedIn");
 					}
 				});
 			} else {
@@ -270,6 +278,10 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			var payload = $.parseJSON(jws.parsedJWS.payloadS);
 			return payload;			
+		},
+		
+		reset: function(){
+			this.set(_.clone(this.defaults()));
 		}
 	});
 	
