@@ -48,7 +48,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		getInfo: function(){
 			var model = this;
 			
-			//Only proceed if the accounts API service is being utilized
+			//Only proceed if the accounts API service is being utilized and there is a username
+			if(!this.get("username")) return;
 			if(!appModel.get("accountsUrl")){
 				this.getNameFromSubject();
 				return;
