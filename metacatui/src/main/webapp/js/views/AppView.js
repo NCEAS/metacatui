@@ -195,7 +195,7 @@ define(['jquery',
 		},
 		
 		closePopovers: function(e){
-			if(this.currentView.closePopovers)
+			if(this.currentView && this.currentView.closePopovers)
 				this.currentView.closePopovers(e);
 		},
 		
