@@ -699,7 +699,7 @@ table th.btn-container .btn{
 /* METADATA VIEW CSS
 -------------------------------------------------- */
 	.metadata-index {
-		border: 1px solid #1C6E84;
+		/*border: 1px solid #1C6E84;*/
 		padding: 20px;
 		max-width: 940px;
 		border-radius: 7px;

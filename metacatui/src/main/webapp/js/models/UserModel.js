@@ -48,6 +48,13 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		getInfo: function(){
 			var model = this;
 			
+			//Only proceed if the accounts API service is being utilized and there is a username
+			if(!this.get("username")) return;
+			if(!appModel.get("accountsUrl")){
+				this.getNameFromSubject();
+				return;
+			}
+			
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
@@ -55,6 +62,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				type: "GET",
 				url: url, 
 				success: function(data, textStatus, xhr) {	
+				
+					//Only proceed if the accounts API service is being utilized
+					if(appModel.get("pendingMapsUrl")){
 					
 					//Get the pending requests			
 					$.ajax({

@@ -308,7 +308,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								appUserModel.set("username", username);
 								
 								viewRef.listenToOnce(appUserModel, "change:loggedIn", function(){
-									if(!appUserModel.loggedIn){
+									if(!appUserModel.get("loggedIn")){
 										viewRef.listenTo(viewRef, "postRender", function(){
 											viewRef.$("#RegistryLogin").children(".alert-container").detach();
 											viewRef.$("#RegistryLogin").prepend(viewRef.alertTemplate({ 
@@ -376,7 +376,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					viewRef.$('#tempMetacatContainer').html(data);
 					
 					// the Metacat logout form is now in the main content for us to work with
-					var metacatUrl = viewRef.$("form").attr("action");
+					var metacatUrl = appModel.get("metacatUrl") || viewRef.$("form").attr("action");
 					
 					// Success?
 					if (metacatUrl) {
