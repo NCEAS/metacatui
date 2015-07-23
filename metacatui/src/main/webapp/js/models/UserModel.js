@@ -48,6 +48,12 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		getInfo: function(){
 			var model = this;
 			
+			//Only proceed if the accounts API service is being utilized
+			if(!appModel.get("accountsUrl")){
+				this.getNameFromSubject();
+				return;
+			}
+			
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
@@ -56,24 +62,27 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				url: url, 
 				success: function(data, textStatus, xhr) {	
 					
-					//Get the pending requests			
-					$.ajax({
-						url: appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(model.get("username")),
-						success: function(data, textStatus, xhr){
-							//Reset the equivalent id list so we don't just add it to it with push()
-							model.set("pending", model.defaults().pending);
-							var pending = model.get("pending");
-							_.each($(data).find("person"), function(person, i) {
-								var subject = $(person).find("subject").text();
-								if (subject.toLowerCase() != model.get("username").toLowerCase()) {
-									pending.push(subject);
-								}
-							});
-							model.set("pending", pending);	
-							model.trigger("change:pending"); //Trigger the change event
-						}
-					});
+					//Only proceed if the accounts API service is being utilized
+					if(appModel.get("pendingMapsUrl")){
 					
+						//Get the pending requests			
+						$.ajax({
+							url: appModel.get("pendingMapsUrl") + encodeURIComponent(model.get("username")),
+							success: function(data, textStatus, xhr){
+								//Reset the equivalent id list so we don't just add it to it with push()
+								model.set("pending", model.defaults().pending);
+								var pending = model.get("pending");
+								_.each($(data).find("person"), function(person, i) {
+									var subject = $(person).find("subject").text();
+									if (subject.toLowerCase() != model.get("username").toLowerCase()) {
+										pending.push(subject);
+									}
+								});
+								model.set("pending", pending);	
+								model.trigger("change:pending"); //Trigger the change event
+							}
+						});
+					}
 					
 					//Reset the group list so we don't just add it to it with push()
 					model.set("groups", model.defaults().groups);
@@ -191,6 +200,13 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 							model.set("loggedIn", false);
 						
 						model.getInfo();
+					},
+					error: function(data, textStatus, xhr){
+						//User is not logged in
+						//model.set("loggedIn", false);
+						//model.set("username", model.defaults().username);
+						model.reset();
+						model.trigger("change:loggedIn");
 					}
 				});
 			} else {
@@ -247,6 +263,10 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			var payload = $.parseJSON(jws.parsedJWS.payloadS);
 			return payload;			
+		},
+		
+		reset: function(){
+			this.set(_.clone(this.defaults()));
 		}
 	});
 	
