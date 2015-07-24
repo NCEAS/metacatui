@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 	var RegistryView = Backbone.View.extend({
 
 		el: '#Content',
+		loginEl: '#RegistryLogin',
 		
 		template: _.template(RegistryFields),		
 		alertTemplate: _.template(AlertTemplate),		
@@ -111,6 +112,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 		augementForm: function() {
 			// want to add fields to the form automatically
 			var registryEntryForm = $("#RegistryEntryForm");
+			var loginForm = $(this.loginEl);
 			
 			// if we have the registry form we can add to it
 			if (registryEntryForm.length) {
@@ -133,6 +135,23 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 				var formOptions = registryModel.get("formOptions");
 				registryEntryForm.find("#keyword").replaceWith(this.template({formOptions: formOptions}));
 				
+			}
+			else if(loginForm.length){
+				//Enter help items for login inputs
+				var orgLabel = this.$("form div.text-left:contains('Organization')");
+				if(!orgLabel) return;
+				
+				//Choose unaffiliated as the default, to help the user
+				if($("select[name='organization']").children("option[value='unaffiliated']").length)
+					$("select[name='organization']").val("unaffiliated");
+				
+				var helpIcon = $(document.createElement("i"))
+									.addClass("tooltip-this icon icon-question-sign")
+									.attr("data-title", "If you signed up for an account here, or you're unsure what to choose, choose 'unaffiliated'")
+									.attr("data-placement", "top")
+									.attr("data-trigger", "hover click");
+				orgLabel.append(helpIcon);
+				helpIcon.tooltip();
 			}
 		},
 		
@@ -229,26 +248,25 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			var formObj = ($("#loginForm").length > 0) ? $("#loginForm")[0] : null;
 			if(!formObj) return false;
 			
+			//Remove the alert message
+			this.$(this.loginEl).children(".alert-container").detach();
+			this.$(".has-error").removeClass("has-error");
+			
 			// trim username & passwd:
 			var username = this.trimString(formObj.elements["uid"].value);
 			var organization = this.trimString(formObj.elements["organization"].value);
 			var password = this.trimString(formObj.elements["password"].value);
 
 			if (username == "") {
-				alert("You must type a username. \n");
-				formObj.elements["uid"].focus();
+				this.showAlert(formObj.elements["uid"], "Please enter a username.");			
 				return false;
 			}
-
 			if (organization == "") {
-				alert("You must select an organization. \n");
-				formObj.elements["organization"].focus();
+				this.showAlert(formObj.elements["organization"], "You must select an organization.");
 				return false;
 			}
-
 			if (password == "") {
-				alert("You must type a password. \n");
-				formObj.elements["password"].focus();
+				this.showAlert(formObj.elements["password"], "You must type a password.");
 				return false;
 			}
 
@@ -306,8 +324,8 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								viewRef.listenToOnce(appUserModel, "change:loggedIn", function(){
 									if(!appUserModel.get("loggedIn")){
 										viewRef.listenTo(viewRef, "postRender", function(){
-											viewRef.$("#RegistryLogin").children(".alert-container").detach();
-											viewRef.$("#RegistryLogin").prepend(viewRef.alertTemplate({ 
+											viewRef.$(viewRef.loginEl).children(".alert-container").detach();
+											viewRef.$(viewRef.loginEl).prepend(viewRef.alertTemplate({ 
 												msg: "Login failed. Please try again. ",
 												classes: "alert-error"
 											}));											
@@ -463,6 +481,21 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			this.$el.html(this.loadingTemplate({
 				msg: msg
 			}));
+		},
+		
+		showAlert: function(input, message){
+			var msg = message || "Please enter all required fields.";
+			
+			this.$(this.loginEl).prepend(this.alertTemplate({ 
+				msg: msg,
+				classes: "alert-error"
+			}));
+			
+			//Style the input as an error.
+			$(input).parent().parent(".row-fluid").addClass("has-error"); //For Metacat 2.4.X and before
+			
+			//Focus on the input
+			$(input).focus();			
 		},
 		
 		scrollToTop: function() {
