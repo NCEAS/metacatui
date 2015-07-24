@@ -40,6 +40,7 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			annotatorUrl: null,
 			accountsUrl: null,
+			pendingMapsUrl: null,
 			prov: false
 		},
 				
@@ -76,6 +77,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('tokenUrl', this.get('baseUrl') + '/portal/token');
 				this.set("prov", true);
 				this.set('resolveServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
+				this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap");
 			}
 			
 			this.on("change:pid", this.changePid);
