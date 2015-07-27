@@ -674,7 +674,6 @@ define(['jquery',
 			                "image/png",
 			                "image/svg xml",
 			                "image/svg+xml",
-			                "image/tiff",
 			                "image/bmp"];
 			
 			//Does this data object match one of these IDs?

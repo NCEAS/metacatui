@@ -72,7 +72,6 @@ define(['jquery', 'underscore', 'backbone'],
 			                "image/png",
 			                "image/svg xml",
 			                "image/svg+xml",
-			                "image/tiff",
 			                "image/bmp"];
 			//The list of formatIds that are images
 			var pdfIds = ["application/pdf"];	

@@ -725,9 +725,9 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 #Content.no-stylesheet > .citation,
 #Metadata  > .container > .row-fluid > .citation,
 #Metadata  > .container > .row-fluid > form > .citation{
-	font-size: 1.8em;
+	font-size: 1.3em;
 	line-height: 1.7em;
-	margin-bottom: 40px;
+	margin-bottom: 20px;
 	border: 0px;
 	box-shadow: none;
 	-webkit-box-shadow: none;
@@ -805,7 +805,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 /**----------------------------------------**/
 .citation ~ .logo{
-  max-width: 90px;
+  max-width: 70px;
   display: inline-block;
   float: right;
   margin-bottom: 10px;
@@ -908,9 +908,6 @@ table.download-contents {
 }
 .download-contents th{
 	font-weight: normal;
-}
-.download-contents .icon{
-	font-size: 1.5em;
 }
 .download-contents .btn .icon,
 .download-contents .preview .icon{
