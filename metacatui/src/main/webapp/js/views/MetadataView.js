@@ -749,9 +749,19 @@ define(['jquery',
 			if(link.length > 0){
 				//Get the container element
 				var container  = $(link).parents(".entitydetails"); 
-				if(container.length < 1) 
+				
+				if(container.length < 1){
 					//backup - find the parent of this link that is a direct child of the form element
-					container = _.intersection($(link).parents("form").children(), $(link).parents());
+					var firstLevelContainer = _.intersection($(link).parents("form").children(), $(link).parents());
+					//Find the controls-well inside of that first level container, which is the well that contains info about this data object
+					if(firstLevelContainer.length > 0)
+						container = $(firstLevelContainer).children(".controls-well");
+							
+					if((container.length < 1) && (firstLevelContainer.length > 0))
+						container = firstLevelContainer;
+					
+					$(container).addClass("entitydetails");
+				}
 				
 				return container;
 			}	
@@ -804,7 +814,7 @@ define(['jquery',
 				//Insert the data display HTML and the anchor tag to mark this spot on the page 
 				if(container){
 					if((type == "image") || (type == "PDF")){
-						if($(container).children("label"))
+						if($(container).children("label").length > 0)
 							$(container).children("label").first().after(dataDisplay);
 						else
 							$(container).prepend(dataDisplay);
