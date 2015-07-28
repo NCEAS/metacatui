@@ -117,6 +117,9 @@ define(['jquery',
 								//Get the package details from the index, too
 								viewRef.getPackageDetails();
 								
+								// is this the latest version? (includes DOI link when needed)
+								viewRef.showLatestVersion();
+								
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 								
@@ -127,10 +130,7 @@ define(['jquery',
 							}
 						});
 			}
-			else this.renderMetadataFromIndex();
-			
-			// is this the latest version? (includes DOI link when needed)
-			this.showLatestVersion(pid);		
+			else this.renderMetadataFromIndex();		
 						
 			return this;
 		},
@@ -147,6 +147,7 @@ define(['jquery',
 			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
 			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageDetails);
+			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
 			
 			//Add the metadata HTML
 			this.$el.html(metadataFromIndex.render().el);
@@ -431,7 +432,7 @@ define(['jquery',
 									model: metadataModel, 
 									createLink: false }).render().el;
 			$(this.citationEl).replaceWith(newCitationEl);
-			this.citationEl = newCitationEl;
+			this.citationEl = newCitationEl;			
 		},
 		
 		insertDataSource: function(){
@@ -616,8 +617,10 @@ define(['jquery',
 					if (identifier) {
 						
 						var populateTemplate = function(auth) {
+							if(!viewRef.citationEl) viewRef.getCitation();
+							
 							// TODO: include SystemMetadata details						
-							viewRef.$el.find("#viewMetadataCitationLink").after(
+							$(viewRef.citationEl).before(
 								viewRef.doiTemplate({
 									isAuthorized: auth,
 									identifier: identifier,
@@ -655,11 +658,15 @@ define(['jquery',
 		},
 		
 		insertEditLink: function(pid) {
-			this.$el.find("#viewMetadataCitationLink").after(
+			if(!this.citationEl){
+				this.getCitation();
+				if(!this.citationEl) return false;
+			}
+			
+			$(this.citationEl).before(
 					this.editMetadataTemplate({
 						identifier: pid
 					}));
-			//this.$el.find("#viewMetadataCitationLink").after("<a href='#share/modify/" + pid + "'>Edit</a>");
 		},
 		
 		/*
@@ -1140,6 +1147,9 @@ define(['jquery',
 		
 		// this will lookup the latest version of the PID
 		showLatestVersion: function(pid, traversing) {
+			if((typeof pid === "undefined") || !pid)
+				var pid = this.pid || appModel.get("pid");
+	
 			var obsoletedBy = null,
 				encodedPid = encodeURIComponent(pid);
 			
