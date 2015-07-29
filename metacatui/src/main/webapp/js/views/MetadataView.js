@@ -33,6 +33,8 @@ define(['jquery',
 	var MetadataView = Backbone.View.extend({
 		
 		subviews: [],
+		
+		model: null,
 
 		el: '#Content',
 		
@@ -53,9 +55,7 @@ define(['jquery',
 		mapTemplate: _.template(MapTemplate),
 				
 		objectIds: [],
-		
-		DOI_PREFIXES: ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."],
-		
+				
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 			"click #publish" : "publish",
@@ -117,6 +117,9 @@ define(['jquery',
 								//Get the package details from the index, too
 								viewRef.getPackageDetails();
 								
+								// is this the latest version? (includes DOI link when needed)
+								viewRef.showLatestVersion();
+								
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 								
@@ -127,10 +130,7 @@ define(['jquery',
 							}
 						});
 			}
-			else this.renderMetadataFromIndex();
-			
-			// is this the latest version? (includes DOI link when needed)
-			this.showLatestVersion(pid);		
+			else this.renderMetadataFromIndex();		
 						
 			return this;
 		},
@@ -147,6 +147,7 @@ define(['jquery',
 			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
 			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageDetails);
+			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
 			
 			//Add the metadata HTML
 			this.$el.html(metadataFromIndex.render().el);
@@ -254,10 +255,15 @@ define(['jquery',
 			
 			//Create a model representing the data package
 			this.packageModel = new Package();
+			this.listenToOnce(this.packageModel, 'complete', function(){
+				var metadataModel = _.findWhere(viewRef.packageModel.get("members"), { id: pid });
+				viewRef.model = metadataModel;
+			});
 			this.listenToOnce(this.packageModel, 'complete', this.getEntityNames);
 			this.listenToOnce(this.packageModel, 'complete', this.insertPackageDetails);
 			this.listenToOnce(this.packageModel, 'complete', this.insertCitation);
 			this.listenToOnce(this.packageModel, 'complete', this.insertDataSource);
+			this.listenToOnce(this.packageModel, 'complete', this.insertControls);
 			this.listenToOnce(nodeModel, 'change:members',  this.insertDataSource);
 			this.packageModel.getMembersByMemberID(pid);
 		},
@@ -430,8 +436,12 @@ define(['jquery',
 			var newCitationEl = new CitationView({
 									model: metadataModel, 
 									createLink: false }).render().el;
-			$(this.citationEl).replaceWith(newCitationEl);
-			this.citationEl = newCitationEl;
+			var citationContainer = $(document.createElement("div")).addClass("citation-container").append(newCitationEl);
+			
+			//Insert the citation into the page
+			$(this.citationEl).replaceWith(citationContainer);
+			
+			this.citationEl = newCitationEl;			
 		},
 		
 		insertDataSource: function(){
@@ -442,7 +452,7 @@ define(['jquery',
 			var thisDoc = _.findWhere(this.packageModel.get("members"), {id: this.pid});
 			if(!thisDoc) return false;
 			
-			var dataSource = _.findWhere(nodeModel.get("members"), {identifier: thisDoc.get("datasource")});
+			var dataSource = nodeModel.getMember(thisDoc);
 			
 			if(dataSource && dataSource.logo){
 				//Insert the data source template
@@ -452,6 +462,52 @@ define(['jquery',
 				this.$(".popover-this").popover();
 				this.$(".tooltip-this").tooltip();
 			}
+		},
+		
+		/*
+		 * Checks the authority for the logged in user for this dataset 
+		 * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
+		 */
+		insertControls: function(){
+			//Do not show user controls for older versions of data sets
+			if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
+				return false;
+			
+			//Get the HTML elements we will use to insert the controls
+			var insertNear = this.$el.children().first(); 
+				
+			if(this.citationEl && ($(this.citationEl).parents(".citation-container").length > 0))
+				insertNear = $(this.citationEl).parents(".citation-container");				
+			
+			//Save some references
+			var pid     = this.model.get("id") || this.pid,
+				model   = this.model,
+				viewRef = this;
+
+			this.listenTo(this.model, "change:isAuthorized", function(){
+				if(!model.get("isAuthorized")) return false;
+
+				//Insert the controls container
+				var controlsEl = $(document.createElement("div")).addClass("authority-controls inline-buttons");
+				$(insertNear).before(controlsEl);
+	
+				//Insert an Edit button
+				controlsEl.append(
+					viewRef.editMetadataTemplate({
+						identifier: pid
+					}));
+				
+				//Insert a Publish button if its not already published with a DOI	
+				if(!model.isDOI()){					
+					//Insert the template
+					controlsEl.append(
+						viewRef.doiTemplate({
+							isAuthorized: true,
+							identifier: pid
+						}));
+				}
+			});
+			this.model.checkAuthority();
 		},
 		
 		/*
@@ -562,106 +618,6 @@ define(['jquery',
 			}
 		},
 		
-		// checks if the pid is already a DOI
-		isDOI: function(pid) {
-			for (var i=0; i < this.DOI_PREFIXES.length; i++) {
-				if (pid.toLowerCase().indexOf(this.DOI_PREFIXES[i].toLowerCase()) == 0) {
-					return true;
-				}
-			}
-			return false;
-				
-		},
-		
-		// this will insert the DOI publish button
-		insertDoiButton: function(pid) {
-						
-			// first check if already a DOI
-			if (this.isDOI(pid)) {
-				return;
-			}
-			
-			var encodedPid = encodeURIComponent(pid);
-
-			// see if the user is authorized to update this object
-			var authServiceUrl = appModel.get('authServiceUrl');
-
-			// look up the SystemMetadata
-			var metaServiceUrl = appModel.get('metaServiceUrl');
-			if((typeof metaServiceUrl === "undefined") || !metaServiceUrl) return;
-
-			// systemMetadata to render
-			var identifier = null;
-			var formatId = null;
-			var size = null;
-			var checksum = null;
-			var rightsHolder = null;
-			var submitter = null;
-			
-			var viewRef = this;
-						
-			// get the /meta for the pid
-			$.get(
-				metaServiceUrl + encodedPid,
-				function(data, textStatus, xhr) {
-					
-					// the response should have all the elements we want
-					identifier = $(data).find("identifier").text();
-					formatId = $(data).find("formatId").text();
-					size = $(data).find("size").text();
-					checksum = $(data).find("checksum").text();
-					rightsHolder = $(data).find("rightsHolder").text();
-					submitter = $(data).find("submitter").text();
-
-					if (identifier) {
-						
-						var populateTemplate = function(auth) {
-							// TODO: include SystemMetadata details						
-							viewRef.$el.find("#viewMetadataCitationLink").after(
-								viewRef.doiTemplate({
-									isAuthorized: auth,
-									identifier: identifier,
-									formatId: formatId,
-									size: size,
-									checksum: checksum,
-									rightsHolder: rightsHolder,
-									submitter: submitter
-								})
-							);
-						};
-						
-						// are we authorized to publish?
-						$.ajax({
-								url: authServiceUrl + encodedPid + "?action=changePermission",
-								type: "GET",
-								xhrFields: {
-									withCredentials: true
-								},
-								success: function(data, textStatus, xhr) {
-									populateTemplate(true);
-									viewRef.insertEditLink(pid);
-								},
-								error: function(xhr, textStatus, errorThrown) {
-									console.log('Not authorized to publish');
-								}
-							});
-					}
-					
-				}
-			);
-			
-			
-				
-		},
-		
-		insertEditLink: function(pid) {
-			this.$el.find("#viewMetadataCitationLink").after(
-					this.editMetadataTemplate({
-						identifier: pid
-					}));
-			//this.$el.find("#viewMetadataCitationLink").after("<a href='#share/modify/" + pid + "'>Edit</a>");
-		},
-		
 		/*
 		 * param dataObject - a SolrResult representing the data object returned from the index
 		 * returns - true if this data object is an image, false if it is other
@@ -674,7 +630,6 @@ define(['jquery',
 			                "image/png",
 			                "image/svg xml",
 			                "image/svg+xml",
-			                "image/tiff",
 			                "image/bmp"];
 			
 			//Does this data object match one of these IDs?
@@ -749,9 +704,19 @@ define(['jquery',
 			if(link.length > 0){
 				//Get the container element
 				var container  = $(link).parents(".entitydetails"); 
-				if(container.length < 1) 
+				
+				if(container.length < 1){
 					//backup - find the parent of this link that is a direct child of the form element
-					container = _.intersection($(link).parents("form").children(), $(link).parents());
+					var firstLevelContainer = _.intersection($(link).parents("form").children(), $(link).parents());
+					//Find the controls-well inside of that first level container, which is the well that contains info about this data object
+					if(firstLevelContainer.length > 0)
+						container = $(firstLevelContainer).children(".controls-well");
+							
+					if((container.length < 1) && (firstLevelContainer.length > 0))
+						container = firstLevelContainer;
+					
+					$(container).addClass("entitydetails");
+				}
 				
 				return container;
 			}	
@@ -804,7 +769,7 @@ define(['jquery',
 				//Insert the data display HTML and the anchor tag to mark this spot on the page 
 				if(container){
 					if((type == "image") || (type == "PDF")){
-						if($(container).children("label"))
+						if($(container).children("label").length > 0)
 							$(container).children("label").first().after(dataDisplay);
 						else
 							$(container).prepend(dataDisplay);
@@ -1000,26 +965,6 @@ define(['jquery',
 			}
 		},
 		
-		createThumbnail: function(id){
-			//Does the appModel point to a resolve URL from a DataONE CN?
-		/*	if(appModel.get("objectServiceUrl").indexOf("/resolve/") > -1){
-				
-				//Get the correct image URL from the HTTP response header
-				$.get(appModel.get("objectServiceUrl") + encodeURIComponent(id), function(data, textStatus, xhr){
-					var img = $(document.createElement("img"))
-	         				  .attr("src", appModel.get("objectServiceUrl") + encodeURIComponent(id))
-	         				  .addClass("thumbnail");
-		
-					
-					return "done";
-				});
-			}
-			else{
-				return "not needed";
-			}	
-*/
-		},
-		
 		replaceEcoGridLinks: function(pids){
 			var viewRef = this;
 			
@@ -1131,6 +1076,9 @@ define(['jquery',
 		
 		// this will lookup the latest version of the PID
 		showLatestVersion: function(pid, traversing) {
+			if((typeof pid === "undefined") || !pid)
+				var pid = this.pid || appModel.get("pid");
+	
 			var obsoletedBy = null,
 				encodedPid = encodeURIComponent(pid);
 			
@@ -1151,12 +1099,8 @@ define(['jquery',
 					if (traversing) {
 						viewRef.$el.find("#Metadata > .container").prepend(
 								viewRef.versionTemplate({pid: pid})
-						);
-								
-					} else {
-						// finally add the DOI button - this is the latest version
-						viewRef.insertDoiButton(pid);
-					}			
+						);			
+					}		
 				}
 			});	
 		},

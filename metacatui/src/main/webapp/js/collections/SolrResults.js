@@ -106,6 +106,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			if (this.header != null) {
 				this.header.set({"start" : this.start});
 			}
+
 			this.fetch({
 				data: {start: this.start}, 
 				jsonp: "json.wrf",
@@ -122,7 +123,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				}
 				this.header.set({"start" : this.start});
 			}
-			
+							
 			//Get the results!
 			this.fetch({
 				data: {start: this.start}, 
