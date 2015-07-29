@@ -551,10 +551,6 @@ define(['jquery',
 			_.each(this.packageModel.get("members"), function(member, i){
 				//var entityDetailsSection = view.$('.entitydetails[data-id="' + member.get("id") + '"]');
 				var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
-				
-				//Display the prov statement for this package member in it's entity details section
-				//var statement = new ProvStatement({model: member, relatedModels: view.packageModel.get("relatedModels")}).render().el;
-				//$(entityDetailsSection).append(statement);
 
 				//Retrieve the sources and derivations for this member
 				var memberSources 	  = member.get("provSources"),
@@ -571,6 +567,7 @@ define(['jquery',
 					});	
 					view.subviews.push(memberSourcesProvChart);
 					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
+					view.$("#Metadata").addClass("gutters");
 				}
 				if(memberDerivations.length){
 					//Make the derivation chart for this member
@@ -583,6 +580,7 @@ define(['jquery',
 					});	
 					view.subviews.push(memberDerivationsProvChart);
 					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
+					view.$("#Metadata").addClass("gutters");
 				}
 			});
 			
