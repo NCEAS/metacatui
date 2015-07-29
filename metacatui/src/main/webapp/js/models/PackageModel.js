@@ -49,7 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Get the id of the resource map for this member
 			var provFlList = appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,prov_instanceOfClass,' + provFlList +
+			var query = 'fl=resourceMap,read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,prov_instanceOfClass,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
 						'&wt=json' +
@@ -92,7 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,read_count_i,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,' + provFlList +
+			var query = 'fl=resourceMap,read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,' + provFlList +
 						'&rows=100' +
 						'&q=-obsoletedBy:*+%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
 						'&wt=json' +

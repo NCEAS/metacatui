@@ -1,57 +1,9 @@
 
-<a id="publish" class="share-feature btn btn-primary"
+<a id="publish" class="share-feature btn"
 <% if (!isAuthorized) {
 	print(' disabled="disabled" '); 
 	print(' rel="popover" data-placement="bottom" data-trigger="hover" data-content="Sign in to publish with DOI" '); 	
 } %> 
  pid="<%= identifier %>">Publish <i class="icon-share icon-white icon-large"></i></a>
 	
-	<!-- TODO: include these details -->
-	<!-- 		
-	<h2 class="nav-header">Object information</h2>
-	<ul id="systemMetadata" class="nav nav-list">
-		<li class="nav-header">Details</li>
-		<li>
-			<table class="table-striped">
-				<tbody>
-					<tr>
-						<td>Id</td>
-						<td><%= identifier %></td>
-					</tr>
-					<tr>
-						<td>Format</td>
-						<td><%= formatId %></td>
-					</tr>
-					<tr>
-						<td>Size</td>
-						<td><%= size %></td>
-					</tr>
-					<tr>
-						<td>Checksum</td>
-						<td><%= checksum %></td>
-					</tr>
-				</tbody>
-			</table>
-		</li>
-		<li class="nav-header">Access</li>
-		<li>
-			<table class="table-striped">
-				<tbody>
-					<tr>
-						<td>Owner</td>
-						<td><%= rightsHolder %></td>
-					</tr>
-					<tr>
-						<td>Submitter</td>
-						<td><%= submitter %></td>
-					</tr>
-					<tr>
-						<td>Additional</td>
-						<td>TBD</td>
-					</tr>
-				</tbody>
-			</table>
-		</li>
-	</ul>
-	-->
-
+	

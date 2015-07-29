@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone'],
 			size: 0,
 			type: null,
 			url: null,
+			obsoletedBy: null,
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
@@ -104,7 +105,41 @@ define(['jquery', 'underscore', 'backbone'],
 			else
 				this.set("url", appModel.get("objectServiceUrl") + this.get("id"));		
 		},
+		
+		// checks if the pid is already a DOI
+		isDOI: function() {
+			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."];
+			for (var i=0; i < DOI_PREFIXES.length; i++) {
+				if (this.get("id").toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0)
+					return true;
+			}
+			return false;
+		},
 
+		/* 
+		 * Checks if the currently-logged-in user is authorized to change permissions on this doc 
+		 */
+		checkAuthority: function(){
+			var authServiceUrl = appModel.get('authServiceUrl');
+			if(!authServiceUrl) return false;
+			
+			var model = this;
+			
+			$.ajax({
+				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=changePermission",
+				type: "GET",
+				xhrFields: {
+					withCredentials: true
+				},
+				success: function(data, textStatus, xhr) {
+					model.set("isAuthorized", true);
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					model.set("isAuthorized", false);
+				}
+			});
+		},
+		
 		/**** Provenance-related functions ****/
 		/*
 		 * Returns true if this provenance field points to a source of this data or metadata object 

@@ -33,6 +33,8 @@ define(['jquery',
 	var MetadataView = Backbone.View.extend({
 		
 		subviews: [],
+		
+		model: null,
 
 		el: '#Content',
 		
@@ -53,9 +55,7 @@ define(['jquery',
 		mapTemplate: _.template(MapTemplate),
 				
 		objectIds: [],
-		
-		DOI_PREFIXES: ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."],
-		
+				
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 			"click #publish" : "publish",
@@ -255,10 +255,15 @@ define(['jquery',
 			
 			//Create a model representing the data package
 			this.packageModel = new Package();
+			this.listenToOnce(this.packageModel, 'complete', function(){
+				var metadataModel = _.findWhere(viewRef.packageModel.get("members"), { id: pid });
+				viewRef.model = metadataModel;
+			});
 			this.listenToOnce(this.packageModel, 'complete', this.getEntityNames);
 			this.listenToOnce(this.packageModel, 'complete', this.insertPackageDetails);
 			this.listenToOnce(this.packageModel, 'complete', this.insertCitation);
 			this.listenToOnce(this.packageModel, 'complete', this.insertDataSource);
+			this.listenToOnce(this.packageModel, 'complete', this.insertControls);
 			this.listenToOnce(nodeModel, 'change:members',  this.insertDataSource);
 			this.packageModel.getMembersByMemberID(pid);
 		},
@@ -431,7 +436,11 @@ define(['jquery',
 			var newCitationEl = new CitationView({
 									model: metadataModel, 
 									createLink: false }).render().el;
-			$(this.citationEl).replaceWith(newCitationEl);
+			var citationContainer = $(document.createElement("div")).addClass("citation-container").append(newCitationEl);
+			
+			//Insert the citation into the page
+			$(this.citationEl).replaceWith(citationContainer);
+			
 			this.citationEl = newCitationEl;			
 		},
 		
@@ -443,7 +452,7 @@ define(['jquery',
 			var thisDoc = _.findWhere(this.packageModel.get("members"), {id: this.pid});
 			if(!thisDoc) return false;
 			
-			var dataSource = _.findWhere(nodeModel.get("members"), {identifier: thisDoc.get("datasource")});
+			var dataSource = nodeModel.getMember(thisDoc);
 			
 			if(dataSource && dataSource.logo){
 				//Insert the data source template
@@ -453,6 +462,48 @@ define(['jquery',
 				this.$(".popover-this").popover();
 				this.$(".tooltip-this").tooltip();
 			}
+		},
+		
+		insertControls: function(){
+			//Do not show user controls for older versions of data sets
+			if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
+				return false;
+			
+			//Get the HTML elements we will use to insert the controls
+			var insertAfter = this.$el.children().first(); 
+				
+			if(this.citationEl && ($(this.citationEl).parents(".citation-container").length > 0))
+				insertAfter = $(this.citationEl).parents(".citation-container");				
+			
+			//Save some references
+			var pid     = this.model.get("id") || this.pid,
+				model   = this.model,
+				viewRef = this;
+
+			this.listenTo(this.model, "change:isAuthorized", function(){
+				if(!model.get("isAuthorized")) return false;
+
+				//Insert the controls container
+				var controlsEl = $(document.createElement("div")).addClass("authority-controls inline-buttons");
+				$(insertAfter).after(controlsEl);
+	
+				//Insert an Edit button
+				controlsEl.append(
+					viewRef.editMetadataTemplate({
+						identifier: pid
+					}));
+				
+				//Insert a Publish button if its not already published with a DOI	
+				if(!model.isDOI()){					
+					//Insert the template
+					controlsEl.append(
+						viewRef.doiTemplate({
+							isAuthorized: true,
+							identifier: pid
+						}));
+				}
+			});
+			this.model.checkAuthority();
 		},
 		
 		/*
@@ -561,112 +612,6 @@ define(['jquery',
 					}
 				});
 			}
-		},
-		
-		// checks if the pid is already a DOI
-		isDOI: function(pid) {
-			for (var i=0; i < this.DOI_PREFIXES.length; i++) {
-				if (pid.toLowerCase().indexOf(this.DOI_PREFIXES[i].toLowerCase()) == 0) {
-					return true;
-				}
-			}
-			return false;
-				
-		},
-		
-		// this will insert the DOI publish button
-		insertDoiButton: function(pid) {
-						
-			// first check if already a DOI
-			if (this.isDOI(pid)) {
-				return;
-			}
-			
-			var encodedPid = encodeURIComponent(pid);
-
-			// see if the user is authorized to update this object
-			var authServiceUrl = appModel.get('authServiceUrl');
-
-			// look up the SystemMetadata
-			var metaServiceUrl = appModel.get('metaServiceUrl');
-			if((typeof metaServiceUrl === "undefined") || !metaServiceUrl) return;
-
-			// systemMetadata to render
-			var identifier = null;
-			var formatId = null;
-			var size = null;
-			var checksum = null;
-			var rightsHolder = null;
-			var submitter = null;
-			
-			var viewRef = this;
-						
-			// get the /meta for the pid
-			$.get(
-				metaServiceUrl + encodedPid,
-				function(data, textStatus, xhr) {
-					
-					// the response should have all the elements we want
-					identifier = $(data).find("identifier").text();
-					formatId = $(data).find("formatId").text();
-					size = $(data).find("size").text();
-					checksum = $(data).find("checksum").text();
-					rightsHolder = $(data).find("rightsHolder").text();
-					submitter = $(data).find("submitter").text();
-
-					if (identifier) {
-						
-						var populateTemplate = function(auth) {
-							if(!viewRef.citationEl) viewRef.getCitation();
-							
-							// TODO: include SystemMetadata details						
-							$(viewRef.citationEl).before(
-								viewRef.doiTemplate({
-									isAuthorized: auth,
-									identifier: identifier,
-									formatId: formatId,
-									size: size,
-									checksum: checksum,
-									rightsHolder: rightsHolder,
-									submitter: submitter
-								})
-							);
-						};
-						
-						// are we authorized to publish?
-						$.ajax({
-								url: authServiceUrl + encodedPid + "?action=changePermission",
-								type: "GET",
-								xhrFields: {
-									withCredentials: true
-								},
-								success: function(data, textStatus, xhr) {
-									populateTemplate(true);
-									viewRef.insertEditLink(pid);
-								},
-								error: function(xhr, textStatus, errorThrown) {
-									console.log('Not authorized to publish');
-								}
-							});
-					}
-					
-				}
-			);
-			
-			
-				
-		},
-		
-		insertEditLink: function(pid) {
-			if(!this.citationEl){
-				this.getCitation();
-				if(!this.citationEl) return false;
-			}
-			
-			$(this.citationEl).before(
-					this.editMetadataTemplate({
-						identifier: pid
-					}));
 		},
 		
 		/*
@@ -1016,26 +961,6 @@ define(['jquery',
 			}
 		},
 		
-		createThumbnail: function(id){
-			//Does the appModel point to a resolve URL from a DataONE CN?
-		/*	if(appModel.get("objectServiceUrl").indexOf("/resolve/") > -1){
-				
-				//Get the correct image URL from the HTTP response header
-				$.get(appModel.get("objectServiceUrl") + encodeURIComponent(id), function(data, textStatus, xhr){
-					var img = $(document.createElement("img"))
-	         				  .attr("src", appModel.get("objectServiceUrl") + encodeURIComponent(id))
-	         				  .addClass("thumbnail");
-		
-					
-					return "done";
-				});
-			}
-			else{
-				return "not needed";
-			}	
-*/
-		},
-		
 		replaceEcoGridLinks: function(pids){
 			var viewRef = this;
 			
@@ -1170,12 +1095,8 @@ define(['jquery',
 					if (traversing) {
 						viewRef.$el.find("#Metadata > .container").prepend(
 								viewRef.versionTemplate({pid: pid})
-						);
-								
-					} else {
-						// finally add the DOI button - this is the latest version
-						viewRef.insertDoiButton(pid);
-					}			
+						);			
+					}		
 				}
 			});	
 		},

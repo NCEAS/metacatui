@@ -720,8 +720,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	display: inherit;
 }
 
-#Metadata  > .citation,
-#Metadata  > form > .citation,
+#Metadata  .citation,
 #Content.no-stylesheet > .citation,
 #Metadata  > .container > .row-fluid > .citation,
 #Metadata  > .container > .row-fluid > form > .citation{
@@ -739,8 +738,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	width: 100%;
 	float: none;
 }
-#Metadata  > .citation.has-data-source,
-#Metadata  > form > .citation.has-data-source,
+#Metadata .citation.has-data-source,
 #Content.no-stylesheet > .citation.has-data-source,
 #Metadata  > .container > .row-fluid > .citation.has-data-source,
 #Metadata  > .container > .row-fluid > form > .citation.has-data-source{
@@ -748,9 +746,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	width: calc(100% - 95px);
 	float: left;
 }
-#Metadata  > .container > .row-fluid > form > .citation .title,
-#Metadata  > .citation .title,
-#Metadata  > form > .citation .title{
+#Metadata .citation .title{
 	font-weight: bold;
 }
 .entitydetails.controls-well > .thumbnail{
