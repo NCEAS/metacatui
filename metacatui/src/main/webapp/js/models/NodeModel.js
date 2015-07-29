@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone'],
 	// ------------------
 	var Node = Backbone.Model.extend({
 		memberLogos : {
+				"defaultLogo"		   : "img/node-logos/KNB.png",
 				"urn:node:KNB"         : "img/node-logos/KNB.png",
 				"urn:node:ESA"         : "img/node-logos/ESA.png",
 				"urn:node:SANPARKS"    : "img/node-logos/SANPARKS.png",
@@ -34,8 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 				"urn:node:NMEPSCOR"    : "img/node-logos/NMEPSCOR.png",
 				"urn:node:TERN"        : "img/node-logos/TERN.png",
 				"urn:node:NKN"         : "img/node-logos/NKN.png",
-				"urn:node:PPBio"       : "img/node-logos/PPBio.png",
-				"urn:node:mnDemo2"     : "img/node-logos/KNB.png"
+				"urn:node:PPBio"       : "img/node-logos/PPBio.png"
 		},
 		
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API
@@ -51,6 +51,25 @@ define(['jquery', 'underscore', 'backbone'],
 				//Get the node information from the CN
 				this.getNodeInfo();
 			}
+		},
+		
+		getMember(memberInfo){
+			if(!memberInfo) return false;
+			
+			//Get the member ID
+			var memberId = null;			
+			if((typeof memberInfo === "object") && memberInfo.type == "SolrResult")
+				memberId = memberInfo.get("datasource");
+			else if(typeof memberInfo === "string")
+				memberId = memberInfo;
+			else
+				return false;
+			
+			//Find the member by its ID
+			var member = _.findWhere(this.get("members"), {identifier: memberId});
+			if(!member) return false;
+			
+			return member;
 		},
 		
 		getNodeInfo: function(){
@@ -104,7 +123,16 @@ define(['jquery', 'underscore', 'backbone'],
 						node[attribute.nodeName] = attribute.nodeValue;
 					});
 					
-					node.logo = thisModel.memberLogos[node.identifier];
+					//Get the logo path name for this member
+					var logo = thisModel.memberLogos[node.identifier];
+					if(!logo && thisModel.memberLogos["defaultLogo"])
+						logo = thisModel.memberLogos["defaultLogo"];
+					else if(!logo)
+						logo = null;
+							
+					node.logo = logo;
+					
+					
 					node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
 					
 					if(node.type == "mn") memberList.push(node);

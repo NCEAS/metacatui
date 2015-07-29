@@ -55,6 +55,13 @@ article.container {
 	/** Keeps the footer down **/
 	min-height: 100%;
 }
+.inline-buttons {
+  margin-bottom: 20px;
+  clear: both;
+}
+.inline-buttons > .btn{
+	margin-right: 10px;
+}
 
 /****************************************** 
 ** Navigation ***

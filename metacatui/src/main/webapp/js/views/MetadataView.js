@@ -464,16 +464,20 @@ define(['jquery',
 			}
 		},
 		
+		/*
+		 * Checks the authority for the logged in user for this dataset 
+		 * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
+		 */
 		insertControls: function(){
 			//Do not show user controls for older versions of data sets
 			if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
 				return false;
 			
 			//Get the HTML elements we will use to insert the controls
-			var insertAfter = this.$el.children().first(); 
+			var insertNear = this.$el.children().first(); 
 				
 			if(this.citationEl && ($(this.citationEl).parents(".citation-container").length > 0))
-				insertAfter = $(this.citationEl).parents(".citation-container");				
+				insertNear = $(this.citationEl).parents(".citation-container");				
 			
 			//Save some references
 			var pid     = this.model.get("id") || this.pid,
@@ -485,7 +489,7 @@ define(['jquery',
 
 				//Insert the controls container
 				var controlsEl = $(document.createElement("div")).addClass("authority-controls inline-buttons");
-				$(insertAfter).after(controlsEl);
+				$(insertNear).before(controlsEl);
 	
 				//Insert an Edit button
 				controlsEl.append(
