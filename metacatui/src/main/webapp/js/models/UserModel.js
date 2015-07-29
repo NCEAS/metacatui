@@ -63,27 +63,26 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				url: url, 
 				success: function(data, textStatus, xhr) {	
 				
-					//Only proceed if the accounts API service is being utilized
-					if(appModel.get("pendingMapsUrl")){
-					
-					//Get the pending requests			
-					$.ajax({
-						url: appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(model.get("username")),
-						success: function(data, textStatus, xhr){
-							//Reset the equivalent id list so we don't just add it to it with push()
-							model.set("pending", model.defaults().pending);
-							var pending = model.get("pending");
-							_.each($(data).find("person"), function(person, i) {
-								var subject = $(person).find("subject").text();
-								if (subject.toLowerCase() != model.get("username").toLowerCase()) {
-									pending.push(subject);
-								}
-							});
-							model.set("pending", pending);	
-							model.trigger("change:pending"); //Trigger the change event
-						}
-					});
-					
+					//Get the pending identity map requests, if the service is turned on
+					if(appModel.get("pendingMapsUrl")){					
+						//Get the pending requests			
+						$.ajax({
+							url: appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(model.get("username")),
+							success: function(data, textStatus, xhr){
+								//Reset the equivalent id list so we don't just add it to it with push()
+								model.set("pending", model.defaults().pending);
+								var pending = model.get("pending");
+								_.each($(data).find("person"), function(person, i) {
+									var subject = $(person).find("subject").text();
+									if (subject.toLowerCase() != model.get("username").toLowerCase()) {
+										pending.push(subject);
+									}
+								});
+								model.set("pending", pending);	
+								model.trigger("change:pending"); //Trigger the change event
+							}
+						});
+					}
 					
 					//Reset the group list so we don't just add it to it with push()
 					model.set("groups", model.defaults().groups);

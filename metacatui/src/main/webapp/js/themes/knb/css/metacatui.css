@@ -793,9 +793,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		display: inline-block; 
 	}    
     
-/* CUSTOMIZE THE NAVBAR
+/* NAVIGATION
 -------------------------------------------------- */
-
+	.breadcrumb{
+	  margin-top: 120px;
+	}
     .mapMode #Header{
     	position: relative;
     }
@@ -1437,19 +1439,6 @@ svg .domain{
 	display: block;
 }
 
-/* Other Navigation 
------------------------------------------------------ */
-.breadcrumb{
-  width: 90%;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 120px;
-  clear: both;
-  display: block;
-  float: none;
-  margin-bottom: 0px;
-}
-
   /* Metadata rendering CSS
   -------------------------------------------------- */
     #Metadata {
@@ -1619,9 +1608,6 @@ svg .domain{
 	.select-editable input:focus { 
 		outline:none; 
 	}	
-
-/* TOOLS PAGE
-  -------------------------------------------------- */
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
@@ -2176,87 +2162,6 @@ svg .domain{
 		font-size: 13px;
 		height: 28px;
 	}
-
-
-  	
-/* RESPONSIVE CSS
--------------------------------------------------- */
-/*    
-    @media (max-width: 979px) {
-
-      .navbar-inner {
-        border-radius: 0;
-        margin: -20px 0;
-      }
-
-      .carousel .item {
-        height: 100%;
-      }
-      .carousel img {
-        width: auto;
-        height: 500px;
-      }
-
-      .featurette {
-        height: auto;
-        padding: 0;
-      }
-      .featurette-image.pull-left,
-      .featurette-image.pull-right {
-        display: block;
-        float: none;
-        max-width: 40%;
-        margin: 0 auto 20px;
-      }
-    }
-*/
-    /*
-    @media (max-width: 767px) {
-
-      .navbar-inner {
-        margin: -20px;
-      }
-
-      .carousel {
-        margin-left: -20px;
-        margin-right: -20px;
-      }
-      .carousel .container {
-
-      }
-      .carousel .item {
-        height: 300px;
-      }
-      .carousel img {
-        height: 300px;
-      }
-      .carousel-caption {
-        width: 65%;
-        padding: 0 70px;
-        margin-top: 100px;
-      }
-      .carousel-caption h1 {
-        font-size: 30px;
-      }
-      .carousel-caption .lead,
-      .carousel-caption .btn {
-        font-size: 18px;
-      }
-
-      .marketing .span4 + .span4 {
-        margin-top: 40px;
-      }
-
-      .featurette-heading {
-        font-size: 30px;
-      }
-      .featurette .lead {
-        font-size: 18px;
-        line-height: 1.5;
-      }
-
-    }
-    */
     
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */

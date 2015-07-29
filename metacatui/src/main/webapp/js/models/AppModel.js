@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone'],
 			d1Service: '/d1/mn/v1',
 			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v1",
+			nodeServiceUrl: null,
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
@@ -66,17 +67,21 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
-			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+			
+			if(this.get("d1CNBaseUrl")){
+				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
+				this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 		
-			//Settings for the DataONE API v2 only
-			if(this.get("d1CNService").indexOf("v2") > -1){
-				this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
-				this.set('viewServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/views/metacatui/');
-				//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
-				this.set('tokenUrl', this.get('d1CNBaseUrl') + '/portal/token');
-				this.set("prov", true);
-				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
-				this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap");
+				//Settings for the DataONE API v2 only
+				if(this.get("d1CNService").indexOf("v2") > -1){
+					this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
+					this.set('viewServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/views/metacatui/');
+					//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+					this.set('tokenUrl', this.get('d1CNBaseUrl') + '/portal/token');
+					this.set("prov", true);
+					this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
+					this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap");
+				}
 			}
 			
 			this.on("change:pid", this.changePid);
