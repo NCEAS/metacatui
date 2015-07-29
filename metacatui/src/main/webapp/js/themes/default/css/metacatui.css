@@ -533,9 +533,12 @@ Bold 700
     }
    
     
-/* CUSTOMIZE THE NAVBAR
+/* NAVIGATION
 -------------------------------------------------- */
-   
+   .breadcrumb{
+   		margin-bottom: 20px;
+   		width: 97%;
+   }
     nav#Navbar {
       top: 0px;
       width: auto;
@@ -783,8 +786,7 @@ Bold 700
 		font-size: 13px;
 	}
 	#Metadata .citation{
-		font-size: 1.3em;
-  		line-height: 1.6em;
+		font-weight: normal;
 	}
 	.controls-well img{
 		max-width: 90%;
@@ -918,6 +920,7 @@ Bold 700
 	.entitydetails{
 		background-color: #FFFFFF;
 		padding: 10px;
+		width: auto;
 	}
 	.data-display{
 		clear: both;

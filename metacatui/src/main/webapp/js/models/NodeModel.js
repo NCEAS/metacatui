@@ -53,7 +53,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 		},
 		
-		getMember(memberInfo){
+		getMember: function(memberInfo){
 			if(!memberInfo) return false;
 			
 			//Get the member ID

@@ -171,7 +171,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				
 				//Download button cell
 				var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");				
-				var downloadButtonHTML = view.downloadButtonTemplate({ href: url });
+				var downloadButtonHTML = view.downloadButtonTemplate({ href: url, fileName: entityName });
 				$(downloadBtnCell).append(downloadButtonHTML);
 				$(tr).append(downloadBtnCell);
 				

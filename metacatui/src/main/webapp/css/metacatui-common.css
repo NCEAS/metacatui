@@ -784,7 +784,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
   min-width: 130px;
 }
 .tab-content,
-.row-fluid .tab-content.span12{
+.row-fluid .tab-content.span10{
 	width: 76%;
 	width: calc(100% - 165px);
 }
