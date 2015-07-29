@@ -228,7 +228,7 @@ define(['jquery',
 		    				  .append($(document.createElement("li"))
 						    		  .append($(document.createElement("a"))
 						    				  .attr("href", "#" + Backbone.history.fragment)
-						    				  .addClass("active")
+						    				  .addClass("inactive")
 						    				  .text("Metadata")));
 			
 			if(uiRouter.lastRoute() == "data"){
@@ -239,6 +239,7 @@ define(['jquery',
 						         .text(" Back to search")
 						         .prepend($(document.createElement("i"))
 						        		  .addClass("icon-angle-left")));
+				$(breadcrumbs).find("a.search").addClass("inactive");
 			}
 			
 			this.$el.prepend(breadcrumbs);

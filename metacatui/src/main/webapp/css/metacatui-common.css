@@ -83,7 +83,7 @@ article.container {
 .breadcrumb>li>a{
 	font-weight: normal;
 }
-.breadcrumb>li>a.active{
+.breadcrumb>li>a.inactive{
 	color: #555;
 }
 .breadcrumb .back{

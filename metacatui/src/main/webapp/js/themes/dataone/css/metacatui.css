@@ -751,6 +751,9 @@ table th.btn-container .btn{
     
 /* OTHER NAVIGATION
 -------------------------------------------------- */
+.breadcrumb{
+	width: 93%;
+}
 .breadcrumb > .home,
 .breadcrumb > li.home + li:before{ /*Hide the "Home" breadcrumb link and its divider */
 	display: none;
