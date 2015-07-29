@@ -105,10 +105,6 @@ define(['jquery',
 								if(response.indexOf('id="Metadata"') == -1)
 									viewRef.$el.addClass("container no-stylesheet");
 								
-								//Find the taxonomic range and give it a class for styling - for older versions of Metacat only (v2.4.3 and older)
-								if(!viewRef.$(".taxonomicCoverage").length)
-									$('#Metadata').find('h4:contains("Taxonomic Range")').parent().addClass('taxonomicCoverage');
-								
 								viewRef.$el.fadeIn("slow");
 								
 								//Get the citation element
@@ -261,12 +257,36 @@ define(['jquery',
 				viewRef.model = metadataModel;
 			});
 			this.listenToOnce(this.packageModel, 'complete', this.getEntityNames);
+			this.listenToOnce(this.packageModel, 'complete', this.alterMarkup);			
 			this.listenToOnce(this.packageModel, 'complete', this.insertPackageDetails);
 			this.listenToOnce(this.packageModel, 'complete', this.insertCitation);
 			this.listenToOnce(this.packageModel, 'complete', this.insertDataSource);
 			this.listenToOnce(this.packageModel, 'complete', this.insertControls);
 			this.listenToOnce(nodeModel, 'change:members',  this.insertDataSource);
 			this.packageModel.getMembersByMemberID(pid);
+		},
+		
+		alterMarkup: function(){
+			//Find the taxonomic range and give it a class for styling - for older versions of Metacat only (v2.4.3 and older)
+			if(!this.$(".taxonomicCoverage").length)
+				this.$('h4:contains("Taxonomic Range")').parent().addClass('taxonomicCoverage');
+			
+			//Remove the title section (redundant)
+			var title = this.$(".control-group.title");
+			if(!title.length){
+				//Try to find the title label
+				var titleLabel = this.$("label:contains('Titlell')");
+				if(titleLabel.length && (titleLabel.text() == "Title")) 
+					title = titleLabel.parents(".control-group");
+				
+				//Try to find the element with the title text
+				if(!title.length){
+					title = this.$(".controls:contains('" + this.model.get("title") + "')");
+					if(title.length) title = title.parents(".control-group");
+				}
+			}
+			if(title.length) title.detach();
+			
 		},
 		
 		/*

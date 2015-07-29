@@ -708,6 +708,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 /****************************************** 
 ** The Metadata and MetadataIndex View **
 ******************************************/	
+#metadata-index-details .General .title,
 #metadata-index-details .Other .text,
 #metadata-index-details .Other .attributeDescription,
 #metadata-index-details .Other .checksum,
