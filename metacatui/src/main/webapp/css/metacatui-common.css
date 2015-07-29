@@ -603,13 +603,14 @@ h3{
 	color: #737373;
 }		
 /*The context sections gets narrowed when there is one prov chart next to it*/
-.hasProvLeft,
-.hasProvRight,
-.entitydetails.hasProvLeft,
-.entitydetails.hasProvRight{ 
-	width: 75%; /* IE fallback */
-	width: calc(100% - 106px - 43px); /* 100% - prov-chart width - (padding + borders)*/
-	display: inline-block;
+.gutters .entitydetails{
+	width: 60%; /* IE fallback */
+	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - (padding + borders)*/
+	display: inline-block;	
+	margin-left: 105px;
+}
+.entitydetails.hasProvLeft{
+	margin-left: 0px;
 }
 article.hasProvLeft table.download-contents .name,
 article.hasProvRight table.download-contents .name{
@@ -621,11 +622,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	max-width: 250px;
 }
 
-/*The metadata gets narrowed even more when there are two prov charts next to it*/
+/*The metadata gets narrowed even more when there are two prov charts next to it */
 .hasProvLeft.hasProvRight,
 .entitydetails.hasProvLeft.hasProvRight{
-	width: 60%; /* IE fallback */
-	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - (padding + borders)*/
+	margin-left: 0px;
 }
 
 /* Prov chart popovers */
@@ -857,6 +857,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     	-moz-border-radius: 4px;
     	-webkit-border-radius: 4px;
     	margin-bottom: 20px;
+    	margin-left: 0px;
     	padding: 20px;
     	width: 85%;
     	width: calc(100% - 40px);
@@ -898,9 +899,6 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-left: -5px;
 	margin-top: -5px;
 	padding-left: 10px;
-}
-#Metadata .form-horizontal .controls.entitydetails{
-	margin-left: 0px;
 }
 /** Images, Maps, and other visuals **/
 .thumbnail{
