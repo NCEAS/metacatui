@@ -1206,11 +1206,15 @@ textarea.token{
 	border-bottom: 1px dashed #CCC;
 	padding: 10px 0px 5px 0px;
 	width: 100%;
+}   
+.filter-input-contain{
+	clear: both;
 }
 .filter-contain > label{
    	font-size: .9em;
    	font-weight: bold;
-   	color: #666;
+   	display: inline-block;
+   	height: 2em;
 }
 .current-filters > li,
 .current-filters > li[class*="span"],
@@ -1232,10 +1236,8 @@ textarea.token{
 }
 /*-- The filter checkboxes --*/
 #includes-files label{
- 	font-size: 13px;
  	margin-right: 8px;
  	float: left;
- 	display: inline;
 }
 ul.checkbox-list{
  	list-style: none;

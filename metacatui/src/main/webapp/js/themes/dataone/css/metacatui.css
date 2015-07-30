@@ -1040,10 +1040,6 @@ table th.btn-container .btn{
     	margin-bottom: 0px;
     }
     
-    .filter-input-contain{
-    	clear: both;
-    }
-    
     .filter-input-contain input.filter{
     	width: 77%;
     	margin-left: 3px;
@@ -1233,14 +1229,6 @@ table th.btn-container .btn{
 		display: inline-block;
 		float: left;
 	}
-	
-	 #includes-files label,
-     #includes-files label.ui-state-active{
-    	margin-top: 0px;
-    	line-height: 21px;
-    	float:left;
-    	height: 21px;
-    } 
     
     #filter-year label{
     	margin-top:0px;

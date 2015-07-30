@@ -160,7 +160,18 @@ define(['jquery',
 			this.renderMap();	
 			
 			//Initialize the tooltips
-			$('.tooltip-this').tooltip();
+			var tooltips = $(".tooltip-this");
+			
+			//Find the tooltips that are on filter labels - add a slight delay to those
+			var groupedTooltips = _.groupBy(tooltips, function(t){
+				return (($(t).prop("tagName") == "LABEL") && ($(t).parents(".filter-container").length > 0))
+			});
+			var forFilterLabel = true,
+				forOtherElements = false;			
+			$(groupedTooltips[forFilterLabel]).tooltip({ delay: {show: "600"}});
+			$(groupedTooltips[forOtherElements]).tooltip();
+			
+			//Initialize all popover elements
 			$('.popover-this').popover();
 			
 			//Initialize the resizeable content div
@@ -961,13 +972,13 @@ define(['jquery',
 				//If this member node is already a data source filter, then the checkbox is checked
 				var checked = _.findWhere(currentFilters, {value: member.identifier}) ? true : false;
 					
-					$(label).addClass("ellipsis tooltip-this")
-							.attr("data-trigger", "hover")
-							.attr("title", member.description)
+					//Create a textual label for this data source
+					$(label).addClass("ellipsis")
 							.attr("for", member.identifier)
-							.attr("data-placement", "top")
 							.html(member.name)
 							.prepend($(document.createElement("i")).addClass("icon icon-check"), $(document.createElement("i")).addClass("icon icon-check-empty"));
+					
+					//Create a checkbox for this data source
 					$(input).addClass("filter")
 							.attr("type", "checkbox")
 							.attr("data-category", "dataSource")
@@ -977,12 +988,23 @@ define(['jquery',
 							.attr("data-label", member.name)
 							.attr("data-description", member.description);
 					
+					//Add tooltips to the label element
+					$(label).tooltip({
+						placement: "top",
+						delay: {"show" : 700},
+						trigger: "hover",
+						title: member.description
+					});
+					
+					//If this data source is already selected as a filter (from the search model), then check the checkbox
 					if(checked) $(input).attr("checked", "checked");
-										
+								
+					//Collapse some of the checkboxes and labels after a certain amount
 					if(i > (listMax - 1)){
 						$(listItem).addClass("hidden");
 					}
 					
+					//Insert a "More" link after a certain amount to enable users to expand the list
 					if(i == listMax){
 						var moreLink = document.createElement("a");
 						$(moreLink).html("Show " + numHidden + " more member nodes")
@@ -991,6 +1013,7 @@ define(['jquery',
 						$(list).append(moreLink);
 					} 
 					
+					//Add this checkbox and laebl to the list
 					$(listItem).append(input).append(label);
 					$(list).append(listItem);
 			});
