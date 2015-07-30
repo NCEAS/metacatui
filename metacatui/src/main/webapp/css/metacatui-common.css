@@ -87,7 +87,7 @@ article.container {
 .breadcrumb>li>a{
 	font-weight: normal;
 }
-.breadcrumb>li>a.active{
+.breadcrumb>li>a.inactive{
 	color: #555;
 }
 .breadcrumb .back{
@@ -733,6 +733,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 /****************************************** 
 ** The Metadata and MetadataIndex View **
 ******************************************/	
+#metadata-index-details .General .title,
 #metadata-index-details .Other .text,
 #metadata-index-details .Other .attributeDescription,
 #metadata-index-details .Other .checksum,
@@ -808,7 +809,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
   min-width: 130px;
 }
 .tab-content,
-.row-fluid .tab-content.span12{
+.row-fluid .tab-content.span10{
 	width: 76%;
 	width: calc(100% - 165px);
 }
@@ -945,9 +946,6 @@ table.download-contents {
 }
 .download-contents th{
 	font-weight: normal;
-}
-.download-contents .icon{
-	font-size: 1.5em;
 }
 .download-contents .btn .icon,
 .download-contents .preview .icon{
