@@ -1125,16 +1125,17 @@ textarea.token{
   width: calc(100% - 10px);
   padding: 2px 5px;
   margin-bottom: 0px;
-  font-size: 1.1em;
   display: block;
   float: none;
-  background-color: #992222;
-  color: #FFF;
-  font-weight: normal;
   cursor: pointer;
+  font-size: 1em;
+  color: rgb(131, 131, 0);
+  font-weight: bold;
+  background-color: rgb(255, 255, 66);
 }
 #clear-all .icon{
-	color: #DB8080;
+	color: rgb(131, 131, 0);
+	margin: 0px 5px;
 }
 #map-container{
 	display: none;
@@ -1368,6 +1369,9 @@ input.has-error:focus{
 form .text-left > .icon {
   margin-left: 10px;
   font-size: 1.1em;
+}
+.input-append .tooltip-inner {
+  white-space: normal;
 }
 /*******************************************
 CSS library fixes

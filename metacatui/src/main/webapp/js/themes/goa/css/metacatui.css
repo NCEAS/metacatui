@@ -1459,11 +1459,9 @@ svg .point:hover ~ .line-chart-label{
    }
   
     #clear-all{
-    	text-align: right;
-    	float: right;
-    	cursor: pointer;
-    	padding: 0px;
-    	margin: 18px 18px 0px 0px;
+    	text-align: center;
+    	margin-bottom: 10px;
+    	clear: both;
     }
     
      /* Autocomplete */

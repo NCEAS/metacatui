@@ -52,6 +52,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 					signInUrlLdap:  signInUrlLdap,
 					currentUrl: window.location.href,
 				}));
+			
+			//Initialize the tooltips in the navbar
+			this.$(".tooltip-this").tooltip({
+				delay: {show: 600},
+				trigger: "hover",
+				placement: "bottom"
+			});
 		},
 		
 		triggerSearch: function() {
