@@ -1648,31 +1648,6 @@ svg .point:hover ~ .line-chart-label{
    .row-fluid input[class*="span"].left{
    		float: left;
    }
-
-	/*-- Share Your Data button --*/
-    
-    
-    
-    #clear-all{
-    	text-align: right;
-    	float: right;
-    	cursor: pointer;
-    	color: #840C11;
-    	font-size: .8em;
-    	min-height: 0.8em;
-    	position: absolute;
-    	bottom: 0px;
-    	right: 0px;
-    }
-    
-    #clear-all > i{
-    	margin-left: 5px;
-    	font-size: 1.1em;
-    }
-    
-    #clear-all:hover{
-    	text-decoration: none;
-    }
     
     /* Autocomplete */
     ul.ui-autocomplete{

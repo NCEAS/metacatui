@@ -1280,7 +1280,7 @@ define(['jquery',
 	
 							});
 						}
-						$('#annotation_input').hoverAutocomplete({
+						$('#annotation_input').autocomplete({
 							source: 
 								function (request, response) {
 						            var term = $.ui.autocomplete.escapeRegex(request.term)
@@ -1325,7 +1325,7 @@ define(['jquery',
 						for (var i=0; i < Math.min(originSuggestions.length-1, facetLimit); i+=2) {
 							rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
 						}
-						$('#creator_input').hoverAutocomplete({
+						$('#creator_input').autocomplete({
 							source: function (request, response) {
 					            var term = $.ui.autocomplete.escapeRegex(request.term)
 					                , startsWithMatcher = new RegExp("^" + term, "i")

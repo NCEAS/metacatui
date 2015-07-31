@@ -1268,20 +1268,6 @@ table th.btn-container .btn{
    .row-fluid input[class*="span"].left{
    		float: left;
    }  
-    
-    #clear-all{
-		cursor: pointer;
-		font-size: 14px;
-		color: #FFF;
-		font-weight: 500;
-    }
-    
-    #clear-all > i{
-    	font-size: 15px;
-    	margin-left: 7px;
-    	color: #DB8080;
-    }
-    
     /* Autocomplete */
     ul.ui-autocomplete{
     	width: 246px;

@@ -1483,10 +1483,7 @@ Bold 700
    .row-fluid input[class*="span"].left{
    		float: left;
    }  
-    #clear-all > i{
-    	color: #DB8080;
-    }
-    
+
     /* Autocomplete */
     ul.ui-autocomplete{
     	width: 246px;

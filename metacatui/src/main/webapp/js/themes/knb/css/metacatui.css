@@ -1733,28 +1733,6 @@ svg .domain{
 
 	/*-- Currently applied filters --*/
 	
-	#clear-all{
-		background-color: #992222;
-		color: #FFFFFF;
-		cursor: pointer;
-	/*	padding: 0px 5px 0px 5px;
-		border-radius: 2px;
-		-moz-border-radius: 2px;
-		-webkit-border-radius: 2px;
-		width: auto;
-		max-width: 100%;
-		margin: 0px 4% 0px 0px;
-		display: inline-block;
-		text-transform: none;
-		text-shadow: none;
-		font-size: 14px;
-		line-height: 20px;*/
-	}
-	
-	#clear-all i{
-		margin-right: 5px;
-	}
-	
 	.current-filters .alert{
 		width: 100%;
 		margin-top: 10px;

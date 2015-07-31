@@ -56,6 +56,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			this.$(".fancybox").fancybox({
 				transitionIn: "elastic"
 			});
+			
+			//Initialize the tooltips in the navbar
+			this.$(".tooltip-this").tooltip({
+				delay: {show: 600},
+				trigger: "hover",
+				placement: "bottom"
+			});
 		},
 		
 		triggerSearch: function() {
@@ -114,7 +121,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			if (e.keyCode != 13) return;
 			this.triggerSearch();
 		},
-
+		
 		toggleHeaderType: function(){
 			// set the navbar class based on what the page requested
 			var headerType = appModel.get('headerType');
