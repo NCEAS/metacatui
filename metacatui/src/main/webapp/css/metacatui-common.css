@@ -84,7 +84,7 @@ article.container {
 	font-weight: normal;
 }
 .breadcrumb>li>a.inactive{
-	color: #555;
+	color: #999;
 }
 .breadcrumb .back{
 	margin-right: 20px;
