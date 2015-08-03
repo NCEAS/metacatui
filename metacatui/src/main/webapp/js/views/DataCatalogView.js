@@ -211,8 +211,11 @@ define(['jquery',
 			this.listenTo(this.searchResults, 'add', this.addOne);
 			this.listenTo(this.searchResults, 'reset', this.addAll);
 			this.listenTo(this.searchResults, 'reset', this.checkForProv);
-			if(nodeModel.get("members").length > 0) this.listDataSources();
-			else this.listenTo(nodeModel, 'change:members', this.listDataSources);
+			
+			//List data sources
+			this.listDataSources();
+			this.listenTo(nodeModel, 'change:members', this.listDataSources);
+			
 			// listen to the appModel for the search trigger			
 			this.listenTo(appModel, 'search', this.getResults);
 
@@ -947,24 +950,22 @@ define(['jquery',
 		 * Get the member node list from the model and list the members in the filter list
 		 */
 		listDataSources: function(){
+			if(nodeModel.get("members").length < 1) return;
+			
 			//Get the member nodes
-			var members = nodeModel.get("members");
+			var members = _.sortBy(nodeModel.get("members"), function(m){ return m.name });
+			var filteredMembers = _.reject(members, function(m){ return(_.contains(nodeModel.get("replicaMembers"), m.identifier)); });
 			
 			//Get the current search filters for data source
 			var currentFilters = this.searchModel.get("dataSource");
 			
 			//Create an HTML list
 			var listMax = 4,
-				hiddenNodes = ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
-				numHidden = members.length - listMax - hiddenNodes.length,
-				list = document.createElement("ul");
-			
-			$(list).addClass("checkbox-list");
+				numHidden = filteredMembers.length - listMax,
+				list = $(document.createElement("ul")).addClass("checkbox-list");
 			
 			//Add a checkbox and label for each member node in the node model
-			_.each(members, function(member, i){
-				if(_.contains(hiddenNodes, member.identifier)) return;
-					
+			_.each(filteredMembers, function(member, i){					
 				var listItem = document.createElement("li"),
 					input = document.createElement("input"),
 					label = document.createElement("label");
@@ -1216,7 +1217,7 @@ define(['jquery',
 						position: {
 							my: "left top",
 							at: "left bottom",
-							collision: "fit"
+							collistion: "flipfit"
 						}
 					});
 					
@@ -1262,7 +1263,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collision: "fit"
+								collistion: "flipfit"
 							}
 						});
 					}
@@ -1312,7 +1313,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collision: "fit"
+								collistion: "flipfit"
 							}
 						});
 					}
@@ -1355,7 +1356,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collision: "fit"
+								collistion: "flipfit"
 							}
 						});
 					}
@@ -1445,7 +1446,7 @@ define(['jquery',
 						position: {
 							my: "left top",
 							at: "left bottom",
-							collision: "fit"
+							collision: "flipfit"
 						}
 					});
 				}

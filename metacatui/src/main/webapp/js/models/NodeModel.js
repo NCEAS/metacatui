@@ -41,7 +41,8 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API
 		defaults: {
 			members: [],
-			coordinators: []
+			coordinators: [],
+			replicaMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"]
 		},
 		
 		initialize: function(){
