@@ -63,14 +63,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					annotation : "sem_annotation_bioportal_sm",
 					formatType : "formatType",
 						   all : "",
-					   creator : "origin",
-					   spatial : "site",
+					   creator : "originText",
+					   spatial : "siteText",
 				   resourceMap : "resourceMap",
 				   	   pubYear : "dateUploaded",
 				   	dataSource : "datasource",
 				   			id : "id",
 				  rightsHolder : "rightsHolder",
-				     submitter : "submitter"
+				     submitter : "submitter",
+				     	 taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 		},
 		
 		filterCount: function() {
@@ -209,7 +210,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var identifiers = this.get('id');
 				
 				if(Array.isArray(identifiers))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "OR", subtext: true });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "AND", subtext: true });				
 				else if(identifiers) 
 					query += "+" + this.fieldNameMap["id"] + ':*' + encodeURIComponent(identifiers) + "*";
 			}
@@ -249,35 +250,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//---Taxon---
 			if(this.filterIsAvailable("taxon") && ((filter == "taxon") || getAll)){
 				var taxon = this.get('taxon');
-				for (var i=0; i < taxon.length; i++){
-					var thisTaxon = taxon[i];
+				
+				for(var i=0; i<taxon.length; i++){
+					var value = (typeof taxon == "object")? taxon[i].value : taxon[i].trim();
+					value = value.substring(0, 1).toUpperCase() + value.substring(1);
 					
-					//Trim the spaces off
-					if(typeof thisTaxon == "object")
-						thisTaxon = thisTaxon.value.trim();
-					else
-						thisTaxon = thisTaxon.trim();
-					
-					if(this.needsQuotes(thisTaxon)) value = "%22" + thisTaxon + "%22";
-					else value = encodeURIComponent(thisTaxon);
-					
-					value = "*" + value + "*";
-					
-					query += "+(" +
-								   "family:" + value + 
-								   " OR " +
-								   "species:" + value + 
-								   " OR " +
-								   "genus:" + value + 
-								   " OR " +
-								   "kingdom:" + value + 
-								   " OR " +
-								   "phylum:" + value + 
-								   " OR " +
-								   "order:" + value +
-								   " OR " +
-								   "class:" + value + 
-								   ")";
+					query += this.getMultiFieldQuery(this.fieldNameMap["taxon"], value, {subtext: true});
 				}
 			}
 			
@@ -428,7 +406,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var spatial = this.get('spatial');
 				
 				if(Array.isArray(spatial))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, { operator: "OR", subtext: true });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, { operator: "AND", subtext: true });				
 				else if(spatial) 
 					query += "+" + this.fieldNameMap["spatial"] + ':*' + encodeURIComponent(spatial) + "*";
 			}
@@ -438,7 +416,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var creator = this.get('creator');
 				
 				if(Array.isArray(creator))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["creator"], creator, { operator: "OR", subtext: true });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["creator"], creator, { operator: "AND", subtext: true });				
 				else if(creator) 
 					query += "+" + this.fieldNameMap["creator"] + ':*' + encodeURIComponent(creator) + "*";
 			}
@@ -495,12 +473,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		/*
 		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
 		 * Example:  title:(resistance OR salmon OR "pink salmon")
+		 * Options: 
+		 * 		- operator (OR or AND)
+		 * 		- subtext (binary) - will surround search value with wildcards to search for partial matches
+		 * 		- Example:
+		 * 			var options = { operator: "OR", subtext: true }
 		 */
 		getGroupedQuery: function(fieldName, values, options){
 			var query = "",
 				numValues = values.length,
 				model = this;
 			
+			if(Array.isArray(fieldName) && (fieldName.length > 1))
+				return this.getMultiFieldQuery(fieldName, values, options);
+						
 			if(options && (typeof options == "object")){
 				var operator = options.operator,
 					subtext = options.subtext;
@@ -512,8 +498,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var value = values[0],
 					queryAddition;
 				
-				if((typeof value == "object") && (typeof value.value != "undefined"))
-					value = value.value;
+				if(!Array.isArray(value) && (typeof value === "object") && value.value)
+					value = value.value.trim();
 				
 				if(this.needsQuotes(values[0])) queryAddition = '"' + value + '"';
 				else if(subtext)                queryAddition = "*" + encodeURIComponent(value) + "*";
@@ -523,6 +509,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			else{				
 				_.each(values, function(value, i){
+					//Check for filter objects
+					if(!Array.isArray(value) && (typeof value === "object") && value.value)
+						value = value.value.trim();
+					
 					if(model.needsQuotes(value)) value = '"' + value + '"';
 					else if(subtext)             value = "*" + encodeURIComponent(value) + "*";
 					else                         value = encodeURIComponent(value);
@@ -534,6 +524,63 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			
 			return query;
+		},
+		
+		/*
+		 * Makes a Solr syntax query using multiple field names, one field value to search for, and some options.
+		 * Example: (family:*Pin* OR class:*Pin* OR order:*Pin* OR phlyum:*Pin*)
+		 * Options: 
+		 * 		- operator (OR or AND)
+		 * 		- subtext (binary) - will surround search value with wildcards to search for partial matches
+		 * 		- Example:
+		 * 			var options = { operator: "OR", subtext: true }
+		 */
+		getMultiFieldQuery: function(fieldNames, value, options){
+			var query = "",
+				numFields = fieldNames.length,
+				model = this;
+			
+			//Catch errors
+			if((numFields < 1) || !value) return "";
+			
+			//If only one field was given, then use the grouped query function
+			if(numFields == 1)
+				return this.getGroupedQuery(fieldNames, value, options);
+				
+			//Get the options
+			if(options && (typeof options == "object")){
+				var operator = options.operator,
+					subtext = options.subtext;
+			}
+		
+			//Default to the OR operator
+			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) 
+				var operator = "OR";
+			if((typeof subtext === "undefined")) 
+				var subtext = false;
+			
+			//Create the value string
+			//Trim the spaces off
+			if(!Array.isArray(value) && (typeof value === "object") && value.value)
+				value = value.value.trim();
+			else
+				value = value.trim();
+			if(this.needsQuotes(value)) value = '"' + value + '"';
+			else if(subtext)            value = "*" + encodeURIComponent(value) + "*";
+			else                        value = encodeURIComponent(value);
+			
+			query = "+(";
+				
+			//Create the query string
+			var last = numFields - 1;
+			_.each(fieldNames, function(field, i){					
+				query += field + ":" + value;
+				if(i < last)  query += "%20" + operator + "%20";
+			});
+			
+			query += ")";
+			
+			return query;			
 		},
 		
 		/**** Provenance-related functions ****/

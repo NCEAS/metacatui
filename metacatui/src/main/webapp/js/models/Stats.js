@@ -113,7 +113,7 @@ define(['jquery', 'underscore', 'backbone'],
 						
 						//Find the earliest endDate if there are no beginDates
 						$.ajax({
-							url: appModel.get('queryServiceUrl') + endDateQuery, 
+							url: appModel.get('queryServiceUrl') + "q=" + endDateQuery + otherParams, 
 							jsonp: "json.wrf",
 							dataType: "jsonp",
 							success: function(endDateData, textStatus, xhr) {
