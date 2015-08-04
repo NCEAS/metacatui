@@ -188,6 +188,10 @@
 		<div id="map-container" class="auto-height">
 			<div class="map-toggle-container">
 				<a class="toggle-map" href="#data/mode=list">Hide Map <i class="icon icon-double-angle-right"></i></a>
+				
+				<% var checked = useMapBounds ? 'checked="checked"' : ''; %>
+				<label class="toggle-map-filter">Limit my search to the map area</label>
+				<input type="checkbox" name="map" <%=checked%> class="toggle-map-filter" />
 			</div>
 		</div>
 		

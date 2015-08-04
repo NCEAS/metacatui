@@ -29,6 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				west: null,
 				north: null,
 				south: null,
+				useGeohash: true,
 				geohashes: [],
 				geohashLevel: 9,
 				geohashGroups: {},
@@ -52,6 +53,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				}]
 			}
 		},
+		
+		//A list of all the filter names that are related to the spatial/map filter
+		spatialFilters: ["useGeohash", "geohashes", "geohashLevel", "geohashGroups", "east", "west", "north", "south"],
 		
 		initialize: function(){
 			this.listenTo(this, "change:geohashes", this.groupGeohashes);
@@ -78,8 +82,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var changedAttr = this.changedAttributes(_.clone(this.defaults()));
 			
 			if (changedAttr) {
+				//Get all the changed attributes
 				var changedKeys = _.keys(changedAttr);
-				changedKeys = _.without(changedKeys, "sortOrder"); //Don't count the sort order as a changed filter
+				
+				//Don't count the sort order as a changed filter
+				changedKeys = _.without(changedKeys, "sortOrder");
+				
+				//Don't count the geohashes or directions as a filter if the geohash filter is turned off
+				if(!this.get("useGeohash"))
+					changedKeys = _.difference(changedKeys, this.spatialFilters);
+				
 				return changedKeys.length;
 			}
 			return 0;
@@ -368,7 +380,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			});
 			
 			//-----Geohashes-----
-			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll))){
+			if(this.filterIsAvailable("geohashLevel") && (((filter == "geohash") || getAll)) && this.get("useGeohash")){
 				var geohashes = this.get("geohashes");
 				
 				if ((typeof geohashes != undefined) && (geohashes.length > 0)){ 
