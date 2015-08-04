@@ -60,7 +60,7 @@ define(['jquery',
 		resultMarkers: [],
 		//The geohash value for each tile drawn on the map
 		tileGeohashes: [],
-		reservedMapPhrase: 'Only results with all spatial coverage inside the map',
+		toggleMapFilterEl: "input.toggle-map-filter",
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -70,7 +70,7 @@ define(['jquery',
 					 'click #results_next_bottom' : 'nextpage',
 	       			   		   'click .pagerLink' : 'navigateToPage',
 							  'click .filter.btn' : 'updateTextFilters',
-						  'keypress input.filter' : 'triggerOnEnter',
+			 'keypress input[type="text"].filter' : 'triggerOnEnter',
 							  'change #sortOrder' : 'triggerSearch',
 							   'change #min_year' : 'updateYearRange',
 							   'change #max_year' : 'updateYearRange',
@@ -85,6 +85,7 @@ define(['jquery',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			  'click .toggle-map' : 'toggleMapMode',
 				   			 'click .toggle-list' : 'toggleList',
+				   	   "click .toggle-map-filter" : "toggleMapFilter",
 				   		 'mouseover .open-marker' : 'showResultOnMap',
 				   	      'mouseout .open-marker' : 'hideResultOnMap',
 		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
@@ -146,6 +147,7 @@ define(['jquery',
 				resourceMap     : this.searchModel.get('resourceMap'),
 				searchOptions   : registryModel.get('searchOptions'),
 				gmaps           : gmaps,
+				useMapBounds    : this.searchModel.get("useGeohash"),
 				username        : appUserModel.get('username'),
 				isMySearch      : (_.indexOf(this.searchModel.get("username"), appUserModel.get("username")) > -1),
 				loading         : loadingHTML,
@@ -799,15 +801,8 @@ define(['jquery',
 			//Get the filter term
 			var term = $(filterNode).attr('data-term');
 			
-			//Check if this is the reserved phrase for the map filter
-			if((category == "spatial") && (term == this.reservedMapPhrase)){
-				this.resetMap();
-				this.renderMap();
-			}
-			else{
-				//Remove this filter term from the searchModel
-				this.searchModel.removeFromModel(category, term);				
-			}
+			//Remove this filter term from the searchModel
+			this.searchModel.removeFromModel(category, term);				
 			
 			//Hide the filter from the UI
 			this.hideFilter(filterNode);
@@ -1673,9 +1668,6 @@ define(['jquery',
 						//Save our geohash search settings
 						viewRef.searchModel.set('geohashes', geohashBBoxes);
 						viewRef.searchModel.set('geohashLevel', precision);
-												
-						//Add a new visual 'current filter' to the DOM for the spatial search
-						viewRef.showFilter('spatial', viewRef.reservedMapPhrase, true);
 					}
 					
 					//Reset to the first page
@@ -1734,9 +1726,28 @@ define(['jquery',
 			mapModel.set("mapOptions", mapModel.defaults().mapOptions);
 			
 			this.allowSearch = false;
+		},
+		
+		toggleMapFilter: function(e){				
+			var toggleInput = this.$(this.toggleMapFilterEl);
+			if((typeof toggleInput === "undefined") || !toggleInput) return;
 			
-			//Remove the map filter in the UI
-			this.hideFilter($('#current-spatial-filters').find('[data-term="'+ this.reservedMapPhrase +'"]'));
+			var isOn = $(toggleInput).prop("checked");
+			
+			//If the user clicked on the label, then change the checkbox for them
+			if(e.target.tagName == "LABEL"){
+				isOn = !isOn;
+				toggleInput.prop("checked", isOn);
+			}
+			
+			if(isOn)
+				this.searchModel.set("useGeohash", true);
+			else
+				this.searchModel.set("useGeohash", false);
+			
+			//Tell the map to trigger a new search and redraw tiles
+			this.allowSearch = true;			
+			google.maps.event.trigger(mapModel.get("map"), "idle");
 		},
 		
 		/**
@@ -2508,7 +2519,6 @@ define(['jquery',
 			}
 		
 		},
-		
 		
 		/**
 		 * ==================================================================================================

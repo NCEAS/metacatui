@@ -1188,7 +1188,7 @@ textarea.token{
 	display: block;
 }
 .map-toggle-container{
-  background-color: #333333;
+    background-color: #333333;
 	background: -moz-linear-gradient(top,  rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 37%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,1)), color-stop(37%,rgba(0,0,0,0.7)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
 	background: -webkit-linear-gradient(top,  rgba(0,0,0,1) 0%,rgba(0,0,0,0.7) 37%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
@@ -1196,20 +1196,14 @@ textarea.token{
 	background: -ms-linear-gradient(top,  rgba(0,0,0,1) 0%,rgba(0,0,0,0.7) 37%,rgba(0,0,0,0.7) 100%); /* IE10+ */
 	background: linear-gradient(to bottom,  rgba(0,0,0,1) 0%,rgba(0,0,0,0.7) 37%,rgba(0,0,0,0.7) 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#b3000000',GradientType=0 ); /* IE6-9 */
-
   padding: 5px;
-  position: absolute;
   top: 0px;
   z-index: 1;
+  height: auto;
+  position: relative;
+  display: block;
   width: 95%;
   width: calc(100% - 10px);
-  height: auto;
-}
-.map-toggle-container{
-	position: relative;
-	display: block;
-	width: 95%;
-	width: calc(100% - 10px);
 }
 .mapMode #results-view .map-toggle-container {
   display: none;
@@ -1226,6 +1220,14 @@ textarea.token{
 }
 .map-toggle-container > a > .icon{
 	margin-left: 5px;
+	margin-right: 5px;
+}
+.map-toggle-container > label{
+	color: #FFF;
+	float: right;
+}
+.map-toggle-container > input[type="checkbox"]{
+	float: right;
 	margin-right: 5px;
 }
 /* For list mode only */
