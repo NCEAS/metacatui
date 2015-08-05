@@ -60,7 +60,7 @@ define(['jquery',
 		resultMarkers: [],
 		//The geohash value for each tile drawn on the map
 		tileGeohashes: [],
-		toggleMapFilterEl: "input.toggle-map-filter",
+		mapFilterToggle: ".toggle-map-filter",
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -85,7 +85,7 @@ define(['jquery',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			  'click .toggle-map' : 'toggleMapMode',
 				   			 'click .toggle-list' : 'toggleList',
-				   	   "click .toggle-map-filter" : "toggleMapFilter",
+				   	   "click .toggle-map-filter" : "mapFilterToggle",
 				   		 'mouseover .open-marker' : 'showResultOnMap',
 				   	      'mouseout .open-marker' : 'hideResultOnMap',
 		      'mouseover .prevent-popover-runoff' : 'preventPopoverRunoff'
@@ -159,7 +159,7 @@ define(['jquery',
 			this.updateStats();		
 			
 			//Render the Google Map
-			this.renderMap();	
+			this.renderMap();
 			
 			//Initialize the tooltips
 			var tooltips = $(".tooltip-this");
@@ -1600,6 +1600,9 @@ define(['jquery',
 			$("#map-container").append('<div id="map-canvas"></div>');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
 			mapModel.set("map", this.map);
+			
+			//Hide the map filter toggle element
+			this.$(this.mapFilterToggle).hide();
 
 			//Store references
 			var mapRef = this.map;
@@ -1626,10 +1629,14 @@ define(['jquery',
 					
 					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
 					if(viewRef.map.getZoom() == mapOptions.minZoom){
+						
 						if(!viewRef.hasZoomed){
 							if(needsRecentered && !viewRef.hasDragged) mapModel.get("map").setCenter(savedMapCenter);
 							return; 
 						}
+						
+						//Hide the map filter toggle element
+						viewRef.$(viewRef.mapFilterToggle).hide();
 						
 						viewRef.resetMap();
 					}
@@ -1637,6 +1644,9 @@ define(['jquery',
 						//If the user has not zoomed or dragged to a new area of the map yet and our map is off-center, recenter it
 						if(!viewRef.hasZoomed && needsRecentered)
 							mapModel.get("map").setCenter(savedMapCenter);
+							
+						//Show the map filter toggle element
+						viewRef.$(viewRef.mapFilterToggle).show();
 						
 						//Get the Google map bounding box
 						var boundingBox = mapRef.getBounds();
@@ -1681,7 +1691,12 @@ define(['jquery',
 				}
 				//Else, if this is the fresh map render on page load
 				else{
-					if(needsRecentered && !viewRef.hasDragged) mapModel.get("map").setCenter(savedMapCenter);
+					if(needsRecentered && !viewRef.hasDragged) 
+						mapModel.get("map").setCenter(savedMapCenter);
+					
+					//Show the map filter toggle element
+					if(viewRef.map.getZoom() > mapOptions.minZoom)
+						viewRef.$(viewRef.mapFilterToggle).show();
 				}
 				
 				viewRef.hasZoomed = false;
@@ -1728,14 +1743,14 @@ define(['jquery',
 			this.allowSearch = false;
 		},
 		
-		toggleMapFilter: function(e){				
-			var toggleInput = this.$(this.toggleMapFilterEl);
+		toggleMapFilter: function(e, a){				
+			var toggleInput = this.$("input" + this.mapFilterToggle);
 			if((typeof toggleInput === "undefined") || !toggleInput) return;
 			
 			var isOn = $(toggleInput).prop("checked");
 			
 			//If the user clicked on the label, then change the checkbox for them
-			if(e.target.tagName == "LABEL"){
+			if(e.target.tagName != "INPUT"){
 				isOn = !isOn;
 				toggleInput.prop("checked", isOn);
 			}
