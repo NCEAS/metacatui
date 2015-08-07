@@ -71,7 +71,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		      pubYear : "Publish year",
 		      	   id : "Identifier",
 		        taxon : "Taxon",
-		      spatial : "Location"
+		      spatial : "Location",
+		    	  all : ""
 		},
 		
 		//Map the filter names to their index field names

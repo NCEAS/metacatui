@@ -1242,6 +1242,7 @@ textarea.token{
   min-height: 1.5em;
   line-height: 1.5em;
   width: 100%;
+  width: calc(100% - 20px);
   margin: 5px 0px;
   border-radius: 3px;
   -webkit-border-radius: 3px;

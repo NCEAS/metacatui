@@ -989,7 +989,8 @@ define(['jquery',
 				desc = label;
 			}
 			
-			var categoryLabel = this.searchModel.fieldLabels[category] || category;
+			var categoryLabel = this.searchModel.fieldLabels[category];
+			if(typeof categoryLabel === "undefined") categoryLabel = category;
 			
 			//Add a filter node to the DOM
 			var filterEl = viewRef.currentFilterTemplate({
