@@ -67,11 +67,19 @@
 					<div id="filter-year" class="filter-contain row-fluid" data-category="year">
 						<h3><i class="icon-calendar"></i>Year</h3>
 						<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
-						<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top">Data covers</label>					
+						<label class="span11 left year-tooltip" for="data_year" id="data-year-label" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top">
+							<i class="icon icon-check"></i>
+							<i class="icon icon-check-empty"></i>
+							Data covers
+						</label>					
 						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="top"></i>	
 						<div class="clear"></div>
 						<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-						<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top" >Published between</label>
+						<label class="span11 left year-tooltip" for="publish_year" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top" >
+							<i class="icon icon-check"></i>
+							<i class="icon icon-check-empty"></i>
+							Published between
+						</label>
 						<i class="icon-question-sign more-info popover-this" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="top"></i>	
 						<div class="clear"></div>
 						<input class="span3"  type="number" id="min_year" value="<%=yearMin%>" />

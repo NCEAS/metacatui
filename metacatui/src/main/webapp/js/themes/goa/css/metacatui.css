@@ -1209,12 +1209,23 @@ svg .point:hover ~ .line-chart-label{
     	color: #333;
     }
     
+    .filter-contain{
+    	height: auto;
+    	max-height: 100%;
+    }
     .filter-contain .filter-contain{
     	padding: 0px 15px 12px 15px;
 		border-bottom: 1px solid #e0e0e0;
     }
-
-    
+   	.filter-contain > label{
+		font-weight: normal;
+		color: #777;
+	}
+	.filter-contain input[type="checkbox"] ~ label {
+	  float: left;
+	  width: 75%;
+	  text-transform: capitalize;
+	}  
     .category-nav .active > a,
     .category-nav li.nav-item.active{
     	background-color: #e0e0e0;
@@ -1291,16 +1302,7 @@ svg .point:hover ~ .line-chart-label{
    
     #filter-year > input[type="number"]{
    		color: #006699;
-   		background: none;
-   		border: 0px;
-   		text-align: right;
-   		min-height: 2em;
-   		-webkit-appearance: none;
-   		box-shadow: none;
-   		top: -5px;
-   		position: relative;
-   		margin-bottom: 0px;
-   		margin-top: 10px;
+   		width: 60px;
     }
     
     #filter-year > input[type="number"]:focus{

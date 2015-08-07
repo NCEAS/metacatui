@@ -2668,9 +2668,9 @@ define(['jquery',
 		
 		toggleFilterCollapse: function(e){
 			if(typeof e !== "undefined")
-				var container = $(e.target).parents(".filter-contain");
+				var container = $(e.target).parents(".filter-contain.collapsable");
 			else
-				var container = this.$(".filter-contain");
+				var container = this.$(".filter-contain.collapsable");
 		
 			//If we can't find a container, then don't do anything
 			if(container.length < 1) return;

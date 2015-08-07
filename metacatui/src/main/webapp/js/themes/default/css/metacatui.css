@@ -1186,15 +1186,6 @@ Bold 700
     #includes-files input[type="checkbox"]{
     	display: none;
     }
-    
-    #filter-year label,
-    #includes-files label{
-   		padding: 0px 5px 0px 5px;
-		min-height: 1.5em;
-		width: auto;
-		max-width: 100%;
-		margin: 5px 5px 0px 0px;
-    }  
         .filter-contain .checkbox-list{
     	margin-left: 36px;
     }
@@ -1302,13 +1293,6 @@ Bold 700
     }
 
 	/*-- Currently applied filters --*/
-	.current-filters,
-	.current-filters[class*="span"]{
-		list-style: none;
-		margin-left: 10px;
-		min-height: 0px;
-	}
-	
 	.current-filters .current-filter{
 		color: #FFFFFF;
 	}
@@ -1326,39 +1310,10 @@ Bold 700
 	.current-filters > li[class*="span"]{
 		background-color: #166194;
 		color: #FFF;
-		padding: 0px 5px 0px 5px;
-		height: auto;
-		line-height: 21px;
-		width: auto;
-		max-width: 100%;
-		margin: 5px 5px 0px 0px;
-		float:left;
-		border-radius: 3px;
-		-webkit-border-radius: 3px;
-		-moz-border-radius: 3px;
-		font-size: 14px;
 	}
-	
-	 #includes-files label,
-     #includes-files label.ui-state-active{
-    	margin-top: 0px;
-    	line-height: 21px;
-    	float:left;
-    	height: 21px;
-    } 
-    
     #filter-year label#data-year-label{
     	margin-top:0px;
     }
-	
-	.current-filters > li > span{
-		float: left;
-		margin-right: 5px;
-		line-height: 1.5em;
-		white-space: normal;
-		max-width: 90%;
-	}
-	
 	.current-filters > li > i{
 		float: right;
 		display: inline;
@@ -1565,7 +1520,7 @@ Bold 700
 	  position: relative;
 	  height: 500px;
 	  width: 400px;
-	  width: calc(100% - 221px - 400px);
+	  width: calc(100% - 246px - 400px);
 	  float: left;
 	}
 	.mapMode #map-container {

@@ -28,10 +28,10 @@
 				<ul id="current-taxon-filters" class="current-filters" data-category="taxon"></ul>
 				<ul id="current-spatial-filters" class="current-filters" data-category="spatial"></ul>
 		    </div>
-    		<div class="filter-container">
+    		<div class="filter-container collapsable">
 				<h5 id="filters-header">Filter by:</h5>
 				
-				<div class="filter-contain" data-category="attribute">
+				<div class="filter-contain collapsable" data-category="attribute">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
 						<i class="icon icon-caret-down collapse"></i>
@@ -48,7 +48,7 @@
 			    </div>
 			    
 			    <% if(searchModelRef.filterIsAvailable("annotation")){ %>
-			    <div class="filter-contain" data-category="annotation">
+			    <div class="filter-contain collapsable" data-category="annotation">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
 						<i class="icon icon-caret-down collapse"></i>
@@ -66,7 +66,7 @@
 			    
 			    <% } %>
 			    
-				<div class="filter-contain" id="includes-files" data-category="resourceMap">
+				<div class="filter-contain collapsable" id="includes-files" data-category="resourceMap">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>					
 						<i class="icon icon-caret-down collapse"></i>
@@ -88,7 +88,7 @@
 				</div>
 				
 				<% if(searchModelRef.filterIsAvailable("dataSource")){ %>
-					<div class="filter-contain" id="member-nodes-container" data-category="dataSource">
+					<div class="filter-contain collapsable" id="member-nodes-container" data-category="dataSource">
 						<label class="expand-collapse-control">
 							<i class="icon icon-caret-right expand"></i>
 							<i class="icon icon-caret-down collapse"></i>
@@ -104,7 +104,7 @@
 					</div>
 				<% } %>
 				
-				<div class="filter-contain">
+				<div class="filter-contain collapsable">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
 						<i class="icon icon-caret-down collapse"></i>
@@ -120,7 +120,7 @@
 				    <div class="clear"></div>
 			    </div>	
 				
-				<div id="filter-year" class="filter-contain">
+				<div id="filter-year" class="filter-contain collapsable">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
 						<i class="icon icon-caret-down collapse"></i>
@@ -157,7 +157,7 @@
 					<div class="clear"></div>
 				</div>
 				
-				<div class="filter-contain" data-category="id">
+				<div class="filter-contain collapsable" data-category="id">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
 						<i class="icon icon-caret-down collapse"></i>
@@ -173,7 +173,7 @@
 					<div class="clear"></div>				
 				</div>
 				
-				<div class="filter-contain" data-category="taxon">
+				<div class="filter-contain collapsable" data-category="taxon">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
 						<i class="icon icon-caret-down collapse"></i>
@@ -189,7 +189,7 @@
 					<div class="clear"></div>			
 				</div>
 				
-				<div class="filter-contain no-border" data-category="spatial">
+				<div class="filter-contain collapsable no-border" data-category="spatial">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
 						<i class="icon icon-caret-down collapse"></i>

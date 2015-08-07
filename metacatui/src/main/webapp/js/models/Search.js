@@ -105,7 +105,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Don't count the geohashes or directions as a filter if the geohash filter is turned off
 			if(!this.get("useGeohash"))
 				currentFilters = _.difference(currentFilters, this.spatialFilters);
-
+			
+			return currentFilters;
 		},
 		
 		filterCount: function() {
