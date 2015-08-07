@@ -1323,9 +1323,7 @@ Bold 700
 	}
 	
 	.current-filters > li,
-	.current-filters > li[class*="span"],
-	#filter-year label.ui-state-active, 
-	#includes-files label.ui-state-active{
+	.current-filters > li[class*="span"]{
 		background-color: #166194;
 		color: #FFF;
 		padding: 0px 5px 0px 5px;
@@ -1368,13 +1366,6 @@ Bold 700
 		font-size: 1em;
 		color: #71A9BD;
 	}
-	
-	
-	label.ui-state-active i{
-		color: #71A9BD;
-	}
-	
-	
 	label.ui-state-active i.icon-check-empty,
 	label.ui-state-default i.icon-check{
 		display: none;

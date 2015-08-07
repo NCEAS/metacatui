@@ -485,7 +485,7 @@ Bold 700 Italic
 	transition: all 1s;
 	display: none;
 	height: 100%;
-	width: calc(100% - 220px - 400px);
+	width: calc(100% - 216px - 400px);
 	position: relative;
 }
 
@@ -1724,11 +1724,6 @@ svg .domain{
   		font-size: .9em;
   	} 
 	
-	label.ui-state-active i{
-		color: #8DBCDD;
-	}
-	
-	
 	label.ui-state-active i.icon-check-empty,
 	label.ui-state-default i.icon-check{
 		display: none;
@@ -1761,9 +1756,7 @@ svg .domain{
 	}
 
 	.current-filters > li,
-	.current-filters > li[class*="span"],
-	#filter-year label.ui-state-active, 
-	#includes-files label.ui-state-active{
+	.current-filters > li[class*="span"]{
 		background-color: #006699;
 		padding: 0px 5px 0px 5px;
 		border-radius: 2px;

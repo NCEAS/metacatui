@@ -988,24 +988,6 @@ table th.btn-container .btn{
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-    #sidebar{
-    	width: 225px;
-    	padding: 0px 20px 0px 10px;
-    	height: auto;
-    	overflow-y: visible;
-    	overflow-x: visible;
-		float: left;
-		clear: left;
-    }
-    .mapMode #sidebar{
-		padding-right: 25px;
-		width: 205px;
-		height: 700px;
-		border-right: 1px solid #CCC;
-		overflow-x: hidden;
-		overflow-y: overlay;
-		-webkit-transform: translate3d(0,0,0);
-    }
     
     .subset-choice{
     background-color: rgba(23, 97, 146, 0.46);
@@ -1032,18 +1014,6 @@ table th.btn-container .btn{
 	}
     
     /***Filters ***/
-
-  
-    
-    #filters-header{
-    	padding: 0px;
-    	margin-bottom: 0px;
-    }
-    
-    .filter-input-contain input.filter{
-    	width: 77%;
-    	margin-left: 3px;
-    }
     	
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
@@ -1081,12 +1051,6 @@ table th.btn-container .btn{
     
     .filter-contain.no-border{
     	border-width: 0px;
-    }
-    
-    #all_input{
-    	width: 135px;
-    	width: calc(100% - 30px - 10px);
-    	margin-left: 0px;
     }
     
     input.filter::-webkit-input-placeholder{
@@ -1159,7 +1123,8 @@ table th.btn-container .btn{
     	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
-    	width: 93%;
+    	width: 89%;
+    	width: calc(100% - 20px);
     }
     
     #year-range.disabled,
@@ -1193,12 +1158,6 @@ table th.btn-container .btn{
     }
 
 	/*-- Currently applied filters --*/
-	.current-filters,
-	.current-filters[class*="span"]{
-		list-style: none;
-		margin-left: 3px;
-		min-height: 0px;
-	}
 	
 	.current-filters .current-filter{
 		color: #FFFFFF;
@@ -1215,27 +1174,19 @@ table th.btn-container .btn{
 	}
 	
 	.current-filters > li,
-	.current-filters > li[class*="span"],
-	.ui-buttonset label.ui-state-active{
+	.current-filters > li[class*="span"]{
 		background-color: #1C6E84;
 		color: #FFF;
-	}
-	
-	.current-filter > span{
-		max-width: 90%;
-		overflow: hidden;
-		white-space: normal;
-		word-break: break-word;
-		display: inline-block;
-		float: left;
 	}
     
     #filter-year label{
     	margin-top:0px;
+    	margin-bottom: 10px;
     	display: inline-block;
     	float: left;
     	margin-right: 10px;
     	font-size: 13px;
+    	padding-left: 0px;
     }
 	
 	.current-filters > li > i{
@@ -1246,12 +1197,6 @@ table th.btn-container .btn{
 		color: #71A9BD;
 		margin-left: 5px;
 	}
-	
-	
-	label.ui-state-active i{
-		color: #71A9BD;
-	}
-	
 	.current-filters > li > i:hover{
     	cursor: pointer;
     	color: #FFFFFF;
@@ -1974,7 +1919,7 @@ svg .point:hover ~ .line-chart-label{
 #map-container{
 	height: 500px;
 	width: 400px;
-	width: calc(100% - 241px - 400px);	/* 100% - sidebar - results */
+	width: calc(100% - 216px - 400px);	/* 100% - sidebar - results */
 	float: left;
 }
 #map-canvas{
