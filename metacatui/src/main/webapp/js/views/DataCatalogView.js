@@ -1291,7 +1291,7 @@ define(['jquery',
 						position: {
 							my: "left top",
 							at: "left bottom",
-							collistion: "flipfit"
+							collision: "flipfit"
 						}
 					});
 					
@@ -1337,7 +1337,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collistion: "flipfit"
+								collision: "flipfit"
 							}
 						});
 					}
@@ -1387,7 +1387,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collistion: "flipfit"
+								collision: "flipfit"
 							}
 						});
 					}
@@ -1430,7 +1430,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collistion: "flipfit"
+								collision: "flipfit"
 							}
 						});
 					}
