@@ -58,7 +58,9 @@
 	}
     #Content{
     	padding: 20px;
+    	padding-bottom: 250px;
     	width: 100%;
+    	max-width: 100%;
     	margin-left: 0px;
     	margin-right: 0px;
     }
@@ -1340,8 +1342,11 @@ svg .point:hover ~ .line-chart-label{
     #results-view{
     	padding: 0 7%;
     	width: 85%;
+    	max-height: 100%;
     }
-    
+    #sidebar .filter-contain{
+    	max-height: 100%;
+    }
     #sidebar > .filter-contain > .row-fluid {
    	  margin-bottom: 30px;
    }
@@ -1482,7 +1487,9 @@ svg .point:hover ~ .line-chart-label{
     	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
-    	width: 95%;
+    	  width: 90%;
+  margin-top: 10px;
+  margin-left: 5px;
     }
     
     #year-range.disabled,

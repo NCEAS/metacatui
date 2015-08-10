@@ -60,7 +60,7 @@ define(['jquery',
 		resultMarkers: [],
 		//The geohash value for each tile drawn on the map
 		tileGeohashes: [],
-		toggleMapFilterEl: "input.toggle-map-filter",
+		mapFilterToggle: ".toggle-map-filter",
 		
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -82,6 +82,7 @@ define(['jquery',
 					'click a.keyword-search-link' : 'additionalCriteria',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
+ 'click .filter-contain .expand-collapse-control' : 'toggleFilterCollapse',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			  'click .toggle-map' : 'toggleMapMode',
 				   			 'click .toggle-list' : 'toggleList',
@@ -147,6 +148,7 @@ define(['jquery',
 				resourceMap     : this.searchModel.get('resourceMap'),
 				searchOptions   : registryModel.get('searchOptions'),
 				gmaps           : gmaps,
+				mode		    : appModel.get("searchMode"),
 				useMapBounds    : this.searchModel.get("useGeohash"),
 				username        : appUserModel.get('username'),
 				isMySearch      : (_.indexOf(this.searchModel.get("username"), appUserModel.get("username")) > -1),
@@ -159,18 +161,19 @@ define(['jquery',
 			this.updateStats();		
 			
 			//Render the Google Map
-			this.renderMap();	
+			this.renderMap();
 			
 			//Initialize the tooltips
 			var tooltips = $(".tooltip-this");
 			
 			//Find the tooltips that are on filter labels - add a slight delay to those
 			var groupedTooltips = _.groupBy(tooltips, function(t){
-				return (($(t).prop("tagName") == "LABEL") && ($(t).parents(".filter-container").length > 0))
+				return ((($(t).prop("tagName") == "LABEL") || ($(t).parent().prop("tagName") == "LABEL")) && ($(t).parents(".filter-container").length > 0))
 			});
 			var forFilterLabel = true,
-				forOtherElements = false;			
-			$(groupedTooltips[forFilterLabel]).tooltip({ delay: {show: "600"}});
+				forOtherElements = false;
+			
+			$(groupedTooltips[forFilterLabel]).tooltip({ delay: {show: "800"}});
 			$(groupedTooltips[forOtherElements]).tooltip();
 			
 			//Initialize all popover elements
@@ -178,6 +181,9 @@ define(['jquery',
 			
 			//Initialize the resizeable content div
 			$('#content').resizable({handles: "n,s,e,w"});
+			
+			//Collapse the filters
+			this.toggleFilterCollapse();
 			
 			//Initialize the jQueryUI button checkboxes
 			$( "#filter-year" ).buttonset();
@@ -315,9 +321,6 @@ define(['jquery',
 		 */
 		getResults: function (page) {			
 			
-			//Style the UI as loading
-			this.loading();
-			
 			//Set the sort order based on user choice
 			var sortOrder = this.searchModel.get('sortOrder');
 			this.searchResults.setSort(sortOrder);
@@ -454,11 +457,12 @@ define(['jquery',
 			var checked = $(checkbox).prop("checked");
 
 			if(typeof category == "undefined") var category = $(checkbox).attr('data-category');
-			if(typeof value == "undefined") var value = $(checkbox).attr("value");
+			if(typeof value == "undefined")    var value = $(checkbox).attr("value");
 			
 			//If the user just unchecked the box, then remove this filter
 			if(!checked){
 				this.searchModel.removeFromModel(category, value);
+				this.hideFilter(category, value);
 			}
 			//If the user just checked the box, then add this filter
 			else{
@@ -489,6 +493,9 @@ define(['jquery',
 					this.searchModel.set(category, filter);				
 				}
 				
+				//Show the filter element
+				this.showFilter(category, value, true, labl);
+				
 				//Show the reset button
 				this.showClearButton();
 			}
@@ -509,6 +516,7 @@ define(['jquery',
 			
 			//If this filter is not available, exit this function
 			if(!this.searchModel.filterIsAvailable(category)) return false;
+			if((category == "pubYear") || (category == "dataYear")) return;
 			
 			//If the checkbox has a value, then update as a string value not boolean
 			var value = $(checkbox).attr("value");
@@ -517,8 +525,19 @@ define(['jquery',
 				return;
 			}
 			else value = $(checkbox).prop('checked');
+			
+			this.$(".ui-buttonset").buttonset("refresh");
 
 			this.searchModel.set(category, value);
+			
+			//Add the filter to the UI
+			if(value)
+				this.showFilter(category, "", true);
+			//Remove the filter from the UI
+			else{
+				value = "";
+				this.hideFilter(category, value);
+			}
 			
 			//Show the reset button
 			this.showClearButton();
@@ -571,14 +590,19 @@ define(['jquery',
 						  //refresh the UI buttonset so it appears as checked/unchecked
 						  $("#filter-year").buttonset("refresh");
 					  }
+					  
+				      //Add the filter elements
+					  if($('#publish_year').prop('checked'))
+						  viewRef.showFilter($('#publish_year').attr("data-category"), true, false, ui.values[0] + " to " + ui.values[1], {replace: true});
+					  if($('#data_year').prop('checked'))				      
+						  viewRef.showFilter($('#data_year').attr("data-category"), true, false, ui.values[0] + " to " + ui.values[1], {replace: true});
 				      
 					  //Route to page 1
 				      viewRef.updatePageNumber(0);
 					      
 					 //Trigger a new search
 					 viewRef.triggerSearch();
-				    } 
-				    
+				    }  
 				  });
 				
 				//Get the minimum and maximum years of this current search and use those as the min and max values in the slider
@@ -646,6 +670,10 @@ define(['jquery',
 
 					//Slide the handles back to the defaults
 					$('#year-range').slider("values", [this.searchModel.defaults().yearMin, this.searchModel.defaults().yearMax]);
+					
+					//Hide the filters
+					this.hideFilter("dataYear");
+					this.hideFilter("pubYear");
 				}
 				//If either of the year inputs have changed or if just one of the year types were unchecked
 				else{
@@ -667,16 +695,30 @@ define(['jquery',
 					  //And update the search model
 					  model.set('dataYear', true);
 					  
+					  //Add the filter elements
+					  this.showFilter($('#data_year').attr("data-category"), true, true, minVal + " to " + maxVal, {replace: true});
+				      					  
 					  //refresh the UI buttonset so it appears as checked/unchecked
 					  $("#filter-year").buttonset("refresh");
 					}
-				    
-					//Route to page 1
-				    this.updatePageNumber(0);
-					      
-				    //Trigger a new search
-					this.triggerSearch();
+					else{
+						//Add the filter elements
+						if(pubYearChecked)
+							this.showFilter($('#publish_year').attr("data-category"), true, true, minVal + " to " + maxVal, {replace: true});
+						else
+							this.hideFilter($('#publish_year').attr("data-category"), true);
+						if(dataYearChecked)			      
+							this.showFilter($('#data_year').attr("data-category"), true, true, minVal + " to " + maxVal, {replace: true});
+						else
+							this.hideFilter($('#data_year').attr("data-category"), true);
+					}
 				}
+				
+				//Route to page 1
+			    this.updatePageNumber(0);
+				      
+			    //Trigger a new search
+				this.triggerSearch();
 			}
 		},
 		
@@ -795,17 +837,27 @@ define(['jquery',
 			//Get the parent element that stores the filter term 
 			var filterNode = $(e.target).parent();
 			
-			//Find this element's category in the data-category attribute of it's parent
-			var category = filterNode.attr("data-category") || filterNode.parent().attr('data-category');
-			
-			//Get the filter term
-			var term = $(filterNode).attr('data-term');
-			
-			//Remove this filter term from the searchModel
-			this.searchModel.removeFromModel(category, term);				
+			//Find this filter's category and value
+			var category = filterNode.attr("data-category") || filterNode.parent().attr('data-category'),			
+				value    = $(filterNode).attr('data-term');
+
+			//Remove this filter from the searchModel
+			this.searchModel.removeFromModel(category, value);				
 			
 			//Hide the filter from the UI
-			this.hideFilter(filterNode);
+			this.hideFilter(category, value);
+			
+			//Find if there is an associated checkbox with this filter
+			var checkbox = $("input[type='checkbox'][data-category='" + category + "']");
+			if(checkbox.length > 0){
+				var checkboxWithValue = checkbox.find("[value='" + value + "']");
+				if(checkboxWithValue.length > 0)
+					checkboxWithValue.prop("checked", false);
+				else
+					checkbox.prop("checked", false);
+				
+				this.$(".ui-buttonset").buttonset("refresh");
+			}
 			
 			//Route to page 1
 			this.updatePageNumber(0);
@@ -821,10 +873,8 @@ define(['jquery',
 						
 			this.allowSearch = true;
 			
-			//Clear all the filters in the UI
-			this.$el.find('.current-filter').each(function(){
-				viewRef.hideFilter(this);
-			});
+			//Hide all the filters in the UI
+			$.each(this.$(".current-filter"), function(){ viewRef.hideEl(this); });
 			
 			//Hide the clear button
 			this.hideClearButton();
@@ -844,7 +894,7 @@ define(['jquery',
 			$("#data_year").prop("checked",     this.searchModel.get("dataYear"));
 			$("#publish_year").prop("checked",  this.searchModel.get("pubYear"));
 			this.listDataSources();
-			$(".filter-container .ui-buttonset").buttonset("refresh");
+			$(".ui-buttonset").buttonset("refresh");
 			
 			//Zoom out the Google Map
 			this.resetMap();	
@@ -860,24 +910,34 @@ define(['jquery',
 			this.triggerSearch();
 		},
 		
-		//Removes a specified filter node from the DOM
-		hideFilter : function(filterNode){
-			//Remove the filter node from the DOM
-			$(filterNode).fadeOut("slow", function(){
-				filterNode.remove();
+		hideEl: function(element){
+			//Fade out and remove the element
+			$(element).fadeOut("slow", function(){
+				element.remove();
 			});	
 		},
 		
+		//Removes a specified filter node from the DOM
+		hideFilter: function(category, value){
+			if(typeof value === "undefined")
+				var filterNode = this.$(".current-filters[data-category='" + category + "']").children(".current-filter");
+			else
+				var filterNode = this.$(".current-filters[data-category='" + category + "']").children("[data-term='" + value + "']");
+
+			//Remove the filter node from the DOM
+			this.hideEl(filterNode);				
+		},
+		
 		//Adds a specified filter node to the DOM
-		showFilter : function(category, term, checkForDuplicates, label){
+		showFilter: function(category, term, checkForDuplicates, label, options){
 			
 			var viewRef = this;
 			
-			if((typeof term === "undefined") || !term) return false;
+			if(typeof term === "undefined") return false;
 			
 			//Get the element to add the UI filter node to 
 			//The pattern is #current-<category>-filters
-			var e = this.$el.find('#current-' + category + '-filters');
+			var filterContainer = this.$el.find('#current-' + category + '-filters');
 			
 			//Allow the option to only display this exact filter category and term once to the DOM
 			//Helpful when adding a filter that is not stored in the search model (for display only)
@@ -885,7 +945,7 @@ define(['jquery',
 				var duplicate = false;
 				
 				//Get the current terms from the DOM and check against the new term
-				e.children().each( function(){
+				filterContainer.children().each( function(){
 					if($(this).attr('data-term') == term){
 						duplicate = true;
 					}
@@ -929,14 +989,31 @@ define(['jquery',
 				desc = label;
 			}
 			
+			var categoryLabel = this.searchModel.fieldLabels[category];
+			if(typeof categoryLabel === "undefined") categoryLabel = category;
+			
 			//Add a filter node to the DOM
-			e.prepend(viewRef.currentFilterTemplate({
+			var filterEl = viewRef.currentFilterTemplate({
+				category: categoryLabel,
 				value: value, 
 				label: label,
 				description: desc
 				}
-			));	
-						
+			);
+			
+			//Add the filter to the page - either replace or tack on
+			if(options && options.replace){
+				var currentFilter = filterContainer.find(".current-filter");
+				if(currentFilter.length > 0)
+					currentFilter.replaceWith(filterEl);	
+				else
+					filterContainer.prepend(filterEl);						
+			}
+			else
+				filterContainer.prepend(filterEl);	
+				
+			//Tooltips and Popovers
+			$(filterEl).tooltip({ delay: { show: 800 }});
 			
 			return;
 		},
@@ -987,13 +1064,13 @@ define(['jquery',
 					//Add tooltips to the label element
 					$(label).tooltip({
 						placement: "top",
-						delay: {"show" : 700},
+						delay: {"show" : 900},
 						trigger: "hover",
 						title: member.description
 					});
 					
 					//If this data source is already selected as a filter (from the search model), then check the checkbox
-					if(checked) $(input).attr("checked", "checked");
+					if(checked) $(input).prop("checked", "checked");
 								
 					//Collapse some of the checkboxes and labels after a certain amount
 					if(i > (listMax - 1)){
@@ -1053,6 +1130,8 @@ define(['jquery',
 				
 				$(mnFilterContainer).find("checkbox[value='" + value + "']").prop("checked", true);	
 			});
+			
+			this.$(".ui-buttonset").buttonset("refresh");
 			
 			return true;
 		},
@@ -1212,7 +1291,7 @@ define(['jquery',
 						position: {
 							my: "left top",
 							at: "left bottom",
-							collistion: "flipfit"
+							collision: "flipfit"
 						}
 					});
 					
@@ -1258,7 +1337,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collistion: "flipfit"
+								collision: "flipfit"
 							}
 						});
 					}
@@ -1308,7 +1387,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collistion: "flipfit"
+								collision: "flipfit"
 							}
 						});
 					}
@@ -1351,7 +1430,7 @@ define(['jquery',
 							position: {
 								my: "left top",
 								at: "left bottom",
-								collistion: "flipfit"
+								collision: "flipfit"
 							}
 						});
 					}
@@ -1449,12 +1528,21 @@ define(['jquery',
 		},
 		
 		hideClearButton: function(){
+			
+			//Show the current filters panel
+			this.$(".current-filters-container").slideUp();
+			
 			//Hide the reset button
 			$('#clear-all').addClass("hidden");
 			this.setAutoHeight();
 		},
 		
 		showClearButton: function(){
+			
+			//Show the current filters panel
+			if(_.difference(this.searchModel.currentFilters(), this.searchModel.spatialFilters).length > 0)
+				this.$(".current-filters-container").slideDown();
+			
 			//Show the reset button
 			$("#clear-all").removeClass("hidden");
 			this.setAutoHeight();
@@ -1600,6 +1688,9 @@ define(['jquery',
 			$("#map-container").append('<div id="map-canvas"></div>');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
 			mapModel.set("map", this.map);
+			
+			//Hide the map filter toggle element
+			this.$(this.mapFilterToggle).hide();
 
 			//Store references
 			var mapRef = this.map;
@@ -1626,10 +1717,14 @@ define(['jquery',
 					
 					//If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
 					if(viewRef.map.getZoom() == mapOptions.minZoom){
+						
 						if(!viewRef.hasZoomed){
 							if(needsRecentered && !viewRef.hasDragged) mapModel.get("map").setCenter(savedMapCenter);
 							return; 
 						}
+						
+						//Hide the map filter toggle element
+						viewRef.$(viewRef.mapFilterToggle).hide();
 						
 						viewRef.resetMap();
 					}
@@ -1637,6 +1732,9 @@ define(['jquery',
 						//If the user has not zoomed or dragged to a new area of the map yet and our map is off-center, recenter it
 						if(!viewRef.hasZoomed && needsRecentered)
 							mapModel.get("map").setCenter(savedMapCenter);
+							
+						//Show the map filter toggle element
+						viewRef.$(viewRef.mapFilterToggle).show();
 						
 						//Get the Google map bounding box
 						var boundingBox = mapRef.getBounds();
@@ -1681,7 +1779,12 @@ define(['jquery',
 				}
 				//Else, if this is the fresh map render on page load
 				else{
-					if(needsRecentered && !viewRef.hasDragged) mapModel.get("map").setCenter(savedMapCenter);
+					if(needsRecentered && !viewRef.hasDragged) 
+						mapModel.get("map").setCenter(savedMapCenter);
+					
+					//Show the map filter toggle element
+					if(viewRef.map.getZoom() > mapOptions.minZoom)
+						viewRef.$(viewRef.mapFilterToggle).show();
 				}
 				
 				viewRef.hasZoomed = false;
@@ -1728,14 +1831,14 @@ define(['jquery',
 			this.allowSearch = false;
 		},
 		
-		toggleMapFilter: function(e){				
-			var toggleInput = this.$(this.toggleMapFilterEl);
+		toggleMapFilter: function(e, a){				
+			var toggleInput = this.$("input" + this.mapFilterToggle);
 			if((typeof toggleInput === "undefined") || !toggleInput) return;
 			
 			var isOn = $(toggleInput).prop("checked");
 			
 			//If the user clicked on the label, then change the checkbox for them
-			if(e.target.tagName == "LABEL"){
+			if(e.target.tagName != "INPUT"){
 				isOn = !isOn;
 				toggleInput.prop("checked", isOn);
 			}
@@ -2432,7 +2535,7 @@ define(['jquery',
 		 * Without this delay, the app waits until all records are processed
 		*/
 		addAll: function () {
-			
+
 			// do this first to indicate coming results
 			this.updateStats();
 			
@@ -2517,7 +2620,6 @@ define(['jquery',
 						});
 				}
 			}
-		
 		},
 		
 		/**
@@ -2554,15 +2656,51 @@ define(['jquery',
 			$("#map-container").addClass("loading");
 			this.$results.addClass("loading");
 			
-			this.$results.html(this.loadingTemplate({ msg: "Searching data..." }));
+			this.$results.html(this.loadingTemplate());
 		},
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 
 		collapse: function(e){
-				var id = $(e.target).attr('data-collapse');
+			var id = $(e.target).attr('data-collapse');
 
-				$('#'+id).toggleClass('collapsed');
-
+			$('#'+id).toggleClass('collapsed');
+		},
+		
+		toggleFilterCollapse: function(e){
+			if(typeof e !== "undefined")
+				var container = $(e.target).parents(".filter-contain.collapsable");
+			else
+				var container = this.$(".filter-contain.collapsable");
+		
+			//If we can't find a container, then don't do anything
+			if(container.length < 1) return;
+			
+			//Expand
+			if($(container).is(".collapsed")){
+				//Toggle the visibility of the collapse/expand icons
+				$(container).find(".expand").hide();
+				$(container).find(".collapse").show();
+				
+				//Cache the height of this element so we can reset it on collapse
+				$(container).attr("data-height", $(container).css("height"));
+				
+				//Increase the height of the container to expand it
+				$(container).css("max-height", "900px");
+			}
+			//Collapse
+			else{
+				//Toggle the visibility of the collapse/expand icons
+				$(container).find(".collapse").hide();
+				$(container).find(".expand").show();
+							
+				//Decrease the height of the container to collapse it
+				if($(container).attr("data-height"))
+					$(container).css("max-height", $(container).attr("data-height"));
+				else
+					$(container).css("max-height", "1.5em");
+			}
+			
+			$(container).toggleClass("collapsed");
 		},
 		
 		//Move the popover element up the page a bit if it runs off the bottom of the page

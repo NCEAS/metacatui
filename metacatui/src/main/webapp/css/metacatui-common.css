@@ -1172,7 +1172,7 @@ textarea.token{
   float: none;
   cursor: pointer;
   font-size: 1em;
-  color: rgb(131, 131, 0);
+  color: rgb(97, 97, 0);
   font-weight: bold;
   background-color: rgb(255, 255, 66);
 }
@@ -1223,12 +1223,14 @@ textarea.token{
 	margin-right: 5px;
 }
 .map-toggle-container > label{
-	color: #FFF;
+	color: yellow;
 	float: right;
 }
 .map-toggle-container > input[type="checkbox"]{
 	float: right;
-	margin-right: 5px;
+	margin-top: 2px;
+	height: 20px;
+	width: 20px;
 }
 /* For list mode only */
 .list-only #sidebar{
@@ -1252,38 +1254,107 @@ textarea.token{
 	border-bottom: 1px dashed #CCC;
 	padding: 10px 0px 5px 0px;
 	width: 100%;
+	height: auto;
+	max-height: 1.4em;
+	transition: max-height .5s ease-in-out;
+	-webkit-transition: max-height .5s ease-in-out;
+	-moz-transition: max-height .5s ease-in-out;
+  	overflow: hidden;
 }   
 .filter-input-contain{
 	clear: both;
 }
 .filter-contain > label{
-   	font-size: .9em;
+   	font-size: 13px;
    	font-weight: bold;
    	display: inline-block;
    	height: 2em;
 }
-.current-filters > li,
-.current-filters > li[class*="span"],
-.ui-buttonset label.ui-state-active{
-	padding: 0px 5px 0px 5px;
-	height: auto;
-	line-height: 1.5em;
-	width: auto;
-	max-width: 175px;
-	margin: 5px 5px 0px 0px;
-	float:left;
-	border-radius: 3px;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	font-size: 14px;
+.current-filters-container{
+  margin-bottom: 10px;
+  display: block;
+  clear: both;
+  border-bottom: 2px solid #DDD;
+  padding-left: 10px;
+  padding-right: 25px;
+}
+.current-filters > .current-filter,
+.current-filters > .current-filter[class*="span"]{
+  padding: 0px 5px 0px 5px;
+  min-height: 1.5em;
+  line-height: 1.5em;
+  width: 100%;
+  width: calc(100% - 20px);
+  margin: 5px 0px;
+  border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  font-size: 13px;
+}
+.current-filters,
+.current-filters[class*="span"]{
+	list-style: none;
+	margin-left: 0px;
+	min-height: 0px;
+}
+.current-filter > span{
+	max-width: 90%;
+	overflow: hidden;
+	white-space: normal;
+	word-break: break-word;
+	display: inline-block;
+}
+.current-filter .category{
+	font-weight: bold;
+	margin-right: 5px;
 }
 .current-filter > .icon{
 	margin-left: 5px;
 }
+#sidebar{
+  	width: 225px;
+  	height: auto;
+  	overflow-y: visible;
+  	overflow-x: visible;
+	float: left;
+	clear: left;
+}
+.mapMode #sidebar{
+	width: 215px;
+	height: 700px;
+	border-right: 1px solid #CCC;
+	overflow-x: hidden;
+	overflow-y: overlay;
+	-webkit-transform: translate3d(0,0,0);
+}
+#sidebar > *{
+  padding-left: 10px;
+  padding-right: 25px;
+  width: calc(100% - 35px);
+}
+#sidebar > .input-append{
+	margin-top: 10px;
+	border-bottom: 2px solid #DDD;
+	padding-bottom: 16px;
+}
+#sidebar > .input-append > label{
+	font-size: 15px;
+	font-weight: bold;
+}
+#all_input {
+	width: 75%;
+	width: calc(100% - 50px);
+	margin-left: 0px;
+}
+.filter-input-contain input.filter{
+	width: 64%;
+}
 /*-- The filter checkboxes --*/
 #includes-files label{
- 	margin-right: 8px;
+ 	margin-right: 4px;
  	float: left;
+ 	font-size: 13px;
+ 	width: auto;
 }
 ul.checkbox-list{
  	list-style: none;
@@ -1340,7 +1411,7 @@ label.ui-state-active i.icon-check{
 	font-size: 17px;
 	float: left;
 	margin: 0px;
-	margin-right: 5px;
+	margin-right: 8px;
 }  
 .filter-contain .icon.more-info{
    	font-size: 14px;
@@ -1349,14 +1420,18 @@ label.ui-state-active i.icon-check{
    	float: left;
    	cursor: default;
 }   
-#filter-year > i,
-#includes-files > i{
+.filter-contain .icon.expand,
+.filter-contain .icon.collapse{
+	margin-right: 15px;
+}
+#filter-year > .icon,
+#includes-files > .icon{
   	margin-top: 0px;
 }  
-.filter-contain > i.icon-sitemap{
+.filter-contain > .icon-sitemap{
   	font-size: 18px;
 }  
-.filter-contain > i.icon-map-marker{
+.filter-contain > .icon-map-marker{
   	font-size: 22px;
 }
 .current-filters.active {

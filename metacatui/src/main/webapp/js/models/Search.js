@@ -61,6 +61,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			this.listenTo(this, "change:geohashes", this.groupGeohashes);
 		},
 		
+		fieldLabels: {
+			attribute : "Data attribute",
+		  resourceMap : "Only results with data", 
+		   annotation : "Annotation",
+		   dataSource : "Data source",
+		      creator : "Creator",
+		     dataYear : "Data coverage",
+		      pubYear : "Publish year",
+		      	   id : "Identifier",
+		        taxon : "Taxon",
+		      spatial : "Location",
+		      	  all : ""
+		},
+		
 		//Map the filter names to their index field names
 		fieldNameMap: {
 					 attribute : "attribute",
@@ -78,23 +92,27 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			     	     taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 		},
 		
-		filterCount: function() {
+		currentFilters: function(){
 			var changedAttr = this.changedAttributes(_.clone(this.defaults()));
 			
-			if (changedAttr) {
-				//Get all the changed attributes
-				var changedKeys = _.keys(changedAttr);
-				
-				//Don't count the sort order as a changed filter
-				changedKeys = _.without(changedKeys, "sortOrder");
-				
-				//Don't count the geohashes or directions as a filter if the geohash filter is turned off
-				if(!this.get("useGeohash"))
-					changedKeys = _.difference(changedKeys, this.spatialFilters);
-				
-				return changedKeys.length;
-			}
-			return 0;
+			if (!changedAttr) return new Array();
+			
+			var currentFilters = _.keys(changedAttr);
+
+			//Don't count the sort order as a changed filter
+			currentFilters = _.without(currentFilters, "sortOrder");
+			
+			//Don't count the geohashes or directions as a filter if the geohash filter is turned off
+			if(!this.get("useGeohash"))
+				currentFilters = _.difference(currentFilters, this.spatialFilters);
+			
+			return currentFilters;
+		},
+		
+		filterCount: function() {
+			var currentFilters = this.currentFilters();
+			
+			return currentFilters.length;			
 		},
 		
 		//Function filterIsAvailable will check if a filter is available in this search index - 
@@ -116,16 +134,34 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//Get the current filter terms array
 				var currentFilterValues = this.get(category);
 				
-				//Remove this filter term from the array
-				var newFilterValues = _.without(currentFilterValues, filterValueToRemove);
-				_.each(currentFilterValues, function(currentFilterValue, key){
-					if(currentFilterValue.value == filterValueToRemove){
-						newFilterValues = _.without(newFilterValues, currentFilterValue);
+				//The year filters have special rules
+				//If both year types will be reset/default, then also reset the year min and max values
+				if((category == "pubYear") || (category == "dataYear")){
+					var otherType = (category == "pubYear") ? "dataYear" : "pubYear";
+					
+					if(_.contains(this.currentFilters(), otherType))
+						var newFilterValues = this.defaults()[category];
+					else{
+						this.set(category, this.defaults()[category]);
+						this.set("yearMin", this.defaults()["yearMin"]);
+						this.set("yearMax", this.defaults()["yearMax"]);
+						return;
 					}
-				});
-				
+						
+				}
 				//Remove this filter term from the array
-				//var newFilterValues = _.without(currentFilterValues, filterValue);
+				else if(Array.isArray(currentFilterValues)){
+					var newFilterValues = _.without(currentFilterValues, filterValueToRemove);
+					_.each(currentFilterValues, function(currentFilterValue, key){
+						if(currentFilterValue.value == filterValueToRemove){
+							newFilterValues = _.without(newFilterValues, currentFilterValue);
+						}
+					});
+				}
+				//Get the default value
+				else
+					var newFilterValues = this.defaults()[category]; 
+						
 				//Set the new value
 				this.set(category, newFilterValues);	
 				
@@ -233,10 +269,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				
 				//If the resource map search setting is a list of resource map IDs
 				if(Array.isArray(resourceMap))
-					query += this.getGroupedQuery(this.fieldNameMap["resourceMap"], resourceMap,  { operator: "OR" });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["resourceMap"], resourceMap,  { operator: "OR" });				
 				//Otherwise, treat it as a binary setting
 				else if(resourceMap) 
-					query += this.fieldNameMap["resourceMap"] + ':*';
+					query += "+" + this.fieldNameMap["resourceMap"] + ':*';
 			}
 			
 			//---Username: search for this username in rightsHolder and submitter ---

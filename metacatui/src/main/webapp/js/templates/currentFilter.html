@@ -1,21 +1,22 @@
-<li class="current-filter popover-this" 
+<li class="current-filter" 
     data-term="<% if(value){ print(value); }%>" 
     title="<% if(label){ print(label); }%>"
     data-description="<% if(description){ print(description); }%>"
     data-label="<% if(label){ print(label); }%>"
     data-trigger="hover"
-    data-content="<% if(description){ print(description); }%>"
+    data-title="<% if(description){ print(description); }%>"
     data-placement="top"
     >
-<span>
-<%
-	
-	if (label) {
-		print(label);
-	}
-	else if (value) {
-		print(value);
-	}
-%>
-</span>
-<i class="icon-remove remove-filter"></i></li>
+   	<span>
+		<%
+			if (label)
+				value = label;
+			
+			if((value.length > 0) && (category.length > 0))
+				category = category + ": ";
+		%>
+		<span class="category"><%=category%></span>
+		<%=value%>
+	</span>
+	<i class="icon-remove remove-filter"></i>
+</li>

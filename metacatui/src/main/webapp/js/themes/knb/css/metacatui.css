@@ -485,7 +485,7 @@ Bold 700 Italic
 	transition: all 1s;
 	display: none;
 	height: 100%;
-	width: calc(100% - 220px - 400px);
+	width: calc(100% - 216px - 400px);
 	position: relative;
 }
 
@@ -1439,6 +1439,20 @@ svg .domain{
 	display: block;
 }
 
+
+/* Other Navigation 
+----------------------------------------------------- */
+.breadcrumb{
+  width: 86%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 120px;
+  clear: both;
+  display: block;
+  float: none;
+  margin-bottom: 0px;
+}
+
   /* Metadata rendering CSS
   -------------------------------------------------- */
     #Metadata {
@@ -1611,28 +1625,7 @@ svg .domain{
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-	#sidebar {
-  width: 225px;
-  padding: 0px 20px 0px 10px;
-  height: auto;
-  overflow-y: visible;
-  overflow-x: visible;
-  float: left;
-  clear: left;
-}
-
-    
-    .mapMode #sidebar.collapsed{
-    	height: 40px;
-    }
-    .mapMode #sidebar {
-	  padding-right: 10px;
-	  width: 200px;
-	  height: 700px;
-	  overflow-x: hidden;
-	  overflow-y: scroll;
-	  -webkit-transform: translate3d(0,0,0); 
-    }   
+  
     
    aside > div{
    	margin: 0px 0px 10px 0px;
@@ -1710,11 +1703,6 @@ svg .domain{
   		font-size: .9em;
   	} 
 	
-	label.ui-state-active i{
-		color: #8DBCDD;
-	}
-	
-	
 	label.ui-state-active i.icon-check-empty,
 	label.ui-state-default i.icon-check{
 		display: none;
@@ -1747,20 +1735,8 @@ svg .domain{
 	}
 
 	.current-filters > li,
-	.current-filters > li[class*="span"],
-	#filter-year label.ui-state-active, 
-	#includes-files label.ui-state-active{
+	.current-filters > li[class*="span"]{
 		background-color: #006699;
-		padding: 0px 5px 0px 5px;
-		border-radius: 2px;
-		-moz-border-radius: 2px;
-		-webkit-border-radius: 2px;
-		width: auto;
-		max-width: 100%;
-		margin: 5px 5px 0px 0px;
-		display: inline-block;
-		text-shadow: none;
-		float:left;
 		color: #FFF;
 	}
 	
@@ -1768,16 +1744,6 @@ svg .domain{
 		color: #FFFFFF;
 		font-size: 14px;
 	}
-	
-	
-	.current-filters > li > span{
-		float: left;
-		margin-right: 5px;
-		line-height: 19px;
-		white-space: normal;
-		max-width: 89%;
-	}
-	
 	.current-filters > li > i{
 		float: right;
 		display: inline;
@@ -1827,7 +1793,7 @@ svg .domain{
     	background: #AAAAAA;
     	position: relative;
     	margin-bottom: 5px;
-    	width: 91%;
+    	width: 85%;
     }
     
     #year-range.disabled,
