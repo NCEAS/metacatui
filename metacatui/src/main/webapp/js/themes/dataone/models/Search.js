@@ -507,6 +507,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else
 				return false;
 			
+			//Is this a date range search? If so, we don't use quote marks
+			var ISODateRegEx = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z)/;
+			if(ISODateRegEx.exec(value))
+				return false;
+			
 			//Check for a space character
 			if(value.indexOf(" ") >= 0)
 				return true;
