@@ -190,9 +190,10 @@ h3{
 ******************************************/
 .result-row{
 	padding: 5px;
+	padding-left: 10px;
 	 cursor: pointer;
 	 width: 95%;
-	 width: calc(100% - 10px);
+	 width: calc(100% - 15px);
 	 border-top: 1px solid #EEE;
 }
 .result-row .info-icons{
@@ -249,7 +250,6 @@ h3{
   width: 50px;
   float: left;
   margin-right: 10px;
-  margin-left: 5px;
 }
 .result-row > .logo.ORNLDAAC,
 .result-row > .logo.CDL,
