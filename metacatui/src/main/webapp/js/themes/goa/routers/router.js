@@ -1,16 +1,16 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/AboutView', 'views/ToolsView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/TextView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView) {
 		
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'navigateToDefault',    // the default route
-			'about'                     : 'renderAbout',    // about page
 			'about(/:anchorId)'         : 'renderAbout',    // about page anchors
+			'help(/:page)(/:anchorId)'  : 'renderHelp',
 			//'plans'                     : 'renderPlans',    // plans page
 			//'tools(/:anchorId)'         : 'renderTools',    // tools page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
@@ -23,6 +23,11 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
 		
+		helpPages: {
+			"search" : "searchTips",
+			defaultPage : "searchTips"
+		},
+		
 		initialize: function(){
 			// set the KNB as the only LDAP servicer for this theme
 			// NOTE: requires CORS configured on the web server
@@ -31,8 +36,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
 			
 			appView.indexView = new IndexView();
-			appView.aboutView = new AboutView();
-			appView.toolsView = new ToolsView();
+			appView.textView = new TextView();
 			appView.dataCatalogView = new DataCatalogView();
 			appView.registryView = new RegistryView();
 			appView.metadataView = new MetadataView();
@@ -58,20 +62,36 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(appView.indexView);
 		},
 		
+		renderHelp: function(page, anchorId){
+			this.routeHistory.push("help");
+			appModel.set('anchorId', anchorId);
+			
+			if(page)
+				var pageName = this.helpPages[page];
+			else
+				var pageName = this.helpPages["defaultPage"]; //default
+			
+			var options = {
+				pageName: pageName,
+				anchorId: anchorId
+			}
+			
+			appView.showView(appView.textView, options);
+		},
+		
 		renderAbout: function (anchorId) {
 			this.routeHistory.push("about");
 			appModel.set('anchorId', anchorId);
-			appView.showView(appView.aboutView);
+			var options = {
+					pageName: "about",
+					anchorId: anchorId
+				}
+			
+			appView.showView(appView.textView, options);
 		},
 		
 		renderPlans: function (param) {
 			this.routeHistory.push("plans");
-		},
-		
-		renderTools: function (anchorId) {
-			this.routeHistory.push("tools");
-			appModel.set('anchorId', anchorId);
-			appView.showView(appView.toolsView);
 		},
 		
 		renderData: function (mode, query, page) {

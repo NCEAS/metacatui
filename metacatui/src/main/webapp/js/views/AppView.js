@@ -89,7 +89,7 @@ define(['jquery',
 		currentView: null,
 		
 		// Our view switcher for the whole app
-		showView: function(view) {			
+		showView: function(view, viewOptions) {			
 			//reference to appView
 			var thisAppViewRef = this;
 	
@@ -131,7 +131,7 @@ define(['jquery',
 					
 					// render the new view
 					view.$el.hide();
-					view.render();
+					view.render(viewOptions);
 					view.$el.fadeIn('slow', function() {
 						
 						// after fade in, do postRender()
@@ -146,7 +146,7 @@ define(['jquery',
 			} else {
 				
 				// just show the view without transition
-				view.render();
+				view.render(viewOptions);
 				
 			}
 			

@@ -33,14 +33,14 @@
 			<li class="subnav-head">Search</li><li id="menu-item-1445" class="searchField menu-item menu-item-type-custom menu-item-object-custom menu-item-1445"><form action="http://www.snap.is/search" method="get"><input id="searchField" name="q" class="searchField" type="text" placeholder="enter your query"></form></li>
 			</ul>
         </li>       
-        <% if (fullName) { 
+        <% if (formattedName) { 
         	print(
         	'<li class="dropdown menu-item">',
 				'<a href="#" class="dropdown-toggle" data-toggle="dropdown">',
 					'<i class="icon-user"></i><b class="icon-sort-down"></b>',
 				'</a>',
 				'<ul class="dropdown-menu">',
-					'<li><a href="#profile/rightsHolder:(', username, ')">', fullName, '</a></li>',
+					'<li><a href="#profile/rightsHolder:(', username, ')">', formattedName, '</a></li>',
 					'<li class="divider"></li>',  
 					'<li><a href="#share" class="wipeLeft">Register data</a></li>',
 					'<li><a href="#data" id="myData">My packages</a></li>',

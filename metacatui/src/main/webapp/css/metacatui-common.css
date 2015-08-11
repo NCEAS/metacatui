@@ -170,6 +170,10 @@ h3{
 	float: left; 
 	margin-right: 10px;
 }
+#Content > .alert-container{
+	top: 40px;
+	position: relative;
+}
 
 /****************************************** 
 ** Icons ***
@@ -1492,6 +1496,12 @@ form .text-left > .icon {
 }
 .input-append .tooltip-inner {
   white-space: normal;
+}
+/*******************************************
+Documentation and Help Pages
+******************************************/
+.documentation h5{
+	display: inline;
 }
 /*******************************************
 CSS library fixes

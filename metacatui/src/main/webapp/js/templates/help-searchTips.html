@@ -1,0 +1,49 @@
+<article class="documentation container">
+<h2>Search Tips</h2>
+<h3>General</h3>
+<ul>
+	<li>Searching for multiple words at the same time will look for matches with that exact phrase - 
+	e.g. <code>marine mammal</code> will only return matches mentioning <code>marine mammal</code> - 
+	<code>marine</code> and <code>mammal</code> will return results mentioning the individual words marine and mammal.</li>
+	<li>Search filters are looking for matches in the science metadata for each data set. 
+	Any text or metadata contained in the data files (e.g. .csv table, .zip folder) will not be searched.</li>
+</ul>
+
+<h3>Data Attribute</h3>
+<p>Searches the attribute names (e.g. column headers) of data tables</p>
+<h5>Examples</h5>: <code>salinity</code>, <code>lifestage</code>
+
+<h3>Data files</h3>
+<p>If this filter is checked, only search results that include data files will be returned. 
+If it is unchecked, some search results may be metadata files only.</p>
+
+<h3>Member Node</h3>
+<p>Select one or more DataONE Member Nodes to exclude your search to only data from those Member Nodes. 
+Each search result originated from only one Member Node, and its logo will be displayed in the search result listing.</p>
+
+<h3>Creator</h3>
+<p>Searches the person name(s) or entity (organization, group, etc.) name(s) that are listed as creators of a dataset. 
+The username of the user who uploaded a data set is not taken into account (use the "Anything" filter instead).</p>
+<h5>Examples:</h5> <code>Smith</code>, <code>John Smith</code>
+
+<h3>Year</h3>
+<p>You can filter results by year in two ways:</p>
+<ul>
+	<li><h5>Year(s) of data coverage</h5>: Year that data was collected</li>
+	<li><h5>Year of publication</h5>: Year that data was published. If the data creator did not provide a publish date, then the year the data was uploaded is used instead.</li>
+</ul>
+
+<h3>Identifier</h3>
+<p>An advanced filter to use when searching for a dataset by part or all of it’s ID or DOI (Digital Object Identifier).
+<a href="#about/assigning-dois">What is a DOI?</a></p>
+<h5>Examples</h5>: <code>lter</code>, <code>doi:10.5063/F1HH6H0R</code>
+
+<h3>Taxon</h3>
+<p>Searches all taxonomic ranks that were provided by the data set creator for a full or partial match.</p> 
+<h5>Examples</h5>: <code>Dreissena polymorpha</code>, <code>Mollusca</code>
+
+<h3>Location</h3>
+<p>Searches the geographic site or study area description. 
+The location may be a place name or a detailed description of the study site.</p> 
+<h5>Examples</h5>: <code>Hudson River</code>, <code>freshwater</code>
+</article>
