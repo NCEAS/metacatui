@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					   creator : "originText",
 					   spatial : "siteText",
 				   resourceMap : "resourceMap",
-				   	   pubYear : "dateUploaded",
+				   	   pubYear : ["dateUploaded", "datePublished"],
 				   	dataSource : "datasource",
 				   			id : "id",
 				  rightsHolder : "rightsHolder",
@@ -317,7 +317,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					var yearMax = this.get('yearMax');	
 					
 					//Add to the query if we are searching publication year
-					query += "+" + this.fieldNameMap["pubYear"] + ":%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";				
+					query += "+" + this.fieldNameMap["pubYear"] + ":[" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z]";				
 				}
 			}
 			
@@ -505,6 +505,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else if(typeof entry == "string")
 				value = entry;
 			else
+				return false;
+			
+			//Is this a date range search? If so, we don't use quote marks
+			var ISODateRegEx = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z)/;
+			if(ISODateRegEx.exec(value))
 				return false;
 			
 			//Check for a space character
