@@ -122,10 +122,6 @@ Bold 700
     padding-top: 115px;
     }
     
-    ul, ol{
-    	margin: 0px;
-    }
-    
     ul.indent > li{
     	margin-left: 15px;
     }

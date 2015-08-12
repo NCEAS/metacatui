@@ -41,8 +41,13 @@ define(['jquery', 'underscore', 'backbone',
 				}));
 			}
 			
+			if(options.pageName == "searchTips")
+				var dataForTemplate = appSearchModel;
+			
 			//Load the text template
-			this.$el.html(template());
+			this.$el.html(template({
+				data: dataForTemplate
+			}));
 			
 			return this;
 		},
