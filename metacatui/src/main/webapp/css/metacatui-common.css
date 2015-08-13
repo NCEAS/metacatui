@@ -8,6 +8,9 @@
 .subtle{
 	color: #999;
 }
+.footnote{
+	font-size: .7em;
+}
 .badge{
 	margin-left: 10px;
 	margin-right: 10px;
@@ -180,6 +183,10 @@ h3{
 ******************************************/
 .btn > i{
 	margin-left: 5px;
+}
+h3 > .icon{
+	margin-right: 10px;
+	max-height: 1em;
 }
 .provenance-statement-container i{
 	font-size: 1.2em;
@@ -865,7 +872,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     	margin-left: 0px;
     	padding: 20px;
     	width: 85%;
-    	width: calc(100% - 40px);
+    	width: calc(100% - 180px);
 }
 .entitydetails > h4 > *{
 	float: left;
@@ -908,15 +915,15 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 /** Images, Maps, and other visuals **/
 .thumbnail{
 	height: auto;
-	width: 350px;
-	padding: 20px;
 	margin-bottom: 20px;
 }
 .entitydetails .thumbnail{
 	margin-left: 180px;
 	margin-top: 40px;
+	padding: 20px;
+	width: 350px;
 }
-.thumbnail  img{
+.entitydetails .thumbnail  img{
 	min-width: 100%;
 	height: auto;
 }

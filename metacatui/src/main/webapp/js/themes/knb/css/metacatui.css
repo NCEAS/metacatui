@@ -428,8 +428,10 @@ Bold 700 Italic
     }
     
     .btn-primary {
-      background-color: #006699;
-      color: #FFFFFF;    
+       background-color: #007DBB;
+	  color: #FFFFFF;
+	  background-image: none;
+	  box-shadow: none;  
     }
     
     .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {

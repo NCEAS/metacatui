@@ -12,32 +12,32 @@
 </ul>
 
 <% if(searchModel.filterIsAvailable("attribute")){ %>
-	<h3><%=searchModel.fieldLabels["attribute"]%></h3>
+	<h3><i class="icon icon-table"></i><%=searchModel.fieldLabels["attribute"]%></h3>
 	<p>Searches the attribute names (e.g. column headers) of data tables</p>
 	<h5>Examples</h5>: <code>salinity</code>, <code>lifestage</code>
 <% } %>
 
 <% if(searchModel.filterIsAvailable("resourceMap")){ %>
-	<h3>Data files (<%=searchModel.fieldLabels["resourceMap"]%>)</h3>
+	<h3><img src="img/data-table.png" class="icon" />Data files (<%=searchModel.fieldLabels["resourceMap"]%>)</h3>
 	<p>If this filter is checked, only search results that include data files will be returned. 
 	If it is unchecked, some search results may be metadata files only.</p>
 <% } %>
 
 <% if(searchModel.filterIsAvailable("dataSource")){ %>
-	<h3><%=searchModel.fieldLabels["dataSource"]%></h3>
+	<h3><i class="icon icon-group"></i><%=searchModel.fieldLabels["dataSource"]%></h3>
 	<p>Select one or more DataONE Member Nodes to exclude your search to only data from those Member Nodes. 
 	Each search result originated from only one Member Node, and its logo will be displayed in the search result listing.</p>
 <% } %>
 
 <% if(searchModel.filterIsAvailable("creator")){ %>
-	<h3><%=searchModel.fieldLabels["creator"]%></h3>
+	<h3><i class="icon icon-user"></i><%=searchModel.fieldLabels["creator"]%></h3>
 	<p>Searches the person name(s) or entity (organization, group, etc.) name(s) that are listed as creators of a dataset. 
 	The username of the user who uploaded a data set is not taken into account (use the "Anything" filter instead).</p>
 	<h5>Examples:</h5> <code>Smith</code>, <code>John Smith</code>
 <% } %>
 
 <% if(searchModel.filterIsAvailable("pubYear") || searchModel.filterIsAvailable("dataYear")){ %>
-	<h3>Year</h3>
+	<h3><i class="icon icon-calendar"></i>Year</h3>
 	<p>Use the slider or type in a year number and limit your search to data that was collected and/or published between that year range. You can filter results by year in two ways:</p>
 	<ul>
 		<li><h5>Year(s) of data coverage</h5>: Year that data was collected</li>
@@ -46,20 +46,20 @@
 <% } %>
 
 <% if(searchModel.filterIsAvailable("id")){ %>
-	<h3><%=searchModel.fieldLabels["id"]%></h3>
+	<h3><i class="icon icon-bullseye"></i><%=searchModel.fieldLabels["id"]%></h3>
 	<p>An advanced filter to use when searching for a dataset by part or all of it’s ID or DOI (Digital Object Identifier).
 	<a href="#about/assigning-dois">What is a DOI?</a></p>
 	<h5>Examples</h5>: <code>lter</code>, <code>doi:10.5063/F1HH6H0R</code>
 <% } %>
 
 <% if(searchModel.filterIsAvailable("taxon")){ %>
-	<h3><%=searchModel.fieldLabels["taxon"]%></h3>
+	<h3><i class="icon icon-sitemap"></i><%=searchModel.fieldLabels["taxon"]%></h3>
 	<p>Searches all taxonomic ranks that were provided by the data set creator for a full or partial match.</p> 
 	<h5>Examples</h5>: <code>Dreissena polymorpha</code>, <code>Mollusca</code>
 <% } %>
 
 <% if(searchModel.filterIsAvailable("spatial")){ %>
-	<h3><%=searchModel.fieldLabels["spatial"]%></h3>
+	<h3><i class="icon icon-globe"></i><%=searchModel.fieldLabels["spatial"]%></h3>
 	<p>Searches the geographic site or study area description. 
 	The location may be a place name or a detailed description of the study site.</p> 
 	<h5>Examples</h5>: <code>Hudson River</code>, <code>freshwater</code>
