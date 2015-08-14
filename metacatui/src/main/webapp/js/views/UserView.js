@@ -372,13 +372,16 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 			e.preventDefault();
 			
+			var view = this,
+				container = this.$('[data-subsection="edit-account"] .content');
+			
 			var success = function(data){
-				this.showAlert("Saved details for " + subject);
+				view.showAlert("Success! Your profile has been updated.", 'alert-success', container);
 			}
 			var error = function(data){
 				var msg = (data && data.responseText) ? data.responseText : "Sorry, updating your profile failed. Please try again.";
 				if(!data.responseText)
-					this.showAlert(msg, 'alert-error');
+					view.showAlert(msg, 'alert-error', container);
 			}
 
 			//Get info entered into form
@@ -402,6 +405,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			if(!container)
 				var container = this.$el;
 
+			//Remove any alerts that are already in this container
+			if(container.children(".alert-container").length > 0)
+				container.children(".alert-container").detach();
 			
 			$(container).prepend(
 					this.alertTemplate({
