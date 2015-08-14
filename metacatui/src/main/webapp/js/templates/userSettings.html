@@ -50,14 +50,6 @@
 			  </div>
 			  <div class="panel-body">
 			  	<div id="identity-list-container"></div>
-			  
-			  	<div class="panel panel-default">
-				  <div class="panel-heading">
-				  	<h4 class="panel-title" id="pending-list-heading">Pending Requests</h4>
-				  </div>
-			 	  <div class="panel-body" id="pending-list-container">
-				  </div>
-			   </div>
 			   
 			   <div class="panel panel-default" data-subsection="add-account">
 				  <div class="panel-heading">
@@ -76,6 +68,14 @@
 					</form>
 				  </div>
 				</div>
+				
+				<div class="panel panel-default" data-subsection="pending-accounts">
+				  <div class="panel-heading">
+				  	<h4 class="panel-title" id="pending-list-heading">Pending Requests</h4>
+				  </div>
+			 	  <div class="panel-body" id="pending-list-container">
+				  </div>
+			   </div>
 		   
 			  </div>
 			</div>
@@ -98,7 +98,8 @@
 		  	<h4 class="panel-title">Generate Token</h4>
 		  </div>
 		  <div class="panel-body" id="token-generator-container">
-		  	<input class="token-generator btn" type="button" name="token-generator">Generate Token</input>
+		  	<p>Generate a token to upload your data by using one of the following applications.</p>
+		  	<input class="token-generator btn" type="button" name="token-generator" value="Generate Token"></input>
 		  </div>
 		</div>
 		  
@@ -107,7 +108,7 @@
 		  	<h4 class="panel-title">Applications that use the DataONE API</h4>
 		  </div>
 	   	  <div class="panel-body">
-		       <p>Generate a token above to upload your data to this repository by using one of the following applications.</p>
+		       <p>Generate a token above to upload your data by using one of the following applications.</p>
 		  </div>
 		</div>	  
 	</div>

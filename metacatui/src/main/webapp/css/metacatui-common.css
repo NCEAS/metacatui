@@ -147,6 +147,9 @@ h3{
 	margin-left: 43%;
 	margin-top: 20%;
 }
+.panel-body .notification .icon {
+    margin-top: 10px;
+}
 .notification p{
 	font-size: 1em;
 	text-align: center;
@@ -1061,6 +1064,11 @@ textarea.token{
 }
 .form-group{
 	clear: both;
+}
+.list-identity-item .remove-identity-btn {
+    float: right;
+    font-size: 1.5em;
+    color: #F15959;
 }
 
 /****************************************** 

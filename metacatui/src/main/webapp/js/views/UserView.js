@@ -246,10 +246,17 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			//Create a list item for each identity
 			_.each(identities, function(identity, i){
 				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
-					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity);
-				var remove = "<a href='#' class='remove-identity-btn' data-identity='" + identity + "'><i class='icon icon-trash'/></a>";
-				$(identityList).append($(listItem).append($(link).prepend(remove)));
-				
+					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),
+					remove   = $(document.createElement("a")).attr("href", '#')
+							   .addClass('remove-identity-btn')
+							   .attr("data-identity", identity)
+							   .prepend("<i class='icon icon-remove-sign'/>");
+				$(identityList).append($(listItem).append($(link).append(remove)));
+				$(remove).tooltip({
+					trigger: "hover",
+					placement: "top",
+					title: "Delete equivalent account"
+				})
 			});
 			
 			//Add to the page
@@ -264,8 +271,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.$("#pending-list-container").empty();
 	
 			//Create the list element
-			if (pending.length < 1)
-				var pendingList = $(document.createElement("p")).text("You have no pending username map requests.");
+			if (pending.length < 1){
+				this.$("[data-subsection='pending-accounts']").hide();
+				return;
+			}
 			else{
 				this.$("#pending-list-container").prepend($(document.createElement("p")).text("You have " + pending.length + " new request to map accounts. If these requests are from you, accept them below. If you do not recognize a username, reject the request."));
 				var pendingList = $(document.createElement("ul")).addClass("list-identity").attr("id", "pending-list");
@@ -376,12 +385,16 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			e.preventDefault();
 			
 			var view = this,
-				container = this.$('[data-subsection="edit-account"] .content');
+				container = this.$('[data-subsection="edit-account"] .content') || $(e.target).parent();
 			
 			var success = function(data){
+				$(container).find(".loading").detach();
+				$(container).children().show();
 				view.showAlert("Success! Your profile has been updated.", 'alert-success', container);
 			}
 			var error = function(data){
+				$(container).find(".loading").detach();
+				$(container).children().show();
 				var msg = (data && data.responseText) ? data.responseText : "Sorry, updating your profile failed. Please try again.";
 				if(!data.responseText)
 					view.showAlert(msg, 'alert-error', container);
@@ -396,6 +409,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.model.set("firstName", givenName);
 			this.model.set("lastName", familyName);
 			this.model.set("email", email);
+			
+			//Loading icon
+			$(container).children().hide();
+			$(container).prepend(this.loadingTemplate());
 			
 			//Send the update
 			this.model.update(success, error);
@@ -420,16 +437,20 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			);
 		},
 		
-		mapRequest: function() {
+		mapRequest: function(e) {
+			
+			e.preventDefault();
 			
 			var model = this.model;
 
+			//Get the identity entered into the input
 			var equivalentIdentity = this.$("#map-request-field").val();
 			if (!equivalentIdentity || equivalentIdentity.length < 1) {
 				return;
 			}
-			//equivalentIdentity = encodeURIComponent(equivalentIdentity);
-				
+			//Clear the text input
+			this.$("#map-request-field").val("");
+			 
 			var mapUrl = appModel.get("accountsUrl") + "pendingmap";
 				
 			var viewRef = this,
@@ -450,7 +471,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 				},
 				success: function(data, textStatus, xhr) {
 					var message = "A username map request has been sent to " + equivalentIdentity +
-								  "<h4>Next step:</h4><p>Login with your other account and approve this request.</p>"
+								  "<h4>Next step:</h4><p>Login with this other account and approve this request.</p>"
 					viewRef.showAlert(message, null, container);
 					model.getInfo();
 				},
