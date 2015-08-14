@@ -289,6 +289,54 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			return payload;			
 		},
 		
+		update: function(onSuccess, onError){
+			var model = this;
+			
+			var person = 
+				'<?xml version="1.0" encoding="UTF-8"?>'
+				+ '<d1:person xmlns:d1="http://ns.dataone.org/service/types/v1">'
+					+ '<subject>' + this.get("username") + '</subject>'
+					+ '<givenName>' + this.get("firstName") + '</givenName>'
+					+ '<familyName>' + this.get("lastName") + '</familyName>'
+					+ '<email>' + this.get("email") + '</email>'
+				+ '</d1:person>';
+			
+			var xmlBlob = new Blob([person], {type : 'application/xml'});
+			var formData = new FormData();
+			formData.append("subject", this.get("username"));
+			formData.append("person", xmlBlob, "person");
+
+			var updateUrl = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
+						
+			// ajax call to update
+			$.ajax({
+				type: "PUT",
+				cache: false,
+			    contentType: false,
+			    processData: false,
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.get("token")
+			    },
+				url: updateUrl,
+				data: formData,
+				success: function(data, textStatus, xhr) {
+					if(typeof onSuccess != "undefined") 
+						onSuccess(data);
+					
+					//model.getInfo();
+				},
+				error: function(data, textStatus, xhr) {
+					if(typeof onError != "undefined") 
+						onError(data);
+					
+					//model.getInfo();
+				}
+			});
+		},
+		
 		reset: function(){
 			this.set(_.clone(this.defaults()));
 		}

@@ -368,56 +368,32 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 		},
 		
-		saveUser: function() {
+		saveUser: function(e) {
 			
-			var model = this.model;
+			e.preventDefault();
+			
+			var success = function(data){
+				this.showAlert("Saved details for " + subject);
+			}
+			var error = function(data){
+				var msg = (data && data.responseText) ? data.responseText : "Sorry, updating your profile failed. Please try again.";
+				if(!data.responseText)
+					this.showAlert(msg, 'alert-error');
+			}
 
-			var subject = this.model.get("username");
+			//Get info entered into form
 			var givenName = this.$("#mod-givenName").val();
 			var familyName = this.$("#mod-familyName").val();
 			var email = this.$("#mod-email").val();
 			
-			var person = 
-				'<?xml version="1.0" encoding="UTF-8"?>'
-				+ '<d1:person xmlns:d1="http://ns.dataone.org/service/types/v1">'
-				+ '<subject>' + subject + '</subject>'
-				+ '<givenName>' + givenName + '</givenName>'
-				+ '<familyName>' + familyName + '</familyName>'
-				+ '<email>' + email + '</email>'
-				+ '</d1:person>';
+			//Update the model
+			this.model.set("firstName", givenName);
+			this.model.set("lastName", familyName);
+			this.model.set("email", email);
 			
-			var xmlBlob = new Blob([person], {type : 'application/xml'});
-			var formData = new FormData();
-			formData.append("subject", subject);
-			formData.append("person", xmlBlob, "person");
-
-			var updateUrl = appModel.get("accountsUrl") + encodeURIComponent(subject);;
+			//Send the update
+			this.model.update(success, error);
 			
-			var viewRef = this;
-			
-			// ajax call to update
-			$.ajax({
-				type: "PUT",
-				cache: false,
-			    contentType: false,
-			    processData: false,
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.model.get("token")
-			    },
-				url: updateUrl,
-				data: formData,
-				success: function(data, textStatus, xhr) {
-					viewRef.showAlert("Saved details for " + subject);
-					model.getInfo();
-				},
-				error: function(data, textStatus, xhr) {
-					viewRef.showAlert(data.responseText, 'alert-error');
-					model.getInfo();
-				}
-			});
 		},
 		
 		showAlert: function(msg, classes, container) {

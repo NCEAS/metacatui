@@ -1111,6 +1111,7 @@ textarea.token{
 }
 .panel>.list-group, .panel>.panel-collapse>.list-group {
   margin-bottom: 0;
+  margin-left: 0px;
 }
 .list-group {
   padding-left: 0;
