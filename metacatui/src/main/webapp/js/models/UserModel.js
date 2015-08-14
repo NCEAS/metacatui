@@ -102,20 +102,28 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					_.each($(data).find("group"), function(group, i){
 						//Get all the group information
 						var memberEls = $(group).find("hasMember"),
+							ownerEls = $(group).find("rightsHolder"),
 							members   = new Array(),
+							owners    = new Array(),
 							groupName = $(group).find("groupName").first().text(),
 							subject   = $(group).find("subject").first().text();
 						
-						//Go through each member element and grab the member's name
+						//Go through each member element and grab the member's username
 						_.each(memberEls, function(member, i){
 							members.push($(member).text());
+						});
+						
+						//Go through each owner element and grab the owner's username
+						_.each(ownerEls, function(owner, i){
+							owners.push($(owner).text());
 						});
 						
 						//Create the group object and add it to the model
 						groups.push({
 							groupName : groupName,
 							subject   : subject,
-							members   : members
+							members   : members,
+							owners    : owners
 						});
 					});
 					

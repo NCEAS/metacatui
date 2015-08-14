@@ -193,7 +193,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		},
 		
 		insertGroupList: function(){
-			var groups = this.model.get("groups");
+			var groups = this.model.get("groups"),
+				user = this.model;
 			
 			//Empty the container first
 			this.$("#group-list-container").empty();
@@ -208,18 +209,47 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			_.each(groups, function(group, i){
 				var listItem = $(document.createElement("li")).addClass("list-group-item group"),
 					link     = $(document.createElement("a")).attr("href", "#").attr("data-subject", group.subject).text(group.groupName),
-					icon     = $(document.createElement("i")).addClass("icon icon-expand-alt tooltip-this").attr("data-title", "Expand").attr("data-placement", "top").attr("data-trigger", "hover");
-				$(groupList).append($(listItem).append($(link).prepend(icon)));
+					icon     = $(document.createElement("i")).addClass("icon icon-caret-right tooltip-this group").attr("data-title", "Expand").attr("data-placement", "top").attr("data-trigger", "hover");
+				$(groupList).append($(listItem)
+						    .append($(link).prepend(icon))
+						    .append(" (" + group.members.length + " members )"));
 				
 				//Create a list of member names
 				var memberList     = $(document.createElement("ul")).addClass("list-group group-member-list collapsed");
 				_.each(group.members, function(member){
+					var username = member;
+					
+					if(username == user.get("username"))
+						username = "Me <span>(" + user.get("username") + ")</span>";
+					
+					var isOwner = _.contains(group.owners, member) ? true : false;
+
 					//Create a list item for this member
 					var memberListItem = $(document.createElement("li")).addClass("list-group-item member"),
-						memberLink     = $(document.createElement("a")).attr("href", "#").attr("data-username", member).text(member);
+						memberIcon     = $(document.createElement("i")).addClass("icon icon-user"),	
+						memberLink     = $(document.createElement("a")).attr("href", "#").attr("data-username", member)
+										.prepend(memberIcon, username);
+					
+					memberIcon.tooltip({
+						placement: "top",
+						trigger: "hover",
+						title: "Group member"
+					});
+					
+					//Indicate if this member is an owner of the group
+					if(isOwner){
+						var ownerIcon = $(document.createElement("i")).addClass("icon icon-star owner");
+						ownerIcon.tooltip({
+							placement: "top",
+							trigger: "hover",
+							title: "Group owner"
+						});
+						memberIcon.after(ownerIcon);
+					}
 					
 					$(memberList).append($(memberListItem).append(memberLink));
 				});
+			
 				//Add the member list to the group list
 				$(listItem).append(memberList);
 			});
@@ -668,11 +698,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			var listItem = e.target;
 			
 			if(!$(listItem).hasClass("list-group-item")){
-				listItem = $(listItem).parents("li.list-group-item");
+				listItem = $(listItem).parents("li.list-group-item.group");
 			}
 			
 			$(listItem).find(".group-member-list").toggleClass("collapsed").slideToggle();
-			$(listItem).find(".icon").toggleClass("icon-expand-alt").toggleClass("icon-collapse-alt");
+			$(listItem).find(".icon.group").toggleClass("icon-caret-right").toggleClass("icon-caret-down");
 		},
 		
 		onClose: function () {			
