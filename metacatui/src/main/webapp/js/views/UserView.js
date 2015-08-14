@@ -35,6 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			var view = this;
 			
 			this.stopListening();
+			//If the logged-in status changes, refresh the page
 			this.listenToOnce(appUserModel, "change:loggedIn", function(){
 				view.onClose();
 				view.render();
@@ -46,6 +47,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			
 			//Show the loading sign first
 			$(this.sectionHolder).html(this.loadingTemplate());
+			this.$el.show();
 						
 			// set the header type
 			appModel.set('headerType', 'default');
@@ -73,9 +75,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			this.renderSettings();
 			
 			//Hide all the sections first and display the default "profile" section first
-			$(this.sectionHolder).children().slideUp();
-			this.$("[data-section='profile']").slideDown();
-			this.$(".subsection").hide();
+			$(this.sectionHolder).children().hide();
+			this.$("[data-section='profile']").slideDown();				
+			this.$(".subsection").hide();					
+
 			
 			return this;
 		},

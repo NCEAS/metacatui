@@ -158,6 +158,12 @@ define(['jquery',
 			});
 			
 			this.$el.html(cel);
+			
+			// Store some references to key views that we use repeatedly
+			this.$resultsview = this.$('#results-view');
+			this.$results = this.$('#results');
+			
+			//Update stats
 			this.updateStats();		
 			
 			//Render the Google Map
@@ -226,10 +232,6 @@ define(['jquery',
 			
 			// listen to the appModel for the search trigger			
 			this.listenTo(appModel, 'search', this.getResults);
-
-			// Store some references to key views that we use repeatedly
-			this.$resultsview = this.$('#results-view');
-			this.$results = this.$('#results');
 			
 			// and go to a certain page if we have it
 			this.getResults();	
