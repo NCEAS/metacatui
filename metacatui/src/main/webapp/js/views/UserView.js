@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html'], 				
-	function($, _, Backbone, UserModel, StatsView, DataCatalogView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate) {
+define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html'], 				
+	function($, _, Backbone, UserGroup, UserModel, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate) {
 	'use strict';
 			
 	var UserView = Backbone.View.extend({
@@ -13,11 +13,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 		loadingTemplate:  _.template(LoadingTemplate),
 		settingsTemplate: _.template(SettingsTemplate),		
 		menuTemplate:     _.template(ProfileMenuTemplate),
-		
+				
 		events: {
 			"click .section-link"          : "switchToSection",
 			"click .subsection-link"       : "switchToSubSection",
-			"click .list-group-item.group" : "toggleMemberList",
 			"click .token-generator"       : "getToken",
 			"click #map-request-btn"	   : "mapRequest",
 			"click #mod-save-btn"		   : "saveUser",
@@ -154,8 +153,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			}));
 			
 			//Listen for the group list to draw the group list
-			this.listenTo(this.model, "change:groups", this.insertGroupList);
-			this.insertGroupList();
+			this.listenTo(this.model, "change:isMemberOf", this.getGroups);
+			this.getGroups();
 			
 			//Listen for the identity list
 			this.listenTo(this.model, "change:identities", this.insertIdentityList);
@@ -192,71 +191,31 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			window.setTimeout(function(){ subsection.removeClass("highlight"); }, 1500);
 		},
 		
-		insertGroupList: function(){
-			var groups = this.model.get("groups"),
-				user = this.model;
+		getGroups: function(){
+			var view = this;
 			
-			//Empty the container first
-			this.$("#group-list-container").empty();
-
-			//Create the list element
-			if(groups.length < 1)
-				var groupList = $(document.createElement("p")).text("You are not a member of any groups.");
-			else
-				var groupList = $(document.createElement("ul")).addClass("list-group").attr("id", "group-list");
-			
-			//Create a list item for each group
-			_.each(groups, function(group, i){
-				var listItem = $(document.createElement("li")).addClass("list-group-item group"),
-					link     = $(document.createElement("a")).attr("href", "#").attr("data-subject", group.subject).text(group.groupName),
-					icon     = $(document.createElement("i")).addClass("icon icon-caret-right tooltip-this group").attr("data-title", "Expand").attr("data-placement", "top").attr("data-trigger", "hover");
-				$(groupList).append($(listItem)
-						    .append($(link).prepend(icon))
-						    .append(" (" + group.members.length + " members )"));
+			//Create a group Collection for each group this user is a member of
+			_.each(this.model.get("isMemberOf"), function(groupId){
+				var userGroup = new UserGroup([view.model], { groupId: groupId });
 				
-				//Create a list of member names
-				var memberList     = $(document.createElement("ul")).addClass("list-group group-member-list collapsed");
-				_.each(group.members, function(member){
-					var username = member;
-					
-					if(username == user.get("username"))
-						username = "Me <span>(" + user.get("username") + ")</span>";
-					
-					var isOwner = _.contains(group.owners, member) ? true : false;
-
-					//Create a list item for this member
-					var memberListItem = $(document.createElement("li")).addClass("list-group-item member"),
-						memberIcon     = $(document.createElement("i")).addClass("icon icon-user"),	
-						memberLink     = $(document.createElement("a")).attr("href", "#").attr("data-username", member)
-										.prepend(memberIcon, username);
-					
-					memberIcon.tooltip({
-						placement: "top",
-						trigger: "hover",
-						title: "Group member"
-					});
-					
-					//Indicate if this member is an owner of the group
-					if(isOwner){
-						var ownerIcon = $(document.createElement("i")).addClass("icon icon-star owner");
-						ownerIcon.tooltip({
-							placement: "top",
-							trigger: "hover",
-							title: "Group owner"
-						});
-						memberIcon.after(ownerIcon);
-					}
-					
-					$(memberList).append($(memberListItem).append(memberLink));
-				});
-			
-				//Add the member list to the group list
-				$(listItem).append(memberList);
+				view.listenTo(userGroup, "sync", view.insertGroupList);
+				userGroup.getGroup();				
 			});
+		},
+		
+		insertGroupList: function(userGroup){			
+			//Only create a list for new groups that aren't yet on the page
+			var existingGroupLists = _.where(this.subviews, {type: "GroupListView"});
+			if(existingGroupLists)
+				var groupIds = _.pluck(existingGroupLists, "groupId");
+			if(groupIds && (_.contains(groupIds, userGroup.groupId)))
+				return;
 			
+			var groupView = new GroupListView({ collection: userGroup });
+			this.subviews.push(groupView);
+					
 			//Add to the page
-			$(groupList).find(".collapsed").hide();
-			this.$("#group-list-container").append(groupList);
+			this.$("#group-list-container").append(groupView.render().el);				
 		},
 		
 		insertIdentityList: function(){
@@ -690,19 +649,6 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel', 'views/StatsView
 			});
 			
 			this.$el.prepend(menu);
-		},
-		
-		toggleMemberList: function(e){
-			e.preventDefault();
-			
-			var listItem = e.target;
-			
-			if(!$(listItem).hasClass("list-group-item")){
-				listItem = $(listItem).parents("li.list-group-item.group");
-			}
-			
-			$(listItem).find(".group-member-list").toggleClass("collapsed").slideToggle();
-			$(listItem).find(".icon.group").toggleClass("icon-caret-right").toggleClass("icon-caret-down");
 		},
 		
 		onClose: function () {			

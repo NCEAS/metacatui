@@ -18,14 +18,20 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				searchResults: null,
 				loggedIn: false,
 				registered: false,
-				groups: [],
+				isMemberOf: [],
+				isOwnerOf: [],
 				identities: [],
 				pending: [],
 				token: null
 			}
 		},
 		
-		initialize: function(){
+		initialize: function(options){
+			if(typeof options !== "undefined"){
+				if(options.username) this.set("username", options.username);
+				if(options.rawData)  this.parseXML(options.rawData);
+			}
+			
 			//If no username was provided at time of initialization, then use the profile username (username sent to #profile view)
 			if(!this.get("username"))
 				this.set("username", appModel.get("profileUsername"));
@@ -45,6 +51,56 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			}));
 		},
 		
+		parseXML: function(data){
+			var model = this;
+			
+			//Reset the group list so we don't just add it to it with push()
+			this.set("isMemberOf", this.defaults().isMemberOf);
+			//Reset the equivalent id list so we don't just add it to it with push()
+			this.set("identities", this.defaults().identities);
+			
+			//Get the person's name and verification status
+			var username   = $(data).find("person subject").first().text(),
+				firstName  = $(data).find("person givenName").first().text(),
+				lastName   = $(data).find("person familyName").first().text(),
+				fullName   = firstName + " " + lastName,
+				email      = $(data).find("person email").first().text(),
+				verified   = $(data).find("person verified").first().text(),
+				groups     = this.get("isMemberOf"),
+				ownerOf	   = this.get("isOwnerOf"),
+				identities = this.get("identities");
+			
+			//Get each equivalent identity and save
+			_.each($(data).find("person").first().find("equivalentIdentity"), function(identity, i){
+				//push onto the list
+				// TODO: include person details?
+				var id = $(identity).text();
+				identities.push(id);
+			});
+			
+			//Get each group and save
+			_.each($(data).find("group"), function(group, i){
+				var groupId = $(group).find("subject").first().text();
+				groups.push(groupId);
+								
+				if($(group).children("rightsHolder:contains('" + model.get("username") + "')").length > 0)
+					ownerOf.push(groupId);
+			});
+			
+			return {
+				isMemberOf: groups,
+				isOwnerOf: ownerOf,
+				identities: identities,
+				verified: verified,
+				username: username,
+				firstName: firstName,
+				lastName: lastName,
+				fullName: fullName,
+				email: email,
+				registered: true
+			}
+		},
+		
 		getInfo: function(){
 			var model = this;
 			
@@ -62,7 +118,13 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				type: "GET",
 				url: url, 
 				success: function(data, textStatus, xhr) {	
-				
+					//Parse the response
+					model.set(model.parseXML(data));
+					 //Trigger the change events
+					model.trigger("change:isMemberOf");
+					model.trigger("change:isOwnerOf");
+					model.trigger("change:identities");
+
 					//Get the pending identity map requests, if the service is turned on
 					if(appModel.get("pendingMapsUrl")){					
 						//Get the pending requests			
@@ -83,69 +145,6 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 							}
 						});
 					}
-					
-					//Reset the group list so we don't just add it to it with push()
-					model.set("groups", model.defaults().groups);
-					//Reset the equivalent id list so we don't just add it to it with push()
-					model.set("identities", model.defaults().identities);
-					
-					//Get the person's name and verification status
-					var firstName = $(data).find("person givenName").first().text(),
-						lastName  = $(data).find("person familyName").first().text(),
-						fullName  = firstName + " " + lastName,
-						email  = $(data).find("person email").first().text(),
-						verified  = $(data).find("person verified").first().text(),
-						groups    = model.get("groups"),
-						identities = model.get("identities");
-	
-					//For each group this user is in, create a group object and store it in this model
-					_.each($(data).find("group"), function(group, i){
-						//Get all the group information
-						var memberEls = $(group).find("hasMember"),
-							ownerEls = $(group).find("rightsHolder"),
-							members   = new Array(),
-							owners    = new Array(),
-							groupName = $(group).find("groupName").first().text(),
-							subject   = $(group).find("subject").first().text();
-						
-						//Go through each member element and grab the member's username
-						_.each(memberEls, function(member, i){
-							members.push($(member).text());
-						});
-						
-						//Go through each owner element and grab the owner's username
-						_.each(ownerEls, function(owner, i){
-							owners.push($(owner).text());
-						});
-						
-						//Create the group object and add it to the model
-						groups.push({
-							groupName : groupName,
-							subject   : subject,
-							members   : members,
-							owners    : owners
-						});
-					});
-					
-					//For each equiv id, store in the model
-					_.each($(data).find("person").first().find("equivalentIdentity"), function(identity, i){
-						//push onto the list
-						// TODO: include person details?
-						var id = $(identity).text();
-						identities.push(id);
-					});
-	
-					//Save all these attributes in the model
-					model.set("groups",    groups);	
-					model.trigger("change:groups"); //Trigger the change event since it's an array and won't fire a change event on its own				
-					model.set("identities", identities);	
-					model.trigger("change:identities"); //Trigger the change event
-					model.set("verified",  verified);
-					model.set("firstName", firstName);
-					model.set("lastName",  lastName);
-					model.set("fullName",  fullName);
-					model.set("email",  email);
-					model.set("registered",  true);
 				},
 				error: function(xhr, textStatus, errorThrown){
 					if(xhr.status == 404)
@@ -162,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Send the request
 			$.ajax(accountsRequestOptions);
 		},
-		
+				
 		getNameFromSubject: function(){
 			var username  = this.get("username"),
 				fullName = "";
