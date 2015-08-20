@@ -22,7 +22,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: null,
-			d1CNBaseUrl: window.location.origin,
+			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
 			d1CNService: "cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -49,6 +49,7 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			annotatorUrl: null,
 			accountsUrl: null,
+			groupsUrl: null,
 			prov: false
 		},
 		
@@ -61,7 +62,7 @@ define(['jquery', 'underscore', 'backbone'],
 				var baseUrl = window.location.protocol + "//" + window.location.host;
 				
 				this.set('baseUrl', baseUrl);
-				this.set('d1CNBaseUrl', baseUrl);
+				//this.set('d1CNBaseUrl', baseUrl);
 			}
 			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
@@ -75,6 +76,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set('nodeServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/node');
 			this.set("accountsUrl", this.get("d1CNBaseUrl")  + this.get('context') + this.get("d1CNService") + "/accounts/");
+			this.set("groupsUrl", this.get("d1CNBaseUrl")  + this.get('context') + this.get("d1CNService") + "/groups/");
 
 			this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + "/" + this.get('d1CNService') + 'logsolr');
 			//this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');

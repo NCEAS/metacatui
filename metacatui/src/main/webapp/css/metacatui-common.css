@@ -142,26 +142,26 @@ h3{
 /****************************************** 
 ** Notifications and Alerts ***
 ******************************************/
-.notification .icon{
+.notification.loading .icon{
 	font-size: 40px;
 	margin-left: 43%;
 	margin-top: 20%;
 }
-.panel-body .notification .icon {
+.panel-body .notification.loading .icon {
     margin-top: 10px;
 }
-.notification p{
+.notification.loading p{
 	font-size: 1em;
 	text-align: center;
 	width: 100%;
 	margin: 20px auto;
 	display: block;
 }
-.filter-contain .notification i{
+.filter-contain .notification.loading i{
   	color: #999;
   	font-size: .5em;
 }
-.filter-contain .notification p{
+.filter-contain .notification.loading p{
 	font-size: .3em;
 	line-height: 3em;
 	text-align: center;
@@ -180,7 +180,23 @@ h3{
 	top: 40px;
 	position: relative;
 }
-
+.notification.success{
+	color: #008000;
+}
+.notification.error{
+	color: #a94442;
+}
+.notification.success,
+.notification.error{
+	font-weight: bold;
+}
+.notification.error .icon,
+.notification.success .icon{
+	margin-right: 10px;
+}
+.form-feedback{
+    min-height: 30px;
+}
 /****************************************** 
 ** Icons ***
 ******************************************/
@@ -1525,6 +1541,9 @@ form .text-left > .icon {
 }
 .input-append .tooltip-inner {
   white-space: normal;
+}
+.form-group input.control-group{
+	line-height: 30px;
 }
 /*******************************************
 Documentation and Help Pages

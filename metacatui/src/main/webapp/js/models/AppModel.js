@@ -41,6 +41,7 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			annotatorUrl: null,
 			accountsUrl: null,
+			groupsUrl: null,
 			pendingMapsUrl: null,
 			prov: false
 		},
@@ -71,6 +72,7 @@ define(['jquery', 'underscore', 'backbone'],
 			if(this.get("d1CNBaseUrl")){
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+				this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
 		
 				//Settings for the DataONE API v2 only
 				if(this.get("d1CNService").indexOf("v2") > -1){

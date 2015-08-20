@@ -35,7 +35,8 @@ define(['jquery',
 		events: {
 											 "click" : "closePopovers",
 	 		                  'click .direct-search' : 'routeToMetadata',
-		 	               'keypress .direct-search' : 'routeToMetadata'
+		 	               'keypress .direct-search' : 'routeToMetadata',
+		 	                 "click .toggle-slide"   : "toggleSlide"
 			//'click #SignInLdap input[type="submit"]' : "submitLogin"
 
 		},
@@ -286,6 +287,15 @@ define(['jquery',
 			//Send login request via the User Model
 			appUserModel.loginLdap(formData, loginSuccess, loginFail);			
 		},
+		
+		toggleSlide: function(e){
+			if(!e || !e.target) return;
+			
+			e.preventDefault();
+			
+			var id = $(e.target).attr("data-toggle-el");
+			$("#" + id).slideToggle();
+		}
 				
 	});
 	return AppView;		

@@ -23,7 +23,10 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			"click .confirm-request-btn"   : "confirmRequest",
 			"click .reject-request-btn"	   : "rejectRequest",
 			"click .remove-identity-btn"   : "removeIdentity",
-			"click [highlight-subsection]" : "highlightSubSection"
+			"click [highlight-subsection]" : "highlightSubSection",
+			"blur #add-group-name"         : "checkGroupName",
+			"keypress #add-group-name"     : "preventSubmit",
+			"click #add-group-submit"      : "createGroup"
 		},
 		
 		initialize: function(){			
@@ -59,6 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				//If the user is logged in, display the settings options
 				if(this.model.get("loggedIn")){
 					this.insertMenu();
+					this.renderSettings();
 				}
 			}
 			//Create a user model for this person
@@ -69,9 +73,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				this.model = user;				
 			}
 			
-			//Render all the sections of the User View
+			//Render the profile section of the User View
 			this.renderProfile();
-			this.renderSettings();
 			
 			//Hide all the sections first and display the default "profile" section first
 			$(this.sectionHolder).children().hide();
@@ -153,6 +156,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			}));
 			
 			//Listen for the group list to draw the group list
+			this.insertCreateGroupForm();
 			this.listenTo(this.model, "change:isMemberOf", this.getGroups);
 			this.getGroups();
 			
@@ -191,6 +195,9 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			window.setTimeout(function(){ subsection.removeClass("highlight"); }, 1500);
 		},
 		
+		/*
+		 * Gets the groups that this user is a part of and creates a UserGroup collection for each
+		 */
 		getGroups: function(){
 			var view = this;
 			
@@ -203,6 +210,30 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			});
 		},
 		
+		/*
+		 * Will send a request for info about this user and their groups, and redraw the group lists
+		 * Will reset the Create New group form, too
+		 */
+		refreshGroupLists: function(){
+			this.insertCreateGroupForm();
+			this.model.getInfo();
+		},
+		
+		insertCreateGroupForm: function(){
+			//Reset the form
+			$("#add-group-form-container").find("input[type='text']").val("").removeClass("has-error");
+			$("#group-name-notification-container").empty().removeClass("notification success error");
+			
+			//Create a pending group that is stored locally until the user submits it
+			this.pendingGroup = new UserGroup([this.model], { pending: true });
+			var groupView = new GroupListView({ collection: this.pendingGroup });
+			groupView.setElement(this.$("#add-group-container .member-list"));
+			groupView.render();	
+		},
+		
+		/*
+		 * Inserts a GroupListView for the given UserGroup collection
+		 */
 		insertGroupList: function(userGroup){			
 			//Only create a list for new groups that aren't yet on the page
 			var existingGroupLists = _.where(this.subviews, {type: "GroupListView"});
@@ -332,9 +363,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		},
 		
 		setUpAutocomplete: function() {
+			var input = this.$(".account-autocomplete");
+			if(!input || !input.length) return;
 			
 			// look up registered identities 
-			$('#map-request-field').hoverAutocomplete({
+			$(input).hoverAutocomplete({
 				source: function (request, response) {
 		            var term = $.ui.autocomplete.escapeRegex(request.term);
 		            
@@ -345,7 +378,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 						_.each($(data).find("person"), function(person, i){
 							var item = {};
 							item.value = $(person).find("subject").text();
-							item.label = $(person).find("givenName").text() + " " + $(person).find("familyName").text();
+							item.label = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
 							list.push(item);
 						});
 						
@@ -354,16 +387,17 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 					});
 		            
 		        },
-				select: function(event, ui) {
+				select: function(e, ui) {
+					e.preventDefault();
+					
 					// set the text field
-					$('#map-request-field').val(ui.item.value);
-					// prevent default action
-					return false;
+					$(e.target).val(ui.item.value);
+					$(e.target).parents("form").find("input[name='fullName']").val(ui.item.label);
 				},
 				position: {
 					my: "left top",
 					at: "left bottom",
-					collision: "fit"
+					collision: "none"
 				}
 			});
 			
@@ -415,8 +449,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				var container = this.$el;
 
 			//Remove any alerts that are already in this container
-			if(container.children(".alert-container").length > 0)
-				container.children(".alert-container").detach();
+			if($(container).children(".alert-container").length > 0)
+				$(container).children(".alert-container").detach();
 			
 			$(container).prepend(
 					this.alertTemplate({
@@ -649,6 +683,86 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			});
 			
 			this.$el.prepend(menu);
+		},
+		
+		//Checks the availability of a given group name
+		checkGroupName: function(e){
+			if(!e || !e.target) return;
+			
+			var view = this,
+				$notification = $("#group-name-notification-container"),
+				$input = $(e.target);
+			
+			var name = $input.val().trim();
+			if(!name) return;
+			
+			//Create an empty group and check the name availability - this group might already exist
+			this.pendingGroup.name = name;
+			
+			this.listenToOnce(this.pendingGroup, "nameChecked", function(collection){
+				//If the group name/id is available, then display so 
+				if(collection.nameAvailable){
+					var icon = $(document.createElement("i")).addClass("icon icon-ok"),
+						message = "The name " + collection.name + " is available",
+						container = $(document.createElement("div")).addClass("notification success");
+					
+					$notification.html($(container).append(icon, message));
+					$input.removeClass("has-error");
+				}
+				else{
+					var icon = $(document.createElement("i")).addClass("icon icon-remove"),
+						message = "The name " + collection.name + " is already taken",
+						container = $(document.createElement("div")).addClass("notification error");
+				
+					$notification.html($(container).append(icon, message));					
+					$input.addClass("has-error");
+				}
+					
+			});
+			
+			//Get group info/check name availablity
+			this.pendingGroup.getGroup({ add: false });
+		},
+		
+		/*
+		 * Syncs the pending group with the server
+		 */
+		createGroup: function(e){
+			e.preventDefault();
+			
+			//If there is no name specified, give warning
+			if(!this.pendingGroup.name){
+				var $notification = $("#group-name-notification-container"),
+					$input = $("#add-group-name");
+				
+				var icon = $(document.createElement("i")).addClass("icon icon-exclamation"),
+				    message = "You must enter a group name",
+				    container = $(document.createElement("div")).addClass("notification error");
+			
+				$notification.html($(container).append(icon, message));					
+				$input.addClass("has-error");
+				
+				return;
+			}
+			else if(!this.pendingGroup.nameAvailable) return;
+			
+			var view = this;
+			var success = function(data){
+				view.showAlert("Your group has been saved", "alert-success", "#add-group-form-container");
+				view.refreshGroupLists();
+			}
+			var error = function(data){
+				view.showAlert("Your group could not be created. Please try again", "alert-error", "#add-group-form-container")
+			}
+			
+			//Create it!
+			if(!this.pendingGroup.save(success, error)) error();
+		},
+		
+		preventSubmit: function(e){
+			if(e.keyCode != 13) return;
+			
+			e.preventDefault();
 		},
 		
 		onClose: function () {			
