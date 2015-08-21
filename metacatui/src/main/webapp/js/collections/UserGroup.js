@@ -126,29 +126,32 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			if(this.pending && !this.nameAvailable) return false;
 			
 			var memberXML = "",
+				ownerXML = "",
 				collection = this;
 			
 			//Create the member and owner XML
 			this.forEach(function(member){
 				memberXML += "<hasMember>" + member.get("username") + "</hasMember>";
+				
 				if(collection.isOwner(member) || (appUserModel == member))
-					memberXML += "<rightsHolder>" + member.get("username") + "</rightsHolder>";
+					ownerXML += "<rightsHolder>" + member.get("username") + "</rightsHolder>";
 			});
 			
 			//Create the group XML
 			var groupXML = 
 				'<?xml version="1.0" encoding="UTF-8"?>'
 				+ '<d1:group xmlns:d1="http://ns.dataone.org/service/types/v1">'
-					+ '<subject>' + this.groupId + '</subject>'
-					+ '<groupName>' + this.name + '</groupName>'
+					+ '<subject>'   + this.groupId + '</subject>'
+					+ '<groupName>' + this.name    + '</groupName>'
 					+ memberXML
+					+ ownerXML
 				+ '</d1:group>';
 			
 			var xmlBlob = new Blob([groupXML], {type : 'application/xml'});
 			var formData = new FormData();
 			formData.append("group", xmlBlob, "group");
 						
-			// ajax call to update
+			// AJAX call to update
 			$.ajax({
 				type: this.pending? "POST" : "PUT",
 				cache: false,

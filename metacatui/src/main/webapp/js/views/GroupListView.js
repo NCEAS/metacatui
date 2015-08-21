@@ -34,6 +34,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			"click .toggle"               : "toggleMemberList",
 			"click .add-member .submit"   : "addToCollection",
 			"click .remove-member"		  : "removeFromCollection",
+			"click .add-owner"            : "addOwnerToCollection",
+			"click .remove-owner"         : "removeOwnerFromCollection",
 			"keypress input"              : "checkForReturn"
 		},
 		
@@ -92,7 +94,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			this.listenTo(group, "add", this.addMember);
 			this.listenTo(group, "remove", this.removeMember);
-			this.listenTo(group, "change:isOwnerOf", this.addOwner);
 			this.listenTo(group, "change:isOwnerOf", this.addControls);
 			
 			return this;
@@ -140,11 +141,12 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			else
 				this.$el.append(memberEl);
 			
-			//Indicate if this member is an owner of the group
-			if(this.collection.isOwner(member)){
-				var ownerIcon = this.getOwnerEl();
+			//Add an owner icon for owners of the group or to assign owners to the group
+			if(this.collection.isOwner(member) || this.collection.isOwner(appUserModel)){
+				var ownerIcon = this.getOwnerEl(member);
 				memberIcon.after(ownerIcon);
 			}
+			
 			if(this.collection.isOwner(appUserModel)){
 				//Add a remove icon for each member
 				var removeIcon = $(document.createElement("i")).addClass("icon icon-remove remove-member"),
@@ -263,24 +265,83 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		
 		
 		//-------------- Displaying UI elements for owners --------------//
-		addOwner: function(user){
-			//Make sure this user is an owner of this group 
-			//(may have been sent here by a trigger that this user's ownership has changed in general, not specifically for this group
-			if(!this.collection.isOwner(user)) return;
+		/*
+		 * When a user clicks on the add-owner element, this view will add the user as an owner of the
+		 * group and will update the collection. The collection is saved to the server.
+		 */
+		addOwnerToCollection: function(e){
+			if(!e) return;
+			e.preventDefault();
 			
-			var memberEl = this.$(".member[data-username='" + user.get("username") + "'");
-			if(!memberEl.length) return;
+			var view = this;
 			
-			memberEl.find(".icon-user").after(this.getOwnerEl());
+			//Get this member
+			var username = $(e.target).parents(".member").attr("data-username");
+			if(!username) return;			
+			var member = this.collection.findWhere({username: username});
+			
+			//Update ownership
+			member.get("isOwnerOf").push(this.collection.groupId);
+			member.trigger("change:isOwnerOf");
+			
+			//Save
+			var success = function(){ view.refreshOwner(member); }			
+			this.collection.save(success);
 		},
 		
-		getOwnerEl: function(){
-			var ownerIcon = $(document.createElement("i")).addClass("icon icon-star owner");
-			ownerIcon.tooltip({
-				placement: "top",
-				trigger: "hover",
-				title: "Group owner"
-			});
+		/*
+		 * When the user clicks on the remove ownership icon for an owner, the rightsHolder is removed
+		 * from the group and the updated group is saved to the server.
+		 */
+		removeOwnerFromCollection: function(e){
+			if(!e) return;
+			e.preventDefault();
+			
+			var view = this;
+			
+			//Get this member
+			var username = $(e.target).parents(".member").attr("data-username");
+			if(!username) return;
+			var member = this.collection.findWhere({username: username});
+			
+			//Update ownership
+			var newOwners = _.without(member.get("isOwnerOf"), this.collection.groupId);
+			member.set("isOwnerOf", newOwners);
+			member.trigger("change:isOwnerOf");
+			
+			//Save
+			var success = function(){ view.refreshOwner(member); }			
+			this.collection.save(success);
+		},
+		
+		refreshOwner: function(user){
+			//Get the member element on the page
+			var memberEl = this.memberEls[user.cid];
+			if((typeof memberEl === "undefined") || !memberEl)
+				memberEl = this.$(".member[data-username='" + user.get("username") + "'");
+						
+			//Replace the owner element with the new one
+			$(memberEl).find(".owner").tooltip("destroy").replaceWith(this.getOwnerEl(user));
+		},
+		
+		getOwnerEl: function(member){
+			var ownerIcon = $(document.createElement("i")).addClass("icon owner");
+			
+			if(this.collection.isOwner(member)){
+				ownerIcon.addClass("icon-star is-owner remove-owner").tooltip({
+					placement: "top",
+					trigger: "hover",
+					title: "Group owner"
+				});
+			}
+			else{
+				ownerIcon.addClass("icon-star-empty add-owner").tooltip({
+					placement: "top",
+					trigger: "hover",
+					title: "Add this person as a co-owner of the group"
+				});
+			}
+				
 			return ownerIcon;
 		},
 		
