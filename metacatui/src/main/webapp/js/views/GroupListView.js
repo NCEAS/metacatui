@@ -2,7 +2,11 @@
 define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/UserModel'], 				
 	function($, _, Backbone, UserGroup, UserModel) {
 	'use strict';
-			
+		
+	/*
+	 * GroupListView
+	 * Displays a list of UserModels of a UserGroup collection and allows owners to add/remove members from the group 
+	 */
 	var GroupListView = Backbone.View.extend({
 
 		type: "GroupListView",
@@ -10,7 +14,12 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		tagName: "ul",
 		
 		className: "list-group member-list",
-				
+		
+		memberEls: [],
+		
+		/*
+		 * New instances of this view should pass a UserGroup collection in the options object
+		 */
 		initialize: function(options){
 			if(typeof options == "undefined"){
 				this.collection = new UserGroup();
@@ -24,9 +33,15 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		events: {
 			"click .toggle"               : "toggleMemberList",
 			"click .add-member .submit"   : "addToCollection",
+			"click .remove-member"		  : "removeFromCollection",
 			"keypress input"              : "checkForReturn"
 		},
 		
+		/*
+		 * The overall list layout is created, with a header and list of members.
+		 * This view listens to the UserGroup collection and updates the member list as
+		 * members are added and removed. 
+		 */
 		render: function(){
 			
 			var group = this.collection,
@@ -76,12 +91,18 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				this.addControls();
 			
 			this.listenTo(group, "add", this.addMember);
+			this.listenTo(group, "remove", this.removeMember);
 			this.listenTo(group, "change:isOwnerOf", this.addOwner);
 			this.listenTo(group, "change:isOwnerOf", this.addControls);
 			
 			return this;
 		},
 		
+		//-------- Adding members to the group --------//
+		/*
+		 * The specified UserModel is added to the UI, and if the current user is an owner of the group, 
+		 * the owner controls are displayed
+		 */
 		addMember: function(member){
 			var username = member.get("username"),
 				name     = member.get("fullName");
@@ -92,6 +113,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			//Create a list item for this member
 			var memberListItem = $(document.createElement("li")).addClass("list-group-item member").attr("data-username", username),
+				memberNameContainer = $(document.createElement("div")).addClass("name-container"),
 				memberIcon     = $(document.createElement("i")).addClass("icon icon-user"),	
 				memberLink     = $(document.createElement("a")).attr("href", "#profile/" + username).attr("data-username", username).prepend(memberIcon, name),
 				memberName     = $(document.createElement("span")).addClass("details").attr("data-username", username).text(username);
@@ -101,15 +123,12 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				trigger: "hover",
 				title: "Group member"
 			});
-			
-			//Indicate if this member is an owner of the group
-			if(this.collection.isOwner(member)){
-				var ownerIcon = this.getOwnerEl();
-				memberIcon.after(ownerIcon);
-			}
-			
+		
 			//Put all the elements together
-			var memberEl = $(memberListItem).append(memberLink, memberName);
+			var memberEl = $(memberListItem).append($(memberNameContainer).append(memberLink, memberName));
+			
+			//Store this element in the view
+			this.memberEls[member.cid] = memberEl;
 			
 			//If this is Me, list Me first
 			if(username == appUserModel.get("username"))
@@ -120,6 +139,24 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			//If no members are listed yet, append to the main el
 			else
 				this.$el.append(memberEl);
+			
+			//Indicate if this member is an owner of the group
+			if(this.collection.isOwner(member)){
+				var ownerIcon = this.getOwnerEl();
+				memberIcon.after(ownerIcon);
+			}
+			if(this.collection.isOwner(appUserModel)){
+				//Add a remove icon for each member
+				var removeIcon = $(document.createElement("i")).addClass("icon icon-remove remove-member"),
+					clearfix   = $(document.createElement("div")).addClass('clear'),
+				    memberControls = $(document.createElement("div")).addClass("member-controls").append(removeIcon);
+				removeIcon.tooltip({
+					trigger   : "hover",
+					placement : "top",
+					title     : "Remove this person from the group"
+				});
+				memberNameContainer.addClass("has-member-controls").after(memberControls, clearfix);
+			}
 			
 			//Update the header
 			if(this.$numMembers)
@@ -132,16 +169,100 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				this.collapseMember(memberEl);
 		},
 		
+		/*
+		 * When the user inputs a username, a UserModel is created and added to the collection.
+		 * The collection is saved to the server. Failed and successful member additions are 
+		 * handled and displayed to the user 
+		 */
+		addToCollection: function(e){
+			if(e) e.preventDefault();
+			
+			//Get form values
+			var username = this.$addMember.find("input[name='username']").val();
+			var fullName = this.$addMember.find("input[name='fullName']").val();
+			
+			//Reset the form
+			this.$addMember.find("input[name='username']").val("");
+			this.$addMember.find("input[name='fullName']").val("");
+			
+			//Is this user already in the collection?
+			if(this.collection.findWhere({username: username})){
+				this.addMemberNotification({
+					msg: fullName + " is already in this group",
+					status: "error"
+				});
+				return;
+			}
+			
+			//Don't auto-collapse the list since the user is interacting with the controls right now
+			this.preventToggle = true;
+			
+			//Create User Model
+			var user = new UserModel({
+				username: username,
+				fullName: fullName
+			});
+			
+			var view = this;
+			var success = function(response){
+				view.addMemberNotification({
+					msg: fullName + " added",
+					status: "success"
+				});
+			}
+			var error = function(response){
+				view.addMemberNotification({
+					msg: "Something went wrong and " + fullName + " could not be added. Please try again.",
+					status: "error"
+				});
+				
+				//Remove this user from the collection
+				view.collection.remove(user);
+			}
+			
+			//Add this user
+			this.collection.add(user);
+			this.collection.save(success, error);
+		},
+		
+		//-------- Removing members from the group ------//
+		/*
+		 * When the user clicks on the remove icon, the member is removed from the collection
+		 * and the updated collection is saved to the server
+		 */
+		removeFromCollection: function(e){
+			var username = $(e.target).parents(".member").attr("data-username");
+			if(!username) return;
+			
+			var member = this.collection.findWhere({username: username});
+			this.collection.remove(member);
+			this.collection.save();
+		},
+		
+		/*
+		 * Removes the specified member from the UI
+		 */
 		removeMember: function(member){
-			this.$("li[data-username='" + member.get("username") + "']").detach();
+			//Get DOM element for this user
+			var memberEl = this.memberEls[member.cid];
+			if((typeof memberEl === "undefined") || !memberEl)
+				memberEl = this.$("li[data-username='" + member.get("username") + "']");
+			
+			//Remove from page
+			memberEl.remove();
 			
 			//Update the header
 			if(this.$numMembers)
 				this.$numMembers.text(this.collection.length);
 			if(this.$groupName)
 				this.$groupName.text(this.collection.name);
+
+			//Remove this member el from the view storage
+			this.memberEls[member.cid] = null;
 		},
 		
+		
+		//-------------- Displaying UI elements for owners --------------//
 		addOwner: function(user){
 			//Make sure this user is an owner of this group 
 			//(may have been sent here by a trigger that this user's ownership has changed in general, not specifically for this group
@@ -180,77 +301,44 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				addMemberIcon     = $(document.createElement("i")).addClass("icon icon-plus"),
 				addMemberSubmit   = $(document.createElement("button")).addClass("btn submit").append(addMemberIcon),
 				addMemberLabel    = $(document.createElement("label")).text("Add Member"),
-				addMemberForm     = $(document.createElement("form")).append(addMemberLabel, addMemberInput, addMemberName, addMemberSubmit),
+				addMemberMsg      = $(document.createElement("div")).addClass("notification")
+									.append($(document.createElement("i")).addClass("icon"),
+											$(document.createElement("span")).addClass("msg")),
+				addMemberForm     = $(document.createElement("form")).append(addMemberLabel, addMemberInput, addMemberName, addMemberSubmit, addMemberMsg),
 				addMemberListItem = $(document.createElement("li")).addClass("list-group-item add-member input-append").append(addMemberForm);
 			
 			this.$addMember = $(addMemberForm);
+			this.$addMemberMsg = $(addMemberMsg);
 									
 			this.$el.append(addMemberListItem);
 			
 			this.setUpAutocomplete();
+						
 		},
 		
-		addToCollection: function(e){
-			if(e) e.preventDefault();
+		/*
+		 * Display a notification in the "add member" form space
+		 * Pass an options object with a msg (message string) and status ('success' or 'error')
+		 */
+		addMemberNotification: function(options){
+			if(!options.status) options.status = "success";
+			if(!options.msg) return;
 			
-			//Get form values
-			var username = this.$addMember.find("input[name='username']").val();
-			var fullName = this.$addMember.find("input[name='fullName']").val();
-			
-			//Reset the form
-			this.$addMember.find("input[name='username']").val("");
-			this.$addMember.find("input[name='fullName']").val("");
-			
-			//Don't auto-collapse the list since the user is interacting with the controls right now
-			this.preventToggle = true;
-			
-			//Create User Model
-			var user = new UserModel({
-				username: username,
-				fullName: fullName
-			});
-			
-			//Add this user
-			this.collection.add(user);
-		},
-		
-		checkForReturn: function(e){
-			if(e.keyCode != 13) return;
-		
-			if($.contains(e.target, this.$addMember.find("input[name='fullName']"))){
-				e.preventDefault();
-				return;
+			if(options.status == "success"){
+				this.$addMemberMsg.addClass("success").removeClass("error")
+								  .children(".icon").addClass("icon-ok").removeClass("icon-remove");
+				this.$addMemberMsg.children(".msg").text(options.msg);
 			}
-			else if($(e.target).is(".submit-enter")){
-				e.preventDefault();
-				var callback = $(e.target).attr("data-submit-callback");
-				this[callback]();
-				return;
+			else{
+				this.$addMemberMsg.removeClass("success").addClass("error")
+				  .children(".icon").removeClass("icon-ok").addClass("icon-remove");
+				this.$addMemberMsg.children(".msg").text(options.msg);
 			}
+			
+			this.$addMemberMsg.show().delay(3000).fadeOut();
 		},
 		
-		collapseMember: function(memberEl){
-			if(this.preventToggle) return;
-			
-			$(memberEl).slideUp();				
-		},
-		
-		toggleMemberList: function(e){
-			if(e) e.preventDefault();
-			
-			if(this.preventToggle) return;
-			
-			this.$(".member, .add-member").slideToggle().toggleClass("collapsed");
-			this.$(".icon.group").toggleClass("icon-caret-right icon-caret-down");
-		},
-		
-		collapseMemberList: function(e){
-			if(this.preventToggle) return;
-			
-			this.$(".member, .add-member").slideUp().addClass("collapsed");
-			this.$(".icon.group").addClass("icon-caret-right").removeClass("icon-caret-down");
-		},
-		
+		//----------- Form utilities -------------//
 		setUpAutocomplete: function() {
 			var input = this.$(".account-autocomplete");
 			if(!input || !input.length) return;
@@ -292,6 +380,44 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 		},
 		
+		checkForReturn: function(e){
+			if(e.keyCode != 13) return;
+		
+			if($.contains(e.target, this.$addMember.find("input[name='fullName']"))){
+				e.preventDefault();
+				return;
+			}
+			else if($(e.target).is(".submit-enter")){
+				e.preventDefault();
+				var callback = $(e.target).attr("data-submit-callback");
+				this[callback]();
+				return;
+			}
+		},
+		
+		//---------- Collapsing/Expanding the member list --------//
+		collapseMember: function(memberEl){
+			if(this.preventToggle) return;
+			
+			$(memberEl).slideUp();				
+		},
+		
+		collapseMemberList: function(e){
+			if(this.preventToggle && !e) return;
+			
+			this.$(".member, .add-member").slideUp().addClass("collapsed");
+			this.$(".icon.group").addClass("icon-caret-right").removeClass("icon-caret-down");
+		},
+		
+		toggleMemberList: function(e){
+			if(e) e.preventDefault();			
+			else if(this.preventToggle ) return;
+			
+			this.$(".member, .add-member").slideToggle().toggleClass("collapsed");
+			this.$(".icon.group").toggleClass("icon-caret-right icon-caret-down");
+		},
+		
+		// ------- When this view is closed --------//
 		onClose: function(){
 			this.remove();
 		}

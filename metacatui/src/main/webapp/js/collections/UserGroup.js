@@ -3,10 +3,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	function($, _, Backbone, UserModel) {
 	'use strict';
 
-	// UserGroup Collection
-	// ------------------------
-	
-	// The collection of Users that represent a DataONE group
+	/*
+	 * UserGroup Collection
+	 * The collection of Users that represent a DataONE group
+	 */ 
 	var UserGroup = Backbone.Collection.extend({
 		// Reference to this collection's model.
 		model: UserModel,
@@ -35,6 +35,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			return this;
 		},
 		
+		/*
+		 * Gets the group from the server. Options object uses the BackboneJS options API
+		 */
 		getGroup: function(options){
 			if(!this.groupId && this.name){
 				this.groupId = "CN=" + this.name + ",DC=dataone,DC=org";
@@ -45,6 +48,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			return this;
 		},
 		
+		/*
+		 * Fetches the group info from the server. Should not be called directly - use getGroup() instead
+		 */
 		fetch: function (options) {
 	        options = options || { silent: false, reset: false, remove: false };
 	        options.dataType = "xml";
@@ -58,6 +64,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	        return Backbone.Collection.prototype.fetch.call(this, options);
 	    },
 		
+	    /*
+	     * Backbone.js override - parses the XML reponse from DataONE and creates a JSON representation that will
+	     * be used to create UserModels
+	     */
 		parse: function(response, options){
 			if(!response) return;
 			
@@ -105,8 +115,12 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 		},
 		
 		/*
-		 * An alternative to Backbone sync - will send a POST request to DataONE CNIdentity.createGroup()
-		 * to create this collection as a new DataONE group 
+		 * An alternative to Backbone sync 
+		 * - will send a POST request to DataONE CNIdentity.createGroup() to create this collection as a new DataONE group
+		 * or
+		 * - will send a PUT request to DataONE CNIdentity.updateGroup() to update this existing DataONE group
+		 * 
+		 *  If this group is marked as pending, then the group is created, otherwise it's updated
 		 */
 		save: function(onSuccess, onError){
 			if(this.pending && !this.nameAvailable) return false;
@@ -136,7 +150,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 						
 			// ajax call to update
 			$.ajax({
-				type: "POST",
+				type: this.pending? "POST" : "PUT",
 				cache: false,
 			    contentType: false,
 			    processData: false,
@@ -165,6 +179,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			return true;
 		},
 		
+		/*
+		 * Retrieves the UserModels that are rightsHolders of this group
+		 */
 		getOwners: function(){
 			var groupId = this.groupId;
 			return _.filter(this.models, function(user){
@@ -172,6 +189,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			});
 		},
 		
+		/*
+		 * Shortcut function - will check if a specified User is an owner of this group
+		 */
 		isOwner: function(model){
 			if(typeof model === "undefined") return false;
 			

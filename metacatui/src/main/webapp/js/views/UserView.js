@@ -2,7 +2,12 @@
 define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html'], 				
 	function($, _, Backbone, UserGroup, UserModel, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate) {
 	'use strict';
-			
+	
+	/*
+	 * UserView
+	 * A major view that displays a public profile for the user and a settings page for the logged-in user
+	 * to manage their account info, groups, identities, and API tokens.
+	 */
 	var UserView = Backbone.View.extend({
 
 		el: '#Content',
@@ -32,7 +37,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		initialize: function(){			
 			this.subviews = new Array();
 		},
-				
+		
+		//---------------------------- Rendering the main parts of the view ----------------------------------//
 		render: function () {
 			var view = this;
 			
@@ -85,51 +91,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			return this;
 		},
 		
-		switchToSection: function(e){
-			
-			e.preventDefault();
-			
-			//Hide all the sections first
-			$(this.sectionHolder).children().slideUp().removeClass(".active");
-
-			//Get the section name
-			var sectionName = $(e.target).attr("data-section");
-			
-			//Display the specified section
-			var activeSection = this.$(".section[data-section='" + sectionName + "']");
-			$(activeSection).addClass("active").slideDown();
-			this.$(".nav-tab").removeClass("active");
-			$(e.target).parents(".nav-tab").addClass("active");
-			
-			//Find all the subsections, if there are any
-			if($(activeSection).find(".subsection").length > 0){
-				//Find any item classified as "active"
-				var activeItem = $(activeSection).find(".active");
-				if(activeItem.length > 0){
-					//Find the data section this active item is referring to
-					if($(activeItem).children("[data-section]").length > 0){
-						//Get the section name
-						var subsectionName = $(activeItem).find("[data-section]").first().attr("data-section");
-						//If we found a section name, find the subsection element and display it
-						if(subsectionName) this.switchToSubSection(null, subsectionName);
-					}
-				}
-			}
-		},
-		
-		switchToSubSection: function(e, subsectionName){
-			if(e) e.preventDefault();
-			if(!subsectionName) var subsectionName = $(e.target).attr("data-section");
-						
-			//Mark its links as active
-			$(".section.active").find(".subsection-link").removeClass("active");
-			$(".section.active").find(".subsection-link[data-section='" + subsectionName + "']").addClass("active");
-			
-			//Hide all the other sections
-			$(".section.active").find(".subsection").hide();
-			$(".section.active").find(".subsection[data-section='" + subsectionName + "']").show();
-		},
-		
 		renderProfile: function(){
 			//Insert the template first
 			this.sectionHolder.append(this.profileTemplate());
@@ -179,6 +140,70 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			this.setUpAutocomplete();
 		},
 		
+		/*
+		 * Displays a menu for the user to switch between different views of the user profile
+		 */
+		insertMenu: function(){
+			//If the user is not logged in, then remove the menu 
+			if(!appUserModel.get("loggedIn")){
+				this.$(".nav").detach();
+				return;
+			}
+			
+			//Otherwise, insert the menu
+			var menu = this.menuTemplate({
+				username: this.model.get("username")
+			});
+			
+			this.$el.prepend(menu);
+		},
+
+		//---------------------------- Navigating sections of view ----------------------------------//
+		switchToSection: function(e){
+			
+			e.preventDefault();
+			
+			//Hide all the sections first
+			$(this.sectionHolder).children().slideUp().removeClass(".active");
+
+			//Get the section name
+			var sectionName = $(e.target).attr("data-section");
+			
+			//Display the specified section
+			var activeSection = this.$(".section[data-section='" + sectionName + "']");
+			$(activeSection).addClass("active").slideDown();
+			this.$(".nav-tab").removeClass("active");
+			$(e.target).parents(".nav-tab").addClass("active");
+			
+			//Find all the subsections, if there are any
+			if($(activeSection).find(".subsection").length > 0){
+				//Find any item classified as "active"
+				var activeItem = $(activeSection).find(".active");
+				if(activeItem.length > 0){
+					//Find the data section this active item is referring to
+					if($(activeItem).children("[data-section]").length > 0){
+						//Get the section name
+						var subsectionName = $(activeItem).find("[data-section]").first().attr("data-section");
+						//If we found a section name, find the subsection element and display it
+						if(subsectionName) this.switchToSubSection(null, subsectionName);
+					}
+				}
+			}
+		},
+		
+		switchToSubSection: function(e, subsectionName){
+			if(e) e.preventDefault();
+			if(!subsectionName) var subsectionName = $(e.target).attr("data-section");
+						
+			//Mark its links as active
+			$(".section.active").find(".subsection-link").removeClass("active");
+			$(".section.active").find(".subsection-link[data-section='" + subsectionName + "']").addClass("active");
+			
+			//Hide all the other sections
+			$(".section.active").find(".subsection").hide();
+			$(".section.active").find(".subsection[data-section='" + subsectionName + "']").show();
+		},
+		
 		highlightSubSection: function(e){
 			e.preventDefault();
 			if(!e.target) return;
@@ -195,6 +220,74 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			window.setTimeout(function(){ subsection.removeClass("highlight"); }, 1500);
 		},
 		
+		//---------------------------- Inserting public profile UI elements ----------------------------------//		
+		insertStats: function(){
+			var username = this.model.get("username");
+			
+			//Render the Stats View for this person
+			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
+			statsModel.set("query", '(rightsHolder:"' + username + '" OR submitter:"' + username + '")');
+			this.statsView = new StatsView({
+				title: "",
+				el: this.$("#user-stats")
+			});
+			this.subviews.push(this.statsView);
+			this.statsView.render();
+		},
+		
+		/*
+		 * Insert the name of the user
+		 */
+		insertUserInfo: function(){
+			
+			this.listenTo(this.model, "change:firstName", this.insertUserInfo);
+			this.listenTo(this.model, "change:lastName", this.insertUserInfo);
+
+			//Don't try to insert anything if we haven't gotten all the user info yet
+			if(!this.model.get("lastName") && !this.model.get("firstName")) return;
+				
+			//Construct the full name
+			var name = this.model.get("firstName") + " " + this.model.get("lastName");
+			
+			//Insert the name into this page
+			this.$("#fullname").text(name);
+		},
+		
+		/*
+		 * Insert the first year of contribution for this user
+		 */
+		insertFirstUpload: function(){
+			var firstUpload = new Date(statsModel.get("firstUpload"));
+			
+			var monthNames = [ "January", "February", "March", "April", "May", "June",
+				                 "July", "August", "September", "October", "November", "December" ];
+			
+			var m = monthNames[firstUpload.getUTCMonth()],
+				y = firstUpload.getUTCFullYear(),
+				d = firstUpload.getUTCDate();
+			
+			this.$("#first-upload").text("Contributor since " + m + " " + d + ", " + y);
+		},
+		
+		/*
+		 * Insert a list of this user's content
+		 */
+		insertContent: function(){				
+			var view = new DataCatalogView({
+				el            : this.$("#data-list")[0],
+				searchModel   : this.model.get("searchModel"),
+				searchResults : this.model.get("searchResults"),
+				mode          : "list",
+				isSubView     : true
+			});
+			this.subviews.push(view);
+			view.render();
+			view.$el.addClass("list-only");
+			view.$(".auto-height").removeClass("auto-height").css("height", "auto");
+			$("#metacatui-app").removeClass("DataCatalog mapMode");
+		}, 
+		
+		//---------------------------------- Groups -----------------------------------------//
 		/*
 		 * Gets the groups that this user is a part of and creates a UserGroup collection for each
 		 */
@@ -208,27 +301,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				view.listenTo(userGroup, "sync", view.insertGroupList);
 				userGroup.getGroup();				
 			});
-		},
-		
-		/*
-		 * Will send a request for info about this user and their groups, and redraw the group lists
-		 * Will reset the Create New group form, too
-		 */
-		refreshGroupLists: function(){
-			this.insertCreateGroupForm();
-			this.model.getInfo();
-		},
-		
-		insertCreateGroupForm: function(){
-			//Reset the form
-			$("#add-group-form-container").find("input[type='text']").val("").removeClass("has-error");
-			$("#group-name-notification-container").empty().removeClass("notification success error");
-			
-			//Create a pending group that is stored locally until the user submits it
-			this.pendingGroup = new UserGroup([this.model], { pending: true });
-			var groupView = new GroupListView({ collection: this.pendingGroup });
-			groupView.setElement(this.$("#add-group-container .member-list"));
-			groupView.render();	
 		},
 		
 		/*
@@ -252,6 +324,109 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				groupView.collapseMemberList();
 		},
 		
+		/*
+		 * Will send a request for info about this user and their groups, and redraw the group lists
+		 * Will reset the Create New group form, too
+		 */
+		refreshGroupLists: function(){
+			this.insertCreateGroupForm();
+			this.model.getInfo();
+		},
+		
+		/*
+		 * Inserts a new form for this user to create a new group. 
+		 * The form container is grabbed from the user settings template
+		 */
+		insertCreateGroupForm: function(){
+			//Reset the form
+			$("#add-group-form-container").find("input[type='text']").val("").removeClass("has-error");
+			$("#group-name-notification-container").empty().removeClass("notification success error");
+			
+			//Create a pending group that is stored locally until the user submits it
+			this.pendingGroup = new UserGroup([this.model], { pending: true });
+			var groupView = new GroupListView({ collection: this.pendingGroup });
+			groupView.setElement(this.$("#add-group-container .member-list"));
+			groupView.render();	
+		},
+		
+		/*
+		 * Gets the group name the user has entered and attempts to get this group from the server
+		 * If no group is found, then the group name is marked as available. Otherwise an error msg is displayed
+		 */
+		checkGroupName: function(e){
+			if(!e || !e.target) return;
+			
+			var view = this,
+				$notification = $("#group-name-notification-container"),
+				$input = $(e.target);
+			
+			var name = $input.val().trim();
+			if(!name) return;
+			
+			//Create an empty group and check the name availability - this group might already exist
+			this.pendingGroup.name = name;
+			
+			this.listenToOnce(this.pendingGroup, "nameChecked", function(collection){
+				//If the group name/id is available, then display so 
+				if(collection.nameAvailable){
+					var icon = $(document.createElement("i")).addClass("icon icon-ok"),
+						message = "The name " + collection.name + " is available",
+						container = $(document.createElement("div")).addClass("notification success");
+					
+					$notification.html($(container).append(icon, message));
+					$input.removeClass("has-error");
+				}
+				else{
+					var icon = $(document.createElement("i")).addClass("icon icon-remove"),
+						message = "The name " + collection.name + " is already taken",
+						container = $(document.createElement("div")).addClass("notification error");
+				
+					$notification.html($(container).append(icon, message));					
+					$input.addClass("has-error");
+				}
+					
+			});
+			
+			//Get group info/check name availablity
+			this.pendingGroup.getGroup({ add: false });
+		},
+		
+		/*
+		 * Syncs the pending group with the server
+		 */
+		createGroup: function(e){
+			e.preventDefault();
+			
+			//If there is no name specified, give warning
+			if(!this.pendingGroup.name){
+				var $notification = $("#group-name-notification-container"),
+					$input = $("#add-group-name");
+				
+				var icon = $(document.createElement("i")).addClass("icon icon-exclamation"),
+				    message = "You must enter a group name",
+				    container = $(document.createElement("div")).addClass("notification error");
+			
+				$notification.html($(container).append(icon, message));					
+				$input.addClass("has-error");
+				
+				return;
+			}
+			else if(!this.pendingGroup.nameAvailable) return;
+			
+			var view = this;
+			var success = function(data){
+				view.showAlert("Your group has been saved", "alert-success", "#add-group-form-container");
+				view.refreshGroupLists();
+			}
+			var error = function(data){
+				view.showAlert("Your group could not be created. Please try again", "alert-error", "#add-group-form-container")
+			}
+			
+			//Create it!
+			if(!this.pendingGroup.save(success, error)) error();
+		},
+		
+		//---------------------------------- Identities/Accounts -----------------------------------------//
 		insertIdentityList: function(){
 			var identities = this.model.get("identities");
 			
@@ -285,182 +460,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			//Add to the page
 			//$(identityList).find(".collapsed").hide();
 			this.$("#identity-list-container").append(identityList);
-		},
-		
-		insertPendingList: function(){
-			var pending = this.model.get("pending");
-			
-			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
-			this.$("#pending-list-container").empty();
-	
-			//Create the list element
-			if (pending.length < 1){
-				this.$("[data-subsection='pending-accounts']").hide();
-				return;
-			}
-			else{
-				this.$("#pending-list-container").prepend($(document.createElement("p")).text("You have " + pending.length + " new request to map accounts. If these requests are from you, accept them below. If you do not recognize a username, reject the request."));
-				var pendingList = $(document.createElement("ul")).addClass("list-identity").attr("id", "pending-list");
-				var pendingCount = $(document.createElement("span")).addClass("badge").attr("id", "pending-count").text(pending.length);
-				this.$("#pending-list-heading").append(pendingCount);
-			}
-			
-			//Create a list item for each pending id
-			_.each(pending, function(identity, i){
-				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
-					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),				
-				    acceptIcon = $(document.createElement("i")).addClass("icon icon-check-sign icon-large icon-positive tooltip-this").attr("data-title", "Accept Request").attr("data-trigger", "hover").attr("data-placement", "top"),
-				    rejectIcon = $(document.createElement("i")).addClass("icon icon-trash icon-large icon-negative tooltip-this").attr("data-title", "Reject Request").attr("data-trigger", "hover").attr("data-placement", "top"),
-					confirm = $(document.createElement("a")).attr("href", "#").addClass('confirm-request-btn').attr("data-identity", identity).append(acceptIcon),
-					reject = $(document.createElement("a")).attr("href", "#").addClass("reject-request-btn").attr("data-identity", identity).append(rejectIcon);
-
-				$(pendingList).append(
-						$(listItem).append($(link))
-						.prepend(confirm)
-						.prepend(reject)
-				);
-				
-			});
-			
-			//Add to the page
-			this.$("#pending-list-container").append(pendingList);
-		},
-		
-		updateModForm: function() {
-			this.$("#mod-givenName").val(this.model.get("firstName"));
-			this.$("#mod-familyName").val(this.model.get("lastName"));
-			this.$("#mod-email").val(this.model.get("email"));
-			
-			if (this.model.get("registered")) {
-				this.$("#registered-user-container").show();
-			} else {
-				this.$("#registered-user-container").hide();
-			}
-			
-		},
-		
-		getToken: function(){		
-			var model = this.model;
-			
-			//When the token is retrieved, then show it
-			this.listenToOnce(this.model, "change:token", this.showToken);
-			
-			//Get the token from the CN
-			this.model.checkToken(function(data, textStatus, xhr){				
-				model.set("token", data);
-			});			
-		},
-		
-		showToken: function(){
-			var token = this.model.get("token");
-			
-			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "11").attr("disabled", "disabled").addClass("token").text(token),
-				copyButton = $(document.createElement("a")).attr("href", "#").addClass("btn").attr("type", "button").text("Copy");
-						
-			var	successMessage = this.alertTemplate({
-					msg: '<i class="icon icon-ok"></i>  <strong>Success!</strong> Copy your token: <br/>' + $(tokenInput)[0].outerHTML,
-					classes: "alert-success"
-				});
-			
-			this.$("#token-generator-container").html(successMessage);
-		},
-		
-		setUpAutocomplete: function() {
-			var input = this.$(".account-autocomplete");
-			if(!input || !input.length) return;
-			
-			// look up registered identities 
-			$(input).hoverAutocomplete({
-				source: function (request, response) {
-		            var term = $.ui.autocomplete.escapeRegex(request.term);
-		            
-		            var list = [];
-
-		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
-					$.get(url, function(data, textStatus, xhr) {
-						_.each($(data).find("person"), function(person, i){
-							var item = {};
-							item.value = $(person).find("subject").text();
-							item.label = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
-							list.push(item);
-						});
-						
-			            response(list);
-
-					});
-		            
-		        },
-				select: function(e, ui) {
-					e.preventDefault();
-					
-					// set the text field
-					$(e.target).val(ui.item.value);
-					$(e.target).parents("form").find("input[name='fullName']").val(ui.item.label);
-				},
-				position: {
-					my: "left top",
-					at: "left bottom",
-					collision: "none"
-				}
-			});
-			
-		},
-		
-		saveUser: function(e) {
-			
-			e.preventDefault();
-			
-			var view = this,
-				container = this.$('[data-subsection="edit-account"] .content') || $(e.target).parent();
-			
-			var success = function(data){
-				$(container).find(".loading").detach();
-				$(container).children().show();
-				view.showAlert("Success! Your profile has been updated.", 'alert-success', container);
-			}
-			var error = function(data){
-				$(container).find(".loading").detach();
-				$(container).children().show();
-				var msg = (data && data.responseText) ? data.responseText : "Sorry, updating your profile failed. Please try again.";
-				if(!data.responseText)
-					view.showAlert(msg, 'alert-error', container);
-			}
-
-			//Get info entered into form
-			var givenName = this.$("#mod-givenName").val();
-			var familyName = this.$("#mod-familyName").val();
-			var email = this.$("#mod-email").val();
-			
-			//Update the model
-			this.model.set("firstName", givenName);
-			this.model.set("lastName", familyName);
-			this.model.set("email", email);
-			
-			//Loading icon
-			$(container).children().hide();
-			$(container).prepend(this.loadingTemplate());
-			
-			//Send the update
-			this.model.update(success, error);
-			
-		},
-		
-		showAlert: function(msg, classes, container) {
-			if(!classes)
-				var classes = 'alert-success';
-			if(!container)
-				var container = this.$el;
-
-			//Remove any alerts that are already in this container
-			if($(container).children(".alert-container").length > 0)
-				$(container).children(".alert-container").detach();
-			
-			$(container).prepend(
-					this.alertTemplate({
-						msg: msg,
-						classes: classes
-					})
-			);
 		},
 		
 		mapRequest: function(e) {
@@ -604,162 +603,186 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			});
 		},
 		
-		insertStats: function(){
-			var username = this.model.get("username");
+		insertPendingList: function(){
+			var pending = this.model.get("pending");
 			
-			//Render the Stats View for this person
-			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
-			statsModel.set("query", '(rightsHolder:"' + username + '" OR submitter:"' + username + '")');
-			this.statsView = new StatsView({
-				title: "",
-				el: this.$("#user-stats")
-			});
-			this.subviews.push(this.statsView);
-			this.statsView.render();
-		},
-		
-		/*
-		 * Insert the name of the user
-		 */
-		insertUserInfo: function(){
-			
-			this.listenTo(this.model, "change:firstName", this.insertUserInfo);
-			this.listenTo(this.model, "change:lastName", this.insertUserInfo);
-
-			//Don't try to insert anything if we haven't gotten all the user info yet
-			if(!this.model.get("lastName") && !this.model.get("firstName")) return;
-				
-			//Construct the full name
-			var name = this.model.get("firstName") + " " + this.model.get("lastName");
-			
-			//Insert the name into this page
-			this.$("#fullname").text(name);
-		},
-		
-		/*
-		 * Insert the first year of contribution for this user
-		 */
-		insertFirstUpload: function(){
-			var firstUpload = new Date(statsModel.get("firstUpload"));
-			
-			var monthNames = [ "January", "February", "March", "April", "May", "June",
-				                 "July", "August", "September", "October", "November", "December" ];
-			
-			var m = monthNames[firstUpload.getUTCMonth()],
-				y = firstUpload.getUTCFullYear(),
-				d = firstUpload.getUTCDate();
-			
-			this.$("#first-upload").text("Contributor since " + m + " " + d + ", " + y);
-		},
-		
-		/*
-		 * Insert a list of this user's content
-		 */
-		insertContent: function(){				
-			var view = new DataCatalogView({
-				el            : this.$("#data-list")[0],
-				searchModel   : this.model.get("searchModel"),
-				searchResults : this.model.get("searchResults"),
-				mode          : "list",
-				isSubView     : true
-			});
-			this.subviews.push(view);
-			view.render();
-			view.$el.addClass("list-only");
-			view.$(".auto-height").removeClass("auto-height").css("height", "auto");
-			$("#metacatui-app").removeClass("DataCatalog mapMode");
-		}, 
-		
-		/*
-		 * Displays a menu for the user to switch between different views of the user profile
-		 */
-		insertMenu: function(){
-			//If the user is not logged in, then remove the menu 
-			if(!appUserModel.get("loggedIn")){
-				this.$(".nav").detach();
+			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
+			this.$("#pending-list-container").empty();
+	
+			//Create the list element
+			if (pending.length < 1){
+				this.$("[data-subsection='pending-accounts']").hide();
 				return;
 			}
+			else{
+				this.$("#pending-list-container").prepend($(document.createElement("p")).text("You have " + pending.length + " new request to map accounts. If these requests are from you, accept them below. If you do not recognize a username, reject the request."));
+				var pendingList = $(document.createElement("ul")).addClass("list-identity").attr("id", "pending-list");
+				var pendingCount = $(document.createElement("span")).addClass("badge").attr("id", "pending-count").text(pending.length);
+				this.$("#pending-list-heading").append(pendingCount);
+			}
 			
-			//Otherwise, insert the menu
-			var menu = this.menuTemplate({
-				username: this.model.get("username")
+			//Create a list item for each pending id
+			_.each(pending, function(identity, i){
+				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
+					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),				
+				    acceptIcon = $(document.createElement("i")).addClass("icon icon-check-sign icon-large icon-positive tooltip-this").attr("data-title", "Accept Request").attr("data-trigger", "hover").attr("data-placement", "top"),
+				    rejectIcon = $(document.createElement("i")).addClass("icon icon-trash icon-large icon-negative tooltip-this").attr("data-title", "Reject Request").attr("data-trigger", "hover").attr("data-placement", "top"),
+					confirm = $(document.createElement("a")).attr("href", "#").addClass('confirm-request-btn').attr("data-identity", identity).append(acceptIcon),
+					reject = $(document.createElement("a")).attr("href", "#").addClass("reject-request-btn").attr("data-identity", identity).append(rejectIcon);
+
+				$(pendingList).append(
+						$(listItem).append($(link))
+						.prepend(confirm)
+						.prepend(reject)
+				);
+				
 			});
 			
-			this.$el.prepend(menu);
+			//Add to the page
+			this.$("#pending-list-container").append(pendingList);
 		},
 		
-		//Checks the availability of a given group name
-		checkGroupName: function(e){
-			if(!e || !e.target) return;
+		updateModForm: function() {
+			this.$("#mod-givenName").val(this.model.get("firstName"));
+			this.$("#mod-familyName").val(this.model.get("lastName"));
+			this.$("#mod-email").val(this.model.get("email"));
 			
-			var view = this,
-				$notification = $("#group-name-notification-container"),
-				$input = $(e.target);
+			if (this.model.get("registered")) {
+				this.$("#registered-user-container").show();
+			} else {
+				this.$("#registered-user-container").hide();
+			}
 			
-			var name = $input.val().trim();
-			if(!name) return;
-			
-			//Create an empty group and check the name availability - this group might already exist
-			this.pendingGroup.name = name;
-			
-			this.listenToOnce(this.pendingGroup, "nameChecked", function(collection){
-				//If the group name/id is available, then display so 
-				if(collection.nameAvailable){
-					var icon = $(document.createElement("i")).addClass("icon icon-ok"),
-						message = "The name " + collection.name + " is available",
-						container = $(document.createElement("div")).addClass("notification success");
-					
-					$notification.html($(container).append(icon, message));
-					$input.removeClass("has-error");
-				}
-				else{
-					var icon = $(document.createElement("i")).addClass("icon icon-remove"),
-						message = "The name " + collection.name + " is already taken",
-						container = $(document.createElement("div")).addClass("notification error");
-				
-					$notification.html($(container).append(icon, message));					
-					$input.addClass("has-error");
-				}
-					
-			});
-			
-			//Get group info/check name availablity
-			this.pendingGroup.getGroup({ add: false });
 		},
 		
 		/*
-		 * Syncs the pending group with the server
+		 * Gets the user account settings, updates the UserModel and saves this new info to the server
 		 */
-		createGroup: function(e){
+		saveUser: function(e) {
+			
 			e.preventDefault();
 			
-			//If there is no name specified, give warning
-			if(!this.pendingGroup.name){
-				var $notification = $("#group-name-notification-container"),
-					$input = $("#add-group-name");
-				
-				var icon = $(document.createElement("i")).addClass("icon icon-exclamation"),
-				    message = "You must enter a group name",
-				    container = $(document.createElement("div")).addClass("notification error");
+			var view = this,
+				container = this.$('[data-subsection="edit-account"] .content') || $(e.target).parent();
 			
-				$notification.html($(container).append(icon, message));					
-				$input.addClass("has-error");
-				
-				return;
-			}
-			else if(!this.pendingGroup.nameAvailable) return;
-			
-			var view = this;
 			var success = function(data){
-				view.showAlert("Your group has been saved", "alert-success", "#add-group-form-container");
-				view.refreshGroupLists();
+				$(container).find(".loading").detach();
+				$(container).children().show();
+				view.showAlert("Success! Your profile has been updated.", 'alert-success', container);
 			}
 			var error = function(data){
-				view.showAlert("Your group could not be created. Please try again", "alert-error", "#add-group-form-container")
+				$(container).find(".loading").detach();
+				$(container).children().show();
+				var msg = (data && data.responseText) ? data.responseText : "Sorry, updating your profile failed. Please try again.";
+				if(!data.responseText)
+					view.showAlert(msg, 'alert-error', container);
 			}
+
+			//Get info entered into form
+			var givenName = this.$("#mod-givenName").val();
+			var familyName = this.$("#mod-familyName").val();
+			var email = this.$("#mod-email").val();
 			
-			//Create it!
-			if(!this.pendingGroup.save(success, error)) error();
+			//Update the model
+			this.model.set("firstName", givenName);
+			this.model.set("lastName", familyName);
+			this.model.set("email", email);
+			
+			//Loading icon
+			$(container).children().hide();
+			$(container).prepend(this.loadingTemplate());
+			
+			//Send the update
+			this.model.update(success, error);
+			
+		},
+		
+		//---------------------------------- Token -----------------------------------------//
+		getToken: function(){		
+			var model = this.model;
+			
+			//When the token is retrieved, then show it
+			this.listenToOnce(this.model, "change:token", this.showToken);
+			
+			//Get the token from the CN
+			this.model.checkToken(function(data, textStatus, xhr){				
+				model.set("token", data);
+			});			
+		},
+		
+		showToken: function(){
+			var token = this.model.get("token");
+			
+			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "11").attr("disabled", "disabled").addClass("token").text(token),
+				copyButton = $(document.createElement("a")).attr("href", "#").addClass("btn").attr("type", "button").text("Copy");
+						
+			var	successMessage = this.alertTemplate({
+					msg: '<i class="icon icon-ok"></i>  <strong>Success!</strong> Copy your token: <br/>' + $(tokenInput)[0].outerHTML,
+					classes: "alert-success"
+				});
+			
+			this.$("#token-generator-container").html(successMessage);
+		},
+		
+		setUpAutocomplete: function() {
+			var input = this.$(".account-autocomplete");
+			if(!input || !input.length) return;
+			
+			// look up registered identities 
+			$(input).hoverAutocomplete({
+				source: function (request, response) {
+		            var term = $.ui.autocomplete.escapeRegex(request.term);
+		            
+		            var list = [];
+
+		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
+					$.get(url, function(data, textStatus, xhr) {
+						_.each($(data).find("person"), function(person, i){
+							var item = {};
+							item.value = $(person).find("subject").text();
+							item.label = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
+							list.push(item);
+						});
+						
+			            response(list);
+
+					});
+		            
+		        },
+				select: function(e, ui) {
+					e.preventDefault();
+					
+					// set the text field
+					$(e.target).val(ui.item.value);
+					$(e.target).parents("form").find("input[name='fullName']").val(ui.item.label);
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					collision: "none"
+				}
+			});
+			
+		},
+		
+		//---------------------------------- Misc. and Utilities -----------------------------------------//
+
+		showAlert: function(msg, classes, container) {
+			if(!classes)
+				var classes = 'alert-success';
+			if(!container)
+				var container = this.$el;
+
+			//Remove any alerts that are already in this container
+			if($(container).children(".alert-container").length > 0)
+				$(container).children(".alert-container").detach();
+			
+			$(container).prepend(
+					this.alertTemplate({
+						msg: msg,
+						classes: classes
+					})
+			);
 		},
 		
 		preventSubmit: function(e){

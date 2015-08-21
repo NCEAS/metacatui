@@ -194,6 +194,14 @@ h3{
 .notification.success .icon{
 	margin-right: 10px;
 }
+.input-append .notification{
+	font-size: 15px;
+}
+.notification > .msg {
+    width: 90%;
+    display: inline;
+    white-space: normal;
+}
 .form-feedback{
     min-height: 30px;
 }
@@ -1088,6 +1096,25 @@ textarea.token{
 }
 .icon.owner{
 	color: #FFD700;
+}
+.member .has-member-controls{
+	float: left;
+	width: 85%;
+}
+.member .member-controls{
+	float: left;
+	width: 10%;
+	width: calc(15% - 10px);
+}
+.member .member-controls .remove-member{
+	float: right;
+	font-size: 1.3em;
+    line-height: 2em;
+    cursor: pointer;
+}
+.add-member .notification{
+	margin-top: 10px;
+	line-height: 30px;
 }
 
 /****************************************** 
