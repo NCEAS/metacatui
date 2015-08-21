@@ -200,9 +200,9 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		 */
 		getGroups: function(){
 			var view = this;
-			
+
 			//Create a group Collection for each group this user is a member of
-			_.each(this.model.get("isMemberOf"), function(groupId){
+			_.each(this.model.get("isMemberOf").sort(), function(groupId){
 				var userGroup = new UserGroup([view.model], { groupId: groupId });
 				
 				view.listenTo(userGroup, "sync", view.insertGroupList);
@@ -246,7 +246,10 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			this.subviews.push(groupView);
 					
 			//Add to the page
-			this.$("#group-list-container").append(groupView.render().el);				
+			this.$("#group-list-container").append(groupView.render().el);
+			
+			if((this.model.get("isMemberOf").length > 3) || (userGroup.length > 3))
+				groupView.collapseMemberList();
 		},
 		
 		insertIdentityList: function(){

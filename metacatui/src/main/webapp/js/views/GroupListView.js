@@ -54,11 +54,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			}
 
 			//Save some elements for later use
-			this.$header     = $(listItem);
+			this.$header = $(listItem);
 			
 			//Put it all together
 			$(listItem).append($(link).prepend(icon, groupName));			
-			if(this.numMembers) $(listItem).append(" (", numMembers, " members)");			
+			if(numMembers) $(listItem).append(" (", numMembers, " members)");			
 			this.$el.append(listItem);
 			
 			//Create a list of member names
@@ -67,9 +67,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				view.addMember(member);
 			});
 			
-			if(this.collection.isOwner(appUserModel)){
+			//Collapse the list - $el must already be inserted in DOM for collapse to work
+			if(group.length > 3)
+				this.collapseMemberList();
+			
+			//Add some group controls for the owners
+			if(group.isOwner(appUserModel))
 				this.addControls();
-			}
 			
 			this.listenTo(group, "add", this.addMember);
 			this.listenTo(group, "change:isOwnerOf", this.addOwner);
@@ -122,6 +126,10 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				this.$numMembers.text(this.collection.length);
 			if(this.$groupName)
 				this.$groupName.text(this.collection.name);
+			
+			//Collapse members of this group is necessary
+			if(this.$el.is(".collapsed"))
+				this.collapseMember(memberEl);
 		},
 		
 		removeMember: function(member){
@@ -193,6 +201,9 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			this.$addMember.find("input[name='username']").val("");
 			this.$addMember.find("input[name='fullName']").val("");
 			
+			//Don't auto-collapse the list since the user is interacting with the controls right now
+			this.preventToggle = true;
+			
 			//Create User Model
 			var user = new UserModel({
 				username: username,
@@ -218,12 +229,26 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			}
 		},
 		
-		toggleMemberList: function(e){
-			e.preventDefault();
+		collapseMember: function(memberEl){
+			if(this.preventToggle) return;
 			
-			this.$el.toggleClass("collapsed");
-			this.$(".member").slideToggle();
-			this.$(".icon.group").toggleClass("icon-caret-right").toggleClass("icon-caret-down");
+			$(memberEl).slideUp();				
+		},
+		
+		toggleMemberList: function(e){
+			if(e) e.preventDefault();
+			
+			if(this.preventToggle) return;
+			
+			this.$(".member, .add-member").slideToggle().toggleClass("collapsed");
+			this.$(".icon.group").toggleClass("icon-caret-right icon-caret-down");
+		},
+		
+		collapseMemberList: function(e){
+			if(this.preventToggle) return;
+			
+			this.$(".member, .add-member").slideUp().addClass("collapsed");
+			this.$(".icon.group").addClass("icon-caret-right").removeClass("icon-caret-down");
 		},
 		
 		setUpAutocomplete: function() {
