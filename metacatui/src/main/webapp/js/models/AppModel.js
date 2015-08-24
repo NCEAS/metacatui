@@ -35,6 +35,8 @@ define(['jquery', 'underscore', 'backbone'],
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
+			// NOTE: include your bioportal apikey for suggested classes
+			// see: http://bioportal.bioontology.org/account
 			bioportalServiceUrl: null,
 			orcidServiceUrl: null,
 			tokenUrl: null,
