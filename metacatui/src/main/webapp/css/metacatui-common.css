@@ -837,7 +837,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     	margin-left: 0px;
     	padding: 20px;
     	width: 85%;
-    	width: calc(100% - 40px);
+    	width: calc(100% - 180px);
 }
 .entitydetails > h4 > *{
 	float: left;
