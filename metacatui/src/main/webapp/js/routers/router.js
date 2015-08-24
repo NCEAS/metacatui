@@ -20,7 +20,8 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'logout'                    : 'logout',    		// logout the user
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
-			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
+			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
+			'api(/:anchorId)'           : 'renderAPI'       // API page 
 		},
 		
 		helpPages: {
@@ -80,6 +81,17 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			appModel.set('anchorId', anchorId);
 			var options = {
 					pageName: "about",
+					anchorId: anchorId
+				}
+			
+			appView.showView(appView.textView, options);
+		},
+		
+		renderAPI: function (anchorId) {
+			this.routeHistory.push("api");
+			appModel.set('anchorId', anchorId);
+			var options = {
+					pageName: "api",
 					anchorId: anchorId
 				}
 			

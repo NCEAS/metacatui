@@ -2,9 +2,10 @@
 define(['jquery', 'underscore', 'backbone', 
         'text!templates/alert.html',
         'text!templates/about.html',
+        'text!templates/api.html',
         'text!templates/tools.html',
         'text!templates/help-searchTips.html'], 				
-	function($, _, Backbone, AlertTemplate, AboutTemplate, ToolsTemplate, SearchTipsTemplate) {
+	function($, _, Backbone, AlertTemplate, AboutTemplate, APITemplate, ToolsTemplate, SearchTipsTemplate) {
 	'use strict';
 		
 	// A generic view that loads a text template
@@ -15,6 +16,7 @@ define(['jquery', 'underscore', 'backbone',
 		//Templates
 		alert: _.template(AlertTemplate),
 		about: _.template(AboutTemplate),
+		api: _.template(APITemplate),
 		tools: _.template(ToolsTemplate),
 		searchTips: _.template(SearchTipsTemplate),
 				
