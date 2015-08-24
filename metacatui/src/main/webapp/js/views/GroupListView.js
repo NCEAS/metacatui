@@ -213,12 +213,15 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				});
 			}
 			var error = function(response){
+				if(!fullName) fullName = "that person";
 				view.addMemberNotification({
-					msg: "Something went wrong and " + fullName + " could not be added. Please try again.",
+					msg: "Something went wrong and " + fullName + " could not be added. " +
+							"Hint: That user may not exist.",
 					status: "error"
 				});
 				
-				//Remove this user from the collection
+				//Remove this user from the collection and other storage
+				view.memberEls[user.cid] = null;
 				view.collection.remove(user);
 			}
 			
@@ -233,6 +236,16 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		 * and the updated collection is saved to the server
 		 */
 		removeFromCollection: function(e){
+			e.preventDefault();
+			
+			if(this.collection.length == 1){
+				this.addMemberNotification({
+					status: "error",
+					msg: "You must have at least one member in a group."
+				});
+				return;
+			}
+				
 			var username = $(e.target).parents(".member").attr("data-username");
 			if(!username) return;
 			
