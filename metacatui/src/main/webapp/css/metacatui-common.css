@@ -1578,6 +1578,10 @@ Documentation and Help Pages
 .documentation h5{
 	display: inline;
 }
+.code_example {
+    display: block; 
+    white-space: pre; 
+}
 /*******************************************
 CSS library fixes
 ******************************************/
