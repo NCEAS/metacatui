@@ -1116,6 +1116,19 @@ textarea.token{
 	margin-top: 10px;
 	line-height: 30px;
 }
+#data-list > p.center{
+	margin-top: 40px;
+}
+/****************************************** 
+** Stats ***
+******************************************/
+.no-activity *,
+.no-activity svg .title,
+.no-activity svg .bar-label{
+    color: #CCC;
+    stroke: #CCC;
+    fill: #CCC;
+}
 
 /****************************************** 
 ** Panels ***
@@ -1577,6 +1590,10 @@ Documentation and Help Pages
 ******************************************/
 .documentation h5{
 	display: inline;
+}
+.code_example {
+    display: block; 
+    white-space: pre; 
 }
 /*******************************************
 CSS library fixes

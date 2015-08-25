@@ -1,0 +1,15 @@
+<% 
+if(!fullName) var fullName = "This user";
+%>
+
+<p class="center">
+	<%=fullName%> hasn't uploaded anything yet.
+</p>
+
+<% if(username){ %>
+	<div>
+		<p class="center">
+			<a class="btn btn-primary" href="#share">Upload data now</a>.
+		</p>
+	</div>
+<% } %>

@@ -1,0 +1,16 @@
+<% 
+if(!fullName) var fullName = "This user";
+%>
+
+<p class="center">
+	<%=fullName%> hasn't uploaded anything yet.
+</p>
+
+<% if(username){ %>
+	<div>
+		<p class="center">
+		<strong>Upload data now:</strong>
+		<a href="#profile/<%=username%>">Find ways to upload data to DataONE</a>.
+		</p>
+	</div>
+<% } %>

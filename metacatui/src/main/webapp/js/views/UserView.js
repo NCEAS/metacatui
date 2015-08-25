@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html'], 				
-	function($, _, Backbone, UserGroup, UserModel, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate) {
+define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'], 				
+	function($, _, Backbone, UserGroup, UserModel, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
 	
 	/*
@@ -18,6 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		loadingTemplate:  _.template(LoadingTemplate),
 		settingsTemplate: _.template(SettingsTemplate),		
 		menuTemplate:     _.template(ProfileMenuTemplate),
+		noResultsTemplate: _.template(NoResultsTemplate),
 				
 		events: {
 			"click .section-link"          : "switchToSection",
@@ -84,7 +85,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			//Hide all the sections first and display the default "profile" section first
 			$(this.sectionHolder).children().hide();
-			this.$("[data-section='profile']").slideDown();				
+			this.$profile.slideDown();				
 			this.$(".subsection").hide();					
 
 			
@@ -94,6 +95,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		renderProfile: function(){
 			//Insert the template first
 			this.sectionHolder.append(this.profileTemplate());
+			this.$profile = this.$("[data-section='profile']");
+			
+			//If this user hasn't uploaded anything yet, display so
+			this.listenTo(this.model.get("searchResults"), "reset", function(searchResults){
+				if(searchResults.length == 0)
+					this.noActivity();
+			});
 			
 			//Insert the user data statistics
 			this.insertStats();
@@ -115,6 +123,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			this.sectionHolder.append(this.settingsTemplate({
 				username: this.model.get("username")
 			}));
+			this.$settings = this.$("[data-section='settings']");
 			
 			//Listen for the group list to draw the group list
 			this.insertCreateGroupForm();
@@ -222,6 +231,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		
 		//---------------------------- Inserting public profile UI elements ----------------------------------//		
 		insertStats: function(){
+			if(this.model.noActivity && this.statsView){
+				this.statsView.$el.addClass("no-activity");
+				return;
+			}
+			
 			var username = this.model.get("username");
 			
 			//Render the Stats View for this person
@@ -233,6 +247,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			});
 			this.subviews.push(this.statsView);
 			this.statsView.render();
+			if(this.model.noActivity)
+				this.statsView.$el.addClass("no-activity");
 		},
 		
 		/*
@@ -240,23 +256,24 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		 */
 		insertUserInfo: function(){
 			
-			this.listenTo(this.model, "change:firstName", this.insertUserInfo);
-			this.listenTo(this.model, "change:lastName", this.insertUserInfo);
+			this.listenTo(this.model, "change:fullName", this.insertUserInfo);
 
 			//Don't try to insert anything if we haven't gotten all the user info yet
-			if(!this.model.get("lastName") && !this.model.get("firstName")) return;
-				
-			//Construct the full name
-			var name = this.model.get("firstName") + " " + this.model.get("lastName");
+			if(!this.model.get("fullName")) return;
 			
 			//Insert the name into this page
-			this.$("#fullname").text(name);
+			this.$("#fullname").text(this.model.get("fullName"));
 		},
 		
 		/*
 		 * Insert the first year of contribution for this user
 		 */
 		insertFirstUpload: function(){
+			if(this.model.noActivity){
+				this.$("#first-upload").text("");
+				return;
+			}
+			
 			var firstUpload = new Date(statsModel.get("firstUpload"));
 			
 			var monthNames = [ "January", "February", "March", "April", "May", "June",
@@ -272,7 +289,15 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		/*
 		 * Insert a list of this user's content
 		 */
-		insertContent: function(){				
+		insertContent: function(){	
+			if(this.model.noActivity){
+				this.$("#data-list").html(this.noResultsTemplate({
+					fullName: this.model.get("fullName"),
+					username: ((this.model == appUserModel) && appUserModel.get("loggedIn"))? this.model.get("username") : null
+				}));
+				return;
+			}
+			
 			var view = new DataCatalogView({
 				el            : this.$("#data-list")[0],
 				searchModel   : this.model.get("searchModel"),
@@ -286,6 +311,17 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			view.$(".auto-height").removeClass("auto-height").css("height", "auto");
 			$("#metacatui-app").removeClass("DataCatalog mapMode");
 		}, 
+		
+		/*
+		 * When this user has not uploaded any content, render the profile differently
+		 */
+		noActivity: function(){
+			this.model.noActivity = true;
+			this.insertContent();
+			this.insertFirstUpload();
+			this.insertStats();
+			//this.$profile.html(this.model.get("fullName") + " hasn't uploaded any data yet.");
+		},
 		
 		//---------------------------------- Groups -----------------------------------------//
 		/*

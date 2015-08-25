@@ -49,7 +49,7 @@ Bold 700 Italic
     #Content {
     	max-width: 100%;
     	width: 100%;
-    	margin-top: 95px;
+    	margin-top: 20px;
     	padding-bottom: 260px; /* Keeps footer down */
     }
 		
@@ -907,6 +907,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .navbar .nav {
       margin-top: 8px;
+    }
+    
+    #Content > .nav-tabs{
+        padding-left: 25px;
+    	width: calc(100% - 50px);
+    	padding-right: 25px;
     }
     
     #SignIn {
@@ -2522,15 +2528,7 @@ svg .domain{
 		content: "";
     	padding-top: 115px;
     }
-    
-	/* Offsets the anchor links by the same height as the fixed header */
-	.section {	
-		position:relative;
-		top: -95px;
-		padding-top: 95px;
-		display: block;
-	}
-    
+
     div.row-fluid > .section {
       margin: 35px auto auto auto;
     }

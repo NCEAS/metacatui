@@ -1,44 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>KNB | Knowledge Network for Biocomplexity</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Metacat UI">
-    <meta name="author" content="Ecoinformatics Development Team">
+<article id="API">
+	<div class="container">
 
-    <!-- Stylesheets -->
-    <link href="../../../../css/bootstrap.min.css" rel="stylesheet">
-    <link href="../../../../css/font-awesome-3.2.1.min.css" rel="stylesheet">
-    <link href="../../../../css/glyphicons.css" rel="stylesheet">
-    <link href="../../../../css/halflings.css" rel="stylesheet">
-    <link href="../../../../js/themes/<%=theme%>/css/metacatui.css" type="text/css" rel="stylesheet">
-    <!--link href="./css/bootstrap-responsive.min.css" rel="stylesheet"-->
-
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="./components/html5shiv.js"></script>
-    <![endif]-->
-
-    <!-- Fav and touch icons -->
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../img/knb-144.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../img/knb-114.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../img/knb-72.png">
-    <link rel="apple-touch-icon-precomposed" href="../img/knb-57.png">
-
-	<style>
-	.code_example { display: block; white-space: pre; }
-	</style>
-</head>
-<body>
-<!--
-NOTE: ALL CONTENT ABOVE THIS POINT SHOULD BE REMOVED, LEAVING ONLY THE 'article'
-WHEN THIS TEMPLATE IS INCORPORATED INTO A VIEW IN MetacatUI.
-The <html>, <head> and <body> tags here are just for testing before a view is created. 
-  -->
-<article id="DeveloperAPI">
-	<div class="container-fluid">
-
+        <!--
     	<div class="span2 list-group">
       		<a href="#api" class="list-group-item active">DataONE REST API</a>
       		<a href="#apijava" class="list-group-item">Java Client Library</a>
@@ -47,12 +10,12 @@ The <html>, <head> and <body> tags here are just for testing before a view is cr
     	</div>
 
     	<div class="span10">
-
+-->
 			<div class="row-fluid">
 				<div class="text-left">
 					<h2>
 						<i class="glyphicons-icon cloud"></i>
-						Developer Tools
+						KNB Developer Tools
 					</h2>
 					<p class="lead">The KNB supports the DataONE REST API, and Java, Python, and R libraries for easily creating client tools.  
 					</p>	
@@ -62,8 +25,7 @@ The <html>, <head> and <body> tags here are just for testing before a view is cr
 				<div class="row-fluid">
 					<article class="text-left">
 						<h3 id="api">
-							<i class="glyphicons-icon cloud"></i> DataONE
-							Developer API
+							<i class="glyphicons-icon cloud"></i> DataONE REST API
 						</h3>
 						<p class="lead">A REST API for accessing and contributing data.</p>
 						<p>
@@ -82,7 +44,7 @@ The <html>, <head> and <body> tags here are just for testing before a view is cr
 							While DataONE maintains the full technical documentation on the
 							API, here is a brief overview for commonly accessed services on the KNB.
 						</p>
-						<section id="summary">
+						<section name="summary">
 							<h3>Summary</h3>
 							<p>DataONE distinguishes three classes of objects that it
 								will store and manage: data objects, science metadata objects,
@@ -143,52 +105,52 @@ The <html>, <head> and <body> tags here are just for testing before a view is cr
 									<tr>
 										<td><code>/object/&lt;pid&gt;</code></td>
 										<td>GET</td>
-										<td><a href="#get">Get an Object</a></td>
+										<td><a href="#api/get">Get an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/object</code></td>
 										<td>POST</td>
-										<td><a href="#create">Create an Object</a></td>
+										<td><a href="#api/create">Create an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/object/&lt;pid&gt;</code></td>
 										<td>PUT</td>
-										<td><a href="#update">Update an Object</a></td>
+										<td><a href="#api/update">Update an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/archive/&lt;pid&gt;</code></td>
 										<td>PUT</td>
-										<td><a href="#archive">Archive an Object</a></td>
+										<td><a href="#api/archive">Archive an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/meta/&lt;pid&gt;</code></td>
 										<td>GET</td>
-										<td><a href="#getSystemMetadata">Get System Metadata for an Object</a></td>
+										<td><a href="#api/getSystemMetadata">Get System Metadata for an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/generate</code></td>
 										<td>POST</td>
-										<td><a href="#generate">Generate an Identifier</a></td>
+										<td><a href="#api/generate">Generate an Identifier</a></td>
 									</tr>
 									<tr>
                                         <td><code>/query/solr/&lt;query&gt;</code></td>
 										<td>GET</td>
-										<td><a href="#query">Search the metadata index</a></td>
+										<td><a href="#api/query">Search the metadata index</a></td>
 									</tr>
 									<tr>
 										<td><code>/object</code></td>
 										<td>GET</td>
-										<td><a href="#listObjects">List objects</a></td>
+										<td><a href="#api/listObjects">List objects</a></td>
 									</tr>
 									<tr>
 										<td><code>/object/&lt;pid&gt;</code></td>
 										<td>DELETE</td>
-										<td><a href="#delete">Delete an Object</a></td>
+										<td><a href="#api/delete">Delete an Object</a></td>
 									</tr>
 								</tbody>
 							</table>
 						</section>
-						<section id="Calling Services">
+						<section name="Calling Services">
 							<h3 id="requestFormat">Request Format</h3>
 							<ul>
 								<li>GET, HEAD, and DELETE requests only pass parameters as
@@ -235,9 +197,9 @@ The <html>, <head> and <body> tags here are just for testing before a view is cr
 						    </p></blockquote>
 							</p>
 						</section>
-						<section id="examples">
+						<section name="examples">
 						    
-							<h3 id="get">Get an Object</h3>
+							<h3 name="get">Get an Object</h3>
                             <p>Each object on DataONE has a persistent identifier (PID), which can be used to get the
                             bytes of tha object.  Note that PID identifiers must be escaped using URL escaping conventions
                             if they contain characters that are normally reserved in URLs.  For example, a DOI such as
@@ -255,7 +217,7 @@ curl -X GET \
                             accessible content.  To view private content, be sure to include a valid X.509 certificate in
                             the request (e.g,, in curl, use the <code>--cert</code> argument to provide the path to a 
                             certificate that that was previously downloaded from CILogon).
-							<h3 id="create">Create an Object</h3>
+							<h3 name="create">Create an Object</h3>
                             An object can be inserted into the repository using the <code>create</code> API call, which
                             involves POSTing the object to the object collection.  Required parameters include the
                             <code>pid</code> to be used for the object, the bytes of the <code>object</code> itself,
@@ -274,7 +236,7 @@ curl -X POST \
      -F sysmeta=@mysystemmetadata.xml \
      "${ENDPOINT}/object"
 							</code>
-							<h3 id="update">Update an Object</h3>
+							<h3 name="update">Update an Object</h3>
                             An object can be updated in the repository using the <code>update</code> API call, which
                             involves PUTing the object to the object collection.  Required parameters include the
                             <code>newPid</code> to be used for the object, the bytes of the <code>object</code> itself,
@@ -294,7 +256,7 @@ curl -X PUT \
      -F sysmeta=@mysystemmetadata.xml \
      "${ENDPOINT}/object/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
 							</code>
-							<h3 id="archive">Archive an Object</h3>
+							<h3 name="archive">Archive an Object</h3>
                             An object can be archived, which moves it out of the search path so it won't be discovered, but is
                             still accessible to users who know the <code>pid</code> of the object so that citations remain 
                             viable. To archive an object, call the <code>archive</code> service using an HTTP PUT with the 
@@ -305,7 +267,7 @@ curl -X PUT \
      -H "Accept: text/xml" \
      "${ENDPOINT}/archive/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
 							</code>
-							<h3 id="getSystemMetadata">Get System Metadata for an Object</h3>
+							<h3 name="getSystemMetadata">Get System Metadata for an Object</h3>
                             Use the <code>getSystemMetadata</code> to access the <a href="https://releases.dataone.org/online/api-documentation-v1.2.0/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical 
                             information about each object on the repository, including its identifier, its type, access 
                             control policies, and replication policies, and other details like size and checksum.
@@ -314,7 +276,7 @@ curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/meta/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
 							</code>
-							<h3 id="archive">Generate an identifier</h3>
+							<h3 name="archive">Generate an identifier</h3>
                             Creating an object on the repository requires submitting it with a globally unique identifier, 
                             which can be generated by calling the <code>generateIdentifier</code> service.  This service can
                             be used to generate identifiers that are UUIDs, DOIs, and that potentially follow other syntax 
@@ -329,7 +291,7 @@ curl -X POST \
      -F scheme=UUID \
      "${ENDPOINT}/generate"
 							</code>
-							<h3 id="query">Search the metadata index</h3>
+							<h3 name="query">Search the metadata index</h3>
                             To search across all of the metadata in the repository, use the <code>query</code> service to 
                             configure a SOLR query.  The full SOLR syntax is supported, providing the means to create complex 
                             logical query conditions, and to customize the metadata fields returned. Query results can be 
@@ -345,19 +307,23 @@ curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/query/solr/q=title:soil+AND+-obsoletedBy:*&amp;fl=identifier,title,origin&amp;rows=30&amp;start=0&amp;wt=xml"
 							</code>
+
+                            The searchable SOLR fields that can be used to compose queries are accessible from the query service
+                            as well by accessing the endpoint without any query constraints.
+
 							<code class="code_example">
 curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/query/solr"
 							</code>
-							<h3 id="listObjects">List Objects</h3>
+							<h3 name="listObjects">List Objects</h3>
                             The <code>listObjects</code> service provides a sequential list of objects on a node, and is
                             minimally filterable.  The <code>query</code> service generally contains more information and is
                             preferred, but the object list can be useful to see recent activity on the repository.
 							<code class="code_example">
 curl -X GET -H "Accept: text/xml" "${ENDPOINT}/object?start=0&amp;count=100"
 							</code>
-							<h3 id="delete">Delete an Object</h3>
+							<h3 name="delete">Delete an Object</h3>
                             Delete is an administrative service that can not be called by users. Contact an administrator for
                             appropriate credentials. The <code>delete</code> service is provided to fully remove content from
                             the repository, particularly when that content violates a law or ethical standard.  When removing
@@ -403,14 +369,6 @@ curl -X DELETE \
 				</div>
 			</div>
 
-		</div>
+            <!--		</div> -->
     </div>
 </article>
-
-<!--
-NOTE: ALL CONTENT BELOW THIS POINT SHOULD BE REMOVED, LEAVING ONLY THE 'article'
-WHEN THIS TEMPLATE IS INCORPORATED INTO A VIEW IN MetacatUI.
-The <html>, <head>, and <body> tags here are just for testing before a view is created. 
-  -->
-</body>
-</html>
