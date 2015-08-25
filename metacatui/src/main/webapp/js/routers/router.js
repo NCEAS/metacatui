@@ -98,6 +98,17 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			appView.showView(appView.textView, options);
 		},
 		
+		renderAPI: function (anchorId) {
+			this.routeHistory.push("api");
+			appModel.set('anchorId', anchorId);
+			var options = {
+					pageName: "api",
+					anchorId: anchorId
+				}
+			
+			appView.showView(appView.textView, options);
+		},
+		
 		renderTools: function (anchorId) {
 			this.routeHistory.push("tools");
 			appModel.set('anchorId', anchorId);
