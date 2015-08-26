@@ -15,7 +15,7 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			//'tools(/:anchorId)'         : 'renderTools',    // tools page
 			//'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
-			'profile(/*username)'		: 'renderProfile',
+			'profile(/*username)(/:section)(/:subsection)' : 'renderProfile',
 			//'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
@@ -103,14 +103,19 @@ function ($, _, Backbone, IndexView, AboutView, ToolsView, DataCatalogView, Regi
 			appView.showView(appView.metadataView);
 		},
 		
-		renderProfile: function(username){
-			this.closeLastView();
+		renderProfile: function(username, section, subsection){
+			this.closeLastView();			
 			
 			if(!username){
 				this.routeHistory.push("summary");
 				appView.showView(appView.statsView);
 			}
 			else{
+				if(section)
+					appView.userView.activeSection = section;
+				if(subsection)
+					appView.userView.activeSubSection = subsection;	
+				
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
 				appView.showView(appView.userView);

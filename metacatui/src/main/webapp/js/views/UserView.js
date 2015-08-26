@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		settingsTemplate: _.template(SettingsTemplate),		
 		menuTemplate:     _.template(ProfileMenuTemplate),
 		noResultsTemplate: _.template(NoResultsTemplate),
-				
+						
 		events: {
 			"click .section-link"          : "switchToSection",
 			"click .subsection-link"       : "switchToSubSection",
@@ -37,6 +37,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		
 		initialize: function(){			
 			this.subviews = new Array();
+			this.activeSection = "profile";
+			this.activeSubSection = "";
 		},
 		
 		//---------------------------- Rendering the main parts of the view ----------------------------------//
@@ -46,7 +48,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			this.stopListening();
 			//If the logged-in status changes, refresh the page
 			this.listenToOnce(appUserModel, "change:loggedIn", function(){
+				var activeSection = view.activeSection,
+					activeSubSection = view.activeSubSection;
 				view.onClose();
+				view.activeSection = activeSection;
+				view.activeSubSection = activeSubSection;
 				view.render();
 			});
 			
@@ -83,12 +89,15 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			//Render the profile section of the User View
 			this.renderProfile();
 			
-			//Hide all the sections first and display the default "profile" section first
-			$(this.sectionHolder).children().hide();
-			this.$profile.slideDown();				
-			this.$(".subsection").hide();					
-
 			
+			//Hide all the sections first, then display the section specified in the URL (or the default)
+			this.$(".subsection, .section").hide();
+			this.switchToSection(null, this.activeSection);
+			
+			//Show the subsection			
+			if(this.activeSubSection)
+				this.switchToSubSection(null, this.activeSubSection);
+				
 			return this;
 		},
 		
@@ -168,21 +177,25 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		},
 
 		//---------------------------- Navigating sections of view ----------------------------------//
-		switchToSection: function(e){
+		switchToSection: function(e, sectionName){
 			
-			e.preventDefault();
+			if(e) e.preventDefault();
 			
 			//Hide all the sections first
 			$(this.sectionHolder).children().slideUp().removeClass(".active");
 
 			//Get the section name
-			var sectionName = $(e.target).attr("data-section");
+			if(!sectionName)
+				var sectionName = $(e.target).attr("data-section");
 			
 			//Display the specified section
 			var activeSection = this.$(".section[data-section='" + sectionName + "']");
+			if(!activeSection.length) activeSection = this.$(".section[data-section='profile']");
 			$(activeSection).addClass("active").slideDown();
+			
+			//Change the navigation tabs
 			this.$(".nav-tab").removeClass("active");
-			$(e.target).parents(".nav-tab").addClass("active");
+			$(".nav-tab[data-section='" + sectionName + "']").addClass("active");
 			
 			//Find all the subsections, if there are any
 			if($(activeSection).find(".subsection").length > 0){
@@ -201,8 +214,10 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		},
 		
 		switchToSubSection: function(e, subsectionName){
-			if(e) e.preventDefault();
-			if(!subsectionName) var subsectionName = $(e.target).attr("data-section");
+			if(e){ 
+				e.preventDefault();
+			    var subsectionName = $(e.target).attr("data-section");
+			}
 						
 			//Mark its links as active
 			$(".section.active").find(".subsection-link").removeClass("active");
@@ -213,16 +228,17 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			$(".section.active").find(".subsection[data-section='" + subsectionName + "']").show();
 		},
 		
-		highlightSubSection: function(e){
-			e.preventDefault();
-			if(!e.target) return;
+		highlightSubSection: function(e, subsectionName){
+			if(e) e.preventDefault();
 			
-			//Get the subsection name
-			var subsectionName = $(e.target).attr("highlight-subsection");
-			if(!subsectionName) return;
+			if(!subsectionName){
+				//Get the subsection name
+				var subsectionName = el.attr("highlight-subsection");
+				if(!subsectionName) return;
+			}
 			
 			//Visually highlight the subsection
-			var subsection = this.$("[data-subsection='" + subsectionName + "']");
+			var subsection = this.$(".subsection[data-section='" + subsectionName + "']");
 			subsection.addClass("highlight");
 			appView.scrollTo(subsection);
 			//Wait about a second and then remove the highlight style
@@ -830,6 +846,10 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		onClose: function () {			
 			//Clear the template
 			this.$el.html("");
+			
+			//Reset the active section and subsection
+			this.activeSection = "profile";
+			this.activeSubSection = "";
 			
 			//Stop listening to changes in models
 			this.stopListening(statsModel);		

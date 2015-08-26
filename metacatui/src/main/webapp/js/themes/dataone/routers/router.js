@@ -14,7 +14,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			//'plans'                     : 'renderPlans',      // plans page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',     // metadata page
-			'profile(/*username)'		: 'renderProfile',
+			'profile(/*username)(/:section)(/:subsection)' : 'renderProfile',
 			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
 			'logout'                    : 'logout'           // logout the user
 			//'signup'          			: 'renderLdap',     // use ldapweb for registration
@@ -131,7 +131,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			appView.showView(appView.metadataView);
 		},
 		
-		renderProfile: function(username){
+		renderProfile: function(username, section, subsection){
 			this.closeLastView();
 						
 			if(!username){
@@ -139,6 +139,11 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 				appView.showView(appView.statsView);
 			}
 			else{
+				if(section)
+					appView.userView.activeSection = section;
+				if(subsection)
+					appView.userView.activeSubSection = subsection;
+				
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
 				appView.showView(appView.userView);
