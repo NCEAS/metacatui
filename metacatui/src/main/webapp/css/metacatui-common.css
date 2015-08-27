@@ -939,7 +939,9 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-top: -5px;
 	padding-left: 10px;
 }
-/** Images, Maps, and other visuals **/
+/****************************************** 
+* Images, Maps, and Media
+********************************************/
 .thumbnail{
 	height: auto;
 	margin-bottom: 20px;
@@ -961,7 +963,55 @@ img[src*="gstatic.com/"].georegion-map,
 img[src*="googleapis.com/"].georegion-map{
 	max-width: 100%;
 }
-
+.media {
+  margin-top: 15px;
+}
+.media:first-child {
+  margin-top: 0;
+}
+.media,
+.media-body {
+  overflow: hidden;
+  zoom: 1;
+}
+.media-body {
+  width: 10000px;
+}
+.media-object {
+  display: block;
+  max-width: inherit;
+}
+.media-object.img-thumbnail {
+  max-width: none;
+}
+.media-right,
+.media > .pull-right {
+  padding-left: 10px;
+}
+.media-left,
+.media > .pull-left {
+  padding-right: 10px;
+}
+.media-left,
+.media-right,
+.media-body {
+  display: table-cell;
+  vertical-align: top;
+}
+.media-middle {
+  vertical-align: middle;
+}
+.media-bottom {
+  vertical-align: bottom;
+}
+.media-heading {
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+.media-list {
+  padding-left: 0;
+  list-style: none;
+}
 /****************************************** 
 * Download / Resource Map contents table
 ********************************************/
@@ -1129,7 +1179,6 @@ textarea.token{
     stroke: #CCC;
     fill: #CCC;
 }
-
 /****************************************** 
 ** Panels ***
 ******************************************/
