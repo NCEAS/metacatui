@@ -51,12 +51,12 @@ define(['jquery', 'underscore', 'backbone'],
 		bioportalSearch: function(request, response, localValues, allValues) {
 			
 			// make sure we have something to lookup
-			if (!appModel.get('bioportalServiceUrl')) {
+			if (!appModel.get('bioportalSearchUrl')) {
 				response(localValues);
 				return;
 			}
 			
-			var query = appModel.get('bioportalServiceUrl') + request.term;
+			var query = appModel.get('bioportalSearchUrl') + request.term;
 			var availableTags = [];
 			$.get(query, function(data, textStatus, xhr) {
 			
@@ -103,11 +103,11 @@ define(['jquery', 'underscore', 'backbone'],
 			var concepts = [];
 
 			// make sure we have something to lookup
-			if (!appModel.get('bioportalServiceUrl')) {
+			if (!appModel.get('bioportalSearchUrl')) {
 				return;
 			}
 			
-			var query = appModel.get('bioportalServiceUrl') + encodeURIComponent(uri);
+			var query = appModel.get('bioportalSearchUrl') + encodeURIComponent(uri);
 			var availableTags = [];
 			$.get(query, function(data, textStatus, xhr) {
 			
@@ -130,7 +130,7 @@ define(['jquery', 'underscore', 'backbone'],
 		orcidGetConcepts: function(uri, callback) {
 			
 			// make sure we have something to lookup
-			if (!appModel.get('orcidServiceUrl')) {
+			if (!appModel.get('bioportalSearchUrl')) {
 				return;
 			}
 			
@@ -156,13 +156,13 @@ define(['jquery', 'underscore', 'backbone'],
 		orcidSearch: function(request, response, more) {
 			
 			// make sure we have something to lookup
-			if (!appModel.get('orcidServiceUrl')) {
+			if (!appModel.get('bioportalSearchUrl')) {
 				response(more);
 				return;
 			}
 			
 			var people = [];
-			var query = appModel.get('orcidServiceUrl') + request.term;
+			var query = appModel.get('bioportalSearchUrl') + request.term;
 			$.get(query, function(data, status, xhr) {
 				// get the orcid info
 				var profile = $(data).find("orcid-profile");
@@ -183,6 +183,30 @@ define(['jquery', 'underscore', 'backbone'],
 				// callback with answers
 				response(people);
 			})
+		},
+		
+		/*
+		 * Gets the bio of a person given an ORCID
+		 */
+		getOrcidBio: function(options){
+			if(!options) return;
+			
+			var orcid   = options.userModel ? options.userModel.get("orcid") : options.orcid,
+				success = options.success || function(){},
+				error   = options.error   || function(){};
+			
+			$.get({
+				url: appModel.get("orcidBioUrl"),
+				accept: "application/orcid+json",
+				success: function(data, textStatus, xhr){
+					success(data, textStatus, xhr);
+					console.log(data);
+				},
+				error: function(xhr, textStatus, error){
+					error(xhr, textStatus, error);
+					console.log(textStatus);
+				}
+			});
 		}
 	
 		

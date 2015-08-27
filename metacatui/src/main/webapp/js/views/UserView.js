@@ -667,6 +667,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				return;
 			}
 			else{
+				this.$("[data-subsection='pending-accounts']").show();
 				this.$("#pending-list-container").prepend($(document.createElement("p")).text("You have " + pending.length + " new request to map accounts. If these requests are from you, accept them below. If you do not recognize a username, reject the request."));
 				var pendingList = $(document.createElement("ul")).addClass("list-identity").attr("id", "pending-list");
 				var pendingCount = $(document.createElement("span")).addClass("badge").attr("id", "pending-count").text(pending.length);
@@ -678,7 +679,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
 					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),				
 				    acceptIcon = $(document.createElement("i")).addClass("icon icon-check-sign icon-large icon-positive tooltip-this").attr("data-title", "Accept Request").attr("data-trigger", "hover").attr("data-placement", "top"),
-				    rejectIcon = $(document.createElement("i")).addClass("icon icon-trash icon-large icon-negative tooltip-this").attr("data-title", "Reject Request").attr("data-trigger", "hover").attr("data-placement", "top"),
+				    rejectIcon = $(document.createElement("i")).addClass("icon icon-remove icon-large icon-negative tooltip-this").attr("data-title", "Reject Request").attr("data-trigger", "hover").attr("data-placement", "top"),
 					confirm = $(document.createElement("a")).attr("href", "#").addClass('confirm-request-btn').attr("data-identity", identity).append(acceptIcon),
 					reject = $(document.createElement("a")).attr("href", "#").addClass("reject-request-btn").attr("data-identity", identity).append(rejectIcon);
 

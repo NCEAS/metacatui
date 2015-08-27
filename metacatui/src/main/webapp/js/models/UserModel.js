@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrResults"], 				
-	function($, _, Backbone, SearchModel, SearchResults) {
+define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel", "collections/SolrResults"], 				
+	function($, _, Backbone, SearchModel, LookupModel, SearchResults) {
 	'use strict';
 
 	// User Model
@@ -14,6 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				email: null,
 				verified: null,
 				username: null,
+				orcid: null,
 				searchModel: null,
 				searchResults: null,
 				loggedIn: false,
@@ -148,7 +149,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				},
 				error: function(xhr, textStatus, errorThrown){
 					if(xhr.status == 404)
-						model.getNameFromSubject();
+						model.getNameFromSubject();					
 				}
 			}
 			

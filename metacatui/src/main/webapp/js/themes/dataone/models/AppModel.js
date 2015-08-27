@@ -42,7 +42,8 @@ define(['jquery', 'underscore', 'backbone'],
 			bioportalServiceUrl: "https://data.bioontology.org/search?ontologies=D1-CARBON-FLUX,PROV-ONE,ENVO,CHEBI,DATA-CITE,DC-TERMS,OWL-TIME&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
 			//bioportalServiceUrl: null, // use this to deactivate the annotator view
 			orcidBaseUrl: "https://pub.orcid.org",
-			orcidServiceUrl: "https://pub.orcid.org/v1.1/search/orcid-bio?q=",
+			orcidSearchUrl: null,
+			orcidBioUrl: null,
 			signInUrl: null,
 			signInUrlOrcid: null,
 			signInUrlLdap: null,
@@ -86,17 +87,19 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("prov", true);
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
 				this.set('viewServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
-				//this.set('packageServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 				this.set('tokenUrl', this.get('d1CNBaseUrl') + '/portal/token');
 				this.set("signOutUrl", this.get('d1CNBaseUrl') + "/portal/logout");
 				this.set("signInUrl", this.get('d1CNBaseUrl') + "/portal/startRequest?target=");
 				this.set("signInUrlLdap", this.get('d1CNBaseUrl') + "/portal/ldap?target=");	
 				this.set("signInUrlOrcid", this.get('d1CNBaseUrl') + "/portal/oauth?action=start&target=");
 				
+				//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 				// use portal to  retrieve token and annotate metadata
 				//this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');
 				
-				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+				this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
+				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.2/search/orcid-bio?q=');
+				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 				
 			}
 			
