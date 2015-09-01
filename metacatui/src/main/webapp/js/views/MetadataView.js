@@ -67,6 +67,10 @@ define(['jquery',
 			if((options === undefined) || (!options)) var options = {};
 
 			this.pid = options.pid || options.id || appModel.get("pid") || null;
+			
+			if(typeof options.el !== "undefined")
+				this.setElement(options.el);
+			
 			this.citationEl = this.el;
 		},
 				
@@ -253,8 +257,12 @@ define(['jquery',
 			//Create a model representing the data package
 			this.packageModel = new Package();
 			this.listenToOnce(this.packageModel, 'complete', function(){
-				var metadataModel = _.findWhere(viewRef.packageModel.get("members"), { id: pid });
+				var metadataModel = _.findWhere(viewRef.packageModel.get("members"), { id: pid }) || viewRef.packageModel.getMetadata();
 				viewRef.model = metadataModel;
+				if(viewRef.pid != metadataModel.get("id")){
+					this.pid =  metadataModel.get("id"); 
+					this.render();
+				}
 			});
 			this.listenToOnce(this.packageModel, 'complete', this.getEntityNames);
 			this.listenToOnce(this.packageModel, 'complete', this.alterMarkup);			
@@ -297,35 +305,20 @@ define(['jquery',
 			
 			//If the package model is not complete, don't do anything
 			if(!this.packageModel.complete) return this;
+			
+			//Insert a package table for each package in this dataset
+			if(this.packageModel.getNestedPackages().length > 0){
+				var title = 'Data set 1 (of ' + (this.packageModel.getNestedPackages().length + 1) + ')';
+				this.insertPackageTable(this.packageModel, title);
 				
-			//** Draw the package table **//	
-			var tableView = new PackageTable({ model: this.packageModel, currentlyViewing: this.pid, parentView: this});
-			
-			//Get the package table container
-			var tableContainer = this.$("#downloadContents");
-			
-			//Older versions of Metacat will not have this container
-			if(!$(tableContainer).length){
-				tableContainer = $(document.createElement("div")).attr("id", "downloadContents");
-				$(this.citationEl).after(tableContainer);
+				_.each(this.packageModel.getNestedPackages(), function(nestedPackage, i, list){
+					var title = 'Data set ' + (i+2) + ' (of ' + (list.length+1) + ') <a href="#view/' + nestedPackage.get("id") + '">View full details of this dataset <i class="icon icon-external-link-sign"></i></a>';
+					viewRef.insertPackageTable(nestedPackage, title);
+				});
 			}
+			else
+				this.insertPackageTable(this.packageModel);
 			
-			//Insert the package table HTML 
-			$(tableContainer).html(tableView.render().el);
-			
-			//Hide the Metadata buttons that have no matching entity details section
-			var count = 0;
-			_.each($("#downloadContents .preview"), function(btn){
-				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
-					$(btn).addClass("hidden");
-					count++;
-				}
-			});
-			if(count == $("#downloadContents .preview").length){
-				$("td.more-info").addClass("hidden");
-				$("th.more-info").addClass("hidden");
-			}
-							
 			//Remove the extra download button returned from the XSLT since the package table will have all the download links
 			$("#downloadPackage").detach();
 			
@@ -337,6 +330,45 @@ define(['jquery',
 			this.packageModel.getProvTrace();
 		    
 		    return this;
+		},
+		
+		insertPackageTable: function(packageModel, title){
+			var viewRef = this;
+			
+			if(typeof packageModel === "undefined") var packageModel = this.packageModel;
+			
+			//** Draw the package table **//	
+			var tableView = new PackageTable({ 
+				model: packageModel, 
+				currentlyViewing: this.pid, 
+				parentView: this,
+				title: title
+			});
+			
+			//Get the package table container
+			var tableContainer = this.$("#downloadContents");
+			
+			//Older versions of Metacat will not have this container
+			if(!$(tableContainer).length){
+				tableContainer = $(document.createElement("div")).attr("id", "downloadContents");
+				$(this.citationEl).after(tableContainer);
+			}
+			
+			//Insert the package table HTML 
+			$(tableContainer).append(tableView.render().el);
+			
+			//Hide the Metadata buttons that have no matching entity details section
+			var count = 0;
+			_.each($("#downloadContents .preview"), function(btn){
+				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
+					$(btn).hide();
+					count++;
+				}
+			});
+			if(count == $("#downloadContents .preview").length){
+				$("td.more-info, th.more-info").hide();
+				$("th.more-info-header").attr("colspan", $("th.more-info-header").attr("colspan")-1);
+			}			
 		},
 				
 		insertSpatialCoverageMap: function(customCoordinates){
@@ -574,8 +606,8 @@ define(['jquery',
 				var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
 
 				//Retrieve the sources and derivations for this member
-				var memberSources 	  = member.get("provSources"),
-					memberDerivations = member.get("provDerivations");
+				var memberSources 	  = member.get("provSources") || new Array(),
+					memberDerivations = member.get("provDerivations") || new Array();
 
 				//Make the source chart for this member
 				if(memberSources.length){
@@ -769,7 +801,7 @@ define(['jquery',
 				if(objID == this.pid) continue;
 								
 				//Is this a visual object (image or PDF)?
-				var type = solrResult.getType();
+				var type = solrResult.type == "SolrResult" ? solrResult.getType() : "Data set";
 				if(type == "image")
 					images.push(solrResult);
 				else if(type == "PDF")

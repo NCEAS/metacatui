@@ -257,7 +257,7 @@ define(['jquery', 'underscore', 'backbone'],
 		    } else {
 		        return bytes + ' B';
 		    }
-		},
+		}
 
 	});
 	return SolrResult;

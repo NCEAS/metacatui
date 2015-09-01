@@ -1531,6 +1531,13 @@ svg .domain{
     	color: #FFF;
     	font-weight: normal;
     }
+    .table-header.subtle {
+    	color: #84BFDC;
+	}
+	.table-header > a{
+		color: yellow;
+		margin-left: 20px;
+	}
     .file-type i {
   		  color: #999;
   		  margin-left: 5px;

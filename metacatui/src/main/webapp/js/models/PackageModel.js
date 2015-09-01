@@ -14,6 +14,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				indexDoc: null, //A SolrResult object representation of the resource map 
 				size: 0, //The number of items aggregated in this package
 				formattedSize: "",
+				formatId: null,
+				read_count_i: null,
 				members: [],
 				memberIds: [],
 				sources: [],
@@ -23,7 +25,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				derivationPackages: [],
 				sourceDocs: [],
 				derivationDocs: [],
-				relatedModels: [] //A condensed list of all SolrResult models related to this package in some way
+				relatedModels: [], //A condensed list of all SolrResult models related to this package in some way
+				parentPackage: null
 			}
 		},
 		
@@ -34,9 +37,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		type: "Package",
 		
 		initialize: function(options){
-			//When the members attribute of this model is set, it is assumed to be complete. 
-			//Since this attribute is an array, do not iteratively push new items to it or this will be triggered each time.
-			this.on("change:members", this.flagComplete);				
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */
@@ -48,8 +48,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var model = this;
 			
 			//Get the id of the resource map for this member
-			var provFlList = appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,prov_instanceOfClass,' + provFlList +
+			var provFlList = appSearchModel.getProvFlList() + "prov_instanceOfClass,";
+			var query = 'fl=resourceMap,read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
 						'&wt=json' +
@@ -65,12 +65,19 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(typeof data.response.docs !== "undefined"){
 						var doc = data.response.docs[0];
 					
+						//Is this document a resource map itself?
+						if(doc.formatId == "http://www.openarchives.org/ore/terms"){
+							model.set("id", doc.id); //this is the package model ID
+							model.set("members", new Array()); //Reset the member list
+							model.getMembers();
+						}
 						//If there is no resource map, then this is the only document to in this package
-						if((typeof doc.resourceMap === "undefined") || !doc.resourceMap){
+						else if((typeof doc.resourceMap === "undefined") || !doc.resourceMap){
 							model.set('id', null);
 							model.set('memberIds', new Array(doc.id));
 							model.set('members', [new SolrResult(doc)]);
 							model.trigger("change:members");
+							model.flagComplete();
 						}
 						else{
 							model.set('id', doc.resourceMap[0]);
@@ -106,23 +113,64 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				
 					//Separate the resource maps from the data/metadata objects
 					_.each(data.response.docs, function(doc){
-						if(doc.formatType == "RESOURCE"){											
+						if(doc.id == model.get("id")){											
 							model.indexDoc = doc;
 						}
 						else{
 							pids.push(doc.id);
 							
-							members.push(new SolrResult(doc));
+							if(doc.formatType == "RESOURCE"){
+								var newPckg = new PackageModel(doc);
+								newPckg.set("parentPackage", model);
+								members.push(newPckg);
+							}
+							else
+								members.push(new SolrResult(doc));
 						}
 					});
 					
 					model.set('memberIds', _.uniq(pids));
 					model.set('members', members);
-					model.trigger("change:members");
+					
+					if(model.getNestedPackages().length > 0)
+						model.createNestedPackages();
+					else
+						model.flagComplete();
 				}
 			});
 			
 			return this;
+		},
+		
+		createNestedPackages: function(){
+			var parentPackage = this,
+				nestedPackages = this.getNestedPackages(),
+				numNestedPackages = nestedPackages.length,
+				numComplete = 0;
+			
+			_.each(nestedPackages, function(nestedPackage, i, nestedPackages){
+				//Only look one-level deep at all times to avoid going down a rabbit hole
+				if(nestedPackage.parentPackage && nestedPackage.parentPackage.parentPackage) return;
+				
+				//Flag the parent model as complete when all the nested package info is ready
+				nestedPackage.on("complete", function(){ 
+					numComplete++;
+					
+					//This is the last package in this package - finish up details and flag as complete
+					if(numNestedPackages == numComplete){
+						var sorted = _.sortBy(parentPackage.get("members"), function(p){ return p.get("id") });
+						parentPackage.set("members", sorted);
+						parentPackage.flagComplete();
+					}					
+				});
+				
+				//Get the members of this nested package
+				nestedPackage.getMembers();
+			});			
+		},
+		
+		getNestedPackages: function(){
+			return _.where(this.get("members"), {type: "Package"});
 		},
 		
 		/*
@@ -139,6 +187,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Make arrays of unique IDs of objects that are sources or derivations of this package.
 			_.each(this.get("members"), function(member, i){
+				if(member.type == "Package") return;
+				
 				if(member.hasProvTrace()){
 					sources 	= _.union(sources, member.getSources());					
 					derivations = _.union(derivations, member.getDerivations());
@@ -361,6 +411,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 			//Now for each doc, we want to find which member it is related to
 			_.each(this.get("members"), function(member, i, members){
+				if(member.type == "Package") return;
+				
 				//Get the sources and derivations of this member
 				var memberSourceIDs = member.getSources();
 				var memberDerIDs    = member.getDerivations();
@@ -458,10 +510,51 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			return false;
 		},
 		
+		//Check authority of the Metadata SolrResult model instead
+		checkAuthority: function(){
+			return this.getMetadata().checkAuthority();
+		},
+		
 		flagComplete: function(){
 			this.complete = true;
 			this.pending = false;
 			this.trigger("complete");
+		},
+		
+		/****************************/
+		/**
+		 * Convert number of bytes into human readable format
+		 *
+		 * @param integer bytes     Number of bytes to convert
+		 * @param integer precision Number of digits after the decimal separator
+		 * @return string
+		 */
+		bytesToSize: function(bytes, precision){  
+		    var kilobyte = 1024;
+		    var megabyte = kilobyte * 1024;
+		    var gigabyte = megabyte * 1024;
+		    var terabyte = gigabyte * 1024;
+		    
+		    if(typeof bytes === "undefined") var bytes = this.get("size");		    		    
+		   
+		    if ((bytes >= 0) && (bytes < kilobyte)) {
+		        return bytes + ' B';
+		 
+		    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+		        return (bytes / kilobyte).toFixed(precision) + ' KB';
+		 
+		    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+		        return (bytes / megabyte).toFixed(precision) + ' MB';
+		 
+		    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+		        return (bytes / gigabyte).toFixed(precision) + ' GB';
+		 
+		    } else if (bytes >= terabyte) {
+		        return (bytes / terabyte).toFixed(precision) + ' TB';
+		 
+		    } else {
+		        return bytes + ' B';
+		    }
 		}
 		
 	});

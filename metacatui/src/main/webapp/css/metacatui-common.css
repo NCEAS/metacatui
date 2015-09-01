@@ -912,6 +912,9 @@ img[src*="googleapis.com/"].georegion-map{
 	float: none;
 	clear: both;
 }
+.download-contents ~ .download-contents {
+    margin-top: 20px;
+}
 table.download-contents {
 	width: 100%;
 	margin-bottom: 0px;
@@ -922,6 +925,11 @@ table.download-contents {
 }
 .download-contents th{
 	font-weight: normal;
+}
+.table-header.subtle{
+    font-size: .9em;
+    line-height: 0.8em;
+    border-top: 0px;
 }
 .download-contents .btn .icon,
 .download-contents .preview .icon{
