@@ -976,6 +976,16 @@ tfoot .control{
 tfoot .control i{
 	margin-left: 5px;
 }
+.download-contents ~ .expand-collapse-control{
+   line-height: 2em;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.expand-collapse-control > a > .icon{
+	margin-right: 5px;
+}
 /**----------------------------------------**/
 
 /****************************************** 

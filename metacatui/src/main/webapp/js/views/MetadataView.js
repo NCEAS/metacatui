@@ -372,7 +372,7 @@ define(['jquery',
 					viewRef.insertPackageTable(packageModel, { title: title });
 					
 					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
-						var title = 'Related Data set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details)<i class="icon icon-external-link-sign"></i></a>';
+						var title = 'Related Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details)<i class="icon icon-external-link-sign"></i></a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 					viewRef.getEntityNames(packageModel.getNestedPackages());
@@ -388,6 +388,30 @@ define(['jquery',
 				viewRef.listenToOnce(packageModel, "change:provenanceFlag", viewRef.drawProvCharts);
 				packageModel.getProvTrace();
 			});
+			
+			//Collapse the table list after the first table
+			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
+				numTables = additionalTables.children(".download-contents").length;
+			if(numTables > 1){
+				var expandIcon = $(document.createElement("i")).addClass("icon icon-caret-right"),
+					expandLink = $(document.createElement("a"))
+								.attr("href", "#")
+								.addClass("slideToggle toggle-display-on-slide")
+								.attr("data-slide-el", "additional-tables-for-" + this.cid)
+								.text("Show " + numTables + " related datasets")
+								.prepend(expandIcon),
+					collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-down"),
+					collapseLink = $(document.createElement("a"))
+								.attr("href", "#")
+								.addClass("slideToggle toggle-display-on-slide")
+								.attr("data-slide-el", "additional-tables-for-" + this.cid)
+								.text("Hide related datasets")
+								.prepend(collapseIcon)
+								.hide(),
+					expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
+				
+				additionalTables.before(expandControl);
+			}
 			
 		    return this;
 		},
@@ -414,16 +438,30 @@ define(['jquery',
 			});
 			
 			//Get the package table container
-			var tableContainer = this.$("#downloadContents");
+			var tablesContainer = this.$("#downloadContents");
 			
 			//Older versions of Metacat will not have this container
-			if(!$(tableContainer).length){
-				tableContainer = $(document.createElement("div")).attr("id", "downloadContents");
-				$(this.citationEl).after(tableContainer);
+			if(!$(tablesContainer).length){
+				tablesContainer = $(document.createElement("div")).attr("id", "downloadContents");
+				$(this.citationEl).after(tablesContainer);
 			}
+			
+			//After the first table, start collapsing them
+			var numTables = $(tablesContainer).find("table.download-contents").length;
+			if(numTables == 1){
+				var tableContainer = $(document.createElement("div")).attr("id", "additional-tables-for-" + this.cid);
+				tableContainer.hide();
+				$(tablesContainer).append(tableContainer);
+			}
+			else if(numTables > 1)
+				var tableContainer = this.$("#additional-tables-for-" + this.cid);				
+			else
+				var tableContainer = tablesContainer;
 			
 			//Insert the package table HTML 
 			$(tableContainer).append(tableView.render().el);
+			
+			this.subviews.push(tableView);
 			
 			//Hide the Metadata buttons that have no matching entity details section
 			var count = 0;
@@ -1347,12 +1385,13 @@ define(['jquery',
 		
 		onClose: function () {			
 			_.each(this.subviews, function(subview) {
-				subview.onClose();
+				subview.remove();
 			});
 			
 			this.packageModels =  new Array();
 			this.packageIds = new Array();
 			this.model = null;
+			this.pid = null;
 			
 			//Put the document title back to the default
 			appModel.set("title", appModel.defaults.title);
@@ -1360,9 +1399,7 @@ define(['jquery',
 			//Remove view-specific classes
 			this.$el.removeClass("container no-stylesheet");
 			
-			this.$el.empty();
-			
-			this.pid = null;
+			this.$el.empty();			
 		}
 		
 	});

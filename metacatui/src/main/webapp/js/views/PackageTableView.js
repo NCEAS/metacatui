@@ -5,6 +5,21 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 	
 	var PackageTable = Backbone.View.extend({
 		
+		template: _.template(Template),		
+		downloadButtonTemplate: _.template(DownloadButtonTemplate),
+		
+		type: "PackageTable",
+		
+		tagName : "div",
+		
+		className : "download-contents",
+		
+		events: {
+			"click  .preview"         : "previewData",
+			"click .expand-control"   : "expand",
+			"click .collapse-control" : "collapse"
+		},
+		
 		initialize: function(options){
 			if((options === undefined) || (!options)) var options = {};
 			
@@ -38,20 +53,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					i = routes.length;
 				}
 			}
-		},
-		
-		template: _.template(Template),
-		
-		downloadButtonTemplate: _.template(DownloadButtonTemplate),
-		
-		tagName : "div",
-		
-		className : "download-contents",
-		
-		events: {
-			"click  .preview"         : "previewData",
-			"click .expand-control"   : "expand",
-			"click .collapse-control" : "collapse"
 		},
 		
 		/*

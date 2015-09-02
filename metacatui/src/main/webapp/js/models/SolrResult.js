@@ -148,7 +148,6 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			$.get(appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl=*&wt=json',
 				  function(data, response, xhr){
-					console.log(data);
 					if(data.response.docs.length > 0)
 						model.set(data.response.docs[0]);
 			});
