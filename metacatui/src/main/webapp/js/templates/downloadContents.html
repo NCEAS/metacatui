@@ -1,8 +1,9 @@
 <% 
  if(!title) var title = "Files in this dataset";
+ if(nested) var classes = "nested";
 %>
 
-<table class="download-contents table-striped table-condensed table">
+<table class="download-contents table-striped table-condensed table <%=classes%>">
 	<thead>
 		<tr class="table-header">
 			<th colspan="7" class="table-header">

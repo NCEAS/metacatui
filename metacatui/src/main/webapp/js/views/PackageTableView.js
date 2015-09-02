@@ -16,6 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.numVisible = options.numVisible || 4;
 			this.parentView = options.parentView || null;			
 			this.title = options.title || "Files in this dataset";
+			this.nested = (typeof options.nested === "undefined")? false : options.nested;
 			
 			//Set up the Package model
 			if((typeof options.model === "undefined") || !options.model){
@@ -131,7 +132,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				downloadButton : downloadButtonHTML,
 				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
-					 packageId : this.model.get("id")
+					 packageId : this.model.get("id"),
+					    nested : this.nested
 			}));
 			
 			//Add the table body and footer

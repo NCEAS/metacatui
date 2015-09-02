@@ -919,6 +919,10 @@ table.download-contents {
 	width: 100%;
 	margin-bottom: 0px;
 }
+table.download-contents.nested{
+	margin-left: 5%;
+	width: 95%;
+}
 .download-contents td{
 	overflow-wrap: break-word;
 	vertical-align: middle; /*Oh tables, good for one thing...*/

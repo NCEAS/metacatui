@@ -369,11 +369,11 @@ define(['jquery',
 				//Insert a package table for each package in viewRef dataset
 				if(packageModel.getNestedPackages().length > 0){
 					var title = 'Current Data Set (1 of ' + (packageModel.getNestedPackages().length + 1) + ') <span class="subtle">Identifier: ' + packageModel.get("id") + '</span>';
-					viewRef.insertPackageTable(packageModel, title);
+					viewRef.insertPackageTable(packageModel, { title: title });
 					
 					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
-						var title = 'Referenced Data set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details)<i class="icon icon-external-link-sign"></i></a>';
-						viewRef.insertPackageTable(nestedPackage, title);
+						var title = 'Related Data set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details)<i class="icon icon-external-link-sign"></i></a>';
+						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 				}
 				else
@@ -390,8 +390,15 @@ define(['jquery',
 		    return this;
 		},
 		
-		insertPackageTable: function(packageModel, title){
+		insertPackageTable: function(packageModel, options){
 			var viewRef = this;
+			
+			if(options){
+				var title = options.title || "";
+				var nested = (typeof options.nested === "undefined")? false : options.nested;
+			}
+			else
+				var title = "", nested = false;
 			
 			if(typeof packageModel === "undefined") return;
 			
@@ -400,7 +407,8 @@ define(['jquery',
 				model: packageModel, 
 				currentlyViewing: this.pid, 
 				parentView: this,
-				title: title
+				title: title,
+				nested: nested
 			});
 			
 			//Get the package table container
