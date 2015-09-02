@@ -92,13 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				else
 					//Add this row to the table body
 					$(tbody).append(row);
-			});
-			
-			//After all the rows are added, hide the first X rows. We wait until after all rows are added because their order may be changed around during rendering.
-			var bodyRows = $(tbody).find("tr");
-			if(bodyRows.length > this.numVisible)
-				//Get the first X rows
-				$(_.last(bodyRows, this.numHidden)).addClass("collapse").css("display", "none"); 
+			}); 
 			
 			//Draw the footer which will have an expandable/collapsable control
 			this.numHidden = members.length - this.numVisible;
@@ -117,6 +111,12 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(expandLink).append(expandIcon);
 				$(collapseLink).append(collapseIcon);
 			}
+			
+			//After all the rows are added, hide the first X rows. We wait until after all rows are added because their order may be changed around during rendering.
+			var bodyRows = $(tbody).find("tr");
+			if(bodyRows.length > this.numVisible)
+				//Get the first X rows
+				$(_.last(bodyRows, this.numHidden)).addClass("collapse").css("display", "none");
 			
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
@@ -205,7 +205,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(moreInfoCell).append(moreInfo);
 			}
 			else{
-				$(moreInfoCell).text("&nbsp;");
+				$(moreInfoCell).text(" ");
 			}
 			$(tr).append(moreInfoCell);
 	
@@ -219,6 +219,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				else              fileType = ".xml (EML" + fileTypePopover + ")";
 			}
 			else if(fileType == "application/pdf") fileType = "PDF"; //Friendlier-looking...
+			else if(fileType == "application/zip") fileType = "ZIP folder"; //Friendlier-looking...
 			$(fileTypeCell).html(fileType);
 			$(tr).append(fileTypeCell);
 			

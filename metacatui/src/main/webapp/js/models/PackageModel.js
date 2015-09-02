@@ -15,6 +15,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				size: 0, //The number of items aggregated in this package
 				formattedSize: "",
 				formatId: null,
+				obsoletedBy: null,
+				obsoletes: null,
 				read_count_i: null,
 				members: [],
 				memberIds: [],
@@ -99,9 +101,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,' + provFlList +
+			var query = 'fl=resourceMap,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,' + provFlList +
 						'&rows=100' +
-						'&q=-obsoletedBy:*+%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
+						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
 						'&wt=json' +
 						"&json.wrf=?";
 			
@@ -115,6 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					_.each(data.response.docs, function(doc){
 						if(doc.id == model.get("id")){											
 							model.indexDoc = doc;
+							model.set(doc);
 						}
 						else{
 							pids.push(doc.id);
@@ -518,7 +521,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		flagComplete: function(){
 			this.complete = true;
 			this.pending = false;
-			this.trigger("complete");
+			this.trigger("complete", this);
 		},
 		
 		/****************************/
