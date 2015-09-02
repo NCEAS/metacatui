@@ -154,20 +154,6 @@ define(['jquery', 'underscore', 'backbone'],
 			});
 		},
 		
-		/*
-		 * Queries for the most recent package IDs this object is in
-		 */
-		getPackageIds: function(){
-			var model = this;
-			$.get(
-				appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl=resourceMap&wt=json', 
-				function(data, response, xhr){
-					if(data.response.docs.length > 0)
-						model.set("resourceMap", data.response.docs[0].resourceMap);
-					
-					model.trigger("change:resourceMap");
-			});
-		},
 		
 		/**** Provenance-related functions ****/
 		/*

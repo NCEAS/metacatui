@@ -176,6 +176,32 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			return _.where(this.get("members"), {type: "Package"});
 		},
 		
+		getMemberNames: function(){
+			var metadata = this.getMetadata();
+			if(!metadata) return false;
+			
+			//Load the rendered metadata from the view service
+			var viewService = appModel.get("viewServiceUrl") + metadata.get("id");
+			$.get(viewService, function(data, response, xhr){
+				if(solrResult.get("formatType") == "METADATA") 
+					entityName = solrResult.get("title");
+				else{
+					var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
+					if(container && container.length > 0){
+						var entityName = $(container).find(".entityName").attr("data-entity-name");
+						if((typeof entityName === "undefined") || (!entityName)){
+							entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
+							if((typeof entityName === "undefined") || (!entityName)) 
+								entityName = null;
+						}
+					}
+					else
+						entityName = null;
+	
+				}
+			});
+		},
+		
 		/*
 		 * Will get the sources and derivations of each member of this dataset and group them into packages  
 		 */

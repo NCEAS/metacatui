@@ -193,6 +193,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			$(nameCell).html(nameEl);
 			$(tr).append(nameCell);
 			
+			if(entityName == id)
+				$(nameCell).addClass("entity-name-placeholder").attr("data-id", id);
+			
 			//"More info" cell
 			var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
 			if((members.length > 1) && (this.currentlyViewing != memberModel.get("id")) && (formatType != "METADATA")){

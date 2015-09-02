@@ -321,7 +321,7 @@ define(['jquery',
 						});
 						viewRef.packageModels = latestPackages;
 						
-						viewRef.getEntityNames();
+						viewRef.getEntityNames(viewRef.packageModels);
 						viewRef.insertPackageDetails();
 						viewRef.insertDataDetails();
 					}
@@ -375,6 +375,8 @@ define(['jquery',
 						var title = 'Related Data set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details)<i class="icon icon-external-link-sign"></i></a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
+					viewRef.getEntityNames(packageModel.getNestedPackages());
+
 				}
 				else
 					viewRef.insertPackageTable(packageModel);
@@ -759,24 +761,47 @@ define(['jquery',
 			else return true;			
 		},
 		
-		getEntityNames: function(){
+		getEntityNames: function(packageModels){
 			var viewRef = this;
 
-			_.each(this.packageModels, function(packageModel){
+			_.each(packageModels, function(packageModel){
+				
+				//If this package has a different metadata doc than the one we are currently viewing
+				var metadataModel = packageModel.getMetadata();
+				if(metadataModel.get("id") != viewRef.pid){
+					$.get(appModel.get("viewServiceUrl") + metadataModel.get("id"), function(parsedMetadata, response, xhr){
+						_.each(packageModel.get("members"), function(solrResult, i){
+							var entityName = "";
+							
+							if(solrResult.get("formatType") == "METADATA")
+								entityName = solrResult.get("title");
+							
+							var container = viewRef.findEntityDetailsContainer(solrResult.get("id"), parsedMetadata);
+							entityName = viewRef.getEntityName(container);
+							
+							//Set the entity name
+							if(entityName) solrResult.set("entityName", entityName);
+							
+							//Update the UI with the new name
+							viewRef.$(".entity-name-placeholder[data-id='" + solrResult.get("id") + "']").text(entityName);
+						});
+					});
+					return;
+				}
+				
 				_.each(packageModel.get("members"), function(solrResult, i){
 					
-					if(solrResult.get("formatType") == "METADATA") 
+					var entityName = "";
+					
+					if(solrResult.get("formatType") == "METADATA")
 						entityName = solrResult.get("title");
+					else if(solrResult.get("formatType") == "RESOURCE")
+						return;
 					else{
 						var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
-						if(container && container.length > 0){
-							var entityName = $(container).find(".entityName").attr("data-entity-name");
-							if((typeof entityName === "undefined") || (!entityName)){
-								entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
-								if((typeof entityName === "undefined") || (!entityName)) 
-									entityName = null;
-							}
-						}
+						
+						if(container && container.length > 0)
+							entityName = viewRef.getEntityName(container);
 						else
 							entityName = null;
 		
@@ -788,7 +813,24 @@ define(['jquery',
 			});
 		},
 		
-		findEntityDetailsContainer: function(id){
+		getEntityName: function(containerEl){
+			if(!containerEl) return false;
+			
+			var entityName = $(containerEl).find(".entityName").attr("data-entity-name");
+			if((typeof entityName === "undefined") || (!entityName)){
+				entityName = $(containerEl).find(".control-label:contains('Entity Name') + .controls-well").text();
+				if((typeof entityName === "undefined") || (!entityName)) 
+					entityName = null;
+			}
+			
+			return entityName;
+		},
+		
+		updateEntityName: function(){
+			
+		},
+		
+		findEntityDetailsContainer: function(id, el){
 			//Are we looking for the main object that this MetadataView is displaying?
 			if(id == this.pid){
 				if(this.$("#Metadata").length > 0) return this.$("#Metadata");
@@ -799,9 +841,11 @@ define(['jquery',
 				var link = this.$(".entitydetails a[data-id='" + id + "']");
 			}
 			
+			if(!el) var el = this.el;
+			
 			//Otherwise, try looking for an anchor with the id matching this object's id
 			if(link.length < 1)
-				link = this.$("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
+				link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
 
 			//Get metadata index view
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
@@ -809,7 +853,7 @@ define(['jquery',
 			
 			//Otherwise, find the Online Distribution Link the hard way 
 			if((link.length < 1) && (!metadataFromIndex))
-				link = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
+				link = $(el).find(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
 						
 			if(link.length > 0){
 				//Get the container element
