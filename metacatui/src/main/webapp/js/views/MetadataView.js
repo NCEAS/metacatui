@@ -117,7 +117,7 @@ define(['jquery',
 								viewRef.getCitation();
 								
 								//Get the package details from the index, too
-								viewRef.getPackageIds();
+								viewRef.getModel();
 								
 								// is this the latest version? (includes DOI link when needed)
 								viewRef.showLatestVersion();
@@ -247,26 +247,32 @@ define(['jquery',
 			this.$el.prepend(breadcrumbs);
 		},
 		
-		/*
-		 * Creates a package model and retrieves the info about all members of that package 
-		 */
-		getPackageIds: function(pid) {
-			var viewRef = this;
-			
+		getModel: function(pid){
 			//If no id is passed, used the one in the appModel
 			if((typeof pid === "undefined") || !pid) var pid = this.pid;
 
+			var viewRef = this;
+			
 			//Get the package ID 
-			var metadataModel = new SolrResult({ id: pid });
-			metadataModel.getPackageIds();
-			this.listenToOnce(metadataModel, "change:resourceMap", function(model){ 
-				viewRef.getPackageDetails(model.get("resourceMap"));
+			var model = new SolrResult({ id: pid });
+			this.listenTo(model, "change", function(model){
+				var packageIds = new Array(); 
+					
+				if(model.get("resourceMap"))
+					packageIds.push(model.get("resourceMap"));
+				if(model.get("formatType") == "RESOURCE")
+					packageIds.push(model.get("id"));
+				
+				packageIds = _.flatten(packageIds);
+				
+				viewRef.getPackageDetails(packageIds);
 				viewRef.packageIds = model.get("resourceMap");
 			});
+			model.getInfo();			
 		},
 		
-		getPackageDetails: function(allPackages){
-			if(!allPackages) return;
+		getPackageDetails: function(packageIDs){
+			if(!packageIDs) return;
 			
 			var viewRef = this;
 			
@@ -280,24 +286,29 @@ define(['jquery',
 			});
 			
 			var completePackages = 0;
-			for(var i=0; i < allPackages.length; i++){
-				var thisPackageID = allPackages[i];
+			_.each(packageIDs, function(thisPackageID, i){
 				
 				//Create a model representing the data package
 				var thisPackage = new Package({ id: thisPackageID });
-				this.packageModels.push(thisPackage);
+				viewRef.packageModels.push(thisPackage);
 				
 				//When the package info is fully retrieved
-				this.listenToOnce(thisPackage, 'complete', function(thisPackage){
+				viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
 					if(!viewRef.model){
-						var metadataModel = _.findWhere(thisPackage.get("members"), { id: viewRef.pid }) || thisPackage.getMetadata();
-						viewRef.model = metadataModel;
-						viewRef.trigger("modelFound");
+						var metadataModel = thisPackage.getMetadata();
 						
-						if(viewRef.pid != metadataModel.get("id")){
-							this.pid =  metadataModel.get("id"); 
-							this.render();
-						}
+						if((thisPackage.get("id") == viewRef.pid) || (metadataModel.get("id") == viewRef.pid)){
+							viewRef.model = metadataModel;
+						
+							if(viewRef.pid != metadataModel.get("id")){
+								viewRef.pid = metadataModel.get("id");
+								appModel.set("pid", metadataModel.get("id"));
+								viewRef.onClose();
+								viewRef.render();
+							}
+							else
+								viewRef.trigger("modelFound");
+						}		
 					}
 					
 					//When all packages are fully retrieved
@@ -317,7 +328,7 @@ define(['jquery',
 				});
 				
 				thisPackage.getMembers();	
-			}	
+			});	
 
 		},
 		

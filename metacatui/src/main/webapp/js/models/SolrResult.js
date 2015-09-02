@@ -141,6 +141,19 @@ define(['jquery', 'underscore', 'backbone'],
 			});
 		},
 		
+		getInfo: function(){
+			if(!this.get("id")) return false;
+			
+			var model = this;
+			
+			$.get(appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl=*&wt=json',
+				  function(data, response, xhr){
+					console.log(data);
+					if(data.response.docs.length > 0)
+						model.set(data.response.docs[0]);
+			});
+		},
+		
 		/*
 		 * Queries for the most recent package IDs this object is in
 		 */
@@ -149,7 +162,6 @@ define(['jquery', 'underscore', 'backbone'],
 			$.get(
 				appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl=resourceMap&wt=json', 
 				function(data, response, xhr){
-					console.log(data);
 					if(data.response.docs.length > 0)
 						model.set("resourceMap", data.response.docs[0].resourceMap);
 					
