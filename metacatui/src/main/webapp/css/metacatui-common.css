@@ -74,6 +74,7 @@ article.container {
   display: block;
   float: none;
   margin-bottom: 0px;
+  font-size: .9em;
 }
 .breadcrumb>li+li:before {
   padding: 0 5px;
@@ -741,7 +742,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 #Content.no-stylesheet > .citation,
 #Metadata  > .container > .row-fluid > .citation,
 #Metadata  > .container > .row-fluid > form > .citation{
-	font-size: 1.3em;
+	font-size: 1.4em;
 	line-height: 1.7em;
 	margin-bottom: 20px;
 	border: 0px;

@@ -257,15 +257,27 @@ define(['jquery',
 			var model = new SolrResult({ id: pid });
 			this.listenTo(model, "change", function(model){
 				var packageIds = new Array(); 
-					
+				
+				//Create an array of packages this object is in, or if it's not in any, keep track of its own ID
 				if(model.get("resourceMap"))
 					packageIds.push(model.get("resourceMap"));
+				else if(model.get("formatType") == "METADATA"){
+					packageIds.push(model.get("id"));
+					viewRef.model = model;
+					viewRef.trigger("modelFound");
+				}
+				
+				//If this is a package itself, keep track of its ID
 				if(model.get("formatType") == "RESOURCE")
 					packageIds.push(model.get("id"));
 				
+				//Clean up
 				packageIds = _.flatten(packageIds);
 				
+				//Get the package members and all their info
 				viewRef.getPackageDetails(packageIds);
+				
+				//Store only the packages this model is differently inside of, in the view
 				viewRef.packageIds = model.get("resourceMap");
 			});
 			model.getInfo();			
@@ -288,9 +300,17 @@ define(['jquery',
 			var completePackages = 0;
 			_.each(packageIDs, function(thisPackageID, i){
 				
-				//Create a model representing the data package
-				var thisPackage = new Package({ id: thisPackageID });
-				viewRef.packageModels.push(thisPackage);
+				var getPackage = true;
+				
+				//This isn't a package, but just a lonely metadata doc...
+				if((thisPackageID == viewRef.pid) && (viewRef.model)){
+					var thisPackage = new Package({ id: null, members: [viewRef.model] });
+					getPackage = false;
+				}
+				else{
+					//Create a model representing the data package
+					var thisPackage = new Package({ id: thisPackageID });
+				}
 				
 				//When the package info is fully retrieved
 				viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
@@ -313,9 +333,7 @@ define(['jquery',
 					
 					//When all packages are fully retrieved
 					completePackages++;
-					if(completePackages == viewRef.packageIds.length){
-						var obsoletedIds = new Array();
-						_.each(viewRef.packageModels, function(m){ if(m.get("obsoletes")) obsoletedIds.push(m.get("obsoletes")); });
+					if(completePackages >= viewRef.packageIds.length){
 						var latestPackages = _.filter(viewRef.packageModels, function(m){
 							return(!m.get("obsoletedBy"));
 						});
@@ -326,8 +344,14 @@ define(['jquery',
 						viewRef.insertDataDetails();
 					}
 				});
+
+				//Save the package in the view
+				viewRef.packageModels.push(thisPackage);
 				
-				thisPackage.getMembers();	
+				if(getPackage)
+					thisPackage.getMembers();	
+				else
+					thisPackage.flagComplete();
 			});	
 
 		},
@@ -411,6 +435,11 @@ define(['jquery',
 					expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
 				
 				additionalTables.before(expandControl);
+			}
+			
+			//If this metadata doc is not in a package, but is just a lonely metadata doc...
+			if(!this.packageModels.length){
+				viewRef.insertPackageTable(this.model);
 			}
 			
 		    return this;
@@ -815,13 +844,14 @@ define(['jquery',
 								entityName = solrResult.get("title");
 							
 							var container = viewRef.findEntityDetailsContainer(solrResult.get("id"), parsedMetadata);
-							entityName = viewRef.getEntityName(container);
+							if(container) entityName = viewRef.getEntityName(container);
 							
 							//Set the entity name
-							if(entityName) solrResult.set("entityName", entityName);
-							
-							//Update the UI with the new name
-							viewRef.$(".entity-name-placeholder[data-id='" + solrResult.get("id") + "']").text(entityName);
+							if(entityName){
+								solrResult.set("entityName", entityName);
+								//Update the UI with the new name
+								viewRef.$(".entity-name-placeholder[data-id='" + solrResult.get("id") + "']").text(entityName);
+							}
 						});
 					});
 					return;

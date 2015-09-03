@@ -81,6 +81,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Filter out the packages from the member list
 			members = _.filter(members, function(m){ return(m.type != "Package") });
 			
+			//Count the number of rows in this table
+			var numRows = 0;
+			
 			//Create the HTML for each row
 			_.each(members, function(solrResult, i, members){				
 				//Get the row element
@@ -94,24 +97,26 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				else
 					//Add this row to the table body
 					$(tbody).append(row);
+
+				numRows++;
 			}); 
 			
 			//Draw the footer which will have an expandable/collapsable control
-			this.numHidden = members.length - this.numVisible;
+			this.numHidden = numRows - this.numVisible;
 			if(this.numHidden > 0){
 				var tfoot        = $(document.createElement("tfoot")),
 					tfootRow     = $(document.createElement("tr")),
 					tfootCell    = $(document.createElement("th")).attr("colspan", 7),
-					expandLink   = $(document.createElement("a")).addClass("expand-control control").text("View " + this.numHidden + " more"),
-					expandIcon   = $(document.createElement("i")).addClass("icon-expand-alt"),
-					collapseLink = $(document.createElement("a")).addClass("collapse-control control").text("View less").css("display", "none"),
-					collapseIcon = $(document.createElement("i")).addClass("icon-collapse-alt");
+					expandLink   = $(document.createElement("a")).addClass("expand-control control").text("Show " + this.numHidden + " more items in this data set"),
+					expandIcon   = $(document.createElement("i")).addClass("icon icon-caret-right icon-on-left"),
+					collapseLink = $(document.createElement("a")).addClass("collapse-control control").text("Show less").css("display", "none"),
+					collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-up icon-on-left");
 
 				$(tfoot).append(tfootRow);
 				$(tfootRow).append(tfootCell);
 				$(tfootCell).append(expandLink, collapseLink);
-				$(expandLink).append(expandIcon);
-				$(collapseLink).append(collapseIcon);
+				$(expandLink).prepend(expandIcon);
+				$(collapseLink).prepend(collapseIcon);
 			}
 			
 			//After all the rows are added, hide the first X rows. We wait until after all rows are added because their order may be changed around during rendering.
@@ -122,7 +127,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
-			if(packageServiceUrl){
+			if(packageServiceUrl && this.model.get("id")){
 				downloadButtonHTML = this.downloadButtonTemplate({ 
 					href: packageServiceUrl + encodeURIComponent(this.model.get("id")), 
 					text: "Download all",
