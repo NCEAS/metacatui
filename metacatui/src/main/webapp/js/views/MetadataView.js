@@ -402,8 +402,11 @@ define(['jquery',
 					viewRef.getEntityNames(packageModel.getNestedPackages());
 
 				}
-				else
-					viewRef.insertPackageTable(packageModel);
+				else{
+					var title = packageModel.get("id") ? '<span class="subtle">Identifier: ' + packageModel.get("id") + '</span>' : "";
+					title = "Files in this dataset " + title;
+					viewRef.insertPackageTable(packageModel, {title: title});
+				}
 				
 				//Remove the extra download button returned from the XSLT since the package table will have all the download links
 				$("#downloadPackage").remove();
