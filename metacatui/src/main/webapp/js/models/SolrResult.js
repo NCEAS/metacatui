@@ -146,10 +146,14 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			var model = this;
 			
-			$.get(appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl=*&wt=json',
+			var fields = "id,resourceMap,formatType,formatId,isDocumentedBy,documents,title,dataSource,isAuthorized" 
+				
+			$.get(appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl='+fields+'&wt=json',
 				  function(data, response, xhr){
 					if(data.response.docs.length > 0)
 						model.set(data.response.docs[0]);
+					else
+						model.trigger("404");
 			});
 		},
 		

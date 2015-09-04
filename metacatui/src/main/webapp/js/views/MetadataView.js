@@ -71,9 +71,7 @@ define(['jquery',
 			this.pid = options.pid || options.id || appModel.get("pid") || null;
 			
 			if(typeof options.el !== "undefined")
-				this.setElement(options.el);
-			
-			this.citationEl = this.el;
+				this.setElement(options.el);			
 		},
 				
 		// Render the main metadata view
@@ -92,8 +90,13 @@ define(['jquery',
 			}
 			else var pid = this.pid;
 			
-			// URL encode the pid
-			this.encodedPid = encodeURIComponent(pid);
+			this.getModel();	
+						
+			return this;
+		},
+		
+		renderMetadata: function(){
+			var pid = this.pid;
 			
 			// Check for a view service in this appModel
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) 
@@ -116,9 +119,6 @@ define(['jquery',
 								//Get the citation element
 								viewRef.getCitation();
 								
-								//Get the package details from the index, too
-								viewRef.getModel();
-								
 								// is this the latest version? (includes DOI link when needed)
 								viewRef.showLatestVersion();
 								
@@ -128,13 +128,26 @@ define(['jquery',
 								//Insert the breadcrumbs
 								viewRef.insertBreadcrumbs();
 								
+								viewRef.insertCitation();
+								
+								if(!viewRef.model.get("resourceMap")){
+									var packageModel = new Package({ id: null, members: [viewRef.model] });
+									viewRef.packageModels.push(packageModel);
+									viewRef.listenTo(packageModel, "complete", viewRef.insertPackageDetails);
+									packageModel.flagComplete();
+								}
+								else if(viewRef.packageModels)
+									viewRef.insertPackageDetails(viewRef.packageModels);
+								
+								viewRef.insertDataSource();
+								viewRef.insertControls();
+								viewRef.alterMarkup();
+								
 								viewRef.setUpAnnotator();
 							}
 						});
 			}
-			else this.renderMetadataFromIndex();		
-						
-			return this;
+			else this.renderMetadataFromIndex();	
 		},
 
 		/* If there is no view service available, then display the metadata fields from the index */
@@ -255,30 +268,37 @@ define(['jquery',
 			
 			//Get the package ID 
 			var model = new SolrResult({ id: pid });
-			this.listenTo(model, "change", function(model){
-				var packageIds = new Array(); 
-				
-				//Create an array of packages this object is in, or if it's not in any, keep track of its own ID
-				if(model.get("resourceMap"))
-					packageIds.push(model.get("resourceMap"));
-				else if(model.get("formatType") == "METADATA"){
-					packageIds.push(model.get("id"));
+			this.listenToOnce(model, "change", function(model){
+					
+				if(model.get("formatType") == "METADATA"){
 					viewRef.model = model;
-					viewRef.trigger("modelFound");
+					viewRef.renderMetadata();
+				}
+				else if(model.get("formatType") == "DATA"){
+					if(model.get("isDocumentedBy")){
+						viewRef.pid = _.first(model.get("isDocumentedBy"));
+						viewRef.getModel(viewRef.pid);
+					}
+					else
+						viewRef.renderMetadataFromIndex();
+				}
+				else if(model.get("formatType") == "RESOURCE"){
+					var packageModel = new Package({ id: model.get("id") });
+					packageModel.on("complete", function(){
+						viewRef.model = packageModel.getMetadata();
+						viewRef.pid = viewRef.model.get("id");
+						//viewRef.packageModels.push(packageModel);
+						viewRef.renderMetadata();
+						
+						if(viewRef.model.get("resourceMap"))
+							viewRef.getPackageDetails(viewRef.model.get("resourceMap"));	
+					});
+					packageModel.getMembers();
+					return;
 				}
 				
-				//If this is a package itself, keep track of its ID
-				if(model.get("formatType") == "RESOURCE")
-					packageIds.push(model.get("id"));
-				
-				//Clean up
-				packageIds = _.flatten(packageIds);
-				
-				//Get the package members and all their info
-				viewRef.getPackageDetails(packageIds);
-				
-				//Store only the packages this model is differently inside of, in the view
-				viewRef.packageIds = model.get("resourceMap");
+				if(model.get("resourceMap"))
+					viewRef.getPackageDetails(model.get("resourceMap"));
 			});
 			model.getInfo();			
 		},
@@ -287,15 +307,6 @@ define(['jquery',
 			if(!packageIDs) return;
 			
 			var viewRef = this;
-			
-			this.on("modelFound", function(){
-				//Listen for changes to the models for things that only need to happen once per page load
-				viewRef.listenToOnce(nodeModel, 'change:members',  viewRef.insertDataSource);
-				viewRef.listenToOnce(viewRef.model, 'change:title', viewRef.alterMarkup);			
-				viewRef.listenToOnce(viewRef.model, 'change:title', viewRef.insertCitation);		
-				viewRef.listenToOnce(viewRef.model, 'change:dataSource', viewRef.insertDataSource);
-				viewRef.listenToOnce(viewRef.model, 'change:isAuthorized', viewRef.insertControls);
-			});
 			
 			var completePackages = 0;
 			_.each(packageIDs, function(thisPackageID, i){
@@ -314,22 +325,6 @@ define(['jquery',
 				
 				//When the package info is fully retrieved
 				viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
-					if(!viewRef.model){
-						var metadataModel = thisPackage.getMetadata();
-						
-						if((thisPackage.get("id") == viewRef.pid) || (metadataModel.get("id") == viewRef.pid)){
-							viewRef.model = metadataModel;
-						
-							if(viewRef.pid != metadataModel.get("id")){
-								viewRef.pid = metadataModel.get("id");
-								appModel.set("pid", metadataModel.get("id"));
-								viewRef.onClose();
-								viewRef.render();
-							}
-							else
-								viewRef.trigger("modelFound");
-						}		
-					}
 					
 					//When all packages are fully retrieved
 					completePackages++;
@@ -338,10 +333,7 @@ define(['jquery',
 							return(!m.get("obsoletedBy"));
 						});
 						viewRef.packageModels = latestPackages;
-						
-						viewRef.getEntityNames(viewRef.packageModels);
-						viewRef.insertPackageDetails();
-						viewRef.insertDataDetails();
+						viewRef.insertPackageDetails(latestPackages);
 					}
 				});
 
@@ -384,6 +376,11 @@ define(['jquery',
 		 */
 		insertPackageDetails: function(packageModel){	
 			var viewRef = this;
+			
+			if(!this.citationEl) return;
+			
+			//Get the entity names from this page/metadata
+			this.getEntityNames(this.packageModels);
 			
 			_.each(this.packageModels, function(packageModel){
 
@@ -444,6 +441,9 @@ define(['jquery',
 			if(!this.packageModels.length){
 				viewRef.insertPackageTable(this.model);
 			}
+			
+			//Now insert the data details sections 
+			this.insertDataDetails();
 			
 		    return this;
 		},

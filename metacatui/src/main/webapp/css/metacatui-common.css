@@ -155,6 +155,10 @@ h3{
 	color: #999;
 	margin: 0;
 }
+#Content > .alert-container{
+	top: 20px;
+    position: relative;
+}
 .alert-container ~ .container{
 	padding-top: 0px;
 }

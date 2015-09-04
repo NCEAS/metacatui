@@ -92,7 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		
 		/* Get all the members of a resource map/package based on the id attribute of this model. 
 		 * Create a SolrResult model for each member and save it in the members[] attribute of this model. */
-		getMembers: function(){
+		getMembers: function(){			
 			this.pending = true;
 			
 			var model   = this,
