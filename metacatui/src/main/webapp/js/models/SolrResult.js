@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone'],
 			selected: false,
 			formatId: null,
 			formatType: null,
-			dataSource: null,
+			datasource: null,
 			rightsHolder: null,
 			size: 0,
 			type: null,
@@ -146,7 +146,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			var model = this;
 			
-			var fields = "id,resourceMap,formatType,formatId,isDocumentedBy,documents,title,dataSource,isAuthorized" 
+			var fields = "id,resourceMap,formatType,formatId,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized" 
 				
 			$.get(appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl='+fields+'&wt=json',
 				  function(data, response, xhr){

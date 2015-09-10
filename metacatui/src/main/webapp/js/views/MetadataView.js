@@ -635,6 +635,7 @@ define(['jquery',
 			if(!this.model || !nodeModel || !nodeModel.get("members").length) return;
 			
 			var dataSource = nodeModel.getMember(this.model);
+			//if(!dataSource) var dataSource = { logo:  "img/node-logos/KNB.png" }; //For development purposes
 			
 			if(dataSource && dataSource.logo){
 				//Insert the data source template
@@ -666,7 +667,7 @@ define(['jquery',
 				model   = this.model,
 				viewRef = this;
 
-			this.listenTo(this.model, "change:isAuthorized", function(){
+			this.listenToOnce(this.model, "change:isAuthorized", function(){
 				if(!model.get("isAuthorized")) return false;
 
 				//Insert the controls container
