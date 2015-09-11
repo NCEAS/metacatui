@@ -1082,7 +1082,7 @@ define(['jquery',
 					//Insert a "More" link after a certain amount to enable users to expand the list
 					if(i == listMax){
 						var moreLink = document.createElement("a");
-						$(moreLink).html("Show " + numHidden + " more member nodes")
+						$(moreLink).html("Show " + numHidden + " more")
 								   .addClass("more-link pointer toggle-list")
 								   .append($(document.createElement("i")).addClass("icon icon-expand-alt"));
 						$(list).append(moreLink);
@@ -1139,13 +1139,19 @@ define(['jquery',
 		},
 
 		toggleList: function(e){
-			var link = e.target;
+			var link = e.target,
+				controls = $(link).parents("ul").find(".toggle-list"),
+				list = $(link).parents("ul"),
+				isHidden = !(list.find(".more-link").is(".hidden"));
 			
 			//Hide/Show the list
-			$(link).parents("ul").find("li").slideToggle().toggleClass("hidden visible");
+			if(isHidden)
+				list.children("li").slideDown();
+			else
+				list.children("li.hidden").slideUp();			
 			
-			//Hide/Show the control link
-			$(link).parents("ul").find(".toggle-list").toggleClass("hidden");
+			//Hide/Show the control links
+			controls.toggleClass("hidden");
 		},
 		
 		// highlights anything additional that has been selected

@@ -273,7 +273,8 @@ h3 > .icon{
 }
 .result-row .info-icons .stats,
 .result-row .info-icons .abstract,
-.result-row .info-icons .icons.provenance{
+.result-row .info-icons .icons.provenance,
+.result-row .info-icons .icons.stats{
 	cursor: default;
 }
 .result-row .info-icons .icon.views{
@@ -1519,7 +1520,8 @@ textarea.token{
  	font-size: 13px;
  	width: auto;
 }
-ul.checkbox-list{
+.filter-contain .checkbox-list {
+    margin-left: 0px;
  	list-style: none;
 }
 .checkbox-list > li > input{

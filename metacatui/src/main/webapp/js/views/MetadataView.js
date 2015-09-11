@@ -36,7 +36,6 @@ define(['jquery',
 		
 		model: null,
 		packageModels: new Array(),
-		packageIds: new Array(),
 
 		el: '#Content',
 		
@@ -161,7 +160,7 @@ define(['jquery',
 			//Add the package details once the metadata from the index is drawn 
 			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
-			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageIds);
+			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageDetails);
 			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
 			
 			//Add the metadata HTML
@@ -328,7 +327,7 @@ define(['jquery',
 					
 					//When all packages are fully retrieved
 					completePackages++;
-					if(completePackages >= viewRef.packageIds.length){
+					if(completePackages >= packageIDs.length){
 						var latestPackages = _.filter(viewRef.packageModels, function(m){
 							return(!m.get("obsoletedBy"));
 						});
@@ -956,7 +955,9 @@ define(['jquery',
 			//If there is a metadataIndex subview, render from there.
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
 			if(typeof metadataFromIndex !== "undefined"){
-				metadataFromIndex.insertDataDetails(packageModel);
+				_.each(this.packageModels, function(packageModel){
+					metadataFromIndex.insertDataDetails(packageModel);
+				});
 				return;
 			}
 			
@@ -1422,7 +1423,6 @@ define(['jquery',
 			});
 			
 			this.packageModels =  new Array();
-			this.packageIds = new Array();
 			this.model = null;
 			this.pid = null;
 			

@@ -357,10 +357,16 @@ thead tr{
 	border-top: 0px;
 }
 tr.table-header{
-	background-color: #1C6E84;
+	background-color: #5F7F88;
 }
 tr.table-header th{
 	text-align: center;
+}
+.table-header .subtle {
+    color: #D9E4EC;
+    font-weight: lighter;
+    font-size: .9em;
+    margin-left: 10px;
 }
 tr, th, td{
 	border-width: 0px;
@@ -997,6 +1003,10 @@ ul.tb-megamenu-subnav{
 		color: #999;
 		font-weight: normal;
 		text-shadow: none;
+	}
+	.filter-contain .icon.expand:hover,
+	.filter-contain .icon.collapse:hover{
+		color: #1C6E84;
 	}
    
 
