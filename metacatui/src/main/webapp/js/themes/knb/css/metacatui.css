@@ -1537,17 +1537,34 @@ svg .domain{
     	font-weight: bold;
     }
     .table .table-header{
-    	background-color: #006699;
+    	background-color: #7F9FAF;
     	text-align: center;
     	color: #FFF;
     	font-weight: normal;
     }
+    .table-header .subtle {
+	    color: #FFFFFF;
+	    font-weight: lighter;
+	    font-size: .9em;
+	    margin-left: 10px;
+	}
+	.table-header > a{
+		color: #EFEB64;
+		margin-left: 20px;
+	}
+	.table-header > a > .icon{
+		margin-left: 5px;
+	}
     .file-type i {
   		  color: #999;
   		  margin-left: 5px;
     }
     .table-striped tfoot>tr>th{
     	background-color: #f9f9f9;
+    }
+    .download-contents ~ .expand-collapse-control{
+        border: 1px solid #8EB6CA;
+        background-color: #C5D7E0;
     }
     /**----------------------------------------**/
 

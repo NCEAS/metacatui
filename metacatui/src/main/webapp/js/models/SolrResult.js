@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone'],
 			selected: false,
 			formatId: null,
 			formatType: null,
-			dataSource: null,
+			datasource: null,
 			rightsHolder: null,
 			size: 0,
 			type: null,
@@ -133,10 +133,27 @@ define(['jquery', 'underscore', 'backbone'],
 				},
 				success: function(data, textStatus, xhr) {
 					model.set("isAuthorized", true);
+					model.trigger("change:isAuthorized");
 				},
 				error: function(xhr, textStatus, errorThrown) {
 					model.set("isAuthorized", false);
 				}
+			});
+		},
+		
+		getInfo: function(){
+			if(!this.get("id")) return false;
+			
+			var model = this;
+			
+			var fields = "id,resourceMap,formatType,formatId,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized" 
+				
+			$.get(appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl='+fields+'&wt=json',
+				  function(data, response, xhr){
+					if(data.response.docs.length > 0)
+						model.set(data.response.docs[0]);
+					else
+						model.trigger("404");
 			});
 		},
 		
@@ -257,7 +274,7 @@ define(['jquery', 'underscore', 'backbone'],
 		    } else {
 		        return bytes + ' B';
 		    }
-		},
+		}
 
 	});
 	return SolrResult;

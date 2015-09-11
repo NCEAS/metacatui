@@ -216,6 +216,23 @@ define(['jquery',
 			return false;
 		},
 		
+		toggleSlide: function(e){
+			if(e) e.preventDefault();
+			else return false;
+			
+			var clickedOn   = $(e.target),
+				toggleElId  = clickedOn.attr("data-slide-el") || clickedOn.parents("[data-slide-el]").attr("data-slide-el"),
+				toggleEl    = $("#" + toggleElId);
+			
+			toggleEl.slideToggle("fast", function(){
+				//Toggle the display of the link if it has the right class
+				if(clickedOn.is(".toggle-display-on-slide")){
+					clickedOn.siblings(".toggle-display-on-slide").toggle();	
+					clickedOn.toggle();	
+				}
+			});		
+		},
+		
 		submitLogin: function(e){
 			e.preventDefault();
 			

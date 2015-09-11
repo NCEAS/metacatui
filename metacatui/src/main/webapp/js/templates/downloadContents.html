@@ -1,15 +1,22 @@
-<table class="download-contents table-striped table-condensed table">
+<% 
+ if(!title) var title = "Files in this dataset";
+ if(nested) var classes = "nested";
+%>
+
+<table class="download-contents table-striped table-condensed table <%=classes%>">
 	<thead>
 		<tr class="table-header">
-			<th colspan="7" class="table-header">Files in this dataset</th>
+			<th colspan="7" class="table-header">
+				<%=title%>
+			</th>
 		</tr>
 		<tr>
 			<th><i class="icon icon-folder-open"></i></th>
-			<th class="id wrap-contents" colspan="2">Name</th>
+			<th class="id wrap-contents more-info-header" colspan="2">Name</th>
 			<th class="formatId wrap-contents">File type</th>
 			<th>Size</th>
 			<th><% if(readsEnabled){ print("Downloads"); } %></th>
-			<th colspan="2"><%=downloadButton%></th>
+			<th><%=downloadButton%></th>
 		</tr>
 	</thead>	
 </table>

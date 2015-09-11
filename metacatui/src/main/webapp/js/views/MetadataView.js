@@ -35,6 +35,8 @@ define(['jquery',
 		subviews: [],
 		
 		model: null,
+		packageModels: new Array(),
+		packageIds: new Array(),
 
 		el: '#Content',
 		
@@ -67,7 +69,9 @@ define(['jquery',
 			if((options === undefined) || (!options)) var options = {};
 
 			this.pid = options.pid || options.id || appModel.get("pid") || null;
-			this.citationEl = this.el;
+			
+			if(typeof options.el !== "undefined")
+				this.setElement(options.el);			
 		},
 				
 		// Render the main metadata view
@@ -86,8 +90,13 @@ define(['jquery',
 			}
 			else var pid = this.pid;
 			
-			// URL encode the pid
-			this.encodedPid = encodeURIComponent(pid);
+			this.getModel();	
+						
+			return this;
+		},
+		
+		renderMetadata: function(){
+			var pid = this.pid;
 			
 			// Check for a view service in this appModel
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) 
@@ -110,9 +119,6 @@ define(['jquery',
 								//Get the citation element
 								viewRef.getCitation();
 								
-								//Get the package details from the index, too
-								viewRef.getPackageDetails();
-								
 								// is this the latest version? (includes DOI link when needed)
 								viewRef.showLatestVersion();
 								
@@ -122,13 +128,26 @@ define(['jquery',
 								//Insert the breadcrumbs
 								viewRef.insertBreadcrumbs();
 								
+								viewRef.insertCitation();
+								
+								if(!viewRef.model.get("resourceMap")){
+									var packageModel = new Package({ id: null, members: [viewRef.model] });
+									viewRef.packageModels.push(packageModel);
+									viewRef.listenTo(packageModel, "complete", viewRef.insertPackageDetails);
+									packageModel.flagComplete();
+								}
+								else if(viewRef.packageModels)
+									viewRef.insertPackageDetails(viewRef.packageModels);
+								
+								viewRef.insertDataSource();
+								viewRef.insertControls();
+								viewRef.alterMarkup();
+								
 								viewRef.setUpAnnotator();
 							}
 						});
 			}
-			else this.renderMetadataFromIndex();		
-						
-			return this;
+			else this.renderMetadataFromIndex();	
 		},
 
 		/* If there is no view service available, then display the metadata fields from the index */
@@ -142,7 +161,7 @@ define(['jquery',
 			//Add the package details once the metadata from the index is drawn 
 			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
-			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageDetails);
+			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageIds);
 			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
 			
 			//Add the metadata HTML
@@ -241,29 +260,92 @@ define(['jquery',
 			this.$el.prepend(breadcrumbs);
 		},
 		
-		/*
-		 * Creates a package model and retrieves the info about all members of that package 
-		 */
-		getPackageDetails: function(pid) {
-			var viewRef = this;
-			
+		getModel: function(pid){
 			//If no id is passed, used the one in the appModel
 			if((typeof pid === "undefined") || !pid) var pid = this.pid;
+
+			var viewRef = this;
 			
-			//Create a model representing the data package
-			this.packageModel = new Package();
-			this.listenToOnce(this.packageModel, 'complete', function(){
-				var metadataModel = _.findWhere(viewRef.packageModel.get("members"), { id: pid });
-				viewRef.model = metadataModel;
+			//Get the package ID 
+			var model = new SolrResult({ id: pid });
+			this.listenToOnce(model, "change", function(model){
+					
+				if(model.get("formatType") == "METADATA"){
+					viewRef.model = model;
+					viewRef.renderMetadata();
+				}
+				else if(model.get("formatType") == "DATA"){
+					if(model.get("isDocumentedBy")){
+						viewRef.pid = _.first(model.get("isDocumentedBy"));
+						viewRef.getModel(viewRef.pid);
+					}
+					else
+						viewRef.renderMetadataFromIndex();
+				}
+				else if(model.get("formatType") == "RESOURCE"){
+					var packageModel = new Package({ id: model.get("id") });
+					packageModel.on("complete", function(){
+						viewRef.model = packageModel.getMetadata();
+						viewRef.pid = viewRef.model.get("id");
+						//viewRef.packageModels.push(packageModel);
+						viewRef.renderMetadata();
+						
+						if(viewRef.model.get("resourceMap"))
+							viewRef.getPackageDetails(viewRef.model.get("resourceMap"));	
+					});
+					packageModel.getMembers();
+					return;
+				}
+				
+				if(model.get("resourceMap"))
+					viewRef.getPackageDetails(model.get("resourceMap"));
 			});
-			this.listenToOnce(this.packageModel, 'complete', this.getEntityNames);
-			this.listenToOnce(this.packageModel, 'complete', this.alterMarkup);			
-			this.listenToOnce(this.packageModel, 'complete', this.insertPackageDetails);
-			this.listenToOnce(this.packageModel, 'complete', this.insertCitation);
-			this.listenToOnce(this.packageModel, 'complete', this.insertDataSource);
-			this.listenToOnce(this.packageModel, 'complete', this.insertControls);
-			this.listenToOnce(nodeModel, 'change:members',  this.insertDataSource);
-			this.packageModel.getMembersByMemberID(pid);
+			model.getInfo();			
+		},
+		
+		getPackageDetails: function(packageIDs){
+			if(!packageIDs) return;
+			
+			var viewRef = this;
+			
+			var completePackages = 0;
+			_.each(packageIDs, function(thisPackageID, i){
+				
+				var getPackage = true;
+				
+				//This isn't a package, but just a lonely metadata doc...
+				if((thisPackageID == viewRef.pid) && (viewRef.model)){
+					var thisPackage = new Package({ id: null, members: [viewRef.model] });
+					getPackage = false;
+				}
+				else{
+					//Create a model representing the data package
+					var thisPackage = new Package({ id: thisPackageID });
+				}
+				
+				//When the package info is fully retrieved
+				viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
+					
+					//When all packages are fully retrieved
+					completePackages++;
+					if(completePackages >= viewRef.packageIds.length){
+						var latestPackages = _.filter(viewRef.packageModels, function(m){
+							return(!m.get("obsoletedBy"));
+						});
+						viewRef.packageModels = latestPackages;
+						viewRef.insertPackageDetails(latestPackages);
+					}
+				});
+
+				//Save the package in the view
+				viewRef.packageModels.push(thisPackage);
+				
+				if(getPackage)
+					thisPackage.getMembers();	
+				else
+					thisPackage.flagComplete();
+			});	
+
 		},
 		
 		alterMarkup: function(){
@@ -292,51 +374,139 @@ define(['jquery',
 		/*
 		 * Inserts a table with all the data package member information and sends the call to display annotations
 		 */
-		insertPackageDetails: function(){	
+		insertPackageDetails: function(packageModel){	
 			var viewRef = this;
 			
-			//If the package model is not complete, don't do anything
-			if(!this.packageModel.complete) return this;
+			if(!this.citationEl) return;
+			
+			//Get the entity names from this page/metadata
+			this.getEntityNames(this.packageModels);
+			
+			_.each(this.packageModels, function(packageModel){
+
+				//If the package model is not complete, don't do anything
+				if(!packageModel.complete) return viewRef;
 				
-			//** Draw the package table **//	
-			var tableView = new PackageTable({ model: this.packageModel, currentlyViewing: this.pid, parentView: this});
+				//Insert a package table for each package in viewRef dataset
+				if(packageModel.getNestedPackages().length > 0){
+					var title = 'Current Data Set (1 of ' + (packageModel.getNestedPackages().length + 1) + ') <span class="subtle">Identifier: ' + packageModel.get("id") + '</span>';
+					viewRef.insertPackageTable(packageModel, { title: title });
+					
+					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
+						var title = 'Related Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details)<i class="icon icon-external-link-sign"></i></a>';
+						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
+					});
+					viewRef.getEntityNames(packageModel.getNestedPackages());
+
+				}
+				else{
+					var title = packageModel.get("id") ? '<span class="subtle">Identifier: ' + packageModel.get("id") + '</span>' : "";
+					title = "Files in this dataset " + title;
+					viewRef.insertPackageTable(packageModel, {title: title});
+				}
+				
+				//Remove the extra download button returned from the XSLT since the package table will have all the download links
+				$("#downloadPackage").remove();
+			    
+			    //Show the provenance trace for viewRef package			
+				viewRef.listenToOnce(packageModel, "change:provenanceFlag", viewRef.drawProvCharts);
+				packageModel.getProvTrace();
+			});
 			
-			//Get the package table container
-			var tableContainer = this.$("#downloadContents");
-			
-			//Older versions of Metacat will not have this container
-			if(!$(tableContainer).length){
-				tableContainer = $(document.createElement("div")).attr("id", "downloadContents");
-				$(this.citationEl).after(tableContainer);
+			//Collapse the table list after the first table
+			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
+				numTables = additionalTables.children(".download-contents").length;
+			if(numTables > 1){
+				var expandIcon = $(document.createElement("i")).addClass("icon icon-caret-right"),
+					expandLink = $(document.createElement("a"))
+								.attr("href", "#")
+								.addClass("slideToggle toggle-display-on-slide")
+								.attr("data-slide-el", "additional-tables-for-" + this.cid)
+								.text("Show " + numTables + " related datasets")
+								.prepend(expandIcon),
+					collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-down"),
+					collapseLink = $(document.createElement("a"))
+								.attr("href", "#")
+								.addClass("slideToggle toggle-display-on-slide")
+								.attr("data-slide-el", "additional-tables-for-" + this.cid)
+								.text("Hide related datasets")
+								.prepend(collapseIcon)
+								.hide(),
+					expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
+				
+				additionalTables.before(expandControl);
 			}
 			
+			//If this metadata doc is not in a package, but is just a lonely metadata doc...
+			if(!this.packageModels.length){
+				viewRef.insertPackageTable(this.model);
+			}
+			
+			//Now insert the data details sections 
+			this.insertDataDetails();
+			
+		    return this;
+		},
+		
+		insertPackageTable: function(packageModel, options){
+			var viewRef = this;
+			
+			if(options){
+				var title = options.title || "";
+				var nested = (typeof options.nested === "undefined")? false : options.nested;
+			}
+			else
+				var title = "", nested = false;
+			
+			if(typeof packageModel === "undefined") return;
+			
+			//** Draw the package table **//	
+			var tableView = new PackageTable({ 
+				model: packageModel, 
+				currentlyViewing: this.pid, 
+				parentView: this,
+				title: title,
+				nested: nested
+			});
+			
+			//Get the package table container
+			var tablesContainer = this.$("#downloadContents");
+			
+			//Older versions of Metacat will not have this container
+			if(!$(tablesContainer).length){
+				tablesContainer = $(document.createElement("div")).attr("id", "downloadContents");
+				$(this.citationEl).after(tablesContainer);
+			}
+			
+			//After the first table, start collapsing them
+			var numTables = $(tablesContainer).find("table.download-contents").length;
+			if(numTables == 1){
+				var tableContainer = $(document.createElement("div")).attr("id", "additional-tables-for-" + this.cid);
+				tableContainer.hide();
+				$(tablesContainer).append(tableContainer);
+			}
+			else if(numTables > 1)
+				var tableContainer = this.$("#additional-tables-for-" + this.cid);				
+			else
+				var tableContainer = tablesContainer;
+			
 			//Insert the package table HTML 
-			$(tableContainer).html(tableView.render().el);
+			$(tableContainer).append(tableView.render().el);
+			
+			this.subviews.push(tableView);
 			
 			//Hide the Metadata buttons that have no matching entity details section
 			var count = 0;
 			_.each($("#downloadContents .preview"), function(btn){
 				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
-					$(btn).addClass("hidden");
+					$(btn).hide();
 					count++;
 				}
 			});
 			if(count == $("#downloadContents .preview").length){
-				$("td.more-info").addClass("hidden");
-				$("th.more-info").addClass("hidden");
-			}
-							
-			//Remove the extra download button returned from the XSLT since the package table will have all the download links
-			$("#downloadPackage").detach();
-			
-		    //Display the images in this package
-		    this.insertDataDetails();
-		    
-		    //Show the provenance trace for this package			
-			this.listenToOnce(this.packageModel, "change:provenanceFlag", this.drawProvCharts);
-			this.packageModel.getProvTrace();
-		    
-		    return this;
+				$("td.more-info, th.more-info").hide();
+				$("th.more-info-header").attr("colspan", $("th.more-info-header").attr("colspan")-1);
+			}			
 		},
 				
 		insertSpatialCoverageMap: function(customCoordinates){
@@ -446,16 +616,11 @@ define(['jquery',
 		},
 		
 		insertCitation: function(){
-			if(!this.citationEl || !this.packageModel) return false;
-			if(this.packageModel.get("members").length == 0) return false;
-						
-			//Get the model for this metadata doc
-			var metadataModel = _.findWhere(this.packageModel.get("members"), {id: this.pid});
-			if(!metadataModel) return false;
+			if(!this.model) return false;
 			
 			//Create a citation element from the model attributes
 			var newCitationEl = new CitationView({
-									model: metadataModel, 
+									model: this.model, 
 									createLink: false }).render().el;
 			var citationContainer = $(document.createElement("div")).addClass("citation-container").append(newCitationEl);
 			
@@ -467,13 +632,10 @@ define(['jquery',
 		
 		insertDataSource: function(){
 			if(!this.citationEl) this.getCitation();			
-			if(!this.packageModel || !nodeModel || !nodeModel.get("members").length) return;
+			if(!this.model || !nodeModel || !nodeModel.get("members").length) return;
 			
-			//Get this metadata doc from the package model
-			var thisDoc = _.findWhere(this.packageModel.get("members"), {id: this.pid});
-			if(!thisDoc) return false;
-			
-			var dataSource = nodeModel.getMember(thisDoc);
+			var dataSource = nodeModel.getMember(this.model);
+			//if(!dataSource) var dataSource = { logo:  "img/node-logos/KNB.png" }; //For development purposes
 			
 			if(dataSource && dataSource.logo){
 				//Insert the data source template
@@ -505,7 +667,7 @@ define(['jquery',
 				model   = this.model,
 				viewRef = this;
 
-			this.listenTo(this.model, "change:isAuthorized", function(){
+			this.listenToOnce(this.model, "change:isAuthorized", function(){
 				if(!model.get("isAuthorized")) return false;
 
 				//Insert the controls container
@@ -535,22 +697,22 @@ define(['jquery',
 		 * Renders ProvChartViews on the page to display provenance on a package level and on an individual object level.
 		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations 
 		 */
-		drawProvCharts: function(){
+		drawProvCharts: function(packageModel){
 			//Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn 
-			if(this.packageModel.get("provenanceFlag") != "complete") return false;
+			if(packageModel.get("provenanceFlag") != "complete") return false;
 			
 			var view = this;
 			
 			//Draw two flow charts to represent the sources and derivations at a package level			
-			var packageSources     = this.packageModel.get("sourcePackages"),
-				packageDerivations = this.packageModel.get("derivationPackages");
+			var packageSources     = packageModel.get("sourcePackages"),
+				packageDerivations = packageModel.get("derivationPackages");
 
 			if(Object.keys(packageSources).length){
 				var sourceProvChart = new ProvChart({
 					sources      : packageSources,
-					context      : this.packageModel,
+					context      : packageModel,
 					contextEl    : this.$("#Metadata"),
-					packageModel : this.packageModel,
+					packageModel : packageModel,
 					parentView   : view
 				});	
 				this.subviews.push(sourceProvChart);
@@ -559,9 +721,9 @@ define(['jquery',
 			if(Object.keys(packageDerivations).length){
 				var derivationProvChart = new ProvChart({
 					derivations  : packageDerivations,
-					context      : this.packageModel,
+					context      : packageModel,
 					contextEl    : this.$("#Metadata"),
-					packageModel : this.packageModel,
+					packageModel : packageModel,
 					parentView   : view
 				});		
 				this.subviews.push(derivationProvChart);
@@ -569,13 +731,12 @@ define(['jquery',
 			}			
 			
 			//Draw the provenance charts for each member of this package at an object level
-			_.each(this.packageModel.get("members"), function(member, i){
-				//var entityDetailsSection = view.$('.entitydetails[data-id="' + member.get("id") + '"]');
+			_.each(packageModel.get("members"), function(member, i){
 				var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
 
 				//Retrieve the sources and derivations for this member
-				var memberSources 	  = member.get("provSources"),
-					memberDerivations = member.get("provDerivations");
+				var memberSources 	  = member.get("provSources") || new Array(),
+					memberDerivations = member.get("provDerivations") || new Array();
 
 				//Make the source chart for this member
 				if(memberSources.length){
@@ -583,7 +744,7 @@ define(['jquery',
 						sources      : memberSources, 
 						context      : member,
 						contextEl    : entityDetailsSection,
-						packageModel : view.packageModel,
+						packageModel : packageModel,
 						parentView   : view
 					});	
 					view.subviews.push(memberSourcesProvChart);
@@ -596,7 +757,7 @@ define(['jquery',
 						derivations  : memberDerivations,
 						context      : member,
 						contextEl    : entityDetailsSection,
-						packageModel : view.packageModel,
+						packageModel : packageModel,
 						parentView   : view
 					});	
 					view.subviews.push(memberDerivationsProvChart);
@@ -670,34 +831,77 @@ define(['jquery',
 			else return true;			
 		},
 		
-		getEntityNames: function(){
+		getEntityNames: function(packageModels){
 			var viewRef = this;
-						
-			_.each(this.packageModel.get("members"), function(solrResult, i){
+
+			_.each(packageModels, function(packageModel){
 				
-				if(solrResult.get("formatType") == "METADATA") 
-					entityName = solrResult.get("title");
-				else{
-					var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
-					if(container && container.length > 0){
-						var entityName = $(container).find(".entityName").attr("data-entity-name");
-						if((typeof entityName === "undefined") || (!entityName)){
-							entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
-							if((typeof entityName === "undefined") || (!entityName)) 
-								entityName = null;
-						}
-					}
-					else
-						entityName = null;
-	
+				//If this package has a different metadata doc than the one we are currently viewing
+				var metadataModel = packageModel.getMetadata();
+				if(metadataModel.get("id") != viewRef.pid){
+					$.get(appModel.get("viewServiceUrl") + metadataModel.get("id"), function(parsedMetadata, response, xhr){
+						_.each(packageModel.get("members"), function(solrResult, i){
+							var entityName = "";
+							
+							if(solrResult.get("formatType") == "METADATA")
+								entityName = solrResult.get("title");
+							
+							var container = viewRef.findEntityDetailsContainer(solrResult.get("id"), parsedMetadata);
+							if(container) entityName = viewRef.getEntityName(container);
+							
+							//Set the entity name
+							if(entityName){
+								solrResult.set("entityName", entityName);
+								//Update the UI with the new name
+								viewRef.$(".entity-name-placeholder[data-id='" + solrResult.get("id") + "']").text(entityName);
+							}
+						});
+					});
+					return;
 				}
 				
-				//Set the entityName, even if it's null
-				solrResult.set("entityName", entityName);
+				_.each(packageModel.get("members"), function(solrResult, i){
+					
+					var entityName = "";
+					
+					if(solrResult.get("formatType") == "METADATA")
+						entityName = solrResult.get("title");
+					else if(solrResult.get("formatType") == "RESOURCE")
+						return;
+					else{
+						var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
+						
+						if(container && container.length > 0)
+							entityName = viewRef.getEntityName(container);
+						else
+							entityName = null;
+		
+					}
+					
+					//Set the entityName, even if it's null
+					solrResult.set("entityName", entityName);
+				});
 			});
 		},
 		
-		findEntityDetailsContainer: function(id){
+		getEntityName: function(containerEl){
+			if(!containerEl) return false;
+			
+			var entityName = $(containerEl).find(".entityName").attr("data-entity-name");
+			if((typeof entityName === "undefined") || (!entityName)){
+				entityName = $(containerEl).find(".control-label:contains('Entity Name') + .controls-well").text();
+				if((typeof entityName === "undefined") || (!entityName)) 
+					entityName = null;
+			}
+			
+			return entityName;
+		},
+		
+		updateEntityName: function(){
+			
+		},
+		
+		findEntityDetailsContainer: function(id, el){
 			//Are we looking for the main object that this MetadataView is displaying?
 			if(id == this.pid){
 				if(this.$("#Metadata").length > 0) return this.$("#Metadata");
@@ -708,9 +912,11 @@ define(['jquery',
 				var link = this.$(".entitydetails a[data-id='" + id + "']");
 			}
 			
+			if(!el) var el = this.el;
+			
 			//Otherwise, try looking for an anchor with the id matching this object's id
 			if(link.length < 1)
-				link = this.$("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
+				link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
 
 			//Get metadata index view
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
@@ -718,7 +924,7 @@ define(['jquery',
 			
 			//Otherwise, find the Online Distribution Link the hard way 
 			if((link.length < 1) && (!metadataFromIndex))
-				link = this.$(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
+				link = $(el).find(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
 						
 			if(link.length > 0){
 				//Get the container element
@@ -750,153 +956,157 @@ define(['jquery',
 			//If there is a metadataIndex subview, render from there.
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
 			if(typeof metadataFromIndex !== "undefined"){
-				metadataFromIndex.insertDataDetails();
+				metadataFromIndex.insertDataDetails(packageModel);
 				return;
 			}
-
-			var dataDisplay = "",
-				viewRef = this,
-				images = [],
-				pdfs = [],
-				other = [],
-				packageMembers = this.packageModel.get("members");
-						
-			//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
-			for(var i=0; i < packageMembers.length; i++){
-				var solrResult = packageMembers[i],
-					objID      = solrResult.get("id");
-				
-				if(objID == this.pid) continue;
-								
-				//Is this a visual object (image or PDF)?
-				var type = solrResult.getType();
-				if(type == "image")
-					images.push(solrResult);
-				else if(type == "PDF")
-					pdfs.push(solrResult);
-				
-				//Find the part of the HTML Metadata view that describes this data object
-				var anchor         = $(document.createElement("a")).attr("id", objID),
-					downloadButton = this.downloadButtonTemplate({href: solrResult.get("url")}),
-					container      = this.findEntityDetailsContainer(objID),
-					dataDisplay = viewRef.dataDisplayTemplate({
-										 type : type,
-										  src : solrResult.get("url"), 
-									    objID : objID
-					});
-
-				//Insert the data display HTML and the anchor tag to mark this spot on the page 
-				if(container){
-					if((type == "image") || (type == "PDF")){
-						if($(container).children("label").length > 0)
-							$(container).children("label").first().after(dataDisplay);
-						else
-							$(container).prepend(dataDisplay);
-					}
-					$(container).prepend(anchor);
+			
+			var viewRef = this;
+			
+			_.each(this.packageModels, function(packageModel){
+			
+				var dataDisplay = "",
+					images = [],
+					pdfs = [],
+					other = [],
+					packageMembers = packageModel.get("members");
+							
+				//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
+				for(var i=0; i < packageMembers.length; i++){
+					var solrResult = packageMembers[i],
+						objID      = solrResult.get("id");
 					
-					var nameLabel = $(container).find("label:contains('Entity Name')");
-					if(nameLabel.length > 0)
-						$(nameLabel).parent().after(downloadButton);
-				}				
-			}
-						
-			//==== Initialize the fancybox images =====
-			// We will be checking every half-second if all the HTML has been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
-			var numImages  = images.length,
-				numPDFS	   = pdfs.length,
-				//The shared lightbox options for both images and PDFs
-				lightboxOptions = {
-						prevEffect	: 'elastic',
-						nextEffect	: 'elastic',
-						closeEffect : 'elastic',
-						openEffect  : 'elastic',
-						aspectRatio : true,
-						closeClick : true,
-						afterLoad  : function(){
-							//Create a custom HTML caption based on data stored in the DOM element
-							this.title = this.title + " <a href='" + this.href + "' class='btn' target='_blank'>Download</a> ";
-						},
-						helpers	    : {
-						    title : {
-							      type : 'outside'
-						    }
+					if(objID == viewRef.pid) continue;
+									
+					//Is viewRef a visual object (image or PDF)?
+					var type = solrResult.type == "SolrResult" ? solrResult.getType() : "Data set";
+					if(type == "image")
+						images.push(solrResult);
+					else if(type == "PDF")
+						pdfs.push(solrResult);
+					
+					//Find the part of the HTML Metadata view that describes viewRef data object
+					var anchor         = $(document.createElement("a")).attr("id", objID),
+						downloadButton = viewRef.downloadButtonTemplate({href: solrResult.get("url")}),
+						container      = viewRef.findEntityDetailsContainer(objID),
+						dataDisplay = viewRef.dataDisplayTemplate({
+											 type : type,
+											  src : solrResult.get("url"), 
+										    objID : objID
+						});
+	
+					//Insert the data display HTML and the anchor tag to mark viewRef spot on the page 
+					if(container){
+						if((type == "image") || (type == "PDF")){
+							if($(container).children("label").length > 0)
+								$(container).children("label").first().after(dataDisplay);
+							else
+								$(container).prepend(dataDisplay);
 						}
-				};
-			
-			if(numPDFS > 0){
-				var numPDFChecks  = 0,
-					lightboxPDFSelector = "a[class^='fancybox'][data-fancybox-iframe]",
-					pdfIntervalID = window.setInterval(initializePDFLightboxes, 500);
-				
-				//Add additional options for PDFs
-				var pdfLightboxOptions = lightboxOptions;
-				pdfLightboxOptions.type = "iframe";
-				pdfLightboxOptions.iframe = { preload: false };
-				pdfLightboxOptions.height = "98%";
-				
-				var initializePDFLightboxes = function(){
-					numPDFChecks++;
-					
-					//Initialize what images have loaded so far after 5 seconds
-					if(numPDFChecks == 10){ 
-						$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
-					}
-					//When 15 seconds have passed, stop checking so we don't blow up the browser
-					else if(numPDFChecks > 30){
-						window.clearInterval(pdfIntervalID);
-						return;
-					}
-					
-					//Are all of our pdfs loaded yet?
-					if(viewRef.$(lightboxPDFSelector).length < numPDFs) return;
-					else{					
-						//Initialize our lightboxes
-						$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
+						$(container).prepend(anchor);
 						
-						//We're done - clear the interval
-						window.clearInterval(pdfIntervalID);
+						var nameLabel = $(container).find("label:contains('Entity Name')");
+						if(nameLabel.length > 0)
+							$(nameLabel).parent().after(downloadButton);
 					}				
 				}
+							
+				//==== Initialize the fancybox images =====
+				// We will be checking every half-second if all the HTML has been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
+				var numImages  = images.length,
+					numPDFS	   = pdfs.length,
+					//The shared lightbox options for both images and PDFs
+					lightboxOptions = {
+							prevEffect	: 'elastic',
+							nextEffect	: 'elastic',
+							closeEffect : 'elastic',
+							openEffect  : 'elastic',
+							aspectRatio : true,
+							closeClick : true,
+							afterLoad  : function(){
+								//Create a custom HTML caption based on data stored in the DOM element
+								viewRef.title = viewRef.title + " <a href='" + viewRef.href + "' class='btn' target='_blank'>Download</a> ";
+							},
+							helpers	    : {
+							    title : {
+								      type : 'outside'
+							    }
+							}
+					};
 				
-			}
-			
-			if(numImages > 0){
-				var numImgChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load
-					lightboxImgSelector = "a[class^='fancybox'][data-fancybox-type='image']";
+				if(numPDFS > 0){
+					var numPDFChecks  = 0,
+						lightboxPDFSelector = "a[class^='fancybox'][data-fancybox-iframe]",
+						pdfIntervalID = window.setInterval(initializePDFLightboxes, 500);
 					
-				//Add additional options for images
-				var imgLightboxOptions = lightboxOptions;
-				imgLightboxOptions.type = "image";
-				imgLightboxOptions.perload = 1;
-				
-				var initializeImgLightboxes = function(){
-					numImgChecks++;
+					//Add additional options for PDFs
+					var pdfLightboxOptions = lightboxOptions;
+					pdfLightboxOptions.type = "iframe";
+					pdfLightboxOptions.iframe = { preload: false };
+					pdfLightboxOptions.height = "98%";
 					
-					//Initialize what images have loaded so far after 5 seconds
-					if(numImgChecks == 10){ 
-						$(lightboxImgSelector).fancybox(imgLightboxOptions);
-					}
-					//When 15 seconds have passed, stop checking so we don't blow up the browser
-					else if(numImgChecks > 30){
-						$(lightboxImgSelector).fancybox(imgLightboxOptions);
-						window.clearInterval(imgIntervalID);
-						return;
-					}
-					
-					//Are all of our images loaded yet?
-					if(viewRef.$(lightboxImgSelector).length < numImages) return;
-					else{					
-						//Initialize our lightboxes
-						$(lightboxImgSelector).fancybox(imgLightboxOptions);
+					var initializePDFLightboxes = function(){
+						numPDFChecks++;
 						
-						//We're done - clear the interval
-						window.clearInterval(imgIntervalID);
-					}				
+						//Initialize what images have loaded so far after 5 seconds
+						if(numPDFChecks == 10){ 
+							$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
+						}
+						//When 15 seconds have passed, stop checking so we don't blow up the browser
+						else if(numPDFChecks > 30){
+							window.clearInterval(pdfIntervalID);
+							return;
+						}
+						
+						//Are all of our pdfs loaded yet?
+						if(viewRef.$(lightboxPDFSelector).length < numPDFs) return;
+						else{					
+							//Initialize our lightboxes
+							$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
+							
+							//We're done - clear the interval
+							window.clearInterval(pdfIntervalID);
+						}				
+					}
+					
 				}
 				
-				var imgIntervalID = window.setInterval(initializeImgLightboxes, 500);
-			}
+				if(numImages > 0){
+					var numImgChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load
+						lightboxImgSelector = "a[class^='fancybox'][data-fancybox-type='image']";
+						
+					//Add additional options for images
+					var imgLightboxOptions = lightboxOptions;
+					imgLightboxOptions.type = "image";
+					imgLightboxOptions.perload = 1;
+					
+					var initializeImgLightboxes = function(){
+						numImgChecks++;
+						
+						//Initialize what images have loaded so far after 5 seconds
+						if(numImgChecks == 10){ 
+							$(lightboxImgSelector).fancybox(imgLightboxOptions);
+						}
+						//When 15 seconds have passed, stop checking so we don't blow up the browser
+						else if(numImgChecks > 30){
+							$(lightboxImgSelector).fancybox(imgLightboxOptions);
+							window.clearInterval(imgIntervalID);
+							return;
+						}
+						
+						//Are all of our images loaded yet?
+						if(viewRef.$(lightboxImgSelector).length < numImages) return;
+						else{					
+							//Initialize our lightboxes
+							$(lightboxImgSelector).fancybox(imgLightboxOptions);
+							
+							//We're done - clear the interval
+							window.clearInterval(imgIntervalID);
+						}				
+					}
+					
+					var imgIntervalID = window.setInterval(initializeImgLightboxes, 500);
+				}
+			});
 		},
 		
 		/*
@@ -1208,8 +1418,13 @@ define(['jquery',
 		
 		onClose: function () {			
 			_.each(this.subviews, function(subview) {
-				subview.onClose();
+				subview.remove();
 			});
+			
+			this.packageModels =  new Array();
+			this.packageIds = new Array();
+			this.model = null;
+			this.pid = null;
 			
 			//Put the document title back to the default
 			appModel.set("title", appModel.defaults.title);
@@ -1217,9 +1432,7 @@ define(['jquery',
 			//Remove view-specific classes
 			this.$el.removeClass("container no-stylesheet");
 			
-			this.$el.empty();
-			
-			this.pid = null;
+			this.$el.empty();			
 		}
 		
 	});

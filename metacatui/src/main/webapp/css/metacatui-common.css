@@ -81,6 +81,7 @@ article.container {
   display: block;
   float: none;
   margin-bottom: 0px;
+  font-size: .9em;
 }
 .breadcrumb>li+li:before {
   padding: 0 5px;
@@ -803,7 +804,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 #Content.no-stylesheet > .citation,
 #Metadata  > .container > .row-fluid > .citation,
 #Metadata  > .container > .row-fluid > form > .citation{
-	font-size: 1.3em;
+	font-size: 1.4em;
 	line-height: 1.7em;
 	margin-bottom: 20px;
 	border: 0px;
@@ -944,6 +945,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 ********************************************/
 .thumbnail{
 	height: auto;
+	width: 350px;
+	padding: 20px;
 	margin-bottom: 20px;
 }
 .entitydetails .thumbnail{
@@ -952,7 +955,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	padding: 20px;
 	width: 350px;
 }
-.entitydetails .thumbnail  img{
+.thumbnail  img{
 	min-width: 100%;
 	height: auto;
 }
@@ -1024,9 +1027,16 @@ img[src*="googleapis.com/"].georegion-map{
 	float: none;
 	clear: both;
 }
+.download-contents ~ .download-contents {
+    margin-top: 20px;
+}
 table.download-contents {
 	width: 100%;
 	margin-bottom: 0px;
+}
+table.download-contents.nested{
+	margin-left: 5%;
+	width: 95%;
 }
 .download-contents td{
 	overflow-wrap: break-word;
@@ -1034,6 +1044,11 @@ table.download-contents {
 }
 .download-contents th{
 	font-weight: normal;
+}
+.table-header.subtle{
+    font-size: .9em;
+    line-height: 0.8em;
+    border-top: 0px;
 }
 .download-contents .btn .icon,
 .download-contents .preview .icon{
@@ -1075,6 +1090,16 @@ tfoot .control{
 }
 tfoot .control i{
 	margin-left: 5px;
+}
+.download-contents ~ .expand-collapse-control{
+   line-height: 2em;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.expand-collapse-control > a > .icon{
+	margin-right: 5px;
 }
 /**----------------------------------------**/
 
