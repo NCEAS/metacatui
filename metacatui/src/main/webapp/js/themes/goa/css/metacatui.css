@@ -409,6 +409,7 @@
       color: #FFFFFF;
       font-size: 16px;
       font-weight: 400;
+      text-shadow: none;
       padding: 5px 20px;
     }
 
@@ -958,6 +959,9 @@ svg .point:hover ~ .line-chart-label{
 .breadcrumb > li.home + li:before{ /*Hide the "Home" breadcrumb link and its divider */
 	display: none;
 }
+.breadcrumb{
+	width: 100%;
+}
 
   /* Metadata rendering CSS
   -------------------------------------------------- */
@@ -996,15 +1000,29 @@ svg .point:hover ~ .line-chart-label{
 	
 	#Metadata .citation{
 		font-size: 1.3em;
+		font-weight: normal;
 	}
-   	
-    /**----------------------------------------**/
-	
 	.metadata-index {
 		padding: 2%;
 		width: 96%;
 	}
 	
+   	
+    /**----------------------------------------**/
+    
+	/** Package Contents Table **/
+	.table-header .subtle{
+    	margin-left: 20px;
+    }
+    .table-header a {
+	    font-weight: normal;
+	    color: #08c;
+	}
+	.table.download-contents .btn-primary {
+    	font-size: .85em;
+    	width: 105px;
+	}
+
 	/** Data Display & Thumbnails **/
 	.entitydetails{
 		background-color: #FFFFFF;
@@ -1172,333 +1190,298 @@ svg .point:hover ~ .line-chart-label{
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-    aside.well{
-    	padding: 10px 0px 0px 0px;
-    }
-    
-    .filter-contain h2.nav-header{
-    	margin-bottom: 0px;
-    }
-    
-    /*-- Data categories --*/
-    .category-nav{
-    	width: 100%;
-    	margin: 0px;
-    	padding: 0px;
-    }
-    
-    .category-nav > li.nav-item{
-    	width: 96%;
-    	padding-left: 4%;
-    	border-bottom: 1px solid #e0e0e0;
-    }
-    
-    .category-nav > li.nav-item > a{
-    	padding-left: 0px;
-    }
-	
-	.category-nav > li.my-packages > a{
-		color: #08c;
-	}
-    
-    .category-nav > li.nav-item:hover,
-     .category-nav > li.nav-item:hover > a,
-      .category-nav > li.nav-item.active:hover,
-     .category-nav > li.nav-item:hover > a.active{
-    	background-color: #e0e0e0;
-    	color: #333;
-    }
-    
-    .filter-contain{
-    	height: auto;
-    	max-height: 100%;
-    }
-    .filter-contain .filter-contain{
-    	padding: 0px 15px 12px 15px;
-		border-bottom: 1px solid #e0e0e0;
-    }
-   	.filter-contain > label{
-		font-weight: normal;
-		color: #777;
-	}
-	.filter-contain input[type="checkbox"] ~ label {
-	  float: left;
-	  width: 75%;
-	  text-transform: capitalize;
-	}  
-    .category-nav .active > a,
-    .category-nav li.nav-item.active{
-    	background-color: #e0e0e0;
-		color: #333;
-		margin-top: 0px;
-    }
-    
-    
-    .category-nav  i.icon-remove{
-    	padding-top: 5px;
-    	visibility: hidden;
-    }
-    
-    .category-nav  > li.nav-item.active i.icon-remove{
-    	visibility: visible;
-    }
-    
-    .filter-contain .filter-contain{
-    	width: 90%;
-    }
-
-    
-    /*-- Search buttons next to text inputs --*/
-    .filter.btn{
-    	border-radius: 0px 5px 5px 0px;
-    	-moz-border-radius: 0px 5px 5px 0px;
-    	-webkit-border-radius: 0px 5px 5px 0px;
-    	border: 1px solid #AAAAAA;
-    }
-    
-    .filter.btn > i:hover{
-    	color: #3399CC;
-    }
-    
-    /* Filter checkboxes */
-    .filter-contain .checkbox-list{
-    	margin-left: 36px;
-    }
-    ul.checkbox-list{
-    	list-style: none;
-    }
-    .checkbox-list > li > input{
-    	float: left;
-    	margin-right: 10px;
-    }
-    .checkbox-list > li > input{
-    	float: left; 	
-    }
-    .checkbox-list label{
-    	font-size: .9em;
-    }
-    .checkbox-list .more-link{
-  		font-weight: normal;
-  		font-size: .9em;
-  	} 
-  	
-    /*-- Inputs for search filters --*/
-    input.filter{
-    	border-radius: 5px 0px 0px 5px;
-    	-webkit-border-radius: 5px 0px 0px 5px;
-    	-moz-border-radius: 5px 0px 0px 5px;
-    	border: 1px solid #AAAAAA;
-    	border-right: 0px;
-    	height: 20px;
-    }
-
-	/*-- The 'Year' filter elements --*/
-    #filter-year label{
-   		min-height: 18px;
-   		margin-bottom: 0px;
-   		line-height: 27px;
-   		width: auto;
-    }
-   
-    #filter-year > input[type="number"]{
-   		color: #006699;
-   		width: 60px;
-    }
-    
-    #filter-year > input[type="number"]:focus{
-    	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
-    }
-    
-    #max_year{
-    	float: right;
-    	right: 5px;
-    }
-    
-    #min_year{
-    	float: left;
-    }
-    
-    #year-range{
-    	min-height: 6px;
-    	border-radius: 4px;
-    	border: 0px;
-    	background: #AAAAAA;
-    	position: relative;
-    	margin-bottom: 5px;
-    	width: 90%;
-    }
-    
-    #year-range.disabled,
-    #min_year.disabled,
-    #max_year.disabled{
-    	opacity: 0.6;
-    }
-    
-    .ui-slider-range{
-    	top: 0;
-    	height: 100%;
-    	position: absolute;
-    	z-index: 1;
-    	display: block;
-    	border: 0;
-    	background: #006699;
-    }
-    
-    .ui-slider-handle{
-    	border: 1px solid #999999;
-    	background-color: #EFEFEF;
-    	top: -0.4em;
-    	position: absolute;
-    	z-index: 2;
-    	width: 1.2em;
-    	height: 1.2em;
-    	cursor: default;
-    	border-radius: 1.2em;
-    	-moz-border-radius: 1.2em;
-    	-webkit-border-radius: 1.2em;
-    }
-
-	/*-- Currently applied filters --*/
-	.current-filters,
-	.current-filters[class*="span"],
-	a[class*="active"] {
-		list-style: none;
-		margin-left: 0px;
-		min-height: 0px;
-	}
-		
-	.current-filter{
-		margin: 5px 5px 0px 0px;
-		padding: 0px 5px;
-		background-color: #e0e0e0;
-		display:inline-block;
-		font-size: 14px;
-		font-weight: 500;
-		width: auto;
-		max-width: 94%;
-		color: #333;
-		text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-		float: left;
-	}
-	
-	.current-filter > i{
-		float: right;
-		display: inline;
-		margin-top: 2px;
-	}
-	
-	.current-filter > i:hover{
-    	cursor: pointer;
-	}
-	
-	.current-filter > span{
-		float: left;
-		margin-right: 5px;
-		max-width: 90%;
-		white-space: -moz-pre-wrap !important;
-		white-space: -pre-wrap;
-		white-space: -o-pre-wrap;
-		white-space: pre-wrap;
-		word-wrap: break-word;
-		word-break: break-all;
-		white-space: normal;
-	}
-    
-	
-    /*-- Headers in sidebar --*/
-
-	.filter-contain h2{
-		margin: 20px 0px 10px 0px;
-	}
-	
-    h3.nav-header{
-    	text-align: left;
-    	color: #777777;
-    	padding: 0px;
-    }
-    
-    h3.nav-header > label{
-    	display: inline-block;
-    	font: 400 14px/18px inherit, Arial, sans-serif;
-    }
-    
-    h3.nav-header > input{
-    	height: 20px;
-    }
-    
-    .nav-header > .icon{
-    	margin-right: 5px;
-    	font-size: 16px;
-    }
-    
-    li.nav-header{
-    	text-transform: none;
-		font: 600 13px/13px inherit;
-		color: #7F7F7F;
-    }
-    
-    /*-- Your Collections area --*/
-    ul.collections{
-    	margin-left: 0px;
-    	list-style: none;
-    }
-    
-    a.collections {
-    	color: #555555;
-    }
-    
-    a.collections:hover{
-    	color: #3399CC;
-    }
-    
-    a.collections > i{
-    	margin-right: 5px;
-    }
-    
-   input[class*="span"].left,
-   .row-fluid input[class*="span"].left{
-   		float: left;
-   }
-  
-    #clear-all{
-    	text-align: center;
-    	margin-bottom: 10px;
-    	clear: both;
-    }
-    
-     /* Autocomplete */
-    ul.ui-autocomplete{
-    	width: 246px;
-    	background-color: #FFFFFF;
-    	border: 1px solid #999999;
-    	padding: 10px;
-    	list-style: none;
-    	overflow-y: scroll;
-    	-webkit-transform: translate3d(0,0,0); 
-    	max-height: 150px;
-    	z-index: 10;
-    }
-    
-    li.ui-menu-item{
-    	width: 245px;
-    	overflow: hidden;
-    	white-space: nowrap;
-    	text-overflow: ellipsis;
-    }
-    
-    li.ui-menu-item > a{
-    	color: #555555;
-    	font-weight: normal;
-    	width: 245px;
-    }
-    
-    li.ui-menu-item > a:hover,
-    li.ui-menu-item .ui-state-focus {
-    	cursor: pointer;
-    	text-decoration: none;
-    	font-weight: bold;
-    } 
+#sidebar{
+ width: 31%;
 }
+aside.well{
+  	padding: 10px 0px 0px 0px;
+}  
+.filter-contain h2.nav-header{
+	margin-top: 0px;
+}
+.filter-contain{
+  	height: auto;
+  	max-height: 100%;
+}
+.filter-contain .filter-contain{
+	border-bottom: 1px solid #e0e0e0;
+}
+.filter-contain > label{
+	font-weight: normal;
+	color: #777;
+}
+.filter-contain input[type="checkbox"] ~ label {
+  text-transform: capitalize;
+}  
+.filter-contain .nav-header .popover{
+	text-transform: none;
+}
+	    
+/*-- Data categories --*/
+.category-nav{
+	width: 100%;
+	margin: 0px;
+	padding: 0px;
+}
+
+.category-nav > li.nav-item{
+	width: 96%;
+	padding-left: 4%;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.category-nav > li.nav-item > a{
+	padding-left: 0px;
+}
+
+.category-nav > li.my-packages > a{
+	color: #08c;
+}
+   
+.category-nav > li.nav-item:hover,
+.category-nav > li.nav-item:hover > a,
+.category-nav > li.nav-item.active:hover,
+.category-nav > li.nav-item:hover > a.active{
+  	background-color: #e0e0e0;
+  	color: #333;
+}
+.category-nav .active > a,
+.category-nav li.nav-item.active{
+  	background-color: #08c;
+	color: #FFF;
+}
+.category-nav  i.icon-remove{
+  	padding-top: 5px;
+  	visibility: hidden;
+}  
+.category-nav  > li.nav-item.active i.icon-remove{
+  	visibility: visible;
+}
+/*-- Search buttons next to text inputs --*/
+.filter.btn{
+	border-radius: 0px 5px 5px 0px;
+	-moz-border-radius: 0px 5px 5px 0px;
+	-webkit-border-radius: 0px 5px 5px 0px;
+	border: 1px solid #AAAAAA;
+	width: 35px;
+}
+.filter.btn > .icon{
+	margin-left: -1px;
+}
+.filter.btn > i:hover{
+	color: #3399CC;
+}
+
+/* Filter checkboxes */
+ .filter-contain .checkbox-list{
+ 	margin-left: 36px;
+ }
+ ul.checkbox-list{
+ 	list-style: none;
+ }
+ .checkbox-list > li > input{
+ 	float: left;
+ 	margin-right: 10px;
+ }
+ .checkbox-list > li > input{
+ 	float: left; 	
+ }
+ .checkbox-list label{
+ 	font-size: .9em;
+ }
+ .checkbox-list .more-link{
+	font-weight: normal;
+	font-size: .9em;
+} 
+  	
+/*-- Inputs for search filters --*/
+
+/*-- The 'Year' filter elements --*/
+#filter-year > input[type="number"]{
+	color: #006699;
+	width: 60px;
+}
+
+#filter-year > input[type="number"]:focus{
+	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
+}
+
+#max_year{
+	float: right;
+	right: 5px;
+}
+
+#min_year{
+	float: left;
+}
+
+#year-range{
+	min-height: 6px;
+	border-radius: 4px;
+	border: 0px;
+	background: #AAAAAA;
+	position: relative;
+	margin-bottom: 5px;
+	width: 90%;
+    margin-top: 10px;
+	margin-bottom: 20px;
+}
+
+#year-range.disabled,
+#min_year.disabled,
+#max_year.disabled{
+	opacity: 0.6;
+}
+
+.ui-slider-range{
+	top: 0;
+	height: 100%;
+	position: absolute;
+	z-index: 1;
+	display: block;
+	border: 0;
+	background: #006699;
+}
+
+.ui-slider-handle{
+	border: 1px solid #999999;
+	background-color: #EFEFEF;
+	top: -0.4em;
+	position: absolute;
+	z-index: 2;
+	width: 1.2em;
+	height: 1.2em;
+	cursor: default;
+	border-radius: 1.2em;
+	-moz-border-radius: 1.2em;
+	-webkit-border-radius: 1.2em;
+}
+
+/*-- Currently applied filters --*/
+	
+.current-filter{
+	background-color: #3399CC;
+	color: #FFF;
+}
+
+.current-filter > i{
+	float: right;
+	display: inline;
+	margin-top: 2px;
+}
+
+.current-filter > i:hover{
+   	cursor: pointer;
+}
+
+.current-filter > span{
+	float: left;
+	margin-right: 5px;
+	max-width: 90%;
+	white-space: -moz-pre-wrap !important;
+	white-space: -pre-wrap;
+	white-space: -o-pre-wrap;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	word-break: break-all;
+	white-space: normal;
+}
+   
+
+   /*-- Headers in sidebar --*/
+
+.filter-contain h2{
+	margin: 0px;
+	padding: 0px 10px;
+}
+
+  h3.nav-header{
+  	text-align: left;
+  	color: #777777;
+  	padding: 0px;
+  }
+  
+  h3.nav-header > label{
+  	display: inline-block;
+  	font: 400 14px/18px inherit, Arial, sans-serif;
+  }
+  
+  h3.nav-header > input{
+  	height: 20px;
+  }
+  
+  .nav-header > .icon{
+  	margin-right: 5px;
+  	font-size: 16px;
+  }
+  
+  li.nav-header{
+  	text-transform: none;
+font: 600 13px/13px inherit;
+color: #7F7F7F;
+  }
+   
+   /*-- Your Collections area --*/
+ ul.collections{
+ 	margin-left: 0px;
+ 	list-style: none;
+ }
+ 
+ a.collections {
+ 	color: #555555;
+ }
+ 
+ a.collections:hover{
+ 	color: #3399CC;
+ }
+ 
+ a.collections > i{
+ 	margin-right: 5px;
+ }
+ 
+input[class*="span"].left,
+.row-fluid input[class*="span"].left{
+		float: left;
+}
+
+ #clear-all{
+ 	text-align: center;
+ 	margin-bottom: 10px;
+ 	clear: both;
+ }
+ 
+  /* Autocomplete */
+ul.ui-autocomplete{
+	width: 246px;
+	background-color: #FFFFFF;
+	border: 1px solid #999999;
+	padding: 10px;
+	list-style: none;
+	overflow-y: scroll;
+	-webkit-transform: translate3d(0,0,0); 
+	max-height: 150px;
+	z-index: 10;
+}
+
+li.ui-menu-item{
+	width: 245px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+li.ui-menu-item > a{
+	color: #555555;
+	font-weight: normal;
+	width: 245px;
+}
+
+li.ui-menu-item > a:hover,
+li.ui-menu-item .ui-state-focus {
+	cursor: pointer;
+	text-decoration: none;
+	font-weight: bold;
+} 
 
 /* RESULT CSS
 -------------------------------------------------- */
@@ -1566,7 +1549,15 @@ svg .point:hover ~ .line-chart-label{
     	cursor: default;
     	visibility: hidden;
     }
-    
+    .result-row .info-icons .icon.views {
+    	font-size: 1.3em;
+    	margin-left: 5px;
+	}
+	.result-row .info-icons .label{
+		border-radius: 3px;
+		font-size: .9em;
+		color: #555;
+	}
     
     i.inactive{
     	visibility: hidden;
@@ -1604,12 +1595,6 @@ svg .point:hover ~ .line-chart-label{
     }
     
      /** View count **/
-    .result-row .stats .count{
-    	font-size: 16px;
-    	text-align: center; 
-    	display: block;
-    }
-    
     .result-row .stats label{
     	font-size: 12px;
     	text-align: center;
@@ -1620,8 +1605,6 @@ svg .point:hover ~ .line-chart-label{
     
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
-    	font-size: 12px;
-    	float: left;
     } 
     .result-row a.download:hover{
     	background-color: #e6e6e6;

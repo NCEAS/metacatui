@@ -4,12 +4,6 @@
 		<div class="row-fluid">
 		<!--SIDEBAR AREA-->
 		<aside id="sidebar" class="span4 well">
-			<div class="row-fluid">
-				<a id="sidebar_share" class="btn btn-primary span10 offset1" href="#share">
-	        		<i class="icon icon-upload icon-white icon-large"></i>  Share Your Data
-	      		</a>
-      		</div>
-      		<div class="clear"></div>
     	    <div class="filter-contain row-fluid">
     	    	<div class="row-fluid">
 		    		<h2 class="nav-header span4">Filters</h2>
@@ -52,14 +46,14 @@
 				<div id="filter-year" class="filter-contain" data-category="year">
 					<h3 class="nav-header"><i class="icon icon-calendar"></i><label>Year</label></h3>
 					<input class="span1 left filter"  type="checkbox" id="data_year" name="data-coverage-year" data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
-					<label class="span11 left year-tooltip popover-this" for="data_year" id="data-year-label" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="right">
+					<label class="left year-tooltip popover-this" for="data_year" id="data-year-label" data-trigger="hover" data-content="Only show results with data collected within the year range" data-placement="right">
 						<i class="icon icon-check"></i>
 						<i class="icon icon-check-empty"></i>
 						Data covers
 					</label>					
 					<div class="clear"></div>
 					<input class="span1 left filter"  type="checkbox" id="publish_year" name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
-					<label class="span11 left year-tooltip popover-this" for="publish_year" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="right" >
+					<label class="left year-tooltip popover-this" for="publish_year" data-trigger="hover" data-content="Only show results that were published within the year range" data-placement="right" >
 						<i class="icon icon-check"></i>
 						<i class="icon icon-check-empty"></i>
 						Published between

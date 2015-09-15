@@ -84,7 +84,8 @@ Bold 700
     }
     
     .hidden,
-    #clear-all.hidden{
+    #clear-all.hidden,
+    .list-only #clear-all{
     	display: none;
     }
     
@@ -136,8 +137,9 @@ Bold 700
     	line-height: 25px;
     	list-style: none;
     }
-   
-    
+    .nav-tabs ~ section{
+    	background-color: #FFF;
+    }
     .clear{
     	clear: both;
     }
@@ -149,8 +151,8 @@ Bold 700
     }
     
     thead{
-    	background-color: #a7b3c2;
-    	color: #FFFFFF;
+    	background-color: #f3f3f3;
+    	border-bottom: 1px solid #999;
     }
     thead a{
     	color: #FFFFFF;
@@ -266,28 +268,28 @@ Bold 700
   padding: 5px;
   color: #555;
 }
-
 .depth:focus {
   outline: none;
   background-position: 0 -1.7em;
 }
-
 .controls-well {
-	    padding: 4px;
-	    background-color: #FFFFFF; 
-	   	border: 1px solid #DEE1EA;
-		border-radius: 3px;
-		-webkit-border-radius: 3px;
-		-moz-border-radius: 3px;
-	}
-	.control-label {
-		cursor: default;
-	}
-	
-	select{
-    	width: auto;
-    }
-
+	padding: 4px;
+    background-color: #FFFFFF; 
+   	border: 1px solid #DEE1EA;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+}
+.control-label {
+	cursor: default;
+}
+select{
+   	width: auto;
+}
+.form-group input ~ .subtle{
+	margin-left: 23%;
+	display: block;
+}
 
 	
 
@@ -444,14 +446,6 @@ Bold 700
       background-color: #166194;
       color: #FFFFFF;
       border-color: #163894;
-    }
-    
-    .btn:hover{
-    	background-color: #0377DD;
-    	background-position: 0 -50px;
-    	color: #FFF;
-    	text-shadow: 0 1px 1px rgba(127, 127, 127, 0.75);
-    	border: 1px solid transparent;
     }
     .btn:hover i,
     .download-contents .download .btn-primary:hover i{
@@ -703,6 +697,10 @@ Bold 700
     #SignIn {
       float: right;
     }
+    
+    .list-group .list-group-item.active{
+    	border-left-color: #90AB05;
+    }
  
     
     /* Search/ID Input bar in nav bar */
@@ -751,7 +749,14 @@ Bold 700
 	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
 	    margin-top: 0;
 	}
-	
+	.nav-tabs{
+		margin-bottom: 0px;
+	}	
+	.nav-tab > a{
+	    background-color: rgba(255,255,255, .5);
+	    border-radius: 5px 5px 0px 0px;
+	    margin-right: 5px;
+	}
 	.navbar .sub-menu:before {
 	    border-bottom: 7px solid transparent;
 	    border-left: none;
@@ -779,7 +784,9 @@ Bold 700
 
 /* METADATA VIEW CSS
 -------------------------------------------------- */
-		
+	#Content.no-stylesheet.container > .breadcrumb {
+    	width: calc(100% - 40px);
+	}
 	#Metadata > a[href="#data"]{
 		display: block;
 		margin-bottom: 20px;
@@ -1065,403 +1072,370 @@ Bold 700
 		top: 20%;
 	}
     
-    /***Filters ***/
-    #sidebar{
-    	background-color: rgba(255, 255, 255, 0.8);
-    	width: 190px;
-	  padding: 0px 20px 0px 10px;
-	  height: auto;
-	  overflow-y: visible;
-	  overflow-x: visible;
-	  float: left;
-	  clear: left;
-	  border-right: 1px solid #999;
-    }
-    .filter-contain{
-   	  border-bottom: 1px dashed #BBB;
-   	  padding: 10px 0px;
-   }
-   .filter-contain > i.icon-map-marker{
-   		font-size: 23px;
-   }
-   .filter-contain > label > .icon{
-   		color: inherit;
-   		font-size: 1.3em;
-   }
-   .filter-contain label i{
-   		font-size: 15px;
-   		margin-left: 3px;
-		top: 2px;	
-		position: relative;
-   }
-    
-    .filter-contain i.more-info{
-    	font-size: 14px;
-    	line-height: 23px;
-    	top: 5px;
-    	float: left;
-    }
-    
-    /*-- Search buttons next to text inputs --*/
-    .filter.btn{
-    	background-color: #999;
-    	background-image: none;
-    	border-radius: 0px;
-    	-moz-border-radius: 0px;
-    	-webkit-border-radius: 0px;
-    	border-top-right-radius: 4px;
-		border-bottom-right-radius: 4px;
-		-webkit-border-top-right-radius: 4px;
-		-webkit-border-bottom-right-radius: 4px;
-		-moz-border-top-right-radius: 4px;
-		-moz-border-bottom-right-radius: 4px;
-    	border: 0px;
-    	height: 30px;
-    	padding: 0px;
-    	display: inline-block;
-    	width: 20%;
-    }
-    
-    .filter.btn > i{
-    	margin-bottom: 2px;
-    	display: block;
-    	color: #FFF;
-    }
-    
-    .filter.btn > i:hover{
-    	color: #FFF;
-    	transition: color .5s;
-    }
-    
-    /*-- Inputs for search filters --*/
-    input.filter{
-    	border-radius: 4px;
-    	-webkit-border-radius: 4px;
-    	-moz-border-radius: 4px;
-    	border-top-right-radius: 0px;
-		border-bottom-right-radius: 0px;
-    	-webkit-border-top-right-radius: 0px;
-		-webkit-border-bottom-right-radius: 0px;
-    	-moz-border-top-right-radius: 0px;
-		-moz-border-bottom-right-radius: 0px;
-    	border: 1px solid #AAA;
-    	height: 20px;
-    	background-color: #FFF;
-    	background-image: none;
-    	width: 140px;
-    	margin-left: 10px;
-    	-moz-box-shadow: inset 0 0 10px -1px #CCC;
-		-webkit-box-shadow: inset 0 0 10px -1px #CCC;
-		box-shadow: inset 0 0 10px -1px #CCC;
-		color: #555;
-    }
-    
-    #all_input{
-    	margin-left: 0px;
-    }
-    
-    input.filter::-webkit-input-placeholder{
-		color: #999;
-		font-weight: normal;
-		text-shadow: none;
-	}
-	input.filter:-moz-placeholder{ /* Firefox 19+ */
-		color: #999;
-		font-weight: normal;
-		text-shadow: none;
-	}
-	input.filter::-moz-placeholder{ /* Firefox 18- */
-		color: #333;
-		font-weight: normal;
-		text-shadow: none;
-	}
-	input.filter:-ms-input-placeholder{
-		color: #999;
-		font-weight: normal;
-		text-shadow: none;
-	}
+ /***Filters ***/
+#sidebar{
+  	background-color: rgba(255, 255, 255, 0.8);
+	 padding: 0px 10px;
+	 height: auto;
+	 overflow-y: visible;
+	 overflow-x: visible;
+	 float: left;
+	 clear: left;
+	 border-right: 1px solid #999;
+}
+#sidebar > * {
+    padding-right: 0px;
+    width: calc(100% - 10px);
+}
+  .filter-contain{
+ 	  border-bottom: 1px dashed #BBB;
+ 	  padding: 10px 0px;
+ }
+ .filter-contain > i.icon-map-marker{
+ 		font-size: 23px;
+ }
+ .filter-contain > label > .icon{
+ 		color: inherit;
+ 		font-size: 1.3em;
+ }
+ .filter-contain label i{
+ 		font-size: 15px;
+ 		margin-left: 3px;
+top: 2px;	
+position: relative;
+ }
+ .filter-contain input[type="checkbox"].filter{
+ 		width: 20px;
+  	float: left;
+ }
+  
+  .filter-contain i.more-info{
+  	font-size: 14px;
+  	line-height: 23px;
+  	top: 5px;
+  	float: left;
+  }
 
-	/*-- The filter checkboxes --*/
-	#filter-year input[type="checkbox"],
-    #includes-files input[type="checkbox"]{
-    	display: none;
-    }
-        .filter-contain .checkbox-list{
-    	margin-left: 36px;
-    }
-    ul.checkbox-list{
-    	list-style: none;
-    }
-    .checkbox-list > li > input{
-    	float: left;
-    	margin-right: 10px;
-    }
-    .checkbox-list > li > input{
-    	float: left; 	
-    }
-    .checkbox-list label{
-    	font-size: .9em;
-    }
-    .checkbox-list .more-link{
-  		font-weight: normal;
-  		font-size: .9em;
-  	} 
-    
-	/*-- The 'Year' filter elements --*/
-	#filter-year .left-padding{
-		padding-left: 10px;
-	}
-    
-    #data-year-label{
-    	margin-left: 10px;
-    }
-
-   #filter-year .filter-input-contain{
-   		margin-top: 10px;
+/*-- Search buttons next to text inputs --*/
+  .filter.btn{
+  	height: 30px;
+  	padding: 0px;
+  	width: 35px;
+  }
+  
+  .filter.btn > i:hover{
+  	color: #08c;
+  	transition: color .5s;
+  }
+  
+  /*-- Inputs for search filters --*/
+   .filter-contain input.filter{
+   	width: 160px;
    }
-    #filter-year  input[type="number"]{
-   		background: #FFF;
-		border: 1px solid #CCC;
-		border-radius: 4px;
-		-moz-border-radius: 4px;
-		-webkit-border-radius: 4px;
-		text-align: right;
-		min-height: 23px;
-		-webkit-appearance: none;
-		top: -5px;
-		position: relative;
-		margin-bottom: 0px;
-		width: 56px;
-		margin-top: 10px;
-		margin-bottom: 10px;
-		-moz-box-shadow: inset 0 0 10px -1px #CCC;
-		-webkit-box-shadow: inset 0 0 10px -1px #CCC;
-		box-shadow: inset 0 0 10px -1px #CCC;
-		font-size: 14px;
-		color: #888;
-		line-height: 14px;
-		padding: 2px;
-    }
-    
-    #filter-year  input[type="number"]:focus{
-    	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
-    }
-    
-    #max_year{
-    	float: right;
-    }
-    
-    #min_year{
-    	float: left;
-    }
-    
-    #year-range{
-    	min-height: 6px;
-    	position: relative;
-    	margin-bottom: 5px;
-    	width: 87%;
-    }
-    
-    #year-range.disabled,
-    #min_year.disabled,
-    #max_year.disabled{
-    	opacity: 0.6;
-    }
-    
-    .ui-slider-range{
-    	top: 0;
-    	height: 100%;
-    	position: absolute;
-    	z-index: 1;
-    	display: block;
-    	border: 0;
-    	background: #166194;
-    }
-    
-    .ui-slider-handle{
-    	border: 1px solid #999999;
-    	background-color: #EFEFEF;
-    	top: -0.4em;
-    	position: absolute;
-    	z-index: 2;
-    	width: 1.2em;
-    	height: 1.2em;
-    	cursor: default;
-    	border-radius: 1.2em;
-    	-moz-border-radius: 1.2em;
-    	-webkit-border-radius: 1.2em;
-    }
+   
+   #all_input{
+   	margin-left: 0px;
+   }
+   
+   input.filter::-webkit-input-placeholder{
+	color: #999;
+	font-weight: normal;
+	text-shadow: none;
+}
+input.filter:-moz-placeholder{ /* Firefox 19+ */
+	color: #999;
+	font-weight: normal;
+	text-shadow: none;
+}
+input.filter::-moz-placeholder{ /* Firefox 18- */
+	color: #333;
+	font-weight: normal;
+	text-shadow: none;
+}
+input.filter:-ms-input-placeholder{
+	color: #999;
+	font-weight: normal;
+	text-shadow: none;
+}
 
-	/*-- Currently applied filters --*/
-	.current-filters .current-filter{
-		color: #FFFFFF;
-	}
-	
-	.current-filters .alert{
-		width: 100%;
-		margin-top: 10px;
-	}
-	
-	#current-all-filters{
-		margin-left: 0px;
-	}
-	
-	.current-filters > li,
-	.current-filters > li[class*="span"]{
-		background-color: #166194;
-		color: #FFF;
-	}
-    #filter-year label#data-year-label{
-    	margin-top:0px;
-    }
-	.current-filters > li > i{
-		float: right;
-		display: inline;
-		line-height: 1.5em;
-		font-size: 1em;
-		color: #71A9BD;
-	}
-	label.ui-state-active i.icon-check-empty,
-	label.ui-state-default i.icon-check{
-		display: none;
-	}
-	
-	label.ui-state-active i.icon-check{
-		display: inline;
-	}
-	
-	.current-filters > li > i:hover{
-    	cursor: pointer;
-    	color: #FFFFFF;
-    	opacity: 1;
-	}
-	
-	/** for showing "my packages" filter */
-	.keyword-search-link {
-		display: none;
-	}
-	.current-filters.active {
-		background-color: inherit;
-		border-color: inherit;
-		display: inline-block;
-	}
-	.keyword-search-link.active {
-		background-color: #166194;
-		border-color: inherit;
-		display: inline-block;
-		width: auto;
-	}
-    
-	
-    /*-- Headers in sidebar --*/
-    h2.nav-header {
-		display: block;
-		margin: 0px;
-		min-height: 25px;
-		padding: 0px;
-		padding-left: 10px;
-		margin-bottom: 0px;
+/*-- The filter checkboxes --*/
+#filter-year input[type="checkbox"],
+#includes-files input[type="checkbox"]{
+	display: none;
+}
+    .filter-contain .checkbox-list{
+	margin-left: 36px;
+}
+ul.checkbox-list{
+	list-style: none;
+}
+.checkbox-list > li > input{
+	float: left;
+	margin-right: 10px;
+}
+.checkbox-list > li > input{
+	float: left; 	
+}
+.checkbox-list label{
+	font-size: .9em;
+}
+.checkbox-list .more-link{
+font-weight: normal;
+font-size: .9em;
+} 
+   
+/*-- The 'Year' filter elements --*/
+#filter-year .left-padding{
+	padding-left: 10px;
+}
+   
+#data-year-label{
+  	margin-left: 10px;
+}
+#filter-year .filter-input-contain{
+ 	margin-top: 10px;
+}
+  #filter-year  input[type="number"]{
+ 	background: #FFF;
+	border: 1px solid #CCC;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	text-align: right;
+	min-height: 23px;
+	-webkit-appearance: none;
+	top: -5px;
+	position: relative;
+	margin-bottom: 0px;
+	width: 56px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	-moz-box-shadow: inset 0 0 10px -1px #CCC;
+	-webkit-box-shadow: inset 0 0 10px -1px #CCC;
+	box-shadow: inset 0 0 10px -1px #CCC;
+	font-size: 14px;
+	color: #888;
+	line-height: 14px;
+	padding: 2px;
+}   
+#filter-year  input[type="number"]:focus{
+	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
+}
+
+#max_year{
+	float: right;
+}
+
+#min_year{
+	float: left;
+}
+
+#year-range{
+	min-height: 6px;
+	position: relative;
+	margin-bottom: 5px;
+	width: 87%;
+}
+
+#year-range.disabled,
+#min_year.disabled,
+#max_year.disabled{
+	opacity: 0.6;
+}   
+.ui-slider-range{
+	top: 0;
+	height: 100%;
+	position: absolute;
+	z-index: 1;
+	display: block;
+	border: 0;
+	background: #166194;
+}
+
+.ui-slider-handle{
+	border: 1px solid #999999;
+	background-color: #EFEFEF;
+	top: -0.4em;
+	position: absolute;
+	z-index: 2;
+	width: 1.2em;
+	height: 1.2em;
+	cursor: default;
+	border-radius: 1.2em;
+	-moz-border-radius: 1.2em;
+	-webkit-border-radius: 1.2em;
+}
+
+/*-- Currently applied filters --*/
+.current-filters .current-filter{
+	color: #FFFFFF;
+}
+
+.current-filters .alert{
+	width: 100%;
+	margin-top: 10px;
+}
+
+#current-all-filters{
+	margin-left: 0px;
+}
+
+.current-filters > li,
+.current-filters > li[class*="span"]{
+	background-color: #166194;
+	color: #FFF;
+}
+   #filter-year label#data-year-label{
+   	margin-top:0px;
+   }
+.current-filters > li > i{
+	float: right;
+	display: inline;
+	line-height: 1.5em;
+	font-size: 1em;
+	color: #71A9BD;
+}
+label.ui-state-active i.icon-check-empty,
+label.ui-state-default i.icon-check{
+	display: none;
+}
+
+label.ui-state-active i.icon-check{
+	display: inline;
+}
+
+.current-filters > li > i:hover{
+   	cursor: pointer;
+   	color: #FFFFFF;
+   	opacity: 1;
+}
+
+/** for showing "my packages" filter */
+.keyword-search-link {
+	display: none;
+}
+.current-filters.active {
+	background-color: inherit;
+	border-color: inherit;
+	display: inline-block;
+}
+.keyword-search-link.active {
+	background-color: #166194;
+	border-color: inherit;
+	display: inline-block;
+	width: auto;
+}
+   
+
+   /*-- Headers in sidebar --*/
+  h2.nav-header {
+display: block;
+margin: 0px;
+min-height: 25px;
+padding: 0px;
+padding-left: 10px;
+margin-bottom: 0px;
+float: left;
+font-size: 18px;
+text-transform: none;
+color: #666;
+  }
+  
+  h2.nav-header > i{
+  	font-size: 18px;
+  	float: right;
+  	margin-right: 20px;
+  	margin-top: 5px;
+  	color: #DDD;
+  	cursor: pointer;
+  }
+
+  
+  h3.nav-header,
+  h3.nav-header > label{
+margin: 0px;
+color: #ddd;
+text-transform: none;
+display: block;
+padding: 0px;
+text-shadow: none;
+padding-left: 10px;
+  }
+  
+  h3.nav-header > label{
+  	display: inline-block;
+  	padding: 0px;
+  }
+  
+  h3.nav-header > input{
+  	height: 20px;
+  }
+  
+  .nav-header > i{
+  	margin-right: 5px;
+  	font-size: 23px;
+  }
+  
+  li.nav-header{
+  	text-transform: none;
+color: #7F7F7F;
+  }
+  
+  /*-- Your Collections area --*/
+ ul.collections{
+ 	margin-left: 0px;
+ 	list-style: none;
+ }
+ 
+ a.collections {
+ 	color: #555555;
+ }
+ 
+ a.collections:hover{
+ 	color: #3399CC;
+ }
+ 
+ a.collections > i{
+ 	margin-right: 5px;
+ }
+ 
+input[class*="span"].left,
+.row-fluid input[class*="span"].left{
 		float: left;
-		font-size: 18px;
-		text-transform: none;
-		color: #666;
-    }
-    
-    h2.nav-header > i{
-    	font-size: 18px;
-    	float: right;
-    	margin-right: 20px;
-    	margin-top: 5px;
-    	color: #DDD;
-    	cursor: pointer;
-    }
+}  
 
-    
-    h3.nav-header,
-    h3.nav-header > label{
-		margin: 0px;
-		color: #ddd;
-		text-transform: none;
-		display: block;
-		padding: 0px;
-		text-shadow: none;
-		padding-left: 10px;
-    }
-    
-    h3.nav-header > label{
-    	display: inline-block;
-    	padding: 0px;
-    }
-    
-    h3.nav-header > input{
-    	height: 20px;
-    }
-    
-    .nav-header > i{
-    	margin-right: 5px;
-    	font-size: 23px;
-    }
-    
-    li.nav-header{
-    	text-transform: none;
-		color: #7F7F7F;
-    }
-    
-    /*-- Your Collections area --*/
-    ul.collections{
-    	margin-left: 0px;
-    	list-style: none;
-    }
-    
-    a.collections {
-    	color: #555555;
-    }
-    
-    a.collections:hover{
-    	color: #3399CC;
-    }
-    
-    a.collections > i{
-    	margin-right: 5px;
-    }
-    
-   input[class*="span"].left,
-   .row-fluid input[class*="span"].left{
-   		float: left;
-   }  
+ /* Autocomplete */
+ul.ui-autocomplete{
+	width: 246px;
+	background-color: #FFFFFF;
+	border: 1px solid #999999;
+	padding: 10px;
+	list-style: none;
+	overflow-y: scroll;
+	-webkit-transform: translate3d(0,0,0); 
+	max-height: 150px;
+	z-index: 2;
+}
 
-    /* Autocomplete */
-    ul.ui-autocomplete{
-    	width: 246px;
-    	background-color: #FFFFFF;
-    	border: 1px solid #999999;
-    	padding: 10px;
-    	list-style: none;
-    	overflow-y: scroll;
-    	-webkit-transform: translate3d(0,0,0); 
-    	max-height: 150px;
-    	z-index: 2;
-    }
-    
-    li.ui-menu-item{
-    	width: 245px;
-    	overflow: hidden;
-    	white-space: nowrap;
-    	text-overflow: ellipsis;
-    }
-    
-    li.ui-menu-item > a {
-    	color: #555555;
-    	width: 245px;
-    }
-	
-    li.ui-menu-item > a:hover,
-    .ui-state-focus {
-    	cursor: pointer;
-    	text-decoration: none;
-    	font-weight: bold;
-    	color: #166194;
-    }
+li.ui-menu-item{
+	width: 245px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+li.ui-menu-item > a {
+	color: #555555;
+	width: 245px;
+}
+
+li.ui-menu-item > a:hover,
+.ui-state-focus {
+	cursor: pointer;
+	text-decoration: none;
+	font-weight: bold;
+	color: #166194;
+}
     
 
 /* SEARCH PAGE CSS
@@ -1469,22 +1443,22 @@ Bold 700
 	.mapMode #Content{
 		max-width: 100%;
 	}
+	
     /*-- Results header --*/  
     .result-header{
     	height: auto;
+    	width: 90%;
+    	width: calc(100% - 20px);
     	padding: 5px 10px;
     }
-
-    .result-header-count > .result-header-count > span{
-    	color: #CCCCCC;
-    }
-    
-    .result-header-count > .result-header-count:after{
-    	content: " data packages";
-    }
-    
     #countstats:before{
 		content: "Datasets ";
+	}
+	#statcounts{
+		float: left;s
+	}
+	.sort-by{
+		float: right;
 	}
  	.sort-by > label{
  		display: inline;
@@ -1513,6 +1487,11 @@ Bold 700
 	  -webkit-transform: translate3d(0,0,1);
 	  height: 700px;
 	  margin-left: 0px;
+	}
+	.list-only #results-container {
+    	padding: 0px 20px;
+    	margin-left: 0px;
+    	width: calc(100% - 40px);
 	}
 	#map-container {
 	  -webkit-transition: all 1s;
@@ -1668,6 +1647,7 @@ Bold 700
     .pagination{
     	margin: 10px 0px 0px 0px;
     	text-align: left;
+    	clear: both;
     } 
     .search-results ~ .pagination {
   		margin-left: 10px;
@@ -1708,10 +1688,18 @@ Bold 700
   -------------------------------------------------- */ 
   
   #Profile{
-  	width: 960px;
+  	max-width: 960px;
   	margin: auto;
   	background-color: transparent;
   }
+#user-profile #data-list {
+    border-bottom: 2px solid #CCC;
+    margin-top: 20px;
+}
+.section {
+    padding: 20px;
+    width: calc(100% - 40px);
+}
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
@@ -1755,6 +1743,7 @@ Bold 700
 
 .profile .chart-title h2{
 	font-size: 31px;
+	font-weight: 300;
 }
 
 .profile .chart{
@@ -2358,10 +2347,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     
  .table .table-header{
- 	background-color: #506A84;
+ 	background-color: #D8E3EF;
+ 	color: #333;
  	text-align: center;
  	font-size: 1em;
  }
+ .table-header .subtle {
+    color: #777;
+    margin-left: 10px;
+    font-weight: normal;
+    font-size: .9em;
+}
  .table .btn{
  	min-width: 110px;
  }

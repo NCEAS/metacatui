@@ -15,12 +15,12 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			//'tools(/:anchorId)'         : 'renderTools',    // tools page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
-			'profile(/*username)'		: 'renderProfile',
+			'profile'					: 'renderProfile',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			//'signup'          			: 'renderLdap',     // use ldapweb for registration
-			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
-			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
+			'account(/:stage)'          : 'renderLdap'     // use ldapweb for different stages
+			//'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
 		
 		helpPages: {
@@ -127,18 +127,11 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			appView.showView(appView.metadataView);
 		},
 		
-		renderProfile: function(username){
+		renderProfile: function(){
 			this.closeLastView();
 			
-			if(!username){
-				this.routeHistory.push("summary");
-				appView.showView(appView.statsView);
-			}
-			else{
-				this.routeHistory.push("profile");
-				appModel.set("profileUsername", username);
-				appView.showView(appView.userView);
-			}
+			this.routeHistory.push("summary");
+			appView.showView(appView.statsView);
 		},
 		
 		renderRegistry: function (stage, pid) {

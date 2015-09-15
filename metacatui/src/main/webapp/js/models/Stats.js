@@ -300,7 +300,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//Get the earliest upload date	
 			var query =  "q=" + this.get('query') +
 								"+dateUploaded:(19*%20OR%2020*)" +
-								"+-obsoletes:*"+    //Only count the first version
+								"+-obsoletedBy:*"+    //Only count one version of a revision chain
 								"+readPermission:public" +
 								"&fl=dateUploaded" +
 								"&rows=1" +
@@ -330,10 +330,10 @@ define(['jquery', 'underscore', 'backbone'],
 							model.set('totalUploads', data.response.numFound);	
 							
 							var dataQuery =  "q=" + model.get('query') +
-							  "+-obsoletes:*+formatType:DATA+readPermission:public";
+							  "+-obsoletedBy:*+formatType:DATA+readPermission:public";
 							
 							var metadataQuery =  "q=" + model.get('query') +
-							  "+-obsoletes:*+formatType:METADATA+readPermission:public";
+							  "+-obsoletedBy:*+formatType:METADATA+readPermission:public";
 							  
 							var facets =  "&rows=0" +
 										  "&facet=true" +

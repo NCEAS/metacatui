@@ -59,7 +59,7 @@ define(['jquery',
 				
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
-			"click #publish" : "publish",
+			"click #publish"             : "publish",
 			"mouseover .highlight-node"  : "highlightNode",
 			"mouseout  .highlight-node"  : "highlightNode"
 		},
@@ -220,7 +220,7 @@ define(['jquery',
 				this.$el.prepend(this.citationEl);
 			}
 			else
-				this.citationEl = citationEl;
+				this.citationEl = citationEl;			
 		},
 		
 		insertBreadcrumbs: function(){
@@ -392,7 +392,7 @@ define(['jquery',
 					viewRef.insertPackageTable(packageModel, { title: title });
 					
 					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
-						var title = 'Related Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details)<i class="icon icon-external-link-sign"></i></a>';
+						var title = 'Related Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 					viewRef.getEntityNames(packageModel.getNestedPackages());
@@ -419,14 +419,14 @@ define(['jquery',
 				var expandIcon = $(document.createElement("i")).addClass("icon icon-caret-right"),
 					expandLink = $(document.createElement("a"))
 								.attr("href", "#")
-								.addClass("slideToggle toggle-display-on-slide")
+								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
 								.text("Show " + numTables + " related datasets")
 								.prepend(expandIcon),
 					collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-down"),
 					collapseLink = $(document.createElement("a"))
 								.attr("href", "#")
-								.addClass("slideToggle toggle-display-on-slide")
+								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
 								.text("Hide related datasets")
 								.prepend(collapseIcon)
@@ -443,7 +443,7 @@ define(['jquery',
 			
 			//Now insert the data details sections 
 			this.insertDataDetails();
-			
+						
 		    return this;
 		},
 		
