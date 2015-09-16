@@ -761,7 +761,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	padding: 20px;
 	display: none;
 }
-.nav.list-group > .list-group-item img{
+.nav.list-group > .list-group-item img.icon{
 	width: 32px;
 	height: auto;
 	padding: 16px;
@@ -769,6 +769,14 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .fancybox-inline .notification {
   min-height: 150px;
 }
+#loginPopup .cilogon img{
+	display: block;
+    max-width: 114px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+}
+
 /****************************************** 
 ** The Metadata and MetadataIndex View **
 ******************************************/	
@@ -1659,6 +1667,10 @@ form .text-left > .icon {
 }
 .form-group input.control-group{
 	line-height: 30px;
+}
+.form-group input ~ .help-text {
+    display: block;
+    margin-left: 24%;
 }
 /*******************************************
 Documentation and Help Pages

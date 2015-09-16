@@ -47,7 +47,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			this.stopListening();
 			//If the logged-in status changes, refresh the page
-			this.listenToOnce(appUserModel, "change:loggedIn", function(){
+			this.listenTo(appUserModel, "change:loggedIn", function(){
 				var activeSection = view.activeSection,
 					activeSubSection = view.activeSubSection;
 				view.onClose();
@@ -69,7 +69,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			//Is this our currently-logged in user?
 			var username = appModel.get("profileUsername");
-			if(username == appUserModel.get("username")){
+			if(username.toUpperCase() == appUserModel.get("username").toUpperCase()){ //Case-insensitive matching of usernames
 				this.model = appUserModel;
 				
 				//If the user is logged in, display the settings options
@@ -83,12 +83,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				var user = new UserModel({
 					username: username
 				});
-				this.model = user;				
+				this.model = user;
 			}
 			
 			//Render the profile section of the User View
 			this.renderProfile();
-			
 			
 			//Hide all the sections first, then display the section specified in the URL (or the default)
 			this.$(".subsection, .section").hide();
