@@ -22,8 +22,8 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: null,
-			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
-			d1CNService: "cn/v2",
+			d1CNBaseUrl:  "https://cn.dataone.org",
+			d1CNService: "cn/v1",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
@@ -70,22 +70,16 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('authServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/isAuthorized/');
 			this.set('queryServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/query/solr/?');
 			this.set('metaServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/meta/');
-			//this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
-			//this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
-			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
-			//this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set('nodeServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/node');
 			this.set("accountsUrl", this.get("d1CNBaseUrl")  + this.get('context') + this.get("d1CNService") + "/accounts/");
+			this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
 			this.set("groupsUrl", this.get("d1CNBaseUrl")  + this.get('context') + this.get("d1CNService") + "/groups/");
-
-			this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + "/" + this.get('d1CNService') + 'logsolr');
-			//this.set('d1LogServiceUrl', this.get('baseUrl') + '/solr/d1-cn-log/select/?');
+			this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + "/" + this.get('d1CNService') + '/query/logsolr');
 			
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
 				this.set("prov", true);
-				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
 				this.set('viewServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
 				this.set('tokenUrl', this.get('d1CNBaseUrl') + '/portal/token');
 				this.set("signOutUrl", this.get('d1CNBaseUrl') + "/portal/logout");
@@ -93,14 +87,11 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("signInUrlLdap", this.get('d1CNBaseUrl') + "/portal/ldap?target=");	
 				this.set("signInUrlOrcid", this.get('d1CNBaseUrl') + "/portal/oauth?action=start&target=");
 				
-				//this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+				this.set('packageServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/packages/application%2Fbagit-097/');
 				// use portal to  retrieve token and annotate metadata
-				//this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');
-				
-				this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
+				//this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');				
 				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.2/search/orcid-bio?q=');
-				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
-				
+				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');				
 			}
 			
 			this.on("change:pid", this.changePid);
