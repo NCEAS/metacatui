@@ -82,14 +82,14 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("prov", true);
 				this.set('viewServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
 				this.set('tokenUrl', this.get('d1CNBaseUrl') + '/portal/token');
-				this.set("signOutUrl", this.get('d1CNBaseUrl') + "/portal/logout");
-				this.set("signInUrl", this.get('d1CNBaseUrl') + "/portal/startRequest?target=");
-				this.set("signInUrlLdap", this.get('d1CNBaseUrl') + "/portal/ldap?target=");	
-				this.set("signInUrlOrcid", this.get('d1CNBaseUrl') + "/portal/oauth?action=start&target=");
 				
 				this.set('packageServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/packages/application%2Fbagit-097/');
 				// use portal to  retrieve token and annotate metadata
 				//this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');				
+				this.set("signOutUrl", this.get('d1CNBaseUrl') + "/portal/logout");
+				this.set("signInUrl", this.get('d1CNBaseUrl') + "/portal/startRequest?target=");
+				this.set("signInUrlOrcid", this.get('d1CNBaseUrl') + "/portal/oauth?action=start&target=");
+				this.set("signInUrlLdap", this.get('d1CNBaseUrl') + "/portal/ldap?target=");	
 				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.2/search/orcid-bio?q=');
 				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');				
 			}

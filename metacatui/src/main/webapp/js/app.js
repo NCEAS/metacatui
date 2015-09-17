@@ -33,12 +33,12 @@ require.config({
     jqueryform: '../components/jquery.form',
     jquerysidr: '../components/jquery.sidr.min',
     underscore: '../components/underscore',
-    backbone: '../components/backbone',
+    backbone: '../components/backbone-min',
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
-    moment: '../components/moment',
-    jws: '../components/jws-2.0',
-    jsrasign: '../components/jsrsasign-4.7.0-all-min',    
+    moment: '../components/moment.min',
+    jws: '../components/jws-3.2.min',
+    jsrasign: '../components/jsrsasign-4.9.0.min',    
     registry: [ 
                // use the path fallback in case there is no metacat installed here
                //'/' + metacatContext + '/style/common/templates/metacatui/entryForm',
@@ -50,7 +50,7 @@ require.config({
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
 	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
-    annotator: '../components/annotator/v1.2.10/annotator-full',
+    annotator: '../components/annotator/v1.2.10/annotator-full.min',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: d3URL,
 	LineChart: ['views/LineChartView', null],

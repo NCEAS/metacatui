@@ -232,14 +232,19 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		highlightSubSection: function(e, subsectionName){
 			if(e) e.preventDefault();
 			
-			if(!subsectionName){
+			if(!subsectionName && e){
 				//Get the subsection name
-				var subsectionName = el.attr("highlight-subsection");
+				var subsectionName = $(e.target).attr("highlight-subsection");
 				if(!subsectionName) return;
 			}
+			else if(!subsectionName && !e) return false;
+			
+			//Find the subsection
+			var subsection = this.$(".subsection[data-section='" + subsectionName + "']");
+			if(!subsection.length) subsection = this.$("[data-subsection='add-account']");
+			if(!subsection.length) return;
 			
 			//Visually highlight the subsection
-			var subsection = this.$(".subsection[data-section='" + subsectionName + "']");
 			subsection.addClass("highlight");
 			appView.scrollTo(subsection);
 			//Wait about a second and then remove the highlight style
@@ -546,7 +551,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					subject: equivalentIdentity
 				},
 				success: function(data, textStatus, xhr) {
-					var message = "A username map request has been sent to " + equivalentIdentity +
+					var message = "A username map request has been sent to <a href='#profile/'" + equivalentIdentity + ">" + equivalentIdentity + "</a>"
 								  "<h4>Next step:</h4><p>Login with this other account and approve this request.</p>"
 					viewRef.showAlert(message, null, container);
 					model.getInfo();
@@ -704,7 +709,6 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			} else {
 				this.$("#registered-user-container").hide();
 			}
-			
 		},
 		
 		/*

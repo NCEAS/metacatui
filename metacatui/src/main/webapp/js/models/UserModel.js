@@ -292,9 +292,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 			} catch (ex) {
 			    result = 0;
 			}
-			
-			if(!result) return false;
-			
+						
 			var payload = $.parseJSON(jws.parsedJWS.payloadS);
 			return payload;			
 		},

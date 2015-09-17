@@ -812,14 +812,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	cursor: pointer;
     }
     
-    /* Depending on the headerType, these classes apply */
-    nav#Navbar.alt {
-      position: absolute;
-    }
-    nav#Navbar.default {
-      position: fixed;
-    }
-    
     .navbar {
       position: relative;
       border: none;   
@@ -1591,7 +1583,11 @@ svg .domain{
 		min-height: 800px;
     }
     
-    label.inline {
+    #RegistryEntryForm label.inline, 
+    #RegistryLogin label.inline, 
+    #RegistryResponse label.inline, 
+    #RegistryEntryReview label.inline, 
+    #RegistryGuide label.inline {
     	width: 40%;
     }
     
@@ -2544,13 +2540,6 @@ svg .domain{
  	#metacatDocs .section {
       color: #555555;
       text-decoration: none;
-    }
-    
-    /* make sure the anchors render with padding-top */
-    .section:before, .section:before, .section:before,
-    .section:before, .section:before, .section:before {
-		content: "";
-    	padding-top: 115px;
     }
 
     div.row-fluid > .section {

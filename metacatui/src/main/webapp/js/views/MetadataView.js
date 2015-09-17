@@ -146,7 +146,7 @@ define(['jquery',
 								else if(viewRef.packageModels)
 									viewRef.insertPackageDetails(viewRef.packageModels);
 								
-								viewRef.insertDataSource();
+								//viewRef.insertDataSource();
 								viewRef.insertOwnerControls();
 								viewRef.insertControls();
 								viewRef.alterMarkup();
@@ -452,6 +452,7 @@ define(['jquery',
 			
 			//Now insert the data details sections 
 			this.insertDataDetails();
+			this.insertDataSource();
 						
 		    return this;
 		},
@@ -718,7 +719,7 @@ define(['jquery',
 			var copyButtons = this.$("a.copy");
 			var client = new ZeroClipboard(copyButtons);
 			client.on("aftercopy", function(e){
-				$(e.target).parent().children(".copy-success").show().delay(3000).fadeOut();
+				$(e.target).parent().children(".copy-success").show().delay(1000).fadeOut();
 			});
 			
 			//Initialize the fancybox elements

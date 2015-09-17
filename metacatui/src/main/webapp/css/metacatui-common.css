@@ -1169,6 +1169,11 @@ tfoot .control i{
 #user-profile #clear-all{
 	display: none;
 }
+.user-view-section > section {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
 textarea.token{
 	width: 100%;
 	margin-top: 20px;
@@ -1679,6 +1684,25 @@ form .text-left > .icon {
 .form-group input ~ .help-text {
     display: block;
     margin-left: 24%;
+}
+.inline-input-group.controls-well{
+	margin-bottom: 20px;
+	padding: 10px;
+}
+.inline-input-group > .input-append{
+	margin-right: 20px;
+	position: relative;
+}
+.input-append > .notification {
+    position: absolute;
+    right: 0;
+    top: -25px;
+    background-color: #FFF;
+}
+label.inline{
+	display: inline;
+	margin-right: 10px;
+	vertical-align: middle;
 }
 /*******************************************
 Documentation and Help Pages
