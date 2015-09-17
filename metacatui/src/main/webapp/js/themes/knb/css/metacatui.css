@@ -1454,11 +1454,18 @@ svg .domain{
   width: 86%;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 120px;
+  margin-top: 0px;
   clear: both;
   display: block;
   float: none;
   margin-bottom: 0px;
+}
+.nav-pills.primary a {
+    background-color: #E8EEF1;
+}
+.nav-pills.primary li a:hover{
+	background-color: #BDD7E4;
+    color: #006699;
 }
 
   /* Metadata rendering CSS

@@ -1162,6 +1162,10 @@ tfoot .control i{
 #user-profile{
 	padding-top: 20px;
 }
+#user-profile #data-list{
+	padding-bottom: 20px;
+	margin-bottom: 20px;
+}
 #user-profile #clear-all{
 	display: none;
 }
@@ -1664,6 +1668,10 @@ form .text-left > .icon {
 }
 .input-append .tooltip-inner {
   white-space: normal;
+}
+.input-append .alert{
+	font-size: 14px;
+	margin-top: 10px;
 }
 .form-group input.control-group{
 	line-height: 30px;

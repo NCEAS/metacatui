@@ -258,15 +258,16 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 				
 				// the response should have the token
 				var payload = model.parseToken(data);
-				var username = payload.userId;
-				var fullName = payload.fullName;
-				var token    = data;
+				var username = payload ? payload.userId : null;
+				var fullName = payload ? payload.fullName : null;
+				var token    = payload ? data : null;
+				var loggedIn = payload ? true : false;
 
 				// set in the model
 				model.set('fullName', fullName);
 				model.set('username', username);
-				model.set("loggedIn", true);
 				model.set("token", token);
+				model.set("loggedIn", loggedIn);
 				model.getInfo();
 			};
 			
@@ -289,9 +290,10 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 			try {
 				result = jws.parseJWS(token);
 			} catch (ex) {
-				console.log("JWT warning: " + ex);
 			    result = 0;
 			}
+			
+			if(!result) return false;
 			
 			var payload = $.parseJSON(jws.parsedJWS.payloadS);
 			return payload;			

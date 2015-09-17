@@ -530,9 +530,11 @@
 				<div id="loginPopup" class="fancybox-inline">
 					<ul class="list-group nav">
 						<li class="list-group-item center cilogon"><h4><a href="<%=signInUrl%>">Login with CILogon<img src="./img/CILogon-options.png" /></a></h4><p class="subtle">and 100+ Universities and Institutions</p></li>
-	        			<li class="list-group-item"><h4><a href="<%=signInUrlOrcid%>"><img src="./img/orcid_64x64.png" class="icon"/> Login with ORCID iD</a></h4></li>
 	        			
-	        			<% if (signInUrlLdap) { %> 
+	        			<% if(signInUrlOrcid) { %>
+	        				<li class="list-group-item"><h4><a href="<%=signInUrlOrcid%>"><img src="./img/orcid_64x64.png" class="icon"/> Login with ORCID iD</a></h4></li>
+	        			<% }
+	        			   if (signInUrlLdap) { %> 
 		        			<li class="list-group-item">
 			        				<form id="SignInLdap" class="form-inline input-group" 
 				        				action="<%=signInUrlLdap%>" 

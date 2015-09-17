@@ -2,6 +2,9 @@
 if(classes === undefined){
 	var classes = "";
 }
+if(containerClasses === undefined){
+	var containerClasses = "";
+}
 if(msg === undefined){
 	var msg = "";
 }
@@ -14,7 +17,7 @@ if(includeEmail){
 }
 %>
 
-<div class="container alert-container">
+<div class="container alert-container <%=containerClasses%>">
 	<div class="alert <%=classes%>">
 	<%=msg%>
 	<%=email%>

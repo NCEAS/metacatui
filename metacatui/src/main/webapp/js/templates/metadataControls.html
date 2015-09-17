@@ -1,0 +1,21 @@
+<ul class="nav nav-pills primary">
+	<li><a href="#citePopup" class="fancybox">Cite</a></li>
+	<li><a href="#sharePopup" class="fancybox">Share</a></li>
+</ul>
+
+<div class="fancybox-inline" id="sharePopup">
+	<div class="input-append tab-pane" id="shareTab">
+		<label>Link to share: </label>
+		<input type="text" value="<%=url%>" />
+		<a class="btn copy" data-clipboard-text="<%=url%>">Copy</a>
+		<div class="alert alert-success copy-success hidden"><i class="icon icon-ok"></i> Copied</div>
+	</div>
+</div>
+<div class="fancybox-inline" id="citePopup">
+	<div class="input-append tab-pane active" id="citeTab">
+		<label>Cite as: </label>
+		<input type="text" value="<%=citation%>" />
+		<a class="btn copy" data-clipboard-text="<%=citation%>">Copy</a>
+		<div class="alert alert-success copy-success hidden"><i class="icon icon-ok"></i> Copied</div>
+	</div>
+</div>

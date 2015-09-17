@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'], 				
-	function($, _, Backbone, UserGroup, UserModel, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
+define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/ZeroClipboard.min', 'collections/UserGroup', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'], 				
+	function($, _, Backbone, ZeroClipboard, UserGroup, UserModel, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
 	
 	/*
@@ -68,8 +68,9 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			appModel.set('headerType', 'default');
 			
 			//Is this our currently-logged in user?
-			var username = appModel.get("profileUsername");
-			if(username.toUpperCase() == appUserModel.get("username").toUpperCase()){ //Case-insensitive matching of usernames
+			var username = appModel.get("profileUsername"),
+				currentUser = appUserModel.get("username") || "";
+			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
 				this.model = appUserModel;
 				
 				//If the user is logged in, display the settings options
@@ -115,10 +116,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			this.insertStats();
 			
 			//Insert the user's basic information
-			if((this.model.get("username") == appUserModel.get("username")) && appUserModel.get("loggedIn"))
+			var currentUser = appUserModel.get("username") || "";
+			if((this.model.get("username").toUpperCase() == currentUser.toUpperCase()) && appUserModel.get("loggedIn"))
 				this.insertUserInfo();
 			else{
-				this.listenTo(this.model, "change:lastName", this.insertUserInfo);
+				this.listenTo(this.model, "change:fullName", this.insertUserInfo);
 				this.model.getInfo();				
 			}
 
@@ -271,8 +273,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		 */
 		insertUserInfo: function(){
 			
-			this.listenTo(this.model, "change:fullName", this.insertUserInfo);
-
 			//Don't try to insert anything if we haven't gotten all the user info yet
 			if(!this.model.get("fullName")) return;
 			
@@ -765,15 +765,27 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		showToken: function(){
 			var token = this.model.get("token");
 			
-			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "11").attr("disabled", "disabled").addClass("token").text(token),
-				copyButton = $(document.createElement("a")).attr("href", "#").addClass("btn").attr("type", "button").text("Copy");
+			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token").text(token),
+				copyButton = $(document.createElement("a")).addClass("btn copy").text("Copy").attr("data-clipboard-text", token),
+				successIcon = $(document.createElement("i")).addClass("icon icon-ok"),
+		  		copySuccess = $(document.createElement("div")).addClass("notification success copy-success hidden").append(successIcon, " Copied!");
+
 						
-			var	successMessage = this.alertTemplate({
-					msg: '<i class="icon icon-ok"></i>  <strong>Success!</strong> Copy your token: <br/>' + $(tokenInput)[0].outerHTML,
-					classes: "alert-success"
-				});
+			var	successMessage = $.parseHTML(this.alertTemplate({
+					msg: '<i class="icon icon-ok"></i>  <strong>Success!</strong> Copy your token: <br/>',
+					classes: "alert-success",
+					containerClasses: "well"
+				}));
+			$(successMessage).append(tokenInput, copyButton, copySuccess);
+			this.$("#token-generator-button").replaceWith(successMessage);
 			
-			this.$("#token-generator-container").html(successMessage);
+			
+			//Create a copy button
+			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
+			var client = new ZeroClipboard(copyButton);
+			client.on("aftercopy", function(e){
+				copySuccess.show().delay(3000).fadeOut();
+			});
 		},
 		
 		setUpAutocomplete: function() {

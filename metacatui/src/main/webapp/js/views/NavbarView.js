@@ -32,8 +32,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			if(appModel.get("signInUrl")){
 				var target = Backbone.history.location.href;
 				var signInUrl = appModel.get('signInUrl') + target;
-				var signInUrlOrcid = appModel.get('signInUrlOrcid') + target;
-				var signInUrlLdap = appModel.get('signInUrlLdap') + target;	
+				var signInUrlOrcid = appModel.get('signInUrlOrcid') ? appModel.get('signInUrlOrcid') + target : null;
+				var signInUrlLdap = appModel.get('signInUrlLdap') ? appModel.get('signInUrlLdap') + target : null;	
 			}
 
 			var name = appUserModel.get('fullName') ? appUserModel.get('fullName').charAt(0).toUpperCase() + appUserModel.get("fullName").substring(1) : appUserModel.get("username");

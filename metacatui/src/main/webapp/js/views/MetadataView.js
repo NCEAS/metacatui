@@ -5,6 +5,7 @@ define(['jquery',
 		'backbone',
 		'gmaps',
 		'fancybox',
+		'../../components/zeroclipboard/ZeroClipboard.min',
 		'models/PackageModel',
 		'models/SolrResult',
 		'views/ProvChartView',
@@ -18,6 +19,7 @@ define(['jquery',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html',
+		'text!templates/metadataControls.html',
 		'text!templates/usageStats.html',
 		'text!templates/downloadButton.html',
 		'text!templates/downloadContents.html',
@@ -26,7 +28,12 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, $ui, _, Backbone, gmaps, fancybox, Package, SolrResult, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, CitationView, DataSourceTemplate, PublishDoiTemplate, VersionTemplate, LoadingTemplate, UsageTemplate, DownloadButtonTemplate, DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, MapTemplate, AnnotationTemplate) {
+	function($, $ui, _, Backbone, gmaps, fancybox, ZeroClipboard, Package, SolrResult, 
+			 ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, 
+			 AnnotatorView, CitationView, DataSourceTemplate, PublishDoiTemplate, 
+			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadButtonTemplate, 
+			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, 
+			 MapTemplate, AnnotationTemplate) {
 	'use strict';
 
 	
@@ -48,6 +55,7 @@ define(['jquery',
 		usageTemplate: _.template(UsageTemplate),
 		versionTemplate: _.template(VersionTemplate),
 		loadingTemplate: _.template(LoadingTemplate),
+		controlsTemplate: _.template(ControlsTemplate),
 		dataSourceTemplate: _.template(DataSourceTemplate),
 		downloadButtonTemplate: _.template(DownloadButtonTemplate),
 		downloadContentsTemplate: _.template(DownloadContentsTemplate),
@@ -139,6 +147,7 @@ define(['jquery',
 									viewRef.insertPackageDetails(viewRef.packageModels);
 								
 								viewRef.insertDataSource();
+								viewRef.insertOwnerControls();
 								viewRef.insertControls();
 								viewRef.alterMarkup();
 								
@@ -625,7 +634,7 @@ define(['jquery',
 			
 			//Insert the citation into the page
 			$(this.citationEl).replaceWith(citationContainer);
-			
+						
 			this.citationEl = newCitationEl;			
 		},
 		
@@ -650,7 +659,7 @@ define(['jquery',
 		 * Checks the authority for the logged in user for this dataset 
 		 * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
 		 */
-		insertControls: function(){
+		insertOwnerControls: function(){
 			//Do not show user controls for older versions of data sets
 			if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
 				return false;
@@ -690,6 +699,32 @@ define(['jquery',
 				}
 			});
 			this.model.checkAuthority();
+		},
+		
+		/*
+		 * Inserts elements users can use to interact with this dataset:
+		 * - A "Copy Citation" button to copy the citation text
+		 */
+		insertControls: function(){			
+			//Get template
+			var controlsContainer = this.controlsTemplate({
+				citation: $(this.citationEl).text(),
+				url: window.location
+			});
+			$(this.citationEl).after(controlsContainer);
+			
+			//Create a copy citation button
+			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
+			var copyButtons = this.$("a.copy");
+			var client = new ZeroClipboard(copyButtons);
+			client.on("aftercopy", function(e){
+				$(e.target).parent().children(".copy-success").show().delay(3000).fadeOut();
+			});
+			
+			//Initialize the fancybox elements
+			this.$(".fancybox").fancybox({
+				transitionIn: "elastic"
+			});
 		},
 		
 		/*
