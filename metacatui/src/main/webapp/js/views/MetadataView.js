@@ -148,7 +148,6 @@ define(['jquery',
 								
 								//viewRef.insertDataSource();
 								viewRef.insertOwnerControls();
-								viewRef.insertControls();
 								viewRef.alterMarkup();
 								
 								viewRef.setUpAnnotator();
@@ -452,6 +451,7 @@ define(['jquery',
 			
 			//Now insert the data details sections 
 			this.insertDataDetails();
+			this.insertControls();
 			this.insertDataSource();
 						
 		    return this;

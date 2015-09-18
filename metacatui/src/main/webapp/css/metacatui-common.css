@@ -39,7 +39,7 @@ article.container {
 }
 #Content{
 	width: 90%;
-	max-width: 960px;
+	max-width: 1200px;
 	margin-left: auto;
 	margin-right: auto;
 }
@@ -116,7 +116,7 @@ article.container {
 .nav .input > form > input[type="text"],
 .header .input > form > input[type="text"]{
    	display: inline-block;
-   	width: 85px;
+   	width: 60px;
 }
 .nav .input > form > .btn,
 .header .input > form > .btn {
@@ -1534,6 +1534,19 @@ textarea.token{
 .filter-input-contain input.filter{
 	width: 64%;
 }
+/*-- Pagination and sort --*/
+.sort-by{
+	float: right;
+}
+.sort-by label {
+    display: inline;
+    margin-right: 5px;
+    line-height: 30px;
+    vertical-align: top;
+}
+.sort-by select{
+	width: auto;
+}
 /*-- The filter checkboxes --*/
 #includes-files label{
  	margin-right: 4px;
@@ -1693,6 +1706,7 @@ form .text-left > .icon {
 .inline-input-group.controls-well{
 	margin-bottom: 20px;
 	padding: 10px;
+	clear: both;
 }
 .inline-input-group > .input-append{
 	margin-right: 20px;
@@ -1722,7 +1736,9 @@ input.subtle{
 .input-append input.subtle{
     font-size: 13px;
 }
-input.subtle:focus{
+input.subtle:focus,
+.nav .input > form > input[type="text"]:focus
+{
 	width: 200px;
 }
 /*******************************************

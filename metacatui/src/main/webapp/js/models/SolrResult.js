@@ -209,9 +209,10 @@ define(['jquery', 'underscore', 'backbone'],
 			var fieldNames = appSearchModel.getProvFields(),
 				currentField = "";
 			
-			for(var i=0; i<= fieldNames.length; i++){
+			for(var i=0; i < fieldNames.length; i++){
 				currentField = fieldNames[i];
-				if(this.has(currentField)) return true;
+				if(this.has(currentField)) 
+					return true;
 			}
 			
 			return false;

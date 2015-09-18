@@ -2122,18 +2122,6 @@ svg .domain{
 		color: #FFF;
 		background-color: #00AAFF;
 	}
-	
-	.sort-by label{
-		display: inline-block;
-		margin-right: 5px;
-		line-height: 30px;
-		font-size: 13px;
-	}
-	
-	.sort-by select{
-		font-size: 13px;
-		height: 28px;
-	}
     
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
