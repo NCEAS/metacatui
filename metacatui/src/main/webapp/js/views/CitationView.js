@@ -96,7 +96,10 @@ define(['jquery', 'underscore', 'backbone'],
 				var memberNode = _.find(nodeModel.get("members"), function(member){
 					return (member.identifier == datasource);
 				});
-				if(typeof memberNode !== "undefined") publisherText = memberNode.name + ". "; 
+				if(typeof memberNode !== "undefined") 
+					publisherText = memberNode.name + ". "; 
+				else
+					publisherText = datasource + ". "; 
 			}	
 			var publisherEl = $(document.createElement("span")).text(publisherText);
 			

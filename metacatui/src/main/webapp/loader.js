@@ -1,3 +1,9 @@
+/**
+ *   MetacatUI v1.8.0
+ *   https://github.com/NCEAS/metacatui
+ *   MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.
+ **/
+
 // Step 1: Find the data-theme specified in the script include
 var theme 		   = document.getElementById("loader").getAttribute("data-theme");
 var metacatContext = document.getElementById("loader").getAttribute("data-metacat-context");

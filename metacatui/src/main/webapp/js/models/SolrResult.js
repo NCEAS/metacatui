@@ -160,9 +160,6 @@ define(['jquery', 'underscore', 'backbone'],
 						model.set(data.response.docs[0]);
 					else
 						model.trigger("404");
-				},
-				error: function(a,b,c){
-					console.log("hi");
 				}
 			});
 		},

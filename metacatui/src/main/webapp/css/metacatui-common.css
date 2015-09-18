@@ -840,6 +840,9 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .entitydetails.controls-well > .thumbnail{
 	margin-left: 180px;
 }
+.citation ~ .inline-input-group > .input-append{
+	float: right;
+}
 /* Used in metadata view for metadata format types without stylesheet */
 #Content.no-stylesheet.container{ 
 	width: 86%;
@@ -854,6 +857,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 
 .attributeList > .row-fluid > .span2 {
   min-width: 130px;
+  max-width: 150px;
+  max-width: calc(165px - 2.127659574468085%);
 }
 .tab-content,
 .row-fluid .tab-content.span10{
@@ -1703,6 +1708,22 @@ label.inline{
 	display: inline;
 	margin-right: 10px;
 	vertical-align: middle;
+}
+input.subtle{
+	width: 50px;
+	font-size: .9em;
+	-o-transition: width .2s ease-out;
+	-moz-transition: width .2s ease-out;
+	-webkit-transition: width .2s ease-out;
+	-ms-transition: width .2s ease-out;
+	-kthtml-transition: width .2s ease-out;
+	transition: width .2s ease-out;
+}
+.input-append input.subtle{
+    font-size: 13px;
+}
+input.subtle:focus{
+	width: 200px;
 }
 /*******************************************
 Documentation and Help Pages
