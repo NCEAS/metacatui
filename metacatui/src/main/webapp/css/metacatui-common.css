@@ -1092,6 +1092,9 @@ table.download-contents .btn-container,
 table.download-contents .btn-container .btn{
 	width: 105px;
 } 
+.download-contents th .btn-primary{
+	min-width: 108px;
+}
 /* The footer / expand-collapse control */
 .table tfoot th{ 
 	text-align: center; 

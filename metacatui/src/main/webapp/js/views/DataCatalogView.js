@@ -24,6 +24,7 @@ define(['jquery',
 		el: "#Content",
 		
 		isSubView: false,
+		filters: true, //Turn on/off the filters in this view
 		
 		//The default global models for searching
 		searchModel: null,		
@@ -101,7 +102,7 @@ define(['jquery',
 				_.each(optionKeys, function(key, i){
 					view[key] = options[key];
 				});				
-			}			
+			}
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -454,6 +455,7 @@ define(['jquery',
 		 * ==================================================================================================
 		**/
 		updateCheckboxFilter : function(e, category, value){
+			if(!this.filters) return;
 			
 			var checkbox = e.target;
 			var checked = $(checkbox).prop("checked");
@@ -510,9 +512,10 @@ define(['jquery',
 		},
 		
 		updateBooleanFilters : function(e){
-			var checkbox = e.target;
+			if(!this.filters) return;
 			
 			//Get the category
+			var checkbox = e.target;
 			var category = $(checkbox).attr('data-category');
 			var currentValue = this.searchModel.get(category);
 			
@@ -554,6 +557,8 @@ define(['jquery',
 		//Update the UI year slider and input values
 		//Also update the model
 		updateYearRange : function(e) {
+			if(!this.filters) return;
+
 			var viewRef    = this,
 				userAction = !(typeof e === "undefined"),
 				model      = this.searchModel,
@@ -725,6 +730,8 @@ define(['jquery',
 		},
 		
 		updateTextFilters : function(e, item){
+			if(!this.filters) return;
+
 			//Get the search/filter category
 			var category = $(e.target).attr('data-category');
 			
@@ -835,7 +842,6 @@ define(['jquery',
 		
 		//Removes a specific filter term from the searchModel
 		removeFilter : function(e){	
-
 			//Get the parent element that stores the filter term 
 			var filterNode = $(e.target).parent();
 			
@@ -921,6 +927,8 @@ define(['jquery',
 		
 		//Removes a specified filter node from the DOM
 		hideFilter: function(category, value){
+			if(!this.filters) return;
+
 			if(typeof value === "undefined")
 				var filterNode = this.$(".current-filters[data-category='" + category + "']").children(".current-filter");
 			else
@@ -932,6 +940,7 @@ define(['jquery',
 		
 		//Adds a specified filter node to the DOM
 		showFilter: function(category, term, checkForDuplicates, label, options){
+			if(!this.filters) return;
 			
 			var viewRef = this;
 			
@@ -1024,6 +1033,8 @@ define(['jquery',
 		 * Get the member node list from the model and list the members in the filter list
 		 */
 		listDataSources: function(){
+			if(!this.filters) return;
+
 			if(nodeModel.get("members").length < 1) return;
 			
 			//Get the member nodes
@@ -1110,6 +1121,8 @@ define(['jquery',
 		},
 		
 		resetDataSourceList: function(){
+			if(!this.filters) return;
+
 			//Reset the Member Nodes checkboxes
 			var mnFilterContainer = $("#member-nodes-container"),
 				defaultMNs = this.searchModel.get("dataSource");
@@ -1139,6 +1152,8 @@ define(['jquery',
 		},
 
 		toggleList: function(e){
+			if(!this.filters) return;
+
 			var link = e.target,
 				controls = $(link).parents("ul").find(".toggle-list"),
 				list = $(link).parents("ul"),
@@ -1247,6 +1262,8 @@ define(['jquery',
 
 		//Get the facet counts
 		getAutoCompletes: function(){
+			if(!this.filters) return;
+
 			var viewRef = this;
 			
 			//Create the facet query by using our current search query 
@@ -1536,6 +1553,7 @@ define(['jquery',
 		},
 		
 		hideClearButton: function(){
+			if(!this.filters) return;
 			
 			//Show the current filters panel
 			this.$(".current-filters-container").slideUp();
@@ -1546,6 +1564,7 @@ define(['jquery',
 		},
 		
 		showClearButton: function(){
+			if(!this.filters) return;
 			
 			//Show the current filters panel
 			if(_.difference(this.searchModel.currentFilters(), this.searchModel.spatialFilters).length > 0)

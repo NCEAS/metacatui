@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 	var UserModel = Backbone.Model.extend({
 		defaults: function(){
 			return{
+				checked: false, //Set to true when we have checked the status of this user
 				lastName: null,
 				firstName: null,
 				fullName: null,
@@ -37,28 +38,36 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 			if(!this.get("username"))
 				this.set("username", appModel.get("profileUsername"));
 						
-			this.on("change:username", this.createSearchModel);
+			this.on("change:username change:identities", this.updateSearchModel);
 			this.createSearchModel();
-			
+						
 			//Create a search results model for this person
 			var searchResults = new SearchResults([], { rows: 5, start: 0 });
 			this.set("searchResults", searchResults);
 		},
 		
-		createSearchModel: function(){
+		createSearchModel: function(){			
 			//Create a search model that will retrieve data created by this person
-			this.set("searchModel", new SearchModel({
-				username: [this.get("username")]
-			}));
+			this.set("searchModel", new SearchModel());	
+			this.updateSearchModel();
+		},
+		
+		updateSearchModel: function(){			
+			//Get all the identities for this person
+			var ids = [this.get("identities"), this.get("username")];
+			ids = _.compact(_.flatten(ids));
+			
+			this.get("searchModel").set("username", ids);			
+			this.trigger("change:searchModel");
 		},
 		
 		parseXML: function(data){
 			var model = this;
 			
 			//Reset the group list so we don't just add it to it with push()
-			this.set("isMemberOf", this.defaults().isMemberOf);
+			this.set("isMemberOf", this.defaults().isMemberOf, {silent: true});
 			//Reset the equivalent id list so we don't just add it to it with push()
-			this.set("identities", this.defaults().identities);
+			this.set("identities", this.defaults().identities, {silent: true});
 			
 			//Get the person's name and verification status
 			var username   = $(data).find("person subject").first().text(),
@@ -109,6 +118,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 			if(!this.get("username")) return;
 			if(!appModel.get("accountsUrl")){
 				this.getNameFromSubject();
+				this.set("checked", true);
 				return;
 			}
 			
@@ -125,31 +135,14 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 					model.trigger("change:isMemberOf");
 					model.trigger("change:isOwnerOf");
 					model.trigger("change:identities");
-
-					//Get the pending identity map requests, if the service is turned on
-					if(appModel.get("pendingMapsUrl")){					
-						//Get the pending requests			
-						$.ajax({
-							url: appModel.get("pendingMapsUrl") + encodeURIComponent(model.get("username")),
-							success: function(data, textStatus, xhr){
-								//Reset the equivalent id list so we don't just add it to it with push()
-								model.set("pending", model.defaults().pending);
-								var pending = model.get("pending");
-								_.each($(data).find("person"), function(person, i) {
-									var subject = $(person).find("subject").text();
-									if (subject.toLowerCase() != model.get("username").toLowerCase()) {
-										pending.push(subject);
-									}
-								});
-								model.set("pending", pending);	
-								model.trigger("change:pending"); //Trigger the change event
-							}
-						});
-					}
+					
+					model.set("checked", true);
 				},
 				error: function(xhr, textStatus, errorThrown){
-					if(xhr.status == 404)
-						model.getNameFromSubject();					
+					if(xhr.status == 404){
+						model.getNameFromSubject();
+						model.set("checked", true);
+					}
 				}
 			}
 			
@@ -161,6 +154,31 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 			
 			//Send the request
 			$.ajax(accountsRequestOptions);
+		},
+		
+		//Get the pending identity map requests, if the service is turned on
+		getPendingIdentities: function(){
+			if(!appModel.get("pendingMapsUrl")) return false;
+			
+			var model = this;
+			
+			//Get the pending requests			
+			$.ajax({
+				url: appModel.get("pendingMapsUrl") + encodeURIComponent(this.get("username")),
+				success: function(data, textStatus, xhr){
+					//Reset the equivalent id list so we don't just add it to it with push()
+					model.set("pending", model.defaults().pending);
+					var pending = model.get("pending");
+					_.each($(data).find("person"), function(person, i) {
+						var subject = $(person).find("subject").text();
+						if (subject.toLowerCase() != model.get("username").toLowerCase()) {
+							pending.push(subject);
+						}
+					});
+					model.set("pending", pending);	
+					model.trigger("change:pending"); //Trigger the change event
+				}
+			});
 		},
 				
 		getNameFromSubject: function(){
@@ -268,7 +286,11 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 				model.set('username', username);
 				model.set("token", token);
 				model.set("loggedIn", loggedIn);
-				model.getInfo();
+				
+				if(username)
+					model.getInfo();
+				else
+					model.set("checked", true);
 			};
 			
 			// ajax call to get token
@@ -292,7 +314,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 			} catch (ex) {
 			    result = 0;
 			}
-						
+				
+			if(!jws.parsedJWS) return "";
+				
 			var payload = $.parseJSON(jws.parsedJWS.payloadS);
 			return payload;			
 		},

@@ -396,18 +396,18 @@ define(['jquery',
 				
 				//Insert a package table for each package in viewRef dataset
 				if(packageModel.getNestedPackages().length > 0){
-					var title = 'Current Data Set (1 of ' + (packageModel.getNestedPackages().length + 1) + ') <span class="subtle">Identifier: ' + packageModel.get("id") + '</span>';
+					var title = 'Current Data Set (1 of ' + (packageModel.getNestedPackages().length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
 					viewRef.insertPackageTable(packageModel, { title: title });
 					
 					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
-						var title = 'Related Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Identifier: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+						var title = 'Related Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 					viewRef.getEntityNames(packageModel.getNestedPackages());
 
 				}
 				else{
-					var title = packageModel.get("id") ? '<span class="subtle">Identifier: ' + packageModel.get("id") + '</span>' : "";
+					var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
 					title = "Files in this dataset " + title;
 					viewRef.insertPackageTable(packageModel, {title: title});
 				}
@@ -647,6 +647,8 @@ define(['jquery',
 			//if(!dataSource) var dataSource = { logo:  "img/node-logos/KNB.png" }; //For development purposes
 			
 			if(dataSource && dataSource.logo){
+				this.$(".data-source").remove();
+				
 				//Insert the data source template
 				$(this.citationEl).after(this.dataSourceTemplate({
 					node : dataSource

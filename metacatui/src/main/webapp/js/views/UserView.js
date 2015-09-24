@@ -42,54 +42,24 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		},
 		
 		//---------------------------- Rendering the main parts of the view ----------------------------------//
-		render: function () {
-			var view = this;
-			
+		render: function () {			
 			this.stopListening();
-			//If the logged-in status changes, refresh the page
-			this.listenTo(appUserModel, "change:loggedIn", function(){
-				var activeSection = view.activeSection,
-					activeSubSection = view.activeSubSection;
-				view.onClose();
-				view.activeSection = activeSection;
-				view.activeSubSection = activeSubSection;
-				view.render();
-			});
 			
 			//Add the container element for our profile sections
 			this.sectionHolder = $(document.createElement("section")).addClass("user-view-section");
 			this.$el.html(this.sectionHolder);
 			
 			//Show the loading sign first
-			$(this.sectionHolder).html(this.loadingTemplate());
+			//$(this.sectionHolder).html(this.loadingTemplate());
 			this.$el.show();
 						
 			// set the header type
 			appModel.set('headerType', 'default');
 			
 			//Is this our currently-logged in user?
-			var username = appModel.get("profileUsername"),
-				currentUser = appUserModel.get("username") || "";
-			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
-				this.model = appUserModel;
-				
-				//If the user is logged in, display the settings options
-				if(this.model.get("loggedIn")){
-					this.insertMenu();
-					this.renderSettings();
-				}
-			}
-			//Create a user model for this person
-			else{
-				var user = new UserModel({
-					username: username
-				});
-				this.model = user;
-			}
-			
-			//Render the profile section of the User View
-			this.renderProfile();
-			
+			if(appUserModel.get("checked")) this.renderUser();
+			else appUserModel.on("change:checked", this.renderUser, this);
+						
 			//Hide all the sections first, then display the section specified in the URL (or the default)
 			this.$(".subsection, .section").hide();
 			this.switchToSection(null, this.activeSection);
@@ -99,6 +69,33 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				this.switchToSubSection(null, this.activeSubSection);
 				
 			return this;
+		},
+		
+		renderUser: function(){
+			var username = appModel.get("profileUsername"),
+				currentUser = appUserModel.get("username") || "";
+			
+			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
+				this.model = appUserModel;
+				
+				//If the user is logged in, display the settings options
+				if(this.model.get("loggedIn")){
+					this.insertMenu();
+					this.renderProfile();
+					this.renderSettings();
+				}
+			}
+			//Create a user model for this person
+			else{
+				var user = new UserModel({
+					username: username
+				});
+				this.model = user;	
+				
+				//Get the user's info first then render the profile section of the User View
+				this.model.once("change:checked", this.renderProfile, this);
+				this.model.getInfo();
+			}	
 		},
 		
 		renderProfile: function(){
@@ -116,14 +113,13 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.insertStats();
 			
 			//Insert the user's basic information
-			var currentUser = appUserModel.get("username") || "";
-			if((this.model.get("username").toUpperCase() == currentUser.toUpperCase()) && appUserModel.get("loggedIn"))
-				this.insertUserInfo();
-			else{
-				this.listenTo(this.model, "change:fullName", this.insertUserInfo);
-				this.model.getInfo();				
-			}
+			this.listenTo(this.model, "change:fullName", this.insertUserInfo);
+			this.insertUserInfo();
 
+			var view = this;
+			//Listen to changes in the user's search terms
+			this.listenTo(this.model, "change:searchModel", this.renderProfile);
+			
 			//Insert this user's data content
 			this.insertContent();
 		},
@@ -146,13 +142,10 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			//Listen for the pending list
 			this.listenTo(this.model, "change:pending", this.insertPendingList);
-			this.insertPendingList();
+			this.model.getPendingIdentities();
 			
 			//Listen for updates to person details
-			this.listenTo(this.model, "change:lastName", this.updateModForm);
-			this.listenTo(this.model, "change:firstName", this.updateModForm);
-			this.listenTo(this.model, "change:email", this.updateModForm);
-			this.listenTo(this.model, "change:registered", this.updateModForm);
+			this.listenTo(this.model, "change:lastName change:firstName change:email change:registered", this.updateModForm);
 			this.updateModForm();
 
 			// init autocomplete fields
@@ -165,7 +158,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		insertMenu: function(){
 			//If the user is not logged in, then remove the menu 
 			if(!appUserModel.get("loggedIn")){
-				this.$(".nav").detach();
+				this.$(".nav").remove();
 				return;
 			}
 			
@@ -262,7 +255,12 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			//Render the Stats View for this person
 			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
-			statsModel.set("query", '(rightsHolder:"' + username + '" OR submitter:"' + username + '")');
+			
+			//Create a base query for the statistics
+			var statsSearchModel = this.model.get("searchModel").clone();
+			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});			
+			statsModel.set("query", statsSearchModel.getQuery());
+			
 			this.statsView = new StatsView({
 				title: "",
 				el: this.$("#user-stats")
@@ -323,7 +321,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				searchModel   : this.model.get("searchModel"),
 				searchResults : this.model.get("searchResults"),
 				mode          : "list",
-				isSubView     : true
+				isSubView     : true,
+				filters       : false
 			});
 			this.subviews.push(view);
 			view.render();

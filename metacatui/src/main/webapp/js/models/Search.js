@@ -89,6 +89,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				   	   		id : "id",
 				  rightsHolder : "rightsHolder",
 				     submitter : "submitter",
+				      username : "rightsHolder",
 			     	     taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 		},
 		
@@ -278,21 +279,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//---Username: search for this username in rightsHolder and submitter ---
 			if(this.filterIsAvailable("username") && ((filter == "username") || getAll)){
 				var username = this.get('username');
-				for (var i=0; i < username.length; i++){
-					var thisUsername = username[i];
-
-					//Trim the spaces off
-					if(typeof thisUsername == "object")
-						thisUsername = thisUsername.value.trim();
-					else
-						thisUsername = thisUsername.trim();
-					
-					//URL encode the filter value
-					if(this.needsQuotes(thisUsername)) thisUsername = "%22" + thisUsername + "%22";
-					else thisUsername = encodeURIComponent(thisUsername);
-					
-					query += "+(" + this.fieldNameMap["rightsHolder"] + ":" + thisUsername + "%20OR%20" + this.fieldNameMap["submitter"] + ":" + thisUsername + ")";
-				}
+				if(username)
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["username"], username, {operator: "OR"});
 			}
 			
 			//---Taxon---
@@ -529,6 +517,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		 * Example:  title:(resistance OR salmon OR "pink salmon")
 		 */
 		getGroupedQuery: function(fieldName, values, options){
+			if(!values) return "";
+			values = _.compact(values);
+			if(!values.length) return "";
+
 			var query = "",
 				numValues = values.length,
 				model = this;
@@ -557,7 +549,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				query = fieldName + ":" + queryAddition;
 			}
 			else{		
-				_.each(values, function(value, i){
+				_.each(values, function(value, i){					
 					//Check for filter objects
 					if(!Array.isArray(value) && (typeof value === "object") && value.value)
 						value = value.value.trim();
