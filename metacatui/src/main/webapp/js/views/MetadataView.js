@@ -1328,13 +1328,7 @@ define(['jquery',
 							var msg = "Publish failed: " + $(xhr.responseText).find("description").text();
 							
 							viewRef.hideLoading();
-							viewRef.$el.find('.container').prepend(
-									viewRef.alertTemplate({
-										msg: msg,
-										classes: 'alert-error',
-										includeEmail: true
-									})
-							);
+							viewRef.showError(msg);
 						}
 					}
 				);
@@ -1375,12 +1369,31 @@ define(['jquery',
 		
 		showLoading: function(message) {
 			this.hideLoading();
+			
 			appView.scrollToTop();
-			this.$el.prepend(this.loadingTemplate({msg: message}));
+			
+			var loading = this.loadingTemplate({ msg: message });
+			if(!loading) return;
+			
+			this.$loading = $($.parseHTML(loading));
+			this.$detached = this.$el.children().detach();
+			
+			this.$el.html(loading);
 		},
 		
 		hideLoading: function() {
-			$("#Notification").remove();
+			if(this.$loading)  this.$loading.remove();
+			if(this.$detached) this.$el.html(this.$detached);
+		},
+		
+		showError: function(msg){
+			this.$el.prepend(
+				this.alertTemplate({
+					msg: msg,
+					classes: 'alert-error',
+					containerClasses: "page",
+					includeEmail: true
+				}));	
 		},
 		
 		setUpAnnotator: function() {
@@ -1463,6 +1476,8 @@ define(['jquery',
 			this.packageModels =  new Array();
 			this.model = null;
 			this.pid = null;
+			this.$detached = null;
+			this.$loading = null;
 			
 			//Put the document title back to the default
 			appModel.set("title", appModel.defaults.title);

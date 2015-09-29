@@ -64,6 +64,7 @@ article.container {
 }
 .inline-buttons {
   margin-bottom: 20px;
+  margin-top: 20px;
   clear: both;
 }
 .inline-buttons > .btn{
@@ -148,6 +149,9 @@ h3{
 	margin-left: 43%;
 	margin-top: 20%;
 }
+.notification.loading.page .icon{
+	margin-top: 10px;
+}
 .panel-body .notification.loading .icon {
     margin-top: 10px;
 }
@@ -176,10 +180,6 @@ h3{
 .alert .icon-left{
 	float: left; 
 	margin-right: 10px;
-}
-#Content > .alert-container{
-	top: 40px;
-	position: relative;
 }
 .notification.success{
 	color: #008000;
@@ -842,6 +842,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 .citation ~ .inline-input-group > .input-append{
 	float: right;
+	margin-bottom: 0px;
 }
 /* Used in metadata view for metadata format types without stylesheet */
 #Content.no-stylesheet.container{ 
@@ -1710,6 +1711,9 @@ form .text-left > .icon {
 	margin-bottom: 20px;
 	padding: 10px;
 	clear: both;
+}
+.inline-input-group label.inline{
+	line-height: 2em;
 }
 .inline-input-group > .input-append{
 	margin-right: 20px;

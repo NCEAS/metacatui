@@ -100,10 +100,10 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		setURL: function(){			
-			if(appModel.get("resolveServiceUrl"))
+			if(appModel.get("objectServiceUrl"))
+				this.set("url", appModel.get("objectServiceUrl") + this.get("id"));
+			else if(appModel.get("resolveServiceUrl"))
 				this.set("url", appModel.get("resolveServiceUrl") + this.get("id"));
-			else
-				this.set("url", appModel.get("objectServiceUrl") + this.get("id"));		
 		},
 		
 		// checks if the pid is already a DOI
@@ -128,8 +128,8 @@ define(['jquery', 'underscore', 'backbone'],
 			$.ajax({
 				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=changePermission",
 				type: "GET",
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				//jsonp: "json.wrf",
+				//dataType: "jsonp",
 				xhrFields: {
 					withCredentials: true
 				},
@@ -151,10 +151,10 @@ define(['jquery', 'underscore', 'backbone'],
 			var fields = "id,resourceMap,formatType,formatId,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized" 
 				
 			$.ajax({
-				url: appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl='+fields+'&wt=json&json.wrf=?',
+				url: appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl='+fields+'&wt=json',
 				type: "GET",
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				//jsonp: "json.wrf",
+				//dataType: "jsonp",
 				success: function(data, response, xhr){
 					if(data.response.docs.length > 0)
 						model.set(data.response.docs[0]);
