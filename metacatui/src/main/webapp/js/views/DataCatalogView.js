@@ -1398,7 +1398,7 @@ define(['jquery',
 						            var localValues = startsWith.concat(contains);
 						            
 						            // pass to bioportal search to complete the list and do the call back
-						            lookupModel.bioportalSearch(request, response, localValues, rankedAnnotationSuggestions);
+						            appLookupModel.bioportalSearch(request, response, localValues, rankedAnnotationSuggestions);
 						            
 					        },
 							select: function(event, ui) {
@@ -1442,7 +1442,7 @@ define(['jquery',
 					            var localValues = startsWith.concat(contains);
 					            
 					            // pass to orcid search to complete the list and do the call back
-					            lookupModel.orcidSearch(request, response, localValues);
+					            appLookupModel.orcidSearch(request, response, localValues);
 					        },
 							select: function(event, ui) {
 								// set the text field
@@ -2100,22 +2100,38 @@ define(['jquery',
 				}
 			}
 			
-			//Get some stats on our tile counts so we can normalize them to create a color scale
-			var totalTiles = filteredTileGeohashes.length/2,
-				maxCount = _.max(filteredTileGeohashes, function(value){
-					var reg = new RegExp('^\\d+$');
-					if(!reg.test(value)) return 0;
-					return value;
-				}),
-				minCount = _.min(filteredTileGeohashes, function(value){
-					var reg = new RegExp('^\\d+$');
-					if(!reg.test(value)) return 9999999;
-					return value;
-				}),
-				lightnessMin = mapModel.get("tileLightnessMin"),
+			//Make a copy of the array that is geohash counts only
+			var countsOnly = [];
+			for(var i=1; i < filteredTileGeohashes.length; i+=2){
+				countsOnly.push(filteredTileGeohashes[i]);
+			}
+			
+			//Create a range of lightness to make different colors on the tiles
+			var lightnessMin = mapModel.get("tileLightnessMin"),
 				lightnessMax = mapModel.get("tileLightnessMax"),
 				lightnessRange = lightnessMax - lightnessMin;
 			
+			//Get some stats on our tile counts so we can normalize them to create a color scale
+			var findMedian = function(nums){
+				if(nums.length % 2 == 0)
+					return (nums[(nums.length/2)-1] + nums[(nums.length/2)])/2;
+				else
+					return nums[(nums.length/2)-0.5];
+			}
+			var sortedCounts = countsOnly.sort(function(a,b){ return a-b; }),
+				maxCount = sortedCounts[sortedCounts.length-1],
+				minCount = sortedCounts[0];
+				/*median = findMedian(sortedCounts),
+				partitionedCounts = _.partition(sortedCounts, function(num){ return( num < median ) }),
+				firstQuartile = findMedian(partitionedCounts[0]),
+				thirdQuartile = findMedian(partitionedCounts[1]),
+				iqr = (thirdQuartile - firstQuartile)*1.5,
+				minInterval = firstQuartile - iqr,
+				maxInterval = thirdQuartile + iqr;
+			
+			var lowOutliers = _.filter(partitionedCounts[0], function(num){ return(num < minInterval); }),
+				highOutliers = _.filter(partitionedCounts[1], function(num){ return(num > maxInterval); }); 
+			*/
 			var viewRef = this;
 			
 			//Now draw a tile for each geohash facet

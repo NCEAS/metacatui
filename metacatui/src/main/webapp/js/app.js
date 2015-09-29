@@ -98,7 +98,7 @@ var appSearchModel = appSearchModel || {};
 var registryModel = registryModel || {};
 var statsModel = statsModel || {};
 var mapModel = mapModel || {};
-var lookupModel = lookupModel || {};
+var appLookupModel = appLookupModel || {};
 var nodeModel = nodeModel || {};
 var appUserModel = appUserModel || {};
 
@@ -130,7 +130,7 @@ function(Bootstrap, AppView, AppModel) {
 		
 		mapModel = new MapModel();
 		
-		lookupModel = new LookupModel();
+		appLookupModel = new LookupModel();
 		
 		nodeModel = new NodeModel();
 		

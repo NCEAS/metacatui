@@ -57,10 +57,10 @@ define(['jquery',
 			
 			var div = "body";
 			
-			var bioportalServiceUrl = appModel.get('bioportalServiceUrl');
-			if (!bioportalServiceUrl) {
+			var bioportalSearchUrl = appModel.get('bioportalSearchUrl');
+			if (!bioportalSearchUrl) {
 				// do not use annotator
-				console.log("bioportalServiceUrl is not configured, annotation is disabled");
+				console.log("bioportalSearchUrl is not configured, annotation is disabled");
 				this.disabled = true;
 				return;
 			}
@@ -122,7 +122,7 @@ define(['jquery',
 			// set up tags with bioportal suggestions as default
 			$(div).annotator().annotator('addPlugin', 'Tags');
 			$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
-				source: lookupModel.bioportalSearch,
+				source: appLookupModel.bioportalSearch,
 				focus: focus,
 				position: {
 					my: "left top",
@@ -166,7 +166,7 @@ define(['jquery',
 					var type = $(resourceElem).attr('type');
 					if (type == "orcid_sm" || type == "party") {
 						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
-							source: lookupModel.orcidSearch,
+							source: appLookupModel.orcidSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
@@ -174,7 +174,7 @@ define(['jquery',
 
 					} else {
 						$(div).data('annotator').plugins.Tags.input.hoverAutocomplete({
-							source: lookupModel.bioportalSearch,
+							source: appLookupModel.bioportalSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
@@ -252,9 +252,9 @@ define(['jquery',
 						
 						// look it up and provide the callback
 						if (annotation["oa:Motivation"] == "prov:wasAttributedTo") {
-							lookupModel.orcidGetConcepts(conceptUri, renderAnnotation);	
+							appLookupModel.orcidGetConcepts(conceptUri, renderAnnotation);	
 						} else {
-							lookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
+							appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
 						}
 						
 					} else {

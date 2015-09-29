@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel", "collections/SolrResults"], 				
-	function($, _, Backbone, SearchModel, LookupModel, SearchResults) {
+define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrResults"], 				
+	function($, _, Backbone, SearchModel, SearchResults) {
 	'use strict';
 
 	// User Model
@@ -116,12 +116,28 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 			
 			//Only proceed if the accounts API service is being utilized and there is a username
 			if(!this.get("username")) return;
+				
+			//Check if this is an ORCiD
+			if(this.isOrcid()){
+				//Get the person's info from their ORCiD bio
+				appLookupModel.orcidGetBio({ 
+					userModel: this,
+					success: function(){
+						model.set("checked", true);
+					},
+					error: function(){
+						model.set("checked", true);						
+					}
+				});
+				return;
+			}
+			
+			//Otherwise, check the accounts service
 			if(!appModel.get("accountsUrl")){
 				this.getNameFromSubject();
 				this.set("checked", true);
 				return;
 			}
-			
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
@@ -177,6 +193,12 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 					});
 					model.set("pending", pending);	
 					model.trigger("change:pending"); //Trigger the change event
+				},
+				error: function(xhr, textStatus){
+					if(xhr.responseText.indexOf("error code 34")){
+						model.set("pending", model.defaults().pending);
+						model.trigger("change:pending"); //Trigger the change event
+					}
 				}
 			});
 		},
@@ -193,6 +215,38 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 				fullName = this.get("fullname") || username;
 			
 			this.set("fullName", fullName);
+		},
+		
+		isOrcid: function(orcid){
+			var username = (typeof orcid === "string")? orcid : this.get("username");
+			
+			//Have we already verified this?
+			if((typeof orcid == "undefined") && (username == this.get("orcid"))) return true;
+
+			//A simple and fast check first
+			//ORCiDs are 16 digits and 3 dashes - 19 characters
+			if(username.length != 19) return false;
+								
+			/* The ORCiD checksum algorithm to determine is a character string is an ORCiD 
+			 * http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier
+			 */	
+			var total = 0,
+				baseDigits = username.replace(/-/g, "").substr(0, 15);
+			
+			for(var i=0; i<baseDigits.length; i++){
+				var digit = parseInt(baseDigits.charAt(i));
+				total = (total + digit) * 2;
+			}
+			
+			var remainder = total % 11,
+				result = (12 - remainder) % 11,
+				checkDigit = (result == 10) ? "X" : result.toString(),
+				isOrcid = (checkDigit == username.charAt(username.length-1));
+			
+			if(isOrcid)
+				this.set("orcid", username);
+			
+			return isOrcid;
 		},
 		
 		loginLdap: function(formData, success, error){
@@ -306,6 +360,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "models/LookupModel
 		},
 		
 		parseToken: function(token) {
+			if(typeof token == "undefined")
+				var token = this.get("token");
 			
 			var jws = new KJUR.jws.JWS();
 			var result = 0;

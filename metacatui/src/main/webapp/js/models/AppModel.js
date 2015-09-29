@@ -36,8 +36,9 @@ define(['jquery', 'underscore', 'backbone'],
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
-			bioportalServiceUrl: null,
+			bioportalSearchUrl: null,
 			orcidSearchUrl: null,
+			orcidBioUrl: null,
 			tokenUrl: null,
 			annotatorUrl: null,
 			accountsUrl: null,
@@ -83,7 +84,6 @@ define(['jquery', 'underscore', 'backbone'],
 				//Settings for the DataONE API v2 only
 				if(this.get("d1CNService").indexOf("v2") > -1){
 					this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
-					this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.2/search/orcid-bio?q=');
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 					this.set("prov", true);
 				}

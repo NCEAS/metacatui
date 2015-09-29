@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone'],
 			objectServiceUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			bioportalServiceUrl: "http://data.bioontology.org/search?ontologies=OBOE-SBC&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
+			bioportalSearchUrl: "http://data.bioontology.org/search?ontologies=OBOE-SBC&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
 			orcidServiceUrl: "http://pub.orcid.org/v1.1/search/orcid-bio?q=",
 			tokenUrl: null,
 			annotatorUrl: null

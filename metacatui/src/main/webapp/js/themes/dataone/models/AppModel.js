@@ -18,12 +18,12 @@ define(['jquery', 'underscore', 'backbone'],
 			anchorId: null,
 			profileUsername: null,
 			page: 0,
-			baseUrl: window.location.origin,
+			baseUrl: "https://cn-sandbox-2.test.dataone.org", //window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: null,
-			d1CNBaseUrl:  "https://cn.dataone.org",
-			d1CNService: "cn/v1",
+			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
+			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
@@ -39,11 +39,10 @@ define(['jquery', 'underscore', 'backbone'],
 			nodeServiceUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			bioportalServiceUrl: "https://data.bioontology.org/search?ontologies=D1-CARBON-FLUX,PROV-ONE,ENVO,CHEBI,DATA-CITE,DC-TERMS,OWL-TIME&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
-			//bioportalServiceUrl: null, // use this to deactivate the annotator view
+			bioportalSearchUrl: "https://data.bioontology.org/search?ontologies=D1-CARBON-FLUX,PROV-ONE,ENVO,CHEBI,DATA-CITE,DC-TERMS,OWL-TIME&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
+			//bioportalSearchUrl: null, // use this to deactivate the annotator view
 			orcidBaseUrl: "https://pub.orcid.org",
 			orcidSearchUrl: null,
-			orcidBioUrl: null,
 			signInUrl: null,
 			signInUrlOrcid: null,
 			signInUrlLdap: null,
@@ -67,20 +66,20 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
-			this.set('authServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/isAuthorized/');
-			this.set('queryServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/query/solr/?');
-			this.set('metaServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/meta/');
-			this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/resolve/');
-			this.set('nodeServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/node');
-			this.set("accountsUrl", this.get("d1CNBaseUrl")  + this.get('context') + this.get("d1CNService") + "/accounts/");
+			this.set('authServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1CNService') + '/isAuthorized/');
+			this.set('queryServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/solr/?');
+			this.set('metaServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1CNService') + '/meta/');
+			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1CNService') + '/resolve/');
+			this.set('nodeServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1CNService') + '/node');
+			this.set("accountsUrl", this.get("d1CNBaseUrl")  + this.get("d1CNService") + "/accounts/");
 			this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
-			this.set("groupsUrl", this.get("d1CNBaseUrl")  + this.get('context') + this.get("d1CNService") + "/groups/");
-			this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + "/" + this.get('d1CNService') + '/query/logsolr');
+			this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
+			this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr');
 			
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
 				this.set("prov", true);
-				this.set('viewServiceUrl', this.get('d1CNBaseUrl') + this.get('context') + this.get('d1CNService') + '/views/metacatui/');
+				this.set('viewServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/views/metacatui/');
 				this.set('tokenUrl', this.get('d1CNBaseUrl') + '/portal/token');
 				
 				this.set('packageServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/packages/application%2Fbagit-097/');
@@ -90,8 +89,9 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("signInUrl", this.get('d1CNBaseUrl') + "/portal/startRequest?target=");
 				this.set("signInUrlOrcid", this.get('d1CNBaseUrl') + "/portal/oauth?action=start&target=");
 				this.set("signInUrlLdap", this.get('d1CNBaseUrl') + "/portal/ldap?target=");	
-				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/v1.2/search/orcid-bio?q=');
-				this.set('orcidServiceUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');				
+				
+				if(this.get('orcidBaseUrl'))
+					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 			}
 			
 			this.on("change:pid", this.changePid);

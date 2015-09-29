@@ -56,7 +56,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			// set the header type
 			appModel.set('headerType', 'default');
 			
-			//Is this our currently-logged in user?
+			//Render the user profile when their info has been checked
 			if(appUserModel.get("checked")) this.renderUser();
 			else appUserModel.on("change:checked", this.renderUser, this);
 						
@@ -280,7 +280,13 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			if(!this.model.get("fullName")) return;
 			
 			//Insert the name into this page
-			this.$("#fullname").text(this.model.get("fullName"));
+			this.$(".insert-fullname").text(this.model.get("fullName"));
+			//Insert the username
+			this.$(".insert-username").text(this.model.get("username"));
+			if(this.model.isOrcid()) 
+				this.$(".show-orcid").show();
+			else
+				this.$(".show-orcid").hide();
 		},
 		
 		/*

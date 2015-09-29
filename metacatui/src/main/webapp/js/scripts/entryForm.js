@@ -163,6 +163,8 @@ function sortInputTags() {
 
 function sortTagWithAttributeName(tag, afterTag, parentTag) {
     var elem = document.getElementById(afterTag);
+    
+    if(!elem) return;
    
     elem = elem.nextSibling.nextSibling;
     while (elem.nodeName == "TR") {
