@@ -169,6 +169,7 @@ define(['jquery',
 			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
 			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageDetails);
+			this.listenToOnce(metadataFromIndex, 'complete', this.insertOwnerControls);
 			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
 			
 			//Add the metadata HTML

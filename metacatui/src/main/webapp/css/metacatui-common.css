@@ -429,6 +429,7 @@ h3 > .icon{
 }
 .prov-chart > .title{
 	font-size: 1em;
+	font-weight: normal;
 	width: 90px;
 	line-height: 1em;
 	top: -70px;
@@ -724,6 +725,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
   margin-top: 0px;
   font-size: 1em;
 }
+#Metadata .popover-content .citation{
+	font-size: 1em;
+	font-weight: normal;
+} 
 
 /****************************************** 
 ** Collapsable Lists (ExpandCollapseView) **

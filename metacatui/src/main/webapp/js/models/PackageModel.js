@@ -452,7 +452,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						//Is this package member a direct source of this package member?
 						if(_.contains(memberSourceIDs, sourcePkgMember.get("id")))
 							//Save this source package member as a source of this member
-							member.set("provSources", _.union(member.get("provSources"), sourcePkgMember));
+							member.set("provSources", _.union(member.get("provSources"), [sourcePkgMember]));
 						
 						//Save this in the list of related models
 						if(!_.contains(relatedModelIDs, sourcePkgMember.get("id"))){
@@ -466,7 +466,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						//Is this package member a direct source of this package member?
 						if(_.contains(memberDerIDs, derPkgMember.get("id")))
 							//Save this derivation package member as a derivation of this member
-							member.set("provDerivations", _.union(member.get("provDerivations"), derPkgMember));	
+							member.set("provDerivations", _.union(member.get("provDerivations"), [derPkgMember]));	
 						
 						//Save this in the list of related models
 						if(!_.contains(relatedModelIDs, derPkgMember.get("id"))){
@@ -479,7 +479,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					//Is this package member a direct source of this package member?
 					if(_.contains(memberSourceIDs, doc.get("id")))
 						//Save this source package member as a source of this member
-						member.set("provSources", _.union(member.get("provSources"), doc));
+						member.set("provSources", _.union(member.get("provSources"), [doc]));
 					
 					//Save this in the list of related models
 					if(!_.contains(relatedModelIDs, doc.get("id"))){
@@ -491,7 +491,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					//Is this package member a direct derivation of this package member?
 					if(_.contains(memberDerIDs, doc.get("id")))
 						//Save this derivation package member as a derivation of this member
-						member.set("provDerivations", _.union(member.get("provDerivations"), doc));
+						member.set("provDerivations", _.union(member.get("provDerivations"), [doc]));
 					
 					//Save this in the list of related models
 					if(!_.contains(relatedModelIDs, doc.get("id"))){
@@ -503,11 +503,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					//Is this package member a direct derivation of this package member?
 					if(_.contains(memberDerIDs, doc.get("id")))
 						//Save this derivation package member as a derivation of this member
-						member.set("provDerivations", _.union(member.get("provDerivations"), doc));
+						member.set("provDerivations", _.union(member.get("provDerivations"), [doc]));
 					//Is this package member a direct source of this package member?
 					if(_.contains(memberSourceIDs, doc.get("id")))
 						//Save this source package member as a source of this member
-						member.set("provSources", _.union(member.get("provSources"), doc));
+						member.set("provSources", _.union(member.get("provSources"), [doc]));
 				});
 				
 				//Add this member to the list of related models

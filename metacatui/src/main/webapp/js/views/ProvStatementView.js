@@ -80,7 +80,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 			var predicates = _.difference(appSearchModel.getProvFields(), this.skipPredicates);			
 			
 			//Look for prov traces in all the models
-			var allModels = _.union(this.model, this.relatedModels);			
+			var allModels = _.union([this.model], this.relatedModels);			
 			
 			_.each(allModels, function(model, i, list){
 				_.each(predicates, function(p, ii){

@@ -67,11 +67,11 @@ define(['jquery',
 			var view = this;
 						
 			//Get all the fields from the Solr index
-			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json&json.wrf=?';
+			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json';
 			$.ajax({
 				url: appModel.get('queryServiceUrl') + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				//jsonp: "json.wrf",
+				//dataType: "jsonp",
 				success: function(data, textStatus, xhr){ 
 
 					if(data.response.numFound == 0){
@@ -90,7 +90,7 @@ define(['jquery',
 						_.each(data.response.docs, function(doc, i, list){
 							
 							//If this is a data object and there is a science metadata doc that describes it, then navigate to that Metadata View.
-							if((doc.formatType == "DATA") && (doc.isDocumentedBy.length > 0)){
+							if((doc.formatType == "DATA") && (doc.isDocumentedBy && doc.isDocumentedBy.length)){
 								view.onClose();
 								uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
 								return;
