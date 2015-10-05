@@ -18,6 +18,7 @@ define(['jquery', 'underscore', 'backbone'],
 			anchorId: null,
 			profileUsername: null,
 			page: 0,
+			metcatVersion: "2.5.0", 
 			baseUrl: "https://cn-sandbox-2.test.dataone.org", //window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
@@ -92,6 +93,15 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				if(this.get('orcidBaseUrl'))
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+			}
+			
+			//Settings for older versions of metacat
+			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/") > -1)){
+				var queryServiceUrl = this.get("queryServiceUrl");
+				if(queryServiceUrl.substring(queryServiceUrl.length-1) == "?")
+					queryServiceUrl = queryServiceUrl.substring(0, queryServiceUrl.length-1);
+				
+				this.set("queryServiceUrl", queryServiceUrl);
 			}
 			
 			this.on("change:pid", this.changePid);

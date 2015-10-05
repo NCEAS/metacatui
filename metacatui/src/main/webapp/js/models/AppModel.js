@@ -19,10 +19,11 @@ define(['jquery', 'underscore', 'backbone'],
 			profileUsername: null,
 			page: 0,
 			profileQuery: null,
+			metcatVersion: "2.5.0", 
 			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
-			d1Service: '/d1/mn/v1',
+			d1Service: '/d1/mn/v2',
 			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v1",
 			nodeServiceUrl: null,
@@ -63,7 +64,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
-			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
+			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/?');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
@@ -87,6 +88,15 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 					this.set("prov", true);
 				}
+			}
+			
+			//Settings for older versions of metacat
+			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/") > -1)){
+				var queryServiceUrl = this.get("queryServiceUrl");
+				if(queryServiceUrl.substring(queryServiceUrl.length-1) == "?")
+					queryServiceUrl = queryServiceUrl.substring(0, queryServiceUrl.length-1);
+				
+				this.set("queryServiceUrl", queryServiceUrl);
 			}
 			
 			this.on("change:pid", this.changePid);

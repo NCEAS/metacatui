@@ -67,11 +67,11 @@ define(['jquery',
 			var view = this;
 						
 			//Get all the fields from the Solr index
-			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json';
+			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json&json.wrf=?';
 			$.ajax({
 				url: appModel.get('queryServiceUrl') + query, 
-				//jsonp: "json.wrf",
-				//dataType: "jsonp",
+				jsonp: "json.wrf",
+				dataType: "jsonp",
 				success: function(data, textStatus, xhr){ 
 
 					if(data.response.numFound == 0){
