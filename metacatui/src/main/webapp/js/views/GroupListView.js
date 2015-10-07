@@ -149,7 +149,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			if(this.collection.isOwner(appUserModel)){
 				//Add a remove icon for each member
-				var removeIcon = $(document.createElement("i")).addClass("icon icon-remove remove-member"),
+				var removeIcon = $(document.createElement("i")).addClass("icon icon-remove icon-negative remove-member"),
 					clearfix   = $(document.createElement("div")).addClass('clear'),
 				    memberControls = $(document.createElement("div")).addClass("member-controls").append(removeIcon);
 				removeIcon.tooltip({

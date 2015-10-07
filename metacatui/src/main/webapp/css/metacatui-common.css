@@ -233,7 +233,7 @@ h3 > .icon{
 	color: green;
 }
 .icon-negative{
-	color: #FF0000;
+    color: #F15959;
 }
 /****************************************** 
 ** Results and Result Rows ***
@@ -1195,10 +1195,19 @@ textarea.token{
 .form-group{
 	clear: both;
 }
-.list-identity-item .remove-identity-btn {
+.list-group-item .remove-identity-btn {
     float: right;
-    font-size: 1.5em;
-    color: #F15959;
+    line-height: 2.7em;
+}
+.list-group-item.identity.pending .details{
+	margin-left: 52px;
+}
+.list-group-item.identity .details .orcid-logo{
+	margin-left: 0px;
+}
+.list-group-item .confirm-request-btn,
+.list-group-item .reject-request-btn{
+	margin-right: 5px;
 }
 .icon.is-owner{
 	color: #FFD700;
@@ -1224,6 +1233,11 @@ textarea.token{
 }
 #data-list > p.center{
 	margin-top: 40px;
+}
+.orcid-logo{
+	height: 16px;
+	width: 16px;
+	margin-left: 10px;
 }
 /****************************************** 
 ** Stats ***
@@ -1323,11 +1337,11 @@ textarea.token{
 .list-group-item a > .icon{
 	margin-right: 5px;
 }
-.list-identity-item:first-child {
+.list-group-item:first-child {
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
 }
-.list-identity-item {
+.list-group-item {
   position: relative;
   display: block;
   padding: 10px 15px;
@@ -1335,24 +1349,26 @@ textarea.token{
   background-color: #fff;
   border: 1px solid #ddd;
 }
-.panel>.list-identity .list-identity-item.active{
+.panel>.list-identity .list-group-item.active{
 	border-left-width: 5px;
 }
-.list-identity-item > .list-identity {
+.list-group-item > .list-identity {
   padding-left: 20px;
   margin-bottom: 0px;
 }
-.list-identity-item > .list-identity > .list-identity-item:last-child{
+.list-group-item > .list-identity > .list-identity-item:last-child{
 	border-bottom-width: 0px;
 }
-.list-identity-item a > .icon{
+.list-group-item a > .icon{
 	margin-right: 5px;
 }
 .list-group-item .details {
     font-size: .9em;
     display: block;
-    margin-left: 16px;
     color: #666;
+}
+.list-group-item.member .details{
+	margin-left: 33px;
 }
 /****************************************** 
 ** Searching and Map ***

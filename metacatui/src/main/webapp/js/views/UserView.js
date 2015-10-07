@@ -24,11 +24,11 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			"click .section-link"          : "switchToSection",
 			"click .subsection-link"       : "switchToSubSection",
 			"click .token-generator"       : "getToken",
-			"click #map-request-btn"	   : "mapRequest",
 			"click #mod-save-btn"		   : "saveUser",
-			"click .confirm-request-btn"   : "confirmRequest",
-			"click .reject-request-btn"	   : "rejectRequest",
-			"click .remove-identity-btn"   : "removeIdentity",
+			"click #map-request-btn"	   : "sendMapRequest",
+			"click .remove-identity-btn"   : "removeMap",
+			"click .confirm-request-btn"   : "confirmMapRequest",
+			"click .reject-request-btn"	   : "rejectMapRequest",
 			"click [highlight-subsection]" : "highlightSubSection",
 			"blur #add-group-name"         : "checkGroupName",
 			"keypress #add-group-name"     : "preventSubmit",
@@ -41,7 +41,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.activeSubSection = "";
 		},
 		
-		//---------------------------- Rendering the main parts of the view ----------------------------------//
+		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
 		render: function () {			
 			this.stopListening();
 			
@@ -56,7 +56,9 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			// set the header type
 			appModel.set('headerType', 'default');
 			
-			//Render the user profile when their info has been checked
+			//Render the user profile only after the app user's info has been checked
+			//This prevents the app from rendering the profile before the login process has completed - which would
+			//cause this profile to render twice (first before the user is logged in then again after they log in)
 			if(appUserModel.get("checked")) this.renderUser();
 			else appUserModel.on("change:checked", this.renderUser, this);
 						
@@ -100,9 +102,22 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		
 		renderProfile: function(){
 			//Insert the template first
-			this.sectionHolder.append(this.profileTemplate());
-			this.$profile = this.$("[data-section='profile']");
+			var profileEl = $.parseHTML(this.profileTemplate().trim());
 			
+			//If the profile is being redrawn, then replace it
+			if(this.$profile && this.$profile.length){
+				//If the profile section is currently hidden, make sure we hide our new profile rendering too
+				if(!this.$profile.is(":visible"))
+					$(profileEl).hide();
+				
+				this.$profile.replaceWith(profileEl);
+			}
+			//If this is a fresh rendering, then append it to the page and save it
+			else
+				this.sectionHolder.append(profileEl);
+			
+			this.$profile = $(profileEl);
+						
 			//If this user hasn't uploaded anything yet, display so
 			this.listenTo(this.model.get("searchResults"), "reset", function(searchResults){
 				if(searchResults.length == 0)
@@ -170,7 +185,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.$el.prepend(menu);
 		},
 
-		//---------------------------- Navigating sections of view ----------------------------------//
+		//------------------------------------------ Navigating sections of view ------------------------------------------------//
 		switchToSection: function(e, sectionName){
 			
 			if(e) e.preventDefault();
@@ -244,7 +259,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			window.setTimeout(function(){ subsection.removeClass("highlight"); }, 1500);
 		},
 		
-		//---------------------------- Inserting public profile UI elements ----------------------------------//		
+		//------------------------------------------ Inserting public profile UI elements ------------------------------------------------//		
 		insertStats: function(){
 			if(this.model.noActivity && this.statsView){
 				this.statsView.$el.addClass("no-activity");
@@ -348,7 +363,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			//this.$profile.html(this.model.get("fullName") + " hasn't uploaded any data yet.");
 		},
 		
-		//---------------------------------- Groups -----------------------------------------//
+		//-------------------------------------------------------------- Groups -------------------------------------------------------//
 		/*
 		 * Gets the groups that this user is a part of and creates a UserGroup collection for each
 		 */
@@ -487,48 +502,13 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			if(!this.pendingGroup.save(success, error)) error();
 		},
 		
-		//---------------------------------- Identities/Accounts -----------------------------------------//
-		insertIdentityList: function(){
-			var identities = this.model.get("identities");
-			
-			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
-			this.$("#identity-list-container").empty();
-			
-			//Create the list element
-			if (identities.length < 1){
-				var highlightLink = $(document.createElement("a")).attr("href", window.location.hash + "/settings/add-account").attr("highlight-subsection", "add-account").text("here."),
-					identityList = $(document.createElement("p")).text("Your account is not mapped to any other accounts. Send a request below, ").append(highlightLink);
-			}
-			else
-				var identityList = $(document.createElement("ul")).addClass("list-identity").attr("id", "identity-list");
-			
-			//Create a list item for each identity
-			_.each(identities, function(identity, i){
-				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
-					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),
-					remove   = $(document.createElement("a")).attr("href", '#')
-							   .addClass('remove-identity-btn')
-							   .attr("data-identity", identity)
-							   .prepend("<i class='icon icon-remove-sign'/>");
-				$(identityList).append($(listItem).append($(link).append(remove)));
-				$(remove).tooltip({
-					trigger: "hover",
-					placement: "top",
-					title: "Delete equivalent account"
-				})
-			});
-			
-			//Add to the page
-			//$(identityList).find(".collapsed").hide();
-			this.$("#identity-list-container").append(identityList);
-		},
-		
-		mapRequest: function(e) {
-			
+		//------------------------------------------------ Identities/Accounts -------------------------------------------------------//
+		/*
+		 * Sends a new identity map request and displays notifications about the result 
+		 */
+		sendMapRequest: function(e) {
 			e.preventDefault();
 			
-			var model = this.model;
-
 			//Get the identity entered into the input
 			var equivalentIdentity = this.$("#map-request-field").val();
 			if (!equivalentIdentity || equivalentIdentity.length < 1) {
@@ -536,132 +516,116 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			}
 			//Clear the text input
 			this.$("#map-request-field").val("");
-			 
-			var mapUrl = appModel.get("accountsUrl") + "pendingmap";
-				
+			 	
+			//Show notifications after the identity map request is a success or failure 
 			var viewRef = this,
-				container = this.$("#identity-request-container");
+				success = function(){
+					var message = "A username map request has been sent to <a href='#profile/" + equivalentIdentity + "'>" + equivalentIdentity + "</a>"
+					  "<h4>Next step:</h4><p>Login with this other account and approve this request.</p>"
+					viewRef.showAlert(message, null, "#request-alert-container");
+				},
+				error = function(xhr){
+					viewRef.showAlert(xhr.responseText, 'alert-error', "#request-alert-container");
+				};
 			
-			// ajax call to map
-			$.ajax({
-				type: "POST",
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.model.get("token")
-			    },
-				url: mapUrl,
-				data: {
-					subject: equivalentIdentity
-				},
-				success: function(data, textStatus, xhr) {
-					var message = "A username map request has been sent to <a href='#profile/'" + equivalentIdentity + ">" + equivalentIdentity + "</a>"
-								  "<h4>Next step:</h4><p>Login with this other account and approve this request.</p>"
-					viewRef.showAlert(message, null, container);
-					model.getInfo();
-				},
-				error: function(data, textStatus, xhr) {
-					viewRef.showAlert(data.responseText, 'alert-error', container);
-					model.getInfo();
-				}
-			});
+			//Send it
+			this.model.addMap(equivalentIdentity, success, error);
 		},
 		
-		confirmRequest: function(e) {
+		/*
+		 * Removes a confirmed identity map request and displays notifications about the result 
+		 */
+		removeMap: function(e) {
+			e.preventDefault();
 			
+			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
+			if(!equivalentIdentity) return;
+			
+			var viewRef = this,
+				success = function(){
+					viewRef.showAlert("Success! Your account is no longer associated with the user " + equivalentIdentity, "alert-success", "#identity-alert-container");
+				},
+				error = function(xhr, textStatus, error){
+					viewRef.showAlert(xhr.responseText, 'alert-error', "#identity-alert-container");
+				};
+
+			this.model.removeMap(equivalentIdentity, success, error);
+		},
+		
+		/*
+		 * Confirms an identity map request that was initiated from another user, and displays notifications about the result 
+		 */
+		confirmMapRequest: function(e) {			
 			var model = this.model;
 
 			e.preventDefault();
-			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
-			
-			var mapUrl = appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(equivalentIdentity);	
-			
+			var otherUsername = $(e.target).parents("a").attr("data-identity");	
+				
 			var viewRef = this;
 			
-			// ajax call to confirm map
-			$.ajax({
-				type: "PUT",
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.model.get("token")
-			    },
-				url: mapUrl,
-				success: function(data, textStatus, xhr) {
-					viewRef.showAlert("Confirmed mapping request for " + equivalentIdentity);
-					model.getInfo();
-				},
-				error: function(data, textStatus, xhr) {
-					viewRef.showAlert(data.responseText, 'alert-error');
-					model.getInfo();
-				}
-			});
+			var success = function(data, textStatus, xhr) {
+				viewRef.showAlert("Success! Your account is now linked with the username " + otherUsername, "alert-success", "#pending-alert-container");
+			}
+			var error = function(xhr, textStatus, error) {
+				viewRef.showAlert(xhr.responseText, 'alert-error', "#pending-alert-container");
+			}
+			
+			//Confirm this map request
+			this.model.confirmMapRequest(otherUsername, success, error);		
 		},
 		
-		rejectRequest: function(e) {
-			
-			var model = this.model;
-			
+		/*
+		 * Rejects an identity map request that was initiated by another user, and displays notifications about the result 
+		 */
+		rejectMapRequest: function(e) {			
 			e.preventDefault();
-			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
 			
-			var mapUrl = appModel.get("accountsUrl") + "pendingmap/" + encodeURIComponent(equivalentIdentity);
+			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");
 			
-			var viewRef = this;
-			
-			// ajax call to reject map
-			$.ajax({
-				type: "DELETE",
-				xhrFields: {
-					withCredentials: true
+			if(!equivalentIdentity) return;
+						
+			var viewRef = this,
+				success = function(data){
+					viewRef.showAlert("Removed mapping request for " + equivalentIdentity, "alert-success", "#pending-alert-container");
 				},
-				headers: {
-			        "Authorization": "Bearer " + this.model.get("token")
-			    },
-				url: mapUrl,
-				success: function(data, textStatus, xhr) {
-					viewRef.showAlert("Removed mapping request for " + equivalentIdentity);
-					model.getInfo();
-				},
-				error: function(data, textStatus, xhr) {
-					viewRef.showAlert(data.responseText, 'alert-error');
-					model.getInfo();
-				}
-			});
+				error = function(xhr, textStatus, error){
+					viewRef.showAlert(xhr.responseText, 'alert-error', "#pending-alert-container");
+				};
+			
+			this.model.denyMapRequest(equivalentIdentity, success, error);
 		},
 		
-		removeIdentity: function(e) {
+		insertIdentityList: function(){
+			var identities = this.model.get("identities");
 			
-			var model = this.model;
-
-			e.preventDefault();
-			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");	
+			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
+			this.$("#identity-list-container").empty();
 			
-			var mapUrl = appModel.get("accountsUrl") + "map/" + encodeURIComponent(equivalentIdentity);	
+			//Create the list element
+			if(identities.length < 1){
+				var highlightLink = $(document.createElement("a")).attr("href", window.location.hash + "/settings/add-account").attr("highlight-subsection", "add-account").text("here."),
+					identityList = $(document.createElement("p")).text("Your account is not mapped to any other accounts. Send a request below, ").append(highlightLink);
+			}
+			else
+				var identityList = $(document.createElement("ul")).addClass("list-identity").attr("id", "identity-list");
 			
-			var viewRef = this;
-			
-			// ajax call to remove mapping
-			$.ajax({
-				type: "DELETE",
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.model.get("token")
-			    },
-				url: mapUrl,
-				success: function(data, textStatus, xhr) {
-					viewRef.showAlert("Removed mapping for " + equivalentIdentity);
-					model.getInfo();
-				},
-				error: function(data, textStatus, xhr) {
-					viewRef.showAlert(data.responseText, 'alert-error');
-					model.getInfo();
-				}
+			var view = this;
+			//Create a list item for each identity
+			_.each(identities, function(identity, i){
+				var listItem = view.createUserListItem(identity, { confirmed: true });
+				
+				//When/if the info from the equivalent identities is retrieved, update the item
+				view.listenToOnce(identity, "change:fullName", function(identity){
+					var newListItem = view.createUserListItem(identity, {confirmed: true});
+					listItem.replaceWith(newListItem);
+				});
+				
+				$(identityList).append(listItem);				
 			});
+			
+			//Add to the page
+			//$(identityList).find(".collapsed").hide();
+			this.$("#identity-list-container").append(identityList);
 		},
 		
 		insertPendingList: function(){
@@ -684,24 +648,68 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			}
 			
 			//Create a list item for each pending id
-			_.each(pending, function(identity, i){
-				var listItem = $(document.createElement("li")).addClass("list-identity-item identity"),
-					link     = $(document.createElement("a")).attr("href", "#profile/" + identity).attr("data-subject", identity).text(identity),				
-				    acceptIcon = $(document.createElement("i")).addClass("icon icon-check-sign icon-large icon-positive tooltip-this").attr("data-title", "Accept Request").attr("data-trigger", "hover").attr("data-placement", "top"),
-				    rejectIcon = $(document.createElement("i")).addClass("icon icon-remove icon-large icon-negative tooltip-this").attr("data-title", "Reject Request").attr("data-trigger", "hover").attr("data-placement", "top"),
-					confirm = $(document.createElement("a")).attr("href", "#").addClass('confirm-request-btn').attr("data-identity", identity).append(acceptIcon),
-					reject = $(document.createElement("a")).attr("href", "#").addClass("reject-request-btn").attr("data-identity", identity).append(rejectIcon);
-
-				$(pendingList).append(
-						$(listItem).append($(link))
-						.prepend(confirm)
-						.prepend(reject)
-				);
+			var view = this;
+			_.each(pending, function(pendingUser, i){					
+				var listItem = view.createUserListItem(pendingUser, {pending: true});
+				$(pendingList).append(listItem);
 				
+				if(pendingUser.isOrcid()){
+					view.listenToOnce(pendingUser, "change:fullName", function(pendingUser){
+						var newListItem = view.createUserListItem(pendingUser, {pending: true});
+						listItem.replaceWith(newListItem);
+					});
+				}
 			});
 			
 			//Add to the page
 			this.$("#pending-list-container").append(pendingList);
+		},
+		
+		createUserListItem: function(user, options){
+			var pending = false,
+				confirmed = false;
+			
+			if(options && options.pending)
+				pending = true;
+			if(options && options.confirmed)
+				confirmed = true;
+			
+			var username = user.get("username"),
+			    fullName = user.get("fullName") || username;
+		
+			var listItem = $(document.createElement("li")).addClass("list-group-item identity"),
+				link     = $(document.createElement("a")).attr("href", "#profile/" + username).attr("data-identity", username).text(fullName),
+				details  = $(document.createElement("span")).addClass("subtle details").text(username);
+
+			listItem.append(link, details);
+
+			if(pending){
+				var acceptIcon = $(document.createElement("i")).addClass("icon icon-ok icon-large icon-positive tooltip-this").attr("data-title", "Accept Request").attr("data-trigger", "hover").attr("data-placement", "top"),
+					rejectIcon = $(document.createElement("i")).addClass("icon icon-remove icon-large icon-negative tooltip-this").attr("data-title", "Reject Request").attr("data-trigger", "hover").attr("data-placement", "top"),
+					confirm = $(document.createElement("a")).attr("href", "#").addClass('confirm-request-btn').attr("data-identity", username).append(acceptIcon),
+					reject = $(document.createElement("a")).attr("href", "#").addClass("reject-request-btn").attr("data-identity", username).append(rejectIcon);
+				
+				listItem.prepend(confirm, reject).addClass("pending");
+			}
+			else if(confirmed){
+				var removeIcon = $(document.createElement("i")).addClass("icon icon-remove icon-large icon-negative"),
+					remove = $(document.createElement("a")).attr("href", "#").addClass("remove-identity-btn").attr("data-identity", username).append(removeIcon);
+				$(remove).tooltip({
+					trigger: "hover",
+					placement: "top",
+					title: "Remove equivalent account"
+				});
+				listItem.prepend(remove.append(removeIcon));
+			}
+
+			if(user.isOrcid()){
+				var orcidLogo = $(document.createElement("img")).attr("src", "./img/orcid_64x64.png").addClass("orcid-logo");				
+				details.prepend(orcidLogo, " ORCiD: ");
+			}
+			else
+				details.prepend(" Username: ");
+			
+			return listItem;
 		},
 		
 		updateModForm: function() {
@@ -871,6 +879,9 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			//Reset the active section and subsection
 			this.activeSection = "profile";
 			this.activeSubSection = "";
+			
+			//Remove saved elements
+			this.$profile = null;
 			
 			//Stop listening to changes in models
 			this.stopListening(statsModel);		

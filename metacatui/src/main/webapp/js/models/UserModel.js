@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		defaults: function(){
 			return{
 				checked: false, //Set to true when we have checked the status of this user
+				basicUser: false, //Set to true to only query for basic info about this user - prevents sending queries for info that will never be displayed in the UI
 				lastName: null,
 				firstName: null,
 				fullName: null,
@@ -31,7 +32,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		initialize: function(options){
 			if(typeof options !== "undefined"){
 				if(options.username) this.set("username", options.username);
-				if(options.rawData)  this.parseXML(options.rawData);
+				if(options.rawData)  this.set(this.parseXML(options.rawData));
 			}
 			
 			//If no username was provided at time of initialization, then use the profile username (username sent to #profile view)
@@ -52,10 +53,13 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			this.updateSearchModel();
 		},
 		
-		updateSearchModel: function(){			
+		updateSearchModel: function(){	
 			//Get all the identities for this person
-			var ids = [this.get("identities"), this.get("username")];
-			ids = _.compact(_.flatten(ids));
+			var ids = [this.get("username")];
+			
+			_.each(this.get("identities"), function(equivalentUser){
+				ids.push(equivalentUser.get("username"));
+			});
 			
 			this.get("searchModel").set("username", ids);			
 			this.trigger("change:searchModel");
@@ -80,12 +84,18 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				ownerOf	   = this.get("isOwnerOf"),
 				identities = this.get("identities");
 			
+			if(firstName == "NA")
+				firstName = null;
+			if(lastName == "NA")
+				lastName = null;
+			
 			//Get each equivalent identity and save
 			_.each($(data).find("person").first().find("equivalentIdentity"), function(identity, i){
 				//push onto the list
-				// TODO: include person details?
-				var id = $(identity).text();
-				identities.push(id);
+				var username = $(identity).text(),
+					equivalentId = new UserModel({ username: username, basicUser: true });
+				
+				identities.push(equivalentId);
 			});
 			
 			//Get each group and save
@@ -147,6 +157,15 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				success: function(data, textStatus, xhr) {	
 					//Parse the response
 					model.set(model.parseXML(data));
+					
+					//Get more information about equivalent identities only if this isn't marked as a "basic user"
+					//The "basicUser" property is to prevent querying for information that will never be displayed in the interface
+					if(!model.get("basicUser")){
+						_.each(model.get("identities"), function(equivalentId){
+							equivalentId.getInfo();
+						});
+					}
+					
 					 //Trigger the change events
 					model.trigger("change:isMemberOf");
 					model.trigger("change:isOwnerOf");
@@ -186,10 +205,18 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					model.set("pending", model.defaults().pending);
 					var pending = model.get("pending");
 					_.each($(data).find("person"), function(person, i) {
-						var subject = $(person).find("subject").text();
-						if (subject.toLowerCase() != model.get("username").toLowerCase()) {
-							pending.push(subject);
-						}
+												
+						//Create a new User Model for this pending identity
+						var pendingUser = new UserModel({ rawData: person });
+						
+						//Don't list yourself as a pending map request
+						if(pendingUser.get("username").toLowerCase() == model.get("username").toLowerCase())
+							return;
+						
+						if(pendingUser.isOrcid())
+							pendingUser.getInfo();
+						
+						pending.push(pendingUser);
 					});
 					model.set("pending", pending);	
 					model.trigger("change:pending"); //Trigger the change event
@@ -341,7 +368,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				model.set("token", token);
 				model.set("loggedIn", loggedIn);
 				
-				if(username)
+				if(username && model.isOrcid())
+					model.set("checked", true);
+				else if(username)
 					model.getInfo();
 				else
 					model.set("checked", true);
@@ -418,9 +447,132 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				},
 				error: function(data, textStatus, xhr) {
 					if(typeof onError != "undefined") 
-						onError(data);
+						onError(data);					
+				}
+			});
+		},
+		
+		confirmMapRequest: function(otherUsername, onSuccess, onError){
+			if(!otherUsername) return;
+
+			var mapUrl = appModel.get("pendingMapsUrl") + encodeURIComponent(otherUsername),
+				model = this;	
+
+			if(!onSuccess)
+				var onSuccess = function(){};
+			if(!onError)
+				var onError = function(){};
+			
+			// ajax call to confirm map
+			$.ajax({
+				type: "PUT",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.get("token")
+			    },
+				url: mapUrl,
+				success: function(data, textStatus, xhr) {
+					if(onSuccess)
+						onSuccess(data, textStatus, xhr);
 					
-					//model.getInfo();
+					//Get updated info
+					model.getInfo();
+				},
+				error: function(xhr, textStatus, error) {
+					if(onError)
+						onError(xhr, textStatus, error);
+				}
+			});
+		},
+		
+		denyMapRequest: function(otherUsername, onSuccess, onError){
+			if(!otherUsername) return;
+			
+			var mapUrl = appModel.get("pendingMapsUrl") + encodeURIComponent(otherUsername),
+				model = this;	
+		
+			// ajax call to reject map
+			$.ajax({
+				type: "DELETE",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.get("token")
+			    },
+				url: mapUrl,
+				success: function(data, textStatus, xhr) {
+					if(typeof onSuccess == "function")
+						onSuccess(data, textStatus, xhr);
+					
+					model.getInfo();
+				},
+				error: function(xhr, textStatus, error) {
+					if(typeof onError == "function")
+						onError(xhr, textStatus, error);
+				}
+			});
+		},
+		
+		addMap: function(otherUsername, onSuccess, onError){
+			if(!otherUsername) return;
+			
+			var mapUrl = appModel.get("pendingMapsUrl"),
+				model = this;
+			
+			// ajax call to map
+			$.ajax({
+				type: "POST",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.get("token")
+			    },
+				url: mapUrl,
+				data: {
+					subject: otherUsername
+				},
+				success: function(data, textStatus, xhr) {
+					if(typeof onSuccess == "function")
+						onSuccess(data, textStatus, xhr);
+					
+					model.getInfo();
+				},
+				error: function(xhr, textStatus, error) {
+					if(typeof onError == "function")
+						onError(xhr, textStatus, error);
+				}
+			});
+		},
+		
+		removeMap: function(otherUsername, onSuccess, onError){
+			if(!otherUsername) return;
+			
+			var mapUrl = appModel.get("pendingMapsUrl") + encodeURIComponent(otherUsername),
+				model = this;
+						
+			// ajax call to remove mapping
+			$.ajax({
+				type: "DELETE",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + this.get("token")
+			    },
+				url: mapUrl,
+				success: function(data, textStatus, xhr) {					
+					if(typeof onSuccess == "function")
+						onSuccess(data, textStatus, xhr);
+					
+					model.getInfo();
+				},
+				error: function(xhr, textStatus, error) {
+					if(typeof onError == "function")
+						onError(xhr, textStatus, error);
 				}
 			});
 		},
