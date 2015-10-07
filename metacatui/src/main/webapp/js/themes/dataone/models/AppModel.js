@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone'],
 			profileUsername: null,
 			page: 0,
 			metcatVersion: "2.5.0", 
-			baseUrl: "https://cn-sandbox-2.test.dataone.org", //window.location.origin,
+			baseUrl: window.location.origin,
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: null,
@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// see: http://bioportal.bioontology.org/account
 			bioportalSearchUrl: "https://data.bioontology.org/search?ontologies=D1-CARBON-FLUX,PROV-ONE,ENVO,CHEBI,DATA-CITE,DC-TERMS,OWL-TIME&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
 			//bioportalSearchUrl: null, // use this to deactivate the annotator view
-			orcidBaseUrl: "https://pub.orcid.org",
+			orcidBaseUrl: "https://sandbox.orcid.org",
 			orcidSearchUrl: null,
 			signInUrl: null,
 			signInUrlOrcid: null,
@@ -67,30 +67,32 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
-			this.set('authServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1CNService') + '/isAuthorized/');
-			this.set('queryServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/solr/?');
-			this.set('metaServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1CNService') + '/meta/');
-			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1CNService') + '/resolve/');
-			this.set('nodeServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1CNService') + '/node');
-			this.set("accountsUrl", this.get("d1CNBaseUrl")  + this.get("d1CNService") + "/accounts/");
-			this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
-			this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
-			this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr');
+			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1CNService') + '/isAuthorized/');
+			this.set('queryServiceUrl',   this.get('baseUrl') + this.get('d1CNService') + '/query/solr/?');
+			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1CNService') + '/meta/');
+			this.set('resolveServiceUrl', this.get('baseUrl')  + this.get('d1CNService') + '/resolve/');
+			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1CNService') + '/node');
+			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1CNService") + "/accounts/");
+			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1CNService") + "/groups/");
+			this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1CNService') + '/query/logsolr');
+			this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap/");
 			
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
 				this.set("prov", true);
-				this.set('viewServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/views/metacatui/');
-				this.set('tokenUrl', this.get('d1CNBaseUrl') + '/portal/token');
+				this.set('viewServiceUrl',    this.get('baseUrl') + this.get('d1CNService') + '/views/metacatui/');
+				this.set('packageServiceUrl', this.get('baseUrl') + this.get('d1CNService') + '/packages/application%2Fbagit-097/');
 				
-				this.set('packageServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/packages/application%2Fbagit-097/');
-				// use portal to  retrieve token and annotate metadata
+				//Authentication / portal URLs
+				this.set('portalUrl',      this.get('d1CNBaseUrl') + '/portal/');
+				this.set('tokenUrl',       this.get('portalUrl') + 'token');
 				//this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');				
-				this.set("signOutUrl", this.get('d1CNBaseUrl') + "/portal/logout");
-				this.set("signInUrl", this.get('d1CNBaseUrl') + "/portal/startRequest?target=");
-				this.set("signInUrlOrcid", this.get('d1CNBaseUrl') + "/portal/oauth?action=start&target=");
-				this.set("signInUrlLdap", this.get('d1CNBaseUrl') + "/portal/ldap?target=");	
+				this.set("signOutUrl",     this.get('portalUrl') + "logout");
+				this.set("signInUrl",      this.get('portalUrl') + "startRequest?target=");
+				this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
+				this.set("signInUrlLdap",  this.get('portalUrl') + "ldap?target=");	
 				
+				//Orcids are used with DataONE v2 only
 				if(this.get('orcidBaseUrl'))
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 			}
@@ -105,7 +107,6 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			this.on("change:pid", this.changePid);
-
 		},
 		
 		changePid: function(model, name){			
