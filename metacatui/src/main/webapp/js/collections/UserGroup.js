@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			return appModel.get("accountsUrl") + this.groupId;
 		},
 				
-		comparator: "username",
+		comparator: "lastName", //Sort by last name
 		
 		initialize: function(models, options) {
 			if(typeof options !== "undefined"){

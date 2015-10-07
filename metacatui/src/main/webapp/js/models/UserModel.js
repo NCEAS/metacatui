@@ -70,6 +70,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			//Reset the group list so we don't just add it to it with push()
 			this.set("isMemberOf", this.defaults().isMemberOf, {silent: true});
+			this.set("isOwnerOf", this.defaults().isOwnerOf, {silent: true});
 			//Reset the equivalent id list so we don't just add it to it with push()
 			this.set("identities", this.defaults().identities, {silent: true});
 			
@@ -103,7 +104,12 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				var groupId = $(group).find("subject").first().text();
 				groups.push(groupId);
 								
-				if($(group).children("rightsHolder:contains('" + model.get("username") + "')").length > 0)
+				//Get all the rightsHolders
+				var allRightsHolders = [];
+				_.each($(group).children("rightsHolder"), function(rightsHolder){
+					allRightsHolders.push($(rightsHolder).text().toLowerCase());
+				});
+				if(_.contains(allRightsHolders, username.toLowerCase()))
 					ownerOf.push(groupId);
 			});
 			
@@ -155,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				type: "GET",
 				url: url, 
 				success: function(data, textStatus, xhr) {	
-					//Parse the response
+					//Parse the XML response to get user info
 					model.set(model.parseXML(data));
 					
 					//Get more information about equivalent identities only if this isn't marked as a "basic user"

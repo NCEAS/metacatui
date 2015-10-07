@@ -110,7 +110,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			//If this is the currently-logged-in user, display "Me"
 			if(username == appUserModel.get("username"))
-				name = "Me";
+				name = name + " (Me)";
 			
 			//Create a list item for this member
 			var memberListItem = $(document.createElement("li")).addClass("list-group-item member").attr("data-username", username),
@@ -131,11 +131,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			//Store this element in the view
 			this.memberEls[member.cid] = memberEl;
 			
-			//If this is Me, list Me first
-			if(username == appUserModel.get("username"))
-				this.$header.after(memberEl)
 			//Append after the last member listed
-			else if(this.$(".member").length)
+			if(this.$(".member").length)
 				this.$(".member").last().after(memberEl);
 			//If no members are listed yet, append to the main el
 			else
@@ -147,7 +144,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				memberIcon.after(ownerIcon);
 			}
 			
-			if(this.collection.isOwner(appUserModel)){
+			//If the current user is an owner of this group, then display a 'remove member' button - but not for themselves
+			if(this.collection.isOwner(appUserModel) && (username.toLowerCase() != appUserModel.get("username").toLowerCase())){
 				//Add a remove icon for each member
 				var removeIcon = $(document.createElement("i")).addClass("icon icon-remove icon-negative remove-member"),
 					clearfix   = $(document.createElement("div")).addClass('clear'),
@@ -237,17 +235,24 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		 */
 		removeFromCollection: function(e){
 			e.preventDefault();
+				
+			var username = $(e.target).parents(".member").attr("data-username");
+			if(!username) return;
 			
-			if(this.collection.length == 1){
+			if(username.toLowerCase() == appUserModel.get("username").toLowerCase()){
+				this.addMemberNotification({
+					status: "error",
+					msg: "You can't remove yourself from a group."
+				});
+				return;
+			}
+			else if(this.collection.length == 1){
 				this.addMemberNotification({
 					status: "error",
 					msg: "You must have at least one member in a group."
 				});
 				return;
 			}
-				
-			var username = $(e.target).parents(".member").attr("data-username");
-			if(!username) return;
 			
 			var member = this.collection.findWhere({username: username});
 			this.collection.remove(member);
