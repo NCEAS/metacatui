@@ -828,7 +828,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		            var ignoreEquivIds = ($(this.element).attr("id") == "map-request-field"),
 		            	ignoreIds = ignoreEquivIds? appUserModel.get("identitiesUsernames") : [];		            	
 		            ignoreIds.push(appUserModel.get("username").toLowerCase());
-
+		            
 		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
 					$.get(url, function(data, textStatus, xhr) {
 						_.each($(data).find("person"), function(person, i){

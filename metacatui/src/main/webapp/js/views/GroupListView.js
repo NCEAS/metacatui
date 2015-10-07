@@ -422,18 +422,31 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			var input = this.$(".account-autocomplete");
 			if(!input || !input.length) return;
 			
+			var view = this;
+			
 			// look up registered identities 
 			$(input).hoverAutocomplete({
 				source: function (request, response) {
 		            var term = $.ui.autocomplete.escapeRegex(request.term);
 		            
 		            var list = [];
+		            
+		            //Ids/Usernames that we want to ignore in the autocompelte
+		            var ignoreIds = view.collection.pluck("username");
+		            _.each(ignoreIds, function(id){
+		            	ignoreIds.push(id.toLowerCase());
+		            });		            
+		            ignoreIds.push(appUserModel.get("username").toLowerCase());
 
 		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
 					$.get(url, function(data, textStatus, xhr) {
 						_.each($(data).find("person"), function(person, i){
 							var item = {};
 							item.value = $(person).find("subject").text();
+							
+							//Ignore certain values
+							if(_.contains(ignoreIds, item.value.toLowerCase())) return;
+							
 							item.label = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
 							list.push(item);
 						});
