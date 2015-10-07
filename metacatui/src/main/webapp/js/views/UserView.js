@@ -816,19 +816,29 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		setUpAutocomplete: function() {
 			var input = this.$(".account-autocomplete");
 			if(!input || !input.length) return;
-			
+						
 			// look up registered identities 
 			$(input).hoverAutocomplete({
 				source: function (request, response) {
 		            var term = $.ui.autocomplete.escapeRegex(request.term);
 		            
 		            var list = [];
+		            
+		            //Ids/Usernames that we want to ignore in the autocompelte
+		            var ignoreEquivIds = ($(this.element).attr("id") == "map-request-field"),
+		            	ignoreIds = ignoreEquivIds? appUserModel.get("identitiesUsernames") : [];		            	
+		            ignoreIds.push(appUserModel.get("username").toLowerCase());
 
 		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
 					$.get(url, function(data, textStatus, xhr) {
 						_.each($(data).find("person"), function(person, i){
 							var item = {};
 							item.value = $(person).find("subject").text();
+							
+							//Don't display yourself in the autocomplete dropdown (prevents users from adding themselves as an equivalent identity or group member)
+							//Also don't display your equivalent identities in the autocomplete
+							if(_.contains(ignoreIds, item.value.toLowerCase())) return;								
+								
 							item.label = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
 							list.push(item);
 						});

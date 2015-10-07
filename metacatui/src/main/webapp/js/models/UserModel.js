@@ -24,6 +24,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				isMemberOf: [],
 				isOwnerOf: [],
 				identities: [],
+				identitiesUsernames: [],
 				pending: [],
 				token: null
 			}
@@ -34,6 +35,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				if(options.username) this.set("username", options.username);
 				if(options.rawData)  this.set(this.parseXML(options.rawData));
 			}
+			
+			this.on("change:identities", this.pluckIdentityUsernames);
 			
 			//If no username was provided at time of initialization, then use the profile username (username sent to #profile view)
 			if(!this.get("username"))
@@ -581,6 +584,18 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						onError(xhr, textStatus, error);
 				}
 			});
+		},
+		
+		pluckIdentityUsernames: function(){
+			var models = this.get("identities"),
+				usernames = [];
+			
+			_.each(models, function(m){
+				usernames.push(m.get("username").toLowerCase());
+			});
+			
+			this.set("identitiesUsernames", usernames);
+			this.trigger("change:identitiesUsernames");
 		},
 		
 		reset: function(){
