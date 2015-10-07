@@ -131,9 +131,12 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			
 			//Create the member and owner XML
 			this.forEach(function(member){
+				//Don't list yourself as an owner or member (implied)
+				if(appUserModel == member) return;
+				
 				memberXML += "<hasMember>" + member.get("username") + "</hasMember>";
 				
-				if(collection.isOwner(member) || (appUserModel == member))
+				if(collection.isOwner(member))
 					ownerXML += "<rightsHolder>" + member.get("username") + "</rightsHolder>";
 			});
 			
@@ -173,13 +176,30 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 					collection.nameAvailable = null;
 					collection.getGroup();
 				},
-				error: function(data, textStatus, xhr) {
+				error: function(xhr, textStatus, error) {
 					if(typeof onError != "undefined") 
-						onError(data);					
+						onError(xhr);					
 				}
 			});
 			
 			return true;
+		},
+		
+		/*
+		 * For pending groups only (those in the creation stage)
+		 * Will check if the given name/id is available 
+		 */
+		checkName: function(name){
+			//Only check the name for pending groups
+			if(!this.pending) return; 
+			
+			//Reset the name and ID
+			this.name = name || this.name;
+			this.groupId = null;			
+			this.nameAvailable = null; 
+			
+			//Get group info/check name availablity
+			this.getGroup({ add: false });
 		},
 		
 		/*

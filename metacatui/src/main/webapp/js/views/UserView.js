@@ -436,11 +436,9 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				$notification = $("#group-name-notification-container"),
 				$input = $(e.target);
 			
+			//Get the name typed in by the user
 			var name = $input.val().trim();
 			if(!name) return;
-			
-			//Create an empty group and check the name availability - this group might already exist
-			this.pendingGroup.name = name;
 			
 			this.listenToOnce(this.pendingGroup, "nameChecked", function(collection){
 				//If the group name/id is available, then display so 
@@ -463,8 +461,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					
 			});
 			
-			//Get group info/check name availablity
-			this.pendingGroup.getGroup({ add: false });
+			this.pendingGroup.checkName(name);
 		},
 		
 		/*
@@ -487,19 +484,30 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				
 				return;
 			}
-			else if(!this.pendingGroup.nameAvailable) return;
+			//If this name is not available, exit
+			else if(this.pendingGroup.nameAvailable == false) return;
 			
-			var view = this;
+			var view = this,
+				group = this.pendingGroup;
 			var success = function(data){
-				view.showAlert("Your group has been saved", "alert-success", "#add-group-form-container");
+				view.showAlert("Success! Your group has been saved. View it <a href='#profile/" + group.groupId + "'>here</a>", "alert-success", "#add-group-alert-container");
 				view.refreshGroupLists();
 			}
-			var error = function(data){
-				view.showAlert("Your group could not be created. Please try again", "alert-error", "#add-group-form-container")
+			var error = function(xhr){
+				var response = xhr? $.parseHTML(xhr.responseText) : null,
+					description = "";
+				if(response && response.length)
+					description = $(response).find("description").text();
+				
+				if(description) description = "(" + description + ").";
+				else description = "";
+					
+				view.showAlert("Your group could not be created. " + description + " Please try again.", "alert-error", "#add-group-alert-container")
 			}
 			
 			//Create it!
-			if(!this.pendingGroup.save(success, error)) error();
+			if(!this.pendingGroup.save(success, error)) 
+				error();
 		},
 		
 		//------------------------------------------------ Identities/Accounts -------------------------------------------------------//
@@ -851,12 +859,12 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		showAlert: function(msg, classes, container) {
 			if(!classes)
 				var classes = 'alert-success';
-			if(!container)
+			if(!container || !$(container).length)
 				var container = this.$el;
 
 			//Remove any alerts that are already in this container
 			if($(container).children(".alert-container").length > 0)
-				$(container).children(".alert-container").detach();
+				$(container).children(".alert-container").remove();
 			
 			$(container).prepend(
 					this.alertTemplate({
