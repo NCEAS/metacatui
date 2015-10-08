@@ -156,7 +156,7 @@ define(['jquery', 'underscore', 'backbone'],
 		/*
 		 * Supplies search results for ORCiDs to autocomplete UI elements
 		 */
-		orcidSearch: function(request, response, more) {
+		orcidSearch: function(request, response, more, ignore) {
 			
 			// make sure we have something to lookup
 			if (!appModel.get('bioportalSearchUrl')) {
@@ -165,6 +165,9 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			var people = [];
+			
+			if(!ignore) var ignore = [];
+			
 			var query = appModel.get('orcidSearchUrl') + request.term;
 			$.get(query, function(data, status, xhr) {
 				// get the orcid info
@@ -172,8 +175,11 @@ define(['jquery', 'underscore', 'backbone'],
 
 				_.each(profile, function(obj) {
 					var choice = {};
-					choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
 					choice.value = $(obj).find("orcid-identifier > uri").text();
+
+					if(_.contains(ignore, choice.value.toLowerCase())) return;
+					
+					choice.label = $(obj).find("orcid-bio > personal-details > given-names").text() + " " + $(obj).find("orcid-bio > personal-details > family-name").text();
 					choice.desc = $(obj).find("orcid-bio > personal-details").text();
 					people.push(choice);
 				});
@@ -185,7 +191,7 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				// callback with answers
 				response(people);
-			})
+			});
 		},
 		
 		/*

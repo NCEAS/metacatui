@@ -846,7 +846,10 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			            response(list);
 
 					});
-		            
+					
+					//Send an ORCiD search when the search string gets long enough
+					if(request.term.length > 3)
+						appLookupModel.orcidSearch(request, response, false, ignoreIds);       
 		        },
 				select: function(e, ui) {
 					e.preventDefault();
