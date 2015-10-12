@@ -27,6 +27,10 @@ define(['jquery', 'underscore', 'backbone'],
 			coverageYears: 0
 		},
 		
+		//Some dated used for query creation
+		firstPossibleUpload: "2000-01-01T00:00:00Z", //The first possible date that an object could be uploaded (based on DataONE dates)
+		firstPossibleDate: "1800-01-01T00:00:00Z",   //The first possible date that data could have been collected in (based on DataONE dates)
+		
 		initialize: function(){
 			//Add a function to parse ISO date strings for IE8 and other older browsers
 			(function(){
@@ -82,8 +86,9 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			//Get the earliest temporal data coverage year
-			var query = this.get('query') +
-						"+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+			var query = this.get('query') + 
+						"+beginDate:[" + this.firstPossibleDate + "%20TO%20NOW]" //Use date filter to weed out badly formatted data 
+						"+readPermission:public" +
 						"+-obsoletedBy:*";
 			
 			var otherParams = "&rows=1" +
@@ -144,7 +149,10 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			//Get the latest temporal data coverage year
-			var query = this.get('query') + "+(endDate:18*%20OR%20endDate:19*%20OR%20endDate:20*)+-obsoletedBy:*"; //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+			var query = this.get('query') + 
+						"+endDate:[" + this.firstPossibleDate + "%20TO%20NOW]" + //Use date filter to weed out badly formatted data 
+						"+-obsoletedBy:*" +
+						"+readPermission:public";
 			var otherParams = "&rows=1" +
 							  "&fl=endDate" +
 							  "&sort=endDate+desc" +
@@ -189,7 +197,9 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			//Build the query to get the format types
-			var query = this.get('query') + "+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*";
+			var query = this.get('query') + 
+						"+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*" +
+						"+readPermission:public";
 			var otherParams = "&rows=2" +
 						 	  "&group=true" +
 							  "&group.field=formatType" +
@@ -299,7 +309,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Get the earliest upload date	
 			var query =  "q=" + this.get('query') +
-								"+dateUploaded:(19*%20OR%2020*)" +
+								"+dateUploaded:[" + this.firstPossibleUpload + "%20TO%20NOW]" + //Weeds out badly formatted dates
 								"+-obsoletedBy:*"+    //Only count one version of a revision chain
 								"+readPermission:public" +
 								"&fl=dateUploaded" +
@@ -430,7 +440,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//The full query			
 			var query = "q=" + this.get('query') +
-			  "+(beginDate:18*%20OR%20beginDate:19*%20OR%20beginDate:20*)" + //Only return results that start with 18,19, or 20 to filter badly formatted data (e.g. 1-01-03 in doi:10.5063/AA/nceas.193.7)
+			  "+beginDate:[" + this.firstPossibleDate + "%20TO%20NOW]" + //Use date filter to weed out badly formatted data 
 			  "+-obsoletedBy:*" +
 			  "+readPermission:public" +
 			  "&rows=0" +
