@@ -212,7 +212,8 @@ h3{
 .btn > i{
 	margin-left: 5px;
 }
-h3 > .icon{
+h3 > .icon,
+h4 > .icon{
 	margin-right: 10px;
 	max-height: 1em;
 }
@@ -1774,6 +1775,12 @@ Documentation and Help Pages
 ******************************************/
 .documentation h5{
 	display: inline;
+}
+.documentation h4{
+	margin-top: 20px;
+}
+.documentation > section{
+	margin-bottom: 30px;
 }
 .code_example {
     display: block; 

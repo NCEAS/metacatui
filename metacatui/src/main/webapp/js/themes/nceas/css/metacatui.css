@@ -1,20 +1,4 @@
 
-/* Import font families */
-@import url(https://fonts.googleapis.com/css?family=Oswald:400,300,700);
-/* Oswald weights:
-Light 300
-Normal 400
-Bold 700
-*/
-@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic);
-/* Source Sans Pro weights:
-Light 300
-Normal 400
-Normal italic 400
-Semi-bold 600
-Bold 700
-*/
-
     
 #loading-app{
 	display: none;

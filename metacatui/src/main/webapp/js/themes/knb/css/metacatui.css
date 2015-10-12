@@ -1,11 +1,5 @@
  
 /* Import font families */
-@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,300italic,400italic,600italic);
-/* Source Sans Pro wights 
-Light 300, italic
-Normal 400, italic
-Semi-bold 600, italic
-*/
 @import url(https://fonts.googleapis.com/css?family=Gentium+Book+Basic);
 /* Gentium Book Basic weights:
 Normal 400
@@ -24,7 +18,7 @@ Bold 700 Italic
     body {
       color: #555555;
       background-color: #FDFDFD;
-      font-family: "Helvetica Nueue", "Helvetica", "Source Sans Pro", "Arial", "sans serif";
+      font-family: "Helvetica Nueue", "Helvetica", "Arial", "sans serif";
       font-weight: 400;
       font-size: 14px;
       line-height: 20px;
@@ -2307,7 +2301,7 @@ svg .domain{
 	clear: both;
 	margin: 20px auto 0 auto;
 	color: #333333;
-	font: 300 14px/14px Source Sans Pro;
+	font: 300 14px/14px;
 }
 
 #metacatDocs > .footer > .footerNav{
@@ -2346,11 +2340,11 @@ svg .domain{
 #metacatDocs th{
     	background-color: #555555;
     	color: #FFFFFF;
-    	font: 300 16px/20px Source Sans Pro;
+    	font: 300 16px/20px;
     }
     
 #metacatDocs td{
-    	font: 400 15px/20px Source Sans Pro;
+    	font: 400 15px/20px;
     }
     
 #metacatDocs tr.row-odd{
@@ -2412,7 +2406,7 @@ svg .domain{
  .figure > .caption{
 	 margin-bottom: 0px;
 	text-align: center;
-	font: 400 14px/14px Source Sans Pro;
+	font: 400 14px/14px;
 	color: #666;
 	padding-top: 10px;
  }
@@ -2476,7 +2470,7 @@ svg .domain{
     }
     
     #metacatDocs h3 {
-		font: 400 24.5px/40px "Source Sans Pro" sans-serif;
+		font: 400 24.5px/40px;
 	}
 	
 	#metacatDocs h2{
