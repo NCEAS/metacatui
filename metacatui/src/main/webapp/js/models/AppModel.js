@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone'],
 			page: 0,
 			profileQuery: null,
 			metcatVersion: "2.5.0", 
-			baseUrl: window.location.origin,
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
@@ -52,28 +52,22 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		initialize: function() {
 			
-			//For IE
-			if (!window.location.origin) {
-				var baseUrl = window.location.protocol + "//" + window.location.host;
-				
-				this.set('baseUrl', baseUrl);
+			//If no base URL is specified, then user the DataONE CN base URL
+			if(!this.get("baseUrl")){
+				this.set("baseUrl",   this.get("d1CNBaseUrl"));
+				this.set("d1Service", this.get("d1CNService"));
 			}
 			
 			// these are pretty standard, but can be customized if needed
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
-			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
-			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/?');
+			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
-			
-			if(this.get("d1Service").indexOf("v2") > -1){
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
-			}
 			
 			if(this.get("d1CNBaseUrl")){
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
@@ -90,15 +84,21 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 			}
 			
-			//Settings for older versions of metacat
-			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/") > -1)){
+			//Settings for older versions of metacat, using DataONE API v1
+			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/v1") > -1)){
+				//Query service URL
 				var queryServiceUrl = this.get("queryServiceUrl");
 				if(queryServiceUrl.substring(queryServiceUrl.length-1) == "?")
-					queryServiceUrl = queryServiceUrl.substring(0, queryServiceUrl.length-1);
+					queryServiceUrl = queryServiceUrl.substring(0, queryServiceUrl.length-1);				
 				
 				this.set("queryServiceUrl", queryServiceUrl);
+				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			}
-			
+			//Whenever the Metacat version is at least 2.5.0 and we are querying a MN
+			else if((this.get("metcatVersion") >= "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/") > -1)){
+				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+			}				
+	
 			this.on("change:pid", this.changePid);
 		},
 

@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		defaults: function(){
 			return {
 				id: null, //The id of the resource map/package itself
+				url: null, //the URL to retrieve this package
 				memberId: null, //An id of a member of the data package
 				indexDoc: null, //A SolrResult object representation of the resource map 
 				size: 0, //The number of items aggregated in this package
@@ -143,6 +144,26 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			});				
 			
 			return this;
+		},
+		
+		//Create the URL string that is used to download this package
+		getURL: function(){
+			var url = null;
+			
+			//If we haven't set a packageServiceURL upon app initialization and we are querying a CN, then the packageServiceURL is dependent on the MN this package is from
+			if(!appModel.get("packageServiceUrl") && (appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && nodeModel.get("members").length){
+				var source = this.get("datasource"),
+					node   = _.find(nodeModel.get("members"), {identifier: source});
+				
+				//If this node has MNRead v2 services...
+				if(node && node.readv2)
+					url = node.baseURL + "/v2/packages/application%2Fbagit-097/" + this.get("id");			
+			}
+			else if(appModel.get("packageServiceUrl"))
+				url = appModel.get("packageServiceUrl") + this.get("id");
+			
+			this.set("url", url);
+			return url;
 		},
 		
 		createNestedPackages: function(){

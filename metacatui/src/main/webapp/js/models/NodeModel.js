@@ -118,6 +118,12 @@ define(['jquery', 'underscore', 'backbone'],
 					_.each(thisNodeChildren, function(child){
 						//Information about this node
 						node[child.nodeName] = child.textContent;
+						
+						//Check if this member node has v2 read capabilities - important for the Package service
+						if((child.nodeName == "services") && child.childNodes.length){
+							var v2 = $(child).find("service[name='MNRead'][version='v2'][available='true']").length;
+							node["readv2"] = v2;
+						}
 					});
 					_.each(thisNode.attributes, function(attribute){
 						//Information about this node

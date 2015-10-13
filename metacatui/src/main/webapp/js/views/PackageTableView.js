@@ -133,9 +133,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
-			if(packageServiceUrl && this.model.get("id")){
+			if(this.model.getURL()){
 				downloadButtonHTML = this.downloadButtonTemplate({ 
-					href: packageServiceUrl + encodeURIComponent(this.model.get("id")), 
+					href: this.model.get("url"), 
 					text: "Download all",
 					className: "btn btn-primary "
 				});	

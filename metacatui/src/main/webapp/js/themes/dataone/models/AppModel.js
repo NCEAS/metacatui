@@ -19,10 +19,10 @@ define(['jquery', 'underscore', 'backbone'],
 			profileUsername: null,
 			page: 0,
 			metcatVersion: "2.5.0", 
-			baseUrl: window.location.origin,
+			baseUrl: "https://cn-sandbox-2.test.dataone.org",
 			// the most likely item to change is the Metacat deployment context
 			context: '',
-			d1Service: null,
+			d1Service: "/cn/v2",
 			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
@@ -58,30 +58,26 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		initialize: function() {
 			
-			//For IE
-			if (!window.location.origin) {
-				var baseUrl = window.location.protocol + "//" + window.location.host;
-				
-				this.set('baseUrl', baseUrl);
-				//this.set('d1CNBaseUrl', baseUrl);
+			if(!this.get("baseUrl")){
+				this.set("baseUrl",   this.get("d1CNBaseUrl"));
+				this.set("d1Service", this.get("d1CNService"));
 			}
 			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
-			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1CNService') + '/isAuthorized/');
-			this.set('queryServiceUrl',   this.get('baseUrl') + this.get('d1CNService') + '/query/solr/?');
-			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1CNService') + '/meta/');
-			this.set('resolveServiceUrl', this.get('baseUrl')  + this.get('d1CNService') + '/resolve/');
-			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1CNService') + '/node');
-			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1CNService") + "/accounts/");
-			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1CNService") + "/groups/");
-			this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1CNService') + '/query/logsolr');
+			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
+			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/?');
+			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
+			this.set('resolveServiceUrl', this.get('baseUrl')  + this.get('d1Service') + '/resolve/');
+			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
+			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
+			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
+			this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1Service') + '/query/logsolr');
 			this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap/");
 			
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
 				this.set("prov", true);
 				this.set('viewServiceUrl',    this.get('baseUrl') + this.get('d1CNService') + '/views/metacatui/');
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('d1CNService') + '/packages/application%2Fbagit-097/');
 				
 				//Authentication / portal URLs
 				this.set('portalUrl',      this.get('d1CNBaseUrl') + '/portal/');
@@ -98,12 +94,17 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//Settings for older versions of metacat
-			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/") > -1)){
+			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/v1") > -1)){
 				var queryServiceUrl = this.get("queryServiceUrl");
 				if(queryServiceUrl.substring(queryServiceUrl.length-1) == "?")
 					queryServiceUrl = queryServiceUrl.substring(0, queryServiceUrl.length-1);
 				
 				this.set("queryServiceUrl", queryServiceUrl);
+				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+			}
+			//Whenever the Metacat version is at least 2.5.0 and we are querying a MN
+			else if((this.get("metcatVersion") >= "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/") > -1)){
+				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 			}
 			
 			this.on("change:pid", this.changePid);
