@@ -309,6 +309,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Get the earliest upload date	
 			var query =  "q=" + this.get('query') +
+								"+formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
 								"+dateUploaded:[" + this.firstPossibleUpload + "%20TO%20NOW]" + //Weeds out badly formatted dates
 								"+-obsoletedBy:*"+    //Only count one version of a revision chain
 								"+readPermission:public" +

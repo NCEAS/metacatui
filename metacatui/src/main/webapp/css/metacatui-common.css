@@ -236,6 +236,17 @@ h4 > .icon{
 .icon-negative{
     color: #F15959;
 }
+.icon-circle-badge{
+	background-color: #999;
+    padding: 6px;
+    border-radius: 7px;
+    color: #FFF;
+}
+.icon-text{
+	font-family: inherit;
+	font-weight: bold;
+	font-size: .9em;
+}
 /****************************************** 
 ** Results and Result Rows ***
 ******************************************/
@@ -1179,6 +1190,7 @@ tfoot .control i{
 }
 #user-profile #data-list{
 	padding-bottom: 20px;
+	padding-left: 25px;
 	margin-bottom: 20px;
 }
 #user-profile #clear-all{
@@ -1188,6 +1200,20 @@ tfoot .control i{
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+}
+.user-view-section .hgroup{
+	margin-bottom: 20px;
+}
+.user-view-section .hgroup h2{
+	font-weight: lighter;
+}
+.user-view-section .hgroup h6,
+.user-view-section .hgroup h5{
+	font-weight: normal;
+}
+.user-view-section .hgroup .divided{
+	margin-top: 20px;
+	padding-top: 20px;
 }
 textarea.token{
 	width: 100%;
@@ -1323,7 +1349,7 @@ textarea.token{
   border: 1px solid #ddd;
 }
 .list-group-header.list-group-item{
-	background-color: #D3E0EA;
+	background-color: #ECF1F5;
 }
 .panel>.list-group .list-group-item.active{
 	border-left-width: 5px;

@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 	var UserModel = Backbone.Model.extend({
 		defaults: function(){
 			return{
+				type: "person", //assume this is a person unless we are told otherwise - other possible type is a "group"
 				checked: false, //Set to true when we have checked the status of this user
 				basicUser: false, //Set to true to only query for basic info about this user - prevents sending queries for info that will never be displayed in the UI
 				lastName: null,
@@ -37,10 +38,6 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			}
 			
 			this.on("change:identities", this.pluckIdentityUsernames);
-			
-			//If no username was provided at time of initialization, then use the profile username (username sent to #profile view)
-			if(!this.get("username"))
-				this.set("username", appModel.get("profileUsername"));
 						
 			this.on("change:username change:identities", this.updateSearchModel);
 			this.createSearchModel();
@@ -69,7 +66,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		},
 		
 		parseXML: function(data){
-			var model = this;
+			var model = this,
+				username = this.get("username");
 			
 			//Reset the group list so we don't just add it to it with push()
 			this.set("isMemberOf", this.defaults().isMemberOf, {silent: true});
@@ -77,47 +75,76 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Reset the equivalent id list so we don't just add it to it with push()
 			this.set("identities", this.defaults().identities, {silent: true});
 			
-			//Get the person's name and verification status
-			var username   = $(data).find("person subject").first().text(),
-				firstName  = $(data).find("person givenName").first().text(),
-				lastName   = $(data).find("person familyName").first().text(),
-				fullName   = firstName + " " + lastName,
-				email      = $(data).find("person email").first().text(),
-				verified   = $(data).find("person verified").first().text(),
-				groups     = this.get("isMemberOf"),
-				ownerOf	   = this.get("isOwnerOf"),
-				identities = this.get("identities");
+			//Find this person's node in the XML
+			var userNode = null;
+			if(username){
+				var subjects = $(data).find("subject");
+				for(var i=0; i<subjects.length; i++){
+					if($(subjects[i]).text().toLowerCase() == username.toLowerCase()){
+						userNode = $(subjects[i]).parent();
+						break;
+					}
+				}
+			}
+			else{
+				var username = $(data).children("subject").text();
+			}
+			if(!userNode) return;
 			
-			if(firstName == "NA")
-				firstName = null;
-			if(lastName == "NA")
-				lastName = null;
-			
-			//Get each equivalent identity and save
-			_.each($(data).find("person").first().find("equivalentIdentity"), function(identity, i){
-				//push onto the list
-				var username = $(identity).text(),
-					equivalentId = new UserModel({ username: username, basicUser: true });
+			var type = $(userNode).prop("tagName").toLowerCase();
+			if(type == "group"){
+				var fullName = $(userNode).find("groupName").first().text();
+			}
+			else{
+				//Find the person's info
+				var	firstName  = $(userNode).find("givenName").first().text(),
+					lastName   = $(userNode).find("familyName").first().text(),
+					email      = $(userNode).find("email").first().text(),
+					verified   = $(userNode).find("verified").first().text(),
+					memberOf   = this.get("isMemberOf"),
+					ownerOf	   = this.get("isOwnerOf"),
+					identities = this.get("identities");
 				
-				identities.push(equivalentId);
-			});
-			
-			//Get each group and save
-			_.each($(data).find("group"), function(group, i){
-				var groupId = $(group).find("subject").first().text();
-				groups.push(groupId);
-								
-				//Get all the rightsHolders
-				var allRightsHolders = [];
-				_.each($(group).children("rightsHolder"), function(rightsHolder){
-					allRightsHolders.push($(rightsHolder).text().toLowerCase());
+				//Sometimes names are saved as "NA" when they are not available - translate these to false values
+				if(firstName == "NA")
+					firstName = null;
+				if(lastName == "NA")
+					lastName = null;
+				
+				//Construct the fullname from the first and last names, but watch out for falsely values
+				var fullName = "";
+					fullName += firstName? firstName : "";
+					fullName += lastName? (" " + lastName) : "";
+					
+				//Get each equivalent identity and save
+				_.each($(userNode).find("equivalentIdentity"), function(identity, i){
+					//push onto the list
+					var username = $(identity).text(),
+						equivalentId = new UserModel({ username: username, basicUser: true });
+					
+					identities.push(equivalentId);
 				});
-				if(_.contains(allRightsHolders, username.toLowerCase()))
-					ownerOf.push(groupId);
-			});
+				
+				//Get each group and save
+				_.each($(data).find("group"), function(group, i){
+					//Save group ID
+					var groupId = $(group).find("subject").first().text(),
+						groupName = $(group).find("groupName").text();
+					
+					memberOf.push({ groupId: groupId, name: groupName });
+									
+					//Check if this person is a rightsholder
+					var allRightsHolders = [];
+					_.each($(group).children("rightsHolder"), function(rightsHolder){
+						allRightsHolders.push($(rightsHolder).text().toLowerCase());
+					});
+					if(_.contains(allRightsHolders, username.toLowerCase()))
+						ownerOf.push(groupId);
+				});
+			}
 			
 			return {
-				isMemberOf: groups,
+				isMemberOf: memberOf,
 				isOwnerOf: ownerOf,
 				identities: identities,
 				verified: verified,
@@ -126,7 +153,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				lastName: lastName,
 				fullName: fullName,
 				email: email,
-				registered: true
+				registered: true,
+				type: type,
+				rawData: data
 			}
 		},
 		

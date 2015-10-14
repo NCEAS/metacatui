@@ -327,6 +327,9 @@
     i.glyphicons-icon.white {
       opacity: 1;
     }
+    .icon-circle-badge{
+    	background-color: #1C6E84;
+    }
    
 
 /* TABLES 
@@ -1250,7 +1253,9 @@ ul.tb-megamenu-subnav{
 		height: 700px;
 		margin-left: 0px;
 	}
-	
+	.list-only #results-container{
+		margin-left: 0px;
+	}
 	#results{
 		margin-bottom: 10px;
 	}

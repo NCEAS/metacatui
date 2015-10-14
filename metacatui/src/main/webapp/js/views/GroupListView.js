@@ -21,13 +21,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		 * New instances of this view should pass a UserGroup collection in the options object
 		 */
 		initialize: function(options){
-			if(typeof options == "undefined"){
-				this.collection = new UserGroup();
-				return;
-			}
+			if(typeof options == "undefined")
+				var options = {};
 			
-			this.collection = options.collection || new UserGroup();
-			this.groupId    = this.collection.groupId || null;
+			this.collection    = options.collection || new UserGroup();
+			this.groupId       = this.collection.groupId || null;
+			this.collapsable   = (typeof options.collapsable == "undefined")? true : options.collapsable;
+			this.showGroupName = (typeof options.showGroupName == "undefined")? true : options.showGroupName;
 		},
 		
 		events: {
@@ -54,29 +54,34 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 						
 			//Create the header/first-level of the list			
 			var listItem   = $(document.createElement("li")).addClass("list-group-header list-group-item group toggle"),
-				icon       = $(document.createElement("i")).addClass("icon icon-caret-down tooltip-this group");
+				icon       = $(document.createElement("i")).addClass("icon icon-caret-down tooltip-this group"),
+				numMembers = $(document.createElement("span")).addClass("num-members").text(group.length),
+				numMembersLabel = $(document.createElement("span")).text(" members"),
+				numMembersContainer = $(document.createElement("span")).append(numMembers, numMembersLabel);
 			
-			if(!this.collection.pending){
-				var link       = $(document.createElement("a")).attr("href", "#profile/" + group.groupId).attr("data-subject", group.groupId),
-					groupName  = $(document.createElement("span")).text(group.name),
-					numMembers = $(document.createElement("span")).addClass("num-members").text(group.length);
+			if(this.showGroupName){
+				if(!this.collection.pending){
+					var link       = $(document.createElement("a")).attr("href", "#profile/" + group.groupId).attr("data-subject", group.groupId),
+						groupName  = $(document.createElement("span")).text(group.name);
 
-				//Save some elements for later use
-				this.$numMembers = $(numMembers);
-				this.$groupName  = $(groupName);
-			}
-			else{
-				var link       = $(document.createElement("a")).attr("href", "#"),
-					groupName  = $(document.createElement("span")).text("Members");
+					numMembersContainer.prepend(" (").append(")");
+				}
+				else{
+					var link       = $(document.createElement("a")).attr("href", "#"),
+						groupName  = $(document.createElement("span")).text("");
+				}
+				
+				//Put it all together
+				$(listItem).append($(link).prepend(icon, groupName));			
 			}
 
+			//Add the member count			
+			this.$el.append(listItem.append(numMembersContainer));
+			
 			//Save some elements for later use
 			this.$header = $(listItem);
-			
-			//Put it all together
-			$(listItem).append($(link).prepend(icon, groupName));			
-			if(numMembers) $(listItem).append(" (", numMembers, " members)");			
-			this.$el.append(listItem);
+			this.$numMembers = $(numMembers);
+			this.$groupName  = $(groupName);
 			
 			//Create a list of member names
 			var view = this;
@@ -117,7 +122,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				memberNameContainer = $(document.createElement("div")).addClass("name-container"),
 				memberIcon     = $(document.createElement("i")).addClass("icon icon-user"),	
 				memberLink     = $(document.createElement("a")).attr("href", "#profile/" + username).attr("data-username", username).prepend(memberIcon, name),
-				memberName     = $(document.createElement("span")).addClass("details").attr("data-username", username).text(username);
+				memberName     = $(document.createElement("span")).addClass("details ellipsis").attr("data-username", username).text(username);
 						
 			memberIcon.tooltip({
 				placement: "top",
@@ -491,13 +496,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		
 		//---------- Collapsing/Expanding the member list --------//
 		collapseMember: function(memberEl){
-			if(this.preventToggle) return;
+			if(this.preventToggle || !this.collapsable) return;
 			
 			$(memberEl).slideUp();				
 		},
 		
 		collapseMemberList: function(e){
-			if(this.preventToggle && !e) return;
+			if((this.preventToggle && !e) || !this.collapsable) return;
 			
 			this.$(".member, .add-member").slideUp().addClass("collapsed");
 			this.$(".icon.group").addClass("icon-caret-right").removeClass("icon-caret-down");
@@ -505,7 +510,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		
 		toggleMemberList: function(e){
 			if(e) e.preventDefault();			
-			else if(this.preventToggle ) return;
+			else if(this.preventToggle || !this.collapsable) return;
 			
 			this.$(".member, .add-member").slideToggle().toggleClass("collapsed");
 			this.$(".icon.group").toggleClass("icon-caret-right icon-caret-down");

@@ -22,17 +22,28 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				
 		comparator: "lastName", //Sort by last name
 		
-		initialize: function(models, options) {
+		initialize: function(models, options) {			
+			if((typeof models == "undefined") || !models)
+				var models = [];
+			
 			if(typeof options !== "undefined"){
+				//Save our options
+				$.extend(this, options);
 				this.groupId = options.groupId || "";
 				this.name    = options.name    || "";
 				this.pending = (typeof options.pending === "undefined") ? false : options.pending;
-			}
+				
+				//If raw data is passed, parse it to get a list of users to be added to this group
+				if(options.rawData){
+					var toAdd = this.parse(options.rawData);
+					_.each(toAdd, function(modelAttributes){
+						models.push(new UserModel(modelAttributes));
+					});
+				}
+			} 			
 			
-			if(typeof models !== "undefined")
-				this.add(models);
-						
-			return this;
+			//Add all our models to this collection
+			this.add(models);			
 		},
 		
 		/*
@@ -95,7 +106,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				if(_.contains(existing, username)) return;
 				
 				//User attributes
-				var userAttr = new UserModel().parseXML(person);
+				var userAttr = new UserModel().set("username", username).parseXML(person);
 				
 				//Is this person an owner of this group?
 				if(group.find("rightsHolder:contains('" + username + "')").length){

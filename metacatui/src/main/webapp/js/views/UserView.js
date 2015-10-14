@@ -87,22 +87,52 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					this.renderSettings();
 				}
 			}
-			//Create a user model for this person
+			//If this isn't the currently-looged in user, then let's find out more info about this account
 			else{
+				//Create a UserModel with the username given
 				var user = new UserModel({
 					username: username
 				});
 				this.model = user;	
 				
-				//Get the user's info first then render the profile section of the User View
+				//When we get the infomration about this account, then crender the profile
 				this.model.once("change:checked", this.renderProfile, this);
+				//Get the info
 				this.model.getInfo();
 			}	
 		},
 		
+		/* COMMENTED OUT for now because it was possibly over-engineering the problem... But keeping this code just in case its usable in the future...
+		 * the idea was to create an inherited view for groups that reuses a lot of the UserView code, but because it was tied to a collection (vs model) it was going to be a 
+		 * lot of refactoring 
+		 * -------
+		 * Checks if the current model is a person or a group, and renders this UserView for people and the UsersGroupView for groups
+		 */
+/*		checkType: function(){
+			//If this user is a group
+			if(this.model.get("type") == "group"){
+				var el = this.el;
+				
+				//Create a User Group collection
+				var group = new UserGroup([], this.model.toJSON());
+				//PUll in the UserGroupView, an inherited view, and render that
+				require(["views/UserGroupView"], function(UserGroupView){
+					var groupView = new UserGroupView({ collection: group });
+					groupView.setElement(el);
+					groupView.render();
+				});
+				
+			}
+			//For non-group (person) accounts, render the profile here
+			else
+				this.renderProfile();
+		},*/	
+		
 		renderProfile: function(){
 			//Insert the template first
-			var profileEl = $.parseHTML(this.profileTemplate().trim());
+			var profileEl = $.parseHTML(this.profileTemplate({
+				type: this.model.get("type")
+			}).trim());
 			
 			//If the profile is being redrawn, then replace it
 			if(this.$profile && this.$profile.length){
@@ -137,6 +167,25 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			//Insert this user's data content
 			this.insertContent();
+			
+			//List the groups this user is in
+			if(this.model.get("type") == "group"){
+				//Create the User Group collection
+				var options = { 
+					name: this.model.get("fullName"), 
+					groupId: this.model.get("username"),
+					rawData: this.model.get("rawData") || null 
+					}
+				var userGroup = new UserGroup([], options);
+				
+				//Create the group list and add it to the page
+				var viewOptions = { collapsable: false, showGroupName: false } 
+				var groupList = this.createGroupList(userGroup, viewOptions);
+				this.$("#user-membership-container").html(groupList);
+			}
+			else{
+				this.insertMembership();				
+			}
 		},
 		
 		renderSettings: function(){
@@ -146,7 +195,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			}));
 			this.$settings = this.$("[data-section='settings']");
 			
-			//Listen for the group list to draw the group list
+			//Draw the group list
 			this.insertCreateGroupForm();
 			this.listenTo(this.model, "change:isMemberOf", this.getGroups);
 			this.getGroups();
@@ -263,19 +312,25 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		insertStats: function(){
 			if(this.model.noActivity && this.statsView){
 				this.statsView.$el.addClass("no-activity");
+				this.$("#total-upload-container").text("0");
 				return;
 			}
 			
-			var username = this.model.get("username");
+			var username = this.model.get("username"),
+				view = this;
 			
-			//Render the Stats View for this person
+			//Insert a couple stats into the profile
 			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
+			this.listenToOnce(statsModel, "change:totalUploads", function(statsModel){
+				view.$("#total-upload-container").text(statsModel.get("totalUploads"));
+			});
 			
 			//Create a base query for the statistics
 			var statsSearchModel = this.model.get("searchModel").clone();
 			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});			
 			statsModel.set("query", statsSearchModel.getQuery());
 			
+			//Render the Stats View for this person
 			this.statsView = new StatsView({
 				title: "",
 				el: this.$("#user-stats")
@@ -309,7 +364,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		 */
 		insertFirstUpload: function(){
 			if(this.model.noActivity){
-				this.$("#first-upload").text("");
+				this.$("#first-upload-container, #first-upload-year-container").hide();
 				return;
 			}
 			
@@ -322,7 +377,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				y = firstUpload.getUTCFullYear(),
 				d = firstUpload.getUTCDate();
 			
-			this.$("#first-upload").text("Contributor since " + m + " " + d + ", " + y);
+			this.$("#first-upload-container").text("Contributor since " + m + " " + d + ", " + y);
+			this.$("#first-upload-year-container").text(y);
 		},
 		
 		/*
@@ -353,6 +409,33 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		}, 
 		
 		/*
+		 * Inserts a list of groups this user is a member of 
+		 */
+		insertMembership: function(){			
+			var groups = _.sortBy(this.model.get("isMemberOf"), "name");			
+			if(!groups.length){
+				this.$("#user-membership-header").hide();
+				return;
+			}
+						
+			var	model  = this.model,
+				list   = $(document.createElement("ul")).addClass("list-group member-list"),
+				listHeader = $(document.createElement("h5")).addClass("list-group-item list-group-header").text("Member of " + groups.length + " groups"),
+				listContainer = this.$("#user-membership-container");
+						
+			_.each(groups, function(group, i){				
+				var name = group.name || "Group " + i,
+					listItem = $(document.createElement("li")).addClass("list-group-item"),
+					groupLink = group.groupId? $(document.createElement("a")).attr("href", "#profile/" + group.groupId).text(name).appendTo(listItem) : "<a></a>";
+				
+				$(list).append(listItem);
+			});
+			
+			listContainer.html(list);
+			list.before(listHeader);
+		},
+		
+		/*
 		 * When this user has not uploaded any content, render the profile differently
 		 */
 		noActivity: function(){
@@ -360,7 +443,6 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.insertContent();
 			this.insertFirstUpload();
 			this.insertStats();
-			//this.$profile.html(this.model.get("fullName") + " hasn't uploaded any data yet.");
 		},
 		
 		//-------------------------------------------------------------- Groups -------------------------------------------------------//
@@ -368,21 +450,27 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		 * Gets the groups that this user is a part of and creates a UserGroup collection for each
 		 */
 		getGroups: function(){
-			var view = this;
-
+			var view = this,
+				groups = [];
+			
 			//Create a group Collection for each group this user is a member of
-			_.each(this.model.get("isMemberOf").sort(), function(groupId){
-				var userGroup = new UserGroup([view.model], { groupId: groupId });
-				
-				view.listenTo(userGroup, "sync", view.insertGroupList);
-				userGroup.getGroup();				
-			});
+			_.each(_.sortBy(this.model.get("isMemberOf"), "name"), function(group){
+				var userGroup = new UserGroup([], group);
+				groups.push(userGroup);
+
+				view.listenTo(userGroup, "sync", function(){				
+					var list = view.createGroupList(userGroup);
+					this.$("#group-list-container").append(list);
+				});
+				userGroup.getGroup();		
+			});			
 		},
-		
+
+				
 		/*
 		 * Inserts a GroupListView for the given UserGroup collection
 		 */
-		insertGroupList: function(userGroup){			
+		createGroupList: function(userGroup, options){			
 			//Only create a list for new groups that aren't yet on the page
 			var existingGroupLists = _.where(this.subviews, {type: "GroupListView"});
 			if(existingGroupLists)
@@ -390,14 +478,22 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			if(groupIds && (_.contains(groupIds, userGroup.groupId)))
 				return;
 			
-			var groupView = new GroupListView({ collection: userGroup });
-			this.subviews.push(groupView);
-					
-			//Add to the page
-			this.$("#group-list-container").append(groupView.render().el);
+			//Create a list of the view options
+			if(typeof options == "object")
+				options.collection = userGroup;
+			else
+				var options = { collection: userGroup };
 			
-			if((this.model.get("isMemberOf").length > 3) || (userGroup.length > 3))
+			//Create the view and save it as a subview
+			var groupView = new GroupListView(options);
+			this.subviews.push(groupView);
+			
+			//Collapse the views if need be
+			if((this.model.get("isMemberOf") && (this.model.get("isMemberOf").length > 3)) || (userGroup.length > 3))
 				groupView.collapseMemberList();
+			
+			//Finally, render it and return
+			return groupView.render().el;
 		},
 		
 		/*
