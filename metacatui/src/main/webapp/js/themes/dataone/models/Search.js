@@ -244,11 +244,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					//Trim the spaces off
 					filterValue = filterValue.trim();
 					
-					filterValue = encodeURIComponent(filterValue);
 					// Does this need to be wrapped in quotes?
 					if(model.needsQuotes(filterValue))
-						filterValue = "%22" + filterValue + "%22";
-					
+						filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+					else
+						filterValue = encodeURIComponent(filterValue);
 					
 					query += "+" + model.fieldNameMap["annotation"] + ":" + filterValue;			
 				});
@@ -364,9 +364,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(typeof filterValue == "object")
 						filterValue = filterValue.value;
 					
-					filterValue = encodeURIComponent(filterValue);
-					if(this.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
-					
+					if(this.needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+					else 					filterValue = encodeURIComponent(filterValue);
+
 					query += "+" + filterValue;
 				}
 			}
@@ -395,8 +395,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						filterValue = filterValue.trim();
 						
 						// Does this need to be wrapped in quotes?
-						filterValue = encodeURIComponent(filterValue);
-						if(model.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
+						if(model.needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
+						else filterValue = encodeURIComponent(filterValue);
 
 						query += "+" + model.fieldNameMap[filterName] + ":" + filterValue;			
 					}
@@ -502,6 +502,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Check for a space character
 			if(value.indexOf(" ") >= 0)
+				return true;
+			
+			//Check for the colon : character
+			if(value.indexOf(":") >= 0)
 				return true;
 		
 			return false;
