@@ -245,10 +245,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					filterValue = filterValue.trim();
 					
 					// Does this need to be wrapped in quotes?
+					filterValue = encodeURIComponent(filterValue);
 					if(model.needsQuotes(filterValue))
 						filterValue = "%22" + filterValue + "%22";
-					else
-						filterValue = encodeURIComponent(filterValue);
 					
 					query += "+" + model.fieldNameMap["annotation"] + ":" + filterValue;			
 				});
@@ -365,8 +364,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(typeof filterValue == "object")
 						filterValue = filterValue.value;
 					
+					filterValue = encodeURIComponent(filterValue);
 					if(this.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
-					else filterValue = encodeURIComponent(filterValue);
 					
 					query += "+" + filterValue;
 				}
@@ -396,8 +395,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						filterValue = filterValue.trim();
 						
 						// Does this need to be wrapped in quotes?
+						filterValue = encodeURIComponent(filterValue);
 						if(model.needsQuotes(filterValue)) filterValue = "%22" + filterValue + "%22";
-						else 							   filterValue = encodeURIComponent(filterValue);
 
 						query += "+" + model.fieldNameMap[filterName] + ":" + filterValue;			
 					}
@@ -505,10 +504,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(value.indexOf(" ") >= 0)
 				return true;
 			
-			//Check for the colon : character
-			if(value.indexOf(":") >= 0)
-				return true;
-			
 			return false;
 		},
 		
@@ -542,7 +537,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				if(!Array.isArray(value) && (typeof value === "object") && value.value)
 					value = value.value.trim();
 				
-				if(this.needsQuotes(values[0])) queryAddition = '"' + value + '"';
+				if(this.needsQuotes(values[0])) queryAddition = '%22' + encodeURIComponent(value) + '%22';
 				else if(subtext)                queryAddition = "*" + encodeURIComponent(value) + "*";
 				else							queryAddition = encodeURIComponent(value);
 					
@@ -554,7 +549,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if(!Array.isArray(value) && (typeof value === "object") && value.value)
 						value = value.value.trim();
 					
-					if(model.needsQuotes(value)) value = '"' + value + '"';
+					if(model.needsQuotes(value)) value = '%22' + encodeURIComponent(value) + '%22';
 					else if(subtext)             value = "*" + encodeURIComponent(value) + "*";
 					else                         value = encodeURIComponent(value);
 						
@@ -606,7 +601,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				value = value.value.trim();
 			else
 				value = value.trim();
-			if(this.needsQuotes(value)) value = '"' + value + '"';
+			if(this.needsQuotes(value)) value = '%22' + encodeURIComponent(value) + '%22';
 			else if(subtext)            value = "*" + encodeURIComponent(value) + "*";
 			else                        value = encodeURIComponent(value);
 			
