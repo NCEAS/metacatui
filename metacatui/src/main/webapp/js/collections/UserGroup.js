@@ -35,9 +35,22 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				
 				//If raw data is passed, parse it to get a list of users to be added to this group
 				if(options.rawData){
+					
+					//Get a list of UserModel attributes to add to this collection
 					var toAdd = this.parse(options.rawData);
+					
+					//Create a UserModel for each user
 					_.each(toAdd, function(modelAttributes){
-						models.push(new UserModel(modelAttributes));
+						//Don't pass the raw data to the UserModel creation because it is redundant-
+						//We already parsed the raw data when we called add() above
+						var rawDataSave = modelAttributes.rawData;
+						modelAttributes.rawData = null;
+						
+						//Create the model then add the raw data back 
+						var member = new UserModel(modelAttributes);
+						member.set("rawData", rawDataSave);
+						
+						models.push(member);
 					});
 				}
 			} 			
