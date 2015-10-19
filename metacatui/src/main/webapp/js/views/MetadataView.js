@@ -137,9 +137,13 @@ define(['jquery',
 								
 								viewRef.insertCitation();
 								
+								//If this metadata doc is not in a resource map
 								if(!viewRef.model.get("resourceMap")){
+									//Create a package model that contains just this metadata doc
 									var packageModel = new Package({ id: null, members: [viewRef.model] });
 									viewRef.packageModels.push(packageModel);
+									
+									//Mark the model as complete and insert its details
 									viewRef.listenTo(packageModel, "complete", viewRef.insertPackageDetails);
 									packageModel.flagComplete();
 								}
@@ -268,6 +272,10 @@ define(['jquery',
 			this.$el.prepend(breadcrumbs);
 		},
 		
+		/*
+		 * Retrieves information from the index about this object, given the id (passed from the URL)
+		 * When the object info is retrieved from the index, we set up models depending on the type of object this is
+		 */
 		getModel: function(pid){
 			//If no id is passed, used the one in the appModel
 			if((typeof pid === "undefined") || !pid) var pid = this.pid;
@@ -940,6 +948,8 @@ define(['jquery',
 		},
 		
 		findEntityDetailsContainer: function(id, el){
+			if(!el) var el = this.el;
+						
 			//Are we looking for the main object that this MetadataView is displaying?
 			if(id == this.pid){
 				if(this.$("#Metadata").length > 0) return this.$("#Metadata");
@@ -950,10 +960,8 @@ define(['jquery',
 				var link = this.$(".entitydetails a[data-id='" + id + "']");
 			}
 			
-			if(!el) var el = this.el;
-			
 			//Otherwise, try looking for an anchor with the id matching this object's id
-			if(link.length < 1)
+			if(!link.length)
 				link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
 
 			//Get metadata index view
@@ -1017,15 +1025,15 @@ define(['jquery',
 					
 					if(objID == viewRef.pid) continue;
 									
-					//Is viewRef a visual object (image or PDF)?
+					//Is this a visual object (image or PDF)?
 					var type = solrResult.type == "SolrResult" ? solrResult.getType() : "Data set";
 					if(type == "image")
 						images.push(solrResult);
 					else if(type == "PDF")
 						pdfs.push(solrResult);
 					
-					//Find the part of the HTML Metadata view that describes viewRef data object
-					var anchor         = $(document.createElement("a")).attr("id", objID),
+					//Find the part of the HTML Metadata view that describes this data object
+					var anchor         = $(document.createElement("a")).attr("id", objID.replace(/[^A-Za-z0-9]/g, "-")),
 						downloadButton = viewRef.downloadButtonTemplate({href: solrResult.get("url")}),
 						container      = viewRef.findEntityDetailsContainer(objID),
 						dataDisplay = viewRef.dataDisplayTemplate({
@@ -1034,7 +1042,7 @@ define(['jquery',
 										    objID : objID
 						});
 	
-					//Insert the data display HTML and the anchor tag to mark viewRef spot on the page 
+					//Insert the data display HTML and the anchor tag to mark this spot on the page 
 					if(container){
 						if((type == "image") || (type == "PDF")){
 							if($(container).children("label").length > 0)
@@ -1479,6 +1487,7 @@ define(['jquery',
 			this.pid = null;
 			this.$detached = null;
 			this.$loading = null;
+			this.citationEl = null;
 			
 			//Put the document title back to the default
 			appModel.set("title", appModel.defaults.title);
