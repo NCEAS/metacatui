@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 			json.memberNode = _.findWhere(nodeModel.get("members"), {identifier: this.model.get("datasource")});
 				
 			var resultRow = this.template(json);
-			this.$el.append(resultRow);
+			this.$el.html(resultRow);
 			
 			//Create the citation
 			var citation = new CitationView({metadata: this.model}).render().el;

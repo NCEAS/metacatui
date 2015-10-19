@@ -25,8 +25,8 @@ define(['jquery', 'underscore', 'backbone',
 				
 		render: function (options) {
 			
-			//Use a smaller header
-			if(this.el == "#Content")
+			//Use a smaller header unless this is a subview
+			if(!this.isSubview)
 				appModel.set('headerType', 'default');
 			
 			//Get the text template from the options (sent from the router, most likely)
