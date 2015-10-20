@@ -77,7 +77,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			//Find this person's node in the XML
 			var userNode = null;
-			if(username){
+			if(!username)
+				var username = $(data).children("subject").text();			
+			if(username){			
 				var subjects = $(data).find("subject");
 				for(var i=0; i<subjects.length; i++){
 					if($(subjects[i]).text().toLowerCase() == username.toLowerCase()){
@@ -86,11 +88,10 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					}
 				}
 			}
-			else{
-				var username = $(data).children("subject").text();
-			}
-			if(!userNode) return;
+			if(!userNode)
+				userNode = $(data).first();
 			
+			//Get the type of user - either a person or group
 			var type = $(userNode).prop("tagName").toLowerCase();
 			if(type == "group"){
 				var fullName = $(userNode).find("groupName").first().text();
@@ -243,13 +244,14 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					model.set("pending", model.defaults().pending);
 					var pending = model.get("pending");
 					_.each($(data).find("person"), function(person, i) {
-												
-						//Create a new User Model for this pending identity
-						var pendingUser = new UserModel({ rawData: person });
 						
 						//Don't list yourself as a pending map request
-						if(pendingUser.get("username").toLowerCase() == model.get("username").toLowerCase())
+						var personsUsername = $(person).find("subject").text();
+						if(personsUsername.toLowerCase() == model.get("username").toLowerCase())
 							return;
+						
+						//Create a new User Model for this pending identity
+						var pendingUser = new UserModel({ rawData: person });
 						
 						if(pendingUser.isOrcid())
 							pendingUser.getInfo();
