@@ -85,6 +85,7 @@ define(['jquery',
 		render: function () {
 
 			appModel.set('headerType', 'default');
+			this.$el.html(this.loadingTemplate({ msg: "Loading" }));
 			
 			//Reset a new class map - for matching ids->class names in prov charts
 			this.classMap = new Array();

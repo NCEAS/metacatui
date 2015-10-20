@@ -50,7 +50,11 @@
     #clear-all.hidden{
     	display: none;
     }
-    
+    #clear-all{
+    	background-color: #29ABCE;
+    	color: white;
+    	font-weight: normal;
+    }
     article, aside, figure, footer, header, hgroup, menu, nav, section { 
       display:block;   
     }

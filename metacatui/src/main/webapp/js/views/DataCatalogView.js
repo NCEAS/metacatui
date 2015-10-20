@@ -2699,7 +2699,7 @@ define(['jquery',
 			$("#map-container").addClass("loading");
 			this.$results.addClass("loading");
 			
-			this.$results.html(this.loadingTemplate());
+			this.$results.html(this.loadingTemplate({ msg: "Searching for data..." }));
 		},
 		
 		//Toggles the collapseable filters sidebar and result list in the default theme 

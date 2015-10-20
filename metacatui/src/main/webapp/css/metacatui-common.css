@@ -149,6 +149,9 @@ h3{
 	margin-left: 43%;
 	margin-top: 20%;
 }
+#Content > .notification.loading > .icon {
+    margin-left: 47%;
+}
 .notification.loading.page .icon{
 	margin-top: 10px;
 }
