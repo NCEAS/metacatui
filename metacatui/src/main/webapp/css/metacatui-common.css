@@ -1754,7 +1754,8 @@ form .text-left > .icon {
 .form-group input.control-group{
 	line-height: 30px;
 }
-.form-group input ~ .help-text {
+.form-group input ~ .help-text,
+.form-group input ~ .help-text ~ .form-feedback {
     display: block;
     margin-left: 24%;
 }

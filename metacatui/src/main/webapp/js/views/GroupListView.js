@@ -63,8 +63,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				if(!this.collection.pending){
 					var link       = $(document.createElement("a")).attr("href", "#profile/" + group.groupId).attr("data-subject", group.groupId),
 						groupName  = $(document.createElement("span")).text(group.name);
-
-					numMembersContainer.prepend(" (").append(")");
 				}
 				else{
 					var link       = $(document.createElement("a")).attr("href", "#"),
@@ -72,7 +70,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				}
 				
 				//Put it all together
-				$(listItem).append($(link).prepend(icon, groupName));			
+				$(listItem).append($(link).prepend(icon, groupName));	
+				numMembersContainer.prepend(" (").append(")");
 			}
 
 			//Add the member count			
@@ -164,10 +163,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			}
 			
 			//Update the header
-			if(this.$numMembers)
-				this.$numMembers.text(this.collection.length);
-			if(this.$groupName)
-				this.$groupName.text(this.collection.name);
+			this.updateHeader();
 			
 			//Collapse members of this group is necessary
 			if(this.$el.is(".collapsed"))
@@ -208,6 +204,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				fullName: fullName
 			});
 			
+			//Add this user to the collection
+			this.collection.add(user);
+			
+			//If this is a pending group (in the middle of creation), then don't save it to the server
+			if(this.collection.pending) return;
+			
+			//Save this user in the group
 			var view = this;
 			var success = function(response){
 				view.addMemberNotification({
@@ -228,8 +231,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				view.collection.remove(user);
 			}
 			
-			//Add this user
-			this.collection.add(user);
+			//Save
 			this.collection.save(success, error);
 		},
 		
@@ -259,9 +261,16 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				return;
 			}
 			
+			//Remove the member from the collection
 			var member = this.collection.findWhere({username: username});
 			this.collection.remove(member);
-			this.collection.save();
+			
+			//Update the header
+			this.updateHeader();
+			
+			//Only save the group to the server if its not a pending group
+			if(!this.collection.pending)
+				this.collection.save();
 		},
 		
 		/*
@@ -275,12 +284,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			//Remove from page
 			memberEl.remove();
-			
-			//Update the header
-			if(this.$numMembers)
-				this.$numMembers.text(this.collection.length);
-			if(this.$groupName)
-				this.$groupName.text(this.collection.name);
 
 			//Remove this member el from the view storage
 			this.memberEls[member.cid] = null;
@@ -346,7 +349,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			//Replace the owner element with the new one
 			$(memberEl).find(".owner").tooltip("destroy").replaceWith(this.getOwnerEl(user));
 		},
-		
+
 		getOwnerEl: function(member){
 			var ownerIcon = $(document.createElement("i")).addClass("icon owner");
 			
@@ -420,6 +423,16 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			}
 			
 			this.$addMemberMsg.show().delay(3000).fadeOut();
+		},
+		
+		/*
+		 * Update the header of this group list, which includes the number of members and the group name
+		 */
+		updateHeader: function(){
+			if(this.$numMembers)
+				this.$numMembers.text(this.collection.length);
+			if(this.$groupName)
+				this.$groupName.text(this.collection.name);
 		},
 		
 		//----------- Form utilities -------------//
