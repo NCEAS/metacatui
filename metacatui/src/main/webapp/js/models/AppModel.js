@@ -43,8 +43,9 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			annotatorUrl: null,
 			accountsUrl: null,
-			groupsUrl: null,
 			pendingMapsUrl: null,
+			accountsMapsUrl: null,
+			groupsUrl: null,
 			prov: false
 		},
 				
@@ -70,10 +71,12 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			
 			if(this.get("d1CNBaseUrl")){
-				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 				this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
+				this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
 				this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
+
+				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
 		
 				//Settings for the DataONE API v2 only

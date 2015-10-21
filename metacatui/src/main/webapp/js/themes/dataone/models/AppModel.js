@@ -44,13 +44,16 @@ define(['jquery', 'underscore', 'backbone'],
 			//bioportalSearchUrl: null, // use this to deactivate the annotator view
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,
+			accountsUrl: null,
+			pendingMapsUrl: null,
+			accountMapsUrl: null,
+			groupsUrl: null,
 			signInUrl: null,
+			signOutUrl: null,
 			//signInUrlOrcid: null,
 			signInUrlLdap: null,
 			tokenUrl: null,
 			//annotatorUrl: null,
-			accountsUrl: null,
-			groupsUrl: null,
 			prov: false
 		},
 		
@@ -69,10 +72,12 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
 			this.set('resolveServiceUrl', this.get('baseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
-			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
-			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
 			this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1Service') + '/query/logsolr');
+
+			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
+			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
 			this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap/");
+			this.set("accountsMapsUrl",    this.get("accountsUrl") + "map/");
 			
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
@@ -91,14 +96,14 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');				
 				
 				//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
-				if(typeof this.get("signOutUrl") !== "undefined")
-					this.set("signOutUrl",     this.get('portalUrl') + "logout");
 				if(typeof this.get("signInUrl") !== "undefined")
-					this.set("signInUrl",      this.get('portalUrl') + "startRequest?target=");
+					this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
+				if(this.get("signInUrl"))
+					this.set("signOutUrl", this.get('portalUrl') + "logout");
 				if(typeof this.get("signInUrlOrcid") !== "undefined")
 					this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
 				if(typeof this.get("signInUrlLdap") !== "undefined")
-					this.set("signInUrlLdap",  this.get('portalUrl') + "ldap?target=");					
+					this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");					
 				if(this.get('orcidBaseUrl'))
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 			}

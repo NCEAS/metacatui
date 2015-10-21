@@ -591,7 +591,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		removeMap: function(otherUsername, onSuccess, onError){
 			if(!otherUsername) return;
 			
-			var mapUrl = appModel.get("pendingMapsUrl") + encodeURIComponent(otherUsername),
+			var mapUrl = appModel.get("accountsMapsUrl") + encodeURIComponent(otherUsername),
 				model = this;
 						
 			// ajax call to remove mapping

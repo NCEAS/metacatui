@@ -650,7 +650,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					viewRef.showAlert("Success! Your account is no longer associated with the user " + equivalentIdentity, "alert-success", "#identity-alert-container");
 				},
 				error = function(xhr, textStatus, error){
-					viewRef.showAlert(xhr.responseText, 'alert-error', "#identity-alert-container");
+					viewRef.showAlert("Something went wrong: " + xhr.responseText, 'alert-error', "#identity-alert-container");
 				};
 
 			this.model.removeMap(equivalentIdentity, success, error);
