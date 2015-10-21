@@ -459,7 +459,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				groups.push(userGroup);
 
 				view.listenTo(userGroup, "sync", function(){				
-					var 	list = view.createGroupList(userGroup);
+					var list = view.createGroupList(userGroup);
 					this.$("#group-list-container").append(list);
 				});
 				userGroup.getGroup();		

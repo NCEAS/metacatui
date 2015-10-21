@@ -118,23 +118,13 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				//Username of this person
 				var username = $(person).children("subject").text();
 				
-				//If this user is already in the group, request its info and skip adding it
+				//If this user is already in the group, skip adding it
 				if(_.contains(existing, username.toLowerCase())) return;
 				
-				//User attributes
-				var userAttr = new UserModel().set("username", username).parseXML(person);
-				
-				//Is this person an owner of this group?
-				if(group.find("rightsHolder:contains('" + username + "')").length){
-					if(!userAttr.isOwnerOf)
-						userAttr.isOwnerOf = [collection.groupId];
-					else if(Array.isArray(userAttr.isOwnerOf))
-						userAttr.isOwnerOf.push(collection.groupId);
-					else if(typeof userAttr.isOwnerOf == "string")
-						userAttr.isOwnerOf = [userAttr.isOwnerOf, collection.groupId];
-				}
+				//User attributes - pass the full response for the UserModel to parse
+				var userAttr = {username: username, rawData: response}
 					
-				//Create User Model and add to collection
+				//Add to collection
 				toAdd.push(userAttr);				
 			});	
 			
