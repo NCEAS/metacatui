@@ -455,11 +455,11 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			//Create a group Collection for each group this user is a member of
 			_.each(_.sortBy(this.model.get("isMemberOf"), "name"), function(group){
-				var userGroup = new UserGroup([], group);
+				var userGroup = new UserGroup([view.model], group);
 				groups.push(userGroup);
 
 				view.listenTo(userGroup, "sync", function(){				
-					var list = view.createGroupList(userGroup);
+					var 	list = view.createGroupList(userGroup);
 					this.$("#group-list-container").append(list);
 				});
 				userGroup.getGroup();		

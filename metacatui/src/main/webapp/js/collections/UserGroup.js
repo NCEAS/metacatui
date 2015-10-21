@@ -103,7 +103,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				people = $(response).find("person"),
 				collection = this,
 				toAdd = new Array(),
-				existing = this.pluck("username");
+				existing = this.pluck("username");	
+			
+			//Make all existing usernames lowercase for string matching
+			if(existing.length) existing = _.invoke(existing, "toLowerCase");
 			
 			this.name = $(group).children("groupName").text();
 			
@@ -116,7 +119,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				var username = $(person).children("subject").text();
 				
 				//If this user is already in the group, request its info and skip adding it
-				if(_.contains(existing, username)) return;
+				if(_.contains(existing, username.toLowerCase())) return;
 				
 				//User attributes
 				var userAttr = new UserModel().set("username", username).parseXML(person);

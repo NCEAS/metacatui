@@ -117,14 +117,30 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					fullName += firstName? firstName : "";
 					fullName += lastName? (" " + lastName) : "";
 					
-				//Get each equivalent identity and save
-				_.each($(userNode).find("equivalentIdentity"), function(identity, i){
-					//push onto the list
-					var username = $(identity).text(),
-						equivalentId = new UserModel({ username: username, basicUser: true });
-					
-					identities.push(equivalentId);
-				});
+				//Don't get this detailed info about basic users
+				if(!this.get("basicUser")){
+					//Get all the equivalent identities for this user
+					var equivalentIds = $(userNode).find("equivalentIdentity");
+					if(equivalentIds.length > 0)
+						var allPersons = $(data).find("person subject");
+	
+					_.each(equivalentIds, function(identity, i){
+						//push onto the list
+						var username = $(identity).text(),
+							equivUserNode;
+						
+						//Find the matching person node in the response
+						_.each(allPersons, function(person){
+							if($(person).text().toLowerCase() == username.toLowerCase()){
+								equivUserNode = $(person).parent().first();
+								allPersons = _.without(allPersons, person);
+							}
+						});
+						
+						var equivalentUser = new UserModel({ username: username, basicUser: true, rawData: equivUserNode });						
+						identities.push(equivalentUser);
+					});
+				}
 				
 				//Get each group and save
 				_.each($(data).find("group"), function(group, i){
@@ -196,14 +212,6 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				success: function(data, textStatus, xhr) {	
 					//Parse the XML response to get user info
 					model.set(model.parseXML(data));
-					
-					//Get more information about equivalent identities only if this isn't marked as a "basic user"
-					//The "basicUser" property is to prevent querying for information that will never be displayed in the interface
-					if(!model.get("basicUser")){
-						_.each(model.get("identities"), function(equivalentId){
-							equivalentId.getInfo();
-						});
-					}
 					
 					 //Trigger the change events
 					model.trigger("change:isMemberOf");
