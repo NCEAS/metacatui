@@ -232,6 +232,30 @@ define(['jquery',
 			});		
 		},
 		
+		showAlert: function(msg, classes, container, delay) {
+			if(!classes)
+				var classes = 'alert-success';
+			if(!container || !$(container).length)
+				var container = this.$el;
+
+			//Remove any alerts that are already in this container
+			if($(container).children(".alert-container").length > 0)
+				$(container).children(".alert-container").remove();
+			
+			var alert = $.parseHTML(this.alertTemplate({
+				msg: msg,
+				classes: classes
+			}).trim());
+			
+			if(delay){
+				$(alert).hide();
+				$(container).prepend(alert);
+				$(alert).show().delay(3000).fadeOut();
+			}
+			else
+				$(container).prepend(alert);
+		},
+		
 		submitLogin: function(e){
 			e.preventDefault();
 			

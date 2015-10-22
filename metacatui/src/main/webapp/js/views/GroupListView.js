@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			"click .add-member .submit"   : "addToCollection",
 			"click .remove-member"		  : "removeFromCollection",
 			"click .add-owner"            : "addOwnerToCollection",
-			"click .remove-owner"         : "removeOwnerFromCollection",
+			"click .remove-owner"         : "removeOwnership",
 			"keypress input"              : "checkForReturn"
 		},
 		
@@ -319,7 +319,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		 * When the user clicks on the remove ownership icon for an owner, the rightsHolder is removed
 		 * from the group and the updated group is saved to the server.
 		 */
-		removeOwnerFromCollection: function(e){
+		removeOwnership: function(e){
 			if(!e) return;
 			e.preventDefault();
 			
@@ -330,11 +330,18 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			if(!username) return;
 			var member = this.collection.findWhere({username: username});
 			
-			//Update ownership
-			var newOwners = _.without(member.get("isOwnerOf"), this.collection.groupId);
-			member.set("isOwnerOf", newOwners);
-			member.trigger("change:isOwnerOf");
+			//Make sure we have at least one owner in this group left
+			var	newOwners = _.without( this.collection.getOwners(), member);
+			if(newOwners.length < 1){
+				appView.showAlert("Groups need to have at least one owner.", "aler-error", this.$el, true);
+				return;
+			}
 			
+			//Update the model
+			var newOwnership = _.without(member.get("isOwnerOf"), view.collection.groupId);
+			member.set("isOwnerOf", newOwnership);			
+			member.trigger("change:isOwnerOf");
+
 			//Save
 			var success = function(){ view.refreshOwner(member); }			
 			this.collection.save(success);
