@@ -27,7 +27,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				identities: [],
 				identitiesUsernames: [],
 				pending: [],
-				token: null
+				token: null,
+				rawData: null
 			}
 		},
 		

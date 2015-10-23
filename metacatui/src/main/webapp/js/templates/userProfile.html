@@ -3,6 +3,12 @@
 		<div class="span3">
 			<hgroup class="hgroup">
 				<h2 class="center insert-fullname"></h2>
+				<% if(type == "group") { %>
+					<h5 class="center subtle user-type">
+						<i class="icon icon-on-left icon-group"></i>
+						Group
+					</h5>
+				<% } %>
 				<h6 class="center subtle">
 					<span>
 						<% if(type == "group") { %> Group Id: <% }

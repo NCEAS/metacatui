@@ -122,8 +122,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				if(_.contains(existing, username.toLowerCase())) return;
 				
 				//User attributes - pass the full response for the UserModel to parse
-				var userAttr = {username: username, rawData: response}
-					
+				var userAttr = new UserModel({username: username}).parseXML(response);
+									
 				//Add to collection
 				toAdd.push(userAttr);				
 			});	

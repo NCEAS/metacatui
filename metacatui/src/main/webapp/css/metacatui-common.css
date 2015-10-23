@@ -1214,6 +1214,11 @@ tfoot .control i{
 .user-view-section .hgroup h5{
 	font-weight: normal;
 }
+.user-view-section .user-type{
+	margin-bottom: 10px;
+	margin-top: 5px;
+	padding-bottom: 10px;
+}
 .user-view-section .hgroup .divided{
 	margin-top: 20px;
 	padding-top: 20px;
