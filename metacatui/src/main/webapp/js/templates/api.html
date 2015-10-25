@@ -1,3 +1,8 @@
+Overall comments,
+- Could be nice if example output was given below the example curl commands.
+- Might be useful to explain what KNB is compared to DataOne. i.e. The REST endpoint for KNB is a Metacat instance that has an API which is aligned with DataONE's API.
+
+
 <article id="API">
 	<div class="container">
 
@@ -17,8 +22,8 @@
 						<i class="glyphicons-icon cloud"></i>
 						KNB Developer Tools
 					</h2>
-					<p class="lead">The KNB supports the DataONE REST API, and Java, Python, and R libraries for easily creating client tools.  
-					</p>	
+					<p class="lead">The KNB supports the DataONE REST API, and Java, Python, and R libraries for easily creating client tools.
+					</p>
 				</div>
 			</div>
 
@@ -32,15 +37,15 @@
 							The KNB supports the DataONE REST API for automating the process of
                             uploading, downloading, and searching for data on the KNB using scripted
                             languages such as shell, R, Matlab, and Python, among others.  This guide
-                            is a brief synopsis of the DataONE API, which is more comprehensively 
+                            is a brief synopsis of the DataONE API, which is more comprehensively
                             documented in the <a
 							href="https://purl.dataone.org/architecture/apis/MN_APIs.html"
 							target="_external">DataONE Architecture Documentation</a> (also see the <a
 							href="https://purl.dataone.org/architecture-dev/apis/MN_APIs.html"
 							target="_external">development version of the architecture guide for future releases</a>).
 							This API allows any software
-							tool that supports the DataONE API (such as the rDataONE R
-							package) to also be able to seamlessly interact with KNB data.
+							tool that supports the DataONE API (such as the <a href="https://github.com/DataONEorg/rdataone">rDataONE R
+							package</a>) to also be able to seamlessly interact with KNB data.
 							While DataONE maintains the full technical documentation on the
 							API, here is a brief overview for commonly accessed services on the KNB.
 						</p>
@@ -54,22 +59,22 @@
 								access rules, etc.</p>
 							<p>
                                 <strong>Data objects</strong> are treated as opaque blobs, and are retrievable
-                                via the <code>get</code> method given a persistent identifier (PID). Data objects
-                                can be represented in any format, but the repository encourages the use of 
+                                via the <code>GET</code> method given a persistent identifier (PID). Data objects
+                                can be represented in any format, but the repository encourages the use of
                                 non-propietary, open formats such as CSV and netCDF that make good archival formats.
                             </p>
-                            <p>    
-                                <strong>Science metadata objects</strong> are metadata documents such as 
-                                <a href="http://knb.ecoinformatics.org/software/eml" target="blank">EML</a>, 
+                            <p>
+                                <strong>Science metadata objects</strong> are metadata documents such as
+                                <a href="http://knb.ecoinformatics.org/software/eml" target="blank">EML</a>,
                                 FGDC, ISO19115, and so forth that provide metadata describing some data
 								object(s). These are represented in XML according to their
-								respective schema. 
+								respective schema.
                             </p>
-                            <p>    
+                            <p>
                                 <strong>Resource Maps objects</strong> are OAI-ORE documents that
 								describe the aggregations of data and metadata into
 								<code>data packages</code>. Individual data and metadata files can be uploaded
-                                to the repository, but to indicate that a set of files is part of an 
+                                to the repository, but to indicate that a set of files is part of an
                                 aggregated data package, you must provide a OAI-ORE resource map linking the
                                 objects.
 							</p>
@@ -86,13 +91,13 @@
 							<blockquote><i class="glyphicons-icon warning_sign"></i>
 							<p class="text-warning">
                             The examples below show calls to the production KNB data
-                            repository REST endpoint 
+                            repository REST endpoint
 							(<code>https://knb.ecoinformatics.org/knb/d1/mn/v1</code>), but users
 						    should not create test data on the production KNB.  Instead, please use
 						    a test Metacat server to explore the API and create test data
 						    (e.g., <code>https://dev.nceas.ucsb.edu/knb/d1/mn/v1</code>).
 						    </p></blockquote>
-								
+
 							</p>
 							<h4>Quick Reference</h4>
 							<table class="endpoints">
@@ -168,29 +173,29 @@
 									streams.</li>
 							</ul>
 							<h3 id="responseFormat">Response Format</h3>
-							<p>Version 1.0 of the DataONE services only support XML serialization, and 
+							<p>Version 1.0 of the DataONE services only support XML serialization, and
 							this format MUST be used when communicating with the KNB.
 							Request and response documents MUST also be encoded using UTF-8.</p>
 							<h3 id="auth">Authentication and Authorization</h3>
-							<p>Authentication is handled using SSL with client-side certificates 
-							(in X.509 format).  Users can 
-							<a href="https://cilogon.org/?skin=DataONE" target="_external">log into CILogon</a> 
-							to download a certificate, 
+							<p>Authentication is handled using SSL with client-side certificates
+							(in X.509 format).  Users can
+							<a href="https://cilogon.org/?skin=DataONE" target="_external">log into CILogon</a>
+							to download a certificate,
 							which can then be included in requests.  The Subject of the provided certificate
 							will be used by the KNB to determine all access control decisions for accessing,
 							creating, updating, archiving, and deleting objects.  If a client-side certificate
 							is not provided, the user will be considered an anonymous <code>public</code> user
-							and will only be able to access public content.   
+							and will only be able to access public content. ? This means I need a cert to create/update/archive/delete, yes? ?
 							</p>
-							<p>Each language or submission tool will have different mechanisms for setting the 
-							client certificate in the SSL session.  For example, for Curl the certificate filename 
+							<p>Each language or submission tool will have different mechanisms for setting the
+							client certificate in the SSL session.  For example, for Curl the certificate filename
 							is passed in on the commandline: <code>curl -X POST --cert /tmp/x509up_u502 ...</code>.
 							<blockquote><i class="glyphicons-icon warning_sign"></i>
                                 <p class="text-warning">The version of <code>curl</code> shipped by Apple on MacOS X 10.9
-                                and later is broken and does not support providing PEM certificates via the command line. 
-                                Instead, it uses certificates registered in the system keychain, as described on the 
-                                <a href="http://curl.haxx.se/mail/archive-2014-10/0053.html">curl mailing list</a>.  
-                                Thus, calls to the KNB that require a certificate will fail on the standard Mac curl 
+                                and later is broken and does not support providing PEM certificates via the command line.
+                                Instead, it uses certificates registered in the system keychain, as described on the
+                                <a href="http://curl.haxx.se/mail/archive-2014-10/0053.html">curl mailing list</a>.
+                                Thus, calls to the KNB that require a certificate will fail on the standard Mac curl
                                 version, which can be fixed by replacing this with the MacPorts version
                                 of curl, or by using a certificate converted to PK12 format. A workaround for these issues
                                 is being explored, as the behavior differs in Mavericks and Yosemite.
@@ -198,12 +203,12 @@
 							</p>
 						</section>
 						<section name="examples">
-						    
+
 							<h3 name="get">Get an Object</h3>
                             <p>Each object on DataONE has a persistent identifier (PID), which can be used to get the
                             bytes of tha object.  Note that PID identifiers must be escaped using URL escaping conventions
                             if they contain characters that are normally reserved in URLs.  For example, a DOI such as
-                            <code>doi:10.5063/FF1HT2M7Q</code> is a PID which would need to be escaped to 
+                            <code>doi:10.5063/FF1HT2M7Q</code> is a PID which would need to be escaped to
                             <code>doi:10.5063%2FF1HT2M7Q</code> when used in a URL.
 
 							<code class="code_example">
@@ -215,16 +220,16 @@ curl -X GET \
 
                             If a certificate is not provided in the request, then the results will only include publicly
                             accessible content.  To view private content, be sure to include a valid X.509 certificate in
-                            the request (e.g,, in curl, use the <code>--cert</code> argument to provide the path to a 
+                            the request (e.g,, in curl, use the <code>--cert</code> argument to provide the path to a
                             certificate that that was previously downloaded from CILogon).
 							<h3 name="create">Create an Object</h3>
                             An object can be inserted into the repository using the <code>create</code> API call, which
                             involves POSTing the object to the object collection.  Required parameters include the
                             <code>pid</code> to be used for the object, the bytes of the <code>object</code> itself,
-                            and an XML 
+                            and an XML
                             <a href="https://releases.dataone.org/online/api-documentation-v1.2.0/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
-                            (<code>sysmeta</code>) document describing core metadata 
-                            properties about the object, including who owns it, its format, etc. 
+                            (<code>sysmeta</code>) document describing core metadata
+                            properties about the object, including who owns it, its format, etc.
 							<code class="code_example">
 curl -X POST \
      --cert /tmp/x509up_u501 \
@@ -240,9 +245,9 @@ curl -X POST \
                             An object can be updated in the repository using the <code>update</code> API call, which
                             involves PUTing the object to the object collection.  Required parameters include the
                             <code>newPid</code> to be used for the object, the bytes of the <code>object</code> itself,
-                            and an XML 
+                            and an XML
                             <a href="https://releases.dataone.org/online/api-documentation-v1.2.0/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
-                            (<code>sysmeta</code>) document describing core metadata 
+                            (<code>sysmeta</code>) document describing core metadata
                             properties about the object, including who owns it, its format, etc. Note that this operation
                             occurs against the original object by including its <code>pid</code> in the REST URL.
 							<code class="code_example">
@@ -258,8 +263,8 @@ curl -X PUT \
 							</code>
 							<h3 name="archive">Archive an Object</h3>
                             An object can be archived, which moves it out of the search path so it won't be discovered, but is
-                            still accessible to users who know the <code>pid</code> of the object so that citations remain 
-                            viable. To archive an object, call the <code>archive</code> service using an HTTP PUT with the 
+                            still accessible to users who know the <code>pid</code> of the object so that citations remain
+                            viable. To archive an object, call the <code>archive</code> service using an HTTP PUT with the
                             <code>pid</code> in the service endpoint.
 							<code class="code_example">
 curl -X PUT \
@@ -268,8 +273,8 @@ curl -X PUT \
      "${ENDPOINT}/archive/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
 							</code>
 							<h3 name="getSystemMetadata">Get System Metadata for an Object</h3>
-                            Use the <code>getSystemMetadata</code> to access the <a href="https://releases.dataone.org/online/api-documentation-v1.2.0/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical 
-                            information about each object on the repository, including its identifier, its type, access 
+                            Use the <code>getSystemMetadata</code> to access the <a href="https://releases.dataone.org/online/api-documentation-v1.2.0/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical
+                            information about each object on the repository, including its identifier, its type, access
                             control policies, and replication policies, and other details like size and checksum.
 							<code class="code_example">
 curl -X GET \
@@ -277,10 +282,12 @@ curl -X GET \
      "${ENDPOINT}/meta/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
 							</code>
 							<h3 name="archive">Generate an identifier</h3>
-                            Creating an object on the repository requires submitting it with a globally unique identifier, 
+							Maybe this could come earlier. You'll need an identifier before you can execute some of the above comments.
+
+                            Creating an object on the repository requires submitting it with a globally unique identifier,
                             which can be generated by calling the <code>generateIdentifier</code> service.  This service can
-                            be used to generate identifiers that are UUIDs, DOIs, and that potentially follow other syntax 
-                            conventions. The <code>scheme</code> parameter controls which type of identifier should be 
+                            be used to generate identifiers that are UUIDs, DOIs, and that potentially follow other syntax
+                            conventions. The <code>scheme</code> parameter controls which type of identifier should be
                             generated.  Generally, the use of UUIDs is encouraged for fine-grained identifiation of individual
                             files within a data package, and the use of DOIs for the identifier for the metadata record for
                             an overall data package.
@@ -292,15 +299,15 @@ curl -X POST \
      "${ENDPOINT}/generate"
 							</code>
 							<h3 name="query">Search the metadata index</h3>
-                            To search across all of the metadata in the repository, use the <code>query</code> service to 
-                            configure a SOLR query.  The full SOLR syntax is supported, providing the means to create complex 
-                            logical query conditions, and to customize the metadata fields returned. Query results can be 
+                            To search across all of the metadata in the repository, use the <code>query</code> service to
+                            configure a SOLR query.  The full SOLR syntax is supported, providing the means to create complex
+                            logical query conditions, and to customize the metadata fields returned. Query results can be
                             returned in <code>xml</code> and <code>json</code> formats.  Paging through results is supported
-                            using the <code>rows</code> and <code>start</code> parameters.  To search only the most recent 
+                            using the <code>rows</code> and <code>start</code> parameters.  To search only the most recent
                             version of the metadata, include the <code>-obsoletedBy:*</code> constraint in the SOLR query. And
                             note that all SOLR queries must be properly URL-escaped and SOLR escaped to be processed correctly
                             (e.g., spaces in the SOLR query need to be escaped with a '+' or '%20', and colons in a SOLR query
-                            value need to be preceded by a backslash). In addition, to run these commands from curl, shell 
+                            value need to be preceded by a backslash). In addition, to run these commands from curl, shell
                             escapes will also need to be added as appropriate (e.g., by quoting strings).
 							<code class="code_example">
 curl -X GET \
