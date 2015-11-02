@@ -976,21 +976,25 @@ ul.tb-megamenu-subnav{
     input.filter::-webkit-input-placeholder{
 		color: #999;
 		font-weight: normal;
+		font-size: .9em;
 		text-shadow: none;
 	}
 	input.filter:-moz-placeholder{ /* Firefox 19+ */
 		color: #999;
 		font-weight: normal;
+		font-size: .9em;
 		text-shadow: none;
 	}
 	input.filter::-moz-placeholder{ /* Firefox 18- */
 		color: #333;
 		font-weight: normal;
+		font-size: .9em;
 		text-shadow: none;
 	}
 	input.filter:-ms-input-placeholder{
 		color: #999;
 		font-weight: normal;
+		font-size: .9em;
 		text-shadow: none;
 	}
 	.filter-contain .icon.expand:hover,
@@ -1251,6 +1255,7 @@ ul.tb-megamenu-subnav{
 	}	
 	.mapMode #results-container{
 		width: 400px;
+		width: calc(100% - 216px - 33%);
 		overflow-x: hidden;
 		overflow-y: scroll;
 		-webkit-transform: translate3d(0,0,1); 
@@ -1844,8 +1849,7 @@ svg .point:hover ~ .line-chart-label{
 
 #map-container{
 	height: 500px;
-	width: 400px;
-	width: calc(100% - 216px - 400px);	/* 100% - sidebar - results */
+	width: 33%;
 	float: left;
 }
 #map-canvas{

@@ -461,12 +461,10 @@
 /* MAPS 
 --------------------------------- */
 #map-container{
-	-webkit-transition: all 1s;
-	transition: all 1s;
 	display: none;
-	height: 100%;
-	width: calc(100% - 216px - 400px);
-	position: relative;
+	height: 500px;
+	width: 33%;
+	float: left;
 }
 
 #map-container.loading {
@@ -547,25 +545,6 @@
 .mapMode #hide-map-control{
 	display: block;
 }
-
-
-/* Data Catalog CSS
--------------------------------------------------- */
-#mainBody {
-	min-height: 800px;
-	margin-top: 0px;
-	padding-left: 10px;
-}
-
-/* MAPS 
---------------------------------- */
-
-#map-container{
-	height: 500px;
-	width: 400px;
-	width: calc(100% - 220px - 400px);	
-	float: left;
-}
 #map-canvas{
 	height: 100%;
 	width: 100%;
@@ -592,6 +571,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	top: 25px;
 	left: 160px;
 }
+
+
+/* Data Catalog CSS
+-------------------------------------------------- */
+#mainBody {
+	min-height: 800px;
+	margin-top: 0px;
+	padding-left: 10px;
+}
+
 /* FEATURES CSS 
 -------------------------------------------------- */    
     
@@ -1933,6 +1922,7 @@ svg .domain{
 	}	
 	.mapMode #results-container{
 		width: 400px;
+		width: calc(100% - 33% - 216px);
 		overflow-x: hidden;
 		overflow-y: scroll;
 		-webkit-transform: translate3d(0,0,1); 

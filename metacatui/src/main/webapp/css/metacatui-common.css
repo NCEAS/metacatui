@@ -147,10 +147,8 @@ h3{
 .notification.loading .icon{
 	font-size: 40px;
 	margin-left: 43%;
+	margin-left: calc(50% - 46px);
 	margin-top: 20%;
-}
-#Content > .notification.loading > .icon {
-    margin-left: 47%;
 }
 .notification.loading.page .icon{
 	margin-top: 10px;
@@ -176,6 +174,9 @@ h3{
 	width: auto;
 	color: #999;
 	margin: 0;
+}
+#results .notification.loading .icon{
+	margin-top: 20px;
 }
 .alert h4{
 	margin-top: 10px;
