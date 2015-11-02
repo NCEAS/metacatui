@@ -1034,7 +1034,6 @@ select{
     
   /* SIDEBAR CSS
   -------------------------------------------------- */
-
  	aside > div{
  		margin-bottom: 10px;		
  	}
@@ -1067,7 +1066,6 @@ select{
  /***Filters ***/
 #sidebar{
   	background-color: rgba(255, 255, 255, 0.8);
-	 padding: 0px 10px;
 	 height: auto;
 	 overflow-y: visible;
 	 overflow-x: visible;
@@ -1121,12 +1119,10 @@ position: relative;
   }
   
   /*-- Inputs for search filters --*/
-   .filter-contain input.filter{
-   	width: 160px;
-   }
    
    #all_input{
    	margin-left: 0px;
+   	width: calc(100% - 61px);
    }
    
    input.filter::-webkit-input-placeholder{
@@ -1473,7 +1469,8 @@ li.ui-menu-item > a:hover,
 	  background-color: rgba(255, 255, 255, 0.9);
 	}
    .mapMode #results-container {
-	  width: 400px;
+	  width: 40%;
+	  width: calc(100% - 33% - 237px);
 	  overflow-x: hidden;
 	  overflow-y: scroll;
 	  -webkit-transform: translate3d(0,0,1);
@@ -1486,12 +1483,10 @@ li.ui-menu-item > a:hover,
     	width: calc(100% - 40px);
 	}
 	#map-container {
-	  -webkit-transition: all 1s;
-	  transition: all 1s;
 	  position: relative;
 	  height: 500px;
-	  width: 400px;
-	  width: calc(100% - 246px - 400px);
+	  width: 33%;
+	  width: calc(33% - .5px);
 	  float: left;
 	}
 	.mapMode #map-container {

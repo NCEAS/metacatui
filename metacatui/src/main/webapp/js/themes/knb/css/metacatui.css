@@ -464,6 +464,7 @@
 	display: none;
 	height: 500px;
 	width: 33%;
+	width: calc(33% - .5px);
 	float: left;
 }
 

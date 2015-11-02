@@ -1850,6 +1850,7 @@ svg .point:hover ~ .line-chart-label{
 #map-container{
 	height: 500px;
 	width: 33%;
+	width: calc(33% - .5px);
 	float: left;
 }
 #map-canvas{
