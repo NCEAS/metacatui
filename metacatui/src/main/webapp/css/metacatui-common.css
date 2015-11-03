@@ -147,8 +147,8 @@ h3{
 .notification.loading .icon{
 	font-size: 40px;
 	margin-left: 43%;
-	margin-left: calc(50% - 46px);
-	margin-top: 20%;
+	margin-left: calc(50% - 23px);
+	margin-top: 40px;
 }
 .notification.loading.page .icon{
 	margin-top: 10px;
@@ -996,6 +996,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 .thumbnail.map{
 	width: auto;
+	max-width: 700px;
+}
+.control-group ~ .thumbnail{
+	margin-left: 180px;
 }
 img[src*="gstatic.com/"].georegion-map, 
 img[src*="googleapis.com/"].georegion-map{

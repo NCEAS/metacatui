@@ -128,8 +128,8 @@ define(['jquery', 'underscore', 'backbone'],
 			$.ajax({
 				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=changePermission",
 				type: "GET",
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				//jsonp: "json.wrf",
+				//dataType: "jsonp",
 				xhrFields: {
 					withCredentials: true
 				},
@@ -148,7 +148,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			var model = this;
 			
-			var fields = "id,resourceMap,formatType,formatId,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized" 
+			var fields = "id,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized" 
 				
 			$.ajax({
 				url: appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl='+fields+'&wt=json&json.wrf=?',

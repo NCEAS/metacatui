@@ -1297,7 +1297,7 @@ define(['jquery',
 			if (ret) {
 				
 				// show the loading icon
-				var message = "Publishing package...please be patient";
+				var message = "Publishing package...this may take a few moments";
 				this.showLoading(message);
 				
 				var identifier = null;
@@ -1314,7 +1314,7 @@ define(['jquery',
 						
 							if (identifier) {
 								viewRef.hideLoading();
-								var msg = "Published package '" + identifier + "'";
+								var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='#view/" + identifier + "'>published data package here</a>";
 								viewRef.$el.find('.container').prepend(
 										viewRef.alertTemplate({
 											msg: msg,
@@ -1347,34 +1347,31 @@ define(['jquery',
 		},
 		
 		// this will lookup the latest version of the PID
-		showLatestVersion: function(pid, traversing) {
-			if((typeof pid === "undefined") || !pid)
-				var pid = this.pid || appModel.get("pid");
-	
-			var obsoletedBy = null,
-				encodedPid = encodeURIComponent(pid);
-			
+		showLatestVersion: function(pid) {	
+			if(!pid){
+				//Is this obsoleted by something else?
+				var pid = this.model.get("obsoletedBy");			
+				if(!pid) return;
+			}
+				
 			// look up the metadata service URL. It may be turned off
 			var metaServiceUrl = appModel.get('metaServiceUrl');			
 			if((typeof metaServiceUrl === "undefined") || !metaServiceUrl) return;
 			
 			// look up the meta
-			var viewRef = this;
+			var viewRef = this,
+				encodedPid = encodeURIComponent(pid);
 			$.get(metaServiceUrl + encodedPid, function(data, textStatus, xhr) {
 						
-				// the response should have a resourceMap element
-				obsoletedBy = $(data).find("obsoletedBy").text();
+				// the response should have a obsoletedBy element
+				var newestVersion = $(data).find("obsoletedBy").text();
 						
-				if (obsoletedBy) {						
-					viewRef.showLatestVersion(obsoletedBy, true);
+				if (newestVersion) {						
+					viewRef.showLatestVersion(newestVersion);
 				} else {
-					if (traversing) {
-						viewRef.$el.find("#Metadata > .container").prepend(
-								viewRef.versionTemplate({pid: pid})
-						);			
-					}		
+					viewRef.$el.prepend(viewRef.versionTemplate({pid: pid}));			
 				}
-			});	
+			});
 		},
 		
 		showLoading: function(message) {

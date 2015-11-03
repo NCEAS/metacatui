@@ -133,7 +133,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
-			if(this.model.getURL()){
+			if(this.model.getURL() && this.model.get("id")){
 				downloadButtonHTML = this.downloadButtonTemplate({ 
 					href: this.model.get("url"), 
 					text: "Download all",
