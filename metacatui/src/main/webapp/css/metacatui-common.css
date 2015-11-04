@@ -1591,6 +1591,10 @@ textarea.token{
 	font-size: 15px;
 	font-weight: bold;
 }
+#sidebar .tooltip-inner{
+	font-size: 1.2em;
+	font-weight: normal;
+}
 #all_input {
 	width: 75%;
 	width: calc(100% - 50px);
