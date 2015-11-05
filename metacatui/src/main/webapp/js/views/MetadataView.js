@@ -135,21 +135,8 @@ define(['jquery',
 								
 								//Insert the breadcrumbs
 								viewRef.insertBreadcrumbs();
-								
 								viewRef.insertCitation();
-								
-								//If this metadata doc is not in a resource map
-								if(!viewRef.model.get("resourceMap")){
-									//Create a package model that contains just this metadata doc
-									var packageModel = new Package({ id: null, members: [viewRef.model] });
-									viewRef.packageModels.push(packageModel);
-									
-									//Mark the model as complete and insert its details
-									viewRef.listenTo(packageModel, "complete", viewRef.insertPackageDetails);
-									packageModel.flagComplete();
-								}
-								else if(viewRef.packageModels)
-									viewRef.insertPackageDetails(viewRef.packageModels);
+								viewRef.insertPackageDetails();
 								
 								//viewRef.insertDataSource();
 								viewRef.insertOwnerControls();
@@ -173,9 +160,9 @@ define(['jquery',
 			//Add the package details once the metadata from the index is drawn 
 			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
-			this.listenToOnce(metadataFromIndex, 'complete', this.getPackageDetails);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertOwnerControls);
 			this.listenToOnce(metadataFromIndex, 'complete', this.insertControls);
+			this.listenToOnce(metadataFromIndex, 'complete', this.insertPackageDetails);
 			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
 			
 			//Add the metadata HTML
@@ -396,6 +383,13 @@ define(['jquery',
 			var viewRef = this;
 			
 			if(!this.citationEl) return;
+			
+			//Create a package model that contains just this metadata doc
+			if(!this.model.get("resourceMap")){
+				var packageModel = new Package({ id: null, members: [this.model] });
+				packageModel.flagComplete();
+				this.packageModels.push(packageModel);
+			}
 			
 			//Get the entity names from this page/metadata
 			this.getEntityNames(this.packageModels);

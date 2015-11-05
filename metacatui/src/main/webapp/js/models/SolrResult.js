@@ -101,9 +101,9 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		setURL: function(){			
 			if(appModel.get("objectServiceUrl"))
-				this.set("url", appModel.get("objectServiceUrl") + this.get("id"));
+				this.set("url", appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id")));
 			else if(appModel.get("resolveServiceUrl"))
-				this.set("url", appModel.get("resolveServiceUrl") + this.get("id"));
+				this.set("url", appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("id")));
 		},
 		
 		// checks if the pid is already a DOI
@@ -148,7 +148,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			var model = this;
 			
-			var fields = "id,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized" 
+			var fields = "id,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,size" 
 				
 			$.ajax({
 				url: appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl='+fields+'&wt=json&json.wrf=?',
