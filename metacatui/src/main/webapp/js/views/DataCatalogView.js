@@ -1078,7 +1078,8 @@ define(['jquery',
 					$(label).tooltip({
 						placement: "top",
 						delay: {"show" : 900},
-						trigger: "hover",
+						trigger: "click",
+						viewport: "#sidebar",
 						title: member.description
 					});
 					

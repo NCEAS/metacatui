@@ -18,12 +18,13 @@ define(['jquery', 'underscore', 'backbone'],
 			anchorId: null,
 			profileUsername: null,
 			page: 0,
+			useJsonp: true,
 			metcatVersion: "2.5.0", 
-			baseUrl: "https://cn-sandbox-2.test.dataone.org", //window.location.origin || (window.location.protocol + "//" + window.location.host)
+			baseUrl: "https://cn.dataone.org",//window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
+			d1CNBaseUrl:  "https://cn.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -50,7 +51,7 @@ define(['jquery', 'underscore', 'backbone'],
 			groupsUrl: null,
 			signInUrl: null,
 			signOutUrl: null,
-			//signInUrlOrcid: null,
+			signInUrlOrcid: null,
 			signInUrlLdap: null,
 			tokenUrl: null,
 			//annotatorUrl: null,
@@ -68,7 +69,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
-			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/?');
+			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
 			this.set('resolveServiceUrl', this.get('baseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
@@ -76,8 +77,13 @@ define(['jquery', 'underscore', 'backbone'],
 
 			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
 			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
+			
 			this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap/");
 			this.set("accountsMapsUrl",    this.get("accountsUrl") + "map/");
+								
+			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
+			if(this.get("useJsonp"))
+				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");
 			
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
@@ -110,12 +116,6 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Settings for older versions of metacat
 			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/v1") > -1)){
-				//The query service doesn't use a "?" icon at the end
-				var queryServiceUrl = this.get("queryServiceUrl");
-				if(queryServiceUrl.substring(queryServiceUrl.length-1) == "?")
-					queryServiceUrl = queryServiceUrl.substring(0, queryServiceUrl.length-1);
-				this.set("queryServiceUrl", queryServiceUrl);
-				
 				//The package service API is different
 				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			}
