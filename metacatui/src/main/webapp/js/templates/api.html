@@ -52,32 +52,42 @@
 								identifiable by their persistent identifier (PID), and each has
 								associated SystemMetadata which describes the object type, size,
 								access rules, etc.</p>
-							<p>
-                                <strong>Data objects</strong> are treated as opaque blobs, and are retrievable
-                                via the <code>get</code> method given a persistent identifier (PID). Data objects
-                                can be represented in any format, but the repository encourages the use of 
-                                non-proprietary, open formats such as CSV and netCDF.
-                            </p>
-                            <p>    
-                                <strong>Science metadata objects</strong> are metadata documents such as 
-                                <a href="http://knb.ecoinformatics.org/software/eml" target="blank">EML</a>, 
-                                FGDC, ISO19115, and so forth that provide metadata describing some data
-								object(s). These are represented in XML according to their
-								respective schema. 
-                            </p>
-                            <p>    
-                                <strong>Resource Map objects</strong> are OAI-ORE documents that
-								describe the aggregations of data and metadata into
-								<code>data packages</code>. Individual data and metadata files can be uploaded
-                                to the repository, but to indicate that a set of files is part of an 
-                                aggregated data package, you must provide a OAI-ORE resource map linking the
-                                objects.
-							</p>
-							<p>
-								In addition to aggregation, Resource Maps can describe the origin of objects by asserting
-								<a href="https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science">
-								provenance relationships.</a> These relationships will be displayed on the KNB.
-                            </p>
+							<ul>
+                                <li>
+                                	<strong>Data objects</strong>
+                                	<p>
+	                                	are treated as opaque blobs, and are retrievable
+		                                via the <code>get</code> method given a persistent identifier (PID). Data objects
+		                                can be represented in any format, but the repository encourages the use of 
+		                                non-proprietary, open formats such as CSV and netCDF.
+	                                </p>
+                            	</li>
+                            	<li>    
+	                                <strong>Science metadata objects</strong> 
+	                                <p>
+		                                are metadata documents such as 
+		                                <a href="http://knb.ecoinformatics.org/software/eml" target="blank">EML</a>, 
+		                                FGDC, ISO19115, and so forth that provide metadata describing some data
+										object(s). These are represented in XML according to their
+										respective schema. 
+									</p>
+                            	</li>
+	                            <li>    
+	                                <strong>Resource Map objects</strong>
+		                            <p> are OAI-ORE documents that
+										describe the aggregations of data and metadata into
+										<code>data packages</code>. Individual data and metadata files can be uploaded
+		                                to the repository, but to indicate that a set of files is part of an 
+		                                aggregated data package, you must provide a OAI-ORE resource map linking the
+		                                objects.
+	                                </p>
+	                                <p>
+										In addition to aggregation, Resource Maps can describe the origin of objects by asserting
+										<a href="https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science">
+										provenance relationships.</a> These relationships will be displayed on the KNB.
+                            		</p>
+								</li>
+							</ul>
 							<p>
 							<blockquote><i class="glyphicons-icon warning_sign"></i>
 							<p class="text-warning">
@@ -100,7 +110,7 @@
 								
 							</p>
 							<h4>Quick Reference</h4>
-							<table class="endpoints">
+							<table class="endpoints api">
 								<tbody>
 									<tr>
 										<th>URL</th>
@@ -135,7 +145,7 @@
 									<tr>
 										<td><code>/generate</code></td>
 										<td>POST</td>
-										<td><a href="#api/generate">Generate an Identifier</a></td>
+										<td><a href="#api/generateId">Generate an Identifier</a></td>
 									</tr>
 									<tr>
                                         <td><code>/query/solr/&lt;query&gt;</code></td>
@@ -190,7 +200,7 @@
 							<p>Each language or submission tool will have different mechanisms for setting the 
 							client certificate in the SSL session.  For example, for Curl the certificate filename 
 							is passed in on the command line: <code>curl -X POST --cert /tmp/x509up_u502 ...</code>.
-							<blockquote><i class="icon icon-warning-sign"></i>
+							<blockquote><i class="icon icon-warning-sign icon-warning"></i>
                                 <p class="text-warning">The version of <code>curl</code> shipped by Apple on MacOS X 10.9
                                 and later is broken and does not support providing PEM certificates via the command line. 
                                 Instead, it uses certificates registered in the system keychain, as described on the 
@@ -203,34 +213,40 @@
 							</p>
 						</section>
 						<section name="examples">
-						    
-							<h3 name="get">Get an Object</h3>
-                            <p>Each object on DataONE has a persistent identifier (PID), which can be used to get the
-                            bytes of tha object.  Note that PID identifiers must be escaped using URL escaping conventions
-                            if they contain characters that are normally reserved in URLs.  For example, a DOI such as
-                            <code>doi:10.5063/FF1HT2M7Q</code> is a PID which would need to be escaped to 
-                            <code>doi:10.5063%2FF1HT2M7Q</code> when used in a URL.
-
-							<code class="code_example">
+						
+							<section class="example">    
+							    <a id="get"></a>
+								<h3 name="get">Get an Object</h3>
+	                            <p>Each object on DataONE has a persistent identifier (PID), which can be used to get the
+	                            bytes of tha object.  Note that PID identifiers must be escaped using URL escaping conventions
+	                            if they contain characters that are normally reserved in URLs.  For example, a DOI such as</p>
+	                            <code>doi:10.5063/FF1HT2M7Q</code> is a PID which would need to be escaped to 
+	                            <code>doi:10.5063%2FF1HT2M7Q</code> when used in a URL.
+	
+								<code class="code_example">
 ENDPOINT="https://knb.ecoinformatics.org/knb/d1/mn/v2"
 curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/object/doi:10.5063%2FF1HT2M7Q"
-							</code>
+								</code>
+	
+	                            If a certificate is not provided in the request, then the results will only include publicly
+	                            accessible content.  To view private content, be sure to include a valid X.509 certificate in
+	                            the request (e.g,, in curl, use the <code>--cert</code> argument to provide the path to a 
+	                            certificate that that was previously downloaded from CILogon).
+	                        </section>
 
-                            If a certificate is not provided in the request, then the results will only include publicly
-                            accessible content.  To view private content, be sure to include a valid X.509 certificate in
-                            the request (e.g,, in curl, use the <code>--cert</code> argument to provide the path to a 
-                            certificate that that was previously downloaded from CILogon).
-							<h3 name="create">Create an Object</h3>
-                            An object can be inserted into the repository using the <code>create</code> API call, which
-                            involves POSTing the object to the object collection.  Required parameters include the
-                            <code>pid</code> to be used for the object, the bytes of the <code>object</code> itself,
-                            and an XML 
-                            <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
-                            (<code>sysmeta</code>) document describing core metadata 
-                            properties about the object, including who owns it, its format, etc. 
-							<code class="code_example">
+							<section class="example">
+								<a id="create"></a>
+								<h3 name="create">Create an Object</h3>
+	                            An object can be inserted into the repository using the <code>create</code> API call, which
+	                            involves POSTing the object to the object collection.  Required parameters include the
+	                            <code>pid</code> to be used for the object, the bytes of the <code>object</code> itself,
+	                            and an XML 
+	                            <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
+	                            (<code>sysmeta</code>) document describing core metadata 
+	                            properties about the object, including who owns it, its format, etc. 
+								<code class="code_example">
 curl -X POST \
      --cert /tmp/x509up_u501 \
      -H "Charset: utf-8" \
@@ -240,17 +256,21 @@ curl -X POST \
      -F object=@mydatafile.csv \
      -F sysmeta=@mysystemmetadata.xml \
      "${ENDPOINT}/object"
-							</code>
-							<h3 name="update">Update an Object</h3>
-                            An object can be updated in the repository using the <code>update</code> API call, which
-                            involves PUTing the object to the object collection.  Required parameters include the
-                            <code>newPid</code> to be used for the object, the bytes of the <code>object</code> itself,
-                            and an XML 
-                            <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
-                            (<code>sysmeta</code>) document describing core metadata 
-                            properties about the object, including who owns it, its format, etc. Note that this operation
-                            occurs against the original object by including its <code>pid</code> in the REST URL.
-							<code class="code_example">
+								</code>
+							</section>
+							
+							<section class="example">
+								<a id="update"></a>
+								<h3 name="update">Update an Object</h3>
+	                            An object can be updated in the repository using the <code>update</code> API call, which
+	                            involves PUTing the object to the object collection.  Required parameters include the
+	                            <code>newPid</code> to be used for the object, the bytes of the <code>object</code> itself,
+	                            and an XML 
+	                            <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
+	                            (<code>sysmeta</code>) document describing core metadata 
+	                            properties about the object, including who owns it, its format, etc. Note that this operation
+	                            occurs against the original object by including its <code>pid</code> in the REST URL.
+								<code class="code_example">
 curl -X PUT \
      --cert /tmp/x509up_u501 \
      -H "Charset: utf-8" \
@@ -260,86 +280,111 @@ curl -X PUT \
      -F object=@mydatafile.csv \
      -F sysmeta=@mysystemmetadata.xml \
      "${ENDPOINT}/object/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
-							</code>
-							<h3 name="archive">Archive an Object</h3>
-                            An object can be archived, which moves it out of the search path so it won't be discovered, but is
-                            still accessible to users who know the <code>pid</code> of the object so that citations remain 
-                            viable. To archive an object, call the <code>archive</code> service using an HTTP PUT with the 
-                            <code>pid</code> in the service endpoint.
-							<code class="code_example">
+								</code>
+							</section>
+							
+							<section class="example">
+								<a id="archive"></a>
+								<h3 name="archive">Archive an Object</h3>
+	                            An object can be archived, which moves it out of the search path so it won't be discovered, but is
+	                            still accessible to users who know the <code>pid</code> of the object so that citations remain 
+	                            viable. To archive an object, call the <code>archive</code> service using an HTTP PUT with the 
+	                            <code>pid</code> in the service endpoint.
+								<code class="code_example">
 curl -X PUT \
      --cert /tmp/x509up_u501 \
      -H "Accept: text/xml" \
      "${ENDPOINT}/archive/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
-							</code>
-							<h3 name="getSystemMetadata">Get System Metadata for an Object</h3>
-                            Use the <code>getSystemMetadata</code> to access the <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical 
-                            information about each object on the repository, including its identifier, its type, access 
-                            control policies, and replication policies, and other details like size and checksum.
-							<code class="code_example">
+								</code>
+							</section>
+							
+							<section class="example">
+								<a id="getSystemMetadata"></a>
+								<h3 name="getSystemMetadata">Get System Metadata for an Object</h3>
+	                            Use the <code>getSystemMetadata</code> to access the <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical 
+	                            information about each object on the repository, including its identifier, its type, access 
+	                            control policies, and replication policies, and other details like size and checksum.
+								<code class="code_example">
 curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/meta/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
-							</code>
-							<h3 name="archive">Generate an identifier</h3>
-                            Creating an object on the repository requires submitting it with a globally unique identifier, 
-                            which can be generated by calling the <code>generateIdentifier</code> service.  This service can
-                            be used to generate identifiers that are UUIDs, DOIs, and that potentially follow other syntax 
-                            conventions. The <code>scheme</code> parameter controls which type of identifier should be 
-                            generated.  Generally, the use of UUIDs is encouraged for fine-grained identification of individual
-                            files within a data package, and the use of DOIs for the identifier for the metadata record for
-                            an overall data package.
-							<code class="code_example">
+								</code>
+							</section>
+							
+							<section class="example">
+								<a id="generateId"></a>
+								<h3 name="generateId">Generate an identifier</h3>
+	                            Creating an object on the repository requires submitting it with a globally unique identifier, 
+	                            which can be generated by calling the <code>generateIdentifier</code> service.  This service can
+	                            be used to generate identifiers that are UUIDs, DOIs, and that potentially follow other syntax 
+	                            conventions. The <code>scheme</code> parameter controls which type of identifier should be 
+	                            generated.  Generally, the use of UUIDs is encouraged for fine-grained identification of individual
+	                            files within a data package, and the use of DOIs for the identifier for the metadata record for
+	                            an overall data package.
+								<code class="code_example">
 curl -X POST \
      --cert /tmp/x509up_u501 \
      -H "Accept: text/xml" \
      -F scheme=UUID \
      "${ENDPOINT}/generate"
-							</code>
-							<h3 name="query">Search the metadata index</h3>
-                            To search across all of the metadata in the repository, use the <code>query</code> service to 
-                            configure a SOLR query.  The full SOLR syntax is supported, providing the means to create complex 
-                            logical query conditions, and to customize the metadata fields returned. Query results can be 
-                            returned in <code>xml</code> and <code>json</code> formats.  Paging through results is supported
-                            using the <code>rows</code> and <code>start</code> parameters.  To search only the most recent 
-                            version of the metadata, include the <code>-obsoletedBy:*</code> constraint in the SOLR query. And
-                            note that all SOLR queries must be properly URL-escaped and SOLR escaped to be processed correctly
-                            (e.g., spaces in the SOLR query need to be escaped with a '+' or '%20', and colons in a SOLR query
-                            value need to be preceded by a backslash). In addition, to run these commands from curl, shell 
-                            escapes will also need to be added as appropriate (e.g., by quoting strings).
-							<code class="code_example">
+								</code>
+							</section>
+							
+							<section class="example">
+								<a id="query"></a>
+								<h3 name="query">Search the metadata index</h3>
+	                            To search across all of the metadata in the repository, use the <code>query</code> service to 
+	                            configure a SOLR query.  The full SOLR syntax is supported, providing the means to create complex 
+	                            logical query conditions, and to customize the metadata fields returned. Query results can be 
+	                            returned in <code>xml</code> and <code>json</code> formats.  Paging through results is supported
+	                            using the <code>rows</code> and <code>start</code> parameters.  To search only the most recent 
+	                            version of the metadata, include the <code>-obsoletedBy:*</code> constraint in the SOLR query. And
+	                            note that all SOLR queries must be properly URL-escaped and SOLR escaped to be processed correctly
+	                            (e.g., spaces in the SOLR query need to be escaped with a '+' or '%20', and colons in a SOLR query
+	                            value need to be preceded by a backslash). In addition, to run these commands from curl, shell 
+	                            escapes will also need to be added as appropriate (e.g., by quoting strings).
+								<code class="code_example">
 curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/query/solr/q=title:soil+AND+-obsoletedBy:*&amp;fl=identifier,title,origin&amp;rows=30&amp;start=0&amp;wt=xml"
-							</code>
-
-                            The searchable SOLR fields that can be used to compose queries are accessible from the query service
-                            as well by accessing the endpoint without any query constraints.
-
-							<code class="code_example">
+								</code>
+	
+	                           <p> The searchable SOLR fields that can be used to compose queries are accessible from the query service
+	                            as well by accessing the endpoint without any query constraints.</p>
+			
+								<code class="code_example">
 curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/query/solr"
-							</code>
-							<h3 name="listObjects">List Objects</h3>
-                            The <code>listObjects</code> service provides a sequential list of objects on a node, and is
-                            minimally filterable.  The <code>query</code> service generally contains more information and is
-                            preferred, but the object list can be useful to see recent activity on the repository.
-							<code class="code_example">
+								</code>
+							</section>
+							
+							<section class="example">
+								<a id="listObjects"></a>
+								<h3 name="listObjects">List Objects</h3>
+	                            The <code>listObjects</code> service provides a sequential list of objects on a node, and is
+	                            minimally filterable.  The <code>query</code> service generally contains more information and is
+	                            preferred, but the object list can be useful to see recent activity on the repository.
+								<code class="code_example">
 curl -X GET -H "Accept: text/xml" "${ENDPOINT}/object?start=0&amp;count=100"
-							</code>
-							<h3 name="delete">Delete an Object</h3>
-                            Delete is an administrative service that can not be called by users. Contact an administrator for
-                            appropriate credentials. The <code>delete</code> service is provided to fully remove content from
-                            the repository, particularly when that content violates a law or ethical standard.  When removing
-                            content for scientific reasons, <code>archive</code> is the proper method as it preserves citable
-                            links while still hiding content from search.
-							<code class="code_example">
+								</code>
+							</section>
+
+							<section class="example">
+								<a id="delete"></a>
+								<h3 name="delete">Delete an Object</h3>
+	                            Delete is an administrative service that can not be called by users. Contact an administrator for
+	                            appropriate credentials. The <code>delete</code> service is provided to fully remove content from
+	                            the repository, particularly when that content violates a law or ethical standard.  When removing
+	                            content for scientific reasons, <code>archive</code> is the proper method as it preserves citable
+	                            links while still hiding content from search.
+								<code class="code_example">
 curl -X DELETE \
      --cert /tmp/x509up_u501 \
      -H "Accept: text/xml" \
      "${ENDPOINT}/object/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
-							</code>
+								</code>
+							</section>
 						</section>
 					</article>
 				</div>

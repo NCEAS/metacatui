@@ -240,6 +240,9 @@ h4 > .icon{
 .icon-negative{
     color: #F15959;
 }
+.icon-warning{
+	color: #c09853;
+}
 .icon-circle-badge{
 	background-color: #999;
     padding: 6px;
@@ -1828,8 +1831,42 @@ Documentation and Help Pages
 	margin-bottom: 30px;
 }
 .code_example {
-    display: block; 
-    white-space: pre; 
+    display: block;
+    white-space: pre;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: auto;
+    padding: 5px 20px;
+    border: 0px;
+    color: #1192DD;
+}
+code{
+	color: #1192DD;
+}
+.example{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+table.api{
+	font-size: 1.1em;
+}
+table.api th {
+    background-color: #90B5CE;
+    color: white;
+    font-weight: normal;
+    font-size: 1.1em;
+}
+table.api th, table.api td {
+    padding: 10px;
+}
+table.api tr:nth-child(odd) {
+    background-color: #E7EAEA;
+}
+table.api tr td:nth-child(even) {
+    background-color: rgba(192, 218, 218, 0.2);
+}
+.example h3{
+	font-weight: lighter;
 }
 /*******************************************
 CSS library fixes

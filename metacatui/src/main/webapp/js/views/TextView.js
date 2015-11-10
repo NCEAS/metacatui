@@ -25,6 +25,10 @@ define(['jquery', 'underscore', 'backbone',
 				
 		render: function (options) {
 			
+			this.anchorId = "";
+			if(options && options.anchorId)
+				this.anchorId = options.anchorId;
+			
 			//Use a smaller header unless this is a subview
 			if(!this.isSubview)
 				appModel.set('headerType', 'default');
@@ -50,12 +54,12 @@ define(['jquery', 'underscore', 'backbone',
 			this.$el.html(template({
 				data: dataForTemplate
 			}));
-			
+						
 			return this;
 		},
 		
 		postRender: function() {
-			var anchorId = appModel.get('anchorId');
+			var anchorId = this.anchorId;
 			if (anchorId) {
 				this.scrollToAnchor(anchorId);
 			} else {
@@ -65,7 +69,11 @@ define(['jquery', 'underscore', 'backbone',
 
 		// scroll to the anchor given to the render function
 		scrollToAnchor: function(anchorId) {
-			var anchorTag = $("a[name='" + anchorId + "']" );
+			var anchorTag = $("a#" + anchorId);
+			if(!anchorTag.length)
+				anchorTag =  $("a[name='" + anchorId + "']" );
+			if(!anchorTag.length) return;
+			
 			$('html,body').animate({scrollTop: anchorTag.offset().top}, 'slow');
 		},
 		

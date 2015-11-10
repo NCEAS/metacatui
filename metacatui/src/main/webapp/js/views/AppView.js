@@ -135,12 +135,11 @@ define(['jquery',
 					view.$el.fadeIn('slow', function() {
 						
 						// after fade in, do postRender()
-						if (view.postRender) {
+						if (view.postRender)
 							view.postRender();
-						} else {
-							// force scroll to top if no custom scrolling is implemented
+						// force scroll to top if no custom scrolling is implemented
+						else
 							thisAppViewRef.scrollToTop();
-						}
 					});
 				});
 			} else {
@@ -148,6 +147,11 @@ define(['jquery',
 				// just show the view without transition
 				view.render(viewOptions);
 				
+				if (view.postRender)
+					view.postRender();
+				// force scroll to top if no custom scrolling is implemented
+				else
+					thisAppViewRef.scrollToTop();				
 			}
 			
 			// track the current view
