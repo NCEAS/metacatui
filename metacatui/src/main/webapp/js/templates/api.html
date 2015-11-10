@@ -39,8 +39,8 @@
 							href="https://purl.dataone.org/architecture-dev/apis/MN_APIs.html"
 							target="_external">development version of the architecture guide for future releases</a>).
 							This API allows any software
-							tool that supports the DataONE API (such as the rDataONE R
-							package) to also be able to seamlessly interact with KNB data.
+							tool that supports the DataONE API (such as the <a href="https://releases.dataone.org/online/dataone_r/">rDataONE R
+							package</a>) to also be able to seamlessly interact with KNB data.
 							While DataONE maintains the full technical documentation on the
 							API, here is a brief overview for commonly accessed services on the KNB.
 						</p>
@@ -56,7 +56,7 @@
                                 <strong>Data objects</strong> are treated as opaque blobs, and are retrievable
                                 via the <code>get</code> method given a persistent identifier (PID). Data objects
                                 can be represented in any format, but the repository encourages the use of 
-                                non-propietary, open formats such as CSV and netCDF that make good archival formats.
+                                non-proprietary, open formats such as CSV and netCDF.
                             </p>
                             <p>    
                                 <strong>Science metadata objects</strong> are metadata documents such as 
@@ -66,7 +66,7 @@
 								respective schema. 
                             </p>
                             <p>    
-                                <strong>Resource Maps objects</strong> are OAI-ORE documents that
+                                <strong>Resource Map objects</strong> are OAI-ORE documents that
 								describe the aggregations of data and metadata into
 								<code>data packages</code>. Individual data and metadata files can be uploaded
                                 to the repository, but to indicate that a set of files is part of an 
@@ -74,23 +74,28 @@
                                 objects.
 							</p>
 							<p>
+								In addition to aggregation, Resource Maps can describe the origin of objects by asserting
+								<a href="https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science">
+								provenance relationships.</a> These relationships will be displayed on the KNB.
+                            </p>
+							<p>
 							<blockquote><i class="glyphicons-icon warning_sign"></i>
 							<p class="text-warning">
 							All API access is over HTTPS, and accessed via the
-							<code>https://knb.ecoinformatics.org/knb/d1/mn/v1/</code>
+							<code>https://knb.ecoinformatics.org/knb/d1/mn/v2/</code>
 							endpoint. The relative path prefix
-							<code>/v1/</code>
-							indicates that we are currently using version 1 of the DataONE
-							API. This will be updated with future API version releases.
+							<code>/v2/</code>
+							indicates that we are currently using version 2 of the DataONE
+							API.
                             </blockquote>
 							<blockquote><i class="glyphicons-icon warning_sign"></i>
 							<p class="text-warning">
                             The examples below show calls to the production KNB data
                             repository REST endpoint 
-							(<code>https://knb.ecoinformatics.org/knb/d1/mn/v1</code>), but users
+							(<code>https://knb.ecoinformatics.org/knb/d1/mn/v2</code>), but users
 						    should not create test data on the production KNB.  Instead, please use
 						    a test Metacat server to explore the API and create test data
-						    (e.g., <code>https://dev.nceas.ucsb.edu/knb/d1/mn/v1</code>).
+						    (e.g., <code>https://dev.nceas.ucsb.edu/knb/d1/mn/v2</code>).
 						    </p></blockquote>
 								
 							</p>
@@ -184,8 +189,8 @@
 							</p>
 							<p>Each language or submission tool will have different mechanisms for setting the 
 							client certificate in the SSL session.  For example, for Curl the certificate filename 
-							is passed in on the commandline: <code>curl -X POST --cert /tmp/x509up_u502 ...</code>.
-							<blockquote><i class="glyphicons-icon warning_sign"></i>
+							is passed in on the command line: <code>curl -X POST --cert /tmp/x509up_u502 ...</code>.
+							<blockquote><i class="icon icon-warning-sign"></i>
                                 <p class="text-warning">The version of <code>curl</code> shipped by Apple on MacOS X 10.9
                                 and later is broken and does not support providing PEM certificates via the command line. 
                                 Instead, it uses certificates registered in the system keychain, as described on the 
@@ -207,7 +212,7 @@
                             <code>doi:10.5063%2FF1HT2M7Q</code> when used in a URL.
 
 							<code class="code_example">
-ENDPOINT="https://knb.ecoinformatics.org/knb/d1/mn/v1"
+ENDPOINT="https://knb.ecoinformatics.org/knb/d1/mn/v2"
 curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/object/doi:10.5063%2FF1HT2M7Q"
@@ -222,7 +227,7 @@ curl -X GET \
                             involves POSTing the object to the object collection.  Required parameters include the
                             <code>pid</code> to be used for the object, the bytes of the <code>object</code> itself,
                             and an XML 
-                            <a href="https://releases.dataone.org/online/api-documentation-v1.2.0/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
+                            <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
                             (<code>sysmeta</code>) document describing core metadata 
                             properties about the object, including who owns it, its format, etc. 
 							<code class="code_example">
@@ -241,7 +246,7 @@ curl -X POST \
                             involves PUTing the object to the object collection.  Required parameters include the
                             <code>newPid</code> to be used for the object, the bytes of the <code>object</code> itself,
                             and an XML 
-                            <a href="https://releases.dataone.org/online/api-documentation-v1.2.0/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
+                            <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a>
                             (<code>sysmeta</code>) document describing core metadata 
                             properties about the object, including who owns it, its format, etc. Note that this operation
                             occurs against the original object by including its <code>pid</code> in the REST URL.
@@ -268,7 +273,7 @@ curl -X PUT \
      "${ENDPOINT}/archive/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
 							</code>
 							<h3 name="getSystemMetadata">Get System Metadata for an Object</h3>
-                            Use the <code>getSystemMetadata</code> to access the <a href="https://releases.dataone.org/online/api-documentation-v1.2.0/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical 
+                            Use the <code>getSystemMetadata</code> to access the <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical 
                             information about each object on the repository, including its identifier, its type, access 
                             control policies, and replication policies, and other details like size and checksum.
 							<code class="code_example">
@@ -281,7 +286,7 @@ curl -X GET \
                             which can be generated by calling the <code>generateIdentifier</code> service.  This service can
                             be used to generate identifiers that are UUIDs, DOIs, and that potentially follow other syntax 
                             conventions. The <code>scheme</code> parameter controls which type of identifier should be 
-                            generated.  Generally, the use of UUIDs is encouraged for fine-grained identifiation of individual
+                            generated.  Generally, the use of UUIDs is encouraged for fine-grained identification of individual
                             files within a data package, and the use of DOIs for the identifier for the metadata record for
                             an overall data package.
 							<code class="code_example">
@@ -353,7 +358,7 @@ curl -X DELETE \
 				<div class="text-left">
 					<h3 id="apipython">
 						<i class="glyphicons-icon cloud"></i>
-						DataONE Python Client Library
+						<a href="http://pythonhosted.org/dataone.libclient/">DataONE Python Client Library</a>
 					</h3>
 					<p class="lead">A helper library for calling the REST API using Python.</p>
 				</div>
@@ -363,7 +368,7 @@ curl -X DELETE \
 				<div class="text-left">
 					<h3 id="rdataone">
 						<i class="glyphicons-icon cloud"></i>
-						DataONE R Package
+						<a href="https://releases.dataone.org/online/dataone_r/">DataONE R Package</a>
 					</h3>
 					<p class="lead">An R package providing classes and methods for calling the API within R.</p>
 				</div>
