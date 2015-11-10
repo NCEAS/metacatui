@@ -357,6 +357,12 @@ curl -X GET \
      -H "Accept: text/xml" \
      "${ENDPOINT}/query/solr"
 								</code>
+								<p>Example: To retrieve the download/view counts of a particular object in the KNB, use this Solr query:</p>
+								<code class="code_example">
+curl -X GET \
+     -H "Accept: text/xml" \
+     "{ENDPOINT}/query/solr/q=id:{OBJECT_PID}&fl=read_count_i"
+								</code>
 							</section>
 							
 							<section class="example">
