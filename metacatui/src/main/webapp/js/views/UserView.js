@@ -61,14 +61,6 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			//cause this profile to render twice (first before the user is logged in then again after they log in)
 			if(appUserModel.get("checked")) this.renderUser();
 			else appUserModel.on("change:checked", this.renderUser, this);
-						
-			//Hide all the sections first, then display the section specified in the URL (or the default)
-			this.$(".subsection, .section").hide();
-			this.switchToSection(null, this.activeSection);
-			
-			//Show the subsection			
-			if(this.activeSubSection)
-				this.switchToSubSection(null, this.activeSubSection);
 				
 			return this;
 		},
@@ -85,6 +77,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					this.insertMenu();
 					this.renderProfile();
 					this.renderSettings();
+					this.resetSections();
 				}
 			}
 			//If this isn't the currently-looged in user, then let's find out more info about this account
@@ -97,6 +90,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				
 				//When we get the infomration about this account, then crender the profile
 				this.model.once("change:checked", this.renderProfile, this);
+				this.model.once("change:checked", this.resetSections, this);
 				//Get the info
 				this.model.getInfo();
 			}	
@@ -185,7 +179,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			}
 			else{
 				this.insertMembership();				
-			}
+			}			
 		},
 		
 		renderSettings: function(){
@@ -286,6 +280,16 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			$(".section.active").find(".subsection[data-section='" + subsectionName + "']").show();
 		},
 		
+		resetSections: function(){
+			//Hide all the sections first, then display the section specified in the URL (or the default)
+			this.$(".subsection, .section").hide();
+			this.switchToSection(null, this.activeSection);
+			
+			//Show the subsection			
+			if(this.activeSubSection)
+				this.switchToSubSection(null, this.activeSubSection);
+		},
+		
 		highlightSubSection: function(e, subsectionName){
 			if(e) e.preventDefault();
 			
@@ -363,7 +367,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		 * Insert the first year of contribution for this user
 		 */
 		insertFirstUpload: function(){
-			if(this.model.noActivity){
+			if(this.model.noActivity || !this.model.get("searchResults").length){
 				this.$("#first-upload-container, #first-upload-year-container").hide();
 				return;
 			}
@@ -707,8 +711,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			//Create the list element
 			if(identities.length < 1){
-				var highlightLink = $(document.createElement("a")).attr("href", window.location.hash + "/settings/add-account").attr("highlight-subsection", "add-account").text("here."),
-					identityList = $(document.createElement("p")).text("Your account is not mapped to any other accounts. Send a request below, ").append(highlightLink);
+				var identityList = $(document.createElement("p")).text("Your account is not mapped to any other accounts. Send a request below.");
 			}
 			else
 				var identityList = $(document.createElement("ul")).addClass("list-identity").attr("id", "identity-list");
