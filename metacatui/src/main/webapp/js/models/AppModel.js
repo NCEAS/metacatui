@@ -18,7 +18,7 @@ define(['jquery', 'underscore', 'backbone'],
 			anchorId: null,
 			profileUsername: null,
 			page: 0,
-			useJsonp: true,
+			useJsonp: false,
 			profileQuery: null,
 			metacatVersion: "2.5.0", 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
@@ -41,13 +41,13 @@ define(['jquery', 'underscore', 'backbone'],
 			bioportalSearchUrl: null,
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
-			tokenUrl: null,
+			//tokenUrl: null,
 			annotatorUrl: null,
-			accountsUrl: null,
+			//accountsUrl: null,
 			pendingMapsUrl: null,
-			accountsMapsUrl: null,
-			groupsUrl: null,
-			prov: false
+			//accountsMapsUrl: null,
+			//groupsUrl: null,
+			//prov: false
 		},
 				
 		defaultView: "data",
@@ -90,7 +90,8 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 					
 					//Turn the provenance features on
-					this.set("prov", true);
+					if(typeof this.get("prov") != "undefined")
+						this.set("prov", true);
 				}
 			}
 			

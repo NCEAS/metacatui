@@ -1509,9 +1509,10 @@ li.ui-menu-item > a:hover,
     }
     
     #results.loading *{
-    	color: #CCCCCC;
-    	background-color: #DDDDDD;
-    	border: 0px;
+    	    color: #333;
+	    background-color: #DDDDDD;
+	    border: 0px;
+	    font-size: 1.2em;
     }
     .result-row {
       width: 90%;

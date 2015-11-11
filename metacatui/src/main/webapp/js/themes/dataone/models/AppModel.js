@@ -45,17 +45,17 @@ define(['jquery', 'underscore', 'backbone'],
 			//bioportalSearchUrl: null, // use this to deactivate the annotator view
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,
-			accountsUrl: null,
-			pendingMapsUrl: null,
-			accountMapsUrl: null,
-			groupsUrl: null,
-			signInUrl: null,
-			signOutUrl: null,
-			signInUrlOrcid: null,
-			signInUrlLdap: null,
-			tokenUrl: null,
+			//accountsUrl: null,
+			//pendingMapsUrl: null,
+			//accountMapsUrl: null,
+			//groupsUrl: null,
+			//signInUrl: null,
+			//signOutUrl: null,
+			//signInUrlOrcid: null,
+			//signInUrlLdap: null,
+			//tokenUrl: null,
 			//annotatorUrl: null,
-			prov: false
+			//prov: false
 		},
 		
 		defaultView: "data",
@@ -88,7 +88,8 @@ define(['jquery', 'underscore', 'backbone'],
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
 				//Turn provenance feature on
-				this.set("prov", true);
+				if(typeof this.get("prov") != "undefined")
+					this.set("prov", true);
 				
 				//The view service for member node installations of metacatui
 				this.set('viewServiceUrl',    this.get('baseUrl') + this.get('d1CNService') + '/views/metacatui/');
