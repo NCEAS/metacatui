@@ -1,6 +1,5 @@
 <% if (concept) {
 %>
-		<i class="icon-tag"></i>
 		<a id="<%= annotation.id %>" 
 			class="hover-proxy popover-this ellipsis badge <% if (annotation.reject) { print(' badge-warning') } %>" 
 			title="<%=concept.value %>"
@@ -12,11 +11,10 @@
 			>
 			<%=concept.label %>
 		</a>
-		<br/>
+		
 <%
 } else if (annotation.tags[0]) {
 %>
-		<i class="icon-tag"></i>
 		<a id="<%= annotation.id %>" 
 			class="hover-proxy popover-this ellipsis badge <% if (annotation.reject) { print(' badge-warning') } %>" 
 			title="<%=annotation.tags[0] %>"
@@ -28,13 +26,12 @@
 			>
 			#<%=annotation.tags[0].split("#")[1] %>
 		</a>
-		<br/>
+		
 <%
 }
 
 if (annotation.text) {
 %>	
-		<i class="icon-comment icon"></i>
 		<div
 			id="<%= annotation.id %>" 
 			class="hover-proxy popover-this ellipsis comment badge <% if (annotation.reject) { print(' badge-warning') } %>" 
@@ -47,7 +44,7 @@ if (annotation.text) {
 			>
 			<%=annotation.text %>
 		</div>
-	<br/>
+	
 <%	
 }
 %>
