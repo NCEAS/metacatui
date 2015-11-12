@@ -223,6 +223,50 @@ define(['jquery',
 				
 			});
 			
+			// add input trigger
+			var selectText = function(element) {
+			    var doc = document;
+			    var text = $(element).get(0);
+			    var range;
+			    var selection;
+			        
+			    if (doc.body.createTextRange) {
+			        range = document.body.createTextRange();
+			        range.moveToElementText(text);
+			        range.select();
+			    } else if (window.getSelection) {
+			        selection = window.getSelection();        
+			        range = document.createRange();
+			        range.selectNodeContents(text);
+			        selection.removeAllRanges();
+			        selection.addRange(range);
+			    }
+			};
+			
+			// add a button to select text and launch the new editor
+			var launchEditor = function(event) {
+				var target = event.target;
+				// select the text to annotate
+				// TODO: select the actual content, not the label
+				var block = $(target).parent().children(".controls-well");
+				var next = $(block).children();
+				while ($(next).length) {
+					block = next;
+					next = $(next).children();
+				}
+				selectText(block);
+				
+				// set up the annotator range
+				$(div).data('annotator').checkForEndSelection(event);
+				
+				// simiulate click on adder button
+				$(".annotator-adder > button").trigger("click");
+				
+			};
+			$('[resource] > div:first-child').append("<button class='badge add-tag-btn'>Add tag</button>");
+			$(".add-tag-btn").bind("click", launchEditor);
+			
+			
 			// Use tag as hyperlink in the annotation
 			var updateAnnotationLinks = function(editor) {
 				var annotation = editor.annotation;
@@ -253,8 +297,11 @@ define(['jquery',
 					return ann.resource;
 				});
 				
+				// clear them out!
+				$(".hover-proxy").remove();
+				
 				// summarize annotation count in citation block
-				$(".citation-container > .controls-well").prepend("<span class='badge'>" + annotations.length + " annotations</span>");
+				$(".citation-container > .controls-well").prepend("<span class='badge hover-proxy'>" + annotations.length + " annotations</span>");
 				
 				//look up the concept details for each annotation
 				_.each(annotations, function(annotation) {
@@ -269,7 +316,7 @@ define(['jquery',
 							
 							// render it in the document
 							var highlight = $("[data-annotation-id='" + annotation.id + "']");
-							var section = $(highlight).closest(".controls-well");
+							var section = $(highlight).closest(".control-group");
 							section.append(viewRef.annotationTemplate({
 								annotation: annotation,
 								concept: concept
@@ -340,7 +387,11 @@ define(['jquery',
 			};
 			
 			var handleDelete = function(annotation) {
-				reindexPid(annotation, true);
+				// only handle this if it is a saved annotation
+				if (annotation.id) {
+					reindexPid(annotation, true);
+				}
+				
 			}
 			
 			$(div).annotator('subscribe', 'annotationCreated', reindexPid);
