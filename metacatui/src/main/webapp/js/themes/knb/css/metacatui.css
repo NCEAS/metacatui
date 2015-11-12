@@ -465,6 +465,7 @@
 	height: 500px;
 	width: 33%;
 	width: calc(33% - .5px);
+	width: calc((100% - 217px) / 2);
 	float: left;
 }
 
@@ -1924,6 +1925,7 @@ svg .domain{
 	.mapMode #results-container{
 		width: 400px;
 		width: calc(100% - 33% - 216px);
+		width: calc((100% - 216px) / 2);
 		overflow-x: hidden;
 		overflow-y: scroll;
 		-webkit-transform: translate3d(0,0,1); 

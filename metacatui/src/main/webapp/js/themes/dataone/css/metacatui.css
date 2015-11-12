@@ -1255,6 +1255,7 @@ ul.tb-megamenu-subnav{
 	.mapMode #results-container{
 		width: 400px;
 		width: calc(100% - 216px - 33%);
+		width: calc((100% - 216px) / 2);
 		overflow-x: hidden;
 		overflow-y: scroll;
 		-webkit-transform: translate3d(0,0,1); 
@@ -1850,6 +1851,7 @@ svg .point:hover ~ .line-chart-label{
 	height: 500px;
 	width: 33%;
 	width: calc(33% - .5px);
+	width: calc((100% - 217px) / 2);
 	float: left;
 }
 #map-canvas{
