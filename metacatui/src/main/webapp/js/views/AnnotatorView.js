@@ -43,9 +43,6 @@ define(['jquery',
 			
 			console.log('Closing the Annotator view');
 			
-			// hide the gutter for other views
-			$.sidr("close", "gutter");
-			
 			// destroy the annotator
 			if ($("body").data('annotator')) {
 				$("body").annotator('destroy');
@@ -90,7 +87,6 @@ define(['jquery',
 				var tokenUrl = appModel.get('tokenUrl');
 				authOptions = {
 					tokenUrl: tokenUrl,
-					//token: 'eyJhbGciOiJIUzI1NiJ9.eyJjb25zdW1lcktleSI6ImY3ODBmM2UzOThjZjQ1Y2JiNGU4NGVkOWVjOTE2MjJhIiwiaXNzdWVkQXQiOiIyMDE0LTEyLTAzVDIwOjQ3OjA3LjA5MSswMDowMCIsInVzZXJJZCI6IkNOPUJlbmphbWluIExlaW5mZWxkZXIgQTUxNSxPPVVuaXZlcnNpdHkgb2YgQ2hpY2FnbyxDPVVTLERDPWNpbG9nb24sREM9b3JnIiwiZnVsbE5hbWUiOm51bGwsInR0bCI6ODY0MDB9.vWfjKg-gtCLafoKazNZe3wAII8DeR3FqqZmQukNMNE8'
 				}
 			}
 			
@@ -135,7 +131,7 @@ define(['jquery',
 			// set up rejection field
 			$(div).data('annotator').editor.addField({
 		        type: 'checkbox',
-		        label: '<strong>Reject</strong> this annotation?',
+		        label: '<strong>Flag</strong> this annotation?',
 		        load: function(field, annotation) {
 		        	$(field).find('input').removeAttr("checked");
 		            if (annotation.reject) {
@@ -186,6 +182,47 @@ define(['jquery',
 				
 			});
 			
+			// showing the viewer show the concepts with labels, definitions and audit info
+			$(div).annotator('subscribe', 'annotationViewerShown', function(viewer, annotations) {
+				console.log("annotationViewerShown: " + viewer);
+				$(viewer.element).find(".annotator-tag").each(function(index, element) {
+					var conceptUri = $(element).html();
+					var renderAnnotation = function(concepts) {
+						var concept = _.findWhere(concepts, {value: conceptUri});
+						var annotation = _.find(annotations, function(annotation) {
+							return _.contains(annotation.tags, conceptUri);
+						});
+						var created = new Date(annotation.created);
+						var updated = new Date(annotation.updated);
+						var user = annotation.user; // TODO: make more readable
+						$(element).after(
+								"<div>", 
+								"<p><i>Label: </i>" + concept.label + "</p>", 
+								"<p><i>Definition: </i>" + concept.desc + "</p>",
+								"</div>",
+								"<div>",
+								"<p><i>Created: </i>" + created.toDateString() + "</p>",
+								"<p><i>Updated: </i>" + updated.toDateString() + "</p>",
+								"<p><i>User: </i>" + user + "</p>",
+								"</div>"
+								);
+					};
+					appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);
+					
+					
+				});
+				
+			});
+			
+			// clean up the comment section if none are provided
+			$(div).annotator('subscribe', 'annotationViewerTextField', function(field, annotation) {
+				var content = $(field).html();
+				if (content == "<i>No Comment</i>") {
+					$(field).html("");
+				}
+				
+			});
+			
 			// Use tag as hyperlink in the annotation
 			var updateAnnotationLinks = function(editor) {
 				var annotation = editor.annotation;
@@ -207,47 +244,40 @@ define(['jquery',
 			// NOTE: just using the annotateit.org links for now
 			//$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
 
-			// init the sidr on annotation load
+			// render annotations when they load
 			var viewRef = this;
-			
-			var showSidr = function(annotations) {
+			var renderAnnotations = function(annotations) {
 				
 				// sort the annotations by xpath
 				annotations = _.sortBy(annotations, function(ann) {
 					return ann.resource;
 				});
 				
-				$("#view_annotations").sidr({
-					name: "gutter",
-					side: "right",
-					displace: false
-				})
-				// default to open
-				$.sidr("open", "gutter");
-				
-				// render the annotations in the gutter
-				var gutter = $("#gutter");
-				gutter.html("");
+				// summarize annotation count in citation block
+				$(".citation-container > .controls-well").prepend("<span class='badge'>" + annotations.length + " annotations</span>");
 				
 				//look up the concept details for each annotation
 				_.each(annotations, function(annotation) {
 					
 					if (annotation.tags[0]) {
+						
 						// look up concepts where we can
 						var conceptUri = annotation.tags[0];
 						var renderAnnotation = function(concepts) {
 							
 							var concept = _.findWhere(concepts, {value: conceptUri});
 							
-							// render it
-							gutter.append(viewRef.annotationTemplate({
+							// render it in the document
+							var highlight = $("[data-annotation-id='" + annotation.id + "']");
+							var section = $(highlight).closest(".controls-well");
+							section.append(viewRef.annotationTemplate({
 								annotation: annotation,
 								concept: concept
 							}));
 							
 							// bind after rendering
-							$(".hover-proxy").bind("click", hoverAnnotation);
-							$('.popover-this').popover();
+							$(".hover-proxy").bind("mouseenter", hoverAnnotation);
+							$(".hover-proxy").bind("mouseleave", hoverAnnotation);
 						};
 						
 						// look it up and provide the callback
@@ -258,29 +288,27 @@ define(['jquery',
 						}
 						
 					} else {
-						// just render the annotation
-						gutter.append(viewRef.annotationTemplate({
+						// for comments, just render it in the document
+						var highlight = $("[data-annotation-id='" + annotation.id + "']");
+						var section = $(highlight).closest(".controls-well");
+						section.append(viewRef.annotationTemplate({
 							annotation: annotation,
 							concept: null
 						}));
 						// bind after rendering
-						$(".hover-proxy").bind("click", hoverAnnotation);
-						$('.popover-this').popover();
+						$(".hover-proxy").bind("mouseenter", hoverAnnotation);
 					}
-					
 					
 				});
 
-				// define hover action to mimic hovering the highlight
+				// define hover action to mimic hovering the highlighted region
 				var hoverAnnotation = function(event) {
 					
 					// figure out the annotation being selected
 					var annotationId = $(event.target).attr("id");
 					
-					// trigger as if a hover on highlight
+					// trigger as if a hover on highlighted region
 					var highlight = $("[data-annotation-id='" + annotationId + "']");
-					var target = $(event.target);
-					var targetLoc = target.offset();
 					
 					// make sure the highlight is viewable in active tab
 					var tabId = $(highlight).parents(".tab-pane").attr("id");
@@ -288,11 +316,11 @@ define(['jquery',
 					
 					// scroll the location in page
 					var highlightLocation = highlight.offset();
-					$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "fast");
+					//$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "fast");
 					
 					// trigger the hover
 					highlight.trigger({
-						type: "mouseover",
+						type: event.type, //"mouseover",
 						pageY: highlightLocation.top + 0,
 						pageX: highlightLocation.left + highlight.width() + 0,
 					});
@@ -307,7 +335,7 @@ define(['jquery',
 				if (isDelete) {
 					annotations.splice(annotations.indexOf(annotation), 1);
 				}
-				showSidr(annotations);
+				renderAnnotations(annotations);
 
 			};
 			
@@ -318,7 +346,7 @@ define(['jquery',
 			$(div).annotator('subscribe', 'annotationCreated', reindexPid);
 			$(div).annotator('subscribe', 'annotationUpdated', reindexPid);
 			$(div).annotator('subscribe', 'annotationDeleted', handleDelete);
-			$(div).annotator('subscribe', 'annotationsLoaded', showSidr);
+			$(div).annotator('subscribe', 'annotationsLoaded', renderAnnotations);
 
 		}
 		
