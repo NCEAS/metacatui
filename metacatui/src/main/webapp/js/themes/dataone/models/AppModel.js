@@ -24,7 +24,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn.dataone.org",
+			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -45,23 +45,24 @@ define(['jquery', 'underscore', 'backbone'],
 			//bioportalSearchUrl: null, // use this to deactivate the annotator view
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,
-			//accountsUrl: null,
-			//pendingMapsUrl: null,
-			//accountMapsUrl: null,
-			//groupsUrl: null,
-			//signInUrl: null,
-			//signOutUrl: null,
-			//signInUrlOrcid: null,
-			//signInUrlLdap: null,
-			//tokenUrl: null,
-			//annotatorUrl: null,
-			//prov: false
+			accountsUrl: null,
+			pendingMapsUrl: null,
+			accountMapsUrl: null,
+			groupsUrl: null,
+			signInUrl: null,
+			signOutUrl: null,
+			signInUrlOrcid: null,
+			signInUrlLdap: null,
+			tokenUrl: null,
+			annotatorUrl: null,
+			prov: false
 		},
 		
 		defaultView: "data",
 		
 		initialize: function() {
 			
+			this.set("baseUrl", null);
 			if(!this.get("baseUrl")){
 				this.set("baseUrl",   this.get("d1CNBaseUrl"));
 				this.set("d1Service", this.get("d1CNService"));
