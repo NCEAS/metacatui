@@ -8,7 +8,7 @@ define(['jquery', 'underscore', 'backbone'],
 	var LookupModel = Backbone.Model.extend({
 		// This model contains functions for looking up values from services
 		defaults: {
-
+			concepts: {}
 		},
 		
 		initialize: function() {
@@ -100,7 +100,14 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		bioportalGetConcepts: function(uri, callback) {
 			
-			var concepts = [];
+			var concepts = this.get('concepts')[uri];
+			
+			if (concepts) {
+				callback(concepts);
+				return;
+			} else {
+				concepts = [];
+			}
 
 			// make sure we have something to lookup
 			if (!appModel.get('bioportalSearchUrl')) {
@@ -109,6 +116,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			var query = appModel.get('bioportalSearchUrl') + encodeURIComponent(uri);
 			var availableTags = [];
+			var model = this;
 			$.get(query, function(data, textStatus, xhr) {
 			
 				_.each(data.collection, function(obj) {
@@ -122,20 +130,30 @@ define(['jquery', 'underscore', 'backbone'],
 					concepts.push(concept);
 
 				});
-				
+				model.get('concepts')[uri] = concepts;
+
 				callback(concepts);
 			});
 		},
 		
 		orcidGetConcepts: function(uri, callback) {
 			
+			var people = this.get('concepts')[uri];
+			
+			if (people) {
+				callback(people);
+				return;
+			} else {
+				people = [];
+			}
+			
 			// make sure we have something to lookup
 			if (!appModel.get('bioportalSearchUrl')) {
 				return;
 			}
 			
-			var people = [];
 			var query = appModel.get('orcidBaseUrl')  + uri.substring(uri.lastIndexOf("/"));
+			var model = this;
 			$.get(query, function(data, status, xhr) {
 				// get the orcid info
 				var profile = $(data).find("orcid-profile");
@@ -147,6 +165,8 @@ define(['jquery', 'underscore', 'backbone'],
 					choice.desc = $(obj).find("orcid-bio > personal-details").text();
 					people.push(choice);
 				});
+				
+				model.get('concepts')[uri] = people;
 				
 				// callback with answers
 				callback(people);
