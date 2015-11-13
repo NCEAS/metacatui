@@ -136,6 +136,8 @@ define(['jquery',
 								//Insert the breadcrumbs
 								viewRef.insertBreadcrumbs();
 								viewRef.insertCitation();
+								
+								//Insert package table if the package details haven't been inserted yet
 								viewRef.insertPackageDetails();
 								
 								//viewRef.insertDataSource();
@@ -302,55 +304,52 @@ define(['jquery',
 					return;
 				}
 				
-				if(model.get("resourceMap"))
-					viewRef.getPackageDetails(model.get("resourceMap"));
+				//Get the package information
+				viewRef.getPackageDetails(model.get("resourceMap"));
+				
 			});
 			model.getInfo();			
 		},
 		
-		getPackageDetails: function(packageIDs){
-			if(!packageIDs) return;
-			
+		getPackageDetails: function(packageIDs){			
 			var viewRef = this;
 			
 			var completePackages = 0;
-			_.each(packageIDs, function(thisPackageID, i){
-				
-				var getPackage = true;
-				
-				//This isn't a package, but just a lonely metadata doc...
-				if((thisPackageID == viewRef.pid) && (viewRef.model)){
-					var thisPackage = new Package({ id: null, members: [viewRef.model] });
-					getPackage = false;
-				}
-				else{
+
+			//This isn't a package, but just a lonely metadata doc...
+			if(!packageIDs || !packageIDs.length){
+				var thisPackage = new Package({ id: null, members: [this.model] });
+				thisPackage.flagComplete();
+				this.packageModels = [thisPackage];
+				this.insertPackageDetails(thisPackage);
+			}
+			else{
+				_.each(packageIDs, function(thisPackageID, i){
+					
 					//Create a model representing the data package
 					var thisPackage = new Package({ id: thisPackageID });
-				}
-				
-				//When the package info is fully retrieved
-				viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
 					
-					//When all packages are fully retrieved
-					completePackages++;
-					if(completePackages >= packageIDs.length){
-						var latestPackages = _.filter(viewRef.packageModels, function(m){
-							return(!m.get("obsoletedBy"));
-						});
-						viewRef.packageModels = latestPackages;
-						viewRef.insertPackageDetails(latestPackages);
-					}
-				});
-
-				//Save the package in the view
-				viewRef.packageModels.push(thisPackage);
-				
-				if(getPackage)
+					//When the package info is fully retrieved
+					viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
+						
+						//When all packages are fully retrieved
+						completePackages++;
+						if(completePackages >= packageIDs.length){
+							var latestPackages = _.filter(viewRef.packageModels, function(m){
+								return(!m.get("obsoletedBy"));
+							});
+							viewRef.packageModels = latestPackages;
+							viewRef.insertPackageDetails(latestPackages);
+						}
+					});
+	
+					//Save the package in the view
+					viewRef.packageModels.push(thisPackage);	
+					
+					//Get the members
 					thisPackage.getMembers();	
-				else
-					thisPackage.flagComplete();
-			});	
-
+				});	
+			}
 		},
 		
 		alterMarkup: function(){
@@ -379,17 +378,12 @@ define(['jquery',
 		/*
 		 * Inserts a table with all the data package member information and sends the call to display annotations
 		 */
-		insertPackageDetails: function(packageModel){	
+		insertPackageDetails: function(packageModel){				
+			if(this.$(".download-contents").length > 0) return;
+			
 			var viewRef = this;
 			
 			if(!this.citationEl) return;
-			
-			//Create a package model that contains just this metadata doc
-			if(!this.model.get("resourceMap")){
-				var packageModel = new Package({ id: null, members: [this.model] });
-				packageModel.flagComplete();
-				this.packageModels.push(packageModel);
-			}
 			
 			//Get the entity names from this page/metadata
 			this.getEntityNames(this.packageModels);
@@ -713,13 +707,16 @@ define(['jquery',
 		 * Inserts elements users can use to interact with this dataset:
 		 * - A "Copy Citation" button to copy the citation text
 		 */
-		insertControls: function(){			
+		insertControls: function(){		
 			//Get template
 			var controlsContainer = this.controlsTemplate({
 				citation: $(this.citationEl).text(),
 				url: window.location
 			});
-			$(this.citationEl).after(controlsContainer);
+			if(this.$(".metadata-controls").length > 0)
+				this.$(".metadata-controls").replaceWith(controlsContainer);
+			else
+				$(this.citationEl).after(controlsContainer);
 			
 			//Create a copy citation button
 			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
@@ -880,6 +877,8 @@ define(['jquery',
 				
 				//If this package has a different metadata doc than the one we are currently viewing
 				var metadataModel = packageModel.getMetadata();
+				if(!metadataModel) return;
+				
 				if(metadataModel.get("id") != viewRef.pid){
 					$.get(appModel.get("viewServiceUrl") + metadataModel.get("id"), function(parsedMetadata, response, xhr){
 						_.each(packageModel.get("members"), function(solrResult, i){
@@ -1470,9 +1469,12 @@ define(['jquery',
 			}
 		},
 		
-		onClose: function () {			
+		onClose: function () {	
+			var viewRef = this;
+			
 			_.each(this.subviews, function(subview) {
-				subview.remove();
+				if(subview.el != viewRef.el)
+					subview.remove();
 			});
 			
 			this.packageModels =  new Array();
