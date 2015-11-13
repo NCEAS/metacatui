@@ -223,48 +223,7 @@ define(['jquery',
 				
 			});
 			
-			// add input trigger
-			var selectText = function(element) {
-			    var doc = document;
-			    var text = $(element).get(0);
-			    var range;
-			    var selection;
-			        
-			    if (doc.body.createTextRange) {
-			        range = document.body.createTextRange();
-			        range.moveToElementText(text);
-			        range.select();
-			    } else if (window.getSelection) {
-			        selection = window.getSelection();        
-			        range = document.createRange();
-			        range.selectNodeContents(text);
-			        selection.removeAllRanges();
-			        selection.addRange(range);
-			    }
-			};
 			
-			// add a button to select text and launch the new editor
-			var launchEditor = function(event) {
-				var target = event.target;
-				// select the text to annotate
-				// TODO: select the actual content, not the label
-				var block = $(target).parent().children(".controls-well");
-				var next = $(block).children();
-				while ($(next).length) {
-					block = next;
-					next = $(next).children();
-				}
-				selectText(block);
-				
-				// set up the annotator range
-				$(div).data('annotator').checkForEndSelection(event);
-				
-				// simiulate click on adder button
-				$(".annotator-adder > button").trigger("click");
-				
-			};
-			$('[resource] > div:first-child').append("<button class='badge add-tag-btn'>Add tag</button>");
-			$(".add-tag-btn").bind("click", launchEditor);
 			
 			
 			// Use tag as hyperlink in the annotation
@@ -299,6 +258,52 @@ define(['jquery',
 				
 				// clear them out!
 				$(".hover-proxy").remove();
+				$(".annotation-container").remove();
+				
+				// make a spot for them
+				$("[resource]").prepend("<div class='annotation-container controls-well'></div>");
+				
+				// add input trigger
+				var selectText = function(element) {
+				    var doc = document;
+				    var text = $(element).get(0);
+				    var range;
+				    var selection;
+				        
+				    if (doc.body.createTextRange) {
+				        range = document.body.createTextRange();
+				        range.moveToElementText(text);
+				        range.select();
+				    } else if (window.getSelection) {
+				        selection = window.getSelection();        
+				        range = document.createRange();
+				        range.selectNodeContents(text);
+				        selection.removeAllRanges();
+				        selection.addRange(range);
+				    }
+				};
+				
+				// add a button to select text and launch the new editor
+				var launchEditor = function(event) {
+					var target = event.target;
+					// select the text to annotate
+					var block = $(target).closest('[resource]').children(".control-group").children(".controls-well");
+					var next = $(block).children();
+					while ($(next).length) {
+						block = next;
+						next = $(next).children();
+					}
+					selectText(block);
+					
+					// set up the annotator range
+					$(div).data('annotator').checkForEndSelection(event);
+					
+					// simiulate click on adder button
+					$(".annotator-adder > button").trigger("click");
+					
+				};
+				$('.annotation-container').append("<a class='badge add-tag-btn'>Add tag</a>");
+				$(".add-tag-btn").bind("click", launchEditor);
 				
 				// summarize annotation count in citation block
 				$(".citation-container > .controls-well").prepend("<span class='badge hover-proxy'>" + annotations.length + " annotations</span>");
@@ -316,7 +321,7 @@ define(['jquery',
 							
 							// render it in the document
 							var highlight = $("[data-annotation-id='" + annotation.id + "']");
-							var section = $(highlight).closest(".control-group");
+							var section = $(highlight).closest("[resource]").children(".annotation-container");
 							section.append(viewRef.annotationTemplate({
 								annotation: annotation,
 								concept: concept
@@ -337,7 +342,7 @@ define(['jquery',
 					} else {
 						// for comments, just render it in the document
 						var highlight = $("[data-annotation-id='" + annotation.id + "']");
-						var section = $(highlight).closest(".controls-well");
+						var section = $(highlight).closest("[resource]").children(".annotation-container");
 						section.append(viewRef.annotationTemplate({
 							annotation: annotation,
 							concept: null
