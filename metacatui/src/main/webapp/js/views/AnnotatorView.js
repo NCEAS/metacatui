@@ -153,7 +153,7 @@ define(['jquery',
 				var selectedElement = annotator.selectedRanges[0].commonAncestor;
 				
 				// find the first parent with a "resource" attribute
-				var resourceElem = $(selectedElement).parents('[resource]');
+				var resourceElem = $(selectedElement).closest('.annotation-target');
 				if (resourceElem) {
 					// add the resource identifier to the annotation
 					$.extend(annotation, {resource: $(resourceElem).attr('resource')});
@@ -261,7 +261,7 @@ define(['jquery',
 				$(".annotation-container").remove();
 				
 				// make a spot for them
-				$("[resource]").prepend("<div class='annotation-container controls-well'></div>");
+				$(".annotation-target").after("<div class='annotation-container controls-well control-group'></div>");
 				
 				// add input trigger
 				var selectText = function(element) {
@@ -287,7 +287,7 @@ define(['jquery',
 				var launchEditor = function(event) {
 					var target = event.target;
 					// select the text to annotate
-					var block = $(target).closest('[resource]').children(".control-group").children(".controls-well");
+					var block = $(target).closest('.tab-pane').children(".annotation-target");
 					var next = $(block).children();
 					while ($(next).length) {
 						block = next;
@@ -321,7 +321,7 @@ define(['jquery',
 							
 							// render it in the document
 							var highlight = $("[data-annotation-id='" + annotation.id + "']");
-							var section = $(highlight).closest("[resource]").children(".annotation-container");
+							var section = $(highlight).closest(".tab-pane").children(".annotation-container");
 							section.append(viewRef.annotationTemplate({
 								annotation: annotation,
 								concept: concept
@@ -342,7 +342,7 @@ define(['jquery',
 					} else {
 						// for comments, just render it in the document
 						var highlight = $("[data-annotation-id='" + annotation.id + "']");
-						var section = $(highlight).closest("[resource]").children(".annotation-container");
+						var section = $(highlight).closest(".tab-pane").children(".annotation-container");
 						section.append(viewRef.annotationTemplate({
 							annotation: annotation,
 							concept: null
@@ -363,8 +363,8 @@ define(['jquery',
 					var highlight = $("[data-annotation-id='" + annotationId + "']");
 					
 					// make sure the highlight is viewable in active tab
-					var tabId = $(highlight).parents(".tab-pane").attr("id");
-					$("a[href='#" + tabId + "']").trigger("click");
+//					var tabId = $(highlight).parents(".tab-pane").attr("id");
+//					$("a[href='#" + tabId + "']").trigger("click");
 					
 					// scroll the location in page
 					var highlightLocation = highlight.offset();
