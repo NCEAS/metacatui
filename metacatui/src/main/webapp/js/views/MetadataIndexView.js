@@ -252,6 +252,7 @@ define(['jquery',
 			
 			//Get the Package Model - it is attached with the parent Metadata View
 			var pkg = this.parentView.packageModel;
+			if(!pkg) return;
 			
 			if(pkg.get("members").length <= 1) return;
 			

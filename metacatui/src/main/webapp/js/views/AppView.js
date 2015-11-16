@@ -48,7 +48,11 @@ define(['jquery',
 			appUserModel.checkStatus();
 
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!			
-			$("head").prepend(this.appHeadTemplate({theme: theme, themeTitle: themeTitle}));
+			$("head").prepend(this.appHeadTemplate({
+				theme: theme, 
+				themeTitle: themeTitle,
+				googleAnalyticsKey: appModel.get("googleAnalyticsKey")
+				}));
 									
 			// set up the body
 			this.$el.append(this.template());
@@ -89,7 +93,8 @@ define(['jquery',
 		currentView: null,
 		
 		// Our view switcher for the whole app
-		showView: function(view, viewOptions) {			
+		showView: function(view, viewOptions) {		
+
 			//reference to appView
 			var thisAppViewRef = this;
 	
@@ -156,7 +161,17 @@ define(['jquery',
 			
 			// track the current view
 			this.currentView = view;
+			this.sendAnalytics();
 		},	
+		
+		sendAnalytics: function(){
+			if(!appModel.get("googleAnalyticsKey") || (typeof ga === "undefined")) return;
+			
+			var page = window.location.hash || "/";
+			page = page.replace("#", ""); //remove the leading pound sign
+			
+			ga('send', 'pageview', {'page':  page});
+		},
 		
 		routeToMetadata: function(e){			
 			//If the user pressed a key inside a text input, we only want to proceed if it was the Enter key
