@@ -555,7 +555,7 @@ define(['jquery',
 			
 			//Send this event to Google Analytics
 			if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
-				ga("send", "event", "search", "filter", category + " : " + value);
+				ga("send", "event", "search", "filter, " + category, value);
 		},
 		
 		//Update the UI year slider and input values
@@ -714,7 +714,7 @@ define(['jquery',
 					  
 					 //Send this event to Google Analytics
 				   	 if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
-						ga("send", "event", "search", "filter", "Data Year : " + minVal + " to " + maxVal);
+						ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
 					
 					}
 					else{
@@ -724,7 +724,7 @@ define(['jquery',
 							
 							//Send this event to Google Analytics
 							if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
-								ga("send", "event", "search", "filter", "Publication Year : " + minVal + " to " + maxVal);
+								ga("send", "event", "search", "filter, Publication Year", minVal + " to " + maxVal);
 						}
 						else
 							this.hideFilter($('#publish_year').attr("data-category"), true);
@@ -734,7 +734,7 @@ define(['jquery',
 							
 							//Send this event to Google Analytics
 							if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
-								ga("send", "event", "search", "filter", "Data Year : " + minVal + " to " + maxVal);
+								ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
 						}
 						else
 							this.hideFilter($('#data_year').attr("data-category"), true);
@@ -861,7 +861,7 @@ define(['jquery',
 			
 			//Send this event to Google Analytics
 			if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
-				ga("send", "event", "search", "filter", category + " : " + term);
+				ga("send", "event", "search", "filter, " + category, term);
 		},
 		
 		//Removes a specific filter term from the searchModel
