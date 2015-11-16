@@ -223,30 +223,6 @@ define(['jquery',
 				
 			});
 			
-			
-			
-			
-			// Use tag as hyperlink in the annotation
-			var updateAnnotationLinks = function(editor) {
-				var annotation = editor.annotation;
-				if (annotation.tags) {
-					var value = annotation.tags[0];
-					// TODO: test for valid URI
-					// add the uri as a link
-					$.extend(annotation, 
-						{links: [{
-						        	type: "text/html",
-						        	href: value,
-						        	rel: "alternate"
-								}]
-						}
-					);
-				}
-			};
-			
-			// NOTE: just using the annotateit.org links for now
-			//$(div).annotator('subscribe', 'annotationEditorSubmit', updateAnnotationLinks);
-
 			// render annotations when they load
 			var viewRef = this;
 			var renderAnnotations = function(annotations) {
@@ -308,6 +284,46 @@ define(['jquery',
 				// summarize annotation count in citation block
 				$(".citation-container > .controls-well").prepend("<span class='badge hover-proxy'>" + annotations.length + " annotations</span>");
 				
+				
+				var flagAnnotation = function(event) {
+					var annotationId = $(event.target).attr("data-id");
+					console.log("flagging annotation id: " +  annotationId);
+					var annotations = $(div).data('annotator').plugins.Store.annotations;
+					var annotation = _.findWhere(annotations, {id: annotationId});
+					annotation.reject = !annotation.reject;
+					$(div).data('annotator').updateAnnotation(annotation);					
+
+				};
+				var deleteAnnotation = function(event) {
+					var annotationId = $(event.target).attr("data-id");
+					console.log("deleting annotation id: " +  annotationId);
+					var annotations = $(div).data('annotator').plugins.Store.annotations;
+					var annotation = _.findWhere(annotations, {id: annotationId});
+					$(div).data('annotator').deleteAnnotation(annotation);					
+
+				};
+				
+				// define hover action to mimic hovering the highlighted region
+				var hoverAnnotation = function(event) {
+					
+					// figure out the annotation being selected
+					var annotationId = $(event.target).attr("id");
+					
+					// trigger as if a hover on highlighted region
+					var highlight = $("[data-annotation-id='" + annotationId + "']");
+					
+					// scroll the location in page
+					var highlightLocation = highlight.offset();
+					//$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "fast");
+					
+					// trigger the hover
+					highlight.trigger({
+						type: event.type, //"mouseover",
+						pageY: highlightLocation.top + 0,
+						pageX: highlightLocation.left + highlight.width() + 0,
+					});
+				};
+				
 				//look up the concept details for each annotation
 				_.each(annotations, function(annotation) {
 					
@@ -328,8 +344,12 @@ define(['jquery',
 							}));
 							
 							// bind after rendering
-							$(".hover-proxy").bind("mouseenter", hoverAnnotation);
-							$(".hover-proxy").bind("mouseleave", hoverAnnotation);
+							$(section).children(".hover-proxy").bind("mouseenter", hoverAnnotation);
+							$(section).children(".hover-proxy").bind("mouseleave", hoverAnnotation);
+							
+							$(section).children(".annotation-flag").bind("click", flagAnnotation);
+							$(section).children(".annotation-delete").bind("click", deleteAnnotation);
+
 						};
 						
 						// look it up and provide the callback
@@ -346,38 +366,14 @@ define(['jquery',
 						section.append(viewRef.annotationTemplate({
 							annotation: annotation,
 							concept: null
-						}));
-						// bind after rendering
-						$(".hover-proxy").bind("mouseenter", hoverAnnotation);
+						}));	
+					
 					}
-					
 				});
-
-				// define hover action to mimic hovering the highlighted region
-				var hoverAnnotation = function(event) {
-					
-					// figure out the annotation being selected
-					var annotationId = $(event.target).attr("id");
-					
-					// trigger as if a hover on highlighted region
-					var highlight = $("[data-annotation-id='" + annotationId + "']");
-					
-					// make sure the highlight is viewable in active tab
-//					var tabId = $(highlight).parents(".tab-pane").attr("id");
-//					$("a[href='#" + tabId + "']").trigger("click");
-					
-					// scroll the location in page
-					var highlightLocation = highlight.offset();
-					//$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "fast");
-					
-					// trigger the hover
-					highlight.trigger({
-						type: event.type, //"mouseover",
-						pageY: highlightLocation.top + 0,
-						pageX: highlightLocation.left + highlight.width() + 0,
-					});
-				};
-			}
+				
+				
+				
+			};
 						
 			// reindex when an annotation is updated
 			var reindexPid = function(annotation, isDelete) {

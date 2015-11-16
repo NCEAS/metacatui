@@ -11,7 +11,6 @@
 			>
 			<%=concept.label %>
 		</a>
-		
 <%
 } else if (annotation.tags[0]) {
 %>
@@ -30,22 +29,20 @@
 <%
 }
 
-if (annotation.text) {
+if (annotation.reject) {
 %>	
-		<div
-			id="<%= annotation.id %>" 
-			class="hover-proxy popover-this ellipsis comment badge <% if (annotation.reject) { print(' badge-warning') } %>" 
-			title="Comment" 
-			data-content="<%=annotation.text %>"
-			data-trigger="hover"
-			data-placement="left"
-			data-container="body"
-			data-viewport="{ selector: 'body', padding: 0 }"
-			>
-			<%=annotation.text %>
-		</div>
-	
-<%	
+	<i class="icon-remove-sign annotation-delete" 
+		data-id="<%= annotation.id %>"
+	>
+	</i>
+<%
+} else {
+%>
+	<i class="icon-flag annotation-flag" 
+		data-id="<%= annotation.id %>"
+	>
+	</i>
+<%
 }
 %>
 
