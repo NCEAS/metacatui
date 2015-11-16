@@ -921,7 +921,7 @@ define(['jquery',
 		hideEl: function(element){
 			//Fade out and remove the element
 			$(element).fadeOut("slow", function(){
-				element.remove();
+				$(element).remove();
 			});	
 		},
 		

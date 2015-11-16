@@ -12,7 +12,7 @@ if ((mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!mapKey)) mapKey = null;
 var useD3 = true; 
 
 //This version of Metacat UI - used for cache busting
-window.metacatUIVersion = "1.8.0";
+window.metacatUIVersion = "1.8.1";
 
 // Step 2: let everything else be taken care of by the app
 preventCompatibilityIssues();
@@ -60,32 +60,32 @@ function preventCompatibilityIssues(){
 		  }
 	}
 	
-	/* Polyfill for startsWith() */
+	/* Polyfill for startsWith() - IE 8 and earlier */
 	if (!String.prototype.startsWith) {
-		  Object.defineProperty(String.prototype, 'startsWith', {
-		    enumerable: false,
-		    configurable: false,
-		    writable: false,
-		    value: function(searchString, position) {
-		      position = position || 0;
-		      return this.lastIndexOf(searchString, position) === position;
-		    }
-		  });
+		  String.prototype.startsWith = function(searchString, position) {
+		    position = position || 0;
+		    return this.indexOf(searchString, position) === position;
+		  };
 		}
 	
-	/* Polyfill for endsWith() */
+	/* Polyfill for endsWith() - IE 8 and earlier */
 	if (!String.prototype.endsWith) {
-		  Object.defineProperty(String.prototype, 'endsWith', {
-		    value: function(searchString, position) {
+		  String.prototype.endsWith = function(searchString, position) {
 		      var subjectString = this.toString();
-		      if (position === undefined || position > subjectString.length) {
+		      if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
 		        position = subjectString.length;
 		      }
 		      position -= searchString.length;
 		      var lastIndex = subjectString.indexOf(searchString, position);
 		      return lastIndex !== -1 && lastIndex === position;
-		    }
-		  });
+		  };
+		}
+	
+	/* POlyfill for Array.isArray() - IE 8 and earlier */
+	if (!Array.isArray) {
+		  Array.isArray = function(arg) {
+		    return Object.prototype.toString.call(arg) === '[object Array]';
+		  };
 		}
 	
 	/**
