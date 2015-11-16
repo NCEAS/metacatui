@@ -197,7 +197,7 @@ define(['jquery',
 			$( "#includes-files-buttonset" ).buttonset();
 			
 			//Iterate through each search model text attribute and show UI filter for each
-			var categories = ['all', 'creator', 'taxon', 'annotation'];
+			var categories = ['all', 'attribute', 'creator', 'id', 'taxon', 'spatial', 'additionalCriteria', 'annotation'];
 			var thisTerm = null;
 			
 			for (var i=0; i<categories.length; i++){
@@ -1025,6 +1025,7 @@ define(['jquery',
 			}
 			
 			var categoryLabel = this.searchModel.fieldLabels[category];
+			if((typeof categoryLabel === "undefined")  && (category == "additionalCriteria")) categoryLabel = "";
 			if(typeof categoryLabel === "undefined") categoryLabel = category;
 			
 			//Add a filter node to the DOM
