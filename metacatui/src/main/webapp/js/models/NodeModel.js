@@ -7,7 +7,7 @@ define(['jquery', 'underscore', 'backbone'],
 	// ------------------
 	var Node = Backbone.Model.extend({
 		memberLogos : {
-				"defaultLogo"		   : "img/node-logos/KNB.png",
+				//"defaultLogo"		   : "img/node-logos/KNB.png",
 				"urn:node:KNB"         : "img/node-logos/KNB.png",
 				"urn:node:ESA"         : "img/node-logos/ESA.png",
 				"urn:node:SANPARKS"    : "img/node-logos/SANPARKS.png",
@@ -35,7 +35,8 @@ define(['jquery', 'underscore', 'backbone'],
 				"urn:node:NMEPSCOR"    : "img/node-logos/NMEPSCOR.png",
 				"urn:node:TERN"        : "img/node-logos/TERN.png",
 				"urn:node:NKN"         : "img/node-logos/NKN.png",
-				"urn:node:PPBio"       : "img/node-logos/PPBio.png"
+				"urn:node:PPBio"       : "img/node-logos/PPBio.png",
+				"urn:node:USGS_SDC"    : "img/node-logos/USGSCSAS.png"
 		},
 		
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API

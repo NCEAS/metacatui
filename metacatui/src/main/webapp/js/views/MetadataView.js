@@ -587,8 +587,8 @@ define(['jquery',
 
 				var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() + 
 						  "&spn=0.003833,0.010568" +
-						  "&t=h" +
-						  "&z=16";
+						  "&t=m" +
+						  "&z=14";
 				//Create a google map image
 				var mapHTML = "<img class='georegion-map' " +
 							  "src='https://maps.googleapis.com/maps/api/staticmap?" +

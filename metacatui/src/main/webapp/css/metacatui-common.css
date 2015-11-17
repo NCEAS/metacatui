@@ -1542,7 +1542,7 @@ textarea.token{
   border-radius: 3px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  font-size: 13px;
+  font-size: 1em;
 }
 .current-filters,
 .current-filters[class*="span"]{
@@ -1551,11 +1551,13 @@ textarea.token{
 	min-height: 0px;
 }
 .current-filter > span{
-	max-width: 90%;
+	max-width: 85%;
+	max-width: calc(100% - 25px);
 	overflow: hidden;
 	white-space: normal;
 	word-break: break-word;
 	display: inline-block;
+	vertical-align: middle;
 }
 .current-filter .category{
 	font-weight: bold;
@@ -1582,8 +1584,8 @@ textarea.token{
 }
 #sidebar > *{
   padding-left: 10px;
-  padding-right: 25px;
-  width: calc(100% - 35px);
+  padding-right: 10px;
+  width: calc(100% - 20px);
 }
 #sidebar > .input-append{
 	margin-top: 10px;
@@ -1601,11 +1603,18 @@ textarea.token{
 }
 #all_input {
 	width: 75%;
-	width: calc(100% - 50px);
+	width: calc(100% - 60px);
 	margin-left: 0px;
 }
 .filter-input-contain input.filter{
 	width: 64%;
+	min-width: 120px;
+}
+#filter-year{
+	width: 90%;
+}
+#filter-year input[type='text']{
+	max-width: 50px;
 }
 /*-- Pagination and sort --*/
 .sort-by{

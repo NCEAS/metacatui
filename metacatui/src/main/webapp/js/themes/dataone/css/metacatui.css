@@ -397,14 +397,9 @@ table th.btn-container .btn{
 }
 
 .navbar-inner{
-	background: rgba(102,0,51,1);
-	/*background: -moz-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(102,0,51,1)), color-stop(44%, rgba(77,0,39,1)), color-stop(100%, rgba(51,0,26,1)));
-	background: -webkit-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-	background: -o-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-	background: -ms-linear-gradient(top, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-	background: linear-gradient(to bottom, rgba(102,0,51,1) 0%, rgba(77,0,39,1) 44%, rgba(51,0,26,1) 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#660033', endColorstr='#33001a', GradientType=0 );*/
+	background-color: #660033;
+	background-image: none;
+	filter: none; /* for IE override */
 	border-radius: 0px;
 	border-width: 0px;
 }
@@ -426,7 +421,9 @@ table th.btn-container .btn{
 	width: 100%;
 	width: calc(100% - 40px);
 	min-height: 40px;
-	background-color: rgba(63, 0, 31, 1);
+	background-color: #3F001F;
+	background-image: none;
+	filter: none; /* for IE override */
 	padding-left: 20px;
 	padding-right: 20px;
 }
@@ -458,7 +455,7 @@ table th.btn-container .btn{
    	margin-left: 40px;
    }
    .navbar-lower .input > form > label{
-    color: rgba(203, 80, 138, 1);
+    color: #CB508A;
    }
    .navbar-lower .input > form > input[type="text"]{
    	background-image: url(../img/subtle-bg-magenta.png);
@@ -485,16 +482,16 @@ table th.btn-container .btn{
  	border-bottom-right-radius: 2px;
 }
    .navbar-lower .input > form > input[type="text"]::-webkit-input-placeholder{
-   	color: rgba(203, 80, 138, 1);
+   	color: #CB508A;
    }
    .navbar-lower .input > form > input[type="text"]:-moz-placeholder{
-   	color: rgba(203, 80, 138, 1);
+   	color: #CB508A;
    }
    .navbar-lower .input > form > input[type="text"]::-moz-placeholder{
-   	color: rgba(203, 80, 138, 1);
+   	color: #CB508A;
    }
    .navbar-lower .input > form > input[type="text"]:-ms-input-placeholder{
-   	color: rgba(203, 80, 138, 1);
+   	color: #CB508A;
    }
    
 .show-new-dataCatalogView{
@@ -680,7 +677,7 @@ ul.tb-megamenu-subnav{
 }
 
 .panel>.list-group .list-group-item.active{
-	border-left-color: rgba(102,0,51,1);
+	border-left-color: #660033;
 }
 
 /* METADATA VIEW CSS
@@ -1253,8 +1250,7 @@ ul.tb-megamenu-subnav{
 		margin-left: 20px;
 	}	
 	.mapMode #results-container{
-		width: 400px;
-		width: calc(100% - 216px - 33%);
+		width: 40%; /* IE fallback */
 		width: calc((100% - 216px) / 2);
 		overflow-x: hidden;
 		overflow-y: scroll;
@@ -1365,7 +1361,7 @@ ul.tb-megamenu-subnav{
     }
     
     .result-row:hover .info-icons .inactive{
-    	color: rgba(178, 202, 221, 1);
+    	color: #B2CADD;
     }
     
     .popover{
@@ -1849,8 +1845,7 @@ svg .point:hover ~ .line-chart-label{
 
 #map-container{
 	height: 500px;
-	width: 33%;
-	width: calc(33% - .5px);
+	width: 33%; /* IE fallback */
 	width: calc((100% - 217px) / 2);
 	float: left;
 }

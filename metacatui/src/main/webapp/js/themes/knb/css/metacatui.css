@@ -463,8 +463,7 @@
 #map-container{
 	display: none;
 	height: 500px;
-	width: 33%;
-	width: calc(33% - .5px);
+	width: 33%; /* IE fallback */
 	width: calc((100% - 217px) / 2);
 	float: left;
 }
@@ -1923,8 +1922,7 @@ svg .domain{
 		margin-left: 20px;
 	}	
 	.mapMode #results-container{
-		width: 400px;
-		width: calc(100% - 33% - 216px);
+		width: 40%; /* IE fallback */
 		width: calc((100% - 216px) / 2);
 		overflow-x: hidden;
 		overflow-y: scroll;

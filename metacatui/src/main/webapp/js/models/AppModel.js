@@ -10,16 +10,24 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
+			
+			googleAnalyticsKey: null,
+
 			searchMode: mapKey ? 'map' : 'list',
 			searchHistory: [],
 			sortOrder: 'dateUploaded+desc',
+			page: 0,
+			
 			previousPid: null,
 			lastPid: null,
+			
 			anchorId: null,
+			
 			profileUsername: null,
-			page: 0,
-			useJsonp: true,
 			profileQuery: null,
+			
+			useJsonp: true,
+			
 			metacatVersion: "2.5.0", 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context

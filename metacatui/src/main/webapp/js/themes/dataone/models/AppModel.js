@@ -10,21 +10,29 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
+			
+			googleAnalyticsKey: 'UA-15017327-17',
+			
 			searchMode: mapKey ? 'map' : 'list',
 			searchHistory: [],
 			sortOrder: 'dateUploaded+desc',
+			page: 0,
+			
 			pid: null,
 			previousPid: null,
+			
 			anchorId: null,
+			
 			profileUsername: null,
-			page: 0,
+			
 			useJsonp: true,
+			
 			metcatVersion: "2.5.0", 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
+			d1CNBaseUrl:  "https://cn.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -62,7 +70,6 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		initialize: function() {
 			
-			this.set("baseUrl", null);
 			if(!this.get("baseUrl")){
 				this.set("baseUrl",   this.get("d1CNBaseUrl"));
 				this.set("d1Service", this.get("d1CNService"));
