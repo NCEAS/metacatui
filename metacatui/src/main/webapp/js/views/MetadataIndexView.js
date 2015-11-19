@@ -161,7 +161,7 @@ define(['jquery',
 			if(this.parentView && this.parentView.model){
 				var formatId = this.parentView.model.get("formatId");
 				if(formatId.indexOf("eml://") >= 0){
-					var url = this.parentView.model.get("url") || appModel.get("objectServiceUrl") + this.parentView.model.get("id");
+					var url = appModel.get("baseUrl") + appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
 					
 					$.get(url, function(data, textStatus, xhr){
 						if(!data || !$(data).length) return;
@@ -173,7 +173,7 @@ define(['jquery',
 								
 								var linkText = $(onlineDist).text();
 								
-								if(linkText.indexOf("ecogrid")){
+								if(linkText.indexOf("ecogrid") >= 0){
 									//Clean up the link text
 									var start = linkText.lastIndexOf("/");
 									var ecogridPid = linkText.substr(start+1).trim(),
