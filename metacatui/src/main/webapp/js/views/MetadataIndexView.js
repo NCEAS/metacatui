@@ -166,17 +166,23 @@ define(['jquery',
 					$.get(url, function(data, textStatus, xhr){
 						if(!data || !$(data).length) return;
 						
+						var allLinks = [];
+						
 						//Find the distribution information
 						var emlDoc = $(data).find("distribution").each(function(i, dist){
 							var onlineDist = $(dist).children("online");
 							if(onlineDist.length){
 								
-								var linkText = $(onlineDist).text();
+								var linkText = $(onlineDist).text().trim();
+								
+								//Keep track of all the links so there are no duplicates
+								if(_.contains(allLinks, linkText)) return;
+								else allLinks.push(linkText);
 								
 								if(linkText.indexOf("ecogrid") >= 0){
 									//Clean up the link text
 									var start = linkText.lastIndexOf("/");
-									var ecogridPid = linkText.substr(start+1).trim(),
+									var ecogridPid = linkText.substr(start+1),
 										dataObjects = [];
 									
 									//Iterate over each id in the package and try to fuzzily match the ecogrid link to the id
@@ -200,7 +206,7 @@ define(['jquery',
 										}
 									}
 								}
-								
+															
 								var link = $(document.createElement("a")).attr("href", linkText).text(linkText),
 									fullHTML = view.formatAttribute("Online Distribution Info", link);
 								
