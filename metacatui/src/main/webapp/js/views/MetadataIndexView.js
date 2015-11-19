@@ -157,6 +157,35 @@ define(['jquery',
 					view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
 				}
 			});
+			
+			//Send a request for the EML doc itself to extract certain info
+			if(this.parentView && this.parentView.model){
+				var formatId = this.parentView.model.get("formatId");
+				if(formatId.indexOf("eml://") >= 0){
+					var url = this.parentView.model.get("url") || appModel.get("objectServiceUrl") + this.parentView.model.get("id");
+					
+					$.get(url, function(data, textStatus, xhr){
+						if(!data || !$(data).length) return;
+						
+						//Find the distribution information
+						var emlDoc = $(data).find("distribution").each(function(i, dist){
+							var onlineDist = $(dist).children("online");
+							if(onlineDist.length){
+								var link = $(document.createElement("a")).attr("href", $(onlineDist).text()).text($(onlineDist).text()),
+									fullHTML = view.formatAttribute("Online Distribution Info", link);
+								
+								//Find the "General" section of this page
+								if(view.$(".General").length)
+									view.$(".General").after(fullHTML);
+								else
+									view.$el.append(fullHTML);
+							}
+						});
+						
+						
+					});
+				}
+			}
 						
 			return this;
 		},
@@ -226,6 +255,10 @@ define(['jquery',
 					type: type,
 					resource: "#xpointer(//" + attribute + "[" + (i+1) + "])"
 				});
+			}
+			
+			if(!embeddedAttributes && (value instanceof $)){
+				value = value[0].outerHTML;
 			}
 			
 			html += view.attributeTemplate({
