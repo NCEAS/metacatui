@@ -13,7 +13,6 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 	 ], 				
 	function($, _, Backbone, gmaps, SolrResult, CitationView, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, MetadataIndexTemplate, DataDisplayTemplate) {
-	'use strict';
 		
 	var MetadataIndexView = Backbone.View.extend({
 		
@@ -157,6 +156,66 @@ define(['jquery',
 					view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
 				}
 			});
+			
+			//Send a request for the EML doc itself to extract certain info
+			if(this.parentView && this.parentView.model){
+				var formatId = this.parentView.model.get("formatId");
+				if(formatId.indexOf("eml://") >= 0){
+					var url = appModel.get("baseUrl") + appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
+					
+					$.get(url, function(data, textStatus, xhr){
+						if(!data || !$(data).length) return;
+						
+						//Find the distribution information
+						var emlDoc = $(data).find("distribution").each(function(i, dist){
+							var onlineDist = $(dist).children("online");
+							if(onlineDist.length){
+								
+								var linkText = $(onlineDist).text();
+								
+								if(linkText.indexOf("ecogrid") >= 0){
+									//Clean up the link text
+									var start = linkText.lastIndexOf("/");
+									var ecogridPid = linkText.substr(start+1).trim(),
+										dataObjects = [];
+									
+									//Iterate over each id in the package and try to fuzzily match the ecogrid link to the id
+									if(view.parentView.packageModels){										
+										//Get all the data objects in this metadata's packages
+										_.each(view.parentView.packageModels, function(package){
+											dataObjects.push(package.get("members"));
+										});
+										
+										dataObjects = _.flatten(dataObjects);
+									}
+									for(var i = 0; i < dataObjects.length; i++){
+										
+										//If we find a match, replace the ecogrid links with a DataONE API link to the object
+										if(dataObjects[i].get("id").indexOf(ecogridPid) > -1){
+											
+											var linkText = dataObjects[i].get("url");
+																		
+											//We can stop looking now
+											i = dataObjects.length;
+										}
+									}
+								}
+								
+								var link = $(document.createElement("a")).attr("href", linkText).text(linkText),
+									fullHTML = view.formatAttribute("Online Distribution Info", link);
+								
+								//Find the "General" section of this page
+								if(view.$(".General").length)
+									view.$(".General").after(fullHTML);
+								else
+									view.$el.append(fullHTML);
+							}
+						});
+						
+						
+					});
+				}
+			}
 						
 			return this;
 		},
@@ -228,6 +287,10 @@ define(['jquery',
 				});
 			}
 			
+			if(!embeddedAttributes && (value instanceof $)){
+				value = value[0].outerHTML;
+			}
+			
 			html += view.attributeTemplate({
 				attribute: attribute,
 				formattedAttribute: view.transformCamelCase(attribute),
@@ -252,6 +315,7 @@ define(['jquery',
 			
 			//Get the Package Model - it is attached with the parent Metadata View
 			var pkg = this.parentView.packageModel;
+			if(!pkg) return;
 			
 			if(pkg.get("members").length <= 1) return;
 			
