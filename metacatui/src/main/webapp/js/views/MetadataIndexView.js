@@ -13,7 +13,6 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 	 ], 				
 	function($, _, Backbone, gmaps, SolrResult, CitationView, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, MetadataIndexTemplate, DataDisplayTemplate) {
-	'use strict';
 		
 	var MetadataIndexView = Backbone.View.extend({
 		
@@ -171,7 +170,38 @@ define(['jquery',
 						var emlDoc = $(data).find("distribution").each(function(i, dist){
 							var onlineDist = $(dist).children("online");
 							if(onlineDist.length){
-								var link = $(document.createElement("a")).attr("href", $(onlineDist).text()).text($(onlineDist).text()),
+								
+								var linkText = $(onlineDist).text();
+								
+								if(linkText.indexOf("ecogrid")){
+									//Clean up the link text
+									var start = linkText.lastIndexOf("/");
+									var ecogridPid = linkText.substr(start+1).trim(),
+										dataObjects = [];
+									
+									//Iterate over each id in the package and try to fuzzily match the ecogrid link to the id
+									if(view.parentView.packageModels){										
+										//Get all the data objects in this metadata's packages
+										_.each(view.parentView.packageModels, function(package){
+											dataObjects.push(package.get("members"));
+										});
+										
+										dataObjects = _.flatten(dataObjects);
+									}
+									for(var i = 0; i < dataObjects.length; i++){
+										
+										//If we find a match, replace the ecogrid links with a DataONE API link to the object
+										if(dataObjects[i].get("id").indexOf(ecogridPid) > -1){
+											
+											var linkText = dataObjects[i].get("url");
+																		
+											//We can stop looking now
+											i = dataObjects.length;
+										}
+									}
+								}
+								
+								var link = $(document.createElement("a")).attr("href", linkText).text(linkText),
 									fullHTML = view.formatAttribute("Online Distribution Info", link);
 								
 								//Find the "General" section of this page
