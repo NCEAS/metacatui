@@ -216,6 +216,72 @@ define(['jquery',
 					});
 				}
 			}
+			
+			//Send a request for the EML doc itself to extract certain info
+			if(this.parentView && this.parentView.model){
+				var formatId = this.parentView.model.get("formatId");
+				if(formatId.indexOf("eml://") >= 0){
+					var url = appModel.get("baseUrl") + appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
+					
+					$.get(url, function(data, textStatus, xhr){
+						if(!data || !$(data).length) return;
+						
+						var allLinks = [];
+						
+						//Find the distribution information
+						var emlDoc = $(data).find("distribution").each(function(i, dist){
+							var onlineDist = $(dist).children("online");
+							if(onlineDist.length){
+								
+								var linkText = $(onlineDist).text().trim();
+								
+								//Keep track of all the links so there are no duplicates
+								if(_.contains(allLinks, linkText)) return;
+								else allLinks.push(linkText);
+								
+								if(linkText.indexOf("ecogrid") >= 0){
+									//Clean up the link text
+									var start = linkText.lastIndexOf("/");
+									var ecogridPid = linkText.substr(start+1),
+										dataObjects = [];
+									
+									//Iterate over each id in the package and try to fuzzily match the ecogrid link to the id
+									if(view.parentView.packageModels){										
+										//Get all the data objects in this metadata's packages
+										_.each(view.parentView.packageModels, function(package){
+											dataObjects.push(package.get("members"));
+										});
+										
+										dataObjects = _.flatten(dataObjects);
+									}
+									for(var i = 0; i < dataObjects.length; i++){
+										
+										//If we find a match, replace the ecogrid links with a DataONE API link to the object
+										if(dataObjects[i].get("id").indexOf(ecogridPid) > -1){
+											
+											var linkText = dataObjects[i].get("url");
+																		
+											//We can stop looking now
+											i = dataObjects.length;
+										}
+									}
+								}
+															
+								var link = $(document.createElement("a")).attr("href", linkText).text(linkText),
+									fullHTML = view.formatAttribute("Online Distribution Info", link);
+								
+								//Find the "General" section of this page
+								if(view.$(".General").length)
+									view.$(".General").after(fullHTML);
+								else
+									view.$el.append(fullHTML);
+							}
+						});
+						
+						
+					});
+				}
+			}
 						
 			return this;
 		},

@@ -197,7 +197,7 @@ define(['jquery',
 			$( "#includes-files-buttonset" ).buttonset();
 			
 			//Iterate through each search model text attribute and show UI filter for each
-			var categories = ['all', 'creator', 'taxon', 'annotation'];
+			var categories = ['all', 'attribute', 'creator', 'id', 'taxon', 'spatial', 'additionalCriteria', 'annotation'];
 			var thisTerm = null;
 			
 			for (var i=0; i<categories.length; i++){
@@ -552,6 +552,10 @@ define(['jquery',
 			
 			//Trigger a new search
 			this.triggerSearch();
+			
+			//Send this event to Google Analytics
+			if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+				ga("send", "event", "search", "filter, " + category, value);
 		},
 		
 		//Update the UI year slider and input values
@@ -707,15 +711,31 @@ define(['jquery',
 				      					  
 					  //refresh the UI buttonset so it appears as checked/unchecked
 					  $("#filter-year").buttonset("refresh");
+					  
+					 //Send this event to Google Analytics
+				   	 if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+						ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
+					
 					}
 					else{
 						//Add the filter elements
-						if(pubYearChecked)
+						if(pubYearChecked){
 							this.showFilter($('#publish_year').attr("data-category"), true, true, minVal + " to " + maxVal, {replace: true});
+							
+							//Send this event to Google Analytics
+							if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+								ga("send", "event", "search", "filter, Publication Year", minVal + " to " + maxVal);
+						}
 						else
 							this.hideFilter($('#publish_year').attr("data-category"), true);
-						if(dataYearChecked)			      
+						
+						if(dataYearChecked){	      
 							this.showFilter($('#data_year').attr("data-category"), true, true, minVal + " to " + maxVal, {replace: true});
+							
+							//Send this event to Google Analytics
+							if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+								ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
+						}
 						else
 							this.hideFilter($('#data_year').attr("data-category"), true);
 					}
@@ -838,6 +858,10 @@ define(['jquery',
 			
 			//Trigger a new search
 			this.triggerSearch();
+			
+			//Send this event to Google Analytics
+			if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+				ga("send", "event", "search", "filter, " + category, term);
 		},
 		
 		//Removes a specific filter term from the searchModel
@@ -921,7 +945,7 @@ define(['jquery',
 		hideEl: function(element){
 			//Fade out and remove the element
 			$(element).fadeOut("slow", function(){
-				element.remove();
+				$(element).remove();
 			});	
 		},
 		
@@ -1001,6 +1025,7 @@ define(['jquery',
 			}
 			
 			var categoryLabel = this.searchModel.fieldLabels[category];
+			if((typeof categoryLabel === "undefined")  && (category == "additionalCriteria")) categoryLabel = "";
 			if(typeof categoryLabel === "undefined") categoryLabel = category;
 			
 			//Add a filter node to the DOM
@@ -1879,6 +1904,12 @@ define(['jquery',
 			//Tell the map to trigger a new search and redraw tiles
 			this.allowSearch = true;			
 			google.maps.event.trigger(mapModel.get("map"), "idle");
+			
+			//Send this event to Google Analytics
+			if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+				var action = isOn? "on" : "off";
+				ga("send", "event", "map", action);
+			}
 		},
 		
 		/**
@@ -2292,6 +2323,11 @@ define(['jquery',
 					//Change the zoom
 					//viewRef.map.fitBounds(tileBounds);
 					myFitBounds(viewRef.map, tileBounds);
+					
+					
+					//Send this event to Google Analytics
+					if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+						ga("send", "event", "map", "clickTile", "geohash : " + tileObject.geohash);
 				});
 			}
 			
