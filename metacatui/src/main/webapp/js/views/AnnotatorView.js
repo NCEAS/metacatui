@@ -352,7 +352,7 @@ define(['jquery',
 								canEdit: canEdit
 							}));
 							
-							section.append(bubble);
+							section.prepend(bubble);
 							
 							// bind after rendering
 							var target = $(bubble).find(".hover-proxy").filter("[data-id='" + annotation.id + "']");
