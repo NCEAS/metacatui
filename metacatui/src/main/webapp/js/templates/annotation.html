@@ -1,50 +1,49 @@
+<div class="btn-group" role="group">
 <% if (concept) {
 %>
-		<a id="<%= annotation.id %>" 
-			class="hover-proxy popover-this ellipsis badge <% if (annotation.reject) { print(' badge-warning') } %>" 
+		<button data-id="<%= annotation.id %>" 
+			class="hover-proxy ellipsis btn <% if (annotation.reject) { print(' btn-warning') } %>" 
+			type="button"
 			title="<%=concept.value %>"
-			data-content="<%=concept.desc %>"
-			data-trigger="hover"
-			data-placement="left"
-			data-container="body"
-			data-viewport="{ selector: 'body', padding: 0 }"
 			>
 			<%=concept.label %>
-		</a>
+		</button>
 <%
 } else if (annotation.tags[0]) {
 %>
-		<a id="<%= annotation.id %>" 
-			class="hover-proxy popover-this ellipsis badge <% if (annotation.reject) { print(' badge-warning') } %>" 
+		<button data-id="<%= annotation.id %>" 
+			class="hover-proxy popover-this ellipsis btn <% if (annotation.reject) { print(' btn-warning') } %>" 
+			type="button"
 			title="<%=annotation.tags[0] %>"
-			data-content=""
-			data-trigger="hover"
-			data-placement="left"
-			data-container="body"
-			data-viewport="{ selector: 'body', padding: 0 }"
 			>
 			#<%=annotation.tags[0].split("#")[1] %>
-		</a>
+		</button>
 		
 <%
 }
+if (canEdit) {
 
-if (annotation.reject) {
-%>	
-	<i class="icon-remove-sign annotation-delete" 
-		data-id="<%= annotation.id %>"
-	>
-	</i>
-<%
-} else {
+	if (annotation.reject) {
+	%>	
+		<button class="btn btn-warning annotation-delete" 
+			data-id="<%= annotation.id %>"
+		>
+		<i class="icon-remove-sign"></i>
+		</button>
+	<%
+	} else {
+	%>
+		<button class="btn btn-default annotation-flag" 
+			data-id="<%= annotation.id %>"
+		>
+		<i class="icon-flag"></i>		
+		</button>
+	<%
+	}
+}	
 %>
-	<i class="icon-flag annotation-flag" 
-		data-id="<%= annotation.id %>"
-	>
-	</i>
-<%
-}
-%>
+
+</div>
 
 
 

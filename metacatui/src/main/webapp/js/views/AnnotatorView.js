@@ -278,7 +278,7 @@ define(['jquery',
 					$(".annotator-adder > button").trigger("click");
 					
 				};
-				$('.annotation-container').append("<a class='badge add-tag-btn'>Add tag</a>");
+				$('.annotation-container').append("<div class='btn-group'><button class='btn btn-info'>Add tag</button><button class='btn btn-info add-tag-btn'><i class='icon-plus-sign'></i></button></div>");
 				$(".add-tag-btn").bind("click", launchEditor);
 				
 				// summarize annotation count in citation block
@@ -307,14 +307,15 @@ define(['jquery',
 				var hoverAnnotation = function(event) {
 					
 					// figure out the annotation being selected
-					var annotationId = $(event.target).attr("id");
+					var annotationId = $(event.target).attr("data-id");
+					
+					console.log("hover trigger for annotation: " + annotationId);
 					
 					// trigger as if a hover on highlighted region
 					var highlight = $("[data-annotation-id='" + annotationId + "']");
 					
 					// scroll the location in page
 					var highlightLocation = highlight.offset();
-					//$("html, body").animate({ scrollTop: highlightLocation.top - 50 }, "fast");
 					
 					// trigger the hover
 					highlight.trigger({
@@ -335,20 +336,35 @@ define(['jquery',
 							
 							var concept = _.findWhere(concepts, {value: conceptUri});
 							
+							var canEdit = 
+								_.contains(annotation.permissions.admin, appUserModel.get("username"))
+								||
+								_.contains(annotation.permissions.update, appUserModel.get("username"))
+								|| 
+								_.contains(annotation.permissions.delete, appUserModel.get("username"));
+							
 							// render it in the document
 							var highlight = $("[data-annotation-id='" + annotation.id + "']");
 							var section = $(highlight).closest(".tab-pane").children(".annotation-container");
-							section.append(viewRef.annotationTemplate({
+							var bubble = jQuery(viewRef.annotationTemplate({
 								annotation: annotation,
-								concept: concept
+								concept: concept,
+								canEdit: canEdit
 							}));
 							
-							// bind after rendering
-							$(section).children(".hover-proxy").bind("mouseenter", hoverAnnotation);
-							$(section).children(".hover-proxy").bind("mouseleave", hoverAnnotation);
+							section.append(bubble);
 							
-							$(section).children(".annotation-flag").bind("click", flagAnnotation);
-							$(section).children(".annotation-delete").bind("click", deleteAnnotation);
+							// bind after rendering
+							var target = $(bubble).find(".hover-proxy").filter("[data-id='" + annotation.id + "']");
+							console.log("binding annotation actions for target: " + $(target).size());
+							
+							$(target).bind("mouseover", hoverAnnotation);
+							$(target).bind("mouseout", hoverAnnotation);
+							
+							target = $(bubble).find(".annotation-flag").filter("[data-id='" + annotation.id + "']");
+							$(target).bind("click", flagAnnotation);
+							target = $(bubble).find(".annotation-delete").filter("[data-id='" + annotation.id + "']");
+							$(target).bind("click", deleteAnnotation);
 
 						};
 						
@@ -365,7 +381,8 @@ define(['jquery',
 						var section = $(highlight).closest(".tab-pane").children(".annotation-container");
 						section.append(viewRef.annotationTemplate({
 							annotation: annotation,
-							concept: null
+							concept: null,
+							appUserModel: appUserModel
 						}));	
 					
 					}
