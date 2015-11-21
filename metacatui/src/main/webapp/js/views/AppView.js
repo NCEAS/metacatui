@@ -36,7 +36,9 @@ define(['jquery',
 											 "click" : "closePopovers",
 	 		                  'click .direct-search' : 'routeToMetadata',
 		 	               'keypress .direct-search' : 'routeToMetadata',
-		 	                 "click .toggle-slide"   : "toggleSlide"
+		 	                 "click .toggle-slide"   : "toggleSlide",
+				 		 	      "click input.copy" : "higlightInput", 
+					 		 	  "focus input.copy" : "higlightInput" 
 			//'click #SignInLdap input[type="submit"]' : "submitLogin"
 		},
 				
@@ -273,6 +275,13 @@ define(['jquery',
 			}
 			else
 				$(container).prepend(alert);
+		},
+		
+		higlightInput: function(e){
+			if(!e) return;
+			
+			e.preventDefault();			
+			e.target.setSelectionRange(0, 9999);
 		},
 		
 		submitLogin: function(e){
