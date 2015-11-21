@@ -1527,6 +1527,13 @@ li.ui-menu-item .ui-state-focus {
     .result-author {
       font-weight: bold;
     }
+    .result-row .citation .title{
+    	color:#006699;
+    }
+    .result-row .citation a:hover{
+ 	   color: #006699;
+    	text-decoration: underline;
+	}
     
     /*-- Results List Icons --*/
     .info-icons > .icons {

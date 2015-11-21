@@ -1991,10 +1991,13 @@ svg .domain{
     	background-color: #FFF8EB; 
   	}
 
-    .result-title{
-    	font-weight: 600;
+    .result-row .citation .title{
     	color: #1C6E84;
     }
+    .result-row .citation a:hover{
+ 	   color: #1C6E84;
+    	text-decoration: underline;
+	}
     
     /*-- Popovers --*/
     .popover{

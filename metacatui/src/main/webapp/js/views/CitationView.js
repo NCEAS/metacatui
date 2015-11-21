@@ -108,22 +108,18 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Create a link
 	        if(this.createLink)
-	        	var linkEl = $(document.createElement("a")).addClass("route-to-metadata").attr("data-id", id);
+	        	var linkEl = $(document.createElement("a")).addClass("route-to-metadata").attr("data-id", id).attr("href", "#view/" + id);
 	        else
 	        	var linkEl = document.createElement("span");
 			
-	        //The title will be clickable for citations with science metadata
-	        if((typeof title !== "undefined") && title){
-				$(linkEl).addClass("title").attr("data-id", id).text(title + ". ");
+	        if((typeof title !== "undefined") && title)
+	        	var titleEl = $(document.createElement("span")).addClass("title").attr("data-id", id).text(title + ". ");
+	        else
+	        	var titleEl = document.createElement("span");
 
-				//Put together all the citation parts
-				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
-	        }
-	        //The entire citation will be clickable for citations without a title/science metadata
-	        else{
-	        	$(linkEl).append(authorEl, pubDateEl, publisherEl, idEl);
-	        	this.$el.append(linkEl);
-	        }
+			//Put together all the citation parts
+	        $(linkEl).append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+	        this.$el.append(linkEl);
 	            
 	        return this;         
 		},

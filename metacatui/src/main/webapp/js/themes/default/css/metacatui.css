@@ -1561,11 +1561,13 @@ li.ui-menu-item > a:hover,
     	padding-left: 0px;
     }
     
-    .result-title{
-    	font-weight: 600;
+    .result-row .citation .title{
     	color: #166194;
-    }
-
+    }w
+	.result-row .citation a:hover{
+ 	   color: #166194;
+    	text-decoration: underline;
+	}
     .result-row .dropdown-menu{
   		left: -320%;
   	}
