@@ -55,7 +55,8 @@ define(['jquery', 'underscore', 'backbone'],
 			pendingMapsUrl: null,
 			//accountsMapsUrl: null,
 			//groupsUrl: null,
-			//prov: false
+			//prov: false,
+			useSeriesId: true
 		},
 				
 		defaultView: "data",
@@ -100,6 +101,17 @@ define(['jquery', 'underscore', 'backbone'],
 					//Turn the provenance features on
 					if(typeof this.get("prov") != "undefined")
 						this.set("prov", true);
+					//Turn the seriesId feature on					
+					if(typeof this.get("useSeriesId") != "undefined")
+						this.set("useSeriesId", true);
+				}
+				else{
+					//Turn the provenance features off
+					if(typeof this.get("prov") != "undefined")
+						this.set("prov", false);
+					//Turn the seriesId feature off
+					if(typeof this.get("useSeriesId") != "undefined")
+						this.set("useSeriesId", false);
 				}
 			}
 			
@@ -112,6 +124,9 @@ define(['jquery', 'underscore', 'backbone'],
 			else if((this.get("metacatVersion") >= "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/") > -1)){
 				//The package service for v2 DataONE API
 				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+				
+				if(typeof this.get("useSeriesId") != "undefined")
+					this.set("useSeriesId", true);
 			}				
 	
 			this.on("change:pid", this.changePid);

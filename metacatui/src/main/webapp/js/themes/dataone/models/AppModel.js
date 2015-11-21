@@ -28,11 +28,11 @@ define(['jquery', 'underscore', 'backbone'],
 			useJsonp: true,
 			
 			metcatVersion: "2.5.0", 
-			baseUrl: "https://cn-sandbox-2.test.dataone.org",//window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
+			d1CNBaseUrl:  "https://cn.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -63,7 +63,8 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlLdap: null,
 			tokenUrl: null,
 			annotatorUrl: null,
-			prov: false
+			prov: false,
+			useSeriesId: true
 		},
 		
 		defaultView: "data",
@@ -99,6 +100,10 @@ define(['jquery', 'underscore', 'backbone'],
 				if(typeof this.get("prov") != "undefined")
 					this.set("prov", true);
 				
+				//Use the seriesId feature with the v2 API
+				if(typeof this.get("useSeriesId") != "undefined")
+					this.set("useSeriesId", true);
+				
 				//The view service for member node installations of metacatui
 				this.set('viewServiceUrl',    this.get('baseUrl') + this.get('d1CNService') + '/views/metacatui/');
 				
@@ -122,16 +127,34 @@ define(['jquery', 'underscore', 'backbone'],
 				if(this.get('orcidBaseUrl'))
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 			}
+			else{
+				//Turn the provenance features off
+				if(typeof this.get("prov") != "undefined")
+					this.set("prov", false);
+				//Turn the seriesId feature off
+				if(typeof this.get("useSeriesId") != "undefined")
+					this.set("useSeriesId", false);
+			}
 			
 			//Settings for older versions of metacat
 			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/v1") > -1)){
 				//The package service API is different
 				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
+				
+				//Turn the provenance features off
+				if(typeof this.get("prov") != "undefined")
+					this.set("prov", false);
+				//Turn the seriesId feature off
+				if(typeof this.get("useSeriesId") != "undefined")
+					this.set("useSeriesId", false);
 			}
 			//Whenever the Metacat version is at least 2.5.0 and we are querying a MN
 			else if((this.get("metcatVersion") >= "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/") > -1)){
 				//The package service for v2 DataONE API
 				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+				
+				if(typeof this.get("useSeriesId") != "undefined")
+					this.set("useSeriesId", true);
 			}
 			
 			this.on("change:pid", this.changePid);

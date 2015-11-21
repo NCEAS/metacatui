@@ -41,6 +41,9 @@ define(['jquery',
 		
 		subviews: [],
 		
+		pid: null,
+		seriesId: null,
+		
 		model: null,
 		packageModels: new Array(),
 
@@ -92,12 +95,9 @@ define(['jquery',
 			this.subviews = new Array();
 			
 			// get the pid to render
-			if(!this.pid){
-				var pid = appModel.get("pid");
-				this.pid = pid;
-			}
-			else var pid = this.pid;
-			
+			if(!this.pid)
+				this.pid = appModel.get("pid");
+						
 			this.getModel();	
 						
 			return this;
@@ -268,13 +268,14 @@ define(['jquery',
 		 * When the object info is retrieved from the index, we set up models depending on the type of object this is
 		 */
 		getModel: function(pid){
-			//If no id is passed, used the one in the appModel
+			//Get the pid and sid
 			if((typeof pid === "undefined") || !pid) var pid = this.pid;
+			if((typeof this.seriesId !== "undefined") && this.seriesId) var sid = this.seriesId;
 
 			var viewRef = this;
 			
 			//Get the package ID 
-			var model = new SolrResult({ id: pid });
+			var model = new SolrResult({ id: pid, seriesId: sid });
 			this.listenToOnce(model, "change", function(model){
 					
 				if(model.get("formatType") == "METADATA"){
@@ -1480,6 +1481,7 @@ define(['jquery',
 			this.packageModels =  new Array();
 			this.model = null;
 			this.pid = null;
+			this.seriesId = null;
 			this.$detached = null;
 			this.$loading = null;
 			this.citationEl = null;

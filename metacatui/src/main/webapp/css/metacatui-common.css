@@ -984,6 +984,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	float: right;
 	margin-bottom: 0px;
 }
+.input-append.inline input[type='text']{
+	margin-right: 0px;
+	margin-left: 0px;
+}
 /* Used in metadata view for metadata format types without stylesheet */
 #Content.no-stylesheet.container{ 
 	width: 86%;
@@ -1911,7 +1915,6 @@ form .text-left > .icon {
 	line-height: 2em;
 }
 .inline-input-group > .input-append{
-	margin-right: 20px;
 	position: relative;
 }
 .input-append > .notification {

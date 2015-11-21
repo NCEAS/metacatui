@@ -14,6 +14,7 @@ define(['jquery', 'underscore', 'backbone'],
 			title: '',
 			pubDate: '',
 			id: '',
+			seriesId: appModel.get("useSeriesId")? null : undefined,
 			resourceMap: null,
 			downloads: null,
 			citations: 0,
@@ -143,26 +144,52 @@ define(['jquery', 'underscore', 'backbone'],
 			});
 		},
 		
-		getInfo: function(){
-			if(!this.get("id")) return false;
-			
+		getInfo: function(){			
 			var model = this;
 			
-			var fields = "id,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,size" 
+			var fields = "id,seriesId,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,size" 
+				
+			var query = "q=";
+			//Do not search for seriesId when it is not configured in this model/app
+			if(typeof this.get("seriesId") === "undefined")
+				query += 'id:"' + this.get("id") + '"';
+			//If there is no seriesId set, then search for pid or sid 
+			else if(!this.get("seriesId"))
+				query += '(id:"' + this.get("id") + '" OR seriesId:"' + this.get("id") + '")';
+			//If a seriesId is specified, then search for that
+			else if(this.get("seriesId") && (this.get("id").length > 0))
+				query += '(seriesId:"' + this.get("seriesId") + '" AND id:"' + this.get("id") + '")';
+			//If only a seriesId is specified, then just search for the most recent version
+			else if(this.get("seriesId") && !this.get("id"))
+				query += 'seriesId:"' + this.get("id") + '" -obsoletedBy:*';
 				
 			$.ajax({
-				url: appModel.get("queryServiceUrl") + 'q=id:"' + this.get("id") + '"&fl='+fields+'&wt=json&json.wrf=?',
+				url: appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json&json.wrf=?',
 				type: "GET",
 				jsonp: "json.wrf",
 				dataType: "jsonp",
 				success: function(data, response, xhr){
-					if(data.response.docs.length > 0)
-						model.set(data.response.docs[0]);
+					var docs = data.response.docs;
+
+					if(docs.length == 1){
+						model.set(docs[0]);
+					}
+					//If we searched by seriesId, then let's find the most recent version in the series
+					else if(docs.length > 1){
+						var mostRecent = _.reject(docs, function(doc){
+							return (typeof doc.obsoletedBy !== "undefined");
+						});
+						
+						if(mostRecent.length > 0)
+							model.set(mostRecent[0]);
+						else
+							model.set(docs[0]); //Just default to the first doc found
+					}
 					else
 						model.trigger("404");
 				},
 				error: function(xhr, textStatus, errorThrown){
-					console.log('error');
+					model.trigger("getInfoError");
 				}
 			});
 		},

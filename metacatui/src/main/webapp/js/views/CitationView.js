@@ -47,6 +47,7 @@ define(['jquery', 'underscore', 'backbone'],
 					dateUploaded = this.metadata.get("dateUploaded"),
 					title 		 = this.metadata.get("title"),
 					id 			 = this.metadata.get("id"),
+					seriesId     = appModel.get("useSeriesId")? this.metadata.get("seriesId") : null,
 					datasource	 = this.metadata.get("datasource");
 			
 				//Format the author text
@@ -104,7 +105,13 @@ define(['jquery', 'underscore', 'backbone'],
 			var publisherEl = $(document.createElement("span")).text(publisherText);
 			
 	        //The ID
-	        var idEl = $(document.createElement("span")).addClass("id").text("" + id + ". ");
+			var idEl = $(document.createElement("span")).addClass("id");
+			if(seriesId){
+				$(idEl).text(seriesId + ", version: " + id + ". ");
+			}
+			else{
+		        $(idEl).text("" + id + ". ");				
+			}
 			
 			//Create a link
 	        if(this.createLink)

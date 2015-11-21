@@ -11,7 +11,6 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			''                          : 'renderIndex',    // the default route
 			'about(/:anchorId)'         : 'renderAbout',    // about page 
 			'help(/:page)(/:anchorId)'  : 'renderHelp',
-			'plans'                     : 'renderPlans',    // plans page
 			'tools(/:anchorId)'         : 'renderTools',    // tools page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
@@ -110,11 +109,6 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			
 			appView.showView(appView.textView, options);
 		},
-		
-		renderPlans: function (param) {
-			this.routeHistory.push("plans");
-		},
-		
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
 			appModel.set('page', page);
@@ -143,8 +137,18 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
-			appModel.set('pid', pid);
+			
+			//Check for a seriesId
+			if(appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
+				seriesId = pid.substr(0, pid.indexOf(", version:"));
+				appView.metadataView.seriesId = seriesId;
+				
+				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);				
+			}
+			
+			appModel.set('pid', pid);			
 			appView.metadataView.pid = pid;
+			
 			appView.showView(appView.metadataView);
 		},
 		
