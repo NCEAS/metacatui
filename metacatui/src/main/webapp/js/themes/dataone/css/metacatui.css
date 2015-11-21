@@ -574,26 +574,6 @@ table th.btn-container .btn{
 	margin-bottom: 10px;
 	font-size: .9em;
 }
-.fancybox-inline form {
- 	width: 92%;
-	left: 5%;
- 	position: relative;
-    margin: 0px 0px 0px 0px;
-    padding: 0px 0px 0px 0px;
-}
-.fancybox-inline form input{
-	width: 90%;
-	width: calc(100% - 20px);
-	margin-bottom: 5px;
-}
-.fancybox-inline form select{
-	width: calc(100% - 6px);
-	margin-bottom: 5px;
-}
-.fancybox-inline form input.btn{
-	width: 95%;
-	width: calc(100% - 5px);
-}
 .list-group > .divider {
   list-style: none;
   border-bottom: 1px solid #DDD;

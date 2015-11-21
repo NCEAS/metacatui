@@ -1,7 +1,7 @@
 /*global define */
 
-define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'], 				
-	function($, _, Backbone, NavbarTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html', 'text!templates/loginOptions.html', 'text!templates/ldapLogin.html'], 				
+	function($, _, Backbone, NavbarTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
 	'use strict';
 	
 	// Build the navbar view of the application
@@ -10,6 +10,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 		el: '#Navbar',
 		
 		template: _.template(NavbarTemplate),
+		loginOptionsTemplate: _.template(LoginOptionsTemplate),
+		ldapLoginTemplate: _.template(LdapLoginTemplate),
 		
 		events: {
 						  'click #search_btn' : 'triggerSearch',
@@ -25,7 +27,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 			this.listenTo(appUserModel, 'change:username', this.render);
 			this.listenTo(appUserModel, 'change:fullName', this.render);
 			this.listenTo(appUserModel, 'change:loggedIn', this.render);
-			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);
+			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);				
 		},
 				
 		render: function () {		
@@ -50,11 +52,16 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 					signInUrlOrcid:  signInUrlOrcid,
 					signInUrlLdap:  signInUrlLdap,
 					currentUrl: window.location.href,
+					loginOptions: this.loginOptionsTemplate().trim()
 				}));
-			
+						
+			var view = this;
 			//Initialize the fancybox elements
 			this.$(".fancybox").fancybox({
-				transitionIn: "elastic"
+				transitionIn: "elastic",
+				afterShow: function(){
+					$("#login-options a").on("click", null, view, view.showLDAPLogin);
+				}
 			});
 			
 			//Initialize the tooltips in the navbar
@@ -62,7 +69,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 				delay: {show: 600},
 				trigger: "hover",
 				placement: "bottom"
-			});
+			});			
 		},
 		
 		triggerSearch: function() {
@@ -137,6 +144,28 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html'],
 				//Add the class given
 				$(this.$el).addClass(headerType);
 			}
+		},
+		
+		showLDAPLogin: function(e, a){
+			e.preventDefault();
+			
+			if($(e.target).hasClass("ldap")){
+				var org = $(e.target).attr("data-value"),
+					accountType = $(e.target).attr("data-name"),
+					view = e.data;
+				
+				this.loginPopup = $("#loginPopup").children().detach();
+				
+				var ldapLogin = view.ldapLoginTemplate({
+					signInUrlLdap: appModel.get("signInUrlLdap"),
+					accountType: accountType,
+					org: org				
+				});
+			}
+			else
+				window.location = appModel.get("signInUrl") + window.location;
+			
+			$("#loginPopup").append(ldapLogin);
 		}
 				
 	});

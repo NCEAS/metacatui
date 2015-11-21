@@ -785,6 +785,37 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	padding: 20px;
 	display: none;
 }
+.fancybox-inline h2 {
+    font-size: 1.2em;
+    text-align: center;
+}
+.fancybox-inline > form .input-group, .fancybox-inline form .btn {
+    max-width: 296px;
+    left: 22%;
+    position: relative;
+}
+.fancybox-inline > form input{
+	width: 90%;
+	width: calc(100% - 20px);
+	margin-bottom: 5px;
+}
+.fancybox-inline > form select{
+	width: calc(100% - 6px);
+	margin-bottom: 5px;
+}
+.fancybox-inline > form input.btn{
+	width: 95%;
+	width: calc(100% - 5px);
+	margin-top: 20px;
+}
+.fancybox-inline .divider-text{
+	position: absolute;
+    top: 50%;
+    left: 40%;
+    background-color: white;
+    padding: 5px;
+    color: #AAA;
+}
 .nav.list-group > .list-group-item img.icon{
 	width: 32px;
 	height: auto;
@@ -793,12 +824,97 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .fancybox-inline .notification {
   min-height: 150px;
 }
+#loginPopup {
+    min-width: 550px;
+    padding: 5px;
+}
 #loginPopup .cilogon img{
 	display: block;
     max-width: 114px;
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
+}
+#loginPopup h3{
+	font-size: .9em;
+	font-weight: normal;
+	    margin-top: 0px;
+    line-height: 1.1em;
+}
+#loginPopup > .row-fluid > .span7{
+	border-left: 1px solid #DDD;
+    padding-left: 20px;
+}
+.orcid-signin a > span{
+    padding: 11px;
+    display: inline-block;
+    height: 1.5em;
+    color: #8FAF10;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-left-width: 0px;
+    border: 1px solid #aacf14;
+    border-left-width: 0px;
+}
+.orcid-signin a {
+    padding: 0px;
+    border-radius: 4px;
+    padding-left: 0px;
+}
+#loginPopup .signin{
+	display: inline-block;
+	width: auto;
+	padding: 0px;
+	margin-bottom: 20px;
+}
+#loginPopup .signin:hover{
+	box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+    border: 1px solid rgba(81, 203, 238, 1);
+    cursor: pointer;
+}
+#loginPopup .well{
+	border-color: #CCC;
+}
+#loginPopup .remember{
+	height: 1.2em;
+	overflow: hidden;
+}
+.scroll-y{
+	overflow-y: scroll;
+	-webkit-transform: translate3d(0,0,0); 
+}
+#loginPopup .scroll-y{
+	height: 250px;
+}
+.inline input,
+.inline label{
+	float: left;
+	display: inline;
+	font-size: .9em;
+}
+.inline input{
+	margin-right: 10px;
+	margin-left: 30%;
+}
+.orcid-signin img {
+    height: 1.5em;
+    background-color: #FFF;
+    padding: 11px;
+    border-radius: 4px;
+    border: 1px solid #aacf14;
+    display: inline-block;
+    margin-right: -4px;
+    margin-top: -1px;
+    border-bottom-right-radius: 0px;
+    border-top-right-radius: 0px;
+    border-right-width: 0px;
+}
+#loginPopup > .row-fluid > .span6:first-child {
+    border-right: 1px solid #CCC;
+    min-height: 265px;
+}
+.orcid-signin {
+    margin-top: 36%;
 }
 
 /****************************************** 

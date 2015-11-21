@@ -11,7 +11,7 @@ define(['jquery', 'underscore', 'backbone'],
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
 			
-			googleAnalyticsKey: 'UA-15017327-17',
+			googleAnalyticsKey: null,//'UA-15017327-17',
 			
 			searchMode: mapKey ? 'map' : 'list',
 			searchHistory: [],
@@ -28,11 +28,11 @@ define(['jquery', 'underscore', 'backbone'],
 			useJsonp: true,
 			
 			metcatVersion: "2.5.0", 
-			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: "https://cn-sandbox-2.test.dataone.org",//window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn.dataone.org",
+			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -111,10 +111,10 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');				
 				
 				//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
-				if(typeof this.get("signInUrl") !== "undefined")
+				if(typeof this.get("signInUrl") !== "undefined"){
 					this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
-				if(this.get("signInUrl"))
 					this.set("signOutUrl", this.get('portalUrl') + "logout");
+				}
 				if(typeof this.get("signInUrlOrcid") !== "undefined")
 					this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
 				if(typeof this.get("signInUrlLdap") !== "undefined")
