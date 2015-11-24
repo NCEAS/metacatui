@@ -28,14 +28,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
 			if(d3){
-				this.listenTo(statsModel, 'change:dataUploadDates',   this.drawUploadChart);
-				this.listenTo(statsModel, 'change:temporalCoverage',  this.drawCoverageChart);
-				//TODO: Relook at this once formatType is indexed
-				this.listenTo(statsModel, 'change:dataDownloadDates',    this.drawDownloadsChart);
+				this.listenTo(statsModel, 'change:dataUploadDates',       this.drawUploadChart);
+				this.listenTo(statsModel, 'change:temporalCoverage',      this.drawCoverageChart);				
+				this.listenTo(statsModel, 'change:metadataDownloadDates', this.drawDownloadsChart);
+				this.listenTo(statsModel, 'change:dataDownloadDates',     this.drawDownloadsChart);
 			}
 			
 			this.listenTo(statsModel, 'change:dataUploads', 	  this.drawUploadTitle);
-			//TODO: Change this from totalDownloads to dataDownloadDates once formatType is indexed
 			this.listenTo(statsModel, 'change:totalDownloads', 	  this.drawDownloadTitle);
 			this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
@@ -53,6 +52,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Insert the loading template into the space where the charts will go
 			if(d3){
 				this.$(".chart").html(this.loadingTemplate);
+				this.$(".show-loading").html(this.loadingTemplate);
 			}
 			//If SVG isn't supported, insert an info warning
 			else{
@@ -62,7 +62,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					email: false
 				}));
 			}
-
+			
+			if(!statsModel.get("supportDownloads"))
+				this.$(".stripe.downloads").remove();
+			
 			//Start retrieving data from Solr
 			statsModel.getAll();
 		
@@ -288,6 +291,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 * drawDownloadsChart - draws a line chart representing the downloads over time
 		 */
 		drawDownloadsChart: function(){
+			//Only draw the chart once both metadata and data dates have been retrieved
+			if(!statsModel.get("metadataDownloadDates") || !statsModel.get("dataDownloadDates")) return;
+				
 			//Get the width of the chart by using the parent container width
 			var parentEl = this.$('.download-chart');
 			var width = parentEl.width() || null;
@@ -295,24 +301,16 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//If there are no download stats, draw a blank chart and exit
 			if(!statsModel.get('totalDownloads')){
 				
-				var lineChartView = new LineChart(
-						{	  id: "download-chart",
-						 	yLabel: "downloads",
-						 frequency: 0,
-						cumulative: false,
-						 	 width: width
-						});
-				
-				parentEl.html(lineChartView.render().el);
-					
+				parentEl.html("<p class='subtle center'>No one has downloaded any of this data.</p>");
+									
 				return;
 			}
 			
 			//Set the frequency of our points
-			var frequency = 1;
+			var frequency = 6;
 									
 			//Check which line we should draw first since the scale will be based off the first line
-			if(statsModel.get("metadataDownloads") > statsModel.get("dataUploads") ){
+			if(statsModel.get("metadataDownloads") > statsModel.get("dataDownloads") ){
 				
 				//If there isn't a lot of point to graph, draw points more frequently on the line
 				if(statsModel.get("metadataDownloadDates").length < 40) frequency = 1;
@@ -321,7 +319,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var lineChartView = new LineChart(
 						{	  data: statsModel.get('metadataDownloadDates'),
 			  formatFromSolrFacets: true,
-						cumulative: false,
+						cumulative: true,
 								id: "download-chart",
 						 className: "metadata",
 						 	yLabel: "downloads",
@@ -346,7 +344,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					var lineChartView = new LineChart(
 							{	  data: statsModel.get('dataDownloadDates'),
 				  formatFromSolrFacets: true,
-							cumulative: false,
+							cumulative: true,
 									id: "download-chart",
 							 className: "data",
 							 	yLabel: "downloads",
@@ -388,11 +386,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					globalR: 40
 				});
 				
-				this.$('#downloads-title').prepend(downloadChartTitle.render().el);
+				this.$('#downloads-title').html(downloadChartTitle.render().el);
 				
 				return;
 			}
-		/*	TODO: Uncomment out this code to draw metadata and data separately once formatType is indexed
+			
 			//Get information for our download chart title
 			var titleChartData = [],
 				metadataDownloads = statsModel.get("metadataDownloads"),
@@ -409,31 +407,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							      {count: statsModel.get("dataDownloads"), 	   label: "data", 	  className: dataClass}
 								 ];
 			
-			*/
-			
-			/** ------ temporary code until formatType is indexed -----*/
-			/** TODO: Remove this code once formatType is indexed **/
-			//Get information for our download chart title
-			var titleChartData = [],
-				downloads = statsModel.get("totalDownloads"),
-				dataClass = "data";									
-			
-			var titleChartData = [
-			                      {count: statsModel.get("totalDownloads"), label: "downloads", className: dataClass}
-								 ];
-			/**------------------------------------------------**/
-			
-			
 			//Draw the download chart title
 			var downloadChartTitle = new CircleBadge({
 				id: "download-chart-title",
 				data: titleChartData,
 				className: "chart-title",
-				useGlobalR: true,
-				globalR: 60
+				useGlobalR: true
 			});
 			
-			this.$('#downloads-title').prepend(downloadChartTitle.render().el);
+			this.$('#downloads-title').html(downloadChartTitle.render().el);
 		},
 		
 		//Draw a bar chart for the temporal coverage 

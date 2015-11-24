@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone'], 				
-	function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'], 				
+	function($, _, Backbone, LogsSearch) {
 	'use strict';
 
 	// Statistics Model 
@@ -22,9 +22,17 @@ define(['jquery', 'underscore', 'backbone'],
 			metadataUploadDates: null,
 			dataUploadDates: null,
 			
+			totalDownloads: 0,
+			metadataDownloads: 0,
+			dataDownloads: 0,
+			metadataDownloadDates: null,
+			dataDownloadDates: null,
+			
 			firstBeginDate: 0,
 			temporalCoverage: 0,
-			coverageYears: 0
+			coverageYears: 0,
+			
+			supportDownloads: (appModel.get("nodeId") && appModel.get("d1LogServiceUrl"))
 		},
 		
 		//Some dated used for query creation
@@ -64,7 +72,10 @@ define(['jquery', 'underscore', 'backbone'],
 			            return new Date(s);
 			        }
 			    }
-			})()
+			})();
+			
+			this.on("change:dataDownloads",     this.sumDownloads);
+			this.on("change:metadataDownloads", this.sumDownloads);
 		},
 		
 		//This function serves as a shorthand way to get all of the statistics stored in the model
@@ -78,7 +89,9 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			this.getFirstBeginDate();
 			this.getFormatTypes();
-			this.getUploads();
+			this.getUploads();			
+			this.getDataDownloadDates();
+			this.getMetadataDownloadDates();
 		},
 		
 		// Send a Solr query to get the earliest beginDate, latest endDate, and facets of data collection years
@@ -483,6 +496,67 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 				
 			});
+		},
+		
+		/*
+		 * The Downloads query can be customized only by: filtering by a certain MN or filtering by a rightsHolder
+		 */
+		
+		getDataDownloadDates: function(){
+			if(!appModel.get("d1LogServiceUrl")) return;
+			
+			var model = this;
+				
+			var logSearch = new LogsSearch();
+			logSearch.set("event", "read");
+			logSearch.set("formatType", "DATA");
+			logSearch.set("facetRanges", ["dateLogged"]);
+			
+			$.ajax({
+				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json",
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){
+					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
+					model.set("dataDownloads", data.response.numFound);	
+					model.set("dataDownloadDates", counts);		
+					
+					if(data.response.numFound == 0) model.trigger("change:dataDownloads");
+				}
+			});
+		},
+
+		getMetadataDownloadDates: function(){
+			if(!appModel.get("d1LogServiceUrl")) return;
+			
+			var model = this;
+				
+			var logSearch = new LogsSearch();
+			logSearch.set("event", "read");
+			logSearch.set("formatType", "METADATA");
+			logSearch.set("facetRanges", ["dateLogged"]);
+			
+			$.ajax({
+				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json",
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){
+					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
+					
+					model.set("metadataDownloads", data.response.numFound);	
+					model.set("metadataDownloadDates", counts);	
+					
+					if(data.response.numFound == 0) model.trigger("change:metadataDownloads");
+				}
+			});
+		},
+		
+		sumDownloads: function(){
+			if((this.get("dataDownloads") == null) || (this.get("metadataDownloads") == null)) return;
+			
+			this.set("totalDownloads", this.get("dataDownloads") + this.get("metadataDownloads"));
+			
+			if(this.get("totalDownloads") == 0) this.trigger("change:totalDownloads");
 		}
 	});
 	return Stats;

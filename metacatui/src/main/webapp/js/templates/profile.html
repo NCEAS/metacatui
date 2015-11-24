@@ -1,11 +1,21 @@
 <article id="Profile" class="profile">
 <h1 class="profile-title"><%=title%></h1>
 <section class="charts-container">
+	<section class="stripe downloads">
+		<section class="charts">
+			<section class="chart-title">
+				<div id="downloads-title" class="show-loading"></div>
+				<h2>Downloads</h2>
+				<p>The number of individual metadata and data files downloaded over time.</p>
+			</section>
+			<div class="download-chart chart"></div>
+		</section>
+	</section>
 	<section class="stripe">
 		<section class="charts">
 			<section class="chart-title">
 				<div id="uploads-title"></div>
-				<h2>Files uploaded</h2>
+				<h2>Uploads</h2>
 				<p>The number of individual metadata and data files uploaded over time. Only the first version of each file is counted.</p>
 			</section>
 			<div class="upload-chart chart"></div>

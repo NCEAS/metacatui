@@ -11,7 +11,9 @@ define(['jquery', 'underscore', 'backbone'],
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
 			
-			googleAnalyticsKey: null,//'UA-15017327-17',
+			googleAnalyticsKey: null, 
+			
+			nodeId: "urn:node:CN",
 			
 			searchMode: mapKey ? 'map' : 'list',
 			searchHistory: [],
@@ -82,7 +84,11 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
-			this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1Service') + '/query/logsolr');
+			
+			this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1Service') + '/query/logsolr/');
+			if(this.get("useJsonp"))
+				this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
+
 
 			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
 			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");

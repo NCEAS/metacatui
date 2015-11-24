@@ -1705,7 +1705,13 @@ li.ui-menu-item > a:hover,
     	border-radius: 5px;
     	padding: 20px;
   }
-  
+  .stripe .notification.loading{
+  	top: 10px;
+  	margin-top: 10px;
+  }
+  .stripe .notification.loading i{
+  	color: #333;
+  }
   .profile h1{
     margin: 20px auto;
     padding: 0px 20px;
@@ -1714,6 +1720,7 @@ li.ui-menu-item > a:hover,
 	border-radius: 5px;
 	padding: 0px 20px;
 	color: #555;
+	font-weight: normal;
   }
   
     .profile-title:empty{
@@ -1742,7 +1749,9 @@ li.ui-menu-item > a:hover,
 	margin-left: 20px;
 	margin-top: 30px;
 }
-  
+.profile .chart svg{
+	width: 650px;
+}  
   /* The universal color for data */
 svg .data,
 .fallback.data{

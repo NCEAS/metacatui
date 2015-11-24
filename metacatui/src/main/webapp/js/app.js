@@ -110,6 +110,9 @@ function(Bootstrap, AppView, AppModel) {
 	// initialize the application
 	appModel = new AppModel({context: '/' + metacatContext});
 	
+	//Check for custom settings in the theme config file
+	if(typeof customAppConfig == "function") customAppConfig();
+	
 	/* Now require the rest of the libraries for the application */
 	require(['backbone', 
 	         'routers/router', 

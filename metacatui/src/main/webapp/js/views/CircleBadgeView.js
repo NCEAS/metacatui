@@ -60,12 +60,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			* ========================================================================
 			*/
 			
-			var radiuses = [13, 17, 25, 30, 40, 60];
+			var radiuses = [13, 17, 25, 30, 40, 50, 60];
 				_.each(this.data, function(d, i){
 
 					if((viewRef.globalR)){
 						d.r = viewRef.globalR;
-					}					
+					}	
 					//If no radius or global radius number is specified, we will determine the radius based on the count length
 					if(!d.r){		
 						if(d.count < 10){ 	   							 	//i.e. is 1 digit 
@@ -98,13 +98,19 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								 viewRef.globalR = radiuses[4];
 							}
 						}
-						else{
+						else if((d.count >= 100000) && (d.count < 1000000)){ //i.e. is 6 digits
 							d.r = radiuses[5];
 							if(radiuses[5] >  viewRef.globalR){
 								 viewRef.globalR = radiuses[5];
 							}
 						}
-					}
+						else if(d.count >= 1000000){ //i.e. is 7+ digits
+							d.r = radiuses[6];
+							if(radiuses[6] >  viewRef.globalR){
+								 viewRef.globalR = radiuses[6];
+							}
+						}
+					}					
 				});
 				
 			/*

@@ -1416,6 +1416,17 @@ textarea.token{
     stroke: #CCC;
     fill: #CCC;
 }
+#downloads-title .circle-badge{
+	max-height: 150px;
+}
+.profile .chart-title{
+	float: left;
+}
+.profile .chart{
+	float: left;
+	margin-left: 20px;
+	margin-top: 30px;
+}
 /****************************************** 
 ** Panels ***
 ******************************************/

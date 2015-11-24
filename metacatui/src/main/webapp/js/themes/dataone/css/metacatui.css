@@ -1521,12 +1521,6 @@ ul.tb-megamenu-subnav{
 	    
 /* Stats styles 
   -------------------------------------------------- */ 
-.profile .charts{
-  	margin-left: auto;
-  	margin-right: auto;
-  	width: 960px;
-  	clear: both;
-  }
   
   .stripe{
     	min-height: 350px;
@@ -1537,13 +1531,15 @@ ul.tb-megamenu-subnav{
   }
   
   .profile h1{
-    margin: 20px auto;
 	line-height: 90px;
-	background-color: #FFF;
-	border-radius: 5px;
-	color: #555;
+	font-weight: lighter;
   }
-  
+  .profile .chart-title{
+	width: 280px;
+  }
+  .profile .chart{
+	width: 735px;
+  }
   .profile-title:empty{
   	display: none;
   }
@@ -1554,20 +1550,10 @@ ul.tb-megamenu-subnav{
   	display: block;
   }
 
-.profile .chart-title{
-	width: 205px;
-	float: left;
-}
 
 .profile .chart-title h2{
 	font-size: 31px;
-}
-
-.profile .chart{
-	float: left;
-	width: 735px;
-	margin-left: 20px;
-	margin-top: 30px;
+	font-weight: lighter;
 }
   
   /* The universal color for data */
@@ -1742,9 +1728,8 @@ svg .point{
 	stroke: #FFFFFF;
 	stroke-width: 2px;
 }
-#download-chart .point{
-	fill: #FFFFFF;
-	stroke:	#660033;
+.point[r='2']{
+	stroke-width: 0px;
 }
 .line-chart-label{
 	font-weight: bold;

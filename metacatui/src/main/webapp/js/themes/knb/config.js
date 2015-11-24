@@ -21,3 +21,11 @@ var themeMap =
 		'templates/about.html' : 'themes/' + theme + '/templates/about.html'
 		}
 };
+
+var customAppConfig = function(){
+	//Only apply these settings when we are in production
+	if(!appModel || (appModel.get("baseUrl").indexOf("knb.ecoinformatics.org") < 0)) return;
+
+	appModel.set("nodeId", "urn:node:KNB");
+	appModel.set("googleAnalyticsKey", "UA-1588494-14");
+}

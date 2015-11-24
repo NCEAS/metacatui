@@ -12,6 +12,8 @@ define(['jquery', 'underscore', 'backbone'],
 			title: window.themeTitle || "Metacat Data Catalog",
 			
 			googleAnalyticsKey: null,
+			
+			nodeId: null,
 
 			searchMode: mapKey ? 'map' : 'list',
 			searchHistory: [],
@@ -35,6 +37,7 @@ define(['jquery', 'underscore', 'backbone'],
 			d1Service: '/d1/mn/v2',
 			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
+			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -89,6 +92,10 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
 				this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
 				this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
+				
+				this.set('d1LogServiceUrl',   this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
+				if(this.get("useJsonp"))
+					this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
 
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');

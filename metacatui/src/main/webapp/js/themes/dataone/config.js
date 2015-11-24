@@ -16,3 +16,10 @@ var themeMap =
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
 		}
 };
+
+var customAppConfig = function(){
+	//Only apply these settings when we are in production
+	if(!appModel || (appModel.get("d1CNBaseUrl").indexOf("cn.dataone.org") < 0)) return;
+
+	appModel.set("googleAnalyticsKey", "UA-15017327-17");
+}

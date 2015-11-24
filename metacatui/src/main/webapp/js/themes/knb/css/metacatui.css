@@ -1084,7 +1084,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	width: 900px;
+  	width: 1000px;
   	clear: both;
   	padding: 20px 16%;
   }
@@ -1115,7 +1115,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   }
 
 .profile .chart-title{
-	width: 205px;
+	width: 280px;
 	float: left;
 }
 
@@ -1299,6 +1299,12 @@ svg .domain{
 svg .point{
 	stroke: #FFFFFF;
 	stroke-width: 2px;
+}
+.download-chart .point.metadata{
+	stroke: #761012;
+}
+.download-chart .point.data{
+	stroke: #38B0B0;
 }
 .line-chart-label{
 	font-weight: bold;

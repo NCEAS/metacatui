@@ -43,7 +43,8 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			members: [],
 			coordinators: [],
-			replicaMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"]
+			replicaMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
+			currentMemberNode: appModel.get("nodeId") || null
 		},
 		
 		initialize: function(){
@@ -152,6 +153,15 @@ define(['jquery', 'underscore', 'backbone'],
 				thisModel.trigger('change:members');
 				thisModel.set('coordinators', coordList);
 				thisModel.trigger('change:coordinators');
+				
+				//Find the node we are currently querying, if there is one
+				if(!thisModel.get("currentMemberNode")){
+					var thisMember = _.findWhere(thisModel.get("members"), { baseURL:  (appModel.get("baseUrl") + appModel.get('context') + appModel.get("d1Service")).replace("/v2", "").replace("/v1", "") });
+					if(thisMember !== undefined)
+						thisModel.set("currentMemberNode", thisMember.identifier);
+					
+					thisModel.trigger("change:currentMemberNode");
+				}
 			});
 		}
 				
