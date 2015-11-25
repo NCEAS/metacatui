@@ -828,12 +828,12 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     min-width: 550px;
     padding: 5px;
 }
-#loginPopup .cilogon img{
+#loginPopup .well img{
 	display: block;
     max-width: 114px;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 10px;
+    margin-bottom: 10px;
 }
 #loginPopup h3{
 	font-size: .9em;
@@ -844,6 +844,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 #loginPopup > .row-fluid > .span7{
 	border-left: 1px solid #DDD;
     padding-left: 20px;
+}
+#loginPopup .btn.ldap{
+	width: 90%;
+	width: calc(100% - 25px);
 }
 .orcid-signin a > span{
     padding: 11px;
@@ -865,12 +869,32 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	display: inline-block;
 	width: auto;
 	padding: 0px;
-	margin-bottom: 20px;
+	margin-bottom: 10px;
 }
-#loginPopup .signin:hover{
-	box-shadow: 0 0 5px rgba(81, 203, 238, 1);
-    border: 1px solid rgba(81, 203, 238, 1);
-    cursor: pointer;
+#loginPopup .btn {
+    border: 1px solid #1C6E84;
+    background-image: none;
+    color: #1C6E84;
+    margin-bottom: 10px;
+    background-color: white;
+}
+#loginPopup .btn:hover {
+    background-color: #1C6E84;
+    color: white;
+    text-shadow: none;
+    transition: all 500ms;
+        cursor: pointer;
+    
+}
+#loginPopup .orcid-signin a:hover,
+#loginPopup .orcid-signin a:hover > img{
+	background-color: #aacf14;
+	    cursor: pointer;
+	  transition: all 500ms;
+	
+}
+#loginPopup .orcid-signin a:hover > span{
+	color: white;
 }
 #loginPopup .well{
 	border-color: #CCC;

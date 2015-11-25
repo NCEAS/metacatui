@@ -515,8 +515,7 @@
 				<ul class="dropdown-menu">
 					<li class="dropdown-header"><%=formattedName%></li>
 					<li class="divider"></li>
-					<!-- <li><a href="#share">Register data</a></li>-->
-					<!--  <li><a href="#profile/<%=username%>">My profile</a></li>-->
+					<li><a href="#profile/<%=username%>">Account settings</a></li>
 					<li><a href="#data" id="myData">My data packages</a></li>
 					<li class="divider"></li>
 					<li><a href="#logout">Logout</a></li>
@@ -533,7 +532,7 @@
 						<% if(signInUrlOrcid) { %>
 							<div class="span5">
 								<div class="orcid-signin">
-									<a href="<%=signInUrlOrcid%>" class="signin CILogonSignin">
+									<a href="<%=signInUrlOrcid%>" class="signin CILogonSignin update-orcid-sign-in-url">
 										<img src="./img/orcid_64x64.png" />
 										<span>Sign in with ORCID</span>
 									</a>
@@ -545,15 +544,20 @@
 						else { %>
 							<div class="span12">
 						<% } %>
-						<a href="<%=signInUrl%>">
-							<img src="./img/google_signin.png" class="signin CILogonSignin" />
-						</a>
-						<% if(loginOptions){ %>
-							<div class="well scroll-y">
-								<h3>Sign in with your University or Institution</h3>
-								<input type="text" name="search" placeholder="Search..." />
+						<div class="well scroll-y">
+							<a class="btn update-sign-in-url" href="<%=signInUrl%>">Sign in with your University or Institution using CILogon</a>
+							<img src="./img/CILogon-options.png" />
+							<!-- <img src="./img/google_signin.png" class="signin CILogonSignin" />  -->
+							<% if(loginOptions){ %>
+								<!-- <h3>Sign in with your University or Institution</h3> -->
+								<!-- <input type="text" name="search" placeholder="Search..." />-->
+								<h3>The 100+ Universities and Institutions supported by CILogon:</h3>
 								<div id="login-options"><%=loginOptions%></div>
-							</div>
+							<% } %>
+						</div>
+						<% if(signInUrlLdap) { %>
+							<a href="#" class="btn ldap" data-name="NCEAS - National Center for Ecological Analysis and Synthesis" data-value="o=NCEAS,dc=ecoinformatics,dc=org">Sign in with an NCEAS Account</a>
+							<a href="#" class="btn ldap" data-name="KNB Data Repository" data-value="o=unaffiliated,dc=ecoinformatics,dc=org">Sign in with a KNB Account</a>
 						<% } %>
 					</div>
 					</div>					
@@ -565,9 +569,7 @@
 						</div>
 					</div>-->
 				</div>
-		<%	} else if(signInUrlLdap) { %>
-	        	<li id="SignIn" class="share-feature"><a href="#share">Sign In</a></li>
-	   	<%  }
+		<%	} 
         }   %>	
   	</ul>
   </div><!-- /.navbar-lower -->

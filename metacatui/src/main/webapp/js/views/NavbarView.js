@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html', 'text!
 				
 		render: function () {		
 			if(appModel.get("signInUrl")){
-				var target = Backbone.history.location.href;
+				var target = encodeURIComponent(window.location.href);
 				var signInUrl = appModel.get('signInUrl') + target;
 				var signInUrlOrcid = appModel.get('signInUrlOrcid') ? appModel.get('signInUrlOrcid') + target : null;
 				var signInUrlLdap = appModel.get('signInUrlLdap') ? appModel.get('signInUrlLdap') + target : null;	
@@ -60,7 +60,12 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html', 'text!
 			this.$(".fancybox").fancybox({
 				transitionIn: "elastic",
 				afterShow: function(){
-					$("#login-options a").on("click", null, view, view.showLDAPLogin);
+					$("#loginPopup a.ldap").on("click", null, view, view.showLDAPLogin);
+					
+					//Update the sign-in URLs so we are redirected back to the previous page after authentication
+					$("a.update-sign-in-url").attr("href", appModel.get("signInUrl") + encodeURIComponent(window.location.href));
+					$("a.update-orcid-sign-in-url").attr("href", appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
+					$("a.update-ldap-sign-in-url").attr("href", appModel.get("signInUrlLdap") + encodeURIComponent(window.location.href));
 				}
 			});
 			
@@ -166,6 +171,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html', 'text!
 				window.location = appModel.get("signInUrl") + window.location;
 			
 			$("#loginPopup").append(ldapLogin);
+			
+			var view = this;
+			$("#SignInLdap .back").on("click", function(e){
+				e.preventDefault();
+				
+				 $("#loginPopup").html(view.loginPopup);
+			});
 		}
 				
 	});
