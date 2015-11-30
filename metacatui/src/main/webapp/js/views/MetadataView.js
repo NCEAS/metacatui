@@ -118,6 +118,12 @@ define(['jquery',
 							if (status=="error") 
 								viewRef.renderMetadataFromIndex();
 							else{
+								//Check for a response that is a 200 OK status, but is an error msg
+								if((response.length < 250) && (response.indexOf("Error transforming document") > -1)){
+									viewRef.renderMetadataFromIndex();
+									return;
+								}
+								
 								//Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
 								if(response.indexOf('id="Metadata"') == -1)
 									viewRef.$el.addClass("container no-stylesheet");
