@@ -977,7 +977,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	display: inherit;
 }
 #Metadata  .citation,
-#Content.no-stylesheet > .citation,
+#Content.no-stylesheet .citation,
 #Metadata  > .container > .row-fluid > .citation,
 #Metadata  > .container > .row-fluid > form > .citation{
 	font-size: 1.4em;
@@ -995,15 +995,19 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	float: none;
 }
 #Metadata .citation.has-data-source,
-#Content.no-stylesheet > .citation.has-data-source,
+#Content.no-stylesheet .citation.has-data-source,
 #Metadata  > .container > .row-fluid > .citation.has-data-source,
 #Metadata  > .container > .row-fluid > form > .citation.has-data-source{
 	width: 83%;
 	width: calc(100% - 95px);
 	float: left;
 }
-#Metadata .citation .title{
+#Metadata .citation .title,
+#Content.no-stylesheet .citation .title{
 	font-weight: bold;
+}
+.breadcrumb ~ .citation-container{
+	margin-top: 20px;
 }
 .entitydetails.controls-well > .thumbnail{
 	margin-left: 180px;
@@ -1017,6 +1021,12 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-left: 0px;
 }
 /* Used in metadata view for metadata format types without stylesheet */
+#Content > pre {
+    background-color: #EEE;
+    color: #333;
+    font-family: inherit;
+    font-size: 1em;
+}
 #Content.no-stylesheet.container{ 
 	width: 86%;
 }

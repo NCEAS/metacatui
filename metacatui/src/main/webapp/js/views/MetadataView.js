@@ -125,8 +125,11 @@ define(['jquery',
 								}
 								
 								//Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
-								if(response.indexOf('id="Metadata"') == -1)
+								if(response.indexOf('id="Metadata"') == -1){
 									viewRef.$el.addClass("container no-stylesheet");
+									viewRef.renderMetadataFromIndex();
+									return;
+								}
 								
 								viewRef.$el.fadeIn("slow");
 								
@@ -174,7 +177,7 @@ define(['jquery',
 			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
 			
 			//Add the metadata HTML
-			this.$el.html(metadataFromIndex.render().el);
+			this.$el.prepend(metadataFromIndex.render().el);
 			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();

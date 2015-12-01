@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 				userAgent: [],
 				dateAggregated: [],
 				inFullRobotList: "false",
+				isRepeatVisit: "false",
 				isPublic: [],
 				entryId: [],
 				city: [],
@@ -77,7 +78,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 			username: "rightsHolder",
 			formatId: "formatId",
 			formatType: "formatType",
-			inFullRobotList : "inFullRobotList"
+			inFullRobotList : "inFullRobotList",
+			isRepeatVisit : "isRepeatVisit"
 		},
 		
 		setNodeId: function(){
@@ -92,7 +94,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 			var query = "",
 				model = this;
 			
-			var otherFilters = ["event", "formatType", "formatId", "id", "pid", "userAgent", "inFullRobotList", "dateAggregated", "dateLogged", "entryId", "city", "region", "location", "size", "username"];
+			var otherFilters = ["event", "formatType", "formatId", "id", "pid", "userAgent", "inFullRobotList", "isRepeatVisit", "dateAggregated", "dateLogged", "entryId", "city", "region", "location", "size", "username"];
 			
 			
 			//-------nodeId--------
