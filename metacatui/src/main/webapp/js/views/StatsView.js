@@ -103,8 +103,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							formatLabel: function(name){
 								//If this is the application/vnd.ms-excel formatID - let's just display "MS Excel"
 								if((name !== undefined) && (name.indexOf("ms-excel") > -1)) name = "MS Excel";
-								if((name != undefined) && (name == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) name= "MS Excel OpenXML"
-								if((name != undefined) && (name == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")) name= "MS Word OpenXML"
+								else if((name != undefined) && (name == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) name= "MS Excel OpenXML"
+								else if((name != undefined) && (name == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")) name= "MS Word OpenXML"
+								//Application/octet-stream - shorten it
+								else if((name !== undefined) && (name == "application/octet-stream")) name = "Application file";
+								
 								if(name === undefined) name = "";
 								
 								return name;
@@ -148,8 +151,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 									
 									//EML modules
 									if(name.indexOf("-//ecoinformatics.org//eml-") > -1) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);							
+									
 								}
-								if((name !== undefined) && (name == "http://datadryad.org/profile/v3.1")) name = "Dryad 3.1";
+								//Dryad - shorten it
+								else if((name !== undefined) && (name == "http://datadryad.org/profile/v3.1")) name = "Dryad 3.1";
+								//FGDC - just display "FGDC {year}"
+								else if((name !== undefined) && (name.indexOf("FGDC") > -1)) name = "FGDC " + name.substring(name.length-4);
+								
 								if(name === undefined) name = "";
 								return name;
 							}
