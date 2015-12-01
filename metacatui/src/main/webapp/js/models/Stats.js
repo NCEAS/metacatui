@@ -512,6 +512,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			logSearch.set("formatType", "DATA");
 			logSearch.set("facetRanges", ["dateLogged"]);
 			
+			if(this.get("searchModel") && this.get("searchModel").get("username")){
+				logSearch.set("username", this.get("searchModel").get("username"));
+			}
+			
 			$.ajax({
 				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json",
 				jsonp: "json.wrf",
@@ -535,6 +539,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			logSearch.set("event", "read");
 			logSearch.set("formatType", "METADATA");
 			logSearch.set("facetRanges", ["dateLogged"]);
+			
+			if(this.get("searchModel") && this.get("searchModel").get("username")){
+				logSearch.set("username", this.get("searchModel").get("username"));
+			}
 			
 			$.ajax({
 				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json",

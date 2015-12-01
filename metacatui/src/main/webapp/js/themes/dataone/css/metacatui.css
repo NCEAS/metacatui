@@ -267,17 +267,46 @@
   box-shadow: none;
 
 }
+.btn{
+	border: 1px solid #1C6E84;
+    background-image: none;
+    color: #1C6E84;
+    margin-bottom: 10px;
+    background-color: white;
+    box-shadow: none;
+    transition: background-color .7s;
+}
+.btn:hover {
+    background-color: #1C6E84;
+    color: white;
+    text-shadow: none;
+    cursor: pointer;
+    border: 1px solid #1C6E84;
+    box-shadow: none;
+}
 .btn-primary{
+	background-color: rgb(99, 28, 63);
 	background-color: rgba(99, 28, 63, 1);
 	background-image: none;
 	transition: background-color .7s;
+	box-shadow: none;
+	border: 0px;
+	color: #FFF;
 }
 .btn-primary:hover{
+	background-color: rgb(157, 3, 80);
 	background-color: rgba(157, 3, 80, 1);
+	border: 0px;
 } 
-.btn.subtle {
+.btn.subtle,
+.filter.btn {
     color: #666;
-}      
+    border-color: #666;
+}    
+.filter.btn:hover,
+.btn.subtle:hover{
+	color: #FFF;
+}  
 .btn-group > .dropdown-toggle {
 	-webkit-border-top-right-radius: 4px;
 	-moz-border-top-right-radius: 4px;
@@ -475,11 +504,17 @@ table th.btn-container .btn{
 }  
 .navbar-lower .nav > li > a.btn{
 	padding: 5px 10px;
+	margin-bottom: 0px;
+}
+.navbar-lower .nav > li > a.btn:hover,
+.navbar-lower .input-append > form > .btn:hover{
+	background-color: #A92C6D;
 }
 .navbar-lower .input-append > form > .btn{
 	border-radius: 0px;
 	border-top-right-radius: 2px;
  	border-bottom-right-radius: 2px;
+ 	margin-bottom: 0px;
 }
    .navbar-lower .input > form > input[type="text"]::-webkit-input-placeholder{
    	color: #CB508A;

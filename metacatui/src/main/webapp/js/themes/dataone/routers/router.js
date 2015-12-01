@@ -13,7 +13,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'help(/:page)(/:anchorId)'  : 'renderHelp',
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',     // metadata page
-//			'profile(/*username)(/:section)(/:subsection)' : 'renderProfile',
+			'profile(/*username)(/:section)(/:subsection)' : 'renderProfile',
 			'profile' : 'renderProfile',
 			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
 			'logout'                    : 'logout'           // logout the user

@@ -828,18 +828,21 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     min-width: 550px;
     padding: 5px;
 }
-#loginPopup .well img{
-	display: block;
-    max-width: 114px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 10px;
-}
 #loginPopup h3{
 	font-size: .9em;
 	font-weight: normal;
-	    margin-top: 0px;
+	margin-top: 0px;
     line-height: 1.1em;
+}
+#loginPopup .well ul{
+	font-size: .9em;
+	list-style: none;
+	margin-left: 0px;
+}
+#loginPopup .well ul li{
+    border-bottom: 1px solid #DDD;
+    padding: 3px;
+    font-size: .9em;
 }
 #loginPopup > .row-fluid > .span7{
 	border-left: 1px solid #DDD;
@@ -883,7 +886,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     color: white;
     text-shadow: none;
     transition: all 500ms;
-        cursor: pointer;
+    cursor: pointer;
+    border: 0px;
     
 }
 #loginPopup .orcid-signin a:hover,
@@ -938,7 +942,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     min-height: 265px;
 }
 .orcid-signin {
-    margin-top: 36%;
+    margin-top: 10%;
 }
 
 /****************************************** 
@@ -1675,6 +1679,9 @@ textarea.token{
 }   
 .filter-input-contain{
 	clear: both;
+}
+.filter.btn{
+	margin-bottom: 0px;
 }
 .filter-contain > label{
    	font-size: 13px;

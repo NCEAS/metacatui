@@ -333,6 +333,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			var statsSearchModel = this.model.get("searchModel").clone();
 			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});			
 			statsModel.set("query", statsSearchModel.getQuery());
+			statsModel.set("searchModel", statsSearchModel);
 			
 			//Render the Stats View for this person
 			this.statsView = new StatsView({
