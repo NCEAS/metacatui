@@ -26,6 +26,12 @@
     	color: #555;
     }
     
+    h1{
+    	font-size: 2em;
+    	font-weight: lighter;
+    	margin-bottom: 1em;
+    }
+    
 	strong{
 		font-weight: 600;
 	}

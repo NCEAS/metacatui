@@ -15,6 +15,12 @@
 	margin-left: 10px;
 	margin-right: 10px;
 }
+.danger{
+	color: #960303;
+}
+.strong{
+	font-weight: bold;
+}
 
 /****************************************** 
 ** General Structure ***
@@ -1192,6 +1198,9 @@ img[src*="googleapis.com/"].georegion-map{
 .media-body {
   width: 10000px;
 }
+.media-body h5 a{
+	color: inherit;	
+}
 .media-object {
   display: block;
   max-width: inherit;
@@ -1386,6 +1395,9 @@ tfoot .control i{
     margin-left: auto;
     margin-right: auto;
 }
+.user-view-section > .section > .span12{
+	margin-left: 0px;
+}
 .user-view-section .hgroup{
 	margin-bottom: 20px;
 }
@@ -1404,6 +1416,9 @@ tfoot .control i{
 .user-view-section .hgroup .divided{
 	margin-top: 20px;
 	padding-top: 20px;
+}
+#token-generator-container .alert{
+	margin-bottom: 0px;
 }
 textarea.token{
 	width: 100%;

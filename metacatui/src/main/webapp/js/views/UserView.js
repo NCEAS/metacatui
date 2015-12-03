@@ -235,6 +235,9 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			// init autocomplete fields
 			this.setUpAutocomplete();
 			*/
+			
+			//Get the token right away
+			this.getToken();
 		},
 		
 		/*
@@ -922,20 +925,18 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		showToken: function(){
 			var token = this.model.get("token");
 			
-			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token").text(token),
-				copyButton = $(document.createElement("a")).addClass("btn copy").text("Copy").attr("data-clipboard-text", token),
+			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token copy").text(token),
+				copyButton = $(document.createElement("a")).addClass("btn btn-primary copy").text("Copy").attr("data-clipboard-text", token),
 				successIcon = $(document.createElement("i")).addClass("icon icon-ok"),
 		  		copySuccess = $(document.createElement("div")).addClass("notification success copy-success hidden").append(successIcon, " Copied!");
-
 						
 			var	successMessage = $.parseHTML(this.alertTemplate({
-					msg: '<i class="icon icon-ok"></i>  <strong>Success!</strong> Copy your token: <br/>',
+					msg: 'Copy your identification code: <br/>',
 					classes: "alert-success",
 					containerClasses: "well"
 				}));
 			$(successMessage).append(tokenInput, copyButton, copySuccess);
 			this.$("#token-generator-button").replaceWith(successMessage);
-			
 			
 			//Create a copy button
 			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
