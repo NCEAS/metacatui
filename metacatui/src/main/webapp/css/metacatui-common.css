@@ -1423,6 +1423,7 @@ tfoot .control i{
 textarea.token{
 	width: 100%;
 	margin-top: 20px;
+	font-size: .9em;
 }
 .form-group{
 	clear: both;
