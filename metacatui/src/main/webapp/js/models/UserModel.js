@@ -287,8 +287,16 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				fullName = username.substring(username.indexOf("uid=") + 4, username.indexOf(","));
 			else if((username.indexOf("CN=") > -1) && (username.indexOf(",") > -1))
 				fullName = username.substring(username.indexOf("CN=") + 3, username.indexOf(","));
-			else
-				fullName = this.get("fullname") || username;
+			
+			//Cut off the last string after the name when it contains digits - not part of this person's names 
+			if(fullName.lastIndexOf(" ") > fullName.indexOf(" ")){
+				var lastWord = fullName.substring(fullName.lastIndexOf(" "));
+				if(lastWord.search(/\d/) > -1)
+					fullName = fullName.substring(0, fullName.lastIndexOf(" "));
+			}
+			
+			//Default to the username
+			if(!fullName) fullName = this.get("fullname") || username;
 			
 			this.set("fullName", fullName);
 		},
