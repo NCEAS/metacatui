@@ -185,6 +185,11 @@ h3{
 	float: left; 
 	margin-right: 10px;
 }
+.alert.plain{
+	background-color: #FFF;
+	border-color: #DDD;
+	color: #333;
+}
 .notification.success{
 	color: #008000;
 }
@@ -824,31 +829,31 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .fancybox-inline .notification {
   min-height: 150px;
 }
-#loginPopup {
+#signinPopup {
     min-width: 550px;
     padding: 5px;
 }
-#loginPopup h3{
+#signinPopup h3{
 	font-size: .9em;
 	font-weight: normal;
 	margin-top: 0px;
     line-height: 1.1em;
 }
-#loginPopup .well ul{
+#signinPopup .well ul{
 	font-size: .9em;
 	list-style: none;
 	margin-left: 0px;
 }
-#loginPopup .well ul li{
+#signinPopup .well ul li{
     border-bottom: 1px solid #DDD;
     padding: 3px;
     font-size: .9em;
 }
-#loginPopup > .row-fluid > .span7{
+#signinPopup > .row-fluid > .span7{
 	border-left: 1px solid #DDD;
     padding-left: 20px;
 }
-#loginPopup .btn.ldap{
+#signinPopup .btn.ldap{
 	width: 90%;
 	width: calc(100% - 25px);
 }
@@ -868,20 +873,20 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     border-radius: 4px;
     padding-left: 0px;
 }
-#loginPopup .signin{
+#signinPopup .signin{
 	display: inline-block;
 	width: auto;
 	padding: 0px;
 	margin-bottom: 10px;
 }
-#loginPopup .btn {
+#signinPopup .btn {
     border: 1px solid #1C6E84;
     background-image: none;
     color: #1C6E84;
     margin-bottom: 10px;
     background-color: white;
 }
-#loginPopup .btn:hover {
+#signinPopup .btn:hover {
     background-color: #1C6E84;
     color: white;
     text-shadow: none;
@@ -890,20 +895,27 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     border: 0px;
     
 }
-#loginPopup .orcid-signin a:hover,
-#loginPopup .orcid-signin a:hover > img{
+#signinPopup .orcid-signin a:hover,
+#signinPopup .orcid-signin a:hover > img{
 	background-color: #aacf14;
 	    cursor: pointer;
 	  transition: all 500ms;
 	
 }
-#loginPopup .orcid-signin a:hover > span{
+#signinPopup .orcid-signin a:hover > span{
 	color: white;
 }
-#loginPopup .well{
+#signinPopup .well{
 	border-color: #CCC;
 }
-#loginPopup .remember{
+#signinPopup .span12 .well .btn{
+	width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    margin-bottom: 20px;
+}
+#signinPopup .remember{
 	height: 1.2em;
 	overflow: hidden;
 }
@@ -911,7 +923,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	overflow-y: scroll;
 	-webkit-transform: translate3d(0,0,0); 
 }
-#loginPopup .scroll-y{
+#signinPopup .scroll-y{
 	height: 250px;
 }
 .inline input,
@@ -937,7 +949,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     border-top-right-radius: 0px;
     border-right-width: 0px;
 }
-#loginPopup > .row-fluid > .span6:first-child {
+#signinPopup > .row-fluid > .span6:first-child {
     border-right: 1px solid #CCC;
     min-height: 265px;
 }
@@ -1464,6 +1476,9 @@ textarea.token{
 	float: left;
 	margin-left: 20px;
 	margin-top: 30px;
+}
+.profile .stripe{
+	clear: both;
 }
 /****************************************** 
 ** Panels ***

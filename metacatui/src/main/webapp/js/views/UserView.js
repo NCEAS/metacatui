@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/ZeroClipboard.min', 'collections/UserGroup', 'models/UserModel', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'], 				
-	function($, _, Backbone, ZeroClipboard, UserGroup, UserModel, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
+define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/ZeroClipboard.min', 'collections/UserGroup', 'models/UserModel', 'views/SignInView', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'], 				
+	function($, _, Backbone, ZeroClipboard, UserGroup, UserModel, SignInView, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
 	
 	/*
@@ -66,7 +66,26 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		},
 		
 		renderUser: function(){
-			var username = appModel.get("profileUsername"),
+			this.model = appUserModel;
+			
+			if(!this.model.get("loggedIn")){
+				this.showAlert('You must be logged in to view your account settings.',
+								"alert-warning",
+								this.$el);
+				
+				//Insert the sign-in button
+				var signInView = new SignInView().render();
+				this.$el.append(signInView.el);
+				signInView.setUpPopup();
+				
+				return;
+			}
+				
+			this.renderSettings();
+			this.resetSections();
+			
+			//TODO: uncomment these lines when we are turning on user profiles
+			/*var username = appModel.get("profileUsername"),
 				currentUser = appUserModel.get("username") || "";
 			
 			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
@@ -80,6 +99,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					this.resetSections();
 				}
 			}
+			
 			//If this isn't the currently-looged in user, then let's find out more info about this account
 			else{
 				//Create a UserModel with the username given
@@ -93,7 +113,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				this.model.once("change:checked", this.resetSections, this);
 				//Get the info
 				this.model.getInfo();
-			}	
+			}
+			*/	
 		},
 		
 		/* COMMENTED OUT for now because it was possibly over-engineering the problem... But keeping this code just in case its usable in the future...
@@ -123,6 +144,9 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		},*/	
 		
 		renderProfile: function(){
+			//TODO: uncomment this line when we are turning on user profiles
+			return;
+			
 			//Insert the template first
 			var profileEl = $.parseHTML(this.profileTemplate({
 				type: this.model.get("type")
@@ -189,6 +213,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			}));
 			this.$settings = this.$("[data-section='settings']");
 			
+			//TODO: uncomment these lines when we are turning on user profiles
+			/*
 			//Draw the group list
 			this.insertCreateGroupForm();
 			this.listenTo(this.model, "change:isMemberOf", this.getGroups);
@@ -208,12 +234,16 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 
 			// init autocomplete fields
 			this.setUpAutocomplete();
+			*/
 		},
 		
 		/*
 		 * Displays a menu for the user to switch between different views of the user profile
 		 */
 		insertMenu: function(){
+			//TODO: uncomment these lines when we are turning on user profiles
+			return;
+			
 			//If the user is not logged in, then remove the menu 
 			if(!appUserModel.get("loggedIn")){
 				this.$(".nav").remove();
@@ -255,12 +285,14 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				var activeItem = $(activeSection).find(".active");
 				if(activeItem.length > 0){
 					//Find the data section this active item is referring to
-					if($(activeItem).children("[data-section]").length > 0){
+					if($(activeItem).children("[data-subsection]").length > 0){
 						//Get the section name
-						var subsectionName = $(activeItem).find("[data-section]").first().attr("data-section");
+						var subsectionName = $(activeItem).find("[data-subsection]").first().attr("data-subsection");
 						//If we found a section name, find the subsection element and display it
 						if(subsectionName) this.switchToSubSection(null, subsectionName);
 					}
+					else
+						this.switchToSubSection(null, $(activeSection).children("[data-section]").first().attr("data-section"));
 				}
 			}
 		},

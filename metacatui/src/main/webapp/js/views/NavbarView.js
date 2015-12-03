@@ -1,7 +1,7 @@
 /*global define */
 
-define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html', 'text!templates/loginOptions.html', 'text!templates/ldapLogin.html'], 				
-	function($, _, Backbone, NavbarTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
+define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/navbar.html'], 				
+	function($, _, Backbone, SignInView, NavbarTemplate) {
 	'use strict';
 	
 	// Build the navbar view of the application
@@ -10,8 +10,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html', 'text!
 		el: '#Navbar',
 		
 		template: _.template(NavbarTemplate),
-		loginOptionsTemplate: _.template(LoginOptionsTemplate),
-		ldapLoginTemplate: _.template(LdapLoginTemplate),
 		
 		events: {
 						  'click #search_btn' : 'triggerSearch',
@@ -31,43 +29,23 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html', 'text!
 		},
 				
 		render: function () {		
-			if(appModel.get("signInUrl")){
-				var target = encodeURIComponent(window.location.href);
-				var signInUrl = appModel.get('signInUrl') + target;
-				var signInUrlOrcid = appModel.get('signInUrlOrcid') ? appModel.get('signInUrlOrcid') + target : null;
-				var signInUrlLdap = appModel.get('signInUrlLdap') ? appModel.get('signInUrlLdap') + target : null;	
-			}
-
 			var name = appUserModel.get('fullName') ? appUserModel.get('fullName').charAt(0).toUpperCase() + appUserModel.get("fullName").substring(1) : appUserModel.get("username");
 			
-			//Insert the navbar template
+			//Insert the navbar template			
 			this.$el.html(
 				this.template({
 					username:   appUserModel.get('username'),
 					formattedName:   name,
 					firstName:  appUserModel.get('firstName'),
 					loggedIn:   appUserModel.get("loggedIn"),
-					baseUrl:    appModel.get('baseUrl'),
-					signInUrl:  signInUrl,
-					signInUrlOrcid:  signInUrlOrcid,
-					signInUrlLdap:  signInUrlLdap,
-					currentUrl: window.location.href,
-					loginOptions: this.loginOptionsTemplate().trim()
+					baseUrl:    appModel.get('baseUrl')
 				}));
+			
+			//Insert the sign-in button
+			var signInView = new SignInView().render();
+			this.$(".login-container").append(signInView.el);
+			signInView.setUpPopup();
 						
-			var view = this;
-			//Initialize the fancybox elements
-			this.$(".fancybox").fancybox({
-				transitionIn: "elastic",
-				afterShow: function(){
-					$("#loginPopup a.ldap").on("click", null, view, view.showLDAPLogin);
-					
-					//Update the sign-in URLs so we are redirected back to the previous page after authentication
-					$("a.update-sign-in-url").attr("href", appModel.get("signInUrl") + encodeURIComponent(window.location.href));
-					$("a.update-orcid-sign-in-url").attr("href", appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
-					$("a.update-ldap-sign-in-url").attr("href", appModel.get("signInUrlLdap") + encodeURIComponent(window.location.href));
-				}
-			});
 			
 			//Initialize the tooltips in the navbar
 			this.$(".tooltip-this").tooltip({
@@ -149,35 +127,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/navbar.html', 'text!
 				//Add the class given
 				$(this.$el).addClass(headerType);
 			}
-		},
-		
-		showLDAPLogin: function(e, a){
-			e.preventDefault();
-			
-			if($(e.target).hasClass("ldap")){
-				var org = $(e.target).attr("data-value"),
-					accountType = $(e.target).attr("data-name"),
-					view = e.data;
-				
-				this.loginPopup = $("#loginPopup").children().detach();
-				
-				var ldapLogin = view.ldapLoginTemplate({
-					signInUrlLdap: appModel.get("signInUrlLdap"),
-					accountType: accountType,
-					org: org				
-				});
-			}
-			else
-				window.location = appModel.get("signInUrl") + window.location;
-			
-			$("#loginPopup").append(ldapLogin);
-			
-			var view = this;
-			$("#SignInLdap .back").on("click", function(e){
-				e.preventDefault();
-				
-				 $("#loginPopup").html(view.loginPopup);
-			});
 		}
 				
 	});

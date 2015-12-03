@@ -1,5 +1,6 @@
 <section id="user-settings" class="row-fluid section" data-section="settings">
-	<div class="panel panel-default span4">
+	
+	<!--  <div class="panel panel-default span4">
 	  <div class="panel-heading">
 	  	Settings
 	  </div>
@@ -119,8 +120,22 @@
 		  </div>
 		</div>
 	</div>
-	
-	<div class="span8 subsection" data-section="apps">
+	-->
+	<div class="span12 subsection active" data-section="apps">
+		<div class="panel panel-default">
+		  <div class="panel-heading">
+		  	<h4 class="panel-title">Generate Token</h4>
+		  </div>
+		  <div class="panel-body">
+		  	<h5>Use your token to upload data</h5>
+		  	<p>Your token is a unique string of characters that identifies the person uploading, editing, and archiving data. It's like an ID card for your account.
+		  	Copy/paste your token into an application that supports DataONE and manage the data under your account.</p> 
+		  	<div id="token-generator-container">
+		  		<a class="token-generator btn" id="token-generator-button">Generate Token</a>
+		  	</div>
+		  </div>
+		</div>	
+		
 		<div class="panel panel-default">
 		  <div class="panel-heading">
 		  	<h4 class="panel-title">Applications that support DataONE tokens</h4>
@@ -129,7 +144,7 @@
 	   	  		<p>To upload data in the DataONE network: choose a Member Node to host your data and an app that supports DataONE.</p>
    	  			
    	  			<a href="https://www.dataone.org/current-member-nodes" target="_blank">See the list of DataONE Member Nodes <i class="icon icon-double-angle-right"></i></a>
-   	  			<div class="media">
+   	  			<!--  <div class="media">
    	  				<div class="media-left">
 	   	  				<img src="./img/morpho-image.png" class="media-object" width="100" />
 	   	  			</div>
@@ -142,12 +157,13 @@
 	   	  				</p>
    	  				</div>
    	  			</div>
+   	  			-->
    	  			<div class="media">
    	  				<div class="media-left">
 		   	  			<img src="./img/rDataONE-logo-128px.png" class="media-object" width="100" />
 		   	  		</div>
 	   	  			<div class="media-body">
-		   	  			<h5>DataONE R<em class="badge">Coming soon </em> </h5>
+		   	  			<h5>DataONE R</h5>
 		   	  			<p>The DataONE client for R has plans to use DataONE tokens in its 2.1.0 release.
 		   	  			<a href="https://github.com/DataONEorg/rdataone">Learn more about DataONE R<i class="icon icon-double-angle-right"></i></a></p>
 		   	  		</div>
@@ -163,20 +179,6 @@
 		   	  		</div>
 			   	 </div>
 		  </div>
-		</div>
-		
-		<div class="panel panel-default">
-		  <div class="panel-heading">
-		  	<h4 class="panel-title">Generate Token</h4>
-		  </div>
-		  <div class="panel-body">
-		  	<h5>Use your token to upload data</h5>
-		  	<p>Your token is a unique string of characters that identifies the person uploading, editing, and archiving data. It's like an ID card for your account.
-		  	Copy/paste your token into an application that supports DataONE and manage the data under your account.</p> 
-		  	<div id="token-generator-container">
-		  		<a class="token-generator btn" id="token-generator-button">Generate Token</a>
-		  	</div>
-		  </div>
-		</div>	  
+		</div>  
 	</div>
 </section>
