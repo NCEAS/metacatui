@@ -466,6 +466,9 @@ table th.btn-container .btn{
 	font-size: 1em;
 	font-weight: light;
 }
+.navbar-lower span{
+	color: #9E4884;
+}
 .navbar .nav > .label{
 	font-size: .8em;
 	color: #FFF;
@@ -542,7 +545,7 @@ table th.btn-container .btn{
 .navbar-lower .inline-buttons .btn{
 	margin-top: 0px;
 }
-.navbar .nav > li .dropdown-menu a{
+.navbar-lower .nav > li .dropdown-menu a{
 	color: inherit;
 }
 .show-new-dataCatalogView{

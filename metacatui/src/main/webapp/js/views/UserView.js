@@ -919,11 +919,15 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			//Get the token from the CN
 			this.model.checkToken(function(data, textStatus, xhr){				
 				model.set("token", data);
+				model.trigger("change:token");
 			});			
 		},
 		
 		showToken: function(){
 			var token = this.model.get("token");
+			
+			if(!token)				
+				return;
 			
 			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token copy").text(token),
 				copyButton = $(document.createElement("a")).addClass("btn btn-primary copy").text("Copy").attr("data-clipboard-text", token),

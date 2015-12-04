@@ -60,7 +60,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			* ========================================================================
 			*/
 			
-			var radiuses = [13, 17, 25, 30, 40, 50, 60];
+			var radiuses = [30, 30, 30, 30, 40, 50, 60];
 				_.each(this.data, function(d, i){
 
 					if((viewRef.globalR)){
