@@ -10,8 +10,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 		loginOptionsTemplate: _.template(LoginOptionsTemplate),
 		ldapLoginTemplate: _.template(LdapLoginTemplate),
 		
-		tagName: "a",
-		className: "fancybox btn login",
+		tagName: "div",
+		className: "inline-buttons",
 		
 		render: function(){
 			if(!appModel.get("signInUrl")) return this;
@@ -34,7 +34,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 			}
 			
 			//Make the button
-			this.$el.attr("href", "#signinPopup").text("Sign in");
+			var signIn = $(document.createElement("a")).attr("href", "#signinPopup").text("Sign in").addClass("fancybox btn login"),
+				signUp = $(document.createElement("a")).attr("href", "#signupPopup").text("Sign up").addClass("fancybox");
+			
+			this.$el.append(signIn, signUp);
 			
 			return this;
 		},
@@ -43,7 +46,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 			var view = this;
 			
 			//Initialize the fancybox elements
-			this.$(".fancybox.login").fancybox({
+			this.$(".fancybox").fancybox({
 				transitionIn: "elastic",
 				afterShow: function(){
 					$("#signinPopup a.ldap").on("click", null, view, view.showLDAPLogin);

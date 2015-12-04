@@ -68,14 +68,6 @@ article.container {
 	/** Keeps the footer down **/
 	min-height: 100%;
 }
-.inline-buttons {
-  margin-bottom: 20px;
-  margin-top: 20px;
-  clear: both;
-}
-.inline-buttons > .btn{
-	margin-right: 10px;
-}
 
 /****************************************** 
 ** Navigation ***
@@ -146,6 +138,30 @@ h3{
 	font-size: 1.5em;
 }
 
+/****************************************** 
+** Buttons ***
+******************************************/
+.inline-buttons {
+  margin-bottom: 20px;
+  margin-top: 20px;
+  clear: both;
+}
+.inline-buttons > .btn{
+	margin-right: 10px;
+}
+.btn-large{
+	font-size: 1.2em;
+	line-height: 1.5em;
+}
+.btn-large.center{
+	margin-bottom: 20px;
+	display: block;
+	max-width: 30%;
+}
+.orcid-signin.btn-large.center{
+	max-width: 45%;
+	margin-bottom: 0px;
+}
 
 /****************************************** 
 ** Notifications and Alerts ***
@@ -244,6 +260,9 @@ h4 > .icon{
 .filter-contain img.icon{
 	float: left;
 	height: 20px;
+}
+img.icon{
+	max-height: 1.4em;	
 }
 .icon-positive{
 	color: green;
@@ -800,6 +819,15 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     font-size: 1.2em;
     text-align: center;
 }
+.fancybox-inline h3.subtitle{
+	font-size: 1em;
+    font-weight: lighter;
+    line-height: 1.5em;
+    font-style: italic;
+}
+.fancybox-inline h4{
+    font-size: 1em;
+}
 .fancybox-inline > form .input-group, .fancybox-inline form .btn {
     max-width: 296px;
     left: 22%;
@@ -835,31 +863,31 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .fancybox-inline .notification {
   min-height: 150px;
 }
-#signinPopup {
+.fancybox-inline {
     min-width: 550px;
     padding: 5px;
 }
-#signinPopup h3{
+.fancybox-inline h3{
 	font-size: .9em;
 	font-weight: normal;
 	margin-top: 0px;
     line-height: 1.1em;
 }
-#signinPopup .well ul{
+.fancybox-inline .well ul{
 	font-size: .9em;
 	list-style: none;
 	margin-left: 0px;
 }
-#signinPopup .well ul li{
+.fancybox-inline .well ul li{
     border-bottom: 1px solid #DDD;
     padding: 3px;
     font-size: .9em;
 }
-#signinPopup > .row-fluid > .span7{
+.fancybox-inline > .row-fluid > .span7{
 	border-left: 1px solid #DDD;
     padding-left: 20px;
 }
-#signinPopup .btn.ldap{
+.fancybox-inline .btn.ldap{
 	width: 90%;
 	width: calc(100% - 25px);
 }
@@ -879,49 +907,33 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     border-radius: 4px;
     padding-left: 0px;
 }
-#signinPopup .signin{
+.fancybox-inline .signin{
 	display: inline-block;
 	width: auto;
 	padding: 0px;
 	margin-bottom: 10px;
 }
-#signinPopup .btn {
-    border: 1px solid #1C6E84;
-    background-image: none;
-    color: #1C6E84;
-    margin-bottom: 10px;
-    background-color: white;
-}
-#signinPopup .btn:hover {
-    background-color: #1C6E84;
-    color: white;
-    text-shadow: none;
-    transition: all 500ms;
-    cursor: pointer;
-    border: 0px;
-    
-}
-#signinPopup .orcid-signin a:hover,
-#signinPopup .orcid-signin a:hover > img{
+.fancybox-inline .orcid-signin a:hover,
+.fancybox-inline .orcid-signin a:hover > img{
 	background-color: #aacf14;
 	    cursor: pointer;
 	  transition: all 500ms;
 	
 }
-#signinPopup .orcid-signin a:hover > span{
+.fancybox-inline .orcid-signin a:hover > span{
 	color: white;
 }
-#signinPopup .well{
+.fancybox-inline .well{
 	border-color: #CCC;
 }
-#signinPopup .span12 .well .btn{
+.fancybox-inline .span12 .well .btn{
 	width: 300px;
     margin-left: auto;
     margin-right: auto;
     display: block;
     margin-bottom: 20px;
 }
-#signinPopup .remember{
+.fancybox-inline .remember{
 	height: 1.2em;
 	overflow: hidden;
 }
@@ -929,7 +941,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	overflow-y: scroll;
 	-webkit-transform: translate3d(0,0,0); 
 }
-#signinPopup .scroll-y{
+.fancybox-inline .scroll-y{
 	height: 250px;
 }
 .inline input,
@@ -955,12 +967,12 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
     border-top-right-radius: 0px;
     border-right-width: 0px;
 }
-#signinPopup > .row-fluid > .span6:first-child {
+#signInPopup .orcid-signin {
+    margin-top: 10%;
+}
+.fancybox-inline > .row-fluid > .span6:first-child {
     border-right: 1px solid #CCC;
     min-height: 265px;
-}
-.orcid-signin {
-    margin-top: 10%;
 }
 
 /****************************************** 

@@ -438,14 +438,14 @@ table th.btn-container .btn{
 	border-radius: 0px;
 	border-width: 0px;
 }
-.navbar .nav > li > a {
+.navbar .nav > li a {
        color: #FFF;
 	text-shadow: none;
 	font-size: 1.2em;
 	font-weight: normal;
    }
-   .navbar .nav > li > a:hover,
-   .navbar .nav > li > a:focus{
+   .navbar .nav > li a:hover,
+   .navbar .nav > li a:focus{
    	color: rgb(0,255,255);
    }
    .navbar .nav li.dropdown.open>.dropdown-toggle, .navbar .nav li.dropdown.active>.dropdown-toggle, .navbar .nav li.dropdown.open.active>.dropdown-toggle{
@@ -462,7 +462,7 @@ table th.btn-container .btn{
 	padding-left: 20px;
 	padding-right: 20px;
 }
-.navbar-lower .nav > li > a {
+.navbar-lower .nav > li a {
 	font-size: 1em;
 	font-weight: light;
 }
@@ -501,18 +501,18 @@ table th.btn-container .btn{
    	color: white;
    }
 .navbar-lower .input > form > .btn,
-.navbar-lower .nav > li > a.btn {
+.navbar-lower .nav > li a.btn {
 	background-color:#91285F;
 	background-image: none;
 	color:#ffffff;
 	text-shadow:0px 1px 0px #3f0020;
 	border: 0px;
 }  
-.navbar-lower .nav > li > a.btn{
+.navbar-lower .nav > li a.btn{
 	padding: 5px 10px;
 	margin-bottom: 0px;
 }
-.navbar-lower .nav > li > a.btn:hover,
+.navbar-lower .nav > li a.btn:hover,
 .navbar-lower .input-append > form > .btn:hover{
 	background-color: #A92C6D;
 }
@@ -534,7 +534,17 @@ table th.btn-container .btn{
    .navbar-lower .input > form > input[type="text"]:-ms-input-placeholder{
    	color: #CB508A;
    }
-   
+.navbar-lower .inline-buttons{
+	margin-bottom: 0px;
+	margin-top: 0px;
+	line-height: 40px;
+} 
+.navbar-lower .inline-buttons .btn{
+	margin-top: 0px;
+}
+.navbar .nav > li .dropdown-menu a{
+	color: inherit;
+}
 .show-new-dataCatalogView{
 	cursor: pointer;
 }
