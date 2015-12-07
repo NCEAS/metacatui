@@ -12,7 +12,11 @@
 		    	<ul id="current-all-filters" class="current-filters" data-category="all"></ul>
 		    	<ul id="current-attribute-filters" class="current-filters" data-category="attribute"></ul>
 		    	<ul id="current-annotation-filters" class="current-filters" data-category="annotation"></ul>
-		    	<ul id="current-resourceMap-filters" class="current-filters" data-category="resourceMap"></ul>
+		    	<ul id="current-resourceMap-filters" class="current-filters" data-category="resourceMap">
+		    		<% if (resourceMap){ %>
+		    			<li class="current-filter"><span class="category"><%=searchModelRef.fieldLabels["resourceMap"]%></span><i class="icon-remove remove-filter"></i></li>
+		    		<% } %>
+		    	</ul>
 		    	<ul id="current-dataSource-filters" class="current-filters" data-category="dataSource"></ul>
 		    	<ul id="current-creator-filters" class="current-filters " data-category="creator">
 		    		<% if(isMySearch){ %>

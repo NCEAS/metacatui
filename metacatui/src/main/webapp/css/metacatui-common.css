@@ -1789,6 +1789,9 @@ textarea.token{
 .current-filter > .icon{
 	margin-left: 5px;
 }
+.current-filters[data-category='resourceMap'] .current-filter .category{
+	margin-right: 0px;
+}
 #sidebar{
   	width: 225px;
   	height: auto;
