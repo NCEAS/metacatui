@@ -1436,6 +1436,9 @@ tfoot .control i{
 #token-generator-container .alert{
 	margin-bottom: 0px;
 }
+#token-generator-container .notification.loading{
+	min-height: 236px;
+}
 textarea.token{
 	width: 100%;
 	margin-top: 20px;

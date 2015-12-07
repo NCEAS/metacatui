@@ -418,21 +418,15 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					username = payload ? payload.userId : null,
 					fullName = payload ? payload.fullName : null,
 					token    = payload ? data : null,
-					loggedIn = payload ? true : false,
-					lifeSpan = (payload && payload.ttl) ? payload.ttl : null,
-					expires = (payload && payload.issuedAt) ? new Date(payload.issuedAt) : null;
-				
-				if(expires && lifeSpan && (lifeSpan > 99999)) 
-					expires.setMilliseconds(lifeSpan);
-				else if(expires && lifeSpan)
-					expires.setSeconds(lifeSpan);
+					loggedIn = payload ? true : false;
 
 				// set in the model
 				model.set('fullName', fullName);
 				model.set('username', username);
 				model.set("token", token);
 				model.set("loggedIn", loggedIn);
-				model.set("expires", expires);
+
+				model.getTokenExpiration(payload);
 				
 				if(username && model.isOrcid())
 					model.set("checked", true);
@@ -452,6 +446,21 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				data: {},
 				success: callback
 			});
+		},
+		
+		getTokenExpiration: function(payload){
+			if(!payload && this.get("token")) var payload = this.parseToken(this.get("token"));
+			if(!payload) return;
+			
+			var lifeSpan = (payload && payload.ttl) ? payload.ttl : null,
+				expires = (payload && payload.issuedAt) ? new Date(payload.issuedAt) : null;
+				
+				if(expires && lifeSpan && (lifeSpan > 99999)) 
+					expires.setMilliseconds(lifeSpan);
+				else if(expires && lifeSpan)
+					expires.setSeconds(lifeSpan);
+				
+			this.set("expires", expires);
 		},
 		
 		parseToken: function(token) {

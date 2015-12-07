@@ -913,12 +913,16 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		getToken: function(){		
 			var model = this.model;
 			
+			//Show loading sign
+			this.$("#token-generator-container").html(this.loadingTemplate());
+			
 			//When the token is retrieved, then show it
 			this.listenToOnce(this.model, "change:token", this.showToken);
 			
 			//Get the token from the CN
 			this.model.checkToken(function(data, textStatus, xhr){				
-				model.set("token", data);
+				model.getTokenExpiration();
+				model.set("token", data);				
 				model.trigger("change:token");
 			});			
 		},
@@ -942,7 +946,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					containerClasses: "well"
 				}));
 			$(successMessage).append(tokenInput, copyButton, copySuccess);
-			this.$("#token-generator-button").replaceWith(successMessage);
+			this.$("#token-generator-container").html(successMessage);
 			
 			//Create a copy button
 			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
