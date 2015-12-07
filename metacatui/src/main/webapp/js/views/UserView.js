@@ -929,13 +929,15 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			if(!token)				
 				return;
 			
-			var tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token copy").text(token),
+			var expires    = this.model.get("expires"),
+				tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token copy").text(token),
 				copyButton = $(document.createElement("a")).addClass("btn btn-primary copy").text("Copy").attr("data-clipboard-text", token),
 				successIcon = $(document.createElement("i")).addClass("icon icon-ok"),
-		  		copySuccess = $(document.createElement("div")).addClass("notification success copy-success hidden").append(successIcon, " Copied!");
+		  		copySuccess = $(document.createElement("div")).addClass("notification success copy-success hidden").append(successIcon, " Copied!"),
+		  		expirationMsg = "<strong>Note:</strong> Your identification code expires on " + expires.toLocaleDateString() + " at " + expires.toLocaleTimeString();
 						
 			var	successMessage = $.parseHTML(this.alertTemplate({
-					msg: 'Copy your identification code: <br/>',
+					msg: 'Copy your identification code: <br/> ' + expirationMsg,
 					classes: "alert-success",
 					containerClasses: "well"
 				}));

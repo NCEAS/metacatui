@@ -28,6 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				identitiesUsernames: [],
 				pending: [],
 				token: null,
+				expires: null,
 				rawData: null
 			}
 		},
@@ -413,17 +414,25 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			var callback = (typeof customCallback === "function") ? customCallback : function(data, textStatus, xhr) {
 				
 				// the response should have the token
-				var payload = model.parseToken(data);
-				var username = payload ? payload.userId : null;
-				var fullName = payload ? payload.fullName : null;
-				var token    = payload ? data : null;
-				var loggedIn = payload ? true : false;
+				var payload = model.parseToken(data),
+					username = payload ? payload.userId : null,
+					fullName = payload ? payload.fullName : null,
+					token    = payload ? data : null,
+					loggedIn = payload ? true : false,
+					lifeSpan = (payload && payload.ttl) ? payload.ttl : null,
+					expires = (payload && payload.issuedAt) ? new Date(payload.issuedAt) : null;
+				
+				if(expires && lifeSpan && (lifeSpan > 99999)) 
+					expires.setMilliseconds(lifeSpan);
+				else if(expires && lifeSpan)
+					expires.setSeconds(lifeSpan);
 
 				// set in the model
 				model.set('fullName', fullName);
 				model.set('username', username);
 				model.set("token", token);
 				model.set("loggedIn", loggedIn);
+				model.set("expires", expires);
 				
 				if(username && model.isOrcid())
 					model.set("checked", true);
