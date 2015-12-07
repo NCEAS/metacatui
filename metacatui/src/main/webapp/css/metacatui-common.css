@@ -128,7 +128,7 @@ article.container {
 	text-decoration:none;
 }  
 .nav .right .dropdown-menu {
-  left: -20px;
+  left: -50%;
 }
 
 /****************************************** 
@@ -148,6 +148,10 @@ h3{
 }
 .inline-buttons > .btn{
 	margin-right: 10px;
+}
+.inline-buttons > .text-btwn-btns{
+	margin-right: 10px;
+	margin-left: 10px;
 }
 .btn-large{
 	font-size: 1.2em;

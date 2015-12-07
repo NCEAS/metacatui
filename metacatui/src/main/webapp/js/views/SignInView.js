@@ -34,9 +34,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 			}
 			
 			//Make the button
-			var signIn = $(document.createElement("a")).attr("href", "#signinPopup").text("Sign in").addClass("fancybox btn login"),
+			var signIn = $(document.createElement("a")).attr("href", "#signinPopup").text("Sign in").addClass("fancybox login"),
 				or     = $(document.createElement("span")).text("or").addClass("text-btwn-btns"),
-				signUp = $(document.createElement("a")).attr("href", "#signupPopup").text("Sign up").addClass("fancybox");
+				signUp = $(document.createElement("a")).attr("href", "#signupPopup").text("Sign up").addClass("fancybox btn");
 			
 			this.$el.append(signIn, or, signUp);
 			
