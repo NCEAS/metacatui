@@ -157,10 +157,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				
 				//If this node has MNRead v2 services...
 				if(node && node.readv2)
-					url = node.baseURL + "/v2/packages/application%2Fbagit-097/" + this.get("id");			
+					url = node.baseURL + "/v2/packages/application%2Fbagit-097/" + encodeURIComponenet(this.get("id"));			
 			}
 			else if(appModel.get("packageServiceUrl"))
-				url = appModel.get("packageServiceUrl") + this.get("id");
+				url = appModel.get("packageServiceUrl") + encodeURIComponenet(this.get("id"));
 			
 			this.set("url", url);
 			return url;
