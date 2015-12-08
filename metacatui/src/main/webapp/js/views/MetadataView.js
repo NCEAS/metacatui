@@ -88,7 +88,7 @@ define(['jquery',
 		render: function () {
 
 			appModel.set('headerType', 'default');
-			this.$el.html(this.loadingTemplate({ msg: "Loading" }));
+			this.showLoading("Loading...");
 			
 			//Reset a new class map - for matching ids->class names in prov charts
 			this.classMap = new Array();
@@ -317,6 +317,16 @@ define(['jquery',
 				//Get the package information
 				viewRef.getPackageDetails(model.get("resourceMap"));
 				
+			});
+			this.listenToOnce(model, "404", function(model){
+				var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
+						  "<ul class='indent'>" +
+							  "<li>The content was removed because it was invalid or inappropriate.</li>" +
+							  "<li>You do not have permission to view this content.</li>" +
+							  "<li>The ID '" + pid  + "' does not exist.</li>" +
+						  "</ul>";
+				viewRef.hideLoading();
+				viewRef.showError(msg);
 			});
 			model.getInfo();			
 		},
