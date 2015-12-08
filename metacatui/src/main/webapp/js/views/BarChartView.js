@@ -187,7 +187,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  		  	  textY = y(d.y) - 10;
 		  		  
 		  		  return "translate(" + textX + "," + textY + ")"; })
-		  	  .text(function(d){ return viewRef.commaSeparateNumber(d.y); })
+		  	  .text(function(d){ return appView.commaSeparateNumber(d.y); })
 		  	  .attr("text-anchor", "middle")
 		  	  .attr("class", "bar-label " + this.barLabelClass);
 	   }
@@ -221,16 +221,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			}
 			
 			return data;
-		},
-		
-		
-		//Function to add commas to large numbers
-		commaSeparateNumber: function(val){
-		    while (/(\d+)(\d{3})/.test(val.toString())){
-		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-		    }
-		    return val;
-		 }
+		}
 		
 	});
 	return BarChartView;		

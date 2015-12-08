@@ -2,9 +2,9 @@
 
 <h5 class="result-header-count bold-header" id="countstats">
 <% if(numFound > 0){
-		print('<span>' + start + '</span>');
-		print(' to <span>' + end + '</span>');
-		print(' of <span>' + numFound + '</span>');
+		print('<span>' + appView.commaSeparateNumber(start) + '</span>');
+		print(' to <span>' + appView.commaSeparateNumber(end) + '</span>');
+		print(' of <span>' + appView.commaSeparateNumber(numFound) + '</span>');
 	}
 	else if(numFound == 0){
 		print('<span>0</span>');

@@ -160,7 +160,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		                    "end" : "start";
 		            })
 		            .text(function(d, i) { 	         
-		            	return viewRef.commaSeparateNumber(d.data.count); 
+		            	return appView.commaSeparateNumber(d.data.count); 
 		            })
 		           .attr("transform", function(d, i) { //Calculate the label position based on arc centroid
 		                var c = arc.centroid(d),
@@ -212,7 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        		textData.push({
 									"cx" : w/2,  //Start at the center
 									"cy" : h/2, //Start at the center
-									"text" : this.commaSeparateNumber(this.titleCount),
+									"text" : appView.commaSeparateNumber(this.titleCount),
 									"className" : "donut-title-count " + this.countClass
 								});
 	        	}
@@ -352,15 +352,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			});
 			
 			//return newArray;
-		},
-		
-		//Function to add commas to large numbers
-		commaSeparateNumber: function(val){
-		    while (/(\d+)(\d{3})/.test(val.toString())){
-		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-		    }
-		    return val;
-		 }
+		}
 		
 	});
 	return DonutChartView;		

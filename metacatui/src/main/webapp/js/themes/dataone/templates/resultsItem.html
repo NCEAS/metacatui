@@ -1,12 +1,3 @@
-<%
-		//Function to add commas to large numbers
-		function commaSeparateNumber(val){
-		    while (/(\d+)(\d{3})/.test(val.toString())){
-		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-		    }
-		    return val;
-		 }
-%>
 <% if(memberNode && memberNode.logo){ %>
 	<img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%> repository" />
 <% } %>	
@@ -41,7 +32,7 @@
 	</a> 
     <div class="stats icons stop-route">
 		<% if (typeof reads !== "undefined"){ 
-			var readableCount = commaSeparateNumber(reads); %>
+			var readableCount = appView.commaSeparateNumber(reads); %>
 			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><span class="count-container"><%=readableCount%></span> <i class="icon icon-eye-open views stop-route"></i></span>
 		<% }
 		else{ 

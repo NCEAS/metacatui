@@ -166,7 +166,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				.selectAll("text")
 				.data(this.data)
 				.enter().append("svg:text")
-				.text(function(d){ return viewRef.commaSeparateNumber(d.count); })
+				.text(function(d){ return appView.commaSeparateNumber(d.count); })
 				.attr("transform", function(d, i){
 					return "translate(" + d.x + "," + (d.r+12) + ")";
 				})
@@ -183,16 +183,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			}
 	        
 			return this;
-		},
-		
-		//Function to add commas to large numbers
-		commaSeparateNumber: function(val){
-		    while (/(\d+)(\d{3})/.test(val.toString())){
-		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-		    }
-		    return val;
-		 }
-		
+		}	
 	});
 	return CircleBadgeView;		
 });

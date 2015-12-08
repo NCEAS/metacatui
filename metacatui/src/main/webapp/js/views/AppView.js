@@ -222,22 +222,6 @@ define(['jquery',
 				this.currentView.closePopovers(e);
 		},
 		
-		// scroll to top of page
-		scrollToTop: function() {
-			$("body,html").stop(true,true) //stop first for it to work in FF
-						  .animate({ scrollTop: 0 }, "slow");
-			return false;
-		},
-		
-		scrollTo: function(pageElement, offsetTop){
-			//Find the header height if it is a fixed element
-			var headerOffset = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
-			
-			$("body,html").stop(true,true) //stop first for it to work in FF
-						  .animate({ scrollTop: $(pageElement).offset().top - 40 - headerOffset}, 1000);
-			return false;
-		},
-		
 		toggleSlide: function(e){
 			if(e) e.preventDefault();
 			else return false;
@@ -277,13 +261,6 @@ define(['jquery',
 			}
 			else
 				$(container).prepend(alert);
-		},
-		
-		higlightInput: function(e){
-			if(!e) return;
-			
-			e.preventDefault();			
-			e.target.setSelectionRange(0, 9999);
 		},
 		
 		submitLogin: function(e){
@@ -356,6 +333,37 @@ define(['jquery',
 			
 			//Send login request via the User Model
 			appUserModel.loginLdap(formData, loginSuccess, loginFail);			
+		},
+		
+		/********************** Utilities ********************************/
+		// Various utility functions to use across the app //
+		/************ Function to add commas to large numbers ************/
+		commaSeparateNumber: function(val){
+		    while (/(\d+)(\d{3})/.test(val.toString())){
+		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+		    }
+		    return val;
+		 },
+		higlightInput: function(e){
+			if(!e) return;
+			
+			e.preventDefault();			
+			e.target.setSelectionRange(0, 9999);
+		},
+		// scroll to top of page
+		scrollToTop: function() {
+			$("body,html").stop(true,true) //stop first for it to work in FF
+						  .animate({ scrollTop: 0 }, "slow");
+			return false;
+		},
+		
+		scrollTo: function(pageElement, offsetTop){
+			//Find the header height if it is a fixed element
+			var headerOffset = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
+			
+			$("body,html").stop(true,true) //stop first for it to work in FF
+						  .animate({ scrollTop: $(pageElement).offset().top - 40 - headerOffset}, 1000);
+			return false;
 		}
 				
 	});

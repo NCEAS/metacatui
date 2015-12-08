@@ -377,7 +377,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  
 				  labels.append("text")
 				  		.text(function(d, i){
-				  			return viewRef.labelValue + viewRef.commaSeparateNumber(d.count);
+				  			return viewRef.labelValue + appView.commaSeparateNumber(d.count);
 				  		})
 				  		.attr("x", function(d, i){
 				  			var xPos = viewRef.x(d.date) - (labelWidth/2);
@@ -432,15 +432,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			}
 			
 			return uploadData;
-		},
-		
-		//Function to add commas to large numbers
-		commaSeparateNumber: function(val){
-		    while (/(\d+)(\d{3})/.test(val.toString())){
-		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-		    }
-		    return val;
-		 }
+		} 
 		
 	});
 	return LineChartView;		
