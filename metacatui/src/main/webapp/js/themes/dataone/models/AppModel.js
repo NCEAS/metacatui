@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			anchorId: null,
 			
+			userProfiles: false,
 			profileUsername: null,
 			
 			useJsonp: true,

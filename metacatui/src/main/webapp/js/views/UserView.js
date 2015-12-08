@@ -68,53 +68,55 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		renderUser: function(){
 			this.model = appUserModel;
 			
-			if(!this.model.get("loggedIn")){
-				this.showAlert('You must be logged in to view your account settings.',
-								"alert-warning",
-								this.$el);
-				
-				//Insert the sign-in button
-				var signInView = new SignInView().render();
-				this.$el.append(signInView.el);
-				signInView.setUpPopup();
-				
-				return;
-			}
-				
-			this.renderSettings();
-			this.resetSections();
-			
-			//TODO: uncomment these lines when we are turning on user profiles
-			/*var username = appModel.get("profileUsername"),
-				currentUser = appUserModel.get("username") || "";
-			
-			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
-				this.model = appUserModel;
-				
-				//If the user is logged in, display the settings options
-				if(this.model.get("loggedIn")){
-					this.insertMenu();
-					this.renderProfile();
-					this.renderSettings();
-					this.resetSections();
+			if(!appModel.get("userProfiles")){
+
+				if(!this.model.get("loggedIn")){
+					this.showAlert('You must be logged in to view your account settings.',
+									"alert-warning",
+									this.$el);
+					
+					//Insert the sign-in button
+					var signInView = new SignInView().render();
+					this.$el.append(signInView.el);
+					signInView.setUpPopup();
+					
+					return;
 				}
+					
+				this.renderSettings();
+				this.resetSections();
 			}
-			
-			//If this isn't the currently-looged in user, then let's find out more info about this account
 			else{
-				//Create a UserModel with the username given
-				var user = new UserModel({
-					username: username
-				});
-				this.model = user;	
+				var username = appModel.get("profileUsername"),
+					currentUser = appUserModel.get("username") || "";
 				
-				//When we get the infomration about this account, then crender the profile
-				this.model.once("change:checked", this.renderProfile, this);
-				this.model.once("change:checked", this.resetSections, this);
-				//Get the info
-				this.model.getInfo();
-			}
-			*/	
+				if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
+					this.model = appUserModel;
+					
+					//If the user is logged in, display the settings options
+					if(this.model.get("loggedIn")){
+						this.insertMenu();
+						this.renderProfile();
+						this.renderSettings();
+						this.resetSections();
+					}
+				}
+				
+				//If this isn't the currently-looged in user, then let's find out more info about this account
+				else{
+					//Create a UserModel with the username given
+					var user = new UserModel({
+						username: username
+					});
+					this.model = user;	
+					
+					//When we get the infomration about this account, then crender the profile
+					this.model.once("change:checked", this.renderProfile, this);
+					this.model.once("change:checked", this.resetSections, this);
+					//Get the info
+					this.model.getInfo();
+				}
+			}	
 		},
 		
 		/* COMMENTED OUT for now because it was possibly over-engineering the problem... But keeping this code just in case its usable in the future...
@@ -144,8 +146,6 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		},*/	
 		
 		renderProfile: function(){
-			//TODO: uncomment this line when we are turning on user profiles
-			return;
 			
 			//Insert the template first
 			var profileEl = $.parseHTML(this.profileTemplate({
@@ -208,33 +208,31 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		
 		renderSettings: function(){
 			//Insert the template first
-			this.sectionHolder.append(this.settingsTemplate({
-				username: this.model.get("username")
-			}));
+			this.sectionHolder.append(this.settingsTemplate(this.model.toJSON()));
 			this.$settings = this.$("[data-section='settings']");
 			
-			//TODO: uncomment these lines when we are turning on user profiles
-			/*
-			//Draw the group list
-			this.insertCreateGroupForm();
-			this.listenTo(this.model, "change:isMemberOf", this.getGroups);
-			this.getGroups();
-			
-			//Listen for the identity list
-			this.listenTo(this.model, "change:identities", this.insertIdentityList);
-			this.insertIdentityList();
-			
-			//Listen for the pending list
-			this.listenTo(this.model, "change:pending", this.insertPendingList);
-			this.model.getPendingIdentities();
-			
-			//Listen for updates to person details
-			this.listenTo(this.model, "change:lastName change:firstName change:email change:registered", this.updateModForm);
-			this.updateModForm();
-
-			// init autocomplete fields
-			this.setUpAutocomplete();
-			*/
+			if(appModel.get("userProfiles")){
+	
+				//Draw the group list
+				this.insertCreateGroupForm();
+				this.listenTo(this.model, "change:isMemberOf", this.getGroups);
+				this.getGroups();
+				
+				//Listen for the identity list
+				this.listenTo(this.model, "change:identities", this.insertIdentityList);
+				this.insertIdentityList();
+				
+				//Listen for the pending list
+				this.listenTo(this.model, "change:pending", this.insertPendingList);
+				this.model.getPendingIdentities();
+				
+				//Listen for updates to person details
+				this.listenTo(this.model, "change:lastName change:firstName change:email change:registered", this.updateModForm);
+				this.updateModForm();
+	
+				// init autocomplete fields
+				this.setUpAutocomplete();
+			}
 			
 			//Get the token right away
 			this.getToken();
@@ -244,9 +242,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		 * Displays a menu for the user to switch between different views of the user profile
 		 */
 		insertMenu: function(){
-			//TODO: uncomment these lines when we are turning on user profiles
-			return;
-			
+
 			//If the user is not logged in, then remove the menu 
 			if(!appUserModel.get("loggedIn")){
 				this.$(".nav").remove();

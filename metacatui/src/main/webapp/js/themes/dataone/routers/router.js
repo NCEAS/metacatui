@@ -13,8 +13,8 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'help(/:page)(/:anchorId)'  : 'renderHelp',
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata',     // metadata page
-			//'profile(/*username)(/:section)(/:subsection)' : 'renderProfile',
-			'account'                   : 'renderUserSettings',
+			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
+			'myAccount'                   : 'renderUserSettings',
 			'profile' : 'renderProfile',
 			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
 			'logout'                    : 'logout'          // logout the user
@@ -153,7 +153,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 		renderProfile: function(username, section, subsection){
 			this.closeLastView();
 						
-			if(!username){
+			if(!username || !appModel.get("userProfiles")){
 				this.routeHistory.push("summary");
 				appView.showView(appView.statsView);
 			}

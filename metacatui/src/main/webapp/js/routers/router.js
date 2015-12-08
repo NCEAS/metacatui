@@ -14,8 +14,9 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'tools(/:anchorId)'         : 'renderTools',    // tools page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
-//			'profile(/*username)(/:section)(/:subsection)'		: 'renderProfile',
+			'profile(/*username)(/:section)(/:subsection)'		: 'renderProfile',
 			'profile'		: 'renderProfile',
+			//'myAccount'                   : 'renderUserSettings',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
@@ -155,7 +156,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 		renderProfile: function(username, section, subsection){
 			this.closeLastView();			
 			
-			if(!username){
+			if(!username || !appModel.get("userProfiles")){
 				this.routeHistory.push("summary");
 				appView.showView(appView.statsView);
 			}
@@ -169,6 +170,18 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 				appModel.set("profileUsername", username);
 				appView.showView(appView.userView);
 			}
+		},
+		
+		renderUserSettings: function(){			
+			this.closeLastView();
+
+			appView.userView.activeSection = "settings";
+			this.routeHistory.push("profile");
+			
+			if(appUserModel.get("username"))
+				appModel.set("profileUsername", appUserModel.get("username"));	
+			
+			appView.showView(appView.userView);
 		},
 		
 		renderRegistry: function (stage, pid) {

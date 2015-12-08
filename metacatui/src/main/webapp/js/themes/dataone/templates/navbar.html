@@ -515,7 +515,12 @@
 				<ul class="dropdown-menu">
 					<li class="dropdown-header"><%=formattedName%></li>
 					<li class="divider"></li>
-					<li><a href="#account">My Account</a></li>
+					<% if(appModel.get("userProfiles")){ %>
+						<li><a href="#profile/<%=username%>">My profile</a></li>
+					<% }
+						else{ %>
+						<li><a href="#myAccount">My account</a></li>
+					<% } %>	
 					<li><a href="#data" id="myData">My data packages</a></li>
 					<li class="divider"></li>
 					<li><a href="#logout">Logout</a></li>
