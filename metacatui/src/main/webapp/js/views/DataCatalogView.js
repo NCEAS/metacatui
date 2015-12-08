@@ -241,6 +241,7 @@ define(['jquery',
 			if($(".auto-height").length > 0){
 				//Readjust the height whenever the window is resized
 				$(window).resize(this.setAutoHeight);
+				$(".auto-height-member").resize(this.setAutoHeight);
 			}
 
 			return this;
@@ -265,7 +266,8 @@ define(['jquery',
 			
 			//Get the remaining height left based on the window size
 			var remainingHeight = $(window).outerHeight(true) - otherHeight;
-			if(remainingHeight <= 0) remainingHeight = $(window).outerHeight(true) || 300;
+			if(remainingHeight < 0) remainingHeight = $(window).outerHeight(true) || 300;
+			else if(remainingHeight <= 120) remainingHeight = ($(window).outerHeight(true) - remainingHeight) || 300;
 			
 			//Adjust all elements with the .auto-height class
 			$(".auto-height").height(remainingHeight);
