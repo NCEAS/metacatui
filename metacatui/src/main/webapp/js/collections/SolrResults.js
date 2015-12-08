@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrResult'], 				
-	function($, _, Backbone, SolrHeader, SolrResult) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrResult', 'models/LogsSearch'], 				
+	function($, _, Backbone, SolrHeader, SolrResult, LogsSearch) {
 	'use strict';
 
 	// SolrResults Collection
@@ -22,7 +22,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.facetCounts  = "nothing";
 		    this.stats 		  = options.stats   || false;
 		    this.minYear 	  = options.minYear || 1900;
-		    this.maxYear 	  = options.maxYear || new Date().getFullYear();
+		    this.maxYear 	  = options.maxYear || new Date().getFullYear();	
+		    
+		    //Turn on/off the feature to search the logs when retrieving SolrResults
+		    this.searchLogs  = (typeof options.searchLogs == "undefined")? true : options.searchLogs;
+		    
+		    if(appModel.get("d1LogServiceUrl") && this.searchLogs){
+			    this.logsSearch = options.logsSearch || new LogsSearch();
+			    
+			    this.on("reset", this.getLogs);
+		    }
 		},
 		
 		url: function() {
@@ -167,6 +176,43 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		
 		setStats: function(fields){
 			this.stats = fields;
+		},
+		
+		//Get info about each model in this collection from the Logs index
+		getLogs: function(){
+			var collection = this;
+			
+			//Get the read events
+			this.logsSearch.set({
+				pid: this.pluck("id"), 
+				event: "read",
+				facets: "pid"
+			});
+			
+			var url = appModel.get("d1LogServiceUrl") + "q=" + this.logsSearch.getQuery() + this.logsSearch.getFacetQuery();
+			$.ajax({
+				url: url + "&wt=json&rows=0",
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){
+					var pidCounts = data.facet_counts.facet_fields.pid;
+					
+					if(!pidCounts || !pidCounts.length){
+						collection.invoke("set", {reads: 0});
+						collection.invoke("trigger", "change:reads");
+						return;
+					}
+					
+					for(var i=0; i < pidCounts.length; i+=2){
+						var doc = collection.findWhere({ id: pidCounts[i] });
+						if(!doc) break;
+						
+						doc.set("reads", pidCounts[i+1]);
+					}
+					
+					collection.invoke("trigger", "change:reads");
+				}
+			});
 		}
 	});
 

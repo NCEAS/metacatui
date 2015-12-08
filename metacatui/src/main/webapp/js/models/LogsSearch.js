@@ -54,8 +54,6 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 
 		initialize: function(){
 			this.listenTo(this, "change:geohashes", this.groupGeohashes);
-			
-			this.listenToOnce(nodeModel, "change:currentMemberNode", this.setNodeId);
 		},
 		
 		//Map the filter names to their index field names
@@ -96,8 +94,10 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 			
 			var otherFilters = ["event", "formatType", "formatId", "id", "pid", "userAgent", "inFullRobotList", "isRepeatVisit", "dateAggregated", "dateLogged", "entryId", "city", "region", "location", "size", "username"];
 			
-			
 			//-------nodeId--------
+			//Update the Node Id
+			this.setNodeId();
+			
 			if(this.filterIsAvailable("nodeId") && this.get("nodeId")){
 				var value = this.get("nodeId");
 				
@@ -150,6 +150,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 			var query = "&facet=true&facet.limit=-1&facet.mincount=" + this.get("facetMinCount"),
 				model = this;
 			
+			if(typeof this.get("facets") == "string")
+				this.set("facets", [this.get("facets")]);
 			_.each(this.get("facets"), function(facetField, i, list){
 				
 				if(model.filterIsAvailable(facetField)){

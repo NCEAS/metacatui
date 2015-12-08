@@ -330,8 +330,8 @@ img.icon{
 	cursor: default;
 }
 .result-row .info-icons .icon.views{
-  font-size: 1.3em;
   margin-left: 5px;
+  color: inherit;
 }
 .result-row .icons.provenance i{
 	font-size: 1.5em;
@@ -376,8 +376,12 @@ img.icon{
   background-color: #FFF;
   color: inherit;
   text-shadow: none;
-  padding: 2px 5px;
+  padding: 1px 5px;
   border: 1px solid #CCC;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  margin-top: -2px;  
 }
 /****************************************** 
 ** Provenance flow-charts ***
@@ -1658,6 +1662,9 @@ textarea.token{
 }
 #map-container{
 	display: none;
+}
+body.mapMode{
+	overflow-y: hidden;
 }
 .mapMode #map-container{
 	position: relative;

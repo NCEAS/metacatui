@@ -27,6 +27,9 @@ define(['jquery', 'underscore', 'backbone'],
 			type: null,
 			url: null,
 			obsoletedBy: null,
+			geohash_9: null,
+			read_count_i: 0,
+			reads: 0,
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
@@ -56,6 +59,7 @@ define(['jquery', 'underscore', 'backbone'],
 		initialize: function(){
 			this.setURL();
 			this.set("type", this.getType());
+			this.on("change:read_count_i", function(){ this.set("reads", this.get("read_count_i"))});
 		},
 		
 		type: "SolrResult",

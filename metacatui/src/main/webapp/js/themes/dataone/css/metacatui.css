@@ -1421,13 +1421,6 @@ ul.tb-megamenu-subnav{
     	word-break: keep-all;
     	text-overflow: ellipsis;
     }
-  	
-  	/** View count **/
-    .result-row .stats .count{
-    	font-size: 16px;
-    	text-align: center; 
-    	display: block;
-    }
     
     .result-row .stats label{
     	font-size: 12px;

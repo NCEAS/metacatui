@@ -517,7 +517,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			}
 			
 			$.ajax({
-				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json",
+				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
 				jsonp: "json.wrf",
 				dataType: "jsonp",
 				success: function(data, textStatus, xhr){
@@ -545,7 +545,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			}
 			
 			$.ajax({
-				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json",
+				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
 				jsonp: "json.wrf",
 				dataType: "jsonp",
 				success: function(data, textStatus, xhr){

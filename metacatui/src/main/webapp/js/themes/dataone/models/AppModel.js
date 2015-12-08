@@ -163,6 +163,10 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set("useSeriesId", true);
 			}
 			
+			//Only use these settings in production
+			if(this.get("d1CNBaseUrl").indexOf("cn.dataone.org") > -1)
+				this.set("googleAnalyticsKey", "UA-15017327-17");
+			
 			this.on("change:pid", this.changePid);
 		},
 		
