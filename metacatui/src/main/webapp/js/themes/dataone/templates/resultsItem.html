@@ -4,12 +4,16 @@
 <div class="citation"></div> 
 <div class="clear"></div>
 <div class="info-icons  stop-route">  
+	
+	<% if(!isPublic){ %>
+		<div class="private icons stop-route"><i class="icon icon-lock tooltip-this private stop-route" data-toggle="tooltip" data-placement="right" title="Your private content."></i></div>		
+	<% } %>
 	<% if(typeof abstract != "undefined"){  %>
 		<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
 	<% } %> 
 	<div class="resource-map icons stop-route">             
 		<% if (resourceMap) {
-				print('<img src="img/data-file-icon-gray.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This result includes data files"></i>');
+				print('<img src="js/themes/dataone/img/data-file-icon-magenta-desat.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This data set includes data files"></i>');
 			} %>
 	         
 	</div>    		      

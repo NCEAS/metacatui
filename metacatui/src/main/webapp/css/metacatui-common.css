@@ -327,10 +327,7 @@ img.icon{
 .result-row .info-icons .icons.download .tooltip{
 	width: 120px;
 }
-.result-row .info-icons .abstract,
-.result-row .info-icons .icons.provenance,
-.result-row .info-icons .icons.stats,
-.result-row .info-icons .icons.resource-map{
+.result-row .info-icons .icon{
 	cursor: default;
 }
 .result-row .info-icons .icon.views{
@@ -343,12 +340,18 @@ img.icon{
 .result-row .info-icons img.icon{
 	height: 1em;
 }
+.info-icons .icon.private{
+	font-size: 1.5em;
+}
 .result-row .info-icons .label{
 	background-color: #5E8497;
 }
 .search-results.loading .notification{
   margin-top: 20px;
   min-height: 700px;
+}
+.search-results #no-results-found {
+    margin: 20px;
 }
 .result-row .route-to-metadata{
 	cursor: pointer;
@@ -386,6 +389,9 @@ img.icon{
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   margin-top: -2px;  
+}
+.result-row .tooltip-inner{
+	font-size: 1.2em;
 }
 /****************************************** 
 ** Provenance flow-charts ***
@@ -1123,6 +1129,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
   display: inline-block;
   float: right;
   margin-bottom: 10px;
+}
+.metadata-controls .info-icons{
+	float: left;
+	margin-top: 10px;
 }
 
 /****************************************** 
@@ -2029,7 +2039,7 @@ form .text-left > .icon {
 }
 .inline-input-group.controls-well{
 	margin-bottom: 20px;
-	padding: 10px;
+	padding: 10px 20px;
 	clear: both;
 }
 .inline-input-group label.inline{

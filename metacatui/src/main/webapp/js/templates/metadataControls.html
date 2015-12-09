@@ -1,4 +1,9 @@
 <div class="inline-input-group controls-well metadata-controls">
+	<div class="info-icons">
+		<% if(!model.isPublic){ %>
+			<div class="private icons"><i class="icon icon-lock tooltip-this private" data-toggle="tooltip" data-placement="right" title="This is your private content."></i></div>		
+		<% } %>
+	</div>
 	<div class="input-append inline">
 		<div class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</div>
 		<input type="text" value="<%=citation%>" class="subtle copy">

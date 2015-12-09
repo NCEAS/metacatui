@@ -57,7 +57,7 @@
     	display: none;
     }
     #clear-all{
-    	background-color: #29ABCE;
+    	background-color: #1C6E84;
     	color: white;
     	font-weight: normal;
     }
@@ -1389,6 +1389,9 @@ ul.tb-megamenu-subnav{
     .info-icons .icon:hover{
     	color: #CE0060;
     }
+    .info-icons .icon.private{
+		color: #FF6633;
+	}
     .info-icons .on-map > i.on-map:nth-child(n+2){
     	margin-left: 3px;
     }

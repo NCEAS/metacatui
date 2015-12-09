@@ -736,7 +736,8 @@ define(['jquery',
 			//Get template
 			var controlsContainer = this.controlsTemplate({
 				citation: $(this.citationEl).text(),
-				url: window.location
+				url: window.location,
+				model: this.model.toJSON()
 			});
 			if(this.$(".metadata-controls").length > 0)
 				this.$(".metadata-controls").replaceWith(controlsContainer);
@@ -755,6 +756,7 @@ define(['jquery',
 			this.$(".fancybox").fancybox({
 				transitionIn: "elastic"
 			});
+			this.$(".tooltip-this").tooltip();
 		},
 		
 		/*

@@ -234,7 +234,7 @@ define(['jquery',
 			// listen to the appModel for the search trigger			
 			this.listenTo(appModel, 'search', this.getResults);
 			
-			this.listenTo(appUserModel, "change:loggedIn", this.getResults);
+			this.listenTo(appUserModel, "change:loggedIn", this.triggerSearch);
 			
 			// and go to a certain page if we have it
 			this.getResults();	
@@ -295,11 +295,12 @@ define(['jquery',
 		 * 										PERFORMING SEARCH
 		 * ==================================================================================================
 		**/
-		triggerSearch: function() {				
+		triggerSearch: function() {		
+		
 			//Set the sort order 
 			var sortOrder = $("#sortOrder").val();
 			this.searchModel.set('sortOrder', sortOrder);
-			
+						
 			//Trigger a search to load the results
 			appModel.trigger('search');
 			
@@ -333,7 +334,7 @@ define(['jquery',
 			this.searchResults.setSort(sortOrder);
 			
 			//Specify which fields to retrieve
-			var fields = "id,seriesId,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource";
+			var fields = "id,seriesId,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,isPublic";
 			if(gmaps){
 				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}
@@ -2618,58 +2619,63 @@ define(['jquery',
 		 * fully loaded and then loads the remaining items.
 		 * Without this delay, the app waits until all records are processed
 		*/
-		addAll: function () {
-
+		addAll: function () {			
+			//After the map is done loading, then load the rest of the results into the list
+			if(this.ready) this.renderAll();
+			else{
+				var viewRef = this;
+				var intervalID = setInterval(function() {
+					if (viewRef.ready) {
+						clearInterval(intervalID);
+						viewRef.renderAll();
+					}
+				}, 500);	
+			}
+			
+			//After all the results are loaded, query for our facet counts in the background
+			this.getAutoCompletes();
+		},
+		
+		renderAll: function(){
 			// do this first to indicate coming results
 			this.updateStats();
-			
-			//Clear the results list before we start adding new rows
-			this.$results.html('');
 			
 			//Remove all the existing tiles on the map
 			this.removeTiles();
 			this.removeMarkers();
-			
-			//If there are no results, display so
-			var numFound = this.searchResults.models.length;
-			if (numFound == 0){
-				this.$results.html('<p id="no-results-found">No results found.</p>');
-			}
-			
+	
 			//Remove the loading class and styling
 			this.$results.removeClass('loading');
 			
-			//After the map is done loading, then load the rest of the results into the list
-			var viewRef = this;
-			var intervalId = setInterval(function() {
-				if (viewRef.ready) {
-					clearInterval(intervalId);
-										
-					//--First map all the results--
-					if(gmaps){
-						//Draw all the tiles on the map to represent the datasets
-						viewRef.drawTiles();	
-						
-						//Remove the loading styles from the map
-						$("#map-container").removeClass("loading");
-					}
-					
-					//--- Add all the results to the list ---
-					for (i = 0; i < numFound; i++) {
-						var element = viewRef.searchResults.models[i];
-						if(typeof element !== "undefined") viewRef.addOne(element);
-					};
-					
-					// Initialize any tooltips within the result item
-					$(".tooltip-this").tooltip();
-					$(".popover-this").popover();
-
-				}
-				
-			}, 500);
+			//If there are no results, display so
+			var numFound = this.searchResults.length;
+			if (numFound == 0){
+				this.$results.html('<p id="no-results-found">No results found.</p>');
+				return;
+			}
 			
-			//After all the results are loaded, query for our facet counts in the background
-			this.getAutoCompletes();
+			//Clear the results list before we start adding new rows
+			this.$results.html('');
+			
+			//--First map all the results--
+			if(gmaps){
+				//Draw all the tiles on the map to represent the datasets
+				this.drawTiles();	
+				
+				//Remove the loading styles from the map
+				$("#map-container").removeClass("loading");
+			}
+			
+			//--- Add all the results to the list ---
+			for (i = 0; i < this.searchResults.length; i++) {
+				var element = this.searchResults.models[i];
+				if(typeof element !== "undefined") this.addOne(element);
+			};
+			
+			// Initialize any tooltips within the result item
+			$(".tooltip-this").tooltip();
+			$(".popover-this").popover();
+			
 			//Set the autoheight
 			this.setAutoHeight();
 		},
