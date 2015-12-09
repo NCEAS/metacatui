@@ -934,10 +934,11 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				copyButton = $(document.createElement("a")).addClass("btn btn-primary copy").text("Copy").attr("data-clipboard-text", token),
 				successIcon = $(document.createElement("i")).addClass("icon icon-ok"),
 		  		copySuccess = $(document.createElement("div")).addClass("notification success copy-success hidden").append(successIcon, " Copied!"),
-		  		expirationMsg = "<strong>Note:</strong> Your identification code expires on " + expires.toLocaleDateString() + " at " + expires.toLocaleTimeString();
+		  		expirationMsg = "<strong>Note:</strong> Your identification code expires on " + expires.toLocaleDateString() + " at " + expires.toLocaleTimeString(),
+		  		usernameMsg = "<div class='footnote'>Your user identity: " + this.model.get("username") + "</div>";
 						
 			var	successMessage = $.parseHTML(this.alertTemplate({
-					msg: 'Copy your identification code: <br/> ' + expirationMsg,
+					msg: 'Copy your identification code: <br/> ' + expirationMsg + usernameMsg,
 					classes: "alert-success",
 					containerClasses: "well"
 				}));

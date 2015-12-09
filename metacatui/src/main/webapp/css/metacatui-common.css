@@ -11,6 +11,10 @@
 .footnote{
 	font-size: .7em;
 }
+.alert .footnote{
+	font-size: .9em;
+	margin-top: 10px;
+}
 .badge{
 	margin-left: 10px;
 	margin-right: 10px;
