@@ -100,11 +100,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			if (this.header != null) {
 				this.header.set({"start" : this.start});
 			}
-			this.fetch({
-				data: {start: this.start}, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
-				reset: true});
+			
+			var fetchOptions = this.createFetchOptions();			
+			this.fetch(fetchOptions);
 		},
 		
 		prevpage: function() {
@@ -116,11 +114,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				this.header.set({"start" : this.start});
 			}
 
-			this.fetch({
-				data: {start: this.start}, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
-				reset: true});
+			var fetchOptions = this.createFetchOptions();			
+			this.fetch(fetchOptions);
 		},
 		
 		toPage: function(page) {
@@ -133,12 +128,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				this.header.set({"start" : this.start});
 			}
 							
-			//Get the results!
-			this.fetch({
-				data: {start: this.start}, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
-				reset: true});
+			var fetchOptions = this.createFetchOptions();			
+			this.fetch(fetchOptions);
 		},
 		
 		setrows: function(numrows) {
@@ -178,8 +169,29 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			this.stats = fields;
 		},
 		
+		createFetchOptions: function(){
+			var options = {
+				start : this.start,
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				reset: true}
+			
+			if(appUserModel.get("token")){
+				options.xhrFields = {
+					withCredentials: true
+				}
+				options.headers = {
+			        "Authorization": "Bearer " + appUserModel.get("token")
+			    }
+			}
+			
+			return options;
+		},
+		
 		//Get info about each model in this collection from the Logs index
 		getLogs: function(){
+			if(!appModel.get("d1LogServiceUrl") || (typeof appModel.get("d1LogServiceUrl") == "undefined")) return;
+
 			var collection = this;
 			
 			//Get the read events
@@ -199,7 +211,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 					
 					if(!pidCounts || !pidCounts.length){
 						collection.invoke("set", {reads: 0});
-						collection.invoke("trigger", "change:reads");
 						return;
 					}
 					
@@ -208,9 +219,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 						if(!doc) break;
 						
 						doc.set("reads", pidCounts[i+1]);
-					}
-					
-					collection.invoke("trigger", "change:reads");
+					}					
 				}
 			});
 		}

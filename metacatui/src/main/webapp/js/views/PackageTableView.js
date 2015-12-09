@@ -53,6 +53,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					i = routes.length;
 				}
 			}
+			
+			this.listenTo(this.model, "changeAll", this.render);
 		},
 		
 		/*
@@ -140,7 +142,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					className: "btn btn-primary "
 				});	
 			}
-			this.$el.append(this.template({
+			this.$el.html(this.template({
 				downloadButton : downloadButtonHTML,
 				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
@@ -151,7 +153,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Add the table body and footer
 			this.$("thead").after(tbody);
 			if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
-			
+						
 			return this;
 		},
 		
@@ -247,7 +249,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			$(tr).append(sizeCell);
 	
 			//The number of reads/downloads cell
-			var reads = memberModel.get("read_count_i");
+			var reads = memberModel.get("read_count_i") || memberModel.get("reads");
 			var readsCell = $(document.createElement("td")).addClass("downloads");		
 			this.readsEnabled = false;
 			$(tr).append(readsCell);

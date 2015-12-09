@@ -25,13 +25,10 @@
 		print('<a class="icons provenance active stop-route">');
 		print('<i class="icon icon-code-fork active stop-route"></i>');
 	}
-	else{
-		print('<a class="icons provenance inactive stop-route">');
-		print('<i class="icon icon-code-fork inactive stop-route"></i>');
-	} %>
+	%>
 	</a> 
     <div class="stats icons stop-route">
-		<% if (typeof reads !== "undefined"){ 
+		<% if (reads){ 
 			var readableCount = appView.commaSeparateNumber(reads); %>
 			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><span class="count-container"><%=readableCount%></span> <i class="icon icon-eye-open views stop-route"></i></span>
 		<% }

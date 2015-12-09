@@ -234,6 +234,8 @@ define(['jquery',
 			// listen to the appModel for the search trigger			
 			this.listenTo(appModel, 'search', this.getResults);
 			
+			this.listenTo(appUserModel, "change:loggedIn", this.getResults);
+			
 			// and go to a certain page if we have it
 			this.getResults();	
 			

@@ -96,7 +96,7 @@ define(['jquery', 'underscore', 'backbone'],
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
 				
-				if(this.get("useJsonp"))
+				if(this.get("useJsonp") && (typeof this.get("d1LogServiceUrl") != "undefined"))
 					this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
 
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");

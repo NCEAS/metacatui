@@ -151,7 +151,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getInfo: function(){			
 			var model = this;
 			
-			var fields = "id,seriesId,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,size" 
+			var fields = "id,seriesId,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,size,read_count_i" 
 				
 			var query = "q=";
 			//Do not search for seriesId when it is not configured in this model/app
@@ -235,6 +235,8 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Returns true if this SolrResult has a provenance trace (i.e. has either sources or derivations)
 		 */
 		hasProvTrace: function(){
+			if(!appModel.get("prov")) return false;
+			
 			if(this.get("formatType") == "METADATA"){
 				if(this.get("prov_hasSources") || this.get("prov_hasDerivations"))
 					return true;

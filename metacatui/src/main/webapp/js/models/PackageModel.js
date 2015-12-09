@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
-	function($, _, Backbone, SolrResult) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSearch'], 				
+	function($, _, Backbone, SolrResult, LogsSearch) {
 	'use strict';
 
 	// Package Model 
@@ -40,6 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		type: "Package",
 		
 		initialize: function(options){
+			this.on("complete", this.getLogInfo);
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */
@@ -52,7 +53,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//Get the id of the resource map for this member
 			var provFlList = appSearchModel.getProvFlList() + "prov_instanceOfClass,";
-			var query = 'fl=resourceMap,read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,' + provFlList +
+			var query = 'fl=resourceMap,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
 						'&wt=json' +
@@ -219,6 +220,49 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					else
 						entityName = null;
 	
+				}
+			});
+		},
+		
+		getLogInfo: function(){
+			if(!appModel.get("d1LogServiceUrl") || (typeof appModel.get("d1LogServiceUrl") == "undefined")) return;
+			
+			var model = this;
+			
+			var memberIds = _.map(this.get("members"), function(m){
+				return  m.get("id");
+			});
+			//Get the read events
+			var logsSearch = new LogsSearch();
+			logsSearch.set({
+				pid: memberIds, 
+				event: "read",
+				facets: "pid"
+			});
+			
+			var url = appModel.get("d1LogServiceUrl") + "q=" + logsSearch.getQuery() + logsSearch.getFacetQuery();
+			$.ajax({
+				url: url + "&wt=json&rows=0",
+				jsonp: "json.wrf",
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr){
+					var pidCounts = data.facet_counts.facet_fields.pid;
+					
+					if(!pidCounts || !pidCounts.length){
+						model.get("members").invoke("set", {reads: 0});
+						model.get("members").invoke("trigger", "change:reads");
+						return;
+					}
+					
+					for(var i=0; i < pidCounts.length; i+=2){
+						var doc = _.findWhere(model.get("members"), { id: pidCounts[i] });
+						if(!doc) break;
+						
+						doc.set("reads", pidCounts[i+1]);
+					}	
+					
+					//Trigger the change all event to send notice that all members have changed somehow
+					model.trigger("changeAll");
 				}
 			});
 		},
