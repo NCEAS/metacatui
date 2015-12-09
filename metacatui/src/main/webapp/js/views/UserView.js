@@ -395,6 +395,15 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				this.$(".show-orcid").hide();
 		},
 		
+		// Creates an HTML element to display in front of the user identity/subject. 
+		// Only used for the ORCID logo right now
+		createIdPrefix: function(){
+			if(this.model.get("orcid") || this.model.isOrcid())
+				return $(document.createElement("img")).attr("src", "./img/orcid_64x64.png").addClass("orcid-logo");
+			else
+				return "";
+		},
+		
 		/*
 		 * Insert the first year of contribution for this user
 		 */
@@ -841,9 +850,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				listItem.prepend(remove.append(removeIcon));
 			}
 
-			if(user.isOrcid()){
-				var orcidLogo = $(document.createElement("img")).attr("src", "./img/orcid_64x64.png").addClass("orcid-logo");				
-				details.prepend(orcidLogo, " ORCiD: ");
+			if(user.isOrcid()){			
+				details.prepend(this.createIdPrefix(), " ORCID: ");
 			}
 			else
 				details.prepend(" Username: ");
@@ -935,7 +943,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				successIcon = $(document.createElement("i")).addClass("icon icon-ok"),
 		  		copySuccess = $(document.createElement("div")).addClass("notification success copy-success hidden").append(successIcon, " Copied!"),
 		  		expirationMsg = "<strong>Note:</strong> Your identification code expires on " + expires.toLocaleDateString() + " at " + expires.toLocaleTimeString(),
-		  		usernameMsg = "<div class='footnote'>Your user identity: " + this.model.get("username") + "</div>";
+		  		usernameMsg = "<div class='footnote'>Your user identity: " + this.createIdPrefix()[0].outerHTML + this.model.get("username") + "</div>";
 						
 			var	successMessage = $.parseHTML(this.alertTemplate({
 					msg: 'Copy your identification code: <br/> ' + expirationMsg + usernameMsg,

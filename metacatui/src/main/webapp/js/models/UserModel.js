@@ -184,6 +184,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Only proceed if the accounts API service is being utilized and there is a username
 			if(!this.get("username")) return;
 				
+				/*
 			//Check if this is an ORCiD
 			if(this.isOrcid()){
 				//Get the person's info from their ORCiD bio
@@ -197,7 +198,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					}
 				});
 				return;
-			}
+			}*/
 			
 			//Otherwise, check the accounts service
 			if(!appModel.get("accountsUrl")){
@@ -307,7 +308,14 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			//Have we already verified this?
 			if((typeof orcid == "undefined") && (username == this.get("orcid"))) return true;
+			
+			//Checks for ORCIDs using the orcid base URL as a prefix
+			if(username.indexOf("http://orcid.org/") == 0){
+				this.set("orcid", username);
+				return true;
+			}
 
+			//If the ORCID base url is not present, we will check if this is a 19-digit ORCID ID
 			//A simple and fast check first
 			//ORCiDs are 16 digits and 3 dashes - 19 characters
 			if(username.length != 19) return false;
@@ -428,9 +436,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 
 				model.getTokenExpiration(payload);
 				
-				if(username && model.isOrcid())
-					model.set("checked", true);
-				else if(username)
+				if(username)
 					model.getInfo();
 				else
 					model.set("checked", true);
