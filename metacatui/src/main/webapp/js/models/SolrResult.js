@@ -31,6 +31,7 @@ define(['jquery', 'underscore', 'backbone'],
 			read_count_i: 0,
 			reads: 0,
 			isPublic: null,
+			notFound: false,
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
@@ -189,7 +190,7 @@ define(['jquery', 'underscore', 'backbone'],
 							model.set(docs[0]); //Just default to the first doc found
 					}
 					else
-						model.trigger("404");
+						model.notFound();
 				},
 				error: function(xhr, textStatus, errorThrown){
 					model.trigger("getInfoError");
@@ -197,6 +198,11 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 						
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+		},
+		
+		notFound: function(){
+			this.set({"notFound": true}, {silent: true});
+			this.trigger("404");
 		},
 		
 		/**** Provenance-related functions ****/

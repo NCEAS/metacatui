@@ -56,14 +56,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var query = 'fl=resourceMap,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
-						'&wt=json' +
-						"&json.wrf=?";
+						'&wt=json';
 						
 
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get("queryServiceUrl") + query,
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, textStatus, xhr) {
 					//There should be only one response since we searched by id
 					if(typeof data.response.docs !== "undefined"){
@@ -89,7 +86,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 						}
 					}
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		/* Get all the members of a resource map/package based on the id attribute of this model. 
@@ -109,7 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 						'&wt=json' +
 						"&json.wrf=?";
 			
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get("queryServiceUrl") + query, 
 				jsonp: "json.wrf",
 				dataType: "jsonp",
@@ -142,7 +141,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 					else
 						model.flagComplete();
 				}
-			});				
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			
 			return this;
 		},
@@ -204,24 +205,28 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			//Load the rendered metadata from the view service
 			var viewService = appModel.get("viewServiceUrl") + metadata.get("id");
-			$.get(viewService, function(data, response, xhr){
-				if(solrResult.get("formatType") == "METADATA") 
-					entityName = solrResult.get("title");
-				else{
-					var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
-					if(container && container.length > 0){
-						var entityName = $(container).find(".entityName").attr("data-entity-name");
-						if((typeof entityName === "undefined") || (!entityName)){
-							entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
-							if((typeof entityName === "undefined") || (!entityName)) 
+			var requestSettings = {
+					url: viewService, 
+					success: function(data, response, xhr){
+						if(solrResult.get("formatType") == "METADATA") 
+							entityName = solrResult.get("title");
+						else{
+							var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
+							if(container && container.length > 0){
+								var entityName = $(container).find(".entityName").attr("data-entity-name");
+								if((typeof entityName === "undefined") || (!entityName)){
+									entityName = $(container).find(".control-label:contains('Entity Name') + .controls-well").text();
+									if((typeof entityName === "undefined") || (!entityName)) 
+										entityName = null;
+								}
+							}
+							else
 								entityName = null;
+			
 						}
 					}
-					else
-						entityName = null;
-	
-				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		getLogInfo: function(){
@@ -241,7 +246,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			});
 			
 			var url = appModel.get("d1LogServiceUrl") + "q=" + logsSearch.getQuery() + logsSearch.getFacetQuery();
-			$.ajax({
+			var requestSettings = {
 				url: url + "&wt=json&rows=0",
 				jsonp: "json.wrf",
 				dataType: "jsonp",
@@ -249,8 +254,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 					var pidCounts = data.facet_counts.facet_fields.pid;
 					
 					if(!pidCounts || !pidCounts.length){
-						model.get("members").invoke("set", {reads: 0});
-						model.get("members").invoke("trigger", "change:reads");
+						_.invoke(model.get("members"), "set", {reads: 0});
+						_.invoke(model.get("members"), "trigger", "change:reads");
 						return;
 					}
 					
@@ -264,7 +269,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 					//Trigger the change all event to send notice that all members have changed somehow
 					model.trigger("changeAll");
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		/*
@@ -335,7 +341,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 						"&rows=100&wt=json&json.wrf=?";
 			
 			//Send the query to the query service
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get("queryServiceUrl") + query, 
 				jsonp: "json.wrf",
 				dataType: "jsonp",
@@ -375,8 +381,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 					else
 						model.sortProvTrace(data.response.docs);
 				
+				}
 			}
-		});
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			
 			return this;
 		},

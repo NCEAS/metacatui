@@ -44,7 +44,7 @@ define(['jquery',
 		pid: null,
 		seriesId: null,
 		
-		model: null,
+		model: new SolrResult(),
 		packageModels: new Array(),
 
 		el: '#Content',
@@ -89,10 +89,12 @@ define(['jquery',
 
 			appModel.set('headerType', 'default');
 			this.showLoading("Loading...");
-			
+						
 			//Reset a new class map - for matching ids->class names in prov charts
 			this.classMap = new Array();
 			this.subviews = new Array();
+			this.model.set(this.model.defaults);
+			this.packageModels = new Array();
 			
 			// get the pid to render
 			if(!this.pid)
@@ -293,7 +295,9 @@ define(['jquery',
 			var viewRef = this;
 			
 			//Get the package ID 
-			var model = new SolrResult({ id: pid, seriesId: sid });
+			this.model.set({ id: pid, seriesId: sid });
+			var model = this.model;
+			
 			this.listenToOnce(model, "change", function(model){
 					
 				if(model.get("formatType") == "METADATA"){
@@ -334,9 +338,11 @@ define(['jquery',
 		showNotFound: function(){
 			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
 			if(!appUserModel.get("checked")){
-				this.model.listenToOnce(appUserModel, "change:checked", this.showNotFound);
+				this.listenToOnce(appUserModel, "change:checked", this.showNotFound);
 				return;
 			}
+			
+			if(!this.model.get("notFound")) return;
 			
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 					  "<ul class='indent'>" +
@@ -1522,7 +1528,7 @@ define(['jquery',
 			});
 			
 			this.packageModels =  new Array();
-			this.model = null;
+			this.model.set(this.model.defaults);
 			this.pid = null;
 			this.seriesId = null;
 			this.$detached = null;

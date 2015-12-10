@@ -176,11 +176,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				start : this.start,
 				reset: true
 			}
-			
-			options = _.extend(options, appUserModel.createAjaxSettings());
-			
 						
-			return options;
+			return _.extend(options, appUserModel.createAjaxSettings());
 		},
 		
 		//Get info about each model in this collection from the Logs index
@@ -197,7 +194,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			});
 			
 			var url = appModel.get("d1LogServiceUrl") + "q=" + this.logsSearch.getQuery() + this.logsSearch.getFacetQuery();
-			$.ajax({
+			var requestSettings = {
 				url: url + "&wt=json&rows=0",
 				success: function(data, textStatus, xhr){
 					var pidCounts = data.facet_counts.facet_fields.pid;
@@ -214,7 +211,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 						doc.set("reads", pidCounts[i+1]);
 					}					
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		}
 	});
 
