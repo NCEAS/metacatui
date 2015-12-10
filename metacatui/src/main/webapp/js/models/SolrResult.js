@@ -168,11 +168,9 @@ define(['jquery', 'underscore', 'backbone'],
 			else if(this.get("seriesId") && !this.get("id"))
 				query += 'seriesId:"' + this.get("id") + '" -obsoletedBy:*';
 				
-			$.ajax({
-				url: appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json&json.wrf=?',
+			var requestSettings = {
+				url: appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json',
 				type: "GET",
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, response, xhr){
 					var docs = data.response.docs;
 
@@ -196,7 +194,9 @@ define(['jquery', 'underscore', 'backbone'],
 				error: function(xhr, textStatus, errorThrown){
 					model.trigger("getInfoError");
 				}
-			});
+			}
+						
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		/**** Provenance-related functions ****/

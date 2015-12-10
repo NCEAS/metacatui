@@ -959,9 +959,6 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	overflow-y: scroll;
 	-webkit-transform: translate3d(0,0,0); 
 }
-.fancybox-inline .scroll-y{
-	height: 250px;
-}
 .inline input,
 .inline label{
 	float: left;

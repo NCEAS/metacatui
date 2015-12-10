@@ -670,6 +670,18 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			this.trigger("change:identitiesUsernames");
 		},
 		
+		createAjaxSettings: function(){
+			if(!this.get("token")) return {}
+			
+			return { xhrFields: {
+					withCredentials: true
+					},
+				  headers: {
+			        "Authorization": "Bearer " + this.get("token")
+				  }
+				}
+		},
+		
 		reset: function(){
 			this.set(_.clone(this.defaults()));
 		}

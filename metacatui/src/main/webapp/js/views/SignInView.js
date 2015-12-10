@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 					signInUrlOrcid:  signInUrlOrcid,
 					signInUrlLdap:  signInUrlLdap,
 					currentUrl: window.location.href,
-					loginOptions: this.loginOptionsTemplate().trim()
+					loginOptions: this.loginOptionsTemplate({ signInUrl: signInUrl }).trim()
 				}));
 			}
 			

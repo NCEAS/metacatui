@@ -66,7 +66,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 						   "&start=" + this.start + 
 						   "&facet=true&facet.sort=index" + facetFields + 
 						   stats +		
-						   "&wt=json&json.wrf=?";
+						   "&wt=json";
 									
 			return endpoint;
 		},
@@ -142,7 +142,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				this.start = 0;
 				
 			}
-			this.fetch({data: {start: this.start}, reset: true});
+			var fetchOptions = this.createFetchOptions();			
+			this.fetch(fetchOptions);
+			//this.fetch({data: {start: this.start}, reset: true});
 		},
 		
 		setQuery: function(newquery) {
@@ -172,19 +174,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		createFetchOptions: function(){
 			var options = {
 				start : this.start,
-				jsonp: "json.wrf",
-				dataType: "jsonp",
-				reset: true}
-			
-			if(appUserModel.get("token")){
-				options.xhrFields = {
-					withCredentials: true
-				}
-				options.headers = {
-			        "Authorization": "Bearer " + appUserModel.get("token")
-			    }
+				reset: true
 			}
 			
+			options = _.extend(options, appUserModel.createAjaxSettings());
+			
+						
 			return options;
 		},
 		
@@ -204,8 +199,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			var url = appModel.get("d1LogServiceUrl") + "q=" + this.logsSearch.getQuery() + this.logsSearch.getFacetQuery();
 			$.ajax({
 				url: url + "&wt=json&rows=0",
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, textStatus, xhr){
 					var pidCounts = data.facet_counts.facet_fields.pid;
 					

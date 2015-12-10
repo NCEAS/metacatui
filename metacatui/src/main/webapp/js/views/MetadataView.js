@@ -97,6 +97,8 @@ define(['jquery',
 			// get the pid to render
 			if(!this.pid)
 				this.pid = appModel.get("pid");
+			
+			this.listenTo(appUserModel, "change:loggedIn", this.render);
 						
 			this.getModel();	
 						
@@ -104,7 +106,8 @@ define(['jquery',
 		},
 		
 		renderMetadata: function(){
-			var pid = this.pid;
+			var pid = this.pid,
+				view = this;
 			
 			// Check for a view service in this appModel
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) 
@@ -112,8 +115,11 @@ define(['jquery',
 					
 			if(endpoint && (typeof endpoint !== "undefined")){
 				var viewRef = this;
-				this.$el.load(endpoint,
-						function(response, status, xhr) {
+				var loadSettings = {
+						url: endpoint,
+						success: function(response, status, xhr) {
+							view.$el.html(response);
+						
 							//Our fallback is to show the metadata details from the Solr index
 							if (status=="error") 
 								viewRef.renderMetadataFromIndex();
@@ -155,7 +161,10 @@ define(['jquery',
 								
 								viewRef.setUpAnnotator();
 							}
-						});
+						}
+				}
+				
+				$.ajax(_.extend(loadSettings, appUserModel.createAjaxSettings()));
 			}
 			else this.renderMetadataFromIndex();	
 		},
@@ -318,17 +327,25 @@ define(['jquery',
 				viewRef.getPackageDetails(model.get("resourceMap"));
 				
 			});
-			this.listenToOnce(model, "404", function(model){
-				var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
-						  "<ul class='indent'>" +
-							  "<li>The content was removed because it was invalid or inappropriate.</li>" +
-							  "<li>You do not have permission to view this content.</li>" +
-							  "<li>The ID '" + pid  + "' does not exist.</li>" +
-						  "</ul>";
-				viewRef.hideLoading();
-				viewRef.showError(msg);
-			});
+			this.listenToOnce(model, "404", this.showNotFound);
 			model.getInfo();			
+		},
+		
+		showNotFound: function(){
+			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
+			if(!appUserModel.get("checked")){
+				this.model.listenToOnce(appUserModel, "change:checked", this.showNotFound);
+				return;
+			}
+			
+			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
+					  "<ul class='indent'>" +
+					  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
+						  "<li>You do not have permission to view this content.</li>" +
+						  "<li>The content was removed because it was invalid or inappropriate.</li>" +
+					  "</ul>";
+			this.hideLoading();
+			this.showError(msg);
 		},
 		
 		getPackageDetails: function(packageIDs){			

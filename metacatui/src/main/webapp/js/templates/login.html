@@ -16,13 +16,13 @@
 				else { %>
 					<div class="span12">
 				<% } %>
+				<a class="btn update-sign-in-url" href="<%=signInUrl%>">Sign in with your University or Institution</a>
 				<div class="well scroll-y">
-					<a class="btn update-sign-in-url" href="<%=signInUrl%>">Sign in with your University or Institution using CILogon</a>
 					<!-- <img src="./img/google_signin.png" class="signin CILogonSignin" />  -->
 					<% if(loginOptions){ %>
 						<!-- <h3>Sign in with your University or Institution</h3> -->
 						<!-- <input type="text" name="search" placeholder="Search..." />-->
-							<h3>The 100+ Universities and Institutions supported by CILogon:</h3>
+							<h3>Some of the 100+ Universities and Institutions to choose from:</h3>
 							<div id="login-options"><%=loginOptions%></div>
 						<% } %>
 				</div>
