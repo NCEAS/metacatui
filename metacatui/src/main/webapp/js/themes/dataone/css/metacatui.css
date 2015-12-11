@@ -560,7 +560,10 @@ table th.btn-container .btn{
 	max-height: 83px;
 	float: left;
 }
-   
+.navbar .tb-megamenu-block p a {
+    color: inherit;
+    font-size: 1em;
+}
 /* Depending on the headerType, these classes apply */
 
 .navbar-inner > ul{
