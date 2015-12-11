@@ -986,22 +986,26 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		            ignoreIds.push(appUserModel.get("username").toLowerCase());
 		            
 		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
-					$.get(url, function(data, textStatus, xhr) {
-						_.each($(data).find("person"), function(person, i){
-							var item = {};
-							item.value = $(person).find("subject").text();
-							
-							//Don't display yourself in the autocomplete dropdown (prevents users from adding themselves as an equivalent identity or group member)
-							//Also don't display your equivalent identities in the autocomplete
-							if(_.contains(ignoreIds, item.value.toLowerCase())) return;								
+					var requestSettings = {
+						url: url, 
+						success: function(data, textStatus, xhr) {
+							_.each($(data).find("person"), function(person, i){
+								var item = {};
+								item.value = $(person).find("subject").text();
 								
-							item.label = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
-							list.push(item);
-						});
-						
-			            response(list);
-
-					});
+								//Don't display yourself in the autocomplete dropdown (prevents users from adding themselves as an equivalent identity or group member)
+								//Also don't display your equivalent identities in the autocomplete
+								if(_.contains(ignoreIds, item.value.toLowerCase())) return;								
+									
+								item.label = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
+								list.push(item);
+							});
+							
+				            response(list);
+	
+						}
+					}
+					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 					
 					//Send an ORCiD search when the search string gets long enough
 					if(request.term.length > 3)

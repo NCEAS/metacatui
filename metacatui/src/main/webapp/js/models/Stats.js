@@ -107,16 +107,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			var otherParams = "&rows=1" +
 							  "&fl=beginDate" +
 							  "&sort=beginDate+asc" +
-							  "&wt=json&json.wrf=?";	
+							  "&wt=json";	
 			
 			//Save this
 			this.getFirstBeginDateQuery = query; 
 			
 			//Query for the earliest beginDate
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				type: "GET",
+				dataType: "json",
 				success: function(data, textStatus, xhr) {
 					
 					//Is this the latest query?
@@ -130,10 +130,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						var endDateQuery = query.replace(/beginDate/g, "endDate");
 						
 						//Find the earliest endDate if there are no beginDates
-						$.ajax({
+						var requestSettings = {
 							url: appModel.get('queryServiceUrl') + "q=" + endDateQuery + otherParams, 
-							jsonp: "json.wrf",
-							dataType: "jsonp",
+							type: "GET",
 							success: function(endDateData, textStatus, xhr) {
 								//If not endDates or beginDates are found, there is no temporal data in the index, so save falsey values
 								if(!endDateData.response.numFound){
@@ -144,7 +143,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 									model.set('firstBeginDate', new Date.fromISO(endDateData.response.docs[0].endDate));
 								}
 							}
-						});
+						}
+						$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 					}
 					else{
 						// Save the earliest beginDate and total found in our model
@@ -155,7 +155,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						model.trigger("change:totalBeginDates");
 					}
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		getLastEndDate: function(){
@@ -169,17 +171,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			var otherParams = "&rows=1" +
 							  "&fl=endDate" +
 							  "&sort=endDate+desc" +
-							  "&wt=json" +
-							  "&json.wrf=?";
+							  "&wt=json";
 			
 			//Save this query so we know what the most recent one is
 			this.getLastEndDateQuery = query;
 			
 			//Query for the latest endDate
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				type: "GET",
+				dataType: "json",
 				success: function(data, textStatus, xhr) {
 					if(typeof data == "string") data = JSON.parse(data);
 					
@@ -200,7 +201,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						model.trigger("change:lastEndDate");
 					}	
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		/**
@@ -218,13 +221,13 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 							  "&group.field=formatType" +
 							  "&group.limit=0" +
 							  "&sort=formatType%20desc" +			
-							  "&wt=json&json.wrf=?";
+							  "&wt=json";
 
 			//Run the query
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				type: "GET",
+				dataType: "json",
 				success: function(data, textStatus, xhr) {
 
 					var formats = data.grouped.formatType.groups;
@@ -257,7 +260,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						model.set('dataCount', formats[1].doclist.numFound);
 					}	
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		getDataFormatIDs: function(){
@@ -271,18 +276,20 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			"&facet.limit=-1" +
 			"&facet.mincount=1" +
 			"&rows=0" +
-			"&wt=json&json.wrf=?";
+			"&wt=json";
 			
 			if(this.get('dataCount') > 0){					
 				//Now get facet counts of the data format ID's 
-				$.ajax({
+				var requestSettings = {
 					url: appModel.get('queryServiceUrl') + query, 
-					jsonp: "json.wrf",
-					dataType: "jsonp",
+					type: "GET",
+					dataType: "json",
 					success: function(data, textStatus, xhr) {
 						model.set('dataFormatIDs', data.facet_counts.facet_fields.formatId);
 					}
-				});
+				}
+				
+				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			}
 		},
 		
@@ -297,19 +304,21 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						"&facet.limit=-1" +
 						"&facet.mincount=1" +
 						"&rows=0" +
-						"&wt=json&json.wrf=?";
+						"&wt=json";
 			
 			if(this.get('metadataCount') > 0){
 				
 				//Now get facet counts of the metadata format ID's 
-				$.ajax({
+				var requestSettings = {
 					url: appModel.get('queryServiceUrl') + query, 
-					jsonp: "json.wrf",
-					dataType: "jsonp",
+					type: "GET",
+					dataType: "json",
 					success: function(data, textStatus, xhr) {
 						model.set('metadataFormatIDs', data.facet_counts.facet_fields.formatId);
 					}
-				});
+				}
+				
+				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 			}
 		},
 		
@@ -329,13 +338,13 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 								"&fl=dateUploaded" +
 								"&rows=1" +
 								"&sort=dateUploaded+asc" +
-								"&wt=json&json.wrf=?";
+								"&wt=json";
 			
 			//Run the query
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				type: "GET",
+				dataType: "json",
 				success: function(data, textStatus, xhr) {
 
 					if(!data.response.numFound){
@@ -367,31 +376,35 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 										  "&facet.range.start=" + model.get('firstUpload') +
 										  "&facet.range.end=NOW" +
 										  "&facet.range.gap=%2B1MONTH" +
-										  "&wt=json&json.wrf=?";
+										  "&wt=json";
 				
 							//Run the query
-							$.ajax({
+							var requestSettings = {
 								url: appModel.get('queryServiceUrl') + metadataQuery+facets, 
-								jsonp: "json.wrf",
-								dataType: "jsonp",
+								type: "GET",
 								success: function(data, textStatus, xhr) {
 									model.set("metadataUploads", data.response.numFound);
 									model.set("metadataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);		
 									
-									$.ajax({
+									var requestSettings = {
 										url: appModel.get('queryServiceUrl') + dataQuery+facets, 
-										jsonp: "json.wrf",
-										dataType: "jsonp",
+										type: 'GET',
 										success: function(data, textStatus, xhr) {
 											model.set("dataUploads", data.response.numFound);
 											model.set("dataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);	
 										}
-									});
+									}
+									
+									$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 								}
-							});
+							}
+							
+							$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 						}
 				}
-			});	
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		/* getTemporalCoverage
@@ -462,12 +475,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			  "&facet.limit=30000" + //Put some reasonable limit here so we don't wait forever for this query
 			  "&facet.missing=true" + //We want to retrieve years with 0 results
 			  fullFacetQuery + 
-			  "&wt=json&json.wrf=?";
+			  "&wt=json";
 						
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, textStatus, xhr) {
 					model.set('temporalCoverage', data.facet_counts.facet_queries);
 					
@@ -495,7 +506,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 					statsModel.set('coverageYears',  coverageYears); */
 				}
 				
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		/*
@@ -516,10 +529,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				logSearch.set("username", this.get("searchModel").get("username"));
 			}
 			
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				type: "GET",
 				success: function(data, textStatus, xhr){
 					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
 					model.set("dataDownloads", data.response.numFound);	
@@ -527,7 +539,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 					
 					if(data.response.numFound == 0) model.trigger("change:dataDownloads");
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 
 		getMetadataDownloadDates: function(){
@@ -544,10 +558,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				logSearch.set("username", this.get("searchModel").get("username"));
 			}
 			
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				type: "GET",
 				success: function(data, textStatus, xhr){
 					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
 					
@@ -556,7 +569,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 					
 					if(data.response.numFound == 0) model.trigger("change:metadataDownloads");
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		sumDownloads: function(){

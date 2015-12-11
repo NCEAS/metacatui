@@ -105,13 +105,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var query = 'fl=resourceMap,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,' + provFlList +
 						'&rows=100' +
 						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
-						'&wt=json' +
-						"&json.wrf=?";
+						'&wt=json';
 			
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				url: appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 				
 					//Separate the resource maps from the data/metadata objects
@@ -248,8 +245,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var url = appModel.get("d1LogServiceUrl") + "q=" + logsSearch.getQuery() + logsSearch.getFacetQuery();
 			var requestSettings = {
 				url: url + "&wt=json&rows=0",
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, textStatus, xhr){
 					var pidCounts = data.facet_counts.facet_fields.pid;
 					
@@ -338,13 +333,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var query = "q=" + combinedQuery + 
 						"&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId,dateUploaded,rightsHolder,datasource,prov_instanceOfClass," + 
 						provFieldList + 
-						"&rows=100&wt=json&json.wrf=?";
+						"&rows=100&wt=json";
 			
 			//Send the query to the query service
 			var requestSettings = {
 				url: appModel.get("queryServiceUrl") + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, textStatus, xhr){	
 								
 					//Do any of our docs have multiple resource maps?
@@ -358,11 +351,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 							
 							var query = "q=+-obsoletedBy:*+" + appSearchModel.getGroupedQuery("id", allMapIDs, "OR") + 
 										"&fl=obsoletes,id" +
-										"&wt=json&json.wrf=?";
-							$.ajax({
+										"&wt=json";
+							var requestSettings = {
 								url: appModel.get("queryServiceUrl") + query, 
-								jsonp: "json.wrf",
-								dataType: "jsonp",
 								success: function(mapData, textStatus, xhr){	
 								
 									//Create a list of resource maps that are not obsoleted by any other resource map retrieved
@@ -373,7 +364,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 									
 									model.sortProvTrace(data.response.docs);
 								}
-							});	
+							}
+							$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 						}
 						else
 							model.sortProvTrace(data.response.docs);

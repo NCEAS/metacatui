@@ -95,11 +95,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
 			
-			$.ajax({
+			var requestSettings = {
 					type: "POST",
-					xhrFields: {
-						withCredentials: true
-					},
 					url: this.ldapwebUrl,
 					data: formData,
 					success: function(data, textStatus, jqXHR) {
@@ -111,7 +108,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 						//Show the content
 						viewRef.show();
 					}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			
 			return false;
 			

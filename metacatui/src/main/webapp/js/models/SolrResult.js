@@ -132,14 +132,9 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			var model = this;
 			
-			$.ajax({
+			var requestSettings = {
 				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=changePermission",
 				type: "GET",
-				//jsonp: "json.wrf",
-				//dataType: "jsonp",
-				xhrFields: {
-					withCredentials: true
-				},
 				success: function(data, textStatus, xhr) {
 					model.set("isAuthorized", true);
 					model.trigger("change:isAuthorized");
@@ -147,7 +142,8 @@ define(['jquery', 'underscore', 'backbone'],
 				error: function(xhr, textStatus, errorThrown) {
 					model.set("isAuthorized", false);
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		getInfo: function(){			

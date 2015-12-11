@@ -930,24 +930,30 @@ define(['jquery',
 				if(!metadataModel) return;
 				
 				if(metadataModel.get("id") != viewRef.pid){
-					$.get(appModel.get("viewServiceUrl") + metadataModel.get("id"), function(parsedMetadata, response, xhr){
-						_.each(packageModel.get("members"), function(solrResult, i){
-							var entityName = "";
-							
-							if(solrResult.get("formatType") == "METADATA")
-								entityName = solrResult.get("title");
-							
-							var container = viewRef.findEntityDetailsContainer(solrResult.get("id"), parsedMetadata);
-							if(container) entityName = viewRef.getEntityName(container);
-							
-							//Set the entity name
-							if(entityName){
-								solrResult.set("entityName", entityName);
-								//Update the UI with the new name
-								viewRef.$(".entity-name-placeholder[data-id='" + solrResult.get("id") + "']").text(entityName);
-							}
-						});
-					});
+					var requestSettings = { 
+						url: appModel.get("viewServiceUrl") + metadataModel.get("id"), 
+						success: function(parsedMetadata, response, xhr){
+							_.each(packageModel.get("members"), function(solrResult, i){
+								var entityName = "";
+								
+								if(solrResult.get("formatType") == "METADATA")
+									entityName = solrResult.get("title");
+								
+								var container = viewRef.findEntityDetailsContainer(solrResult.get("id"), parsedMetadata);
+								if(container) entityName = viewRef.getEntityName(container);
+								
+								//Set the entity name
+								if(entityName){
+									solrResult.set("entityName", entityName);
+									//Update the UI with the new name
+									viewRef.$(".entity-name-placeholder[data-id='" + solrResult.get("id") + "']").text(entityName);
+								}
+							});
+						}
+					}
+
+					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+
 					return;
 				}
 				
@@ -1346,7 +1352,7 @@ define(['jquery',
 				
 				var identifier = null;
 				var viewRef = this;
-				$.ajax({
+				var requestSettings = {
 						url: publishServiceUrl + pid,
 						type: "PUT",
 						xhrFields: {
@@ -1385,7 +1391,8 @@ define(['jquery',
 							viewRef.showError(msg);
 						}
 					}
-				);
+				
+				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 				
 			}
 		},
@@ -1405,17 +1412,22 @@ define(['jquery',
 			// look up the meta
 			var viewRef = this,
 				encodedPid = encodeURIComponent(pid);
-			$.get(metaServiceUrl + encodedPid, function(data, textStatus, xhr) {
-						
-				// the response should have a obsoletedBy element
-				var newestVersion = $(data).find("obsoletedBy").text();
-						
-				if (newestVersion) {						
-					viewRef.showLatestVersion(newestVersion);
-				} else {
-					viewRef.$el.prepend(viewRef.versionTemplate({pid: pid}));			
+			var requestSettings = {
+				url: metaServiceUrl + encodedPid, 
+				type: "GET",
+				success: function(data, textStatus, xhr) {
+							
+					// the response should have a obsoletedBy element
+					var newestVersion = $(data).find("obsoletedBy").text();
+							
+					if (newestVersion) {						
+						viewRef.showLatestVersion(newestVersion);
+					} else {
+						viewRef.$el.prepend(viewRef.versionTemplate({pid: pid}));			
+					}
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		showLoading: function(message) {

@@ -209,7 +209,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
-			var accountsRequestOptions = {
+			var requestSettings = {
 				type: "GET",
 				url: url, 
 				success: function(data, textStatus, xhr) {	
@@ -231,14 +231,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				}
 			}
 			
-			//Send a token with the request if there is one
-			if(this.get("token")){
-				accountsRequestOptions.xhrFields = { withCredentials: true }
-				accountsRequestOptions.headers = { "Authorization": "Bearer " + this.get("token") }
-			}
-			
 			//Send the request
-			$.ajax(accountsRequestOptions);
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		//Get the pending identity map requests, if the service is turned on
@@ -248,7 +242,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			var model = this;
 			
 			//Get the pending requests			
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get("pendingMapsUrl") + encodeURIComponent(this.get("username")),
 				success: function(data, textStatus, xhr){
 					//Reset the equivalent id list so we don't just add it to it with push()
@@ -278,7 +272,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						model.trigger("change:pending"); //Trigger the change event
 					}
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 				
 		getNameFromSubject: function(){
@@ -347,7 +343,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			var model = this;
 			
-			$.ajax({
+			var requestSettings = {
 				type: "POST",
 				url: appModel.get("signInUrlLdap") + window.location.href, 
 				data: formData, 
@@ -363,7 +359,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					if(error)
 						error(this);
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		// call Metacat or the DataONE CN to validate the session and tell us the user's name
@@ -375,11 +373,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			if (metacatUrl) {				
 				// ajax call to validate the session/get the user info
-				$.ajax({
+				var requestSettings = {
 					type: "POST",
-					xhrFields: {
-						withCredentials: true
-					},
 					url: metacatUrl,
 					data: { action: "validatesession" },
 					success: function(data, textStatus, xhr) {
@@ -405,7 +400,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						model.reset();
 						model.trigger("change:loggedIn");
 					}
-				});
+				}
+				
+				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 			} else {
 				// use the token method for checking authentication
 				this.checkToken();
@@ -443,15 +440,18 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			};
 			
 			// ajax call to get token
-			$.ajax({
+			var requestSettings = {
 				type: "GET",
+				dataType: "text",
 				xhrFields: {
 					withCredentials: true
 				},
 				url: tokenUrl,
 				data: {},
 				success: callback
-			});
+			}
+			
+			$.ajax(requestSettings);			
 		},
 		
 		getTokenExpiration: function(payload){
@@ -507,17 +507,11 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			var updateUrl = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 						
 			// ajax call to update
-			$.ajax({
+			var requestSettings = {
 				type: "PUT",
 				cache: false,
 			    contentType: false,
 			    processData: false,
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.get("token")
-			    },
 				url: updateUrl,
 				data: formData,
 				success: function(data, textStatus, xhr) {
@@ -530,7 +524,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					if(typeof onError != "undefined") 
 						onError(data);					
 				}
-			});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		confirmMapRequest: function(otherUsername, onSuccess, onError){
@@ -545,14 +541,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				var onError = function(){};
 			
 			// ajax call to confirm map
-			$.ajax({
+			var requestSettings = {
 				type: "PUT",
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.get("token")
-			    },
 				url: mapUrl,
 				success: function(data, textStatus, xhr) {
 					if(onSuccess)
@@ -565,7 +555,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					if(onError)
 						onError(xhr, textStatus, error);
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		denyMapRequest: function(otherUsername, onSuccess, onError){
@@ -575,14 +566,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				model = this;	
 		
 			// ajax call to reject map
-			$.ajax({
+			var requestSettings = {
 				type: "DELETE",
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.get("token")
-			    },
 				url: mapUrl,
 				success: function(data, textStatus, xhr) {
 					if(typeof onSuccess == "function")
@@ -594,7 +579,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					if(typeof onError == "function")
 						onError(xhr, textStatus, error);
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		addMap: function(otherUsername, onSuccess, onError){
@@ -604,7 +590,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				model = this;
 			
 			// ajax call to map
-			$.ajax({
+			var requestSettings = {
 				type: "POST",
 				xhrFields: {
 					withCredentials: true
@@ -626,7 +612,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					if(typeof onError == "function")
 						onError(xhr, textStatus, error);
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		removeMap: function(otherUsername, onSuccess, onError){
@@ -636,14 +623,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				model = this;
 						
 			// ajax call to remove mapping
-			$.ajax({
+			var requestSettings = {
 				type: "DELETE",
-				xhrFields: {
-					withCredentials: true
-				},
-				headers: {
-			        "Authorization": "Bearer " + this.get("token")
-			    },
 				url: mapUrl,
 				success: function(data, textStatus, xhr) {					
 					if(typeof onSuccess == "function")
@@ -655,7 +636,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					if(typeof onError == "function")
 						onError(xhr, textStatus, error);
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		pluckIdentityUsernames: function(){

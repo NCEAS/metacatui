@@ -1303,12 +1303,11 @@ define(['jquery',
 							 this.searchModel.getFacetQuery() +
 							 "&wt=json&json.wrf=?";
 
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + facetQuery,
-				jsonp: "jsonwrf",
-				dataType: "jsonp",
-				success: function(data, textStatus, xhr) {
-					//var data = JSON.parse(data.responseText);
+				type: "GET",
+				dataType: "json",
+				success: function(data, textStatus, xhr){
 					
 					var facetCounts = data.facet_counts.facet_fields,
 						facetLimit  = 999;
@@ -1580,7 +1579,8 @@ define(['jquery',
 						}
 					});
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		hideClearButton: function(){
@@ -2385,12 +2385,10 @@ define(['jquery',
 			var query = "q=" + searchModelClone.getQuery() + 
 						"&fl=id,title,geohash_9,abstract,geohash_" + geohashLevel +
 						"&rows=1000" +
-						"&wt=json&json.wrf=?";
+						"&wt=json";
 						
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, textStatus, xhr){
 					var docs = data.response.docs;
 					var uniqueGeohashes = viewRef.markerGeohashes;
@@ -2431,7 +2429,9 @@ define(['jquery',
 						});
 					});
 				}
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+
 		},
 		
 		/**
@@ -2459,12 +2459,10 @@ define(['jquery',
 			var query = "q=" + searchModelClone.getQuery() + 
 						"&fl=id,title,geohash_9," + geohashName +
 						"&rows=1000" +
-						"&wt=json&json.wrf=?";
+						"&wt=json";
 			
-			$.ajax({
+			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, textStatus, xhr){
 					//Make an infoWindow for each doc
 					var docs = data.response.docs;
@@ -2543,7 +2541,8 @@ define(['jquery',
 					
 					viewRef.infoWindows = infoWindows;
 				}		
-			});
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		/**
