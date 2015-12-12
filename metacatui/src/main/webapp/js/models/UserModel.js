@@ -458,14 +458,22 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			if(!payload && this.get("token")) var payload = this.parseToken(this.get("token"));
 			if(!payload) return;
 			
-			var lifeSpan = (payload && payload.ttl) ? payload.ttl : null,
-				expires = (payload && payload.issuedAt) ? new Date(payload.issuedAt) : null;
+			//The exp claim should be standard - it is in UTC seconds 
+			var expires = payload.exp? new Date(payload.exp * 1000) : null;
 				
-				if(expires && lifeSpan && (lifeSpan > 99999)) 
-					expires.setMilliseconds(lifeSpan);
-				else if(expires && lifeSpan)
-					expires.setSeconds(lifeSpan);
+			//Use the issuedAt and ttl as a backup (only used in d1 2.0.0 and 2.0.1)
+			if(!expires){
+				var issuedAt = payload.issuedAt? new Date(payload.issuedAt) : null,
+					lifeSpan = payload.ttl? payload.ttl : null;
 				
+				if(issuedAt && lifeSpan && (lifeSpan > 99999)) 
+					issuedAt.setMilliseconds(lifeSpan);
+				else if(issuedAt && lifeSpan)
+					issuedAt.setSeconds(lifeSpan);
+				
+				expires = issuedAt;
+			}
+							
 			this.set("expires", expires);
 		},
 		

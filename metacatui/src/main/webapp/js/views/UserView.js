@@ -942,7 +942,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				copyButton = $(document.createElement("a")).addClass("btn btn-primary copy").text("Copy").attr("data-clipboard-text", token),
 				successIcon = $(document.createElement("i")).addClass("icon icon-ok"),
 		  		copySuccess = $(document.createElement("div")).addClass("notification success copy-success hidden").append(successIcon, " Copied!"),
-		  		expirationMsg = "<strong>Note:</strong> Your authentication token expires on " + expires.toLocaleDateString() + " at " + expires.toLocaleTimeString(),
+		  		expirationMsg = expires? "<strong>Note:</strong> Your authentication token expires on " + expires.toLocaleDateString() + " at " + expires.toLocaleTimeString() : "",
 		  		usernameMsg = "<div class='footnote'>Your user identity: ",
 		  		usernamePrefix = this.createIdPrefix();
 			
