@@ -62,11 +62,11 @@ define(['jquery', 'underscore', 'backbone'],
 			//groupsUrl: null,
 			signInUrl: null,
 			signOutUrl: null,
-			//signInUrlOrcid: null,
+			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
 			//annotatorUrl: null,
-			//prov: true,
+		    //prov: true,
 			useSeriesId: true
 		},
 		

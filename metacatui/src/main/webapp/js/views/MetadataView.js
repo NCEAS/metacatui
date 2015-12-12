@@ -107,6 +107,58 @@ define(['jquery',
 			return this;
 		},
 		
+		/*
+		 * Retrieves information from the index about this object, given the id (passed from the URL)
+		 * When the object info is retrieved from the index, we set up models depending on the type of object this is
+		 */
+		getModel: function(pid){
+			//Get the pid and sid
+			if((typeof pid === "undefined") || !pid) var pid = this.pid;
+			if((typeof this.seriesId !== "undefined") && this.seriesId) var sid = this.seriesId;
+
+			var viewRef = this;
+			
+			//Get the package ID 
+			this.model.set({ id: pid, seriesId: sid });
+			var model = this.model;
+			
+			this.listenToOnce(model, "change", function(model){
+					
+				if(model.get("formatType") == "METADATA"){
+					viewRef.model = model;
+					viewRef.renderMetadata();
+				}
+				else if(model.get("formatType") == "DATA"){
+					if(model.get("isDocumentedBy")){
+						viewRef.pid = _.first(model.get("isDocumentedBy"));
+						viewRef.getModel(viewRef.pid);
+					}
+					else
+						viewRef.renderMetadataFromIndex();
+				}
+				else if(model.get("formatType") == "RESOURCE"){
+					var packageModel = new Package({ id: model.get("id") });
+					packageModel.on("complete", function(){
+						viewRef.model = packageModel.getMetadata();
+						viewRef.pid = viewRef.model.get("id");
+						//viewRef.packageModels.push(packageModel);
+						viewRef.renderMetadata();
+						
+						if(viewRef.model.get("resourceMap"))
+							viewRef.getPackageDetails(viewRef.model.get("resourceMap"));	
+					});
+					packageModel.getMembers();
+					return;
+				}
+				
+				//Get the package information
+				viewRef.getPackageDetails(model.get("resourceMap"));
+				
+			});
+			this.listenToOnce(model, "404", this.showNotFound);
+			model.getInfo();			
+		},
+		
 		renderMetadata: function(){
 			var pid = this.pid,
 				view = this;
@@ -163,6 +215,9 @@ define(['jquery',
 								
 								viewRef.setUpAnnotator();
 							}
+						},
+						error: function(xhr, textStatus, errorThrown){
+							view.renderMetadataFromIndex();
 						}
 				}
 				
@@ -188,7 +243,7 @@ define(['jquery',
 			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
 			
 			//Add the metadata HTML
-			this.$el.prepend(metadataFromIndex.render().el);
+			this.$el.html(metadataFromIndex.render().el);
 			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
@@ -281,58 +336,6 @@ define(['jquery',
 			}
 			
 			this.$el.prepend(breadcrumbs);
-		},
-		
-		/*
-		 * Retrieves information from the index about this object, given the id (passed from the URL)
-		 * When the object info is retrieved from the index, we set up models depending on the type of object this is
-		 */
-		getModel: function(pid){
-			//Get the pid and sid
-			if((typeof pid === "undefined") || !pid) var pid = this.pid;
-			if((typeof this.seriesId !== "undefined") && this.seriesId) var sid = this.seriesId;
-
-			var viewRef = this;
-			
-			//Get the package ID 
-			this.model.set({ id: pid, seriesId: sid });
-			var model = this.model;
-			
-			this.listenToOnce(model, "change", function(model){
-					
-				if(model.get("formatType") == "METADATA"){
-					viewRef.model = model;
-					viewRef.renderMetadata();
-				}
-				else if(model.get("formatType") == "DATA"){
-					if(model.get("isDocumentedBy")){
-						viewRef.pid = _.first(model.get("isDocumentedBy"));
-						viewRef.getModel(viewRef.pid);
-					}
-					else
-						viewRef.renderMetadataFromIndex();
-				}
-				else if(model.get("formatType") == "RESOURCE"){
-					var packageModel = new Package({ id: model.get("id") });
-					packageModel.on("complete", function(){
-						viewRef.model = packageModel.getMetadata();
-						viewRef.pid = viewRef.model.get("id");
-						//viewRef.packageModels.push(packageModel);
-						viewRef.renderMetadata();
-						
-						if(viewRef.model.get("resourceMap"))
-							viewRef.getPackageDetails(viewRef.model.get("resourceMap"));	
-					});
-					packageModel.getMembers();
-					return;
-				}
-				
-				//Get the package information
-				viewRef.getPackageDetails(model.get("resourceMap"));
-				
-			});
-			this.listenToOnce(model, "404", this.showNotFound);
-			model.getInfo();			
 		},
 		
 		showNotFound: function(){
