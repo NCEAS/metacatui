@@ -248,15 +248,79 @@
   
 /* FOOTER CSS
 -------------------------------------------------- */    
-    footer{
-    	font-size: .8em;
-    	line-height: 1em;
-    	padding: 10px;
-    	border-top: 3px solid #660033;
-    	margin-top: 0px;
-    }
-    
-    
+footer{
+	width: 100%;
+}
+.footer-container{
+	max-width: 1000px;
+	margin-left: auto;
+	margin-right: auto;
+}
+.footer-upper{
+	background-color: #666666;
+	font-size: 1em;
+	padding-top: 15px;
+	padding-bottom: 5px;
+}
+.footer-lower{
+	background-color: #333333;
+	color: white;
+	font-size: .7em;
+	line-height: 1.4em;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+.footer-upper a{
+	color: #FFF;
+	font-size: .9em;
+	font-weight: lighter;
+}
+.footer-upper .footer-right a{
+	margin-right: 20px;
+}
+.footer-upper .footer-right .icon{
+	vertical-align: text-bottom;
+}
+.footer-icons a{
+	height: 30px;
+	width: 30px;
+	margin-right: 1em;
+	display: inline-block;
+	background-image: url('../img/footer_icons.png');
+}
+#footer_vimeo{
+	background-position: -5px 35px;
+}   
+#footer_youtube{
+	background-position: -54px 35px;
+}
+#footer_linkedin{
+	background-position: -103px 35px;
+}
+#footer_twitter{
+	background-position: -151px 35px;
+}
+#footer_facebook{
+	background-position: -197px 35px;
+}
+#footer_rss{
+	background-position: -243px 35px;
+}
+#footer_slideshare{
+	background-position: -288px 35px;
+}
+#footer_gplus{
+	background-position: -334px 35px;
+}
+.footer-left{
+	float: left;
+}   
+.footer-right{
+	float: right;
+}
+.mapMode .footer-upper{
+	display: none;
+}
     
  /* BUTTONS CSS
 -------------------------------------------------- */   
@@ -441,7 +505,7 @@ table th.btn-container .btn{
 .navbar .nav > li a {
        color: #FFF;
 	text-shadow: none;
-	font-size: 1.2em;
+	font-size: 1em;
 	font-weight: normal;
    }
    .navbar .nav > li a:hover,
