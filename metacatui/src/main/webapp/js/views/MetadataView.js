@@ -87,6 +87,8 @@ define(['jquery',
 		// Render the main metadata view
 		render: function () {
 
+			this.stopListening();
+			
 			appModel.set('headerType', 'default');
 			this.showLoading("Loading...");
 						
@@ -171,9 +173,7 @@ define(['jquery',
 				var viewRef = this;
 				var loadSettings = {
 						url: endpoint,
-						success: function(response, status, xhr) {
-							view.$el.html(response);
-						
+						success: function(response, status, xhr) {						
 							//Our fallback is to show the metadata details from the Solr index
 							if (status=="error") 
 								viewRef.renderMetadataFromIndex();
@@ -190,6 +190,9 @@ define(['jquery',
 									viewRef.renderMetadataFromIndex();
 									return;
 								}
+								
+								//Now show the response from the view service
+								view.$el.html(response);
 								
 								viewRef.$el.fadeIn("slow");
 								
