@@ -67,7 +67,7 @@
 
 	#Content{
 		background-color: #FFFFFF;  	
-		padding-bottom: 85px; /** Keeps the footer down **/
+		padding-bottom: 124px; /** Keeps the footer down **/
 	}
 	.DataCatalog #Content{
 		width: 100%;
@@ -76,7 +76,7 @@
 		margin-bottom: 0px;
 	}	
 	#Footer{
-		height: 60px;
+		height: 124px;
 	}
      .container{
     	width: 100%;
@@ -268,7 +268,7 @@ footer{
 	font-size: .7em;
 	line-height: 1.4em;
 	padding-top: 10px;
-	padding-bottom: 10px;
+	padding-bottom: 4px;
 }
 .footer-upper a{
 	color: #FFF;
