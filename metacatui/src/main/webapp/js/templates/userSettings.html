@@ -1,10 +1,13 @@
 <section id="user-settings" class="row-fluid section" data-section="settings">
+<% if(!appModel.get("userProfiles")){ %>
+	<h1>My Account</h1>
+<% } %>
 
-<h1>My Account</h1>
-<% var welcomeName = firstName || fullName %>
+<% var welcomeName = firstName || fullName || ""; %>
 <h3>Welcome, <%=welcomeName%></h3>
 	
-	<!--  <div class="panel panel-default span4">
+	<% if(appModel.get("userProfiles")){ %>
+	<div class="panel panel-default span4">
 	  <div class="panel-heading">
 	  	Settings
 	  </div>
@@ -15,7 +18,7 @@
 	  	</ul>
 	</div>
 	
-	<div class="span8 subsection" data-section="account">
+	<div class="span7 subsection" data-section="account">
 					
 			<div id="registered-user-container" class="panel panel-default" data-subsection="edit-account">
 			  <div class="panel-heading">
@@ -88,7 +91,7 @@
 			</div>
 	</div>
 	
-	<div class="span8 subsection" data-section="groups">
+	<div class="span7 subsection" data-section="groups">
 		<div class="panel panel-default">
 		  <div class="panel-heading">
 		  	<h4 class="panel-title">My Groups</h4>
@@ -124,8 +127,12 @@
 		  </div>
 		</div>
 	</div>
-	-->
+	<div class="span7 subsection active" data-section="apps">
+	<% } 
+	else {
+	%>
 	<div class="span12 subsection active" data-section="apps">
+	<% } %>
 		<div class="panel panel-default">
 		  <div class="panel-heading">
 		  	<h4 class="panel-title">My authentication token</h4>

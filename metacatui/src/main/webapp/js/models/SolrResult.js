@@ -154,16 +154,16 @@ define(['jquery', 'underscore', 'backbone'],
 			var query = "q=";
 			//Do not search for seriesId when it is not configured in this model/app
 			if(typeof this.get("seriesId") === "undefined")
-				query += 'id:"' + this.get("id") + '"';
+				query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
 			//If there is no seriesId set, then search for pid or sid 
 			else if(!this.get("seriesId"))
-				query += '(id:"' + this.get("id") + '" OR seriesId:"' + this.get("id") + '")';
+				query += '(id:"' + encodeURIComponent(this.get("id")) + '" OR seriesId:"' + encodeURIComponent(this.get("id")) + '")';
 			//If a seriesId is specified, then search for that
 			else if(this.get("seriesId") && (this.get("id").length > 0))
-				query += '(seriesId:"' + this.get("seriesId") + '" AND id:"' + this.get("id") + '")';
+				query += '(seriesId:"' + encodeURIComponent(this.get("seriesId")) + '" AND id:"' + encodeURIComponent(this.get("id")) + '")';
 			//If only a seriesId is specified, then just search for the most recent version
 			else if(this.get("seriesId") && !this.get("id"))
-				query += 'seriesId:"' + this.get("id") + '" -obsoletedBy:*';
+				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
 				
 			var requestSettings = {
 				url: appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json',

@@ -16,7 +16,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/:section)(/:subsection)'		: 'renderProfile',
 			'profile'		            : 'renderProfile',
-			//'myAccount'                   : 'renderUserSettings',
+			//'my-account'                   : 'renderUserSettings',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
