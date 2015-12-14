@@ -60,6 +60,8 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		initialize: function(){
 			this.setURL();
+			this.on("change:id", this.setURL);
+			
 			this.set("type", this.getType());
 			this.on("change:read_count_i", function(){ this.set("reads", this.get("read_count_i"))});
 		},

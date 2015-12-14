@@ -163,7 +163,11 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				id		   = memberModel.get("id"),
 				entityName = memberModel.get("entityName"),
 				url        = memberModel.get("url");
-					
+			
+			if(!url){
+				memberModel.setURL();
+				url = memberModel.get('url');
+			}
 			//Use the metadata title instead of the ID
 			if(!entityName && (formatType == "METADATA")) entityName = memberModel.get("title");
 			if(formatType == "METADATA") entityName =  "Metadata: " + entityName;
