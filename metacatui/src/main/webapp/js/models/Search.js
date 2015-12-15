@@ -307,7 +307,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					var yearMax = this.get('yearMax');	
 					
 					//Add to the query if we are searching publication year
-					query += "+" + this.getMultiFieldQuery(this.fieldNameMap["pubYear"], "%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D");
+					query += "+" + this.getMultiFieldQuery(this.fieldNameMap["pubYear"], "[" + yearMin + "-01-01T00:00:00Z TO " + yearMax + "-12-31T00:00:00Z]");
 					//query += "+" + this.fieldNameMap["pubYear"] + ":%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";				
 				}
 			}

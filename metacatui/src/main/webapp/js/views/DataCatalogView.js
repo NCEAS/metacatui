@@ -140,23 +140,19 @@ define(['jquery',
 			var loadingHTML = this.loadingTemplate({
 				msg: "Retrieving member nodes..."
 			});
-			var cel = this.template({	
-				sortOrder       : this.searchModel.get('sortOrder'),
-				yearMin         : this.searchModel.get('yearMin'),
-				yearMax         : this.searchModel.get('yearMax'),
-				pubYear         : this.searchModel.get('pubYear'),
-				dataYear        : this.searchModel.get('dataYear'),
-				resourceMap     : this.searchModel.get('resourceMap'),
-				searchOptions   : registryModel.get('searchOptions'),
-				gmaps           : gmaps,
-				mode		    : appModel.get("searchMode"),
-				useMapBounds    : this.searchModel.get("useGeohash"),
-				username        : appUserModel.get('username'),
-				isMySearch      : (_.indexOf(this.searchModel.get("username"), appUserModel.get("username")) > -1),
-				loading         : loadingHTML,
-				searchModelRef  : this.searchModel, 
-				dataSourceTitle : (window.theme == "dataone") ? "Member Node" : "Data source"
-			});
+			
+			var templateVars = {	
+					searchOptions   : registryModel.get('searchOptions'),
+					gmaps           : gmaps,
+					mode		    : appModel.get("searchMode"),
+					useMapBounds    : this.searchModel.get("useGeohash"),
+					username        : appUserModel.get('username'),
+					isMySearch      : (_.indexOf(this.searchModel.get("username"), appUserModel.get("username")) > -1),
+					loading         : loadingHTML,
+					searchModelRef  : this.searchModel, 
+					dataSourceTitle : (window.theme == "dataone") ? "Member Node" : "Data source"
+				}
+			var cel = this.template(_.extend(this.searchModel.toJSON(), templateVars));
 			
 			this.$el.html(cel);
 			
@@ -208,7 +204,14 @@ define(['jquery',
 				for (var x=0; x<thisTerm.length; x++){
 					this.showFilter(categories[i], thisTerm[x]);
 				}
-			}			
+			}	
+			
+			//List the Member Node filters
+			var view = this;
+			_.each(this.searchModel.get("dataSource"), function(source, i){
+				view.showFilter("dataSource", source);
+			});
+			
 			// the additional fields
 			this.showAdditionalCriteria();
 			
@@ -638,6 +641,12 @@ define(['jquery',
 						//If the slider min is still at the default value, then update with the min value found at this search
 						if($("#year-range").slider("option", "min") == model.defaults().yearMin)
 							$('#year-range').slider({ min: year });
+						
+						//Add the filter elements if this is set
+						if(viewRef.searchModel.get("pubYear"))
+							viewRef.showFilter("pubYear", true, false, $('#min_year').val() + " to " + $('#max_year').val(), {replace:true});
+						if(viewRef.searchModel.get("dataYear"))
+							viewRef.showFilter("dataYear", true, false, $('#min_year').val() + " to " + $('#max_year').val(), {replace:true});
 					}
 				});
 				//Only when the first begin date is retrieved, set the slider min and max values	 
@@ -656,6 +665,12 @@ define(['jquery',
 						//If the slider max is still at the default value, then update with the max value found at this search
 						if($("#year-range").slider("option", "max") == model.defaults().yearMax)
 							$('#year-range').slider({ max: year });
+						
+						//Add the filter elements if this is set
+						if(viewRef.searchModel.get("pubYear"))
+							viewRef.showFilter("pubYear", true, false, $('#min_year').val() + " to " + $('#max_year').val(), {replace:true});
+						if(viewRef.searchModel.get("dataYear"))
+							viewRef.showFilter("dataYear", true, false, $('#min_year').val() + " to " + $('#max_year').val(), {replace:true});
 					}
 				});
 				this.statsModel.getFirstBeginDate();
@@ -1005,8 +1020,8 @@ define(['jquery',
 				}
 				if (typeof term.filterLabel !== "undefined") {
 					label = term.filterLabel;
-				} else if (label) {
-					// just keep it
+				} else if ((typeof term.label !== "undefined") && (term.label)) {
+					label = term.label;
 				} else {
 					label = null;
 				}
