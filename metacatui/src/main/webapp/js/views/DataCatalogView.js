@@ -977,7 +977,11 @@ define(['jquery',
 				var filterNode = this.$(".current-filters[data-category='" + category + "']").children(".current-filter");
 			else
 				var filterNode = this.$(".current-filters[data-category='" + category + "']").children("[data-term='" + value + "']");
-
+			
+			//Try finding it a different way
+			if(!filterNode || !filterNode.length)
+				filterNode = this.$(".current-filter[data-category='" + category + "']");
+			
 			//Remove the filter node from the DOM
 			this.hideEl(filterNode);				
 		},

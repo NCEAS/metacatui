@@ -158,7 +158,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				else if(Array.isArray(currentFilterValues)){
 					var newFilterValues = _.without(currentFilterValues, filterValueToRemove);
 					_.each(currentFilterValues, function(currentFilterValue, key){
-						if(currentFilterValue.value == filterValueToRemove){
+						var valueString = (typeof currentFilterValue == "object")? currentFilterValue.value : currentFilterValue;
+						if(valueString == filterValueToRemove){
 							newFilterValues = _.without(newFilterValues, currentFilterValue);
 						}
 					});
