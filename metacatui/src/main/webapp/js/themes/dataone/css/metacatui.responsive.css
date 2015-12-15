@@ -38,9 +38,9 @@
 	
 	/************** Footer ****************/
 	#Footer{
-		height: 150px; /* Keeps footer down */
+		height: 260px; /* Keeps footer down */
 	}
 	#Content{
-		padding-bottom: 175px; /* Keeps footer down */
+		padding-bottom: 270px; /* Keeps footer down */
 	}
 }

@@ -23,6 +23,11 @@
 		width: 55%;
 		overflow: visible;
 	}
+	.entitydetails{
+	    width: 100%;
+	    margin: 0px;
+	    box-sizing: border-box;
+	}
 	.entitydetails > h4 > .title{
 		width: 83%;
 	}
@@ -31,6 +36,11 @@
 	}
 	.entitydetails > h4 > .btn{
 		float: none;
+	}
+	.control-group ~ .thumbnail{
+		width: 100%;
+		box-sizing: border-box;
+    	margin-left: 0px;
 	}
 	.breadcrumb{
 		margin-top: 20px;
@@ -64,7 +74,10 @@
 	#Header{
 		position: relative;
 	}
-	
+	.nav .right .dropdown-menu{
+		left: 30%;
+		width: 50%;
+	}
 	
 	/*************** General Structure ***********/
 	.row-fluid .span6.pagination-left {
@@ -88,6 +101,33 @@
 	.filter-contain > label{
 		font-size: 1.1em;
 	}
+	
+	/***** Stats ********/
+	.profile .format-charts .chart{
+		width: 100%;
+		float: none;
+	}
+	.profile .format-charts-container{
+		height: auto;
+	}
+	#metadata-chart, #data-chart{
+		width: 100%;
+		float: none;
+	}
+	/********* Login popup **********/
+	.fancybox-inline .span7 .well{
+		max-width: 83%;
+	}
+	.fancybox-inline > .row-fluid > .span7{
+		float: none;
+		width: 44%;
+		padding-left: 0px;
+		margin-left: 0px;
+	}
+	.fancybox-inline h2{
+		display: inline;
+	}
+	
 }
  
 /* Smartphones (landscape) ----------- */
