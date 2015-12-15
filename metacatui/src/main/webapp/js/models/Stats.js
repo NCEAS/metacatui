@@ -101,7 +101,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			//Get the earliest temporal data coverage year
 			var query = this.get('query') + 
 						"+beginDate:[" + this.firstPossibleDate + "%20TO%20NOW]" //Use date filter to weed out badly formatted data 
-						"+readPermission:public" +
 						"+-obsoletedBy:*";
 			
 			var otherParams = "&rows=1" +
@@ -166,8 +165,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			//Get the latest temporal data coverage year
 			var query = this.get('query') + 
 						"+endDate:[" + this.firstPossibleDate + "%20TO%20NOW]" + //Use date filter to weed out badly formatted data 
-						"+-obsoletedBy:*" +
-						"+readPermission:public";
+						"+-obsoletedBy:*";
 			var otherParams = "&rows=1" +
 							  "&fl=endDate" +
 							  "&sort=endDate+desc" +
@@ -214,8 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			//Build the query to get the format types
 			var query = this.get('query') + 
-						"+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*" +
-						"+readPermission:public";
+						"+%28formatType:METADATA%20OR%20formatType:DATA%29+-obsoletedBy:*";
 			var otherParams = "&rows=2" +
 						 	  "&group=true" +
 							  "&group.field=formatType" +
@@ -270,7 +267,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			var query = "q=" + this.get('query') +
 			"+formatType:DATA+-obsoletedBy:*" +
-			"+readPermission:public" +
 			"&facet=true" +
 			"&facet.field=formatId" +
 			"&facet.limit=-1" +
@@ -298,7 +294,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			var query = "q=" + this.get('query') +
 						"+formatType:METADATA+-obsoletedBy:*" +
-						"+readPermission:public" +
 						"&facet=true" +
 						"&facet.field=formatId" +
 						"&facet.limit=-1" +
@@ -334,7 +329,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 								"+formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
 								"+dateUploaded:[" + this.firstPossibleUpload + "%20TO%20NOW]" + //Weeds out badly formatted dates
 								"+-obsoletedBy:*"+    //Only count one version of a revision chain
-								"+readPermission:public" +
 								"&fl=dateUploaded" +
 								"&rows=1" +
 								"&sort=dateUploaded+asc" +
@@ -363,10 +357,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 							model.set('totalUploads', data.response.numFound);	
 							
 							var dataQuery =  "q=" + model.get('query') +
-							  "+-obsoletedBy:*+formatType:DATA+readPermission:public";
+							  "+-obsoletedBy:*+formatType:DATA";
 							
 							var metadataQuery =  "q=" + model.get('query') +
-							  "+-obsoletedBy:*+formatType:METADATA+readPermission:public";
+							  "+-obsoletedBy:*+formatType:METADATA";
 							  
 							var facets =  "&rows=0" +
 										  "&facet=true" +
@@ -381,6 +375,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 							//Run the query
 							var requestSettings = {
 								url: appModel.get('queryServiceUrl') + metadataQuery+facets, 
+								dataType: "json",
 								type: "GET",
 								success: function(data, textStatus, xhr) {
 									model.set("metadataUploads", data.response.numFound);
@@ -389,6 +384,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 									var requestSettings = {
 										url: appModel.get('queryServiceUrl') + dataQuery+facets, 
 										type: 'GET',
+										dataType: "json",
 										success: function(data, textStatus, xhr) {
 											model.set("dataUploads", data.response.numFound);
 											model.set("dataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);	
@@ -469,7 +465,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			var query = "q=" + this.get('query') +
 			  "+beginDate:[" + this.firstPossibleDate + "%20TO%20NOW]" + //Use date filter to weed out badly formatted data 
 			  "+-obsoletedBy:*" +
-			  "+readPermission:public" +
 			  "&rows=0" +
 			  "&facet=true" +
 			  "&facet.limit=30000" + //Put some reasonable limit here so we don't wait forever for this query
@@ -479,6 +474,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						
 			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + query, 
+				dataType: "json",
 				success: function(data, textStatus, xhr) {
 					model.set('temporalCoverage', data.facet_counts.facet_queries);
 					
@@ -532,6 +528,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			var requestSettings = {
 				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
 				type: "GET",
+				dataType: "json",
 				success: function(data, textStatus, xhr){
 					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
 					model.set("dataDownloads", data.response.numFound);	
@@ -561,6 +558,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			var requestSettings = {
 				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
 				type: "GET",
+				dataType: "json",
 				success: function(data, textStatus, xhr){
 					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
 					

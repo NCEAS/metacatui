@@ -91,6 +91,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				   	   pubYear : ["datePublished", "dateUploaded"],
 				   	   		id : "id",
 				  rightsHolder : "rightsHolder",
+			          username : ["rightsHolder", "writePermission", "changePermission"],
 				     submitter : "submitter",
 				      username : "rightsHolder",
 			     	     taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
@@ -606,6 +607,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Trim the spaces off
 			if(!Array.isArray(value) && (typeof value === "object") && value.value)
 				value = value.value.trim();
+			else if(Array.isArray(value))
+				value = value[0].trim();
 			else
 				value = value.trim();
 			if(this.needsQuotes(value)) value = '%22' + encodeURIComponent(value) + '%22';
