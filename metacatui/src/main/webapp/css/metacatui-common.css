@@ -1066,7 +1066,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-left: 0px;
 }
 /* Used in metadata view for metadata format types without stylesheet */
-#Content > pre {
+#Content > pre,
+#Metadata pre {
     background-color: #EEE;
     color: #333;
     font-family: inherit;

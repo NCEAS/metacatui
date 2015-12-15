@@ -442,13 +442,12 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			// ajax call to get token
 			var requestSettings = {
 				type: "GET",
-				dataType: "text",
-				xhrFields: {
-					withCredentials: true
-				},
+		        dataType: "text",
 				url: tokenUrl,
-				data: {},
-				success: callback
+				success: callback,
+				error: function(xhr, textStatus, errorThrown){
+					model.set("checked", true);
+				}
 			}
 			
 			$.ajax(requestSettings);			

@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				pubYear: false,
 				dataYear: false,
 				sortOrder: 'dateUploaded+desc',
+				sortByReads: false, // True if we can sort by reads/popularity
 				east: null,
 				west: null,
 				north: null,
