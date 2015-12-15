@@ -1665,9 +1665,9 @@ textarea.token{
   float: none;
   cursor: pointer;
   font-size: 1em;
-  color: rgb(97, 97, 0);
+  color: #FFF;
   font-weight: bold;
-  background-color: rgb(255, 255, 66);
+  background-color: #006699
 }
 #clear-all .icon{
 	color: rgb(131, 131, 0);
