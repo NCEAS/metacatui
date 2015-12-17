@@ -83,13 +83,12 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
 			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
-			this.set('resolveServiceUrl', this.get('baseUrl')  + this.get('d1Service') + '/resolve/');
+			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
 			
-			this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1Service') + '/query/logsolr/');
-			if(this.get("useJsonp"))
-				this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
-
+			if(typeof this.get("d1LogServiceUrl") !== "undefined"){
+				this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1Service') + '/query/logsolr/?');
+			}
 
 			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
 			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
