@@ -164,7 +164,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						}
 						else{
 							objectId   = triple.object.get("id");
-							objectName = triple.object.get("entityName");
+							objectName = triple.object.get("fileName");
 						}
 						var objectModel = _.find(view.relatedModels, function(m){ 
 							return(m.get("id") == objectId); 
@@ -213,7 +213,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						}
 						else{
 							subjectId   = triple.subject.get("id");
-							subjectName = triple.subject.get("entityName");
+							subjectName = triple.subject.get("fileName");
 						}
 						
 						var subjectModel = _.find(view.relatedModels, function(m){ 

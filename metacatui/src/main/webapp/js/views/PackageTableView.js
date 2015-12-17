@@ -161,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var formatType = memberModel.get("formatType"),
 				type       = memberModel.type == "Package" ? "data" : memberModel.getType(),
 				id		   = memberModel.get("id"),
-				entityName = memberModel.get("entityName"),
+				entityName = memberModel.get("fileName"),
 				url        = memberModel.get("url");
 			
 			if(!url){

@@ -950,7 +950,7 @@ define(['jquery',
 								
 								//Set the entity name
 								if(entityName){
-									solrResult.set("entityName", entityName);
+									solrResult.set("fileName", entityName);
 									//Update the UI with the new name
 									viewRef.$(".entity-name-placeholder[data-id='" + solrResult.get("id") + "']").text(entityName);
 								}
@@ -967,7 +967,9 @@ define(['jquery',
 					
 					var entityName = "";
 					
-					if(solrResult.get("formatType") == "METADATA")
+					if(solrResult.get("fileName"))
+						entityName = solrResult.get("fileName");
+					else if(solrResult.get("formatType") == "METADATA")
 						entityName = solrResult.get("title");
 					else if(solrResult.get("formatType") == "RESOURCE")
 						return;
@@ -982,7 +984,7 @@ define(['jquery',
 					}
 					
 					//Set the entityName, even if it's null
-					solrResult.set("entityName", entityName);
+					solrResult.set("fileName", entityName);
 				});
 			});
 		},

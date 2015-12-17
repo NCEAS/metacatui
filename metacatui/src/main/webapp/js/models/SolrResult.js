@@ -21,6 +21,7 @@ define(['jquery', 'underscore', 'backbone'],
 			selected: false,
 			formatId: null,
 			formatType: null,
+			fileName: null,
 			datasource: null,
 			rightsHolder: null,
 			size: 0,
@@ -151,7 +152,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getInfo: function(){			
 			var model = this;
 			
-			var fields = "id,seriesId,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i" 
+			var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i" 
 				
 			var query = "q=";
 			//Do not search for seriesId when it is not configured in this model/app
