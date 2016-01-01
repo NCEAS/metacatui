@@ -121,7 +121,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				memberNameContainer = $(document.createElement("div")).addClass("name-container"),
 				memberIcon     = $(document.createElement("i")).addClass("icon icon-user"),	
 				memberLink     = $(document.createElement("a")).attr("href", "#profile/" + username).attr("data-username", username).prepend(memberIcon, name),
-				memberName     = $(document.createElement("span")).addClass("details ellipsis").attr("data-username", username).text(username);
+				memberName     = $(document.createElement("span")).addClass("details ellipsis").attr("data-username", username).text(member.get("usernameReadable"));
 						
 			memberIcon.tooltip({
 				placement: "top",

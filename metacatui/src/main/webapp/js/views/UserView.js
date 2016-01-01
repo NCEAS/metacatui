@@ -361,10 +361,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				view.$("#total-upload-container").text(statsModel.get("totalUploads"));
 			});
 			statsModel.once("change:totalDownloads", function(){
-				if(!this.get("totalDownloads"))
-					view.$("#total-download-wrapper").hide();
-				else
-					view.$("#total-download-container").text(this.get("totalDownloads"));
+				view.$("#total-download-container").text(this.get("totalDownloads"));
 			});
 			
 			//Create a base query for the statistics
@@ -395,8 +392,12 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			//Insert the name into this page
 			var usernameLink = $(document.createElement("a")).attr("href", "#profile/" + this.model.get("username")).text(this.model.get("fullName"));
 			this.$(".insert-fullname").append(usernameLink);
+			
 			//Insert the username
-			this.$(".insert-username").text(this.model.get("username"));
+			if(!this.model.get("usernameReadable")) this.model.createReadableUsername();
+			this.$(".insert-username").text(this.model.get("usernameReadable"));
+			
+			//Show or hide ORCID logo
 			if(this.model.isOrcid()) 
 				this.$(".show-orcid").show();
 			else

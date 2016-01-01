@@ -17,6 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				email: null,
 				verified: null,
 				username: null,
+				usernameReadable: null,
 				orcid: null,
 				searchModel: null,
 				searchResults: null,
@@ -43,6 +44,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						
 			this.on("change:username change:identities", this.updateSearchModel);
 			this.createSearchModel();
+			
+			this.on("change:username", this.createReadableUsername());
 						
 			//Create a search results model for this person
 			var searchResults = new SearchResults([], { rows: 5, start: 0 });
@@ -661,6 +664,15 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			this.set("identitiesUsernames", usernames);
 			this.trigger("change:identitiesUsernames");
+		},
+		
+		createReadableUsername: function(){
+			if(!this.get("username")) return;
+			
+			var username = this.get("username"),
+				readableUsername = username.substring(username.indexOf("=")+1, username.indexOf(",")) || username;
+			
+			this.set("usernameReadable", readableUsername);
 		},
 		
 		createAjaxSettings: function(){
