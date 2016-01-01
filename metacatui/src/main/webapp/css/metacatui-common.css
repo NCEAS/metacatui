@@ -1518,6 +1518,9 @@ textarea.token{
 .add-member label{
 	font-weight: bold;
 }
+#first-upload-year-container{
+	float: left;
+}
 /****************************************** 
 ** Stats ***
 ******************************************/

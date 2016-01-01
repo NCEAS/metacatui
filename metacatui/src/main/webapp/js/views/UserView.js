@@ -348,6 +348,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			if(this.model.noActivity && this.statsView){
 				this.statsView.$el.addClass("no-activity");
 				this.$("#total-upload-container").text("0");
+				this.$("#total-download-container").text("0");
 				return;
 			}
 			
@@ -358,6 +359,12 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
 			this.listenToOnce(statsModel, "change:totalUploads", function(statsModel){
 				view.$("#total-upload-container").text(statsModel.get("totalUploads"));
+			});
+			statsModel.once("change:totalDownloads", function(){
+				if(!this.get("totalDownloads"))
+					view.$("#total-download-wrapper").hide();
+				else
+					view.$("#total-download-container").text(this.get("totalDownloads"));
 			});
 			
 			//Create a base query for the statistics
@@ -409,22 +416,64 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		 * Insert the first year of contribution for this user
 		 */
 		insertFirstUpload: function(){
-			if(this.model.noActivity || !this.model.get("searchResults").length){
+			if(this.model.noActivity){
 				this.$("#first-upload-container, #first-upload-year-container").hide();
 				return;
 			}
 			
-			var firstUpload = new Date(statsModel.get("firstUpload"));
-			
-			var monthNames = [ "January", "February", "March", "April", "May", "June",
-				                 "July", "August", "September", "October", "November", "December" ];
-			
-			var m = monthNames[firstUpload.getUTCMonth()],
+			// Construct the first upload date sentence
+			var firstUpload = new Date(statsModel.get("firstUpload")),			
+				monthNames = [ "January", "February", "March", "April", "May", "June",
+				                 "July", "August", "September", "October", "November", "December" ],
+				m = monthNames[firstUpload.getUTCMonth()],
 				y = firstUpload.getUTCFullYear(),
 				d = firstUpload.getUTCDate();
 			
 			this.$("#first-upload-container").text("Contributor since " + m + " " + d + ", " + y);
-			this.$("#first-upload-year-container").text(y);
+			
+			//Construct the time-elapsed sentence
+			var now = new Date(),
+				msElapsed = now - firstUpload,
+				years = msElapsed / 31556952000,
+				months = msElapsed / 2629746000,
+				weeks = msElapsed / 604800000,
+				days = msElapsed / 86400000,
+				time = "";
+			
+			//If one week or less, express in days
+			if(weeks <= 1){
+				time = (Math.round(days) || 1) + " day";
+				if(days > 1.5) time += "s";
+			}
+			//If one month or less, express in weeks
+			else if(months < 1){
+				time = (Math.round(weeks) || 1) + " week";
+				if(weeks > 1.5) time += "s";
+			}
+			//If less than 12 months, express in months
+			else if(months <= 11.5){
+				time = (Math.round(months) || 1) + " month";
+				if(months > 1.5) time += "s";
+			}
+			//If one year or more, express in years and months
+			else{
+				var yearsOnly = (Math.round(years) || 1),
+					monthsOnly = Math.round(years % 1 * 12);
+				
+				if(monthsOnly == 12){
+					yearsOnly += 1;
+					monthsOnly = 0;
+				}
+				
+				time = yearsOnly + " year";
+				if(yearsOnly > 1) time += "s";
+				
+				if(monthsOnly)
+					time += ", " + monthsOnly + " month";
+				if(monthsOnly > 1) time += "s";
+			}
+			
+			this.$("#first-upload-year-container").text(time);
 		},
 		
 		/*
