@@ -1521,6 +1521,15 @@ textarea.token{
 #first-upload-year-container{
 	float: left;
 }
+address.email-container{
+	display: inline;
+}
+address.email-container:after{
+	content: attr(data-domain);
+}
+address.email-container:before{
+	content: attr(data-user);
+}
 /****************************************** 
 ** Stats ***
 ******************************************/

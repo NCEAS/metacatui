@@ -402,6 +402,16 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				this.$(".show-orcid").show();
 			else
 				this.$(".show-orcid").hide();
+			
+			//Show the email
+			if(this.model.get("email")){
+				this.$(".email-wrapper").show();
+				var parts = this.model.get("email").split("@");
+				this.$(".email-container").attr("data-user", parts[0]);
+				this.$(".email-container").attr("data-domain", parts[1]);
+			}
+			else
+				this.$(".email-wrapper").hide();
 		},
 		
 		// Creates an HTML element to display in front of the user identity/subject. 
