@@ -1675,6 +1675,9 @@ address.email-container:before{
 .list-group-item.member .details{
 	margin-left: 18px;
 }
+.list-group-item.create-group a{
+	font-weight: normal;
+}
 /****************************************** 
 ** Searching and Map ***
 ******************************************/

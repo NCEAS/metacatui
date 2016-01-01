@@ -89,8 +89,9 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			});
 			
 			//Collapse the list - $el must already be inserted in DOM for collapse to work
-			if(group.length > 3)
+			/*if(group.length > 3)
 				this.collapseMemberList();
+			*/
 			
 			//Add some group controls for the owners
 			if(group.isOwner(appUserModel))

@@ -37,13 +37,14 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		
 		initialize: function(){			
 			this.subviews = new Array();
-			this.activeSection = "profile";
-			this.activeSubSection = "";
 		},
 		
 		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
-		render: function () {			
+		render: function (options) {			
 			this.stopListening();
+			
+			this.activeSection = (options && options.section)? options.section : "profile";
+			this.activeSubSection = (options && options.subsection)? options.subsection : "";
 			
 			//Add the container element for our profile sections
 			this.sectionHolder = $(document.createElement("section")).addClass("user-view-section");
@@ -530,12 +531,20 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				listContainer = this.$("#user-membership-container");
 						
 			_.each(groups, function(group, i){				
-				var name = group.name || "Group " + i,
+				var name = group.name || "Group",
 					listItem = $(document.createElement("li")).addClass("list-group-item"),
 					groupLink = group.groupId? $(document.createElement("a")).attr("href", "#profile/" + group.groupId).text(name).appendTo(listItem) : "<a></a>";
 				
 				$(list).append(listItem);
 			});
+			
+			if(this.model.get("username") == appUserModel.get("username")){
+				var link = $(document.createElement("a")).attr("href", "#profile/" + appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
+					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-plus-sign"),
+					listItem = $(document.createElement("li")).addClass("list-group-item create-group").append( $(link).prepend(icon) );
+				
+				$(list).append(listItem);				
+			}
 			
 			listContainer.html(list);
 			list.before(listHeader);

@@ -158,14 +158,9 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 				appView.showView(appView.statsView);
 			}
 			else{
-				if(section)
-					appView.userView.activeSection = section;
-				if(subsection)
-					appView.userView.activeSubSection = subsection;
-				
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
-				appView.showView(appView.userView);
+				appView.showView(appView.userView, { section: section, subsection: subsection });
 			}
 		},
 		
