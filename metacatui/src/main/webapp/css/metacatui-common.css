@@ -1433,8 +1433,9 @@ tfoot .control i{
 .user-view-section .hgroup{
 	margin-bottom: 20px;
 }
-.user-view-section .hgroup h2{
+.user-view-section .hgroup h2 a{
 	font-weight: lighter;
+	color: inherit;
 }
 .user-view-section .hgroup h6,
 .user-view-section .hgroup h5{

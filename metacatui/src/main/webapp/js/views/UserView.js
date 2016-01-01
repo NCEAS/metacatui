@@ -386,7 +386,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			if(!this.model.get("fullName")) return;
 			
 			//Insert the name into this page
-			this.$(".insert-fullname").text(this.model.get("fullName"));
+			var usernameLink = $(document.createElement("a")).attr("href", "#profile/" + this.model.get("username")).text(this.model.get("fullName"));
+			this.$(".insert-fullname").append(usernameLink);
 			//Insert the username
 			this.$(".insert-username").text(this.model.get("username"));
 			if(this.model.isOrcid()) 
