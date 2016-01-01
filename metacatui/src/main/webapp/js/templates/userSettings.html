@@ -32,15 +32,16 @@
 			  		</div>
 				  	<div class="form-group">
 				  		<label class="control-group span2" for="mod-givenName">First name</label>
-					  	<input class="input-large" type="text" placeholder="First name" name="mod-givenName" id="mod-givenName">
+					  	<input class="input-large form-control" type="text" placeholder="First name" name="mod-givenName" id="mod-givenName">
 				  	</div>
 				  	<div class="form-group">
 				  		<label class="control-group span2" for="mod-familyName">Last name</label>
-					  	<input class="input-large" type="text" placeholder="Last name" name="mod-familyName" id="mod-familyName">
+					  	<input class="input-large form-control" type="text" placeholder="Last name" name="mod-familyName" id="mod-familyName">
 				  	</div>
 				  	<div class="form-group">
 				  		<label class="control-group span2" for="mod-email">Email</label>
-					  	<input class="input-large" type="text" placeholder="Email" name="mod-email" id="mod-email">
+					  	<input class="input-large form-control" type="text" placeholder="Email" name="mod-email" id="mod-email">
+					  	<span class="help-block"></span>
 				  	</div>
 				  	<div class="form-group">
 				  		<div class="span2"></div>
@@ -55,6 +56,9 @@
 			  	<h4 class="panel-title">My Other Accounts</h4>
 			  </div>
 			  <div class="panel-body">
+			  	<p>
+				 	If you have uploaded data with another account(s), you can link your accounts together so that you can log in with just one and manage <strong>all</strong> your data.
+				</p>
 			  	<div id="identity-alert-container"></div>
 			  	<div id="identity-list-container"></div>
 			   
@@ -64,12 +68,9 @@
 				  </div>
 				  <div class="panel-body" id="identity-request-container">
 				  	<div id="request-alert-container"></div>
-				  	<p>
-				  		If you have uploaded data with another account(s), you can link your accounts together so that you can log in with just one and view <strong>all</strong> your data.
-				  	</p>
 				  	<form>
 					  	<div class="input-append">
-					  		<label for="map-request-field">Other username</label>
+					  		<label for="map-request-field">Search by username, email, or name OR enter a full username below.</label>
 						  	<input class="input-xlarge account-autocomplete" type="text" placeholder="Username or Name (cn=me, o=my org...)" id="map-request-field">
 							<button class="btn" id="map-request-btn"><i class="icon-plus"></i></button>
 					  	</div>

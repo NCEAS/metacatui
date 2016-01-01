@@ -53,8 +53,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			this.$el.empty();
 						
 			//Create the header/first-level of the list			
-			var listItem   = $(document.createElement("li")).addClass("list-group-header list-group-item group toggle"),
-				icon       = $(document.createElement("i")).addClass("icon icon-caret-down tooltip-this group"),
+			var listItem   = $(document.createElement("li")).addClass("list-group-header list-group-item group"),
+				//icon       = $(document.createElement("i")).addClass("icon icon-caret-down tooltip-this group"),
 				numMembers = $(document.createElement("span")).addClass("num-members").text(group.length),
 				numMembersLabel = $(document.createElement("span")).text(" members"),
 				numMembersContainer = $(document.createElement("span")).append(numMembers, numMembersLabel);
@@ -70,7 +70,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				}
 				
 				//Put it all together
-				$(listItem).append($(link).prepend(icon, groupName));	
+				$(listItem).append($(link).prepend(/*icon, */groupName));	
 				numMembersContainer.prepend(" (").append(")");
 			}
 
@@ -394,7 +394,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 									.attr("disabled", "disabled"),
 				addMemberIcon     = $(document.createElement("i")).addClass("icon icon-plus"),
 				addMemberSubmit   = $(document.createElement("button")).addClass("btn submit").append(addMemberIcon),
-				addMemberLabel    = $(document.createElement("label")).text("Add Member"),
+				addMemberLabel    = $(document.createElement("label")).text("Add Member - Search by username, email, or name OR enter a full username below."),
 				addMemberMsg      = $(document.createElement("div")).addClass("notification")
 									.append($(document.createElement("i")).addClass("icon"),
 											$(document.createElement("span")).addClass("msg")),

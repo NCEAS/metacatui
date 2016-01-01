@@ -752,7 +752,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			//Create the list element
 			if(identities.length < 1){
-				var identityList = $(document.createElement("p")).text("Your account is not mapped to any other accounts. Send a request below.");
+				var identityList = $(document.createElement("p")).text("You haven't linked to another account yet. Send a request below.");
 			}
 			else
 				var identityList = $(document.createElement("ul")).addClass("list-identity").attr("id", "identity-list");
@@ -863,6 +863,15 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.$("#mod-givenName").val(this.model.get("firstName"));
 			this.$("#mod-familyName").val(this.model.get("lastName"));
 			this.$("#mod-email").val(this.model.get("email"));
+			
+			if(!this.model.get("email")){
+				this.$("#mod-email").parent(".form-group").addClass("has-warning");
+				this.$("#mod-email").parent(".form-group").find(".help-block").text("Please provide an email address.");
+			}
+			else{
+				this.$("#mod-email").parent(".form-group").removeClass("has-warning");
+				this.$("#mod-email").parent(".form-group").find(".help-block").text("");
+			}
 			
 			if (this.model.get("registered")) {
 				this.$("#registered-user-container").show();

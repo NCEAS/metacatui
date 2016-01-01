@@ -1495,6 +1495,11 @@ textarea.token{
     line-height: 2em;
     cursor: pointer;
 }
+.add-member label{
+	max-width: 100%;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
 .add-member .notification{
 	margin-top: 10px;
 	line-height: 30px;
@@ -1507,6 +1512,10 @@ textarea.token{
 	width: 16px;
 	margin-left: 10px;
 	margin-right: 5px;
+}
+#identity-request-container label,
+.add-member label{
+	font-weight: bold;
 }
 /****************************************** 
 ** Stats ***
@@ -2015,6 +2024,31 @@ input.has-error:focus{
 .has-error > div.text-left{ /* div.text-left is for Metacat-specific (2.4.X and before) login markup */
 	color: #a94442;
 	font-weight: bold;
+}
+.has-warning label{
+	color: #8a6d3b;
+	font-weight: bold;
+}
+.has-warning .help-block{
+	color: #8a6d3b;
+}
+.has-warning .form-control {
+  border-color: #8a6d3b;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+}
+.has-warning .form-control:focus {
+  border-color: #66512c;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #c0a16b;
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #c0a16b;
+}
+.has-warning .input-group-addon {
+  color: #8a6d3b;
+  background-color: #fcf8e3;
+  border-color: #8a6d3b;
+}
+.has-warning .form-control-feedback {
+  color: #8a6d3b;
 }
 form .text-left > .icon {
   margin-left: 10px;
