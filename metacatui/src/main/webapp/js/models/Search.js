@@ -331,10 +331,19 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//-----Data Source--------
 			if(this.filterIsAvailable("dataSource") && ((filter == "dataSource") || getAll)){
 				var filterValue = null;
-				var filterValues = this.get("dataSource");
+				var filterValues = [];
+									
+				if(this.get("dataSource").length > 0){
+					var objectValues =  _.filter(this.get("dataSource"), function(v){ return (typeof v == "object") });
+					if(objectValues && objectValues.length)
+						filterValues.push(_.pluck(objectValues, "value"));
+				}
 				
-				if(filterValues.length > 0)
-					filterValues = _.pluck(filterValues, "value");
+				var stringValues = _.filter( this.get("dataSource"), function(v){ return (typeof v == "string") });
+				if(stringValues && stringValues.length)
+					filterValues.push(stringValues);
+				
+				filterValues = _.flatten(filterValues);
 				
 				query += "+" + this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues,  { operator: "OR" });				
 			}

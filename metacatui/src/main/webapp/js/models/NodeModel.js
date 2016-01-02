@@ -7,7 +7,7 @@ define(['jquery', 'underscore', 'backbone'],
 	// ------------------
 	var Node = Backbone.Model.extend({
 		memberLogos : {
-				//"defaultLogo"		   : "img/node-logos/KNB.png",
+				"defaultLogo"		   : "img/node-logos/KNB.png",
 				"urn:node:KNB"         : "img/node-logos/KNB.png",
 				"urn:node:ESA"         : "img/node-logos/ESA.png",
 				"urn:node:SANPARKS"    : "img/node-logos/SANPARKS.png",

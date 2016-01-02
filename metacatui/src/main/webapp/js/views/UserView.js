@@ -103,13 +103,32 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					}
 				}
 				
-				//If this isn't the currently-looged in user, then let's find out more info about this account
-				else{
+				//If this isn't the currently-logged in user, then let's find out more info about this account
+				else{	
+					//Is this a member node?
+					var node = _.where(nodeModel.get("members"), { shortIdentifier: username });
+					
+					if(node && node.length){
+						node = node[0];
+						this.model = new UserModel({
+							type: "node",
+							logo: node.logo,
+							description: node.description,
+							node: node,
+							checked: true,
+							fullName: node.name,
+							usernameReadable: username
+						});
+						this.renderProfile();
+						this.resetSections();
+						return;
+					}
+					
 					//Create a UserModel with the username given
 					var user = new UserModel({
 						username: username
 					});
-					this.model = user;	
+					this.model = user;
 					
 					//When we get the infomration about this account, then crender the profile
 					this.model.once("change:checked", this.renderProfile, this);
@@ -150,7 +169,9 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			//Insert the template first
 			var profileEl = $.parseHTML(this.profileTemplate({
-				type: this.model.get("type")
+				type: this.model.get("type"),
+				logo: this.model.get("logo") || "",
+				description: this.model.get("description") || ""
 			}).trim());
 			
 			//If the profile is being redrawn, then replace it
@@ -395,8 +416,13 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.$(".insert-fullname").append(usernameLink);
 			
 			//Insert the username
-			if(!this.model.get("usernameReadable")) this.model.createReadableUsername();
-			this.$(".insert-username").text(this.model.get("usernameReadable"));
+			if(this.model.get("type") != "node"){
+				if(!this.model.get("usernameReadable")) this.model.createReadableUsername();
+				this.$(".insert-username").text(this.model.get("usernameReadable"));
+			}
+			else{
+				$("#username-wrapper").hide();
+			}
 			
 			//Show or hide ORCID logo
 			if(this.model.isOrcid()) 
@@ -540,7 +566,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			if(this.model.get("username") == appUserModel.get("username")){
 				var link = $(document.createElement("a")).attr("href", "#profile/" + appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
-					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-plus-sign"),
+					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-plus"),
 					listItem = $(document.createElement("li")).addClass("list-group-item create-group").append( $(link).prepend(icon) );
 				
 				$(list).append(listItem);				

@@ -15,6 +15,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				firstName: null,
 				fullName: null,
 				email: null,
+				logo: null,
+				description: null,
 				verified: null,
 				username: null,
 				usernameReadable: null,
@@ -59,14 +61,20 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		},
 		
 		updateSearchModel: function(){	
-			//Get all the identities for this person
-			var ids = [this.get("username")];
+			if(this.get("type") == "node"){
+				this.get("searchModel").set("dataSource", [this.get("node").identifier]);
+				this.get("searchModel").set("username", []);
+			}
+			else{
+				//Get all the identities for this person
+				var ids = [this.get("username")];
+				
+				_.each(this.get("identities"), function(equivalentUser){
+					ids.push(equivalentUser.get("username"));
+				});
+				this.get("searchModel").set("username", ids);
+			}
 			
-			_.each(this.get("identities"), function(equivalentUser){
-				ids.push(equivalentUser.get("username"));
-			});
-			
-			this.get("searchModel").set("username", ids);			
 			this.trigger("change:searchModel");
 		},
 		

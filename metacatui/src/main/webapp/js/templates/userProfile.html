@@ -2,14 +2,22 @@
 	<section class="row-fluid" id="user-profile">
 		<div class="span3">
 			<hgroup class="hgroup">
+				<% if(logo){ %>
+					<img src="<%=logo%>" class="logo center"/>
+				<% } %>
 				<h2 class="center insert-fullname"></h2>
 				<% if(type == "group") { %>
 					<h5 class="center subtle user-type">
 						<i class="icon icon-on-left icon-group"></i>
 						Group
 					</h5>
+				<% } else if(type == "node"){ %>
+					<h5 class="center subtle user-type">
+						<i class="icon icon-on-left icon-group"></i>
+						Member Node
+					</h5>
 				<% } %>
-				<h6 class="center subtle">
+				<h6 class="center subtle" id="username-wrapper">
 					<span>
 						<% if(type == "group") { %> Group Id: <% }
 						   else{ %> Username: <% } %> 
@@ -21,6 +29,13 @@
 					<i class="icon icon-on-left icon-envelope"></i>
 					<address class="email-container" data-user="" data-domain="">@</address>
 				</h5>
+				
+				<% if(description){ %>
+					<p>
+						<%=description%>
+					</p>
+				<% } %>
+				
 				<h5 class="divided">
 					<i id="first-upload-year-container" class="icon icon-circle-badge icon-text icon-on-left"></i>
 					<span id="first-upload-container" class="span7"></span>
