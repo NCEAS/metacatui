@@ -23,8 +23,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			dataUploadDates: null,
 			
 			totalDownloads: 0,
-			metadataDownloads: 0,
-			dataDownloads: 0,
+			metadataDownloads: null,
+			dataDownloads: null,
 			metadataDownloadDates: null,
 			dataDownloadDates: null,
 			
