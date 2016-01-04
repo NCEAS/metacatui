@@ -42,6 +42,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
 		render: function (options) {			
 			this.stopListening();
+			if(this.model) this.model.stopListening();
 			
 			this.activeSection = (options && options.section)? options.section : "profile";
 			this.activeSubSection = (options && options.subsection)? options.subsection : "";
@@ -56,7 +57,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 						
 			// set the header type
 			appModel.set('headerType', 'default');
-			
+						
 			//Render the user profile only after the app user's info has been checked
 			//This prevents the app from rendering the profile before the login process has completed - which would
 			//cause this profile to render twice (first before the user is logged in then again after they log in)
@@ -105,30 +106,27 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				
 				//If this isn't the currently-logged in user, then let's find out more info about this account
 				else{	
-					//Is this a member node?
-					var node = _.where(nodeModel.get("members"), { shortIdentifier: username });
-					
-					if(node && node.length){
-						node = node[0];
-						this.model = new UserModel({
-							type: "node",
-							logo: node.logo,
-							description: node.description,
-							node: node,
-							checked: true,
-							fullName: node.name,
-							usernameReadable: username
-						});
+					//Create a UserModel with the username given
+					this.model = new UserModel({
+						username: username
+					});
+
+					//Is this a member node?	
+					if(nodeModel.get("checked") && this.model.isNode()){
+						this.model.saveAsNode();
 						this.renderProfile();
 						this.resetSections();
 						return;
 					}
-					
-					//Create a UserModel with the username given
-					var user = new UserModel({
-						username: username
-					});
-					this.model = user;
+					//If the node model hasn't been checked yet
+					else if(!nodeModel.get("checked")){
+						var user = this.model,
+							view = this;
+						this.listenTo(nodeModel, "change:checked", function(){
+							if(user.isNode())
+								view.render();
+						});
+					}
 					
 					//When we get the infomration about this account, then crender the profile
 					this.model.once("change:checked", this.renderProfile, this);
@@ -380,10 +378,10 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			//Insert a couple stats into the profile
 			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
 			this.listenToOnce(statsModel, "change:totalUploads", function(statsModel){
-				view.$("#total-upload-container").text(statsModel.get("totalUploads"));
+				view.$("#total-upload-container").text(appView.commaSeparateNumber(statsModel.get("totalUploads")));
 			});
 			statsModel.once("change:totalDownloads", function(){
-				view.$("#total-download-container").text(this.get("totalDownloads"));
+				view.$("#total-download-container").text(appView.commaSeparateNumber(this.get("totalDownloads")));
 			});
 			
 			//Create a base query for the statistics

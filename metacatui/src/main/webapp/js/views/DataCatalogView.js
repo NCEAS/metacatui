@@ -122,10 +122,12 @@ define(['jquery',
 		    	this.searchResults = appSearchResults;
 		    
 			//Get the search mode - either "map" or "list"
-			this.mode = appModel.get("searchMode");
 			if((typeof this.mode === "undefined") || !this.mode){
-				this.mode = "map";
-				appModel.set("searchMode", "map");
+				this.mode = appModel.get("searchMode");
+				if((typeof this.mode === "undefined") || !this.mode)
+					this.mode = "map";
+				
+				appModel.set("searchMode", this.mode);
 			}
 			if($(window).outerWidth() <= 600){ 
 				this.mode = "list"; 

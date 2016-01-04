@@ -44,7 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			
 			this.on("change:identities", this.pluckIdentityUsernames);
 						
-			this.on("change:username change:identities", this.updateSearchModel);
+			this.on("change:username change:identities change:type", this.updateSearchModel);
 			this.createSearchModel();
 			
 			this.on("change:username", this.createReadableUsername());
@@ -235,7 +235,14 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					model.set("checked", true);
 				},
 				error: function(xhr, textStatus, errorThrown){
-					if(xhr.status == 404){
+					
+					// Sometimes the node info has not been received before this getInfo() is called.
+					// If the node info was received while this getInfo request was pending, and this user was determined
+					// to be a node, then we can skip any further action here.
+					if(model.get("type") == "node")
+						return;
+					
+					if((xhr.status == 404) && nodeModel.get("checked")){
 						model.getNameFromSubject();
 						model.set("checked", true);
 					}
@@ -347,6 +354,29 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				this.set("orcid", username);
 			
 			return isOrcid;
+		},
+		
+		isNode: function(){
+			var node = _.where(nodeModel.get("members"), { shortIdentifier: this.get("username") });
+			return (node && node.length)
+		},
+		
+		// Will check if this user is a Member Node. If so, it will save the MN info to the model
+		saveAsNode: function(){
+			if(!this.isNode()) return;
+			
+			var node = _.where(nodeModel.get("members"), { shortIdentifier: this.get("username") })[0];
+			
+			this.set({
+				type: "node",
+				logo: node.logo,
+				description: node.description,
+				node: node,
+				fullName: node.name,
+				usernameReadable: this.get("username")
+			});
+			this.updateSearchModel();
+			this.set("checked", true);
 		},
 		
 		loginLdap: function(formData, success, error){

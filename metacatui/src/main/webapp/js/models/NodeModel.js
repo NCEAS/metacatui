@@ -44,7 +44,8 @@ define(['jquery', 'underscore', 'backbone'],
 			members: [],
 			coordinators: [],
 			replicaMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
-			currentMemberNode: appModel.get("nodeId") || null
+			currentMemberNode: appModel.get("nodeId") || null,
+			checked: false
 		},
 		
 		initialize: function(){
@@ -95,6 +96,8 @@ define(['jquery', 'underscore', 'backbone'],
 					if(!xmlResponse) return;
 					
 					thisModel.saveNodeInfo(xmlResponse);
+					
+					thisModel.set("checked", true);
 				}		
 			});
 		},

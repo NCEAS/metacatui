@@ -85,7 +85,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
-				this.$('.format-charts-data').html("<h2 class='" + svgClass + " fallback'>" + this.commaSeparateNumber(dataCount) + " data files</h2>");
+				this.$('.format-charts-data').html("<h2 class='" + svgClass + " fallback'>" + appView.commaSeparateNumber(dataCount) + " data files</h2>");
 				
 				return;
 			}
@@ -129,7 +129,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
-				this.$('.format-charts-metadata').html("<h2 class='" + svgClass + " fallback'>" + this.commaSeparateNumber(metadataCount) + " metadata files</h2>");
+				this.$('.format-charts-metadata').html("<h2 class='" + svgClass + " fallback'>" + appView.commaSeparateNumber(metadataCount) + " metadata files</h2>");
 				
 				return;
 			}
@@ -251,7 +251,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
-				this.$('#uploads-title').html("<h2 class='packages fallback'>" + this.commaSeparateNumber(statsModel.get('totalUploads')) + "</h2>");
+				this.$('#uploads-title').html("<h2 class='packages fallback'>" + appView.commaSeparateNumber(statsModel.get('totalUploads')) + "</h2>");
 				
 				return;
 			}
@@ -382,7 +382,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
-				this.$('#downloads-title').html("<h2 class='packages fallback'>" + this.commaSeparateNumber(statsModel.get('totalDownloads')) + "</h2>");
+				this.$('#downloads-title').html("<h2 class='packages fallback'>" + appView.commaSeparateNumber(statsModel.get('totalDownloads')) + "</h2>");
 				
 				return;
 			}
@@ -474,14 +474,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Find the year range element
 			this.$('#data-coverage-year-range').text(yearRange);
 		},
-		
-		//Function to add commas to large numbers
-		commaSeparateNumber: function(val){
-		    while (/(\d+)(\d{3})/.test(val.toString())){
-		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-		    }
-		    return val;
-		 },
 		
 		onClose: function () {			
 			//Clear the template

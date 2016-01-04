@@ -60,6 +60,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 		fieldNameMap: {
 			all: "",
 			dateLogged: "dateLogged",
+			datasource: "nodeId",
 			nodeId: "nodeId",
 			id: "id",
 			pid: "pid",
@@ -96,7 +97,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 			
 			//-------nodeId--------
 			//Update the Node Id
-			this.setNodeId();
+			if(!this.get("nodeId"))
+				this.setNodeId();
 			
 			if(this.filterIsAvailable("nodeId") && this.get("nodeId")){
 				var value = this.get("nodeId");
@@ -115,7 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 						query += "+" + model.fieldNameMap["nodeId"] + ":" + value;
 					}
 				}
-				else if(Array.isArray("nodeId")){
+				else if(Array.isArray(value)){
 					query += "+" + model.getGroupedQuery(model.fieldNameMap["nodeId"], value, { operator: "OR", subtext: false });				
 				}
 			}

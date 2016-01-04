@@ -520,9 +520,13 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			logSearch.set("event", "read");
 			logSearch.set("formatType", "DATA");
 			logSearch.set("facetRanges", ["dateLogged"]);
-			
-			if(this.get("searchModel") && this.get("searchModel").get("username")){
-				logSearch.set("username", this.get("searchModel").get("username"));
+
+			var searchModel = this.get("searchModel");
+			if(searchModel && searchModel.get("dataSource")){
+				logSearch.set("nodeId", searchModel.get("dataSource"))
+			}
+			if(searchModel && searchModel.get("username")){
+				logSearch.set("username", searchModel.get("username"));
 			}
 			
 			var requestSettings = {
@@ -551,8 +555,12 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			logSearch.set("formatType", "METADATA");
 			logSearch.set("facetRanges", ["dateLogged"]);
 			
-			if(this.get("searchModel") && this.get("searchModel").get("username")){
-				logSearch.set("username", this.get("searchModel").get("username"));
+			var searchModel = this.get("searchModel");
+			if(searchModel && searchModel.get("dataSource")){
+				logSearch.set("nodeId", searchModel.get("dataSource"))
+			}
+			if(searchModel && searchModel.get("username")){
+				logSearch.set("username", searchModel.get("username"));
 			}
 			
 			var requestSettings = {

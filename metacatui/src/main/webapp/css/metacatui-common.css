@@ -1525,9 +1525,12 @@ textarea.token{
 }
 #first-upload-year-container{
 	float: left;
+	max-width: 115px;
 }
 #first-upload-container{
 	font-size: .9em;
+	width: 50%;
+	width: calc(97% - 130px);
 }
 address.email-container{
 	display: inline;
