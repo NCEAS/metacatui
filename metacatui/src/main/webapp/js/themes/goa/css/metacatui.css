@@ -664,7 +664,7 @@
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	width: 900px;
+  	width: 1000px;
   	clear: both;
   }
   
@@ -695,8 +695,8 @@
   }
 
 .profile .chart-title{
-	width: 205px;
 	float: left;
+	max-width: 300px;
 }
 
 .profile .chart-title h2{
@@ -800,6 +800,7 @@ svg .title{
 }
 .profile .format-charts-container .chart-title{
 	width: 100%;
+	max-width: 100%;
 }
 .profile .format-charts{
 	width: 100%;
@@ -860,11 +861,6 @@ svg .title{
 	width: 650px;
 	float: right;
 }
-#upload-chart-title{
-	height: auto;
-	max-height: 105px;
-	width: 205px;
-}
 svg .line{
 	fill: none;
   	stroke-width: 2px;
@@ -919,7 +915,7 @@ svg .point:hover ~ .line-chart-label{
 /* Circle Badges */
 .circle-badge{
 	height: auto;
-	max-height: 100px;
+	max-height: 300px;
 }
 .circle-badge circle{
 	stroke-width: 5px;

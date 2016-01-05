@@ -1734,7 +1734,6 @@ li.ui-menu-item > a:hover,
   }
 
 .profile .chart-title{
-	width: 205px;
 	float: left;
 }
 
@@ -1905,11 +1904,6 @@ svg .title{
 	width: 650px;
 	float: right;
 }
-#upload-chart-title{
-	height: auto;
-	max-height: 105px;
-	width: 205px;
-}
 svg .line{
 	fill: none;
   	stroke-width: 2px;
@@ -1964,7 +1958,7 @@ svg .point:hover ~ .line-chart-label{
 /* Circle Badges */
 .circle-badge{
 	height: auto;
-	max-height: 100px;
+	max-height: 300px;
 }
 .circle-badge circle{
 	stroke-width: 5px;

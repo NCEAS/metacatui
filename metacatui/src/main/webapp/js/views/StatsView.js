@@ -290,7 +290,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				data: titleChartData,
 				className: "chart-title",
 				useGlobalR: true,
-				globalR: 40
+				globalR: 60
 			});
 			this.$('#uploads-title').prepend(uploadChartTitle.render().el);
 		},
@@ -420,7 +420,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				id: "download-chart-title",
 				data: titleChartData,
 				className: "chart-title",
-				useGlobalR: true
+				useGlobalR: true,
+				globalR: 60
 			});
 			
 			this.$('#downloads-title').html(downloadChartTitle.render().el);

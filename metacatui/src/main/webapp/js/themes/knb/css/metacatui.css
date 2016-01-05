@@ -1282,11 +1282,6 @@ svg .title{
 	width: 650px;
 	float: right;
 }
-#upload-chart-title{
-	height: auto;
-	max-height: 105px;
-	width: 205px;
-}
 svg .line{
 	fill: none;
   	stroke-width: 2px;
@@ -1345,7 +1340,7 @@ svg .domain{
 /* Circle Badges */
 .circle-badge{
 	height: auto;
-	max-height: 100px;
+	max-height: 300px;
 }
 .circle-badge circle{
 	stroke-width: 5px;

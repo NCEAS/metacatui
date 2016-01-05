@@ -1551,9 +1551,6 @@ address.email-container:before{
     stroke: #CCC;
     fill: #CCC;
 }
-#downloads-title .circle-badge{
-	max-height: 150px;
-}
 .profile .chart-title{
 	float: left;
 }
