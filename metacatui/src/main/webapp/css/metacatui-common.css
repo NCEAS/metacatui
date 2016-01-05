@@ -1044,7 +1044,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 #Metadata  > .container > .row-fluid > .citation.has-data-source,
 #Metadata  > .container > .row-fluid > form > .citation.has-data-source{
 	width: 83%;
-	width: calc(100% - 95px);
+	width: calc(100% - 130px);
 	float: left;
 }
 #Metadata .citation .title,
@@ -1123,7 +1123,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 /**----------------------------------------**/
 .citation ~ .logo{
-  max-width: 70px;
+  max-width: 125px;
   display: inline-block;
   float: right;
   margin-bottom: 10px;
@@ -1131,6 +1131,16 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .metadata-controls .info-icons{
 	float: left;
 	margin-top: 10px;
+}
+.citation ~ .logo .ORNLDAAC,
+.citation ~ .logo .CDL,
+.citation ~ .logo .PISCO,
+.citation ~ .logo .ONEShare,
+.citation ~ .logo .KUBI,
+.citation ~ .logo .CLOEBIRD,
+.citation ~ .logo .EDACGSTORE,
+.citation ~ .logo .NKN{
+	max-width: 175px;
 }
 
 /****************************************** 
@@ -1517,7 +1527,7 @@ textarea.token{
 #user-profile .logo{
 	max-width: 100px;
 	display: block;
-	margin-bottom: 10px;
+	margin-bottom: 30px;
 }
 #identity-request-container label,
 .add-member label{
@@ -1539,7 +1549,18 @@ address.email-container:after{
 	content: attr(data-domain);
 }
 address.email-container:before{
-	content: attr(data-user);
+	content: attr(data-user);o
+}
+[data-username="ORNLDAAC"] #user-profile .user-info .logo,
+[data-username="CDL"] #user-profile .user-info .logo,
+[data-username="PISCO"] #user-profile .user-info .logo,
+[data-username="ONEShare"] #user-profile .user-info .logo,
+[data-username="KUBI"] #user-profile .user-info .logo,
+[data-username="CLOEBIRD"] #user-profile .user-info .logo,
+[data-username="EDACGSTORE"] #user-profile .user-info .logo,
+[data-username="NKN"] #user-profile .user-info .logo{
+	max-width: 200px;
+	width: 200px;
 }
 /****************************************** 
 ** Stats ***

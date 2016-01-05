@@ -169,7 +169,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			var profileEl = $.parseHTML(this.profileTemplate({
 				type: this.model.get("type"),
 				logo: this.model.get("logo") || "",
-				description: this.model.get("description") || ""
+				description: this.model.get("description") || "",
+				user: this.model.toJSON()
 			}).trim());
 			
 			//If the profile is being redrawn, then replace it
