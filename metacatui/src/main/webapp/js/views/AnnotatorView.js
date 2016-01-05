@@ -361,6 +361,11 @@ define(['jquery',
 							// render it in the document
 							var highlight = $("[data-annotation-id='" + annotation.id + "']");
 							var section = $(highlight).closest(".tab-pane").children(".annotation-container");
+							if (!section.html()) {
+								console.log("Highlights not completed yet - cannot render annotation");
+								return;
+							}
+							
 							var bubble = jQuery(viewRef.annotationTemplate({
 								annotation: annotation,
 								concept: concept,
@@ -385,12 +390,18 @@ define(['jquery',
 
 						};
 						
-						// look it up and provide the callback
-						if (annotation["oa:Motivation"] == "prov:wasAttributedTo") {
-							appLookupModel.orcidGetConcepts(conceptUri, renderAnnotation);	
-						} else {
-							appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
-						}
+						// give time for the highlights to render
+						setTimeout(function() {
+							
+							// look it up and provide the callback
+							if (annotation["oa:Motivation"] == "prov:wasAttributedTo") {
+								appLookupModel.orcidGetConcepts(conceptUri, renderAnnotation);	
+							} else {
+								appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
+							}
+							
+						}, 500);
+
 						
 					} else {
 						// for comments, just render it in the document
@@ -436,6 +447,7 @@ define(['jquery',
 			$(div).annotator('subscribe', 'annotationUpdated', reindexPid);
 			$(div).annotator('subscribe', 'annotationDeleted', handleDelete);
 			$(div).annotator('subscribe', 'annotationsLoaded', renderAnnotations);
+
 
 		}
 		
