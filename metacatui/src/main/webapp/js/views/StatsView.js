@@ -327,7 +327,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var lineChartView = new LineChart(
 						{	  data: statsModel.get('metadataDownloadDates'),
 			  formatFromSolrFacets: true,
-						cumulative: true,
+						cumulative: false,
 								id: "download-chart",
 						 className: "metadata",
 						 	yLabel: "downloads",
@@ -352,7 +352,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					var lineChartView = new LineChart(
 							{	  data: statsModel.get('dataDownloadDates'),
 				  formatFromSolrFacets: true,
-							cumulative: true,
+							cumulative: false,
 									id: "download-chart",
 							 className: "data",
 							 	yLabel: "downloads",
