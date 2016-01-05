@@ -23,6 +23,8 @@ define(['jquery',
 		template: null,
 		
 		annotationTemplate: _.template(AnnotationTemplate),
+		
+		rendered: false,
 						
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {},
@@ -195,8 +197,13 @@ define(['jquery',
 						var created = new Date(annotation.created);
 						var updated = new Date(annotation.updated);
 						var user = annotation.user; // TODO: make more readable
+						var divId = "viewer-" + annotation.id;
+						console.log("viewer div length: " + $(viewer.element).find("div[data-id='" + divId + "']").length);
+						if ($(viewer.element).find("div[data-id='" + divId + "']").length > 0) {
+							return;
+						}
 						$(element).after(
-								"<div>", 
+								"<div data-id='" + divId + "'>", 
 								"<p><i>Label: </i>" + concept.label + "</p>", 
 								"<p><i>Definition: </i>" + concept.desc + "</p>",
 								"</div>",
@@ -226,6 +233,13 @@ define(['jquery',
 			// render annotations when they load
 			var viewRef = this;
 			var renderAnnotations = function(annotations) {
+				
+				// keep from duplicating 
+				if (this.rendered) {
+					console.log("renderAnnotations already called");
+					return;
+				}
+				this.rendered = true;
 				
 				// sort the annotations by xpath
 				annotations = _.sortBy(annotations, function(ann) {
@@ -309,8 +323,9 @@ define(['jquery',
 					// figure out the annotation being selected
 					var annotationId = $(event.target).attr("data-id");
 					
+					console.log("hover trigger for target: " + event.target);
 					console.log("hover trigger for annotation: " + annotationId);
-					
+
 					// trigger as if a hover on highlighted region
 					var highlight = $("[data-annotation-id='" + annotationId + "']");
 					
@@ -353,11 +368,13 @@ define(['jquery',
 							}));
 							
 							section.prepend(bubble);
-							
+							console.log("rendered tag in section: " + section.html());
+
 							// bind after rendering
 							var target = $(bubble).find(".hover-proxy").filter("[data-id='" + annotation.id + "']");
 							console.log("binding annotation actions for target: " + $(target).size());
-							
+							console.log("binding annotation actions for target: " + annotation.id);
+
 							$(target).bind("mouseover", hoverAnnotation);
 							$(target).bind("mouseout", hoverAnnotation);
 							
@@ -394,6 +411,9 @@ define(['jquery',
 						
 			// reindex when an annotation is updated
 			var reindexPid = function(annotation, isDelete) {
+				
+				// reset view
+				this.rendered = false;
 				
 				// re load the annotations
 				var annotations = $(div).data('annotator').plugins.Store.annotations;
