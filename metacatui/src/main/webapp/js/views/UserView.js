@@ -466,7 +466,16 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				y = firstUpload.getUTCFullYear(),
 				d = firstUpload.getUTCDate();
 			
-			this.$("#first-upload-container").text("Contributor since " + m + " " + d + ", " + y);
+			//For Member Nodes, start all dates at July 2012, the beginning of DataONE
+			if(this.model.get("type") == "node"){
+				if(y < 2012){
+					y = 2012;
+					firstUpload = new Date("July 01 2012");
+				}
+				this.$("#first-upload-container").text("DataONE Member Node since " + y);
+			}
+			else
+				this.$("#first-upload-container").text("Contributor since " + m + " " + d + ", " + y);
 			
 			//Construct the time-elapsed sentence
 			var now = new Date(),
