@@ -19,7 +19,7 @@ Load files in the <head> section of your HTML document. Make sure you also add t
     <head>
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
         <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css" media="screen" />
-        <script type="text/javascript" src="/fancybox/jquery.fancybox.pack.js"></script>
+        <script type="text/javascript" src="/new-site/fancybox/jquery.fancybox.pack.js"></script>
     </head>
 
 Create your links with a `title` if you want a title to be shown, and add a class:
