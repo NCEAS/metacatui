@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		render: function (options) {			
 			this.stopListening();
 			if(this.model) this.model.stopListening();
-			
+						
 			this.activeSection = (options && options.section)? options.section : "profile";
 			this.activeSubSection = (options && options.subsection)? options.subsection : "";
 			
@@ -134,7 +134,10 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					//Get the info
 					this.model.getInfo();
 				}
-			}	
+				
+				//When the model is reset, refresh the page
+				this.listenTo(this.model, "reset", this.render);
+			}			
 		},
 		
 		/* COMMENTED OUT for now because it was possibly over-engineering the problem... But keeping this code just in case its usable in the future...
@@ -1037,7 +1040,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.listenToOnce(this.model, "change:token", this.showToken);
 			
 			//Get the token from the CN
-			this.model.checkToken(function(data, textStatus, xhr){				
+			this.model.getToken(function(data, textStatus, xhr){				
 				model.getTokenExpiration();
 				model.set("token", data);				
 				model.trigger("change:token");
@@ -1047,7 +1050,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		showToken: function(){
 			var token = this.model.get("token");
 			
-			if(!token)				
+			if(!token || !this.model.get("loggedIn"))				
 				return;
 			
 			var expires    = this.model.get("expires"),

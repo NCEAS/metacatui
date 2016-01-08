@@ -436,21 +436,19 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					},
 					error: function(data, textStatus, xhr){
 						//User is not logged in
-						//model.set("loggedIn", false);
-						//model.set("username", model.defaults().username);
 						model.reset();
-						model.trigger("change:loggedIn");
 					}
 				}
 				
 				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 			} else {
 				// use the token method for checking authentication
-				this.checkToken();
+				this.getToken();
 			}			
 		},
 		
-		checkToken: function(customCallback) {
+		getToken: function(customCallback) {
+
 			var tokenUrl = appModel.get('tokenUrl');
 			var model = this;
 			
@@ -519,6 +517,26 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			}
 							
 			this.set("expires", expires);
+		},
+		
+		checkToken: function(onSuccess, onError){
+			var url = appModel.get("checkTokenUrl");
+			
+			if(!url) return;
+			
+			var requestSettings = {
+					type: "GET",
+					url: url,
+					success: onSuccess || function(data, textStatus, xhr){
+						appUserModel.set("checked", true);
+					},
+					error: onError || function(data, textStatus, xhr){
+						//If this token in invalid, then reset the user model/log out 
+						appUserModel.reset();
+					}
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
 		parseToken: function(token) {
@@ -725,8 +743,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				}
 		},
 		
-		reset: function(){
-			this.set(_.clone(this.defaults()));
+		reset: function(){			
+			var defaults = _.omit(this.defaults(), ["searchModel", "searchResults"]);
+			this.set(defaults);
 		}
 	});
 	

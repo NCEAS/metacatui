@@ -79,6 +79,8 @@ define(['jquery',
 					$(imageEl).fadeIn('slow');
 				});
 			}
+			
+			this.listenForActivity();
 		},
 		
 		//Changes the web document's title
@@ -333,6 +335,22 @@ define(['jquery',
 			
 			//Send login request via the User Model
 			appUserModel.loginLdap(formData, loginSuccess, loginFail);			
+		},
+		
+		// Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else
+		// When a user checks back, we want to check for log-in status
+		listenForActivity: function(){
+			appUserModel.on("change:loggedIn", function(){
+				if(!appUserModel.get("loggedIn")) return;
+					
+				//Check the user's token on focus
+				$(window).focus(function(){
+					//If the user's token is no longer valid, then refresh the page
+					appUserModel.checkToken(null, function(){
+						window.location.reload();
+					});
+				});
+			});
 		},
 		
 		/********************** Utilities ********************************/

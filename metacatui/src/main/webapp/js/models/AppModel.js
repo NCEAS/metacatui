@@ -53,6 +53,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
 			tokenUrl: null,
+			checkTokenUrl: null,
 			//annotatorUrl: null,
 			accountsUrl: null,
 			pendingMapsUrl: null,
@@ -105,6 +106,7 @@ define(['jquery', 'underscore', 'backbone'],
 				//Settings for the DataONE API v2 only
 				if(this.get("d1CNService").indexOf("v2") > -1){
 					this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
+					this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 					
 					//Turn the provenance features on

@@ -25,18 +25,17 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			anchorId: null,
 			
-			userProfiles: false,
+			userProfiles: true,
 			profileUsername: null,
 			
 			useJsonp: true,
 			
 			metcatVersion: "2.5.0", 
-			baseUrl: "https://cn-sandbox-2.test.dataone.org",
-			//baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
+			d1CNBaseUrl:  "https://cn.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -66,6 +65,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
+			checkTokenUrl: null,
 			annotatorUrl: null,
 		    prov: true,
 			useSeriesId: true
@@ -117,6 +117,7 @@ define(['jquery', 'underscore', 'backbone'],
 				//Authentication / portal URLs
 				this.set('portalUrl', this.get('d1CNBaseUrl') + '/portal/');
 				this.set('tokenUrl',  this.get('portalUrl') + 'token');
+				this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 				
 				//Annotator API 
 				if(typeof this.get("annotatorUrl") !== "undefined")
