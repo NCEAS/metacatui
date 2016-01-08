@@ -31,7 +31,7 @@ define(['jquery', 'underscore', 'backbone'],
 			useJsonp: true,
 			
 			metacatVersion: "2.5.0", 
-			baseUrl: "https://goa.nceas.ucsb.edu",//window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
@@ -55,10 +55,10 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			//annotatorUrl: null,
 			accountsUrl: null,
-			//pendingMapsUrl: null,
-			//accountsMapsUrl: null,
-			//groupsUrl: null,
-			//prov: false,
+			pendingMapsUrl: null,
+			accountsMapsUrl: null,
+			groupsUrl: null,
+			prov: true,
 			useSeriesId: true
 		},
 				

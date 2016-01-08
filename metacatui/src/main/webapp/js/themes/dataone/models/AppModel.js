@@ -67,7 +67,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//signInUrlLdap: null,
 			tokenUrl: null,
 			annotatorUrl: null,
-		    //prov: true,
+		    prov: true,
 			useSeriesId: true
 		},
 		
