@@ -15,7 +15,6 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'view/*pid'                 : 'renderMetadata',     // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-account'                   : 'renderUserSettings',
-			'profile' : 'renderProfile',
 			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
 			'logout'                    : 'logout'          // logout the user
 			//'api(/:anchorId)'           : 'renderAPI'       // API page 

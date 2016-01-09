@@ -22,7 +22,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			metadataUploadDates: null,
 			dataUploadDates: null,
 			
-			totalDownloads: 0,
+			downloads: 0,
 			metadataDownloads: null,
 			dataDownloads: null,
 			metadataDownloadDates: null,
@@ -74,8 +74,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			    }
 			})();
 			
-			this.on("change:dataDownloads",     this.sumDownloads);
-			this.on("change:metadataDownloads", this.sumDownloads);
+			//this.on("change:dataDownloads",     this.sumDownloads);
+			//this.on("change:metadataDownloads", this.sumDownloads);
 		},
 		
 		//This function serves as a shorthand way to get all of the statistics stored in the model
@@ -89,9 +89,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			this.getFirstBeginDate();
 			this.getFormatTypes();
-			this.getUploads();			
-			this.getDataDownloadDates();
-			this.getMetadataDownloadDates();
+			this.getUploads();
+			this.getDownloadDates();
+			//this.getDataDownloadDates();
+			//this.getMetadataDownloadDates();
 		},
 		
 		// Send a Solr query to get the earliest beginDate, latest endDate, and facets of data collection years
@@ -580,12 +581,60 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
+		getDownloadDates: function(){
+			if(!appModel.get("d1LogServiceUrl")) return;
+			
+			var model = this;
+				
+			var logSearch = new LogsSearch();
+			logSearch.set("event", "read");
+			logSearch.set("formatType", ["METADATA", "DATA"]);
+			logSearch.set("facetRanges", ["dateLogged"]);
+			logSearch.set("facets", ["formatType"]);
+			
+			var searchModel = this.get("searchModel");
+			if(searchModel && searchModel.get("dataSource")){
+				logSearch.set("nodeId", searchModel.get("dataSource"))
+			}
+			if(searchModel && searchModel.get("username")){
+				logSearch.set("username", searchModel.get("username"));
+			}
+			
+			var requestSettings = {
+				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
+				type: "GET",
+				dataType: "json",
+				success: function(data, textStatus, xhr){
+					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
+					
+					var m_index = _.indexOf(data.facet_counts.facet_fields.formatType, "METADATA");
+					if(m_index > -1) 
+						model.set("metadataDownloads", data.facet_counts.facet_fields.formatType[m_index+1]);
+					
+					var d_index = _.indexOf(data.facet_counts.facet_fields.formatType, "DATA");
+					if(d_index > -1) 
+						model.set("dataDownloads", data.facet_counts.facet_fields.formatType[d_index+1]);
+					
+					if(data.facet_counts.facet_fields.formatType[m_index+1] == 0) model.trigger("change:metadataDownloads");
+					if( data.facet_counts.facet_fields.formatType[d_index+1] == 0) model.trigger("change:dataDownloads");
+					
+					
+					model.set("downloads", data.response.numFound);	
+					if(data.response.numFound == 0) model.trigger("change:downloads");
+					
+					model.set("downloadDates", counts);	
+				}
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+		},
+		
 		sumDownloads: function(){
 			if((this.get("dataDownloads") == null) || (this.get("metadataDownloads") == null)) return;
 			
-			this.set("totalDownloads", this.get("dataDownloads") + this.get("metadataDownloads"));
+			this.set("downloads", this.get("dataDownloads") + this.get("metadataDownloads"));
 			
-			if(this.get("totalDownloads") == 0) this.trigger("change:totalDownloads");
+			if(this.get("downloads") == 0) this.trigger("change:downloads");			
 		}
 	});
 	return Stats;

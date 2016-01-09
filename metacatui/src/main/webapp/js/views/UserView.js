@@ -384,8 +384,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.listenToOnce(statsModel, "change:totalUploads", function(statsModel){
 				view.$("#total-upload-container").text(appView.commaSeparateNumber(statsModel.get("totalUploads")));
 			});
-			statsModel.once("change:totalDownloads", function(){
-				view.$("#total-download-container").text(appView.commaSeparateNumber(this.get("totalDownloads")));
+			statsModel.once("change:downloads", function(){
+				view.$("#total-download-container").text(appView.commaSeparateNumber(this.get("downloads")));
 			});
 			
 			//Create a base query for the statistics

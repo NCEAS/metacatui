@@ -1583,6 +1583,23 @@ address.email-container:before{
 .profile .stripe{
 	clear: both;
 }
+.profile .downloads .chart-title{
+	width: 100%;
+	margin-bottom: 30px;
+}
+.profile #downloads-title{
+	float: left;
+}
+.profile .chart.download-chart{
+	width: 100%;
+	float: none;
+	clear: both;
+}
+.profile .stripe{
+	border-bottom: 1px dashed #CCC;
+    padding-bottom: 20px;
+    padding-top: 20px;
+}
 /****************************************** 
 ** Panels ***
 ******************************************/

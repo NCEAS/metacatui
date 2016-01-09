@@ -12,6 +12,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * 			[{x: "2009", y: 20, "className": "bar"}]
 			 * 			Any objects with the same x value will be graphed as overlapping bars on the same spot on the x-axis, so stacked bar charts can be created that way.
 			 * 	formatFromSolrFacets = pass true to pass a Solr facets object to format and then use as the data to graph
+			 *  formatFromSolrFacetRanges = pass true to pass a Solr facet ranges object to format and then use as the data to graph
+			 *  	Solr facet ranges look like:   [0: "2015-08-08", 1: 160, 2: "2015-09-08", 3: 200]
 			 *  id: The id to use for the svg element
 			 * 	className = class to give the SVG element
 			 *  barClass = a class to give every bar element
@@ -21,6 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 *  height = height of SVG element
 			 *  roundedRect = pass true to rounded the top corners of the bars. Use false for stacked bar charts
 			 *  displayBarLabel = pass false to turn off the count labels displayed at the top of each bar
+			 *  hideBarLabels = if set to true, the bar labels will be in the DOM but will only be shown on mouseover.
 			 */
 			this.data 	   = options.data 	   || [{x: "", y: 0, className: "default"}];
 			this.id 	   = options.id 	   || "";
@@ -33,11 +36,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.roundedRect 	 = options.roundedRect 	   || false;
 			this.roundedRadius 	 = options.roundedRadius   || null;
 			this.displayBarLabel = options.displayBarLabel || true;
+			this.hideBarLabels   = options.hideLabels      || false;
 			this.barLabelClass	 = options.barLabelClass   || "";
 			
-			if(options.formatFromSolrFacets){
+			if(options.formatFromSolrFacets)
 				this.data = this.formatFromSolrFacets(this.data);
-			}
+			
+			if(options.formatFromSolrFacetRanges)
+				this.data = this.formatFromSolrFacetRanges(this.data);
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -56,7 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 },
 				
 		tagName: "svg",
-					
+				
 		/*
 		 * --Adapted from http://bl.ocks.org/mbostock/7441121--
 		 * This function draws a simple bar chart
@@ -70,94 +76,119 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	         * ========================================================================
 	         */
 			
-			var margin = {top: 20, right: 30, bottom: 30, left: 80},
+			var margin = {top: 20, right: 30, bottom: 70, left: 80},
 		    width = this.width - margin.left - margin.right,
 		    height = this.height - margin.top - margin.bottom;
 
-		var x = d3.scale.ordinal()
-		    .rangeRoundBands([0, width], .1);
-
-		var y = d3.scale.linear()
-		    .range([height, 0]);
+			var x = d3.scale.ordinal()
+			    .rangeRoundBands([0, width], .1);
+			
+			var min = d3.min(this.data, function(d) {  return d.y; }),
+				max = d3.max(this.data, function(d) {  return d.y; }),
+				difference = max - min;
 		
-		var xAxis = d3.svg.axis()
-		    .scale(x)
-		    .orient("bottom");
-
-		var yAxis = d3.svg.axis()
-		    .scale(y)
-		    .orient("left")
-		    .innerTickSize(["-" + this.width]);
-		
-		if(this.yFormat){
-		    yAxis.tickFormat(this.yFormat); 
-		}
-		var chart = d3.select(this.el)
-			.attr("class", "bar-chart " + this.className)
-		    .attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom)
-		  .append("g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-		  
-		  x.domain(this.data.map(function(d) { return d.x; }));
-		  y.domain([0, d3.max(viewRef.data, function(d) {  return d.y; })]);
-
-		  
-		  chart.append("g")
-		      .attr("class", "x axis")
-		      .attr("transform", "translate(0," + height + ")")
-		      .call(xAxis);
-
-		  chart.append("g")
-		      .attr("class", "y axis")
-		      .call(yAxis);
-
-		  /* rounded_rect: A function for drawing a rounded rectangle 
-		    	x: x-coordinate
-				y: y-coordinate
-				w: width
-				h: height
-				r: corner radius
-				tl: top_left rounded?
-				tr: top_right rounded?
-				bl: bottom_left rounded?
-				br: bottom_right rounded?
-		   */
-		  function rounded_rect(x, y, w, h, r, tl, tr, bl, br) {
-			    var retval;
-			    retval  = "M" + (x + r) + "," + y;
-			    retval += "h" + (w - 2*r);
-			    if (tr) { retval += "a" + r + "," + r + " 0 0 1 " + r + "," + r; }
-			    else { retval += "h" + r; retval += "v" + r; }
-			    retval += "v" + (h - 2*r);
-			    if (br) { retval += "a" + r + "," + r + " 0 0 1 " + -r + "," + r; }
-			    else { retval += "v" + r; retval += "h" + -r; }
-			    retval += "h" + (2*r - w);
-			    if (bl) { retval += "a" + r + "," + r + " 0 0 1 " + -r + "," + -r; }
-			    else { retval += "h" + -r; retval += "v" + -r; }
-			    retval += "v" + (2*r - h);
-			    if (tl) { retval += "a" + r + "," + r + " 0 0 1 " + r + "," + -r; }
-			    else { retval += "v" + -r; retval += "h" + r; }
-			    retval += "z";
-			    return retval;
+			if((difference > 30000) || ((min < 10) && (difference > 10000))){
+				var y = d3.scale.log()
+			    		  .range([height, 0]);
+				var log = true;
 			}
+			else{
+				var y = d3.scale.linear()
+			    		  .range([height, 0]);
+				var log = false;
+			}
+			
+			var xAxis = d3.svg.axis()
+			    .scale(x)
+			    .orient("bottom")
+			    .ticks(5);
+		
+			if(!this.yFormat && log)
+				this.yFormat = function(d){ return y.tickFormat(0, d3.format(",d"))(d) };
+			else if(!this.yFormat)
+				this.yFormat = d3.format(",d");
+
+			var yAxis = d3.svg.axis()
+			    .scale(y)
+			    .orient("left")
+			    .innerTickSize(["-" + this.width])
+			    .tickFormat(this.yFormat);
+			
+			var chart = d3.select(this.el)
+				.attr("class", "bar-chart " + this.className)
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+			    .append("g")
+			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			  
+			  x.domain(this.data.map(function(d) { return d.x; }));
+			  y.domain([1, d3.max(viewRef.data, function(d) {  return d.y; })]);
+
 		  
-		  /*
-	         * ========================================================================
-	         * Draw the bars
-	         * ========================================================================
-	         */
+			  chart.append("g")
+			      .attr("class", "x axis")
+			      .attr("transform", "translate(0," + height + ")")
+			      .call(xAxis)
+			      .selectAll("text")
+			      .style("text-anchor", 'end')
+			      .attr("dx", "-.8em")
+			      .attr("dy", ".15em")
+			      .attr("transform", "rotate(-65)");
+	
+			  chart.append("g")
+			      .attr("class", "y axis")
+			      .call(yAxis);
+
+			  /* rounded_rect: A function for drawing a rounded rectangle 
+			    	x: x-coordinate
+					y: y-coordinate
+					w: width
+					h: height
+					r: corner radius
+					tl: top_left rounded?
+					tr: top_right rounded?
+					bl: bottom_left rounded?
+					br: bottom_right rounded?
+			   */
+			  function rounded_rect(x, y, w, h, r, tl, tr, bl, br) {
+				    var retval;
+				    retval  = "M" + (x + r) + "," + y;
+				    retval += "h" + (w - 2*r);
+				    if (tr) { retval += "a" + r + "," + r + " 0 0 1 " + r + "," + r; }
+				    else { retval += "h" + r; retval += "v" + r; }
+				    retval += "v" + (h - 2*r);
+				    if (br) { retval += "a" + r + "," + r + " 0 0 1 " + -r + "," + r; }
+				    else { retval += "v" + r; retval += "h" + -r; }
+				    retval += "h" + (2*r - w);
+				    if (bl) { retval += "a" + r + "," + r + " 0 0 1 " + -r + "," + -r; }
+				    else { retval += "h" + -r; retval += "v" + -r; }
+				    retval += "v" + (2*r - h);
+				    if (tl) { retval += "a" + r + "," + r + " 0 0 1 " + r + "," + -r; }
+				    else { retval += "v" + -r; retval += "h" + r; }
+				    retval += "z";
+				    return retval;
+				}
 		  
-		  var bars = chart.selectAll(".bar")
-			   			  .data(this.data).enter().append("g");
-		  
+			   /*
+		        * ========================================================================
+		        * Draw the bars
+		        * ========================================================================
+		        */
+			  
+			   var bars = chart.selectAll(".bar")
+				   			  .data(this.data).enter().append("g"),
+				   hideLabels = (bars[0].length > 20) || this.hideBarLabels;
+			   
+			   if(hideLabels)
+				   this.barClass += " show-label";
+			  
 			   bars.append("path")
 			   	   .attr("d", function(d){
 					    	  if(!d.y) return null; // Do not draw anything if this y-value is 0
 					    	  
 					    	  if(viewRef.roundedRect){
 					    		  
-					    		  if(viewRef.roundedRadius){
+					    		  if(viewRef.roundedRadius && (bars[0].length < 20)){
 					    			  var radius = viewRef.roundedRadius;
 					    		  }
 					    		  else{
@@ -174,38 +205,56 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				.attr("x", function(d) { return x(d.x); })
 		  	    .attr("y", function(d) { return y(d.y); })
 		  	    .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className + " " + viewRef.barClass; });
+			   
+			   if(hideLabels){
+				   bars.on("mouseover", function(d){
+					  $(d3.select(this).select(".bar-label")[0]).fadeIn(200);
+				   });
+				   bars.on("mouseout", function(d){
+						  $(d3.select(this).select(".bar-label")[0]).hide();
+				   });
+			   }
 
-		/*
-		* ========================================================================
-	    * Display the count above the bar
-		* ========================================================================
-		*/
-	   if(this.displayBarLabel){
-		  bars.append("text")
-		  	  .attr("transform", function(d){ 
-		  		  var textX = x(d.x) + (x.rangeBand()/2),
-		  		  	  textY = y(d.y) - 10;
-		  		  
-		  		  return "translate(" + textX + "," + textY + ")"; })
-		  	  .text(function(d){ return appView.commaSeparateNumber(d.y); })
-		  	  .attr("text-anchor", "middle")
-		  	  .attr("class", "bar-label " + this.barLabelClass);
-	   }
-		  
-		  /*
-	         * ========================================================================
-	         * Add a label to the y-axis
-	         * ========================================================================
-	         */
-		  	d3.select(this.el).append("text")
-		      .attr("y", 6)
-		      .attr("dy", ".71em")
-		      .style("text-anchor", "middle")
-		      .text(this.yLabel)
-		      .attr("class", "title")
-		  	  .attr("transform", "translate(0, " + (this.height/2) + ") rotate(-90)");
-				
-			return this;
+				/*
+				* ========================================================================
+			    * Display the count above the bar
+				* ========================================================================
+				*/
+			   if(this.displayBarLabel){
+				 //When there are more than 20 bars, hide the label and display on hover
+				  if(hideLabels)
+					  this.barLabelClass += " hidden";
+					  
+				  var barLabels = bars.append("text")
+								  	  .attr("transform", function(d){ 
+								  		  var textX = x(d.x) + (x.rangeBand()/2),
+								  		  	  textY = y(d.y) - 10;
+								  		  
+								  		  return "translate(" + textX + "," + textY + ")"; })
+								  	  .text(function(d){ return appView.commaSeparateNumber(d.y); })
+								  	  .attr("text-anchor", "middle")
+								  	  .attr("class", "bar-label " + this.barLabelClass);
+				  
+			   }
+				  
+			  /*
+		         * ========================================================================
+		         * Add a label to the y-axis
+		         * ========================================================================
+		         */
+			  	d3.select(this.el).append("text")
+			      .attr("y", 6)
+			      .attr("dy", ".71em")
+			      .style("text-anchor", "middle")
+			      .text(this.yLabel)
+			      .attr("class", "title")
+			  	  .attr("transform", "translate(0, " + (this.height/2) + ") rotate(-90)");
+					
+				return this;
+		},
+		
+		showBarLabel: function(e){
+			console.log(e.target);
 		},
 		
 		// This function will take a single object of key:value pairs (identical to the format that Solr returns for facets) and format it as needed to draw a bar chart
@@ -217,6 +266,26 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				data.push({
 					x: keys[i],
 					y: rawData[keys[i]]
+				});
+			}
+			
+			return data;
+		},
+		
+		formatFromSolrFacetRanges: function(rawData){
+			var keys = Object.keys(rawData),
+				data = [],
+				monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "June",
+				                 "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
+			
+			for(var i=0; i<keys.length-1; i+=2){
+				var date = new Date(rawData[i]),
+					formattedDate = monthNames[date.getUTCMonth()] + date.getFullYear();
+
+				data.push({
+					x: formattedDate,
+					y: rawData[i+1],
+					rawDate: rawData[i]
 				});
 			}
 			
