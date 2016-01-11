@@ -111,7 +111,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			    .orient("bottom")
 			    .ticks([5]);
 		
-			if(!this.yFormat && log)
+			if(log)
 				this.yFormat = function(d){ return y.tickFormat(0, d3.format(",d"))(d) };
 			else if(!this.yFormat)
 				this.yFormat = d3.format(",d");

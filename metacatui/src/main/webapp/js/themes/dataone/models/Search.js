@@ -620,21 +620,35 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Create the value string
 			//Trim the spaces off
 			if(!Array.isArray(value) && (typeof value === "object") && value.value)
-				value = value.value.trim();
-			else if(Array.isArray(value))
-				value = value[0].trim();
-			else
-				value = value.trim();
-			if(this.needsQuotes(value)) value = '"' + encodeURIComponent(value) + '"';
-			else if(subtext)            value = "*" + encodeURIComponent(value) + "*";
-			else                        value = encodeURIComponent(value);
+				value = [value.value.trim()];
+			else if (typeof value == "string")
+				value = [value.trim()];
+
+			var valueString = "";
+			if(Array.isArray(value)){
+				var model = this;
+				_.each(value, function(v, i){	
+					if((value.length > 1) && (i == 0)) valueString += "("
+						
+					if(model.needsQuotes(v)) valueString += '"' + encodeURIComponent(v.trim()) + '"';
+					else if(subtext)        valueString += "*" + encodeURIComponent(v.trim()) + "*";
+					else                    valueString += encodeURIComponent(v.trim());
+					
+					if(i < value.length-1)
+						valueString += " OR ";
+					else if((i == value.length-1) && (value.length > 1))
+						valueString += ")";
+					
+				});
+			}
+			else valueString = value;
 			
 			query = "+(";
 				
 			//Create the query string
 			var last = numFields - 1;
 			_.each(fieldNames, function(field, i){					
-				query += field + ":" + value;
+				query += field + ":" + valueString;
 				if(i < last)  query += "%20" + operator + "%20";
 			});
 			

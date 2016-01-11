@@ -312,10 +312,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//If there are no download stats, show a message and exit
 			if(!statsModel.get('downloads')){
 				
-				var msg = "No one has downloaded any of this data";
-				if(statsModel.get("searchModel").get("dataSource").length){
-					msg += " or this member node may not be reporting download statistics"
-				}
+				var msg = "No one has downloaded any of this data or download statistics are not being reported.";
 				parentEl.html("<p class='subtle center'>" + msg + ".</p>");
 									
 				return;
