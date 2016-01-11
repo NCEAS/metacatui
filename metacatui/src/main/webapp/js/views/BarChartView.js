@@ -48,7 +48,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			//If there are less than 3 data objects (3 bars)
 			if((this.data.length < 3) && (this.width > 650)){
 				this.width = 650; 
-			}
+			}			
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -98,6 +98,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				var y = d3.scale.log()
 			    		  .range([height, 0]);
 				var log = true;
+				this.className += " log-scale";
 			}
 			else{
 				var y = d3.scale.linear()
@@ -108,7 +109,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			var xAxis = d3.svg.axis()
 			    .scale(x)
 			    .orient("bottom")
-			    .ticks(5);
+			    .ticks([5]);
 		
 			if(!this.yFormat && log)
 				this.yFormat = function(d){ return y.tickFormat(0, d3.format(",d"))(d) };
@@ -226,6 +227,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					   var id = $(this).children("path").attr("data-id");
 					   	viewRef.$(".bar-label[data-id='" + id + "']").hide();
 				   });
+				   
+				   //Add the hide labels class to the chart
+				   this.$el.attr("class", this.$el.attr("class") + " hide-labels");
 			   }
 
 				/*

@@ -1600,12 +1600,18 @@ address.email-container:before{
     padding-bottom: 20px;
     padding-top: 20px;
 }
-svg .bar-label.bg{
+.bar-chart .bar-label.bg{
 	fill: rgba(0,0,0,0.8);
 	stroke-width: 0px;
 }
-svg .bar-label.bg ~ text{
+.bar-chart .bar-label.bg ~ text{
 	fill: #FFF;
+}
+.bar-chart.hide-labels .x.axis .tick:nth-child(even){
+	display: none; /* hide every other x-axis tick when there are too many bars */
+}
+.bar-chart.log-scale .tick line{
+	stroke: #EEE;
 }
 /****************************************** 
 ** Panels ***
