@@ -610,10 +610,14 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 					var m_index = _.indexOf(data.facet_counts.facet_fields.formatType, "METADATA");
 					if(m_index > -1) 
 						model.set("metadataDownloads", data.facet_counts.facet_fields.formatType[m_index+1]);
+					else
+						model.set("metadataDownloads", 0);
 					
 					var d_index = _.indexOf(data.facet_counts.facet_fields.formatType, "DATA");
 					if(d_index > -1) 
 						model.set("dataDownloads", data.facet_counts.facet_fields.formatType[d_index+1]);
+					else
+						model.set("dataDownloads", 0);
 					
 					if(data.facet_counts.facet_fields.formatType[m_index+1] == 0) model.trigger("change:metadataDownloads");
 					if( data.facet_counts.facet_fields.formatType[d_index+1] == 0) model.trigger("change:dataDownloads");

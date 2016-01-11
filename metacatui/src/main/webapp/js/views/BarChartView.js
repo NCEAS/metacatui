@@ -44,6 +44,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			if(options.formatFromSolrFacetRanges)
 				this.data = this.formatFromSolrFacetRanges(this.data);
+			
+			//If there are less than 3 data objects (3 bars)
+			if((this.data.length < 3) && (this.width > 650)){
+				this.width = 650; 
+			}
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -79,6 +84,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			var margin = {top: 20, right: 30, bottom: 70, left: 80},
 		    width = this.width - margin.left - margin.right,
 		    height = this.height - margin.top - margin.bottom;
+			
+			this.margin = margin;
 
 			var x = d3.scale.ordinal()
 			    .rangeRoundBands([0, width], .1);
@@ -204,14 +211,20 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				})
 				.attr("x", function(d) { return x(d.x); })
 		  	    .attr("y", function(d) { return y(d.y); })
-		  	    .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className + " " + viewRef.barClass; });
+		  	    .attr("class", function(d){ if(!d.className){ d.className = ""; } return "bar " + d.className + " " + viewRef.barClass; })
+		  	    .attr("data-id", function(d){ return d.x; });
 			   
 			   if(hideLabels){
 				   bars.on("mouseover", function(d){
-					  $(d3.select(this).select(".bar-label")[0]).fadeIn(200);
+					   //Hide all other bars
+					   viewRef.$(".bar-label").hide();
+					   
+					  var id = $(this).children("path").attr("data-id");
+					  viewRef.$(".bar-label[data-id='" + d.x + "']").fadeIn(200);
 				   });
 				   bars.on("mouseout", function(d){
-						  $(d3.select(this).select(".bar-label")[0]).hide();
+					   var id = $(this).children("path").attr("data-id");
+					   	viewRef.$(".bar-label[data-id='" + id + "']").hide();
 				   });
 			   }
 
@@ -222,18 +235,74 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				*/
 			   if(this.displayBarLabel){
 				 //When there are more than 20 bars, hide the label and display on hover
-				  if(hideLabels)
+				  if(hideLabels){
 					  this.barLabelClass += " hidden";
+				  
+					  var labelWidth = 100, labelHeight = 20,
+					  	  labelXPadding = 10, labelYPadding = 10;
 					  
-				  var barLabels = bars.append("text")
-								  	  .attr("transform", function(d){ 
-								  		  var textX = x(d.x) + (x.rangeBand()/2),
-								  		  	  textY = y(d.y) - 10;
-								  		  
-								  		  return "translate(" + textX + "," + textY + ")"; })
-								  	  .text(function(d){ return appView.commaSeparateNumber(d.y); })
-								  	  .attr("text-anchor", "middle")
-								  	  .attr("class", "bar-label " + this.barLabelClass);
+					  var barLabels = chart.selectAll(".bar-label").data(this.data).enter().append("g").attr("class", "bar-label-container");
+					  	  barLabels.append("rect")
+							  		.attr("x", function(d, i){
+							  			var xPos = x(d.x) + (x.rangeBand()/2);
+								  		//Don't let our label bleed off the edge
+								  		if(xPos < 0) xPos = xPos + labelWidth;
+								  		
+								  		return  xPos; 
+								  	})
+								  	.attr("y", function(d, i){
+								  		var yPos = y(d.y) - 10;	
+								  		
+								  		//Don't let our label bleed off the edge
+								  		if(yPos < (viewRef.margin.top * -1)) yPos = yPos + labelHeight;
+								  		else if(yPos > (viewRef.height - labelHeight)) yPos = yPos - labelHeight;
+								  							  		
+								  		return yPos; 
+								  	})
+								  	.attr("width", function(d){
+								  		return ((d.x + ": " + appView.commaSeparateNumber(d.y)).length * 8) + labelXPadding;
+								  	})
+								  	.attr("height", labelHeight + labelYPadding)
+								  	.attr("rx", 5) //For rounded corners
+								  	.attr("ry", 5) //For rounded corners
+								  	.attr("class", "bg bar-label " + this.barLabelClass)
+								  	.attr("text-anchor", "end")
+								  	.attr("data-id", function(d, i){
+								  		return d.x;
+								  	});
+						  barLabels.append("text")
+								   .attr("x", function(d, i){
+								  		var xPos = x(d.x) + (x.rangeBand()/2);
+								  		//Don't let our label bleed off the edge
+								  		if(xPos < 0) xPos = xPos + labelWidth;
+								  		
+								  		return  xPos + labelXPadding; 
+								  	})
+								  	.attr("y", function(d, i){
+								  		var yPos = y(d.y) - 10;	
+								  		
+								  		//Don't let our label bleed off the edge
+								  		if(yPos < (viewRef.margin.top * -1)) yPos = yPos + labelHeight;
+								  		else if(yPos > (viewRef.height - labelHeight)) yPos = yPos - labelHeight;
+								  							  									  		
+								  		return yPos + labelYPadding * 2; 
+								  	})
+								    .text(function(d){ return d.x + ": " + appView.commaSeparateNumber(d.y); })
+								    .attr("class", "bar-label " + this.barLabelClass)
+								    .attr("text-anchor", "start")
+								    .attr("data-id", function(d){ return d.x });
+				  }
+				  else{
+			  			bars.append("text")
+					  	  .attr("transform", function(d){ 
+					  		  var textX = x(d.x) + (x.rangeBand()/2),
+					  		  	  textY = y(d.y) - 10;
+					  		  
+					  		  return "translate(" + textX + "," + textY + ")"; })
+					  	  .text(function(d){ return appView.commaSeparateNumber(d.y); })
+					  	  .attr("text-anchor", "middle")
+					  	  .attr("class", this.barLabelClass);
+				  }
 				  
 			   }
 				  
@@ -280,7 +349,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			for(var i=0; i<keys.length-1; i+=2){
 				var date = new Date(rawData[i]),
-					formattedDate = monthNames[date.getUTCMonth()] + date.getFullYear();
+					formattedDate = monthNames[date.getUTCMonth()] + " " + date.getFullYear();
 
 				data.push({
 					x: formattedDate,

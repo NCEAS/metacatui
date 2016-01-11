@@ -1600,6 +1600,13 @@ address.email-container:before{
     padding-bottom: 20px;
     padding-top: 20px;
 }
+svg .bar-label.bg{
+	fill: rgba(0,0,0,0.8);
+	stroke-width: 0px;
+}
+svg .bar-label.bg ~ text{
+	fill: #FFF;
+}
 /****************************************** 
 ** Panels ***
 ******************************************/
