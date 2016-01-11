@@ -77,6 +77,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 			username: "rightsHolder",
 			formatId: "formatId",
 			formatType: "formatType",
+			inPartialRobotList : "inPartialRobotList",
 			inFullRobotList : "inFullRobotList",
 			isRepeatVisit : "isRepeatVisit"
 		},
@@ -93,7 +94,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 			var query = "",
 				model = this;
 			
-			var otherFilters = ["event", "formatType", "formatId", "id", "pid", "userAgent", "inFullRobotList", "isRepeatVisit", "dateAggregated", "dateLogged", "entryId", "city", "region", "location", "size", "username"];
+			var otherFilters = ["event", "formatType", "formatId", "id", "pid", "userAgent", "inPartialRobotList", "inFullRobotList", "isRepeatVisit", "dateAggregated", "dateLogged", "entryId", "city", "region", "location", "size", "username"];
 			
 			//-------nodeId--------
 			//Update the Node Id
