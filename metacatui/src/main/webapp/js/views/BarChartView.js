@@ -82,8 +82,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	         */
 			
 			var margin = {top: 20, right: 30, bottom: 70, left: 80},
-		    width = this.width - margin.left - margin.right,
-		    height = this.height - margin.top - margin.bottom;
+		    	width = this.width - margin.left - margin.right,
+		    	height = this.height - margin.top - margin.bottom;
 			
 			this.margin = margin;
 
@@ -242,8 +242,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  if(hideLabels){
 					  this.barLabelClass += " hidden";
 				  
-					  var labelWidth = 100, labelHeight = 20,
-					  	  labelXPadding = 10, labelYPadding = 10;
+					  var labelWidth = 160, labelHeight = 20,
+					  	  labelXPadding = 10, labelYPadding = 10,
+					  	  width = this.width - margin.left - margin.right;
 					  
 					  var barLabels = chart.selectAll(".bar-label").data(this.data).enter().append("g").attr("class", "bar-label-container");
 					  	  barLabels.append("rect")
@@ -251,6 +252,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 							  			var xPos = x(d.x) + (x.rangeBand()/2);
 								  		//Don't let our label bleed off the edge
 								  		if(xPos < 0) xPos = xPos + labelWidth;
+								  		if((xPos + labelWidth) > width) xPos = xPos - labelWidth + labelXPadding;
 								  		
 								  		return  xPos; 
 								  	})
@@ -279,6 +281,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								  		var xPos = x(d.x) + (x.rangeBand()/2);
 								  		//Don't let our label bleed off the edge
 								  		if(xPos < 0) xPos = xPos + labelWidth;
+								  		if((xPos + labelWidth) > width) xPos = xPos - labelWidth + labelXPadding;
 								  		
 								  		return  xPos + labelXPadding; 
 								  	})
