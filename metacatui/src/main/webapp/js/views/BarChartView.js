@@ -129,7 +129,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 			  
 			  x.domain(this.data.map(function(d) { return d.x; }));
-			  y.domain([1, d3.max(viewRef.data, function(d) {  return d.y; })]);
+			  y.domain([1, max]);
 
 		  
 			  chart.append("g")
@@ -327,10 +327,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			  	  .attr("transform", "translate(0, " + (this.height/2) + ") rotate(-90)");
 					
 				return this;
-		},
-		
-		showBarLabel: function(e){
-			console.log(e.target);
 		},
 		
 		// This function will take a single object of key:value pairs (identical to the format that Solr returns for facets) and format it as needed to draw a bar chart

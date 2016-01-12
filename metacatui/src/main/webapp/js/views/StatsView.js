@@ -210,9 +210,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 						 className: "metadata",
 						 	yLabel: "files uploaded",
 						labelValue: "Metadata: ",
-						 frequency: frequency, 
-							radius: 4,
-							width: width
+						// frequency: frequency, 
+							radius: 2,
+							width: width,
+						    labelDate: "M-y"
 						});
 				
 				this.$('.upload-chart').html(lineChartView.render().el);
@@ -234,9 +235,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							 className: "data",
 							 	yLabel: "files uploaded",
 							labelValue: "Data: ",
-							 frequency: frequency, 
-								radius: 4,
-								 width: width
+						//	 frequency: frequency, 
+								radius: 2,
+								 width: width,
+						    labelDate: "M-y"
 							 });
 					
 					this.$('.upload-chart').html(lineChartView.render().el);

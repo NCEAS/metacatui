@@ -23,7 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			 * 					m - month only
 			 * 					y - year only
 			 * 					d - date only
-			 * 					m-y - month and year
+			 * 					m-y - month and year (e.g. 9/2013)
 			 * 					M y - month name and year (e.g. September 2013)
 			 * 					m-d-y - month, date, and year
 			 *  labelValue = a string to prepend to the value displayed in the label for line points
@@ -102,7 +102,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		 * This function draws a line time series chart
 		 */
 		render: function () {			
-						
+			var viewRef = this;
+		
 			/*
 			* ========================================================================
 		    * Set up the basic settings of our line chart (margins, scales, and axis)
@@ -116,11 +117,24 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.width  = this.width - margin.left - margin.right;
 			this.height = this.height - margin.top - margin.bottom;
 			
+			var min = d3.min(this.data, function(d) {  return d.count; }),
+				max = d3.max(this.data, function(d) {  return d.count; }),
+				difference = max - min;
+	
+			/*if((difference > 30000) || ((min < 10) && (difference > 10000))){
+				this.y = d3.scale.log()
+			    		  .range([this.height, 0]);
+				var log = true;
+				this.className += " log-scale";
+			}
+			else{*/
+				this.y = d3.scale.linear()
+			    		  .range([this.height, 0]);
+				var log = false;
+			//}
+			
 			this.x = d3.time.scale().range([0, this.width]);
-			this.y = d3.scale.linear().range([this.height, 0]);
-			
-			var viewRef = this;
-			
+						
 			var xAxis = d3.svg.axis()
 			    .scale(this.x)
 			    .orient("bottom")
@@ -131,6 +145,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			    .scale(this.y)
 			    .orient("left")
 			    .innerTickSize(["-" + this.width]);
+			
+			if(log)
+				yAxis.ticks(0, ".1s");
 			
 			var svg = d3.select(this.el)
 						.attr("class", "line-chart")
@@ -144,8 +161,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		    d.count = +d.count;
 		  });
 		  		  		
-		  this.x.domain(d3.extent(this.data, function(d) { return d.date; }));
-		  this.y.domain([0, d3.max(this.data, function(d){ return d.count; })]); //y axis is always 0 - max y value
+		  this.x = this.x.domain(d3.extent(this.data, function(d) { return d.date; }));
+		  if(log) this.y = this.y.domain([1, max]); //y axis is always 1 - max y value
+		  else this.y = this.y.domain([0, max]);
 		  
 		  /*
 			* ========================================================================
@@ -183,8 +201,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  
 		  var line = d3.svg.line()
 						.x(function(d) { return viewRef.x(d.date); })
-						.y(function(d) { return viewRef.y(d.count); })
-						.interpolate("linear");
+						.y(function(d) { return viewRef.y(d.count); });
+						//.interpolate("linear");
 
 
 		  svg.append("path")
@@ -223,8 +241,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					   		    
 			var line = d3.svg.line()
 				.x(function(d) { return viewRef.x(d.date); })
-				.y(function(d) { return viewRef.y(d.count); })
-				.interpolate("linear");
+				.y(function(d) { return viewRef.y(d.count); });
+				//.interpolate("linear");
 
 		    this.svg.append("path")
 		    	.datum(data)
@@ -274,8 +292,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  					.enter().append("svg:circle")
 									.attr("class", "point " + this.className)
 									.attr("cx", function(d, i){ return viewRef.x(d.date) })
-									.attr("cy", function(d, i){ return viewRef.y(d.count)})
-									.attr("data-id", function(d, i){  return viewRef.x(d.date) + viewRef.y(d.count); })
+									.attr("cy", function(d, i){ return viewRef.y(d.count) })
+									.attr("data-id", function(d, i){  
+										return viewRef.x(d.date) + viewRef.y(d.count); 
+										})
 									.attr("r", function(d, i){ return viewRef.radius });
 							
 				/*

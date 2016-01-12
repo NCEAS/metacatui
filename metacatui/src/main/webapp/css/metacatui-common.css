@@ -1583,15 +1583,20 @@ address.email-container:before{
 .profile .stripe{
 	clear: both;
 }
-.profile .downloads .chart-title{
+.profile .chart-title.uploads{
+	width: 100%;
+	float: left;
+}
+.profile .downloads .chart-title,
+.profile .uploads .chart-title{
 	width: 100%;
 	min-width: 300px;
-	margin-bottom: 30px;
 }
 .profile #downloads-title{
 	float: left;
 }
-.profile .chart.download-chart{
+.profile .chart.download-chart,
+.profile .chart.upload-chart{
 	width: 100%;
 	min-width: 1000px;
 	max-width: 1200px;
