@@ -1585,6 +1585,7 @@ address.email-container:before{
 }
 .profile .downloads .chart-title{
 	width: 100%;
+	min-width: 300px;
 	margin-bottom: 30px;
 }
 .profile #downloads-title{
@@ -1592,6 +1593,8 @@ address.email-container:before{
 }
 .profile .chart.download-chart{
 	width: 100%;
+	min-width: 1000px;
+	max-width: 1200px;
 	float: none;
 	clear: both;
 }

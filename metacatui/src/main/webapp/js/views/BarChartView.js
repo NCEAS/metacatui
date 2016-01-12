@@ -81,14 +81,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	         * ========================================================================
 	         */
 			
-			var margin = {top: 20, right: 30, bottom: 70, left: 80},
+			var margin = {top: 20, right: 10, bottom: 70, left: 80},
 		    	width = this.width - margin.left - margin.right,
 		    	height = this.height - margin.top - margin.bottom;
 			
 			this.margin = margin;
 
 			var x = d3.scale.ordinal()
-			    .rangeRoundBands([0, width], .1);
+			    .rangeRoundBands([0, width], .3);
 			
 			var min = d3.min(this.data, function(d) {  return d.y; }),
 				max = d3.max(this.data, function(d) {  return d.y; }),
@@ -108,8 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			var xAxis = d3.svg.axis()
 			    .scale(x)
-			    .orient("bottom")
-			    .ticks([5]);
+			    .orient("bottom");
 		
 			if(log)
 				this.yFormat = function(d){ return y.tickFormat(0, d3.format(",d"))(d) };
