@@ -1596,10 +1596,12 @@ address.email-container:before{
 	clear: both;
 }
 .profile .stripe{
-	border-bottom: 1px dashed #CCC;
+	border-top: 1px dashed #CCC;
     padding-bottom: 20px;
     padding-top: 20px;
 }
+
+/**** Bar Charts ******/
 .bar-chart .bar-label.bg{
 	fill: rgba(0,0,0,0.8);
 	stroke-width: 0px;
@@ -1613,6 +1615,51 @@ address.email-container:before{
 .bar-chart.log-scale .tick line{
 	stroke: #EEE;
 }
+
+
+/**** Default Chart Styles *****/
+svg .default,
+.fallback.default{
+	fill: #999;
+	stroke: #999;
+	color: #999;
+}
+.donut.default .donut-labels,
+.donut.no-activity .donut-labels{
+	visibility: hidden;
+}
+.donut.default > g .donut-arc,
+.donut.data.default > g .donut-arc,
+.donut.metadata.default > g .donut-arc,
+.donut.default .donut-title-count,
+.donut.default .donut-title-text{
+	fill: #999;
+}
+.circle-badge.default circle{
+	stroke: #999;
+}
+.circle-badge.default text{
+	fill: #999;
+}
+
+
+/**** No Activity Chart Styles (when Stats View is blank/ no activity found) *****/
+svg .no-activity,
+.fallback.no-activity{
+	fill: #CCCCCC;
+	stroke: #CCCCCC;
+	color: #CCCCCC;
+}
+.donut.default > g .donut-arc,
+.donut.data.default > g .donut-arc,
+.donut.metadata.default > g .donut-arc,
+.donut.default .donut-title-count,
+.donut.default .donut-title-text{
+	fill: #CCCCCC;
+}
+
+  
+  
 /****************************************** 
 ** Panels ***
 ******************************************/

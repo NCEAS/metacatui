@@ -1698,13 +1698,7 @@ svg .packages,
 	stroke: #FF6633;
 }
 
-svg .default,
-.fallback.default{
-	fill: #CCCCCC;
-	stroke: #CCCCCC;
-	color: #CCCCCC;
-}
-  
+
   /* Donut charts */  
   #metadata-chart,
 #data-chart{
@@ -1790,21 +1784,6 @@ svg .title{
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
 	fill: #BC005E;
-}
-
-
-.donut.default .donut-labels{
-	visibility: hidden;
-}
-
-.donut.default .donut-title-count,
-.donut.default .donut-title-text{
-	fill: #CCCCCC;
-}
-.donut.default > g .donut-arc,
-.donut.data.default > g .donut-arc,
-.donut.metadata.default > g .donut-arc{
-	fill: #CCCCCC;
 }
 
 .profile .format-charts-container{
@@ -1900,9 +1879,6 @@ svg .point:hover ~ .line-chart-label{
 	stroke-width: 0px;
 	font-size: 20px;
 }
-.circle-badge .default{
-	
-}
 
 /** Bar charts ***/
 .bar-label{
@@ -1917,6 +1893,40 @@ svg .point:hover ~ .line-chart-label{
 
 #data-coverage-year-range{
 	display: block;
+}
+
+/**** Default Chart Styles *****/
+svg .default,
+.fallback.default{
+	stroke: #999;
+	color: #999;
+}
+.donut.default .donut-labels,
+.donut.no-activity .donut-labels{
+	visibility: hidden;
+}
+.donut.default > g .donut-arc,
+.donut.data.default > g .donut-arc,
+.donut.metadata.default > g .donut-arc,
+.donut.default .donut-title-count,
+.donut.default .donut-title-text{
+	fill: #999;
+}
+
+
+/**** No Activity Chart Styles (when Stats View is blank/ no activity found) *****/
+svg .no-activity,
+.fallback.no-activity{
+	fill: #CCCCCC;
+	stroke: #CCCCCC;
+	color: #CCCCCC;
+}
+.donut.no-activity > g .donut-arc,
+.donut.data.no-activity > g .donut-arc,
+.donut.metadata.no-activity > g .donut-arc,
+.donut.no-activity .donut-title-count,
+.donut.no-activity .donut-title-text{
+	fill: #CCCCCC;
 }
 	
 

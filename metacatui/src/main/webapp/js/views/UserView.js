@@ -191,8 +191,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			this.$profile = $(profileEl);
 						
 			//If this user hasn't uploaded anything yet, display so
-			this.listenTo(this.model.get("searchResults"), "reset", function(searchResults){
-				if(searchResults.length == 0)
+			this.listenTo(statsModel, "change:totalUploads", function(){
+				if(!statsModel.get("totalUploads"))
 					this.noActivity();
 			});
 			
@@ -381,7 +381,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			//Insert a couple stats into the profile
 			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
-			this.listenToOnce(statsModel, "change:totalUploads", function(statsModel){
+			this.listenToOnce(statsModel, "change:totalUploads", function(){
 				view.$("#total-upload-container").text(appView.commaSeparateNumber(statsModel.get("totalUploads")));
 			});
 			statsModel.once("change:downloads", function(){
@@ -456,7 +456,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		 * Insert the first year of contribution for this user
 		 */
 		insertFirstUpload: function(){
-			if(this.model.noActivity){
+			if(this.model.noActivity || !statsModel.get("firstUpload")){
 				this.$("#first-upload-container, #first-upload-year-container").hide();
 				return;
 			}

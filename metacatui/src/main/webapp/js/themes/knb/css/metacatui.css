@@ -1096,7 +1096,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   .profile h1{
     margin: 20px auto;
 	width: 900px;
-	border-bottom: 2px solid #ccc;
 	line-height: 90px;
   }
 
@@ -1154,11 +1153,6 @@ svg .packages,
 	stroke: #0E69A1;
 }
 
-svg .default{
-	fill: #CCCCCC;
-	stroke: #CCCCCC;
-	color: #CCCCCC;
-}
   
   /* Donut charts */  
   #metadata-chart,
@@ -1245,20 +1239,6 @@ svg .title{
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
 	fill: #42D2D2;
-}
-
-.donut.default .donut-labels{
-	visibility: hidden;
-}
-
-.donut.default .donut-title-count,
-.donut.default .donut-title-text{
-	fill: #CCCCCC;
-}
-.donut.default > g .donut-arc,
-.donut.data.default > g .donut-arc,
-.donut.metadata.default > g .donut-arc{
-	fill: #CCCCCC;
 }
 
 
@@ -1355,9 +1335,6 @@ svg .domain{
 	stroke-width: 0px;
 	font-size: 20px;
 }
-.circle-badge .default{
-	
-}
 
 /** Bar charts ***/
 .bar-label{
@@ -1374,6 +1351,40 @@ svg .domain{
 	display: block;
 }
 
+
+/**** Default Chart Styles *****/
+svg .default,
+.fallback.default{
+	stroke: #999;
+	color: #999;
+}
+.donut.default .donut-labels,
+.donut.no-activity .donut-labels{
+	visibility: hidden;
+}
+.donut.default > g .donut-arc,
+.donut.data.default > g .donut-arc,
+.donut.metadata.default > g .donut-arc,
+.donut.default .donut-title-count,
+.donut.default .donut-title-text{
+	fill: #999;
+}
+
+
+/**** No Activity Chart Styles (when Stats View is blank/ no activity found) *****/
+svg .no-activity,
+.fallback.no-activity{
+	fill: #CCCCCC;
+	stroke: #CCCCCC;
+	color: #CCCCCC;
+}
+.donut.no-activity > g .donut-arc,
+.donut.data.no-activity > g .donut-arc,
+.donut.metadata.no-activity > g .donut-arc,
+.donut.no-activity .donut-title-count,
+.donut.no-activity .donut-title-text{
+	fill: #CCCCCC;
+}
 
 /* Other Navigation 
 ----------------------------------------------------- */

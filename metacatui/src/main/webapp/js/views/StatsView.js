@@ -77,12 +77,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var dataCount = statsModel.get('dataCount');
 			var data = statsModel.get('dataFormatIDs');
 
-			if(dataCount){	
+			if(dataCount){
 				var svgClass = "data";
 			}
-			else{	//Are we drawing a blank chart (i.e. 0 data objects found)?
+			else if(!statsModel.get('dataCount') && statsModel.get('metadataCount')){	//Are we drawing a blank chart (i.e. 0 data objects found)?
 				var svgClass = "data default";
 			}
+			else if(!statsModel.get('metadataCount') && !statsModel.get('dataCount'))
+				var svgClass = "data no-activity";
 			
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
@@ -124,9 +126,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if(metadataCount){
 				var svgClass = "metadata";
 			}
-			else{	//Are we drawing a blank chart (i.e. 0 data objects found)?
+			else if(!statsModel.get('metadataCount') && statsModel.get('dataCount')){	//Are we drawing a blank chart (i.e. 0 data objects found)?
 				var svgClass = "metadata default";
 			}
+			else if(!statsModel.get('metadataCount') && !statsModel.get('dataCount'))
+				var svgClass = "metadata no-activity";
 			
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
@@ -261,7 +265,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				//Draw the upload chart title
 				var uploadChartTitle = new CircleBadge({
 					id: "upload-chart-title",
-					globalR: 40
+					className: "no-activity",
+					globalR: 60,
+					data: [{ count: 0, label: "uploads" }]
 				});
 				
 				this.$('#uploads-title').prepend(uploadChartTitle.render().el);
@@ -312,7 +318,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//If there are no download stats, show a message and exit
 			if(!statsModel.get('downloads')){
 				
-				var msg = "No one has downloaded any of this data or download statistics are not being reported.";
+				var msg = "No one has downloaded any of this data or download statistics are not being reported";
 				parentEl.html("<p class='subtle center'>" + msg + ".</p>");
 									
 				return;
@@ -354,10 +360,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if(!statsModel.get('downloads')){
 				var downloadChartTitle = new CircleBadge({
 					id: "download-chart-title",
-					globalR: 40
+					className: statsModel.get("totalUploads") ? "default" : "no-activity",
+					globalR: 60,
+					data: [{ count: 0, label: "downloads" }]
 				});
 				
 				this.$('#downloads-title').html(downloadChartTitle.render().el);
+				
+				this.listenToOnce(statsModel, "change:totalUploads", this.drawDownloadTitle);
 				
 				return;
 			}
@@ -399,14 +409,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			// If results were found but none have temporal coverage, draw a default chart
 			if(!statsModel.get('firstBeginDate')){
-
-				//Draw a default bar chart
-				var barChart = new BarChart({
-					id: "temporal-coverage-chart",
-					yLabel: "data packages",
-					width: width
-				});
-				parentEl.html(barChart.render().el);
+								
+				parentEl.html("<p class='subtle center'>There are no metadata documents that describe temporal coverage.</p>");
 									
 				return;
 			}

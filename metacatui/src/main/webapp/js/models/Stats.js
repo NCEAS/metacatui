@@ -344,8 +344,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 					if(!data.response.numFound){
 							//Save some falsey values if none are found
-							model.set('firstUpload', null);
 							model.set('totalUploads', 0);
+							model.trigger("change:totalUploads");
+							model.set('firstUpload', null);
 							model.set("dataUploads", 0);
 							model.set("metadataUploads", 0);
 							model.set('metadataUploadDates', []);
