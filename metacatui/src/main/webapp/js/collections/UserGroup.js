@@ -237,7 +237,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			
 			if(this.pending && (model == appUserModel)) return true; 
 			
-			return _.contains(this.getOwners(), model);
+			var usernames = [];
+			_.each(this.getOwners(), function(user){ usernames.push(user.get("username")); });
+			
+			return _.contains(usernames, model.get("username"));
 		}
 		
 	});

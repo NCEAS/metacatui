@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/UserModel'], 				
-	function($, _, Backbone, UserGroup, UserModel) {
+define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/UserModel', 'views/PagerView'], 				
+	function($, _, Backbone, UserGroup, UserModel, PagerView) {
 	'use strict';
 		
 	/*
@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		className: "list-group member-list",
 		
 		memberEls: [],
-		
+				
 		/*
 		 * New instances of this view should pass a UserGroup collection in the options object
 		 */
@@ -28,6 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			this.groupId       = this.collection.groupId || null;
 			this.collapsable   = (typeof options.collapsable == "undefined")? true : options.collapsable;
 			this.showGroupName = (typeof options.showGroupName == "undefined")? true : options.showGroupName;
+			this.maxItems      = options.maxItems || 2;
 		},
 		
 		events: {
@@ -87,12 +88,17 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			group.forEach(function(member){
 				view.addMember(member);
 			});
-			
-			//Collapse the list - $el must already be inserted in DOM for collapse to work
-			/*if(group.length > 3)
-				this.collapseMemberList();
-			*/
-			
+
+			//Create a pager for this list if there are many group members
+			if(group.length > 4){
+				this.pager = new PagerView({
+					pages: this.$(".member"),
+					itemsPerPage: 4,
+					classes: "list-group-item"
+				});
+				this.$el.append(this.pager.render().el);
+			}
+						
 			//Add some group controls for the owners
 			if(group.isOwner(appUserModel))
 				this.addControls();
@@ -169,6 +175,9 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			//Collapse members of this group is necessary
 			if(this.$el.is(".collapsed"))
 				this.collapseMember(memberEl);
+			
+			if(this.pager)
+				this.pager.update(this.$(".member"));		
 		},
 		
 		/*
@@ -288,6 +297,9 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 
 			//Remove this member el from the view storage
 			this.memberEls[member.cid] = null;
+			
+			if(this.pager)
+				this.pager.update(this.$(".member"));
 		},
 		
 		
