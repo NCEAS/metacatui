@@ -815,12 +815,15 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			var model = this.model;
 
 			e.preventDefault();
-			var otherUsername = $(e.target).parents("a").attr("data-identity");	
+			var otherUsername = $(e.target).parents("a").attr("data-identity"),
+				mapRequestEl = $(e.target).parents(".pending.identity");	
 				
 			var viewRef = this;
 			
 			var success = function(data, textStatus, xhr) {
 				viewRef.showAlert("Success! Your account is now linked with the username " + otherUsername, "alert-success", "#pending-alert-container");
+				
+				mapRequestEl.remove();
 			}
 			var error = function(xhr, textStatus, error) {
 				viewRef.showAlert(xhr.responseText, 'alert-error', "#pending-alert-container");
@@ -836,13 +839,15 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 		rejectMapRequest: function(e) {			
 			e.preventDefault();
 			
-			var equivalentIdentity = $(e.target).parents("a").attr("data-identity");
+			var equivalentIdentity = $(e.target).parents("a").attr("data-identity"),
+				mapRequestEl = $(e.target).parents(".pending.identity");
 			
 			if(!equivalentIdentity) return;
 						
 			var viewRef = this,
 				success = function(data){
 					viewRef.showAlert("Removed mapping request for " + equivalentIdentity, "alert-success", "#pending-alert-container");
+					$(mapRequestEl).remove();
 				},
 				error = function(xhr, textStatus, error){
 					viewRef.showAlert(xhr.responseText, 'alert-error', "#pending-alert-container");

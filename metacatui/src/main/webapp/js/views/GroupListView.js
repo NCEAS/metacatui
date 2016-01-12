@@ -489,7 +489,10 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 									//Ignore certain values
 									if(_.contains(ignoreIds, item.value.toLowerCase())) return;
 									
-									item.label = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
+									item.fullName = $(person).find("fullName").text() || ($(person).find("givenName").text() + " " + $(person).find("familyName").text());
+									item.label = item.fullName;
+									//item.label = "<h3>"+item.fullName+"</h3>Google!";
+									
 									list.push(item);
 								});
 								
@@ -507,7 +510,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 					
 					// set the text field
 					$(e.target).val(ui.item.value);
-					$(e.target).parents("form").find("input[name='fullName']").val(ui.item.label);
+					$(e.target).parents("form").find("input[name='fullName']").val(ui.item.fullName);
 				},
 				position: {
 					my: "left top",
