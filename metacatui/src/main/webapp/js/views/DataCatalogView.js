@@ -1431,7 +1431,7 @@ define(['jquery',
 	
 							});
 						}
-						$('#annotation_input').autocomplete({
+						$('#annotation_input').hoverAutocomplete({
 							source: 
 								function (request, response) {
 						            var term = $.ui.autocomplete.escapeRegex(request.term)
