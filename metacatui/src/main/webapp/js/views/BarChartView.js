@@ -184,7 +184,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			  
 			   var bars = chart.selectAll(".bar")
 				   			  .data(this.data).enter().append("g"),
-				   hideLabels = (bars[0].length > 20) || this.hideBarLabels;
+				   //Hide the bar labels when there are more than 20 bars AND if some of the labels are more than 2 characters wide (2 characters/digits will fit within a bar width)
+				   hideLabels = ((bars[0].length > 20) && (max > 100)) || this.hideBarLabels;
 			   
 			   if(hideLabels)
 				   this.barClass += " show-label";
