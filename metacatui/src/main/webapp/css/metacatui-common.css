@@ -1585,15 +1585,16 @@ address.email-container:before{
 }
 .profile .chart-title.uploads{
 	width: 100%;
-	float: left;
 }
 .profile .downloads .chart-title,
 .profile .uploads .chart-title{
 	width: 100%;
 	min-width: 300px;
 }
-.profile #downloads-title{
+.profile #downloads-title,
+.profile #uploads-title{
 	float: left;
+	min-width: 200px;
 }
 .profile .chart.download-chart,
 .profile .chart.upload-chart{
