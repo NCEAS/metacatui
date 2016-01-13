@@ -14,7 +14,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'tools(/:anchorId)'         : 'renderTools',    // tools page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
-			'profile(/*username)(/s=:section)(/s=:subsection)'		: 'renderProfile',
+			'profile(/*username)'		: 'renderProfile',
 			'profile'		            : 'renderProfile',
 			//'my-account'                   : 'renderUserSettings',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
@@ -163,7 +163,8 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			else{
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
-				appView.showView(appView.userView, { section: section, subsection: subsection });
+				//We only support the public profile section in non-D1 themes
+				appView.showView(appView.userView, { section: "profile" });
 			}
 		},
 		
