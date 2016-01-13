@@ -1564,7 +1564,8 @@ address.email-container:before{
 [data-username="KUBI"] #user-profile .user-info .logo,
 [data-username="CLOEBIRD"] #user-profile .user-info .logo,
 [data-username="EDACGSTORE"] #user-profile .user-info .logo,
-[data-username="NKN"] #user-profile .user-info .logo{
+[data-username="NKN"] #user-profile .user-info .logo,
+[data-username="NRDC"] #user-profile .user-info .logo{
 	max-width: 200px;
 	width: 200px;
 }
