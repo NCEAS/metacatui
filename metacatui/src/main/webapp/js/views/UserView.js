@@ -32,7 +32,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			"click [highlight-subsection]" : "highlightSubSection",
 			"blur #add-group-name"         : "checkGroupName",
 			"keypress #add-group-name"     : "preventSubmit",
-			"click #add-group-submit"      : "createGroup"
+			"click #add-group-submit"      : "createGroup",
+			"click .token-tab" 			   : "switchTabs"
 		},
 		
 		initialize: function(){			
@@ -1059,13 +1060,24 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				return;
 			
 			var expires    = this.model.get("expires"),
+				rToken = 'options(authentication_token = "' + token + '")',
 				tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token copy").text(token),
 				copyButton = $(document.createElement("a")).addClass("btn btn-primary copy").text("Copy").attr("data-clipboard-text", token),
+				copyRButton = $(document.createElement("a")).addClass("btn btn-primary copy").text("Copy").attr("data-clipboard-text", rToken),
 				successIcon = $(document.createElement("i")).addClass("icon icon-ok"),
 		  		copySuccess = $(document.createElement("div")).addClass("notification success copy-success hidden").append(successIcon, " Copied!"),
 		  		expirationMsg = expires? "<strong>Note:</strong> Your authentication token expires on " + expires.toLocaleDateString() + " at " + expires.toLocaleTimeString() : "",
 		  		usernameMsg = "<div class='footnote'>Your user identity: ",
-		  		usernamePrefix = this.createIdPrefix();
+		  		usernamePrefix = this.createIdPrefix(),
+		  		tabs = $(document.createElement("ul")).addClass("nav nav-tabs")
+		  				.append($(document.createElement("li")).addClass("active")
+		  						.append( $(document.createElement("a")).attr("href", "#token-code-panel").addClass("token-tab").text("Token") ))
+		  				.append($(document.createElement("li"))
+		  						.append( $(document.createElement("a")).attr("href", "#r-token-code-panel").addClass("token-tab").text("Token for DataONE R") )),
+		  		tokenRInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token copy").text(rToken),
+		  		tokenRText = $(document.createElement("p")).text("Copy this code snippet to use your token with the DataONE R package."),
+		  		tokenInputContain = $(document.createElement("div")).attr("id", "token-code-panel").addClass("tab-panel active").append(tokenInput, copyButton, copySuccess),
+		  		rTokenInputContain = $(document.createElement("div")).attr("id", "r-token-code-panel").addClass("tab-panel").append(tokenRText, 	tokenRInput, copyRButton, copySuccess.clone()).addClass("hidden");
 			
 			if(typeof usernamePrefix == "object")
 				usernameMsg += usernamePrefix[0].outerHTML;
@@ -1079,14 +1091,20 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 					classes: "alert-success",
 					containerClasses: "well"
 				}));
-			$(successMessage).append(tokenInput, copyButton, copySuccess);
+			$(successMessage).append(tabs, tokenInputContain, rTokenInputContain);
 			this.$("#token-generator-container").html(successMessage);
+			
+			$(".token-tab").tab();
 			
 			//Create a copy button
 			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
 			var client = new ZeroClipboard(copyButton);
+			var clientR = new ZeroClipboard(copyRButton);
 			client.on("aftercopy", function(e){
-				copySuccess.show().delay(3000).fadeOut();
+				$(e.target).nextAll(".copy-success").show().delay(3000).fadeOut();
+			});
+			clientR.on("aftercopy", function(e){
+				$(e.target).nextAll(".copy-success").show().delay(3000).fadeOut();
 			});
 		},
 		
@@ -1166,6 +1184,15 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 						classes: classes
 					})
 			);
+		},
+		
+		switchTabs: function(e){
+			e.preventDefault();
+			$(e.target).tab('show');
+			this.$(".tab-panel").hide();
+			this.$(".tab-panel" + $(e.target).attr("href")).show();
+			this.$("#token-generator-container .copy-button").attr("data-clipboard-text")
+			
 		},
 		
 		preventSubmit: function(e){

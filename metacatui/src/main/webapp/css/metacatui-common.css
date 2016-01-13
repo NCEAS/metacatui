@@ -1460,9 +1460,6 @@ tfoot .control i{
 	margin-top: 20px;
 	padding-top: 20px;
 }
-#token-generator-container .alert{
-	margin-bottom: 0px;
-}
 #token-generator-container .notification.loading{
 	min-height: 236px;
 }
