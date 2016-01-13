@@ -52,7 +52,7 @@ define(['jquery', 'underscore', 'backbone'],
 			nodeServiceUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			bioportalSearchUrl: "https://data.bioontology.org/search?ontologies=ECSO&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
+			//bioportalSearchUrl: "https://data.bioontology.org/search?ontologies=ECSO&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
 			//bioportalSearchUrl: null, // use this to deactivate the annotator view
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,
@@ -66,7 +66,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//signInUrlLdap: null,
 			tokenUrl: null,
 			checkTokenUrl: null,
-			annotatorUrl: null,
+			//annotatorUrl: null,
 		    prov: true,
 			useSeriesId: true
 		},
