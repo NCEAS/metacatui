@@ -1678,7 +1678,7 @@ li.ui-menu-item > a:hover,
   -------------------------------------------------- */ 
   
   #Profile{
-  	max-width: 960px;
+  	max-width: 1200px;
   	margin: auto;
   	background-color: transparent;
   }
@@ -1686,9 +1686,20 @@ li.ui-menu-item > a:hover,
     border-bottom: 2px solid #CCC;
     margin-top: 20px;
 }
+#user-profile .search-results{
+	border-bottom: 1px solid #999;
+	border-top: 1px solid #999;
+}
 .section {
     padding: 20px;
     width: calc(100% - 40px);
+}
+section.user-view-section > .section.active {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+}
+.user-info .icon-circle-badge{
+	background-color: #166194;
 }
 .profile .charts{
   	margin-left: auto;
@@ -1748,9 +1759,6 @@ li.ui-menu-item > a:hover,
 	margin-left: 20px;
 	margin-top: 30px;
 }
-.profile .chart svg{
-	width: 650px;
-}  
   /* The universal color for data */
 svg .data,
 .fallback.data{
@@ -1914,10 +1922,6 @@ svg .domain{
 	fill: none;
 	stroke-width: 1px;
 	stroke: #555555;
-}
-svg .point{
-	fill: #FFFFFF;
-	stroke-width: 2px;
 }
 .line-chart-label{
 	font-weight: bold;
