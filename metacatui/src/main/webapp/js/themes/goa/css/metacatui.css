@@ -728,10 +728,12 @@ svg .metadata,
   }
   
 svg .packages,
-#Profile .packages{
+.profile .packages{
 	color: #5EB3D7;
 	fill: #5EB3D7;
-	stroke: #5EB3D7;
+}
+.profile .bar-label.packages{
+	fill: inherit;
 }
 
 svg .default,

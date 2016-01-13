@@ -1147,10 +1147,12 @@ svg .metadata,
 
   /* The universal color for packages */
 svg .packages,
-#Profile .packages{
+.profile .packages{
 	color: #0E69A1;
 	fill: #0E69A1;
-	stroke: #0E69A1;
+}
+.profile .bar-label.packages{
+	fill: inherit;
 }
 
   

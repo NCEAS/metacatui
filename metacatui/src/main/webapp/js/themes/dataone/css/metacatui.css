@@ -1692,13 +1692,17 @@ svg .metadata,
     /* The universal color for packages */
   
 svg .packages,
-#Profile .packages{
+.profile .packages{
 	color: #FF6633;
 	fill: #FF6633;
-	stroke: #FF6633;
 }
 
-
+.profile .bar-label.packages{
+	fill: inherit;
+}
+.profile .download-chart .bar-chart .bar.packages{
+	fill: #32887F;
+}
   /* Donut charts */  
   #metadata-chart,
 #data-chart{

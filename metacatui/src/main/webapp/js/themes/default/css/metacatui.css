@@ -1769,11 +1769,13 @@ svg .metadata,
   
     /* The universal color for packages */
   
-#Profile .packages,
+.profile .packages,
 svg .packages{
 	color: #ABA805;
 	fill: #ABA805;
-	stroke: #ABA805;
+}
+.profile .bar-label.packages{
+	fill: inherit;
 }
 
 svg .default{

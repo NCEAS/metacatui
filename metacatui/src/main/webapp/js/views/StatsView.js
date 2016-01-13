@@ -335,11 +335,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					data: statsModel.get('downloadDates'),
 					formatFromSolrFacetRanges: true,
 					id: "download-chart",
-					yLabel: "downloads",
-					barClass: "metadata",
+					yLabel: "all downloads",
+					barClass: "packages",
 					roundedRect: true,
 					roundedRadius: 10,
-					barLabelClass: "metadata",
+					barLabelClass: "packages",
 					width: width
 				};
 		
