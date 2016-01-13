@@ -192,7 +192,14 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		getInfo: function(){
 			var model = this;
 			
-			//Only proceed if the accounts API service is being utilized and there is a username
+			//If the accounts service is not on, flag this user as checked/completed
+			if(!appModel.get("accountsUrl")){
+				this.getNameFromSubject();
+				this.set("checked", true);
+				return;
+			}
+			
+			//Only proceed if there is a username
 			if(!this.get("username")) return;
 				
 				/*
@@ -211,12 +218,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				return;
 			}*/
 			
-			//Otherwise, check the accounts service
-			if(!appModel.get("accountsUrl")){
-				this.getNameFromSubject();
-				this.set("checked", true);
-				return;
-			}
+
 			//Get the user info using the DataONE API
 			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
@@ -245,6 +247,14 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					if((xhr.status == 404) && nodeModel.get("checked")){
 						model.getNameFromSubject();
 						model.set("checked", true);
+					}
+					else if((xhr.status == 404) && !nodeModel.get("checked")){
+						model.listenToOnce(nodeModel, "change:checked", function(){
+							if(!model.isNode()){
+								model.getNameFromSubject();
+								model.set("checked", true);
+							}
+						});
 					}
 				}
 			}
@@ -388,14 +398,14 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				type: "POST",
 				url: appModel.get("signInUrlLdap") + window.location.href, 
 				data: formData, 
-			/*	success: function(data, textStatus, xhr){
+				success: function(data, textStatus, xhr){
 					if(success)
 						success(this);
 					
 					$("#SignInLdap")
 					//Direct to the Ldap sign in
 					//window.location = appModel.get("signInUrlLdap") + window.location.href;
-				},*/
+				},
 				error: function(){
 					if(error)
 						error(this);
@@ -427,12 +437,15 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 						model.set('username', username);
 						
 						//Are we logged in?
-						if(username)
+						if(username){
 							model.set("loggedIn", true);
-						else
+							model.getInfo();
+						}
+						else{
 							model.set("loggedIn", false);
-						
-						model.getInfo();
+							model.trigger("change:loggedIn");
+							model.set("checked", true);
+						}
 					},
 					error: function(data, textStatus, xhr){
 						//User is not logged in

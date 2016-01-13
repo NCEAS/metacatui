@@ -1084,9 +1084,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	width: 1000px;
   	clear: both;
-  	padding: 20px 16%;
+  	padding: 20px;
   }
   
   .profile .stripe{
@@ -1102,6 +1101,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .profile-title:empty{
   	display: none;
   }
+
+.user-info .icon-circle-badge {
+    background-color: #0E69A1;
+}
   
 .profile .charts-container .stripe:nth-child(even){
 	background-image: url("../img/sos.png");
@@ -1128,7 +1131,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-left: 20px;
 	margin-top: 30px;
 }
-  
+ 
   /* The universal color for data */
 svg .data,
 .fallback.data{
@@ -1272,10 +1275,6 @@ svg .domain{
 	fill: none;
 	stroke-width: 1px;
 	stroke: #555555;
-}
-svg .point{
-	stroke: #FFFFFF;
-	stroke-width: 2px;
 }
 .download-chart .point.metadata{
 	stroke: #761012;
@@ -2042,6 +2041,9 @@ svg .no-activity,
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
     } 
+    .result-row .info-icons .download{
+    	cursor: pointer;
+    }
     
     /*-- Pagination widget --*/
 	.pagination{

@@ -245,6 +245,10 @@ h3{
 .form-feedback{
     min-height: 30px;
 }
+#Content > .alert-container {
+    max-width: 90%;
+    margin-left: 5%;
+}
 /****************************************** 
 ** Icons ***
 ******************************************/
@@ -1142,7 +1146,9 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .citation ~ .logo .NKN{
 	max-width: 175px;
 }
-
+.citation ~ .logo .KNB{
+	max-height: 90px;
+}
 /****************************************** 
 * The Data Details box in the Metadata View
 ********************************************/

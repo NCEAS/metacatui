@@ -9,6 +9,7 @@ var themeMap =
 		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
 		'templates/about.html' : 'themes/' + theme + '/templates/about.html',
 		'templates/alert.html' : 'themes/' + theme + '/templates/alert.html',
+		'templates/dataSource.html' : 'themes/' + theme + '/templates/dataSource.html',
 		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html',
 		'templates/noResults.html' : 'themes/' + theme + '/templates/noResults.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',

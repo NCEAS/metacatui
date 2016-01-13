@@ -591,7 +591,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			logSearch.set("event", "read");
 			logSearch.set("formatType", ["METADATA", "DATA"]);
 			logSearch.set("facetRanges", ["dateLogged"]);
-			logSearch.set("facets", ["formatType"]);
+			logSearch.set("facets", ["formatType", "pid"]);
 			
 			var searchModel = this.get("searchModel");
 			if(searchModel && searchModel.get("dataSource")){
