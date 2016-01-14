@@ -57,9 +57,9 @@ define(['jquery', 'underscore', 'backbone'],
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,
 			accountsUrl: null,
-			//pendingMapsUrl: null,
-			//accountMapsUrl: null,
-			//groupsUrl: null,
+			pendingMapsUrl: null,
+			accountMapsUrl: null,
+			groupsUrl: null,
 			signInUrl: null,
 			signOutUrl: null,
 			signInUrlOrcid: null,
@@ -87,16 +87,20 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
 			
+			//The logs index
 			if(typeof this.get("d1LogServiceUrl") !== "undefined"){
 				this.set('d1LogServiceUrl',   this.get('baseUrl') + this.get('d1Service') + '/query/logsolr/?');
 			}
 
-			this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
-			this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
+			//The account management links
+			if(typeof this.get("accountsUrl") != "undefined"){
+				this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
+				this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
+				
+				this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap/");
+				this.set("accountsMapsUrl",    this.get("accountsUrl") + "map/");
+			}
 			
-			this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap/");
-			this.set("accountsMapsUrl",    this.get("accountsUrl") + "map/");
-								
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
 			if(this.get("useJsonp"))
 				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");

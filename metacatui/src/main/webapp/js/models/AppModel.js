@@ -52,12 +52,12 @@ define(['jquery', 'underscore', 'backbone'],
 			//bioportalSearchUrl: null,
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
-			tokenUrl: null,
-			checkTokenUrl: null,
+			//tokenUrl: null,
+			//checkTokenUrl: null,
 			//annotatorUrl: null,
 			accountsUrl: null,
-			pendingMapsUrl: null,
-			accountsMapsUrl: null,
+			//pendingMapsUrl: null,
+			//accountsMapsUrl: null,
 			groupsUrl: null,
 			prov: true,
 			useSeriesId: true
@@ -88,11 +88,22 @@ define(['jquery', 'underscore', 'backbone'],
 			if(this.get("useJsonp"))
 				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");			
 			
+			//DataONE CN API 
 			if(this.get("d1CNBaseUrl")){
-				this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
-				this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
-				this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
-				this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
+				
+				//Account services 
+				if(typeof this.get("accountsUrl") != "undefined"){
+					this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+					
+					if(typeof this.get("pendingMapsUrl") != "undefined")
+						this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
+					
+					if(typeof this.get("accountsMapsUrl") != "undefined")
+						this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
+
+					if(typeof this.get("groupsUrl") != "undefined")
+						this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
+				}
 				
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
@@ -105,13 +116,21 @@ define(['jquery', 'underscore', 'backbone'],
 		
 				//Settings for the DataONE API v2 only
 				if(this.get("d1CNService").indexOf("v2") > -1){
-					this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
-					this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
-					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
+					
+					//Token URLs
+					if(typeof this.get("tokenUrl") != "undefined"){
+						this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
+						this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
+					}
+					
+					//ORCID search
+					if(typeof this.get("orcidBaseUrl") != "undefined")
+						this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 					
 					//Turn the provenance features on
 					if(typeof this.get("prov") != "undefined")
 						this.set("prov", true);
+					
 					//Turn the seriesId feature on					
 					if(typeof this.get("useSeriesId") != "undefined")
 						this.set("useSeriesId", true);
