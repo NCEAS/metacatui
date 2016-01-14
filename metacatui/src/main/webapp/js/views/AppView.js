@@ -357,6 +357,8 @@ define(['jquery',
 		// Various utility functions to use across the app //
 		/************ Function to add commas to large numbers ************/
 		commaSeparateNumber: function(val){
+			if(!val) return 0;
+			
 		    while (/(\d+)(\d{3})/.test(val.toString())){
 		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
 		    }
