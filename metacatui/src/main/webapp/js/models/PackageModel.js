@@ -399,7 +399,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				      mapIds = docModel.get("resourceMap");
 
 				
-				if(((typeof mapIds === "undefined") || !mapIds) && (docModel.get("formatType") == "DATA") && (typeof docModel.get("isDocumentedBy") === "undefined")){
+				if(((typeof mapIds === "undefined") || !mapIds) && (docModel.get("formatType") == "DATA") && ((typeof docModel.get("isDocumentedBy") === "undefined") || !docModel.get("isDocumentedBy"))){
 					//If this object is not in a resource map and does not have metadata, it is a "naked" data doc, so save it by itself
 					if(_.contains(sourceIDs, doc.id))
 						sourceDocs.push(docModel);

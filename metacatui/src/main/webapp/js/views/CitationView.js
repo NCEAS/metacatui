@@ -67,13 +67,13 @@ define(['jquery', 'underscore', 'backbone'],
 			//If there is no metadata doc, then this is probably a data doc without science metadata. 
 			//So create the citation from the index values
 			else{
-				var author 	 	 = this.model.get("rightsHolder"),
+				var author 	 	 = this.model.get("rightsHolder") || this.model.get("submitter") || "",
 					dateUploaded = this.model.get("dateUploaded"),
 					id 			 = this.model.get("id"),
 					datasource	 = this.model.get("datasource");
 				
 				//Format the author text
-				var authorText = author.substring(3, author.indexOf(",O=")) + ". ";				
+				var authorText = author? author.substring(3, author.indexOf(",O=")) + ". " : "";
 			}		
    
 	        //The author
