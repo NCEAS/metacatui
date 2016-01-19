@@ -166,7 +166,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				.selectAll("text")
 				.data(this.data)
 				.enter().append("svg:text")
-				.text(function(d){ return appView.commaSeparateNumber(d.count); })
+				.text(function(d){ return appView.commaSeparateNumber(d.count) || 0; })
 				.attr("transform", function(d, i){
 					return "translate(" + d.x + "," + (d.r+12) + ")";
 				})

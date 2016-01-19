@@ -1208,6 +1208,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			//Reset the active section and subsection
 			this.activeSection = "profile";
 			this.activeSubSection = "";
+			this.model.noActivity = null;
 			
 			//Remove saved elements
 			this.$profile = null;
