@@ -256,6 +256,34 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 							}
 						});
 					}
+					else{
+						//As a backup, search for this user instead
+						var requestSettings = {
+								type: "GET",
+								url: appModel.get("accountsUrl") + "?query=" + encodeURIComponent(model.get("username")), 
+								success: function(data, textStatus, xhr) {	
+									//Parse the XML response to get user info
+									model.set(model.parseXML(data));
+									
+									 //Trigger the change events
+									model.trigger("change:isMemberOf");
+									model.trigger("change:isOwnerOf");
+									model.trigger("change:identities");
+									
+									model.set("checked", true);
+								},
+								error: function(){
+									//Set some blank values and flag as checked
+									model.set("username", "");
+									model.set("fullName", "");
+									model.set("notFound", true);
+									model.set("checked", true);
+								}
+							}
+						//Send the request
+						$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));	
+						
+					}
 				}
 			}
 			

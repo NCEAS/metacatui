@@ -117,7 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		 */
 		addMember: function(member){
 			var username = member.get("username"),
-				name     = member.get("fullName");
+				name     = member.get("fullName") || member.get("usernameReadable") || member.get("username");
 			
 			//If this is the currently-logged-in user, display "Me"
 			if(username == appUserModel.get("username"))
