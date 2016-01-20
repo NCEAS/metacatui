@@ -64,7 +64,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			//cause this profile to render twice (first before the user is logged in then again after they log in)
 			if(appUserModel.get("checked")) this.renderUser();
 			else appUserModel.on("change:checked", this.renderUser, this);
-				
+							
 			return this;
 		},
 		

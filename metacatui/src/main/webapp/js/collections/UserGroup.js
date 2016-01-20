@@ -84,6 +84,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	        		collection.nameAvailable = true;
 	        		collection.trigger("nameChecked", collection);
 	        	}
+	        	else{
+		        	//Get as much info as possible from the rawData of this collection, if available
+		        	//collection.parseXML();	        	
+	        	}
+	        		
 	        }
 	        return Backbone.Collection.prototype.fetch.call(this, options);
 	    },
@@ -105,27 +110,46 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				toAdd = new Array(),
 				existing = this.pluck("username");	
 			
+			if(!people.length)
+				people = $(group).find("hasMember");
+			
 			//Make all existing usernames lowercase for string matching
 			if(existing.length) existing = _.invoke(existing, "toLowerCase");
 			
 			this.name = $(group).children("groupName").text();
 			
 			_.each(people, function(person){
-				//If this user is not listed as a member of this group, skip it
-				if($(person).children("isMemberOf:contains('" + collection.groupId + "')").length < 1)
-					return;
 				
-				//Username of this person
-				var username = $(person).children("subject").text();
-				
-				//If this user is already in the group, skip adding it
-				if(_.contains(existing, username.toLowerCase())) return;
-				
-				//User attributes - pass the full response for the UserModel to parse
-				var userAttr = new UserModel({username: username}).parseXML(response);
-									
-				//Add to collection
-				toAdd.push(userAttr);				
+				//The tag name is "hasMember" if we retrieved info about this group from the group nodes only
+				if(person.tagName == "hasMember"){
+					var username = $(person).text();
+					
+					//If this user is already in the group, skip adding it
+					if(_.contains(existing, username.toLowerCase())) return;
+					
+					var user = new UserModel({ username: username }),
+						userAttr = user.toJSON();
+					
+					toAdd.push(userAttr);
+				}
+				//The tag name is "person" if we retrieved info about this group through the /accounts service, which includes all nodes about all members
+				else{
+					//If this user is not listed as a member of this group, skip it
+					if($(person).children("isMemberOf:contains('" + collection.groupId + "')").length < 1)
+						return;
+					
+					//Username of this person
+					var username = $(person).children("subject").text();
+					
+					//If this user is already in the group, skip adding it
+					if(_.contains(existing, username.toLowerCase())) return;
+					
+					//User attributes - pass the full response for the UserModel to parse
+					var userAttr = new UserModel({username: username}).parseXML(response);
+										
+					//Add to collection
+					toAdd.push(userAttr);	
+				}				
 			});	
 			
 			return toAdd;

@@ -237,7 +237,6 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					model.set("checked", true);
 				},
 				error: function(xhr, textStatus, errorThrown){
-					
 					// Sometimes the node info has not been received before this getInfo() is called.
 					// If the node info was received while this getInfo request was pending, and this user was determined
 					// to be a node, then we can skip any further action here.
@@ -255,6 +254,34 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 								model.set("checked", true);
 							}
 						});
+					}
+					else{
+						//As a backup, search for this user instead
+						var requestSettings = {
+								type: "GET",
+								url: appModel.get("accountsUrl") + "?query=" + encodeURIComponent(model.get("username")), 
+								success: function(data, textStatus, xhr) {	
+									//Parse the XML response to get user info
+									model.set(model.parseXML(data));
+									
+									 //Trigger the change events
+									model.trigger("change:isMemberOf");
+									model.trigger("change:isOwnerOf");
+									model.trigger("change:identities");
+									
+									model.set("checked", true);
+								},
+								error: function(){
+									//Set some blank values and flag as checked
+									model.set("username", "");
+									model.set("fullName", "");
+									model.set("notFound", true);
+									model.set("checked", true);
+								}
+							}
+						//Send the request
+						$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));	
+						
 					}
 				}
 			}
