@@ -170,10 +170,13 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				//Don't list yourself as an owner or member (implied)
 				if(appUserModel == member) return;
 				
-				memberXML += "<hasMember>" + member.get("username") + "</hasMember>";
+				var username = member.get("username") ? member.get("username").trim() : null;
+				if(!username) return;
+				
+				memberXML += "<hasMember>" + username + "</hasMember>";
 				
 				if(collection.isOwner(member))
-					ownerXML += "<rightsHolder>" + member.get("username") + "</rightsHolder>";
+					ownerXML += "<rightsHolder>" + username + "</rightsHolder>";
 			});
 			
 			//Create the group XML
