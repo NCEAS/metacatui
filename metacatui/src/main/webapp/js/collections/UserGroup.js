@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 		nameAvailable: null, 
 		
 		url: function(){
-			return appModel.get("accountsUrl") + this.groupId;
+			return appModel.get("accountsUrl") + encodeURIComponent(this.groupId);
 		},
 				
 		comparator: "lastName", //Sort by last name
@@ -84,11 +84,6 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	        		collection.nameAvailable = true;
 	        		collection.trigger("nameChecked", collection);
 	        	}
-	        	else{
-		        	//Get as much info as possible from the rawData of this collection, if available
-		        	//collection.parseXML();	        	
-	        	}
-	        		
 	        }
 	        return Backbone.Collection.prototype.fetch.call(this, options);
 	    },
@@ -175,10 +170,13 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 				//Don't list yourself as an owner or member (implied)
 				if(appUserModel == member) return;
 				
-				memberXML += "<hasMember>" + member.get("username") + "</hasMember>";
+				var username = member.get("username") ? member.get("username").trim() : null;
+				if(!username) return;
+				
+				memberXML += "<hasMember>" + username + "</hasMember>";
 				
 				if(collection.isOwner(member))
-					ownerXML += "<rightsHolder>" + member.get("username") + "</rightsHolder>";
+					ownerXML += "<rightsHolder>" + username + "</rightsHolder>";
 			});
 			
 			//Create the group XML

@@ -189,12 +189,20 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			if(e) e.preventDefault();
 			
 			//Get form values
-			var username = this.$addMember.find("input[name='username']").val();
-			var fullName = this.$addMember.find("input[name='fullName']").val();
-			
+			var username = this.$addMember.find("input[name='username']").val().trim();
+			var fullName = this.$addMember.find("input[name='fullName']").val().trim();
+						
 			//Reset the form
 			this.$addMember.find("input[name='username']").val("");
 			this.$addMember.find("input[name='fullName']").val("");
+			
+			if(!username){
+				this.addMemberNotification({
+					msg: "You must enter a person's username. Try searching by name or email address.",
+					status: "error"
+				});
+				return;
+			}
 			
 			//Is this user already in the collection?
 			if(this.collection.findWhere({username: username})){

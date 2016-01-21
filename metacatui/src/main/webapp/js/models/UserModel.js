@@ -105,11 +105,13 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 				userNode = $(data).first();
 			
 			//Get the type of user - either a person or group
-			var type = $(userNode).prop("tagName").toLowerCase();
+			var type = $(userNode).prop("tagName");
+			if(type) type = type.toLowerCase();
+			
 			if(type == "group"){
 				var fullName = $(userNode).find("groupName").first().text();
 			}
-			else{
+			else if(type){
 				//Find the person's info
 				var	firstName  = $(userNode).find("givenName").first().text(),
 					lastName   = $(userNode).find("familyName").first().text(),
