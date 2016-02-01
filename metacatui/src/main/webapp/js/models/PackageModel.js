@@ -103,7 +103,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = appSearchModel.getProvFlList();
 			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,' + provFlList +
-						'&rows=100' +
+						'&rows=1000' +
 						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
 						'&wt=json';
 			
