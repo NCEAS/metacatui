@@ -17,7 +17,6 @@ window.metacatUIVersion = "1.11.0";
 // Step 2: let everything else be taken care of by the app
 preventCompatibilityIssues();
 loadTheme(theme);
-loadIcons(theme);
 initApp();
 
 function loadTheme(theme) {
@@ -25,14 +24,6 @@ function loadTheme(theme) {
     script.setAttribute("type", "text/javascript");
     script.setAttribute("src", "js/themes/" + theme + "/config.js?v=" + window.metacatUIVersion);
     document.getElementsByTagName("body")[0].appendChild(script);
-}
-function loadIcons(theme) {
-	var url = "./js/themes/" + theme + "/img/favicon.ico?v=" + window.metacatUIVersion;
-    var link = document.createElement("link");
-    link.type = "image/png";
-    link.rel = "shortcut icon";
-    link.href = url;
-    document.getElementsByTagName("head")[0].appendChild(link);
 }
 function initApp() {
     var script = document.createElement("script");

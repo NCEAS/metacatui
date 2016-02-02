@@ -1,0 +1,49 @@
+/* Tablets and large screens ----------- */
+@media only screen and (min-width : 768px){
+	#Navbar {
+      position: absolute;
+      top: 0px;
+      left: 50%;
+      margin: 0px 0px 0px -380px;
+      z-index: 200;
+      float: none;      
+    }
+    
+    #Header {
+	    height: 95px;
+	    background-color: transparent;
+	    background-image: none;
+	    overflow: hidden;
+	    opacity: 1.0;   
+  	}
+}
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (max-width : 480px) {
+	/************** General Structure ****************/
+	#Header{
+		display: none;
+	}
+	#Navbar .navbar-inner{
+		border-bottom: 2px solid #992222;
+	}
+	#Content{
+		padding-bottom: 785px; /* Keeps footer down */
+		margin-top: 0px;
+	}
+	
+	/************** Footer ****************/
+	#Footer{
+		height: 775px; /* Keeps footer down */
+	}
+	footer div.help-items,
+	footer .logos{
+		width: 100%;
+		min-width: 100%;
+		margin-top: 20px;
+	}
+	footer .logos .logo{
+		margin-bottom: 0px;
+		margin-top: 0px;
+	}
+}
