@@ -16,7 +16,12 @@ var themeMap =
 		}
 };
 
+var customMapModelOptions = {
+	tileHue: "231"
+}
+
 var customAppConfig = function(){
 	//Only apply these settings when we are in production
+	
 
 }

@@ -74,6 +74,14 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 			}
 		},
 		
+		initialize: function(options){
+			if(typeof options == "object"){
+				for(var key in options){
+					this.set(key, options[key]);
+				}
+			}
+		},
+		
 		isMaxZoom: function(map){
 			var zoom = map.getZoom(),
 				type = map.getMapTypeId();

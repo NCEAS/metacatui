@@ -131,7 +131,7 @@ function(Bootstrap, AppView, AppModel) {
 		
 		statsModel = new Stats();
 		
-		mapModel = new MapModel();
+		mapModel = (typeof customMapModelOptions == "object")? new MapModel(customMapModelOptions) : new MapModel();
 		
 		appLookupModel = new LookupModel();
 		
