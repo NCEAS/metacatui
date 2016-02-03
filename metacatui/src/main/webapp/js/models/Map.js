@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 	var Map = Backbone.Model.extend({
 		// This model contains all of the map settings used for searching datasets
 		defaults: function(){
+			var model = this;
 			return {
 				map: null,
 				
@@ -68,7 +69,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				
 				//The tile hue - the number of the hue that will be used to color tiles
 				//Tile lightness - percent range of lightness/brightness of this tile hue
-				tileHue: "192",
+				tileHue: model.tileHue || "192",
 				tileLightnessMax: 70,
 				tileLightnessMin: 20
 			}
@@ -76,9 +77,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 		
 		initialize: function(options){
 			if(typeof options == "object"){
-				for(var key in options){
-					this.set(key, options[key]);
-				}
+				if(options.tileHue) this.tileHue = options.tileHue;
 			}
 		},
 		
