@@ -58,13 +58,13 @@ article.container {
    	margin: 0px;
    	padding-bottom: 0px;
 }
-#Footer{
+footer{
 	background-color: #FFFFFF;
 	height: 3em;        /** Keeps the footer down **/
 	position: absolute; /** Keeps the footer down **/
 	bottom: 0px;        /** Keeps the footer down **/
 }
-.mapMode #Footer{
+.mapMode footer{
 	position: relative;
 	height: auto;
 }

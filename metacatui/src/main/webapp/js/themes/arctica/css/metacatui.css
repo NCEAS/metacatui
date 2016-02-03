@@ -28,8 +28,7 @@
     #Content {
     	max-width: 100%;
     	width: 100%;
-    	margin-top: 20px;
-    	padding-bottom: 260px; /* Keeps footer down */
+    	padding-bottom: 377px; /* Keeps footer down */
     }		
     body > section > article {
       min-height: 800px;
@@ -41,7 +40,7 @@
     }
     
     a {
-		color: #006699; 
+		color: #323D90; 
 		transition: color .5s;
 		-webkit-transition: color .5s;
     }
@@ -113,6 +112,9 @@
     
     .row-fluid{
     	min-height: 0px;
+    }
+    code, .code_example{
+    	color: #009E94;
     }
     
     /** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
@@ -214,185 +216,131 @@
 /* FOOTER CSS
 -------------------------------------------------- */    
     
-    .mapMode #Footer h3,
-    .mapMode #Footer h3 > span{
-    	margin-top: 2px;
-    }
-    
-    .mapMode #Footer:hover h3,
-    .mapMode #Footer:hover h3 > span{
-    	font-size: 1em;
-    	line-height: 1em;
-    }
-    
-    #Footer {
-      padding: 5px 1%;
-      margin-top: 0px;
-      color: #FDFDFD;
-      background-color: #3F3F3F;
-      width: 98%;
-      z-index: 2;
-      height: 250px; /* Keeps footer down */
-    }
-    
-    .mapMode #Footer{
-    	position: fixed;
-    	bottom: 0;
-    	background-color: #3F3F3F;
-    	color: #FFF;
-    	height: 1.2em;
-    	transition: min-height 1s ease-out;
-    	-webkit-transition: min-height 1s ease-out;
-    	transition-delay: .5s;
-    	-webkit-transition-delay: .5s;
-    	z-index: 10;
-    	padding-top: 3px;
-    }
-        
-    footer#Footer div#FooterHeading {
-      max-width: 490px;
-    }
+.mapMode footer h3,
+.mapMode footer h3 > span{
+	margin-top: 2px;
+}
 
-    footer#Footer h2 {
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 16px;
-      vertical-align: middle;
-      padding: 0;
-      margin-bottom: 3px;
-    }
-        
-    footer#Footer h3 {
-      font-size: 1em;
-      line-height: 1em;
-      font-weight: bold; 
-      text-align: center;
-      padding: 0px 0px 20px 0px;
-      margin-bottom: -25px;
-      border-bottom: 1px solid #FDFDFD;
-      
-    }
+.mapMode footer:hover h3,
+.mapMode footer:hover h3 > span{
+	font-size: 1em;
+	line-height: 1em;
+}
 
-    footer#Footer h3 > span {
-      font-style: italic;
-    }
-    
-    footer#Footer h4.subheading {
-      vertical-align: baseline;
-      padding: 0;
-      text-align: center;
-    }
-    
-    footer#Footer h4.subheading > span {
-      font-style: italic;
-      text-transform: uppercase;
-      background-color: #3F3F3F;
-      padding: 0px 15px 0px 15px;
-    }
-    
-    footer div.help-items{
-    	min-width: 179px;
-    }
-    
-    footer#Footer i{
-    	margin-right: 5px;
-    	color: #CCCCCC;
-    }
-    
-    footer#Footer ul{
-    	margin: 0px;
-    }
-    
-    footer#Footer ul.helpitems {
-      margin: 0px;
-      list-style: none;
-      list-style-position: inside;
-    }
-    
-    footer#Footer ul.helpitems li {
-      font-size: 13px;
-      line-height: 23px;
-      vertical-align: baseline;                 
-    }
-    
-    footer#Footer ul.helpitems li:hover i{
-    	color: #FFFFFF;
-    }
-    
-    ul.helpitems a {
-      color: #CCCCCC;
-      text-decoration: none;      
-    }
-    
-    footer#Footer a:hover {
-      color: #FFFFFF;
-      text-decoration: none; 
-      transition: color .5s;     
-      -webkit-transition: color .5s;
-    }
-    
-    footer#Footer .disclaimer {
-      color: #CCC;
-      font-size: 12px;      
-    }
-    
-    footer#Footer .logo {
-      color: #D9D9D9;
-      font-size: 39px;
-      line-height: 1.0;
-      letter-spacing: -3px;
-      font-family: "Lato";
-      font-weight: "lighter";
-      margin: 0px 0px 15px 0px;
-      text-align: center;
-    }
-    
-    footer#Footer img {
-      opacity: .75;
-      transition: opacity .5s;
-      -webkit-transition: opacity .5s;
-    }
-    
-    footer#Footer .logos img:hover,
-    footer#Footer .logos p:hover{
-    	opacity: 1;
-    }
-    
-    footer#Footer .logos .knb{
-    	display: block;
-    	margin-top: 17px;
-    }
-    
-    footer#Footer .dataone img{
-    	height: 27px;
-    	width: auto;
-    	min-width: 120px;
-    	margin-top: 24px;
-    }
-    
-    footer#Footer .logos .nceas{
-    	display: block;
-    	margin-top: 0px;
-    }
-    
-    footer#Footer .logos .nceas img{
-    	width: 70px;
-    	height: auto;
-    	margin-top: 5px;
-    }
-    
-    footer#Footer .acknowledgements {
-      margin-top: 12px;
-    }
+footer {
+     padding: 0px 20px 20px 20px;
+ margin-top: 0px;
+ color: #FDFDFD;
+ background-color: #A3B4BB;
+ width: 100%;
+ box-sizing: border-box;
+ z-index: 2;
+ height: 337px; /* Keeps the footer down */
+}
 
-    #footer_signup {
-      position: relative;
-      width: auto;
-      font-size: inherit;
-      padding: 5px;
-      background-color: #992222;
-      color: #FFFFFF;
-    }
+.mapMode footer{
+	position: fixed;
+	bottom: 0;
+	background-color: #A3B4BB;
+	height: 1.2em;
+	transition: min-height 1s ease-out;
+	-webkit-transition: min-height 1s ease-out;
+	transition-delay: .5s;
+	-webkit-transition-delay: .5s;
+	z-index: 10;
+	padding-top: 3px;
+}
+footer .footer-inner{
+	max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+footer .sign-up{
+	background-color: #BCD1DA;
+    width: calc(100% + 40px);
+    margin-left: -20px;
+    margin-top: -20px;
+    padding: 20px 0px;
+}
+footer .help-items{
+	min-width: 179px;
+}
+
+footer .help-items ul{
+	margin: 0px;
+}
+
+footer ul.helpitems {
+  margin: 0px;
+  list-style: none;
+  list-style-position: inside;
+}
+
+footer ul.helpitems li {
+  font-size: .9em;
+}
+
+footer ul.helpitems li:hover i{
+	color: #FFFFFF;
+}
+footer .help-items h3{
+	font-size: 1em;
+	line-height: 1.5em;
+}
+ul.helpitems a,
+.helpitems .icon{
+    color: #244C5D;
+ text-decoration: none;
+ font-weight: 600;
+ line-height: 2.5em;    
+}
+
+footer a:hover {
+  color: #FFFFFF;
+  text-decoration: none; 
+  transition: color .5s;     
+  -webkit-transition: color .5s;
+}
+
+footer .disclaimer {
+  color: #CCC;
+  font-size: 12px;      
+}
+footer .acknowledgements {
+  margin-top: 12px;
+}
+footer .brand{
+	padding-top: 30px;
+}
+footer img {
+  max-height: 70px;
+}
+footer .logos{
+	margin-top: 20px;
+}
+footer .logos img:hover,
+footer .logos p:hover{
+	opacity: 1;
+}
+
+footer .logos .dataone{
+	height: 27px;
+}
+footer .logos .nceas{
+	margin-top: 5px;
+}
+footer .logos img{
+	margin-right: 20px;
+}
+
+footer .sign-up .btn-primary {
+  margin-left: 46%;
+  padding: 5px 10px;
+}
+ 
+ 
+ /* BUTTONS CSS
+-------------------------------------------------- */    
     
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 400;
@@ -406,7 +354,7 @@
     }
     
     .btn-primary {
-       background-color: #007DBB;
+       background-color: #91bf0a;
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;  
@@ -456,6 +404,9 @@
 
     i.glyphicons-icon.white {
       opacity: 1;
+    }
+    #clear-all{
+    	background-color: #91bf0a;
     }
  
 /* MAPS 
@@ -1083,6 +1034,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	margin-right: auto;
   	clear: both;
   	padding: 20px;
+  	    max-width: 960px;
   }
   
   .profile .stripe{
@@ -1132,24 +1084,24 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   /* The universal color for data */
 svg .data,
 .fallback.data{
-  	color: #38B0B0;
-  	stroke: #38B0B0;
-  	fill: #38B0B0;
+  	color: #1f254f;
+  	stroke: #1f254f;
+  	fill: #1f254f;
   }
   
   /* The universal color for metadata */
 svg .metadata,
 .fallback.metadata{
-  	color: #761012;
-  	stroke: #761012;
-  	fill: #761012;
+  	color: #91bf0a;
+  	stroke: #91bf0a;
+  	fill: #91bf0a;
   }
 
   /* The universal color for packages */
 svg .packages,
 .profile .packages{
-	color: #0E69A1;
-	fill: #0E69A1;
+	color: #146660;
+	fill: #146660;
 }
 .profile .bar-label.packages{
 	fill: inherit;
@@ -1217,30 +1169,30 @@ svg .title{
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
 {
-	fill: #B90004;	
+	fill: #91bf0a;	
 }
 .donut.metadata > g:nth-child(odd) .donut-arc,
 .donut.metadata > g:nth-child(odd) .donut-arc-label{
-	fill: #761012;
+	fill: #637c08;
 }
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #2B8282;	
+	fill: #1f254f;	
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
-	fill: #38B0B0;
+	fill: #323e7c;
 }
 /* Have a different color for the first arc so no two colors are adjacent */
 .donut.metadata > g:first-child .donut-arc,
 .donut.metadata > g:first-child .donut-arc-label{
-	fill: #D5181C;
+	fill: #87a543;
 }
 
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
-	fill: #42D2D2;
+	fill: #5065c9;
 }
 
 
@@ -1401,7 +1353,7 @@ svg .no-activity,
 }
 .nav-pills.primary li a:hover{
 	background-color: #BDD7E4;
-    color: #006699;
+    color: #1f254f;
 }
 
   /* Metadata rendering CSS
@@ -1434,14 +1386,17 @@ svg .no-activity,
 	.entitydetails > h4 > .title{
 		font-weight: 100;
 	}	
+	.nav-list>.active>a, .nav-list>.active>a:hover, .nav-list>.active>a:focus{
+		background-color: #1f254f;
+	}
 	
 	.prov-chart,
 	.prov-chart .node
 	.prov-chart .connecter{
-		border-color: #006699;
+		border-color: #1f254f;
 	}
 	.prov-chart .node{
-		color: #006699;
+		color: #1f254f;
 	}
     
     /* Google Map Images for Geographic Region */
@@ -1480,7 +1435,7 @@ svg .no-activity,
     	font-weight: bold;
     }
     .table .table-header{
-    	background-color: #7F9FAF;
+    	background-color: #A3B4BB;
     	text-align: center;
     	color: #FFF;
     	font-weight: normal;
@@ -1708,7 +1663,7 @@ svg .no-activity,
 
 	.current-filters > li,
 	.current-filters > li[class*="span"]{
-		background-color: #006699;
+		background-color: #1f254f;
 		color: #FFF;
 	}
 	
@@ -1781,7 +1736,7 @@ svg .no-activity,
     	z-index: 1;
     	display: block;
     	border: 0;
-    	background-color: #006699;
+    	background-color: #1f254f;
    }
     
     .ui-slider-handle{
@@ -1819,7 +1774,7 @@ svg .no-activity,
     
     /** for showing "my packages" filter */
 	.current-filters > li.keyword-search-link.active {
-		background-color: #006699; /*IE 8 fallback */
+		background-color: #1f254f; /*IE 8 fallback */
 		background-color: rgba(0, 102, 153, .8);
 	}
 	
@@ -1913,7 +1868,7 @@ svg .no-activity,
     li.ui-menu-item > a:hover,
     .ui-state-focus
      {
-        color: #006699;
+        color: #1f254f;
     	cursor: pointer;
     	text-decoration: none;
     	font-weight: bold;
@@ -2002,7 +1957,7 @@ svg .no-activity,
   	}
 
     .result-row .citation .title{
-    	color: #1C6E84;
+    	color: #323D90;
     }
     .result-row .citation a:hover{
  	   color: #1C6E84;
@@ -2030,8 +1985,6 @@ svg .no-activity,
     	word-break: keep-all;
     	text-overflow: ellipsis;
     }
-  	
-    
 	/** Download button **/   
 
     
@@ -2040,6 +1993,7 @@ svg .no-activity,
     } 
     .result-row .info-icons .download{
     	cursor: pointer;
+    	color: #1f254f;
     }
     
     /*-- Pagination widget --*/
@@ -2065,7 +2019,7 @@ svg .no-activity,
     	cursor: default;
     }
 	.pagination ul > li.active > a{
-		background-color: #006699;
+		background-color: #1f254f;
 		color: white;
 	}
 	.pagination ul > li > a:hover{
@@ -2215,7 +2169,7 @@ svg .no-activity,
 #metacatDocs > .document h2:hover > .headerlink,
 #metacatDocs > .document h3:hover > .headerlink{
 	display: inline;
-	color: #006699;
+	color: #1f254f;
 }
 
 
