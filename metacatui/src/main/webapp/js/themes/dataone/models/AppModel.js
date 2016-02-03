@@ -45,6 +45,7 @@ define(['jquery', 'underscore', 'backbone'],
 			metaServiceUrl: null,
 			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
+			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
 			resolveServiceUrl: null,			
@@ -63,7 +64,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrl: null,
 			signOutUrl: null,
 			signInUrlOrcid: null,
-			//signInUrlLdap: null,
+			signInUrlLdap: null,
 			tokenUrl: null,
 			checkTokenUrl: null,
 			//annotatorUrl: null,
@@ -81,6 +82,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
+			this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
 			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
 			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');

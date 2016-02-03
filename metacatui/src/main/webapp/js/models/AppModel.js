@@ -47,6 +47,7 @@ define(['jquery', 'underscore', 'backbone'],
 			metaServiceUrl: null,
 			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
+			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
 			//bioportalSearchUrl: null,
@@ -74,6 +75,7 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			// these are pretty standard, but can be customized if needed
+			this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');

@@ -28,7 +28,7 @@
     #Content {
     	max-width: 100%;
     	width: 100%;
-    	padding-bottom: 377px; /* Keeps footer down */
+    	padding-bottom: 357px; /* Keeps footer down */
     }		
     body > section > article {
       min-height: 800px;
@@ -210,7 +210,7 @@
     position: relative;
     top: 0px;
     z-index: 100;
-    min-height: 400px;      
+    min-height: 500px;      
   }
   
 /* FOOTER CSS
@@ -372,7 +372,8 @@ footer .sign-up .btn-primary {
     }
         
     .btn-primary:hover {
-      background-color: #0093DD;
+      background-color: #6B8E05;
+      transition: background-color .5s;
       color: #FDFDFD;
       background-image: none;
       background-repeat: none;
@@ -539,7 +540,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     #mainContent {
       margin-top: -115px;
       position: relative;
-      background-color: #899CA6;
+      background-color: #1f254f;
       padding-top: 20px;
       color: #FDFDFD;
 			min-height: 400px;
@@ -973,7 +974,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       left: 50%;
       margin: 0px 0px 0px -250px;
       width: 500px;
-      max-height: 130px;
+      max-height: 150px;
       z-index: 200;
       padding: 10px 20px 10px 20px;
       -webkit-border-radius: 6px;
@@ -998,9 +999,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       color: #FDFDFD;
     }
     .carousel-caption .btn-primary {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
+      margin-top: 20px;
     }
 
   /* MAIN BODY CSS
