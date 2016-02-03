@@ -2,7 +2,7 @@
 @media only screen and (min-width : 768px){
 	#Navbar {
       position: absolute;
-      top: 0px;
+      top: -3px;
       left: 50%;
       margin: 0px 0px 0px -380px;
       z-index: 200;

@@ -1,6 +1,6 @@
 @font-face {
-	font-family: "Lato";
-  	src: url('../../../../font/Lato-Light.ttf')  format('truetype'); /* Safari, Android, iOS */
+	font-family: "ExoLight";
+  	src: url('../fonts/Exo-Light.otf');
 }
 /* Body CSS
 -------------------------------------------------- */
@@ -28,7 +28,7 @@
     #Content {
     	max-width: 100%;
     	width: 100%;
-    	padding-bottom: 357px; /* Keeps footer down */
+    	padding-bottom: 300px; /* Keeps footer down */
     }		
     body > section > article {
       min-height: 800px;
@@ -115,6 +115,9 @@
     }
     code, .code_example{
     	color: #009E94;
+    }
+    .brand-name{
+    	font-family: ExoLight;
     }
     
     /** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
@@ -216,17 +219,6 @@
 /* FOOTER CSS
 -------------------------------------------------- */    
     
-.mapMode footer h3,
-.mapMode footer h3 > span{
-	margin-top: 2px;
-}
-
-.mapMode footer:hover h3,
-.mapMode footer:hover h3 > span{
-	font-size: 1em;
-	line-height: 1em;
-}
-
 footer {
      padding: 0px 20px 20px 20px;
  margin-top: 0px;
@@ -235,20 +227,20 @@ footer {
  width: 100%;
  box-sizing: border-box;
  z-index: 2;
- height: 337px; /* Keeps the footer down */
+ height: 300px; /* Keeps the footer down */
 }
 
 .mapMode footer{
 	position: fixed;
 	bottom: 0;
 	background-color: #A3B4BB;
-	height: 1.2em;
+	height: 2em;
 	transition: min-height 1s ease-out;
 	-webkit-transition: min-height 1s ease-out;
 	transition-delay: .5s;
 	-webkit-transition-delay: .5s;
 	z-index: 10;
-	padding-top: 3px;
+	padding-top: 0px 20px;
 }
 footer .footer-inner{
 	max-width: 1000px;
@@ -331,11 +323,29 @@ footer .logos .nceas{
 }
 footer .logos img{
 	margin-right: 20px;
+	    max-height: 25px;
 }
 
 footer .sign-up .btn-primary {
   margin-left: 46%;
   padding: 5px 10px;
+}
+footer .show-in-map-mode a{
+	margin-left: 27%;
+} 
+footer .show-in-map-mode a > h3{
+	color: #FFF;
+	font-weight: lighter;
+	font-size: 1em;
+	margin: 0px;
+	display: inline;
+	line-height: 2em;
+}
+footer .show-in-map-mode .btn{
+	margin-left: 20px;
+	display: inline;
+	padding: 4px;
+    font-size: .9em;
 }
  
  
@@ -742,24 +752,30 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .navbar-inner {
       border: none;
       z-index: 220;
+      height: 50px;
     }
     
     .navbar .nav > li > a.brand {
       padding: 0px;
     }
     .navbar .nav > li > a.brand img{
-    	height: 50px;
+    	height: 35px;
     }
+    .navbar .brand-name {
+    	margin-left: 10px;
+    	font-size: 1em;
+    	text-transform: none;
+	}
   
     .navbar .nav > li > * {
       margin: 0px 5px 7px 5px;
     }
 
     .navbar .nav > li > a {
-         font-size: 1.5em;
+         font-size: 1.1em;
     	font-weight: 300;
     	text-transform: uppercase;
-    	line-height: 1.5em;
+    	line-height: 1em;
     }
 
     .navbar .nav > li > a:focus,
@@ -807,8 +823,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
 
     #Navbar form {
-      margin: 0px 0px 0px 0px;
-      padding: 4px 0px 0px 0px;
+     	margin-top: -3px;
     }
     #Navbar .user {
     	font-size: 14px;
@@ -1000,6 +1015,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     .carousel-caption .btn-primary {
       margin-top: 20px;
+    }
+    .carousel-inner>.item>img, .carousel-inner>.item>a>img{
+    	height: 100%;
+    	max-width: inherit;
     }
 
   /* MAIN BODY CSS

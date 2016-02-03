@@ -68,6 +68,18 @@ footer{
 	position: relative;
 	height: auto;
 }
+.hide-in-map-mode{
+	display: block;
+}
+.show-in-map-mode{
+	display: none;
+}
+.mapMode .show-in-map-mode{
+	display: block;
+}
+.mapMode .hide-in-map-mode{
+	display: none;
+}
 .annotator-wrapper{
 	/** Keeps the footer down **/
 	min-height: 100%;
