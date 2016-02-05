@@ -917,6 +917,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       position: relative;
       top: 0px;
       z-index: 110;
+      background-image: url("../img/mountains-large.jpg");
+      background-size: cover;
     }
 
     /* Carousel base class */
@@ -948,19 +950,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       z-index: 191;
     }
 
-	/* Fallback colors for the carousel while images are loading */
-	.carousel .item:nth-child(2n){
-		background-color: #6C78A4;
-	}
-	
-	.carousel .item:nth-child(2n+1){
-		background-color: #6C94A4;
-	}
-	
-	.carousel .item:nth-child(3n){
-		background-color: #6C8AA4;
-	}
-	/************/
 	
     .carousel .item {
     	height: 400px;
