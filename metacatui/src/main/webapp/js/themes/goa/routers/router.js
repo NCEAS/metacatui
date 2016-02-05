@@ -20,7 +20,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'logout'                    : 'logout',    		// logout the user
 			//'signup'          			: 'renderLdap',     // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap'     // use ldapweb for different stages
-			//'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
+			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
 		
 		helpPages: {

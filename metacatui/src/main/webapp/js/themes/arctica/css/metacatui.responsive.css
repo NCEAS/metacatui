@@ -47,3 +47,9 @@
 		margin-top: 0px;
 	}
 }
+
+@media only screen and (max-width : 768px){ 	
+  	footer .show-in-map-mode a {
+  		margin-left: 25%;
+  	}
+}

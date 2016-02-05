@@ -331,7 +331,8 @@ footer .sign-up .btn-primary {
   padding: 5px 10px;
 }
 footer .show-in-map-mode a{
-	margin-left: 27%;
+	margin-left: 40%;
+	display: inline-block;
 } 
 footer .show-in-map-mode a > h3{
 	color: #FFF;
@@ -807,7 +808,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .navbar .nav > li > a.brand:focus,
     .navbar .nav > li > a.brand:hover {
-    	color: #992222;
     	background-color: transparent;
     }
 
