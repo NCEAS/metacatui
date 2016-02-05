@@ -842,10 +842,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     #SignIn {
       float: right;
     }
-    #signinPopup .btn + .well{
-    	margin-top: 20px;
-    }
-     
+    
     .dropdown-header {
 		display: block;
 		padding: 3px 20px;
