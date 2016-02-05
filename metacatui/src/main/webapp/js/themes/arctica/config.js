@@ -12,7 +12,8 @@ var themeMap =
 		'templates/altHeader.html' : 'themes/' + theme + '/templates/altHeader.html',
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
 		'templates/tools.html' : 'themes/' + theme + '/templates/tools.html',
-		'templates/about.html' : 'themes/' + theme + '/templates/about.html'
+		'templates/about.html' : 'themes/' + theme + '/templates/about.html',
+		'models/AppModel' : "js/themes/" + theme + "/models/AppModel.js"
 		}
 };
 
