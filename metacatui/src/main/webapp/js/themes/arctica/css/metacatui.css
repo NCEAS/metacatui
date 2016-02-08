@@ -28,7 +28,6 @@
     #Content {
     	max-width: 100%;
     	width: 100%;
-    	padding-bottom: 300px; /* Keeps footer down */
     }		
     body > section > article {
       min-height: 800px;
@@ -227,14 +226,18 @@ footer {
  width: 100%;
  box-sizing: border-box;
  z-index: 2;
- height: 300px; /* Keeps the footer down */
+ height: 320px; /* Keeps the footer down */
 }
+#Content{
+	 	padding-bottom: 350px; /* Keeps footer down */
+}
+
 
 .mapMode footer{
 	position: fixed;
 	bottom: 0;
 	background-color: #A3B4BB;
-	height: 2em;
+	height: 3.3em;
 	transition: min-height 1s ease-out;
 	-webkit-transition: min-height 1s ease-out;
 	transition-delay: .5s;
@@ -309,6 +312,7 @@ footer img {
 }
 footer .logos{
 	margin-top: 20px;
+	margin-bottom: 10px;
 }
 footer .logos img:hover,
 footer .logos p:hover{
@@ -760,7 +764,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       padding: 0px;
     }
     .navbar .nav > li > a.brand img{
-    	height: 35px;
+    	height: 70px;
     }
     .navbar .brand-name {
     	margin-left: 10px;
