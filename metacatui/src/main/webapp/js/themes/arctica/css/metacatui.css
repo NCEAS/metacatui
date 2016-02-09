@@ -553,7 +553,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 -------------------------------------------------- */    
     
     #mainContent {
-      margin-top: -115px;
+      margin-top: -200px;
       position: relative;
       background-color: #1f254f;
       padding-top: 20px;
@@ -750,8 +750,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .navbar {
       position: relative;
       border: none;   
-      margin-top: 20px;
-      margin-bottom: 15px;
     }
 
     .navbar-inner {
@@ -760,8 +758,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       height: 50px;
     }
     
+    .navbar .nav > .brand-container{
+    	margin-right: 50px;
+    	margin-left: 50px;
+    }
     .navbar .nav > li > a.brand {
       padding: 0px;
+      margin-top: 0px;
     }
     .navbar .nav > li > a.brand img{
     	height: 70px;
@@ -777,22 +780,30 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
 
     .navbar .nav > li > a {
-         font-size: 1.1em;
-    	font-weight: 300;
-    	text-transform: uppercase;
-    	line-height: 1em;
+        font-size: 1.2em;
+	    font-weight: normal;
+	    line-height: 1em;
+	    color: #333;
+	    margin-top: 15px;
+	    text-shadow: none;
+    }
+    
+    .navbar .nav > li > a.btn-primary{
+    	color: #FFF;
+    	text-shadow: none;
+    }
+    
+    .navbar .nav > li form{
+    	margin-top: 15px;
     }
 
     .navbar .nav > li > a:focus,
     .navbar .nav > li > a:hover {
-      color: #555555;
+      color: #FFF;
+      background-color:rgba(31,37,79,.5);
       font-weight: 400;
-      background-color: #E5E5E5;
       text-decoration: none;
-      -webkit-border-radius: 5px;
-      -moz-border-radius: 5px;
-      border-radius: 5px;
-      /*background-color: transparent;*/
+      text-shadow: none;
     }
     
     .navbar .nav > .active > a,
@@ -825,12 +836,28 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       margin: 5px 0px 0px 0px;
       z-index: 290;
     }
-
-    #Navbar form {
-     	margin-top: -3px;
+    #Navbar{
+    	position: fixed;
+	    left: 10px;
+	    margin: 0px;
+	    z-index: 200;
+	    float: none;
     }
     #Navbar .user {
     	font-size: 14px;
+    }
+    #Header{
+    	position: fixed;
+    	height: 82px;
+    	width: 100%;
+    	background-image: url('../img/Mountains-navbar.jpg');
+    	background-size: cover;
+    }
+    #Content{
+    	padding-top: 82px;
+    }
+    .mapMode #Content{
+    	padding-top: 0px;
     }
     
     .navbar .nav {
@@ -841,10 +868,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
         padding-left: 25px;
     	width: calc(100% - 50px);
     	padding-right: 25px;
-    }
-    
-    #SignIn {
-      float: right;
     }
     
     .dropdown-header {

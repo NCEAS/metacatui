@@ -1,20 +1,13 @@
 /* Tablets and large screens ----------- */
 @media only screen and (min-width : 768px){
-	#Navbar {
-      position: absolute;
-      top: -3px;
-      left: 50%;
-      margin: 0px 0px 0px -380px;
-      z-index: 200;
-      float: none;      
-    }
     
     #Header {
-	    height: 95px;
-	    background-color: transparent;
-	    background-image: none;
 	    overflow: hidden;
-	    opacity: 1.0;   
+	    opacity: 0.8;   
+  	}
+  	
+  	.mapMode #Header{
+  		opacity: 1;
   	}
 }
 
