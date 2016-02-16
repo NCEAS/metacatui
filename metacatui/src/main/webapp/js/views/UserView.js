@@ -507,7 +507,7 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			}
 			//If one year or more, express in years and months
 			else{
-				var yearsOnly = (Math.round(years) || 1),
+				var yearsOnly = (Math.floor(years) || 1),
 					monthsOnly = Math.round(years % 1 * 12);
 				
 				if(monthsOnly == 12){
