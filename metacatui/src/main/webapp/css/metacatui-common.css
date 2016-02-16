@@ -1050,6 +1050,7 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	width: 83%;
 	width: calc(100% - 130px);
 	float: left;
+	margin-bottom: 0px;
 }
 #Metadata .citation .title,
 #Content.no-stylesheet .citation .title{
@@ -1131,6 +1132,19 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
   display: inline-block;
   float: right;
   margin-bottom: 10px;
+}
+.controls-well.metadata-controls{
+	border: 0px;
+	margin-bottom: 0px;
+}
+.citation ~ .copy.btn{
+	float: right;
+	margin-right: 20px;
+}
+.citation ~ .copy.btn + .copy-success{
+	float: right;
+    margin-right: 20px;
+    line-height: 2em;
 }
 .metadata-controls .info-icons{
 	float: left;
