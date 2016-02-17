@@ -1,11 +1,13 @@
-<a class="btn copy subtle" data-clipboard-text="<%=citation%>">Copy Citation</a>
-<div class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</div>
-	
-<div class="inline-input-group controls-well metadata-controls">
-	<div class="info-icons">
-		<% if(!model.isPublic){ %>
-			<div class="private icons"><i class="icon icon-lock tooltip-this private" data-toggle="tooltip" data-placement="right" title="This is your private content."></i></div>		
-		<% } %>
-	</div>
-	<div class="clearfix"></div>
+<div class="metadata-controls-container">
+	<a class="btn copy subtle" data-clipboard-text="<%=citation%>">Copy Citation</a>
+	<span class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</span>
+		
+	<% if(!model.isPublic){ %>
+		<div class="inline-input-group controls-well metadata-controls">
+			<div class="info-icons">
+					<div class="private icons"><i class="icon icon-lock tooltip-this private" data-toggle="tooltip" data-placement="right" title="This is your private content."></i></div>		
+			</div>
+			<div class="clearfix"></div>
+		</div>
+	<% } %>
 </div>

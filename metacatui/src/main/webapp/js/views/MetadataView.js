@@ -768,8 +768,8 @@ define(['jquery',
 				url: window.location,
 				model: this.model.toJSON()
 			});
-			if(this.$(".metadata-controls").length > 0)
-				this.$(".metadata-controls").replaceWith(controlsContainer);
+			if(this.$(".metadata-controls-container").length > 0)
+				this.$(".metadata-controls-container").replaceWith(controlsContainer);
 			else
 				$(this.citationEl).after(controlsContainer);
 			
