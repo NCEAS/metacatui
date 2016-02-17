@@ -1139,24 +1139,24 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-left: 0px;
 }
 /**----------------------------------------**/
+.citation-container{
+	margin-bottom: 20px;
+}
 .citation ~ .logo{
   max-width: 125px;
   display: inline-block;
   float: right;
   margin-bottom: 10px;
 }
-.controls-well.metadata-controls{
-	border: 0px;
-	margin-bottom: 0px;
-}
 .citation ~ .copy.btn{
-	float: right;
-	margin-right: 20px;
+	float: left;
 }
 .citation ~ .copy.btn + .copy-success{
-	float: right;
-    margin-right: 20px;
+    margin-left: 10px;
     line-height: 2em;
+}
+.citation ~ .metadata-controls-container{
+	display: inline-block;
 }
 .metadata-controls .info-icons{
 	float: left;
