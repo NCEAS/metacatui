@@ -87,12 +87,14 @@ define(['jquery',
 		// Render the main metadata view
 		render: function () {
 
+			console.log("metadata view");
+
 			this.stopListening();
 			
 			appModel.set('headerType', 'default');
 			this.showLoading("Loading...");
 						
-			//Reset a new class map - for matching ids->class names in prov charts
+			//Reset various properties of this view first
 			this.classMap = new Array();
 			this.subviews = new Array();
 			this.model.set(this.model.defaults);
@@ -464,8 +466,12 @@ define(['jquery',
 				$("#downloadPackage").remove();
 			    
 			    //Show the provenance trace for viewRef package			
-				viewRef.listenToOnce(packageModel, "change:provenanceFlag", viewRef.drawProvCharts);
-				packageModel.getProvTrace();
+				if(packageModel.get("provenanceFlag") == "complete") 
+					viewRef.drawProvCharts(packageModel);
+				else{
+					viewRef.listenToOnce(packageModel, "change:provenanceFlag", viewRef.drawProvCharts);
+					packageModel.getProvTrace();
+				}
 			});
 			
 			//Collapse the table list after the first table
