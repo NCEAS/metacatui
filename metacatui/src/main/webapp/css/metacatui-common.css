@@ -1137,9 +1137,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 }
 .citation ~ .metadata-controls-container{
 	display: inline-block;
-}
-.citation ~ .metadata-controls-container .btn.copy{
-	margin-top: 20px;
+	width: 100%;
+	margin-bottom: 20px;
 }
 .citation ~ .metadata-controls-container .copy-success{
 	margin-left: 10px;
