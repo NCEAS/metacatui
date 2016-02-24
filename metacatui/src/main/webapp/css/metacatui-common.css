@@ -1135,15 +1135,14 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
   float: right;
   margin-bottom: 10px;
 }
-.citation ~ .copy.btn{
-	float: left;
-}
-.citation ~ .copy.btn + .copy-success{
-    margin-left: 10px;
-    line-height: 2em;
-}
 .citation ~ .metadata-controls-container{
 	display: inline-block;
+}
+.citation ~ .metadata-controls-container .btn.copy{
+	margin-top: 20px;
+}
+.citation ~ .metadata-controls-container .copy-success{
+	margin-left: 10px;
 }
 .metadata-controls .info-icons{
 	float: left;
