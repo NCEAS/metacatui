@@ -87,8 +87,6 @@ define(['jquery',
 		// Render the main metadata view
 		render: function () {
 
-			console.log("metadata view");
-
 			this.stopListening();
 			
 			appModel.set('headerType', 'default');
@@ -439,7 +437,11 @@ define(['jquery',
 			//Get the entity names from this page/metadata
 			this.getEntityNames(this.packageModels);
 			
-			_.each(this.packageModels, function(packageModel){
+			var latestPackages = _.filter(this.packageModels, function(m){
+				return(!m.get("obsoletedBy"));
+			});
+			
+			_.each(latestPackages, function(packageModel){
 
 				//If the package model is not complete, don't do anything
 				if(!packageModel.complete) return viewRef;
@@ -1148,8 +1150,7 @@ define(['jquery',
 				
 				if(numPDFS > 0){
 					var numPDFChecks  = 0,
-						lightboxPDFSelector = "a[class^='fancybox'][data-fancybox-iframe]",
-						pdfIntervalID = window.setInterval(initializePDFLightboxes, 500);
+						lightboxPDFSelector = "a[class^='fancybox'][data-fancybox-iframe]";
 					
 					//Add additional options for PDFs
 					var pdfLightboxOptions = lightboxOptions;
@@ -1171,7 +1172,7 @@ define(['jquery',
 						}
 						
 						//Are all of our pdfs loaded yet?
-						if(viewRef.$(lightboxPDFSelector).length < numPDFs) return;
+						if(viewRef.$(lightboxPDFSelector).length < numPDFS) return;
 						else{					
 							//Initialize our lightboxes
 							$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
@@ -1181,6 +1182,7 @@ define(['jquery',
 						}				
 					}
 					
+					var pdfIntervalID = window.setInterval(initializePDFLightboxes, 500);
 				}
 				
 				if(numImages > 0){

@@ -1148,19 +1148,16 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
   float: right;
   margin-bottom: 10px;
 }
-.citation ~ .copy.btn{
-	float: left;
-}
-.citation ~ .copy.btn + .copy-success{
-    margin-left: 10px;
-    line-height: 2em;
-}
 .citation ~ .metadata-controls-container{
 	display: inline-block;
 }
 .metadata-controls .info-icons{
 	float: left;
 	margin-top: 10px;
+}
+.citation ~ .metadata-controls-container .btn.copy{
+	margin-top: 20px;
+	color: #333;
 }
 .citation ~ .logo .ORNLDAAC,
 .citation ~ .logo .CDL,
@@ -1242,6 +1239,19 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-top: 40px;
 	padding: 20px;
 	width: 350px;
+}
+.entitydetails .thumbnail.pdf{
+	width: 500px;
+}
+.entitydetails .thumbnail.pdf .zoom-in{
+	width: 500px;
+    display: block;
+    height: 2em;
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    font-weight: normal;
+    text-align: center;
+    line-height: 2em;
 }
 .thumbnail  img{
 	min-width: 100%;
