@@ -6,12 +6,18 @@ if(type === undefined)  var type = null;
 if(objID === undefined)  var objID = "";
 %>
 
-<div class="data-display thumbnail" data-obj-id="<%=objID%>">
 
 <%
-if(type == "pdf")
-	print('<a class="fancybox btn" data-fancybox-iframe="iframe" href="' + src + '"><i class="icon-file file-type"></i> <span class="file-type">PDF</span> Preview </a></div>');
-else if(type == "image")
-	print('<a href="' + src + '" rel="' + group + '" class="fancybox" data-fancybox-type="image" title="' + title + '"><img src="' + src + '"  class="metadata-img img-thumbnail"/></a>');		
-%>
+if(type == "PDF"){ %>
+<div class="data-display thumbnail pdf" data-obj-id="<%=objID%>">
+	<iframe src="<%=src%>" class="iframe pdf-preview" width="500" height="500"></iframe>
+	<a class="fancybox zoom-in" data-fancybox-iframe="iframe" href="<%=src%>"><i class="icon-zoom-in icon-on-left file-type"></i> Larger preview </a>
+</div>	
+<% }
+else if(type == "image"){ %>
+<div class="data-display thumbnail" data-obj-id="<%=objID%>">
+	<a href="<%=src%>" rel="<%=group%>" class="fancybox" data-fancybox-type="image" title="<%=title%>">
+		<img src="<%=src%>"  class="metadata-img img-thumbnail" />
+	</a>		
 </div>
+<% } %>

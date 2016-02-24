@@ -1230,6 +1230,19 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	padding: 20px;
 	width: 350px;
 }
+.entitydetails .thumbnail.pdf{
+	width: 500px;
+}
+.entitydetails .thumbnail.pdf .zoom-in{
+	width: 500px;
+    display: block;
+    height: 2em;
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    font-weight: normal;
+    text-align: center;
+    line-height: 2em;
+}
 .thumbnail  img{
 	min-width: 100%;
 	height: auto;

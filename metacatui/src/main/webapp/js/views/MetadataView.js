@@ -1146,8 +1146,7 @@ define(['jquery',
 				
 				if(numPDFS > 0){
 					var numPDFChecks  = 0,
-						lightboxPDFSelector = "a[class^='fancybox'][data-fancybox-iframe]",
-						pdfIntervalID = window.setInterval(initializePDFLightboxes, 500);
+						lightboxPDFSelector = "a[class^='fancybox'][data-fancybox-iframe]";
 					
 					//Add additional options for PDFs
 					var pdfLightboxOptions = lightboxOptions;
@@ -1155,7 +1154,7 @@ define(['jquery',
 					pdfLightboxOptions.iframe = { preload: false };
 					pdfLightboxOptions.height = "98%";
 					
-					var initializePDFLightboxes = function(){
+					var initializePDFLightboxes = function(lightboxOptions, numPDFs){
 						numPDFChecks++;
 						
 						//Initialize what images have loaded so far after 5 seconds
@@ -1169,7 +1168,7 @@ define(['jquery',
 						}
 						
 						//Are all of our pdfs loaded yet?
-						if(viewRef.$(lightboxPDFSelector).length < numPDFs) return;
+						if(viewRef.$(lightboxPDFSelector).length < numPDFS) return;
 						else{					
 							//Initialize our lightboxes
 							$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
@@ -1178,6 +1177,8 @@ define(['jquery',
 							window.clearInterval(pdfIntervalID);
 						}				
 					}
+					
+					var pdfIntervalID = window.setInterval(initializePDFLightboxes, 500);
 					
 				}
 				
@@ -1190,7 +1191,7 @@ define(['jquery',
 					imgLightboxOptions.type = "image";
 					imgLightboxOptions.perload = 1;
 					
-					var initializeImgLightboxes = function(){
+					var initializeImgLightboxes = function(lightboxOptions, numImages){
 						numImgChecks++;
 						
 						//Initialize what images have loaded so far after 5 seconds
@@ -1215,7 +1216,7 @@ define(['jquery',
 						}				
 					}
 					
-					var imgIntervalID = window.setInterval(initializeImgLightboxes, 500);
+					var imgIntervalID = window.setInterval(initializeImgLightboxes, 500, lightboxOptions, numImages);
 				}
 			});
 		},
