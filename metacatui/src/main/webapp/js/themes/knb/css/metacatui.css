@@ -581,6 +581,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-top: 0px;
 	padding-left: 10px;
 }
+.DataCatalog #Content{
+	margin-top: 0px;
+}
 
 /* FEATURES CSS 
 -------------------------------------------------- */    
@@ -1086,6 +1089,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	margin-right: auto;
   	clear: both;
   	padding: 20px;
+  	max-width: 1000px;
   }
   
   .profile .stripe{
