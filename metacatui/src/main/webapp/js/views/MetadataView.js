@@ -437,7 +437,11 @@ define(['jquery',
 			//Get the entity names from this page/metadata
 			this.getEntityNames(this.packageModels);
 			
-			_.each(this.packageModels, function(packageModel){
+			var latestPackages = _.filter(this.packageModels, function(m){
+				return(!m.get("obsoletedBy"));
+			});
+			
+			_.each(latestPackages, function(packageModel){
 
 				//If the package model is not complete, don't do anything
 				if(!packageModel.complete) return viewRef;
