@@ -61,7 +61,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			
 			// load all the registry content so all the js can run in what gets loaded
 			var viewRef = this;
-			$.ajax({
+			var requestSettings = {
 					type: "POST",
 					xhrFields: {
 						withCredentials: true
@@ -84,7 +84,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 							viewRef.trigger("postRender");
 						});						
 					}
-				});
+				};
+	
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 						
 			return this;
 		},
@@ -176,7 +178,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			var view = this;
 						
 			//We need to use the jQuery plugin jQuery.form so we can submit files in older browsers
-			$('#entryForm').ajaxSubmit({
+			var requestSettings = {
 			    url: this.registryUrl,
 			    cache: false,
 			    contentType: false,
@@ -189,7 +191,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					contentArea.html(data);
 					view.scrollToTop();
 				}
-			});
+			}
+			
+			$('#entryForm').ajaxSubmit(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			
 			// prepend the loading icon because we need to keep our form element in the DOM for the jQuery.form plugin to work
 			this.scrollToTop();
@@ -227,7 +231,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
 			var contentArea = this.$el;
-			$.ajax({
+			var requestSettings = {
 					type: "POST",
 					xhrFields: {
 						withCredentials: true
@@ -238,7 +242,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 						contentArea.html(data);
 						viewRef.augementForm();
 					}
-			});
+			};
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			
 		},
 		
@@ -288,7 +294,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 						
 			// ajax call to submit the given form and then render the results in the content area
 			// use post to prevent passwords in the URL
-			$.ajax({
+			var requestSettings = {
 				type: "POST",
 				xhrFields: {
 					withCredentials: true
@@ -307,7 +313,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					if (metacatUrl) {
 						// submit the Metacat API login form
 						var loginFormData = viewRef.$("form").serialize();
-						$.ajax({
+						var submitSettings = {
 							type: "POST",
 							xhrFields: {
 								withCredentials: true
@@ -344,7 +350,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								//uiRouter.navigate("share", {trigger: true});
 								//viewRef.render();
 							}
-						});
+						}
+						
+						$.ajax(_.extend(submitSettings, appUserModel.createAjaxSettings()));
+						
 					} else {
 						// just show what was returned (error message)
 						viewRef.$el.html(data);
@@ -354,7 +363,9 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					viewRef.$('#tempMetacatContainer').remove();
 					
 				}
-		});
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			
 			return true;
 		},
@@ -378,7 +389,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 			viewRef.$el.append("<div id='tempMetacatContainer' />");
 			
 			// ajax call to logout, only want the form object
-			$.ajax({
+			var requestSettings = {
 				type: "GET",
 				xhrFields: {
 					withCredentials: true
@@ -396,7 +407,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					if (metacatUrl) {
 						// submit the Metacat API login form
 						var logoutFormData = viewRef.$("form").serialize();
-						$.ajax({
+						var loginSettings = {
 							type: "POST",
 							xhrFields: {
 								withCredentials: true
@@ -412,7 +423,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 								// trigger the check for logged in user
 								appUserModel.checkStatus();
 							}
-						});
+						}
+
+						$.ajax(_.extend(loginSettings, appUserModel.createAjaxSettings()));
+
 					} else {
 						// just show what was returned (error message)
 						viewRef.$el.html(data);
@@ -425,8 +439,10 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					viewRef.render();
 
 				}
-			});
+			}
 			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+
 			return true;
 		},
 		
