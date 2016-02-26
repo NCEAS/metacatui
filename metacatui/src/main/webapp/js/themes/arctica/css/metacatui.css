@@ -1,6 +1,6 @@
 @font-face {
 	font-family: "ExoLight";
-  	src: url('../fonts/Exo-Light.otf');
+  	src: url("../fonts/Exo-Light.otf");
 }
 /* Body CSS
 -------------------------------------------------- */
@@ -116,7 +116,8 @@
     	color: #009E94;
     }
     .brand-name{
-    	font-family: ExoLight;
+    	font-family: ExoLight, Helvetica, sans-serif;
+    	font-weight: lighter;
     }
     
     /** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
