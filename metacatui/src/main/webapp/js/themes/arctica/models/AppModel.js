@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
-			d1CNBaseUrl: "https://cn.dataone.org",
+			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
@@ -119,21 +119,11 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
 
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
-				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
+				//this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
 		
 				//Settings for the DataONE API v2 only
 				if(this.get("d1CNService").indexOf("v2") > -1){
-					//Turn provenance feature on
-					if(typeof this.get("prov") != "undefined")
-						this.set("prov", true);
-					
-					//Use the seriesId feature with the v2 API
-					if(typeof this.get("useSeriesId") != "undefined")
-						this.set("useSeriesId", true);
-					
-					//The view service for member node installations of metacatui
-					this.set('viewServiceUrl',    this.get('baseUrl') + this.get('d1CNService') + '/views/metacatui/');
-					
+										
 					//Authentication / portal URLs
 					this.set('portalUrl', this.get('d1CNBaseUrl') + '/portal/');
 					this.set('tokenUrl',  this.get('portalUrl') + 'token');
