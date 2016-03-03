@@ -448,10 +448,10 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		checkStatus: function() {
 			var model = this;
 			
-			// look up the URL
-			var metacatUrl = appModel.get('metacatServiceUrl');
-			
-			if (metacatUrl) {				
+			if (!appModel.get("tokenUrl")) {				
+				// look up the URL
+				var metacatUrl = appModel.get('metacatServiceUrl');
+				
 				// ajax call to validate the session/get the user info
 				var requestSettings = {
 					type: "POST",
