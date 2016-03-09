@@ -74,12 +74,25 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
 			
-			//Sort the objects/rows by type (image, program, data, etc.) alphabetically
-			members = _.sortBy(members, function(m){
-				if(m.get("type") == "metadata") return "!"; //Always display metadata first since it will have the title in the table
+			/*
+			//Split the members of this package into groups based on their format type (metaata, data, image, code, etc)
+			members = _.groupBy(members, function(m){
+				if(!m.get("type") || (typeof m.get("type") == "undefined"))
+					return "data";
 				return m.get("type");
 			});
+
+			var rowOrder = ["metadata", "image", "pdf", "data"];
 			
+			for(var i=0; i<rowOrder.length; i++){
+				//Sort the members/rows alphabetically within each group
+				members = _.sortBy(members, function(m){
+					if(m.get("type") == "metadata") return "!"; //Always display metadata first since it will have the title in the table
+					return m.get("type");
+				});	
+			}
+			
+			*/
 			//Filter out the packages from the member list
 			members = _.filter(members, function(m){ return(m.type != "Package") });
 			

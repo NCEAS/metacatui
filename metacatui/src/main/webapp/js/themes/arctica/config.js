@@ -14,7 +14,8 @@ var themeMap =
 		'templates/tools.html' : 'themes/' + theme + '/templates/tools.html',
 		'templates/about.html' : 'themes/' + theme + '/templates/about.html',
 		'templates/userProfileMenu.html' : 'themes/' + theme + '/templates/userProfileMenu.html',
-		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js'
+		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
+		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
 		}
 };
 
