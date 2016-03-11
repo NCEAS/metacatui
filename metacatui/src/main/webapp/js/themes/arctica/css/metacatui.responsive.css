@@ -9,6 +9,18 @@
   	.mapMode #Header{
   		opacity: 1;
   	}
+  	
+  	#Content{
+  		max-width: 1024px;
+  	}
+  	.DataCatalog #Content{
+  		max-width: 100%;
+  	}
+  	footer .logos{
+	    width: 570px;
+	    margin-left: auto;
+	    margin-right: auto;
+  	}
 }
 
 /* Smartphones (portrait and landscape) ----------- */

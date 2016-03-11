@@ -31,7 +31,7 @@ define(['jquery', 'underscore', 'backbone'],
 			useJsonp: true,
 			
 			metacatVersion: "2.5.0", 
-			baseUrl: "https://dev.nceas.ucsb.edu",//window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
@@ -125,13 +125,13 @@ define(['jquery', 'underscore', 'backbone'],
 				if(this.get("d1CNService").indexOf("v2") > -1){
 										
 					//Authentication / portal URLs
-					this.set('portalUrl', this.get('d1CNBaseUrl') + '/portal/');
+					this.set('portalUrl', this.get('d1CNBaseUrl') + 'portal/');
 					this.set('tokenUrl',  this.get('portalUrl') + 'token');
 					this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 					
 					//Annotator API 
 					if(typeof this.get("annotatorUrl") !== "undefined")
-						this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');				
+						this.set('annotatorUrl', this.get('d1CNBaseUrl') + 'portal/annotator');				
 					
 					//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
 					if(typeof this.get("signInUrl") !== "undefined"){
