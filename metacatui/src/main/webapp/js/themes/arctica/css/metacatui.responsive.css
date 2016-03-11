@@ -45,4 +45,18 @@
   	footer .show-in-map-mode a {
   		margin-left: 25%;
   	}
+  	
+  	 #nav-trigger{
+  		display: block;
+  	}
+  	
+  	/* Take nav out of mobile-style */
+	nav{
+		float: right;
+		width: auto;
+		display: block;
+	}
+	.nav li a{
+		text-align: left;
+	}
 }

@@ -1,42 +1,51 @@
-<div class="navbar" >
-      <ul class="nav">
-	    <li class="brand-container"><a class="brand" href="#"><img src="js/themes/arctica/img/logo-navbar.png" /></a></li>
-	    <li class="dropdown">
-        	<a class="show-new-dataCatalogView dropdown-toggle" data-toggle="dropdown">Data</a>
-        	<ul class="dropdown-menu">
-        		<li class="dropdown-header"> Data </li>
-        		<li><a class="show-new-dataCatalogView">Search</a></li>
-        		<li><a href="#profile">Summary</a></li>
-        	</ul>
-        </li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#help">Help</a></li>
-        <li class="input input-append">
-        	<form id="direct-search" action="#">
-	        	<label class="tooltip-this" data-title="Go directly to a dataset by pasting its full DOI or ID here.">Jump to:</label> 
-	        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="direct-search subtle" form="direct-search"/>
-	        	<button class="btn direct-search" form="direct-search">Go</button>
-	        </form>
-        </li>        
-        <% if (loggedIn) { %>
-        	<li class="dropdown">
-				<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-					<i class="icon-user"></i><b class="caret"></b>
-				</a>
-				<ul class="dropdown-menu">
-					<li class="dropdown-header"><%=formattedName%></li>
-					<li><a href="#share">Upload data</a></li>
-					<% if(appModel.get("userProfiles")){ %><li><a href="#profile/<%=username%>">My profile</a></li> <% } %>
-					<li><a href="#data" id="myData">My data packages</a></li>
-					<li class="divider"></li>
-					<li><a href="#logout">Logout</a></li>
+<header class="header" role="banner" itemscope="" itemtype="http://schema.org/WPHeader">
+
+	<div class="border-image" role="img"></div>
+
+		<div id="inner-header" class="wrap cf">
+
+			<a href="/" rel="nofollow" id="logo" class="h1" itemscope="" itemtype="http://schema.org/Organization"><img src="js/themes/arctica/img/header-logo.png"></a>
+
+			<a id="nav-trigger"><i class="icon-bars icon"></i><i class="icon-close icon hidden"></i></a>
+					
+			<nav role="navigation" itemscope="" itemtype="http://schema.org/SiteNavigationElement" id="main-nav">
+				<ul id="menu-main-navigation" class="nav top-nav">
+					<li>
+						<a class="show-new-dataCatalogView dropdown-toggle" data-toggle="dropdown">Data</a>
+						<ul class="dropdown-menu">
+			        		<li class="dropdown-header"> Data </li>
+			        		<li><a class="show-new-dataCatalogView">Search</a></li>
+			        		<li><a href="#profile">Summary</a></li>
+			        	</ul>
+		        	</li>
+					<li><a href="/about">About</a></li>
+					<li><a href="/news">News</a></li>
+				<!-- 	<li class="input input-append">
+			        	<form id="direct-search" action="#">
+				        	<label class="tooltip-this" data-title="Go directly to a dataset by pasting its full DOI or ID here.">Jump to:</label> 
+				        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="direct-search subtle" form="direct-search"/>
+				        	<button class="btn direct-search" form="direct-search">Go</button>
+				        </form>
+			        </li>   -->
+			       <li><a href="#share" class="btn btn-primary">Submit Data</a></li>
+					<% if (loggedIn) { %>
+        				<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i><b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li class="dropdown-header"><%=formattedName%></li>
+								<li><a href="#share">Upload data</a></li>
+								<% if(appModel.get("userProfiles")){ %><li><a href="#profile/<%=username%>">My profile</a></li> <% } %>
+								<li><a href="#data" id="myData">My data packages</a></li>
+								<li class="divider"></li>
+								<li><a href="#logout">Logout</a></li>
+							</ul>
+						</li>
+			        <% } else { %>
+			        		<li class="right login-container"></li>
+			       <%  } %>
 				</ul>
-			</li>
-        <% } else { %>
-        		<li class="right login-container"></li>
-       <%  } %>
-       
-       <li><a href="#share" class="btn btn-primary">Submit Data</a></li>
-        	
-      </ul>
-</div><!-- /.navbar -->
+			</nav>
+					
+		</div>
+				
+</header>

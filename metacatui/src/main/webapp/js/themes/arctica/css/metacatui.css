@@ -9,8 +9,8 @@
       background-color: #FDFDFD;
       font-family: "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif";
       font-weight: 400;
-      font-size: 14px;
-      line-height: 20px;
+      font-size: 1em;
+      line-height: 1.5em;
     }
     body p {
       font-weight: 400;
@@ -204,17 +204,78 @@
 -------------------------------------------------- */    
   
   
-  #Header > img{
-  	-webkit-transition: all 2s;
-  	transition: all 2s;
-  }
+#Header > img{
+ 	-webkit-transition: all 2s;
+ 	transition: all 2s;
+}
+ 
+.header {
+	background-color: #FFF;	
+	padding: 0px 0px $pad 0px;
+	width: 100%;
+}
+.header #inner-header{
+	max-width: 1024px;
+	margin: 0 auto;
+}
+.header nav{
+	float: right;
+	width: auto;		
+}
+.header .nav li{
+	float: left;
+	position: relative;
+}
+.header .nav li a {
+	color: #1f254f;
+	font-size: 1.3em;
+	line-height: 1.5em;
+	font-family: "Aller", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+    display: block;
+    text-decoration: none;
+    padding: 0.75em;
+}
+.header .nav .inline-buttons > *{
+	display: inline;
+	font-size: 1em;
+}
+.header .nav li .btn{
+	font-size: 1em;
+	margin-top: 8px;
+	color: #555;
+}
+.header .nav li .btn.btn-primary{
+	color: #FFF;
+}
+.header .nav .inline-buttons > .text-btwn-btns{
+	margin-left: 0px;
+}
+.header .border-image{
+	background-image: url('../img/border-image.jpg');
+	background-size: cover;
+	height: 25px;
+	width: 100%;
+	margin-bottom: 1em;
+}
+.header #nav-trigger{
+   	margin-top: .5em;
+   	margin-right: .5em;
+   	font-size: 2em;
+   	float: right;
+   	display: none;
+}
+.header .input-append form{
+	margin-top: 16px;
+}
+#logo {
+	margin: 0.75em 0;
+}	
+#logo img{
+	height: 70px;
+	position: relative;
+	top: 6px;
+}
   
-  header#altHeader {
-    position: relative;
-    top: 0px;
-    z-index: 100;
-    min-height: 500px;      
-  }
   
 /* FOOTER CSS
 -------------------------------------------------- */    
@@ -837,22 +898,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       margin: 5px 0px 0px 0px;
       z-index: 290;
     }
-    #Navbar{
-    	position: fixed;
-	    left: 10px;
-	    margin: 0px;
-	    z-index: 200;
-	    float: none;
-    }
     #Navbar .user {
     	font-size: 14px;
-    }
-    #Header{
-    	position: fixed;
-    	height: 82px;
-    	width: 100%;
-    	background-image: url('../img/Mountains-navbar.jpg');
-    	background-size: cover;
     }
     #Content{
     	padding-top: 82px;
