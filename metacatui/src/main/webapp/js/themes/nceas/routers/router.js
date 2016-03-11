@@ -68,8 +68,7 @@ function ($, _, Backbone, IndexView, TextView, RegistryView, MetadataView, Exter
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-			appView.registryView.logout();
-			//appView.showView(appView.indexView);
+			appUserModel.logout();
 		},
 		
 		renderExternal: function(url) {

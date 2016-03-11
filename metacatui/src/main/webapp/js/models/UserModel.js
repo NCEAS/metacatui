@@ -444,6 +444,27 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 		
+		logout: function(){			
+			//Logout via the registry script if we are not using tokens
+			if((typeof appModel.get("tokenUrl") == "undefined") || !appModel.get("tokenUrl")){
+				appView.registryView.logout();
+				return;
+			}
+			
+			//Construct the sign out url and redirect
+			var signOutUrl = appModel.get('signOutUrl'),
+				target = Backbone.history.location.href;
+			
+			// DO NOT include the route otherwise we have an infinite redirect
+			target  = target.split("#")[0];
+			
+			// make sure to include the target
+			signOutUrl += "?target=" + target;
+			
+			// do it!
+			window.location = signOutUrl;
+		},
+		
 		// call Metacat or the DataONE CN to validate the session and tell us the user's name
 		checkStatus: function() {
 			var model = this;

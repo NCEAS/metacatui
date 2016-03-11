@@ -12,7 +12,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			//'about(/:anchorId)'         : 'renderAbout',    // about page 
 			//'help(/:page)(/:anchorId)'  : 'renderHelp',
 			//'tools(/:anchorId)'         : 'renderTools',    // tools page
-			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
+			'(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)'		: 'renderProfile',
 			'profile'		            : 'renderProfile',
@@ -196,7 +196,8 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-			appView.registryView.logout();
+			
+			appUserModel.logout();
 		},
 		
 		renderExternal: function(url) {

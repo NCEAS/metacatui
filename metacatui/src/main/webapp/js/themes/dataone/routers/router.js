@@ -192,18 +192,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
 			
-			//Construct the sign out url and redirect
-			var signOutUrl = appModel.get('signOutUrl');
-			var target = Backbone.history.location.href;
-			
-			// DO NOT include the route otherwise we have an infinite redirect
-			target  = target.split("#")[0];
-			
-			// make sure to include the target
-			signOutUrl += "?target=" + target;
-			
-			// do it!
-			window.location = signOutUrl;
+			appUserModel.logout();
 		},
 		
 		renderExternal: function(url) {
