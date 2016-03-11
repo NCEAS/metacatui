@@ -861,8 +861,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       margin: 0px 0px 0px 0px;
       padding: 0px 0px 0px 0px;
     }
-    #Navbar .user {
-    	font-size: 14px;
+    .navbar .nav > li > .user{
+    	font-size: 15px;
+    	text-transform: capitalize;
     }
     
     .navbar .nav {
