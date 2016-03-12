@@ -9,14 +9,10 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'renderData',    // the default route
-			//'about(/:anchorId)'         : 'renderAbout',    // about page 
-			//'help(/:page)(/:anchorId)'  : 'renderHelp',
-			//'tools(/:anchorId)'         : 'renderTools',    // tools page
-			'(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
+			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)'		: 'renderProfile',
 			'profile'		            : 'renderProfile',
-			//'my-account'                   : 'renderUserSettings',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signup'          			: 'renderLdap',     // use ldapweb for registration

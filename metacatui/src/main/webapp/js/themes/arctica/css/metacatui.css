@@ -30,7 +30,6 @@
     	width: 100%;
     }		
     body > section > article {
-      min-height: 800px;
       margin: auto;
       padding-bottom: 40px;  			
     }
@@ -209,11 +208,7 @@
  	transition: all 2s;
 }
  
-.header {
-	background-color: #FFF;	
-	padding: 0px 0px $pad 0px;
-	width: 100%;
-}
+
 .header #inner-header{
 	max-width: 1024px;
 	margin: 0 auto;
@@ -273,7 +268,7 @@
 #logo img{
 	height: 70px;
 	position: relative;
-	top: 6px;
+    top: -6px;
 }
   
   
@@ -716,6 +711,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .mapMode #Header{
     	position: relative;
     }
+    #Navbar{
+    	position: fixed;
+    	width: 100%;
+    	z-index: 1;
+    	background-color: rgba(255, 255, 255,.8);
+    }
     .center {
       float: none;
       margin: 0 auto;
@@ -818,7 +819,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	font-size: 14px;
     }
     #Content{
-    	padding-top: 82px;
+    	padding-top: 131px;
     }
     .mapMode #Content{
     	padding-top: 0px;
@@ -1395,14 +1396,6 @@ svg .no-activity,
 	
 	/* Registry CSS
 	-------------------------------------------------- */
-    #RegistryEntryForm, 
-    #RegistryLogin, 
-    #RegistryResponse, 
-    #RegistryEntryReview, 
-    #RegistryGuide {
-		/*margin-top: 110px;*/
-		min-height: 800px;
-    }
     
     #RegistryEntryForm label.inline, 
     #RegistryLogin label.inline, 

@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform', 'text!templates/alert.html', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html'], 				
-	function($, _, Backbone, Registry, BootStrap, jQueryForm, AlertTemplate, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate) {
+define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform', 'views/SignInView', 'text!templates/alert.html', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html'], 				
+	function($, _, Backbone, Registry, BootStrap, jQueryForm, SignInView, AlertTemplate, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -45,19 +45,46 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 				
 		render: function () {
 			
+			// request a smaller header
+			appModel.set('headerType', 'default');
+			
+			// show the loading icon
+			this.showLoading();
+
+			//Are we using auth tokens?
+			var tokenUrl = appModel.get("tokenUrl");
+			if((typeof tokenUrl != "undefined") && tokenUrl.length){
+				
+				//If our app user's status hasn't been checked yet, then wait...
+				if(!appUserModel.get("checked")){
+					this.listenToOnce(appUserModel, "change:checked", this.render);
+					return;
+				}
+				//If the user is not logged in, show the login form
+				else if (!appUserModel.get("loggedIn")){
+					var signInBtns = new SignInView().render().el;
+
+					this.$el.html("<h1 class='center'>Sign in to submit data</h1>");
+					$(signInBtns).addClass("large center");
+					this.$el.append(signInBtns);
+					
+					
+					$(signInBtns).find(".login").addClass("btn btn-primary").trigger("click");
+					return;
+				}
+			}
+			
+			//Otherwise...
+			//If we are using auth tokens and the user is logged in, load the registry. 
+			//If we are not using auth tokens, load the registry
+				
 			// look up the url from the main application model
 			this.registryUrl = appModel.get('registryServiceUrl');
 			
-			// request a smaller header
-			appModel.set('headerType', 'default');
-
 			var stageParams = '';
 			if (this.stage) {
 				stageParams = "&stage=" + this.stage + "&pid=" + this.pid;
 			}
-			
-			// show the loading icon
-			this.showLoading();
 			
 			// load all the registry content so all the js can run in what gets loaded
 			var viewRef = this;
@@ -87,8 +114,12 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 				};
 	
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
-						
+			
 			return this;
+		},
+		
+		loadRegistryTemplate: function(){
+			
 		},
 		
 		verifyLoginStatus: function() { 
