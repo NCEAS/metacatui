@@ -17,7 +17,8 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 							  'click #myData' : 'myDataSearch',
 			'click .show-new-dataCatalogView' : 'showNewSearch',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
-			 		 	    'click .dropdown' : 'showDropdown'
+			 		 	    'click .dropdown' : 'hideDropdown',
+			 		 	'mouseover .dropdown' : 'showDropdown'
 		},
 		
 		initialize: function () {

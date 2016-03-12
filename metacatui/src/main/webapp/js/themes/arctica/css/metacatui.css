@@ -1,6 +1,7 @@
 @font-face {
-	font-family: "ExoLight";
-  	src: url("../fonts/Exo-Light.otf");
+	font-family: "Aller";
+  	src: url("/wp-content/themes/aurora/library/fonts/Aller_Rg.ttf");
+  	font-weight: normal;
 }
 /* Body CSS
 -------------------------------------------------- */
@@ -73,6 +74,7 @@
     
     h1{
     	font-weight: normal;
+    	font-family: "Aller";
     }
     
     .bold-header{
@@ -125,48 +127,7 @@
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	.multi-line-ellipsis {
-  		overflow: hidden;
-  		height: 50px;
-		line-height: 1em;
- 	}
-	.multi-line-ellipsis:before {
-		content:"";
-		float: left;
-		width: 5px; height: 50px; }
 	
-	.multi-line-ellipsis > *:first-child {
-		float: right;
-		width: 100%;
-		margin-left: -5px; }		
-	
-	.multi-line-ellipsis:after {
-		content: "\02026";  
-	
-		box-sizing: content-box;
-		-webkit-box-sizing: content-box;
-		-moz-box-sizing: content-box;
-	
-		float: right; position: relative;
-		top: -25px; left: 99%; 
-		width: 3em; margin-left: -3em;
-		padding-right: 5px;
-		
-		text-align: right;
-	
-	  
-	  	background-size: 100% 100%;
-	  	/* 512x1 image, gradient for IE9. Transparent at 0% -> white at 50% -> white at 100%.*/
-		background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAABCAMAAACfZeZEAAAABGdBTUEAALGPC/xhBQAAAwBQTFRF////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wDWRdwAAAP90Uk5TgsRjMZXhS30YrvDUP3Emow1YibnM9+ggOZxrBtpRRo94gxItwLOoX/vsHdA2yGgL8+TdKUK8VFufmHSGgAQWJNc9tk+rb5KMCA8aM0iwpWV6dwP9+fXuFerm3yMs0jDOysY8wr5FTldeoWKabgEJ8RATG+IeIdsn2NUqLjQ3OgBDumC3SbRMsVKsValZplydZpZpbJOQco2KdYeEe36BDAL8/vgHBfr2CvTyDu8R7esU6RcZ5ecc4+Af3iLcJSjZ1ivT0S/PMs3LNck4x8U7wz7Bv0G9RLtHuEq1TbJQr1OtVqqnWqRdoqBhnmSbZ5mXapRtcJGOc4t2eYiFfH9AS7qYlgAAARlJREFUKM9jqK9fEGS7VNrDI2+F/nyB1Z4Fa5UKN4TbbeLY7FW0Tatkp3jp7mj7vXzl+4yrDsYoVx+JYz7mXXNSp/a0RN25JMcLPP8umzRcTZW77tNyk63tdprzXdmO+2ZdD9MFe56Y9z3LUG96mcX02n/CW71JH6Qmf8px/cw77ZvVzB+BCj8D5vxhn/vXZh6D4uzf1rN+Cc347j79q/zUL25TPrJMfG/5LvuNZP8rixeZz/mf+vU+Vut+5NL5gPOeb/sd1dZbTs03hBuvmV5JuaRyMfk849nEM7qnEk6IHI8/qn049hB35QGHiv0yZXuMdkXtYC3ebrglcqvYxoj1muvC1nDlrzJYGbpcdHHIMo2FwYv+j3QAAOBSfkZYITwUAAAAAElFTkSuQmCC);
-	  
-		background: -webkit-gradient(linear, left top, right top,
-			from(rgba(255, 255, 255, 0)), to(white), color-stop(50%, white));
-		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);			
-		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
-		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
-		background: linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
-	}
-    
 	/* Offsets the anchor links by the same height as the fixed header */
 	#About a[name],
 	#Tools a[name],
@@ -407,7 +368,7 @@ footer .logos a:hover, a:focus{
     }
     
     .btn-primary {
-       background-color: #91bf0a;
+       background-color: #19B36A;
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;  
@@ -587,121 +548,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-top: 0px;
 	padding-left: 10px;
 }
-
-/* FEATURES CSS 
--------------------------------------------------- */    
-    
-    #mainContent {
-      margin-top: -200px;
-      position: relative;
-      background-color: #1f254f;
-      padding-top: 20px;
-      color: #FDFDFD;
-			min-height: 400px;
-    }
-
-    section#mainContent h4 {
-      font-size: 160%;
-      font-weight: 300;
-    }
-
-    section#mainContent p {
-      font-size: 110%;
-      font-weight: 300;
-      line-height: 1.75;
-      margin-bottom: 30px;
-    }
-    
-    section#mainContent a.btn-info {
-      background-color: #6C94A4;
-      color: #FFFFFF;
-      /*border: none;
-      text-shadow: none;
-      box-shadow: none;*/
-    }
-
-    section#mainContent a.btn-info:hover {
-      background-color: #5C7F8C;
-    
-    } 
-    
-/* FEATURED DATA CSS
--------------------------------------------------- */    
-
-    #FeaturedData {
-      position: relative;
-      background-color: #878787;
-      color: #FDFDFD;
-      /*min-height: 1200px;*/
-    }
-
-    #FeaturedData > section.row {
-      border-top: 1px solid #878787;
-      height: 554px;
-      position: relative;
-    }
-	
-	#FeaturedData > section:nth-child(even){
-		background-color: #333366;
-	}
-	
-	#FeaturedData > section:nth-child(odd){
-		background-color: #6C94A4;
-	}
-		
-	  #FeaturedData h2 {
-	  	font-weight: 300;
-      color: #FDFDFD;
-      text-decoration: none;
-	  }
-        
-    #FeaturedData h2 a {
-      color: #FDFDFD;
-      text-decoration: none;      
-    }
-    #FeaturedData h2 a.dark{
-    	color: #333;
-    }
-    #FeaturedData .accordion{
-	  position: absolute;
-	  color: #FDFDFD;
-	  top: 0px;
-	  padding: 20px 20px 20px 40px;
-	  width: calc(100% - 60px);
-    }
-    #FeaturedData .accordion-heading{
-    	width: 50%;
-    }
-    #FeaturedData .accordion-body{
-    	clear: both;
-    }
-    #FeaturedData .accordion-inner {
-        border-top: 0px;
-		  background-color: #555555;
-		  background: rgba(0,0,0,0.6);
-		  color: #FFFFFF;
-		  border-radius: 6px 6px 6px 6px;
-		  width: 50%;
-    }
-     #FeaturedData > section.row:nth-child(even) .accordion-inner,
-     #FeaturedData > section.row:nth-child(even) .accordion-heading,
-     #FeaturedData > section.row:nth-child(even) .accordion-body .btn{
-     	float: right;
-     }
-    #FeaturedData .accordion-inner a{
-    	color: white;
-    	text-decoration: underline;
-    }
-     #FeaturedData .accordion-inner a.btn{
-     	text-decoration: none;
-     }
-
-/* CUSTOMIZE THE ACCORDIAN 
--------------------------------------------------- */
-
-	.accordion-heading a.accordion-toggle {
-		display: inline-block; 
-	}    
+ 
     
 /* NAVIGATION
 -------------------------------------------------- */
@@ -949,7 +796,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       padding: 3px 0px 3px 0px;
       color: #555555;      
     }
-    
+
+/* User profile  
+  -------------------------------------------------- */ 
+.user-view-section > section{
+	width: 100%;
+}  
+
 /* Stats styles 
   -------------------------------------------------- */ 
 .profile .charts{
@@ -975,7 +828,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   }
 
 .user-info .icon-circle-badge {
-    background-color: #0E69A1;
+    background-color: #146660;
 }
   
 .profile .charts-container .stripe:nth-child(even){
@@ -2591,37 +2444,7 @@ img.inlineright {
   }
 
 
-/* Additions for the data catalog pages */
 
-/* Define a border for groups of elements.  This uses the 
-   -moz-border-radius (Mozilla, Netscape, Opera only) 
-   attribute for the time being.  Once
-   browsers support the CSS3 border-radius attribute, this 
-   should be switched.*/
-.group {
-    padding:                    0;
-    color:                      #003366;
-    min-width:                  800px;
-    voice-family:               "\"}\""; /* begin ie5win hack */
-    voice-family:               inherit;
-    -moz-border-radius:         10px; /* end ie5win hack */
-    }
-/* Children of the group get some padding */
-.group * {
-    padding:                    2px;
-    }
- 
-.group_border {
-    /* aqua-green border */
-    border:                     #006666 solid 1px;
-    }
-
-.subGroup {
-    padding:                    3px;
-    voice-family:               "\"}\""; /* begin ie5win hack */
-    voice-family:               inherit;
-    -moz-border-radius:         10px; /* end ie5win hack */
-    }
  
 
 /* This selector causes the 'section' tables to indent under the overarching div
