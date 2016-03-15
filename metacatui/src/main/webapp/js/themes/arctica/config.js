@@ -24,7 +24,26 @@ var customMapModelOptions = {
 }
 
 var customAppConfig = function(){
-	//Only apply these settings when we are in production
-	
+	//Only apply these settings when we are in production	
 
 }
+
+//Load the Slaask Chat widget here since it does not work with RequireJS
+//Taken from https://gist.github.com/sbilodeau/29c8016b67485614944e
+var loadSlaask = function(){
+	var slaaskScript = document.createElement("script");
+	slaaskScript.setAttribute("type", "text/javascript");
+	slaaskScript.setAttribute("src",  "https://cdn.slaask.com/chat.js");
+	document.getElementsByTagName("body")[0].appendChild(slaaskScript);
+	
+	slaaskScript.onload = function(){
+		//Override _slaask.createScriptTag to use requireJS to load injected module 'Pusher'
+	    window._slaask.createScriptTag = function (url) {
+	        var t = {};
+	        require([url], function() { t.onload(); });
+	        return t;
+	    };
+	    
+		_slaask.init('717cc6ed9647f962c5fe8a256e49b586');
+	}
+}();
