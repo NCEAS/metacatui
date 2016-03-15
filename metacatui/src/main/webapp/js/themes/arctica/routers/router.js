@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/TextView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/SignInView', 'views/TextView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, SignInView, TextView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView) {
 		
 	// MetacatUI Router
 	// ----------------
@@ -14,7 +14,8 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'profile(/*username)'		: 'renderProfile',
 			'profile'		            : 'renderProfile',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
-			'logout'                    : 'logout',    		// logout the user
+			'signout'					: 'logout',
+			'signin'					: 'renderTokenSignIn',
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
@@ -38,6 +39,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			appView.userView = new UserView();
 			appView.externalView = new ExternalView();
 			appView.ldapView = new LdapView();
+			appView.signInView = new SignInView({ el: "#Content"});
 		},
 		
 		routeHistory: new Array(),
@@ -194,6 +196,11 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			this.routeHistory.length = 0;
 			
 			appUserModel.logout();
+		},
+		
+		renderTokenSignIn: function(){
+			this.routeHistory.push("signin");
+			appView.showView(appView.signInView);
 		},
 		
 		renderExternal: function(url) {

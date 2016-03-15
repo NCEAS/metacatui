@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/TextView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView, DataDetailsView) {
+define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/SignInView', 'views/TextView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
+function ($, _, Backbone, IndexView, SignInView, TextView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView, DataDetailsView) {
 	
 	// MetacatUI Router
 	// ----------------
@@ -16,8 +16,9 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-account'                   : 'renderUserSettings',
 			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
-			'logout'                    : 'logout'          // logout the user
-			//'api(/:anchorId)'           : 'renderAPI'       // API page 
+			'logout'                    : 'logout',          // logout the user
+			'signout'                   : 'logout',          // logout the user
+			'signin'					: 'renderTokenSignIn',
 		},
 		
 		helpPages: {
@@ -36,7 +37,7 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			appView.statsView = new StatsView();
 			appView.userView = new UserView();
 			appView.externalView = new ExternalView();
-			//appView.ldapView = new LdapView();
+			appView.signInView = new SignInView({ el: "#Content"});
 		},
 		
 		routeHistory: new Array(),
@@ -193,6 +194,11 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			this.routeHistory.length = 0;
 			
 			appUserModel.logout();
+		},
+		
+		renderTokenSignIn: function(){
+			this.routeHistory.push("signin");
+			appView.showView(appView.signInView);
 		},
 		
 		renderExternal: function(url) {

@@ -11,7 +11,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 		ldapLoginTemplate: _.template(LdapLoginTemplate),
 		
 		tagName: "div",
-		className: "inline-buttons",
+		className: "inline-buttons sign-in-btns",
 		
 		render: function(){
 			if(!appModel.get("signInUrl")) return this;
@@ -37,8 +37,11 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 			var signIn = $(document.createElement("a")).attr("href", "#signinPopup").text("Sign in").addClass("fancybox login"),
 				or     = $(document.createElement("span")).text("or").addClass("text-btwn-btns"),
 				signUp = $(document.createElement("a")).attr("href", "#signupPopup").text("Sign up").addClass("fancybox btn");
-			
-			this.$el.append(signIn, or, signUp);
+					
+			if(this.$el.attr("id") == "Content")				
+				this.$el.append($(document.createElement("div")).addClass(this.className + " large center").append(signIn, or, signUp));
+			else
+				this.$el.append(signIn, or, signUp);
 			
 			return this;
 		},
@@ -87,6 +90,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 				
 				 $("#signinPopup").html(view.loginPopup);
 			});
+		},
+		
+		onClose: function(){
+			this.$el.empty();
 		}
 	});
 	return SignInView;

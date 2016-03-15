@@ -11,6 +11,7 @@ function ($, _, Backbone, IndexView, TextView, RegistryView, MetadataView, Exter
 			''                          : 'navigateToDefault',    // the default route
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'logout'                    : 'logout',    		// logout the user
+			'signout'                   : 'logout',    		// logout the user
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages

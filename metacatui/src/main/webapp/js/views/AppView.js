@@ -162,8 +162,9 @@ define(['jquery',
 					view.postRender();
 				// force scroll to top if no custom scrolling is implemented
 				else
-					thisAppViewRef.scrollToTop();				
+					thisAppViewRef.scrollToTop();
 			}
+
 			
 			// track the current view
 			this.currentView = view;
