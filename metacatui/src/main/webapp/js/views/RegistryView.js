@@ -57,37 +57,55 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 				
 				//If our app user's status hasn't been checked yet, then wait...
 				if(!appUserModel.get("checked")){
-					this.listenToOnce(appUserModel, "change:checked", this.render);
-					return;
+					this.listenToOnce(appUserModel, "change:checked", function(){
+						appView.currentView.loadRegistry.call(appView.currentView);
+					});
+					return this;
 				}
 				//If the user is not logged in, show the login form
 				else if (!appUserModel.get("loggedIn")){
-					var signInBtns = new SignInView().render().el;
-
-					this.$el.html("<h1 class='center'>Sign in to submit data</h1>");
-					$(signInBtns).addClass("large center");
-					this.$el.append(signInBtns);
-					
-					
-					$(signInBtns).find(".login").addClass("btn btn-primary").trigger("click");
-					return;
+					this.showSignInForm();
+					return this;
+				}
+				//If the user is logged in and we're using tokens, verify the token first
+				else if(appUserModel.get("loggedIn")){
+					appUserModel.checkToken(function(){	//If the token is valid, load the registry.
+												appView.currentView.loadRegistry.call(appView.currentView);
+											},
+											function(){ //If the token if not valid, load the sign in form	
+												appView.currentView.showSignInForm.call(appView.currentView);
+											});
+					return this;
 				}
 			}
+			//If we're not using tokens, load the registry and let the CGI script verify if the user is logged in
+			else
+				this.loadRegistry();
 			
-			//Otherwise...
-			//If we are using auth tokens and the user is logged in, load the registry. 
-			//If we are not using auth tokens, load the registry
-				
+			return this;
+		},
+		
+		/*
+		 * Load the registry template from the register-dataset.cgi script in Metacat.
+		 */
+		loadRegistry: function(){
+			if(((typeof tokenUrl != "undefined") && tokenUrl.length) && !appUserModel.get("loggedIn")){
+				this.showSignInForm();
+				return false;
+			}
+
+			//Get the registry view
+			var viewRef = this;
+
 			// look up the url from the main application model
 			this.registryUrl = appModel.get('registryServiceUrl');
-			
+						
 			var stageParams = '';
 			if (this.stage) {
 				stageParams = "&stage=" + this.stage + "&pid=" + this.pid;
 			}
 			
 			// load all the registry content so all the js can run in what gets loaded
-			var viewRef = this;
 			var requestSettings = {
 					type: "POST",
 					xhrFields: {
@@ -102,8 +120,12 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 						//If this is the login page, prepend some header HTML
 						if(data.indexOf('id="RegistryLogin"') != -1) viewRef.$el.prepend(viewRef.loginHeaderTemplate);
 						
+						//Check login one more time
 						viewRef.verifyLoginStatus();
+						
+						//Add additional form elements
 						viewRef.augementForm();
+						
 						viewRef.fixModalLinks();
 						viewRef.modifyLoginForm();
 						viewRef.$el.hide();
@@ -114,12 +136,6 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 				};
 	
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
-			
-			return this;
-		},
-		
-		loadRegistryTemplate: function(){
-			
 		},
 		
 		verifyLoginStatus: function() { 
@@ -516,6 +532,21 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 
 		trimString: function (stringToTrim) {
 			return stringToTrim.replace(/^\s*/, '').replace(/\s*$/, '');
+		},
+		
+		/*
+		 * Show the SignIn View (or auth tokens)
+		 */
+		showSignInForm: function(){
+			if(!appModel.get("tokenUrl")) return;
+			
+			var signInBtns = new SignInView().render().el;
+
+			this.$el.html("<h1 class='center'>Sign in to submit data</h1>");
+			$(signInBtns).addClass("large center");
+			this.$el.append(signInBtns);
+			
+			$(signInBtns).find(".login").addClass("btn btn-primary").trigger("click");
 		},
 		
 		showLoading: function(msg) {

@@ -384,10 +384,15 @@ footer .logos a:hover, a:focus{
       color: #FFFFFF;
       text-decoration: none;
     }
-        
+      
+      
+    .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled]{
+    	background-color: #1F254F;	
+    } 
+    
     .btn-primary:hover,
     .nav > li > a.btn-primary:hover{
-      background-color: #6B8E05;
+      background-color: #146660;
       transition: background-color .5s;
       color: #FDFDFD;
       background-image: none;
@@ -422,7 +427,7 @@ footer .logos a:hover, a:focus{
       opacity: 1;
     }
     #clear-all{
-    	background-color: #91bf0a;
+    	background-color: #19B36A;
     }
  
 /* MAPS 

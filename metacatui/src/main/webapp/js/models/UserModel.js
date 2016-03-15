@@ -583,8 +583,15 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 		},
 		
 		checkToken: function(onSuccess, onError){
-			var url = appModel.get("checkTokenUrl");
+			//First check if the token has expired
+			if(appUserModel.get("expires") < new Date()){
+				if(onSuccess) onSuccess();
+				else appUserModel.reset();
+								
+				return;
+			}
 			
+			var url = appModel.get("checkTokenUrl");			
 			if(!url) return;
 			
 			var requestSettings = {
@@ -593,9 +600,11 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 					success: onSuccess || function(data, textStatus, xhr){
 						appUserModel.set("checked", true);
 					},
-					error: onError || function(data, textStatus, xhr){
+					error: function(data, textStatus, xhr){
 						//If this token in invalid, then reset the user model/log out 
 						appUserModel.reset();
+						
+						if(onError) onError(data, textStatus, xhr);
 					}
 			}
 			
