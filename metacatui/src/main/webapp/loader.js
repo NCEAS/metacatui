@@ -17,20 +17,27 @@ window.metacatUIVersion = "1.11.0";
 // Step 2: let everything else be taken care of by the app
 preventCompatibilityIssues();
 loadTheme(theme);
-initApp();
 
 function loadTheme(theme) {
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
     script.setAttribute("src", "js/themes/" + theme + "/config.js?v=" + window.metacatUIVersion);
     document.getElementsByTagName("body")[0].appendChild(script);
+
+    script.onload = function(){
+	    //If this theme has a custom function to start the app, then use it
+	    if(typeof customInitApp == "function") customInitApp();
+	    //Start the app
+	    else initApp();
+    }
 }
-function initApp() {
+function initApp() {			
     var script = document.createElement("script");
     script.setAttribute("data-main", "js/app.js?v=" + window.metacatUIVersion);
     script.src = "components/require.js";
     document.getElementsByTagName("body")[0].appendChild(script);
 }
+
 
 // Fix compatibility issues with mainly IE 8 and earlier. Do this before the rest of the app loads since even common
 // functions are missing, such as console.log
