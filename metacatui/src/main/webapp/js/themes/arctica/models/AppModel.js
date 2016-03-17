@@ -12,6 +12,7 @@ define(['jquery', 'underscore', 'backbone'],
 			title: window.themeTitle || "Metacat Data Catalog",
 			
 			googleAnalyticsKey: null,
+			slaaskKey: "ea2a2170250e8b9f9c98da3df4f0f15b",
 			
 			nodeId: null,
 
@@ -59,7 +60,7 @@ define(['jquery', 'underscore', 'backbone'],
 			pendingMapsUrl: null,
 			accountMapsUrl: null,
 			groupsUrl: null,
-			signInUrl: null,
+			//signInUrl: null,
 			signOutUrl: null,
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
@@ -136,7 +137,6 @@ define(['jquery', 'underscore', 'backbone'],
 					//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
 					if(typeof this.get("signInUrl") !== "undefined"){
 						this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
-						this.set("signOutUrl", this.get('portalUrl') + "logout");
 					}
 					if(typeof this.get("signInUrlOrcid") !== "undefined")
 						this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
@@ -144,6 +144,8 @@ define(['jquery', 'underscore', 'backbone'],
 						this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");					
 					if(this.get('orcidBaseUrl'))
 						this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+					if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
+						this.set("signOutUrl", this.get('portalUrl') + "logout");
 				}
 				else{
 					//Turn the provenance features off

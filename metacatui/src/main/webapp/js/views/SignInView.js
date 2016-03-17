@@ -14,13 +14,14 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 		className: "inline-buttons sign-in-btns",
 		
 		render: function(){
-			if(!appModel.get("signInUrl")) return this;
+			//Don't render a SignIn view if there are no Sign In URLs configured
+			if(!appModel.get("signInUrl") && !appModel.get("signInUrlOrcid")) return this;
 			
 			
 			//Insert the sign in popup screen once
 			if(!$("#signinPopup").length){
 				var target = encodeURIComponent(window.location.href);
-				var signInUrl = appModel.get('signInUrl') + target;
+				var signInUrl = appModel.get('signInUrl')? appModel.get('signInUrl') + target : null;
 				var signInUrlOrcid = appModel.get('signInUrlOrcid') ? appModel.get('signInUrlOrcid') + target : null;
 				var signInUrlLdap = appModel.get('signInUrlLdap') ? appModel.get('signInUrlLdap') + target : null;	
 				
