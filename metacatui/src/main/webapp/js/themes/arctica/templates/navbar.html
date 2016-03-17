@@ -12,20 +12,26 @@
 					<li class="dropdown">
 						<a class="show-new-dataCatalogView dropdown-toggle" data-toggle="dropdown">Data</a>
 						<ul class="dropdown-menu">
-			        		<li class="dropdown-header"> Data </li>
 			        		<li><a class="show-new-dataCatalogView">Search</a></li>
 			        		<li><a href="#profile">Summary</a></li>
 			        	</ul>
 		        	</li>
-					<li><a href="/about">About</a></li>
-					<li><a href="/news">News</a></li>
-				<!-- 	<li class="input input-append">
-			        	<form id="direct-search" action="#">
-				        	<label class="tooltip-this" data-title="Go directly to a dataset by pasting its full DOI or ID here.">Jump to:</label> 
-				        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="direct-search subtle" form="direct-search"/>
-				        	<button class="btn direct-search" form="direct-search">Go</button>
-				        </form>
-			        </li>   -->
+					<li class="dropdown">
+						<a href="/support">Support</a>
+						<ul class="dropdown-menu">
+			        		<li><a href="submit">Data Submission</a></li>
+			        		<li><a href="q-and-a">Q & A</a></li>
+			        		<li><a href="data-plans">Data Plans</a></li>
+			        	</ul>
+			        </li>
+					<li class="dropdown">
+						<a href="/about">About</a>
+						<ul class="dropdown-menu">
+			        		<li><a href="/category/news">News</a></li>
+			        		<li><a href="/team">Team</a></li>
+			        		<li><a href="/history">History</a></li>
+			        	</ul>
+					</li>
 			       <li><a href="#share" class="btn btn-primary">Submit Data</a></li>
 					<% if (loggedIn) { %>
         				<li class="dropdown">
