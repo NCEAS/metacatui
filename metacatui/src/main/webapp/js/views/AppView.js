@@ -72,7 +72,7 @@ define(['jquery',
 			app.footerView.setElement($('#Footer')).render();
 			
 			//Load the Slaask chat widget if it is enabled in this theme
-			if(appModel.get("slaaskKey"))
+			if(appModel.get("slaaskKey") && window._slaask)
 		    	_slaask.init(appModel.get("slaaskKey"));
 			
 			// listen for image loading - bind only once in init method
