@@ -1,20 +1,39 @@
-@font-face {
+@font-face{
 	font-family: "Aller";
-  	src: url("/wp-content/themes/aurora/library/fonts/Aller_Rg.ttf");
-  	font-weight: normal;
+	src: url('../fonts/Aller_Rg.ttf');
+	font-weight: normal;
+	font-style: normal;
 }
+@font-face{
+	font-family: "AllerItalic";
+	src: url('../fonts/Aller_It.ttf');
+	font-weight: normal;
+	font-style: italic;
+}
+@font-face{
+	font-family: "AllerBold";
+	src: url('../fonts/Aller_Bd.ttf');
+	font-weight: bold;
+	font-style: normal;
+}
+@font-face{
+	font-family: "AllerLight";
+	src: url('../fonts/Aller_Lt.ttf');
+	font-weight: lighter;
+	font-style: normal;
+}
+
 /* Body CSS
 -------------------------------------------------- */
     body {
       color: #555555;
       background-color: #FDFDFD;
       font-family: "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif";
-      font-weight: 400;
+      font-weight: normal;
       font-size: 1em;
       line-height: 1.5em;
     }
     body p {
-      font-weight: 400;
       font-size: 14px;
       line-height: 1.5;
     }
@@ -117,7 +136,7 @@
     	color: #009E94;
     }
     .brand-name{
-    	font-family: ExoLight, Helvetica, sans-serif;
+    	font-family: Aller, Helvetica, sans-serif;
     	font-weight: lighter;
     }
     
@@ -184,21 +203,33 @@
 }
 .header .nav li a {
 	color: #1f254f;
+	background-color: transparent;
 	font-size: 1.3em;
 	line-height: 1.5em;
 	font-family: "Aller", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+	font-weight: normal;
+	font-style: normal;
     display: block;
     text-decoration: none;
     padding: 0.75em;
+}
+.header .nav li a:hover{
+	color: #146660;
 }
 .header .nav .inline-buttons > *{
 	display: inline;
 	font-size: 1em;
 }
-.header .nav li .btn{
+.header .nav li a.btn{
 	font-size: 1em;
 	margin-top: 8px;
 	color: #555;
+}
+.header .nav li a.btn.btn-primary{
+	background-color: #19B36A;
+}
+.header .nav li a.btn.btn-primary:hover{
+	background-color: #146660;
 }
 .header .nav li .btn.btn-primary{
 	color: #FFF;
@@ -630,8 +661,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
     .navbar .nav > li > a:focus,
     .navbar .nav > li > a:hover {
-      color: #FFF;
-      background-color:rgba(31,37,79,.5);
+      color: #146660;
+      background-color:transparent;
       font-weight: 400;
       text-decoration: none;
       text-shadow: none;
@@ -640,7 +671,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .navbar .nav > .active > a,
     .navbar .nav > .active > a:hover,
     .navbar .nav > .active > a:focus {
-      color: #555555;
+      color: #146660;
       font-weight: 400;
       text-decoration: none;
       background-color: #E5E5E5;
@@ -694,25 +725,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		line-height: 1.42857143;
 		color: #666;
 	}
-	.header .nav .dropdown-menu li {
-    	width: 100%;
-    	display: block;
-    	float: none;
-	}
-	.header .nav .dropdown-menu li a {
-    	font-size: 1em;
-    	text-align: left;
-    	padding: .5em 20px;
-	}
-	.header .nav .dropdown-menu li a:hover {
-    	background-color: #1F254F;
-	    background-image: none;
-	    color: white;
-	}
-	.header .nav .dropdown-toggle .caret{
-		margin-top: 14px;
-		border-top-color: #1F254F;
-	}
+	
 	.header .nav .icon{
 		margin-right: 5px;
 	}
