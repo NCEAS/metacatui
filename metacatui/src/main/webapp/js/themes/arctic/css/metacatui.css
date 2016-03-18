@@ -135,9 +135,11 @@
     code, .code_example{
     	color: #009E94;
     }
-    .brand-name{
-    	font-family: Aller, Helvetica, sans-serif;
-    	font-weight: lighter;
+    .brand{
+    	font-family: AllerLight, Helvetica, sans-serif;
+    }
+    .brand img{
+    	margin-right: 10px;
     }
     
     /** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
@@ -254,6 +256,11 @@
 .header .input-append form{
 	margin-top: 16px;
 }
+.header .brand{
+    color: #333;
+    line-height: 70px;
+    font-size: 1.5em;
+}
 #logo {
 	margin: 0.75em 0;
 }	
@@ -261,6 +268,7 @@
 	height: 70px;
 	position: relative;
     top: -6px;
+    margin-right: 10px;
 }
   
   
@@ -342,6 +350,15 @@ footer .show-in-map-mode .btn{
 footer .footnote{
 	font-size: .8em;
     color: #333;
+}
+footer .brand{
+	line-height: 70px;
+	color: #333;
+	font-size: 1.5em;
+}
+footer .brand img{
+	height: 70px;
+	width: auto;
 }
 footer .logos{
 	margin-top: 2em;
@@ -598,7 +615,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	position: fixed;
     	width: 100%;
     	z-index: 1;
-    	background-color: rgba(255, 255, 255,.8);
+    	background-color: #FFF;
     }
     .center {
       float: none;
