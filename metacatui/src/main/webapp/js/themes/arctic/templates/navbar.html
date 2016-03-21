@@ -3,30 +3,33 @@
 	<div class="border-image" role="img"></div>
 
 		<div id="inner-header" class="wrap cf">
-			<a href="/" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization"><img src="js/themes/arctica/img/logo.png">NSF Arctic Data Center</a>
+			<a href="/" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization"><img src="js/themes/<%=theme%>/img/logo.png">NSF Arctic Data Center</a>
 
-			<a id="nav-trigger"><i class="icon-bars icon"></i><i class="icon-close icon hidden"></i></a>
+			<a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
 					
 			<nav role="navigation" itemscope="" itemtype="http://schema.org/SiteNavigationElement" id="main-nav">
 				<ul id="menu-main-navigation" class="nav top-nav">
 					<li class="dropdown">
-						<a class="show-new-dataCatalogView dropdown-toggle" data-toggle="dropdown">Data</a>
-						<ul class="dropdown-menu">
-			        		<li><a class="show-new-dataCatalogView">Search</a></li>
+						<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
+						<ul class="dropdown-menu sub-menu">
+			        		<li><a href="#data" class="show-new-dataCatalogView">Search</a></li>
 			        		<li><a href="#profile">Summary</a></li>
+			        		<li><a href="/publications">Publications</a></li>
 			        	</ul>
 		        	</li>
 					<li class="dropdown">
-						<a href="/support">Support</a>
-						<ul class="dropdown-menu">
+						<a>Support</a>
+						<ul class="dropdown-menu sub-menu">
+							<li><a href="/support">Support Info</a></li>
 			        		<li><a href="submit">Data Submission</a></li>
 			        		<li><a href="q-and-a">Q & A</a></li>
 			        		<li><a href="data-plans">Data Plans</a></li>
 			        	</ul>
 			        </li>
 					<li class="dropdown">
-						<a href="/about">About</a>
-						<ul class="dropdown-menu">
+						<a>About</a>
+						<ul class="dropdown-menu sub-menu">
+							<li><a href="/about">Arctic Data Center</a></li>
 			        		<li><a href="/category/news">News</a></li>
 			        		<li><a href="/team">Team</a></li>
 			        		<li><a href="/history">History</a></li>

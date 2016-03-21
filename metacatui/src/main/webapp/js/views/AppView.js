@@ -40,7 +40,7 @@ define(['jquery',
 				 		 	      "click input.copy" : "higlightInput", 
 					 		 	  "focus input.copy" : "higlightInput",
 					 		 	 "click textarea.copy" : "higlightInput", 
-					 		 	  "focus textarea.copy" : "higlightInput" 
+					 		 	  "focus textarea.copy" : "higlightInput"
 			//'click #SignInLdap input[type="submit"]' : "submitLogin"
 		},
 				

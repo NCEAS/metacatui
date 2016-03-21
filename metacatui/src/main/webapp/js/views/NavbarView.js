@@ -18,7 +18,9 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			'click .show-new-dataCatalogView' : 'showNewSearch',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
 			 		 	    'click .dropdown' : 'hideDropdown',
-			 		 	'mouseover .dropdown' : 'showDropdown'
+			 		 	'mouseover .dropdown' : 'showDropdown',
+			 		 	'click #nav-trigger'  : 'showNav',
+			 		 		  'click .nav li' : 'showSubNav'
 		},
 		
 		initialize: function () {
@@ -106,6 +108,18 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		
 		showDropdown: function(){
 			this.$('.dropdown-menu').removeClass('hidden');
+		},
+		
+		showNav: function(){
+			this.$("nav").slideToggle();
+			this.$("#nav-trigger .icon").toggle();
+		},
+		
+		showSubNav: function(e){
+			var parentEl = e.target.tagName == "LI"? e.target : $(e.target).parent("li");
+			if(!parentEl || !$(parentEl).length) return;
+			
+			$(parentEl).find(".sub-menu").slideToggle();
 		},
 		
 		triggerOnEnter: function(e) {
