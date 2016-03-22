@@ -1,5 +1,5 @@
-var theme = theme || "arctica";
-var themeTitle = "Arctica: Data and Software about the Arctic";
+var theme = theme || "arctic";
+var themeTitle = "NSF Arctic Data Center";
 var themeMap = 
 {
 	'*': {
@@ -14,6 +14,7 @@ var themeMap =
 		'templates/tools.html' : 'themes/' + theme + '/templates/tools.html',
 		'templates/about.html' : 'themes/' + theme + '/templates/about.html',
 		'templates/userProfileMenu.html' : 'themes/' + theme + '/templates/userProfileMenu.html',
+		'templates/publishDOI.html' : 'themes/' + theme + '/templates/publishDOI.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
 		}
