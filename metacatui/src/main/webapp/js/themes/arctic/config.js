@@ -37,6 +37,10 @@ var customAppConfig = function(){
 	        return t;
 	    };
 	}
+	
+	if(appModel.get("baseUrl").indexOf("arcticdata.io") > -1){
+		appModel.set("googleAnalyticsKey", "UA-75482301-1");
+	}
 }
 
 var customInitApp = function(){
