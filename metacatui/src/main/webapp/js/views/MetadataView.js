@@ -479,7 +479,7 @@ define(['jquery',
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
 				numTables = additionalTables.children(".download-contents").length;
-			if(numTables > 1){
+			if(numTables > 0){
 				var expandIcon = $(document.createElement("i")).addClass("icon icon-caret-right"),
 					expandLink = $(document.createElement("a"))
 								.attr("href", "#")

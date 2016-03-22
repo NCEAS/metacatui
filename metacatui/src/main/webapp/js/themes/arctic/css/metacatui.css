@@ -65,7 +65,7 @@
     
     a:hover{
     	text-decoration:none;
-    	color: #660000;
+    	color: #146660;
     }
     
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -438,10 +438,13 @@ footer .logos a:hover, a:focus{
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 400;
       background-image: none;
-      background-repeat: none;
-      border: #146660 solid 1px;
+      background-repeat: no-repeat;
+      background-color: transparent;
+      border: 1px solid #146660;
       text-shadow: none;
+      box-shadow: none;
       color: #146660;
+      padding: .5em;
     }
     .header .nav li a.btn{
     	color: #146660;
@@ -450,6 +453,8 @@ footer .logos a:hover, a:focus{
     .header .nav li .btn:hover, .header nav li .btn:focus{
     	background-color: #146660;
     	color: #FFF;
+    	border: 1px solid #146660;
+    	box-shadow: none;
     }
 
     .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a, a.btn-primary:visited {
@@ -463,6 +468,7 @@ footer .logos a:hover, a:focus{
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;  
+	  padding: .8em;
     }
     
     .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
@@ -479,6 +485,7 @@ footer .logos a:hover, a:focus{
       
     .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled]{
     	background-color: #1F254F;	
+    	border: 0px;
     } 
     
     .btn-primary:hover,
@@ -1218,7 +1225,6 @@ svg .no-activity,
   -------------------------------------------------- */
     #Metadata {
 		min-height: 800px;
-		width: 90%;
     }
     
     #Metadata > .container{
@@ -1297,6 +1303,8 @@ svg .no-activity,
     	text-align: center;
     	color: #FFF;
     	font-weight: normal;
+    	padding: 8px;
+    	font-size: .95em;
     }
     .table-header .subtle {
 	    color: #FFFFFF;
@@ -1305,7 +1313,6 @@ svg .no-activity,
 	    margin-left: 10px;
 	}
 	.table-header > a{
-		color: #EFEB64;
 		margin-left: 20px;
 	}
 	.table-header > a > .icon{
@@ -1320,9 +1327,12 @@ svg .no-activity,
     }
     .download-contents ~ .expand-collapse-control{
         border: 1px solid #8EB6CA;
-        background-color: #C5D7E0;
+        background-color: #b8cad2;
     }
-    
+    .download-contents .btn-container .btn{
+    	box-sizing: border-box;
+    	min-width: 100%;
+    }
     .citation ~ .metadata-controls-container .btn.copy{
     	margin-top: 0px;
     	margin-bottom: 20px;
