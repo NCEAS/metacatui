@@ -32,11 +32,11 @@
 		width: auto;
 		display: block;
 	}
-  	.header .nav li{
+  	.header .nav > li{
   		width: auto;
   		border-bottom: 0px;
   	}
-  	.header .nav li a{
+  	.header .nav > li > a{
   		text-align: left;
   		font-size: 1.3em;
   	}

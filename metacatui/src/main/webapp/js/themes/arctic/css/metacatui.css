@@ -229,7 +229,7 @@
 	color: #FFF;
 	font-weight: lighter;
 	font-family: "AllerLight";
-	font-size: .8em;
+	font-size: 1em;
 	border-bottom: 1px solid #CCC;
   	text-align: left;
   	padding: .75em;
@@ -1321,6 +1321,11 @@ svg .no-activity,
     .download-contents ~ .expand-collapse-control{
         border: 1px solid #8EB6CA;
         background-color: #C5D7E0;
+    }
+    
+    .citation ~ .metadata-controls-container .btn.copy{
+    	margin-top: 0px;
+    	margin-bottom: 20px;
     }
     /**----------------------------------------**/
 
