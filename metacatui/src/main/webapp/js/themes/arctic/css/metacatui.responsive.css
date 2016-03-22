@@ -40,6 +40,9 @@
   		text-align: left;
   		font-size: 1.3em;
   	}
+  	.header .nav .sub-menu li a{
+  		font-size: 1em;
+  	}
   	#nav-trigger{
   		display: none;
   	}

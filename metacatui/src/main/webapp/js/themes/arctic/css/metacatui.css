@@ -199,7 +199,7 @@
 .header nav{	
 	display: none;
 	box-sizing: border-box;
-	padding: 20px;	
+	padding: 0px 10px;	
 }
 .header .nav-trigger.close{
 	display: none;
@@ -247,7 +247,6 @@
 .header .nav li a.btn{
 	font-size: 1em;
 	margin-top: 8px;
-	color: #555;
 	box-sizing: border-box;
 }
 .header .nav li a.btn.btn-primary{
@@ -259,8 +258,17 @@
 .header .nav li .btn.btn-primary{
 	color: #FFF;
 }
-.header .nav .inline-buttons > .text-btwn-btns{
-	margin-left: 0px;
+.header .login.btn{
+	margin-left: 20px;
+	width: auto;
+	padding: 9px;
+	position: relative;
+	top: -2px;
+	box-shadow: none;
+}
+.header .login.btn img{
+	position: relative;
+	top: 2px;
 }
 .header .border-image{
 	background-image: url('../img/border-image.jpg');
@@ -431,6 +439,17 @@ footer .logos a:hover, a:focus{
       font-weight: 400;
       background-image: none;
       background-repeat: none;
+      border: #146660 solid 1px;
+      text-shadow: none;
+      color: #146660;
+    }
+    .header .nav li a.btn{
+    	color: #146660;
+    }
+    .btn:hover, .btn:focus,
+    .header .nav li .btn:hover, .header nav li .btn:focus{
+    	background-color: #146660;
+    	color: #FFF;
     }
 
     .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a, a.btn-primary:visited {
@@ -440,6 +459,7 @@ footer .logos a:hover, a:focus{
     
     .btn-primary {
        background-color: #19B36A;
+       border: 0px;
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;  
@@ -500,6 +520,7 @@ footer .logos a:hover, a:focus{
     #clear-all{
     	background-color: #19B36A;
     }
+    
  
 /* MAPS 
 --------------------------------- */
@@ -742,7 +763,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	font-size: 14px;
     }
     #Content{
-    	padding-top: 131px;
+    	padding-top: 160px;
     }
     .mapMode #Content{
     	padding-top: 0px;
@@ -768,6 +789,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	
 	.header .nav .icon{
 		margin-right: 5px;
+	}
+	.header .login-container{
+		margin-left: 20px;
 	}
     
     /** Backbone override for dropdowns so they dsplay on hover rather than click **/

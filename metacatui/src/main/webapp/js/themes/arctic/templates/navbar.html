@@ -49,7 +49,9 @@
 							</ul>
 						</li>
 			        <% } else { %>
-			        		<li class="right login-container"></li>
+			        		<li>
+			        			<a href="<%=appModel.get('signInUrlOrcid')%>" class="fancybox login btn"><img src="img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>
+			        		</li>
 			       <%  } %>
 				</ul>
 			</nav>

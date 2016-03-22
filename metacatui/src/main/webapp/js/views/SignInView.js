@@ -1,12 +1,13 @@
 /*global define */
 
-define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!templates/loginOptions.html', 'text!templates/ldapLogin.html'], 				
-	function($, _, Backbone, LoginTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!templates/loginButtons.html', 'text!templates/loginOptions.html', 'text!templates/ldapLogin.html'], 				
+	function($, _, Backbone, LoginTemplate, LoginButtonsTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
 	'use strict';
 	
 	var SignInView = Backbone.View.extend({
 		
 		template: _.template(LoginTemplate),
+		buttonsTemplate: _.template(LoginButtonsTemplate),
 		loginOptionsTemplate: _.template(LoginOptionsTemplate),
 		ldapLoginTemplate: _.template(LdapLoginTemplate),
 		
@@ -34,15 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!t
 				}));
 			}
 			
-			//Make the button
-			var signIn = $(document.createElement("a")).attr("href", "#signinPopup").text("Sign in").addClass("fancybox login"),
-				or     = $(document.createElement("span")).text("or").addClass("text-btwn-btns"),
-				signUp = $(document.createElement("a")).attr("href", "#signupPopup").text("Sign up").addClass("fancybox btn");
-					
-			if(this.$el.attr("id") == "Content")				
-				this.$el.append($(document.createElement("div")).addClass(this.className + " large center").append(signIn, or, signUp));
-			else
-				this.$el.append(signIn, or, signUp);
+			this.$el.append(this.buttonsTemplate());
 			
 			return this;
 		},
