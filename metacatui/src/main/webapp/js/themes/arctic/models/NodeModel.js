@@ -43,7 +43,17 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API
 		defaults: {
-			members: [],
+			members: [{
+				baseURL: "https://arcticdata.io/metacat/d1/mn",
+				description: "Member Node for NSF Arctic Data Center",
+				identifier: "urn:node:ARCTIC",
+				logo: "img/node-logos/ARCTIC.jpg",
+				name: "NSF Arctic Data Center",
+				readv2: 1,
+				shortIdentifier: "ARCTIC",
+				subject: "CN=urn:node:ARCTIC,DC=dataone,DC=org",
+				type: "mn"
+			}],
 			coordinators: [],
 			replicaMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
 			currentMemberNode: appModel.get("nodeId") || null,

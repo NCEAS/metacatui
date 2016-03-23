@@ -16,6 +16,7 @@ var themeMap =
 		'templates/userProfileMenu.html' : 'themes/' + theme + '/templates/userProfileMenu.html',
 		'templates/publishDOI.html' : 'themes/' + theme + '/templates/publishDOI.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
+		'models/NodeModel' : 'js/themes/' + theme + '/models/NodeModel.js',
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
 		}
 };
@@ -40,6 +41,7 @@ var customAppConfig = function(){
 	}
 	
 	if(appModel.get("baseUrl").indexOf("arcticdata.io") > -1){
+		appModel.set("nodeId", "urn:node:ARCTIC");
 		appModel.set("googleAnalyticsKey", "UA-75482301-1");
 	}
 }
