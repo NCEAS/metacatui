@@ -810,9 +810,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	padding-top: 160px;
     }
     .mapMode #Content{
-    	padding-top: 0px;
+    	padding-top: 112px;
     }
-    
     .navbar .nav {
       margin-top: 8px;
     }

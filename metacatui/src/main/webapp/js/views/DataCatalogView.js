@@ -411,7 +411,8 @@ define(['jquery',
 			
 			//Create a new Solr Results model to store the results of this supplemental query
 			var provSearchResults = new SearchResults(null, { 
-				query: provSearchModel.getQuery(), 
+				query: provSearchModel.getQuery(),
+				searchLogs: false,
 				rows: 150,
 				fields: provSearchModel.getProvFlList() + ",id,resourceMap"
 			});

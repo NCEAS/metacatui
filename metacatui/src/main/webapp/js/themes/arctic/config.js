@@ -15,6 +15,7 @@ var themeMap =
 		'templates/about.html' : 'themes/' + theme + '/templates/about.html',
 		'templates/userProfileMenu.html' : 'themes/' + theme + '/templates/userProfileMenu.html',
 		'templates/publishDOI.html' : 'themes/' + theme + '/templates/publishDOI.html',
+		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
 		'models/NodeModel' : 'js/themes/' + theme + '/models/NodeModel.js',
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'

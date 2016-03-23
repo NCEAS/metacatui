@@ -22,14 +22,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.facetCounts  = "nothing";
 		    this.stats 		  = options.stats   || false;
 		    this.minYear 	  = options.minYear || 1900;
-		    this.maxYear 	  = options.maxYear || new Date().getFullYear();	
+		    this.maxYear 	  = options.maxYear || new Date().getFullYear();
 		    
 		    //Turn on/off the feature to search the logs when retrieving SolrResults
 		    this.searchLogs  = (typeof options.searchLogs == "undefined")? true : options.searchLogs;
 		    
 		    if(appModel.get("d1LogServiceUrl") && this.searchLogs){
 			    this.logsSearch = options.logsSearch || new LogsSearch();
-			    
 			    this.on("reset", this.getLogs);
 		    }
 		},
@@ -196,6 +195,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			var url = appModel.get("d1LogServiceUrl") + "q=" + this.logsSearch.getQuery() + this.logsSearch.getFacetQuery();
 			var requestSettings = {
 				url: url + "&wt=json&rows=0",
+				type: "GET",
 				success: function(data, textStatus, xhr){
 					var pidCounts = data.facet_counts.facet_fields.pid;
 					
