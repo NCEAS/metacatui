@@ -251,6 +251,9 @@
 footer{
 	width: 100%;
 }
+.mapMode #Footer{
+	height: 63px;
+}
 .footer-container{
 	max-width: 1000px;
 	margin-left: auto;

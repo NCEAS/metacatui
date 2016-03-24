@@ -26,6 +26,8 @@ var customAppConfig = function(){
 	//Only apply these settings when we are in production
 	if(!appModel || (appModel.get("baseUrl").indexOf("knb.ecoinformatics.org") < 0)) return;
 
+	//Gmaps key  AIzaSyA6-jiEs5rmEqKk70bigvnwuvhdZbt4tJs
+	
 	appModel.set("nodeId", "urn:node:KNB");
 	appModel.set("googleAnalyticsKey", "UA-1588494-14");
 }

@@ -2075,6 +2075,7 @@ define(['jquery',
 			  div.style.fontSize = "15px";
 			  div.style.position = 'absolute';
 			  div.style.zIndex = "999";
+			  div.style.fontWeight = "bold";
 
 			  // Create an IMG element and attach it to the DIV.
 			  div.innerHTML = this.text;
@@ -2232,6 +2233,7 @@ define(['jquery',
 				//Set up the default tile options 
 				var tileOptions = {
 					      fillColor: color, 
+					      strokeColor: color,
 					      map: this.map,
 					      visible: true,
 					      bounds: bounds
