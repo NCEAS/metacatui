@@ -1365,8 +1365,8 @@ svg .no-activity,
     	background-color: #f9f9f9;
     }
     .download-contents ~ .expand-collapse-control{
-        border: 1px solid #8EB6CA;
-        background-color: #b8cad2;
+        border: 1px solid #323D90;
+        background-color: transparent;
     }
     .download-contents .btn-container .btn{
     	box-sizing: border-box;

@@ -159,6 +159,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				downloadButton : downloadButtonHTML,
 				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
+			     metadataTitle : (this.nested && this.model.getMetadata()) ? this.model.getMetadata().get("title") : "",
 					 packageId : this.model.get("id"),
 					    nested : this.nested
 			}));

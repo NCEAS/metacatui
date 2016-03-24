@@ -5,6 +5,13 @@
 
 <table class="download-contents table-striped table-condensed table <%=classes%>">
 	<thead>
+		<% if(nested && metadataTitle){ %>
+			<tr class="table-header">
+				<th colspan="7" class="table-header">
+					<strong><%=metadataTitle%></strong>
+				</th>
+			</tr>
+		<% } %>
 		<tr class="table-header">
 			<th colspan="7" class="table-header">
 				<%=title%>
