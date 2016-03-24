@@ -2217,7 +2217,7 @@ define(['jquery',
 				else
 					var lightness = (((tileCount-minCount)/(maxCount-minCount)) * lightnessRange) + lightnessMin;
 								
-				var color = "hsl(" + mapModel.get("tileHue") + ",100%,"+lightness+"%)";
+				var color = "hsl(" + mapModel.get("tileHue") + "," + lightness + "%,50%)";
 				
 				//Add the count to the tile
 				var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
