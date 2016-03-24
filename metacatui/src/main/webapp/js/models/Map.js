@@ -52,7 +52,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				//The options for the tiles. Using Google Maps Web API
 				tileOptions: {
 				      strokeWeight: 0,
-				      fillOpacity: 0.1,
+				      fillOpacity: 0.2,
 				      strokeWeight: 1,
 				      strokePosition: google.maps.StrokePosition.INSIDE,
 				      strokeOpacity: 1
@@ -70,13 +70,13 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				
 				//The options for the tile text 
 				tileLabelColorOnHover: '#000000',			
-				tileLabelColor: '#666666',
+				tileLabelColor: '#444444',
 				
 				//The tile hue - the number of the hue that will be used to color tiles
 				//Tile lightness - percent range of lightness/brightness of this tile hue
 				tileHue: model.tileHue || "192",
-				tileLightnessMax: 5,
-				tileLightnessMin: 80
+				tileLightnessMax: 100,
+				tileLightnessMin: 30
 			}
 		},
 		

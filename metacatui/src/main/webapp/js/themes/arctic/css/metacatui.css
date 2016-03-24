@@ -623,6 +623,9 @@ footer .logos a:hover, a:focus{
 #toggle-map{
 	left: -124px;
 }
+.map-toggle-container{
+	z-index: 0;
+}
 
 .mapMode #toggle-map{
 	left: -104px;
@@ -1414,6 +1417,9 @@ svg .no-activity,
 	  -webkit-border-radius: inherit;
 	     -moz-border-radius: inherit;
 	          border-radius: inherit;
+	}
+	#entryForm .accordion-heading .accordion-toggle{
+		display: inline-block;
 	}
 	
 /* Combobox styles, overlay text input on select

@@ -452,7 +452,7 @@ define(['jquery',
 					viewRef.insertPackageTable(packageModel, { title: title });
 					
 					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
-						var title = 'Related Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 					viewRef.getEntityNames(packageModel.getNestedPackages());
@@ -485,14 +485,14 @@ define(['jquery',
 								.attr("href", "#")
 								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
-								.text("Show " + numTables + " related datasets")
+								.text("Show " + numTables + " nested datasets")
 								.prepend(expandIcon),
 					collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-down"),
 					collapseLink = $(document.createElement("a"))
 								.attr("href", "#")
 								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
-								.text("Hide related datasets")
+								.text("Hide nested datasets")
 								.prepend(collapseIcon)
 								.hide(),
 					expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
