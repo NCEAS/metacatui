@@ -39,8 +39,9 @@ define(['jquery',
 		 	                 "click .toggle-slide"   : "toggleSlide",
 				 		 	      "click input.copy" : "higlightInput", 
 					 		 	  "focus input.copy" : "higlightInput",
-					 		 	 "click textarea.copy" : "higlightInput", 
-					 		 	  "focus textarea.copy" : "higlightInput"
+					 		   "click textarea.copy" : "higlightInput", 
+					 		   "focus textarea.copy" : "higlightInput",
+					 		 	  "click .open-chat" : "openChatWithMessage"
 			//'click #SignInLdap input[type="submit"]' : "submitLogin"
 		},
 				
@@ -356,6 +357,14 @@ define(['jquery',
 					});
 				});
 			});
+		},
+		
+		openChatWithMessage: function(){
+			if(!_slaask) return;
+
+	    	$("#slaask-input").val(appModel.get("defaultSupportMessage"));
+	    	$("#slaask-button").trigger("click");	
+			
 		},
 		
 		/********************** Utilities ********************************/

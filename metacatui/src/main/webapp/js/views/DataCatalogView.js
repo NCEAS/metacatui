@@ -2674,6 +2674,14 @@ define(['jquery',
 			var numFound = this.searchResults.length;
 			if (numFound == 0){
 				this.$results.html('<p id="no-results-found">No results found.</p>');
+				if(theme == "arctic"){
+					//When we get new results, check if the user is searching for their own datasets and display a message
+					if((appView.dataCatalogView.searchModel.getQuery() == appUserModel.get("searchModel").getQuery()) && !appSearchResults.length){
+						$("#no-results-found").after("<h3>Where are my data sets?</h3><p>If you are a previous ACADIS Gateway user, " +
+						"you will need to take additional steps to access your data sets in the new NSF Arctic Data Center." +
+						"<a class='open-chat'>Send us a message</a> with your old ACADIS Gateway username or email and we will help.</a></p>");
+					}
+				}
 				return;
 			}
 			

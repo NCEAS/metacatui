@@ -43,6 +43,16 @@
   	.header .nav .sub-menu li a{
   		font-size: 1em;
   	}
+  	.header #logo{
+  		font-size: 1.1em;
+  	}
+  	.header .nav{
+  		font-size: .9em;
+  	}
+  	.header .nav .dropdown-toggle.user{
+  		font-size: .9em;
+  		max-width: 130px;
+  	}
   	#nav-trigger{
   		display: none;
   	}
@@ -128,6 +138,19 @@
 		margin-bottom: 0px;
 		margin-top: 0px;
 	}
+}
+
+@media only screen and (min-width : 1024px){
+    .nav .dropdown-toggle.user{
+    	max-width: 250px;
+    	font-size: 1em
+    }
+    .nav #logo{
+    	font-size: 1.4em;
+    }
+    .header .nav > li > a{
+    	font-size: 1.4em;
+    }
 }
 
 @media only screen and (max-width : 768px){ 	

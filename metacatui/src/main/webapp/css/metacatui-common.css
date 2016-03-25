@@ -2385,6 +2385,14 @@ table.api tr td:nth-child(even) {
 .example h3{
 	font-weight: lighter;
 }
+
+#slaask-input{
+	height: 100px;
+	word-break: break-word;
+}
+.slaask-widget-container{
+	bottom: 170px !important;
+}
 /*******************************************
 CSS library fixes
 ******************************************/

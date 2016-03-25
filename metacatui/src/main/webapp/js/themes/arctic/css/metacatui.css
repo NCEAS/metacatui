@@ -840,6 +840,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		margin-left: 20px;
 	}
     
+    .dropdown-menu{
+    	top: 83%;
+    }
+
     /** Backbone override for dropdowns so they dsplay on hover rather than click **/
     .dropdown-menu .sub-menu {
 	    left: 100%;
@@ -996,9 +1000,9 @@ svg .data,
   /* The universal color for metadata */
 svg .metadata,
 .fallback.metadata{
-  	color: #91bf0a;
-  	stroke: #91bf0a;
-  	fill: #91bf0a;
+  	color: #19B36A;
+  	stroke: #19B36A;
+  	fill: #19B36A;
   }
 
   /* The universal color for packages */
@@ -1935,7 +1939,7 @@ svg .no-activity,
 	min-width: 210px;
 	max-width: 210px;
 }
-    
+  
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 

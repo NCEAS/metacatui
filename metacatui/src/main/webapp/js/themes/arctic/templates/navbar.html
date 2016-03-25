@@ -38,11 +38,11 @@
 			       <li><a href="#share" class="btn btn-primary">Submit Data</a></li>
 					<% if (loggedIn) { %>
         				<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon icon-user"></i><%=formattedName%><b class="caret"></b></a>
+							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><%=formattedName%><b class="caret"></b></a>
 							<ul class="dropdown-menu">
 								<li><a href="#share">Submit data</a></li>
 								<% if(appModel.get("userProfiles")){ %><li><a href="#profile/<%=username%>">My profile</a></li> <% } %>
-								<li><a href="#data" id="myData">My data packages</a></li>
+								<li><a href="#data" id="myData">My data sets</a></li>
 								<li><a href="#signout">Sign Out</a></li>
 							</ul>
 						</li>

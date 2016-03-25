@@ -12,8 +12,16 @@ define(['jquery', 'underscore', 'backbone'],
 			title: window.themeTitle || "Metacat Data Catalog",
 			
 			googleAnalyticsKey: null,
-			slaaskKey: "ea2a2170250e8b9f9c98da3df4f0f15b",
 			
+			//Slaask / Chat
+			slaaskKey: "ea2a2170250e8b9f9c98da3df4f0f15b",
+			defaultSupportMessage: function(){
+				
+				var username =  appUserModel.get("username");
+		    	var usernameMsg = username? "My Orcid is " + username : ".";
+		    	return "Hello, I would like access to my data sets from the ACADIS Gateway. " 
+		    			+ usernameMsg + " My username or email from the ACADIS Gateway was: ";				
+			},
 			nodeId: null,
 
 			searchMode: mapKey ? 'map' : 'list',
