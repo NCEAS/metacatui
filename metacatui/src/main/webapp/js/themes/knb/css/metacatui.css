@@ -1491,8 +1491,9 @@ svg .no-activity,
 	    margin-left: 10px;
 	}
 	.table-header > a{
-		color: #EFEB64;
-		margin-left: 20px;
+	    color: #005884;
+    	margin-left: 20px;
+    	font-weight: bold;
 	}
 	.table-header > a > .icon{
 		margin-left: 5px;

@@ -1544,6 +1544,8 @@ define(['jquery',
 		onClose: function () {	
 			var viewRef = this;
 			
+			this.stopListening();
+			
 			_.each(this.subviews, function(subview) {
 				if(subview.el != viewRef.el)
 					subview.remove();
