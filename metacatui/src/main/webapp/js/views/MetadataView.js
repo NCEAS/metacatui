@@ -15,6 +15,7 @@ define(['jquery',
 		'views/PackageTableView',
 		'views/AnnotatorView',
 		'views/CitationView',
+		'text!templates/metadata.html',
 		'text!templates/dataSource.html',
 		'text!templates/publishDOI.html',
 		'text!templates/newerVersion.html',
@@ -30,7 +31,7 @@ define(['jquery',
 		], 				
 	function($, $ui, _, Backbone, gmaps, fancybox, ZeroClipboard, Package, SolrResult, 
 			 ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, 
-			 AnnotatorView, CitationView, DataSourceTemplate, PublishDoiTemplate, 
+			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate, 
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadButtonTemplate, 
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, 
 			 MapTemplate, AnnotationTemplate) {
@@ -48,11 +49,19 @@ define(['jquery',
 		packageModels: new Array(),
 
 		el: '#Content',
+		metadataContainer: "#metadata-container",
+		citationContainer: "#citation-container",
+		tableContainer:    "#table-container",
+		controlsContainer: "#metadata-controls-container",
+		ownerControlsContainer: "#owner-controls-container",
+		breadcrumbContainer: "#breadcrumb-container",
+		parentLinkContainer: "#parent-link-container",
+		dataSourceContainer: "#data-source-container",
 		
 		type: "Metadata",
 		
 		//Templates
-		template: null,
+		template: _.template(MetadataTemplate),
 		alertTemplate: _.template(AlertTemplate),
 		doiTemplate: _.template(PublishDoiTemplate),
 		usageTemplate: _.template(UsageTemplate),
@@ -165,6 +174,25 @@ define(['jquery',
 			var pid = this.pid,
 				view = this;
 			
+			this.hideLoading();
+			//Load the template which holds the basic structure of the view
+			this.$el.html(this.template());
+			//Insert the breadcrumbs
+			this.insertBreadcrumbs();
+			//Insert the citation
+			this.insertCitation();
+			//Insert the data source logo
+			this.insertDataSource();
+			// is this the latest version? (includes DOI link when needed)
+			this.showLatestVersion();
+			//Insert package table if the package details haven't been inserted yet
+			this.insertPackageDetails();
+			//Insert controls
+			this.insertControls();
+			this.insertOwnerControls();
+
+			
+			
 			// Check for a view service in this appModel
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) 
 				var endpoint = appModel.get('viewServiceUrl') + pid;
@@ -192,28 +220,12 @@ define(['jquery',
 								}
 								
 								//Now show the response from the view service
-								view.$el.html(response);
-								
-								viewRef.$el.fadeIn("slow");
-								
-								//Get the citation element
-								viewRef.getCitation();
-								
-								// is this the latest version? (includes DOI link when needed)
-								viewRef.showLatestVersion();
+								view.$(view.metadataContainer).html(response);
 								
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 								
-								//Insert the breadcrumbs
-								viewRef.insertBreadcrumbs();
-								viewRef.insertCitation();
-								
-								//Insert package table if the package details haven't been inserted yet
-								viewRef.insertPackageDetails();
-								
 								//viewRef.insertDataSource();
-								viewRef.insertOwnerControls();
 								viewRef.alterMarkup();
 								
 								viewRef.setUpAnnotator();
@@ -237,16 +249,8 @@ define(['jquery',
 				});
 			this.subviews.push(metadataFromIndex);
 			
-			//Add the package details once the metadata from the index is drawn 
-			this.listenToOnce(metadataFromIndex, 'complete', this.getCitation);
-			this.listenToOnce(metadataFromIndex, 'complete', this.insertBreadcrumbs);
-			this.listenToOnce(metadataFromIndex, 'complete', this.insertOwnerControls);
-			this.listenToOnce(metadataFromIndex, 'complete', this.insertControls);
-			this.listenToOnce(metadataFromIndex, 'complete', this.insertPackageDetails);
-			this.listenToOnce(metadataFromIndex, 'complete', this.showLatestVersion);
-			
 			//Add the metadata HTML
-			this.$el.html(metadataFromIndex.render().el);
+			this.$(this.metadataContainer).html(metadataFromIndex.render().el);
 			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
@@ -255,7 +259,7 @@ define(['jquery',
 			this.setUpAnnotator();			
 		},
 		
-		getCitation: function(){
+		removeCitation: function(){
 			var citation = "",
 				citationEl = null;
 			
@@ -296,13 +300,8 @@ define(['jquery',
 			//Set the document title to the citation
 			appModel.set("title", citation);
 			
-			//Save the citation element in the view
-			if(!citationEl){
-				this.citationEl = $(document.createElement("div")).addClass("citation");
-				this.$el.prepend(this.citationEl);
-			}
-			else
-				this.citationEl = citationEl;			
+			citationEl.remove();
+			
 		},
 		
 		insertBreadcrumbs: function(){
@@ -338,7 +337,7 @@ define(['jquery',
 				$(breadcrumbs).find("a.search").addClass("inactive");
 			}
 			
-			this.$el.prepend(breadcrumbs);
+			this.$(this.breadcrumbContainer).html(breadcrumbs);
 		},
 		
 		showNotFound: function(){
@@ -377,10 +376,13 @@ define(['jquery',
 					
 					//Create a model representing the data package
 					var thisPackage = new Package({ id: thisPackageID });
-					
+
+					//Listen for any parent packages
+					viewRef.listenToOnce(thisPackage, "change:parentPackageMetadata", viewRef.insertParentLink);
+
 					//When the package info is fully retrieved
 					viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
-						
+	
 						//When all packages are fully retrieved
 						completePackages++;
 						if(completePackages >= packageIDs.length){
@@ -393,10 +395,10 @@ define(['jquery',
 					});
 	
 					//Save the package in the view
-					viewRef.packageModels.push(thisPackage);	
-					
+					viewRef.packageModels.push(thisPackage);
+										
 					//Get the members
-					thisPackage.getMembers();	
+					thisPackage.getMembers({getParentMetadata: true });	
 				});	
 			}
 		},
@@ -431,9 +433,7 @@ define(['jquery',
 			if(this.$(".download-contents").length > 0) return;
 			
 			var viewRef = this;
-			
-			if(!this.citationEl) return;
-			
+						
 			//Get the entity names from this page/metadata
 			this.getEntityNames(this.packageModels);
 			
@@ -452,7 +452,7 @@ define(['jquery',
 					viewRef.insertPackageTable(packageModel, { title: title });
 					
 					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
-						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View full details <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View this dataset <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 					viewRef.getEntityNames(packageModel.getNestedPackages());
@@ -480,20 +480,18 @@ define(['jquery',
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
 				numTables = additionalTables.children(".download-contents").length;
 			if(numTables > 0){
-				var expandIcon = $(document.createElement("i")).addClass("icon icon-caret-right"),
+				var expandIcon = $(document.createElement("i")).addClass("icon icon-level-down"),
 					expandLink = $(document.createElement("a"))
 								.attr("href", "#")
 								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
 								.text("Show " + numTables + " nested datasets")
 								.prepend(expandIcon),
-					collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-down"),
 					collapseLink = $(document.createElement("a"))
 								.attr("href", "#")
 								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
 								.text("Hide nested datasets")
-								.prepend(collapseIcon)
 								.hide(),
 					expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
 				
@@ -507,8 +505,6 @@ define(['jquery',
 			
 			//Now insert the data details sections 
 			this.insertDataDetails();
-			this.insertControls();
-			this.insertDataSource();
 						
 		    return this;
 		},
@@ -535,13 +531,7 @@ define(['jquery',
 			});
 			
 			//Get the package table container
-			var tablesContainer = this.$("#downloadContents");
-			
-			//Older versions of Metacat will not have this container
-			if(!$(tablesContainer).length){
-				tablesContainer = $(document.createElement("div")).attr("id", "downloadContents");
-				$(this.citationEl).after(tablesContainer);
-			}
+			var tablesContainer = this.$(this.tableContainer);
 			
 			//After the first table, start collapsing them
 			var numTables = $(tablesContainer).find("table.download-contents").length;
@@ -572,6 +562,23 @@ define(['jquery',
 				$("td.more-info, th.more-info").hide();
 				$("th.more-info-header").attr("colspan", $("th.more-info-header").attr("colspan")-1);
 			}			
+		},
+		
+		insertParentLink: function(packageModel){
+			var parentPackageMetadata = packageModel.get("parentPackageMetadata"),
+				view = this;
+			
+			_.each(parentPackageMetadata, function(m, i){
+				var title = m.get("title"),
+					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-level-up"),
+					link = $(document.createElement("a")).attr("href", "#view/" + m.get("id"))
+														 .addClass("parent-link")
+														 .text("Parent dataset: " + title)
+														 .prepend(icon);
+					
+				view.$(view.parentLinkContainer).append(link);
+			});
+			
 		},
 				
 		insertSpatialCoverageMap: function(customCoordinates){
@@ -684,29 +691,22 @@ define(['jquery',
 			if(!this.model) return false;
 			
 			//Create a citation element from the model attributes
-			var newCitationEl = new CitationView({
+			var citation = new CitationView({
 									model: this.model, 
 									createLink: false }).render().el;
-			var citationContainer = $(document.createElement("div")).addClass("citation-container").append(newCitationEl);
-			
-			//Insert the citation into the page
-			$(this.citationEl).replaceWith(citationContainer);
-						
-			this.citationEl = newCitationEl;			
+			this.$(this.citationContainer).html(citation);	
 		},
 		
 		insertDataSource: function(){
-			if(!this.citationEl) this.getCitation();			
 			if(!this.model || !nodeModel || !nodeModel.get("members").length) return;
 			
 			var dataSource = nodeModel.getMember(this.model);
-			//if(!dataSource) var dataSource = { logo:  "img/node-logos/KNB.png" }; //For development purposes
 			
 			if(dataSource && dataSource.logo){
 				this.$(".data-source").remove();
 				
 				//Insert the data source template
-				$(this.citationEl).after(this.dataSourceTemplate({
+				this.$(this.dataSourceContainer).html(this.dataSourceTemplate({
 					node : dataSource
 				})).addClass("has-data-source");
 				this.$(".popover-this").popover();
@@ -727,12 +727,8 @@ define(['jquery',
 			if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
 				return false;
 			
-			
-			//Get the HTML elements we will use to insert the controls
-			var insertNear = this.$el.children().first(); 
 				
-			if(this.citationEl && ($(this.citationEl).parents(".citation-container").length > 0))
-				insertNear = $(this.citationEl).parents(".citation-container");				
+			var container = this.$(this.ownerControlsContainer);			
 			
 			//Save some references
 			var pid     = this.model.get("id") || this.pid,
@@ -744,7 +740,7 @@ define(['jquery',
 
 				//Insert the controls container
 				var controlsEl = $(document.createElement("div")).addClass("authority-controls inline-buttons");
-				$(insertNear).before(controlsEl);
+				$(container).html(controlsEl);
 	
 				//Insert an Edit button
 				controlsEl.append(
@@ -772,14 +768,12 @@ define(['jquery',
 		insertControls: function(){		
 			//Get template
 			var controlsContainer = this.controlsTemplate({
-				citation: $(this.citationEl).text(),
-				url: window.location,
-				model: this.model.toJSON()
-			});
-			if(this.$(".metadata-controls-container").length > 0)
-				this.$(".metadata-controls-container").replaceWith(controlsContainer);
-			else
-				$(this.citationEl).after(controlsContainer);
+					citation: $(this.citationContainer).text(),
+					url: window.location,
+					model: this.model.toJSON()
+				});
+
+			$(this.controlsContainer).html(controlsContainer);
 			
 			//Create a copy citation button
 			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
@@ -1561,7 +1555,6 @@ define(['jquery',
 			this.seriesId = null;
 			this.$detached = null;
 			this.$loading = null;
-			this.citationEl = null;
 			
 			//Put the document title back to the default
 			appModel.set("title", appModel.defaults.title);

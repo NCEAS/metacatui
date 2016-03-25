@@ -34,7 +34,9 @@
     body > section > article {
       min-height: 800px;
       margin: auto;
-      padding-bottom: 40px;  			
+      padding-bottom: 40px;  	
+      width: 90%;
+      max-width: 1024px;		
     }
     .mapMode > section > article{
     	padding-bottom: 0px;
@@ -1391,14 +1393,7 @@ svg .no-activity,
 /* Other Navigation 
 ----------------------------------------------------- */
 .breadcrumb{
-  width: 88%;
-  margin-left: auto;
-  margin-right: auto;
   margin-top: 0px;
-  clear: both;
-  display: block;
-  float: none;
-  margin-bottom: 0px;
 }
 .nav-pills.primary a {
     background-color: #E8EEF1;

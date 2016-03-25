@@ -97,13 +97,8 @@ footer{
 ** Navigation ***
 ******************************************/
 .breadcrumb{
-  width: 86%;
-  margin-left: auto;
-  margin-right: auto;
-  clear: both;
-  display: block;
-  float: none;
-  margin-bottom: 0px;
+  width: 100%;
+  box-sizing: border-box;
   font-size: .9em;
 }
 .breadcrumb>li+li:before {
@@ -1076,9 +1071,6 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 #Content.no-stylesheet .citation .title{
 	font-weight: bold;
 }
-.breadcrumb ~ .citation-container{
-	margin-top: 20px;
-}
 .entitydetails.controls-well > .thumbnail{
 	margin-left: 180px;
 }
@@ -1089,6 +1081,14 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .input-append.inline input[type='text']{
 	margin-right: 0px;
 	margin-left: 0px;
+}
+#metadata-controls-container{
+	margin-bottom: 20px;
+}
+/* Hide the elements from the view service that we don't need to display */
+#metadata-container .citation,
+#metadata-container #downloadPackage{
+	display: none;
 }
 /* Used in metadata view for metadata format types without stylesheet */
 #Content > pre,
@@ -1147,37 +1147,33 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-left: 0px;
 }
 /**----------------------------------------**/
-.citation-container{
+.metadata-view .citation{
 	margin-bottom: 20px;
+	display: inline-block;
+	font-size: 1.2em;
+	line-height: 1.5em;
 }
-.citation ~ .logo{
+.citation-container + .data-source{
   max-width: 125px;
   display: inline-block;
   float: right;
   margin-bottom: 10px;
 }
-.citation ~ .metadata-controls-container{
-	display: inline-block;
-}
-.metadata-controls .info-icons{
+.metadata-controls-container .info-icons{
 	float: left;
 	margin-top: 10px;
 }
-.citation ~ .metadata-controls-container .btn.copy{
-	margin-top: 20px;
-	color: #333;
-}
-.citation ~ .logo .ORNLDAAC,
-.citation ~ .logo .CDL,
-.citation ~ .logo .PISCO,
-.citation ~ .logo .ONEShare,
-.citation ~ .logo .KUBI,
-.citation ~ .logo .CLOEBIRD,
-.citation ~ .logo .EDACGSTORE,
-.citation ~ .logo .NKN{
+.citation-container ~ .data-source .ORNLDAAC,
+.citation-container ~ .data-source .CDL,
+.citation-container ~ .data-source .PISCO,
+.citation-container ~ .data-source .ONEShare,
+.citation-container ~ .data-source .KUBI,
+.citation-container ~ .data-source .CLOEBIRD,
+.citation-container ~ .data-source .EDACGSTORE,
+.citation-container ~ .data-source .NKN{
 	max-width: 175px;
 }
-.citation ~ .logo .KNB{
+.citation-container ~ .data-source .KNB{
 	max-height: 90px;
 }
 /****************************************** 
@@ -1331,7 +1327,6 @@ img[src*="googleapis.com/"].georegion-map{
 /****************************************** 
 * Download / Resource Map contents table
 ********************************************/
-    
 #downloadContents .controls-well{
 	overflow-x: scroll;
 	-webkit-transform: translate3d(0,0,0); 
@@ -1390,6 +1385,7 @@ table.download-contents.nested{
 }
 table.download-contents .name{
 	min-width: 325px;
+	max-width: 325px;
 }
 table.download-contents .btn-container,
 table.download-contents .btn-container .btn{
@@ -1398,6 +1394,15 @@ table.download-contents .btn-container .btn{
 .download-contents th .btn-primary{
 	min-width: 108px;
 }
+.download-contents.nested .table-header.title a{
+	color: #FFF;
+}
+.parent-link{
+    font-size: .9em;
+	margin-bottom: 10px;
+	display: block;
+}
+    
 /* The footer / expand-collapse control */
 .table tfoot th{ 
 	text-align: center; 

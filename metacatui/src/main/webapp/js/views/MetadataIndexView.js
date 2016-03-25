@@ -4,15 +4,13 @@ define(['jquery',
 		'backbone',
 		'gmaps',
 		'models/SolrResult',
-		'views/CitationView',
 		'text!templates/loading.html',
 		'text!templates/alert.html',
 		'text!templates/attribute.html',
 		'text!templates/downloadButton.html',
-		'text!templates/metadataIndex.html',
 		'text!templates/dataDisplay.html',
 	 ], 				
-	function($, _, Backbone, gmaps, SolrResult, CitationView, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, MetadataIndexTemplate, DataDisplayTemplate) {
+	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, DataDisplayTemplate) {
 		
 	var MetadataIndexView = Backbone.View.extend({
 		
@@ -20,7 +18,7 @@ define(['jquery',
 		
 		id: 'Metadata',
 		
-		className: "metadata-index container", 
+		className: "metadata-index container form-horizontal", 
 		
 		tagName: 'article',
 		
@@ -33,9 +31,7 @@ define(['jquery',
 		downloadButtonTemplate: _.template(DownloadButtonTemplate),
 		
 		alertTemplate: _.template(alertTemplate),
-		
-		metadataIndexTemplate: _.template(MetadataIndexTemplate),
-		
+				
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
 
 		semanticFields: null,
@@ -137,14 +133,7 @@ define(['jquery',
 							//Add the rest of the metadata
 							$(metadataEl).append(view.formatAttributeSection(docModel, keys, "Other"));
 							
-							view.$el.html(view.metadataIndexTemplate({ 
-								id: id
-							}));
-							
-							var citation = new CitationView({model: docModel, createLink: false}).render().el;
-							view.$(".citation").replaceWith(citation);
-							
-							view.$("#downloadContents").after(metadataEl);
+							view.$el.html(metadataEl);
 							
 							view.flagComplete();
 						});

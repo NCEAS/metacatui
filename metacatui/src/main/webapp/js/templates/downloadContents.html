@@ -5,10 +5,10 @@
 
 <table class="download-contents table-striped table-condensed table <%=classes%>">
 	<thead>
-		<% if(nested && metadataTitle){ %>
-			<tr class="table-header">
+		<% if(nested && metadata){ %>
+			<tr class="table-header title">
 				<th colspan="7" class="table-header">
-					<strong><%=metadataTitle%></strong>
+					<a href="#view/<%=metadata.get('id')%>"><strong><%=metadata.get("title")%></strong></a>
 				</th>
 			</tr>
 		<% } %>

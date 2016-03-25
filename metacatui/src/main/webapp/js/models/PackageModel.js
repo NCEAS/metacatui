@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				sourceDocs: [],
 				derivationDocs: [],
 				relatedModels: [], //A condensed list of all SolrResult models related to this package in some way
-				parentPackage: null
+				parentPackageMetadata: null
 			}
 		},
 		
@@ -93,7 +93,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 		
 		/* Get all the members of a resource map/package based on the id attribute of this model. 
 		 * Create a SolrResult model for each member and save it in the members[] attribute of this model. */
-		getMembers: function(){			
+		getMembers: function(options){			
 			this.pending = true;
 			
 			var model   = this,
@@ -116,6 +116,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 						if(doc.id == model.get("id")){											
 							model.indexDoc = doc;
 							model.set(doc);
+							if(model.get("resourceMap") && (options && options.getParentMetadata))
+								model.getParentMetadata();
 						}
 						else{
 							pids.push(doc.id);
@@ -143,6 +145,43 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			
 			return this;
+		},
+		
+		getParentMetadata: function(){
+			var rMapIds = this.get("resourceMap");
+			
+			var rMapQuery = "";
+			if(Array.isArray(rMapIds) && (rMapIds.length > 1)){
+				_.each(rMapIds, function(id, i, ids){
+					if(rMapQuery.length == 0) rMapQuery += "resourceMap:(";
+					else if(i+1 == ids.length) rMapQuery += ")";
+					else rMapQuery += " OR ";
+					
+					rMapQuery += "%22" + encodeURIComponent(id) + "%22";
+				});
+			}
+			else{
+				rMapIds = Array.isArray(rMapIds)? rMapIds[0] : rMapIds;
+				rMapQuery += "resourceMap:(" + "%22" + encodeURIComponent(rMapIds) + "%22" + ")";
+			}
+			var query = "fl=title,id" +
+						"&wt=json" +
+						"&q=formatType:METADATA+" + rMapQuery;
+			
+			var model = this;
+			var requestSettings = {
+				url: appModel.get("queryServiceUrl") + query,
+				success: function(data, textStatus, xhr) {
+					var parents = [];
+					_.each(data.response.docs, function(doc){
+						parents.push(new SolrResult(doc));
+					})
+					model.set("parentPackageMetadata", parents);
+					model.trigger("change:parentPackageMetadata");
+				}
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		//Create the URL string that is used to download this package
