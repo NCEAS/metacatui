@@ -191,7 +191,8 @@ define(['jquery',
 			this.insertControls();
 			this.insertOwnerControls();
 
-			
+			//Show loading icon in metadata section
+			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
 			
 			// Check for a view service in this appModel
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) 
@@ -703,12 +704,13 @@ define(['jquery',
 			var dataSource = nodeModel.getMember(this.model);
 			
 			if(dataSource && dataSource.logo){
-				this.$(".data-source").remove();
+				this.$("img.data-source").remove();
 				
 				//Insert the data source template
 				this.$(this.dataSourceContainer).html(this.dataSourceTemplate({
 					node : dataSource
 				})).addClass("has-data-source");
+				this.$(this.citationContainer).addClass("has-data-source");
 				this.$(".popover-this").popover();
 				this.$(".tooltip-this").tooltip();
 			}

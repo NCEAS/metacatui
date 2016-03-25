@@ -1058,14 +1058,18 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	width: 100%;
 	float: none;
 }
-#Metadata .citation.has-data-source,
-#Content.no-stylesheet .citation.has-data-source,
-#Metadata  > .container > .row-fluid > .citation.has-data-source,
-#Metadata  > .container > .row-fluid > form > .citation.has-data-source{
+#Metadata .citation-container.has-data-source,
+#Content.no-stylesheet .citation-container.has-data-source,
+#Metadata  > .container > .row-fluid > .citation-container.has-data-source,
+#Metadata  > .container > .row-fluid > form > .citation-container.has-data-source{
 	width: 83%;
 	width: calc(100% - 130px);
 	float: left;
 	margin-bottom: 0px;
+}
+.citation-container.has-data-source {
+    width: calc(100% - 130px);
+    float: left;
 }
 #Metadata .citation .title,
 #Content.no-stylesheet .citation .title{
@@ -1183,7 +1187,8 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 .citation-container ~ .data-source .NKN{
 	max-width: 175px;
 }
-.citation-container ~ .data-source .KNB{
+.citation-container ~ .data-source .KNB,
+.citation-container ~ .data-source .LTER{
 	max-height: 90px;
 }
 /****************************************** 

@@ -786,121 +786,125 @@ ul.tb-megamenu-subnav{
 
 /* METADATA VIEW CSS
 -------------------------------------------------- */
-	.metadata-index {
-		/*border: 1px solid #1C6E84;*/
-		padding: 20px;
-		border-radius: 7px;
-		-moz-border-radius: 7px;
-		-webkit-border-radius: 7px;
-		-o-border-radius: 7px;
-	}
-	#Metadata > form > cite.citation {
-		/*color: #1C6E84;*/
-	}
-	label.control-label{
-		font-weight: 400;
-		font-size: 15px;
-		line-height: 18px;
-		cursor: default;
-	}
-	.form-horizontal .entitydetails > label{
-		background-color: #437582;
-	}
-	#Metadata > a[href="#data"]{
-		display: block;
-		font-size: 13px;
-		padding: 10px;
-	}
-	
-	#Metadata h4{
-		font-weight: 600;
-	}
-	
-	#Metadata .nav-header{
-		text-transform: none;
-	}
-	
-	#Metadata .nav-list > .active > a{
-		font-weight: 700;
-		background-color: #1C6E84;
-		text-shadow: none;
-	}
-	
-	#Metadata .nav > li > a:hover{
-		text-shadow: none;
-	}
-	
-	.search-results a.btn{
-		font-weight: 700;
-	}
-	
-    article.hasProvLeft, article.hasProvRight, section.hasProvLeft, section.hasProvRight{
-		border: 1px solid #1C6E84;
-	  	border-radius: 5px;
-	}
-	
-    /** Prov charts **/
-    .prov-chart,
-    .prov-chart .node,
-    .prov-chart .connecter{
-    	border-color: #1C6E84;
-    }
-    .prov-chart .node:hover i,
-    .prov-chart .node.active i{
-    	color: #1C6E84;
-    }
-    .prov-chart .popover-title{
-		background-color: #1C6E84;
-		color: white;
-		font-weight: light;
-		padding: 6px;
-		text-align: center;
-    }
-   /**----------------------------------------**/
-      
-    .entitydetails{
-    	border: 1px solid #1C6E84;
-    }
-    
-    .entitydetails h4{
-    	color: #1C6E84;
-    }
-    
-    .controls-well img{
-		max-width: 90%;
-		max-height: 900px;
-		margin: 0 auto;
-		display: block;
-	}
-	
-    .georegion-map{
-    	margin: 0px 180px;
-    	display: block;
-    }
-	
-	
-	/** Metadata rendering via the Index **/
-	#metadata-index-details {
-		padding: 2%;
-		width: 96%;
-	}
-	
-	#metadata-index-details .controls-well .controls-well{
-		margin-left: 0px;
-	}
-	
-	#metadata-index-details .controls-well .control-label{
-		display: none;
-	}
-	
-	#metadata-index-details .controls-well > .control-group{
-		margin-bottom: 5px;
-	}
-	
-	.download-this-package{
-		display: none;
-	}
-	/**----------------------------------------**/
+.metadata-view .citation {
+    font-size: 1.4em;
+    line-height: 1.7em;
+}
+.metadata-index {
+	/*border: 1px solid #1C6E84;*/
+	padding: 20px;
+	border-radius: 7px;
+	-moz-border-radius: 7px;
+	-webkit-border-radius: 7px;
+	-o-border-radius: 7px;
+}
+#Metadata > form > cite.citation {
+	/*color: #1C6E84;*/
+}
+label.control-label{
+	font-weight: 400;
+	font-size: 15px;
+	line-height: 18px;
+	cursor: default;
+}
+.form-horizontal .entitydetails > label{
+	background-color: #437582;
+}
+#Metadata > a[href="#data"]{
+	display: block;
+	font-size: 13px;
+	padding: 10px;
+}
+
+#Metadata h4{
+	font-weight: 600;
+}
+
+#Metadata .nav-header{
+	text-transform: none;
+}
+
+#Metadata .nav-list > .active > a{
+	font-weight: 700;
+	background-color: #1C6E84;
+	text-shadow: none;
+}
+
+#Metadata .nav > li > a:hover{
+	text-shadow: none;
+}
+
+.search-results a.btn{
+	font-weight: 700;
+}
+
+   article.hasProvLeft, article.hasProvRight, section.hasProvLeft, section.hasProvRight{
+	border: 1px solid #1C6E84;
+  	border-radius: 5px;
+}
+
+   /** Prov charts **/
+  .prov-chart,
+  .prov-chart .node,
+  .prov-chart .connecter{
+  	border-color: #1C6E84;
+  }
+  .prov-chart .node:hover i,
+  .prov-chart .node.active i{
+  	color: #1C6E84;
+  }
+  .prov-chart .popover-title{
+	background-color: #1C6E84;
+	color: white;
+	font-weight: light;
+	padding: 6px;
+	text-align: center;
+  }
+ /**----------------------------------------**/
+     
+   .entitydetails{
+   	border: 1px solid #1C6E84;
+   }
+   
+   .entitydetails h4{
+   	color: #1C6E84;
+   }
+   
+   .controls-well img{
+	max-width: 90%;
+	max-height: 900px;
+	margin: 0 auto;
+	display: block;
+}
+
+   .georegion-map{
+   	margin: 0px 180px;
+   	display: block;
+   }
+
+
+/** Metadata rendering via the Index **/
+#metadata-index-details {
+	padding: 2%;
+	width: 96%;
+}
+
+#metadata-index-details .controls-well .controls-well{
+	margin-left: 0px;
+}
+
+#metadata-index-details .controls-well .control-label{
+	display: none;
+}
+
+#metadata-index-details .controls-well > .control-group{
+	margin-bottom: 5px;
+}
+
+.download-this-package{
+	display: none;
+}
+/**----------------------------------------**/
 	
 	
 	/** Gutter/Annotation/Sidr ****/
