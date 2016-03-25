@@ -490,7 +490,7 @@ footer .logos a:hover, a:focus{
     .header .nav li .btn:hover, .header nav li .btn:focus{
     	background-color: #146660;
     	color: #FFF;
-    	border: 1px solid #146660;
+    	border: 0px;
     	box-shadow: none;
     }
 

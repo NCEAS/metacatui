@@ -91,8 +91,11 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			//The Data Catalog View will use this user's search model
 			appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 
 				
-			//Navigate to the data catalog view and update the URL
-			uiRouter.navigate("data", {trigger: true});
+			if(Backbone.history.fragment == "data")
+				appView.dataCatalogView.render();
+			else
+				//Navigate to the data catalog view and update the URL
+				uiRouter.navigate("data", {trigger: true});
 			
 			return false;			
 		},
