@@ -1082,8 +1082,18 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-right: 0px;
 	margin-left: 0px;
 }
-#metadata-controls-container{
+.metadata-view .controls-container{
 	margin-bottom: 20px;
+}
+.metadata-view .controls-container > .controls{
+	display: inline;
+	float: left;
+	margin-right: 20px;
+}
+.metadata-view .controls-container > .controls .inline-buttons{
+	margin-top: 0px;
+	margin-bottom: 0px;
+	
 }
 /* Hide the elements from the view service that we don't need to display */
 #metadata-container .citation,

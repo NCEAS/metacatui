@@ -505,7 +505,7 @@ footer .logos a:hover, a:focus{
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;  
-	  padding: .8em;
+	  padding: .6em .8em;
     }
     
     .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
