@@ -54,7 +54,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				      strokeWeight: 0,
 				      fillOpacity: 0.2,
 				      strokeWeight: 1,
-				      strokePosition: google.maps.StrokePosition.INSIDE,
+				      strokePosition: (typeof google != "undefined")? google.maps.StrokePosition.INSIDE : "",
 				      strokeOpacity: 1
 				},		
 				
@@ -62,7 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				tileOnHover: {
 						fillOpacity: 0.8,
 						strokeColor: "#FFFF00",
-						strokePosition: google.maps.StrokePosition.INSIDE,
+						strokePosition: (typeof google != "undefined")? google.maps.StrokePosition.INSIDE : "",
 						strokeWeight: 1,
 						strokeOpacity: 1,
 						fillColor: "#FFFF66"

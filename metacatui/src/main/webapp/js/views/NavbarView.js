@@ -19,6 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			 		 'click .dropdown-menu a' : 'hideDropdown',
 			 		 	    'click .dropdown' : 'hideDropdown',
 			 		 	'mouseover .dropdown' : 'showDropdown',
+			 		 	 'mouseout .dropdown' : 'hideDropdown',
 			 		 	'click #nav-trigger'  : 'showNav',
 			 		 		  'click .nav li' : 'showSubNav'
 		},
