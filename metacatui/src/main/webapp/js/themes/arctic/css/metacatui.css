@@ -263,6 +263,7 @@
 }
 .header .dropdown-menu li a{
 	background-color: #1F254F;
+	background-image: none;
 	color: #FFF;
 	font-weight: lighter;
 	font-family: "AllerLight";
@@ -274,7 +275,7 @@
   	text-align: center;
 }
   	
-.header .nav li a:hover{
+.header .nav > li >  a:hover{
 	color: #146660;
 }
 .header .nav .inline-buttons > *{
@@ -842,29 +843,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     
     .dropdown-menu{
     	top: 83%;
+	    position: relative;
+	    border: 0px;
+	    box-shadow: none;
+	    width: 100%;
     }
-
-    /** Backbone override for dropdowns so they dsplay on hover rather than click **/
-    .dropdown-menu .sub-menu {
-	    left: 100%;
-	    position: absolute;
-	    top: 0;
-	    visibility: hidden;
-	    margin-top: -1px;
-	}
-	
-	.dropdown-menu li:hover .sub-menu {
-	    visibility: visible;
-	}
-	
-	.dropdown:hover .dropdown-menu {
-	    display: block;
-	}
-	
-	.dropdown:hover .dropdown-menu.hidden,
-	.dropdown-menu.hidden{
-		display: none;
-	}
 	
 	.navbar .nav li.dropdown.open > .dropdown-toggle{
 		color: #555555;

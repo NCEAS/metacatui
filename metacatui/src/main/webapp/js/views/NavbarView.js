@@ -111,6 +111,9 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		},
 		
 		showDropdown: function(){
+			//Only show the dropdown menu on hover when not on mobile
+			if($(window).width() < 768) return;
+			
 			this.$('.dropdown-menu').removeClass('hidden');
 		},
 		
