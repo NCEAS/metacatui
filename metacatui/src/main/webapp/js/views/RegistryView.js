@@ -89,6 +89,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 		 * Load the registry template from the register-dataset.cgi script in Metacat.
 		 */
 		loadRegistry: function(){
+			var tokenUrl = appModel.get("tokenUrl");
 			if(((typeof tokenUrl != "undefined") && tokenUrl.length) && !appUserModel.get("loggedIn")){
 				this.showSignInForm();
 				return false;
