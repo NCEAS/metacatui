@@ -128,7 +128,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				var tfoot        = $(document.createElement("tfoot")),
 					tfootRow     = $(document.createElement("tr")),
 					tfootCell    = $(document.createElement("th")).attr("colspan", 7),
-					expandLink   = $(document.createElement("a")).addClass("expand-control control").text("Show " + this.numHidden + " more items in this data set"),
+					item         = (this.numHidden == 1)? "item" : "items",
+					expandLink   = $(document.createElement("a")).addClass("expand-control control").text("Show " + this.numHidden + " more " + item + " in this data set"),
 					expandIcon   = $(document.createElement("i")).addClass("icon icon-caret-right icon-on-left"),
 					collapseLink = $(document.createElement("a")).addClass("collapse-control control").text("Show less").css("display", "none"),
 					collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-up icon-on-left");
