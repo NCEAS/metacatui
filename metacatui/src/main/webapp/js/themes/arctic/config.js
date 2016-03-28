@@ -17,6 +17,7 @@ var themeMap =
 		'templates/publishDOI.html' : 'themes/' + theme + '/templates/publishDOI.html',
 		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html',
 		'templates/noResults.html' : 'themes/' + theme + '/templates/noResults.html',
+		'templates/loginButtons.html' : 'themes/' + theme + '/templates/loginButtons.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
 		'models/NodeModel' : 'js/themes/' + theme + '/models/NodeModel.js',
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
@@ -48,6 +49,7 @@ var customAppConfig = function(){
 	}
 }
 
+/*
 var customInitApp = function(){
 	var slaaskScript = document.createElement("script");
 	slaaskScript.setAttribute("type", "text/javascript");
@@ -61,4 +63,4 @@ var customInitApp = function(){
 		//Don't check again
 		window.clearTimeout(slaaskTimeout);
 	}, 3000);
-}
+}*/
