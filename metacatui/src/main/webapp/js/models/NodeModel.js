@@ -38,6 +38,7 @@ define(['jquery', 'underscore', 'backbone'],
 				"urn:node:PPBio"       : "img/node-logos/PPBio.png",
 				"urn:node:USGS_SDC"    : "img/node-logos/USGSCSAS.png",
 				"urn:node:NRDC"        : "img/node-logos/NRDC.jpg",
+				"urn:node:NCEI"        : "img/node-logos/NCEI.png",
 				"urn:node:ARCTIC"      : "img/node-logos/ARCTIC.png"
 		},
 		
