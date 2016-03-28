@@ -2679,7 +2679,8 @@ define(['jquery',
 					if((appView.dataCatalogView.searchModel.getQuery() == appUserModel.get("searchModel").getQuery()) && !appSearchResults.length){
 						$("#no-results-found").after("<h3>Where are my data sets?</h3><p>If you are a previous ACADIS Gateway user, " +
 						"you will need to take additional steps to access your data sets in the new NSF Arctic Data Center." +
-						"<a class='open-chat'>Send us a message</a> with your old ACADIS Gateway username or email and we will help.</a></p>");
+						"<a href='mailto:support@arcticdata.io'>Send us a message at support@arcticdata.io</a> with your old ACADIS " +
+						"Gateway username and your ORCID identifier (" + appUserModel.get("username") + "), we will help.</p>");
 					}
 				}
 				return;

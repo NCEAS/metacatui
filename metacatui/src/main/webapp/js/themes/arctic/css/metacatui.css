@@ -308,6 +308,10 @@
 	position: relative;
 	top: 2px;
 }
+.login.btn span{
+	top: -.3em;
+    position: relative;
+}
 .header .border-image{
 	background-image: url('../img/border-image.jpg');
 	background-size: cover;
