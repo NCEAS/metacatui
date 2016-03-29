@@ -91,7 +91,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				   	   pubYear : ["datePublished", "dateUploaded"],
 				   	   		id : "id",
 				  rightsHolder : "rightsHolder",
-			          username : ["rightsHolder", "writePermission", "changePermission"],
 				     submitter : "submitter",
 				      username : ["rightsHolder", "writePermission", "changePermission"],
 			     	     taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]

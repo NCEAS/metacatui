@@ -51,7 +51,6 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				///****** MAP TILE OPTIONS **********//
 				//The options for the tiles. Using Google Maps Web API
 				tileOptions: {
-				      strokeWeight: 0,
 				      fillOpacity: 0.2,
 				      strokeWeight: 1,
 				      strokePosition: (typeof google != "undefined")? google.maps.StrokePosition.INSIDE : "",
