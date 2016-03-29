@@ -509,7 +509,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 					}
 					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		            
-					//Send an ORCiD search when the search string gets long enough
+					//Send an ORCID search when the search string gets long enough
 					if(request.term.length > 3)
 						appLookupModel.orcidSearch(request, response, false, ignoreIds);
 		        },

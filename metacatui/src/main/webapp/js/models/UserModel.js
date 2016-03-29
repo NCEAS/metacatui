@@ -205,9 +205,9 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			if(!this.get("username")) return;
 				
 				/*
-			//Check if this is an ORCiD
+			//Check if this is an ORCID
 			if(this.isOrcid()){
-				//Get the person's info from their ORCiD bio
+				//Get the person's info from their ORCID bio
 				appLookupModel.orcidGetBio({ 
 					userModel: this,
 					success: function(){
@@ -373,7 +373,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrRe
 			//ORCiDs are 16 digits and 3 dashes - 19 characters
 			if(username.length != 19) return false;
 								
-			/* The ORCiD checksum algorithm to determine is a character string is an ORCiD 
+			/* The ORCID checksum algorithm to determine is a character string is an ORCiD 
 			 * http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier
 			 */	
 			var total = 0,

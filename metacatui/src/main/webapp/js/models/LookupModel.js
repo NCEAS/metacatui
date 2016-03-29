@@ -216,7 +216,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		/*
 		 * Gets the bio of a person given an ORCID
-		 * Updates the given user model with the bio info from ORCiD
+		 * Updates the given user model with the bio info from ORCID
 		 */
 		orcidGetBio: function(options){
 			if(!options || !options.userModel) return;
