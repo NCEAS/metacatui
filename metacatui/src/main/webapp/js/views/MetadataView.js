@@ -699,7 +699,7 @@ define(['jquery',
 		},
 		
 		insertDataSource: function(){
-			if(!this.model || !nodeModel || !nodeModel.get("members").length) return;
+			if(!this.model || !nodeModel || !nodeModel.get("members").length || !this.$(this.dataSourceContainer).length) return;
 			
 			var dataSource = nodeModel.getMember(this.model);
 			
