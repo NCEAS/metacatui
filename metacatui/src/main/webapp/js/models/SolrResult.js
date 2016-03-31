@@ -33,6 +33,11 @@ define(['jquery', 'underscore', 'backbone'],
 			reads: 0,
 			isDocumentedBy: null,
 			isPublic: null,
+			isService: false,
+			serviceDescription: null,
+			serviceTitle: null,
+			serviceEndpoint: null,
+			serviceOutput: null,
 			notFound: false,
 			provSources: [],
 			provDerivations: [],
@@ -153,7 +158,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getInfo: function(){			
 			var model = this;
 			
-			var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i" 
+			var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription" 
 				
 			var query = "q=";
 			//Do not search for seriesId when it is not configured in this model/app

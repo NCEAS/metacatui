@@ -99,7 +99,7 @@ define(['jquery',
 			this.stopListening();
 			
 			appModel.set('headerType', 'default');
-			this.showLoading("Loading...");
+			//	this.showLoading("Loading...");
 						
 			//Reset various properties of this view first
 			this.classMap = new Array();

@@ -3,6 +3,7 @@
 	if((typeof className === "undefined") || !className) var className = "btn download";	
 	if((typeof text === "undefined")      || !text)      var text = "Download";	
 	if((typeof fileName === "undefined")  || !fileName)  var fileName = "download";
+	if((typeof attributes === "undefined")) var attributes = "download";
 %>
 
-<a class="<%=className%>" href="<%=href%>" download target="_blank"><%=text%><i class="<%=icon%>"></i></a>
+<a class="<%=className%>" href="<%=href%>" <%=attributes%> target="_blank"><span><%=text%></span><i class="<%=icon%>"></i></a>

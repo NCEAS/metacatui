@@ -99,12 +99,19 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Count the number of rows in this table
 			var numRows = 0;
 			
+			//Create a row for the data service description, if there is one
+			var metadata = this.model.getMetadata();
+			if(metadata && metadata.get("isService")){
+				this.$el.addClass("service");
+				$(tbody).append(this.getServiceRows(metadata));
+			}
+			
 			//Create the HTML for each row
 			_.each(members, function(solrResult, i, members){				
 				//Get the row element
 				var row = view.getMemberRow(solrResult, members);
 				
-				//If we are already viewing this object, display the button as disabled with a tooltip
+				//If we are already viewing this object, show its row first
 				if(view.currentlyViewing == solrResult.get("id")){					
 					//List this row first if it is the current item
 					$(tbody).prepend(row);
@@ -160,7 +167,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				downloadButton : downloadButtonHTML,
 				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
-			          metadata : this.nested ? this.model.getMetadata() : null,
+			          metadata : this.nested ? metadata : null,
 					 packageId : this.model.get("id"),
 					    nested : this.nested
 			}));
@@ -253,11 +260,11 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var fileType = memberModel.get("formatId");
 			if(fileType.substr(0, 3) == "eml"){
 				//If the file type is EML, we may want to show a popover element for more info
-				if(this.EMLRoute) fileType = '.xml <a href="#tools/eml">(EML ' + fileTypePopover + ')</a>';
-				else              fileType = ".xml (EML" + fileTypePopover + ")";
+				if(this.EMLRoute) fileType = '.xml <a href="#tools/eml">(EML)</a>';
+				else              fileType = ".xml (EML)";
 			}
 			else if(fileType == "application/pdf") fileType = "PDF"; //Friendlier-looking...
-			else if(fileType == "application/zip") fileType = "ZIP folder"; //Friendlier-looking...
+			else if(fileType == "application/zip") fileType = ".ZIP"; //Friendlier-looking...
 			$(fileTypeCell).html(fileType);
 			$(tr).append(fileTypeCell);
 			
@@ -286,6 +293,75 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			$(tr).append(downloadBtnCell);
 			
 			return tr;
+		},
+		
+		/* 
+		 * Creates the HTML for a row in the table that displays the data service information
+		 */
+		getServiceRows: function(metadata, endPointNum){			
+			var rows = [];
+			
+			for(var i=0; i<metadata.get("serviceEndpoint").length; i++){
+				var tr = document.createElement("tr"); 
+					
+				//Icon cell	
+				var iconCell = $(document.createElement("td")).addClass("format-type"),
+					/*icon = $(document.createElement("img"))
+					.attr("href", "img/serviceIcon.png")*/
+					icon = $(document.createElement("i"))
+						.addClass("icon icon-table tooltip-this")
+						.tooltip({
+							placement: "top",
+							trigger: "hover focus",
+							title: "Data available from an external service"					
+						});
+				$(iconCell).html(icon);
+				$(tr).append(iconCell);
+					
+				//Name cell
+				var nameCell = $(document.createElement("td")).addClass("name wrap-contents");				
+				var nameEl = $(document.createElement("span")).text(metadata.get("serviceTitle") || "Data service");
+				$(nameCell).html(nameEl);
+				$(tr).append(nameCell);
+				
+				//File type cell
+				var output = metadata.get("serviceOutput") || "Data";
+				var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents").text(output + " from an external service");
+				$(tr).append(fileTypeCell);
+				
+				//Size cell
+				var sizeCell = $(document.createElement("td")).addClass("size");
+				$(tr).append(sizeCell);
+				
+				//Downloads cell
+				var readsCell = $(document.createElement("td")).addClass("downloads");
+				$(tr).append(readsCell);
+				
+				//Button cell
+				var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container service");				
+				var downloadButtonHTML = this.downloadButtonTemplate({ 
+						href: metadata.get("serviceEndpoint")[i], 
+						attributes: "",
+						text: "Go to service to download",
+						icon: "icon icon-external-link"
+						});
+				$(downloadBtnCell).append(downloadButtonHTML);
+				$(tr).append(downloadBtnCell);
+				
+				rows.push(tr);
+			}
+			
+			/*var mnName = "";
+			var popoverOptions = {
+					title: ,
+					html: true,
+					content: "",
+					delay: "200ms",
+					trigger: "hover",
+					
+			}
+				*/		
+			return rows;			
 		},
 		
 		/**

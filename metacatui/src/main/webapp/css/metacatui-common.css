@@ -1406,6 +1406,19 @@ table.download-contents .btn-container,
 table.download-contents .btn-container .btn{
 	width: 105px;
 } 
+.download-contents.service .btn-container .btn{
+	width: 135px;
+}
+.download-contents.service .btn-container .btn span {
+    float: left;
+    width: 80%;
+    width: calc(100% - 20px);
+}
+
+.download-contents.service .btn-container .btn .icon {
+    float: right;
+    margin-top: 1em;
+}
 .download-contents th .btn-primary{
 	min-width: 108px;
 }
