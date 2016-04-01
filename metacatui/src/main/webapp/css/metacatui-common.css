@@ -1139,6 +1139,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	white-space: nowrap;
 	max-width: 100%;
 }
+.controls-well > .party{
+	margin-bottom: 30px;
+	border-bottom: 1px solid #DDD;
+}
 /* ---- Taxonomic range ---- */
 .taxonomicCoverage .control-group{
    	margin-bottom: 20px;
