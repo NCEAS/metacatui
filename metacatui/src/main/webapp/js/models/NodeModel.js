@@ -167,7 +167,7 @@ define(['jquery', 'underscore', 'backbone'],
 						thisModel.set("currentMemberNode", thisMember.identifier);
 					
 					thisModel.trigger("change:currentMemberNode");
-				}
+				}				
 			});
 		}
 				

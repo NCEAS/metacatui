@@ -501,7 +501,9 @@ define(['jquery',
 			
 			//If this metadata doc is not in a package, but is just a lonely metadata doc...
 			if(!this.packageModels.length){
-				viewRef.insertPackageTable(this.model);
+				var packageModel = new Package({ members: [this.model] });
+				packageModel.checked = true;
+				viewRef.insertPackageTable(packageModel);
 			}
 			
 			//Now insert the data details sections 
@@ -548,6 +550,8 @@ define(['jquery',
 			
 			//Insert the package table HTML 
 			$(tableContainer).append(tableView.render().el);
+			//Do any post-rendering
+			tableView.postRender();
 			
 			this.subviews.push(tableView);
 			

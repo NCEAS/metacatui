@@ -99,7 +99,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Count the number of rows in this table
 			var numRows = 0;
 			
-			//Create a row for the data service description, if there is one
+			//Create rows for the data service description, if there are any
 			var metadata = this.model.getMetadata();
 			if(metadata && metadata.get("isService")){
 				this.$el.addClass("service");
@@ -177,6 +177,11 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
 						
 			return this;
+		},
+		
+		postRender: function(){
+			if(this.model && this.model.getMetadata() && this.model.getMetadata().get("isService"))
+				this.createServicePopovers(this.model.getMetadata());
 		},
 		
 		getMemberRow: function(memberModel, members){
@@ -319,14 +324,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(tr).append(iconCell);
 					
 				//Name cell
-				var nameCell = $(document.createElement("td")).addClass("name wrap-contents");				
+				var nameCell = $(document.createElement("td")).addClass("name wrap-contents service");				
 				var nameEl = $(document.createElement("span")).text(metadata.get("serviceTitle") || "Data service");
 				$(nameCell).html(nameEl);
 				$(tr).append(nameCell);
 				
 				//File type cell
 				var output = metadata.get("serviceOutput") || "Data";
-				var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents").text(output + " from an external service");
+				var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents").text(output);
 				$(tr).append(fileTypeCell);
 				
 				//Size cell
@@ -350,18 +355,38 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				
 				rows.push(tr);
 			}
-			
-			/*var mnName = "";
-			var popoverOptions = {
-					title: ,
-					html: true,
-					content: "",
-					delay: "200ms",
-					trigger: "hover",
 					
-			}
-				*/		
 			return rows;			
+		},
+		
+		createServicePopovers: function(metadata){
+			
+			//Set up the popovers with more info
+			var popoverSelectors = ".service.name, .download-btn.service .btn";
+			var mnName = (nodeModel.get("checked") && nodeModel.getMember(metadata)) ?  " provided by " + nodeModel.getMember(metadata).name : ""; 
+			var popoverOptions = {
+					title: "Access this data from an external service" + mnName + ".",
+					html: true,
+					content: "<h4>About this data service</h4>" + metadata.get("serviceDescription"),
+					trigger: "hover",
+					container: this.el,
+					delay: { show: 500 },
+					placement: "top"
+			}
+			
+			var view = this;
+			if(!nodeModel.get("checked")){
+				this.listenTo(nodeModel, "change:checked", function(){
+					view.$(popoverSelectors).popover("destroy");
+					
+					//Make the popover options
+					var mnName = (nodeModel.get("checked") && nodeModel.getMember(metadata)) ?  " provided by " + nodeModel.getMember(metadata).name : ""; 					
+					popoverOptions.title = "Access this data from a service" + mnName + ".";
+					view.$(popoverSelectors).popover(popoverOptions);
+				});
+			}
+			else
+				view.$(popoverSelectors).popover(popoverOptions);	
 		},
 		
 		/**

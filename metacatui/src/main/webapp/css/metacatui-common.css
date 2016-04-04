@@ -1453,6 +1453,25 @@ tfoot .control i{
 .expand-collapse-control > a > .icon{
 	margin-right: 5px;
 }
+.download-contents.service .popover{
+	max-width: 600px;
+	background-color: rgba(0,0,0,0.9);
+    color: white;
+}
+.download-contents.service .popover .popover-title{
+	font-weight: bold;
+    font-size: 1.2em;
+    line-height: 1.5em;
+    background-color: rgba(0,0,0,0.9);
+    color: #6eb0e6;
+}
+.download-contents.service .popover .popover-content h4{
+	color: white;
+}
+.download-contents.service .popover .arrow,
+.download-contents.service .popover .arrow:after{
+	    border-top-color: rgba(0,0,0,0.9);
+}
 /**----------------------------------------**/
 
 /****************************************** 
