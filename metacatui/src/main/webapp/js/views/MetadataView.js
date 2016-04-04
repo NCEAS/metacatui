@@ -186,7 +186,7 @@ define(['jquery',
 			// is this the latest version? (includes DOI link when needed)
 			this.showLatestVersion();
 			//Insert package table if the package details haven't been inserted yet
-			this.insertPackageDetails();
+			//this.insertPackageDetails();
 			//Insert controls
 			this.insertControls();
 			this.insertOwnerControls();
@@ -501,7 +501,12 @@ define(['jquery',
 			
 			//If this metadata doc is not in a package, but is just a lonely metadata doc...
 			if(!this.packageModels.length){
-				viewRef.insertPackageTable(this.model);
+				var packageModel = new Package({ 
+					members: [this.model],
+					
+				});
+				packageModel.complete = true;
+				viewRef.insertPackageTable(packageModel);
 			}
 			
 			//Now insert the data details sections 
