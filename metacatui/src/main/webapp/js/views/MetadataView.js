@@ -144,6 +144,7 @@ define(['jquery',
 					if(model.get("isDocumentedBy")){
 						viewRef.pid = _.first(model.get("isDocumentedBy"));
 						viewRef.getModel(viewRef.pid);
+						return;
 					}
 					else
 						viewRef.renderMetadataFromIndex();
@@ -186,8 +187,6 @@ define(['jquery',
 			this.insertDataSource();
 			// is this the latest version? (includes DOI link when needed)
 			this.showLatestVersion();
-			//Insert package table if the package details haven't been inserted yet
-			//this.insertPackageDetails();
 			//Insert controls
 			this.insertControls();
 			this.insertOwnerControls();
@@ -229,6 +228,8 @@ define(['jquery',
 								
 								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
+								
+								viewRef.insertPackageDetails();
 								
 								viewRef.setUpAnnotator();
 							}
@@ -431,8 +432,14 @@ define(['jquery',
 		/*
 		 * Inserts a table with all the data package member information and sends the call to display annotations
 		 */
-		insertPackageDetails: function(packageModel){				
-			if(this.$(".download-contents").length > 0) return;
+		insertPackageDetails: function(packageModel){	
+			//Don't insert the package details twice
+			var tableEls = this.$(this.tableContainer).children();
+			if(tableEls.length > 0) return;
+			
+			//wait for the metadata to load
+			var metadataEls = this.$(this.metadataContainer).children();
+			if(!metadataEls.length || metadataEls.first().is(".loading")) return;
 			
 			var viewRef = this;
 						
@@ -854,7 +861,7 @@ define(['jquery',
 					});	
 					view.subviews.push(memberSourcesProvChart);
 					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
-					view.$(this.articleContainer).addClass("gutters");
+					view.$(view.articleContainer).addClass("gutters");
 				}
 				if(memberDerivations.length){
 					//Make the derivation chart for this member
@@ -867,7 +874,7 @@ define(['jquery',
 					});	
 					view.subviews.push(memberDerivationsProvChart);
 					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
-					view.$(this.articleContainer).addClass("gutters");
+					view.$(view.articleContainer).addClass("gutters");
 				}
 			});
 			
@@ -1060,8 +1067,28 @@ define(['jquery',
 				
 				return container;
 			}	
-			else
-				return false;
+			
+			//Find by file name rather than id
+			//Get the name of the object first
+			var name = "";
+			for(var i=0; i<this.packageModels.length; i++){
+				var model = _.findWhere(this.packageModels[i].get("members"), {id: id});
+				if(model){
+					name = model.get("fileName");
+					break;
+				}
+			}
+			if(name){
+				var entityNames = this.$(".entitydetails .control-label:contains('Entity Name') + .controls-well");
+				if(entityNames.length){
+					var matches = entityNames.find(":contains('" + name + "')");
+					if(matches.length){
+						return matches.parents(".entitydetails").first();
+					}
+				}
+			}
+			
+			return false;
 		},
 		
 		/*

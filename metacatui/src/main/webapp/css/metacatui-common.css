@@ -731,7 +731,7 @@ img.icon{
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .gutters .entitydetails{
 	width: 60%; /* IE fallback */
-	width: calc(100% - 210px); /* 100% - prov-chart width - (padding + borders)*/
+	width: calc(100% - 215px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;	
 	margin-left: 105px;
 	box-sizing: border-box;
@@ -753,14 +753,20 @@ img.icon{
 .entitydetails.hasProvLeft.hasProvRight{
 	margin-left: 0px;
 }
-#article-container.hasProvLeft.hasProvRight{
-	width: calc(100% - 214px);
+#article-container.hasProvLeft,
+#article-container.hasProvRight{
+	width: 80%;
+	width: calc(100% - 110px);
 	padding: 20px;
 	box-sizing: border-box;
 	display: inline-block;
 	border-width: 1px;
     border-style: solid;
     border-radius: 4px;
+}
+#article-container.hasProvLeft.hasProvRight{
+	width: 70%;
+	width: calc(100% - 214px);
 }
 
 /* Prov chart popovers */
