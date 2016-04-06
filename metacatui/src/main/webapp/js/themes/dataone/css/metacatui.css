@@ -838,7 +838,10 @@ label.control-label{
 	font-weight: 700;
 }
 
-   article.hasProvLeft, article.hasProvRight, section.hasProvLeft, section.hasProvRight{
+   #article-container.hasProvLeft, 
+   #article-container.hasProvRight, 
+   #article-container.hasProvLeft, 
+   #article-container.hasProvRight{
 	border: 1px solid #1C6E84;
   	border-radius: 5px;
 }

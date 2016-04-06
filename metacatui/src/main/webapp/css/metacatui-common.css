@@ -457,7 +457,7 @@ img.icon{
 	outline: none;
 }
 .prov-chart .node.active,
-#Metadata.active,
+#article-container.active,
 .entitydetails.active{
 	box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
 }
@@ -731,27 +731,36 @@ img.icon{
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .gutters .entitydetails{
 	width: 60%; /* IE fallback */
-	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - (padding + borders)*/
+	width: calc(100% - 210px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;	
 	margin-left: 105px;
+	box-sizing: border-box;
 }
 .entitydetails.hasProvLeft{
 	margin-left: 0px;
 }
-article.hasProvLeft table.download-contents .name,
-article.hasProvRight table.download-contents .name{
+#article-container.hasProvLeft table.download-contents .name,
+#article-container.hasProvRight table.download-contents .name{
 	min-width: 100px;
 	max-width: 350px;
 }
-article.hasProvLeft.hasProvRight table.download-contents .name{
+#article-container.hasProvLeft.hasProvRight table.download-contents .name{
 	min-width: 100px;
 	max-width: 250px;
 }
-
 /*The metadata gets narrowed even more when there are two prov charts next to it */
 .hasProvLeft.hasProvRight,
 .entitydetails.hasProvLeft.hasProvRight{
 	margin-left: 0px;
+}
+#article-container.hasProvLeft.hasProvRight{
+	width: calc(100% - 214px);
+	padding: 20px;
+	box-sizing: border-box;
+	display: inline-block;
+	border-width: 1px;
+    border-style: solid;
+    border-radius: 4px;
 }
 
 /* Prov chart popovers */

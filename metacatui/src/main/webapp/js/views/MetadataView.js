@@ -57,6 +57,7 @@ define(['jquery',
 		breadcrumbContainer: "#breadcrumb-container",
 		parentLinkContainer: "#parent-link-container",
 		dataSourceContainer: "#data-source-container",
+		articleContainer: "#article-container",
 		
 		type: "Metadata",
 		
@@ -815,23 +816,23 @@ define(['jquery',
 				var sourceProvChart = new ProvChart({
 					sources      : packageSources,
 					context      : packageModel,
-					contextEl    : this.$("#Metadata"),
+					contextEl    : this.$(this.articleContainer),
 					packageModel : packageModel,
 					parentView   : view
 				});	
 				this.subviews.push(sourceProvChart);
-				this.$("#Metadata").before(sourceProvChart.render().el).addClass("hasProvLeft");	
+				this.$(this.articleContainer).before(sourceProvChart.render().el).addClass("hasProvLeft");	
 			}
 			if(Object.keys(packageDerivations).length){
 				var derivationProvChart = new ProvChart({
 					derivations  : packageDerivations,
 					context      : packageModel,
-					contextEl    : this.$("#Metadata"),
+					contextEl    : this.$(this.articleContainer),
 					packageModel : packageModel,
 					parentView   : view
 				});		
 				this.subviews.push(derivationProvChart);
-				this.$("#Metadata").after(derivationProvChart.render().el).addClass("hasProvRight");			
+				this.$(this.articleContainer).after(derivationProvChart.render().el).addClass("hasProvRight");			
 			}			
 			
 			//Draw the provenance charts for each member of this package at an object level
@@ -853,7 +854,7 @@ define(['jquery',
 					});	
 					view.subviews.push(memberSourcesProvChart);
 					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
-					view.$("#Metadata").addClass("gutters");
+					view.$(this.articleContainer).addClass("gutters");
 				}
 				if(memberDerivations.length){
 					//Make the derivation chart for this member
@@ -866,7 +867,7 @@ define(['jquery',
 					});	
 					view.subviews.push(memberDerivationsProvChart);
 					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
-					view.$("#Metadata").addClass("gutters");
+					view.$(this.articleContainer).addClass("gutters");
 				}
 			});
 			
