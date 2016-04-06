@@ -137,7 +137,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			var requestSettings = {
-				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=write",
+				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=changePermission",
 				type: "GET",
 				success: function(data, textStatus, xhr) {
 					model.set("isAuthorized", true);
