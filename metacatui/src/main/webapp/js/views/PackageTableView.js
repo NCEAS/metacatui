@@ -147,6 +147,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				//Get the first X rows
 				$(_.last(bodyRows, this.numHidden)).addClass("collapse").css("display", "none");
 			
+			if(bodyRows.length == 0){
+				tbody.html("<tr><td colspan='100%'>This is an empty dataset.</td></tr>");
+			}
+			
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
 			if(this.model.getURL() && this.model.get("id")){

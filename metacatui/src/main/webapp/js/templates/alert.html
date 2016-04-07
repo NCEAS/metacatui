@@ -16,7 +16,7 @@ if(includeEmail === undefined){
 }
 var email = "";
 if(includeEmail && appModel.get("emailContact")){
-	email = "<span class='webmaster-email'><i class='icon-envelope-alt icon'></i>Need help? Email us at <a href='mailto:<%=appModel.get("emailContact")%>'><%=appModel.get("emailContact")%></a></span>";
+	email = "<span class='webmaster-email'><i class='icon-envelope-alt icon'></i>Need help? Email us at <a href='mailto:" + appModel.get('emailContact') + "'>" + appModel.get('emailContact') + "</a></span>";
 }
 %>
 
