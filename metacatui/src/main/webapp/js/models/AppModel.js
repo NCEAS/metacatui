@@ -11,6 +11,8 @@ define(['jquery', 'underscore', 'backbone'],
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
 			
+			emailContact: "knb-help@nceas.ucsb.edu",
+			
 			googleAnalyticsKey: null,
 			
 			nodeId: null,

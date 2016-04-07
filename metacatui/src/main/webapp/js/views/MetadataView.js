@@ -146,19 +146,25 @@ define(['jquery',
 						viewRef.getModel(viewRef.pid);
 						return;
 					}
-					else
-						viewRef.renderMetadataFromIndex();
+					else{
+						viewRef.noMetadata(model);
+					}
 				}
 				else if(model.get("formatType") == "RESOURCE"){
 					var packageModel = new Package({ id: model.get("id") });
 					packageModel.on("complete", function(){
-						viewRef.model = packageModel.getMetadata();
-						viewRef.pid = viewRef.model.get("id");
-						//viewRef.packageModels.push(packageModel);
-						viewRef.renderMetadata();
+						var metadata = packageModel.getMetadata();
 						
-						if(viewRef.model.get("resourceMap"))
-							viewRef.getPackageDetails(viewRef.model.get("resourceMap"));	
+						if(!metadata){
+							viewRef.noMetadata(packageModel);
+						}
+						else{
+							viewRef.model = metadata;							
+							viewRef.pid = viewRef.model.get("id");
+							viewRef.renderMetadata();
+							if(viewRef.model.get("resourceMap"))
+								viewRef.getPackageDetails(viewRef.model.get("resourceMap"));
+						}		
 					});
 					packageModel.getMembers();
 					return;
@@ -1440,6 +1446,27 @@ define(['jquery',
 				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 				
 			}
+		},
+		
+		//When the given ID from the URL is a resource map that has no metadata, do the following...
+		noMetadata: function(solrResultModel){
+			this.hideLoading();
+			this.$el.html(this.template());
+			
+			this.pid = solrResultModel.get("resourceMap") || solrResultModel.get("id");
+			
+			//Insert breadcrumbs
+			this.insertBreadcrumbs();
+			
+			this.insertDataSource();
+			
+			//Insert a table of contents
+			this.insertPackageTable(solrResultModel);
+			
+			this.renderMetadataFromIndex();
+			
+			//Insert a message that this data is not described by metadata
+			appView.showAlert("Additional information about this data is limited since metadata was not provided by the creator.", "alert-warning", this.$(this.metadataContainer));
 		},
 		
 		// this will lookup the latest version of the PID

@@ -739,6 +739,9 @@ img.icon{
 .entitydetails.hasProvLeft{
 	margin-left: 0px;
 }
+.entitydetails.hasProvLeft .thumbnail.pdf{
+	margin-left: 60px;
+}
 #article-container.hasProvLeft table.download-contents .name,
 #article-container.hasProvRight table.download-contents .name{
 	min-width: 100px;
@@ -1113,6 +1116,9 @@ img.icon{
 	margin-top: 0px;
 	margin-bottom: 0px;
 	
+}
+#metadata-container > .alert-container{
+	margin-top: 40px;
 }
 /* Hide the elements from the view service that we don't need to display */
 #metadata-container .citation,

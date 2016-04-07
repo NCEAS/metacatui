@@ -11,6 +11,8 @@ define(['jquery', 'underscore', 'backbone'],
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
 			
+			emailContact: "support@arcticdata.io",
+			
 			googleAnalyticsKey: null,
 			
 			//Slaask / Chat
