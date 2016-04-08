@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform', 'views/SignInView', 'text!templates/alert.html', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html'], 				
-	function($, _, Backbone, Registry, BootStrap, jQueryForm, SignInView, AlertTemplate, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate) {
+define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/SignInView', 'text!templates/alert.html', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html'], 				
+	function($, _, Backbone, BootStrap, jQueryForm, SignInView, AlertTemplate, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -117,6 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 					success: function(data, textStatus, jqXHR) {
 							
 						viewRef.$el.html(data);
+						console.log(data);
 						
 						//If this is the login page, prepend some header HTML
 						if(data.indexOf('id="RegistryLogin"') != -1) viewRef.$el.prepend(viewRef.loginHeaderTemplate);
@@ -134,7 +135,7 @@ define(['jquery', 'underscore', 'backbone', 'registry', 'bootstrap', 'jqueryform
 							viewRef.trigger("postRender");
 						});						
 					}
-				};
+				}
 	
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
