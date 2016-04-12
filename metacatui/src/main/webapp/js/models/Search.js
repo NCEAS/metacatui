@@ -268,7 +268,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			
 			//---resourceMap---
-			if(this.filterIsAvailable("resourceMap") && ((filter == "resourceMap") || getAll) && this.get('resourceMap').length){
+			if(this.filterIsAvailable("resourceMap") && ((filter == "resourceMap") || getAll)){
 				var resourceMap = this.get('resourceMap');
 				
 				//If the resource map search setting is a list of resource map IDs

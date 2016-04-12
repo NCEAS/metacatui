@@ -202,7 +202,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				formatTypeIcon = document.createElement("i"),
 				icon = "icon-table";
 			
-			//Determine the icon type based on format id
+			//Determine the icon type based on format type
 			if(type == "program")
 				icon = "icon-code";
 			else if(type == "data")
@@ -251,18 +251,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			}
 			$(tr).append(moreInfoCell);
 	
-			//Format type cell
+			//Format id cell
 			var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents");				
-			var fileTypePopover = "";
-			var fileType = memberModel.get("formatId");
-			if(fileType.substr(0, 3) == "eml"){
-				//If the file type is EML, we may want to show a popover element for more info
-				if(this.EMLRoute) fileType = '.xml <a href="#tools/eml">(EML ' + fileTypePopover + ')</a>';
-				else              fileType = ".xml (EML" + fileTypePopover + ")";
-			}
-			else if(fileType == "application/pdf") fileType = "PDF"; //Friendlier-looking...
-			else if(fileType == "application/zip") fileType = "ZIP folder"; //Friendlier-looking...
-			$(fileTypeCell).html(fileType);
+			$(fileTypeCell).html(memberModel.getFormat());
 			$(tr).append(fileTypeCell);
 			
 			//File size cell
