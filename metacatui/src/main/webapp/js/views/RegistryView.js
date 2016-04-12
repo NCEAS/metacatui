@@ -117,7 +117,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					success: function(data, textStatus, jqXHR) {
 							
 						viewRef.$el.html(data);
-						console.log(data);
 						
 						//If this is the login page, prepend some header HTML
 						if(data.indexOf('id="RegistryLogin"') != -1) viewRef.$el.prepend(viewRef.loginHeaderTemplate);
@@ -133,6 +132,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow', function(){
 							viewRef.trigger("postRender");
+							viewRef.setUpAutocompletes();
 						});						
 					}
 				}
@@ -204,6 +204,65 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				orgLabel.append(helpIcon);
 				helpIcon.tooltip();
 			}
+		},
+		
+		/*
+		 * Set up autocompletes for the Registry - for now, only the grant number has an autocomplete
+		 */
+		setUpAutocompletes: function() {
+			if(!appModel.get("grantsUrl")) return;
+			
+			// Look up Grant numbers and titles from NSF
+			var input = this.$("#funding");
+			if(!input || !input.length) return;
+			
+			//Create a help message next to the text input
+			var defaultMsg = "Enter a grant number or search for a grant by keyword.";
+			var helpMsg = $(document.createElement("div")).addClass("input-help-msg subtle").text(defaultMsg);
+			input.after(helpMsg);
+					
+			//Setup the autocomplete widget
+			$(input).hoverAutocomplete({
+				source: appLookupModel.getGrantAutocomplete,
+				select: function(e, ui) {
+					e.preventDefault();
+					
+					// set the text field
+					$(e.target).val(ui.item.value);
+					helpMsg.text("You selected: " + ui.item.label).addClass("success").attr("data-award-id", ui.item.value);
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					of: "#funding",
+					collision: "fit"
+				},
+				appendTo: input.parent(),
+				minLength: 3
+			});
+			input.parents(".accordion-body").addClass("ui-autocomplete-container");
+
+			//When the user is done entering a grant number, get the grant title from the API
+			$(input).focusout(function(){
+				//If the help message already displays the grant title, return
+				if((helpMsg.attr("data-award-id") == input.val()) && (input.val().length > 0)) return;
+				//If no grant number was added, set the help message back to its defaults
+				else if (!input.val()){
+					helpMsg.removeClass("success").attr("data-award-id", "").text(defaultMsg);
+					return;
+				}
+				
+				//Get the grant title and id
+				appLookupModel.getGrant(
+						input.val(), 
+						function(award){
+							helpMsg.text("You selected: " + award.title).attr("data-award-id", award.id).addClass("success");
+						},
+						function(){
+							helpMsg.removeClass("success").attr("data-award-id", "").text("Warning: No NSF award with that number could be found.");
+						});				
+			});
+			
 		},
 		
 		modifyLoginForm: function() {

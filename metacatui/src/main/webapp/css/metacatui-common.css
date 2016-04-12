@@ -33,6 +33,9 @@
 	font-size: 1em;
 	padding: .5em;
 }
+.success{
+	color: green;
+}
 
 /****************************************** 
 ** General Structure ***
@@ -2339,6 +2342,25 @@ input.subtle:focus,
 .nav .input > form > input[type="text"]:focus
 {
 	width: 200px;
+}
+#funding-group .ui-helper-hidden-accessible{
+	display: none;
+}
+#funding-group .ui-autocomplete{
+	width: 500px;
+	position: absolute;
+	top: 10px;
+	left: 10px;
+}
+#funding-group .ui-autocomplete .ui-menu-item{
+	width: 500px;
+	line-height: 1.4em;
+}
+.ui-autocomplete-container{
+	overflow: visible;
+}
+.input-help-msg{
+	padding: .5em 0;
 }
 /*******************************************
 Pager View

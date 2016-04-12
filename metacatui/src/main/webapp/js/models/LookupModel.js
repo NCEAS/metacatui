@@ -245,8 +245,73 @@ define(['jquery', 'underscore', 'backbone'],
 					onError(xhr, textStatus, error);
 				}
 			});
+		},
+		
+		getGrantAutocomplete: function(request, response){
+            var term = $.ui.autocomplete.escapeRegex(request.term),
+            	filterBy = "";
+            
+            //Only search after 3 characters or more
+            if(term.length < 3) return;
+            else if(term.match(/\d/)) return; //Don't search for digit only since it's most likely a user just entering the grant number directy
+            else filterBy = "keyword";
+     
+            var url = appModel.get("grantsUrl") + "?" + filterBy + "=" + term + "&printFields=title,id";					
+			var requestSettings = {
+				url: url, 
+				success: function(data, textStatus, xhr) {
+					
+					if(!data || !data.response || !data.response.award) return [];
+					
+					var list = [];
+					
+					_.each(data.response.award, function(award, i){
+						list.push({ 
+							value: award.id,
+							label: award.title
+						});
+					});
+					
+	            	var term = $.ui.autocomplete.escapeRegex(request.term)
+	                , startsWithMatcher = new RegExp("^" + term, "i")
+	                , startsWith = $.grep(list, function(value) {
+	                    return startsWithMatcher.test(value.label || value.value || value);
+	                })
+	                , containsMatcher = new RegExp(term, "i")
+	                , contains = $.grep(list, function (value) {
+	                    return $.inArray(value, startsWith) < 0 && 
+	                        containsMatcher.test(value.label || value.value || value);
+	                });
+	            
+	            	response(startsWith.concat(contains));			        					
+				}
+			}
+			
+			//Send the query
+			$.ajax(requestSettings);			      
+		},
+		
+		getGrant: function(id, onSuccess, onError){
+			if(!id || !onSuccess || !appModel.get("grantsUrl")) return;
+						
+			var requestSettings = {
+					url: appModel.get("grantsUrl") + "?id=" + id, 
+					success: function(data, textStatus, xhr){
+						if(!data || !data.response || !data.response.award || !data.response.award.length){
+							if(onError) onError();
+							return;
+						}
+						
+						onSuccess(data.response.award[0]);
+					},
+					error: function(){
+						if(onError) onError();
+					}
+			}
+			
+			//Send the query
+			$.ajax(requestSettings);
 		}
-	
 		
 	});
 	return LookupModel;		

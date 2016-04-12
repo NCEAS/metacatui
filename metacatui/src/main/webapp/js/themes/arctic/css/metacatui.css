@@ -144,10 +144,6 @@
     	cursor: pointer;
     }
     
-    .subtle{
-    	color: #888888;
-    }
-    
     .hidden,
     #clear-all.hidden,
     a [class^="icon-"].hidden{

@@ -66,6 +66,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
 			//annotatorUrl: null,
+			grantsUrl: "/api.nsf.gov/services/v1/awards.json",
 			accountsUrl: null,
 			pendingMapsUrl: null,
 			accountMapsUrl: null,
@@ -89,7 +90,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("baseUrl",   this.get("d1CNBaseUrl"));
 				this.set("d1Service", this.get("d1CNService"));
 			}
-			
+						
 			// these are pretty standard, but can be customized if needed
 			this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
@@ -104,7 +105,10 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
 			if(this.get("useJsonp"))
-				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");			
+				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");		
+			
+			//Set the NSF Award API proxy
+			this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
 			
 			//DataONE CN API 
 			if(this.get("d1CNBaseUrl")){

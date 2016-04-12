@@ -90,11 +90,7 @@
     .pointer{
     	cursor: pointer;
     }
-    
-    .subtle{
-    	color: #888888;
-    }
-    
+ 
     .hidden,
     #clear-all.hidden{
     	display: none;
