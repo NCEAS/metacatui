@@ -269,7 +269,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			
 			//---resourceMap---
-			if(this.filterIsAvailable("resourceMap") && ((filter == "resourceMap") || getAll) this.get("resourceMap").length){
+			if(this.filterIsAvailable("resourceMap") && ((filter == "resourceMap") || getAll)){
 				var resourceMap = this.get('resourceMap');
 				
 				//If the resource map search setting is a list of resource map IDs
@@ -281,7 +281,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			
 			//---Username: search for this username in rightsHolder ---
-			if(this.filterIsAvailable("username") && ((filter == "username") || getAll) this.get("username").length){
+			if(this.filterIsAvailable("username") && ((filter == "username") || getAll) && this.get("username").length){
 				var username = this.get('username');
 				if(username)
 					query += "+" + this.getGroupedQuery(this.fieldNameMap["username"], username, {operator: "OR"});
