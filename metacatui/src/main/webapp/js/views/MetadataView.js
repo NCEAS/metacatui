@@ -261,6 +261,9 @@ define(['jquery',
 			//Add the metadata HTML
 			this.$(this.metadataContainer).html(metadataFromIndex.render().el);
 			
+			//Add the package contents
+			this.insertPackageDetails();
+			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
 			
@@ -465,7 +468,7 @@ define(['jquery',
 				if(packageModel.getNestedPackages().length > 0){
 					var title = 'Current Data Set (1 of ' + (packageModel.getNestedPackages().length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
 					viewRef.insertPackageTable(packageModel, { title: title });
-					
+									
 					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
 						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View this dataset <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
@@ -1087,10 +1090,23 @@ define(['jquery',
 			if(name){
 				var entityNames = this.$(".entitydetails .control-label:contains('Entity Name') + .controls-well");
 				if(entityNames.length){
-					var matches = entityNames.find(":contains('" + name + "')");
-					if(matches.length){
-						return matches.parents(".entitydetails").first();
+					//Try to find the match by exact name
+					var matches = entityNames.find("strong:contains('" + name + "')");
+					//Try to find the match by the file name without the file extension
+					if(!matches.length && (name.lastIndexOf(".") > -1)){
+						name = name.substring(0, name.lastIndexOf("."));
+						matches = entityNames.find("strong:contains('" + name + "')");
 					}
+					
+					//If we found more than one match, filter out the substring matches
+					if(matches.length > 1){
+						matches = _.filter(matches, function(div){
+							return (div.text() == name); 
+						});
+					}
+						
+					if(matches.length)
+						return matches.parents(".entitydetails").first();
 				}
 			}
 			

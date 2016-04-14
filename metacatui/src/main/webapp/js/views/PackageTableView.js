@@ -73,28 +73,12 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
-			
-			/*
-			//Split the members of this package into groups based on their format type (metaata, data, image, code, etc)
-			members = _.groupBy(members, function(m){
-				if(!m.get("type") || (typeof m.get("type") == "undefined"))
-					return "data";
-				return m.get("type");
-			});
-
-			var rowOrder = ["metadata", "image", "pdf", "data"];
-			
-			for(var i=0; i<rowOrder.length; i++){
-				//Sort the members/rows alphabetically within each group
-				members = _.sortBy(members, function(m){
-					if(m.get("type") == "metadata") return "!"; //Always display metadata first since it will have the title in the table
-					return m.get("type");
-				});	
-			}
-			
-			*/
+						
 			//Filter out the packages from the member list
 			members = _.filter(members, function(m){ return(m.type != "Package") });
+			
+			//Filter the members in order of preferred appearance
+			members = this.sort(members);
 			
 			//Count the number of rows in this table
 			var numRows = 0;
@@ -281,6 +265,83 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			$(tr).append(downloadBtnCell);
 			
 			return tr;
+		},
+		
+		sort: function(models){
+			//Default to the package model members as the models to sort
+			if(!models){
+				var models = this.model.get("members");
+				//If this model doesn't have members, return an empty array or a falsey value
+				if(!models) return models;
+			}
+			// One == already sorted!
+			if(models.length == 1) return models;
+			
+			var view = this;
+			
+			//** If this is not a nested package AND the parent view is the metadata view, then sort by order of appearance in the metadata **/
+			if(!this.nested || (this.parentView && (this.parentView.type == "Metadata") && !_.findWhere(this.parentView.subviews, {type: "MetadataIndex"}))){
+				//If we are currently viewing a metadata document, find it
+				if(this.currentlyViewing)			
+					var currentMetadata = _.filter(models, function(m){ return (m.get("id") == view.currentlyViewing) });
+				
+				//For each model, find its position on the Metadata View page
+				var numNotFound = 0;
+				_.each(models, function(model){
+					if(currentMetadata == model) return;
+					
+					var container = view.parentView.findEntityDetailsContainer(model.get("id"));
+					if(container) model.offsetTop = $(container)[0].offsetTop;
+					else{
+						model.offsetTop = window.outerHeight;
+						numNotFound++;
+					}
+				});
+				
+				//Continue only if we found the entity details section for at least one model, if not, sort by the default method later
+				if(numNotFound < models.length-1){ //Minus 1 since we don't count the metadata				
+					//Sort the models by this position
+					models = _.sortBy(models, "offsetTop");
+					
+					//Move the metadata model that we are currently viewing in the Metadata view to the top		
+					if(currentMetadata)
+						_.without(models, currentMetadata[0]).unshift(currentMetadata);
+					
+					//Flatten the array in case we have nesting
+					models = _.flatten(models);
+					
+					//Return the sorted array
+					return models;
+				}
+			} 
+			
+			//** For tables with no accompanying metadata (nested or not on the Metadata View), default to sorting by group then alpha by name**/			
+			//Split the members of this package into groups based on their format type (metaata, data, image, code, etc)
+			var groupedModels = _.groupBy(models, function(m){
+					if(!m.get("type") || (typeof m.get("type") == "undefined"))
+						return "data";
+					return m.get("type");
+				}),
+				sortedModels = [];
+
+			var rowOrder = ["metadata", "image", "PDF", "program", "data", "annotation"];
+			
+			for(var i=0; i<rowOrder.length; i++){
+				//Sort the members/rows alphabetically within each group
+				/*models = _.sortBy(models, function(m){
+					if(m.get("type") == "metadata") return "!"; //Always display metadata first since it will have the title in the table
+					return m.get("type");
+				});	*/
+				var group = groupedModels[rowOrder[i]];
+				group = _.sortBy(group, function(m){
+					return m.get("fileName") || m.get("id");
+				});
+				sortedModels.push(group);
+			}
+			
+			models = _.flatten(sortedModels);
+			
+			return models;
 		},
 		
 		/**
