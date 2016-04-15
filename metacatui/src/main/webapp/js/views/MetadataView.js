@@ -441,7 +441,7 @@ define(['jquery',
 		/*
 		 * Inserts a table with all the data package member information and sends the call to display annotations
 		 */
-		insertPackageDetails: function(packageModel){	
+		insertPackageDetails: function(){	
 			
 			//Don't insert the package details twice
 			var tableEls = this.$(this.tableContainer).children();
@@ -451,19 +451,16 @@ define(['jquery',
 			var metadataEls = this.$(this.metadataContainer).children();
 			if(!metadataEls.length || metadataEls.first().is(".loading")) return;
 			
-			//Insert the data details sections 
-			this.insertDataDetails();
-			
 			var time = new Date().getTime();
 			
 			var viewRef = this;
-						
-			//Get the entity names from this page/metadata
-			this.getEntityNames(this.packageModels);
 			
 			var latestPackages = _.filter(this.packageModels, function(m){
 				return(!m.get("obsoletedBy"));
 			});
+			
+			//Get the entity names from this page/metadata
+			this.getEntityNames(latestPackages);
 			
 			_.each(latestPackages, function(packageModel){
 
@@ -471,17 +468,18 @@ define(['jquery',
 				if(!packageModel.complete) return viewRef;
 				
 				//Insert a package table for each package in viewRef dataset
-				if(packageModel.getNestedPackages().length > 0){
-					
-					var title = 'Current Data Set (1 of ' + (packageModel.getNestedPackages().length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
+				var nestedPckgs = packageModel.getNestedPackages();
+				if(nestedPckgs.length > 0){
+										
+					var title = 'Current Data Set (1 of ' + (nestedPckgs.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
 					viewRef.insertPackageTable(packageModel, { title: title });
-									
-					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){						
+						
+					//var start = new Date().getTime();
+					_.each(nestedPckgs, function(nestedPackage, i, list){						
 						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View this dataset <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
-					viewRef.getEntityNames(packageModel.getNestedPackages());
-
+					//console.log("nested rendering: " + ((new Date().getTime()) - start));				
 				}
 				else{
 					var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
@@ -492,7 +490,7 @@ define(['jquery',
 				//Remove the extra download button returned from the XSLT since the package table will have all the download links
 				$("#downloadPackage").remove();
 			    
-			    //Show the provenance trace for viewRef package			
+			    //Show the provenance trace for this package			
 				if(packageModel.get("provenanceFlag") == "complete") 
 					viewRef.drawProvCharts(packageModel);
 				else{
@@ -500,7 +498,7 @@ define(['jquery',
 					packageModel.getProvTrace();
 				}
 			});
-			
+						
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
 				numTables = additionalTables.children(".download-contents").length;
@@ -532,7 +530,10 @@ define(['jquery',
 				packageModel.complete = true;
 				viewRef.insertPackageTable(packageModel);
 			}
-						
+			
+			//Insert the data details sections 
+			this.insertDataDetails();
+
 		    return this;
 		},
 		
