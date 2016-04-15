@@ -73,7 +73,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
-						
+									
 			//Filter out the packages from the member list
 			members = _.filter(members, function(m){ return(m.type != "Package") });
 			
@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var numRows = 0;
 			
 			//Create the HTML for each row
-			_.each(members, function(solrResult, i, members){				
+			_.each(members, function(solrResult, i, members){					
 				//Get the row element
 				var row = view.getMemberRow(solrResult, members);
 				
@@ -160,7 +160,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			return this;
 		},
 		
-		getMemberRow: function(memberModel, members){
+		getMemberRow: function(memberModel, members){			
 			var formatType = memberModel.get("formatType"),
 				type       = memberModel.type == "Package" ? "data" : memberModel.getType(),
 				id		   = memberModel.get("id"),
@@ -263,7 +263,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var downloadButtonHTML = this.downloadButtonTemplate({ href: url, fileName: entityName });
 			$(downloadBtnCell).append(downloadButtonHTML);
 			$(tr).append(downloadBtnCell);
-			
+
 			return tr;
 		},
 		
@@ -280,7 +280,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var view = this;
 			
 			//** If this is not a nested package AND the parent view is the metadata view, then sort by order of appearance in the metadata **/
-			if(!this.nested || (this.parentView && (this.parentView.type == "Metadata") && !_.findWhere(this.parentView.subviews, {type: "MetadataIndex"}))){
+			if(!this.nested && (this.parentView && (this.parentView.type == "Metadata") && !_.findWhere(this.parentView.subviews, {type: "MetadataIndex"}))){
+				
 				//If we are currently viewing a metadata document, find it
 				if(this.currentlyViewing)			
 					var currentMetadata = _.filter(models, function(m){ return (m.get("id") == view.currentlyViewing) });
@@ -316,14 +317,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			} 
 			
 			//** For tables with no accompanying metadata (nested or not on the Metadata View), default to sorting by group then alpha by name**/			
-			//Split the members of this package into groups based on their format type (metaata, data, image, code, etc)
+			//Split the members of this package into groups based on their format type (metaata, data, image, code, etc)			
 			var groupedModels = _.groupBy(models, function(m){
 					if(!m.get("type") || (typeof m.get("type") == "undefined"))
 						return "data";
 					return m.get("type");
 				}),
 				sortedModels = [];
-
+			
 			var rowOrder = ["metadata", "image", "PDF", "program", "data", "annotation"];
 			
 			for(var i=0; i<rowOrder.length; i++){
@@ -332,6 +333,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					if(m.get("type") == "metadata") return "!"; //Always display metadata first since it will have the title in the table
 					return m.get("type");
 				});	*/
+				var sortStart = new Date().getTime();
+				
 				var group = groupedModels[rowOrder[i]];
 				group = _.sortBy(group, function(m){
 					return m.get("fileName") || m.get("id");

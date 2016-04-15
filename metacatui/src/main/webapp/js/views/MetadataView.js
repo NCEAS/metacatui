@@ -442,6 +442,7 @@ define(['jquery',
 		 * Inserts a table with all the data package member information and sends the call to display annotations
 		 */
 		insertPackageDetails: function(packageModel){	
+			
 			//Don't insert the package details twice
 			var tableEls = this.$(this.tableContainer).children();
 			if(tableEls.length > 0) return;
@@ -449,6 +450,11 @@ define(['jquery',
 			//wait for the metadata to load
 			var metadataEls = this.$(this.metadataContainer).children();
 			if(!metadataEls.length || metadataEls.first().is(".loading")) return;
+			
+			//Insert the data details sections 
+			this.insertDataDetails();
+			
+			var time = new Date().getTime();
 			
 			var viewRef = this;
 						
@@ -466,10 +472,11 @@ define(['jquery',
 				
 				//Insert a package table for each package in viewRef dataset
 				if(packageModel.getNestedPackages().length > 0){
+					
 					var title = 'Current Data Set (1 of ' + (packageModel.getNestedPackages().length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
 					viewRef.insertPackageTable(packageModel, { title: title });
 									
-					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
+					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){						
 						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View this dataset <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
@@ -525,9 +532,6 @@ define(['jquery',
 				packageModel.complete = true;
 				viewRef.insertPackageTable(packageModel);
 			}
-			
-			//Now insert the data details sections 
-			this.insertDataDetails();
 						
 		    return this;
 		},
@@ -567,7 +571,7 @@ define(['jquery',
 				var tableContainer = this.$("#additional-tables-for-" + this.cid);				
 			else
 				var tableContainer = tablesContainer;
-			
+						
 			//Insert the package table HTML 
 			$(tableContainer).append(tableView.render().el);
 			
@@ -1034,17 +1038,20 @@ define(['jquery',
 		
 		findEntityDetailsContainer: function(id, el){
 			if(!el) var el = this.el;
+			
+			//If we already found it earlier, return it now
+			var container = this.$(".entitydetails[data-id='" + id + "']");
+			if(container.length) return container;
 						
 			//Are we looking for the main object that this MetadataView is displaying?
 			if(id == this.pid){
 				if(this.$("#Metadata").length > 0) return this.$("#Metadata");
 				else return this.el;
 			}
-			else{
-				//Metacat 2.4.2 and up will have the Online Distribution Link marked 
-				var link = this.$(".entitydetails a[data-id='" + id + "']");
-			}
-			
+						
+			//Metacat 2.4.2 and up will have the Online Distribution Link marked 
+			var link = this.$(".entitydetails a[data-id='" + id + "']");
+						
 			//Otherwise, try looking for an anchor with the id matching this object's id
 			if(!link.length)
 				link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
@@ -1059,7 +1066,7 @@ define(['jquery',
 						
 			if(link.length > 0){
 				//Get the container element
-				var container  = $(link).parents(".entitydetails"); 
+				container = $(link).parents(".entitydetails"); 
 				
 				if(container.length < 1){
 					//backup - find the parent of this link that is a direct child of the form element
@@ -1073,6 +1080,9 @@ define(['jquery',
 					
 					$(container).addClass("entitydetails");
 				}
+				
+				//Add the id so we can easily find it later
+				container.attr("data-id", id);
 				
 				return container;
 			}	
@@ -1105,8 +1115,21 @@ define(['jquery',
 						});
 					}
 						
-					if(matches.length)
-						return matches.parents(".entitydetails").first();
+					if(matches.length){
+						container = matches.parents(".entitydetails").first();
+						container.attr("data-id", id);
+						return container;
+					}
+				}
+			}
+			
+			//If this package has only one item, we can assume the only entity details are about that item
+			var members = this.packageModels[0].get("members"),
+				dataMembers = _.filter(members, function(m){ return (m.get("formatType") == "DATA"); });
+			if(dataMembers.length == 1){
+				if(this.$(".entitydetails").length == 1){
+					this.$(".entitydetails").attr("data-id", id);
+					return this.$(".entitydetails");	
 				}
 			}
 			
