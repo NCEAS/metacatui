@@ -61,6 +61,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		 * Creates a table of package/download contents that this metadata doc is a part of
 		 */
 		render: function(){
+			
 			var view = this,
 				members = this.model.get("members");
 			
@@ -79,25 +80,18 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Filter the members in order of preferred appearance
 			members = this.sort(members);
+			this.sortedMembers = members;
 			
 			//Count the number of rows in this table
-			var numRows = 0;
+			var numRows = members.length;
 			
-			//Create the HTML for each row
-			_.each(members, function(solrResult, i, members){					
-				//Get the row element
-				var row = view.getMemberRow(solrResult, members);
+			if(this.nested)
+				members = members.slice(0, this.numVisible);
 				
-				//If we are already viewing this object, display the button as disabled with a tooltip
-				if(view.currentlyViewing == solrResult.get("id")){					
-					//List this row first if it is the current item
-					$(tbody).prepend(row);
-				}
-				else
-					//Add this row to the table body
-					$(tbody).append(row);
-
-				numRows++;
+			//Create the HTML for each row
+			_.each(members, function(solrResult){					
+				//Append the row element
+				$(tbody).append(view.getMemberRow(solrResult));
 			});
 			
 			//After all the rows are added, hide the first X rows. We wait until after all rows are added because their order may be changed around during rendering.
@@ -156,16 +150,17 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Add the table body and footer
 			this.$("thead").after(tbody);
 			if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
-						
+									
 			return this;
 		},
 		
-		getMemberRow: function(memberModel, members){			
+		getMemberRow: function(memberModel, options){			
 			var formatType = memberModel.get("formatType"),
 				type       = memberModel.type == "Package" ? "data" : memberModel.getType(),
 				id		   = memberModel.get("id"),
 				entityName = memberModel.get("fileName"),
-				url        = memberModel.get("url");
+				url        = memberModel.get("url"),
+				collapsable = (typeof options === "undefined") ? false : options.collapsable;
 			
 			if(!url){
 				memberModel.setURL();
@@ -218,22 +213,24 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(nameCell).addClass("entity-name-placeholder").attr("data-id", id);
 			
 			//"More info" cell
-			var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
-			if((members.length > 1) && (this.currentlyViewing != memberModel.get("id")) && (formatType != "METADATA")){
-				var moreInfo     = $(document.createElement("a"))
-									.attr("href", "#view/" + id)
-									.addClass("preview")
-									.attr("data-id", id)
-									.text("More info");
-				var moreInfoIcon = $(document.createElement("i"))
-									.addClass("icon icon-info-sign");
-				$(moreInfo).append(moreInfoIcon);					
-				$(moreInfoCell).append(moreInfo);
+			if(!this.nested){
+				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
+				if((this.currentlyViewing != memberModel.get("id")) && (formatType != "METADATA")){
+					var moreInfo     = $(document.createElement("a"))
+										.attr("href", "#view/" + id)
+										.addClass("preview")
+										.attr("data-id", id)
+										.text("More info");
+					var moreInfoIcon = $(document.createElement("i"))
+										.addClass("icon icon-info-sign");
+					$(moreInfo).append(moreInfoIcon);					
+					$(moreInfoCell).append(moreInfo);
+				}
+				else{
+					$(moreInfoCell).text(" ");
+				}
+				$(tr).append(moreInfoCell);
 			}
-			else{
-				$(moreInfoCell).text(" ");
-			}
-			$(tr).append(moreInfoCell);
 	
 			//Format id cell
 			var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents");				
@@ -263,6 +260,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var downloadButtonHTML = this.downloadButtonTemplate({ href: url, fileName: entityName });
 			$(downloadBtnCell).append(downloadButtonHTML);
 			$(tr).append(downloadBtnCell);
+			
+			if(collapsable)
+				tr.addClass("collapse");
 
 			return tr;
 		},
@@ -381,6 +381,21 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			e.preventDefault();
 			
 			var view = this;
+			
+			//If this is a nested dataset, we need to actually draw the remaining rows
+			if(this.nested && !this.rowsComplete){	
+				var tbody = this.$("tbody");
+				
+				//Create the HTML for each row
+				var members = this.sortedMembers.slice(this.numVisible);
+				_.each(members, function(solrResult){					
+					//Append the row element
+					$(tbody).append(view.getMemberRow(solrResult, { collapsable: true }));
+				});
+				
+				//Make the view as complete so we don't do this again
+				this.rowsComplete = true;
+			}
 
 			this.$("tr.collapse").fadeIn();
 			this.$(".expand-control").fadeOut(function(){
