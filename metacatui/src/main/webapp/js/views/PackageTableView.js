@@ -85,8 +85,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Count the number of rows in this table
 			var numRows = members.length;
 			
-			if(this.nested)
+			if(numRows > 99){
 				members = members.slice(0, this.numVisible);
+				this.rowsComplete = false;
+			}
 				
 			//Create the HTML for each row
 			_.each(members, function(solrResult){					
@@ -383,7 +385,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var view = this;
 			
 			//If this is a nested dataset, we need to actually draw the remaining rows
-			if(this.nested && !this.rowsComplete){	
+			if(!this.rowsComplete){	
 				var tbody = this.$("tbody");
 				
 				//Create the HTML for each row
