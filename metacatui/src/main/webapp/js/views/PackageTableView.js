@@ -61,7 +61,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		 * Creates a table of package/download contents that this metadata doc is a part of
 		 */
 		render: function(){
-			
+						
 			var view = this,
 				members = this.model.get("members");
 			
@@ -74,7 +74,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
-									
+							
 			//Filter out the packages from the member list
 			members = _.filter(members, function(m){ return(m.type != "Package") });
 			
@@ -152,7 +152,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Add the table body and footer
 			this.$("thead").after(tbody);
 			if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
-									
+												
 			return this;
 		},
 		
@@ -279,42 +279,45 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			// One == already sorted!
 			if(models.length == 1) return models;
 			
-			var view = this;
+			var view = this,
+				metadataView = (this.parentView && this.parentView.type == "Metadata") ? this.parentView : null;
 			
 			//** If this is not a nested package AND the parent view is the metadata view, then sort by order of appearance in the metadata **/
-			if(!this.nested && (this.parentView && (this.parentView.type == "Metadata") && !_.findWhere(this.parentView.subviews, {type: "MetadataIndex"}))){
+			if(!this.nested && (metadataView && !_.findWhere(metadataView.subviews, {type: "MetadataIndex"}))){
+				if(metadataView.hasEntityDetails()){
 				
-				//If we are currently viewing a metadata document, find it
-				if(this.currentlyViewing)			
-					var currentMetadata = _.filter(models, function(m){ return (m.get("id") == view.currentlyViewing) });
-				
-				//For each model, find its position on the Metadata View page
-				var numNotFound = 0;
-				_.each(models, function(model){
-					if(currentMetadata == model) return;
+					//If we are currently viewing a metadata document, find it
+					if(this.currentlyViewing)			
+						var currentMetadata = _.filter(models, function(m){ return (m.get("id") == view.currentlyViewing) });
 					
-					var container = view.parentView.findEntityDetailsContainer(model.get("id"));
-					if(container) model.offsetTop = $(container)[0].offsetTop;
-					else{
-						model.offsetTop = window.outerHeight;
-						numNotFound++;
+					//For each model, find its position on the Metadata View page
+					var numNotFound = 0;
+					_.each(models, function(model){
+						if(currentMetadata == model) return;
+						
+						var container = view.parentView.findEntityDetailsContainer(model.get("id"));
+						if(container) model.offsetTop = $(container)[0].offsetTop;
+						else{
+							model.offsetTop = window.outerHeight;
+							numNotFound++;
+						}
+					});
+					
+					//Continue only if we found the entity details section for at least one model, if not, sort by the default method later
+					if(numNotFound < models.length-1){ //Minus 1 since we don't count the metadata				
+						//Sort the models by this position
+						models = _.sortBy(models, "offsetTop");
+						
+						//Move the metadata model that we are currently viewing in the Metadata view to the top		
+						if(currentMetadata)
+							_.without(models, currentMetadata[0]).unshift(currentMetadata);
+						
+						//Flatten the array in case we have nesting
+						models = _.flatten(models);
+						
+						//Return the sorted array
+						return models;
 					}
-				});
-				
-				//Continue only if we found the entity details section for at least one model, if not, sort by the default method later
-				if(numNotFound < models.length-1){ //Minus 1 since we don't count the metadata				
-					//Sort the models by this position
-					models = _.sortBy(models, "offsetTop");
-					
-					//Move the metadata model that we are currently viewing in the Metadata view to the top		
-					if(currentMetadata)
-						_.without(models, currentMetadata[0]).unshift(currentMetadata);
-					
-					//Flatten the array in case we have nesting
-					models = _.flatten(models);
-					
-					//Return the sorted array
-					return models;
 				}
 			} 
 			
@@ -334,9 +337,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				/*models = _.sortBy(models, function(m){
 					if(m.get("type") == "metadata") return "!"; //Always display metadata first since it will have the title in the table
 					return m.get("type");
-				});	*/
-				var sortStart = new Date().getTime();
-				
+				});	*/				
 				var group = groupedModels[rowOrder[i]];
 				group = _.sortBy(group, function(m){
 					return m.get("fileName") || m.get("id");

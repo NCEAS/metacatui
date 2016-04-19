@@ -1038,6 +1038,11 @@ define(['jquery',
 			
 		},
 		
+		//Checks if the metadata has entity details sections
+		hasEntityDetails: function(){
+			return (this.$(".entitydetails").length > 0);
+		},
+		
 		findEntityDetailsContainer: function(id, el){
 			if(!el) var el = this.el;
 			
