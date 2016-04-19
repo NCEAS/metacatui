@@ -185,6 +185,10 @@ define(['jquery',
 			this.hideLoading();
 			//Load the template which holds the basic structure of the view
 			this.$el.html(this.template());
+			this.$(this.tableContainer).html(this.loadingTemplate({ 
+					msg: "Retrieving data set details..."
+				}));
+			
 			//Insert the breadcrumbs
 			this.insertBreadcrumbs();
 			//Insert the citation
@@ -229,13 +233,13 @@ define(['jquery',
 								//Now show the response from the view service
 								view.$(view.metadataContainer).html(response);
 								
-								//Add a map of the spatial coverage
-								if(gmaps) viewRef.insertSpatialCoverageMap();
-								
 								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
 								
 								viewRef.insertPackageDetails();
+								
+								//Add a map of the spatial coverage
+								if(gmaps) viewRef.insertSpatialCoverageMap();
 								
 								viewRef.setUpAnnotator();
 							}
@@ -444,7 +448,7 @@ define(['jquery',
 		insertPackageDetails: function(){	
 			
 			//Don't insert the package details twice
-			var tableEls = this.$(this.tableContainer).children();
+			var tableEls = this.$(this.tableContainer).children().not(".loading");
 			if(tableEls.length > 0) return;
 			
 			//wait for the metadata to load
@@ -570,6 +574,7 @@ define(['jquery',
 				var tableContainer = tablesContainer;
 						
 			//Insert the package table HTML 
+			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
 			
 			this.subviews.push(tableView);
