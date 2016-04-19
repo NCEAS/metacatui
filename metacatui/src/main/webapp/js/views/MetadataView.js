@@ -450,9 +450,7 @@ define(['jquery',
 			//wait for the metadata to load
 			var metadataEls = this.$(this.metadataContainer).children();
 			if(!metadataEls.length || metadataEls.first().is(".loading")) return;
-			
-			var time = new Date().getTime();
-			
+						
 			var viewRef = this;
 			
 			var latestPackages = _.filter(this.packageModels, function(m){
@@ -854,41 +852,43 @@ define(['jquery',
 				this.$(this.articleContainer).after(derivationProvChart.render().el).addClass("hasProvRight");			
 			}			
 			
-			//Draw the provenance charts for each member of this package at an object level
-			_.each(packageModel.get("members"), function(member, i){
-				var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
-
-				//Retrieve the sources and derivations for this member
-				var memberSources 	  = member.get("provSources") || new Array(),
-					memberDerivations = member.get("provDerivations") || new Array();
-
-				//Make the source chart for this member
-				if(memberSources.length){
-					var memberSourcesProvChart = new ProvChart({
-						sources      : memberSources, 
-						context      : member,
-						contextEl    : entityDetailsSection,
-						packageModel : packageModel,
-						parentView   : view
-					});	
-					view.subviews.push(memberSourcesProvChart);
-					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
-					view.$(view.articleContainer).addClass("gutters");
-				}
-				if(memberDerivations.length){
-					//Make the derivation chart for this member
-					var memberDerivationsProvChart = new ProvChart({
-						derivations  : memberDerivations,
-						context      : member,
-						contextEl    : entityDetailsSection,
-						packageModel : packageModel,
-						parentView   : view
-					});	
-					view.subviews.push(memberDerivationsProvChart);
-					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
-					view.$(view.articleContainer).addClass("gutters");
-				}
-			});
+			if(packageModel.get("sources").length || packageModel.get("derivations").length){
+				//Draw the provenance charts for each member of this package at an object level
+				_.each(packageModel.get("members"), function(member, i){
+					var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
+	
+					//Retrieve the sources and derivations for this member
+					var memberSources 	  = member.get("provSources") || new Array(),
+						memberDerivations = member.get("provDerivations") || new Array();
+	
+					//Make the source chart for this member
+					if(memberSources.length){
+						var memberSourcesProvChart = new ProvChart({
+							sources      : memberSources, 
+							context      : member,
+							contextEl    : entityDetailsSection,
+							packageModel : packageModel,
+							parentView   : view
+						});	
+						view.subviews.push(memberSourcesProvChart);
+						$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
+						view.$(view.articleContainer).addClass("gutters");
+					}
+					if(memberDerivations.length){
+						//Make the derivation chart for this member
+						var memberDerivationsProvChart = new ProvChart({
+							derivations  : memberDerivations,
+							context      : member,
+							contextEl    : entityDetailsSection,
+							packageModel : packageModel,
+							parentView   : view
+						});	
+						view.subviews.push(memberDerivationsProvChart);
+						$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
+						view.$(view.articleContainer).addClass("gutters");
+					}
+				});
+			}
 			
 			//Make all of the prov chart nodes look different based on id
 			if(this.$(".prov-chart").length > 0){
@@ -959,6 +959,9 @@ define(['jquery',
 			var viewRef = this;
 
 			_.each(packageModels, function(packageModel){
+				
+				//Don't get entity names for larger packages - users must put the names in the system metadata
+				if(packageModel.get("members").length > 100) return;
 				
 				//If this package has a different metadata doc than the one we are currently viewing
 				var metadataModel = packageModel.getMetadata();

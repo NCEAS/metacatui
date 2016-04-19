@@ -319,7 +319,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var sources 		   = new Array(),
 				derivations 	   = new Array();
 			
-			//Make arrays of unique IDs of objects that are sources or derivations of this package.
+			//Make arrays of unique IDs of objects that are sources or derivations of this package.			
 			_.each(this.get("members"), function(member, i){
 				if(member.type == "Package") return;
 				
@@ -328,17 +328,19 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 					derivations = _.union(derivations, member.getDerivations());
 				}
 			});
-			
+				
 			this.set("sources", sources);
 			this.set("derivations", derivations);
-			
+
 			//Compact our list of ids that are in the prov trace by combining the sources and derivations and removing ids of members of this package
 			var externalProvEntities = _.difference(_.union(sources, derivations), this.get("memberIds"));
 			
 			//If there are no sources or derivations, then we do not need to find resource map ids for anything
 			if(!externalProvEntities.length){
+				
 				//Save this prov trace on a package-member/document/object level.
-				this.setMemberProvTrace();
+				if(sources.length || derivations.length)
+					this.setMemberProvTrace();
 				
 				//Flag that the provenance trace is complete
 				this.set("provenanceFlag", "complete");
@@ -355,8 +357,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			}
 			
 			//TODO: Find the products of programs/executions
-		
-			
+					
 			//Make a comma-separated list of the provenance field names 
 			var provFieldList = "";
 			_.each(appSearchModel.getProvFields(), function(fieldName, i, list){
