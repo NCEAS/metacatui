@@ -349,6 +349,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					success: function(data, textStatus, jqXHR) {
 						contentArea.html(data);
 						viewRef.augementForm();
+						viewRef.setUpAutocompletes();
 					}
 			};
 			
