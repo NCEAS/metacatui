@@ -82,7 +82,8 @@ define(['jquery',
 		events: {
 			"click #publish"             : "publish",
 			"mouseover .highlight-node"  : "highlightNode",
-			"mouseout  .highlight-node"  : "highlightNode"
+			"mouseout  .highlight-node"  : "highlightNode",
+			"click     .preview" 	     : "previewData"
 		},
 		
 		initialize: function (options) {
@@ -577,20 +578,7 @@ define(['jquery',
 			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
 			
-			this.subviews.push(tableView);
-			
-			//Hide the Metadata buttons that have no matching entity details section
-			var count = 0;
-			_.each($("#downloadContents .preview"), function(btn){
-				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
-					$(btn).hide();
-					count++;
-				}
-			});
-			if(count == $("#downloadContents .preview").length){
-				$("td.more-info, th.more-info").hide();
-				$("th.more-info-header").attr("colspan", $("th.more-info-header").attr("colspan")-1);
-			}			
+			this.subviews.push(tableView);		
 		},
 		
 		insertParentLink: function(packageModel){
@@ -1603,12 +1591,12 @@ define(['jquery',
 			e.preventDefault();
 			
 			//Get the target and id of the click
-			var button = $(e.target);
-			if(!$(button).hasClass("preview")) 
-				button = $(button).parents("a.preview");
+			var link = $(e.target);
+			if(!$(link).hasClass("preview")) 
+				link = $(link).parents("a.preview");
 
-			if(button){
-				var id = $(button).attr("data-id");
+			if(link){
+				var id = $(link).attr("data-id");
 				if((typeof id === "undefined") || !id) 
 					return false; //This will make the app defualt to the child view previewData function
 			}

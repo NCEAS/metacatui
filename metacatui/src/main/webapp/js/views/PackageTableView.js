@@ -15,7 +15,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		className : "download-contents",
 		
 		events: {
-			"click  .preview"         : "previewData",
 			"click .expand-control"   : "expand",
 			"click .collapse-control" : "collapse"
 		},
@@ -44,15 +43,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(this.packageId)    this.model.getMembers();
 			else if(this.memberId) this.model.getMembersByMemberID(this.memberId);
 			
-			//Does a route to an EML info page exist? If not, don't insert any links to EML info
-			var routes = Object.keys(uiRouter.routes);
-			this.EMLRoute = false;
-			for(var i=0; i<routes.length; i++){
-				if(routes[i].indexOf("tools") > -1){
-					this.EMLRoute = true;
-					i = routes.length;
-				}
-			}
+			 this.onMetadataView = (this.parentView && this.parentView.type == "Metadata");
+			 this.hasEntityDetails = this.onMetadataView? this.parentView.hasEntityDetails() : false;
 			
 			this.listenTo(this.model, "changeAll", this.render);
 		},
@@ -85,10 +77,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Count the number of rows in this table
 			var numRows = members.length;
 			
-			if(numRows > 99){
-				members = members.slice(0, this.numVisible);
-				this.rowsComplete = false;
-			}
+			members = members.slice(0, this.numVisible);
+			this.rowsComplete = false;
 				
 			//Create the HTML for each row
 			_.each(members, function(solrResult){					
@@ -96,14 +86,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(tbody).append(view.getMemberRow(solrResult));
 			});
 			
-			//After all the rows are added, hide the first X rows. We wait until after all rows are added because their order may be changed around during rendering.
 			var bodyRows = $(tbody).find("tr");
-			if(bodyRows.length > this.numVisible)
-				//Get the first X rows
-				$(_.last(bodyRows, this.numHidden)).addClass("collapse").css("display", "none"); 
+			this.numHidden = numRows - this.numVisible;
 			
 			//Draw the footer which will have an expandable/collapsable control
-			this.numHidden = numRows - this.numVisible;
 			if(this.numHidden > 0){
 				var tfoot        = $(document.createElement("tfoot")),
 					tfootRow     = $(document.createElement("tr")),
@@ -120,13 +106,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				$(expandLink).prepend(expandIcon);
 				$(collapseLink).prepend(collapseIcon);
 			}
-			
-			//After all the rows are added, hide the first X rows. We wait until after all rows are added because their order may be changed around during rendering.
-			var bodyRows = $(tbody).find("tr");
-			if(bodyRows.length > this.numVisible)
-				//Get the first X rows
-				$(_.last(bodyRows, this.numHidden)).addClass("collapse").css("display", "none");
-			
+
 			if(bodyRows.length == 0){
 				tbody.html("<tr><td colspan='100%'>This is an empty dataset.</td></tr>");
 			}
@@ -145,6 +125,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
 			          metadata : this.nested ? this.model.getMetadata() : null,
+			           colspan : bodyRows.first().find("td").length,
 					 packageId : this.model.get("id"),
 					    nested : this.nested
 			}));
@@ -162,7 +143,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				id		   = memberModel.get("id"),
 				entityName = memberModel.get("fileName"),
 				url        = memberModel.get("url"),
-				collapsable = (typeof options === "undefined") ? false : options.collapsable;
+				hidden     = (typeof options === "undefined") ? false : options.hidden,
+			    collapsable = hidden? true : (typeof options === "undefined") ? false : options.collapsable;
 			
 			if(!url){
 				memberModel.setURL();
@@ -214,25 +196,24 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(entityName == id)
 				$(nameCell).addClass("entity-name-placeholder").attr("data-id", id);
 			
-			//"More info" cell
-			if(!this.nested){
-				var moreInfoCell = $(document.createElement("td")).addClass("more-info btn-container");
-				if((this.currentlyViewing != memberModel.get("id")) && (formatType != "METADATA")){
-					var moreInfo     = $(document.createElement("a"))
-										.attr("href", "#view/" + id)
-										.addClass("preview")
-										.attr("data-id", id)
-										.text("More info");
-					var moreInfoIcon = $(document.createElement("i"))
-										.addClass("icon icon-info-sign");
-					$(moreInfo).append(moreInfoIcon);					
-					$(moreInfoCell).append(moreInfo);
-				}
-				else{
-					$(moreInfoCell).text(" ");
-				}
+			//"More info" cell				
+			var moreInfoCell = $(document.createElement("td")).addClass("more-info");
+
+			//If we are on the metadata view and there is no entity details section, then append a blank cell
+			var	entityDetails = this.hasEntityDetails? this.parentView.findEntityDetailsContainer(id) : false,
+				currentlyViewing = (id == this.currentlyViewing);
+			if((this.onMetadataView && !this.hasEntityDetails) || (this.onMetadataView && !entityDetails) || currentlyViewing || this.nested){
 				$(tr).append(moreInfoCell);
 			}
+			else{
+				var moreInfo = $(document.createElement("a"))
+								.attr("href", "#view/" + id)
+								.addClass("preview")
+								.attr("data-id", id)
+								.text("More info");
+				$(moreInfoCell).append(moreInfo);					
+			}
+			$(tr).append(moreInfoCell);
 	
 			//Format id cell
 			var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents");				
@@ -265,6 +246,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			if(collapsable)
 				tr.addClass("collapse");
+			if(hidden)
+				tr.css("display", "none");
 
 			return tr;
 		},
@@ -280,7 +263,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(models.length == 1) return models;
 			
 			var view = this,
-				metadataView = (this.parentView && this.parentView.type == "Metadata") ? this.parentView : null;
+				metadataView = this.onMetadataView? this.parentView : null;
 			
 			//** If this is not a nested package AND the parent view is the metadata view, then sort by order of appearance in the metadata **/
 			if(!this.nested && (metadataView && !_.findWhere(metadataView.subviews, {type: "MetadataIndex"}))){
@@ -348,35 +331,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			models = _.flatten(sortedModels);
 			
 			return models;
-		},
-		
-		/**
-		 * When the "Metadata" button in the table is clicked while we are on the Metadata view, 
-		 * we want to scroll to the anchor tag of this data object within the page instead of navigating
-		 * to the metadata page again, which refreshes the page and re-renders (more loading time)
-		 **/
-		previewData: function(e){
-			//Don't go anywhere yet...
-			e.preventDefault();
-			
-			if(this.parentView){
-				if(this.parentView.previewData(e))
-					return;
-			}
-			
-			//Get the target of the click
-			var button = $(e.target);
-			if(!$(button).hasClass("preview")) 
-				button = $(button).parents("a.preview");
-			if(button.length < 1) 
-				button = $(button).parents("[href]");
-			
-			//If we are on the Metadata view, then let's scroll to the anchor
-			var id = $(button).attr("data-id");
-			var anchor = $("#" + id.replace(/[^A-Za-z0-9]/g, "-"));
-			
-			if(anchor.length) appView.scrollTo(anchor);
-			else window.location = $(button).attr("href");  //navigate to the link href
 		},
 		
 		expand: function(e){
