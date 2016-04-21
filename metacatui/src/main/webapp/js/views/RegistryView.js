@@ -217,7 +217,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			if(!input || !input.length) return;
 			
 			//Create a help message next to the text input
-			var defaultMsg = "Enter a grant number or search for a grant by keyword.";
+			var defaultMsg = "Enter an award number or search for an award by keyword.";
 			var helpMsg = $(document.createElement("div")).addClass("input-help-msg subtle").text(defaultMsg);
 			input.after(helpMsg);
 					
