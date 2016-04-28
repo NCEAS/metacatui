@@ -1874,6 +1874,13 @@ svg .no-activity,
     	word-break: break-word;
     }
     
+    /* Drop-down menus in the search results */
+    .result-row .dropdown-menu a:hover {
+	    color: #FFFFFF;
+	    background-color: #1f254f;
+	    background-image: none;
+	}
+    
      .abstract-popover{
     	max-height: 500px;
     	min-height: 10px;
