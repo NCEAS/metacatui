@@ -41,6 +41,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 		
 		initialize: function(options){
 			this.on("complete", this.getLogInfo);
+			this.setURL();
+		},
+		
+		setURL: function(){	
+			if(appModel.get("packageServiceUrl"))
+				this.set("url", appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id")));
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */

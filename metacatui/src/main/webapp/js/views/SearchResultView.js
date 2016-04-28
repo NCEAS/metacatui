@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'views/CitationView', 'text!templates/resultsItem.html'], 				
-	function($, _, Backbone, moment, SolrResult, CitationView, ResultItemTemplate) {
+define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html'], 				
+	function($, _, Backbone, moment, SolrResult, Package, CitationView, ResultItemTemplate) {
 	
 	'use strict';
 
@@ -19,7 +19,8 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 		// The DOM events specific to an item.
 		events: {
 			'click .result-selection' : 'toggleSelected',
-			'click'                   : 'routeToMetadata'
+			'click'                   : 'routeToMetadata',
+			'click .download'         : 'download'
 		},
 
 		// The SearchResultView listens for changes to its model, re-rendering. Since there's
@@ -116,6 +117,58 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'view
 				return;
 			
 			uiRouter.navigate('view/'+id, {trigger: true});
+		},
+		
+		download: function(e){				
+			if(appUserModel.get("loggedIn")){
+				if(e){
+					e.preventDefault();
+					var packageId = $(e.target).attr("data-id") || this.model.get("resourceMap");
+				}
+				else
+					var packageId = this.model.get("resourceMap");
+				
+				var fileName = this.model.get("fileName") || this.model.get("title");
+				
+				//Download the entire package if there is one
+				if(packageId){
+					
+					//If there is more than one resource map, download all of them
+					if(Array.isArray(packageId)){
+						for(var i = 0; i<packageId.length; i++){
+							var pkgFileName = fileName || "Dataset_" + (i+1); 
+							
+							//Take off the file extension part of the file name
+							if(pkgFileName.lastIndexOf(".") > 0)
+								pkgFileName = pkgFileName.substring(0, pkgFileName.lastIndexOf("."));
+								
+							var packageModel = new Package({ 
+								id: packageId[i],
+								fileName: pkgFileName + ".zip"
+							});
+							packageModel.downloadWithCredentials();
+						}
+					}
+					else{							
+						//Take off the file extension part of the file name
+						if(fileName.lastIndexOf(".") > 0)
+							fileName = fileName.substring(0, fileName.lastIndexOf("."));
+						
+						//Create a model to represent the package
+						var packageModel = new Package({ 
+							id: packageId,
+							fileName: fileName + ".zip"
+						});
+						packageModel.downloadWithCredentials();
+					}
+				}
+				//Otherwise just download this solo object
+				else{
+					this.model.downloadWithCredentials();
+				}
+			}
+			else
+				return true;			
 		},
 		
 		getOpenURLCOinS: function(){

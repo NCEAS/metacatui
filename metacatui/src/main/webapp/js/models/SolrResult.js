@@ -160,7 +160,7 @@ define(['jquery', 'underscore', 'backbone'],
 			return formatMap[this.get("formatId")] || this.get("formatId");
 		},
 		
-		setURL: function(){			
+		setURL: function(){	
 			if(appModel.get("objectServiceUrl"))
 				this.set("url", appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id")));
 			else if(appModel.get("resolveServiceUrl"))
@@ -205,7 +205,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		downloadWithCredentials: function(){								
 			//Get info about this object
-			var filename = this.get("fileName") || "",
+			var filename = this.get("fileName") || this.get("title") || "",					
 				url = this.get("url");
 
 			//Create an XHR

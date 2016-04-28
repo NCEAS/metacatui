@@ -345,9 +345,12 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(e && $(e.target).attr("data-id") && appUserModel.get("loggedIn")){
 				e.preventDefault();
 				var id = $(e.target).attr("data-id"),
-					model = (this.model.get("id") == id) ? this.model : _.findWhere(this.model.get("members"), function(m){
+					//Find the model with this ID
+					model = (this.model.get("id") == id) ? this.model : _.find(this.model.get("members"), function(m){
 						return (m.get("id") == id);
 					});
+				
+				//If we found a model, fire the download event
 				if(model) 
 					model.downloadWithCredentials();					
 			}

@@ -2,19 +2,19 @@
 </div>
 <div class="clear"></div>
 <div class="info-icons  stop-route"> 
-	<div class="icons stop-route download">             
+	<div class="icons stop-route">             
            <%
            if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
            	  
            	  // handle multiple resourceMaps
-				print('<a class="dropdown-toggle download stop-route" data-toggle="dropdown" title="Download">');
+				print('<a class="dropdown-toggle stop-route" data-toggle="dropdown" title="Download">');
 				print('<i class="icon icon-cloud-download stop-route tooltip-this" data-title="There are multiple packages of data associated with this metadata document. Download each individually." data-trigger="hover" data-placement="right"></i><i class="icon-caret-down icon stop-route"></i>');
 				print('</a>');
-				print('<ul class="dropdown-menu download stop-route">');
+				print('<ul class="dropdown-menu stop-route">');
 				var cnt = 1;
 				_.each(resourceMap, function(resourceMapId) {
 					print('<li class="stop-route">');
-					print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" class="stop-route">', 'Package ', cnt, '</a>');
+					print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" data-id="' + resourceMapId + '" class="stop-route download">', 'Dataset ', cnt, '</a>');
 					print('</li>'); 
 					cnt++;	 
 				});
@@ -22,7 +22,7 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route tooltip-this" title="Click to Download" href="', package_service, URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
+				print('<a class="download stop-route tooltip-this" data-id="' + URLid + '" title="Click to Download" href="', package_service, URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
 			}			
           	%>          
       </div>

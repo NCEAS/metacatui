@@ -30,14 +30,14 @@
          </div>
          
 	    <% if (resourceMap) {
-				print('<span class="span1 download">');
+				print('<span class="span1">');
 	
 				print('<a data-toggle="dropdown" href="#"><i class="icon-download-alt"></i><i class="icon-caret-down"></i></a>');
 			        print('<ul class="dropdown-menu">');
 			        var cnt = 1;
 			        _.each(resourceMap, function(resourceMapId) {
 						print('<li>');
-						print('<a class="btn" href="', package_service, resourceMapId, '" title="', resourceMapId ,'" >', 'Package ', cnt, '</a>');
+						print('<a class="btn download" href="', package_service, resourceMapId, '" title="', resourceMapId ,'" data-id="', resourceMapId ,'" >', 'Package ', cnt, '</a>');
 						print('</li>'); 
 						 
 					})
@@ -45,7 +45,7 @@
 			    }
 		    else {
 		    	print('<span class="span1">');
-				print('<a href=\"', package_service, id, '\"><i class="icon-download-alt"></i></a></span>'); 
+				print('<a href=\"', package_service, id, '\" class="download" data-id="', id ,'" ><i class="icon-download-alt"></i></a></span>'); 
 			}
 		%>
 		
