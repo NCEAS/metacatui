@@ -16,7 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		
 		events: {
 			"click .expand-control"   : "expand",
-			"click .collapse-control" : "collapse"
+			"click .collapse-control" : "collapse",
+			"click .download"         : "download"
 		},
 		
 		initialize: function(options){
@@ -115,9 +116,11 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var downloadButtonHTML = "";
 			if(this.model.getURL() && this.model.get("id")){
 				downloadButtonHTML = this.downloadButtonTemplate({ 
-					href: this.model.get("url"), 
+					href: this.model.get("url"),
+					id: this.model.get("id"),
 					text: "Download all",
-					className: "btn btn-primary "
+					className: "btn btn-primary ",
+					isPublic: this.model.get("isPublic")
 				});	
 			}
 			this.$el.html(this.template({
@@ -240,7 +243,12 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");				
-			var downloadButtonHTML = this.downloadButtonTemplate({ href: url, fileName: entityName });
+			var downloadButtonHTML = this.downloadButtonTemplate({ 
+					href: url, 
+					fileName: entityName,
+					id: memberModel.get("id"),
+					isPublic: memberModel.get("isPublic"),
+				});
 			$(downloadBtnCell).append(downloadButtonHTML);
 			$(tr).append(downloadBtnCell);
 			
@@ -331,6 +339,20 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			models = _.flatten(sortedModels);
 			
 			return models;
+		},
+		
+		download: function(e){				
+			if(e && $(e.target).attr("data-id") && appUserModel.get("loggedIn")){
+				e.preventDefault();
+				var id = $(e.target).attr("data-id"),
+					model = (this.model.get("id") == id) ? this.model : _.findWhere(this.model.get("members"), function(m){
+						return (m.get("id") == id);
+					});
+				if(model) 
+					model.downloadWithCredentials();					
+			}
+			else
+				return true;			
 		},
 		
 		expand: function(e){

@@ -1202,8 +1202,12 @@ img.icon{
   margin-bottom: 10px;
 }
 .metadata-controls-container .info-icons{
-	float: left;
-	margin-top: 10px;
+	display: inline-block;
+	padding-left: 20px;
+	color: #FF7600;
+	font-size: 1.2em;
+	top: 5px;
+    position: relative;
 }
 .citation-container ~ .data-source .ORNLDAAC,
 .citation-container ~ .data-source .CDL,

@@ -1,8 +1,11 @@
 <%
 	if((typeof icon === "undefined")      || !icon)      var icon = "icon-cloud-download";
-	if((typeof className === "undefined") || !className) var className = "btn download";	
+	
+	if((typeof className === "undefined") || !className) var className = "btn download ";	
+	else className += " btn download";
+	
 	if((typeof text === "undefined")      || !text)      var text = "Download";	
-	if((typeof fileName === "undefined")  || !fileName)  var fileName = "download";
+	if((typeof id === "undefined")  || !id)  var id = "";	
 %>
 
-<a class="<%=className%>" href="<%=href%>" download target="_blank"><%=text%><i class="<%=icon%>"></i></a>
+<a class="<%=className%>" href="<%=href%>" download target="_blank" data-id="<%=id%>"><%=text%><i class="<%=icon%>"></i></a>

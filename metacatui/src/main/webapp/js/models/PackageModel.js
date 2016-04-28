@@ -1,7 +1,6 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSearch'], 				
 	function($, _, Backbone, SolrResult, LogsSearch) {
-	'use strict';
 
 	// Package Model 
 	// ------------------
@@ -19,6 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				obsoletedBy: null,
 				obsoletes: null,
 				read_count_i: null,
+				isPublic: true,
 				members: [],
 				memberIds: [],
 				sources: [],
@@ -53,7 +53,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			//Get the id of the resource map for this member
 			var provFlList = appSearchModel.getProvFlList() + "prov_instanceOfClass,";
-			var query = 'fl=resourceMap,fileName,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,' + provFlList +
+			var query = 'fl=resourceMap,fileName,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,isPublic,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
 						'&wt=json';
@@ -102,7 +102,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,' + provFlList +
+			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic,' + provFlList +
 						'&rows=1000' +
 						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
 						'&wt=json';
@@ -306,7 +306,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			}
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
-		
+				
 		/*
 		 * Will get the sources and derivations of each member of this dataset and group them into packages  
 		 */
@@ -629,6 +629,33 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			//Update the list of related models
 			this.set("relatedModels", relatedModels);
 			
+		},
+		
+		downloadWithCredentials: function(){
+			//Get info about this object
+			var filename = this.get("fileName") || "",
+				url = this.get("url");
+
+			//Create an XHR
+			var xhr = new XMLHttpRequest();
+			xhr.responseType = "blob";
+			xhr.withCredentials = true;
+			
+			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+			xhr.onload = function(){ 
+			    var a = document.createElement('a');
+			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+			    a.download = filename; // Set the file name.
+			    a.style.display = 'none';
+			    document.body.appendChild(a);
+			    a.click();
+			    delete a;
+			};
+			
+			//Open and send the request with the user's auth token
+			xhr.open('GET', url);
+			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			xhr.send();
 		},
 		
 		/* Returns the SolrResult that represents the metadata doc */

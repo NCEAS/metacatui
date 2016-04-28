@@ -1,7 +1,6 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone'], 				
 	function($, _, Backbone) {
-	'use strict';
 
 	// SolrResult Model
 	// ------------------
@@ -199,6 +198,36 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 			}
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+		},
+		
+		/*
+		 * This method will download this object while sending the user's auth token in the request.
+		 */
+		downloadWithCredentials: function(){								
+			//Get info about this object
+			var filename = this.get("fileName") || "",
+				url = this.get("url");
+
+			//Create an XHR
+			var xhr = new XMLHttpRequest();
+			xhr.responseType = "blob";
+			xhr.withCredentials = true;
+			
+			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+			xhr.onload = function(){ 
+			    var a = document.createElement('a');
+			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+			    a.download = filename; // Set the file name.
+			    a.style.display = 'none';
+			    document.body.appendChild(a);
+			    a.click();
+			    delete a;
+			};
+			
+			//Open and send the request with the user's auth token
+			xhr.open('GET', url);
+			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			xhr.send();
 		},
 		
 		getInfo: function(){			
