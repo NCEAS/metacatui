@@ -55,10 +55,12 @@ define(['jquery', 'underscore', 'backbone'],
 					authorText = "";
 				_.each(authors, function(author) {
 		             count++;
-		             if (count > 1) authorText += ", ";
-		                
-		             if (count > 1 && count == authors.length) authorText += "and ";
-		                
+		             if (count > 1 && authors.length > 2) authorText += ",";
+		     		                
+		             if (count > 1 && count == authors.length) authorText += " and";
+		     
+		             if(authors.length > 1) authorText += " ";
+
 		             authorText += author
 		                
 		             if (count == authors.length) authorText += ". ";
