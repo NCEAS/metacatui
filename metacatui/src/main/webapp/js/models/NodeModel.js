@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone'],
 				"urn:node:ARCTIC"      : "img/node-logos/ARCTIC.png",
 				"urn:node:PPBIO"       : "img/node-logos/PPBIO.png",
 				"urn:node:DFC"         : "img/node-logos/DFC.png",
-				"urn:node:BCODMO"      : "img/node-logos/BCODMO.png",
+				"urn:node:BCODMO"      : "img/node-logos/BCODMO.jpg",
 				"urn:node:RD2R"        : "img/node-logos/RD2R.png"				
 		},
 		
