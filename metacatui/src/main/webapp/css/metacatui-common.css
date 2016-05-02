@@ -364,6 +364,7 @@ img.icon{
 }
 .info-icons .icon.private{
 	font-size: 1.5em;
+	color: #FF7600;
 }
 .result-row .info-icons .label{
 	background-color: #5E8497;
@@ -1204,7 +1205,6 @@ img.icon{
 .metadata-controls-container .info-icons{
 	display: inline-block;
 	padding-left: 20px;
-	color: #FF7600;
 	font-size: 1.2em;
 	top: 5px;
     position: relative;

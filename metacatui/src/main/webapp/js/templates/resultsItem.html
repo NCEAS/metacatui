@@ -5,6 +5,9 @@
 </div>
 <div class="clear"></div>
 <div class="info-icons  stop-route"> 
+	<% if(!isPublic){ %>
+		<div class="private icons stop-route"><i class="icon icon-lock tooltip-this private stop-route" data-container="#results-container" data-toggle="tooltip" data-placement="right" title="This is private content."></i></div>		
+	<% } %>
 	<div class="icons stop-route">             
            <%
            if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
