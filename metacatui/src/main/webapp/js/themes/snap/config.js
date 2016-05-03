@@ -13,6 +13,7 @@ var themeMap =
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
 		'templates/registryFields.html' : 'themes/' + theme + '/templates/registryFields.html',
 		'models/RegistryModel' : 'themes/' + theme + '/models/RegistryModel',
+		'models/AppModel' : 'themes/' + theme + '/models/AppModel',
 		'routers/router' : 'themes/' + theme + '/routers/router',
 		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html'
 		}

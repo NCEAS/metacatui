@@ -39,7 +39,11 @@ define(['jquery', 'underscore', 'backbone'],
 				"urn:node:USGS_SDC"    : "img/node-logos/USGSCSAS.png",
 				"urn:node:NRDC"        : "img/node-logos/NRDC.jpg",
 				"urn:node:NCEI"        : "img/node-logos/NCEI.png",
-				"urn:node:ARCTIC"      : "img/node-logos/ARCTIC.png"
+				"urn:node:ARCTIC"      : "img/node-logos/ARCTIC.png",
+				"urn:node:PPBIO"       : "img/node-logos/PPBIO.png",
+				"urn:node:DFC"         : "img/node-logos/DFC.png",
+				"urn:node:BCODMO"      : "img/node-logos/BCODMO.jpg",
+				"urn:node:RD2R"        : "img/node-logos/RD2R.png"				
 		},
 		
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API

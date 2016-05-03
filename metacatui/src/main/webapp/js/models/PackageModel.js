@@ -1,7 +1,6 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSearch'], 				
 	function($, _, Backbone, SolrResult, LogsSearch) {
-	'use strict';
 
 	// Package Model 
 	// ------------------
@@ -19,6 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				obsoletedBy: null,
 				obsoletes: null,
 				read_count_i: null,
+				isPublic: true,
 				members: [],
 				memberIds: [],
 				sources: [],
@@ -41,6 +41,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 		
 		initialize: function(options){
 			this.on("complete", this.getLogInfo);
+			this.setURL();
+		},
+		
+		setURL: function(){	
+			if(appModel.get("packageServiceUrl"))
+				this.set("url", appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id")));
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */
@@ -53,7 +59,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			//Get the id of the resource map for this member
 			var provFlList = appSearchModel.getProvFlList() + "prov_instanceOfClass,";
-			var query = 'fl=resourceMap,fileName,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
+
+			var query = 'fl=resourceMap,fileName,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,isPublic,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
 						'&wt=json';
@@ -102,7 +109,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
+			
+			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
 						'&rows=1000' +
 						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
 						'&wt=json';
@@ -306,7 +314,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			}
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
-		
+				
 		/*
 		 * Will get the sources and derivations of each member of this dataset and group them into packages  
 		 */
@@ -319,7 +327,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var sources 		   = new Array(),
 				derivations 	   = new Array();
 			
-			//Make arrays of unique IDs of objects that are sources or derivations of this package.
+			//Make arrays of unique IDs of objects that are sources or derivations of this package.			
 			_.each(this.get("members"), function(member, i){
 				if(member.type == "Package") return;
 				
@@ -328,17 +336,19 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 					derivations = _.union(derivations, member.getDerivations());
 				}
 			});
-			
+				
 			this.set("sources", sources);
 			this.set("derivations", derivations);
-			
+
 			//Compact our list of ids that are in the prov trace by combining the sources and derivations and removing ids of members of this package
 			var externalProvEntities = _.difference(_.union(sources, derivations), this.get("memberIds"));
 			
 			//If there are no sources or derivations, then we do not need to find resource map ids for anything
 			if(!externalProvEntities.length){
+				
 				//Save this prov trace on a package-member/document/object level.
-				this.setMemberProvTrace();
+				if(sources.length || derivations.length)
+					this.setMemberProvTrace();
 				
 				//Flag that the provenance trace is complete
 				this.set("provenanceFlag", "complete");
@@ -355,8 +365,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			}
 			
 			//TODO: Find the products of programs/executions
-		
-			
+					
 			//Make a comma-separated list of the provenance field names 
 			var provFieldList = "";
 			_.each(appSearchModel.getProvFields(), function(fieldName, i, list){
@@ -628,6 +637,33 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			//Update the list of related models
 			this.set("relatedModels", relatedModels);
 			
+		},
+		
+		downloadWithCredentials: function(){
+			//Get info about this object
+			var filename = this.get("fileName") || "",
+				url = this.get("url");
+
+			//Create an XHR
+			var xhr = new XMLHttpRequest();
+			xhr.responseType = "blob";
+			xhr.withCredentials = true;
+			
+			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+			xhr.onload = function(){ 
+			    var a = document.createElement('a');
+			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+			    a.download = filename; // Set the file name.
+			    a.style.display = 'none';
+			    document.body.appendChild(a);
+			    a.click();
+			    delete a;
+			};
+			
+			//Open and send the request with the user's auth token
+			xhr.open('GET', url);
+			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			xhr.send();
 		},
 		
 		/* Returns the SolrResult that represents the metadata doc */

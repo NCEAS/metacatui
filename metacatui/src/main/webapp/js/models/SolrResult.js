@@ -1,7 +1,6 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone'], 				
 	function($, _, Backbone) {
-	'use strict';
 
 	// SolrResult Model
 	// ------------------
@@ -80,7 +79,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.selected = !this.get('selected');
 		},
 		
-		//Returns a plain-english version of the formatType and formatId
+		//Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
 		getType: function(){
 			//The list of formatIds that are images
 			var imageIds = ["image/gif",
@@ -91,7 +90,8 @@ define(['jquery', 'underscore', 'backbone'],
 			                "image/svg+xml",
 			                "image/bmp"];
 			//The list of formatIds that are images
-			var pdfIds = ["application/pdf"];	
+			var pdfIds = ["application/pdf"];
+			var annotationIds = ["http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html"];
 			
 			//Determine the type via provONE
 			var instanceOfClass = this.get("prov_instanceOfClass");
@@ -111,11 +111,61 @@ define(['jquery', 'underscore', 'backbone'],
 			if(this.get("formatType") == "METADATA") return "metadata";
 			if(_.contains(imageIds, this.get("formatId"))) return "image";
 			if(_.contains(pdfIds, this.get("formatId")))   return "PDF";
+			if(_.contains(annotationIds, this.get("formatId")))   return "annotation";
 						
 			else return "data";
 		},
 		
-		setURL: function(){			
+		//Returns a plain-english version of the specific format ID (for selected ids)
+		getFormat: function(){
+			var formatMap = {
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "Microsoft Excel OpenXML",
+				"application/vnd.openxmlformats-officedocument.wordprocessingml.document" : "Microsoft Word OpenXML",
+				"application/vnd.ms-excel.sheet.binary.macroEnabled.12" : "Microsoft Office Excel 2007 binary workbooks",
+				"application/vnd.openxmlformats-officedocument.presentationml.presentation" : "Microsoft Office OpenXML Presentation",
+				"application/vnd.ms-excel" : "Microsoft Excel",
+				"application/msword" : "Microsoft Word",
+				"application/vnd.ms-powerpoint" : "Microsoft Powerpoint",
+				"text/html" : "HTML",
+				"text/plain": "plain text (.txt)",
+				"video/avi" : "Microsoft AVI file",
+				"video/x-ms-wmv" : "Windows Media Video (.wmv)", 
+				"audio/x-ms-wma" : "Windows Media Audio (.wma)",
+				"application/vnd.google-earth.kml xml" : "Google Earth Keyhole Markup Language (KML)",
+				"http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html" : "annotation",
+				"application/mathematica" : "Mathematica Notebook",
+				"application/postscript" : "Postscript",
+				"application/rtf" : "Rich Text Format (RTF)",
+				"application/xml" : "XML Application",
+				"text/xml" : "XML",
+				"application/x-fasta" : "FASTA sequence file",
+				"nexus/1997" : "NEXUS File Format for Systematic Information",
+				"anvl/erc-v02" :  "Kernel Metadata and Electronic Resource Citations (ERCs), 2010.05.13",
+				"http://purl.org/dryad/terms/" : "Dryad Metadata Application Profile Version 3.0",
+				"http://datadryad.org/profile/v3.1" : "Dryad Metadata Application Profile Version 3.1",
+				"application/pdf" : "PDF",
+				"application/zip" : "ZIP file",
+				"http://www.w3.org/TR/rdf-syntax-grammar" : "RDF/XML",
+				"http://www.w3.org/TR/rdfa-syntax" : "RDFa",
+				"application/rdf xml" : "RDF",
+				"text/turtle" : "TURTLE",
+				"text/n3" : "N3",
+				"application/x-gzip" : "GZIP Format",
+				"application/x-python" : "Python script",
+				"http://www.w3.org/2005/Atom" : "ATOM-1.0",
+				"application/octet-stream" : "octet stream (application file)",
+				"http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd" : "Darwin Core, v2.0",
+				"http://rs.tdwg.org/dwc/xsd/simpledarwincore/" : "Simple Darwin Core",
+				"eml://ecoinformatics.org/eml-2.1.0" : "EML v2.1.0",
+				"eml://ecoinformatics.org/eml-2.1.1" : "EML v2.1.1",
+				"eml://ecoinformatics.org/eml-2.0.1" : "EML v2.0.1",
+				"eml://ecoinformatics.org/eml-2.0.0" : "EML v2.0.0"
+			}
+		
+			return formatMap[this.get("formatId")] || this.get("formatId");
+		},
+		
+		setURL: function(){	
 			if(appModel.get("objectServiceUrl"))
 				this.set("url", appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id")));
 			else if(appModel.get("resolveServiceUrl"))
@@ -153,6 +203,36 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 			}
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+		},
+		
+		/*
+		 * This method will download this object while sending the user's auth token in the request.
+		 */
+		downloadWithCredentials: function(){								
+			//Get info about this object
+			var filename = this.get("fileName") || this.get("title") || "",					
+				url = this.get("url");
+
+			//Create an XHR
+			var xhr = new XMLHttpRequest();
+			xhr.responseType = "blob";
+			xhr.withCredentials = true;
+			
+			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+			xhr.onload = function(){ 
+			    var a = document.createElement('a');
+			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+			    a.download = filename; // Set the file name.
+			    a.style.display = 'none';
+			    document.body.appendChild(a);
+			    a.click();
+			    delete a;
+			};
+			
+			//Open and send the request with the user's auth token
+			xhr.open('GET', url);
+			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			xhr.send();
 		},
 		
 		getInfo: function(){			

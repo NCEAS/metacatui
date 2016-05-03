@@ -39,12 +39,6 @@ require.config({
     moment: '../components/moment.min',
     jws: '../components/jws-3.2.min',
     jsrasign: '../components/jsrsasign-4.9.0.min',    
-    registry: [ 
-               // use the path fallback in case there is no metacat installed here
-               //'/' + metacatContext + '/style/common/templates/metacatui/entryForm',
-               // fallback to local version
-               'scripts/entryForm'
-                ],
     domReady: '../components/domready',
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
@@ -69,9 +63,6 @@ require.config({
     bootstrap: { 
     	deps: ['jquery'],
     	exports: 'Bootstrap'
-    },
-    registry: {
-    	exports: 'Registry'
     },
     annotator: {
     	exports: 'Annotator'

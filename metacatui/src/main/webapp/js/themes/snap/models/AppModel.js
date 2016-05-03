@@ -11,19 +11,10 @@ define(['jquery', 'underscore', 'backbone'],
 			headerType: 'default',
 			title: window.themeTitle || "Metacat Data Catalog",
 			
-			emailContact: "support@arcticdata.io",
+			emailContact: "knb-help@nceas.ucsb.edu",
 			
 			googleAnalyticsKey: null,
 			
-			//Slaask / Chat
-			slaaskKey: "ea2a2170250e8b9f9c98da3df4f0f15b",
-			defaultSupportMessage: function(){
-				
-				var username =  appUserModel.get("username");
-		    	var usernameMsg = username? "My Orcid is " + username : ".";
-		    	return "Hello, I would like access to my data sets from the ACADIS Gateway. " 
-		    			+ usernameMsg + " My username or email from the ACADIS Gateway was: ";				
-			},
 			nodeId: null,
 
 			searchMode: mapKey ? 'map' : 'list',
@@ -42,13 +33,13 @@ define(['jquery', 'underscore', 'backbone'],
 			useJsonp: true,
 			
 			metacatVersion: "2.5.0", 
-			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: "https://knb.ecoinformatics.org",//window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
 			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
-			//d1LogServiceUrl: null,
+			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -62,21 +53,15 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
 			//bioportalSearchUrl: null,
-			orcidBaseUrl: "https:/orcid.org",
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
+			//tokenUrl: null,
+			//checkTokenUrl: null,
 			//annotatorUrl: null,
-			grantsUrl: "/api.nsf.gov/services/v1/awards.json",
-			accountsUrl: null,
-			pendingMapsUrl: null,
-			accountMapsUrl: null,
-			groupsUrl: null,
-			//signInUrl: null,
-			signOutUrl: null,
-			signInUrlOrcid: null,
-			//signInUrlLdap: null,
-			tokenUrl: null,
-			checkTokenUrl: null,
+			//accountsUrl: null,
+			//pendingMapsUrl: null,
+			//accountsMapsUrl: null,
+			//groupsUrl: null,
 			prov: true,
 			useSeriesId: true
 		},
@@ -90,7 +75,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("baseUrl",   this.get("d1CNBaseUrl"));
 				this.set("d1Service", this.get("d1CNService"));
 			}
-						
+			
 			// these are pretty standard, but can be customized if needed
 			this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
@@ -105,10 +90,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
 			if(this.get("useJsonp"))
-				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");		
-			
-			//Set the NSF Award API proxy
-			this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
+				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");			
 			
 			//DataONE CN API 
 			if(this.get("d1CNBaseUrl")){
@@ -134,32 +116,28 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
 
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
-				//this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
+				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
 		
 				//Settings for the DataONE API v2 only
 				if(this.get("d1CNService").indexOf("v2") > -1){
-										
-					//Authentication / portal URLs
-					this.set('portalUrl', this.get('d1CNBaseUrl') + 'portal/');
-					this.set('tokenUrl',  this.get('portalUrl') + 'token');
-					this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 					
-					//Annotator API 
-					if(typeof this.get("annotatorUrl") !== "undefined")
-						this.set('annotatorUrl', this.get('d1CNBaseUrl') + 'portal/annotator');				
-					
-					//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
-					if(typeof this.get("signInUrl") !== "undefined"){
-						this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
+					//Token URLs
+					if(typeof this.get("tokenUrl") != "undefined"){
+						this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
+						this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 					}
-					if(typeof this.get("signInUrlOrcid") !== "undefined")
-						this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
-					if(typeof this.get("signInUrlLdap") !== "undefined")
-						this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");					
-					if(this.get('orcidBaseUrl'))
-						this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
-					if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
-						this.set("signOutUrl", this.get('portalUrl') + "logout");
+					
+					//ORCID search
+					if(typeof this.get("orcidBaseUrl") != "undefined")
+						this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
+					
+					//Turn the provenance features on
+					if(typeof this.get("prov") != "undefined")
+						this.set("prov", true);
+					
+					//Turn the seriesId feature on					
+					if(typeof this.get("useSeriesId") != "undefined")
+						this.set("useSeriesId", true);
 				}
 				else{
 					//Turn the provenance features off

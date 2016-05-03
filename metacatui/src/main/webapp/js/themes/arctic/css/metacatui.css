@@ -144,10 +144,6 @@
     	cursor: pointer;
     }
     
-    .subtle{
-    	color: #888888;
-    }
-    
     .hidden,
     #clear-all.hidden,
     a [class^="icon-"].hidden{
@@ -1287,6 +1283,13 @@ svg .no-activity,
 		color: #1f254f;
 	}
     
+   #article-container.hasProvLeft, 
+   #article-container.hasProvRight, 
+   #article-container.hasProvLeft, 
+   #article-container.hasProvRight{
+		border-color: #323D90;
+	}
+
     /* Google Map Images for Geographic Region */
     .georegion-map{
     	margin-left: 125px;
@@ -1870,6 +1873,13 @@ svg .no-activity,
     .popover-content {
     	word-break: break-word;
     }
+    
+    /* Drop-down menus in the search results */
+    .result-row .dropdown-menu a:hover {
+	    color: #FFFFFF;
+	    background-color: #1f254f;
+	    background-image: none;
+	}
     
      .abstract-popover{
     	max-height: 500px;

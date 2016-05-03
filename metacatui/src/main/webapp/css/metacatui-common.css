@@ -33,6 +33,9 @@
 	font-size: 1em;
 	padding: .5em;
 }
+.success{
+	color: green;
+}
 
 /****************************************** 
 ** General Structure ***
@@ -361,6 +364,7 @@ img.icon{
 }
 .info-icons .icon.private{
 	font-size: 1.5em;
+	color: #FF7600;
 }
 .result-row .info-icons .label{
 	background-color: #5E8497;
@@ -457,7 +461,7 @@ img.icon{
 	outline: none;
 }
 .prov-chart .node.active,
-#Metadata.active,
+#article-container.active,
 .entitydetails.active{
 	box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
 }
@@ -731,27 +735,45 @@ img.icon{
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .gutters .entitydetails{
 	width: 60%; /* IE fallback */
-	width: calc(100% - 210px - 40px - 6px); /* 100% - prov-chart width - (padding + borders)*/
+	width: calc(100% - 215px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;	
 	margin-left: 105px;
+	box-sizing: border-box;
 }
 .entitydetails.hasProvLeft{
 	margin-left: 0px;
 }
-article.hasProvLeft table.download-contents .name,
-article.hasProvRight table.download-contents .name{
+.entitydetails.hasProvLeft .thumbnail.pdf{
+	margin-left: 60px;
+}
+#article-container.hasProvLeft table.download-contents .name,
+#article-container.hasProvRight table.download-contents .name{
 	min-width: 100px;
 	max-width: 350px;
 }
-article.hasProvLeft.hasProvRight table.download-contents .name{
+#article-container.hasProvLeft.hasProvRight table.download-contents .name{
 	min-width: 100px;
 	max-width: 250px;
 }
-
 /*The metadata gets narrowed even more when there are two prov charts next to it */
 .hasProvLeft.hasProvRight,
 .entitydetails.hasProvLeft.hasProvRight{
 	margin-left: 0px;
+}
+#article-container.hasProvLeft,
+#article-container.hasProvRight{
+	width: 80%;
+	width: calc(100% - 110px);
+	padding: 20px;
+	box-sizing: border-box;
+	display: inline-block;
+	border-width: 1px;
+    border-style: solid;
+    border-radius: 4px;
+}
+#article-container.hasProvLeft.hasProvRight{
+	width: 70%;
+	width: calc(100% - 214px);
 }
 
 /* Prov chart popovers */
@@ -1099,6 +1121,9 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	margin-bottom: 0px;
 	
 }
+#metadata-container > .alert-container{
+	margin-top: 40px;
+}
 /* Hide the elements from the view service that we don't need to display */
 #metadata-container .citation,
 #metadata-container #downloadPackage{
@@ -1139,6 +1164,10 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
 	white-space: nowrap;
 	max-width: 100%;
 }
+.controls-well > .party{
+	margin-bottom: 30px;
+	border-bottom: 1px solid #DDD;
+}
 /* ---- Taxonomic range ---- */
 .taxonomicCoverage .control-group{
    	margin-bottom: 20px;
@@ -1174,8 +1203,11 @@ article.hasProvLeft.hasProvRight table.download-contents .name{
   margin-bottom: 10px;
 }
 .metadata-controls-container .info-icons{
-	float: left;
-	margin-top: 10px;
+	display: inline-block;
+	padding-left: 20px;
+	font-size: 1.2em;
+	top: 5px;
+    position: relative;
 }
 .citation-container ~ .data-source .ORNLDAAC,
 .citation-container ~ .data-source .CDL,
@@ -2346,6 +2378,25 @@ input.subtle:focus,
 .nav .input > form > input[type="text"]:focus
 {
 	width: 200px;
+}
+#funding-group .ui-helper-hidden-accessible{
+	display: none;
+}
+#funding-group .ui-autocomplete{
+	width: 500px;
+	position: absolute;
+	top: 10px;
+	left: 10px;
+}
+#funding-group .ui-autocomplete .ui-menu-item{
+	width: 500px;
+	line-height: 1.4em;
+}
+.ui-autocomplete-container{
+	overflow: visible;
+}
+.input-help-msg{
+	padding: .5em 0;
 }
 /*******************************************
 Pager View

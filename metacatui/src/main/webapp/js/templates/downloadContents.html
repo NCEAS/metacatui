@@ -1,19 +1,20 @@
 <% 
  if(!title) var title = "Files in this dataset";
  if(nested) var classes = "nested";
+ if(!colspan) var colspan = 7;  
 %>
 
 <table class="download-contents table-striped table-condensed table <%=classes%>">
 	<thead>
 		<% if(nested && metadata){ %>
 			<tr class="table-header title">
-				<th colspan="7" class="table-header">
+				<th colspan="<%=colspan%>" class="table-header">
 					<a href="#view/<%=metadata.get('id')%>"><strong><%=metadata.get("title")%></strong></a>
 				</th>
 			</tr>
 		<% } %>
 		<tr class="table-header">
-			<th colspan="7" class="table-header">
+			<th colspan="<%=colspan%>" class="table-header">
 				<%=title%>
 			</th>
 		</tr>

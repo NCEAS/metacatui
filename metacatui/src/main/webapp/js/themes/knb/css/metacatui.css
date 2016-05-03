@@ -90,11 +90,7 @@
     .pointer{
     	cursor: pointer;
     }
-    
-    .subtle{
-    	color: #888888;
-    }
-    
+ 
     .hidden,
     #clear-all.hidden{
     	display: none;
@@ -1441,6 +1437,12 @@ svg .no-activity,
 	}
 	.prov-chart .node{
 		color: #006699;
+	}
+	#article-container.hasProvLeft, 
+   	#article-container.hasProvRight, 
+   	#article-container.hasProvLeft, 
+   	#article-container.hasProvRight{
+		border-color: #006699;
 	}
     
     /* Google Map Images for Geographic Region */

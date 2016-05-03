@@ -57,6 +57,7 @@ define(['jquery',
 		breadcrumbContainer: "#breadcrumb-container",
 		parentLinkContainer: "#parent-link-container",
 		dataSourceContainer: "#data-source-container",
+		articleContainer: "#article-container",
 		
 		type: "Metadata",
 		
@@ -81,7 +82,8 @@ define(['jquery',
 		events: {
 			"click #publish"             : "publish",
 			"mouseover .highlight-node"  : "highlightNode",
-			"mouseout  .highlight-node"  : "highlightNode"
+			"mouseout  .highlight-node"  : "highlightNode",
+			"click     .preview" 	     : "previewData"
 		},
 		
 		initialize: function (options) {
@@ -143,20 +145,27 @@ define(['jquery',
 					if(model.get("isDocumentedBy")){
 						viewRef.pid = _.first(model.get("isDocumentedBy"));
 						viewRef.getModel(viewRef.pid);
+						return;
 					}
-					else
-						viewRef.renderMetadataFromIndex();
+					else{
+						viewRef.noMetadata(model);
+					}
 				}
 				else if(model.get("formatType") == "RESOURCE"){
 					var packageModel = new Package({ id: model.get("id") });
 					packageModel.on("complete", function(){
-						viewRef.model = packageModel.getMetadata();
-						viewRef.pid = viewRef.model.get("id");
-						//viewRef.packageModels.push(packageModel);
-						viewRef.renderMetadata();
+						var metadata = packageModel.getMetadata();
 						
-						if(viewRef.model.get("resourceMap"))
-							viewRef.getPackageDetails(viewRef.model.get("resourceMap"));	
+						if(!metadata){
+							viewRef.noMetadata(packageModel);
+						}
+						else{
+							viewRef.model = metadata;							
+							viewRef.pid = viewRef.model.get("id");
+							viewRef.renderMetadata();
+							if(viewRef.model.get("resourceMap"))
+								viewRef.getPackageDetails(viewRef.model.get("resourceMap"));
+						}		
 					});
 					packageModel.getMembers();
 					return;
@@ -177,6 +186,10 @@ define(['jquery',
 			this.hideLoading();
 			//Load the template which holds the basic structure of the view
 			this.$el.html(this.template());
+			this.$(this.tableContainer).html(this.loadingTemplate({ 
+					msg: "Retrieving data set details..."
+				}));
+			
 			//Insert the breadcrumbs
 			this.insertBreadcrumbs();
 			//Insert the citation
@@ -185,8 +198,6 @@ define(['jquery',
 			this.insertDataSource();
 			// is this the latest version? (includes DOI link when needed)
 			this.showLatestVersion();
-			//Insert package table if the package details haven't been inserted yet
-			this.insertPackageDetails();
 			//Insert controls
 			this.insertControls();
 			this.insertOwnerControls();
@@ -223,11 +234,13 @@ define(['jquery',
 								//Now show the response from the view service
 								view.$(view.metadataContainer).html(response);
 								
-								//Add a map of the spatial coverage
-								if(gmaps) viewRef.insertSpatialCoverageMap();
-								
 								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
+								
+								viewRef.insertPackageDetails();
+								
+								//Add a map of the spatial coverage
+								if(gmaps) viewRef.insertSpatialCoverageMap();
 								
 								viewRef.setUpAnnotator();
 							}
@@ -252,6 +265,9 @@ define(['jquery',
 			
 			//Add the metadata HTML
 			this.$(this.metadataContainer).html(metadataFromIndex.render().el);
+			
+			//Add the package contents
+			this.insertPackageDetails();
 			
 			//Add a map of the spatial coverage
 			if(gmaps) this.insertSpatialCoverageMap();
@@ -430,17 +446,24 @@ define(['jquery',
 		/*
 		 * Inserts a table with all the data package member information and sends the call to display annotations
 		 */
-		insertPackageDetails: function(packageModel){				
-			if(this.$(".download-contents").length > 0) return;
+		insertPackageDetails: function(){	
 			
-			var viewRef = this;
+			//Don't insert the package details twice
+			var tableEls = this.$(this.tableContainer).children().not(".loading");
+			if(tableEls.length > 0) return;
+			
+			//wait for the metadata to load
+			var metadataEls = this.$(this.metadataContainer).children();
+			if(!metadataEls.length || metadataEls.first().is(".loading")) return;
 						
-			//Get the entity names from this page/metadata
-			this.getEntityNames(this.packageModels);
+			var viewRef = this;
 			
 			var latestPackages = _.filter(this.packageModels, function(m){
 				return(!m.get("obsoletedBy"));
 			});
+			
+			//Get the entity names from this page/metadata
+			this.getEntityNames(latestPackages);
 			
 			_.each(latestPackages, function(packageModel){
 
@@ -448,16 +471,16 @@ define(['jquery',
 				if(!packageModel.complete) return viewRef;
 				
 				//Insert a package table for each package in viewRef dataset
-				if(packageModel.getNestedPackages().length > 0){
-					var title = 'Current Data Set (1 of ' + (packageModel.getNestedPackages().length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
+				var nestedPckgs = packageModel.getNestedPackages();
+				if(nestedPckgs.length > 0){
+										
+					var title = 'Current Data Set (1 of ' + (nestedPckgs.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
 					viewRef.insertPackageTable(packageModel, { title: title });
-					
-					_.each(packageModel.getNestedPackages(), function(nestedPackage, i, list){
+						
+					_.each(nestedPckgs, function(nestedPackage, i, list){						
 						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View this dataset <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
-					viewRef.getEntityNames(packageModel.getNestedPackages());
-
 				}
 				else{
 					var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
@@ -468,7 +491,7 @@ define(['jquery',
 				//Remove the extra download button returned from the XSLT since the package table will have all the download links
 				$("#downloadPackage").remove();
 			    
-			    //Show the provenance trace for viewRef package			
+			    //Show the provenance trace for this package			
 				if(packageModel.get("provenanceFlag") == "complete") 
 					viewRef.drawProvCharts(packageModel);
 				else{
@@ -476,7 +499,7 @@ define(['jquery',
 					packageModel.getProvTrace();
 				}
 			});
-			
+						
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
 				numTables = additionalTables.children(".download-contents").length;
@@ -501,14 +524,17 @@ define(['jquery',
 			
 			//If this metadata doc is not in a package, but is just a lonely metadata doc...
 			if(!this.packageModels.length){
-				var packageModel = new Package({ members: [this.model] });
-				packageModel.checked = true;
+				var packageModel = new Package({ 
+					members: [this.model],
+					
+				});
+				packageModel.complete = true;
 				viewRef.insertPackageTable(packageModel);
 			}
 			
-			//Now insert the data details sections 
+			//Insert the data details sections 
 			this.insertDataDetails();
-						
+
 		    return this;
 		},
 		
@@ -547,26 +573,14 @@ define(['jquery',
 				var tableContainer = this.$("#additional-tables-for-" + this.cid);				
 			else
 				var tableContainer = tablesContainer;
-			
+						
 			//Insert the package table HTML 
+			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
 			//Do any post-rendering
 			tableView.postRender();
 			
-			this.subviews.push(tableView);
-			
-			//Hide the Metadata buttons that have no matching entity details section
-			var count = 0;
-			_.each($("#downloadContents .preview"), function(btn){
-				if(!viewRef.findEntityDetailsContainer($(btn).attr("data-id"))){
-					$(btn).hide();
-					count++;
-				}
-			});
-			if(count == $("#downloadContents .preview").length){
-				$("td.more-info, th.more-info").hide();
-				$("th.more-info-header").attr("colspan", $("th.more-info-header").attr("colspan")-1);
-			}			
+			this.subviews.push(tableView);		
 		},
 		
 		insertParentLink: function(packageModel){
@@ -814,60 +828,62 @@ define(['jquery',
 				var sourceProvChart = new ProvChart({
 					sources      : packageSources,
 					context      : packageModel,
-					contextEl    : this.$("#Metadata"),
+					contextEl    : this.$(this.articleContainer),
 					packageModel : packageModel,
 					parentView   : view
 				});	
 				this.subviews.push(sourceProvChart);
-				this.$("#Metadata").before(sourceProvChart.render().el).addClass("hasProvLeft");	
+				this.$(this.articleContainer).before(sourceProvChart.render().el).addClass("hasProvLeft");	
 			}
 			if(Object.keys(packageDerivations).length){
 				var derivationProvChart = new ProvChart({
 					derivations  : packageDerivations,
 					context      : packageModel,
-					contextEl    : this.$("#Metadata"),
+					contextEl    : this.$(this.articleContainer),
 					packageModel : packageModel,
 					parentView   : view
 				});		
 				this.subviews.push(derivationProvChart);
-				this.$("#Metadata").after(derivationProvChart.render().el).addClass("hasProvRight");			
+				this.$(this.articleContainer).after(derivationProvChart.render().el).addClass("hasProvRight");			
 			}			
 			
-			//Draw the provenance charts for each member of this package at an object level
-			_.each(packageModel.get("members"), function(member, i){
-				var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
-
-				//Retrieve the sources and derivations for this member
-				var memberSources 	  = member.get("provSources") || new Array(),
-					memberDerivations = member.get("provDerivations") || new Array();
-
-				//Make the source chart for this member
-				if(memberSources.length){
-					var memberSourcesProvChart = new ProvChart({
-						sources      : memberSources, 
-						context      : member,
-						contextEl    : entityDetailsSection,
-						packageModel : packageModel,
-						parentView   : view
-					});	
-					view.subviews.push(memberSourcesProvChart);
-					$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
-					view.$("#Metadata").addClass("gutters");
-				}
-				if(memberDerivations.length){
-					//Make the derivation chart for this member
-					var memberDerivationsProvChart = new ProvChart({
-						derivations  : memberDerivations,
-						context      : member,
-						contextEl    : entityDetailsSection,
-						packageModel : packageModel,
-						parentView   : view
-					});	
-					view.subviews.push(memberDerivationsProvChart);
-					$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
-					view.$("#Metadata").addClass("gutters");
-				}
-			});
+			if(packageModel.get("sources").length || packageModel.get("derivations").length){
+				//Draw the provenance charts for each member of this package at an object level
+				_.each(packageModel.get("members"), function(member, i){
+					var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
+	
+					//Retrieve the sources and derivations for this member
+					var memberSources 	  = member.get("provSources") || new Array(),
+						memberDerivations = member.get("provDerivations") || new Array();
+	
+					//Make the source chart for this member
+					if(memberSources.length){
+						var memberSourcesProvChart = new ProvChart({
+							sources      : memberSources, 
+							context      : member,
+							contextEl    : entityDetailsSection,
+							packageModel : packageModel,
+							parentView   : view
+						});	
+						view.subviews.push(memberSourcesProvChart);
+						$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
+						view.$(view.articleContainer).addClass("gutters");
+					}
+					if(memberDerivations.length){
+						//Make the derivation chart for this member
+						var memberDerivationsProvChart = new ProvChart({
+							derivations  : memberDerivations,
+							context      : member,
+							contextEl    : entityDetailsSection,
+							packageModel : packageModel,
+							parentView   : view
+						});	
+						view.subviews.push(memberDerivationsProvChart);
+						$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
+						view.$(view.articleContainer).addClass("gutters");
+					}
+				});
+			}
 			
 			//Make all of the prov chart nodes look different based on id
 			if(this.$(".prov-chart").length > 0){
@@ -938,6 +954,9 @@ define(['jquery',
 			var viewRef = this;
 
 			_.each(packageModels, function(packageModel){
+				
+				//Don't get entity names for larger packages - users must put the names in the system metadata
+				if(packageModel.get("members").length > 100) return;
 				
 				//If this package has a different metadata doc than the one we are currently viewing
 				var metadataModel = packageModel.getMetadata();
@@ -1014,19 +1033,27 @@ define(['jquery',
 			
 		},
 		
+		//Checks if the metadata has entity details sections
+		hasEntityDetails: function(){
+			return (this.$(".entitydetails").length > 0);
+		},
+		
 		findEntityDetailsContainer: function(id, el){
 			if(!el) var el = this.el;
+			
+			//If we already found it earlier, return it now
+			var container = this.$(".entitydetails[data-id='" + id + "']");
+			if(container.length) return container;
 						
 			//Are we looking for the main object that this MetadataView is displaying?
 			if(id == this.pid){
 				if(this.$("#Metadata").length > 0) return this.$("#Metadata");
 				else return this.el;
 			}
-			else{
-				//Metacat 2.4.2 and up will have the Online Distribution Link marked 
-				var link = this.$(".entitydetails a[data-id='" + id + "']");
-			}
-			
+						
+			//Metacat 2.4.2 and up will have the Online Distribution Link marked 
+			var link = this.$(".entitydetails a[data-id='" + id + "']");
+						
 			//Otherwise, try looking for an anchor with the id matching this object's id
 			if(!link.length)
 				link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
@@ -1041,7 +1068,7 @@ define(['jquery',
 						
 			if(link.length > 0){
 				//Get the container element
-				var container  = $(link).parents(".entitydetails"); 
+				container = $(link).parents(".entitydetails"); 
 				
 				if(container.length < 1){
 					//backup - find the parent of this link that is a direct child of the form element
@@ -1056,10 +1083,59 @@ define(['jquery',
 					$(container).addClass("entitydetails");
 				}
 				
+				//Add the id so we can easily find it later
+				container.attr("data-id", id);
+				
 				return container;
 			}	
-			else
-				return false;
+			
+			//Find by file name rather than id
+			//Get the name of the object first
+			var name = "";
+			for(var i=0; i<this.packageModels.length; i++){
+				var model = _.findWhere(this.packageModels[i].get("members"), {id: id});
+				if(model){
+					name = model.get("fileName");
+					break;
+				}
+			}
+			if(name){
+				var entityNames = this.$(".entitydetails .control-label:contains('Entity Name') + .controls-well");
+				if(entityNames.length){
+					//Try to find the match by exact name
+					var matches = entityNames.find("strong:contains('" + name + "')");
+					//Try to find the match by the file name without the file extension
+					if(!matches.length && (name.lastIndexOf(".") > -1)){
+						name = name.substring(0, name.lastIndexOf("."));
+						matches = entityNames.find("strong:contains('" + name + "')");
+					}
+					
+					//If we found more than one match, filter out the substring matches
+					if(matches.length > 1){
+						matches = _.filter(matches, function(div){
+							return (div.text() == name); 
+						});
+					}
+						
+					if(matches.length){
+						container = matches.parents(".entitydetails").first();
+						container.attr("data-id", id);
+						return container;
+					}
+				}
+			}
+			
+			//If this package has only one item, we can assume the only entity details are about that item
+			var members = this.packageModels[0].get("members"),
+				dataMembers = _.filter(members, function(m){ return (m.get("formatType") == "DATA"); });
+			if(dataMembers.length == 1){
+				if(this.$(".entitydetails").length == 1){
+					this.$(".entitydetails").attr("data-id", id);
+					return this.$(".entitydetails");	
+				}
+			}
+			
+			return false;
 		},
 		
 		/*
@@ -1413,6 +1489,27 @@ define(['jquery',
 			}
 		},
 		
+		//When the given ID from the URL is a resource map that has no metadata, do the following...
+		noMetadata: function(solrResultModel){
+			this.hideLoading();
+			this.$el.html(this.template());
+			
+			this.pid = solrResultModel.get("resourceMap") || solrResultModel.get("id");
+			
+			//Insert breadcrumbs
+			this.insertBreadcrumbs();
+			
+			this.insertDataSource();
+			
+			//Insert a table of contents
+			this.insertPackageTable(solrResultModel);
+			
+			this.renderMetadataFromIndex();
+			
+			//Insert a message that this data is not described by metadata
+			appView.showAlert("Additional information about this data is limited since metadata was not provided by the creator.", "alert-warning", this.$(this.metadataContainer));
+		},
+		
 		// this will lookup the latest version of the PID
 		showLatestVersion: function(pid) {	
 			if(!pid){
@@ -1496,12 +1593,12 @@ define(['jquery',
 			e.preventDefault();
 			
 			//Get the target and id of the click
-			var button = $(e.target);
-			if(!$(button).hasClass("preview")) 
-				button = $(button).parents("a.preview");
+			var link = $(e.target);
+			if(!$(link).hasClass("preview")) 
+				link = $(link).parents("a.preview");
 
-			if(button){
-				var id = $(button).attr("data-id");
+			if(link){
+				var id = $(link).attr("data-id");
 				if((typeof id === "undefined") || !id) 
 					return false; //This will make the app defualt to the child view previewData function
 			}

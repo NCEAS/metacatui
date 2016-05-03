@@ -36,7 +36,7 @@ define(['jquery', 'underscore', 'backbone'],
 			objectServiceUrl: null,
 			bioportalSearchUrl: null,
 			orcidSearchUrl: null,
-			tokenUrl: null,
+			//tokenUrl: null,
 			annotatorUrl: null,
 			accountsUrl: null
 		},
@@ -57,7 +57,6 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
-			this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
 		
 			this.on("change:pid", this.changePid);
 		},

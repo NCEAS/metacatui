@@ -42,7 +42,6 @@ define(['jquery',
 					 		   "click textarea.copy" : "higlightInput", 
 					 		   "focus textarea.copy" : "higlightInput",
 					 		 	  "click .open-chat" : "openChatWithMessage"
-			//'click #SignInLdap input[type="submit"]' : "submitLogin"
 		},
 				
 		initialize: function () {

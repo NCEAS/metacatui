@@ -259,7 +259,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			
 			//---Identifier---
-			if(this.filterIsAvailable("id") && ((filter == "id") || getAll)){
+			if(this.filterIsAvailable("id") && ((filter == "id") || getAll) && this.get("id").length){
 				var identifiers = this.get('id');
 				
 				if(Array.isArray(identifiers))
@@ -281,7 +281,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			
 			//---Username: search for this username in rightsHolder ---
-			if(this.filterIsAvailable("username") && ((filter == "username") || getAll)){
+			if(this.filterIsAvailable("username") && ((filter == "username") || getAll) && this.get("username").length){
 				var username = this.get('username');
 				if(username)
 					query += "+" + this.getGroupedQuery(this.fieldNameMap["username"], username, {operator: "OR"});
@@ -514,11 +514,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				return false;
 			
 			//Check for a space character
-			if(value.indexOf(" ") >= 0)
+			if(value.indexOf(" ") > -1)
 				return true;
 			
-			//Check for the colon : character
-			if(value.indexOf(":") >= 0)
+			//Check for the colon : character (and encoded colons)
+			if((value.indexOf(":") > -1) || value.indexOf("%3A") > -1)
 				return true;
 		
 			return false;

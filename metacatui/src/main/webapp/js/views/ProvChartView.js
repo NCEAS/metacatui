@@ -59,8 +59,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		className: "prov-chart",
 		
 		events: {
-			"click .expand.control"   : "expandNodes",
-			"click .collapse.control" : "collapseNodes",
+			"click .expand-control"   : "expandNodes",
+			"click .collapse-control" : "collapseNodes",
 			"click .preview"         : "previewData"
 		},
 		
