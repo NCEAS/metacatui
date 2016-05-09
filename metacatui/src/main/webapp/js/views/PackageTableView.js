@@ -107,7 +107,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(this.numHidden > 0){
 				var tfoot        = $(document.createElement("tfoot")),
 					tfootRow     = $(document.createElement("tr")),
-					tfootCell    = $(document.createElement("th")).attr("colspan", 7),
+					tfootCell    = $(document.createElement("th")).attr("colspan", "100%"),
 					item         = (this.numHidden == 1)? "item" : "items",
 					expandLink   = $(document.createElement("a")).addClass("expand-control control").text("Show " + this.numHidden + " more " + item + " in this data set"),
 					expandIcon   = $(document.createElement("i")).addClass("icon icon-caret-right icon-on-left"),
