@@ -15,15 +15,6 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			googleAnalyticsKey: null,
 			
-			//Slaask / Chat
-			slaaskKey: "ea2a2170250e8b9f9c98da3df4f0f15b",
-			defaultSupportMessage: function(){
-				
-				var username =  appUserModel.get("username");
-		    	var usernameMsg = username? "My Orcid is " + username : ".";
-		    	return "Hello, I would like access to my data sets from the ACADIS Gateway. " 
-		    			+ usernameMsg + " My username or email from the ACADIS Gateway was: ";				
-			},
 			nodeId: null,
 
 			searchMode: mapKey ? 'map' : 'list',
@@ -41,7 +32,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			useJsonp: true,
 			
-			metacatVersion: "2.5.0", 
+			metacatVersion: "2.6.0", 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',

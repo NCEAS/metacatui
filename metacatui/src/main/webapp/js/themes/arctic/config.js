@@ -34,7 +34,7 @@ var customAppConfig = function(){
 	//Gmaps key: AIzaSyCYoTkUEpMAiOoWx5M61ButwgNGX8fIHUs
 	
 	//Check that slaask didn't fail before getting its dependency, Pusher
-	if(window._slaask){
+	/*if(window._slaask){
 		//Override _slaask.createScriptTag to use requireJS to load injected module 'Pusher'
 	    window._slaask.createScriptTag = function (url) {
 	        var t = {};
@@ -44,7 +44,7 @@ var customAppConfig = function(){
 	        return t;
 	    };
 	}
-	
+	*/
 	if(appModel.get("baseUrl").indexOf("arcticdata.io") > -1){
 		appModel.set("nodeId", "urn:node:ARCTIC");
 		appModel.set("googleAnalyticsKey", "UA-75482301-1");
