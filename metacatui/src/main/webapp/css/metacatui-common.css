@@ -2360,14 +2360,17 @@ input.subtle:focus,
 	width: 500px;
 	line-height: 1.4em;
 }
-.ui-autocomplete-container{
-	overflow: visible;
-}
 .input-help-msg{
 	padding: .5em 0;
 }
 .progress{
 	margin-top: 2em;
+}
+.ui-autocomplete-container.collapse.in{
+	overflow: visible;
+}
+#collapseParties .popover{
+	z-index: 0;	
 }
 /*******************************************
 Pager View
