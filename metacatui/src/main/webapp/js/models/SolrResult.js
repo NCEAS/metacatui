@@ -207,6 +207,14 @@ define(['jquery', 'underscore', 'backbone'],
 			//Get info about this object
 			var filename = this.get("fileName") || this.get("title") || "",					
 				url = this.get("url");
+			
+			//If we are accessing objects via the resolve service, we need to find the direct URL
+			if(url.indexOf("/resolve/") > -1){
+				var dataSource = nodeModel.getMember(this.get("datasource")),
+					version = dataSource.readv2? "v2" : "v1";
+				
+				url = dataSource.baseURL + "/" + version + "/object/" + this.get("id");
+			}
 
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
