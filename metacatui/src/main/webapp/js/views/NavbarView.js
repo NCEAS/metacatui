@@ -14,7 +14,6 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		events: {
 						  'click #search_btn' : 'triggerSearch',
 					   'keypress #search_txt' : 'triggerOnEnter',
-							  'click #myData' : 'myDataSearch',
 			'click .show-new-dataCatalogView' : 'showNewSearch',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
 			 		 	    'click .dropdown' : 'hideDropdown',
@@ -81,23 +80,6 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			// ...but don't want to follow links
 			return false;
 			
-		},
-		
-		myDataSearch: function() {
-			
-			//Make sure the user is logged in and there is a search model related to this user
-			if(!appUserModel.get("loggedIn") || !appUserModel.get("searchModel")) return false;
-			
-			//The Data Catalog View will use this user's search model
-			appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 
-				
-			if(Backbone.history.fragment == "data")
-				appView.dataCatalogView.render();
-			else
-				//Navigate to the data catalog view and update the URL
-				uiRouter.navigate("data", {trigger: true});
-			
-			return false;			
 		},
 		
 		showNewSearch: function(){ 

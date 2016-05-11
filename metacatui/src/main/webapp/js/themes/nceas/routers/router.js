@@ -1,8 +1,8 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/TextView', 'views/RegistryView', 'views/MetadataView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, TextView, RegistryView, MetadataView, ExternalView, LdapView) {
+define(['jquery',	'underscore', 'backbone'], 				
+function ($, _, Backbone) {
 		
 	// MetacatUI Router
 	// ----------------
@@ -20,13 +20,6 @@ function ($, _, Backbone, IndexView, TextView, RegistryView, MetadataView, Exter
 		
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
-			
-			appView.indexView = new IndexView();
-			appView.textView = new TextView();
-			appView.registryView = new RegistryView();
-			appView.metadataView = new MetadataView();
-			appView.externalView = new ExternalView();
-			appView.ldapView = new LdapView();
 		},
 		
 		routeHistory: new Array(),
@@ -42,28 +35,85 @@ function ($, _, Backbone, IndexView, TextView, RegistryView, MetadataView, Exter
 
 		renderIndex: function (param) {
 			this.routeHistory.push("index");
-			appView.showView(appView.indexView);
+			
+			if(!appView.indexView){
+				require(["views/IndexView"], function(IndexView){
+					appView.indexView = new IndexView();
+					appView.showView(appView.indexView);					
+				});
+			}
+			else
+				appView.showView(appView.indexView);
 		},
 		
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
+			
+			var seriesId;
+						
+			//Check for a seriesId
+			if(appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
+				seriesId = pid.substr(0, pid.indexOf(", version:"));
+				
+				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);				
+			}
+			
+			//Save the id in the app model
 			appModel.set('pid', pid);
-			appView.metadataView.pid = pid;
-			appView.showView(appView.metadataView);
+			
+			if(!appView.metadataView){
+				require(['views/MetadataView'], function(MetadataView){
+					appView.metadataView = new MetadataView();
+
+					//Send the id(s) to the view
+					appView.metadataView.seriesId = seriesId;
+					appView.metadataView.pid = pid;
+					
+					appView.showView(appView.metadataView);
+				});
+			}
+			else{
+				//Send the id(s) to the view
+				appView.metadataView.seriesId = seriesId;
+				appView.metadataView.pid = pid;
+				
+				appView.showView(appView.metadataView);
+			}
 		},
+		
 		
 		renderRegistry: function (stage, pid) {
 			this.routeHistory.push("registry");
-			appView.registryView.stage = stage;
-			appView.registryView.pid = pid;
-			appView.showView(appView.registryView);
+			
+			if(!appView.registryView){
+				require(['views/RegistryView'], function(RegistryView){
+					appView.registryView = new RegistryView();
+					appView.registryView.stage = stage;
+					appView.registryView.pid = pid;
+					appView.showView(appView.registryView);
+				});
+			}
+			else{
+				appView.registryView.stage = stage;
+				appView.registryView.pid = pid;
+				appView.showView(appView.registryView);
+			}
 		},
 		
 		renderLdap: function (stage) {
 			this.routeHistory.push("ldap");
-			appView.ldapView.stage = stage;
-			appView.showView(appView.ldapView);
+			
+			if(!appView.ldapView){
+				require(["views/LdapView"], function(LdapView){
+					appView.ldapView = new LdapView();
+					appView.ldapView.stage = stage;
+					appView.showView(appView.ldapView);
+				});
+			}else{
+				appView.ldapView.stage = stage;
+				appView.showView(appView.ldapView);
+			}
 		},
 		
 		logout: function (param) {
@@ -75,8 +125,18 @@ function ($, _, Backbone, IndexView, TextView, RegistryView, MetadataView, Exter
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
 			this.routeHistory.push("external");
-			appView.externalView.url = url;
-			appView.showView(appView.externalView);
+			
+			if(!appView.externalView){
+				require(['views/ExternalView'], function(ExternalView){				
+					appView.externalView = new ExternalView();
+					appView.externalView.url = url;
+					appView.showView(appView.externalView);
+				});
+			}
+			else{
+				appView.externalView.url = url;
+				appView.showView(appView.externalView);	
+			}
 		},
 		
 		navigateToDefault: function(){

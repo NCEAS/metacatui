@@ -1,18 +1,16 @@
 /*global define */
 define(['jquery',
 				'underscore', 
-				'jquerysidr',
 				'backbone',
-				'jws',
-				'views/NavbarView',
 				'views/AltHeaderView',
+				'views/NavbarView',
 				'views/FooterView',
 				'text!templates/alert.html',
 				'text!templates/appHead.html',
 				'text!templates/app.html',
 				'text!templates/loading.html'
 				], 				
-	function($, _, jQuerySidr, Backbone, JWS, NavbarView, AltHeaderView, FooterView, AlertTemplate, AppHeadTemplate, AppTemplate, LoadingTemplate) {
+	function($, _, Backbone, AltHeaderView, NavbarView, FooterView, AlertTemplate, AppHeadTemplate, AppTemplate, LoadingTemplate) {
 	'use strict';
 	
 	var app = app || {};
@@ -45,8 +43,6 @@ define(['jquery',
 		},
 				
 		initialize: function () {
-			//Change the document title when the app changes the appModel title at any time
-			this.listenTo(appModel, "change:title", this.changeTitle);
 			
 			//Is there a logged-in user?
 			appUserModel.checkStatus();
@@ -64,10 +60,10 @@ define(['jquery',
 			// render the nav
 			app.navbarView = new NavbarView();
 			app.navbarView.setElement($('#Navbar')).render();
-
+			
 			app.altHeaderView = new AltHeaderView();
 			app.altHeaderView.setElement($('#HeaderContainer')).render();
-
+			
 			app.footerView = new FooterView();
 			app.footerView.setElement($('#Footer')).render();
 			
@@ -83,6 +79,9 @@ define(['jquery',
 					$(imageEl).fadeIn('slow');
 				});
 			}
+			
+			//Change the document title when the app changes the appModel title at any time
+			this.listenTo(appModel, "change:title", this.changeTitle);
 			
 			this.listenForActivity();
 		},

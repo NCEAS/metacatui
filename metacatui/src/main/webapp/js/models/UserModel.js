@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/Search', "collections/SolrResults"], 				
-	function($, _, Backbone, SearchModel, SearchResults) {
+define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections/SolrResults"], 				
+	function($, _, Backbone, JWS, SearchModel, SearchResults) {
 	'use strict';
 
 	// User Model

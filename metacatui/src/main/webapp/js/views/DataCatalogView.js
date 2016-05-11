@@ -304,7 +304,8 @@ define(['jquery',
 		
 			//Set the sort order 
 			var sortOrder = $("#sortOrder").val();
-			this.searchModel.set('sortOrder', sortOrder);
+			if(sortOrder)
+				this.searchModel.set('sortOrder', sortOrder);
 						
 			//Trigger a search to load the results
 			appModel.trigger('search');

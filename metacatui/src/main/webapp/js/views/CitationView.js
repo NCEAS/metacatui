@@ -1,5 +1,5 @@
-define(['jquery', 'underscore', 'backbone'], 				
-	function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'moment'], 				
+	function($, _, Backbone, moment) {
 	'use strict';
 
 	

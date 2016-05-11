@@ -3,10 +3,11 @@ define(['jquery',
 				'underscore', 
 				'backbone',
 				'bootstrap',
+				'views/AltHeaderView',
 				'views/MainContentView',
 				'views/FeaturedDataView'
 				], 				
-	function($, _, Backbone, Bootstrap, MainContentView, FeaturedDataView) {
+	function($, _, Backbone, Bootstrap, AltHeaderView, MainContentView, FeaturedDataView) {
 	'use strict';
 		
 	// Our overall **AppView** is the top-level piece of UI.

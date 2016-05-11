@@ -1,7 +1,7 @@
 /*global define */
 
-define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!templates/loginButtons.html', 'text!templates/loginOptions.html', 'text!templates/ldapLogin.html'], 				
-	function($, _, Backbone, LoginTemplate, LoginButtonsTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
+define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.html', 'text!templates/loginButtons.html', 'text!templates/loginOptions.html', 'text!templates/ldapLogin.html'], 				
+	function($, _, Backbone, fancybox, LoginTemplate, LoginButtonsTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
 	'use strict';
 	
 	var SignInView = Backbone.View.extend({

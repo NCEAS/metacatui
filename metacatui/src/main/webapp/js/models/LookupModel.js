@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone'], 				
-	function($, _, Backbone) {
+define(['jquery', 'jqueryui', 'underscore', 'backbone'], 				
+	function($, $ui, _, Backbone) {
 	'use strict';
 
 	// Lookup Model

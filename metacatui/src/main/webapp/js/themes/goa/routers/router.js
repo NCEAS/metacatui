@@ -1,18 +1,16 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/TextView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView) {
+define(['jquery',	'underscore', 'backbone'], 				
+function ($, _, Backbone) {
 		
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'navigateToDefault',    // the default route
-			'about(/:anchorId)'         : 'renderAbout',    // about page anchors
 			'help(/:page)(/:anchorId)'  : 'renderHelp',
-			//'plans'                     : 'renderPlans',    // plans page
-			//'tools(/:anchorId)'         : 'renderTools',    // tools page
+			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile'					: 'renderProfile',
@@ -20,7 +18,6 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
 			'signin'					: "renderRegistry",
-			//'signup'          			: 'renderLdap',     // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
@@ -36,16 +33,6 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			appModel.set('ldapwebServiceUrl', 'https://knb.ecoinformatics.org/knb/cgi-bin/ldapweb.cgi');
 			
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
-			
-			appView.indexView = new IndexView();
-			appView.textView = new TextView();
-			appView.dataCatalogView = new DataCatalogView();
-			appView.registryView = new RegistryView();
-			appView.metadataView = new MetadataView();
-			appView.statsView = new StatsView();
-			appView.userView = new UserView();
-			appView.externalView = new ExternalView();
-			appView.ldapView = new LdapView();
 		},
 		
 		routeHistory: new Array(),
@@ -58,10 +45,16 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 			else
 				return this.routeHistory[this.routeHistory.length-2];
 		},
-
-		renderIndex: function (param) {
-			this.routeHistory.push("index");
-			appView.showView(appView.indexView);
+		
+		renderText: function(options){
+			if(!appView.textView){
+				require(['views/TextView'], function(TextView){
+					appView.textView = new TextView();
+					appView.showView(appView.textView, options);
+				});
+			}
+			else
+				appView.showView(appView.textView, options);
 		},
 		
 		renderHelp: function(page, anchorId){
@@ -78,75 +71,185 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 				anchorId: anchorId
 			}
 			
-			appView.showView(appView.textView, options);
-		},
-		
-		renderAbout: function (anchorId) {
-			this.routeHistory.push("about");
-			appModel.set('anchorId', anchorId);
-			var options = {
-					pageName: "about",
-					anchorId: anchorId
-				}
-			
-			appView.showView(appView.textView, options);
-		},
-		
-		renderPlans: function (param) {
-			this.routeHistory.push("plans");
+			this.renderText(options);
 		},
 		
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
-			appModel.set('page', page);
 			
-			///Check for the URL parameters
+			///Check for a page URL parameter
 			if(typeof page === "undefined")
 				appModel.set("page", 0);
 			else
 				appModel.set('page', page);
-			
-			//If a search mode parameter is given
-			if((typeof mode !== "undefined") && mode)
-				//appModel.set('searchMode', mode)
-				appView.dataCatalogView.mode = mode;
-			
-			//If a query parameter is given
+
+			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){
 				var customQuery = appSearchModel.get('additionalCriteria');
 				customQuery.push(query);
 				appSearchModel.set('additionalCriteria', customQuery);
 			}
 			
-			appView.showView(appView.dataCatalogView);
+			if(!appView.dataCatalogView){
+				require(['views/DataCatalogView'], function(DataCatalogView){
+					appView.dataCatalogView = new DataCatalogView();
+					
+					//Check for a search mode URL parameter
+					if((typeof mode !== "undefined") && mode)
+						appView.dataCatalogView.mode = mode;
+					
+					appView.showView(appView.dataCatalogView);
+				});
+			}
+			else{
+				//Check for a search mode URL parameter
+				if((typeof mode !== "undefined") && mode)
+					appView.dataCatalogView.mode = mode;
+				
+				appView.showView(appView.dataCatalogView);
+			}
+		},
+		
+		renderMyData: function(page){
+			//Only display this is the user is logged in
+			if(!appUserModel.get("loggedIn") && appUserModel.get("checked")) this.navigate("data", { trigger: true });
+			else if(!appUserModel.get("checked")){
+				var router = this;
+				
+				this.listenToOnce(appUserModel, "change:checked", function(){
+					
+					if(appUserModel.get("loggedIn"))
+						router.renderMyData(page);
+					else
+						this.navigate("data", { trigger: true });
+				});
+				
+				return;
+			}
+			
+			this.routeHistory.push("data");
+			
+			///Check for a page URL parameter
+			if(typeof page === "undefined")
+				appModel.set("page", 0);
+			else
+				appModel.set('page', page);
+			
+			if(!appView.dataCatalogView){
+				require(['views/DataCatalogView'], function(DataCatalogView){
+					appView.dataCatalogView = new DataCatalogView();
+					appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 
+					appView.showView(appView.dataCatalogView);
+				});
+			}
+			else{
+				appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 				
+				appView.showView(appView.dataCatalogView);
+			}
 		},
 		
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
+			
+			var seriesId;
+						
+			//Check for a seriesId
+			if(appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
+				seriesId = pid.substr(0, pid.indexOf(", version:"));
+				
+				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);				
+			}
+			
+			//Save the id in the app model
 			appModel.set('pid', pid);
-			appView.metadataView.pid = pid;
-			appView.showView(appView.metadataView);
+			
+			if(!appView.metadataView){
+				require(['views/MetadataView'], function(MetadataView){
+					appView.metadataView = new MetadataView();
+
+					//Send the id(s) to the view
+					appView.metadataView.seriesId = seriesId;
+					appView.metadataView.pid = pid;
+					
+					appView.showView(appView.metadataView);
+				});
+			}
+			else{
+				//Send the id(s) to the view
+				appView.metadataView.seriesId = seriesId;
+				appView.metadataView.pid = pid;
+				
+				appView.showView(appView.metadataView);
+			}
 		},
 		
-		renderProfile: function(){
-			this.closeLastView();
+		renderProfile: function(username, section, subsection){
+			this.closeLastView();	
 			
-			this.routeHistory.push("summary");
-			appView.showView(appView.statsView);
+			var viewChoice;
+			
+			if(!username || !appModel.get("userProfiles")){
+				this.routeHistory.push("summary");
+				
+				if(!appView.statsView){
+					require(["views/StatsView"], function(StatsView){
+						appView.statsView = new StatsView();
+
+						appView.showView(appView.statsView);						
+					});
+				}
+				else
+					appView.showView(appView.statsView);
+			}
+			else{
+				this.routeHistory.push("profile");
+				appModel.set("profileUsername", username);
+				
+				if(!appView.userView){
+					
+					require(['views/UserView'], function(UserView){
+						appView.userView = new UserView();
+	
+						appView.showView(appView.userView);						
+					});
+				}
+				else
+					appView.showView(appView.userView);
+			}
 		},
 		
 		renderRegistry: function (stage, pid) {
 			this.routeHistory.push("registry");
-			appView.registryView.stage = stage;
-			appView.registryView.pid = pid;
-			appView.showView(appView.registryView);
+			
+			if(!appView.registryView){
+				require(['views/RegistryView'], function(RegistryView){
+					appView.registryView = new RegistryView();
+					appView.registryView.stage = stage;
+					appView.registryView.pid = pid;
+					appView.showView(appView.registryView);
+				});
+			}
+			else{
+				appView.registryView.stage = stage;
+				appView.registryView.pid = pid;
+				appView.showView(appView.registryView);
+			}
 		},
 		
 		renderLdap: function (stage) {
 			this.routeHistory.push("ldap");
-			appView.ldapView.stage = stage;
-			appView.showView(appView.ldapView);
+			
+			if(!appView.ldapView){
+				require(["views/LdapView"], function(LdapView){
+					appView.ldapView = new LdapView();
+					appView.ldapView.stage = stage;
+					appView.showView(appView.ldapView);
+				});
+			}else{
+				appView.ldapView.stage = stage;
+				appView.showView(appView.ldapView);
+			}
 		},
 		
 		logout: function (param) {
@@ -158,8 +261,18 @@ function ($, _, Backbone, IndexView, TextView, DataCatalogView, RegistryView, Me
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
 			this.routeHistory.push("external");
-			appView.externalView.url = url;
-			appView.showView(appView.externalView);
+			
+			if(!appView.externalView){
+				require(['views/ExternalView'], function(ExternalView){				
+					appView.externalView = new ExternalView();
+					appView.externalView.url = url;
+					appView.showView(appView.externalView);
+				});
+			}
+			else{
+				appView.externalView.url = url;
+				appView.showView(appView.externalView);	
+			}
 		},
 		
 		navigateToDefault: function(){
