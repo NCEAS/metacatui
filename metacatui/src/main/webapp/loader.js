@@ -34,7 +34,7 @@ function loadTheme(theme) {
 function initApp() {			
     var script = document.createElement("script");
     script.setAttribute("data-main", "js/app.js?v=" + window.metacatUIVersion);
-    script.src = "components/require.js";
+    script.src = "components/require.min.js";
     document.getElementsByTagName("body")[0].appendChild(script);
 }
 
