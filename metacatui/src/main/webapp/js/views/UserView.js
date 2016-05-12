@@ -1060,7 +1060,8 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 				return;
 			
 			var expires    = this.model.get("expires"),
-				rToken = 'options(authentication_token = "' + token + '")',
+				rTokenName = (appModel.get("d1CNBaseUrl").indexOf("cn.dataone.org") > -1)? "dataone_token" : "dataone_test_token",
+				rToken = 'options(' + rTokenName +' = "' + token + '")',
 				matlabToken = "import org.dataone.client.run.RunManager; mgr = RunManager.getInstance(); mgr.configuration.authentication_token = '" + token + "';",
 				tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token copy").text(token),
 				copyButton = $(document.createElement("a")).addClass("btn btn-primary copy").text("Copy").attr("data-clipboard-text", token),

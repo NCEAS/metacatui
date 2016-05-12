@@ -32,7 +32,7 @@ require.config({
     jqueryui: '../components/jquery-ui-1.10.3.custom.min',
     jqueryform: '../components/jquery.form',
     jquerysidr: '../components/jquery.sidr.min',
-    underscore: '../components/underscore',
+    underscore: '../components/underscore-min',
     backbone: '../components/backbone-min',
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',

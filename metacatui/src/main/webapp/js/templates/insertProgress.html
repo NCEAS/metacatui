@@ -1,0 +1,41 @@
+<div class="container">
+	<% if(status == "processing"){ %>
+	
+		<h1>Thank you for your submission</h1>
+		<p>Please wait just a moment while your data is being uploaded and processed.</p>
+		
+		<div class="progress">
+		  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 70%">
+		    <span class="sr-only">Processing...</span>
+		  </div>
+		</div>
+		
+	<% } else if(status == "complete"){ %>
+	
+		<h1>Thank you for your submission</h1>
+		<p>Your data set is ready to view.</p>
+		
+		<div class="progress">
+		  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+		    <span class="sr-only">Complete</span>
+		  </div>
+		</div>
+		
+		<a class="btn btn-primary btn-large center" href="#view/<%=id%>">View your data set</a>	
+	
+	<% } else if(status == "error"){ %>
+	
+		<h1>Thank you for your submission</h1>
+		
+		<div class="progress">
+		  <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+		    <span class="sr-only">Error</span>
+		  </div>
+		</div>
+		
+		<div class="alert alert-error">Your submission could not be completed. Please <a href="#share" id="registerAnotherPackage">try again</a> or 
+		<a href="mailto:<%=appModel.get('emailContact')%>"> contact us at <%=appModel.get("emailContact")%></a>
+		for assistance.</div>
+		
+	<% } %>
+</div>

@@ -1,6 +1,7 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/SignInView', 'text!templates/alert.html', 'text!templates/registryFields.html', 'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html'], 				
-	function($, _, Backbone, BootStrap, jQueryForm, SignInView, AlertTemplate, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate) {
+define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/SignInView', 'text!templates/alert.html', 'text!templates/registryFields.html', 
+        'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html', 'text!templates/insertProgress.html'], 				
+	function($, _, Backbone, BootStrap, jQueryForm, SignInView, AlertTemplate, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate, ProgressTemplate) {
 	'use strict';
 	
 	// Build the main header view of the application
@@ -14,6 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		loadingTemplate: _.template(LoadingTemplate),
 		ldapAccountToolsTemplate: _.template(LdapAccountToolsTemplate),
 		loginHeaderTemplate: _.template(LoginHeaderTemplate),
+		progressTemplate: _.template(ProgressTemplate),
 				
 		registryUrl: null,
 		
@@ -24,19 +26,18 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		registryQueryString:  "cfg=metacatui",
 		
 		events: {
-			"click #entryFormSubmit"   : "submitEntryForm",
-			"click #entryReturnSubmit"   : "submitReturnForm",
-			"click #dataCorrect"  		 : "submitConfirmYesForm",
-			"click #dataWrongButton"   	: "submitConfirmNoForm",
-			"click #loginButton"   	: "submitLoginForm",
+			"click #entryFormSubmit"        : "submitEntryForm",
+			"click #entryReturnSubmit"      : "submitReturnForm",
+			"click #dataCorrect"  		    : "submitConfirmYesForm",
+			"click #dataWrongButton"   	    : "submitConfirmNoForm",
+			"click #loginButton"   	        : "submitLoginForm",
 			"click #registerAnotherPackage" : "registerAnotherPackage",
-			"click #createAccount" : "createAccount",
-			"click #lookupAccount" : "lookupAccount",
-			"click #resetPassword" : "resetPassword",
-			"click #changePassword" : "changePassword",
+			"click #createAccount"          : "createAccount",
+			"click #lookupAccount" 			: "lookupAccount",
+			"click #resetPassword"          : "resetPassword",
+			"click #changePassword"           : "changePassword",
 			"keypress input[name='password']" : "submitOnEnter",
-			"keypress input[name='uid']" : "submitOnEnter"
-
+			"keypress input[name='uid']"      : "submitOnEnter"
 		},
 
 		initialize: function () {
@@ -133,7 +134,10 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						viewRef.$el.fadeIn('slow', function(){
 							viewRef.trigger("postRender");
 							viewRef.setUpAutocompletes();
-						});						
+						});			
+						
+						//Start showing progress updates
+						viewRef.listenForProgressUpdate();
 					}
 				}
 	
@@ -265,6 +269,65 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			
 		},
 		
+		/*
+		 * Set up autocompletes for the Registry - for now, only the grant number has an autocomplete
+		 */
+		setUpAutocompletes: function() {
+			if(!appModel.get("grantsUrl")) return;
+			
+			// Look up Grant numbers and titles from NSF
+			var input = this.$("#funding");
+			if(!input || !input.length) return;
+			
+			//Create a help message next to the text input
+			var defaultMsg = "Enter an award number or search for an award by keyword.";
+			var helpMsg = $(document.createElement("div")).addClass("input-help-msg subtle").text(defaultMsg);
+			input.after(helpMsg);
+					
+			//Setup the autocomplete widget
+			$(input).hoverAutocomplete({
+				source: appLookupModel.getGrantAutocomplete,
+				select: function(e, ui) {
+					e.preventDefault();
+					
+					// set the text field
+					$(e.target).val(ui.item.value);
+					helpMsg.text("You selected: " + ui.item.label).addClass("success").attr("data-award-id", ui.item.value);
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					of: "#funding",
+					collision: "fit"
+				},
+				appendTo: input.parent(),
+				minLength: 3
+			});
+			input.parents(".accordion-body").addClass("ui-autocomplete-container");
+
+			//When the user is done entering a grant number, get the grant title from the API
+			$(input).focusout(function(){
+				//If the help message already displays the grant title, return
+				if((helpMsg.attr("data-award-id") == input.val()) && (input.val().length > 0)) return;
+				//If no grant number was added, set the help message back to its defaults
+				else if (!input.val()){
+					helpMsg.removeClass("success").attr("data-award-id", "").text(defaultMsg);
+					return;
+				}
+				
+				//Get the grant title and id
+				appLookupModel.getGrant(
+						input.val(), 
+						function(award){
+							helpMsg.text("You selected: " + award.title).attr("data-award-id", award.id).addClass("success");
+						},
+						function(){
+							helpMsg.removeClass("success").attr("data-award-id", "").text("Warning: No NSF award with that number could be found.");
+						});				
+			});
+			
+		},
+		
 		modifyLoginForm: function() {
 			// customize the login form to provide external links as needed
 			var ldapAccountTools = $("#ldapAccountTools");
@@ -296,8 +359,11 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					withCredentials: true
 				},
 			    success: function(data, textStatus, jqXHR) {
-					contentArea.html(data);
-					view.scrollToTop();
+
+			    	contentArea.html(data);
+					
+			    	//Scroll to the top of the page
+			    	view.scrollToTop();
 				}
 			}
 			
@@ -326,19 +392,19 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		submitForm: function(formId) {
 			
 			// get the form data before replacing everything with the loading icon
-			var formData = $("#" + formId).serialize()
+			var formData = $("#" + formId).serialize();
 			
 			// show the loading icon
-			if(formId == "confirmForm"){
-				var msg = "Uploading your data set ... this may take a few minutes.";
-			}
-			else var msg = "";
+			//var msg = (formId == "confirmForm")? "Uploading your data set ... this may take a few minutes." : "";		
+			//this.showLoading(msg);
 			
-			this.showLoading(msg);
-			
-			// ajax call to submit the given form and then render the results in the content area
+    		registryModel.set("status", "processing");
+
+			//Get some references to the view
 			var viewRef = this;
 			var contentArea = this.$el;
+			
+			// ajax call to submit the given form and then render the results in the content area
 			var requestSettings = {
 					type: "POST",
 					xhrFields: {
@@ -347,9 +413,27 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					url: this.registryUrl,
 					data: formData,
 					success: function(data, textStatus, jqXHR) {
-						contentArea.html(data);
-						viewRef.augementForm();
-						viewRef.setUpAutocompletes();
+
+						//When the entry is successfully submitted, show a progress page
+				    	if((formId == "confirmForm") && (data.indexOf("Success") > -1)){	
+				    		//Get the id of the new metdata
+				    		var id = data.substring(data.indexOf("#view/")+6);
+				    		id = id.substring(0, id.indexOf('"'));
+				    		registryModel.set("id", id);
+				    		//registryModel.set("status", "processing");
+				    		
+				    		//Check the index for the new entry
+				    		registryModel.checkIndex();				    		
+				    	}
+				    	//Show the response from the registry script if there doesn't appear to be a success message
+				    	else{
+				    		contentArea.html(data);
+							viewRef.augementForm();
+							viewRef.setUpAutocompletes();
+				    	}
+				    	
+				    	//Scroll to the top of the page
+				    	viewRef.scrollToTop();
 					}
 			};
 			
@@ -597,6 +681,34 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		},
 		
 		/*
+		 * Displays the progress of this registry entry to the user when the model's status is updated
+		 */
+		listenForProgressUpdate: function(){
+			var view = this;
+			
+			//Periodically check if the submission is indexed yet
+			this.listenTo(registryModel, "change:status", function(){
+				view.showProgress();
+			});
+		},
+		
+		showProgress: function(){
+			//Show the progress 
+			this.$el.html(this.progressTemplate({
+				status: registryModel.get("status"),
+				id:     registryModel.get("id")
+			}));
+			
+			//If the status is processing, animate the progress bar
+			if(registryModel.get("status") == "processing"){
+				var fullWidth = this.$(".progress").width();
+				this.$(".progress-bar").animate({
+					width: fullWidth + "px"
+				}, 1800000);
+			}
+		},
+		
+		/*
 		 * Show the SignIn View (or auth tokens)
 		 */
 		showSignInForm: function(){
@@ -647,6 +759,11 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		submitOnEnter: function(e) {
 			if (e.keyCode != 13) return;
 			this.submitLoginForm();
+		},
+		
+		onClose: function(){
+			this.stopListening();
+			registryModel.reset();
 		}
 				
 	});

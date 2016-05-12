@@ -1,14 +1,15 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone', 'views/IndexView', 'views/SignInView', 'views/TextView', 'views/DataCatalogView', 'views/RegistryView', 'views/MetadataView', 'views/StatsView', 'views/UserView', 'views/ExternalView', 'views/LdapView'], 				
-function ($, _, Backbone, IndexView, SignInView, TextView, DataCatalogView, RegistryView, MetadataView, StatsView, UserView, ExternalView, LdapView) {
+define(['jquery',	'underscore', 'backbone'], 				
+function ($, _, Backbone) {
 		
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'renderData',    // the default route
+			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)'		: 'renderProfile',
@@ -16,8 +17,6 @@ function ($, _, Backbone, IndexView, SignInView, TextView, DataCatalogView, Regi
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'signout'					: 'logout',
 			'signin'					: 'renderTokenSignIn',
-			'signup'          			: 'renderLdap',     // use ldapweb for registration
-			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
 			'api(/:anchorId)'           : 'renderAPI'       // API page 
 		},
@@ -28,18 +27,7 @@ function ($, _, Backbone, IndexView, SignInView, TextView, DataCatalogView, Regi
 		},
 		
 		initialize: function(){
-			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
-			
-			appView.indexView = new IndexView();
-			appView.textView = new TextView();
-			appView.dataCatalogView = new DataCatalogView();
-			appView.registryView = new RegistryView();
-			appView.metadataView = new MetadataView();
-			appView.statsView = new StatsView();
-			appView.userView = new UserView();
-			appView.externalView = new ExternalView();
-			appView.ldapView = new LdapView();
-			appView.signInView = new SignInView({ el: "#Content"});
+			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);			
 		},
 		
 		routeHistory: new Array(),
@@ -53,142 +41,186 @@ function ($, _, Backbone, IndexView, SignInView, TextView, DataCatalogView, Regi
 				return this.routeHistory[this.routeHistory.length-2];
 		},
 		
-		renderHelp: function(page, anchorId){
-			this.routeHistory.push("help");
-			appModel.set('anchorId', anchorId);
-			
-			if(page)
-				var pageName = this.helpPages[page];
-			else
-				var pageName = this.helpPages["defaultPage"]; //default
-			
-			var options = {
-				pageName: pageName,
-				anchorId: anchorId
-			}
-			
-			appView.showView(appView.textView, options);
-		},
-
-		renderIndex: function (param) {
-			this.routeHistory.push("index");
-			appView.showView(appView.indexView);
-		},
-		
-		renderAbout: function (anchorId) {
-			this.routeHistory.push("about");
-			appModel.set('anchorId', anchorId);
-			var options = {
-					pageName: "about",
-					anchorId: anchorId
-				}
-			
-			appView.showView(appView.textView, options);
-		},
-		
 		renderAPI: function (anchorId) {
 			this.routeHistory.push("api");
+			
 			appModel.set('anchorId', anchorId);
 			var options = {
 					pageName: "api",
 					anchorId: anchorId
-				}
-			
-			appView.showView(appView.textView, options);
+			}
+
+			if(!appView.textView){
+				require(['views/TextView'], function(TextView){
+					appView.textView = new TextView();
+					appView.showView(appView.textView, options);
+				});
+			}
+			else
+				appView.showView(appView.textView, options);
 		},
-		
-		renderTools: function (anchorId) {
-			this.routeHistory.push("tools");
-			appModel.set('anchorId', anchorId);
-			
-			var options = {
-					pageName: "tools",
-					anchorId: anchorId
-				}
-			
-			appView.showView(appView.textView, options);
-		},
+
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
-			appModel.set('page', page);
 			
-			///Check for the URL parameters
+			///Check for a page URL parameter
 			if(typeof page === "undefined")
 				appModel.set("page", 0);
 			else
 				appModel.set('page', page);
-			
-			//If a search mode parameter is given
-			if((typeof mode !== "undefined") && mode)
-				//appModel.set('searchMode', mode)
-				appView.dataCatalogView.mode = mode;
-			
-			//If a query parameter is given
+
+			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){
 				var customQuery = appSearchModel.get('additionalCriteria');
 				customQuery.push(query);
 				appSearchModel.set('additionalCriteria', customQuery);
 			}
 			
-			appView.showView(appView.dataCatalogView);
+			if(!appView.dataCatalogView){
+				require(['views/DataCatalogView'], function(DataCatalogView){
+					appView.dataCatalogView = new DataCatalogView();
+					
+					//Check for a search mode URL parameter
+					if((typeof mode !== "undefined") && mode)
+						appView.dataCatalogView.mode = mode;
+					
+					appView.showView(appView.dataCatalogView);
+				});
+			}
+			else{
+				//Check for a search mode URL parameter
+				if((typeof mode !== "undefined") && mode)
+					appView.dataCatalogView.mode = mode;
+				
+				appView.showView(appView.dataCatalogView);
+			}
+		},
+		
+		renderMyData: function(page){
+			//Only display this is the user is logged in
+			if(!appUserModel.get("loggedIn") && appUserModel.get("checked")) this.navigate("data", { trigger: true });
+			else if(!appUserModel.get("checked")){
+				var router = this;
+				
+				this.listenToOnce(appUserModel, "change:checked", function(){
+					
+					if(appUserModel.get("loggedIn"))
+						router.renderMyData(page);
+					else
+						this.navigate("data", { trigger: true });
+				});
+				
+				return;
+			}
+			
+			this.routeHistory.push("data");
+			
+			///Check for a page URL parameter
+			if(typeof page === "undefined")
+				appModel.set("page", 0);
+			else
+				appModel.set('page', page);
+			
+			if(!appView.dataCatalogView){
+				require(['views/DataCatalogView'], function(DataCatalogView){
+					appView.dataCatalogView = new DataCatalogView();
+					appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 
+					appView.showView(appView.dataCatalogView);
+				});
+			}
+			else{
+				appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 				
+				appView.showView(appView.dataCatalogView);
+			}
 		},
 		
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
 			
+			var seriesId;
+						
 			//Check for a seriesId
 			if(appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
 				seriesId = pid.substr(0, pid.indexOf(", version:"));
-				appView.metadataView.seriesId = seriesId;
 				
 				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);				
 			}
 			
-			appModel.set('pid', pid);			
-			appView.metadataView.pid = pid;
+			//Save the id in the app model
+			appModel.set('pid', pid);
 			
-			appView.showView(appView.metadataView);
+			if(!appView.metadataView){
+				require(['views/MetadataView'], function(MetadataView){
+					appView.metadataView = new MetadataView();
+
+					//Send the id(s) to the view
+					appView.metadataView.seriesId = seriesId;
+					appView.metadataView.pid = pid;
+					
+					appView.showView(appView.metadataView);
+				});
+			}
+			else{
+				//Send the id(s) to the view
+				appView.metadataView.seriesId = seriesId;
+				appView.metadataView.pid = pid;
+				
+				appView.showView(appView.metadataView);
+			}
 		},
 		
 		renderProfile: function(username, section, subsection){
-			this.closeLastView();			
+			this.closeLastView();	
+			
+			var viewChoice;
 			
 			if(!username || !appModel.get("userProfiles")){
 				this.routeHistory.push("summary");
-				appView.showView(appView.statsView);
+				
+				if(!appView.statsView){
+					require(["views/StatsView"], function(StatsView){
+						appView.statsView = new StatsView();
+
+						appView.showView(appView.statsView);						
+					});
+				}
+				else
+					appView.showView(appView.statsView);
 			}
 			else{
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
-				//We only support the public profile section in non-D1 themes
-				appView.showView(appView.userView, { section: "profile" });
+				
+				if(!appView.userView){
+					
+					require(['views/UserView'], function(UserView){
+						appView.userView = new UserView();
+	
+						appView.showView(appView.userView);						
+					});
+				}
+				else
+					appView.showView(appView.userView);
 			}
-		},
-		
-		renderUserSettings: function(){			
-			this.closeLastView();
-
-			appView.userView.activeSection = "settings";
-			this.routeHistory.push("profile");
-			
-			if(appUserModel.get("username"))
-				appModel.set("profileUsername", appUserModel.get("username"));	
-			
-			appView.showView(appView.userView);
 		},
 		
 		renderRegistry: function (stage, pid) {
 			this.routeHistory.push("registry");
-			appView.registryView.stage = stage;
-			appView.registryView.pid = pid;
-			appView.showView(appView.registryView);
-		},
-		
-		renderLdap: function (stage) {
-			this.routeHistory.push("ldap");
-			appView.ldapView.stage = stage;
-			appView.showView(appView.ldapView);
+			
+			if(!appView.registryView){
+				require(['views/RegistryView'], function(RegistryView){
+					appView.registryView = new RegistryView();
+					appView.registryView.stage = stage;
+					appView.registryView.pid = pid;
+					appView.showView(appView.registryView);
+				});
+			}
+			else{
+				appView.registryView.stage = stage;
+				appView.registryView.pid = pid;
+				appView.showView(appView.registryView);
+			}
 		},
 		
 		logout: function (param) {
@@ -200,14 +232,33 @@ function ($, _, Backbone, IndexView, SignInView, TextView, DataCatalogView, Regi
 		
 		renderTokenSignIn: function(){
 			this.routeHistory.push("signin");
-			appView.showView(appView.signInView);
+
+			if(!appView.signInView){
+				require('views/SignInView', function(SignInView){
+					appView.signInView = new SignInView({ el: "#Content"});
+					appView.showView(appView.signInView);
+				});
+			}
+			else{
+				appView.showView(appView.signInView);				
+			}
 		},
 		
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
 			this.routeHistory.push("external");
-			appView.externalView.url = url;
-			appView.showView(appView.externalView);
+			
+			if(!appView.externalView){
+				require(['views/ExternalView'], function(ExternalView){				
+					appView.externalView = new ExternalView();
+					appView.externalView.url = url;
+					appView.showView(appView.externalView);
+				});
+			}
+			else{
+				appView.externalView.url = url;
+				appView.showView(appView.externalView);	
+			}
 		},
 		
 		navigateToDefault: function(){

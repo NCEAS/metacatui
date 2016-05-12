@@ -207,6 +207,10 @@
 	.control-label {
 		cursor: default;
 	}
+	.progress-bar.progress-bar-success,
+	.progress-bar{
+		background-color: #146660;
+	}
 
 /* EML CUSTOMIZATIONS
 -------------------------------------------------- */
