@@ -2363,6 +2363,9 @@ input.subtle:focus,
 .input-help-msg{
 	padding: .5em 0;
 }
+.cell-icon{
+	width: 1em;	
+}
 .progress{
 	margin-top: 2em;
 }

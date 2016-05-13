@@ -37,7 +37,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			"click #resetPassword"          : "resetPassword",
 			"click #changePassword"           : "changePassword",
 			"keypress input[name='password']" : "submitOnEnter",
-			"keypress input[name='uid']"      : "submitOnEnter"
+			"keypress input[name='uid']"      : "submitOnEnter",
+			"click .remove-award"             : "removeAward",
+			"keypress #funding-visible"       : "addAwardOnEnter"
 		},
 
 		initialize: function () {
@@ -133,7 +135,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow', function(){
 							viewRef.trigger("postRender");
-							viewRef.setUpAutocompletes();
+							viewRef.createAwardHelpers();
 						});			
 						
 						//Start showing progress updates
@@ -211,62 +213,151 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		},
 		
 		/*
-		 * Set up autocompletes for the Registry - for now, only the grant number has an autocomplete
+		 * Set up an autocomplete and table for the award numbers field 
 		 */
-		setUpAutocompletes: function() {
-			if(!appModel.get("grantsUrl")) return;
+		createAwardHelpers: function() {			
+			var view = this;
 			
-			// Look up Grant numbers and titles from NSF
+			//Get the award number input element
 			var input = this.$("#funding");
 			if(!input || !input.length) return;
 			
+			//Clone the award number input element
+			var hiddenInput = input.clone();
+			input.attr("name", "").attr("id", "funding-visible");
+			this.$("#entryForm").append(hiddenInput);
+			
+			//Add a table to display the award numbers
+			var table = $(document.createElement("table")).addClass("table table-striped table-bordered").attr("id", "award-list");
+
 			//Create a help message next to the text input
-			var defaultMsg = "Enter an award number or search for an award by keyword.";
-			var helpMsg = $(document.createElement("div")).addClass("input-help-msg subtle").text(defaultMsg);
+			var helpMsg = $(document.createElement("div")).addClass("input-help-msg subtle");
 			input.after(helpMsg);
+			helpMsg.after(table);
+			
+			//When the user is done entering a grant number, get the grant title from the API
+			$(input).focusout(function(){
 					
+				if(appModel.get("grantsUrl")){
+					//Get the award title and id
+					appLookupModel.getGrant(
+							input.val(), 
+							function(award){							
+								//Display this award							
+								view.addAward(award);
+							},
+							function(){
+								//Display this award as-is						
+								view.addAward({ id: input.val() });
+							}
+					);
+				}
+				else{
+					var award = {
+							id: input.val()
+					}
+					if(!award.id) return;
+					
+					view.addAward(award);
+				}
+			});
+			
+			//Only proceed if we have configured this app with the grants API url
+			if(!appModel.get("grantsUrl")) return;	
+			
+			//Add help text when we can do a lookup
+			helpMsg.text("Enter an award number or search for an award by keyword.");
+			
 			//Setup the autocomplete widget
 			$(input).hoverAutocomplete({
 				source: appLookupModel.getGrantAutocomplete,
 				select: function(e, ui) {
 					e.preventDefault();
-					
-					// set the text field
-					$(e.target).val(ui.item.value);
-					helpMsg.text("You selected: " + ui.item.label).addClass("success").attr("data-award-id", ui.item.value);
+										
+					view.addAward({ title: ui.item.label, id: ui.item.value });
 				},
 				position: {
 					my: "left top",
 					at: "left bottom",
-					of: "#funding",
+					of: "#funding-visible",
 					collision: "fit"
 				},
 				appendTo: input.parent(),
 				minLength: 3
 			});
-			input.parents(".accordion-body").addClass("ui-autocomplete-container");
-
-			//When the user is done entering a grant number, get the grant title from the API
-			$(input).focusout(function(){
-				//If the help message already displays the grant title, return
-				if((helpMsg.attr("data-award-id") == input.val()) && (input.val().length > 0)) return;
-				//If no grant number was added, set the help message back to its defaults
-				else if (!input.val()){
-					helpMsg.removeClass("success").attr("data-award-id", "").text(defaultMsg);
-					return;
-				}
-				
-				//Get the grant title and id
-				appLookupModel.getGrant(
-						input.val(), 
-						function(award){
-							helpMsg.text("You selected: " + award.title).attr("data-award-id", award.id).addClass("success");
-						},
-						function(){
-							helpMsg.removeClass("success").attr("data-award-id", "").text("Warning: No NSF award with that number could be found.");
-						});				
-			});
+			input.parents(".accordion-body").addClass("ui-autocomplete-container");			
+		},
+		
+		addAward: function(award){
+			if(!award.id) return;
 			
+			//Don't add duplicates
+			if($("#award-list").find("[data-id='" + award.id + "']").length > 0){
+				
+				//Clear the input
+				$("#funding-visible").val("");
+				
+				//Display an error msg
+				var helpMsg = $("#funding-visible").siblings(".input-help-msg"),
+					originalMsg = helpMsg.text();				
+				$(helpMsg).addClass('danger').text("That award was already added.");
+				
+				//Remove the message after some time
+			    setTimeout(function(){
+			    	helpMsg.removeClass('danger').text(originalMsg);
+			      }, 2000);
+			
+				return;
+			}
+			
+			//Display this award
+			var title = award.title || (appModel.get("grantsUrl")? "Warning: This is not an NSF award number." : null),
+				titleEl = title? $(document.createElement("td")).text(title) : null,
+				numberEl = $(document.createElement("td")).text(award.id),
+				removeEl = $(document.createElement("td")).addClass("cell-icon").append('<a><i class="icon-remove-sign icon remove-award pointer" alt="Delete"></i></a>'),
+				row = $(document.createElement("tr")).append(titleEl, numberEl, removeEl).attr("data-id", award.id).addClass("award-list-item");							
+			
+			//Style as a warning if we are looking up awards and there is no match
+			if(appModel.get("grantsUrl") && !award.title)
+				row.addClass("warning");
+			
+			//Add the row
+			$("#award-list").append(row);
+			
+			//Clear the input and add the new award number to the hidden input
+			this.$("#funding-visible").val("");
+			if($("#funding").val())
+				$("#funding").val($("#funding").val() + "," + award.id);
+			else
+				$("#funding").val(award.id);
+		},
+		
+		removeAward: function(e){
+			if(!e) return;
+			
+			//Get the remove link that was clicked
+			var removeLink = e.target;
+			if(!removeLink) return;
+			
+			//Get the id of the award that was removed
+			var removeId = $(removeLink).parents("tr").attr("data-id");
+			
+			//Remove the table row that displays this award
+			$("#award-list [data-id='" + removeId + "']").remove();
+			
+			//Remove the award id from the hidden input value
+			var ids = this.$("#funding").val().split(",");
+			this.$("#funding").val(_.without(ids, removeId).toString());
+		},
+		
+		addAwardOnEnter: function(e){
+			if (e.keyCode != 13) return;
+			
+			var award = {
+					id: $("#funding-visible").val()
+			}
+			
+			this.addAward(award);			
 		},
 		
 		modifyLoginForm: function() {
@@ -369,7 +460,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				    	else{
 				    		contentArea.html(data);
 							viewRef.augementForm();
-							viewRef.setUpAutocompletes();
+							viewRef.createAwardHelpers();
 				    	}
 				    	
 				    	//Scroll to the top of the page

@@ -57,7 +57,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
 			//annotatorUrl: null,
-			grantsUrl: "/api.nsf.gov/services/v1/awards.json",
+			grantsUrl: null,
 			accountsUrl: null,
 			pendingMapsUrl: null,
 			accountMapsUrl: null,
@@ -99,7 +99,8 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");		
 			
 			//Set the NSF Award API proxy
-			this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
+			if(typeof this.get("grantsUrl") != "undefined")
+				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
 			
 			//DataONE CN API 
 			if(this.get("d1CNBaseUrl")){
