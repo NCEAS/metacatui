@@ -219,21 +219,24 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			var view = this;
 			
 			//Get the award number input element
-			var input = this.$("#funding");
+			var input = this.$("#funding-visible");
 			if(!input || !input.length) return;
 			
-			//Clone the award number input element
-			var hiddenInput = input.clone();
-			input.attr("name", "").attr("id", "funding-visible");
-			this.$("#entryForm").append(hiddenInput);
-			
-			//Add a table to display the award numbers
-			var table = $(document.createElement("table")).addClass("table table-striped table-bordered").attr("id", "award-list");
-
-			//Create a help message next to the text input
-			var helpMsg = $(document.createElement("div")).addClass("input-help-msg subtle");
-			input.after(helpMsg);
-			helpMsg.after(table);
+			//Check if there are award numbers entered into the field right now
+			var currentAwards = $("#funding").val();
+			if(currentAwards){
+				//Add these awards to the list
+				_.each(currentAwards.split(","), function(awardId){
+					//See if there is a title for this award in the award lookup
+					appLookupModel.getGrant(awardId, function(award){
+						//If a match is found, add it to the list
+						view.addAward(award);						
+					}, function(){
+						//If no match is found, add it to the list without a title
+						view.addAward({ id: awardId });
+					});					
+				});
+			}
 			
 			//When the user is done entering a grant number, get the grant title from the API
 			$(input).focusout(function(){
@@ -266,7 +269,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			if(!appModel.get("grantsUrl")) return;	
 			
 			//Add help text when we can do a lookup
-			helpMsg.text("Enter an award number or search for an award by keyword.");
+			input.siblings(".input-help-msg").text("Enter an award number or search for an award by keyword.");
 			
 			//Setup the autocomplete widget
 			$(input).hoverAutocomplete({
@@ -292,13 +295,13 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			if(!award.id) return;
 			
 			//Don't add duplicates
-			if($("#award-list").find("[data-id='" + award.id + "']").length > 0){
+			if($("#funding-list").find("[data-id='" + award.id + "']").length > 0){
 				
 				//Clear the input
 				$("#funding-visible").val("");
 				
 				//Display an error msg
-				var helpMsg = $("#funding-visible").siblings(".input-help-msg"),
+				var helpMsg = $("#funding").siblings(".input-help-msg"),
 					originalMsg = helpMsg.text();				
 				$(helpMsg).addClass('danger').text("That award was already added.");
 				
@@ -315,19 +318,22 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				titleEl = title? $(document.createElement("td")).text(title) : null,
 				numberEl = $(document.createElement("td")).text(award.id),
 				removeEl = $(document.createElement("td")).addClass("cell-icon").append('<a><i class="icon-remove-sign icon remove-award pointer" alt="Delete"></i></a>'),
-				row = $(document.createElement("tr")).append(titleEl, numberEl, removeEl).attr("data-id", award.id).addClass("award-list-item");							
+				row = $(document.createElement("tr")).append(titleEl, numberEl, removeEl).attr("data-id", award.id).addClass("funding-list-item");							
 			
 			//Style as a warning if we are looking up awards and there is no match
 			if(appModel.get("grantsUrl") && !award.title)
 				row.addClass("warning");
 			
 			//Add the row
-			$("#award-list").append(row);
+			$("#funding-list").append(row);
 			
 			//Clear the input and add the new award number to the hidden input
 			this.$("#funding-visible").val("");
-			if($("#funding").val())
-				$("#funding").val($("#funding").val() + "," + award.id);
+			if($("#funding").val()){
+				var ids = this.$("#funding").val().split(",");
+				if(!_.contains(ids, award.id))
+					$("#funding").val($("#funding").val() + "," + award.id);
+			}
 			else
 				$("#funding").val(award.id);
 		},
@@ -343,7 +349,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			var removeId = $(removeLink).parents("tr").attr("data-id");
 			
 			//Remove the table row that displays this award
-			$("#award-list [data-id='" + removeId + "']").remove();
+			$("#funding-list [data-id='" + removeId + "']").remove();
 			
 			//Remove the award id from the hidden input value
 			var ids = this.$("#funding").val().split(",");
