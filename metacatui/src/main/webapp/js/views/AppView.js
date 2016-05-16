@@ -349,10 +349,17 @@ define(['jquery',
 					
 				//Check the user's token on focus
 				$(window).focus(function(){
-					//If the user's token is no longer valid, then refresh the page
-					appUserModel.checkToken(null, function(){
-						window.location.reload();
-					});
+					if(appModel.get("tokenUrl")){
+						//If the user's token is no longer valid, then refresh the page
+						appUserModel.checkToken(null, function(){
+							window.location.reload();
+						});
+					}
+					else{
+						appUserModel.checkStatus(null, function(){
+							window.location.reload();
+						});
+					}
 				});
 			});
 		},

@@ -466,7 +466,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 		
 		// call Metacat or the DataONE CN to validate the session and tell us the user's name
-		checkStatus: function() {
+		checkStatus: function(onSuccess, onError) {
 			var model = this;
 			
 			if (!appModel.get("tokenUrl")) {				
@@ -479,6 +479,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					url: metacatUrl,
 					data: { action: "validatesession" },
 					success: function(data, textStatus, xhr) {
+						if(onSuccess) onSuccess(data);
 						
 						// the Metacat (XML) response should have a fullName element
 						var username = $(data).find("name").text();
@@ -498,6 +499,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 						}
 					},
 					error: function(data, textStatus, xhr){
+						if(onError) onError();
+						
 						//User is not logged in
 						model.reset();
 					}
