@@ -130,7 +130,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						//Add additional form elements
 						viewRef.augementForm();
 						
-						viewRef.fixModalLinks();
 						viewRef.modifyLoginForm();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow', function(){
@@ -154,16 +153,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			if (registryEntryForm.length && !appUserModel.get('username')) {
 				uiRouter.navigate("signout", {trigger: true});
 			}
-		},
-		
-		fixModalLinks: function() {
-			var baseUrl = appModel.get("baseUrl");
-			$("#myModal").each(function(index, element) {
-				var href = baseUrl + $(element).attr('data-remote');
-				$(element).attr('data-remote', href);
-			});
-			// disable the pointer to old api
-			$("a[href*='metacat?action=read&qformat=']").removeAttr("href");
 		},
 		
 		augementForm: function() {
