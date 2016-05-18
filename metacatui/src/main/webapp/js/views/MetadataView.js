@@ -502,20 +502,21 @@ define(['jquery',
 						
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
-				numTables = additionalTables.children(".download-contents").length;
+				numTables = additionalTables.children(".download-contents").length,
+				item = (numTables == 1)? "dataset" : "datasets";
 			if(numTables > 0){
 				var expandIcon = $(document.createElement("i")).addClass("icon icon-level-down"),
 					expandLink = $(document.createElement("a"))
 								.attr("href", "#")
 								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
-								.text("Show " + numTables + " nested datasets")
+								.text("Show " + numTables + " nested " + item)
 								.prepend(expandIcon),
 					collapseLink = $(document.createElement("a"))
 								.attr("href", "#")
 								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
-								.text("Hide nested datasets")
+								.text("Hide nested " + item)
 								.hide(),
 					expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
 				
