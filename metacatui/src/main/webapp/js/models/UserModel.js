@@ -478,9 +478,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					type: "POST",
 					url: metacatUrl,
 					data: { action: "validatesession" },
-					success: function(data, textStatus, xhr) {
-						if(onSuccess) onSuccess(data);
-						
+					success: function(data, textStatus, xhr) {						
 						// the Metacat (XML) response should have a fullName element
 						var username = $(data).find("name").text();
 						
@@ -497,12 +495,15 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 							model.trigger("change:loggedIn");
 							model.set("checked", true);
 						}
+
+						if(onSuccess) onSuccess(data);
+
 					},
-					error: function(data, textStatus, xhr){
-						if(onError) onError();
-						
+					error: function(data, textStatus, xhr){						
 						//User is not logged in
 						model.reset();
+						
+						if(onError) onError();
 					}
 				}
 				

@@ -2863,7 +2863,9 @@ define(['jquery',
 			
 		},
 		
-		onClose: function () {						
+		onClose: function () {	
+			this.stopListening();
+			
 			$(".DataCatalog").removeClass("DataCatalog");
 			
 			if(gmaps){
@@ -2873,7 +2875,7 @@ define(['jquery',
 			}
 						
 			// remove everything so we don't get a flicker
-			this.$el.html('')
+			this.$el.html('');
 		}				
 	});
 	return DataCatalogView;		

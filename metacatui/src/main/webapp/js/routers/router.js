@@ -309,10 +309,14 @@ function ($, _, Backbone) {
 			if(((typeof appModel.get("tokenUrl") == "undefined") || !appModel.get("tokenUrl")) && !appView.registryView){
 				require(['views/RegistryView'], function(RegistryView){
 					appView.registryView = new RegistryView();
+					if(appView.currentView.onClose)
+						appView.currentView.onClose();
 					appUserModel.logout();
 				});
 			}
 			else{
+				if(appView.currentView.onClose)
+					appView.currentView.onClose();
 				appUserModel.logout();
 			}			
 		},

@@ -624,9 +624,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					
 					// Success?
 					if (metacatUrl) {
-						// submit the Metacat API login form
+						// submit the Metacat API logout form
 						var logoutFormData = viewRef.$("form").serialize();
-						var loginSettings = {
+						var logoutSettings = {
 							type: "POST",
 							xhrFields: {
 								withCredentials: true
@@ -634,17 +634,23 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 							url: metacatUrl,
 							data: logoutFormData,
 							success: function(data1, textStatus1, xhr1) {
-								// don't really do anything with this - browser has the JSESSIONID cookie now
-								
+								/*
 								// Reset the user model username
 								appUserModel.set("username", null);
 								
 								// trigger the check for logged in user
-								appUserModel.checkStatus();
+								appUserModel.checkStatus(function(){
+									viewRef.render.call(viewRef);
+								}, function(){
+									viewRef.render.call(viewRef);
+								});	*/
+								appUserModel.reset();
+								viewRef.render();
+								
 							}
 						}
 
-						$.ajax(_.extend(loginSettings, appUserModel.createAjaxSettings()));
+						$.ajax(_.extend(logoutSettings, appUserModel.createAjaxSettings()));
 
 					} else {
 						// just show what was returned (error message)
@@ -653,9 +659,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					
 					// clean up the temp area
 					viewRef.$('#tempMetacatContainer').remove();
-					
-					// do we want to load the registry, or just let other controller decide the next view?
-					viewRef.render();
 
 				}
 			}
