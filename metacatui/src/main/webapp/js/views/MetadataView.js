@@ -439,8 +439,10 @@ define(['jquery',
 					if(title.length) title = title.parents(".control-group");
 				}
 			}
-			if(title.length) title.detach();
+			if(title.length) title.remove();
 			
+			//Remove ecogrid links and replace them with workable links
+			this.replaceEcoGridLinks();
 		},
 		
 		/*
@@ -1384,43 +1386,20 @@ define(['jquery',
 			}
 		},
 		
-		replaceEcoGridLinks: function(pids){
+		replaceEcoGridLinks: function(){
 			var viewRef = this;
 			
 			//Find the element in the DOM housing the ecogrid link
-			$("label:contains('Online Distribution Info')").next().each(function(){
-				var link = $(this).find("a:contains('ecogrid://')");
-				_.each(link, function(thisLink){
+			$("a:contains('ecogrid://')").each(function(i, thisLink){
 					
 					//Get the link text
 					var linkText = $(thisLink).text();
 					
 					//Clean up the link text
-					var start = linkText.lastIndexOf("/");
-					var ecogridPid = linkText.substr(start+1);
+					var withoutPrefix = linkText.substring(linkText.indexOf("ecogrid://") + 10),
+						pid = withoutPrefix.substring(withoutPrefix.indexOf("/")+1);
 					
-					//Iterate over each id in the package and try to fuzzily match the ecogrid link to the id
-					for(var i = 0; i < pids.length; i++){
-						
-						//If we find a match, replace the ecogrid links with a DataONE API link to the object
-						if(pids[i].indexOf(ecogridPid) > -1){
-							
-							$(thisLink).attr('href', appModel.get('objectServiceUrl') + encodeURIComponent(pids[i]));
-							$(thisLink).text(pids[i]);
-							
-							//Insert an anchor at the parent element that contains the data object detials
-							var parents = $(thisLink).parents();
-							_.each(parents, function(parent){
-								if($(parent).hasClass("dataTableContainer"))
-									$(parent).prepend('<a name="' + pids[i] + '"></a>');
-							});
-														
-							//We can stop looking at the pids now
-							i = pids.length;
-						}
-					}
-				});			
-				
+					$(thisLink).attr('href', appModel.get('objectServiceUrl') + encodeURIComponent(pid)).text(pid);		
 			});
 		},
 		
