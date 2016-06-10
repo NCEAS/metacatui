@@ -2375,6 +2375,9 @@ input.subtle:focus,
 #collapseParties .popover{
 	z-index: 0;	
 }
+#RegistryGuide > div{
+	font-size: 1.8em;
+}
 /*******************************************
 Pager View
 ******************************************/
