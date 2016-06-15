@@ -2347,6 +2347,13 @@ input.subtle:focus,
 {
 	width: 200px;
 }
+.input-submit{
+	margin-left: 10px;
+    height: 1em;
+    line-height: 1em;
+    border-color: #666;
+    color: #666;
+}
 #funding-group .ui-helper-hidden-accessible{
 	display: none;
 }
