@@ -24,7 +24,38 @@
   }
 
 Package metacatui {
+  together {
+    Class Replica <<Backbone.Model>> {
+
+    }
+
+    Class ReplicationPolicy <<Backbone.Model>> {
+
+    }
+
+    Class AccessPolicy <<Backbone.Model>> {
+
+    }
+  }
   Class SystemMetadata <<Backbone.Model>> {
+    serialVersion : String
+    identifier : String
+    formatId : String
+    size : String
+    checksum: String
+    checksumAlgorithm : String
+    submitter: String
+    rightsHolder : String
+    accessPolicy: AccessPolicy
+    replicationPolicy : ReplicationPolicy
+    obsoletes : String
+    obsoletedBy : String
+    archived : Boolean
+    dateUploaded : String
+    dateSysMetadataModified : String
+    originMemberNode : String
+    authoritativeMemberNode : String
+    replica : Replica [*]
   }
 
   Class DataONEObject <<Backbone.Model>> {
@@ -76,6 +107,7 @@ Package eml {
 
     createXML()
   }
+  note top : "For now, we model the EML dataset module. \nWe'll refactor to support the software, citation, and \nprotocol modules as needed."
 
   Class EMLViewer <<Backbone.View>> {
   }
@@ -113,8 +145,12 @@ Package eml {
 }
 
 DataPackage o-- DataONEObject : collectionOf
-DataONEObject <|-- EML : subclassOf
-DataONEObject <-left- SystemMetadata : describes
+DataONEObject <|-right- EML : subclassOf
+DataONEObject <-right- SystemMetadata : describes
+SystemMetadata -right-* AccessPolicy : contains
+SystemMetadata --* ReplicationPolicy : contains
+SystemMetadata --* Replica : contains
+
 EML --o EMLParty: hasModule
 EML --o EMLMethods: hasModule
 EML --o EMLProject: hasModule
