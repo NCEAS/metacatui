@@ -27,6 +27,14 @@
 
 Package metacatui {
   together {
+
+    Class MediaType {
+      + name : String
+      + properties : String [*]
+    }
+
+  note bottom of MediaType: "We may need to delimit property \nK/V pairs with a known delimiter"
+    
     Class Replica <<Backbone.Model>> {
       + replicaMemberNode : String
       + replicationStatus : String
@@ -50,6 +58,7 @@ Package metacatui {
       + validate() : Boolean
       + toXML() : String
     }
+    
   }
   
   Class SystemMetadata <<Backbone.Model>> {
@@ -71,6 +80,9 @@ Package metacatui {
     + originMemberNode : String
     + authoritativeMemberNode : String
     + replica : Replica [*]
+    + seriesId : String
+    + mediaType : MediaType
+    + fileName : String
     + validate() : Boolean
     + toXML() : String
   }
@@ -125,7 +137,7 @@ Package eml {
     + validate() : Boolean
     + toXML() : String
   }
-  note right : "For now, we model the EML \ndataset module only. We'll refactor \nto support the software, citation, and \nprotocol modules as needed."
+  note left : "For now, we model the EML \ndataset module only. We'll refactor \nto support the software, citation, and \nprotocol modules as needed."
 
   Class EMLViewer <<Backbone.View>> {
   }
@@ -201,6 +213,8 @@ DataONEObject <-right- SystemMetadata : describes
 SystemMetadata *-right- AccessRule : contains
 SystemMetadata *-- ReplicationPolicy : contains
 SystemMetadata *-- Replica : contains
+SystemMetadata *-- MediaType : contains
+
 
 EML *-- EMLParty : hasModule
 EML *-- EMLMethods : hasModule
