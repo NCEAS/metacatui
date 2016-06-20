@@ -2,6 +2,8 @@
 
   ' change the default styles
 
+  skinparam linetype ortho
+
   skinparam shadowing false
 
   skinparam class {
@@ -113,7 +115,7 @@ Package eml {
 
     createXML()
   }
-  note top : "For now, we model the EML dataset module. \nWe'll refactor to support the software, citation, and \nprotocol modules as needed."
+  note right : "For now, we model the EML dataset module. \nWe'll refactor to support the software, citation, and \nprotocol modules as needed."
 
   Class EMLViewer <<Backbone.View>> {
   }
@@ -151,19 +153,19 @@ Package eml {
 }
 
 DataPackage o-- DataONEObject : collectionOf
-DataONEObject <|-right- EML : subclassOf
+DataONEObject <|-- EML : subclassOf
 DataONEObject <-right- SystemMetadata : describes
-SystemMetadata -right-* AccessRule : contains
-SystemMetadata --* ReplicationPolicy : contains
-SystemMetadata --* Replica : contains
+SystemMetadata o-right- AccessRule : contains
+SystemMetadata o-- ReplicationPolicy : contains
+SystemMetadata o-- Replica : contains
 
-EML --o EMLParty: hasModule
-EML --o EMLMethods: hasModule
-EML --o EMLProject: hasModule
-EML --o EMLCoverage: hasModule
-EML --o EMLDistribution: hasModule
-EML --o EMLKeyword: hasModule
-EML --o EMLAccess: hasModule
-EML o-- EMLViewer: listensTo
+EML o-- EMLParty: hasModule
+EML o-- EMLMethods: hasModule
+EML o-- EMLProject: hasModule
+EML o-- EMLCoverage: hasModule
+EML o-- EMLDistribution: hasModule
+EML o-- EMLKeyword: hasModule
+EML o-- EMLAccess: hasModule
+EML <.. EMLViewer: listensTo
 
 @enduml
