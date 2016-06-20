@@ -26,15 +26,21 @@
 Package metacatui {
   together {
     Class Replica <<Backbone.Model>> {
-
+      replicaMemberNode : String
+      replicationStatus : String
+      replicaVerified : String
     }
 
     Class ReplicationPolicy <<Backbone.Model>> {
-
+    preferredMemberNodes : String [*]
+    blockedMemberNodes : String [*]
+    replicationAllowed : Boolean
+    numberReplicas : Integer
     }
 
-    Class AccessPolicy <<Backbone.Model>> {
-
+    Class AccessRule <<Backbone.Model>> {
+      subject : String [*]
+      permission : String [*]
     }
   }
   Class SystemMetadata <<Backbone.Model>> {
@@ -46,7 +52,7 @@ Package metacatui {
     checksumAlgorithm : String
     submitter: String
     rightsHolder : String
-    accessPolicy: AccessPolicy
+    accessPolicy: AccessRule [*]
     replicationPolicy : ReplicationPolicy
     obsoletes : String
     obsoletedBy : String
@@ -147,7 +153,7 @@ Package eml {
 DataPackage o-- DataONEObject : collectionOf
 DataONEObject <|-right- EML : subclassOf
 DataONEObject <-right- SystemMetadata : describes
-SystemMetadata -right-* AccessPolicy : contains
+SystemMetadata -right-* AccessRule : contains
 SystemMetadata --* ReplicationPolicy : contains
 SystemMetadata --* Replica : contains
 
