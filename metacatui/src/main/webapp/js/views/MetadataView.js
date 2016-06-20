@@ -1143,6 +1143,8 @@ define(['jquery',
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
 		 */
 		insertDataDetails: function(){
+			console.log("insert data details");
+			
 			//If there is a metadataIndex subview, render from there.
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
 			if(typeof metadataFromIndex !== "undefined"){
@@ -1185,21 +1187,50 @@ define(['jquery',
 											  src : solrResult.get("url"), 
 										    objID : objID
 						});
+					
+					console.log("displaying package member:" + solrResult.type);
 	
 					//Insert the data display HTML and the anchor tag to mark this spot on the page 
 					if(container){
-						if((type == "image") || (type == "PDF")){
+						if((type == "image") || (type == "PDF")){							
+							if((type == "PDF") && !solrResult.get("isPublic")){
+								console.log("private PDF");
+								
+								dataDisplay = $.parseHTML(dataDisplay.trim());
+								
+								//Send the auth token in a XHR request to get the PDF
+								//Create an XHR
+								var xhr = new XMLHttpRequest();
+								xhr.responseType = "blob";
+								xhr.withCredentials = true;
+							
+								//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+								xhr.onload = function(){ 
+								    var iframe = $(dataDisplay).find("iframe");
+								    iframe.attr("src", window.URL.createObjectURL(xhr.response)); // xhr.response is a blob
+								};
+								
+								//Open and send the request with the user's auth token
+								xhr.open('GET', solrResult.get("url"));
+								xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+								xhr.send();
+							}
+								
+							//Insert into the page
 							if($(container).children("label").length > 0)
 								$(container).children("label").first().after(dataDisplay);
 							else
 								$(container).prepend(dataDisplay);
+							
 						}
+						
 						$(container).prepend(anchor);
 						
 						var nameLabel = $(container).find("label:contains('Entity Name')");
 						if(nameLabel.length > 0)
 							$(nameLabel).parent().after(downloadButton);
-					}				
+					}	
+				
 				}
 							
 				//==== Initialize the fancybox images =====
