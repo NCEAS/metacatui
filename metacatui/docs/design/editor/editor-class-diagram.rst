@@ -28,60 +28,68 @@
 Package metacatui {
   together {
     Class Replica <<Backbone.Model>> {
-      replicaMemberNode : String
-      replicationStatus : String
-      replicaVerified : String
+      + replicaMemberNode : String
+      + replicationStatus : String
+      + replicaVerified : String
+      + validate()
+      + createXML()
     }
 
     Class ReplicationPolicy <<Backbone.Model>> {
-    preferredMemberNodes : String [*]
-    blockedMemberNodes : String [*]
-    replicationAllowed : Boolean
-    numberReplicas : Integer
+    + preferredMemberNodes : String [*]
+    + blockedMemberNodes : String [*]
+    + replicationAllowed : Boolean
+    + numberReplicas : Integer
+    + validate()
+    + createXML()
     }
 
     Class AccessRule <<Backbone.Model>> {
-      subject : String [*]
-      permission : String [*]
+      + subject : String [*]
+      + permission : String [*]
+      + validate()
+      + createXML()
     }
   }
   Class SystemMetadata <<Backbone.Model>> {
-    serialVersion : String
-    identifier : String
-    formatId : String
-    size : String
-    checksum: String
-    checksumAlgorithm : String
-    submitter: String
-    rightsHolder : String
-    accessPolicy: AccessRule [*]
-    replicationPolicy : ReplicationPolicy
-    obsoletes : String
-    obsoletedBy : String
-    archived : Boolean
-    dateUploaded : String
-    dateSysMetadataModified : String
-    originMemberNode : String
-    authoritativeMemberNode : String
-    replica : Replica [*]
+    + serialVersion : String
+    + identifier : String
+    + formatId : String
+    + size : String
+    + checksum: String
+    + checksumAlgorithm : String
+    + submitter: String
+    + rightsHolder : String
+    + accessPolicy: AccessRule [*]
+    + replicationPolicy : ReplicationPolicy
+    + obsoletes : String
+    + obsoletedBy : String
+    + archived : Boolean
+    + dateUploaded : String
+    + dateSysMetadataModified : String
+    + originMemberNode : String
+    + authoritativeMemberNode : String
+    + replica : Replica [*]
+    + validate()
+    + createXML()
   }
 
   Class DataONEObject <<Backbone.Model>> {
 
   }
   Class DataPackage <<Backbone.Collection>> {
-    models : DataONEObject [*]
-    model : DataONEObject
-    parentPackages : String [*]
-    childPackages : String [*]
-    initialize() : DataPackage
-    sync()
-    save()
-    fetch()
-    destroy()
-    update()
-    validate()
-    toRDF()
+    + models : DataONEObject [*]
+    + model : DataONEObject
+    + parentPackages : String [*]
+    + childPackages : String [*]
+    + initialize() : DataPackage
+    + sync()
+    + save()
+    + fetch()
+    + destroy()
+    + update()
+    + validate()
+    + toRDF()
   }
 
 }
@@ -89,31 +97,31 @@ Package metacatui {
 Package eml {
 
   Class EML <<Backbone.Model>> {
-    access : EMLAccess
-    isEditable : Boolean
-    alternateIdentifier : String [*]
-    shortName : String
-    title : String
-    creator : EMLParty [*]
-    metadataProvider : EMLParty [*]
-    associatedParty  : EMLParty [*]
-    pubDate : String
-    language : String
-    series : String
-    abstract : String [*]
-    keywordSet : EMLKeyword [*]
-    additionalInfo : String [*]
-    intellectualRights : String [*]
-    distribution : EMLDistribution [*]
-    coverage : EMLCoverage
-    purpose : String [*]
-    contact : EMLParty [*]
-    publisher : EMLParty [*]
-    pubPlace : String
-    methods : EMLMethods [*]
-    project : EMLProject [*]
-
-    createXML()
+    + access : EMLAccess
+    + isEditable : Boolean
+    + alternateIdentifier : String [*]
+    + shortName : String
+    + title : String
+    + creator : EMLParty [*]
+    + metadataProvider : EMLParty [*]
+    + associatedParty  : EMLParty [*]
+    + pubDate : String
+    + language : String
+    + series : String
+    + abstract : String [*]
+    + keywordSet : EMLKeyword [*]
+    + additionalInfo : String [*]
+    + intellectualRights : String [*]
+    + distribution : EMLDistribution [*]
+    + coverage : EMLCoverage
+    + purpose : String [*]
+    + contact : EMLParty [*]
+    + publisher : EMLParty [*]
+    + pubPlace : String
+    + methods : EMLMethods [*]
+    + project : EMLProject [*]
+    + validate()
+    + createXML()
   }
   note right : "For now, we model the EML dataset module. \nWe'll refactor to support the software, citation, and \nprotocol modules as needed."
 
@@ -121,18 +129,21 @@ Package eml {
   }
 
   Class EMLParty <<Backbone.Model>> {
-    givenName : String [*]
-    surName : String
-    organizationName : String
-    role : String
-    createXML() : String
+    + givenName : String [*]
+    + surName : String
+    + organizationName : String
+    + role : String
+    + createXML() : String
+    + validate()
+    + createXML()
   }
 
   Class EMLKeyword <<Backbone.Model>> {
-    keyword : String
-    type : String
-    keywordThesaurus : String
-    createXML()
+    + keyword : String
+    + type : String
+    + keywordThesaurus : String
+    + validate()
+    + createXML()
   }
 
   Class EMLDistribution <<Backbone.Model>> {
