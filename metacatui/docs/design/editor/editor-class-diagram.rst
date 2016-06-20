@@ -36,12 +36,12 @@ Package metacatui {
     }
 
     Class ReplicationPolicy <<Backbone.Model>> {
-    + preferredMemberNodes : String [*]
-    + blockedMemberNodes : String [*]
-    + replicationAllowed : Boolean
-    + numberReplicas : Integer
-    + validate() : Boolean
-    + toXML() : String
+      + preferredMemberNodes : String [*]
+      + blockedMemberNodes : String [*]
+      + replicationAllowed : Boolean
+      + numberReplicas : Integer
+      + validate() : Boolean
+      + toXML() : String
     }
 
     Class AccessRule <<Backbone.Model>> {
@@ -78,6 +78,7 @@ Package metacatui {
   Class DataONEObject <<Backbone.Model>> {
 
   }
+  
   Class DataPackage <<Backbone.Collection>> {
     + models : DataONEObject [*]
     + model : DataONEObject
@@ -124,7 +125,7 @@ Package eml {
     + validate() : Boolean
     + toXML() : String
   }
-  note right : "For now, we model the EML dataset module. \nWe'll refactor to support the software, citation, and \nprotocol modules as needed."
+  note right : "For now, we model the EML \ndataset module only. We'll refactor \nto support the software, citation, and \nprotocol modules as needed."
 
   Class EMLViewer <<Backbone.View>> {
   }
@@ -154,10 +155,36 @@ Package eml {
     + geographicCoverages : GeographicCoverage [*]
     + temporalCoverages : TemporalCoverage [*]
     + taxanomicCoverages : TaxonomicCoverage [*]
-	+ validate() : Boolean
-	+ toXML() : String
+	  + validate() : Boolean
+    + toGeoJSON() : GeoJSONObject
+	  + toXML() : String
+    + fromXML() : EMLCoverage
   }
-
+  together {
+    Class GeographicCoverage {
+      - data : GeoJSONObject
+      + validate() : Boolean
+      + toGeoJSON() : String
+      + fromGeoJSON() : GeoJSONObject
+      + toXML() : String
+      + fromXML() : GeographicCoverage
+    }
+    
+    Class TemporalCoverage {
+      + beginDate : String
+      + beginTime : String
+      + endDate : String
+      + endTime : String
+      + toXML() : String
+      + fromXML() : TemporalCoverage
+    }
+  
+    note bottom : "We will first only support \nGregorian dates. We'll change \nthe property types from String\n to a subclass when we support \nalternative time scales."
+    
+    Class TaxonomicCoverage {
+    }
+  }
+  
   Class EMLMethods <<Backbone.Model>> {
   }
 
@@ -175,13 +202,16 @@ SystemMetadata *-right- AccessRule : contains
 SystemMetadata *-- ReplicationPolicy : contains
 SystemMetadata *-- Replica : contains
 
-EML *-- EMLParty: hasModule
-EML *-- EMLMethods: hasModule
-EML *-- EMLProject: hasModule
-EML *-- EMLCoverage: hasModule
-EML *-- EMLDistribution: hasModule
-EML *-- EMLKeyword: hasModule
-EML *-- EMLAccess: hasModule
-EML <.. EMLViewer: listensTo
+EML *-- EMLParty : hasModule
+EML *-- EMLMethods : hasModule
+EML *-- EMLProject : hasModule
+EML *-- EMLCoverage : hasModule
+EMLCoverage *-- GeographicCoverage : contains
+EMLCoverage *-- TemporalCoverage : contains
+EMLCoverage *-- TaxonomicCoverage : contains
+EML *-- EMLDistribution : hasModule
+EML *-- EMLKeyword : hasModule
+EML *-- EMLAccess : hasModule
+EML <.. EMLViewer : listensTo
 
 @enduml
