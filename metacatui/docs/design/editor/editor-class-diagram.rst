@@ -31,8 +31,8 @@ Package metacatui {
       + replicaMemberNode : String
       + replicationStatus : String
       + replicaVerified : String
-      + validate()
-      + createXML()
+      + validate() : Boolean
+      + toXML() : String
     }
 
     Class ReplicationPolicy <<Backbone.Model>> {
@@ -40,17 +40,18 @@ Package metacatui {
     + blockedMemberNodes : String [*]
     + replicationAllowed : Boolean
     + numberReplicas : Integer
-    + validate()
-    + createXML()
+    + validate() : Boolean
+    + toXML() : String
     }
 
     Class AccessRule <<Backbone.Model>> {
       + subject : String [*]
       + permission : String [*]
-      + validate()
-      + createXML()
+      + validate() : Boolean
+      + toXML() : String
     }
   }
+  
   Class SystemMetadata <<Backbone.Model>> {
     + serialVersion : String
     + identifier : String
@@ -70,8 +71,8 @@ Package metacatui {
     + originMemberNode : String
     + authoritativeMemberNode : String
     + replica : Replica [*]
-    + validate()
-    + createXML()
+    + validate() : Boolean
+    + toXML() : String
   }
 
   Class DataONEObject <<Backbone.Model>> {
@@ -88,7 +89,7 @@ Package metacatui {
     + fetch()
     + destroy()
     + update()
-    + validate()
+    + validate() : Boolean
     + toRDF()
   }
 
@@ -120,8 +121,8 @@ Package eml {
     + pubPlace : String
     + methods : EMLMethods [*]
     + project : EMLProject [*]
-    + validate()
-    + createXML()
+    + validate() : Boolean
+    + toXML() : String
   }
   note right : "For now, we model the EML dataset module. \nWe'll refactor to support the software, citation, and \nprotocol modules as needed."
 
@@ -133,24 +134,28 @@ Package eml {
     + surName : String
     + organizationName : String
     + role : String
-    + createXML() : String
-    + validate()
-    + createXML()
+    + toXML() : String
+    + validate() : Boolean
+    + toXML() : String
   }
 
   Class EMLKeyword <<Backbone.Model>> {
     + keyword : String
     + type : String
     + keywordThesaurus : String
-    + validate()
-    + createXML()
+    + validate() : Boolean
+    + toXML() : String
   }
 
   Class EMLDistribution <<Backbone.Model>> {
   }
 
   Class EMLCoverage <<Backbone.Model>> {
-
+    + geographicCoverages : GeographicCoverage [*]
+    + temporalCoverages : TemporalCoverage [*]
+    + taxanomicCoverages : TaxonomicCoverage [*]
+	+ validate() : Boolean
+	+ toXML() : String
   }
 
   Class EMLMethods <<Backbone.Model>> {
