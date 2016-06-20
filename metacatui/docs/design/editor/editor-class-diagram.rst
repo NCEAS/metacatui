@@ -155,17 +155,17 @@ Package eml {
 DataPackage o-- DataONEObject : collectionOf
 DataONEObject <|-- EML : subclassOf
 DataONEObject <-right- SystemMetadata : describes
-SystemMetadata o-right- AccessRule : contains
-SystemMetadata o-- ReplicationPolicy : contains
-SystemMetadata o-- Replica : contains
+SystemMetadata *-right- AccessRule : contains
+SystemMetadata *-- ReplicationPolicy : contains
+SystemMetadata *-- Replica : contains
 
-EML o-- EMLParty: hasModule
-EML o-- EMLMethods: hasModule
-EML o-- EMLProject: hasModule
-EML o-- EMLCoverage: hasModule
-EML o-- EMLDistribution: hasModule
-EML o-- EMLKeyword: hasModule
-EML o-- EMLAccess: hasModule
+EML *-- EMLParty: hasModule
+EML *-- EMLMethods: hasModule
+EML *-- EMLProject: hasModule
+EML *-- EMLCoverage: hasModule
+EML *-- EMLDistribution: hasModule
+EML *-- EMLKeyword: hasModule
+EML *-- EMLAccess: hasModule
 EML <.. EMLViewer: listensTo
 
 @enduml
