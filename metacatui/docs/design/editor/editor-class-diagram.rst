@@ -179,9 +179,9 @@ Class Diagram
          + geographicCoverages : GeographicCoverage [*]
          + temporalCoverages : TemporalCoverage [*]
          + taxanomicCoverages : TaxonomicCoverage [*]
-           + validate() : Boolean
+         + validate() : Boolean
          + toGeoJSON() : GeoJSONObject
-           + toXML() : String
+         + toXML() : String
          + fromXML() : EMLCoverage
        }
        
