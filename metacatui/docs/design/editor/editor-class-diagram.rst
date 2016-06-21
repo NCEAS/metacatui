@@ -8,7 +8,7 @@ MetacatUI and EML Modules
 
 We divide the architecture up into two modules: MetacatUI, and EML.  The EML module will be a standalone Backbone application that is used by the MetacatUI application.  This is experimental - we do see some tight dependencies that might not allow for the separation.
 
-class Diagram
+Class Diagram
 -------------
 
 ..
@@ -258,3 +258,13 @@ class Diagram
    @enduml
 
 .. image:: editor-class-diagram.png
+
+Implementation Decisions
+------------------------
+- Each DataONEObject will get assigned a SID and a PID. When publish() is called, we assign a DOI to both the SID and the PID, separately. Citations with SIDs will return the latest data package, citations with PIDs will always return the same DataPackage.
+- The DataPackage object will extend Backbone.Collection, and we’ll keep track of both the parent package and the child packages using the Backbone-generated id for the object
+- The EML.isEditable property will control whether or not the editor is enabled in the EMLView
+- We’ll model the EML modules as minimally as needed, using complex types as needed, like EMLParty
+- For now, for we will postpone modeling eml-text, eml-entity modules, and won’t support the maintenance tree
+- Instead of modeling EML with its four submodules (dataset, software, citation, protocol, for now we’re keeping the model simple and only supporting EMLDataset
+- We won’t support the references tag in ``/eml/dataset`
