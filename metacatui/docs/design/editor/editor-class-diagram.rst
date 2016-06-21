@@ -236,20 +236,20 @@ Class Diagram
        
      }
      DataPackage o-- DataONEObject : collectionOf
-     DataONEObject <|-- EML : subclassOf
+     DataONEObject <|-- EML : "          subclassOf"
      DataONEObject <-right- SystemMetadata : describes
-     SystemMetadata *-right- AccessRule : contains
-     SystemMetadata *-- ReplicationPolicy : contains
-     SystemMetadata *-- Replica : contains
-     SystemMetadata *-- MediaType : contains
-     EML *-- EMLParty : hasModule
+     SystemMetadata *-right- AccessRule : "                        contains"
+     SystemMetadata *-- ReplicationPolicy : "    contains"
+     SystemMetadata *-- Replica : "  contains"
+     SystemMetadata *-- MediaType : "            contains"
+     EML *-- EMLParty : "                                                    hasModule"
      EML *-- EMLMethods : hasModule
      EML *-- EMLProject : hasModule
      EML *-- EMLCoverage : hasModule
-     EMLCoverage *-- GeographicCoverage : contains
-     EMLCoverage *-- TemporalCoverage : contains
-     EMLCoverage *-- TaxonomicCoverage : contains
-     TaxonomicCoverage *-- Taxon : contains
+     EMLCoverage *-- GeographicCoverage : "                    contains"
+     EMLCoverage *-- TemporalCoverage : "    contains"
+     EMLCoverage *-- TaxonomicCoverage : "contains"
+     TaxonomicCoverage *-- Taxon : "    contains"
      EML *-- EMLDistribution : hasModule
      EML *-- EMLKeyword : hasModule
      EML *-- EMLAccess : hasModule
