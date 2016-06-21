@@ -255,7 +255,20 @@ function ($, _, Backbone) {
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-			appUserModel.logout();
+			
+			if(((typeof appModel.get("tokenUrl") == "undefined") || !appModel.get("tokenUrl")) && !appView.registryView){
+				require(['views/RegistryView'], function(RegistryView){
+					appView.registryView = new RegistryView();
+					if(appView.currentView.onClose)
+						appView.currentView.onClose();
+					appUserModel.logout();
+				});
+			}
+			else{
+				if(appView.currentView.onClose)
+					appView.currentView.onClose();
+				appUserModel.logout();
+			}	
 		},
 		
 		renderExternal: function(url) {

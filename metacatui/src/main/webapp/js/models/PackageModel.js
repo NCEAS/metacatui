@@ -160,7 +160,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			if(Array.isArray(rMapIds) && (rMapIds.length > 1)){
 				_.each(rMapIds, function(id, i, ids){
 					if(rMapQuery.length == 0) rMapQuery += "resourceMap:(";
-					else if(i+1 == ids.length) rMapQuery += ")";
+					else if(i+1 == ids.length){
+						rMapQuery += ")";
+						return;
+					}
 					else rMapQuery += " OR ";
 					
 					rMapQuery += "%22" + encodeURIComponent(id) + "%22";

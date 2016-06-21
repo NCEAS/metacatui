@@ -439,8 +439,10 @@ define(['jquery',
 					if(title.length) title = title.parents(".control-group");
 				}
 			}
-			if(title.length) title.detach();
+			if(title.length) title.remove();
 			
+			//Remove ecogrid links and replace them with workable links
+			this.replaceEcoGridLinks();
 		},
 		
 		/*
@@ -478,7 +480,7 @@ define(['jquery',
 					viewRef.insertPackageTable(packageModel, { title: title });
 						
 					_.each(nestedPckgs, function(nestedPackage, i, list){						
-						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View this dataset <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 				}
@@ -502,20 +504,21 @@ define(['jquery',
 						
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
-				numTables = additionalTables.children(".download-contents").length;
+				numTables = additionalTables.children(".download-contents").length,
+				item = (numTables == 1)? "dataset" : "datasets";
 			if(numTables > 0){
 				var expandIcon = $(document.createElement("i")).addClass("icon icon-level-down"),
 					expandLink = $(document.createElement("a"))
 								.attr("href", "#")
 								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
-								.text("Show " + numTables + " nested datasets")
+								.text("Show " + numTables + " nested " + item)
 								.prepend(expandIcon),
 					collapseLink = $(document.createElement("a"))
 								.attr("href", "#")
 								.addClass("toggle-slide toggle-display-on-slide")
 								.attr("data-slide-el", "additional-tables-for-" + this.cid)
-								.text("Hide nested datasets")
+								.text("Hide nested " + item)
 								.hide(),
 					expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
 				
@@ -1142,6 +1145,8 @@ define(['jquery',
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
 		 */
 		insertDataDetails: function(){
+			console.log("insert data details");
+			
 			//If there is a metadataIndex subview, render from there.
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
 			if(typeof metadataFromIndex !== "undefined"){
@@ -1184,21 +1189,53 @@ define(['jquery',
 											  src : solrResult.get("url"), 
 										    objID : objID
 						});
+					
+					console.log("displaying package member:" + solrResult.type);
 	
 					//Insert the data display HTML and the anchor tag to mark this spot on the page 
 					if(container){
-						if((type == "image") || (type == "PDF")){
+						if((type == "image") || (type == "PDF")){							
+							if((type == "PDF") && !solrResult.get("isPublic")){
+								console.log("private PDF");
+								
+								dataDisplay = $.parseHTML(dataDisplay.trim());
+								
+								//Send the auth token in a XHR request to get the PDF
+								//Create an XHR
+								var xhr = new XMLHttpRequest();
+								xhr.responseType = "blob";
+								xhr.withCredentials = true;
+							
+								//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+								xhr.onload = function(){ 
+								    var iframe = $(dataDisplay).find("iframe");
+								    iframe.attr("src", window.URL.createObjectURL(xhr.response)); // xhr.response is a blob
+								    var a = $(dataDisplay).find("a.zoom-in").remove();
+								    //TODO: Allow fancybox previews of private PDFs
+								    
+								};
+								
+								//Open and send the request with the user's auth token
+								xhr.open('GET', solrResult.get("url"));
+								xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+								xhr.send();
+							}
+								
+							//Insert into the page
 							if($(container).children("label").length > 0)
 								$(container).children("label").first().after(dataDisplay);
 							else
 								$(container).prepend(dataDisplay);
+							
 						}
+						
 						$(container).prepend(anchor);
 						
 						var nameLabel = $(container).find("label:contains('Entity Name')");
 						if(nameLabel.length > 0)
 							$(nameLabel).parent().after(downloadButton);
-					}				
+					}	
+				
 				}
 							
 				//==== Initialize the fancybox images =====
@@ -1385,43 +1422,21 @@ define(['jquery',
 			}
 		},
 		
-		replaceEcoGridLinks: function(pids){
+		replaceEcoGridLinks: function(){
 			var viewRef = this;
 			
 			//Find the element in the DOM housing the ecogrid link
-			$("label:contains('Online Distribution Info')").next().each(function(){
-				var link = $(this).find("a:contains('ecogrid://')");
-				_.each(link, function(thisLink){
+			$("a:contains('ecogrid://')").each(function(i, thisLink){
 					
 					//Get the link text
 					var linkText = $(thisLink).text();
 					
 					//Clean up the link text
-					var start = linkText.lastIndexOf("/");
-					var ecogridPid = linkText.substr(start+1);
+					var withoutPrefix = linkText.substring(linkText.indexOf("ecogrid://") + 10),
+						pid = withoutPrefix.substring(withoutPrefix.indexOf("/")+1),
+						baseUrl = appModel.get('objectServiceUrl') || appModel.get('resolveServiceUrl');
 					
-					//Iterate over each id in the package and try to fuzzily match the ecogrid link to the id
-					for(var i = 0; i < pids.length; i++){
-						
-						//If we find a match, replace the ecogrid links with a DataONE API link to the object
-						if(pids[i].indexOf(ecogridPid) > -1){
-							
-							$(thisLink).attr('href', appModel.get('objectServiceUrl') + encodeURIComponent(pids[i]));
-							$(thisLink).text(pids[i]);
-							
-							//Insert an anchor at the parent element that contains the data object detials
-							var parents = $(thisLink).parents();
-							_.each(parents, function(parent){
-								if($(parent).hasClass("dataTableContainer"))
-									$(parent).prepend('<a name="' + pids[i] + '"></a>');
-							});
-														
-							//We can stop looking at the pids now
-							i = pids.length;
-						}
-					}
-				});			
-				
+					$(thisLink).attr('href', baseUrl + encodeURIComponent(pid)).text(pid);		
 			});
 		},
 		

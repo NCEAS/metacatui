@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
-			d1CNBaseUrl: "https://cn-sandbox-2.test.dataone.org/",
+			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
@@ -52,6 +52,7 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
+			//grantsUrl: null,
 			//bioportalSearchUrl: null,
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
@@ -90,7 +91,10 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
 			if(this.get("useJsonp"))
-				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");			
+				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");		
+			
+			if(typeof this.get("grantsUrl") !== "undefined")
+				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
 			
 			//DataONE CN API 
 			if(this.get("d1CNBaseUrl")){

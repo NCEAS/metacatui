@@ -37,7 +37,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			"click #resetPassword"          : "resetPassword",
 			"click #changePassword"           : "changePassword",
 			"keypress input[name='password']" : "submitOnEnter",
-			"keypress input[name='uid']"      : "submitOnEnter"
+			"keypress input[name='uid']"      : "submitOnEnter",
+			"click .remove-award"             : "removeAward",
+			"keypress #funding-visible"       : "addAwardOnEnter"
 		},
 
 		initialize: function () {
@@ -128,12 +130,11 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						//Add additional form elements
 						viewRef.augementForm();
 						
-						viewRef.fixModalLinks();
 						viewRef.modifyLoginForm();
 						viewRef.$el.hide();
 						viewRef.$el.fadeIn('slow', function(){
 							viewRef.trigger("postRender");
-							viewRef.setUpAutocompletes();
+							viewRef.createAwardHelpers();
 						});			
 						
 						//Start showing progress updates
@@ -152,16 +153,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			if (registryEntryForm.length && !appUserModel.get('username')) {
 				uiRouter.navigate("signout", {trigger: true});
 			}
-		},
-		
-		fixModalLinks: function() {
-			var baseUrl = appModel.get("baseUrl");
-			$("#myModal").each(function(index, element) {
-				var href = baseUrl + $(element).attr('data-remote');
-				$(element).attr('data-remote', href);
-			});
-			// disable the pointer to old api
-			$("a[href*='metacat?action=read&qformat=']").removeAttr("href");
 		},
 		
 		augementForm: function() {
@@ -211,62 +202,162 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		},
 		
 		/*
-		 * Set up autocompletes for the Registry - for now, only the grant number has an autocomplete
+		 * Set up an autocomplete and table for the award numbers field 
 		 */
-		setUpAutocompletes: function() {
-			if(!appModel.get("grantsUrl")) return;
+		createAwardHelpers: function() {			
+			var view = this;
 			
-			// Look up Grant numbers and titles from NSF
-			var input = this.$("#funding");
+			//Get the award number input element
+			var input = this.$("#funding-visible");
 			if(!input || !input.length) return;
 			
-			//Create a help message next to the text input
-			var defaultMsg = "Enter an award number or search for an award by keyword.";
-			var helpMsg = $(document.createElement("div")).addClass("input-help-msg subtle").text(defaultMsg);
-			input.after(helpMsg);
+			//Add the "add" button
+			var addBtn = $(document.createElement("a")).addClass("btn input-submit").text("Add").prepend("<i class='icon icon-plus icon-on-left'></i>");
+			input.after(addBtn);
+			//$(addBtn).on("click", this.addAward);
+			
+			//Check if there are award numbers entered into the field right now
+			var currentAwards = $("#funding").val();
+			if(currentAwards){
+				//Add these awards to the list
+				_.each(currentAwards.split(","), function(awardId){
+					//See if there is a title for this award in the award lookup
+					appLookupModel.getGrant(awardId, function(award){
+						//If a match is found, add it to the list
+						view.addAward(award);						
+					}, function(){
+						//If no match is found, add it to the list without a title
+						view.addAward({ id: awardId });
+					});					
+				});
+			}
+			
+			//When the user is done entering a grant number, get the grant title from the API
+			$(input).focusout(function(){
 					
+				if(appModel.get("grantsUrl")){
+					//Get the award title and id
+					appLookupModel.getGrant(
+							input.val(), 
+							function(award){							
+								//Display this award							
+								view.addAward(award);
+							},
+							function(){
+								//Display this award as-is						
+								view.addAward({ id: input.val() });
+							}
+					);
+				}
+				else{
+					var award = {
+							id: input.val()
+					}
+					if(!award.id) return;
+					
+					view.addAward(award);
+				}
+			});
+			
+			//Only proceed if we have configured this app with the grants API url
+			if(!appModel.get("grantsUrl")) return;	
+			
+			//Add help text when we can do a lookup
+			input.siblings(".input-help-msg").text("Enter an award number or search for an NSF award by keyword.");
+			
 			//Setup the autocomplete widget
 			$(input).hoverAutocomplete({
 				source: appLookupModel.getGrantAutocomplete,
 				select: function(e, ui) {
 					e.preventDefault();
-					
-					// set the text field
-					$(e.target).val(ui.item.value);
-					helpMsg.text("You selected: " + ui.item.label).addClass("success").attr("data-award-id", ui.item.value);
+										
+					view.addAward({ title: ui.item.label, id: ui.item.value });
 				},
 				position: {
 					my: "left top",
 					at: "left bottom",
-					of: "#funding",
+					of: "#funding-visible",
 					collision: "fit"
 				},
 				appendTo: input.parent(),
 				minLength: 3
 			});
-			input.parents(".accordion-body").addClass("ui-autocomplete-container");
-
-			//When the user is done entering a grant number, get the grant title from the API
-			$(input).focusout(function(){
-				//If the help message already displays the grant title, return
-				if((helpMsg.attr("data-award-id") == input.val()) && (input.val().length > 0)) return;
-				//If no grant number was added, set the help message back to its defaults
-				else if (!input.val()){
-					helpMsg.removeClass("success").attr("data-award-id", "").text(defaultMsg);
-					return;
-				}
-				
-				//Get the grant title and id
-				appLookupModel.getGrant(
-						input.val(), 
-						function(award){
-							helpMsg.text("You selected: " + award.title).attr("data-award-id", award.id).addClass("success");
-						},
-						function(){
-							helpMsg.removeClass("success").attr("data-award-id", "").text("Warning: No NSF award with that number could be found.");
-						});				
-			});
+			input.parents(".accordion-body").addClass("ui-autocomplete-container");			
+		},
+		
+		addAward: function(award){
+			if(!award.id) return;
 			
+			//Don't add duplicates
+			if($("#funding-list").find("[data-id='" + award.id + "']").length > 0){
+				
+				//Clear the input
+				$("#funding-visible").val("");
+				
+				//Display an error msg
+				var helpMsg = $("#funding").siblings(".input-help-msg"),
+					originalMsg = helpMsg.text();				
+				$(helpMsg).addClass('danger').text("That award was already added.");
+				
+				//Remove the message after some time
+			    setTimeout(function(){
+			    	helpMsg.removeClass('danger').text(originalMsg);
+			      }, 2000);
+			
+				return;
+			}
+			
+			//Display this award
+			var title = award.title || (appModel.get("grantsUrl")? "Award name unknown (this award number was not found in the NSF database.)" : null),
+				titleEl = title? $(document.createElement("td")).text(title) : null,
+				numberEl = $(document.createElement("td")).text(award.id),
+				removeEl = $(document.createElement("td")).addClass("cell-icon").append('<a><i class="icon-remove-sign icon remove-award pointer" alt="Delete"></i></a>'),
+				row = $(document.createElement("tr")).append(titleEl, numberEl, removeEl).attr("data-id", award.id).addClass("funding-list-item");							
+			
+			//Style as a warning if we are looking up awards and there is no match
+			if(appModel.get("grantsUrl") && !award.title)
+				row.addClass("warning");
+				
+			//Add the row
+			$("#funding-list").append(row);
+			
+			//Clear the input and add the new award number to the hidden input
+			this.$("#funding-visible").val("");
+			if($("#funding").val()){
+				var ids = this.$("#funding").val().split(",");
+				if(!_.contains(ids, award.id))
+					$("#funding").val($("#funding").val() + "," + award.id);
+			}
+			else
+				$("#funding").val(award.id);
+		},
+		
+		removeAward: function(e){
+			if(!e) return;
+			
+			//Get the remove link that was clicked
+			var removeLink = e.target;
+			if(!removeLink) return;
+			
+			//Get the id of the award that was removed
+			var removeId = $(removeLink).parents("tr").attr("data-id");
+			
+			//Remove the table row that displays this award
+			$("#funding-list [data-id='" + removeId + "']").remove();
+			
+			//Remove the award id from the hidden input value
+			var ids = this.$("#funding").val().split(",");
+			this.$("#funding").val(_.without(ids, removeId).toString());
+		},
+		
+		addAwardOnEnter: function(e){
+			if (e.keyCode != 13) return;
+			
+			var award = {
+					id: $("#funding-visible").val()
+			}
+			
+			this.addAward(award);			
 		},
 		
 		/*
@@ -429,7 +520,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				    	else{
 				    		contentArea.html(data);
 							viewRef.augementForm();
-							viewRef.setUpAutocompletes();
+							viewRef.createAwardHelpers();
 				    	}
 				    	
 				    	//Scroll to the top of the page
@@ -598,9 +689,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					
 					// Success?
 					if (metacatUrl) {
-						// submit the Metacat API login form
+						// submit the Metacat API logout form
 						var logoutFormData = viewRef.$("form").serialize();
-						var loginSettings = {
+						var logoutSettings = {
 							type: "POST",
 							xhrFields: {
 								withCredentials: true
@@ -608,17 +699,23 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 							url: metacatUrl,
 							data: logoutFormData,
 							success: function(data1, textStatus1, xhr1) {
-								// don't really do anything with this - browser has the JSESSIONID cookie now
-								
+								/*
 								// Reset the user model username
 								appUserModel.set("username", null);
 								
 								// trigger the check for logged in user
-								appUserModel.checkStatus();
+								appUserModel.checkStatus(function(){
+									viewRef.render.call(viewRef);
+								}, function(){
+									viewRef.render.call(viewRef);
+								});	*/
+								appUserModel.reset();
+								viewRef.render();
+								
 							}
 						}
 
-						$.ajax(_.extend(loginSettings, appUserModel.createAjaxSettings()));
+						$.ajax(_.extend(logoutSettings, appUserModel.createAjaxSettings()));
 
 					} else {
 						// just show what was returned (error message)
@@ -627,9 +724,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					
 					// clean up the temp area
 					viewRef.$('#tempMetacatContainer').remove();
-					
-					// do we want to load the registry, or just let other controller decide the next view?
-					viewRef.render();
 
 				}
 			}

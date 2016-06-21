@@ -1408,6 +1408,9 @@ table.download-contents.nested{
 .table .table-header{
 	border-bottom: 1px solid #8DA2AA;
 }
+.table-header-link{
+	font-weight: normal;	
+}
 .download-contents .btn .icon,
 .download-contents .preview .icon{
 	font-size: 1em;
@@ -2379,6 +2382,13 @@ input.subtle:focus,
 {
 	width: 200px;
 }
+.input-submit{
+	margin-left: 10px;
+    height: 1em;
+    line-height: 1em;
+    border-color: #666;
+    color: #666;
+}
 #funding-group .ui-helper-hidden-accessible{
 	display: none;
 }
@@ -2395,6 +2405,9 @@ input.subtle:focus,
 .input-help-msg{
 	padding: .5em 0;
 }
+.cell-icon{
+	width: 1em;	
+}
 .progress{
 	margin-top: 2em;
 }
@@ -2403,6 +2416,9 @@ input.subtle:focus,
 }
 #collapseParties .popover{
 	z-index: 0;	
+}
+#RegistryGuide > div{
+	font-size: 1.8em;
 }
 /*******************************************
 Pager View
