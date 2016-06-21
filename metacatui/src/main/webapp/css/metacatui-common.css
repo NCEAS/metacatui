@@ -1408,6 +1408,9 @@ table.download-contents.nested{
 .table .table-header{
 	border-bottom: 1px solid #8DA2AA;
 }
+.table-header-link{
+	font-weight: normal;	
+}
 .download-contents .btn .icon,
 .download-contents .preview .icon{
 	font-size: 1em;

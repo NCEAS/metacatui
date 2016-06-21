@@ -480,7 +480,7 @@ define(['jquery',
 					viewRef.insertPackageTable(packageModel, { title: title });
 						
 					_.each(nestedPckgs, function(nestedPackage, i, list){						
-						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '">(View this dataset <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 				}
@@ -1208,6 +1208,9 @@ define(['jquery',
 								xhr.onload = function(){ 
 								    var iframe = $(dataDisplay).find("iframe");
 								    iframe.attr("src", window.URL.createObjectURL(xhr.response)); // xhr.response is a blob
+								    var a = $(dataDisplay).find("a.zoom-in").remove();
+								    //TODO: Allow fancybox previews of private PDFs
+								    
 								};
 								
 								//Open and send the request with the user's auth token
