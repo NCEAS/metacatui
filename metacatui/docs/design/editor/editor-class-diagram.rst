@@ -155,10 +155,20 @@ Class Diagram
        }
        
        class EMLParty <<Backbone.Model>> {
-         + givenName : String [*]
+         + givenName : String
          + surName : String
          + organizationName : String
          + role : String
+         + deliveryPoint : String [*]
+         + city : String
+         + administrativeArea : String
+         + postalCode : String
+         + country : String
+         + phone : String [*]
+         + fax : String [*]
+         + electronicMailAddress : String [*]
+         + onlineUrl : String [*]
+         + userId : String [*]
          + toXML() : String
          + validate() : Boolean
          + toXML() : String
