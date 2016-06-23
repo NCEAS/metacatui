@@ -350,20 +350,74 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						
 			//We need to use the jQuery plugin jQuery.form so we can submit files in older browsers
 			var requestSettings = {
-			    url: this.registryUrl,
-			    cache: false,
-			    contentType: false,
-			    processData: false,
-			    type: 'POST',
+				url: this.registryUrl,
+				cache: false,
+				contentType: false,
+				processData: false,
+				type: 'POST',
 				xhrFields: {
 					withCredentials: true
 				},
-			    success: function(data, textStatus, jqXHR) {
-
-			    	contentArea.html(data);
+				uploadProgress: function(evt, position, total, percentComplete) {
 					
-			    	//Scroll to the top of the page
-			    	view.scrollToTop();
+					// note incoming total is in KB
+					var byteLabel = "KB"; // Bytes
+					var currentBytes = 0;
+					var totalBytes = 0;
+					
+					if ( total > 0 ) {
+						if ( total > Math.pow(2, 30) ) {
+							// Gigabytes
+							byteLabel = "GB";
+							currentBytes = position/Math.pow(10, 9);
+							totalBytes = total/Math.pow(10, 9);
+							
+						} else if ( total > Math.pow(2, 20) ) {
+							// Megabytes
+							byteLabel = "MB";
+							currentBytes = position/Math.pow(10, 6);
+							totalBytes = total/Math.pow(10, 6);
+							
+ 						} else {
+							// Kilobytes
+							currentBytes = position;
+							totalBytes = total;
+							
+						}
+						
+					}
+					// Format to two significant figures
+					totalBytes = totalBytes.toFixed(2);
+					currentBytes = currentBytes.toFixed(2);
+					
+					var progressHTML = "<h2>Uploading data files and checking metadata</h2>";					
+					progressHTML += "<p>";
+					progressHTML += currentBytes;
+					progressHTML += "&nbsp"; 
+					progressHTML += byteLabel;
+					progressHTML += "&nbsp; of &nbsp;";
+					progressHTML += totalBytes;
+					progressHTML += "&nbsp"; 
+					progressHTML += byteLabel;
+					progressHTML += "</p>";
+					
+					progressHTML += "<div class=\"progress progress-success progress-striped\">";
+					progressHTML += "<div class=\"progress-bar progress-bar-success\"";
+					progressHTML += " role=\"progressbar\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\"";
+					progressHTML += " style=\"color: #777777; width:";
+					progressHTML += percentComplete; 
+					progressHTML += "% \" />&nbsp;";
+					progressHTML += percentComplete;
+					progressHTML += " %</div></div>";
+					contentArea.html(progressHTML);
+					
+				},
+				success: function(data, textStatus, jqXHR) {
+
+					contentArea.html(data);
+					
+					//Scroll to the top of the page
+					view.scrollToTop();
 				}
 			}
 			
