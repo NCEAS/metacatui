@@ -96,7 +96,7 @@ Class Diagram
          + toXML() : String
        }
        
-       class DataONEObject <<Backbone.Model>> {
+       class DataONEObject <<Backbone.UniqueModel>> {
        }
        
        class DataPackage <<Backbone.Collection>> {
@@ -141,6 +141,7 @@ Class Diagram
          + methods : EMLMethods [*]
          + project : EMLProject [*]
          + validate() : Boolean
+         + fromXML() : EML
          + toXML() : String
        }
        
@@ -169,8 +170,8 @@ Class Diagram
          + electronicMailAddress : String [*]
          + onlineUrl : String [*]
          + userId : String [*]
-         + toXML() : String
          + validate() : Boolean
+         + fromXML() : EMLParty
          + toXML() : String
        }
        
@@ -179,6 +180,7 @@ Class Diagram
          + type : String
          + keywordThesaurus : String
          + validate() : Boolean
+         + fromXML() : EMLKeyword
          + toXML() : String
        }
        
@@ -190,7 +192,6 @@ Class Diagram
          + temporalCoverages : TemporalCoverage [*]
          + taxanomicCoverages : TaxonomicCoverage [*]
          + validate() : Boolean
-         + toGeoJSON() : GeoJSONObject
          + toXML() : String
          + fromXML() : EMLCoverage
        }
@@ -205,11 +206,12 @@ Class Diagram
            + fromXML() : GeographicCoverage
          }
          
-         class TemporalCoverage {
+         class TemporalCoverage <<Backbone.Model>> {
            + beginDate : String
            + beginTime : String
            + endDate : String
            + endTime : String
+           + validate() : Boolean
            + toXML() : String
            + fromXML() : TemporalCoverage
          }
@@ -222,15 +224,21 @@ Class Diagram
            alternative time scales.
          end note
          
-         class TaxonomicCoverage {
-           taxonomicClassifications : Taxon [*]
+         class TaxonomicCoverage <<Backbone.Model>> {
+           + taxonomicClassifications : Taxon [*]
+           + validate() : Boolean
+           + fromXML() : TaxanomicCoverage
+           + toXML() : String
          }
          
-         class Taxon {
+         class Taxon <<Backbone.Model>> {
            + parentId : String
            + taxonomicRank : String
            + taxonomicValue : String
            + commonNames : String [*]
+           + validate() : Boolean
+           + fromXML() : Taxon
+           + toXML() : String
          }
          
        }
@@ -246,7 +254,7 @@ Class Diagram
        
      }
      DataPackage o-- DataONEObject : collectionOf
-     DataONEObject <|-- EML : "          subclassOf"
+     DataONEObject <|-- EML : "              subclassOf"
      DataONEObject <-right- SystemMetadata : describes
      SystemMetadata *-right- AccessRule : "                        contains"
      SystemMetadata *-- ReplicationPolicy : "    contains"
