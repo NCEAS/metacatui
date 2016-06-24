@@ -49,7 +49,8 @@ Class Diagram
            + replicationStatus : String
            + replicaVerified : String
            + validate() : Boolean
-           - toXML() : String
+           + parse() : Replica
+           + toXML() : String
          }
          
          class ReplicationPolicy <<Backbone.Model>> {
@@ -58,6 +59,7 @@ Class Diagram
            + replicationAllowed : Boolean
            + numberReplicas : Integer
            + validate() : Boolean
+           + parse() : ReplicationPolicy
            + toXML() : String
          }
          
@@ -66,12 +68,22 @@ Class Diagram
            + permission : String [*]
            + allow : Boolean
            + validate() : Boolean
+           + parse() : AccessRule
            + toXML() : String
          }
          
        }
+              
+       class QualityGuideResults <<Backbone.Model>> {
+       }
        
-       class SystemMetadata <<Backbone.Model>> {
+       note bottom
+         We'll wait to model the quality guide 
+         results until we have a better understanding 
+         of the MDQ engine output
+       end note
+       
+       class DataONEObject <<Backbone.UniqueModel>> {
          + serialVersion : String
          + identifier : String
          + formatId : String
@@ -94,19 +106,8 @@ Class Diagram
          + mediaType : MediaType
          + fileName : String
          + validate() : Boolean
+         + parse() : DataONEObject
          + toXML() : String
-       }
-       
-       class QualityGuideResults <<Backbone.Model>> {
-       }
-       
-       note right
-         We'll wait to model the quality guide 
-         results until we have a better understanding 
-         of the MDQ engine output
-       end note
-       
-       class DataONEObject <<Backbone.UniqueModel>> {
        }
        
        class DataPackage <<Backbone.Collection>> {
@@ -121,6 +122,7 @@ Class Diagram
          + destroy()
          + update()
          + validate() : Boolean
+         + parse() : DataPackage
          - toRDF() : String
        }
        
@@ -200,6 +202,7 @@ Class Diagram
          + url : String
          + urlFunction : String (information or download)
          + onlineDescription : String
+         + parse() : EMLOnlineDist
          + toXML() : String
        }
        
@@ -208,74 +211,76 @@ Class Diagram
          + mediumVolume : String
          + mediumFormat : String
          + mediumNote : String
+         + parse() : EMLOfflineDist
          + toXML() : String
        }
               
-         class GeographicCoverage {
-           - data : GeoJSONObject
-           + validate() : Boolean
-           + toGeoJSON() : String
-           + fromGeoJSON() : GeoJSONObject
-           + toXML() : String
-           + parse()  : GeographicCoverage
-         }
-         
-         class TemporalCoverage <<Backbone.Model>> {
-           + beginDate : String
-           + beginTime : String
-           + endDate : String
-           + endTime : String
-           + validate() : Boolean
-           + toXML() : String
-           + parse()  : TemporalCoverage
-         }
-         
-         note bottom
-           We will first only support
-           Gregorian dates. We'll change
-           the property types from String
-           to a subclass when we support
-           alternative time scales.
-         end note
-         
-         class Taxon <<Backbone.Model>> {
-           + parentId : String
-           + taxonomicRank : String
-           + taxonomicValue : String
-           + commonNames : String [*]
-           + validate() : Boolean
-           + parse()  : Taxon
-           + toXML() : String
-         }
+       class GeographicCoverage {
+         - data : GeoJSONObject
+         + validate() : Boolean
+         + toGeoJSON() : String
+         + fromGeoJSON() : GeoJSONObject
+         + parse() : GeographicCoverage
+         + toXML() : String
+       }
+       
+       class TemporalCoverage <<Backbone.Model>> {
+         + beginDate : String
+         + beginTime : String
+         + endDate : String
+         + endTime : String
+         + validate() : Boolean
+         + parse() : TemporalCoverage
+         + toXML() : String
+       }
+       
+       note bottom
+         We will first only support
+         Gregorian dates. We'll change
+         the property types from String
+         to a subclass when we support
+         alternative time scales.
+       end note
+       
+       class Taxon <<Backbone.Model>> {
+         + parentId : String
+         + taxonomicRank : String
+         + taxonomicValue : String
+         + commonNames : String [*]
+         + validate() : Boolean
+         + parse() : Taxon
+         + toXML() : String
+       }
                 
        class EMLMethods <<Backbone.Model>> {
-       	   + methodSteps : { title : String, paragraph : String [*] } [*]
-       	   + studyExtent : { title : String, paragraph : String [*] } [*]
-       	   + samplingDescription : { title : String, paragraph : String [*] } [*]
-           + toXML() : String
+       	 + methodSteps : { title : String, paragraph : String [*] } [*]
+       	 + studyExtent : { title : String, paragraph : String [*] } [*]
+       	 + samplingDescription : { title : String, paragraph : String [*] } [*]
+         + parse() : EMLMethods
+         + toXML() : String
        }
        
        class EMLProject <<Backbone.Model>> {
-          + title : String
-          + funding : String 
-          + personnel : EMLParty [*]
-          + toXML() : String
+         + title : String
+         + funding : String 
+         + personnel : EMLParty [*]
+         + parse() : EMLProject
+         + toXML() : String
        }
        
      }
      DataPackage o-- DataONEObject : collectionOf
-     DataONEObject <|-- EML : "              subclassOf"
-     DataONEObject <-right- SystemMetadata : describes
-     DataONEObject <-left- QualityGuideResults : describes
-     SystemMetadata *-right- AccessRule : "                        contains"
-     SystemMetadata *-- ReplicationPolicy : "    contains"
-     SystemMetadata *-- Replica : "  contains"
-     SystemMetadata *-- MediaType : "            contains"
-     EML *-- EMLParty : "                                                    hasModule"
+     DataONEObject <|-- EML : "subclassOf"
+     DataONEObject <-- QualityGuideResults : describes
+     DataONEObject *-- AccessRule : "contains"
+     DataONEObject *-- ReplicationPolicy : "contains"
+     DataONEObject *-- Replica : "  contains"
+     DataONEObject *-- MediaType : "contains"
+     EML *-- EMLParty : "hasModule"
      EML *-- EMLMethods : hasModule
      EML *-- EMLProject : hasModule
-     EML *-- GeographicCoverage : "                    hasModule"
-     EML *-- TemporalCoverage : "    hasModule"
+     EML *-- GeographicCoverage : "hasModule"
+     EML *-- TemporalCoverage : "hasModule"
      EML *-- Taxon : "hasModule"
      EML *-- EMLOnlineDist : hasModule
      EML *-- EMLOfflineDist : hasModule
