@@ -49,7 +49,7 @@ Class Diagram
            + replicationStatus : String
            + replicaVerified : String
            + validate() : Boolean
-           + toXML() : String
+           - toXML() : String
          }
          
          class ReplicationPolicy <<Backbone.Model>> {
@@ -96,6 +96,15 @@ Class Diagram
          + toXML() : String
        }
        
+       class QualityGuideResults <<Backbone.Model>> {
+       }
+       
+       note right
+         We'll wait to model the quality guide 
+         results until we have a better understanding 
+         of the MDQ engine output
+       end note
+       
        class DataONEObject <<Backbone.UniqueModel>> {
        }
        
@@ -141,7 +150,7 @@ Class Diagram
          + methods : EMLMethods [*]
          + project : EMLProject [*]
          + validate() : Boolean
-         + fromXML() : EML
+         + parse()  : EML
          + toXML() : String
        }
        
@@ -171,7 +180,7 @@ Class Diagram
          + onlineUrl : String [*]
          + userId : String [*]
          + validate() : Boolean
-         + fromXML() : EMLParty
+         + parse()  : EMLParty
          + toXML() : String
        }
        
@@ -180,7 +189,7 @@ Class Diagram
          + type : String
          + keywordThesaurus : String
          + validate() : Boolean
-         + fromXML() : EMLKeyword
+         + parse()  : EMLKeyword
          + toXML() : String
        }
        
@@ -193,7 +202,7 @@ Class Diagram
          + taxanomicCoverages : TaxonomicCoverage [*]
          + validate() : Boolean
          + toXML() : String
-         + fromXML() : EMLCoverage
+         + parse()  : EMLCoverage
        }
        
        together {
@@ -203,7 +212,7 @@ Class Diagram
            + toGeoJSON() : String
            + fromGeoJSON() : GeoJSONObject
            + toXML() : String
-           + fromXML() : GeographicCoverage
+           + parse()  : GeographicCoverage
          }
          
          class TemporalCoverage <<Backbone.Model>> {
@@ -213,7 +222,7 @@ Class Diagram
            + endTime : String
            + validate() : Boolean
            + toXML() : String
-           + fromXML() : TemporalCoverage
+           + parse()  : TemporalCoverage
          }
          
          note bottom
@@ -227,7 +236,7 @@ Class Diagram
          class TaxonomicCoverage <<Backbone.Model>> {
            + taxonomicClassifications : Taxon [*]
            + validate() : Boolean
-           + fromXML() : TaxanomicCoverage
+           + parse()  : TaxanomicCoverage
            + toXML() : String
          }
          
@@ -237,7 +246,7 @@ Class Diagram
            + taxonomicValue : String
            + commonNames : String [*]
            + validate() : Boolean
-           + fromXML() : Taxon
+           + parse()  : Taxon
            + toXML() : String
          }
          
@@ -256,6 +265,7 @@ Class Diagram
      DataPackage o-- DataONEObject : collectionOf
      DataONEObject <|-- EML : "              subclassOf"
      DataONEObject <-right- SystemMetadata : describes
+     DataONEObject <-left- QualityGuideResults : describes
      SystemMetadata *-right- AccessRule : "                        contains"
      SystemMetadata *-- ReplicationPolicy : "    contains"
      SystemMetadata *-- Replica : "  contains"
