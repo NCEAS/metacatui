@@ -121,7 +121,7 @@ Class Diagram
          + destroy()
          + update()
          + validate() : Boolean
-         + toRDF()
+         - toRDF() : String
        }
        
      }
@@ -143,7 +143,9 @@ Class Diagram
          + intellectualRights : String [*]
          + onlineDist : EMLOnlineDist [*]
          + offlineDist : EMLOfflineDist [*]
-         + coverage : EMLCoverage
+         + geographicCoverages : GeographicCoverage [*]
+         + temporalCoverages : TemporalCoverage [*]
+         + taxonomicClassifications : Taxon [*]
          + purpose : String [*]
          + contact : EMLParty [*]
          + publisher : EMLParty [*]
@@ -208,17 +210,7 @@ Class Diagram
          + mediumNote : String
          + toXML() : String
        }
-       
-       class EMLCoverage <<Backbone.Model>> {
-         + geographicCoverages : GeographicCoverage [*]
-         + temporalCoverages : TemporalCoverage [*]
-         + taxanomicCoverages : TaxonomicCoverage [*]
-         + validate() : Boolean
-         + toXML() : String
-         + parse()  : EMLCoverage
-       }
-       
-       together {
+              
          class GeographicCoverage {
            - data : GeoJSONObject
            + validate() : Boolean
@@ -246,13 +238,6 @@ Class Diagram
            alternative time scales.
          end note
          
-         class TaxonomicCoverage <<Backbone.Model>> {
-           + taxonomicClassifications : Taxon [*]
-           + validate() : Boolean
-           + parse()  : TaxanomicCoverage
-           + toXML() : String
-         }
-         
          class Taxon <<Backbone.Model>> {
            + parentId : String
            + taxonomicRank : String
@@ -262,9 +247,7 @@ Class Diagram
            + parse()  : Taxon
            + toXML() : String
          }
-         
-       }
-       
+                
        class EMLMethods <<Backbone.Model>> {
        	   + methodSteps : { title : String, paragraph : String [*] } [*]
        	   + studyExtent : { title : String, paragraph : String [*] } [*]
@@ -291,11 +274,9 @@ Class Diagram
      EML *-- EMLParty : "                                                    hasModule"
      EML *-- EMLMethods : hasModule
      EML *-- EMLProject : hasModule
-     EML *-- EMLCoverage : hasModule
-     EMLCoverage *-- GeographicCoverage : "                    contains"
-     EMLCoverage *-- TemporalCoverage : "    contains"
-     EMLCoverage *-- TaxonomicCoverage : "contains"
-     TaxonomicCoverage *-- Taxon : "    contains"
+     EML *-- GeographicCoverage : "                    hasModule"
+     EML *-- TemporalCoverage : "    hasModule"
+     EML *-- Taxon : "hasModule"
      EML *-- EMLOnlineDist : hasModule
      EML *-- EMLOfflineDist : hasModule
      EML *-- EMLKeyword : hasModule
