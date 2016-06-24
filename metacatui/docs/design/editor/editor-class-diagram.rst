@@ -64,6 +64,7 @@ Class Diagram
          class AccessRule <<Backbone.Model>> {
            + subject : String [*]
            + permission : String [*]
+           + allow : Boolean
            + validate() : Boolean
            + toXML() : String
          }
@@ -117,7 +118,6 @@ Class Diagram
      }
      package eml {
        class EML <<Backbone.Model>> {
-         + access : EMLAccess
          + isEditable : Boolean
          + alternateIdentifier : String [*]
          + shortName : String
@@ -132,7 +132,8 @@ Class Diagram
          + keywordSet : EMLKeyword [*]
          + additionalInfo : String [*]
          + intellectualRights : String [*]
-         + distribution : EMLDistribution [*]
+         + onlineDist : EMLOnlineDist [*]
+         + offlineDist : EMLOfflineDist [*]
          + coverage : EMLCoverage
          + purpose : String [*]
          + contact : EMLParty [*]
@@ -172,7 +173,19 @@ Class Diagram
          + toXML() : String
        }
        
-       class EMLDistribution <<Backbone.Model>> {
+       class EMLOnlineDist <<Backbone.Model>> {
+         + url : String
+         + urlFunction : String (information or download)
+         + onlineDescription : String
+         + toXML() : String
+       }
+       
+       class EMLOfflineDist <<Backbone.Model>> {
+         + mediumName : String
+         + mediumVolume : String
+         + mediumFormat : String
+         + mediumNote : String
+         + toXML() : String
        }
        
        class EMLCoverage <<Backbone.Model>> {
@@ -226,12 +239,17 @@ Class Diagram
        }
        
        class EMLMethods <<Backbone.Model>> {
+       	   + methodSteps : { title : String, paragraph : String [*] } [*]
+       	   + studyExtent : { title : String, paragraph : String [*] } [*]
+       	   + samplingDescription : { title : String, paragraph : String [*] } [*]
+           + toXML() : String
        }
        
        class EMLProject <<Backbone.Model>> {
-       }
-       
-       class EMLAccess <<Backbone.Model>> {
+          + title : String
+          + funding : String 
+          + personnel : EMLParty [*]
+          + toXML() : String
        }
        
      }
@@ -250,9 +268,9 @@ Class Diagram
      EMLCoverage *-- TemporalCoverage : "    contains"
      EMLCoverage *-- TaxonomicCoverage : "contains"
      TaxonomicCoverage *-- Taxon : "    contains"
-     EML *-- EMLDistribution : hasModule
+     EML *-- EMLOnlineDist : hasModule
+     EML *-- EMLOfflineDist : hasModule
      EML *-- EMLKeyword : hasModule
-     EML *-- EMLAccess : hasModule
      EML <.. EMLViewer : listensTo
      
    @enduml
