@@ -105,6 +105,7 @@ Class Diagram
          + seriesId : String
          + mediaType : MediaType
          + fileName : String
+         + getSystemMetadata() : String
          + validate() : Boolean
          + parse() : DataONEObject
          + toXML() : String
