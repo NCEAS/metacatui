@@ -83,9 +83,104 @@ Class Diagram
          of the MDQ engine output
        end note
        
+       class ScienceMetadata {
+         abstract : String [*]
+         attribute : String [*]
+         attributeDescription : String [*]
+         attributeLabel : String [*]
+         attributeName : String [*]
+         attributeUnit : String [*]
+         author : String 
+         authorGivenName : String 
+         authoritativeMN : String 
+         authorLastName : String [*]
+         authorSurName : String 
+         beginDate : String 
+         changePermission : String [*]
+         contactOrganization : String [*]
+         datasource : String 
+         dataUrl : String 
+         dateModified : String 
+         datePublished : String 
+         dateUploaded : String 
+         decade : String 
+         documents : String [*]
+         edition : String 
+         endDate : String 
+         fileID : String 
+         formatType : String 
+         gcmdKeyword : String [*]
+         investigator : String [*]
+         isDocumentedBy : String [*]
+         isPublic : String 
+         keyConcept : String [*]
+         keywords : String [*]
+         mediaType : String 
+         mediaTypeProperty : String [*]
+         origin : String [*]
+         originator : String [*]
+         placeKey : String [*]
+         presentationCat : String 
+         project : String 
+         pubDate : String 
+         purpose : String 
+         readPermission : String [*]
+         relatedOrganizations : String [*]
+         replicaMN : String [*]
+         resourceMap : String [*]
+         sensor : String [*]
+         sensorText : String [*]
+         source : String [*]
+         scientificName : String [*]
+         species : String [*]
+         genus : String [*]
+         family : String [*]
+         class : String [*]
+         phylum : String [*]
+         order : String [*]
+         kingdom : String [*]
+         westBoundCoord : String 
+         eastBoundCoord : String 
+         northBoundCoord : String 
+         southBoundCoord : String 
+         site : String [*]
+         namedLocation : String [*]
+         noBoundingBox : String 
+         geoform : String 
+         isSpatial : String 
+         geohash_1 : String [*]
+         geohash_2 : String [*]
+         geohash_3 : String [*]
+         geohash_4 : String [*]
+         geohash_5 : String [*]
+         geohash_6 : String [*]
+         geohash_7 : String [*]
+         geohash_8 : String [*]
+         geohash_9 : String [*]
+         prov_generated : String [*]
+         prov_generatedByExecution : String [*]
+         prov_generatedByProgram : String [*]
+         prov_generatedByUser : String [*]
+         prov_hasDerivations : String [*]
+         prov_hasSources : String [*]
+         prov_instanceOfClass : String [*]
+         prov_used : String [*]
+         prov_usedByExecution : String [*]
+         prov_usedByProgram : String [*]
+         prov_usedByUser : String [*]
+         prov_wasDerivedFrom : String [*]
+         prov_wasExecutedByExecution : String [*]
+         prov_wasExecutedByUser : String [*]
+         prov_wasInformedBy : String [*]
+         sem_annotated_by : String [*]
+         sem_annotates : String [*]
+         sem_annotation : String [*]
+         sem_comment : String [*]
+       }
+       
        class DataONEObject <<Backbone.UniqueModel>> {
          + serialVersion : String
-         + identifier : String
+         + id : String
          + formatId : String
          + size : String
          + checksum: String
@@ -114,8 +209,7 @@ Class Diagram
        class DataPackage <<Backbone.Collection>> {
          + models : DataONEObject [*]
          + model : DataONEObject
-         + parentPackages : String [*]
-         + childPackages : String [*]
+         + childPackages : DataPackage [*]
          + initialize() : DataPackage
          + sync()
          + save()
@@ -270,8 +364,10 @@ Class Diagram
        }
        
      }
+     
      DataPackage o-- DataONEObject : collectionOf
-     DataONEObject <|-- EML : "subclassOf"
+     DataONEObject <|-- ScienceMetadata : "subclassOf"
+     ScienceMetadata <|-- EML : "subclassOf"
      DataONEObject <-- QualityGuideResults : describes
      DataONEObject *-- AccessRule : "contains"
      DataONEObject *-- ReplicationPolicy : "contains"
