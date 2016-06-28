@@ -27,14 +27,14 @@ The following use cases are intended to represent basic data and metadata manage
 | `Move Dataset Levels`_         | Move a dataset to a different position in the dataset hierarchy  | 
 +--------------------------------+------------------------------------------------------------------+
 
-.. _Upload Data              ./use-cases/upload-data.rst
-.. _Rename a File            ./use-cases/rename-a-file.rst
-.. _Add Metadata             ./use-cases/add-metadata.rst
-.. _Update Metadata          ./use-cases/update-metadata.rst
-.. _Archive a File           ./use-cases/archive-a-file.rst
-.. _View Public Metadata     ./use-cases/view-public-metadata.rst
-.. _Add a Nested Dataset     ./use-cases/add-a-nested-dataset.rst
-.. _Move Dataset Levels      ./use-cases/move-dataset-levels.rst
+.. _Upload Data:          ./use-cases/upload-data.rst
+.. _Rename a File:        ./use-cases/rename-a-file.rst
+.. _Add Metadata:         ./use-cases/add-metadata.rst
+.. _Update Metadata:      ./use-cases/update-metadata.rst
+.. _Archive a File:       ./use-cases/archive-a-file.rst
+.. _View Public Metadata: ./use-cases/view-public-metadata.rst
+.. _Add a Nested Dataset: ./use-cases/add-a-nested-dataset.rst
+.. _Move Dataset Levels:  ./use-cases/move-dataset-levels.rst
 
 
 
