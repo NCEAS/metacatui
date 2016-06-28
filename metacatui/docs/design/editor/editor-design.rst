@@ -6,6 +6,7 @@ This document provides an overview architecture for incorporating a metadata edi
 Use Cases
 ---------
 The following use cases are intended to represent basic data and metadata management functionality.
+
 +--------------------------------+------------------------------------------------------------------+ 
 |Use Case                        | Description                                                      | 
 +================================+==================================================================+
