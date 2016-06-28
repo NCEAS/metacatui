@@ -200,6 +200,9 @@ Class Diagram
          + seriesId : String
          + mediaType : MediaType
          + fileName : String
+         + nodeLevel : String
+         + uploadStatus : String
+         + uploadFilePath : String
          + getSystemMetadata() : String
          + validate() : Boolean
          + parse() : DataONEObject
@@ -210,13 +213,12 @@ Class Diagram
          + models : DataONEObject [*]
          + model : DataONEObject
          + childPackages : DataPackage [*]
+         - transferQueue : DataONEObject [*]
          + initialize() : DataPackage
          + sync()
          + save()
-         + fetch()
          + destroy()
          + update()
-         + validate() : Boolean
          + parse() : DataPackage
          - toRDF() : String
        }
@@ -400,3 +402,4 @@ Implementation Decisions
 - For now, for we will postpone modeling eml-text, eml-entity modules, and won’t support the maintenance tree
 - Instead of modeling EML with its four submodules (dataset, software, citation, protocol, for now we’re keeping the model simple and only supporting EMLDataset
 - We won’t support the references tag in `/eml/dataset`
+- Object transfers will be queued on a per package basis, using the transferQueue property.  Each DataONEObject item in the queue will have an uploadStatus (queued, transferring, completed, modified). Science metadata that is locally modified, but not 'saved' yet will be in the modified status. Once the save event occurs, it changes to queued and is added to the queue.
