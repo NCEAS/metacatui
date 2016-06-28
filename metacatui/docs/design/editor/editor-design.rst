@@ -1,7 +1,7 @@
 MetacatUI Editor Refactor
 =========================
 
-This document provides an overview architecture for incorporating a metadata editor into the MetacatUI web application. The goal is to support a number of use cases where a scientist needs to manage data and metadata in a Mamber Node repository.
+This document provides an overview architecture for incorporating a metadata editor into the MetacatUI web application. The goal is to support a number of use cases where a scientist needs to manage data and metadata in a Member Node repository.
 
 Use Cases
 ---------
