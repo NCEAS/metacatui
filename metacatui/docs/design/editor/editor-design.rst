@@ -10,21 +10,21 @@ The following use cases are intended to represent basic data and metadata manage
 +--------------------------------+------------------------------------------------------------------+ 
 |Use Case                        | Description                                                      | 
 +================================+==================================================================+
-|`Upload Data`_                  | Choose and upload files to the repository                        | 
+| `Upload Data`_                 | Choose and upload files to the repository                        | 
 +--------------------------------+------------------------------------------------------------------+
-|`Rename a File`_                | Rename a data file                                               | 
+| `Rename a File`_               | Rename a data file                                               | 
 +--------------------------------+------------------------------------------------------------------+
-|`Add Metadata`_                 | Add a dataset folder to contain data files                       | 
+| `Add Metadata`_                | Add a dataset folder to contain data files                       | 
 +--------------------------------+------------------------------------------------------------------+
-|`Update Metadata`_              | Provide metadata details for a selected dataset folder           | 
+| `Update Metadata`_             | Provide metadata details for a selected dataset folder           | 
 +--------------------------------+------------------------------------------------------------------+
-|`Archive a File`_               | Archive a data file in the repository                            | 
+| `Archive a File`_              | Archive a data file in the repository                            | 
 +--------------------------------+------------------------------------------------------------------+
-|`View Public Metadata`_         | View a dataset description from a public perspective             | 
+| `View Public Metadata`_        | View a dataset description from a public perspective             | 
 +--------------------------------+------------------------------------------------------------------+
-|`Add a Nested Dataset`_         | Add a dataset folder into an existing dataset folder             | 
+| `Add a Nested Dataset`_        | Add a dataset folder into an existing dataset folder             | 
 +--------------------------------+------------------------------------------------------------------+
-|`Move Dataset Levels`_          | Move a dataset to a different position in the dataset hierarchy  | 
+| `Move Dataset Levels`_         | Move a dataset to a different position in the dataset hierarchy  | 
 +--------------------------------+------------------------------------------------------------------+
 
 .. _Upload Data              ./use-cases/upload-data.rst
