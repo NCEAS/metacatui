@@ -1,10 +1,44 @@
 MetacatUI Editor Refactor
 =========================
 
-This document provides an overview architecture for incorporating a metadata editor into the MetacatUI web application. The architecture is based off of Backbone Model and View classes.
+This document provides an overview architecture for incorporating a metadata editor into the MetacatUI web application. The goal is to support a number of use cases where a scientist needs to manage data and metadata in a Mamber Node repository.
+
+Use Cases
+---------
+The following use cases are intended to represent basic data and metadata management functionality.
++--------------------------------+------------------------------------------------------------------+ 
+|Use Case                        | Description                                                      | 
++================================+==================================================================+
+|`Upload Data`_                  | Choose and upload files to the repository                        | 
++--------------------------------+------------------------------------------------------------------+
+|`Rename a File`_                | Rename a data file                                               | 
++--------------------------------+------------------------------------------------------------------+
+|`Add Metadata`_                 | Add a dataset folder to contain data files                       | 
++--------------------------------+------------------------------------------------------------------+
+|`Update Metadata`_              | Provide metadata details for a selected dataset folder           | 
++--------------------------------+------------------------------------------------------------------+
+|`Archive a File`_               | Archive a data file in the repository                            | 
++--------------------------------+------------------------------------------------------------------+
+|`View Public Metadata`_         | View a dataset description from a public perspective             | 
++--------------------------------+------------------------------------------------------------------+
+|`Add a Nested Dataset`_         | Add a dataset folder into an existing dataset folder             | 
++--------------------------------+------------------------------------------------------------------+
+|`Move Dataset Levels`_          | Move a dataset to a different position in the dataset hierarchy  | 
++--------------------------------+------------------------------------------------------------------+
+
+.. _Upload Data              ./use-cases/upload-data.rst
+.. _Rename a File            ./use-cases/rename-a-file.rst
+.. _Add Metadata             ./use-cases/add-metadata.rst
+.. _Update Metadata          ./use-cases/update-metadata.rst
+.. _Archive a File           ./use-cases/archive-a-file.rst
+.. _View Public Metadata     ./use-cases/view-public-metadata.rst
+.. _Add a Nested Dataset     ./use-cases/add-a-nested-dataset.rst
+.. _Move Dataset Levels      ./use-cases/move-dataset-levels.rst
+
+
 
 MetacatUI and EML Modules
------------------------------
+-------------------------
 
 We divide the architecture up into two modules: MetacatUI, and EML.  The EML module will be a standalone Backbone application that is used by the MetacatUI application.  This is experimental - we do see some tight dependencies that might not allow for the separation.
 
