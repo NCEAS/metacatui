@@ -49,24 +49,7 @@ Class Diagram
 ..
    @startuml editor-class-diagram.png  
 
-     ' change the default styles   
-     skinparam linetype ortho   
-     skinparam shadowing false   
-     skinparam class {
-       BackgroundColor #F5F5F5
-       BorderColor #333333
-       ArrowColor #333333   
-     }   
-     skinparam noteFontColor #C49858
-     skinparam note {
-       BackgroundColor #FCF8E4
-       BorderColor #FCEED6   
-     }   
-     skinparam packageFontColor #9DA0A4
-     skinparam package {
-       BorderColor #CCCCCC
-     }   
-
+     !include plantuml-styles.txt
      package metacatui {
        together {
          class MediaType {
@@ -237,12 +220,21 @@ Class Diagram
          + fileName : String
          + nodeLevel : String
          + uploadStatus : String
-         + uploadFilePath : String
+         + uploadFile : File
          + getSystemMetadata() : String
          + validate() : Boolean
          + parse() : DataONEObject
          + toXML() : String
        }
+       
+       note right
+         The HTML5 File API doesn't
+         allow file access via the 
+         full path, but only from a
+         File instance. This may affect
+         persisted, incomplete uploads
+         stored in localStorage.
+       end note
        
        class DataPackage <<Backbone.Collection>> {
          + models : DataONEObject [*]
@@ -256,6 +248,9 @@ Class Diagram
          + update()
          + parse() : DataPackage
          - toRDF() : String
+       }
+       
+       class DataPackageView {
        }
        
      }
@@ -403,6 +398,7 @@ Class Diagram
      }
      
      DataPackage o-- DataONEObject : collectionOf
+     DataPackage <.right. DataPackageView : listensTo
      DataONEObject <|-- ScienceMetadata : "subclassOf"
      ScienceMetadata <|-- EML : "subclassOf"
      DataONEObject <-- QualityGuideResults : describes
