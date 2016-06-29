@@ -19,34 +19,26 @@ Technical Sequence Diagram
 --------------------------
 
 .. 
-    
     @startuml images/upload-data-sequence-diagram.png
-
       !include ../plantuml-styles.txt
-      
       skinparam SequenceGroupBorderColor #AAAAAA
       skinparam SequenceGroupBorderThickness #AAAAAA
-
       actor "Scientist"
       participant "DataPackageView" as DPViewer <<Backbone.View>>
       participant "DataPackage" as DataPackageObject <<DataONEObject>>
       participant "MetadataObject" as MetadataObject  <<DataONEObject>>
       participant "DataObject" as DataObject  <<DataONEObject>>
       participant "MN" as MN  <<MemberNode>>
-
       DPViewer -> DPViewer : listenTo("click menu.item", handleUpload())
-      
       Scientist -> DPViewer : chooses "Add files ..." menu item
       activate DPViewer
         DPViewer --> Scientist : file upload dialog
       deactivate DPViewer
-      
       Scientist --> DPViewer : selects upload FileList
       activate DPViewer
       DPViewer -> DPViewer : handleUpload(event, FileList)
       DPViewer -> DPViewer : parentPackage = getParentPackage(id)
       DPViewer -> DPViewer : parentMetadata = getParentMetadata(id)
-      
       loop for File in FileList
         DPViewer -> DataObject : new()
         activate DataObject
@@ -56,7 +48,6 @@ Technical Sequence Diagram
           DPViewer -> DPViewer : dataObject.set(uploadFile, File)
       end
       deactivate DPViewer
-      
     @enduml
 
 .. image images/upload-data-sequence-diagram.png
