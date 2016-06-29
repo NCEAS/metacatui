@@ -50,4 +50,4 @@ Technical Sequence Diagram
       deactivate DPViewer
     @enduml
 
-.. image images/upload-data-sequence-diagram.png
+.. image:: images/upload-data-sequence-diagram.png
