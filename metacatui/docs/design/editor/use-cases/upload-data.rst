@@ -13,7 +13,7 @@ A scientist should be able to upload multiple files to the server by choosing th
 Mockup Image
 ------------
 
-.. image:: images/Edit-Metadata-Queued_Files.png
+.. image:: images/Edit-Metadata-Queued-Files.png
 
 Technical Sequence Diagram
 --------------------------
