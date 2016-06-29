@@ -41,7 +41,9 @@ The following use cases are intended to represent basic data and metadata manage
 MetacatUI and EML Modules
 -------------------------
 
-We divide the architecture up into two modules: MetacatUI, and EML.  The EML module will be a standalone Backbone application that is used by the MetacatUI application.  This is experimental - we do see some tight dependencies that might not allow for the separation.
+We divide the architecture up into two modules: MetacatUI, and EML, where EML is a specialization of the ScienceMetadata class in the MetacatUI module.  We intend to support other specializations in the future (ISO 19139, FGDC, etc.) 
+
+The EML module will be a standalone Backbone application that is used by the MetacatUI application.  This is experimental - we do see some tight dependencies that might not allow for the separation.
 
 Class Diagrams
 --------------

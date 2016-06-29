@@ -205,14 +205,14 @@
         - toRDF() : String
       }
       
-      class DataPackageView {
+      class DataPackageViewer {
         - handleUpload()
       }
       
     }
     
     DataPackage o-- DataONEObject : collectionOf
-    DataPackage <.left. DataPackageView : listensTo
+    DataPackage <.. DataPackageViewer : listensTo
     DataONEObject <|-- ScienceMetadata : "subclassOf"
     DataONEObject <-- QualityGuideResults : describes
     DataONEObject *-- AccessRule : "contains"
