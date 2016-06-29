@@ -1,5 +1,4 @@
       ' change the default styles   
-      skinparam linetype ortho   
       skinparam shadowing false   
       skinparam roundcorner 10
 
