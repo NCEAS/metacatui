@@ -28,6 +28,7 @@ Technical Sequence Diagram
       actor "Scientist"
       participant DataPackageView as PackageView <<Backbone.View>>
       participant DataObject as DataObject  <<DataONEObject>>
+      participant dataObject as "dataObject:DataObject"  <<DataONEObject>>
       participant DataPackage as DataPackage <<Backbone.Collection>>
       participant Metadata as Metadata <<DataONEObject>>
       participant LocalStorage as LocalStore  <<Store>>
@@ -61,43 +62,63 @@ Technical Sequence Diagram
         end note
         
         loop for File in FileList
-          PackageView -> DataObject : new()
+          |||
+          PackageView -> DataObject : dataObject = new()
           
           activate DataObject
             DataObject --> PackageView : dataObject
           deactivate DataObject
           
-          PackageView -> PackageView : dataObject.set(uploadStatus, 'Queued')
-          PackageView -> PackageView : dataObject.set(uploadFile, File)
-
-          note right
-            When an object is queued, the DataPackageView, 
-            DataPackage,and Metadata objects listen to "request",
-            "sync", and "error" events emitted by the DataObject 
-            during save()
-          end note
-
+          activate dataObject
+          PackageView -> dataObject : set({nodeLevel: parentLevel + 1,\n       uploadStatus: 'Queued',\n        uploadFile: File})
+          dataObject --> PackageView: dataObject
+          deactivate dataObject
           PackageView -> DataPackage : queueObject(dataObject)
+      deactivate PackageView
                     
           activate DataPackage
             DataPackage -> DataPackage : add(dataObject)
-          
-          activate Metadata
-          deactivate DataPackage
             Metadata -> Metadata : handleAdd()
-          deactivate Metadata
-          activate DataPackage
+            PackageView -> PackageView : handleAdd()
+            
+            note right
+              When an object is queued, the 
+              DataPackageView, DataPackage,
+              and Metadata objects listen 
+              to "request", "sync", and "error" 
+              events emitted by the DataObject 
+              during save() (not depicted)
+            end note
+            
+          
             DataPackage -> DataPackage : transferQueue.pop()
-            DataPackage -> DataPackage : process(dataObject)
-            DataPackage -> DataObject : save()
+            DataPackage -> DataPackage : handleAdd(dataObject)
+            DataPackage -> dataObject : save()
           deactivate DataPackage
           
-          DataObject -> MN : create()
-          activate MN
-            MN --> DataObject : identifer
-          deactivate MN
+          activate dataObject
+            dataObject -> MN : create()
+            activate MN
+              MN --> dataObject : identifer
+            deactivate MN
+            
+            dataObject -> MN : getSystemMetadata()
+            activate MN
+              MN --> dataObject : sysmeta
+            deactivate MN
+            dataObject -> dataObject : updateSystemMetadata()
+            dataObject -> dataObject : set("uploadStatus", "Complete")
+            
+            note left
+              We don't want to emit the
+              "sync" event until the
+              DataObject properties are
+              completely updated
+            end note
+          DataPackage -> DataPackage : handleSync()
+          deactivate dataObject
+          
         end
-      deactivate PackageView
       
     @enduml
 
