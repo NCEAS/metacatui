@@ -26,38 +26,78 @@ Technical Sequence Diagram
       skinparam SequenceGroupBorderThickness #AAAAAA
 
       actor "Scientist"
-      participant "DataPackageView" as DPViewer <<Backbone.View>>
-      participant "DataPackage" as DataPackageObject <<DataONEObject>>
-      participant "MetadataObject" as MetadataObject  <<DataONEObject>>
-      participant "DataObject" as DataObject  <<DataONEObject>>
-      participant "MN" as MN  <<MemberNode>>
+      participant DataPackageView as PackageView <<Backbone.View>>
+      participant DataObject as DataObject  <<DataONEObject>>
+      participant DataPackage as DataPackage <<Backbone.Collection>>
+      participant Metadata as Metadata <<DataONEObject>>
+      participant LocalStorage as LocalStore  <<Store>>
+      participant MN as MN  <<Store>>
 
-      DPViewer -> DPViewer : listenTo("click menu.item", handleUpload())
-      Scientist -> DPViewer : chooses "Add files ..." menu item
+      note right of LocalStore
+        Any changes to a DataONEObject
+        are persisted to the LocalStore
+        using Backbone.UniqueModel
+      end note
+      PackageView -> DataPackage : listenTo("add", handleAdd())
+      Metadata -> DataPackage : listenTo("add", handleAdd())
 
-      activate DPViewer
-        DPViewer --> Scientist : file upload dialog
-      deactivate DPViewer
+      PackageView -> PackageView : listenTo("click menu.item", handleUpload())
+      Scientist -> PackageView : chooses "Add files ..." menu item
 
-      Scientist --> DPViewer : selects upload FileList
-      activate DPViewer
+      activate PackageView
+        PackageView --> Scientist : file upload dialog
+      deactivate PackageView
 
-        DPViewer -> DPViewer : handleUpload(event, FileList)
-        DPViewer -> DPViewer : parentPackage = getParentPackage(id)
-        DPViewer -> DPViewer : parentMetadata = getParentMetadata(id)
+      Scientist --> PackageView : selects upload FileList
+      activate PackageView
+
+        PackageView -> PackageView : handleUpload(event, FileList)
+        
+        note left
+          DataPackageView gets the 
+          parent package and parent 
+          metadata based on the 
+          event.target
+        end note
         
         loop for File in FileList
-          DPViewer -> DataObject : new()
+          PackageView -> DataObject : new()
           
           activate DataObject
-            DataObject --> DPViewer : dataObject
+            DataObject --> PackageView : dataObject
           deactivate DataObject
           
-            DPViewer -> DPViewer : dataObject.set(uploadStatus, 'Queued')
-            DPViewer -> DPViewer : dataObject.set(uploadFile, File)
-            
+          PackageView -> PackageView : dataObject.set(uploadStatus, 'Queued')
+          PackageView -> PackageView : dataObject.set(uploadFile, File)
+
+          note right
+            When an object is queued, the DataPackageView, 
+            DataPackage,and Metadata objects listen to "request",
+            "sync", and "error" events emitted by the DataObject 
+            during save()
+          end note
+
+          PackageView -> DataPackage : queueObject(dataObject)
+                    
+          activate DataPackage
+            DataPackage -> DataPackage : add(dataObject)
+          
+          activate Metadata
+          deactivate DataPackage
+            Metadata -> Metadata : handleAdd()
+          deactivate Metadata
+          activate DataPackage
+            DataPackage -> DataPackage : transferQueue.pop()
+            DataPackage -> DataPackage : process(dataObject)
+            DataPackage -> DataObject : save()
+          deactivate DataPackage
+          
+          DataObject -> MN : create()
+          activate MN
+            MN --> DataObject : identifer
+          deactivate MN
         end
-      deactivate DPViewer
+      deactivate PackageView
       
     @enduml
 
