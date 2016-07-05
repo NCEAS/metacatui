@@ -91,7 +91,7 @@ Technical Sequence Diagram
             end note
             
           
-            DataPackage -> DataPackage : transferQueue.pop()
+            DataPackage -> DataPackage : transferQueue.shift()
             DataPackage -> DataPackage : handleAdd(dataObject)
             DataPackage -> dataObject : save()
           deactivate DataPackage
@@ -116,6 +116,7 @@ Technical Sequence Diagram
               completely updated
             end note
           DataPackage -> DataPackage : handleSync()
+          PackageView -> PackageView : handleSync()
           deactivate dataObject
           
         end
