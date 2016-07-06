@@ -38,7 +38,7 @@
          + parse()  : EML
          + toXML() : String
          + addEntity() : DataONEObject
-         + removeEntity : String
+         + removeEntity() : String
        }
        
        note left
