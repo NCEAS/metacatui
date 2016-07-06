@@ -37,6 +37,8 @@
          + validate() : Boolean
          + parse()  : EML
          + toXML() : String
+         + addEntity() : DataONEObject
+         + removeEntity : String
        }
        
        note left

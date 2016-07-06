@@ -40,7 +40,7 @@ Technical Sequence Diagram
         using Backbone.UniqueModel
       end note
       PackageView -> DataPackage : listenTo("add", handleAdd())
-      Metadata -> DataPackage : listenTo("add", handleAdd())
+      DataPackage -> DataPackage : on("add", handleAdd())
 
       PackageView -> PackageView : listenTo("click menu.item", handleUpload())
       Scientist -> PackageView : chooses "Add files ..." menu item
@@ -78,21 +78,21 @@ Technical Sequence Diagram
                     
           activate DataPackage
             DataPackage -> DataPackage : add(dataObject)
-            Metadata -> Metadata : handleAdd()
+            DataPackage -> DataPackage : dataObject = transferQueue.shift()
+            DataPackage -> DataPackage : handleAdd(dataObject)
+            DataPackage -> Metadata : addEntity(dataObject)
+            activate Metadata
+              Metadata --> DataPackage : success
+            deactivate Metadata
             PackageView -> PackageView : handleAdd()
             
             note right
-              When an object is queued, the 
-              DataPackageView, DataPackage,
-              and Metadata objects listen 
-              to "request", "sync", and "error" 
-              events emitted by the DataObject 
-              during save() (not depicted)
+              When an object is queued, the DataPackageView and 
+              DataPackage listen to "request", "sync", and "error" 
+              events emitted by the DataObject during save() (not depicted)
             end note
             
-          
-            DataPackage -> DataPackage : transferQueue.shift()
-            DataPackage -> DataPackage : handleAdd(dataObject)
+            
             DataPackage -> dataObject : save()
           deactivate DataPackage
           

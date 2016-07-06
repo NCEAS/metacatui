@@ -18,5 +18,66 @@ Mockup Image
 Technical Sequence Diagram
 --------------------------
 
+.. 
+    @startuml images/archive-a-file-sequence-diagram.png
+
+      !include ../plantuml-styles.txt
+      skinparam SequenceGroupBorderColor #AAAAAA
+      skinparam SequenceGroupBorderThickness #AAAAAA
+
+      actor "Scientist"
+      participant DataPackageView as PackageView <<Backbone.View>>
+      participant ConfirmArchiveView as ConfirmArchiveView  <<ModalView>>
+      participant DataPackage as DataPackage <<Backbone.Collection>>
+      participant Metadata as Metadata <<DataONEObject>>
+      participant DataObject as "dataObject:DataObject" <<DataONEObject>>
+      participant LocalStorage as LocalStore  <<Store>>
+      participant MN as MN  <<Store>>
+
+      PackageView -> DataPackage : listenTo("remove", handleRemove())
+      DataPackage -> DataPackage : on("remove", handleRemove())
+
+      PackageView -> PackageView : listenTo("click menu.item", handleArchive())
+      Scientist -> PackageView : Chooses "Archive ..." menu item
+
+      activate PackageView
+        PackageView -> PackageView : handleArchive()
+        PackageView --> ConfirmArchiveView : render()
+      deactivate PackageView
+        
+      activate ConfirmArchiveView
+        ConfirmArchiveView -> ConfirmArchiveView : listenTo("click #ok", confirmArchive())
+        ConfirmArchiveView -> ConfirmArchiveView : listenTo("click #cancel", confirmArchive())
+        ConfirmArchiveView --> Scientist: Ok? Cancel?
+      deactivate ConfirmArchiveView
+        Scientist -> ConfirmArchiveView : Clicks 'Ok'
+      activate ConfirmArchiveView
+        ConfirmArchiveView -> ConfirmArchiveView : confirmArchive()
+        ConfirmArchiveView -> DataPackage : remove(id)
+      deactivate ConfirmArchiveView
+      
+      activate DataPackage
+      PackageView -> PackageView : handleRemove()
+        DataPackage -> DataPackage : handleRemove(id)
+        DataPackage -> Metadata : removeEntity(id)
+        activate Metadata
+          Metadata --> DataPackage : success
+        deactivate Metadata
+        
+        DataPackage -> DataObject : delete()
+        activate DataObject
+          DataObject -> MN : archive()
+          activate MN
+            MN --> DataObject : identifier
+          deactivate MN
+          DataObject -> DataPackage : success
+        deactivate DataObject
+      deactivate DataPackage
+      
+    @enduml
+
+.. image:: images/archive-a-file-sequence-diagram.png
+
+
 
 
