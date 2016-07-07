@@ -205,14 +205,34 @@
         - toRDF() : String
       }
       
-      class DataPackageViewer {
+      class DataPackageView {
         - handleUpload()
       }
+      note left
+        A DataPackageView represents the
+        table of items in the data package
+      end note
       
+      class CancelSaveView {
+      }
+      note right
+        The CancelSaveView represents the
+        Cancel/Save buttons at the bottom
+        of the editor
+      end note
+      
+      class DataItemView {
+      }
+      note left
+        A DataItemView represents a single row
+        view in the DataPackageView table
+      end note
     }
     
     DataPackage o-- DataONEObject : collectionOf
-    DataPackage <.. DataPackageViewer : listensTo
+    DataPackage <.right. DataPackageView : listensTo
+    DataPackage <.left. CancelSaveView : listensTo
+    DataONEObject <.right. DataItemView : listensTo
     DataONEObject <|-- ScienceMetadata : "subclassOf"
     DataONEObject <-- QualityGuideResults : describes
     DataONEObject *-- AccessRule : "contains"
