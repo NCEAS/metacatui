@@ -38,12 +38,11 @@ The following use cases are intended to represent basic data and metadata manage
 
 
 
-MetacatUI and EML Modules
--------------------------
+Architecture
+------------
 
-We divide the architecture up into two modules: MetacatUI, and EML, where EML is a specialization of the ScienceMetadata class in the MetacatUI module.  We intend to support other specializations in the future (ISO 19139, FGDC, etc.) 
-
-The EML module will be a standalone Backbone application that is used by the MetacatUI application.  This is experimental - we do see some tight dependencies that might not allow for the separation.
+While we see benefits in splitting the architecture into multiple libraries (metacaui and each supported science metadata language), pragmatically there are tight dependencies among the models.  Therefore, we'll keep the classes in one library, but will divide the functionality into separate model and view classes.
+The EML class is a specialization of the generic ScienceMetadata class in the MetacatUI module.  We intend to support other specializations in the future (ISO 19139, FGDC CSDGM, etc.) 
 
 Class Diagrams
 --------------
@@ -68,32 +67,27 @@ Overview
       
       class DataPackageView {
       }
-    }
-    
-    package eml {
+      
       class EML {
       }
       
       class EMLViewer {
       }
     }
-  
+      
     DataPackage --o DataONEObject : collectionOf
     DataPackage <.left. DataPackageView : listensTo
     DataONEObject <|-down- ScienceMetadata : "    subclassOf"
-    ScienceMetadata <|- EML : "    subclassOf"
+    ScienceMetadata <|-down- EML : "    subclassOf"
     EML <.left. EMLViewer : listensTo
   @enduml
   
 .. image:: images/editor-design.png
 
-MetacatUI
-~~~~~~~~~
+Detailed Class Diagrams
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. image:: images/editor-design-metacatui-package.png
-
-EML
-~~~
 
 .. image:: images/editor-design-eml-package.png
 

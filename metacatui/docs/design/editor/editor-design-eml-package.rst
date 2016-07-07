@@ -7,7 +7,7 @@
      skinparam linetype ortho   
   
 
-     package eml {
+     package metacatui {
        class EML <<Backbone.Model>> {
          + isEditable : Boolean
          + alternateIdentifier : String [*]
@@ -41,34 +41,14 @@
          + removeEntity() : String
        }
        
-       note left
+       note top of EML
          For now, we model the EML
          dataset module only. We'll refactor
          to support the software, citation, and
          protocol modules as needed.
        end note
-         
-       class EMLViewer <<Backbone.View>> {
-       }
        
-       class EMLParty <<Backbone.Model>> {
-         + givenName : String
-         + surName : String
-         + organizationName : String
-         + role : String
-         + deliveryPoint : String [*]
-         + city : String
-         + administrativeArea : String
-         + postalCode : String
-         + country : String
-         + phone : String [*]
-         + fax : String [*]
-         + electronicMailAddress : String [*]
-         + onlineUrl : String [*]
-         + userId : String [*]
-         + validate() : Boolean
-         + parse()  : EMLParty
-         + toXML() : String
+       class EMLViewer <<Backbone.View>> {
        }
        
        class EMLKeyword <<Backbone.Model>> {
@@ -134,6 +114,26 @@
          + toXML() : String
        }
                 
+       class EMLParty <<Backbone.Model>> {
+         + givenName : String
+         + surName : String
+         + organizationName : String
+         + role : String
+         + deliveryPoint : String [*]
+         + city : String
+         + administrativeArea : String
+         + postalCode : String
+         + country : String
+         + phone : String [*]
+         + fax : String [*]
+         + electronicMailAddress : String [*]
+         + onlineUrl : String [*]
+         + userId : String [*]
+         + validate() : Boolean
+         + parse()  : EMLParty
+         + toXML() : String
+       }
+       
        class EMLMethods <<Backbone.Model>> {
        	 + methodSteps : { title : String, paragraph : String [*] } [*]
        	 + studyExtent : { title : String, paragraph : String [*] } [*]
@@ -174,6 +174,13 @@
          
        }
        
+       note bottom
+         We minimally support the otherEntity class at first, 
+         and will eventually support it fully, along with
+         the EML DataTable, SpatialRaster, SpatialVector, 
+         StoredProcedure, and View classes. 
+       end note
+       
      }
      
      EML *-- EMLParty : "hasModule"
@@ -191,7 +198,7 @@
      EML *-- EMLStoredProcedure : hasModule
      EML *-- EMLView : hasModule
      EML *-- EMLOtherEntity : hasModule
-     EML <.. EMLViewer : listensTo
+     EML <.right. EMLViewer : listensTo
      
    @enduml
 
