@@ -16,9 +16,9 @@ The following use cases are intended to represent basic data and metadata manage
 +--------------------------------+------------------------------------------------------------------+
 | `Add Metadata`_                | Add a dataset folder to contain data files                       | 
 +--------------------------------+------------------------------------------------------------------+
-| `Update Metadata`_             | Provide metadata details for a selected dataset folder           | 
-+--------------------------------+------------------------------------------------------------------+
 | `Archive a File`_              | Archive a data file in the repository                            | 
++--------------------------------+------------------------------------------------------------------+
+| `Update Metadata`_             | Provide metadata details for a selected dataset folder           | 
 +--------------------------------+------------------------------------------------------------------+
 | `View Public Metadata`_        | View a dataset description from a public perspective             | 
 +--------------------------------+------------------------------------------------------------------+
@@ -104,3 +104,4 @@ Implementation Decisions
 - Instead of modeling EML with its four submodules (dataset, software, citation, protocol, for now we’re keeping the model simple and only supporting EMLDataset
 - We won’t support the references tag in `/eml/dataset`
 - Object transfers will be queued on a per package basis, using the transferQueue property.  Each DataONEObject item in the queue will have an uploadStatus (queued, transferring, completed, modified). Science metadata that is locally modified, but not 'saved' yet will be in the modified status. Once the save event occurs, it changes to queued and is added to the queue.
+- In order to reduce race conditions in the application when editing a document, we will disable the manual 'Save' dialog during certain operations, like uploading or archiving a file, etc., that will be changing the science metadata document in the background.  Once the operation is complete, we re enable it.
