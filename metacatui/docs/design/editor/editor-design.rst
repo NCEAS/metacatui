@@ -66,7 +66,7 @@ Overview
       class ScienceMetadata {
       }
       
-      class DataPackageViewer {
+      class DataPackageView {
       }
     }
     
@@ -79,7 +79,7 @@ Overview
     }
   
     DataPackage --o DataONEObject : collectionOf
-    DataPackage <.left. DataPackageViewer : listensTo
+    DataPackage <.left. DataPackageView : listensTo
     DataONEObject <|-down- ScienceMetadata : "    subclassOf"
     ScienceMetadata <|- EML : "    subclassOf"
     EML <.left. EMLViewer : listensTo
