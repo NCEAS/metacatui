@@ -213,14 +213,6 @@
         table of items in the data package
       end note
       
-      class CancelSaveView {
-      }
-      note right
-        The CancelSaveView represents the
-        Cancel/Save buttons at the bottom
-        of the editor
-      end note
-      
       class DataItemView {
       }
       note left
@@ -231,7 +223,6 @@
     
     DataPackage o-- DataONEObject : collectionOf
     DataPackage <.right. DataPackageView : listensTo
-    DataPackage <.left. CancelSaveView : listensTo
     DataONEObject <.right. DataItemView : listensTo
     DataONEObject <|-- ScienceMetadata : "subclassOf"
     DataONEObject <-- QualityGuideResults : describes
