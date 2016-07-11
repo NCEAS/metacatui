@@ -196,6 +196,7 @@
         + model : DataONEObject
         + childPackages : DataPackage [*]
         - transferQueue : DataONEObject [*]
+        + editable : Boolean
         + initialize() : DataPackage
         + sync()
         + save()
