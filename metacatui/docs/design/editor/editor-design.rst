@@ -94,14 +94,25 @@ Detailed Class Diagrams
 Implementation Decisions
 ------------------------
 - A DataONEObject can represent the three types of objects in a DataONE Member Node of Coordinating Node (DATA, METADATA, RESOURCEMAP). A data object will be represented by a DataONEObject with just the SystemMetadata properties populated.  Any science metadata can be represented by a ScienceMetadata subclass of DataONEObject, or an even more specialized subclass of ScienceMetadata (like EML).  While a DataPackage, which models a resource map, isn't a subclass of DataONEObject per se, we'll use a DataONEObject instance to represent it when calling MNStorage API methods for resource maps.
+
 - The DataPackage's standard Backbone.Collection.models property stores the array of DataONEObjects that are directly aggregated by immediate resource map.  For nested packages, the DataPackage.childPackages property stores an array of immediate child packages. Each of these DataPackage Backbone.Collections store their immediate children.
+
 - Each DataONEObject will get assigned a SID and a PID. When publish() is called, we assign a DOI to both the SID and the PID, separately. Citations with SIDs will return the latest data package, citations with PIDs will always return the same DataPackage.
+
 - If we use SIDs as identifiers in the resource maps, when a sub package is changed, the parent packages up the chain will not need to be updated. If we use PIDs, all parent resource maps will need to be updated.
-- The DataPackage object will extend Backbone.Collection, and we’ll keep track of both the parent package and the child packages using the Backbone-generated id for the object
-- The EML.isEditable property will control whether or not the editor is enabled in the EMLView
-- We’ll model the EML modules as minimally as needed, using complex types as needed, like EMLParty
-- For now, for we will postpone modeling eml-text, eml-entity modules, and won’t support the maintenance tree
-- Instead of modeling EML with its four submodules (dataset, software, citation, protocol, for now we’re keeping the model simple and only supporting EMLDataset
-- We won’t support the references tag in `/eml/dataset`
+
+- The DataPackage object will extend Backbone.Collection, and we’ll keep track of both the parent package and the child packages using the Backbone-generated id for the object.
+
+- The EML.isEditable property will control whether or not the editor is enabled in the EMLView.
+
+- We’ll model the EML modules as minimally as needed, using complex types as needed, like EMLParty.
+
+- For now, for we will postpone modeling eml-text, eml-entity modules, and won’t support the maintenance tree.
+
+- Instead of modeling EML with its four submodules (dataset, software, citation, protocol, for now we’re keeping the model simple and only supporting EMLDataset.
+
+- We won’t support the references tag in `/eml/dataset`.
+
 - Object transfers will be queued on a per package basis, using the transferQueue property.  Each DataONEObject item in the queue will have an uploadStatus (queued, transferring, completed, modified). Science metadata that is locally modified, but not 'saved' yet will be in the modified status. Once the save event occurs, it changes to queued and is added to the queue.
+
 - In order to reduce race conditions in the application when editing a document, we will disable the manual 'Save' dialog during certain operations, like uploading or archiving a file, etc., that will be changing the science metadata document in the background.  Once the operation is complete, we re enable it.
