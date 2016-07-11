@@ -66,33 +66,53 @@ Technical Sequence Diagram
       PackageView -> PackageView : handleRemove()
         DataPackage -> DataPackage : handleRemove(id)
         DataPackage -> Metadata : removeEntity(id)
-        activate Metadata
-          Metadata --> DataPackage : success
-        deactivate Metadata
+      deactivate DataPackage
+      
+      activate Metadata
+        Metadata --> DataPackage : success
+      deactivate Metadata
         
+      activate DataPackage
         DataPackage -> DataObject : destroy()
-        activate DataObject
-          DataObject -> MN : archive()
-          activate MN
-            MN --> DataObject : identifier
-          deactivate MN
-          DataObject -> DataPackage : success          
-        deactivate DataObject
+      deactivate DataPackage
+        
+      activate DataObject
+        DataObject -> MN : archive()
+      deactivate DataObject
+        
+      activate MN
+        MN --> DataObject : identifier
+      deactivate MN
+     
+      activate DataObject   
+        DataObject -> DataPackage : success
+      deactivate DataObject          
 
+      activate DataPackage
         DataPackage -> Metadata : save()
-        activate Metadata
-          Metadata -> MN : update(pid, newPid, sysmeta, object)
-          activate MN
-            MN --> Metadata : identifier
-          deactivate MN
-          Metadata -> DataPackage : success          
-        deactivate Metadata
+      deactivate DataPackage
         
+      activate Metadata
+        Metadata -> MN : update(pid, newPid, sysmeta, object)
+      deactivate Metadata
+        
+      activate MN
+        MN --> Metadata : identifier
+      deactivate MN
+      
+      activate Metadata
+        Metadata -> DataPackage : success
+      deactivate Metadata          
+      
+      activate DataPackage 
         DataPackage -> MN : update(pid, newPid, sysmeta, object)
-        activate MN
-          MN --> DataPackage : identifier
-        deactivate MN
+      deactivate DataPackage
+      
+      activate MN
+        MN --> DataPackage : identifier
+      deactivate MN
         
+      activate DataPackage
         DataPackage --> PackageView : handleEditable()
         note left
           Editing is enabled
