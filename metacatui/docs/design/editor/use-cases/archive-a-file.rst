@@ -70,7 +70,7 @@ Technical Sequence Diagram
           Metadata --> DataPackage : success
         deactivate Metadata
         
-        DataPackage -> DataObject : delete()
+        DataPackage -> DataObject : destroy()
         activate DataObject
           DataObject -> MN : archive()
           activate MN
