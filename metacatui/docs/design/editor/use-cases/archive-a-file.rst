@@ -42,6 +42,11 @@ Technical Sequence Diagram
 
       activate PackageView
         PackageView -> PackageView : handleArchive()
+        PackageView -> DataPackage : set("editable", false)
+        note left
+          Editing is disabled
+        end note
+        PackageView -> DataPackage : listenTo("change:editable", handleEditable())
         PackageView --> ConfirmArchiveView : render()
       deactivate PackageView
         
@@ -50,7 +55,8 @@ Technical Sequence Diagram
         ConfirmArchiveView -> ConfirmArchiveView : listenTo("click #cancel", confirmArchive())
         ConfirmArchiveView --> Scientist: Ok? Cancel?
       deactivate ConfirmArchiveView
-        Scientist -> ConfirmArchiveView : Clicks 'Ok'
+      
+      Scientist -> ConfirmArchiveView : Clicks 'Ok'
       activate ConfirmArchiveView
         ConfirmArchiveView -> ConfirmArchiveView : confirmArchive()
         ConfirmArchiveView -> DataPackage : remove(id)
@@ -70,8 +76,27 @@ Technical Sequence Diagram
           activate MN
             MN --> DataObject : identifier
           deactivate MN
-          DataObject -> DataPackage : success
+          DataObject -> DataPackage : success          
         deactivate DataObject
+
+        DataPackage -> Metadata : save()
+        activate Metadata
+          Metadata -> MN : update(pid, newPid, sysmeta, object)
+          activate MN
+            MN --> Metadata : identifier
+          deactivate MN
+          Metadata -> DataPackage : success          
+        deactivate Metadata
+        
+        DataPackage -> MN : update(pid, newPid, sysmeta, object)
+        activate MN
+          MN --> DataPackage : identifier
+        deactivate MN
+        
+        DataPackage --> PackageView : handleEditable()
+        note left
+          Editing is enabled
+        end note
       deactivate DataPackage
       
     @enduml
