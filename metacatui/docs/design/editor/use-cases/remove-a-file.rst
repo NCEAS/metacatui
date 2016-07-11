@@ -4,22 +4,22 @@ Archive a File
 Scenario
 --------
 
-    As a scientist, I want to archive a file so it is no longer associated with newer versions of my dataset and it will not be discoverable, but will remain citable.
+    As a scientist, I want to remove a file so it is no longer associated with newer versions of my dataset and it will not be discoverable, but will remain citable if published.
 
 Summary
 -------
-A scientist should be able to archive a file, which is similar to deleting a file, but preserves read access in the event the file has been directly cited.  The goal is to enable archiving of data files, as well as data packages that contain the data files.  The display should immediately remove the items that are archived, and they should be asychronously archived in the repository. For uploads with large counts, the table should be responsive and not bog down the display.  If only a data file is archived, the science metadata and containing package should be updated to reflect this. 
+A scientist should be able to remove a file, which is similar to deleting a file, but preserves read access in the event the file has been published and directly cited.  The goal is to enable archiving of data files, as well as data packages that contain the data files.  The display should immediately remove the items that are archived, and they should be asychronously archived in the repository. If the file has been published, it will be archived with public read access.  If it is not published, it is archived with all read access removed (including the original rights holder). If only a data file is archived, the science metadata and containing package should be updated to reflect this. 
 
 Mockup Image
 ------------
 
-.. image:: images/Edit-Metadata-Archive-a-File.png
+.. image:: images/Edit-Metadata-Remove-a-File.png
 
 Technical Sequence Diagram
 --------------------------
 
 .. 
-    @startuml images/archive-a-file-sequence-diagram.png
+    @startuml images/remove-a-file-sequence-diagram.png
 
       !include ../plantuml-styles.txt
       skinparam SequenceGroupBorderColor #AAAAAA
@@ -54,6 +54,17 @@ Technical Sequence Diagram
         ConfirmArchiveView -> ConfirmArchiveView : listenTo("click #ok", confirmArchive())
         ConfirmArchiveView -> ConfirmArchiveView : listenTo("click #cancel", confirmArchive())
         ConfirmArchiveView --> Scientist: Ok? Cancel?
+        note right
+          Dialog states:
+          
+          This file has been published and will
+          be archived instead of deleted. Are
+          you sure you want to archive it?
+          
+          or it states:
+          
+          Are you sure you want to delete this file?
+        end note
       deactivate ConfirmArchiveView
       
       Scientist -> ConfirmArchiveView : Clicks 'Ok'
@@ -75,20 +86,52 @@ Technical Sequence Diagram
       activate DataPackage
         DataPackage -> DataObject : destroy()
       deactivate DataPackage
-        
+      
       activate DataObject
         DataObject -> MN : archive()
       deactivate DataObject
-        
+      
       activate MN
         MN --> DataObject : identifier
       deactivate MN
-     
-      activate DataObject   
-        DataObject -> DataPackage : success
-      deactivate DataObject          
-
+        
+      alt if published   
+        activate DataObject
+          DataObject -> MN : updateSystemMetadata(sysmeta)
+          note left
+            In sysmeta, ensure public
+            read access
+          end note
+        deactivate DataObject
+        
+        activate MN
+          MN --> DataObject : identifier
+        deactivate MN       
+      
+        activate DataObject
+          DataObject --> DataPackage : success
+        deactivate DataObject
+        
+      else not published
+        
+          DataObject -> MN : updateSystemMetadata(sysmeta)
+          note left
+            In sysmeta, remove the AccessPolicy, and
+            set the rightsHolder to the MN subject
+          end note
+        
+        activate MN
+          MN --> DataObject : identifier
+        deactivate MN       
+        
+        activate DataObject  
+          DataObject --> DataPackage : success
+        deactivate DataObject          
       activate DataPackage
+        
+      end
+      
+
         DataPackage -> Metadata : save()
       deactivate DataPackage
         
@@ -121,7 +164,7 @@ Technical Sequence Diagram
       
     @enduml
 
-.. image:: images/archive-a-file-sequence-diagram.png
+.. image:: images/remove-a-file-sequence-diagram.png
 
 
 
