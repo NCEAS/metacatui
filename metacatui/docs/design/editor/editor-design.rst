@@ -16,7 +16,7 @@ The following use cases are intended to represent basic data and metadata manage
 +--------------------------------+------------------------------------------------------------------+
 | `Add Metadata`_                | Add a dataset folder to contain data files                       | 
 +--------------------------------+------------------------------------------------------------------+
-| `Archive a File`_              | Archive a data file in the repository                            | 
+| `Remove a File`_               | Remove a data file in the repository                             | 
 +--------------------------------+------------------------------------------------------------------+
 | `Update Metadata`_             | Provide metadata details for a selected dataset folder           | 
 +--------------------------------+------------------------------------------------------------------+
@@ -31,7 +31,7 @@ The following use cases are intended to represent basic data and metadata manage
 .. _Rename a File:        ./use-cases/rename-a-file.rst
 .. _Add Metadata:         ./use-cases/add-metadata.rst
 .. _Update Metadata:      ./use-cases/update-metadata.rst
-.. _Archive a File:       ./use-cases/archive-a-file.rst
+.. _Remove a File:        ./use-cases/remove-a-file.rst
 .. _View Public Metadata: ./use-cases/view-public-metadata.rst
 .. _Add a Nested Dataset: ./use-cases/add-a-nested-dataset.rst
 .. _Move Dataset Levels:  ./use-cases/move-dataset-levels.rst
