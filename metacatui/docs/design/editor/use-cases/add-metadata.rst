@@ -76,7 +76,7 @@ Technical Sequence Diagram
       activate AddFolderView
         AddFolderView -> AddFolderView : handleSave()
         AddFolderView -> AddFolderView : validate()
-        AddFolderView -> EML : new({"id": id, "title": title, ...})
+        AddFolderView -> EML : new({"id": pid, "title": title, ...})
       deactivate AddFolderView
       
       activate EML
@@ -88,7 +88,7 @@ Technical Sequence Diagram
       deactivate AddFolderView
 
       activate eml
-        eml -> MN : create(id, sysmeta, object)
+        eml -> MN : create(pid, sysmeta, object)
       deactivate eml
       
       activate MN
@@ -105,7 +105,21 @@ Technical Sequence Diagram
       
       activate dataPackage
         dataPackage -> dataPackage : handleAdd()
+        dataPackage --> View : handleAdd()
       deactivate dataPackage
+      
+      activate View
+        View -> View : render()
+        View -> PackageView : render()
+      deactivate View
+      
+      activate PackageView
+        PackageView --> View : packageView
+      deactivate PackageView
+      note left
+        Scientist sees new dataset folder
+        and empty metadata fields
+      end note
     @enduml
     
 .. image:: images/add-a-folder-sequence-diagram.png
