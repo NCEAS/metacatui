@@ -94,9 +94,9 @@ Technical Sequence Diagram
             DataPackage -> EML : addEntity(dataObject)
           deactivate DataPackage
             
-          activate Metadata
+          activate EML
             EML --> DataPackage : success
-          deactivate Metadata
+          deactivate EML
           
           activate DataPackage  
             PackageView -> PackageView : handleAdd()
@@ -148,27 +148,27 @@ Technical Sequence Diagram
             DataPackage -> EML : save()
           deactivate DataPackage
           
-          activate Metadata
+          activate EML
             EML -> MN : update(pid, newPid, sysmeta, object)
-          deactivate Metadata
+          deactivate EML
           
           activate MN
             MN --> EML : identifier
           deactivate MN
           
-          activate Metadata
+          activate EML
             EML -> MN : getSystemMetadata(pid)
-          deactivate Metadata
+          deactivate EML
           
           activate MN
             MN --> EML : sysmeta
           deactivate MN
           
-          activate Metadata
+          activate EML
             EML -> EML : updateSystemMetadata()
             EML -> EML : set("uploadStatus", "Complete")
             EML -> EML : trigger("sync")
-          deactivate Metadata
+          deactivate EML
           
           activate DataPackage
             DataPackage -> DataPackage : handleSync()

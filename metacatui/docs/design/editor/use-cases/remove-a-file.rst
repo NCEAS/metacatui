@@ -79,9 +79,9 @@ Technical Sequence Diagram
         DataPackage -> EML : removeEntity(id)
       deactivate DataPackage
       
-      activate Metadata
+      activate EML
         EML --> DataPackage : success
-      deactivate Metadata
+      deactivate EML
         
       activate DataPackage
         DataPackage -> DataObject : destroy()
@@ -135,15 +135,15 @@ Technical Sequence Diagram
         DataPackage -> EML : save()
       deactivate DataPackage
         
-      activate Metadata
+      activate EML
         EML -> MN : update(pid, newPid, sysmeta, object)
-      deactivate Metadata
+      deactivate EML
         
       activate MN
         MN --> EML : identifier
       deactivate MN
       
-      activate Metadata
+      activate EML
         EML -> DataPackage : success
       deactivate EML          
       
