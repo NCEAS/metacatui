@@ -14,7 +14,7 @@ Mockup Image
 Technical Sequence Diagram
 --------------------------
 
-@startuml images/view-public-metadata-sequence-diagram.png
+.. @startuml images/view-public-metadata-sequence-diagram.png
 
 	!include ../plantuml-styles.txt
 	skinparam SequenceGroupBorderColor #AAAAAA
@@ -54,6 +54,6 @@ Technical Sequence Diagram
 		deactivate DataPackageView
 	deactivate EMLView
 	
-@enduml
+   @enduml
 
 .. image:: images/view-public-metadata-sequence-diagram.png
