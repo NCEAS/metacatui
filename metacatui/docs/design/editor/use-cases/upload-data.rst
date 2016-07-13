@@ -28,7 +28,7 @@ Technical Sequence Diagram
       actor "Scientist"
       participant DataPackageView as PackageView <<Backbone.View>>
       participant DataPackage as DataPackage <<Backbone.Collection>>
-      participant Metadata as Metadata <<DataONEObject>>
+      participant EML as EML <<DataONEObject>>
       participant DataObject as DataObject  <<DataONEObject>>
       participant dataObject as "dataObject:DataObject"  <<DataONEObject>>
       participant LocalStorage as LocalStore  <<Store>>
@@ -91,11 +91,11 @@ Technical Sequence Diagram
             DataPackage -> DataPackage : add(dataObject)
             DataPackage -> DataPackage : dataObject = transferQueue.shift()
             DataPackage -> DataPackage : handleAdd(dataObject)
-            DataPackage -> Metadata : addEntity(dataObject)
+            DataPackage -> EML : addEntity(dataObject)
           deactivate DataPackage
             
           activate Metadata
-            Metadata --> DataPackage : success
+            EML --> DataPackage : success
           deactivate Metadata
           
           activate DataPackage  
@@ -145,29 +145,29 @@ Technical Sequence Diagram
               The row DataItemView changes 
               the upload status
             end note
-            DataPackage -> Metadata : save()
+            DataPackage -> EML : save()
           deactivate DataPackage
           
           activate Metadata
-            Metadata -> MN : update(pid, newPid, sysmeta, object)
+            EML -> MN : update(pid, newPid, sysmeta, object)
           deactivate Metadata
           
           activate MN
-            MN --> Metadata : identifier
+            MN --> EML : identifier
           deactivate MN
           
           activate Metadata
-            Metadata -> MN : getSystemMetadata(pid)
+            EML -> MN : getSystemMetadata(pid)
           deactivate Metadata
           
           activate MN
-            MN --> Metadata : sysmeta
+            MN --> EML : sysmeta
           deactivate MN
           
           activate Metadata
-            Metadata -> Metadata : updateSystemMetadata()
-            Metadata -> Metadata : set("uploadStatus", "Complete")
-            Metadata -> Metadata : trigger("sync")
+            EML -> EML : updateSystemMetadata()
+            EML -> EML : set("uploadStatus", "Complete")
+            EML -> EML : trigger("sync")
           deactivate Metadata
           
           activate DataPackage
