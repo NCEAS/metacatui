@@ -9,7 +9,7 @@ Scenario
 Mockup Image
 ------------
 
-.. image:: images/editor-design-view-metadata.png
+.. image:: ../images/editor-design-view-metadata.png
 
 Technical Sequence Diagram
 --------------------------
