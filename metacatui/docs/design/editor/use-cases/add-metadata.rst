@@ -8,7 +8,7 @@ Scenario
 
 Summary
 -------
-A scientist should be able to add metadata descriptions for their dataset.  The goal is to first add a top level dataset folder, with the name of the folder being the title of the dataset.  Whenhe scientist clicks on "Submit Data" anywhere in the app, a dialog should prompt them to provide a dataset title. The science eml should be updated with the title, creator, and contact information. The package describing the eml should be updated, and the eml and package should be created in the repository.  All future edits are updates.  
+A scientist should be able to add metadata descriptions for their dataset.  The goal is to first add a top level dataset folder, with the name of the folder being the title of the dataset.  When the scientist clicks on "Submit Data" anywhere in the app, a dialog should prompt them to provide a dataset title. The science metadata should be updated with the title, creator, and contact information. The package describing the eml should be updated, and the metadata and package should be created in the repository.  All future edits are updates.  
 
 Mockup Image
 ------------
