@@ -29,7 +29,7 @@ Technical Sequence Diagram
       participant DataPackageView as PackageView <<Backbone.View>>
       participant ConfirmArchiveView as ConfirmArchiveView  <<ModalView>>
       participant DataPackage as DataPackage <<Backbone.Collection>>
-      participant Metadata as Metadata <<DataONEObject>>
+      participant EML as EML <<DataONEObject>>
       participant DataObject as "dataObject:DataObject" <<DataONEObject>>
       participant LocalStorage as LocalStore  <<Store>>
       participant MN as MN  <<Store>>
@@ -76,11 +76,11 @@ Technical Sequence Diagram
       activate DataPackage
       PackageView -> PackageView : handleRemove()
         DataPackage -> DataPackage : handleRemove(id)
-        DataPackage -> Metadata : removeEntity(id)
+        DataPackage -> EML : removeEntity(id)
       deactivate DataPackage
       
       activate Metadata
-        Metadata --> DataPackage : success
+        EML --> DataPackage : success
       deactivate Metadata
         
       activate DataPackage
@@ -132,20 +132,20 @@ Technical Sequence Diagram
       end
       
 
-        DataPackage -> Metadata : save()
+        DataPackage -> EML : save()
       deactivate DataPackage
         
       activate Metadata
-        Metadata -> MN : update(pid, newPid, sysmeta, object)
+        EML -> MN : update(pid, newPid, sysmeta, object)
       deactivate Metadata
         
       activate MN
-        MN --> Metadata : identifier
+        MN --> EML : identifier
       deactivate MN
       
       activate Metadata
-        Metadata -> DataPackage : success
-      deactivate Metadata          
+        EML -> DataPackage : success
+      deactivate EML          
       
       activate DataPackage 
         DataPackage -> MN : update(pid, newPid, sysmeta, object)

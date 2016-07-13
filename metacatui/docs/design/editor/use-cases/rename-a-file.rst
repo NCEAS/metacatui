@@ -28,7 +28,7 @@ Technical Sequence Diagram
       actor "Scientist"
       participant DataPackageView as PackageView <<Backbone.View>>
       participant DataPackage as DataPackage <<Backbone.Collection>>
-      participant Metadata as Metadata <<DataONEObject>>
+      participant EML as EML <<DataONEObject>>
       participant DataObject as "dataObject:DataObject" <<DataONEObject>>
       participant LocalStorage as LocalStore  <<Store>>
       participant MN as MN  <<Store>>
@@ -62,12 +62,12 @@ Technical Sequence Diagram
       activate DataPackage
         DataPackage -> DataPackage : handleChange()
         DataPackage -> DataPackage : set("dirty", true)
-        DataPackage -> Metadata : updateEntity()
+        DataPackage -> EML : updateEntity()
       deactivate DataPackage
       
-      activate Metadata
-        Metadata --> DataPackage : metadata
-      deactivate Metadata
+      activate EML
+        EML --> DataPackage : metadata
+      deactivate EML
       
       activate DataPackage
         DataPackage -> PackageView: showCancelSave()
@@ -97,20 +97,20 @@ Technical Sequence Diagram
       deactivate DataObject
       
       activate DataPackage
-        DataPackage -> Metadata : save()
+        DataPackage -> EML : save()
       deactivate DataPackage
       
-      activate Metadata
-        Metadata -> MN : update(pid, newPid, sysmeta, object)
-      deactivate Metadata
+      activate EML
+        EML -> MN : update(pid, newPid, sysmeta, object)
+      deactivate EML
       
       activate MN
-        MN --> Metadata : identifier
+        MN --> EML : identifier
       deactivate MN
         
-      activate Metadata
-        Metadata -> DataPackage : success          
-      deactivate Metadata
+      activate EML
+        EML -> DataPackage : success          
+      deactivate EML
       
       activate DataPackage  
         DataPackage -> MN : update(pid, newPid, sysmeta, object)
