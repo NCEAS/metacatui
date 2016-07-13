@@ -35,9 +35,9 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatVersion: "2.6.0", 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
-			context: '/knb',
+			context: '/metacat',
 			d1Service: '/d1/mn/v2',
-			d1CNBaseUrl: "https://cn-stage-2.test.dataone.org/",
+			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
 			//d1LogServiceUrl: null,
 			nodeServiceUrl: null,
@@ -49,7 +49,6 @@ define(['jquery', 'underscore', 'backbone'],
 			metaServiceUrl: null,
 			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
-      mnUrl: "https://dev.nceas.ucsb.edu",
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
@@ -84,16 +83,16 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 						
 			// these are pretty standard, but can be customized if needed
-			this.set('metacatBaseUrl', this.get('mnUrl') + this.get('context'));
-			this.set('viewServiceUrl', this.get('mnUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
-			this.set('publishServiceUrl', this.get('mnUrl') + this.get('context') + this.get('d1Service') + '/publish/');
-			this.set('authServiceUrl', this.get('mnUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
-			this.set('queryServiceUrl', this.get('mnUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
-			this.set('metaServiceUrl', this.get('mnUrl') + this.get('context') + this.get('d1Service') + '/meta/');
-			this.set('objectServiceUrl', this.get('mnUrl') + this.get('context') + this.get('d1Service') + '/object/');
-			this.set('registryServiceUrl', this.get('mnUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
-			this.set('ldapwebServiceUrl', this.get('mnUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
-			this.set('metacatServiceUrl', this.get('mnUrl') + this.get('context') + '/metacat');
+			this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
+			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
+			this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
+			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
+			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
+			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
+			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
+			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
+			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
+			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
 			if(this.get("useJsonp"))
@@ -101,7 +100,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Set the NSF Award API proxy
 			if(typeof this.get("grantsUrl") != "undefined")
-				this.set("grantsUrl", this.get("mnUrl") + "/api.nsf.gov/services/v1/awards.json");
+				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
 			
 			//DataONE CN API 
 			if(this.get("d1CNBaseUrl")){

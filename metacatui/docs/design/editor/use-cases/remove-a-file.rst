@@ -58,12 +58,12 @@ Technical Sequence Diagram
           Dialog states:
           
           This file has been published and will
-          be archived instead of deleted. Are
+          be archived instead of removed. Are
           you sure you want to archive it?
           
           or it states:
           
-          Are you sure you want to delete this file?
+          Are you sure you want to remove this file?
         end note
       deactivate ConfirmArchiveView
       
