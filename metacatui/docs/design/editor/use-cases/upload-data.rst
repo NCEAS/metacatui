@@ -41,6 +41,11 @@ Technical Sequence Diagram
       end note
       PackageView -> DataPackage : listenTo("add", handleAdd())
       DataPackage -> DataPackage : on("add", handleAdd())
+      DataPackage -> DataPackage : on("complete", handleComplete())
+      note right
+        When the queue processing is complete,
+        save the package and EML.
+      end note
 
       PackageView -> PackageView : on("click menu.item", handleUpload())
       Scientist -> PackageView : chooses "Add files ..." menu item
@@ -138,54 +143,64 @@ Technical Sequence Diagram
             end note
             dataObject -> dataObject : trigger("sync")
           deactivate dataObject
-          activate DataPackage
-            DataPackage -> DataPackage : handleSync()
-            PackageView -> PackageView : handleSync()
-            note left
-              The row DataItemView changes 
-              the upload status
-            end note
-            DataPackage -> EML : save()
-          deactivate DataPackage
-          
-          activate EML
-            EML -> MN : update(pid, newPid, sysmeta, object)
-          deactivate EML
-          
-          activate MN
-            MN --> EML : identifier
-          deactivate MN
-          
-          activate EML
-            EML -> MN : getSystemMetadata(pid)
-          deactivate EML
-          
-          activate MN
-            MN --> EML : sysmeta
-          deactivate MN
-          
-          activate EML
-            EML -> EML : updateSystemMetadata()
-            EML -> EML : set("uploadStatus", "Complete")
-            EML -> EML : trigger("sync")
-          deactivate EML
-          
-          activate DataPackage
-            DataPackage -> DataPackage : handleSync()
-            DataPackage -> MN : update(pid, newPid, sysmeta, object)
-          deactivate DataPackage
-          
-          activate MN
-            MN --> DataPackage : identifier
-          deactivate MN
-          activate DataPackage
-          
         end
-            DataPackage --> PackageView : handleEditable()
-            note left
-              Editing is enabled
+
+        activate DataPackage
+          DataPackage -> DataPackage : handleSync()
+        deactivate DataPackage
+          PackageView -> PackageView : handleSync()
+          note left
+            The row DataItemView changes 
+            the upload status
+          end note
+          
+          alt if transferQueue.length == 0
+            DataPackage -> DataPackage : trigger("complete")
+            note right
+              In handleSync(), trigger a 'complete' event when the
+              queue is empty so the package and EML are saved.
             end note
-          deactivate DataPackage
+          end
+          DataPackage -> DataPackage : handleComplete()
+          DataPackage -> EML : save()
+        
+        activate EML
+          EML -> MN : update(pid, newPid, sysmeta, object)
+        deactivate EML
+        
+        activate MN
+          MN --> EML : identifier
+        deactivate MN
+        
+        activate EML
+          EML -> MN : getSystemMetadata(pid)
+        deactivate EML
+        
+        activate MN
+          MN --> EML : sysmeta
+        deactivate MN
+        
+        activate EML
+          EML -> EML : updateSystemMetadata()
+          EML -> EML : set("uploadStatus", "Complete")
+          EML -> EML : trigger("sync")
+        deactivate EML
+        
+        activate DataPackage
+          DataPackage -> DataPackage : handleSync()
+          DataPackage -> MN : update(pid, newPid, sysmeta, object)
+        deactivate DataPackage
+        
+        activate MN
+          MN --> DataPackage : identifier
+        deactivate MN
+        activate DataPackage
+        
+          DataPackage --> PackageView : handleEditable()
+          note left
+            Editing is enabled
+          end note
+        deactivate DataPackage
       
     @enduml
 
