@@ -155,6 +155,7 @@
         + serialVersion : String
         + id : String
         + formatId : String
+        + formatType: {'data'|'metadata'|'resource'}
         + size : String
         + checksum: String
         + checksumAlgorithm : String
