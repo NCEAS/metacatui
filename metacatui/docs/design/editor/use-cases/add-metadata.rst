@@ -13,7 +13,7 @@ A scientist should be able to add metadata descriptions for their dataset.  The 
 Mockup Image
 ------------
 
-.. image:: images/Add-a-Folder-Modal-Dialog.png
+.. image:: images/Add-a-Folder.png
 
 Technical Sequence Diagram
 --------------------------
@@ -27,99 +27,95 @@ Technical Sequence Diagram
 
       actor "Scientist"
       participant EMLViewer as View <<Backbone.View>>
-      participant AddFolderView as AddFolderView  <<ModalView>>
-      participant DataPackageView as PackageView  <<Backbone.View>>
-      participant DataPackage as DataPackage <<Backbone.Collection>>
-      participant dataPackage as "dataPackage:DataPackage" <<Backbone.Collection>>
+      participant DataPackageView as PackageView <<Backbone.View>>
+      participant DataItemView as DataItemView <<Backbone.View>>
       participant EML as EML <<DataONEObject>>
-      participant eml as "eml:EML" <<DataONEObject>>
-      participant LocalStorage as LocalStore  <<Store>>
-      participant MN as MN  <<Store>>
+      participant DataPackage as DataPackage <<Backbone.Collection>>
+      participant LocalStorage as LocalStore <<Store>>
+      participant MN as MN <<Store>>
 
       View -> View : on("click #submit_data", handleSubmit())
-      View -> dataPackage : listenTo("add", handleAdd())
       Scientist -> View : Clicks "Submit Data" menu item
 
       activate View
         View -> View : handleSubmit()
+        View -> EML : new({"title": "Untitled Dataset: ...", ...})
+      deactivate View
+      
+      activate EML
+        EML --> View : EML
+      deactivate EML
+      
+      activate View
         View -> DataPackage : new()
       deactivate View
       
       activate DataPackage
-        DataPackage --> View : dataPackage
+      DataPackage -> DataPackage : on("add", handleAdd())
+         DataPackage --> View : DataPackage
       deactivate DataPackage
-
-      dataPackage -> dataPackage : on("add", handleAdd())
       
-      View -> dataPackage : listenTo("add", handleAdd())
-      activate View
-        View -> View : render()
-        note right
-          We render an empty EML
-          View behind the dialog
-        end note
-        View --> AddFolderView : render()
-      deactivate View
-
-      activate AddFolderView
-        AddFolderView -> AddFolderView : on("click #save", handleSave())
-        AddFolderView -> AddFolderView : on("click #cancel", handleCancel())
-        AddFolderView --> Scientist : Save? Cancel?
-        note right
-          Presents dialog to set the 
-          dataset title (and folder name)
-        end note
-      deactivate AddFolderView
       
-      Scientist -> AddFolderView : Clicks "Save"
-      
-      activate AddFolderView
-        AddFolderView -> AddFolderView : handleSave()
-        AddFolderView -> AddFolderView : validate()
-        AddFolderView -> EML : new({"id": pid, "title": title, ...})
-      deactivate AddFolderView
-      
-      activate EML
-        EML --> AddFolderView : eml
-      deactivate EML
-      
-      activate AddFolderView
-          AddFolderView -> eml: save()
-      deactivate AddFolderView
-
-      activate eml
-        eml -> MN : create(pid, sysmeta, object)
-      deactivate eml
-      
-      activate MN
-        MN --> eml : identifier
-      deactivate MN
-
-      activate eml
-        eml --> AddFolderView : eml
-      deactivate eml
-
-      activate AddFolderView
-        AddFolderView -> dataPackage : add(eml)
-      deactivate AddFolderView
-      
-      activate dataPackage
-        dataPackage -> dataPackage : handleAdd()
-        dataPackage --> View : handleAdd()
-      deactivate dataPackage
       
       activate View
         View -> View : render()
-        View -> PackageView : render()
+        View -> PackageView : new({model: DataPackage})
       deactivate View
+
+      activate PackageView
+        PackageView -> DataPackage : listenTo("add", handleAdd())
+        PackageView --> View : DataPackageView
+      deactivate PackageView
+
+      activate View
+        View -> DataPackage : add(EML)
+      deactivate View
+      
+      activate DataPackage
+        DataPackage -> DataPackage : handleAdd()
+        DataPackage -> PackageView : handleAdd()
+      deactivate DataPackage
       
       activate PackageView
-        PackageView --> View : packageView
+        PackageView -> DataItemView : new({model: EML})
       deactivate PackageView
-      note left
-        Scientist sees new dataset folder
-        and empty metadata fields
-      end note
+      
+      activate DataItemView
+        DataItemView --> PackageView : DataItemView
+      deactivate DataItemView
+            
+      activate PackageView
+        PackageView -> DataItemView : render()
+      deactivate PackageView
+      
+      activate DataItemView
+        DataItemView -> DataItemView : on("blur #titleText", handleChange())
+        DataItemView -> Scientist: DataItemView
+        note right
+          We highlight and focus the
+          title for the scientist to change
+        end note
+      deactivate DataItemView
+
+      activate Scientist
+        Scientist -> DataItemView : Enters title
+      deactivate Scientist
+      
+      activate DataItemView
+        DataItemView -> DataItemView : handleChange()
+        DataItemView -> EML : set("title", title)
+      deactivate DataItemView
+      
+      
+      activate EML
+        EML -> DataItemView : EML
+        note right
+          The EML model has changed, so we
+          render the Cancel/Save buttons to 
+          later persist the package and EML
+        end note
+      deactivate EML
+      
     @enduml
     
 .. image:: images/add-a-folder-sequence-diagram.png
