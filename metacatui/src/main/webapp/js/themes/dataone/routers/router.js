@@ -213,16 +213,20 @@ function ($, _, Backbone) {
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
 				
+				if(section || subsection){
+					var viewOptions = { section: section, subsection: subsection }
+				}
+				
 				if(!appView.userView){
 					
 					require(['views/UserView'], function(UserView){
 						appView.userView = new UserView();
 	
-						appView.showView(appView.userView);						
+						appView.showView(appView.userView, viewOptions);						
 					});
 				}
 				else
-					appView.showView(appView.userView);
+					appView.showView(appView.userView, viewOptions);
 			}
 		},
 		

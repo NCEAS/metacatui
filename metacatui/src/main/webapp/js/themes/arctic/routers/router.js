@@ -12,8 +12,7 @@ function ($, _, Backbone) {
 			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
-			'profile(/*username)'		: 'renderProfile',
-			'profile'		            : 'renderProfile',
+			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'signout'					: 'logout',
 			'signin'					: 'renderTokenSignIn',
@@ -192,16 +191,20 @@ function ($, _, Backbone) {
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
 				
+				if(section || subsection){
+					var viewOptions = { section: section, subsection: subsection }
+				}
+				
 				if(!appView.userView){
 					
 					require(['views/UserView'], function(UserView){
 						appView.userView = new UserView();
 	
-						appView.showView(appView.userView);						
+						appView.showView(appView.userView, viewOptions);						
 					});
 				}
 				else
-					appView.showView(appView.userView);
+					appView.showView(appView.userView, viewOptions);
 			}
 		},
 		
