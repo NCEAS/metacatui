@@ -159,7 +159,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 		 *  If this group is marked as pending, then the group is created, otherwise it's updated
 		 */
 		save: function(onSuccess, onError){
-			if(this.pending && !this.nameAvailable) return false;
+			if(this.pending && (this.nameAvailable == false)) return false;
 			
 			var memberXML = "",
 				ownerXML = "",

@@ -43,7 +43,9 @@ define(['jquery', 'underscore', 'backbone'],
 				"urn:node:PPBIO"       : "img/node-logos/PPBIO.png",
 				"urn:node:DFC"         : "img/node-logos/DFC.png",
 				"urn:node:BCODMO"      : "img/node-logos/BCODMO.jpg",
-				"urn:node:RD2R"        : "img/node-logos/RD2R.png"				
+				"urn:node:RD2R"        : "img/node-logos/RD2R.png",				
+				"urn:node:NEON"        : "img/node-logos/NEON.png",				
+				"urn:node:TDAR"        : "img/node-logos/TDAR.png"				
 		},
 		
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API
@@ -171,7 +173,7 @@ define(['jquery', 'underscore', 'backbone'],
 						thisModel.set("currentMemberNode", thisMember.identifier);
 					
 					thisModel.trigger("change:currentMemberNode");
-				}				
+				}
 			});
 		}
 				
