@@ -1701,42 +1701,45 @@ section.user-view-section > .section.active {
 .user-info .icon-circle-badge{
 	background-color: #166194;
 }
+.profile .charts-container{
+    background-color: #FFFFFF; /* IE 8 fallback */
+   	background-color: rgba(255, 255, 255, 0.9);
+   	-moz-border-radius: 5px;
+   	-webkit-border-radius: 5px;
+   	border-radius: 5px;
+   	padding: 20px;
+}
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
   	width: 900px;
   	clear: both;
-  }
-  
-  .stripe{
-    	min-height: 350px;
-    	margin-top: 20px;
-    	background-color: #FFFFFF; /* IE 8 fallback */
-    	background-color: rgba(255, 255, 255, 0.9);
-    	border-radius: 5px;
-    	padding: 20px;
-  }
-  .stripe .notification.loading{
-  	top: 10px;
-  	margin-top: 10px;
-  }
-  .stripe .notification.loading i{
-  	color: #333;
-  }
-  .profile h1{
-    margin: 20px auto;
-    padding: 0px 20px;
+}  
+.stripe{
+	min-height: 350px;
+	margin-top: 20px;
+}
+.stripe .notification.loading{
+	top: 10px;
+	margin-top: 10px;
+}
+.stripe .notification.loading i{
+	color: #333;
+}
+.profile h1{
+	margin: 20px auto;
+	padding: 0px 20px;
 	line-height: 90px;
 	background-color: #FFF;
 	border-radius: 5px;
 	padding: 0px 20px;
 	color: #555;
 	font-weight: normal;
-  }
-  
-    .profile-title:empty{
-  	display: none;
-  }
+}
+ 
+.profile-title:empty{
+ 	display: none;
+}
   
 .profile .charts > svg{
   	margin-left: auto;

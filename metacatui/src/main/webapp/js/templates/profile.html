@@ -1,6 +1,9 @@
 <article id="Profile" class="profile">
 <h1 class="profile-title"><%=title%></h1>
 <section class="charts-container">
+	<% if(typeof description == "string"){ %>
+		<p><%=description%></p>
+	<% } %>
 	<section class="stripe downloads">
 		<section class="charts">
 			<section class="chart-title">

@@ -938,7 +938,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   }
   
   .profile h1{
-    margin: 20px auto;
 	width: 900px;
 	line-height: 90px;
   }

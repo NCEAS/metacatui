@@ -17,6 +17,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if(!options) options = {};
 			
 			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
+			this.description = (typeof options.description === "undefined") ? 
+					"A summary of all datasets in our catalog." : options.description;
 			if(typeof options.el === "undefined")
 				this.el = options.el;
 		},
@@ -47,7 +49,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Insert the template
 			this.$el.html(this.template({
 				query: statsModel.get('query'),
-				title: this.title
+				title: this.title,
+				description: this.description
 			}));
 			
 			//Insert the loading template into the space where the charts will go
