@@ -1145,7 +1145,6 @@ define(['jquery',
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
 		 */
 		insertDataDetails: function(){
-			console.log("insert data details");
 			
 			//If there is a metadataIndex subview, render from there.
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
@@ -1189,9 +1188,7 @@ define(['jquery',
 											  src : solrResult.get("url"), 
 										    objID : objID
 						});
-					
-					console.log("displaying package member:" + solrResult.type);
-	
+						
 					//Insert the data display HTML and the anchor tag to mark this spot on the page 
 					if(container){
 						if((type == "image") || (type == "PDF")){							
