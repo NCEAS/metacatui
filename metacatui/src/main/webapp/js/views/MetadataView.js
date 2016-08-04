@@ -1100,7 +1100,7 @@ define(['jquery',
 					//If we found more than one match, filter out the substring matches
 					if(matches.length > 1){
 						matches = _.filter(matches, function(div){
-							return (div.text() == name); 
+							return (div.textContent == name); 
 						});
 					}
 						
