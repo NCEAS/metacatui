@@ -425,22 +425,6 @@ define(['jquery',
 			if(!this.$(".taxonomicCoverage").length)
 				this.$('h4:contains("Taxonomic Range")').parent().addClass('taxonomicCoverage');
 			
-			//Remove the title section (redundant)
-			var title = this.$(".control-group.title");
-			if(!title.length){
-				//Try to find the title label
-				var titleLabel = this.$("label:contains('Titlell')");
-				if(titleLabel.length && (titleLabel.text() == "Title")) 
-					title = titleLabel.parents(".control-group");
-				
-				//Try to find the element with the title text
-				if(!title.length){
-					title = this.$(".controls:contains('" + this.model.get("title") + "')");
-					if(title.length) title = title.parents(".control-group");
-				}
-			}
-			if(title.length) title.remove();
-			
 			//Remove ecogrid links and replace them with workable links
 			this.replaceEcoGridLinks();
 		},
