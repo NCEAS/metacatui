@@ -1,0 +1,93 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3>Upload Metadata document for QC</h3>
+	</div>
+	<div class="panel-body">
+		<form id="mdqRunForm" method="POST" enctype="multipart/form-data">
+			<input type="file" name="document" id="document"/>
+			<input type="submit" value="Run" class="btn btn-default"/>
+		</form>
+	</div>
+</div>		
+
+<div id="mdqResult">
+
+<% if (typeof result !== 'undefined') { %>
+
+<div class="panel panel-default">
+	<div class="panel-heading">
+		Run ID: <%= id %>	
+		Date: <%= timestamp %>
+	</div>	
+	<div class="panel-body">
+	<%
+		var groupedResults = _.groupBy(result, "status");
+	%>
+	
+	<%
+	_.each(groupedResults.SUCCESS, function(result) {
+	%>
+		<div class="alert alert-success" role="alert">
+			
+			<strong><%= result.check.name %></strong>
+			<%= result.check.description %>
+			<span class="badge"><%= result.check.type %></span>
+			<span class="badge"><%= result.check.environment %></span>
+			<br/>
+			<em><%- result.output[0].value %></em>
+		</div>
+	<%
+	});
+	%>
+	
+	<%
+	_.each(groupedResults.SKIP, function(result) {
+	%>
+		<div class="alert alert-info" role="alert">
+			<strong><%= result.check.name %></strong>
+			<%= result.check.description %>
+			<span class="badge"><%= result.check.type %></span>
+			<span class="badge"><%= result.check.environment %></span>
+			<br/>
+			<em><%- result.output[0].value %></em>
+		</div>
+	<%
+	});
+	%>
+	
+	<%
+	_.each(groupedResults.ERROR, function(result) {
+	%>
+		<div class="alert alert-warning" role="alert">
+			<strong><%= result.check.name %></strong>
+			<%= result.check.description %>
+			<span class="badge"><%= result.check.type %></span>
+			<span class="badge"><%= result.check.environment %></span>
+			<br/>
+			<em><%- result.output[0].value %></em>
+		</div>
+	<%
+	});
+	%>
+	
+	<%
+	_.each(groupedResults.FAILURE, function(result) {
+	%>
+		<div class="alert alert-danger" role="alert">
+			<strong><%= result.check.name %></strong>
+			<%= result.check.description %>
+			<span class="badge"><%= result.check.type %></span>
+			<span class="badge"><%= result.check.environment %></span>
+			<br/>
+			<em><%- result.output[0].value %></em>
+		</div>
+	<%
+	});
+	%>
+    
+  </div>
+  
+</div>
+
+<% } %>
+</div>
