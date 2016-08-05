@@ -14,7 +14,7 @@
 
 <% if (typeof result !== 'undefined') { %>
 
-<div class="panel panel-default">
+<div class="panel panel-default mdq">
 	<div class="panel-heading">
 		Run ID: <%= id %>	
 		Date: <%= timestamp %>
@@ -22,47 +22,127 @@
 	<div class="panel-body">
 	<%
 		var groupedResults = _.groupBy(result, "status");
-	%>
+	%>	
+	
+	<% if (groupedResults.SUCCESS) { %>
+	
+		<div class="alert alert-success" role="alert">
+		<i class="icon icon-check-sign"></i>
+		<a role="button" data-toggle="collapse" href="#collapseSuccess" aria-expanded="false" aria-controls="collapseSuccess">
+		Passed <%=groupedResults.SUCCESS.length%> checks out of <%= result.length %>
+		</a>
+		</div>
+		
+		<div class="collapse" id="collapseSuccess">
+		<ul class="list-group">
 	
 	<%
 	_.each(groupedResults.SUCCESS, function(result) {
 	%>
-		<div class="alert alert-success" role="alert">
-			
-			<strong><%= result.check.name %></strong>
+	
+  		<li class="list-group-item">
+  			<i class="icon icon-check"></i>
+  			<strong><%= result.check.name %></strong>
 			<%= result.check.description %>
-			<span class="badge"><%= result.check.type %></span>
-			<span class="badge"><%= result.check.environment %></span>
+			<span class="badge pull-right"><%= result.check.level %></span>
+			<span class="badge pull-right"><%= result.check.type %></span>
+			<a 	
+				tabindex="0"
+				role="button"
+				class="popover-this" 
+				data-trigger="focus" 
+				data-html="true"
+				data-title="Code (<%= result.check.environment %>)"
+				data-content="<pre><%- result.check.code %></pre>">
+				<i class="icon icon-code"></i>
+			</a>	
 			<br/>
-			<em><%- result.output[0].value %></em>
-		</div>
+			
+			<%
+			_.each(result.output, function(output) {
+			%>				
+				<% if (output.type && output.type.includes('image')) { %>
+					<!-- render the image -->
+					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
+				<% } else { %>
+					<em><%- output.value %></em>
+				<% } %>
+			<%
+			});
+			%>
+			
+  		</li>
 	<%
 	});
 	%>
 	
+		</ul>
+		</div>
+		
+	<% } %>	
+	
+	<% if (groupedResults.SKIP) { %>
+		<div class="alert alert-info" role="alert">
+		<i class="icon icon-info-sign"></i>
+		<a role="button" data-toggle="collapse" href="#collapseSkip" aria-expanded="false" aria-controls="collapseSkip">
+		Skipped <%=groupedResults.SKIP.length%> checks
+		</a>
+		</div>
+		
+		<div class="collapse" id="collapseSkip">
+		<ul class="list-group">
+		
+					
 	<%
 	_.each(groupedResults.SKIP, function(result) {
 	%>
-		<div class="alert alert-info" role="alert">
-			<strong><%= result.check.name %></strong>
+		<li class="list-group-item">
+  			<i class="icon icon-info-sign"></i>
+  			<strong><%= result.check.name %></strong>
 			<%= result.check.description %>
-			<span class="badge"><%= result.check.type %></span>
-			<span class="badge"><%= result.check.environment %></span>
+			<span class="badge pull-right"><%= result.check.level %></span>
+			<span class="badge pull-right"><%= result.check.type %></span>
+			<a 	
+				tabindex="0"
+				role="button"
+				class="popover-this" 
+				data-trigger="focus" 
+				data-html="true"
+				data-title="Code (<%= result.check.environment %>)"
+				data-content="<pre><%- result.check.code %></pre>">
+				<i class="icon icon-code"></i>
+			</a>	
 			<br/>
 			<em><%- result.output[0].value %></em>
-		</div>
+  		</li>
 	<%
 	});
 	%>
+	
+		</ul>
+		</div>
+		
+	<% } %>	
 	
 	<%
 	_.each(groupedResults.ERROR, function(result) {
 	%>
 		<div class="alert alert-warning" role="alert">
+  			<i class="icon icon-warning-sign"></i>
 			<strong><%= result.check.name %></strong>
 			<%= result.check.description %>
-			<span class="badge"><%= result.check.type %></span>
-			<span class="badge"><%= result.check.environment %></span>
+			<span class="badge pull-right"><%= result.check.level %></span>
+			<span class="badge pull-right"><%= result.check.type %></span>
+			<a 	
+				tabindex="0"
+				role="button"
+				class="popover-this" 
+				data-trigger="focus" 
+				data-html="true"
+				data-title="Code (<%= result.check.environment %>)"
+				data-content="<pre><%- result.check.code %></pre>">
+				<i class="icon icon-code"></i>
+			</a>	
 			<br/>
 			<em><%- result.output[0].value %></em>
 		</div>
@@ -74,10 +154,21 @@
 	_.each(groupedResults.FAILURE, function(result) {
 	%>
 		<div class="alert alert-danger" role="alert">
+  			<i class="icon icon-remove-sign"></i>
 			<strong><%= result.check.name %></strong>
 			<%= result.check.description %>
-			<span class="badge"><%= result.check.type %></span>
-			<span class="badge"><%= result.check.environment %></span>
+			<span class="badge pull-right"><%= result.check.level %></span>
+			<span class="badge pull-right"><%= result.check.type %></span>
+			<a 	
+				tabindex="0"
+				role="button"
+				class="popover-this" 
+				data-trigger="focus" 
+				data-html="true"
+				data-title="Code (<%= result.check.environment %>)"
+				data-content="<pre><%- result.check.code %></pre>">
+				<i class="icon icon-code"></i>
+			</a>	
 			<br/>
 			<em><%- result.output[0].value %></em>
 		</div>

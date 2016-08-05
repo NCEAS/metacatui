@@ -44,6 +44,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mdqRun.html'],
 					    type: 'POST',
 						success: function(data, textStatus, xhr) {
 							viewRef.$el.html(viewRef.template(data));
+							//Initialize all popover elements
+							$('.popover-this').popover();
 						}
 				};
 				$.ajax(args);
