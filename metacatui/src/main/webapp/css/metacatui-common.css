@@ -776,11 +776,6 @@ img.icon{
 	width: calc(100% - 214px);
 }
 
-/* MDQ */
-.mdq .popover {
-	max-width: 50%;
-}
-
 /* Prov chart popovers */
 .prov-chart .popover{
 	min-width: 300px;
