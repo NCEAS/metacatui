@@ -30,7 +30,7 @@ define(['jquery', 'underscore', 'backbone', 'moment'],
 		className : "citation",
 		
 		events: {
-			"click .route-to-metadata" : "routeToMetadata"
+			//"click .route-to-metadata" : "routeToMetadata"
 		},
 		
 		/*

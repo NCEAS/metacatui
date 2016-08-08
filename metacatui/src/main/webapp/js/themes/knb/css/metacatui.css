@@ -1998,17 +1998,15 @@ svg .no-activity,
     .result-row:nth-child(even){
     	background-color: transparent;
 	}
-    
-    .result-row:hover { 
-    	background-color: #FFF8EB; 
-  	}
 
     .result-row .citation .title{
     	color: #1C6E84;
     }
-    .result-row .citation a:hover{
+    .result-row .citation a:hover,
+    .result-row .citation a:hover .title,
+    .result-row .citation a:hover .id{
  	   color: #1C6E84;
-    	text-decoration: underline;
+ 	   transition: color .3s;
 	}
     
     /*-- Popovers --*/

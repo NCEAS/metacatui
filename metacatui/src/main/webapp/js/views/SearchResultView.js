@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'mode
 	// The DOM element for a SearchResult item...
 	var SearchResultView = Backbone.View.extend({
 		tagName:  'div',
-		className: 'row-fluid result-row pointer',
+		className: 'row-fluid result-row',
 
 		// Cache the template function for a single item.
 		//template: _.template($('#result-template').html()),
@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'mode
 		// The DOM events specific to an item.
 		events: {
 			'click .result-selection' : 'toggleSelected',
-			'click'                   : 'routeToMetadata',
+			//'click'                   : 'routeToMetadata',
 			'click .download'         : 'download'
 		},
 

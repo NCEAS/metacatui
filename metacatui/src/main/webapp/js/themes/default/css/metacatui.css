@@ -1536,23 +1536,6 @@ li.ui-menu-item > a:hover,
     .result-row:hover .result-row{
     	background-color: transparent;
     }
-    
-    .result-row:hover { 
-    	background-color: #DAEBF7; /* IE 8 fallback */
-    	background-color: rgba(227, 243, 255, 0.8);
-  	}
-  	.result-row .multi-line-ellipsis:after{
-  		transition: background-color 0s;
-  	}
-  	.result-row:hover .multi-line-ellipsis:after{
-  		background: -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0)), to(rgba(227, 243, 255, 0.8)), color-stop(50%, rgba(227, 243, 255, 0.8)));
-  		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 243, 255, 0.8) 50%, rgba(227, 243, 255, 0.8));
-  		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 243, 255, 0.8) 50%, rgba(227, 243, 255, 0.8));
-  		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 243, 255, 0.8) 50%, rgba(227, 243, 255, 0.8));
-  		background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(227, 243, 255, 0.8) 50%, rgba(227, 243, 255, 0.8));
-  	}
-  
-    
     .result-author {
       font-weight: normal;
     }
@@ -1566,7 +1549,6 @@ li.ui-menu-item > a:hover,
     }
 	.result-row .citation a:hover{
  	   color: #166194;
-    	text-decoration: underline;
 	}
     .result-row .dropdown-menu{
   		left: -320%;

@@ -320,7 +320,6 @@ img.icon{
 .result-row{
 	padding: 5px;
 	padding-left: 10px;
-	 cursor: pointer;
 	 width: 95%;
 	 width: calc(100% - 15px);
 	 border-top: 1px solid #EEE;
