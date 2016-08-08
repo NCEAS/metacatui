@@ -378,7 +378,7 @@ img.icon{
 .result-row .route-to-metadata{
 	cursor: pointer;
 }
-.result-row > .logo {
+.result-row .logo {
   width: 50px;
   float: left;
   margin-right: 10px;

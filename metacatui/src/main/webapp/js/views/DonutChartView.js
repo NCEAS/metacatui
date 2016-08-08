@@ -323,20 +323,20 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			//Check if the data is preformatted
 			if((typeof counts[0] == "object") && (typeof counts[0].label != "undefined") && (typeof counts[0].count != "undefined")){
-					//If there are no percentages in the formatted data, find the total and set the percentage of each arc
-					if(typeof counts[0].perc == "undefined"){
-						var countNums = _.pluck(counts, "count");
-						var sum = 0;
-			             _.each(counts, function(c){
-			        	    sum += c.count;
-			             });
-						
-						_.each(counts, function(thisCount){
-							thisCount.perc = thisCount.count/sum;
-						});
-					}
+				//If there are no percentages in the formatted data, find the total and set the percentage of each arc
+				if(typeof counts[0].perc == "undefined"){
+					var countNums = _.pluck(counts, "count");
+					var sum = 0;
+					 _.each(counts, function(c){
+					    sum += c.count;
+					 });
 					
-					return counts;
+					_.each(counts, function(thisCount){
+						thisCount.perc = thisCount.count/sum;
+					});
+				}
+				
+				return counts;
 			}
 			
 			var newArray = [];
