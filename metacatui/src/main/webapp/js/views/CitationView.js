@@ -1,5 +1,5 @@
-define(['jquery', 'underscore', 'backbone', 'moment'], 				
-	function($, _, Backbone, moment) {
+define(['jquery', 'underscore', 'backbone'], 				
+	function($, _, Backbone) {
 	'use strict';
 
 	
@@ -84,11 +84,11 @@ define(['jquery', 'underscore', 'backbone', 'moment'],
 	        //The publication date
 			var pubDateText = "";
 			if((typeof pubDate !== "undefined") && pubDate) { 
-				var pubDateFormatted = moment(pubDate).format('YYYY');
+				var pubDateFormatted = new Date(pubDate).getUTCFullYear();
 	            if(!isNaN(pubDateFormatted)) pubDateText += pubDateFormatted;
 	        }
 	        if(dateUploaded && (isNaN(pubDateFormatted) || !pubDate)){
-	        	var dateUploadedFormatted = moment(dateUploaded).format('YYYY');
+	        	var dateUploadedFormatted = new Date(dateUploaded).getFullYear();
 	            if(!isNaN(dateUploadedFormatted)) pubDateText += dateUploadedFormatted;
 	        }
 			var pubDateEl = $(document.createElement("span")).addClass("pubdate").text(pubDateText + ". ");
