@@ -645,6 +645,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var filename = this.get("fileName") || "",
 				url = this.get("url");
 
+			if(filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4))) filename += ".zip";
+
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
 			xhr.responseType = "blob";

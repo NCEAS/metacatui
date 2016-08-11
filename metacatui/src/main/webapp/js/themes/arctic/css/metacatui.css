@@ -1856,7 +1856,8 @@ svg .no-activity,
     	color: #323D90;
     }
     .result-row .citation a:hover,
-    .result-row .citation a:hover .title{
+    .result-row .citation a:hover .title,
+    .result-row .citation a:hover .id{
  	   color: #146660;
  	   transition: color .5s;
 	}
