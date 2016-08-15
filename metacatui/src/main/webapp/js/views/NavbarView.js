@@ -14,7 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		events: {
 						  'click #search_btn' : 'triggerSearch',
 					   'keypress #search_txt' : 'triggerOnEnter',
-			'click .show-new-dataCatalogView' : 'showNewSearch',
+			         'click .show-new-search' : 'resetSearch',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
 			 		 	    'click .dropdown' : 'hideDropdown',
 			 		 	'mouseover .dropdown' : 'showDropdown',
@@ -82,8 +82,9 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			
 		},
 		
-		showNewSearch: function(){ 
-			appView.showNewSearch(); 
+		resetSearch: function(e){ 
+			e.preventDefault();
+			appView.resetSearch(); 
 		},
 		
 		hideDropdown: function(){

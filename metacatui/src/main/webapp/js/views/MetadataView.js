@@ -1177,7 +1177,6 @@ define(['jquery',
 					if(container){
 						if((type == "image") || (type == "PDF")){							
 							if((type == "PDF") && !solrResult.get("isPublic")){
-								console.log("private PDF");
 								
 								dataDisplay = $.parseHTML(dataDisplay.trim());
 								

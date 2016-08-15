@@ -151,13 +151,27 @@ function(Bootstrap, AppView, AppModel) {
 		     * Override loadUrl & watch return value. Trigger event if no route was matched.
 		     * @return {Boolean} True if a route was matched
 		     */
-		    loadUrl : function() {
-		      var matched = oldLoadUrl.apply(this, arguments);
-		      if(!matched){
-		        this.trigger('routeNotFound', arguments);
-		      }
-		      return matched;
-		    }
+		    loadUrl : function(fragment) {
+		    	if (!this.matchRoot()) return false;
+		        fragment = this.fragment = this.getFragment(fragment);
+		       var match = _.some(this.handlers, function(handler) {
+		          if (handler.route.test(fragment)) {
+		            handler.callback(fragment);
+		            return true;
+		          }
+		        });
+		       
+		       if(!match) this.trigger("routeNotFound");
+		       return match;
+		    },
+		    matchRoot: function() {
+		        var path = this.decodeFragment(this.location.pathname);
+		        var rootPath = path.slice(0, this.root.length - 1) + '/';
+		        return rootPath === this.root;
+		      },
+		      decodeFragment: function(fragment) {
+		          return decodeURI(fragment.replace(/%25/g, '%2525'));
+		        }
 		  });
 		}).call(this);
 		

@@ -135,6 +135,16 @@ define(['jquery',
 			
 			// close the current view
 			if (this.currentView){
+				
+				//Check if the view will need to cancel the close
+				if(typeof this.currentView.confirmClose == "function"){
+					if(!this.currentView.confirmClose()){
+						//uiRouter.track
+						uiRouter.undoLastRoute();
+						return;
+					}
+				}
+				
 				// need reference to the old/current view for the callback method
 				var oldView = this.currentView;
 				
@@ -210,7 +220,7 @@ define(['jquery',
 			}
 		},
 		
-		showNewSearch: function(){
+		resetSearch: function(){
 			// Clear the search and map model to start a fresh search
 			appSearchModel.clear();
 			appSearchModel.set(appSearchModel.defaults);
@@ -405,6 +415,12 @@ define(['jquery',
 			$("body,html").stop(true,true) //stop first for it to work in FF
 						  .animate({ scrollTop: $(pageElement).offset().top - 40 - headerOffset}, 1000);
 			return false;
+		},
+		
+		//Will pop up an alert asking if the user wants to leave the page or not.
+		confirmLeave: function(e){
+			var decision = confirm();
+			return "decision";
 		}
 				
 	});

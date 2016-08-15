@@ -30,6 +30,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			"click #entryReturnSubmit"      : "submitReturnForm",
 			"click #dataCorrect"  		    : "submitConfirmYesForm",
 			"click #dataWrongButton"   	    : "submitConfirmNoForm",
+			"click .dataWrongButton"   	    : "submitConfirmNoForm",
 			"click #loginButton"   	        : "submitLoginForm",
 			"click #registerAnotherPackage" : "registerAnotherPackage",
 			"click #createAccount"          : "createAccount",
@@ -135,6 +136,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						viewRef.$el.fadeIn('slow', function(){
 							viewRef.trigger("postRender");
 							viewRef.createAwardHelpers();
+							window.onbeforeunload = appView.confirmLeave;
 						});			
 						
 						//Start showing progress updates
@@ -848,6 +850,17 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		submitOnEnter: function(e) {
 			if (e.keyCode != 13) return;
 			this.submitLoginForm();
+		},
+		
+		confirmClose: function(){
+			//If the user isn't logged in, we can leave this page
+			if(!appUserModel.get("loggedIn")) return true;
+			
+			//If the submission is complete, we can leave this page
+			if(registryModel.get("status") == "complete") return true;
+			
+			var isLeaving = confirm("Do you want to leave this page? Changes you made will not be saved.");
+			return isLeaving;
 		},
 		
 		onClose: function(){

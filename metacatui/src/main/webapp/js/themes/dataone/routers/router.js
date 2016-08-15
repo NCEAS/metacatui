@@ -29,9 +29,14 @@ function ($, _, Backbone) {
 		
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+			
+			//Track the history of hashes
+			this.on("route", this.trackHash);
 		},
 		
+		//Keep track of navigation movements
 		routeHistory: new Array(),
+		hashHistory: new Array(),
 		
 		// Will return the last route, which is actually the second to last item in the route history, 
 		// since the last item is the route being currently viewed
@@ -40,6 +45,23 @@ function ($, _, Backbone) {
 				return false;
 			else
 				return this.routeHistory[this.routeHistory.length-2];
+		},
+		
+		trackHash: function(e){
+			if(_.last(this.hashHistory) != window.location.hash)
+				this.hashHistory.push(window.location.hash);
+		},
+		
+		//If the user or app cancelled the last route, call this function to revert the window location hash back to the correct value
+		undoLastRoute: function(){
+			this.routeHistory.pop();
+
+			//Remove the last route and hash from the history
+			if(_.last(this.hashHistory) == window.location.hash)
+				this.hashHistory.pop();
+			
+			//Change the hash in the window location back
+			this.navigate(_.last(this.hashHistory), {replace: true});
 		},
 		
 		renderText: function(options){
