@@ -169,12 +169,6 @@
     code, .code_example{
     	color: #009E94;
     }
-    .brand{
-    	font-family: AllerLight, Helvetica, sans-serif;
-    }
-    .brand img{
-    	margin-right: 10px;
-    }
     
     /** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
 	.ellipsis{
@@ -252,7 +246,7 @@
 	background-color: transparent;
 	font-size: 1em;
 	line-height: 1.5em;
-	font-family: "Aller", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+	font-family: "AllerLight", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
 	font-weight: normal;
 	font-style: normal;
     display: block;
@@ -328,20 +322,14 @@
 .header .input-append form{
 	margin-top: 16px;
 }
-.header .brand{
-    color: #333;
-    line-height: 70px;
-    font-size: 1.5em;
-}
-#logo {
-	margin: 0.75em 0;
-	font-size: 1.2em;
-}	
-#logo img{
-	height: 50px;
-	position: relative;
-    top: -6px;
-    margin-right: 10px;
+.brand{
+	background: -webkit-image-set( url(../img/logo-w-title.png)    1x,
+                                   url(../img/logo-w-title_2x.png) 2x);
+    background-repeat: no-repeat;
+    height: 79px; /* height in CSS pixels */
+    width: 142px; /* width in CSS pixels */
+    display: inline-block;
+    font-family: AllerLight, Helvetica, sans-serif;
 }
   
   
@@ -423,15 +411,6 @@ footer .show-in-map-mode .btn{
 footer .footnote{
 	font-size: .8em;
     color: #333;
-}
-footer .brand{
-	line-height: 70px;
-	color: #333;
-	font-size: 1.5em;
-}
-footer .brand img{
-	height: 70px;
-	width: auto;
 }
 footer .logos{
 	margin-top: 2em;
@@ -719,7 +698,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       margin: 0 auto;
     }
     
-    .show-new-dataCatalogView{
+    .show-new-search{
     	cursor: pointer;
     }
     
@@ -733,23 +712,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       z-index: 220;
       height: 50px;
     }
-    
-    .navbar .nav > .brand-container{
-    	margin-right: 50px;
-    	margin-left: 50px;
-    }
-    .navbar .nav > li > a.brand {
-      padding: 0px;
-      margin-top: 0px;
-    }
-    .navbar .nav > li > a.brand img{
-    	height: 70px;
-    }
-    .navbar .brand-name {
-    	margin-left: 10px;
-    	font-size: 1em;
-    	text-transform: none;
-	}
   
     .navbar .nav > li > * {
       margin: 0px 5px 7px 5px;
@@ -796,12 +758,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
          -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
-    
-    .navbar .nav > li > a.brand:focus,
-    .navbar .nav > li > a.brand:hover {
-    	background-color: transparent;
-    }
-
     /* Offset the responsive button for proper vertical alignment */
     .navbar .btn-navbar {
       margin-top: 10px;
