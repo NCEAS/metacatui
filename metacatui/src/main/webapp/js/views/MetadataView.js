@@ -560,8 +560,6 @@ define(['jquery',
 			//Insert the package table HTML 
 			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
-			//Do any post-rendering
-			tableView.postRender();
 			
 			this.subviews.push(tableView);		
 		},

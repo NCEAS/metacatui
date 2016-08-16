@@ -75,20 +75,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			members = this.sort(members);
 			this.sortedMembers = members;
 			
-			//Create rows for the data service description, if there are any
-			var metadata = this.model.getMetadata(),
-				numServiceRows = 0;
-			if(metadata && metadata.get("isService")){
-				this.$el.addClass("service");
-				
-				var serviceRows = this.getServiceRows(metadata);
-				$(tbody).append(serviceRows);
-				
-				numServiceRows = $(serviceRows).find("tr").length;
-			}
+			var metadata = this.model.getMetadata();
 			
 			//Count the number of rows in this table
-			var numRows = members.length + numServiceRows;
+			var numRows = members.length;
 			
 			//Cut down the members list to only those that will be visible
 			members = members.slice(0, this.numVisible);
@@ -151,11 +141,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
 												
 			return this;
-		},
-		
-		postRender: function(){
-			if(this.model && this.model.getMetadata() && this.model.getMetadata().get("isService"))
-				this.createServicePopovers(this.model.getMetadata());
 		},
 		
 		sort: function(models){
@@ -357,95 +342,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				tr.css("display", "none");
 
 			return tr;
-		},
-		
-		/* 
-		 * Creates the HTML for a row in the table that displays the data service information
-		 */
-		getServiceRows: function(metadata, endPointNum){			
-			var rows = [];
-			
-			for(var i=0; i<metadata.get("serviceEndpoint").length; i++){
-				var tr = document.createElement("tr"); 
-					
-				//Icon cell	
-				var iconCell = $(document.createElement("td")).addClass("format-type"),
-					/*icon = $(document.createElement("img"))
-					.attr("href", "img/serviceIcon.png")*/
-					icon = $(document.createElement("i"))
-						.addClass("icon icon-table tooltip-this")
-						.tooltip({
-							placement: "top",
-							trigger: "hover focus",
-							title: "Data available from an external service"					
-						});
-				$(iconCell).html(icon);
-				$(tr).append(iconCell);
-					
-				//Name cell
-				var nameCell = $(document.createElement("td")).addClass("name wrap-contents service");				
-				var nameEl = $(document.createElement("span")).text(metadata.get("serviceTitle") || "Data service");
-				$(nameCell).html(nameEl);
-				$(tr).append(nameCell);
-				
-				//File type cell
-				var output = metadata.get("serviceOutput") || "Data";
-				var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents").text(output);
-				$(tr).append(fileTypeCell);
-				
-				//Size cell
-				var sizeCell = $(document.createElement("td")).addClass("size");
-				$(tr).append(sizeCell);
-				
-				//Downloads cell
-				var readsCell = $(document.createElement("td")).addClass("downloads");
-				$(tr).append(readsCell);
-				
-				//Button cell
-				var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container service");				
-				var downloadButtonHTML = this.downloadButtonTemplate({ 
-						href: metadata.get("serviceEndpoint")[i], 
-						attributes: "",
-						text: "Go to service to download",
-						icon: "icon icon-external-link"
-						});
-				$(downloadBtnCell).append(downloadButtonHTML);
-				$(tr).append(downloadBtnCell);
-				
-				rows.push(tr);
-			}
-					
-			return rows;			
-		},
-		
-		createServicePopovers: function(metadata){
-			
-			//Set up the popovers with more info
-			var popoverSelectors = ".service.name, .download-btn.service .btn";
-			var mnName = (nodeModel.get("checked") && nodeModel.getMember(metadata)) ?  " provided by " + nodeModel.getMember(metadata).name : ""; 
-			var popoverOptions = {
-					title: "Access this data from an external service" + mnName + ".",
-					html: true,
-					content: "<h4>About this data service</h4>" + metadata.get("serviceDescription"),
-					trigger: "hover",
-					container: this.el,
-					delay: { show: 500 },
-					placement: "top"
-			}
-			
-			var view = this;
-			if(!nodeModel.get("checked")){
-				this.listenTo(nodeModel, "change:checked", function(){
-					view.$(popoverSelectors).popover("destroy");
-					
-					//Make the popover options
-					var mnName = (nodeModel.get("checked") && nodeModel.getMember(metadata)) ?  " provided by " + nodeModel.getMember(metadata).name : ""; 					
-					popoverOptions.title = "Access this data from a service" + mnName + ".";
-					view.$(popoverSelectors).popover(popoverOptions);
-				});
-			}
-			else
-				view.$(popoverSelectors).popover(popoverOptions);	
 		},
 
 		download: function(e){				
