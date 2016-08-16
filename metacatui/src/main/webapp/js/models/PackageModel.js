@@ -156,36 +156,75 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 		getParentMetadata: function(){
 			var rMapIds = this.get("resourceMap");
 			
-			var rMapQuery = "";
+			//Create a query that searches for any resourceMap with an id matching one of the parents OR an id that matches one of the parents.
+			//This will return all members of the parent resource maps AND the parent resource maps themselves
+			var rMapQuery = "",
+				idQuery = "";
 			if(Array.isArray(rMapIds) && (rMapIds.length > 1)){
 				_.each(rMapIds, function(id, i, ids){
-					if(rMapQuery.length == 0) rMapQuery += "resourceMap:(";
-					else if(i+1 == ids.length){
-						rMapQuery += ")";
-						return;
-					}
-					else rMapQuery += " OR ";
 					
+					//At the begininng of the list of ids
+					if(rMapQuery.length == 0){
+						rMapQuery += "resourceMap:(";
+						idQuery += "id:(";
+					}
+					
+					//The id
 					rMapQuery += "%22" + encodeURIComponent(id) + "%22";
+					idQuery   += "%22" + encodeURIComponent(id) + "%22";
+					
+					//At the end of the list of ids
+					if(i+1 == ids.length){
+						rMapQuery += ")";
+						idQuery += ")";
+					}
+					//In-between each id
+					else{
+						rMapQuery += " OR ";
+						idQuery += " OR ";
+					}
 				});
 			}
 			else{
-				rMapIds = Array.isArray(rMapIds)? rMapIds[0] : rMapIds;
-				rMapQuery += "resourceMap:(" + "%22" + encodeURIComponent(rMapIds) + "%22" + ")";
+				//When there is just one parent, the query is simple
+				var rMapId = Array.isArray(rMapIds)? rMapIds[0] : rMapIds;
+				rMapQuery += "resourceMap:%22" + encodeURIComponent(rMapId) + "%22";
+				idQuery   += "id:%22" + encodeURIComponent(rMapId) + "%22";
 			}
-			var query = "fl=title,id" +
+			var query = "fl=title,id,obsoletedBy,resourceMap" +
 						"&wt=json" +
-						"&q=formatType:METADATA+" + rMapQuery;
+						"&group=true&group.field=formatType&group.limit=-1" +
+						"&q=((formatType:METADATA+" + rMapQuery + ") OR " + idQuery + ")";
 			
 			var model = this;
 			var requestSettings = {
 				url: appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
-					var parents = [];
-					_.each(data.response.docs, function(doc){
-						parents.push(new SolrResult(doc));
+					var results = data.grouped.formatType.groups,
+						rMapList = _.where(results, { groupValue: "RESOURCE" })[0].doclist,
+						rMaps = rMapList? rMapList.docs : [],
+						rMapIds = _.pluck(rMaps, "id"),
+						parents = [],
+						parentIds = [];
+					
+					//As long as this map isn't obsoleted by another map in our results list, we will show it
+					_.each(rMaps, function(map){
+						if(! (map.obsoletedBy && _.contains(rMapIds, map.obsoletedBy))){
+							parents.push(map);
+							parentIds.push(map.id);	
+						}
+					});
+					
+					var metadataList =  _.where(results, {groupValue: "METADATA"})[0],
+						metadata = (metadataList && metadataList.doclist)? metadataList.doclist.docs : [],
+						metadataModels = [];
+					
+					_.each(metadata, function(m){
+						//If this metadata doc is in one of the filtered parent resource maps
+						if(_.intersection(parentIds, m.resourceMap).length)
+							metadataModels.push(new SolrResult(m));
 					})
-					model.set("parentPackageMetadata", parents);
+					model.set("parentPackageMetadata", metadataModels);
 					model.trigger("change:parentPackageMetadata");
 				}
 			}

@@ -404,7 +404,7 @@ define(['jquery',
 						completePackages++;
 						if(completePackages >= packageIDs.length){
 							var latestPackages = _.filter(viewRef.packageModels, function(m){
-								return(!m.get("obsoletedBy"));
+								return !_.contains(packageIDs, m.get("obsoletedBy"));
 							});
 							viewRef.packageModels = latestPackages;
 							viewRef.insertPackageDetails(latestPackages);
@@ -444,14 +444,10 @@ define(['jquery',
 						
 			var viewRef = this;
 			
-			var latestPackages = _.filter(this.packageModels, function(m){
-				return(!m.get("obsoletedBy"));
-			});
-			
 			//Get the entity names from this page/metadata
-			this.getEntityNames(latestPackages);
+			this.getEntityNames(this.packageModels);
 			
-			_.each(latestPackages, function(packageModel){
+			_.each(this.packageModels, function(packageModel){
 
 				//If the package model is not complete, don't do anything
 				if(!packageModel.complete) return viewRef;
