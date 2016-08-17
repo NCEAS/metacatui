@@ -410,12 +410,6 @@
 	  box-shadow: none;  
     }
     
-    .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
-		background-color: #132D77;
-		color: #555555;
-		text-shadow: none;
-    }
-    
     button.btn-primary a {
       color: #FFFFFF;
       text-decoration: none;

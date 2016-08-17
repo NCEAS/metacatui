@@ -118,14 +118,25 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
 			if(this.model.getURL() && this.model.get("id")){
-				downloadButtonHTML = this.downloadButtonTemplate({ 
-					href: this.model.get("url"),
-					id: this.model.get("id"),
-					text: "Download all",
-					className: "btn btn-primary ",
-					isPublic: this.model.get("isPublic")
-				});	
+				if(this.model.getTotalSize() < appModel.get("maxDownloadSize")){				
+					downloadButtonHTML = this.downloadButtonTemplate({ 
+						href: this.model.get("url"),
+						id: this.model.get("id"),
+						text: "Download all",
+						className: "btn btn-primary ",
+						isPublic: this.model.get("isPublic")
+					});	
+				}
+				else{
+					downloadButtonHTML = this.downloadButtonTemplate({
+						text: "Download all",
+						className: "disabled",
+						attributes: "disabled",
+						tooLarge: true
+					});
+				}
 			}
+			
 			this.$el.html(this.template({
 				downloadButton : downloadButtonHTML,
 				readsEnabled   : this.readsEnabled,
@@ -326,13 +337,24 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			}
 			
 			//Download button cell
-			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");				
-			var downloadButtonHTML = this.downloadButtonTemplate({ 
+			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");	
+			
+			if(memberModel.get("size") < appModel.get("maxDownloadSize")){
+				var downloadButtonHTML = this.downloadButtonTemplate({ 
 					href: url, 
 					fileName: entityName,
 					id: memberModel.get("id"),
 					isPublic: memberModel.get("isPublic"),
 				});
+			}
+			else{
+				var downloadButtonHTML = this.downloadButtonTemplate({ 
+					attributes: "disabled",
+					className: "disabled",
+					tooLarge: true
+				});
+			}
+			
 			$(downloadBtnCell).append(downloadButtonHTML);
 			$(tr).append(downloadBtnCell);
 			
@@ -384,7 +406,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 
 			this.$("tr.collapse").fadeIn();
 			this.$(".expand-control").fadeOut(function(){
-				view.$(".collapse-control").fadeIn();				
+				view.$(".collapse-control").fadeIn("fast");
+				view.$(".tooltip-this").tooltip();
 			});
 		},
 		

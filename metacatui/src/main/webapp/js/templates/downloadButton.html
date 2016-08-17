@@ -8,6 +8,14 @@
 	if((typeof fileName === "undefined")  || !fileName)  var fileName = "download";
 	if((typeof attributes === "undefined")) var attributes = "download";
 	if((typeof id === "undefined")  || !id)  var id = "";	
+	
+	if(typeof href == "string")  href = 'href="' + href + '"';	
+	else if(typeof href === "undefined") var href = "";
+	
+	if((typeof tooLarge !== "undefined") && tooLarge){
+		className += " tooltip-this";
+		attributes += ' data-title="This file is too large to download. Please contact us about how to access this data." data-position="top" data-trigger="hover"';
+	}
 %>
 
-<a class="<%=className%>" href="<%=href%>" <%=attributes%> target="_blank" data-id="<%=id%>"><%=text%><i class="<%=icon%>"></i></a>
+<a class="<%=className%>" <%=href%> <%=attributes%> target="_blank" data-id="<%=id%>"><%=text%><i class="<%=icon%>"></i></a>

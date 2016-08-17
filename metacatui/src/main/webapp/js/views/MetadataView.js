@@ -252,7 +252,7 @@ define(['jquery',
 				
 				$.ajax(_.extend(loadSettings, appUserModel.createAjaxSettings()));
 			}
-			else this.renderMetadataFromIndex();	
+			else this.renderMetadataFromIndex();				
 		},
 
 		/* If there is no view service available, then display the metadata fields from the index */
@@ -469,7 +469,7 @@ define(['jquery',
 					title = "Files in this dataset " + title;
 					viewRef.insertPackageTable(packageModel, {title: title});
 				}
-				
+								
 				//Remove the extra download button returned from the XSLT since the package table will have all the download links
 				$("#downloadPackage").remove();
 			    
@@ -517,6 +517,9 @@ define(['jquery',
 			
 			//Insert the data details sections 
 			this.insertDataDetails();
+			
+			//Initialize tooltips in the package table(s)
+			this.$(".tooltip-this").tooltip();
 
 		    return this;
 		},

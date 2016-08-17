@@ -495,19 +495,13 @@ footer .logos a:hover, a:focus{
 	  padding: .6em .8em;
     }
     
-    .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
-		background-color: #132D77;
-		color: #555555;
-		text-shadow: none;
-    }
-    
     button.btn-primary a {
       color: #FFFFFF;
       text-decoration: none;
     }
       
       
-    .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled]{
+    .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active{
     	background-color: #1F254F;	
     	border: 0px;
     } 

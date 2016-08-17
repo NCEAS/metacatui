@@ -13,6 +13,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				memberId: null, //An id of a member of the data package
 				indexDoc: null, //A SolrResult object representation of the resource map 
 				size: 0, //The number of items aggregated in this package
+				totalSize: null,
 				formattedSize: "",
 				formatId: null,
 				obsoletedBy: null,
@@ -730,6 +731,26 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			this.complete = true;
 			this.pending = false;
 			this.trigger("complete", this);
+		},
+		
+		//Sums up the byte size of each member
+		getTotalSize: function(){
+			if(this.get("totalSize")) return this.get("totalSize");
+			
+			if(this.get("members").length == 1){
+				var totalSize = this.get("members")[0].get("size");
+			}
+			else{
+				var totalSize = _.reduce(this.get("members"), function(sum, member){
+					if(typeof sum == "object")
+						sum = sum.get("size");
+					
+					return sum + member.get("size");
+				});
+			}
+			
+			this.set("totalSize", totalSize);
+			return totalSize;
 		},
 		
 		/****************************/

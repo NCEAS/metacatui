@@ -32,7 +32,9 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			useJsonp: true,
 			
-			metacatVersion: "2.6.0", 
+			maxDownloadSize: 3000000000,
+			
+			metacatVersion: "2.7.2", 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
