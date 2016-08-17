@@ -326,7 +326,8 @@
 	background: -webkit-image-set( url(../img/logo-w-title.png)    1x,
                                    url(../img/logo-w-title_2x.png) 2x);
     background-repeat: no-repeat;
-    height: 79px; /* height in CSS pixels */
+    background-size: contain;
+    height: 60px; /* height in CSS pixels */
     width: 142px; /* width in CSS pixels */
     display: inline-block;
     font-family: AllerLight, Helvetica, sans-serif;
@@ -366,6 +367,7 @@ footer ul li{
 	-webkit-transition-delay: .5s;
 	z-index: 10;
 	padding-top: 0px 20px;
+	display: none;
 }
 footer .footer-inner{
 	max-width: 1000px;

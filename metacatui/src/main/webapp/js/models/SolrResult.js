@@ -38,6 +38,7 @@ define(['jquery', 'underscore', 'backbone'],
 			serviceEndpoint: null,
 			serviceOutput: null,
 			notFound: false,
+			newestVersion: null,
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
@@ -297,6 +298,53 @@ define(['jquery', 'underscore', 'backbone'],
 		notFound: function(){
 			this.set({"notFound": true}, {silent: true});
 			this.trigger("404");
+		},
+		
+		//Transgresses the obsolence chain until it finds the newest version that this user is authorized to read
+		findLatestVersion: function(newestVersion, possiblyNewer) {			
+			// Make sure we have the /meta service configured
+			if(!appModel.get('metaServiceUrl')) return;	
+			
+			//If no pid was supplied, use this model's id
+			if(!newestVersion){
+				var newestVersion = this.get("id");
+				var possiblyNewer = this.get("obsoletedBy");
+			}
+			
+			//If this isn't obsoleted by anything, then there is no newer version
+			if(!possiblyNewer){
+				this.set("newestVersion", newestVersion);
+				return;
+			}
+			
+			var model = this;		
+			
+			//Get the system metadata for the possibly newer version
+			var requestSettings = {
+				url: appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer), 
+				type: "GET",
+				success: function(data) {
+							
+					// the response may have an obsoletedBy element
+					var obsoletedBy = $(data).find("obsoletedBy").text();
+					
+					//If there is an even newer version, then get it and rerun this function
+					if(obsoletedBy)
+						model.findLatestVersion(possiblyNewer, obsoletedBy);
+					//If there isn't a newer version, then this is it
+					else
+						model.set("newestVersion", possiblyNewer);		
+					
+				},
+				error: function(xhr){
+					//If this newer version isn't accessible, link to the latest version that is
+					if(xhr.status == "401")
+						model.set("newestVersion", newestVersion);	
+				}
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));		
+			
 		},
 		
 		/**** Provenance-related functions ****/

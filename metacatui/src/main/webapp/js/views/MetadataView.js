@@ -1500,36 +1500,19 @@ define(['jquery',
 		},
 		
 		// this will lookup the latest version of the PID
-		showLatestVersion: function(pid) {	
-			if(!pid){
-				//Is this obsoleted by something else?
-				var pid = this.model.get("obsoletedBy");			
-				if(!pid) return;
-			}
-				
-			// look up the metadata service URL. It may be turned off
-			var metaServiceUrl = appModel.get('metaServiceUrl');			
-			if((typeof metaServiceUrl === "undefined") || !metaServiceUrl) return;
+		showLatestVersion: function() {				
+			var view = this;
 			
-			// look up the meta
-			var viewRef = this,
-				encodedPid = encodeURIComponent(pid);
-			var requestSettings = {
-				url: metaServiceUrl + encodedPid, 
-				type: "GET",
-				success: function(data, textStatus, xhr) {
-							
-					// the response should have a obsoletedBy element
-					var newestVersion = $(data).find("obsoletedBy").text();
-							
-					if (newestVersion) {						
-						viewRef.showLatestVersion(newestVersion);
-					} else {
-						viewRef.$el.prepend(viewRef.versionTemplate({pid: pid}));			
-					}
-				}
-			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			//When the latest version is found,
+			this.listenTo(this.model, "change:newestVersion", function(){
+				//Make sure it has a newer version, and if so,
+				if(view.model.get("newestVersion") != view.model.get("id"))
+					//Put a link to the newest version in the content 
+					view.$el.prepend(view.versionTemplate({pid: view.model.get("newestVersion")}));
+			});
+			
+			//Find the latest version of this metadata object
+			this.model.findLatestVersion();
 		},
 		
 		showLoading: function(message) {
