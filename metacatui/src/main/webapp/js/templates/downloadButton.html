@@ -13,8 +13,8 @@
 	else if(typeof href === "undefined") var href = "";
 	
 	if((typeof tooLarge !== "undefined") && tooLarge){
-		className += " tooltip-this";
-		attributes += ' data-title="This file is too large to download. Please contact us about how to access this data." data-position="top" data-trigger="hover"';
+		className += " tooltip-this disabled";
+		attributes += ' disabled data-title="This file is too large to download. Please contact us about how to access this data." data-position="top" data-trigger="hover"';
 	}
 %>
 

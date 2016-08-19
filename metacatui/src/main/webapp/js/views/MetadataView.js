@@ -1162,20 +1162,23 @@ define(['jquery',
 					
 					//Find the part of the HTML Metadata view that describes this data object
 					var anchor         = $(document.createElement("a")).attr("id", objID.replace(/[^A-Za-z0-9]/g, "-")),
-						downloadButton = viewRef.downloadButtonTemplate({href: solrResult.get("url")}),
-						container      = viewRef.findEntityDetailsContainer(objID),
-						dataDisplay = viewRef.dataDisplayTemplate({
-											 type : type,
-											  src : solrResult.get("url"), 
-										    objID : objID
-						});
+						container      = viewRef.findEntityDetailsContainer(objID);
+					
+					if(solrResult.get("size") < appModel.get("maxDownloadSize"))
+						var downloadButton = $.parseHTML(viewRef.downloadButtonTemplate({href: solrResult.get("url")}).trim());
+					else
+						var downloadButton = $.parseHTML(viewRef.downloadButtonTemplate({ tooLarge: true }).trim());
 						
 					//Insert the data display HTML and the anchor tag to mark this spot on the page 
 					if(container){
 						if((type == "image") || (type == "PDF")){							
 							if((type == "PDF") && !solrResult.get("isPublic")){
 								
-								dataDisplay = $.parseHTML(dataDisplay.trim());
+								var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({
+													type : type,
+													src : solrResult.get("url"), 
+													objID : objID
+												  }).trim());
 								
 								//Send the auth token in a XHR request to get the PDF
 								//Create an XHR
@@ -1209,8 +1212,10 @@ define(['jquery',
 						$(container).prepend(anchor);
 						
 						var nameLabel = $(container).find("label:contains('Entity Name')");
-						if(nameLabel.length > 0)
+						if(nameLabel.length > 0){
 							$(nameLabel).parent().after(downloadButton);
+							$(downloadButton).find(".tooltip-this").tooltip();
+						}
 					}	
 				
 				}

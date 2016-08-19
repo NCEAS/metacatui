@@ -130,8 +130,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				else{
 					downloadButtonHTML = this.downloadButtonTemplate({
 						text: "Download all",
-						className: "disabled",
-						attributes: "disabled",
 						tooLarge: true
 					});
 				}
@@ -349,8 +347,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			}
 			else{
 				var downloadButtonHTML = this.downloadButtonTemplate({ 
-					attributes: "disabled",
-					className: "disabled",
 					tooLarge: true
 				});
 			}
