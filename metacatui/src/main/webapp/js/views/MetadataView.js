@@ -5,7 +5,7 @@ define(['jquery',
 		'backbone',
 		'gmaps',
 		'fancybox',
-		'../../components/zeroclipboard/ZeroClipboard.min',
+		'clipboard',
 		'models/PackageModel',
 		'models/SolrResult',
 		'views/ProvChartView',
@@ -29,7 +29,7 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
 		], 				
-	function($, $ui, _, Backbone, gmaps, fancybox, ZeroClipboard, Package, SolrResult, 
+	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, Package, SolrResult, 
 			 ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, 
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate, 
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadButtonTemplate, 
@@ -779,12 +779,45 @@ define(['jquery',
 
 			$(this.controlsContainer).html(controlsContainer);
 			
-			//Create a copy citation button
-			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
-			var copyButtons = this.$("a.copy");
-			var client = new ZeroClipboard(copyButtons);
-			client.on("aftercopy", function(e){
-				$(e.target).parent().children(".copy-success").show().delay(1000).fadeOut();
+			var view = this;
+
+			//Create clickable "Copy" buttons to copy text (e.g. citation) to the user's clipboard
+			var copyBtns = $(this.controlsContainer).find(".copy");
+			_.each(copyBtns, function(btn){
+				//Create a copy citation button
+				var clipboard = new Clipboard(btn);
+				clipboard.on("success", function(e){
+					$(e.trigger).siblings(".copy-success").show().delay(1000).fadeOut();
+				});
+				
+				clipboard.on("error", function(e){
+					
+					if(!$(e.trigger).prev("input.copy").length){
+						var textarea = $(document.createElement("input")).val($(e.trigger).attr("data-clipboard-text")).addClass("copy").css("width", "0");
+						textarea.tooltip({
+							title: "Press Ctrl+c to copy",
+							placement: "top"
+						});				
+						$(e.trigger).before(textarea);
+					}
+					else{
+						var textarea = $(e.trigger).prev("input.copy");
+					}
+					
+					textarea.animate({ width: "100px" }, {
+						duration: "slow", 
+						complete: function(){
+							textarea.trigger("focus");
+							textarea.tooltip("show");
+						}
+					});	
+					
+					textarea.focusout(function(){
+						textarea.animate({ width: "0px" }, function(){
+							textarea.remove();
+						})
+					});
+				});
 			});
 			
 			//Initialize the fancybox elements

@@ -247,6 +247,9 @@ h3{
 .notification.error{
 	color: #a94442;
 }
+.notification.warning{
+	color: rgb(197, 166, 0);
+}
 .notification.success,
 .notification.error{
 	font-weight: bold;

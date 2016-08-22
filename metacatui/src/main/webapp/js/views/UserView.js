@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/ZeroClipboard.min', 'collections/UserGroup', 'models/UserModel', 'views/SignInView', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'], 				
-	function($, _, Backbone, ZeroClipboard, UserGroup, UserModel, SignInView, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
+define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup', 'models/UserModel', 'views/SignInView', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'], 				
+	function($, _, Backbone, Clipboard, UserGroup, UserModel, SignInView, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
 	
 	/*
@@ -1104,19 +1104,23 @@ define(['jquery', 'underscore', 'backbone', '../../components/zeroclipboard/Zero
 			
 			$(".token-tab").tab();
 			
-			//Create a copy button
-			ZeroClipboard.config( { swfPath: "./components/zeroclipboard/ZeroClipboard.swf" } );
-			var client = new ZeroClipboard(copyButton);
-			var clientR = new ZeroClipboard(copyRButton);
-			var clientMatlab = new ZeroClipboard(copyMatlabButton);
-			client.on("aftercopy", function(e){
-				$(e.target).nextAll(".copy-success").show().delay(3000).fadeOut();
-			});
-			clientR.on("aftercopy", function(e){
-				$(e.target).nextAll(".copy-success").show().delay(3000).fadeOut();
-			});
-			clientMatlab.on("aftercopy", function(e){
-				$(e.target).nextAll(".copy-success").show().delay(3000).fadeOut();
+			//Create clickable "Copy" buttons to copy text (e.g. token) to the user's clipboard
+			_.each([copyButton[0], copyRButton[0], copyMatlabButton[0]], function(btn){
+				//Create a copy citation button
+				var clipboard = new Clipboard(btn);
+				clipboard.on("success", function(e){
+					copySuccess.show().delay(3000).fadeOut();
+				});
+				clipboard.on("error", function(e){
+					var textarea = $(e.trigger).parent().children("textarea.token");
+					textarea.trigger("focus");
+					textarea.tooltip({
+						title: "Press Ctrl+c to copy",
+						placement: "bottom"
+					});
+					textarea.tooltip("show");
+					
+				});
 			});
 		},
 		
