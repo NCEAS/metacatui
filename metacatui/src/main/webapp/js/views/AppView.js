@@ -363,14 +363,10 @@ define(['jquery',
 					
 					if(appModel.get("tokenUrl")){
 						//If the user's token is no longer valid, then refresh the page
-						appUserModel.checkToken(null, function(){
-							window.location.reload();
-						});
+						appUserModel.checkToken();
 					}
 					else{
-						appUserModel.checkStatus(null, function(){
-							window.location.reload();
-						});
+						appUserModel.checkStatus();
 					}
 				});
 			});

@@ -588,9 +588,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		
 		checkToken: function(onSuccess, onError){
 			//First check if the token has expired
-			if(appUserModel.get("expires") < new Date()){
+			if(appUserModel.get("expires") > new Date()){
 				if(onSuccess) onSuccess();
-				else appUserModel.reset();
 								
 				return;
 			}
@@ -612,7 +611,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));	
 		},
 		
 		parseToken: function(token) {
