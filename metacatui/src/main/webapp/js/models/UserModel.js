@@ -595,7 +595,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				return;
 			}
 			
-			var url = appModel.get("checkTokenUrl");			
+			var url = appModel.get("tokenUrl");			
 			if(!url) return;
 			
 			var requestSettings = {
