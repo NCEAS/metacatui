@@ -25,13 +25,15 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 			//Don't render a SignIn view if there are no Sign In URLs configured
 			if(!appModel.get("signInUrl") && !appModel.get("signInUrlOrcid")) return this;
 			
+			var view = this;
 			
 			if(this.inPlace){
 				this.$el.addClass("hidden modal container");
+				this.$el.attr("data-backdrop", "static");
 				
 				//Add a message to the top, if supplied
 				if(typeof this.topMessage == "string")
-					this.$el.prepend('<p class="center">' + this.topMessage + '</p>');
+					this.$el.prepend('<p class="center container">' + this.topMessage + '</p>');
 				else if(typeof this.topMessage == "object")
 					this.$el.prepend(this.topMessage);
 						
@@ -40,17 +42,21 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 					signInBtnsContainer = $(document.createElement("div")).addClass("center container").html(signInBtns);
 				signInBtnsContainer.find("a").each(function(i, a){
 					var url = $(a).attr("href");
-					url = url.substring(0, url.indexOf("target=")+7) + window.location.origin + window.location.pathname + "#sign-in-success";
+					url = url.substring(0, url.indexOf("target=")+7) + window.location.origin + window.location.pathname + encodeURIComponent("#") + "signinsuccess";
 					$(a).attr("href", url);
 				});
 				signInBtnsContainer.find("h1, h2").remove();
 				this.$el.append(signInBtnsContainer);
 				
+				this.$el.prepend($(document.createElement("div")).addClass("container").prepend(
+						$(document.createElement("a")).text("Close").addClass("close").prepend(
+						$(document.createElement("i")).addClass("icon icon-on-left icon-remove"))));
+				
 				//Listen for clicks 
-				this.$("a").on("click", function(e){	
+				this.$("a.signin").on("click", function(e){	
 					//Get the link URL and change the target to a special route					
 					e.preventDefault();
-					
+										
 					var link = e.target;
 					if(link.nodeName != "A") link = $(link).parents("a");
 					
@@ -61,11 +67,20 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 					
 					//Listen for successful sign-in
 					window.listenForSignIn = setInterval(function(){
-						appUserModel.checkToken(function(){
+						appUserModel.checkToken(function(data){
 							$(".modal.sign-in-btns").modal("hide");
 							clearInterval(window.listenForSignIn);
+							
+							if(appUserModel.get("checked"))
+								appUserModel.trigger("change:checked");
+							else
+								appUserModel.set("checked", true);
 						});
 					}, 750);
+				});
+				
+				this.$("a.close").on("click", function(e){
+					view.$el.modal("hide");
 				});
 			}
 			else{			
@@ -139,6 +154,8 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 		
 		onClose: function(){
 			this.$el.empty();
+			
+			if(window.listenForSignIn)	clearInterval(window.listenForSignIn);
 		}
 	});
 	return SignInView;

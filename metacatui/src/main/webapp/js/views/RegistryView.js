@@ -824,19 +824,32 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				expires = appUserModel.get("expires"),
 				timeLeft = new Date() - expires,
 				timeoutId = setTimeout(function(){
-					if(appUserModel.get("expires") <= new Date()){						
-						 var signInForm = new SignInView({
+					if(appUserModel.get("expires") <= new Date()){		
+						appUserModel.set("loggedIn", false);
+						
+						 var signInView = new SignInView({
 							 inPlace: true,
-							 topMessage: "Your session has timed out. Please sign-in in a new tab and come back to continue editing."
-						 }).render().el;
+							 topMessage: "Your session has timed out. Please sign-in in a new tab then come back to continue editing."
+						 })
+						 var signInForm = signInView.render().el;
+						 
+						 if(view.subviews && Array.isArray(view.subviews))
+							 view.subviews.push(signInView);
+						 else
+							 view.subviews = [signInView];
 						 						 						 
 						$("body").append(signInForm);										
-						$(signInForm).modal();			
+						$(signInForm).modal();		
+						
+						//When the user logged back in, listen again for the next timeout
+						view.listenToOnce(appUserModel, "change:checked", function(){
+							if(appUserModel.get("checked") && appUserModel.get("loggedIn"))
+								view.watchForTimeOut();
+						});
 					}
 				}, timeLeft);
-						
-			registryModel.set("timeout", timeoutId);
 			
+			registryModel.set("timeout", timeoutId);			
 		},
 		
 		showLoading: function(msg) {
@@ -894,6 +907,11 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			//Clear the timeout listener
 			if(registryModel.get("timeout"))
 				clearTimeout(registryModel.get("timeout"));
+			
+			//Close the subviews
+			_.each(this.subviews, function(i, view){
+				if(typeof view.onClose == "function") view.onClose();
+			});
 			
 			registryModel.reset();
 			window.onbeforeunload = null;

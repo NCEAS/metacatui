@@ -587,8 +587,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 		
 		checkToken: function(onSuccess, onError){
+						
 			//First check if the token has expired
-			if(appUserModel.get("expires") > new Date()){
+			if(appUserModel.get("expires") > new Date()){				
 				if(onSuccess) onSuccess();
 								
 				return;
@@ -621,7 +622,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 							
 							appUserModel.set("checked", true);
 							
-							if(onSuccess) onSuccess();
+							if(onSuccess) onSuccess(data, textStatus, xhr);
 						}
 						else if(onError) 
 							onError(data, textStatus, xhr);

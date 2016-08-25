@@ -16,7 +16,7 @@ function ($, _, Backbone) {
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'signout'					: 'logout',
 			'signin'					: 'renderTokenSignIn',
-			"sign-in-success"           : "renderSignInSuccess",
+			"signinsuccess"           : "renderSignInSuccess",
 			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
 			'api(/:anchorId)'           : 'renderAPI'       // API page
 		},
@@ -283,6 +283,7 @@ function ($, _, Backbone) {
 		},
 		
 		renderSignInSuccess: function(){
+			console.log("renderSignInSuccess");
 			$("body").html("Sign-in successful.");
 			setTimeout(window.close, 1000);
 		},
