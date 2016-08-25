@@ -183,6 +183,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				var formOptions = registryModel.get("formOptions");
 				registryEntryForm.find("#keyword").replaceWith(this.template({formOptions: formOptions}));
 				
+				this.watchForTimeOut();
+				
 			}
 			else if(loginForm.length){
 				//Enter help items for login inputs
@@ -802,16 +804,39 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		/*
 		 * Show the SignIn View (or auth tokens)
 		 */
-		showSignInForm: function(){
+		showSignInForm: function(container){
 			if(!appModel.get("tokenUrl")) return;
 			
 			var signInBtns = new SignInView().render().el;
+			
+			if(typeof container == "undefined")
+				var container = this.el;
 
-			this.$el.html("<h1 class='center'>Sign in to submit data</h1>");
+			$(container).html("<h1 class='center'>Sign in to submit data</h1>");
 			$(signInBtns).addClass("large center");
-			this.$el.append(signInBtns);
+			$(container).append(signInBtns);
 			
 			$(signInBtns).find(".login").addClass("btn btn-primary").trigger("click");
+		},
+		
+		watchForTimeOut: function(){
+			var view = this,
+				expires = appUserModel.get("expires"),
+				timeLeft = new Date() - expires,
+				timeoutId = setTimeout(function(){
+					if(appUserModel.get("expires") <= new Date()){						
+						 var signInForm = new SignInView({
+							 inPlace: true,
+							 topMessage: "Your session has timed out. Please sign-in in a new tab and come back to continue editing."
+						 }).render().el;
+						 						 						 
+						$("body").append(signInForm);										
+						$(signInForm).modal();			
+					}
+				}, timeLeft);
+						
+			registryModel.set("timeout", timeoutId);
+			
 		},
 		
 		showLoading: function(msg) {
@@ -865,6 +890,11 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		
 		onClose: function(){
 			this.stopListening();
+			
+			//Clear the timeout listener
+			if(registryModel.get("timeout"))
+				clearTimeout(registryModel.get("timeout"));
+			
 			registryModel.reset();
 			window.onbeforeunload = null;
 		}

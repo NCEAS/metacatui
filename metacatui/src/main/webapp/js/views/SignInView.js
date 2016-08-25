@@ -14,28 +14,79 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 		tagName: "div",
 		className: "inline-buttons sign-in-btns",
 		
+		initialize: function(options){
+			if(typeof options !== "undefined"){
+				this.inPlace = options.inPlace;
+				this.topMessage = options.topMessage;
+			}
+		},
+		
 		render: function(){
 			//Don't render a SignIn view if there are no Sign In URLs configured
 			if(!appModel.get("signInUrl") && !appModel.get("signInUrlOrcid")) return this;
 			
 			
-			//Insert the sign in popup screen once
-			if(!$("#signinPopup").length){
-				var target = encodeURIComponent(window.location.href);
-				var signInUrl = appModel.get('signInUrl')? appModel.get('signInUrl') + target : null;
-				var signInUrlOrcid = appModel.get('signInUrlOrcid') ? appModel.get('signInUrlOrcid') + target : null;
-				var signInUrlLdap = appModel.get('signInUrlLdap') ? appModel.get('signInUrlLdap') + target : null;	
+			if(this.inPlace){
+				this.$el.addClass("hidden modal container");
 				
-				$("body").append(this.template({
-					signInUrl:  signInUrl,
-					signInUrlOrcid:  signInUrlOrcid,
-					signInUrlLdap:  signInUrlLdap,
-					currentUrl: window.location.href,
-					loginOptions: this.loginOptionsTemplate({ signInUrl: signInUrl }).trim()
-				}));
+				//Add a message to the top, if supplied
+				if(typeof this.topMessage == "string")
+					this.$el.prepend('<p class="center">' + this.topMessage + '</p>');
+				else if(typeof this.topMessage == "object")
+					this.$el.prepend(this.topMessage);
+						
+				//Copy/paste the contents of the sign-in popup
+				var signInBtns = $.parseHTML($("#signinPopup").html().trim()),
+					signInBtnsContainer = $(document.createElement("div")).addClass("center container").html(signInBtns);
+				signInBtnsContainer.find("a").each(function(i, a){
+					var url = $(a).attr("href");
+					url = url.substring(0, url.indexOf("target=")+7) + window.location.origin + window.location.pathname + "#sign-in-success";
+					$(a).attr("href", url);
+				});
+				signInBtnsContainer.find("h1, h2").remove();
+				this.$el.append(signInBtnsContainer);
+				
+				//Listen for clicks 
+				this.$("a").on("click", function(e){	
+					//Get the link URL and change the target to a special route					
+					e.preventDefault();
+					
+					var link = e.target;
+					if(link.nodeName != "A") link = $(link).parents("a");
+					
+					var url = $(link).attr("href");
+					
+					//Open up a new small window with this URL to allow the user to login
+					window.open(url, "Login", "height=600,width=700");
+					
+					//Listen for successful sign-in
+					window.listenForSignIn = setInterval(function(){
+						appUserModel.checkToken(function(){
+							$(".modal.sign-in-btns").modal("hide");
+							clearInterval(window.listenForSignIn);
+						});
+					}, 750);
+				});
 			}
-			
-			this.$el.append(this.buttonsTemplate());
+			else{			
+				//Insert the sign in popup screen once
+				if(!$("#signinPopup").length){
+					var target = encodeURIComponent(window.location.href);
+					var signInUrl = appModel.get('signInUrl')? appModel.get('signInUrl') + target : null;
+					var signInUrlOrcid = appModel.get('signInUrlOrcid') ? appModel.get('signInUrlOrcid') + target : null;
+					var signInUrlLdap = appModel.get('signInUrlLdap') ? appModel.get('signInUrlLdap') + target : null;	
+					
+					$("body").append(this.template({
+						signInUrl:  signInUrl,
+						signInUrlOrcid:  signInUrlOrcid,
+						signInUrlLdap:  signInUrlLdap,
+						currentUrl: window.location.href,
+						loginOptions: this.loginOptionsTemplate({ signInUrl: signInUrl }).trim()
+					}));
+				}
+				
+				this.$el.append(this.buttonsTemplate());
+			}
 			
 			return this;
 		},

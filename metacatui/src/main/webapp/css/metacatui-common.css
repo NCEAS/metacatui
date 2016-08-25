@@ -1035,7 +1035,13 @@ img.icon{
     border-right: 1px solid #CCC;
     min-height: 265px;
 }
-
+.modal.container{
+	padding: 20px 20px 40px 20px;
+}
+.modal .container{
+	width: auto;
+	margin-top: 20px;
+}
 /****************************************** 
 ** The Metadata and MetadataIndex View **
 ******************************************/	

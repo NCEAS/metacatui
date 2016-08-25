@@ -594,14 +594,37 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				return;
 			}
 			
+			var model = this;
+			
 			var url = appModel.get("tokenUrl");			
 			if(!url) return;
 			
 			var requestSettings = {
 					type: "GET",
 					url: url,
-					success: onSuccess || function(data, textStatus, xhr){
-						appUserModel.set("checked", true);
+					success: function(data, textStatus, xhr){
+						if(data){
+							// the response should have the token
+							var payload = model.parseToken(data),
+								username = payload ? payload.userId : null,
+								fullName = payload ? payload.fullName : null,
+								token    = payload ? data : null,
+								loggedIn = payload ? true : false;
+
+							// set in the model
+							model.set('fullName', fullName);
+							model.set('username', username);
+							model.set("token", token);
+							model.set("loggedIn", loggedIn);
+
+							model.getTokenExpiration(payload);
+							
+							appUserModel.set("checked", true);
+							
+							if(onSuccess) onSuccess();
+						}
+						else if(onError) 
+							onError(data, textStatus, xhr);
 					},
 					error: function(data, textStatus, xhr){
 						//If this token in invalid, then reset the user model/log out 

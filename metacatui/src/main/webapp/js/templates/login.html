@@ -1,3 +1,8 @@
+<% 
+	if((typeof newTab !== "undefined") && newTab) var linkAttr = 'target="_blank"';
+	else var linkAttr = '';	
+%>
+
 <div id="signinPopup" class="fancybox-inline sign-in">
 	<h2>Sign In</h2>
 	<div class="row-fluid">
@@ -8,7 +13,7 @@
 		<% }	
 		   if(signInUrlOrcid) { %>
 				<div class="orcid-signin">
-					<a href="<%=signInUrlOrcid%>" class="signin CILogonSignin update-orcid-sign-in-url">
+					<a href="<%=signInUrlOrcid%>" class="signin CILogonSignin update-orcid-sign-in-url" <%=linkAttr%>>
 						<img src="./img/orcid_64x64.png" />
 						<span>Sign in with ORCID</span>
 					</a>
@@ -24,7 +29,7 @@
 		<% } 
 		   if(signInUrl) { %>
 				<div class="well scroll-y">
-					<a class="btn update-sign-in-url" href="<%=signInUrl%>">Sign in with your University or Institution</a>
+					<a class="btn update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign in with your University or Institution</a>
 					<!-- <img src="./img/google_signin.png" class="signin CILogonSignin" />  -->
 					<% if(loginOptions){ %>
 						<!-- <h3>Sign in with your University or Institution</h3> -->
@@ -35,8 +40,8 @@
 				</div>
 		<% }
 		   if(signInUrlLdap) { %>
-				<a href="#" class="btn ldap" data-name="NCEAS - National Center for Ecological Analysis and Synthesis" data-value="o=NCEAS,dc=ecoinformatics,dc=org">Sign in with an NCEAS Account</a>
-				<a href="#" class="btn ldap" data-name="KNB Data Repository" data-value="o=unaffiliated,dc=ecoinformatics,dc=org">Sign in with a KNB Account</a>
+				<a href="#" class="btn ldap" data-name="NCEAS - National Center for Ecological Analysis and Synthesis" data-value="o=NCEAS,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with an NCEAS Account</a>
+				<a href="#" class="btn ldap" data-name="KNB Data Repository" data-value="o=unaffiliated,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with a KNB Account</a>
 		<% }
 		   if(signInUrl || signInUrlLdap){ %>
 			</div>
@@ -58,7 +63,7 @@
 			<% if(signInUrlOrcid) { %>
 				<h4>There's no need to create a new account - just use your <a href="<%=signInUrlOrcid%>">existing <img src="./img/orcid_64x64.png" class="icon-on-left icon" /> ORCID account</a> now or <a href="<%=signInUrlOrcid%>">create a new one</a>.</h4>
 				<div class="orcid-signin btn-large center">
-					<a href="<%=signInUrlOrcid%>" class="signin CILogonSignin update-orcid-sign-in-url">
+					<a href="<%=signInUrlOrcid%>" class="signin CILogonSignin update-orcid-sign-in-url" <%=linkAttr%>>
 						<img src="./img/orcid_64x64.png" />
 						<span>Sign up with ORCID</span>
 					</a>
@@ -66,7 +71,7 @@
 			<% } 
 			else if(signInUrl) { %>
 				<h4>There's no need to create a new account - just use one of your existing accounts from Google or from a list of 100+ Universities and Institutions:</h4>
-					<a class="btn btn-primary btn-large center update-sign-in-url" href="<%=signInUrl%>">Sign up now</a>
+					<a class="btn btn-primary btn-large center update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign up now</a>
 					<div class="well scroll-y">
 						<!-- <img src="./img/google_signin.png" class="signin CILogonSignin" />  -->
 						<% if(loginOptions){ %>
