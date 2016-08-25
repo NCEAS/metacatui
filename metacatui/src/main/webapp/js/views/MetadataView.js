@@ -266,14 +266,18 @@ define(['jquery',
 			//Add the metadata HTML
 			this.$(this.metadataContainer).html(metadataFromIndex.render().el);
 			
-			//Add the package contents
-			this.insertPackageDetails();
+			var view = this;
 			
-			//Add a map of the spatial coverage
-			if(gmaps) this.insertSpatialCoverageMap();
-			
-			// render annotator from index content, too
-			this.setUpAnnotator();			
+			this.listenTo(metadataFromIndex, "complete", function(){
+				//Add the package contents
+				view.insertPackageDetails();
+				
+				//Add a map of the spatial coverage
+				if(gmaps) view.insertSpatialCoverageMap();
+				
+				// render annotator from index content, too
+				view.setUpAnnotator();
+			});			
 		},
 		
 		removeCitation: function(){
