@@ -14,7 +14,8 @@ define(['jquery', 'underscore', 'backbone'],
 			searchOptions: {},
 			//Valid statuses: insert, processing, complete, error
 			status: "insert",
-			id: null
+			id: null,
+			changed: false
 		},
 		
 		/*  Checks the index for the newly-inserted document. 
@@ -76,8 +77,7 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		reset: function(){
-			this.set("status", this.defaults.status);
-			this.set("id", this.defaults.id);
+		    return this.set(_.clone(this.defaults));
 		}
 		
 	});

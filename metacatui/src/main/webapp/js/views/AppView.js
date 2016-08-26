@@ -139,7 +139,6 @@ define(['jquery',
 				//Check if the view will need to cancel the close
 				if((typeof this.currentView.confirmClose == "function") && (this.currentView != view)){
 					if(!this.currentView.confirmClose()){
-						//uiRouter.track
 						uiRouter.undoLastRoute();
 						return;
 					}

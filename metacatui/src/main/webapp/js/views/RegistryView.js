@@ -40,7 +40,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			"keypress input[name='password']" : "submitOnEnter",
 			"keypress input[name='uid']"      : "submitOnEnter",
 			"click .remove-award"             : "removeAward",
-			"keypress #funding-visible"       : "addAwardOnEnter"
+			"keypress #funding-visible"       : "addAwardOnEnter",
+			"change #RegistryEntryForm :input" : "trackChange"
 		},
 
 		initialize: function () {
@@ -893,10 +894,17 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			this.submitLoginForm();
 		},
 		
+		trackChange: function(){
+			registryModel.set("changed", true);
+		},
+		
 		confirmClose: function(){
 			//If the user isn't logged in, we can leave this page
 			if(!appUserModel.get("loggedIn")) return true;
-			
+						
+			//If the form hasn't been edited, we can close this view without confirmation
+			if(!registryModel.get("changed")) return true;
+				
 			//If the submission is complete, we can leave this page
 			if(registryModel.get("status") == "complete") return true;
 			
