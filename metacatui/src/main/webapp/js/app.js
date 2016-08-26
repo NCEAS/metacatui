@@ -78,6 +78,9 @@ require.config({
     },
 	nGeohash: {
 		exports: "geohash"
+	},
+	fancybox: {
+		deps: ['jquery']
 	}
   }
 });
