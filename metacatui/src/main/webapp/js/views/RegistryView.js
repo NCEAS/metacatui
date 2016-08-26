@@ -820,6 +820,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		},
 		
 		watchForTimeOut: function(){
+			//This only works with tokens
+			if(!appModel.get("tokenUrl")) return;
+			
 			var view = this,
 				expires = appUserModel.get("expires"),
 				timeLeft = new Date() - expires,
@@ -897,7 +900,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			//If the submission is complete, we can leave this page
 			if(registryModel.get("status") == "complete") return true;
 			
-			var isLeaving = confirm("Do you want to leave this page? Changes you made will not be saved.");
+			var isLeaving = confirm("Do you want to leave this page? All information you've entered will be lost.");
 			return isLeaving;
 		},
 		
