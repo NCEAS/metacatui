@@ -44,7 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			else if(this.memberId) this.model.getMembersByMemberID(this.memberId);
 			
 			 this.onMetadataView = (this.parentView && this.parentView.type == "Metadata");
-			 this.hasEntityDetails = this.onMetadataView? this.parentView.hasEntityDetails() : false;
+			 this.hasEntityDetails = (this.onMetadataView && (this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
 			
 			this.listenTo(this.model, "changeAll", this.render);
 		},
@@ -71,7 +71,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			members = _.filter(members, function(m){ return(m.type != "Package") });
 			
 			//Filter the members in order of preferred appearance
-			members = this.sort(members);
+			if(members.length < 150)
+				members = this.sort(members);
+			
 			this.sortedMembers = members;
 			
 			var metadata = this.model.getMetadata();

@@ -1182,6 +1182,9 @@ define(['jquery',
 					pdfs = [],
 					other = [],
 					packageMembers = packageModel.get("members");
+				
+				//Don't do this for large packages
+				if(packageMembers.length > 150) return;
 							
 				//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
 				for(var i=0; i < packageMembers.length; i++){
