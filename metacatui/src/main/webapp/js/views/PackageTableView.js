@@ -345,17 +345,18 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					id: memberModel.get("id"),
 					isPublic: memberModel.get("isPublic"),
 				});
+				var downloadButton = $.parseHTML(downloadButtonHTML.trim());
 				
 				if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
-					$(downloadButtonHTML).on("click", this.download);
+					$(downloadButton).on("click", this.download);
 			}
 			else{
-				var downloadButtonHTML = this.downloadButtonTemplate({ 
+				var downloadButton = $.parseHTML(this.downloadButtonTemplate({ 
 					tooLarge: true
-				});
+				}).trim());
 			}
 			
-			$(downloadBtnCell).append(downloadButtonHTML);
+			$(downloadBtnCell).append(downloadButton);
 			$(tr).append(downloadBtnCell);
 			
 			if(collapsable)
