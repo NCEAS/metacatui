@@ -16,8 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		
 		events: {
 			"click .expand-control"   : "expand",
-			"click .collapse-control" : "collapse",
-			"click .download"         : "download"
+			"click .collapse-control" : "collapse"
 		},
 		
 		initialize: function(options){
@@ -344,6 +343,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					id: memberModel.get("id"),
 					isPublic: memberModel.get("isPublic"),
 				});
+				
+				if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
+					$(downloadButtonHTML).on("click", this.download);
 			}
 			else{
 				var downloadButtonHTML = this.downloadButtonTemplate({ 
@@ -372,8 +374,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					});
 				
 				//If we found a model, fire the download event
-				if(model) 
-					model.downloadWithCredentials();					
+				if(model && !model.get("isPublic")) 
+					model.downloadWithCredentials();
 			}
 			else
 				return true;			

@@ -209,7 +209,9 @@ define(['jquery', 'underscore', 'backbone'],
 		/*
 		 * This method will download this object while sending the user's auth token in the request.
 		 */
-		downloadWithCredentials: function(){								
+		downloadWithCredentials: function(){
+			if(this.get("isPublic")) return;
+				
 			//Get info about this object
 			var filename = this.get("fileName") || this.get("title") || "",					
 				url = this.get("url");

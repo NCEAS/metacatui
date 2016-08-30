@@ -120,7 +120,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'mode
 		},
 		
 		download: function(e){				
-			if(appUserModel.get("loggedIn")){
+			if(appUserModel.get("loggedIn") && !this.model.get("isPublic")){
 				if(e){
 					e.preventDefault();
 					var packageId = $(e.target).attr("data-id") || this.model.get("resourceMap");
