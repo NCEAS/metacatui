@@ -137,7 +137,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						viewRef.$el.fadeIn('slow', function(){
 							viewRef.trigger("postRender");
 							viewRef.createAwardHelpers();
-							window.onbeforeunload = appView.confirmLeave;
+							window.onbeforeunload = function(){ viewRef.confirmClose() };
 						});			
 						
 						//Start showing progress updates

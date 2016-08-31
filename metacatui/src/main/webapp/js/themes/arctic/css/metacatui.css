@@ -323,6 +323,7 @@
 	margin-top: 16px;
 }
 .brand{
+	background:  url(../img/logo-w-title_2x.png) no-repeat;
 	background: -webkit-image-set( url(../img/logo-w-title.png)    1x,
                                    url(../img/logo-w-title_2x.png) 2x);
     background-repeat: no-repeat;
