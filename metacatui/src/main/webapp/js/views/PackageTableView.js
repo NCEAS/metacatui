@@ -348,7 +348,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				var downloadButton = $.parseHTML(downloadButtonHTML.trim());
 				
 				if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
-					$(downloadButton).on("click", this.download);
+					$(downloadButton).on("click", null, this, this.download);
 			}
 			else{
 				var downloadButton = $.parseHTML(this.downloadButtonTemplate({ 
@@ -370,15 +370,20 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		download: function(e){				
 			if(e && $(e.target).attr("data-id") && appUserModel.get("loggedIn")){
 				e.preventDefault();
-				var id = $(e.target).attr("data-id"),
-					//Find the model with this ID
-					model = (this.model.get("id") == id) ? this.model : _.find(this.model.get("members"), function(m){
-						return (m.get("id") == id);
-					});
+				var id = $(e.target).attr("data-id");
+				
+				var packageModel = this.model? this.model : (e.data && e.data.model)? e.data.model : null;
+				
+				if(!packageModel) return true;
+					
+				//Find the model with this ID
+				packageModel = (packageModel.get("id") == id) ? packageModel : _.find(packageModel.get("members"), function(m){
+					return (m.get("id") == id);
+				});
 				
 				//If we found a model, fire the download event
-				if(model && !model.get("isPublic")) 
-					model.downloadWithCredentials();
+				if(packageModel && !packageModel.get("isPublic")) 
+					packageModel.downloadWithCredentials();
 			}
 			else
 				return true;			
