@@ -1257,7 +1257,7 @@ define(['jquery',
 						$(container).prepend(anchor);
 						
 						var nameLabel = $(container).find("label:contains('Entity Name')");
-						if(nameLabel.length > 0){
+						if(nameLabel.length){
 							$(nameLabel).parent().after(downloadButton);
 							$(downloadButton).find(".tooltip-this").tooltip();
 						}

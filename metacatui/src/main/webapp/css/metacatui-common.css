@@ -1287,6 +1287,27 @@ img.icon{
 	margin-top: -5px;
 	padding-left: 10px;
 }
+
+/****************************************** 
+* Annotations
+********************************************/
+.annotator-adder, .annotator-outer, .annotator-notice {
+    z-index: 999;
+}
+.annotation-container{
+	margin-left: 180px;
+}
+.annotation-container .add-tag{
+	margin-top: 10px;
+    margin-bottom: 10px;
+    text-shadow: none;
+}
+.annotation-attribute-name{
+	font-size: 0px;
+}
+.annotation-target{
+	height: 0px;
+}
 /****************************************** 
 * Images, Maps, and Media
 ********************************************/
