@@ -37,15 +37,15 @@ define(['jquery',
 		// Render the main annotator view
 		render: function () {
 
+			this.$el.data("annotator-view", this);
+			
 			this.setUpAnnotator();			
 			return this;
 		},
 		
 		onClose: function () {	
 			if(this.disabled) return;
-			
-			console.log('Closing the Annotator view');
-			
+						
 			// destroy the annotator
 			if ($("body").data('annotator')) {
 				$("body").annotator('destroy');
@@ -425,11 +425,13 @@ define(['jquery',
 			this.rendered = false;
 			
 			// re load the annotations
-			var annotations = this.$el.data('annotator').plugins.Store.annotations;
+			var annotations = $(this).data('annotator').plugins.Store.annotations;
 			if (isDelete) {
 				annotations.splice(annotations.indexOf(annotation), 1);
 			}
-			this.renderAnnotations(annotations);
+			
+			var view = $(this).data("annotator-view");
+			view.renderAnnotations(annotations);
 
 		},
 		
