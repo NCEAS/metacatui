@@ -340,7 +340,8 @@ footer{
   box-shadow: none;
 
 }
-.btn{
+.btn,
+.annotator-editor a{
 	border: 1px solid #1C6E84;
     background-image: none;
     color: #1C6E84;
@@ -349,26 +350,35 @@ footer{
     box-shadow: none;
     transition: background-color .7s;
 }
-.btn:hover {
+.btn:hover,
+.annotator-editor a:focus,
+.annotator-editor a:hover {
     background-color: #1C6E84;
+    background-image: none;
     color: white;
     text-shadow: none;
     cursor: pointer;
     border: 1px solid #1C6E84;
     box-shadow: none;
 }
-.btn-primary{
+.btn-primary,
+.annotator-editor a.annotator-focus,
+.annotator-editor a.annotator-save{
 	background-color: rgb(99, 28, 63);
 	background-color: rgba(99, 28, 63, 1);
 	background-image: none;
 	transition: background-color .7s;
 	box-shadow: none;
+	text-shadow: none;
 	border: 0px;
 	color: #FFF;
 }
-.btn-primary:hover{
+.btn-primary:hover,
+.annotator-editor .annotator-save:hover{
 	background-color: rgb(157, 3, 80);
 	background-color: rgba(157, 3, 80, 1);
+	background-image: none;
+	text-shadow: none;
 	border: 0px;
 } 
 .btn.subtle,
@@ -426,16 +436,19 @@ footer{
 /* ICONS CSS
 -------------------------------------------------- */
     
-    i.glyphicons-icon, i.halflings-icon {
-      opacity: .8;
-    }
-
-    i.glyphicons-icon.white {
-      opacity: 1;
-    }
-    .icon-circle-badge{
-    	background-color: #1C6E84;
-    }
+i.glyphicons-icon, i.halflings-icon {
+  opacity: .8;
+}
+i.glyphicons-icon.white {
+  opacity: 1;
+}
+.icon-circle-badge{
+	background-color: #1C6E84;
+}
+.annotator-widget::after,
+.annotator-widget a::after{
+	background-image: url('../img/annotator-icons.png');
+}
    
 
 /* TABLES 

@@ -1308,6 +1308,23 @@ img.icon{
 .annotation-target{
 	height: 0px;
 }
+.annotator-listing > .annotator-checkbox:nth-child(2n), 
+.annotator-listing > .annotator-checkbox:nth-child(3n) {
+    display: none;
+}
+#annotator-field-0{
+	display: none;
+}
+.annotator-widget span{
+	padding: 7px;
+	display: inline-block;
+}
+.annotator-widget .annotator-resize{
+	display: none;
+}
+.annotator-filter{
+	display: none;
+}
 /****************************************** 
 * Images, Maps, and Media
 ********************************************/
