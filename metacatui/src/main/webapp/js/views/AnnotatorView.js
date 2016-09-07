@@ -341,17 +341,17 @@ define(['jquery',
 							return;
 						}
 						
-						var bubble = jQuery(annotatorEl.data("annotator-view").annotationTemplate({
+						var bubble = $.parseHTML(annotatorEl.data("annotator-view").annotationTemplate({
 							annotation: annotation,
 							concept: concept,
 							canEdit: canEdit
-						}));
+						}).trim());
 						
 						section.prepend(bubble);
 						console.log("rendered tag in section: " + section.html());
 
 						// bind after rendering
-						var target = $(bubble).find(".hover-proxy").filter("[data-id='" + annotation.id + "']");
+						var target = $(bubble).filter(".hover-proxy");
 						console.log("binding annotation actions for target: " + $(target).size());
 						console.log("binding annotation actions for target: " + annotation.id);
 
