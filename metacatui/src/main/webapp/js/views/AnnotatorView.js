@@ -313,6 +313,8 @@ define(['jquery',
 				});
 			};
 			
+			var annotatorEl = $(this);
+			
 			//look up the concept details for each annotation
 			_.each(annotations, function(annotation) {
 				
@@ -339,7 +341,7 @@ define(['jquery',
 							return;
 						}
 						
-						var bubble = jQuery(viewRef.annotationTemplate({
+						var bubble = jQuery(annotatorEl.data("annotator-view").annotationTemplate({
 							annotation: annotation,
 							concept: concept,
 							canEdit: canEdit
