@@ -137,7 +137,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						viewRef.$el.fadeIn('slow', function(){
 							viewRef.trigger("postRender");
 							viewRef.createAwardHelpers();
-							window.onbeforeunload = appView.confirmLeave;
+							window.onbeforeunload = function(){ viewRef.confirmClose() };
 						});			
 						
 						//Start showing progress updates
@@ -610,6 +610,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 								
 								// set the username in the appModel, that's all we have
 								appUserModel.set("username", username);
+								appUserModel.set("loggedIn", true);
+								appUserModel.getInfo();
 															
 								viewRef.listenToOnce(appUserModel, "change:loggedIn", function(){
 									if(!appUserModel.get("loggedIn")){
@@ -627,12 +629,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 									viewRef.render();
 								});
 								
-								// trigger the check for logged in user
-								appUserModel.checkStatus();
-								
 								// then load the registry url again, now that we are logged in
-								//uiRouter.navigate("share", {trigger: true});
-								//viewRef.render();
+								uiRouter.navigate("share", {silent: true});
+								viewRef.loadRegistry();
 							}
 						}
 						

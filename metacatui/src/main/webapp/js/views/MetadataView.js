@@ -237,7 +237,7 @@ define(['jquery',
 								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
 								
-								viewRef.insertPackageDetails();
+								viewRef.trigger("metadataLoaded");
 								
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
@@ -436,7 +436,7 @@ define(['jquery',
 		/*
 		 * Inserts a table with all the data package member information and sends the call to display annotations
 		 */
-		insertPackageDetails: function(){	
+		insertPackageDetails: function(packages){	
 			
 			//Don't insert the package details twice
 			var tableEls = this.$(this.tableContainer).children().not(".loading");
@@ -444,17 +444,22 @@ define(['jquery',
 			
 			//wait for the metadata to load
 			var metadataEls = this.$(this.metadataContainer).children();
-			if(!metadataEls.length || metadataEls.first().is(".loading")) return;
+			if(!metadataEls.length || metadataEls.first().is(".loading")){
+				this.once("metadataLoaded", this.insertPackageDetails);
+				return;
+			}
 						
 			var viewRef = this;
 			
-			//Get the entity names from this page/metadata
-			this.getEntityNames(this.packageModels);
+			if(!packages) var packages = this.packageModels;
 			
-			_.each(this.packageModels, function(packageModel){
+			//Get the entity names from this page/metadata
+			this.getEntityNames(packages);
+			
+			_.each(packages, function(packageModel){
 
 				//If the package model is not complete, don't do anything
-				if(!packageModel.complete) return viewRef;
+				if(!packageModel.complete) return;
 				
 				//Insert a package table for each package in viewRef dataset
 				var nestedPckgs = packageModel.getNestedPackages();
@@ -510,7 +515,7 @@ define(['jquery',
 			}
 			
 			//If this metadata doc is not in a package, but is just a lonely metadata doc...
-			if(!this.packageModels.length){
+			if(!packages.length){
 				var packageModel = new Package({ 
 					members: [this.model],
 					
@@ -1182,6 +1187,9 @@ define(['jquery',
 					pdfs = [],
 					other = [],
 					packageMembers = packageModel.get("members");
+				
+				//Don't do this for large packages
+				if(packageMembers.length > 150) return;
 							
 				//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
 				for(var i=0; i < packageMembers.length; i++){
@@ -1249,7 +1257,7 @@ define(['jquery',
 						$(container).prepend(anchor);
 						
 						var nameLabel = $(container).find("label:contains('Entity Name')");
-						if(nameLabel.length > 0){
+						if(nameLabel.length){
 							$(nameLabel).parent().after(downloadButton);
 							$(downloadButton).find(".tooltip-this").tooltip();
 						}

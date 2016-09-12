@@ -16,8 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		
 		events: {
 			"click .expand-control"   : "expand",
-			"click .collapse-control" : "collapse",
-			"click .download"         : "download"
+			"click .collapse-control" : "collapse"
 		},
 		
 		initialize: function(options){
@@ -45,7 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			else if(this.memberId) this.model.getMembersByMemberID(this.memberId);
 			
 			 this.onMetadataView = (this.parentView && this.parentView.type == "Metadata");
-			 this.hasEntityDetails = this.onMetadataView? this.parentView.hasEntityDetails() : false;
+			 this.hasEntityDetails = (this.onMetadataView && (this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
 			
 			this.listenTo(this.model, "changeAll", this.render);
 		},
@@ -72,7 +71,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			members = _.filter(members, function(m){ return(m.type != "Package") });
 			
 			//Filter the members in order of preferred appearance
-			members = this.sort(members);
+			if(members.length < 150)
+				members = this.sort(members);
+			
 			this.sortedMembers = members;
 			
 			var metadata = this.model.getMetadata();
@@ -344,14 +345,18 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					id: memberModel.get("id"),
 					isPublic: memberModel.get("isPublic"),
 				});
+				var downloadButton = $.parseHTML(downloadButtonHTML.trim());
+				
+				if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
+					$(downloadButton).on("click", null, this, this.download);
 			}
 			else{
-				var downloadButtonHTML = this.downloadButtonTemplate({ 
+				var downloadButton = $.parseHTML(this.downloadButtonTemplate({ 
 					tooLarge: true
-				});
+				}).trim());
 			}
 			
-			$(downloadBtnCell).append(downloadButtonHTML);
+			$(downloadBtnCell).append(downloadButton);
 			$(tr).append(downloadBtnCell);
 			
 			if(collapsable)
@@ -365,15 +370,20 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		download: function(e){				
 			if(e && $(e.target).attr("data-id") && appUserModel.get("loggedIn")){
 				e.preventDefault();
-				var id = $(e.target).attr("data-id"),
-					//Find the model with this ID
-					model = (this.model.get("id") == id) ? this.model : _.find(this.model.get("members"), function(m){
-						return (m.get("id") == id);
-					});
+				var id = $(e.target).attr("data-id");
+				
+				var packageModel = this.model? this.model : (e.data && e.data.model)? e.data.model : null;
+				
+				if(!packageModel) return true;
+					
+				//Find the model with this ID
+				packageModel = (packageModel.get("id") == id) ? packageModel : _.find(packageModel.get("members"), function(m){
+					return (m.get("id") == id);
+				});
 				
 				//If we found a model, fire the download event
-				if(model) 
-					model.downloadWithCredentials();					
+				if(packageModel && !packageModel.get("isPublic")) 
+					packageModel.downloadWithCredentials();
 			}
 			else
 				return true;			

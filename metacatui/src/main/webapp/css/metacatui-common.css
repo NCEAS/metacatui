@@ -1287,6 +1287,51 @@ img.icon{
 	margin-top: -5px;
 	padding-left: 10px;
 }
+
+/****************************************** 
+* Annotations
+********************************************/
+.annotator-adder, .annotator-outer, .annotator-notice {
+    z-index: 999;
+}
+.annotation-container{
+	margin-left: 180px;
+}
+.annotation-container .add-tag{
+	margin-top: 10px;
+    margin-bottom: 10px;
+    text-shadow: none;
+}
+.annotation-attribute-name{
+	font-size: 0px;
+}
+.annotation-target{
+	height: 0px;
+}
+.annotator-listing > .annotator-checkbox:nth-child(2n), 
+.annotator-listing > .annotator-checkbox:nth-child(3n) {
+    display: none;
+}
+#annotator-field-0{
+	display: none;
+}
+.annotator-widget span{
+	padding: 7px;
+	display: inline-block;
+}
+.annotator-widget .annotator-resize{
+	display: none;
+}
+.annotator-filter{
+	display: none;
+}
+.annotation.tag {
+    padding: .25em .5em;
+    margin-right: 5px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
 /****************************************** 
 * Images, Maps, and Media
 ********************************************/

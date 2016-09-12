@@ -1,13 +1,11 @@
-<div class="btn-group" role="group">
 <% if (concept) {
 %>
-		<button data-id="<%= annotation.id %>" 
-			class="hover-proxy ellipsis btn <% if (annotation.reject) { print(' btn-warning') } %>" 
-			type="button"
-			title="<%=concept.value %>"
-			>
-			<%=concept.label %>
-		</button>
+	<a data-id="<%= annotation.id %>" 
+		class="hover-proxy ellipsis annotation tag <% if (annotation.reject) { print(' warning') } %>" 
+		type="button"
+		title="<%=concept.value %>">
+		<%=concept.label %>
+	</a>
 <%
 } else if (annotation.tags[0]) {
 %>
@@ -42,8 +40,5 @@ if (canEdit) {
 	}
 }	
 %>
-
-</div>
-
 
 
