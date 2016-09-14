@@ -1,0 +1,23 @@
+<div data-id="<%=containerId%>" class="annotation-viewer-container">
+	<span class="annotation tag"><%=concept.label%></span>
+	<div>
+		<p>
+			<strong>Definition: </strong>
+			<%=concept.desc%>
+		</p>
+	</div> 
+	<!-- <div>
+		<span>from the ontology</span>
+	</div> -->
+	<div class="container">
+		<p class="subtle">
+			Added by <a href="#profile/<%=user%>"><%=user%></a>
+			<span class="subtle smaller tag-date"><%=created.toDateString()%></span>
+					<% if(updated){ %>	
+						<span class="subtle smaller tag-date">Updated on
+						<%=updated.toDateString()%>
+						</span>
+					<% } %>
+		</p>
+	</div>
+</div>

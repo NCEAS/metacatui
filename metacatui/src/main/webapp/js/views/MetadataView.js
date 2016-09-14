@@ -1144,7 +1144,7 @@ define(['jquery',
 					}
 						
 					if(matches.length){
-						container = matches.parents(".entitydetails").first();
+						container = $(matches).parents(".entitydetails").first();
 						container.attr("data-id", id);
 						return container;
 					}
