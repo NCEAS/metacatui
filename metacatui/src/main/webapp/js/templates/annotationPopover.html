@@ -1,9 +1,9 @@
 <div data-id="<%=containerId%>" class="annotation-viewer-container">
-	<span class="annotation tag"><%=concept.label%></span>
+	<span class="annotation tag"><%=annotation.concept.label%></span>
 	<div>
 		<p>
 			<strong>Definition: </strong>
-			<%=concept.desc%>
+			<%=annotation.concept.desc%>
 		</p>
 	</div> 
 	<!-- <div>
@@ -11,7 +11,7 @@
 	</div> -->
 	<div class="container">
 		<p class="subtle">
-			Added by <a href="#profile/<%=user%>"><%=user%></a>
+			Added by <a href="#profile/<%=annotation.user%>"><%=annotation.user%></a>
 			<span class="subtle smaller tag-date"><%=created.toDateString()%></span>
 					<% if(updated){ %>	
 						<span class="subtle smaller tag-date">Updated on

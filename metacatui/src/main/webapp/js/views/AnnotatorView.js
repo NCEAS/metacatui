@@ -4,6 +4,7 @@ define(['jquery',
         'annotator',
 		'underscore', 
 		'backbone',
+		'models/AnnotationModel',
 		'text!templates/annotation.html',
 		'text!templates/annotationPopover.html'
 		], 				
@@ -12,6 +13,7 @@ define(['jquery',
 			Annotator, 
 			_, 
 			Backbone, 
+			AnnotationModel,
 			AnnotationTemplate, 
 			AnnotationPopoverTemplate) {
 	'use strict';
@@ -28,6 +30,7 @@ define(['jquery',
 		annotationPopoverTemplate: _.template(AnnotationPopoverTemplate),
 		
 		rendered: false,
+		annotations: [],
 						
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
@@ -54,6 +57,7 @@ define(['jquery',
 				$("body").annotator('destroy');
 			}
 			
+			this.annotations = [];
 		},
 		
 		setUpAnnotator: function() {
@@ -193,6 +197,7 @@ define(['jquery',
 			// showing the viewer show the concepts with labels, definitions and audit info
 			this.$el.annotator('subscribe', 'annotationViewerShown', function(viewer, annotations) {
 				console.log("annotationViewerShown: " + viewer);
+									
 				$(viewer.element).find(".annotator-tag").each(function(index, element) {
 					var conceptUri = $(element).html();
 					var renderAnnotation = function(concepts) {
@@ -253,6 +258,17 @@ define(['jquery',
 			}
 			this.rendered = true;
 			
+			var view = this;
+			
+			//Create a new model for each annotation
+			_.each(annotations, function(annotation){
+				var annModel = new AnnotationModel().set(annotation);
+				if(Array.isArray(view.annotations))
+					view.annotations.push(annModel);
+				else
+					view.annotations = [annModel];
+			});
+			
 			// sort the annotations by xpath
 			annotations = _.sortBy(annotations, function(ann) {
 				return ann.resource;
@@ -275,8 +291,7 @@ define(['jquery',
 			
 			// summarize annotation count in citation block
 			$(".citation-container > .controls-well").prepend("<span class='badge hover-proxy'>" + annotations.length + " annotations</span>");
-			
-			
+						
 			var flagAnnotation = function(event) {
 				var annotationId = $(event.target).attr("data-id");
 				console.log("flagging annotation id: " +  annotationId);
@@ -318,76 +333,28 @@ define(['jquery',
 				});
 			};
 			
-			var annotatorEl = (typeof this.$el != "undefined")? this.$el : this;
+			var annotatorEl = (typeof this.$el != "undefined")? this.$el : this,
+				view = $(annotatorEl).data("annotator-view");
 			
 			//look up the concept details for each annotation
-			_.each(annotations, function(annotation) {
+			_.each(this.annotations, function(annotation) {
 				
-				if (annotation.tags[0]) {
-					
+				if (annotation.get("tags")[0]) {					
 					// look up concepts where we can
-					var conceptUri = annotation.tags[0];
-					var renderAnnotation = function(concepts) {
-						
-						var concept = _.findWhere(concepts, {value: conceptUri});
-						
-						var canEdit = 
-							_.contains(annotation.permissions.admin, appUserModel.get("username"))
-							||
-							_.contains(annotation.permissions.update, appUserModel.get("username"))
-							|| 
-							_.contains(annotation.permissions.delete, appUserModel.get("username"));
-						
-						// render it in the document
-						var highlight = $("[data-annotation-id='" + annotation.id + "']");
-						var section = $(highlight).closest(".tab-pane").children(".annotation-container");
-						if (!section.html()) {
-							console.log("Highlights not completed yet - cannot render annotation");
-							return;
-						}
-						
-						var bubble = $.parseHTML($(annotatorEl).data("annotator-view").annotationTemplate({
-							annotation: annotation,
-							concept: concept,
-							canEdit: canEdit
-						}).trim());
-						
-						section.prepend(bubble);
-						console.log("rendered tag in section: " + section.html());
-
-						// bind after rendering
-						var target = $(bubble).filter(".hover-proxy");
-						console.log("binding annotation actions for target: " + $(target).size());
-						console.log("binding annotation actions for target: " + annotation.id);
-
-						$(target).bind("mouseover", hoverAnnotation);
-						$(target).bind("mouseout", hoverAnnotation);
-						
-						target = $(bubble).filter(".annotation-flag[data-id='" + annotation.id + "']");
-						$(target).bind("click", flagAnnotation);
-						
-						$(target).tooltip({
-							trigger: "hover",
-							title: "Flag this tag as incorrect"
-						});
-						
-						target = $(bubble).filter(".annotation-delete[data-id='" + annotation.id + "']");
-						$(target).bind("click", deleteAnnotation);
-
-					};
+					var conceptUri = annotation.get("tags")[0];
 					
 					// give time for the highlights to render
 					setTimeout(function() {
-						
 						// look it up and provide the callback
-						if (annotation["oa:Motivation"] == "prov:wasAttributedTo") {
-							appLookupModel.orcidGetConcepts(conceptUri, renderAnnotation);	
+						if (annotation.get("oa:Motivation") == "prov:wasAttributedTo") {
+							annotation.orcidGetConcepts(conceptUri);	
 						} else {
-							appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
+							annotation.bioportalGetConcepts(conceptUri);	
 						}
 						
 					}, 500);
-
+					
+					annotation.on("change:concept", view.renderAnnotation, view);
 					
 				} else {
 					// for comments, just render it in the document
@@ -402,6 +369,79 @@ define(['jquery',
 				}
 			});
 	
+		},
+		
+		renderAnnotation: function(annotationModel) {	
+			
+			var canEdit = 
+				_.contains(annotationModel.get("permissions").admin, appUserModel.get("username"))
+				||
+				_.contains(annotationModel.get("permissions").update, appUserModel.get("username"))
+				|| 
+				_.contains(annotationModel.get("permissions").delete, appUserModel.get("username"));
+			
+			// render it in the document
+			var highlight = $("[data-annotation-id='" + annotationModel.get("id") + "']");
+			var section = $(highlight).closest(".tab-pane").children(".annotation-container");
+			if (!section.html()) {
+				console.log("Highlights not completed yet - cannot render annotation");
+				return;
+			}
+						
+			//Render the annotation tag itself
+			var annotationTag = $.parseHTML(this.annotationTemplate({
+				annotation: annotationModel.toJSON(),
+				concept: annotationModel.get("concept"),
+				canEdit: canEdit
+			}).trim());
+			section.prepend(annotationTag);
+			
+			//Attach the annotation object for later
+			$(annotationTag).data("annotation", annotationModel);
+			
+			var view = this;
+			
+			//Create the popover for this element
+			$(annotationTag).on("mouseover", { view: this }, this.showDetails);
+			
+			// bind after rendering
+			var target = $(annotationTag).filter(".hover-proxy");
+			target = $(annotationTag).filter(".annotation-flag[data-id='" + annotation.id + "']");
+			$(target).bind("click", flagAnnotation);
+			
+			$(target).tooltip({
+				trigger: "hover",
+				title: "Flag this tag as incorrect"
+			});
+			
+			target = $(annotationTag).filter(".annotation-delete[data-id='" + annotation.id + "']");
+			$(target).bind("click", deleteAnnotation);
+
+		},
+		
+		showDetails: function(e){
+			var annotation = $(e.target).data("annotation");
+			
+			var created = new Date(annotation.get("created"));
+			var updated = new Date(annotation.get("updated"));
+			var containerId = "viewer-" + annotation.get("id");
+			
+			if(created.valueOf() == updated.valueOf()) updated = null;
+			
+			var annotationPopover = e.data.view.annotationPopoverTemplate({
+				containerId: containerId,
+				created: created,
+				updated: updated,
+				annotation: annotation.toJSON()
+			});
+			$(e.target).popover({
+				trigger: "hover",
+				html: true,
+				title: "blah",//annotation.get("concept").label,
+				content: annotationPopover,
+				placement: "top"
+			});
+			$(e.target).popover("show");
 		},
 		
 		launchEditor: function(event) {
