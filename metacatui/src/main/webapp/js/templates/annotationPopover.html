@@ -1,5 +1,9 @@
 <div data-id="<%=containerId%>" class="annotation-viewer-container">
-	<span class="annotation tag"><%=annotation.concept.label%></span>
+	<span class="annotation tag <% if (annotation.reject) { print(' warning') } %>"><%=annotation.concept.label%></span>
+	<% if (annotation.reject) { %> 
+		<p class="warning">This annotation has been flagged as incorrect.</p>
+	<%	}
+	%>
 	<div>
 		<p>
 			<strong>Definition: </strong>

@@ -1341,7 +1341,8 @@ img.icon{
     margin-bottom: 10px;   
 }
 .annotation-viewer-container .annotation.tag{
-	margin-left: 5px;
+	margin-bottom: 10px;
+    display: inline-block;
 }
 .annotator-tags,
 .annotator-viewer .annotator-item,
@@ -1377,7 +1378,8 @@ img.icon{
 .annotator-viewer .annotator-controls{
 	display: none;
 }
-.annotation-flag.btn {
+.annotation-flag.btn,
+.annotation-delete.btn {
     border-width: 0px;
     margin-bottom: 0px;
     margin-right: 10px;
@@ -1390,8 +1392,17 @@ img.icon{
     line-height: 0em;
     margin-top: -3px;
 }
-.annotation-flag.btn:hover{
+.annotation-flag.btn:hover,
+.annotation-delete.btn:hover{
 	border-width: 0px;
+}
+.annotation-delete.btn-warning {
+    background-image: inherit;
+    background-color: #b32d2d;
+    color: white;
+}
+.annotation-viewer-container p.warning{
+	color: #d00000;
 }
 .annotator-editor .annotator-controls{
 	background-image: none;
@@ -1405,6 +1416,13 @@ img.icon{
 }
 .ui-autocomplete.annotator{
 	z-index: 9999;
+}
+.popover-title {
+    text-transform: capitalize;
+}
+.annotation.tag.warning {
+    background-color: #999;
+    color: #DDD;
 }
 /****************************************** 
 * Images, Maps, and Media

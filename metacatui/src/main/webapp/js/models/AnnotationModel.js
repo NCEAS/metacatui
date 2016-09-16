@@ -10,6 +10,8 @@ define(['jquery', 'underscore', 'backbone'],
 			
 		},
 		
+		//url: appModel.get(""),
+		
 		initialize: function(options){
 			
 		},
@@ -27,8 +29,6 @@ define(['jquery', 'underscore', 'backbone'],
 				model.set("concept", concepts[0]);
 			});
 		}
-	
-	
 	});
 	
 	return Annotation;

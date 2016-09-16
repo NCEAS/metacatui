@@ -34,7 +34,9 @@ define(['jquery',
 						
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
-			"click .add-tag" : "launchEditor"
+			"click .add-tag" : "launchEditor",
+			"click .annotation-flag" : "flagAnnotation",
+			"click .annotation-delete" : "deleteAnnotation"
 		},
 		
 		initialize: function () {
@@ -291,24 +293,6 @@ define(['jquery',
 			
 			// summarize annotation count in citation block
 			$(".citation-container > .controls-well").prepend("<span class='badge hover-proxy'>" + annotations.length + " annotations</span>");
-						
-			var flagAnnotation = function(event) {
-				var annotationId = $(event.target).attr("data-id");
-				console.log("flagging annotation id: " +  annotationId);
-				var annotations = view.$el.data('annotator').plugins.Store.annotations;
-				var annotation = _.findWhere(annotations, {id: annotationId});
-				annotation.reject = !annotation.reject;
-				view.$el.data('annotator').updateAnnotation(annotation);					
-
-			};
-			var deleteAnnotation = function(event) {
-				var annotationId = $(event.target).attr("data-id");
-				console.log("deleting annotation id: " +  annotationId);
-				var annotations = view.$el.data('annotator').plugins.Store.annotations;
-				var annotation = _.findWhere(annotations, {id: annotationId});
-				view.$el.data('annotator').deleteAnnotation(annotation);					
-
-			};
 			
 			// define hover action to mimic hovering the highlighted region
 			var hoverAnnotation = function(event) {
@@ -406,20 +390,65 @@ define(['jquery',
 			
 			// bind after rendering
 			var target = $(annotationTag).filter(".hover-proxy");
-			target = $(annotationTag).filter(".annotation-flag[data-id='" + annotation.id + "']");
-			$(target).bind("click", flagAnnotation);
+			target = $(annotationTag).filter(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
+			//$(target).bind("click", this.flagAnnotation);
 			
 			$(target).tooltip({
 				trigger: "hover",
 				title: "Flag this tag as incorrect"
 			});
 			
-			target = $(annotationTag).filter(".annotation-delete[data-id='" + annotation.id + "']");
-			$(target).bind("click", deleteAnnotation);
+			var deleteBtn = $(annotationTag).filter(".annotation-delete");
+			$(deleteBtn).tooltip({
+				trigger: "hover",
+				title: "Delete this tag"
+			});
+			
+			target = $(annotationTag).filter(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
+			//$(target).bind("click", this.deleteAnnotation);
+
+		},
+		
+		flagAnnotation : function(e) {
+			
+			//Get the flag button
+			var flagButton = e.target;
+			if(!$(flagButton).is(".annotation-flag")){
+				flagButton = $(flagButton).parents(".annotation-flag");
+			}
+
+			//Get the annotation
+			var annotation = $(flagButton).data("annotation");
+
+			//If there is no annotation, exit.
+			if(!annotation) return;
+									
+			//Get the annotation object
+			var anns = this.$el.data("annotator").plugins.Store.annotations;
+			var annObj = _.findWhere(anns, {id: annotation.get("id")});
+			
+			//Reject it!
+			annObj.reject = !annObj.reject;
+	
+			//Update it
+			this.$el.data('annotator').updateAnnotation(annObj);					
+		},
+		
+		deleteAnnotation : function(e) {
+			var annotationId = $(e.target).attr("data-id");
+			console.log("deleting annotation id: " +  annotationId);
+			var annotations = view.$el.data('annotator').plugins.Store.annotations;
+			var annotation = _.findWhere(annotations, {id: annotationId});
+			view.$el.data('annotator').deleteAnnotation(annotation);					
 
 		},
 		
 		showDetails: function(e){
+			//Don't show the details for the flag button
+			if(!$(e.target).is(".annotation.tag")) return;
+			//Don't execute this code again if we already set up a popover
+			else if(typeof $(e.target).data("popover") != "undefined") return;
+			
 			var annotation = $(e.target).data("annotation");
 			
 			var created = new Date(annotation.get("created"));
@@ -437,7 +466,7 @@ define(['jquery',
 			$(e.target).popover({
 				trigger: "hover",
 				html: true,
-				title: "blah",//annotation.get("concept").label,
+				title: annotation.get("concept").label,
 				content: annotationPopover,
 				placement: "top"
 			});
