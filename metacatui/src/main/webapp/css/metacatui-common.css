@@ -1313,7 +1313,8 @@ img.icon{
 .annotator-listing > .annotator-checkbox:nth-child(3n) {
     display: none;
 }
-#annotator-field-0{
+#annotator-field-0,
+#annotator-field-5{
 	display: none;
 }
 .annotator-widget span{
@@ -1325,6 +1326,9 @@ img.icon{
 }
 .annotator-filter{
 	display: none;
+}
+.annotator-field p{
+	padding: 10px;
 }
 .annotation.tag {
     padding: .35em .75em;
@@ -1387,7 +1391,7 @@ img.icon{
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
     border: 0px;
-    padding: 0.42em .75em;
+    padding: 6px;
     font-size: 1em;
     line-height: 0em;
     margin-top: -3px;
@@ -1396,12 +1400,17 @@ img.icon{
 .annotation-delete.btn:hover{
 	border-width: 0px;
 }
-.annotation-delete.btn-warning {
+.annotation-delete.btn-warning,
+.annotation-flag.btn-warning {
     background-image: inherit;
-    background-color: #b32d2d;
+    background-color: #da4f49;
     color: white;
 }
-.annotation-viewer-container p.warning{
+.annotation-delete.btn-warning:hover,
+.annotation-flag.btn-warning:hover{
+	background-color: #f73f3f;
+}
+.annotation-viewer-container .warning{
 	color: #d00000;
 }
 .annotator-editor .annotator-controls{
@@ -1419,6 +1428,9 @@ img.icon{
 }
 .popover-title {
     text-transform: capitalize;
+}
+.annotation-viewer-container .concept a{
+	white-space: pre-wrap;
 }
 .annotation.tag.warning {
     background-color: #999;

@@ -117,19 +117,66 @@ define(['jquery',
 					}
 				}
 			});
-			
-			// need connect keyboard navigation to the hover
-			var focus = function(event, ui) {
-				console.log("This is the value focused: " + ui.item.value);
-				//TODO: connect keyboard focus event to show the hover popover 
-			};
 
 			// NOTE: using the extended hover auto-complete defined in lookup model
 			// set up tags with bioportal suggestions as default
 			this.$el.annotator().annotator('addPlugin', 'Tags');
+			
+			// Initialize the autocomplete widget extension to provide description tooltips.
+		    $.widget( "app.hoverAutocomplete", $.ui.autocomplete, {
+		        
+		        // Set the content attribute as the "item.desc" value.
+		        // This becomes the tooltip content.
+		        _renderItem: function( ul, item ) {
+		        	// if we have a label, use it for the title
+		        	var title = item.value;
+		        	if (item.label) {
+		        		title = item.label;
+		        	}
+		        	
+		        	// if we have a description, use it for the content
+		        	var content = '<div class="annotation-viewer-container">';
+		        	if (item.desc) {
+		        		content += '<span class="annotation tag">' + item.label + '</span>'; 
+		        		if (item.desc != item.value) {
+			        		content += '<p><strong>Definition: </strong>' + item.desc + '</p>';
+			        		content += '<p class="subtle concept">Concept URI: <a href="' + item.value + '" target="_blank">' + item.value + '</a></p>';
+		        		}
+		        	}
+		        	content += "</div>"
+		        	
+		        	//Set up the popover
+		        	var element = this._super( ul, item );
+		        	element.popover({
+        				placement: "right",
+        				trigger: "manual",
+        				container: 'body',
+        				title: title,
+        				html: true,
+        				content: content
+        			})
+        			.on("mouseenter", function () {
+    			        var _this = this;
+    			        $(this).popover("show");
+    			        $(".popover").on("mouseleave", function () {
+    			            $(_this).popover('hide');
+    			        });
+    			    })
+    			    .on("mouseleave", function () {
+    			        var _this = this;
+    			        setTimeout(function () {
+    			            if (!$(".popover:hover").length) {
+    			                $(_this).popover("hide");
+    			            }
+    			        }, 300);
+    			    });
+		            return element;
+		        }
+		    });
+		    
+		    
 			this.$el.data('annotator').plugins.Tags.input.hoverAutocomplete({
 				source: appLookupModel.bioportalSearch,
-				focus: focus,
 				position: {
 					my: "left top",
 					at: "left bottom",
@@ -139,6 +186,9 @@ define(['jquery',
 			
 			//Change the palceholder text
 			$(this.$el.data('annotator').plugins.Tags.input).attr("placeholder", "Search for tag terms...");
+			$(this.$el.data("annotator").plugins.Tags.field).prepend("<p>Add an annotation to this attribute</p>" +
+				"<p><strong>Help others find and understand this dataset better by adding semantic annotations</strong></p>")
+				.addClass("annotator-field");
 			
 			// set up rejection field
 			this.$el.data('annotator').editor.addField({
@@ -270,11 +320,19 @@ define(['jquery',
 				else
 					view.annotations = [annModel];
 			});
-			
+
 			// sort the annotations by xpath
 			annotations = _.sortBy(annotations, function(ann) {
 				return ann.resource;
 			});
+			
+			//Now extract the rejeced annotations
+			var rejectedAnnotations = _.filter(annotations, function(ann){
+				return ann.reject;
+			});
+			
+			//Add the rejected annotations to the end of the list (we want to display them last)
+			annotations = annotations.concat(rejectedAnnotations);
 			
 			// clear them out!
 			$(".hover-proxy").remove();
@@ -285,7 +343,7 @@ define(['jquery',
 			
 			// add a button to select text and launch the new editor				
 			var addBtn = $(document.createElement("a"))
-							.text("Add tag")
+							.text("Add annotation")
 							.addClass("btn btn-info add-tag")
 							.prepend($(document.createElement("i"))
 										.addClass("icon-on-left icon-plus"));
@@ -395,13 +453,13 @@ define(['jquery',
 			
 			$(target).tooltip({
 				trigger: "hover",
-				title: "Flag this tag as incorrect"
+				title: "Flag as incorrect"
 			});
 			
 			var deleteBtn = $(annotationTag).filter(".annotation-delete");
 			$(deleteBtn).tooltip({
 				trigger: "hover",
-				title: "Delete this tag"
+				title: "Delete"
 			});
 			
 			target = $(annotationTag).filter(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
@@ -464,12 +522,25 @@ define(['jquery',
 				annotation: annotation.toJSON()
 			});
 			$(e.target).popover({
-				trigger: "hover",
+				trigger: "manual",
 				html: true,
 				title: annotation.get("concept").label,
 				content: annotationPopover,
 				placement: "top"
-			});
+			}).on("mouseenter", function () {
+		        var _this = this;
+		        $(this).popover("show");
+		        $(".popover").on("mouseleave", function () {
+		            $(_this).popover('hide');
+		        });
+		    }).on("mouseleave", function () {
+		        var _this = this;
+		        setTimeout(function () {
+		            if (!$(".popover:hover").length) {
+		                $(_this).popover("hide");
+		            }
+		        }, 300);
+		    });
 			$(e.target).popover("show");
 		},
 		

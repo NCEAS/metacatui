@@ -9,6 +9,7 @@
 			<strong>Definition: </strong>
 			<%=annotation.concept.desc%>
 		</p>
+		<p class="concept subtle">Concept URI: <a href="<%=annotation.concept.value%>" target="_blank"><%=annotation.concept.value%></a></p>
 	</div> 
 	<!-- <div>
 		<span>from the ontology</span>
@@ -17,11 +18,13 @@
 		<p class="subtle">
 			Added by <a href="#profile/<%=annotation.user%>"><%=annotation.user%></a>
 			<span class="subtle smaller tag-date"><%=created.toDateString()%></span>
-					<% if(updated){ %>	
-						<span class="subtle smaller tag-date">Updated on
-						<%=updated.toDateString()%>
-						</span>
-					<% } %>
+		</p>
+		<p>
+			<% if(updated && annotation.reject){ %>	
+				<span class="subtle smaller tag-date warning">Flagged as incorrect on
+				<%=updated.toDateString()%>
+				</span>
+			<% } %>
 		</p>
 	</div>
 </div>

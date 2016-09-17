@@ -12,39 +12,8 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		},
 		
 		initialize: function() {
-			
-		    // Autocomplete widget extension to provide description tooltips.
-		    $.widget( "app.hoverAutocomplete", $.ui.autocomplete, {
-		        
-		        // Set the content attribute as the "item.desc" value.
-		        // This becomes the tooltip content.
-		        _renderItem: function( ul, item ) {
-		        	// if we have a label, use it for the title
-		        	var title = item.value;
-		        	if (item.label) {
-		        		title = item.label;
-		        	}
-		        	// if we have a description, use it for the content
-		        	var content = item.value;
-		        	if (item.desc) {
-		        		content = item.desc;
-		        		if (item.desc != item.value) {
-			        		content += " (" + item.value + ")";
-		        		}
-		        	}
-		        	var element = this._super( ul, item )
-	                .attr( "data-title", title )
-	                .attr( "data-content", content );
-		        	element.popover(
-		        			{
-		        				placement: "right",
-		        				trigger: "hover",
-		        				container: 'body'
-		        				
-		        			});
-		            return element;
-		        }
-		    });
+		
+		    
 			
 		},
 		

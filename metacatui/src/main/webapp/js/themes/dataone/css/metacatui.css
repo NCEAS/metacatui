@@ -966,13 +966,6 @@ label.control-label{
 	background-color: #1C6E84;
 	color: #FFF;
 }
-.btn.annotation-flag{
-	background-color: #98d2eb;
-    color: #FFF;
-}
-.btn.annotation-flag:hover{
-	background-color: #85daff;
-}
     
 /* Registry CSS
 -------------------------------------------------- */
