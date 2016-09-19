@@ -15,10 +15,10 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				//The options for the map using the Google Maps API MapOptions syntax
 				mapOptions: 
 					(gmaps)? 
-						{   zoom: 3,
-							minZoom: 3,
+						{   zoom: 2,
+							minZoom: 2,
 							maxZoom: 16,
-						    center: new google.maps.LatLng(71, -98),
+						    center: new google.maps.LatLng(45, -98),
 							disableDefaultUI: true,
 						    zoomControl: true,
 						    zoomControlOptions: {

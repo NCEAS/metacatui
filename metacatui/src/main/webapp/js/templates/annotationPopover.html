@@ -16,7 +16,10 @@
 	</div> -->
 	<div class="container">
 		<p class="subtle">
-			Added by <a href="#profile/<%=annotation.user%>"><%=annotation.user%></a>
+			<%
+				var creator = annotation.name || annotation.user;
+			%>
+			Added by <a href="#profile/<%=annotation.user%>"><%=creator%></a>
 			<span class="subtle smaller tag-date"><%=created.toDateString()%></span>
 		</p>
 		<p>
