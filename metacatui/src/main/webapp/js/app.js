@@ -1,11 +1,11 @@
-/*global require */
+﻿/*global require */
 /*jshint unused:false */
 'use strict';
 
 /** NOTE: The theme name and themeMap are specified in the loader.js file **/
 var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if(mapKey){
-	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + mapKey;
 	define('gmaps', 
 			['async!' + gmapsURL], 
 			function() {
@@ -39,7 +39,6 @@ require.config({
     moment: '../components/moment.min',
     jws: '../components/jws-3.2.min',
     jsrasign: '../components/jsrsasign-4.9.0.min',    
-    domReady: '../components/domready',
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
 	nGeohash: '../components/geohash/main',
