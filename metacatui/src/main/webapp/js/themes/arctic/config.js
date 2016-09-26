@@ -61,7 +61,7 @@ MetacatUI.customInitApp = function(){
 	
 	//Give the slaask script 3 seconds to load or move on without it!
 	var slaaskTimeout = window.setTimeout(function(){
-		initApp();	
+		MetacatUI.initApp();	
 		
 		//Don't check again
 		window.clearTimeout(slaaskTimeout);

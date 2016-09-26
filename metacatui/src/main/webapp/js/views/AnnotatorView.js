@@ -119,7 +119,7 @@ define(['jquery',
 			// set up tags with bioportal suggestions as default
 			this.$el.annotator().annotator('addPlugin', 'Tags');
 			this.$el.data('annotator').plugins.Tags.input.hoverAutocomplete({
-				source: appLookupModel.bioportalSearch,
+				source: MetacatUI.appLookupModel.bioportalSearch,
 				focus: focus,
 				position: {
 					my: "left top",
@@ -165,7 +165,7 @@ define(['jquery',
 					var type = $(resourceElem).attr('type');
 					if (type == "orcid_sm" || type == "party") {
 						view.$el.data('annotator').plugins.Tags.input.hoverAutocomplete({
-							source: appLookupModel.orcidSearch,
+							source: MetacatUI.appLookupModel.orcidSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
@@ -173,7 +173,7 @@ define(['jquery',
 
 					} else {
 						view.$el.data('annotator').plugins.Tags.input.hoverAutocomplete({
-							source: appLookupModel.bioportalSearch,
+							source: MetacatUI.appLookupModel.bioportalSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
@@ -215,7 +215,7 @@ define(['jquery',
 								"</div>"
 								);
 					};
-					appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);
+					MetacatUI.appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);
 					
 					
 				});
@@ -370,9 +370,9 @@ define(['jquery',
 						
 						// look it up and provide the callback
 						if (annotation["oa:Motivation"] == "prov:wasAttributedTo") {
-							appLookupModel.orcidGetConcepts(conceptUri, renderAnnotation);	
+							MetacatUI.appLookupModel.orcidGetConcepts(conceptUri, renderAnnotation);	
 						} else {
-							appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
+							MetacatUI.appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);	
 						}
 						
 					}, 500);

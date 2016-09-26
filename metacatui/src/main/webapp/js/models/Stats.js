@@ -501,7 +501,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						coverageYears -= binSize;
 					}
 													
-					statsModel.set('coverageYears',  coverageYears); */
+					MetacatUI.statsModel.set('coverageYears',  coverageYears); */
 				}
 				
 			}
