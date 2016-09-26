@@ -1,4 +1,4 @@
-<div class="citation">
+﻿<div class="citation">
 </div>
 <div class="clear"></div>
 <div class="info-icons  stop-route"> 
@@ -33,7 +33,7 @@
 		<% 
 		
 		if (typeof read_count_i !== "undefined"){ 
-			var readableCount = appView.commaSeparateNumber(read_count_i); %>
+			var readableCount = MetacatUI.appView.commaSeparateNumber(read_count_i); %>
 			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><span class="count-container"><%=readableCount%></span> <i class="icon icon-eye-open views stop-route"></i></span>
 		<% }
 		else{ 

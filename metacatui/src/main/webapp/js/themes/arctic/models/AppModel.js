@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone'], 				
 	function($, _, Backbone) {
 	'use strict';
@@ -9,7 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes for the Application
 		defaults: {
 			headerType: 'default',
-			title: window.themeTitle || "Metacat Data Catalog",
+			title: MetacatUI.themeTitle || "Metacat Data Catalog",
 			
 			emailContact: "support@arcticdata.io",
 			
@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			nodeId: null,
 
-			searchMode: mapKey ? 'map' : 'list',
+			searchMode: MetacatUI.mapKey ? 'map' : 'list',
 			searchHistory: [],
 			sortOrder: 'dateUploaded+desc',
 			page: 0,

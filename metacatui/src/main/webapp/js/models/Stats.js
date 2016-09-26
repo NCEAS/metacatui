@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'], 				
 	function($, _, Backbone, LogsSearch) {
 	'use strict';
@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			temporalCoverage: 0,
 			coverageYears: 0,
 			
-			supportDownloads: (appModel.get("nodeId") && appModel.get("d1LogServiceUrl"))
+			supportDownloads: (MetacatUI.appModel.get("nodeId") && MetacatUI.appModel.get("d1LogServiceUrl"))
 		},
 		
 		//Some dated used for query creation
@@ -114,7 +114,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			//Query for the earliest beginDate
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
+				url: MetacatUI.appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr) {
@@ -131,7 +131,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						
 						//Find the earliest endDate if there are no beginDates
 						var requestSettings = {
-							url: appModel.get('queryServiceUrl') + "q=" + endDateQuery + otherParams, 
+							url: MetacatUI.appModel.get('queryServiceUrl') + "q=" + endDateQuery + otherParams, 
 							type: "GET",
 							success: function(endDateData, textStatus, xhr) {
 								//If not endDates or beginDates are found, there is no temporal data in the index, so save falsey values
@@ -144,7 +144,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 								}
 							}
 						}
-						$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+						$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 					}
 					else{
 						// Save the earliest beginDate and total found in our model
@@ -157,7 +157,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		getLastEndDate: function(){
@@ -177,7 +177,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			//Query for the latest endDate
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
+				url: MetacatUI.appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr) {
@@ -202,7 +202,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		/**
@@ -223,7 +223,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 			//Run the query
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
+				url: MetacatUI.appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr) {
@@ -260,7 +260,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		getDataFormatIDs: function(){
@@ -278,7 +278,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			if(this.get('dataCount') > 0){					
 				//Now get facet counts of the data format ID's 
 				var requestSettings = {
-					url: appModel.get('queryServiceUrl') + query, 
+					url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 					type: "GET",
 					dataType: "json",
 					success: function(data, textStatus, xhr) {
@@ -286,7 +286,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 					}
 				}
 				
-				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			}
 		},
 		
@@ -306,7 +306,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				
 				//Now get facet counts of the metadata format ID's 
 				var requestSettings = {
-					url: appModel.get('queryServiceUrl') + query, 
+					url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 					type: "GET",
 					dataType: "json",
 					success: function(data, textStatus, xhr) {
@@ -314,7 +314,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 					}
 				}
 				
-				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 			}
 		},
 		
@@ -337,7 +337,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			//Run the query
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + query, 
+				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr) {
@@ -376,7 +376,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				
 							//Run the query
 							var requestSettings = {
-								url: appModel.get('queryServiceUrl') + metadataQuery+facets, 
+								url: MetacatUI.appModel.get('queryServiceUrl') + metadataQuery+facets, 
 								dataType: "json",
 								type: "GET",
 								success: function(data, textStatus, xhr) {
@@ -384,7 +384,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 									model.set("metadataUploadDates", data.facet_counts.facet_ranges.dateUploaded.counts);		
 									
 									var requestSettings = {
-										url: appModel.get('queryServiceUrl') + dataQuery+facets, 
+										url: MetacatUI.appModel.get('queryServiceUrl') + dataQuery+facets, 
 										type: 'GET',
 										dataType: "json",
 										success: function(data, textStatus, xhr) {
@@ -393,16 +393,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 										}
 									}
 									
-									$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+									$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 								}
 							}
 							
-							$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+							$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 						}
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		/* getTemporalCoverage
@@ -475,7 +475,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			  "&wt=json";
 						
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + query, 
+				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 				dataType: "json",
 				success: function(data, textStatus, xhr) {
 					model.set('temporalCoverage', data.facet_counts.facet_queries);
@@ -506,7 +506,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		/*
@@ -514,7 +514,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 		 */
 		
 		getDataDownloadDates: function(){
-			if(!appModel.get("d1LogServiceUrl")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl")) return;
 			
 			var model = this;
 				
@@ -532,7 +532,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			}
 			
 			var requestSettings = {
-				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
+				url: MetacatUI.appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr){
@@ -544,11 +544,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 
 		getMetadataDownloadDates: function(){
-			if(!appModel.get("d1LogServiceUrl")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl")) return;
 			
 			var model = this;
 				
@@ -566,7 +566,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			}
 			
 			var requestSettings = {
-				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
+				url: MetacatUI.appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr){
@@ -579,11 +579,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		getDownloadDates: function(){
-			if(!appModel.get("d1LogServiceUrl")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl")) return;
 			
 			var model = this;
 				
@@ -602,7 +602,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			}
 			
 			var requestSettings = {
-				url: appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
+				url: MetacatUI.appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr){
@@ -631,7 +631,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		sumDownloads: function(){

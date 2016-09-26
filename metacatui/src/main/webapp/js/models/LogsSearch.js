@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/Search'], 				
 	function($, _, Backbone, SearchModel) {
 	'use strict';
@@ -18,7 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 			return {
 				all: [],
 				dateLogged: [],
-				nodeId: appModel.get("nodeId") || null,
+				nodeId: MetacatUI.appModel.get("nodeId") || null,
 				id: [],
 				pid: [],
 				event: [],
@@ -83,8 +83,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 		},
 		
 		setNodeId: function(){
-			if(nodeModel.get("currentMemberNode"))
-				this.set("nodeId", nodeModel.get("currentMemberNode"));
+			if(MetacatUI.nodeModel.get("currentMemberNode"))
+				this.set("nodeId", MetacatUI.nodeModel.get("currentMemberNode"));
 		},
 		
 		/*

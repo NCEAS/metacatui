@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrResult', 'models/LogsSearch'], 				
 	function($, _, Backbone, SolrHeader, SolrResult, LogsSearch) {
 	'use strict';
@@ -27,7 +27,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    //Turn on/off the feature to search the logs when retrieving SolrResults
 		    this.searchLogs  = (typeof options.searchLogs == "undefined")? true : options.searchLogs;
 		    
-		    if(appModel.get("d1LogServiceUrl") && this.searchLogs){
+		    if(MetacatUI.appModel.get("d1LogServiceUrl") && this.searchLogs){
 			    this.logsSearch = options.logsSearch || new LogsSearch();
 			    this.on("reset", this.getLogs);
 		    }
@@ -57,7 +57,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			}
 			
 			//create the query url
-			var endpoint = appModel.get('queryServiceUrl') + 
+			var endpoint = MetacatUI.appModel.get('queryServiceUrl') + 
 						   "fl=" + this.fields + 
 						   "&q=" + this.currentquery + 
 						   "&sort=" + this.sort + 
@@ -176,12 +176,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				reset: true
 			}
 						
-			return _.extend(options, appUserModel.createAjaxSettings());
+			return _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
 		},
 		
 		//Get info about each model in this collection from the Logs index
 		getLogs: function(){
-			if(!appModel.get("d1LogServiceUrl") || (typeof appModel.get("d1LogServiceUrl") == "undefined")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl") || (typeof MetacatUI.appModel.get("d1LogServiceUrl") == "undefined")) return;
 
 			var collection = this;
 			
@@ -192,7 +192,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				facets: "pid"
 			});
 			
-			var url = appModel.get("d1LogServiceUrl") + "q=" + this.logsSearch.getQuery() + this.logsSearch.getFacetQuery();
+			var url = MetacatUI.appModel.get("d1LogServiceUrl") + "q=" + this.logsSearch.getQuery() + this.logsSearch.getFacetQuery();
 			var requestSettings = {
 				url: url + "&wt=json&rows=0",
 				type: "GET",
@@ -212,7 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 					}					
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		}
 	});
 

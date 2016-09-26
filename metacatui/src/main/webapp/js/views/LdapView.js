@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!templates/loading.html'], 				
 	function($, _, Backbone, BootStrap, Recaptcha, LoadingTemplate) {
 	'use strict';
@@ -27,10 +27,10 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 		render: function () {
 			
 			// look up the url from the main application model
-			this.ldapwebUrl = appModel.get('ldapwebServiceUrl');
+			this.ldapwebUrl = MetacatUI.appModel.get('ldapwebServiceUrl');
 			
 			// request a smaller header
-			appModel.set('headerType', 'default');
+			MetacatUI.appModel.set('headerType', 'default');
 			
 			// show the loading icon
 			this.showLoading();
@@ -110,7 +110,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!temp
 					}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			
 			return false;
 			

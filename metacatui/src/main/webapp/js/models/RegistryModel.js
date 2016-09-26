@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone'], 				
 	function($, _, Backbone) {
 	'use strict';
@@ -26,7 +26,7 @@ define(['jquery', 'underscore', 'backbone'],
 				checkCount = 0;
 			
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + 'q=id:"' + encodeURIComponent(this.get("id")) + '"&rows=1&fl=id&wt=json',
+				url: MetacatUI.appModel.get("queryServiceUrl") + 'q=id:"' + encodeURIComponent(this.get("id")) + '"&rows=1&fl=id&wt=json',
 				success: function(data){
 				 	//Keep track of how many times we've checked the index
 				 	checkCount++;
@@ -64,13 +64,13 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			
 			//Send the query right away
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));				
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));				
 
 			//Now create a queue of queries that will be sent periodically 
 			var thirtyMinutes = 1800000;
 			for(var msDelay=500; msDelay < thirtyMinutes; msDelay*=2){
 				var timerId = window.setTimeout(function(){
-					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));				
+					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));				
 				}, msDelay);	
 				timeouts.push(timerId);
 			}

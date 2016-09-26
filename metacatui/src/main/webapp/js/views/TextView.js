@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 
         'text!templates/alert.html',
         'text!templates/about.html',
@@ -31,7 +31,7 @@ define(['jquery', 'underscore', 'backbone',
 			
 			//Use a smaller header unless this is a subview
 			if(!this.isSubview)
-				appModel.set('headerType', 'default');
+				MetacatUI.appModel.set('headerType', 'default');
 			
 			//Get the text template from the options (sent from the router, most likely)
 			var template = "";
@@ -48,7 +48,7 @@ define(['jquery', 'underscore', 'backbone',
 			}
 			
 			if(options.pageName == "searchTips")
-				var dataForTemplate = appSearchModel;
+				var dataForTemplate = MetacatUI.appSearchModel;
 			
 			//Load the text template
 			this.$el.html(template({

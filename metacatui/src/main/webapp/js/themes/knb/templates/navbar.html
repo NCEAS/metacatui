@@ -1,4 +1,4 @@
-<div class="navbar" >
+﻿<div class="navbar" >
   <div class="navbar-inner">
       <ul class="nav">
 	    <li><a class="brand" href="#">knb</a></li>
@@ -24,12 +24,12 @@
         <% if (loggedIn) { %>
         	<li class="dropdown">
 				<a href="#" class="dropdown-toggle user" data-toggle="dropdown">
-					<i class="icon-user icon icon-on-left"></i><%=appUserModel.get("firstName")%><b class="caret"></b>
+					<i class="icon-user icon icon-on-left"></i><%=MetacatUI.appUserModel.get("firstName")%><b class="caret"></b>
 				</a>
 				<ul class="dropdown-menu">
 					<li class="dropdown-header"><%=formattedName%></li>
 					<li><a href="#share">Upload data</a></li>
-					<% if(appModel.get("userProfiles")){ %><li><a href="#profile/<%=username%>">My profile</a></li> <% } %>
+					<% if(MetacatUI.appModel.get("userProfiles")){ %><li><a href="#profile/<%=username%>">My profile</a></li> <% } %>
 					<li><a href="#data/my-data">My data sets</a></li>
 					<li class="divider"></li>
 					<li><a href="#signout">Sign out</a></li>

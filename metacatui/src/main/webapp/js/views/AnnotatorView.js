@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery',
         'jqueryui',
         'annotator',
@@ -55,7 +55,7 @@ define(['jquery',
 		
 		setUpAnnotator: function() {
 						
-			var bioportalSearchUrl = appModel.get('bioportalSearchUrl');
+			var bioportalSearchUrl = MetacatUI.appModel.get('bioportalSearchUrl');
 			if (!bioportalSearchUrl) {
 				// do not use annotator
 				console.log("bioportalSearchUrl is not configured, annotation is disabled");
@@ -64,12 +64,12 @@ define(['jquery',
 			}
 			
 			// get the pid
-			var pid = appModel.get('pid');
+			var pid = MetacatUI.appModel.get('pid');
 			
 			// which URI are we annotating?
 			var uri = null;
 			//uri = window.location.href;
-			uri = appModel.get("resolveServiceUrl") + pid;
+			uri = MetacatUI.appModel.get("resolveServiceUrl") + pid;
 			// TODO: use a more stable URI?
 			//uri = "https://cn.dataone.org/cn/v2/resolve/" + pid;
 			
@@ -82,10 +82,10 @@ define(['jquery',
 
 			// use authentication plugin if configured
 			var authOptions = false;
-			if (appUserModel.get('token')) {
-			//if (appModel.get('tokenUrl')) {
+			if (MetacatUI.appUserModel.get('token')) {
+			//if (MetacatUI.appModel.get('tokenUrl')) {
 				// check if we are using our own token generator
-				var tokenUrl = appModel.get('tokenUrl');
+				var tokenUrl = MetacatUI.appModel.get('tokenUrl');
 				authOptions = {
 					tokenUrl: tokenUrl,
 				}
@@ -97,7 +97,7 @@ define(['jquery',
 				Tags: false,
 				Auth: authOptions,
 				Store: {
-					prefix: appModel.get('annotatorUrl'),
+					prefix: MetacatUI.appModel.get('annotatorUrl'),
 					annotationData: {
 						'uri': uri,
 						'pid': pid
@@ -327,11 +327,11 @@ define(['jquery',
 						var concept = _.findWhere(concepts, {value: conceptUri});
 						
 						var canEdit = 
-							_.contains(annotation.permissions.admin, appUserModel.get("username"))
+							_.contains(annotation.permissions.admin, MetacatUI.appUserModel.get("username"))
 							||
-							_.contains(annotation.permissions.update, appUserModel.get("username"))
+							_.contains(annotation.permissions.update, MetacatUI.appUserModel.get("username"))
 							|| 
-							_.contains(annotation.permissions.delete, appUserModel.get("username"));
+							_.contains(annotation.permissions.delete, MetacatUI.appUserModel.get("username"));
 						
 						// render it in the document
 						var highlight = $("[data-annotation-id='" + annotation.id + "']");
@@ -385,7 +385,7 @@ define(['jquery',
 					section.append(viewRef.annotationTemplate({
 						annotation: annotation,
 						concept: null,
-						appUserModel: appUserModel
+						appUserModel: MetacatUI.appUserModel
 					}));	
 				
 				}

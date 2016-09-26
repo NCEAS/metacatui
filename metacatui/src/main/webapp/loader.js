@@ -1,39 +1,40 @@
-/**
- *   MetacatUI v1.11.0
+﻿/**
+ *   MetacatUI v2.0.0
  *   https://github.com/NCEAS/metacatui
  *   MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.
  **/
 
 // Step 1: Find the data-theme specified in the script include
-var theme 		   = document.getElementById("loader").getAttribute("data-theme");
-var metacatContext = document.getElementById("loader").getAttribute("data-metacat-context");
-var mapKey 		   = document.getElementById("loader").getAttribute("data-map-key");
-if ((mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!mapKey)) mapKey = null;
-var useD3 = true; 
+var MetacatUI = MetacatUI || {};
+MetacatUI.theme = document.getElementById("loader").getAttribute("data-theme");
+MetacatUI.metacatContext = document.getElementById("loader").getAttribute("data-metacat-context");
+MetacatUI.mapKey = document.getElementById("loader").getAttribute("data-map-key");
+if ( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ) {
+    MetacatUI.mapKey = null;
+}
+MetacatUI.useD3 = true; 
 
 //This version of Metacat UI - used for cache busting
-window.metacatUIVersion = "1.12.0";
+MetacatUI.metacatUIVersion = "2.0.0";
 
-// Step 2: let everything else be taken care of by the app
-preventCompatibilityIssues();
-loadTheme(theme);
-
-function loadTheme(theme) {
+MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", "js/themes/" + theme + "/config.js?v=" + window.metacatUIVersion);
+    script.setAttribute("src", "js/themes/" + theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
     document.getElementsByTagName("body")[0].appendChild(script);
 
     script.onload = function(){
 	    //If this theme has a custom function to start the app, then use it
-	    if(typeof customInitApp == "function") customInitApp();
+	    if(typeof MetacatUI.customInitApp == "function") {
+            MetacatUI.customInitApp();
+        }
 	    //Start the app
-	    else initApp();
+	    else MetacatUI.initApp();
     }
 }
-function initApp() {			
+MetacatUI.initApp = function () {			
     var script = document.createElement("script");
-    script.setAttribute("data-main", "js/app.js?v=" + window.metacatUIVersion);
+    script.setAttribute("data-main", "js/app.js?v=" + MetacatUI.metacatUIVersion);
     script.src = "components/require.js";
     document.getElementsByTagName("body")[0].appendChild(script);
 }
@@ -41,14 +42,14 @@ function initApp() {
 
 // Fix compatibility issues with mainly IE 8 and earlier. Do this before the rest of the app loads since even common
 // functions are missing, such as console.log
-function preventCompatibilityIssues(){	
+MetacatUI.preventCompatibilityIssues = function(){	
 	// Detecting IE
 	function isIE () {
 		  var myNav = navigator.userAgent.toLowerCase();
 		  return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
 	}	
 	//If IE 8 or earlier, don't use D3
-	if (isIE() && (isIE() < 9)) useD3 = false;
+	if (isIE() && (isIE() < 9)) MetacatUI.useD3 = false;
     
 	
 	/* Add trim() function for IE*/
@@ -302,3 +303,8 @@ function preventCompatibilityIssues(){
 	  }());
 	}
 }
+
+// Step 2: let everything else be taken care of by the app
+MetacatUI.preventCompatibilityIssues();
+MetacatUI.loadTheme(MetacatUI.theme);
+

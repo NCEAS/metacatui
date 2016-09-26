@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'text!templates/altHeader.html', 'text!templates/defaultHeader.html'], 				
 	function($, _, Backbone, AltHeaderTemplate, DefaultHeaderTemplate) {
 	'use strict';
@@ -14,13 +14,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/altHeader.html', 'te
 		
 		initialize: function () {
 			// listen for changes in the [header] app model
-			this.listenTo(appModel, "change:headerType", this.render);
+			this.listenTo(MetacatUI.appModel, "change:headerType", this.render);
 		},
 		
 		render: function () {
 			
 			// figure out which header to render
-			var headerType = appModel.get('headerType');
+			var headerType = MetacatUI.appModel.get('headerType');
 			
 			// then render it
 			this.$el.hide();

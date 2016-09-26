@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSearch'], 				
 	function($, _, Backbone, SolrResult, LogsSearch) {
 
@@ -46,8 +46,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 		},
 		
 		setURL: function(){	
-			if(appModel.get("packageServiceUrl"))
-				this.set("url", appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id")));
+			if(MetacatUI.appModel.get("packageServiceUrl"))
+				this.set("url", MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id")));
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */
@@ -59,7 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var model = this;
 			
 			//Get the id of the resource map for this member
-			var provFlList = appSearchModel.getProvFlList() + "prov_instanceOfClass,";
+			var provFlList = MetacatUI.appSearchModel.getProvFlList() + "prov_instanceOfClass,";
 			var query = 'fl=resourceMap,fileName,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,isPublic,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
@@ -67,7 +67,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 						
 
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query,
+				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 					//There should be only one response since we searched by id
 					if(typeof data.response.docs !== "undefined"){
@@ -95,7 +95,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		/* Get all the members of a resource map/package based on the id attribute of this model. 
@@ -108,14 +108,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				pids    = []; //Keep track of each object pid
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
-			var provFlList = appSearchModel.getProvFlList();
+			var provFlList = MetacatUI.appSearchModel.getProvFlList();
 			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
 						'&rows=1000' +
 						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
 						'&wt=json';
 			
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query,
+				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 				
 					//Separate the resource maps from the data/metadata objects
@@ -149,7 +149,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			
 			return this;
 		},
@@ -199,7 +199,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			var model = this;
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query,
+				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 					var results = data.grouped.formatType.groups,
 						rMapList = _.where(results, { groupValue: "RESOURCE" })[0].doclist,
@@ -230,7 +230,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		//Create the URL string that is used to download this package
@@ -238,16 +238,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var url = null;
 			
 			//If we haven't set a packageServiceURL upon app initialization and we are querying a CN, then the packageServiceURL is dependent on the MN this package is from
-			if(!appModel.get("packageServiceUrl") && (appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && nodeModel.get("members").length){
+			if(!MetacatUI.appModel.get("packageServiceUrl") && (MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && MetacatUI.nodeModel.get("members").length){
 				var source = this.get("datasource"),
-					node   = _.find(nodeModel.get("members"), {identifier: source});
+					node   = _.find(MetacatUI.nodeModel.get("members"), {identifier: source});
 				
 				//If this node has MNRead v2 services...
 				if(node && node.readv2)
 					url = node.baseURL + "/v2/packages/application%2Fbagit-097/" + encodeURIComponent(this.get("id"));			
 			}
-			else if(appModel.get("packageServiceUrl"))
-				url = appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id"));
+			else if(MetacatUI.appModel.get("packageServiceUrl"))
+				url = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id"));
 			
 			this.set("url", url);
 			return url;
@@ -289,7 +289,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			if(!metadata) return false;
 			
 			//Load the rendered metadata from the view service
-			var viewService = appModel.get("viewServiceUrl") + metadata.get("id");
+			var viewService = MetacatUI.appModel.get("viewServiceUrl") + metadata.get("id");
 			var requestSettings = {
 					url: viewService, 
 					success: function(data, response, xhr){
@@ -311,11 +311,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 						}
 					}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		getLogInfo: function(){
-			if(!appModel.get("d1LogServiceUrl") || (typeof appModel.get("d1LogServiceUrl") == "undefined")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl") || (typeof MetacatUI.appModel.get("d1LogServiceUrl") == "undefined")) return;
 			
 			var model = this;
 			
@@ -330,7 +330,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				facets: "pid"
 			});
 			
-			var url = appModel.get("d1LogServiceUrl") + "q=" + logsSearch.getQuery() + logsSearch.getFacetQuery();
+			var url = MetacatUI.appModel.get("d1LogServiceUrl") + "q=" + logsSearch.getQuery() + logsSearch.getFacetQuery();
 			var requestSettings = {
 				url: url + "&wt=json&rows=0",
 				success: function(data, textStatus, xhr){
@@ -353,7 +353,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 					model.trigger("changeAll");
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 				
 		/*
@@ -363,7 +363,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			var model = this;
 			
 			//See if there are any prov fields in our index before continuing
-			if(!appSearchModel.getProvFields()) return this;
+			if(!MetacatUI.appSearchModel.getProvFields()) return this;
 			
 			var sources 		   = new Array(),
 				derivations 	   = new Array();
@@ -398,18 +398,18 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			}
 			else{
 				//Create a query where we retrieve the ID of the resource map of each source and derivation
-				var idQuery = appSearchModel.getGroupedQuery("id", externalProvEntities, "OR");
+				var idQuery = MetacatUI.appSearchModel.getGroupedQuery("id", externalProvEntities, "OR");
 				
 				//TODO: Also create a query where we retrieve the metadata for this object (so we can know its title, authors, etc.)
 				//TODO: Will look like "OR (documents:id OR id OR id)"
-				var metadataQuery = appSearchModel.getGroupedQuery("documents", externalProvEntities, "OR");
+				var metadataQuery = MetacatUI.appSearchModel.getGroupedQuery("documents", externalProvEntities, "OR");
 			}
 			
 			//TODO: Find the products of programs/executions
 					
 			//Make a comma-separated list of the provenance field names 
 			var provFieldList = "";
-			_.each(appSearchModel.getProvFields(), function(fieldName, i, list){
+			_.each(MetacatUI.appSearchModel.getProvFields(), function(fieldName, i, list){
 				provFieldList += fieldName;
 				if(i < list.length-1) provFieldList += ",";
 			});
@@ -426,7 +426,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			//Send the query to the query service
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query, 
+				url: MetacatUI.appModel.get("queryServiceUrl") + query, 
 				success: function(data, textStatus, xhr){	
 								
 					//Do any of our docs have multiple resource maps?
@@ -438,11 +438,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 						var allMapIDs = _.uniq(_.flatten(_.pluck(hasMultipleMaps, "resourceMap")));
 						if(allMapIDs.length){
 							
-							var query = "q=+-obsoletedBy:*+" + appSearchModel.getGroupedQuery("id", allMapIDs, "OR") + 
+							var query = "q=+-obsoletedBy:*+" + MetacatUI.appSearchModel.getGroupedQuery("id", allMapIDs, "OR") + 
 										"&fl=obsoletes,id" +
 										"&wt=json";
 							var requestSettings = {
-								url: appModel.get("queryServiceUrl") + query, 
+								url: MetacatUI.appModel.get("queryServiceUrl") + query, 
 								success: function(mapData, textStatus, xhr){	
 								
 									//Create a list of resource maps that are not obsoleted by any other resource map retrieved
@@ -454,7 +454,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 									model.sortProvTrace(data.response.docs);
 								}
 							}
-							$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+							$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 						}
 						else
 							model.sortProvTrace(data.response.docs);
@@ -465,7 +465,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			
 			return this;
 		},
@@ -705,7 +705,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
-			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
 			xhr.send();
 		},
 		

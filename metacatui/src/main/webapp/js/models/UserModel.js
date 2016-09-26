@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections/SolrResults"], 				
 	function($, _, Backbone, JWS, SearchModel, SearchResults) {
 	'use strict';
@@ -195,7 +195,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			var model = this;
 			
 			//If the accounts service is not on, flag this user as checked/completed
-			if(!appModel.get("accountsUrl")){
+			if(!MetacatUI.appModel.get("accountsUrl")){
 				this.getNameFromSubject();
 				this.set("checked", true);
 				return;
@@ -208,7 +208,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			//Check if this is an ORCID
 			if(this.isOrcid()){
 				//Get the person's info from their ORCID bio
-				appLookupModel.orcidGetBio({ 
+				MetacatUI.appLookupModel.orcidGetBio({ 
 					userModel: this,
 					success: function(){
 						model.set("checked", true);
@@ -222,7 +222,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			
 
 			//Get the user info using the DataONE API
-			var url = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
+			var url = MetacatUI.appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 			
 			var requestSettings = {
 				type: "GET",
@@ -245,12 +245,12 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					if(model.get("type") == "node")
 						return;
 					
-					if((xhr.status == 404) && nodeModel.get("checked")){
+					if((xhr.status == 404) && MetacatUI.nodeModel.get("checked")){
 						model.getNameFromSubject();
 						model.set("checked", true);
 					}
-					else if((xhr.status == 404) && !nodeModel.get("checked")){
-						model.listenToOnce(nodeModel, "change:checked", function(){
+					else if((xhr.status == 404) && !MetacatUI.nodeModel.get("checked")){
+						model.listenToOnce(MetacatUI.nodeModel, "change:checked", function(){
 							if(!model.isNode()){
 								model.getNameFromSubject();
 								model.set("checked", true);
@@ -261,7 +261,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 						//As a backup, search for this user instead
 						var requestSettings = {
 								type: "GET",
-								url: appModel.get("accountsUrl") + "?query=" + encodeURIComponent(model.get("username")), 
+								url: MetacatUI.appModel.get("accountsUrl") + "?query=" + encodeURIComponent(model.get("username")), 
 								success: function(data, textStatus, xhr) {	
 									//Parse the XML response to get user info
 									model.set(model.parseXML(data));
@@ -282,25 +282,25 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 								}
 							}
 						//Send the request
-						$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));	
+						$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));	
 						
 					}
 				}
 			}
 			
 			//Send the request
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 		
 		//Get the pending identity map requests, if the service is turned on
 		getPendingIdentities: function(){
-			if(!appModel.get("pendingMapsUrl")) return false;
+			if(!MetacatUI.appModel.get("pendingMapsUrl")) return false;
 			
 			var model = this;
 			
 			//Get the pending requests			
 			var requestSettings = {
-				url: appModel.get("pendingMapsUrl") + encodeURIComponent(this.get("username")),
+				url: MetacatUI.appModel.get("pendingMapsUrl") + encodeURIComponent(this.get("username")),
 				success: function(data, textStatus, xhr){
 					//Reset the equivalent id list so we don't just add it to it with push()
 					model.set("pending", model.defaults().pending);
@@ -331,7 +331,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 				
 		getNameFromSubject: function(){
@@ -396,7 +396,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 		
 		isNode: function(){
-			var node = _.where(nodeModel.get("members"), { shortIdentifier: this.get("username") });
+			var node = _.where(MetacatUI.nodeModel.get("members"), { shortIdentifier: this.get("username") });
 			return (node && node.length)
 		},
 		
@@ -404,7 +404,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		saveAsNode: function(){
 			if(!this.isNode()) return;
 			
-			var node = _.where(nodeModel.get("members"), { shortIdentifier: this.get("username") })[0];
+			var node = _.where(MetacatUI.nodeModel.get("members"), { shortIdentifier: this.get("username") })[0];
 			
 			this.set({
 				type: "node",
@@ -419,13 +419,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 		
 		loginLdap: function(formData, success, error){
-			if(!formData || !appModel.get("signInUrlLdap")) return false;
+			if(!formData || !MetacatUI.appModel.get("signInUrlLdap")) return false;
 			
 			var model = this;
 			
 			var requestSettings = {
 				type: "POST",
-				url: appModel.get("signInUrlLdap") + window.location.href, 
+				url: MetacatUI.appModel.get("signInUrlLdap") + window.location.href, 
 				data: formData, 
 				success: function(data, textStatus, xhr){
 					if(success)
@@ -433,7 +433,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					
 					$("#SignInLdap")
 					//Direct to the Ldap sign in
-					//window.location = appModel.get("signInUrlLdap") + window.location.href;
+					//window.location = MetacatUI.appModel.get("signInUrlLdap") + window.location.href;
 				},
 				error: function(){
 					if(error)
@@ -441,18 +441,18 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 		
 		logout: function(){			
 			//Logout via the registry script if we are not using tokens
-			if((typeof appModel.get("tokenUrl") == "undefined") || !appModel.get("tokenUrl")){
-				appView.registryView.logout();
+			if((typeof MetacatUI.appModel.get("tokenUrl") == "undefined") || !MetacatUI.appModel.get("tokenUrl")){
+				MetacatUI.appView.registryView.logout();
 				return;
 			}
 			
 			//Construct the sign out url and redirect
-			var signOutUrl = appModel.get('signOutUrl'),
+			var signOutUrl = MetacatUI.appModel.get('signOutUrl'),
 				target = Backbone.history.location.href;
 			
 			// DO NOT include the route otherwise we have an infinite redirect
@@ -469,9 +469,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		checkStatus: function(onSuccess, onError) {
 			var model = this;
 			
-			if (!appModel.get("tokenUrl")) {				
+			if (!MetacatUI.appModel.get("tokenUrl")) {				
 				// look up the URL
-				var metacatUrl = appModel.get('metacatServiceUrl');
+				var metacatUrl = MetacatUI.appModel.get('metacatServiceUrl');
 				
 				// ajax call to validate the session/get the user info
 				var requestSettings = {
@@ -507,7 +507,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					}
 				}
 				
-				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 			} else {
 				// use the token method for checking authentication
 				this.getToken();
@@ -516,7 +516,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		
 		getToken: function(customCallback) {
 
-			var tokenUrl = appModel.get('tokenUrl');
+			var tokenUrl = MetacatUI.appModel.get('tokenUrl');
 			var model = this;
 			
 			if(!tokenUrl) return false;
@@ -589,7 +589,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		checkToken: function(onSuccess, onError){
 						
 			//First check if the token has expired
-			if(appUserModel.get("expires") > new Date()){				
+			if(MetacatUI.appUserModel.get("expires") > new Date()){				
 				if(onSuccess) onSuccess();
 								
 				return;
@@ -597,7 +597,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			
 			var model = this;
 			
-			var url = appModel.get("tokenUrl");			
+			var url = MetacatUI.appModel.get("tokenUrl");			
 			if(!url) return;
 			
 			var requestSettings = {
@@ -620,7 +620,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
 							model.getTokenExpiration(payload);
 							
-							appUserModel.set("checked", true);
+							MetacatUI.appUserModel.set("checked", true);
 							
 							if(onSuccess) onSuccess(data, textStatus, xhr);
 						}
@@ -629,13 +629,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					},
 					error: function(data, textStatus, xhr){
 						//If this token in invalid, then reset the user model/log out 
-						appUserModel.reset();
+						MetacatUI.appUserModel.reset();
 						
 						if(onError) onError(data, textStatus, xhr);
 					}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));	
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));	
 		},
 		
 		parseToken: function(token) {
@@ -673,7 +673,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			formData.append("subject", this.get("username"));
 			formData.append("person", xmlBlob, "person");
 
-			var updateUrl = appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
+			var updateUrl = MetacatUI.appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 						
 			// ajax call to update
 			var requestSettings = {
@@ -695,13 +695,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 		
 		confirmMapRequest: function(otherUsername, onSuccess, onError){
 			if(!otherUsername) return;
 
-			var mapUrl = appModel.get("pendingMapsUrl") + encodeURIComponent(otherUsername),
+			var mapUrl = MetacatUI.appModel.get("pendingMapsUrl") + encodeURIComponent(otherUsername),
 				model = this;	
 
 			if(!onSuccess)
@@ -725,13 +725,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 						onError(xhr, textStatus, error);
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		denyMapRequest: function(otherUsername, onSuccess, onError){
 			if(!otherUsername) return;
 			
-			var mapUrl = appModel.get("pendingMapsUrl") + encodeURIComponent(otherUsername),
+			var mapUrl = MetacatUI.appModel.get("pendingMapsUrl") + encodeURIComponent(otherUsername),
 				model = this;	
 		
 			// ajax call to reject map
@@ -749,13 +749,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 						onError(xhr, textStatus, error);
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 		
 		addMap: function(otherUsername, onSuccess, onError){
 			if(!otherUsername) return;
 			
-			var mapUrl = appModel.get("pendingMapsUrl"),
+			var mapUrl = MetacatUI.appModel.get("pendingMapsUrl"),
 				model = this;
 			
 			// ajax call to map
@@ -782,13 +782,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 						onError(xhr, textStatus, error);
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 		
 		removeMap: function(otherUsername, onSuccess, onError){
 			if(!otherUsername) return;
 			
-			var mapUrl = appModel.get("accountsMapsUrl") + encodeURIComponent(otherUsername),
+			var mapUrl = MetacatUI.appModel.get("accountsMapsUrl") + encodeURIComponent(otherUsername),
 				model = this;
 						
 			// ajax call to remove mapping
@@ -806,7 +806,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 						onError(xhr, textStatus, error);
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 		
 		pluckIdentityUsernames: function(){

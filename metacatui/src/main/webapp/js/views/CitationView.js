@@ -1,4 +1,4 @@
-define(['jquery', 'underscore', 'backbone'], 				
+﻿define(['jquery', 'underscore', 'backbone'], 				
 	function($, _, Backbone) {
 	'use strict';
 
@@ -47,7 +47,7 @@ define(['jquery', 'underscore', 'backbone'],
 					dateUploaded = this.metadata.get("dateUploaded"),
 					title 		 = this.metadata.get("title"),
 					id 			 = this.metadata.get("id"),
-					seriesId     = appModel.get("useSeriesId")? this.metadata.get("seriesId") : null,
+					seriesId     = MetacatUI.appModel.get("useSeriesId")? this.metadata.get("seriesId") : null,
 					datasource	 = this.metadata.get("datasource");
 			
 				//Format the author text
@@ -96,7 +96,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//The publisher (source member node)
 			var publisherText = "";
 			if(typeof datasource !== "undefined"){ 
-				var memberNode = _.find(nodeModel.get("members"), function(member){
+				var memberNode = _.find(MetacatUI.nodeModel.get("members"), function(member){
 					return (member.identifier == datasource);
 				});
 				if(typeof memberNode !== "undefined") 

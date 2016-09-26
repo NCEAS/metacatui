@@ -1,4 +1,4 @@
-<% if(memberNode && memberNode.logo){ %>
+﻿<% if(memberNode && memberNode.logo){ %>
 	<a href="#profile/<%=memberNode.identifier%>"><img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%> repository" /></a>
 <% } %>	
 <div class="citation"></div> 
@@ -33,7 +33,7 @@
 	</a> 
     <div class="stats icons stop-route">
 		<% if (reads){ 
-			var readableCount = appView.commaSeparateNumber(reads); %>
+			var readableCount = MetacatUI.appView.commaSeparateNumber(reads); %>
 			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><span class="count-container"><%=readableCount%></span> <i class="icon icon-eye-open views stop-route"></i></span>
 		<% }
 		else{ 

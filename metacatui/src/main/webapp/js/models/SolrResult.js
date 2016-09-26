@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone'], 				
 	function($, _, Backbone) {
 
@@ -13,7 +13,7 @@ define(['jquery', 'underscore', 'backbone'],
 			title: '',
 			pubDate: '',
 			id: '',
-			seriesId: appModel.get("useSeriesId")? null : undefined,
+			seriesId: MetacatUI.appModel.get("useSeriesId")? null : undefined,
 			resourceMap: null,
 			downloads: null,
 			citations: 0,
@@ -167,10 +167,10 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		setURL: function(){	
-			if(appModel.get("objectServiceUrl"))
-				this.set("url", appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id")));
-			else if(appModel.get("resolveServiceUrl"))
-				this.set("url", appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("id")));
+			if(MetacatUI.appModel.get("objectServiceUrl"))
+				this.set("url", MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id")));
+			else if(MetacatUI.appModel.get("resolveServiceUrl"))
+				this.set("url", MetacatUI.appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("id")));
 		},
 		
 		// checks if the pid is already a DOI
@@ -187,7 +187,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Checks if the currently-logged-in user is authorized to change permissions on this doc 
 		 */
 		checkAuthority: function(){
-			var authServiceUrl = appModel.get('authServiceUrl');
+			var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
 			if(!authServiceUrl) return false;
 			
 			var model = this;
@@ -203,7 +203,7 @@ define(['jquery', 'underscore', 'backbone'],
 					model.set("isAuthorized", false);
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		/*
@@ -218,7 +218,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//If we are accessing objects via the resolve service, we need to find the direct URL
 			if(url.indexOf("/resolve/") > -1){
-				var dataSource = nodeModel.getMember(this.get("datasource")),
+				var dataSource = MetacatUI.nodeModel.getMember(this.get("datasource")),
 					version = dataSource.readv2? "v2" : "v1";
 				
 				url = dataSource.baseURL + "/" + version + "/object/" + this.get("id");
@@ -242,7 +242,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
-			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
 			xhr.send();
 		},
 		
@@ -267,7 +267,7 @@ define(['jquery', 'underscore', 'backbone'],
 				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
 				
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json',
+				url: MetacatUI.appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json',
 				type: "GET",
 				success: function(data, response, xhr){
 					var docs = data.response.docs;
@@ -294,7 +294,7 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 			}
 						
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		notFound: function(){
@@ -305,7 +305,7 @@ define(['jquery', 'underscore', 'backbone'],
 		//Transgresses the obsolence chain until it finds the newest version that this user is authorized to read
 		findLatestVersion: function(newestVersion, possiblyNewer) {			
 			// Make sure we have the /meta service configured
-			if(!appModel.get('metaServiceUrl')) return;	
+			if(! MetacatUI.appModel.get('metaServiceUrl')) return;	
 			
 			//If no pid was supplied, use this model's id
 			if(!newestVersion){
@@ -323,7 +323,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			//Get the system metadata for the possibly newer version
 			var requestSettings = {
-				url: appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer), 
+				url: MetacatUI.appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer), 
 				type: "GET",
 				success: function(data) {
 							
@@ -345,7 +345,7 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));		
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));		
 			
 		},
 		
@@ -355,7 +355,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		isSourceField: function(field){
 			if((typeof field == "undefined") || !field) return false;
-			if(!_.contains(appSearchModel.getProvFields(), field)) return false;			
+			if(!_.contains(MetacatUI.appSearchModel.getProvFields(), field)) return false;			
 			
 			if(field == "prov_generatedByExecution" ||
 			   field == "prov_generatedByProgram"   ||
@@ -372,7 +372,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 */		
 		isDerivationField: function(field){
 			if((typeof field == "undefined") || !field) return false;
-			if(!_.contains(appSearchModel.getProvFields(), field)) return false;
+			if(!_.contains(MetacatUI.appSearchModel.getProvFields(), field)) return false;
 			
 			if(field == "prov_usedByExecution" ||
 			   field == "prov_usedByProgram"   ||
@@ -386,14 +386,14 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Returns true if this SolrResult has a provenance trace (i.e. has either sources or derivations)
 		 */
 		hasProvTrace: function(){
-			if(!appModel.get("prov")) return false;
+			if(! MetacatUI.appModel.get("prov")) return false;
 			
 			if(this.get("formatType") == "METADATA"){
 				if(this.get("prov_hasSources") || this.get("prov_hasDerivations"))
 					return true;
 			}
 				
-			var fieldNames = appSearchModel.getProvFields(),
+			var fieldNames = MetacatUI.appSearchModel.getProvFields(),
 				currentField = "";
 			
 			for(var i=0; i < fieldNames.length; i++){
@@ -412,7 +412,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var sources = new Array(),
 				model = this;
 			
-			_.each(appSearchModel.getProvFields(), function(provField, i){
+			_.each(MetacatUI.appSearchModel.getProvFields(), function(provField, i){
 				if(model.isSourceField(provField) && model.has(provField))
 					sources.push(model.get(provField));
 			});
@@ -427,7 +427,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var derivations = new Array(),
 				model = this;
 		
-			_.each(appSearchModel.getProvFields(), function(provField, i){
+			_.each(MetacatUI.appSearchModel.getProvFields(), function(provField, i){
 				if(model.isDerivationField(provField) && model.get(provField))
 					derivations.push(model.get(provField));
 			});	

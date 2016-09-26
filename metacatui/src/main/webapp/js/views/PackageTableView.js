@@ -1,4 +1,4 @@
-define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templates/downloadContents.html', 'text!templates/downloadButton.html'], 				
+﻿define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templates/downloadContents.html', 'text!templates/downloadButton.html'], 				
 	function($, _, Backbone, Package, Template, DownloadButtonTemplate) {
 	'use strict';
 
@@ -61,8 +61,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(!this.model.complete) return false;
 
 			// Grab all of our URLs
-			var queryServiceUrl   = appModel.get('queryServiceUrl');
-			var packageServiceUrl = appModel.get('packageServiceUrl');
+			var queryServiceUrl   = MetacatUI.appModel.get('queryServiceUrl');
+			var packageServiceUrl = MetacatUI.appModel.get('packageServiceUrl');
 			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
@@ -119,7 +119,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
 			if(this.model.getURL() && this.model.get("id")){
-				if(this.model.getTotalSize() < appModel.get("maxDownloadSize")){				
+				if(this.model.getTotalSize() < MetacatUI.appModel.get("maxDownloadSize")){				
 					downloadButtonHTML = this.downloadButtonTemplate({ 
 						href: this.model.get("url"),
 						id: this.model.get("id"),
@@ -338,7 +338,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");	
 			
-			if(memberModel.get("size") < appModel.get("maxDownloadSize")){
+			if(memberModel.get("size") < MetacatUI.appModel.get("maxDownloadSize")){
 				var downloadButtonHTML = this.downloadButtonTemplate({ 
 					href: url, 
 					fileName: entityName,
@@ -347,7 +347,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				});
 				var downloadButton = $.parseHTML(downloadButtonHTML.trim());
 				
-				if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
+				if(MetacatUI.appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
 					$(downloadButton).on("click", null, this, this.download);
 			}
 			else{
@@ -368,7 +368,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		},
 
 		download: function(e){				
-			if(e && $(e.target).attr("data-id") && appUserModel.get("loggedIn")){
+			if(e && $(e.target).attr("data-id") && MetacatUI.appUserModel.get("loggedIn")){
 				e.preventDefault();
 				var id = $(e.target).attr("data-id");
 				

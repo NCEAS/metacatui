@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'gmaps'], 				
 	function($, _, Backbone, gmaps) {
 	'use strict';
@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				drawMarkers: false,
 				
 				//If this theme doesn't have an image in this location, Google maps will use their default marker image
-				markerImage: "./js/themes/" + theme + "/img/map-marker.png",
+				markerImage: "./js/themes/" + MetacatUI.theme + "/img/map-marker.png",
 				
 				//Keep track of the geohash level used to draw tiles on this map
 				tileGeohashLevel: 1,

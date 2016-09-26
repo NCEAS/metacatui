@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery',
 		'underscore', 
 		'backbone',
@@ -64,7 +64,7 @@ define(['jquery',
 			//Get all the fields from the Solr index
 			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json&json.wrf=?';
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + query, 
+				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 				jsonp: "json.wrf",
 				dataType: "jsonp",
 				success: function(data, textStatus, xhr){ 
@@ -146,13 +146,13 @@ define(['jquery',
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 			
 			//Send a request for the EML doc itself to extract certain info
 			if(this.parentView && this.parentView.model){
 				var formatId = this.parentView.model.get("formatId");
 				if(formatId.indexOf("eml://") >= 0){
-					var url = appModel.get("baseUrl") + appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
+					var url = MetacatUI.appModel.get("baseUrl") + MetacatUI.appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
 					
 					var requestSettings = {
 						url: url, 
@@ -207,7 +207,7 @@ define(['jquery',
 						}
 					}
 					
-					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 				}
 			}
 						
@@ -340,7 +340,7 @@ define(['jquery',
 				
 				var icon   = $(document.createElement("i")).addClass(icon),
 					title  = $(document.createElement("span")).text(solrResult.get("id")).addClass("title"),
-					downloadBtn = view.downloadButtonTemplate({ href: appModel.get("objectServiceUrl") + encodeURIComponent(solrResult.get("id")), className: "btn btn-primary" }),
+					downloadBtn = view.downloadButtonTemplate({ href: MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(solrResult.get("id")), className: "btn btn-primary" }),
 					anchor = $(document.createElement("a")).attr("name", encodeURIComponent(solrResult.get("id"))),
 					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn);
 				

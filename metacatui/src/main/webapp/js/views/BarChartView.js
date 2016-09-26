@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'd3'], 				
 	function($, _, Backbone, d3) {
 	'use strict';
@@ -266,7 +266,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								  		return yPos; 
 								  	})
 								  	.attr("width", function(d){
-								  		return ((d.x + ": " + appView.commaSeparateNumber(d.y)).length * 8) + labelXPadding;
+								  		return ((d.x + ": " + MetacatUI.appView.commaSeparateNumber(d.y)).length * 8) + labelXPadding;
 								  	})
 								  	.attr("height", labelHeight + labelYPadding)
 								  	.attr("rx", 5) //For rounded corners
@@ -294,7 +294,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								  							  									  		
 								  		return yPos + labelYPadding * 2; 
 								  	})
-								    .text(function(d){ return d.x + ": " + appView.commaSeparateNumber(d.y); })
+								    .text(function(d){ return d.x + ": " + MetacatUI.appView.commaSeparateNumber(d.y); })
 								    .attr("class", "bar-label " + this.barLabelClass)
 								    .attr("text-anchor", "start")
 								    .attr("data-id", function(d){ return d.x });
@@ -306,7 +306,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					  		  	  textY = y(d.y) - 10;
 					  		  
 					  		  return "translate(" + textX + "," + textY + ")"; })
-					  	  .text(function(d){ return appView.commaSeparateNumber(d.y); })
+					  	  .text(function(d){ return MetacatUI.appView.commaSeparateNumber(d.y); })
 					  	  .attr("text-anchor", "middle")
 					  	  .attr("class", this.barLabelClass);
 				  }

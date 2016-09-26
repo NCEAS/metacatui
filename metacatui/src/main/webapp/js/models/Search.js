@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
 	function($, _, Backbone, SolrResult) {
 	'use strict';
@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//annotation: [],
 				additionalCriteria: [],
 				id: [],
-				seriesId: appModel.get("useSeriesId")? [] : undefined,
+				seriesId: MetacatUI.appModel.get("useSeriesId")? [] : undefined,
 				formatType: [{
 					value: "METADATA",
 					label: "science metadata",
@@ -386,7 +386,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//-----Theme restrictions from Registry Model-----
 			if((filter == "registryCriteria") || getAll){
-				var registryCriteria = registryModel.get('searchFields');
+				var registryCriteria = MetacatUI.registryModel.get('searchFields');
 				_.each(registryCriteria, function(value, key, list) {
 					query += "+" + value;
 				});

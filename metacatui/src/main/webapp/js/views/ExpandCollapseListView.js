@@ -1,4 +1,4 @@
-define(['jquery', 'underscore', 'backbone'], 				
+﻿define(['jquery', 'underscore', 'backbone'], 				
 	function($, _, Backbone) {
 	'use strict';
 
@@ -85,7 +85,7 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 		
 		makeIDLink: function(id){	
-			return $(document.createElement("a")).attr("href", appModel.get('objectServiceUrl') + encodeURIComponent(id)).text(id);
+			return $(document.createElement("a")).attr("href", MetacatUI.appModel.get('objectServiceUrl') + encodeURIComponent(id)).text(id);
 		},
 		
 		toggle: function(e){

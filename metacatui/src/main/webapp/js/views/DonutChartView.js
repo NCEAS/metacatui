@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'd3'], 				
 	function($, _, Backbone, d3) {
 	'use strict';
@@ -160,7 +160,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		                    "end" : "start";
 		            })
 		            .text(function(d, i) { 	         
-		            	return appView.commaSeparateNumber(d.data.count); 
+		            	return MetacatUI.appView.commaSeparateNumber(d.data.count); 
 		            })
 		           .attr("transform", function(d, i) { //Calculate the label position based on arc centroid
 		                var c = arc.centroid(d),
@@ -212,7 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        		textData.push({
 									"cx" : w/2,  //Start at the center
 									"cy" : h/2, //Start at the center
-									"text" : appView.commaSeparateNumber(this.titleCount),
+									"text" : MetacatUI.appView.commaSeparateNumber(this.titleCount),
 									"className" : "donut-title-count " + this.countClass
 								});
 	        	}

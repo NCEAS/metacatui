@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 
 define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.html', 'text!templates/loginButtons.html', 'text!templates/loginOptions.html', 'text!templates/ldapLogin.html'], 				
 	function($, _, Backbone, fancybox, LoginTemplate, LoginButtonsTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
@@ -23,7 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 		
 		render: function(){
 			//Don't render a SignIn view if there are no Sign In URLs configured
-			if(!appModel.get("signInUrl") && !appModel.get("signInUrlOrcid")) return this;
+			if(!MetacatUI.appModel.get("signInUrl") && !MetacatUI.appModel.get("signInUrlOrcid")) return this;
 			
 			var view = this;
 			
@@ -67,14 +67,14 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 					
 					//Listen for successful sign-in
 					window.listenForSignIn = setInterval(function(){
-						appUserModel.checkToken(function(data){
+						MetacatUI.appUserModel.checkToken(function(data){
 							$(".modal.sign-in-btns").modal("hide");
 							clearInterval(window.listenForSignIn);
 							
-							if(appUserModel.get("checked"))
-								appUserModel.trigger("change:checked");
+							if(MetacatUI.appUserModel.get("checked"))
+								MetacatUI.appUserModel.trigger("change:checked");
 							else
-								appUserModel.set("checked", true);
+								MetacatUI.appUserModel.set("checked", true);
 						});
 					}, 750);
 				});
@@ -87,9 +87,9 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 				//Insert the sign in popup screen once
 				if(!$("#signinPopup").length){
 					var target = encodeURIComponent(window.location.href);
-					var signInUrl = appModel.get('signInUrl')? appModel.get('signInUrl') + target : null;
-					var signInUrlOrcid = appModel.get('signInUrlOrcid') ? appModel.get('signInUrlOrcid') + target : null;
-					var signInUrlLdap = appModel.get('signInUrlLdap') ? appModel.get('signInUrlLdap') + target : null;	
+					var signInUrl = MetacatUI.appModel.get('signInUrl')? MetacatUI.appModel.get('signInUrl') + target : null;
+					var signInUrlOrcid = MetacatUI.appModel.get('signInUrlOrcid') ? MetacatUI.appModel.get('signInUrlOrcid') + target : null;
+					var signInUrlLdap = MetacatUI.appModel.get('signInUrlLdap') ? MetacatUI.appModel.get('signInUrlLdap') + target : null;	
 					
 					$("body").append(this.template({
 						signInUrl:  signInUrl,
@@ -116,9 +116,9 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 					$("#signinPopup a.ldap").on("click", null, view, view.showLDAPLogin);
 					
 					//Update the sign-in URLs so we are redirected back to the previous page after authentication
-					$("a.update-sign-in-url").attr("href", appModel.get("signInUrl") + encodeURIComponent(window.location.href));
-					$("a.update-orcid-sign-in-url").attr("href", appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
-					$("a.update-ldap-sign-in-url").attr("href", appModel.get("signInUrlLdap") + encodeURIComponent(window.location.href));
+					$("a.update-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrl") + encodeURIComponent(window.location.href));
+					$("a.update-orcid-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
+					$("a.update-ldap-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlLdap") + encodeURIComponent(window.location.href));
 				}
 			});
 		},	
@@ -134,13 +134,13 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 				this.loginPopup = $("#signinPopup").children().detach();
 				
 				var ldapLogin = view.ldapLoginTemplate({
-					signInUrlLdap: appModel.get("signInUrlLdap"),
+					signInUrlLdap: MetacatUI.appModel.get("signInUrlLdap"),
 					accountType: accountType,
 					org: org				
 				});
 			}
 			else
-				window.location = appModel.get("signInUrl") + window.location;
+				window.location = MetacatUI.appModel.get("signInUrl") + window.location;
 			
 			$("#signinPopup").append(ldapLogin);
 			

@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery',
 				'underscore', 
 				'backbone',
@@ -45,13 +45,13 @@ define(['jquery',
 		initialize: function () {
 			
 			//Is there a logged-in user?
-			appUserModel.checkStatus();
+			MetacatUI.appUserModel.checkStatus();
 
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!			
 			$("head").prepend(this.appHeadTemplate({
-				theme: theme, 
-				themeTitle: themeTitle,
-				googleAnalyticsKey: appModel.get("googleAnalyticsKey")
+				theme: MetacatUI.theme, 
+				themeTitle: MetacatUI.themeTitle,
+				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
 				}));
 									
 			// set up the body
@@ -68,8 +68,8 @@ define(['jquery',
 			app.footerView.setElement($('#Footer')).render();
 			
 			//Load the Slaask chat widget if it is enabled in this theme
-			if(appModel.get("slaaskKey") && window._slaask)
-		    	_slaask.init(appModel.get("slaaskKey"));
+			if(MetacatUI.appModel.get("slaaskKey") && window._slaask)
+		    	_slaask.init(MetacatUI.appModel.get("slaaskKey"));
 			
 			// listen for image loading - bind only once in init method
 			var imageEl = $('#bg_image');
@@ -81,14 +81,14 @@ define(['jquery',
 			}
 			
 			//Change the document title when the app changes the appModel title at any time
-			this.listenTo(appModel, "change:title", this.changeTitle);
+			this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
 			
 			this.listenForActivity();
 		},
 		
 		//Changes the web document's title
 		changeTitle: function(){
-			document.title = appModel.get("title");
+			document.title = MetacatUI.appModel.get("title");
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -184,7 +184,7 @@ define(['jquery',
 		},	
 		
 		sendAnalytics: function(){
-			if(!appModel.get("googleAnalyticsKey") || (typeof ga === "undefined")) return;
+			if(!MetacatUI.appModel.get("googleAnalyticsKey") || (typeof ga === "undefined")) return;
 			
 			var page = window.location.hash || "/";
 			page = page.replace("#", ""); //remove the leading pound sign
@@ -215,21 +215,21 @@ define(['jquery',
 				
 				if(!val) return false;
 				
-				uiRouter.navigate('view/'+ encodeURIComponent(val), {trigger: true});
+				MetacatUI.uiRouter.navigate('view/'+ encodeURIComponent(val), {trigger: true});
 			}
 		},
 		
 		resetSearch: function(){
 			// Clear the search and map model to start a fresh search
-			appSearchModel.clear();
-			appSearchModel.set(appSearchModel.defaults);
-			mapModel.clear();
-			mapModel.set(mapModel.defaults);
+			MetacatUI.appSearchModel.clear();
+			MetacatUI.appSearchModel.set(MetacatUI.appSearchModel.defaults);
+			MetacatUI.mapModel.clear();
+			MetacatUI.mapModel.set(MetacatUI.mapModel.defaults);
 			
 			//Clear the search history
-			appModel.set("searchHistory", new Array());
+			MetacatUI.appModel.set("searchHistory", new Array());
 			
-			uiRouter.navigate('data', {trigger: true});
+			MetacatUI.uiRouter.navigate('data', {trigger: true});
 		},
 		
 		closePopovers: function(e){
@@ -347,25 +347,25 @@ define(['jquery',
 			}
 			
 			//Send login request via the User Model
-			appUserModel.loginLdap(formData, loginSuccess, loginFail);			
+			MetacatUI.appUserModel.loginLdap(formData, loginSuccess, loginFail);			
 		},
 		
 		// Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else
 		// When a user checks back, we want to check for log-in status
 		listenForActivity: function(){
-			appUserModel.on("change:loggedIn", function(){
-				if(!appUserModel.get("loggedIn")) return;
+			MetacatUI.appUserModel.on("change:loggedIn", function(){
+				if(!MetacatUI.appUserModel.get("loggedIn")) return;
 					
 				//Check the user's token on focus
 				$(window).focus(function(){
-					if(!appUserModel.get("loggedIn")) return;
+					if(!MetacatUI.appUserModel.get("loggedIn")) return;
 					
-					if(appModel.get("tokenUrl")){
+					if(MetacatUI.appModel.get("tokenUrl")){
 						//If the user's token is no longer valid, then refresh the page
-						appUserModel.checkToken();
+						MetacatUI.appUserModel.checkToken();
 					}
 					else{
-						appUserModel.checkStatus();
+						MetacatUI.appUserModel.checkStatus();
 					}
 				});
 			});
@@ -374,7 +374,7 @@ define(['jquery',
 		openChatWithMessage: function(){
 			if(!_slaask) return;
 
-	    	$("#slaask-input").val(appModel.get("defaultSupportMessage"));
+	    	$("#slaask-input").val(MetacatUI.appModel.get("defaultSupportMessage"));
 	    	$("#slaask-button").trigger("click");	
 			
 		},

@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery',
         'jqueryui',
 		'underscore', 
@@ -89,7 +89,7 @@ define(['jquery',
 		initialize: function (options) {
 			if((options === undefined) || (!options)) var options = {};
 
-			this.pid = options.pid || options.id || appModel.get("pid") || null;
+			this.pid = options.pid || options.id || MetacatUI.appModel.get("pid") || null;
 			
 			if(typeof options.el !== "undefined")
 				this.setElement(options.el);			
@@ -100,7 +100,7 @@ define(['jquery',
 
 			this.stopListening();
 			
-			appModel.set('headerType', 'default');
+			MetacatUI.appModel.set('headerType', 'default');
 			//	this.showLoading("Loading...");
 						
 			//Reset various properties of this view first
@@ -111,9 +111,9 @@ define(['jquery',
 			
 			// get the pid to render
 			if(!this.pid)
-				this.pid = appModel.get("pid");
+				this.pid = MetacatUI.appModel.get("pid");
 			
-			this.listenTo(appUserModel, "change:loggedIn", this.render);
+			this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 						
 			this.getModel();	
 						
@@ -206,8 +206,8 @@ define(['jquery',
 			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
 			
 			// Check for a view service in this appModel
-			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl'))) 
-				var endpoint = appModel.get('viewServiceUrl') + pid;
+			if((MetacatUI.appModel.get('viewServiceUrl') !== undefined) && (MetacatUI.appModel.get('viewServiceUrl'))) 
+				var endpoint = MetacatUI.appModel.get('viewServiceUrl') + pid;
 					
 			if(endpoint && (typeof endpoint !== "undefined")){
 				var viewRef = this;
@@ -250,7 +250,7 @@ define(['jquery',
 						}
 				}
 				
-				$.ajax(_.extend(loadSettings, appUserModel.createAjaxSettings()));
+				$.ajax(_.extend(loadSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			}
 			else this.renderMetadataFromIndex();				
 		},
@@ -319,7 +319,7 @@ define(['jquery',
 			}
 			
 			//Set the document title to the citation
-			appModel.set("title", citation);
+			MetacatUI.appModel.set("title", citation);
 			
 			citationEl.remove();
 			
@@ -338,7 +338,7 @@ define(['jquery',
 		    				  .append($(document.createElement("li"))
 		    						  .addClass("search")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#data/page/" + appModel.get("page"))
+						    				  .attr("href", "#data/page/" + MetacatUI.appModel.get("page"))
 						    				  .addClass("search")
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
@@ -347,9 +347,9 @@ define(['jquery',
 						    				  .addClass("inactive")
 						    				  .text("Metadata")));
 			
-			if(uiRouter.lastRoute() == "data"){
+			if(MetacatUI.uiRouter.lastRoute() == "data"){
 				$(breadcrumbs).prepend($(document.createElement("a"))
-						         .attr("href", "#data/page/" + appModel.get("page"))
+						         .attr("href", "#data/page/" + MetacatUI.appModel.get("page"))
 						         .attr("title", "Back")
 						         .addClass("back")
 						         .text(" Back to search")
@@ -363,8 +363,8 @@ define(['jquery',
 		
 		showNotFound: function(){
 			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
-			if(!appUserModel.get("checked")){
-				this.listenToOnce(appUserModel, "change:checked", this.showNotFound);
+			if(!MetacatUI.appUserModel.get("checked")){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
 				return;
 			}
 			
@@ -675,7 +675,7 @@ define(['jquery',
 							  "&path=color:0xDA4D3Aff|weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
 							  "&visible=" + latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
 							  "&sensor=false" +
-							  "&key=" + mapKey + "'/>";
+							  "&key=" + MetacatUI.mapKey + "'/>";
 
 				//Find the spot in the DOM to insert our map image
 				if(parseText) var insertAfter = ($(georegion).find('label:contains("West")').parent().parent().length) ? $(georegion).find('label:contains("West")').parent().parent() :  georegion; //The last coordinate listed
@@ -710,9 +710,9 @@ define(['jquery',
 		},
 		
 		insertDataSource: function(){
-			if(!this.model || !nodeModel || !nodeModel.get("members").length || !this.$(this.dataSourceContainer).length) return;
+			if(!this.model || !MetacatUI.nodeModel || !MetacatUI.nodeModel.get("members").length || !this.$(this.dataSourceContainer).length) return;
 			
-			var dataSource = nodeModel.getMember(this.model);
+			var dataSource = MetacatUI.nodeModel.getMember(this.model);
 			
 			if(dataSource && dataSource.logo){
 				this.$("img.data-source").remove();
@@ -733,7 +733,7 @@ define(['jquery',
 		 */
 		insertOwnerControls: function(){
 			//Don't display editing controls when we are pointing to a CN
-			if(appModel.get("d1Service").toLowerCase().indexOf("cn") > -1)
+			if(MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn") > -1)
 				return false;
 			
 			//Do not show user controls for older versions of data sets
@@ -990,7 +990,7 @@ define(['jquery',
 				
 				if(metadataModel.get("id") != viewRef.pid){
 					var requestSettings = { 
-						url: appModel.get("viewServiceUrl") + metadataModel.get("id"), 
+						url: MetacatUI.appModel.get("viewServiceUrl") + metadataModel.get("id"), 
 						success: function(parsedMetadata, response, xhr){
 							_.each(packageModel.get("members"), function(solrResult, i){
 								var entityName = "";
@@ -1011,7 +1011,7 @@ define(['jquery',
 						}
 					}
 
-					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 
 					return;
 				}
@@ -1209,7 +1209,7 @@ define(['jquery',
 					var anchor         = $(document.createElement("a")).attr("id", objID.replace(/[^A-Za-z0-9]/g, "-")),
 						container      = viewRef.findEntityDetailsContainer(objID);
 					
-					if(solrResult.get("size") < appModel.get("maxDownloadSize"))
+					if(solrResult.get("size") < MetacatUI.appModel.get("maxDownloadSize"))
 						var downloadButton = $.parseHTML(viewRef.downloadButtonTemplate({href: solrResult.get("url")}).trim());
 					else
 						var downloadButton = $.parseHTML(viewRef.downloadButtonTemplate({ tooLarge: true }).trim());
@@ -1242,7 +1242,7 @@ define(['jquery',
 								
 								//Open and send the request with the user's auth token
 								xhr.open('GET', solrResult.get("url"));
-								xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+								xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
 								xhr.send();
 							}
 								
@@ -1386,7 +1386,7 @@ define(['jquery',
 				//Create an element using the dataDisplay template
 				html = this.dataDisplayTemplate({
 					 type : "pdf",
-					  src : appModel.get('objectServiceUrl') + pdfs[i].id,
+					  src : MetacatUI.appModel.get('objectServiceUrl') + pdfs[i].id,
 					title : title 
 				});
 	
@@ -1461,7 +1461,7 @@ define(['jquery',
 					//Clean up the link text
 					var withoutPrefix = linkText.substring(linkText.indexOf("ecogrid://") + 10),
 						pid = withoutPrefix.substring(withoutPrefix.indexOf("/")+1),
-						baseUrl = appModel.get('objectServiceUrl') || appModel.get('resolveServiceUrl');
+						baseUrl = MetacatUI.appModel.get('objectServiceUrl') || MetacatUI.appModel.get('resolveServiceUrl');
 					
 					$(thisLink).attr('href', baseUrl + encodeURIComponent(pid)).text(pid);		
 			});
@@ -1474,7 +1474,7 @@ define(['jquery',
 			if (disabled) {
 				return false;
 			}
-			var publishServiceUrl = appModel.get('publishServiceUrl');
+			var publishServiceUrl = MetacatUI.appModel.get('publishServiceUrl');
 			var pid = $(event.target).closest("a").attr("pid");
 			var ret = confirm("Are you sure you want to publish " + pid + " with a DOI?");
 			
@@ -1512,7 +1512,7 @@ define(['jquery',
 											// avoid a double fade out/in
 											viewRef.$el.html('');
 											viewRef.showLoading();
-											uiRouter.navigate("view/" + identifier, {trigger: true})
+											MetacatUI.uiRouter.navigate("view/" + identifier, {trigger: true})
 										}, 
 										3000);
 							}
@@ -1526,7 +1526,7 @@ define(['jquery',
 						}
 					}
 				
-				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 				
 			}
 		},
@@ -1549,7 +1549,7 @@ define(['jquery',
 			this.renderMetadataFromIndex();
 			
 			//Insert a message that this data is not described by metadata
-			appView.showAlert("Additional information about this data is limited since metadata was not provided by the creator.", "alert-warning", this.$(this.metadataContainer));
+			MetacatUI.appView.showAlert("Additional information about this data is limited since metadata was not provided by the creator.", "alert-warning", this.$(this.metadataContainer));
 		},
 		
 		// this will lookup the latest version of the PID
@@ -1571,7 +1571,7 @@ define(['jquery',
 		showLoading: function(message) {
 			this.hideLoading();
 			
-			appView.scrollToTop();
+			MetacatUI.appView.scrollToTop();
 			
 			var loading = this.loadingTemplate({ msg: message });
 			if(!loading) return;
@@ -1598,7 +1598,7 @@ define(['jquery',
 		},
 		
 		setUpAnnotator: function() {
-			if(!appModel.get("annotatorUrl")) return;
+			if(!MetacatUI.appModel.get("annotatorUrl")) return;
 			
 			
 			var annotator = new AnnotatorView({ 
@@ -1631,7 +1631,7 @@ define(['jquery',
 				return false;
 			
 			//If we are on the Metadata view, then let's scroll to the anchor
-			appView.scrollTo(this.findEntityDetailsContainer(id));	
+			MetacatUI.appView.scrollTo(this.findEntityDetailsContainer(id));	
 			
 			return true;
 		},
@@ -1660,7 +1660,7 @@ define(['jquery',
 			$(".prov-chart .node[data-id='" + id + "']").toggleClass("active");
 			
 			//Highlight its metadata section
-			if(appModel.get("pid") == id)
+			if(MetacatUI.appModel.get("pid") == id)
 				this.$("#Metadata").toggleClass("active");
 			else{
 				var entityDetails = this.findEntityDetailsContainer(id);
@@ -1687,7 +1687,7 @@ define(['jquery',
 			this.$loading = null;
 			
 			//Put the document title back to the default
-			appModel.set("title", appModel.defaults.title);
+			MetacatUI.appModel.set("title", MetacatUI.appModel.defaults.title);
 			
 			//Remove view-specific classes
 			this.$el.removeClass("container no-stylesheet");

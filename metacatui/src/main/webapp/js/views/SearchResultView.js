@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html'], 				
 	function($, _, Backbone, moment, SolrResult, Package, CitationView, ResultItemTemplate) {
 	
@@ -38,7 +38,7 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'mode
 			//Convert the model to JSON and create the result row from the template
 			var json = this.model.toJSON();
 			json.hasProv  = this.model.hasProvTrace();
-			json.memberNode = _.findWhere(nodeModel.get("members"), {identifier: this.model.get("datasource")});
+			json.memberNode = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: this.model.get("datasource")});
 				
 			var resultRow = this.template(json);
 			this.$el.html(resultRow);
@@ -116,11 +116,11 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'mode
 			if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
 				return;
 			
-			uiRouter.navigate('view/'+id, {trigger: true});
+			MetacatUI.uiRouter.navigate('view/'+id, {trigger: true});
 		},
 		
 		download: function(e){				
-			if(appUserModel.get("loggedIn") && !this.model.get("isPublic")){
+			if(MetacatUI.appUserModel.get("loggedIn") && !this.model.get("isPublic")){
 				if(e){
 					e.preventDefault();
 					var packageId = $(e.target).attr("data-id") || this.model.get("resourceMap");

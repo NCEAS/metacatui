@@ -1,4 +1,4 @@
-define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvStatementView"], 				
+﻿define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvStatementView"], 				
 	function($, _, Backbone, CitationView, ProvStatement) {
 	'use strict';
 
@@ -217,7 +217,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			//The citation
 			var createLink = true;
-			if((provEntity.get("id") == appModel.get("pid")) || (citationModel.get("id") == appModel.get("pid")))
+			if((provEntity.get("id") == MetacatUI.appModel.get("pid")) || (citationModel.get("id") == MetacatUI.appModel.get("pid")))
 				createLink = false;
 			
 			var citationHeader = $(document.createElement("h6")).addClass("subtle").text("Citation");
@@ -263,7 +263,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			}
 
 			//Mark the node that was last viewed, if any
-			if(appModel.get("previousPid") == provEntity.get("id")){
+			if(MetacatUI.appModel.get("previousPid") == provEntity.get("id")){
 				$(nodeEl).addClass("previous");
 				$(citationEl).before($(document.createElement("h7")).text("Last viewed"));
 			}
@@ -410,7 +410,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			this.$(".collapsed").fadeOut(/*function(){
 				i++;
 				if(scroll && numAnimations == i)
-					appView.scrollTo(chartEl);
+					MetacatUI.appView.scrollTo(chartEl);
 			}*/);			
 		},
 		

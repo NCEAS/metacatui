@@ -1,4 +1,4 @@
-/*global define */
+﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/SignInView', 'text!templates/alert.html', 'text!templates/registryFields.html', 
         'text!templates/ldapAccountTools.html', 'text!templates/loading.html', 'text!templates/loginHeader.html', 'text!templates/insertProgress.html'], 				
 	function($, _, Backbone, BootStrap, jQueryForm, SignInView, AlertTemplate, RegistryFields, LdapAccountToolsTemplate, LoadingTemplate, LoginHeaderTemplate, ProgressTemplate) {
@@ -51,34 +51,34 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		render: function () {
 			
 			// request a smaller header
-			appModel.set('headerType', 'default');
+			MetacatUI.appModel.set('headerType', 'default');
 			
 			// show the loading icon
 			this.showLoading();
 
 			//Are we using auth tokens?
-			var tokenUrl = appModel.get("tokenUrl");
+			var tokenUrl = MetacatUI.appModel.get("tokenUrl");
 			if((typeof tokenUrl != "undefined") && tokenUrl.length){
 				
 				//If our app user's status hasn't been checked yet, then wait...
-				if(!appUserModel.get("checked")){
-					this.listenToOnce(appUserModel, "change:checked", function(){
-						appView.currentView.loadRegistry.call(appView.currentView);
+				if(!MetacatUI.appUserModel.get("checked")){
+					this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+						MetacatUI.appView.currentView.loadRegistry.call(appView.currentView);
 					});
 					return this;
 				}
 				//If the user is not logged in, show the login form
-				else if (!appUserModel.get("loggedIn")){
+				else if (!MetacatUI.appUserModel.get("loggedIn")){
 					this.showSignInForm();
 					return this;
 				}
 				//If the user is logged in and we're using tokens, verify the token first
-				else if(appUserModel.get("loggedIn")){
-					appUserModel.checkToken(function(){	//If the token is valid, load the registry.
-												appView.currentView.loadRegistry.call(appView.currentView);
+				else if(MetacatUI.appUserModel.get("loggedIn")){
+					MetacatUI.appUserModel.checkToken(function(){	//If the token is valid, load the registry.
+												MetacatUI.appView.currentView.loadRegistry.call(MetacatUI.appView.currentView);
 											},
 											function(){ //If the token if not valid, load the sign in form	
-												appView.currentView.showSignInForm.call(appView.currentView);
+												MetacatUI.appView.currentView.showSignInForm.call(MetacatUI.appView.currentView);
 											});
 					return this;
 				}
@@ -94,8 +94,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		 * Load the registry template from the register-dataset.cgi script in Metacat.
 		 */
 		loadRegistry: function(){
-			var tokenUrl = appModel.get("tokenUrl");
-			if(((typeof tokenUrl != "undefined") && tokenUrl.length) && !appUserModel.get("loggedIn")){
+			var tokenUrl = MetacatUI.appModel.get("tokenUrl");
+			if(((typeof tokenUrl != "undefined") && tokenUrl.length) && !MetacatUI.appUserModel.get("loggedIn")){
 				this.showSignInForm();
 				return false;
 			}
@@ -104,7 +104,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			var viewRef = this;
 
 			// look up the url from the main application model
-			this.registryUrl = appModel.get('registryServiceUrl');
+			this.registryUrl = MetacatUI.appModel.get('registryServiceUrl');
 						
 			var stageParams = '';
 			if (this.stage) {
@@ -145,7 +145,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					}
 				}
 	
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		verifyLoginStatus: function() { 
@@ -153,8 +153,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			var registryEntryForm = $("#RegistryEntryForm");
 			
 			// if we have the registry form but it doesn't look like we are logged in, force a logout
-			if (registryEntryForm.length && !appUserModel.get('username')) {
-				uiRouter.navigate("signout", {trigger: true});
+			if (registryEntryForm.length && !MetacatUI.appUserModel.get('username')) {
+				MetacatUI.uiRouter.navigate("signout", {trigger: true});
 			}
 		},
 		
@@ -166,7 +166,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			// if we have the registry form we can add to it
 			if (registryEntryForm.length) {
 				// pull from the model configuration
-				var formFields = registryModel.get("formFields");
+				var formFields = MetacatUI.registryModel.get("formFields");
 				_.each(formFields, function(value, key, list) {
 					// check if it exists yet
 					if (registryEntryForm.find("input[name='" + key + "'][value='" + value +"']").length > 0) {
@@ -181,7 +181,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				
 				// replace keywords with this widget
 				// use configuration from model for the selection
-				var formOptions = registryModel.get("formOptions");
+				var formOptions = MetacatUI.registryModel.get("formOptions");
 				registryEntryForm.find("#keyword").replaceWith(this.template({formOptions: formOptions}));
 				
 				this.watchForTimeOut();
@@ -227,7 +227,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				//Add these awards to the list
 				_.each(currentAwards.split(","), function(awardId){
 					//See if there is a title for this award in the award lookup
-					appLookupModel.getGrant(awardId, function(award){
+					MetacatUI.appLookupModel.getGrant(awardId, function(award){
 						//If a match is found, add it to the list
 						view.addAward(award);						
 					}, function(){
@@ -240,9 +240,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			//When the user is done entering a grant number, get the grant title from the API
 			$(input).focusout(function(){
 					
-				if(appModel.get("grantsUrl")){
+				if(MetacatUI.appModel.get("grantsUrl")){
 					//Get the award title and id
-					appLookupModel.getGrant(
+					MetacatUI.appLookupModel.getGrant(
 							input.val(), 
 							function(award){							
 								//Display this award							
@@ -265,14 +265,14 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			});
 			
 			//Only proceed if we have configured this app with the grants API url
-			if(!appModel.get("grantsUrl")) return;	
+			if(!MetacatUI.appModel.get("grantsUrl")) return;	
 			
 			//Add help text when we can do a lookup
 			input.siblings(".input-help-msg").text("Enter an award number or search for an NSF award by keyword.");
 			
 			//Setup the autocomplete widget
 			$(input).hoverAutocomplete({
-				source: appLookupModel.getGrantAutocomplete,
+				source: MetacatUI.appLookupModel.getGrantAutocomplete,
 				select: function(e, ui) {
 					e.preventDefault();
 										
@@ -313,14 +313,14 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			}
 			
 			//Display this award
-			var title = award.title || (appModel.get("grantsUrl")? "Award name unknown (this award number was not found in the NSF database.)" : null),
+			var title = award.title || (MetacatUI.appModel.get("grantsUrl")? "Award name unknown (this award number was not found in the NSF database.)" : null),
 				titleEl = title? $(document.createElement("td")).text(title) : null,
 				numberEl = $(document.createElement("td")).text(award.id),
 				removeEl = $(document.createElement("td")).addClass("cell-icon").append('<a><i class="icon-remove-sign icon remove-award pointer" alt="Delete"></i></a>'),
 				row = $(document.createElement("tr")).append(titleEl, numberEl, removeEl).attr("data-id", award.id).addClass("funding-list-item");							
 			
 			//Style as a warning if we are looking up awards and there is no match
-			if(appModel.get("grantsUrl") && !award.title)
+			if(MetacatUI.appModel.get("grantsUrl") && !award.title)
 				row.addClass("warning");
 				
 			//Add the row
@@ -371,7 +371,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			
 			// if we have the login form we can modify it
 			if (ldapAccountTools.length) {
-				var ldapwebServiceUrl = appModel.get('ldapwebServiceUrl') + this.registryQueryString;
+				var ldapwebServiceUrl = MetacatUI.appModel.get('ldapwebServiceUrl') + this.registryQueryString;
 
 				var templateContent = this.ldapAccountToolsTemplate({ldapwebServiceUrl: ldapwebServiceUrl});
 				if (templateContent.length) {
@@ -458,7 +458,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				}
 			}
 			
-			$('#entryForm').ajaxSubmit(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$('#entryForm').ajaxSubmit(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			
 			// prepend the loading icon because we need to keep our form element in the DOM for the jQuery.form plugin to work
 			this.scrollToTop();
@@ -489,7 +489,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			//var msg = (formId == "confirmForm")? "Uploading your data set ... this may take a few minutes." : "";		
 			//this.showLoading(msg);
 			
-    		registryModel.set("status", "processing");
+    		MetacatUI.registryModel.set("status", "processing");
 
 			//Get some references to the view
 			var viewRef = this;
@@ -510,11 +510,11 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				    		//Get the id of the new metdata
 				    		var id = data.substring(data.indexOf("#view/")+6);
 				    		id = id.substring(0, id.indexOf('"'));
-				    		registryModel.set("id", id);
-				    		//registryModel.set("status", "processing");
+				    		MetacatUI.registryModel.set("id", id);
+				    		//MetacatUI.registryModel.set("status", "processing");
 				    		
 				    		//Check the index for the new entry
-				    		registryModel.checkIndex();				    		
+				    		MetacatUI.registryModel.checkIndex();				    		
 				    	}
 				    	//Show the response from the registry script if there doesn't appear to be a success message
 				    	else{
@@ -528,7 +528,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					}
 			};
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			
 		},
 		
@@ -609,12 +609,12 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 								//var allHeaders = xhr1.getAllResponseHeaders();
 								
 								// set the username in the appModel, that's all we have
-								appUserModel.set("username", username);
-								appUserModel.set("loggedIn", true);
-								appUserModel.getInfo();
+								MetacatUI.appUserModel.set("username", username);
+								MetacatUI.appUserModel.set("loggedIn", true);
+								MetacatUI.appUserModel.getInfo();
 															
-								viewRef.listenToOnce(appUserModel, "change:loggedIn", function(){
-									if(!appUserModel.get("loggedIn")){
+								viewRef.listenToOnce(MetacatUI.appUserModel, "change:loggedIn", function(){
+									if(!MetacatUI.appUserModel.get("loggedIn")){
 										viewRef.listenTo(viewRef, "postRender", function(){
 											viewRef.$(viewRef.loginEl).children(".alert-container").detach();
 											viewRef.$(viewRef.loginEl).prepend(viewRef.alertTemplate({ 
@@ -625,17 +625,17 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 									}
 									
 									//Rerender the page
-									uiRouter.navigate("share", {trigger: true});
+									MetacatUI.uiRouter.navigate("share", {trigger: true});
 									viewRef.render();
 								});
 								
 								// then load the registry url again, now that we are logged in
-								uiRouter.navigate("share", {silent: true});
+								MetacatUI.uiRouter.navigate("share", {silent: true});
 								viewRef.loadRegistry();
 							}
 						}
 						
-						$.ajax(_.extend(submitSettings, appUserModel.createAjaxSettings()));
+						$.ajax(_.extend(submitSettings, MetacatUI.appUserModel.createAjaxSettings()));
 						
 					} else {
 						// just show what was returned (error message)
@@ -648,7 +648,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			
 			return true;
 		},
@@ -657,10 +657,10 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		logout: function () {
 			
 			// clear the search criteria in case we are filtering by username
-			appSearchModel.clear();
+			MetacatUI.appSearchModel.clear();
 			
 			// look up the url from the main application model
-			this.registryUrl = appModel.get('registryServiceUrl');
+			this.registryUrl = MetacatUI.appModel.get('registryServiceUrl');
 			
 			// show the loading icon
 			this.showLoading();
@@ -684,7 +684,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 					viewRef.$('#tempMetacatContainer').html(data);
 					
 					// the Metacat logout form is now in the main content for us to work with
-					var metacatUrl = appModel.get("metacatUrl") || viewRef.$("form").attr("action");
+					var metacatUrl = MetacatUI.appModel.get("metacatUrl") || viewRef.$("form").attr("action");
 					
 					// Success?
 					if (metacatUrl) {
@@ -700,21 +700,21 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 							success: function(data1, textStatus1, xhr1) {
 								/*
 								// Reset the user model username
-								appUserModel.set("username", null);
+								MetacatUI.appUserModel.set("username", null);
 								
 								// trigger the check for logged in user
-								appUserModel.checkStatus(function(){
+								MetacatUI.appUserModel.checkStatus(function(){
 									viewRef.render.call(viewRef);
 								}, function(){
 									viewRef.render.call(viewRef);
 								});	*/
-								appUserModel.reset();
+								MetacatUI.appUserModel.reset();
 								viewRef.render();
 								
 							}
 						}
 
-						$.ajax(_.extend(logoutSettings, appUserModel.createAjaxSettings()));
+						$.ajax(_.extend(logoutSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
 					} else {
 						// just show what was returned (error message)
@@ -727,7 +727,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
 			return true;
 		},
@@ -739,7 +739,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		
 		createAccount: function() {
 			// just route to the signup view
-			uiRouter.navigate("signup", {trigger: true});
+			MetacatUI.uiRouter.navigate("signup", {trigger: true});
 			
 			// prevent click-through
 			return false;
@@ -747,7 +747,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		
 		resetPassword: function() {
 			// just route to the password reset view
-			uiRouter.navigate("account/resetpass", {trigger: true});
+			MetacatUI.uiRouter.navigate("account/resetpass", {trigger: true});
 			
 			// prevent click-through
 			return false;
@@ -755,7 +755,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		
 		changePassword: function() {
 			// just route to the password change view
-			uiRouter.navigate("account/changepass", {trigger: true});
+			MetacatUI.uiRouter.navigate("account/changepass", {trigger: true});
 			
 			// prevent click-through
 			return false;
@@ -763,7 +763,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		
 		lookupAccount: function() {
 			// just route to the lookupname view
-			uiRouter.navigate("account/lookupname", {trigger: true});
+			MetacatUI.uiRouter.navigate("account/lookupname", {trigger: true});
 			
 			// prevent click-through
 			return false;
@@ -780,7 +780,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			var view = this;
 			
 			//Periodically check if the submission is indexed yet
-			this.listenTo(registryModel, "change:status", function(){
+			this.listenTo(MetacatUI.registryModel, "change:status", function(){
 				view.showProgress();
 			});
 		},
@@ -788,12 +788,12 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		showProgress: function(){
 			//Show the progress 
 			this.$el.html(this.progressTemplate({
-				status: registryModel.get("status"),
-				id:     registryModel.get("id")
+				status: MetacatUI.registryModel.get("status"),
+				id:     MetacatUI.registryModel.get("id")
 			}));
 			
 			//If the status is processing, animate the progress bar
-			if(registryModel.get("status") == "processing"){
+			if(MetacatUI.registryModel.get("status") == "processing"){
 				var fullWidth = this.$(".progress").width();
 				this.$(".progress-bar").animate({
 					width: fullWidth + "px"
@@ -805,7 +805,7 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		 * Show the SignIn View (or auth tokens)
 		 */
 		showSignInForm: function(container){
-			if(!appModel.get("tokenUrl")) return;
+			if(!MetacatUI.appModel.get("tokenUrl")) return;
 			
 			var signInBtns = new SignInView().render().el;
 			
@@ -821,14 +821,14 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		
 		watchForTimeOut: function(){
 			//This only works with tokens
-			if(!appModel.get("tokenUrl")) return;
+			if(!MetacatUI.appModel.get("tokenUrl")) return;
 			
 			var view = this,
-				expires = appUserModel.get("expires"),
+				expires = MetacatUI.appUserModel.get("expires"),
 				timeLeft = new Date() - expires,
 				timeoutId = setTimeout(function(){
-					if(appUserModel.get("expires") <= new Date()){		
-						appUserModel.set("loggedIn", false);
+					if(MetacatUI.appUserModel.get("expires") <= new Date()){		
+						MetacatUI.appUserModel.set("loggedIn", false);
 						
 						 var signInView = new SignInView({
 							 inPlace: true,
@@ -845,14 +845,14 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						$(signInForm).modal();		
 						
 						//When the user logged back in, listen again for the next timeout
-						view.listenToOnce(appUserModel, "change:checked", function(){
-							if(appUserModel.get("checked") && appUserModel.get("loggedIn"))
+						view.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+							if(MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn"))
 								view.watchForTimeOut();
 						});
 					}
 				}, timeLeft);
 			
-			registryModel.set("timeout", timeoutId);			
+			MetacatUI.registryModel.set("timeout", timeoutId);			
 		},
 		
 		showLoading: function(msg) {
@@ -894,18 +894,18 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		},
 		
 		trackChange: function(){
-			registryModel.set("changed", true);
+			MetacatUI.registryModel.set("changed", true);
 		},
 		
 		confirmClose: function(){
 			//If the user isn't logged in, we can leave this page
-			if(!appUserModel.get("loggedIn")) return true;
+			if(!MetacatUI.appUserModel.get("loggedIn")) return true;
 						
 			//If the form hasn't been edited, we can close this view without confirmation
-			if(!registryModel.get("changed")) return true;
+			if(!MetacatUI.registryModel.get("changed")) return true;
 				
 			//If the submission is complete, we can leave this page
-			if(registryModel.get("status") == "complete") return true;
+			if(MetacatUI.registryModel.get("status") == "complete") return true;
 			
 			var isLeaving = confirm("Do you want to leave this page? All information you've entered will be lost.");
 			return isLeaving;
@@ -915,15 +915,15 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			this.stopListening();
 			
 			//Clear the timeout listener
-			if(registryModel.get("timeout"))
-				clearTimeout(registryModel.get("timeout"));
+			if(MetacatUI.registryModel.get("timeout"))
+				clearTimeout(MetacatUI.registryModel.get("timeout"));
 			
 			//Close the subviews
 			_.each(this.subviews, function(i, view){
 				if(typeof view.onClose == "function") view.onClose();
 			});
 			
-			registryModel.reset();
+			MetacatUI.registryModel.reset();
 			window.onbeforeunload = null;
 		}
 				
