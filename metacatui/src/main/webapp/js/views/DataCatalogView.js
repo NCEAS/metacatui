@@ -1433,7 +1433,61 @@ define(['jquery',
 	
 							});
 						}
-						$('#annotation_input').hoverAutocomplete({
+						
+						//Set up the hover autocomplete for semantics pick lists
+						 $.widget( "app.semHoverAutocomplete", $.ui.autocomplete, {
+						        
+						        // Set the content attribute as the "item.desc" value.
+						        // This becomes the tooltip content.
+						        _renderItem: function( ul, item ) {
+						        	// if we have a label, use it for the title
+						        	var title = item.value;
+						        	if (item.label) {
+						        		title = item.label;
+						        	}
+						        	
+						        	// if we have a description, use it for the content
+						        	var content = '<div class="annotation-viewer-container">';
+						        	if (item.desc) {
+						        		content += '<span class="annotation tag">' + item.label + '</span>'; 
+						        		if (item.desc != item.value) {
+							        		content += '<p><strong>Definition: </strong>' + item.desc + '</p>';
+							        		content += '<p class="subtle concept">Concept URI: <a href="' + item.value + '" target="_blank">' + item.value + '</a></p>';
+						        		}
+						        	}
+						        	content += "</div>"
+						        	
+						        	//Set up the popover
+						        	var element = this._super( ul, item );
+						        	element.popover({
+				        				placement: "right",
+				        				trigger: "manual",
+				        				container: 'body',
+				        				title: title,
+				        				html: true,
+				        				content: content
+				        			})
+				        			.on("mouseenter", function () {
+				    			        var _this = this;
+				    			        $(this).popover("show");
+				    			        $(".popover").on("mouseleave", function () {
+				    			            $(_this).popover('hide');
+				    			        });
+				    			    })
+				    			    .on("mouseleave", function () {
+				    			        var _this = this;
+				    			        setTimeout(function () {
+				    			            if (!$(".popover:hover").length) {
+				    			                $(_this).popover("hide");
+				    			            }
+				    			        }, 300);
+				    			    });
+						            return element;
+						        }
+						    });
+						    
+						 
+						$('#annotation_input').semHoverAutocomplete({
 							source: 
 								function (request, response) {
 						            var term = $.ui.autocomplete.escapeRegex(request.term)

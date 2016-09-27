@@ -123,7 +123,7 @@ define(['jquery',
 			this.$el.annotator().annotator('addPlugin', 'Tags');
 			
 			// Initialize the autocomplete widget extension to provide description tooltips.
-		    $.widget( "app.hoverAutocomplete", $.ui.autocomplete, {
+		    $.widget( "app.semHoverAutocomplete", $.ui.autocomplete, {
 		        
 		        // Set the content attribute as the "item.desc" value.
 		        // This becomes the tooltip content.
@@ -175,7 +175,7 @@ define(['jquery',
 		    });
 		    
 		    
-			this.$el.data('annotator').plugins.Tags.input.hoverAutocomplete({
+			this.$el.data('annotator').plugins.Tags.input.semHoverAutocomplete({
 				source: appLookupModel.bioportalSearch,
 				position: {
 					my: "left top",
@@ -225,7 +225,7 @@ define(['jquery',
 					// change the autocomplete depending on type of element being annotated
 					var type = $(resourceElem).attr('type');
 					if (type == "orcid_sm" || type == "party") {
-						view.$el.data('annotator').plugins.Tags.input.hoverAutocomplete({
+						view.$el.data('annotator').plugins.Tags.input.semHoverAutocomplete({
 							source: appLookupModel.orcidSearch,
 							//focus: focus
 						});
@@ -233,7 +233,7 @@ define(['jquery',
 						$.extend(annotation, {"field": "orcid_sm"});
 
 					} else {
-						view.$el.data('annotator').plugins.Tags.input.hoverAutocomplete({
+						view.$el.data('annotator').plugins.Tags.input.semHoverAutocomplete({
 							source: appLookupModel.bioportalSearch,
 							//focus: focus
 						});
