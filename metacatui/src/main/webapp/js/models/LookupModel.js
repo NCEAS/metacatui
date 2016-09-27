@@ -37,7 +37,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 						choice.synonyms = [];
 						_.each(synonyms, function(synonym) {
 							choice.synonyms.push(synonym);
-						}
+						});
 					}
 					choice.filterLabel = obj['prefLabel'];
 					choice.value = obj['@id'];
@@ -45,16 +45,44 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 						choice.desc = obj['definition'][0];
 					}
 					
-					
-					// TODO: process the children recursively
+					// process the children - just one level
 					var childrenUrl = obj['links']['children'];
-					if (false) {
-					//if (childrenUrl) {
+					if (childrenUrl) {
 						
 						$.get(childrenUrl, function(data, textStatus, xhr) {
 							
 							_.each(data.collection, function(obj) {
-								// it is the same response format as above
+								var choice = {};
+								choice.label = obj['prefLabel'];
+								var synonyms = obj['synonym'];
+								if (synonyms) {
+									choice.synonyms = [];
+									_.each(synonyms, function(synonym) {
+										choice.synonyms.push(synonym);
+									});
+								}
+								choice.filterLabel = obj['prefLabel'];
+								choice.value = obj['@id'];
+								if (obj['definition']) {
+									choice.desc = obj['definition'][0];
+								}
+								
+								// mark items that we know we have matches for
+								if (allValues) {
+									var matchingChoice = _.findWhere(allValues, {value: choice.value});
+									if (matchingChoice) {
+										choice.label = "*" + choice.label;
+										
+										// remove it from the local value - why have two?
+										if (localValues) {
+											localValues = _.reject(localValues, function(obj) {
+												return obj.value == matchingChoice.value;
+											});
+										}
+									}
+								}
+								
+								availableTags.push(choice);
 
 							})
 						});
@@ -113,7 +141,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					if (synonyms) {
 						_.each(synonyms, function(synonym) {
 							terms.push(synonym);
-						}
+						});
 					}	
 
 				});
