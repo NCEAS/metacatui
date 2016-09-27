@@ -57,7 +57,8 @@ define(['jquery', 'underscore', 'backbone'],
 			nodeServiceUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			bioportalSearchUrl: "https://data.bioontology.org/search?ontologies=ECSO&apikey=24e4775e-54e0-11e0-9d7b-005056aa3316&pagesize=1000&suggest=true&q=",
+			bioportalAPIKey: "24e4775e-54e0-11e0-9d7b-005056aa3316",
+			bioportalSearchUrl: null,
 			//bioportalSearchUrl: null, // use this to deactivate the annotator view
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,
@@ -178,6 +179,10 @@ define(['jquery', 'underscore', 'backbone'],
 			//Only use these settings in production
 			if(this.get("d1CNBaseUrl").indexOf("cn.dataone.org") > -1)
 				this.set("googleAnalyticsKey", "UA-15017327-17");
+			
+			//Set up the bioportal search URL
+			if((typeof this.get("bioportalAPIKey") == "string") && this.get("bioportalAPIKey").length)
+				this.set("bioportalSearchUrl", "https://data.bioontology.org/search?ontologies=ECSO&apikey=" + this.get("bioportalAPIKey") + "&pagesize=1000&suggest=true&q=")
 			
 			this.on("change:pid", this.changePid);
 		},

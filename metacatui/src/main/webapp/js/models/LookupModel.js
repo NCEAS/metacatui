@@ -49,7 +49,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					var childrenUrl = obj['links']['children'];
 					if (childrenUrl) {
 						
-						$.get(childrenUrl, function(data, textStatus, xhr) {
+						$.get(childrenUrl + "?apikey=" + appModel.get("bioportalAPIKey"), function(data, textStatus, xhr) {
 							
 							_.each(data.collection, function(obj) {
 								var choice = {};
