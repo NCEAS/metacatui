@@ -1,8 +1,8 @@
 ﻿/* global define */
 "use strict";
 
-define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
-  function($, _, Backbone, UserModel) {
+define(['jquery', 'underscore', 'backbone'],
+  function($, _, Backbone) {
     
     /* 
      A DataPackage represents a hierarchical collection of 
