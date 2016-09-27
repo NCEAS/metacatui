@@ -32,10 +32,33 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 				_.each(data.collection, function(obj) {
 					var choice = {};
 					choice.label = obj['prefLabel'];
+					var synonyms = obj['synonym'];
+					if (synonyms) {
+						choice.synonyms = [];
+						_.each(synonyms, function(synonym) {
+							choice.synonyms.push(synonym);
+						}
+					}
 					choice.filterLabel = obj['prefLabel'];
 					choice.value = obj['@id'];
 					if (obj['definition']) {
 						choice.desc = obj['definition'][0];
+					}
+					
+					
+					// TODO: process the children recursively
+					var childrenUrl = obj['links']['children'];
+					if (false) {
+					//if (childrenUrl) {
+						
+						$.get(childrenUrl, function(data, textStatus, xhr) {
+							
+							_.each(data.collection, function(obj) {
+								// it is the same response format as above
+
+							})
+						});
+						
 					}
 					
 					// mark items that we know we have matches for
@@ -63,6 +86,39 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 				}
 				
 				response(availableTags);
+				
+			});
+		},
+		
+		bioportalExpand: function(term, response) {
+			
+			// make sure we have something to lookup
+			if (!appModel.get('bioportalSearchUrl')) {
+				response(null);
+				return;
+			}
+			
+			var terms = [];
+
+			var query = appModel.get('bioportalSearchUrl') + term;
+			$.get(query, function(data, textStatus, xhr) {
+			
+				_.each(data.collection, function(obj) {
+					// use the preferred label
+					var prefLabel = obj['prefLabel'];
+					terms.push(prefLabel);
+
+					// add the synonyms
+					var synonyms = obj['synonym'];
+					if (synonyms) {
+						_.each(synonyms, function(synonym) {
+							terms.push(synonym);
+						}
+					}	
+
+				});
+				
+				response(terms);
 				
 			});
 		},
