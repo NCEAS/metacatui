@@ -1410,6 +1410,13 @@ img.icon{
 .annotation-flag.btn-warning:hover{
 	background-color: #f73f3f;
 }
+.annotation-flag.btn-success {
+    background-color: #5bb75b;
+    color: #FFF;
+}
+.annotation-flag.btn-success:hover{
+	background-color: #66ce66;	
+}
 .annotation-viewer-container .warning{
 	color: #d00000;
 }

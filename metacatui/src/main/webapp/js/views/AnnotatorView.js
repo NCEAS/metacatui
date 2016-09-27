@@ -451,16 +451,13 @@ define(['jquery',
 			target = $(annotationTag).filter(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
 			//$(target).bind("click", this.flagAnnotation);
 			
-			$(target).tooltip({
-				trigger: "hover",
-				title: "Flag as incorrect"
-			});
-			
 			var deleteBtn = $(annotationTag).filter(".annotation-delete");
 			$(deleteBtn).tooltip({
 				trigger: "hover",
 				title: "Delete"
 			});
+			
+			$(annotationTag).filter(".tooltip-this").tooltip();
 			
 			target = $(annotationTag).filter(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
 			//$(target).bind("click", this.deleteAnnotation);
