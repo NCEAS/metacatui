@@ -15,10 +15,10 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				//The options for the map using the Google Maps API MapOptions syntax
 				mapOptions: 
 					(gmaps)? 
-						{   zoom: 3,
-							minZoom: 3,
+						{   zoom: 2,
+							minZoom: 2,
 							maxZoom: 16,
-						    center: new google.maps.LatLng(71, -98),
+						    center: new google.maps.LatLng(45, -98),
 							disableDefaultUI: true,
 						    zoomControl: true,
 						    zoomControlOptions: {
@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 				drawMarkers: false,
 				
 				//If this theme doesn't have an image in this location, Google maps will use their default marker image
-				markerImage: "./js/themes/" + MetacatUI.theme + "/img/map-marker.png",
+				markerImage: "./js/themes/" + theme + "/img/map-marker.png",
 				
 				//Keep track of the geohash level used to draw tiles on this map
 				tileGeohashLevel: 1,

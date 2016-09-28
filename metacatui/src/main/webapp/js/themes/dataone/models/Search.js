@@ -39,7 +39,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				submitter: [],
 				username: [],
 				attribute: [],
-				//annotation: [],
+				annotation: [],
+				//test_corpus_sm: "F",
 				additionalCriteria: [],
 				dataSource: [],
 				id: [],
@@ -219,6 +220,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//----All other filters with a basic name:value pair pattern----
 			var otherFilters = ["attribute", "formatType", "rightsHolder", "submitter"];
+			
+			if(this.filterIsAvailable("test_corpus_sm")) otherFilters.push("test_corpus_sm");
 			
 			//Start the query string
 			var query = "";
@@ -402,8 +405,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						// Does this need to be wrapped in quotes?
 						if(model.needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
 						else filterValue = encodeURIComponent(filterValue);
+						
+						//Get the field name
+						var fieldName = model.fieldNameMap[filterName] || filterName;
 
-						query += "+" + model.fieldNameMap[filterName] + ":" + filterValue;			
+						query += "+" + fieldName + ":" + filterValue;			
 					}
 				}
 			});
