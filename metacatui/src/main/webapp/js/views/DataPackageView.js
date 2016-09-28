@@ -7,9 +7,8 @@ define([
     'models/DataONEObject',
     'models/metadata/ScienceMetadata',
     'models/metadata/eml211/EML211',
-    'views/EML211View',
-    'models/UserModel'], 
-    function($, _, Backbone, DataPackage, DataONEObject, ScienceMetadata, EML211, EML211View, UserModel) {
+    'views/EML211View'], 
+    function($, _, Backbone, DataPackage, DataONEObject, ScienceMetadata, EML211, EML211View) {
         'use strict';
         
         /*
