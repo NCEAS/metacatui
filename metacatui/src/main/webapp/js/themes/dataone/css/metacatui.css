@@ -12,7 +12,8 @@
       font: 400 14px/20px Helvetica, Arial, "sans serif";
     }
     
-    a {
+    a,
+    .annotator-widget a {
       color: #1C6E84;
       font-weight: 600;
     }
@@ -965,7 +966,6 @@ label.control-label{
 	background-color: #1C6E84;
 	color: #FFF;
 }
-
     
 /* Registry CSS
 -------------------------------------------------- */
@@ -1348,7 +1348,7 @@ label.control-label{
     }
     
     ul.ui-autocomplete.ui-front{
-    	z-index: 999;
+    	z-index: 9999;
     }
     
     li.ui-menu-item{

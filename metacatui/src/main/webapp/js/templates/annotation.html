@@ -3,7 +3,7 @@
 	<a data-id="<%= annotation.id %>" 
 		class="hover-proxy ellipsis annotation tag <% if (annotation.reject) { print(' warning') } %>" 
 		type="button"
-		title="<%=concept.value %>">
+		title="<%=concept.label %>">
 		<%=concept.label %>
 	</a>
 <%
@@ -19,26 +19,29 @@
 		
 <%
 }
-if (canEdit) {
-
-	if (annotation.reject) {
-	%>	
-		<button class="btn btn-warning annotation-delete" 
+if (canEdit && !annotation.reject) {
+%>
+	<!-- 	<button class="btn btn-warning annotation-delete" 
 			data-id="<%= annotation.id %>"
 		>
-		<i class="icon-remove-sign"></i>
-		</button>
-	<%
-	} else {
-	%>
-		<button class="btn btn-default annotation-flag" 
+		<i class="icon-remove"></i>
+		</button>-->
+
+		<button class="btn btn-warning annotation-flag tooltip-this" 
 			data-id="<%= annotation.id %>"
+			data-trigger="hover"
+			data-title="Flag as incorrect"
 		>
 		<i class="icon-flag"></i>		
 		</button>
-	<%
-	}
-}	
-%>
+<% } else if(canEdit && annotation.reject){ %>
+		<button class="btn btn-success annotation-flag tooltip-this" 
+			data-id="<%= annotation.id %>"
+			data-trigger="hover"
+			data-title="Mark as correct"
+		>
+		<i class="icon-flag"></i>		
+		</button>
+<% } %>
 
 

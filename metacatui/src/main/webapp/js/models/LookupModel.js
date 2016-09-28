@@ -12,39 +12,8 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		},
 		
 		initialize: function() {
-			
-		    // Autocomplete widget extension to provide description tooltips.
-		    $.widget( "app.hoverAutocomplete", $.ui.autocomplete, {
-		        
-		        // Set the content attribute as the "item.desc" value.
-		        // This becomes the tooltip content.
-		        _renderItem: function( ul, item ) {
-		        	// if we have a label, use it for the title
-		        	var title = item.value;
-		        	if (item.label) {
-		        		title = item.label;
-		        	}
-		        	// if we have a description, use it for the content
-		        	var content = item.value;
-		        	if (item.desc) {
-		        		content = item.desc;
-		        		if (item.desc != item.value) {
-			        		content += " (" + item.value + ")";
-		        		}
-		        	}
-		        	var element = this._super( ul, item )
-	                .attr( "data-title", title )
-	                .attr( "data-content", content );
-		        	element.popover(
-		        			{
-		        				placement: "right",
-		        				trigger: "hover",
-		        				container: 'body'
-		        				
-		        			});
-		            return element;
-		        }
-		    });
+		
+		    
 			
 		},
 		
@@ -63,10 +32,61 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 				_.each(data.collection, function(obj) {
 					var choice = {};
 					choice.label = obj['prefLabel'];
+					var synonyms = obj['synonym'];
+					if (synonyms) {
+						choice.synonyms = [];
+						_.each(synonyms, function(synonym) {
+							choice.synonyms.push(synonym);
+						});
+					}
 					choice.filterLabel = obj['prefLabel'];
 					choice.value = obj['@id'];
 					if (obj['definition']) {
 						choice.desc = obj['definition'][0];
+					}
+					
+					// process the children - just one level
+					var childrenUrl = obj['links']['children'];
+					if (childrenUrl) {
+						
+						$.get(childrenUrl + "?apikey=" + appModel.get("bioportalAPIKey"), function(data, textStatus, xhr) {
+							
+							_.each(data.collection, function(obj) {
+								var choice = {};
+								choice.label = obj['prefLabel'];
+								var synonyms = obj['synonym'];
+								if (synonyms) {
+									choice.synonyms = [];
+									_.each(synonyms, function(synonym) {
+										choice.synonyms.push(synonym);
+									});
+								}
+								choice.filterLabel = obj['prefLabel'];
+								choice.value = obj['@id'];
+								if (obj['definition']) {
+									choice.desc = obj['definition'][0];
+								}
+								
+								// mark items that we know we have matches for
+								if (allValues) {
+									var matchingChoice = _.findWhere(allValues, {value: choice.value});
+									if (matchingChoice) {
+										choice.label = "*" + choice.label;
+										
+										// remove it from the local value - why have two?
+										if (localValues) {
+											localValues = _.reject(localValues, function(obj) {
+												return obj.value == matchingChoice.value;
+											});
+										}
+									}
+								}
+								
+								availableTags.push(choice);
+
+							})
+						});
+						
 					}
 					
 					// mark items that we know we have matches for
@@ -94,6 +114,39 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 				}
 				
 				response(availableTags);
+				
+			});
+		},
+		
+		bioportalExpand: function(term, response) {
+			
+			// make sure we have something to lookup
+			if (!appModel.get('bioportalSearchUrl')) {
+				response(null);
+				return;
+			}
+			
+			var terms = [];
+
+			var query = appModel.get('bioportalSearchUrl') + term;
+			$.get(query, function(data, textStatus, xhr) {
+			
+				_.each(data.collection, function(obj) {
+					// use the preferred label
+					var prefLabel = obj['prefLabel'];
+					terms.push(prefLabel);
+
+					// add the synonyms
+					var synonyms = obj['synonym'];
+					if (synonyms) {
+						_.each(synonyms, function(synonym) {
+							terms.push(synonym);
+						});
+					}	
+
+				});
+				
+				response(terms);
 				
 			});
 		},
