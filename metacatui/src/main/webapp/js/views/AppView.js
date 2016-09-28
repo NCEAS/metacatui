@@ -1,15 +1,15 @@
 ﻿/*global define */
 define(['jquery',
-				'underscore', 
-				'backbone',
-				'views/AltHeaderView',
-				'views/NavbarView',
-				'views/FooterView',
-				'text!templates/alert.html',
-				'text!templates/appHead.html',
-				'text!templates/app.html',
-				'text!templates/loading.html'
-				], 				
+		'underscore', 
+		'backbone',
+		'views/AltHeaderView',
+		'views/NavbarView',
+		'views/FooterView',
+		'text!templates/alert.html',
+		'text!templates/appHead.html',
+		'text!templates/app.html',
+		'text!templates/loading.html'
+	    ], 				
 	function($, _, Backbone, AltHeaderView, NavbarView, FooterView, AlertTemplate, AppHeadTemplate, AppTemplate, LoadingTemplate) {
 	'use strict';
 	
