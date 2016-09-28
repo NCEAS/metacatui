@@ -19,7 +19,7 @@ define([
         */
         var DataPackageView = Backbone.View.extend({
             
-            el: "#Content",
+            el: "#data-package-container",
             
             dataPackage: null,
             
