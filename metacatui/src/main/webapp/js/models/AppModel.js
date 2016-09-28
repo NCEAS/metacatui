@@ -49,7 +49,6 @@ define(['jquery', 'underscore', 'backbone'],
 			authServiceUrl: null,
 			queryServiceUrl: null,
 			metaServiceUrl: null,
-			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
@@ -73,7 +72,7 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		initialize: function() {
 			
-			//If no base URL is specified, then user the DataONE CN base URL
+			//If no base URL is specified, then use the DataONE CN base URL
 			if(!this.get("baseUrl")){
 				this.set("baseUrl",   this.get("d1CNBaseUrl"));
 				this.set("d1Service", this.get("d1CNService"));
@@ -87,8 +86,6 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
-			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
-			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
