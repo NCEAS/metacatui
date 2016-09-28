@@ -1450,6 +1450,15 @@ define(['jquery',
 						        	var content = '<div class="annotation-viewer-container">';
 						        	if (item.desc) {
 						        		content += '<span class="annotation tag">' + item.label + '</span>'; 
+						        		if (item.synonyms) {
+							        		content += '<p><strong>Synonyms: </strong>';
+							        		_.each(item.synonyms, function(synonym) {
+								        		content += synonym + "<br/>";
+											});
+							        		
+							        		content += '</p>';
+
+						        		}
 						        		if (item.desc != item.value) {
 							        		content += '<p><strong>Definition: </strong>' + item.desc + '</p>';
 							        		content += '<p class="subtle concept">Concept URI: <a href="' + item.value + '" target="_blank">' + item.value + '</a></p>';

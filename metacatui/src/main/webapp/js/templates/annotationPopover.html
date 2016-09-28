@@ -5,6 +5,16 @@
 	<%	}
 	%>
 	<div>
+		<% if (annotation.concept.synonyms) { %> 
+		<p>
+			<strong>Synonyms: </strong>
+			<% 
+			_.each(annotation.concept.synonyms, function(synonym) {
+				print(synonym, "<br/>");
+			});
+			%>
+		</p>
+		<% } %>
 		<p>
 			<strong>Definition: </strong>
 			<%=annotation.concept.desc%>

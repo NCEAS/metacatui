@@ -47,13 +47,14 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					
 					// process the children - just one level
 					var childrenUrl = obj['links']['children'];
-					if (childrenUrl) {
+					if (false) {
+					//if (childrenUrl) {
 						
 						$.get(childrenUrl + "?apikey=" + appModel.get("bioportalAPIKey"), function(data, textStatus, xhr) {
 							
 							_.each(data.collection, function(obj) {
 								var choice = {};
-								choice.label = obj['prefLabel'];
+								choice.label = "--" + obj['prefLabel'];
 								var synonyms = obj['synonym'];
 								if (synonyms) {
 									choice.synonyms = [];
@@ -178,6 +179,14 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					concept.value = obj['@id'];
 					if (obj['definition']) {
 						concept.desc = obj['definition'][0];
+					}
+					// add the synonyms
+					var synonyms = obj['synonym'];
+					if (synonyms) {
+						concept.synonyms = [];
+						_.each(synonyms, function(synonym) {
+							concept.synonyms.push(synonym);
+						});
 					}
 					
 					concepts.push(concept);
