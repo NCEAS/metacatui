@@ -1,6 +1,6 @@
 ﻿/*global define */
-define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html'], 				
-	function($, _, Backbone, moment, SolrResult, Package, CitationView, ResultItemTemplate) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html'], 				
+	function($, _, Backbone, SolrResult, Package, CitationView, ResultItemTemplate) {
 	
 	'use strict';
 

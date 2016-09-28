@@ -38,12 +38,10 @@ require.config({
     jquery: '../components/jquery',
     jqueryui: '../components/jquery-ui-1.10.3.custom.min',
     jqueryform: '../components/jquery.form',
-    jquerysidr: '../components/jquery.sidr.min',
     underscore: '../components/underscore-min',
     backbone: '../components/backbone-min',
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
-    moment: '../components/moment.min',
     jws: '../components/jws-3.2.min',
     jsrasign: '../components/jsrsasign-4.9.0.min',    
     async: '../components/async',
@@ -73,10 +71,6 @@ require.config({
     },
     annotator: {
     	exports: 'Annotator'
-    },
-    jquerysidr: {
-    	deps: ['jquery'],
-    	exports: 'jquerysidr'
     },
     jws: {
     	exports: 'JWS',
