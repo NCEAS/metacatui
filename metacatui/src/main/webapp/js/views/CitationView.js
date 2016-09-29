@@ -47,7 +47,7 @@
 					dateUploaded = this.metadata.get("dateUploaded"),
 					title 		 = this.metadata.get("title"),
 					id 			 = this.metadata.get("id"),
-					seriesId     = MetacatUI.appModel.get("useSeriesId")? this.metadata.get("seriesId") : null,
+					seriesId     = this.metadata.get("seriesId") : null,
 					datasource	 = this.metadata.get("datasource");
 			
 				//Format the author text

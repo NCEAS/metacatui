@@ -418,32 +418,6 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			this.set("checked", true);
 		},
 		
-		loginLdap: function(formData, success, error){
-			if(!formData || !MetacatUI.appModel.get("signInUrlLdap")) return false;
-			
-			var model = this;
-			
-			var requestSettings = {
-				type: "POST",
-				url: MetacatUI.appModel.get("signInUrlLdap") + window.location.href, 
-				data: formData, 
-				success: function(data, textStatus, xhr){
-					if(success)
-						success(this);
-					
-					$("#SignInLdap")
-					//Direct to the Ldap sign in
-					//window.location = MetacatUI.appModel.get("signInUrlLdap") + window.location.href;
-				},
-				error: function(){
-					if(error)
-						error(this);
-				}
-			}
-			
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
-		},
-		
 		logout: function(){			
 			
 			//Construct the sign out url and redirect

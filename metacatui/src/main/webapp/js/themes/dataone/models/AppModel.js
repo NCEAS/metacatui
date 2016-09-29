@@ -29,12 +29,9 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			userProfiles: true,
 			profileUsername: null,
-			
-			useJsonp: true,
-			
+						
 			maxDownloadSize: 3000000000,
 			
-			metcatVersion: "2.7.2", 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
@@ -47,17 +44,17 @@ define(['jquery', 'underscore', 'backbone'],
 			authServiceUrl: null,
 			queryServiceUrl: null,
 			metaServiceUrl: null,
-			ldapwebServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
 			resolveServiceUrl: null,			
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
+			//annotatorUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			bioportalAPIKey: "24e4775e-54e0-11e0-9d7b-005056aa3316",
-			bioportalSearchUrl: null,
+			//bioportalAPIKey: "24e4775e-54e0-11e0-9d7b-005056aa3316",
+			//bioportalSearchUrl: null,
 			//bioportalSearchUrl: null, // use this to deactivate the annotator view
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,
@@ -69,11 +66,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signOutUrl: null,
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
-			tokenUrl: null,
-			checkTokenUrl: null,
-			annotatorUrl: null,
-		    prov: true,
-			useSeriesId: true
+			tokenUrl: null
 		},
 		
 		defaultView: "data",
@@ -107,19 +100,8 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("accountsMapsUrl",    this.get("accountsUrl") + "map/");
 			}
 			
-			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
-			if(this.get("useJsonp"))
-				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");
-			
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
-				//Turn provenance feature on
-				if(typeof this.get("prov") != "undefined")
-					this.set("prov", true);
-				
-				//Use the seriesId feature with the v2 API
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", true);
 				
 				//The view service for member node installations of metacatui
 				this.set('viewServiceUrl',    this.get('baseUrl') + this.get('d1CNService') + '/views/metacatui/');
@@ -127,7 +109,6 @@ define(['jquery', 'underscore', 'backbone'],
 				//Authentication / portal URLs
 				this.set('portalUrl', this.get('d1CNBaseUrl') + '/portal/');
 				this.set('tokenUrl',  this.get('portalUrl') + 'token');
-				this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 				
 				//Annotator API 
 				if(typeof this.get("annotatorUrl") !== "undefined")
@@ -144,35 +125,6 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");					
 				if(this.get('orcidBaseUrl'))
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
-			}
-			else{
-				//Turn the provenance features off
-				if(typeof this.get("prov") != "undefined")
-					this.set("prov", false);
-				//Turn the seriesId feature off
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", false);
-			}
-			
-			//Settings for older versions of metacat
-			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/v1") > -1)){
-				//The package service API is different
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
-				
-				//Turn the provenance features off
-				if(typeof this.get("prov") != "undefined")
-					this.set("prov", false);
-				//Turn the seriesId feature off
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", false);
-			}
-			//Whenever the Metacat version is at least 2.5.0 and we are querying a MN
-			else if((this.get("metcatVersion") >= "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/") > -1)){
-				//The package service for v2 DataONE API
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
-				
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", true);
 			}
 			
 			//Only use these settings in production

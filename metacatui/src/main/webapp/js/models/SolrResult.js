@@ -385,9 +385,7 @@ define(['jquery', 'underscore', 'backbone'],
 		/*
 		 * Returns true if this SolrResult has a provenance trace (i.e. has either sources or derivations)
 		 */
-		hasProvTrace: function(){
-			if(! MetacatUI.appModel.get("prov")) return false;
-			
+		hasProvTrace: function(){			
 			if(this.get("formatType") == "METADATA"){
 				if(this.get("prov_hasSources") || this.get("prov_hasDerivations"))
 					return true;

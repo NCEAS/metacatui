@@ -29,12 +29,9 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			userProfiles: true,
 			profileUsername: null,
-			
-			useJsonp: true,
-			
+						
 			maxDownloadSize: 3000000000,
 			
-			metacatVersion: "2.7.2", 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
@@ -49,7 +46,6 @@ define(['jquery', 'underscore', 'backbone'],
 			authServiceUrl: null,
 			queryServiceUrl: null,
 			metaServiceUrl: null,
-			ldapwebServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
@@ -67,10 +63,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signOutUrl: null,
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
-			tokenUrl: null,
-			checkTokenUrl: null,
-			prov: true,
-			useSeriesId: true
+			tokenUrl: null
 		},
 				
 		defaultView: "data",
@@ -91,12 +84,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
-			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
-			
-			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
-			if(this.get("useJsonp"))
-				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");		
 			
 			//Set the NSF Award API proxy
 			if(typeof this.get("grantsUrl") != "undefined")
@@ -122,11 +110,7 @@ define(['jquery', 'underscore', 'backbone'],
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
 				
-				if(this.get("useJsonp") && (typeof this.get("d1LogServiceUrl") != "undefined"))
-					this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
-
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
-				//this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
 		
 				//Settings for the DataONE API v2 only
 				if(this.get("d1CNService").indexOf("v2") > -1){
@@ -134,7 +118,6 @@ define(['jquery', 'underscore', 'backbone'],
 					//Authentication / portal URLs
 					this.set('portalUrl', this.get('d1CNBaseUrl') + 'portal/');
 					this.set('tokenUrl',  this.get('portalUrl') + 'token');
-					this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 					
 					//Annotator API 
 					if(typeof this.get("annotatorUrl") !== "undefined")
@@ -153,29 +136,7 @@ define(['jquery', 'underscore', 'backbone'],
 					if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
 						this.set("signOutUrl", this.get('portalUrl') + "logout");
 				}
-				else{
-					//Turn the provenance features off
-					if(typeof this.get("prov") != "undefined")
-						this.set("prov", false);
-					//Turn the seriesId feature off
-					if(typeof this.get("useSeriesId") != "undefined")
-						this.set("useSeriesId", false);
-				}
-			}
-			
-			//Settings for older versions of metacat, using DataONE API v1
-			if((this.get("metacatVersion") < "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/v1") > -1)){
-				//The package service API is different
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
-			}
-			//Whenever the Metacat version is at least 2.5.0 and we are querying a MN
-			else if((this.get("metacatVersion") >= "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/") > -1)){
-				//The package service for v2 DataONE API
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
-				
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", true);
-			}				
+			}			
 	
 			this.on("change:pid", this.changePid);
 		},
