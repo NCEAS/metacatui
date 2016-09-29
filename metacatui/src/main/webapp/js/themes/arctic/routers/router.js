@@ -1,7 +1,7 @@
 ﻿/*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone'], 				
+define(['jquery', 'underscore', 'backbone'], 				
 function ($, _, Backbone) {
 		
 	// MetacatUI Router
@@ -16,8 +16,8 @@ function ($, _, Backbone) {
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'signout'					: 'logout',
 			'signin'					: 'renderTokenSignIn',
-			"signinsuccess"           : "renderSignInSuccess",
-			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
+			"signinsuccess"             : "renderSignInSuccess",
+			'share(/*pid)'              : 'renderEditor',    // renders or creates a package in the editor
 			'api(/:anchorId)'           : 'renderAPI'       // API page
 		},
 		
@@ -231,21 +231,24 @@ function ($, _, Backbone) {
 			}
 		},
 		
-		renderRegistry: function (stage, pid) {
-			this.routeHistory.push("registry");
+		/*
+          Renders the editor view given a root package identifier,
+          or a metadata identifier.  If the latter, the corresponding
+          package identifier will be queried and then rendered.
+        */
+		renderEditor: function (pid) {
+			this.routeHistory.push("share");
 			
-			if(!MetacatUI.appView.registryView){
-				require(['views/RegistryView'], function(RegistryView){
-					MetacatUI.appView.registryView = new RegistryView();
-					MetacatUI.appView.registryView.stage = stage;
-					MetacatUI.appView.registryView.pid = pid;
-					MetacatUI.appView.showView(MetacatUI.appView.registryView);
+			if( ! MetacatUI.appView.editorView ){
+				require(['views/EditorView'], function(EditorView) {
+					MetacatUI.appView.editorView = new EditorView({id: pid});
+					MetacatUI.appView.showView(MetacatUI.appView.editorView);
 				});
-			}
-			else{
-				MetacatUI.appView.registryView.stage = stage;
-				MetacatUI.appView.registryView.pid = pid;
-				MetacatUI.appView.showView(MetacatUI.appView.registryView);
+                
+			} else {
+				MetacatUI.appView.editorView.id = pid;
+				MetacatUI.appView.showView(MetacatUI.appView.editorView);
+                
 			}
 		},
 		
@@ -272,7 +275,7 @@ function ($, _, Backbone) {
 			this.routeHistory.push("signin");
 
 			if(!MetacatUI.appView.signInView){
-				require('views/SignInView', function(SignInView){
+				require(['views/SignInView'], function(SignInView){
 					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
 					MetacatUI.appView.showView(MetacatUI.appView.signInView);
 				});

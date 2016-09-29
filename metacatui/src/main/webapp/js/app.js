@@ -6,18 +6,19 @@
 
 var MetacatUI = MetacatUI || {};
 MetacatUI.recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
-if(MetacatUI.mapKey){
+if( MetacatUI.mapKey ){
 	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + MetacatUI.mapKey;
 	define('gmaps', 
 			['async!' + gmapsURL], 
 			function() {
 				return google.maps;
-			}
-		);
-}
-else{
+			});
+            
+} else {
 	define('gmaps', null);
+    
 }
+
 if ( MetacatUI.useD3 ) {
     MetacatUI.d3URL = '../components/d3.v3.min';
     
@@ -90,12 +91,13 @@ MetacatUI.appView = MetacatUI.appView || {};
 MetacatUI.uiRouter = MetacatUI.uiRouter || {};
 MetacatUI.appSearchResults = MetacatUI.appSearchResults || {};
 MetacatUI.appSearchModel = MetacatUI.appSearchModel || {};
-MetacatUI.registryModel = MetacatUI.registryModel || {};
+MetacatUI.dataPackage = MetacatUI.dataPackage || {};
 MetacatUI.statsModel = MetacatUI.statsModel || {};
 MetacatUI.mapModel = MetacatUI.mapModel || {};
 MetacatUI.appLookupModel = MetacatUI.appLookupModel || {};
 MetacatUI.nodeModel = MetacatUI.nodeModel || {};
 MetacatUI.appUserModel = MetacatUI.appUserModel || {};
+
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
@@ -109,20 +111,19 @@ function(Bootstrap, AppView, AppModel) {
 	if(typeof MetacatUI.customAppConfig == "function") MetacatUI.customAppConfig();
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 
-	         'routers/router', 
-	         'collections/SolrResults', 
-	         'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', "models/UserModel"
+	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 
+             'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', 
+             'models/UserModel', 'collections/DataPackage'
 	         ],
-	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel, LookupModel, NodeModel, UserModel) {
+	function(Backbone, UIRouter, SolrResultList, Search, Stats, MapModel, LookupModel, NodeModel, UserModel, DataPackage) {
 		'use strict';  
 	    		
-		//Create all the other models first
+		//Create all the other models and collections first
 		MetacatUI.appSearchResults = new SolrResultList([], {});
 		
 		MetacatUI.appSearchModel = new Search();
 		
-		MetacatUI.registryModel = new RegistryModel();
+		MetacatUI.dataPackage = new DataPackage();
 		
 		MetacatUI.statsModel = new Stats();
 		

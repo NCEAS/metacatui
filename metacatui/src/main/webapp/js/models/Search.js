@@ -1,4 +1,4 @@
-﻿/*global define */
+﻿﻿/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
 	function($, _, Backbone, SolrResult) {
 	'use strict';
@@ -383,15 +383,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					query += "+" + filterValue;
 				}
 			}
-			
-			//-----Theme restrictions from Registry Model-----
-			if((filter == "registryCriteria") || getAll){
-				var registryCriteria = MetacatUI.registryModel.get('searchFields');
-				_.each(registryCriteria, function(value, key, list) {
-					query += "+" + value;
-				});
-			}
-			
+						
 			//-----Other Filters/Basic Filters-----			
 			_.each(otherFilters, function(filterName, key, list){
 				if(model.filterIsAvailable(filterName) && ((filter == filterName) || getAll)){

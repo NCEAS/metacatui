@@ -445,11 +445,6 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 		
 		logout: function(){			
-			//Logout via the registry script if we are not using tokens
-			if((typeof MetacatUI.appModel.get("tokenUrl") == "undefined") || !MetacatUI.appModel.get("tokenUrl")){
-				MetacatUI.appView.registryView.logout();
-				return;
-			}
 			
 			//Construct the sign out url and redirect
 			var signOutUrl = MetacatUI.appModel.get('signOutUrl'),

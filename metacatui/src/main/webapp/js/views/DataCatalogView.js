@@ -144,7 +144,6 @@ define(['jquery',
 			});
 			
 			var templateVars = {	
-					searchOptions   : MetacatUI.registryModel.get('searchOptions'),
 					gmaps           : gmaps,
 					mode		    : MetacatUI.appModel.get("searchMode"),
 					useMapBounds    : this.searchModel.get("useGeohash"),
