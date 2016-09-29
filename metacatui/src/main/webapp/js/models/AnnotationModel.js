@@ -43,8 +43,8 @@ define(['jquery', 'underscore', 'backbone'],
 				url: appModel.get("accountsUrl") + encodeURIComponent(username),
 				type: "GET",
 				success: function(data, textStatus, xhr){
-					var lastName = $(data).find("person").find("familyName").text(),
-						firstName = $(data).find("person").find("givenName").text();
+					var lastName = $(data).find("person").first().find("familyName").text(),
+						firstName = $(data).find("person").first().find("givenName").text();
 					
 					model.set("name", firstName + " " + lastName);
 					
