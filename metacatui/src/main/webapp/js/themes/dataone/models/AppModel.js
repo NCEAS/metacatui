@@ -32,11 +32,11 @@ define(['jquery', 'underscore', 'backbone'],
 						
 			maxDownloadSize: 3000000000,
 			
-			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: "https://cn-stage.test.dataone.org",//window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn.dataone.org",
+			d1CNBaseUrl:  "https://cn-stage.test.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -81,7 +81,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
 			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
-			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/');
+			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/?');
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
