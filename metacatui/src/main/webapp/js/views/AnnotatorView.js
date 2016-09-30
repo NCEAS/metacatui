@@ -425,6 +425,15 @@ define(['jquery',
 			// render it in the document
 			var highlight = $("[data-annotation-id='" + annotationModel.get("id") + "']");
 			var section = $(highlight).closest(".tab-pane").children(".annotation-container");
+			var tab = $(highlight).closest(".tab-pane");
+			//console.log("tab: " + tab);
+			var tabControl = $("a[href='#" + $(tab).attr("id") + "'");
+			//console.log("tabControl: " + tabControl);
+			var icons = $(tabControl).find(".icon-tag");
+			if ($(icons).size() == 0) {
+				tabControl.prepend("<i class='icon-tag'></i>")
+			}
+			
 			if (!section.html()) {
 				console.log("Highlights not completed yet - cannot render annotation");
 				return;
