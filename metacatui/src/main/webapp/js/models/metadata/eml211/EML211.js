@@ -1,5 +1,5 @@
 ﻿/* global define */
-define(['jquery', 'underscore', 'backbone', 'models/ScienceMetadata'], 
+define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'], 
     function($, _, Backbone, ScienceMetadata) {
         
         /*
@@ -8,33 +8,35 @@ define(['jquery', 'underscore', 'backbone', 'models/ScienceMetadata'],
         */
         var EML211 = ScienceMetadata.extend({
 
-            type: "Metadata",            
-            isEditable: false,
-            alternateIdentifier: [],
-            shortName: null,
-            title: null,
-            creator: [], // array of EMLParty objects
-            metadataProvider: [], // array of EMLParty objects
-            associatedParty : [], // array of EMLParty objects
-            pubDate: null,
-            language: null,
-            series: null,
-            abstract: [],
-            keywordSet: [], // array of EMLKeyword objects
-            additionalInfo: [],
-            intellectualRights: [],
-            onlineDist: [], // array of EMLOnlineDist objects
-            offlineDist: [], // array of EMLOfflineDist objects
-            geographicCoverages : GeographicCoverage [*]
-            temporalCoverages : TemporalCoverage [*]
-            taxonomicClassifications : Taxon [*]
-            purpose: [],
-            contact: [], // array of EMLParty objects
-            publisher: [], // array of EMLParty objects
-            pubPlace: null,
-            methods: [], // array of EMLMethods objects
-            project: [], // array of EMLProject objects
-            
+        	defaults: {
+	            type: "Metadata",            
+	            isEditable: false,
+	            alternateIdentifier: [],
+	            shortName: null,
+	            title: null,
+	            creator: [], // array of EMLParty objects
+	            metadataProvider: [], // array of EMLParty objects
+	            associatedParty : [], // array of EMLParty objects
+	            pubDate: null,
+	            language: null,
+	            series: null,
+	            abstract: [],
+	            keywordSet: [], // array of EMLKeyword objects
+	            additionalInfo: [],
+	            intellectualRights: [],
+	            onlineDist: [], // array of EMLOnlineDist objects
+	            offlineDist: [], // array of EMLOfflineDist objects
+	            geographicCoverages : [], //an array for GeographicCoverages
+	            temporalCoverages : [], //an array of TemporalCoverages
+	            taxonomicClassifications : [], //an array of Taxons
+	            purpose: [],
+	            contact: [], // array of EMLParty objects
+	            publisher: [], // array of EMLParty objects
+	            pubPlace: null,
+	            methods: [], // array of EMLMethods objects
+	            project: [], // array of EMLProject objects
+        	},
+        	
             /* 
              Validate this EML 211 document
             */

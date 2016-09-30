@@ -184,7 +184,7 @@ function ($, _, Backbone) {
 			var seriesId;
 						
 			//Check for a seriesId
-			if(MetacatUI.appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
+			if(pid.indexOf("version:") > -1)){
 				seriesId = pid.substr(0, pid.indexOf(", version:"));
 				
 				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);				
@@ -193,23 +193,25 @@ function ($, _, Backbone) {
 			//Save the id in the app model
 			MetacatUI.appModel.set('pid', pid);
 			
-			if(!MetacatUI.appView.metadataView){
-				require(['views/MetadataView'], function(MetadataView){
-					MetacatUI.appView.metadataView = new MetadataView();
-
-					//Send the id(s) to the view
-					MetacatUI.appView.metadataView.seriesId = seriesId;
-					MetacatUI.appView.metadataView.pid = pid;
+			if(!MetacatUI.appView.datasetView){
+				require(['views/DatasetView'], function(DatasetView){
+					MetacatUI.appView.datasetView = new DatasetView({
+						id: pid,
+						seriesId: seriesId
+					});
 					
-					MetacatUI.appView.showView(MetacatUI.appView.metadataView);
+					MetacatUI.appView.showView(MetacatUI.appView.datasetView);
 				});
 			}
 			else{
 				//Send the id(s) to the view
-				MetacatUI.appView.metadataView.seriesId = seriesId;
-				MetacatUI.appView.metadataView.pid = pid;
-				
-				MetacatUI.appView.showView(MetacatUI.appView.metadataView);
+				var options = {
+					id: pid,
+					seriesId: seriesId	
+				}
+				MetacatUI.appView.datasetView.id = pid;
+				MetacatUI.appView.datasetView.seriesId = seriesId;
+				MetacatUI.appView.showView(MetacatUI.appView.datasetView);
 			}
 		},
 		

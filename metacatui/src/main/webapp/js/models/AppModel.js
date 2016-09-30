@@ -58,8 +58,7 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsUrl: null,
 			//pendingMapsUrl: null,
 			//accountsMapsUrl: null,
-			groupsUrl: null,
-			useSeriesId: true
+			groupsUrl: null
 		},
 				
 		defaultView: "data",

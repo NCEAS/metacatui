@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//annotation: [],
 				additionalCriteria: [],
 				id: [],
-				seriesId: MetacatUI.appModel.get("useSeriesId")? [] : undefined,
+				seriesId: [],
 				formatType: [{
 					value: "METADATA",
 					label: "science metadata",
