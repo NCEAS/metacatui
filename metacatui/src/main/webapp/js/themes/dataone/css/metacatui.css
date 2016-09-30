@@ -966,6 +966,12 @@ label.control-label{
 	background-color: #1C6E84;
 	color: #FFF;
 }
+
+.annotator-adder {
+	opacity: 0.0;
+	pointer-events: none;
+	
+}
     
 /* Registry CSS
 -------------------------------------------------- */
