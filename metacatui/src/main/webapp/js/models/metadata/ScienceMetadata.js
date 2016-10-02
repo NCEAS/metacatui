@@ -104,7 +104,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	            sem_annotates: [],
 	            sem_annotation: [],
 	            sem_comment: []        
-        	});
+        	})
         });
         return ScienceMetadata;
     }
