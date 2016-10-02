@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         */
         var ScienceMetadata = DataONEObject.extend({
         	
-        	defaults: {
+        	defaults: _.extend({
 	            type: "Metadata",
 	            abstract: [],
 	            attribute: [],
@@ -104,7 +104,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	            sem_annotates: [],
 	            sem_annotation: [],
 	            sem_comment: []        
-        	}
+        	});
         });
         return ScienceMetadata;
     }
