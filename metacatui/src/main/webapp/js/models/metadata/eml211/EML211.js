@@ -37,6 +37,14 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
 	            project: [], // array of EMLProject objects
         	}),
         	
+            initialize: function(options) {
+                // Call initialize for the super class
+                this.constructor.__super__.initialize.apply(this, options);
+                
+                // EML211-specific init goes here
+                
+            },
+            
             /* 
              Validate this EML 211 document
             */

@@ -40,6 +40,11 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	            uploadFile: null,
         	},
         	
+            initialize: function(options) {
+                console.log("DataONEObject.initialize() called.");
+                
+            },
+            
         	url: function(){
         		if(!this.get("id")) return "";
         		
