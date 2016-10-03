@@ -1,4 +1,4 @@
-﻿/* global define */
+﻿﻿/* global define */
 define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'], 
     function($, _, Backbone, DataONEObject){
 
@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         */
         var ScienceMetadata = DataONEObject.extend({
         	
-        	defaults: {
+        	defaults: _.extend({
 	            type: "Metadata",
 	            abstract: [],
 	            attribute: [],
@@ -104,7 +104,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	            sem_annotates: [],
 	            sem_annotation: [],
 	            sem_comment: []        
-        	}
+        	}),
+            
+            initialize: function(options) {
+                // Call initialize for the super class
+                this.constructor.__super__.initialize.apply(this, options);
+                
+                // ScienceMetadata-specific init goes here
+                
+            }
         });
         return ScienceMetadata;
     }

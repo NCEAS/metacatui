@@ -40,9 +40,15 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	            uploadFile: null,
         	},
         	
+            initialize: function(options) {
+                console.log("DataONEObject.initialize() called.");
+                
+            },
+            
         	url: function(){
         		if(!this.get("id")) return "";
         		
+        		//Get basic information 
         		var query = "";
         		//Do not search for seriesId when it is not configured in this model/app
     			if(typeof this.get("seriesId") === "undefined")
@@ -56,8 +62,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
     			//If only a seriesId is specified, then just search for the most recent version
     			else if(this.get("seriesId") && !this.get("id"))
     				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
+    			
+    			var fl = "formatId,formatType,documents,isDocumentedBy"
         		
-    			return MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "fl=*&wt=json";
+    			return MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "&fl=*&wt=json";
         	},
         	
             /* Returns the serialized SystemMetadata for the object */
@@ -85,7 +93,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
              * A proxy to Backbone.model.fetch, so that we can set custom options for each fetch() request
              */
             _fetch: function(options){
-            	if(options.metaService){
+            	if(options && options.metaService){
 	            	var options = {
 	            		dataType: "text",
 	            		url: MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId"))
@@ -105,7 +113,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
             	if((typeof response == "string") && response.indexOf("<") == 0)
             		return this.xmlToJson($.parseHTML(response)[1]);
             	
-            	return response;
+            	return response.response.docs[0];
             },
             
             /*

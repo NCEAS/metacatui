@@ -8,7 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
         */
         var EML211 = ScienceMetadata.extend({
 
-        	defaults: {
+        	defaults: _.extend({
 	            type: "Metadata",            
 	            isEditable: false,
 	            alternateIdentifier: [],
@@ -35,8 +35,16 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
 	            pubPlace: null,
 	            methods: [], // array of EMLMethods objects
 	            project: [], // array of EMLProject objects
-        	},
+        	}),
         	
+            initialize: function(options) {
+                // Call initialize for the super class
+                this.constructor.__super__.initialize.apply(this, options);
+                
+                // EML211-specific init goes here
+                
+            },
+            
             /* 
              Validate this EML 211 document
             */

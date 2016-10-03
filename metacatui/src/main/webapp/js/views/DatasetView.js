@@ -67,22 +67,32 @@ define(['underscore',
         		if(model.get("formatid") == "eml://ecoinformatics.org/eml-2.1.1"){
 					console.log("this is an EML object");
 					var metadataModel = new EML(model.toJSON());
+
+					//Save the model in the view and trigger the event
+					viewRef.model = metadataModel;
+					viewRef.trigger("modelFound");
 				}
-					
-				//Save the model in the view and trigger the event
-				viewRef.model = metadataModel;
-				viewRef.trigger("modelFound");
-				
-				
-		/*		else if(model.get("formatType") == "DATA"){
-					//TODO: Query for the metadata document that documents this data
+        		else if(model.get("formatType") == "DATA"){
+        			
+        			//Get the metadata doc that documents this data object
+        			if(model.get("isDocumentedBy")){
+        				//Just default to the first one for now
+        				var isDocBy = model.get("isDocumentedBy");
+        				if(Array.isArray(isDocBy)) isDocBy = isDocBy[0];
+        				viewRef.getModel(isDocBy);
+        			}
+        			//If there is no metadata doc, then just use the data model
+        			else{
+        				//Save the model in the view and trigger the event
+        				viewRef.model = model;
+    					viewRef.trigger("modelFound");
+        			}
 				}
 				else if(model.get("formatType") == "RESOURCE"){
-					//TODO: Use the new DataPackage model to get it's members, retrieve the metadata and then render it
-				}
-        	*/	
+					//TODO: Create a data package collection and add this resource map to it, then call a function to find the metadata
+				}					
         	});
-        	model._fetch({metaService: true});
+        	model._fetch();
         	
         	return model;
         },
@@ -91,6 +101,7 @@ define(['underscore',
         //TODO: Render the metadata
         renderMetadata: function(){
         	this.$el.html("metadata goes here");
+        	
         	console.log(this.model);
         },
         
