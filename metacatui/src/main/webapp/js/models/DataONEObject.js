@@ -46,26 +46,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
             },
             
         	url: function(){
-        		if(!this.get("id")) return "";
+        		if(!this.get("id") || !this.get("seriesId")) return "";
         		
-        		//Get basic information 
-        		var query = "";
-        		//Do not search for seriesId when it is not configured in this model/app
-    			if(typeof this.get("seriesId") === "undefined")
-    				query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
-    			//If there is no seriesId set, then search for pid or sid 
-    			else if(!this.get("seriesId"))
-    				query += '(id:"' + encodeURIComponent(this.get("id")) + '" OR seriesId:"' + encodeURIComponent(this.get("id")) + '")';
-    			//If a seriesId is specified, then search for that
-    			else if(this.get("seriesId") && (this.get("id").length > 0))
-    				query += '(seriesId:"' + encodeURIComponent(this.get("seriesId")) + '" AND id:"' + encodeURIComponent(this.get("id")) + '")';
-    			//If only a seriesId is specified, then just search for the most recent version
-    			else if(this.get("seriesId") && !this.get("id"))
-    				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
-    			
-    			var fl = "formatId,formatType,documents,isDocumentedBy";
-        		
-    			return MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "&fl=*&wt=json";
+        		return MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId"));        		
         	},
         	
             /* Returns the serialized SystemMetadata for the object */
@@ -93,14 +76,54 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
              * A proxy to Backbone.model.fetch, so that we can set custom options for each fetch() request
              */
             _fetch: function(options){
-            	if(options && options.metaService){
-	            	var options = {
-	            		dataType: "text",
-	            		url: MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId"))
+            	//If we are using the Solr service to retrieve info about this object, then construct a query
+            	if((typeof options != "undefined") && options.solrService){
+            		
+            		//Get basic information 
+            		var query = "";
+            		//Do not search for seriesId when it is not configured in this model/app
+        			if(typeof this.get("seriesId") === "undefined")
+        				query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
+        			//If there is no seriesId set, then search for pid or sid 
+        			else if(!this.get("seriesId"))
+        				query += '(id:"' + encodeURIComponent(this.get("id")) + '" OR seriesId:"' + encodeURIComponent(this.get("id")) + '")';
+        			//If a seriesId is specified, then search for that
+        			else if(this.get("seriesId") && (this.get("id").length > 0))
+        				query += '(seriesId:"' + encodeURIComponent(this.get("seriesId")) + '" AND id:"' + encodeURIComponent(this.get("id")) + '")';
+        			//If only a seriesId is specified, then just search for the most recent version
+        			else if(this.get("seriesId") && !this.get("id"))
+        				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
+        			
+        			//The fields to return
+        			var fl = "formatId,formatType,documents,isDocumentedBy,id,seriesId";
+        			
+        			//Use the Solr query URL
+	            	var solrOptions = {
+	            		url: MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "&fl=" + fl + "&wt=json"
 	            	}
+	            	
+	            	//Merge with the options passed to this function
+	            	var fetchOptions = _.extend(solrOptions, options);
+            	}
+            	else if(typeof options != "undefined"){
+            		//Use custom options for retreiving XML
+	            	//Merge with the options passed to this function
+            		var fetchOptions = _.extend({
+            			dataType: "text"
+            		}, options);
+            	}
+            	else{
+            		//Use custom options for retreiving XML
+            		var fetchOptions = _.extend({
+            			dataType: "text"
+            		});
             	}
             	
-            	this.fetch(options);
+            	//Add the authorization options 
+            	fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
+
+            	//Call Backbone.Model.fetch to retrieve the info
+            	this.fetch(fetchOptions);
             },
             
             /* 
@@ -149,6 +172,10 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
             	if (xml.hasChildNodes()) {
             		for(var i = 0; i < xml.childNodes.length; i++) {
             			var item = xml.childNodes.item(i);
+            			
+            			if((item.nodeType == 3) && (!item.nodeValue.trim()))
+            				continue;
+            			
             			var nodeName = item.localName;
             			if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 1)) {
             				obj[nodeName] = this.xmlToJson(item);
@@ -169,7 +196,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
         						
         					obj[nodeName] = newArray;          				
             			}
-            		}
+        			}
+            		
             	}
             	return obj;
             }

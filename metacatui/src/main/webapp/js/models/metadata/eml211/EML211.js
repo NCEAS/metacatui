@@ -17,13 +17,13 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
 	            creator: [], // array of EMLParty objects
 	            metadataProvider: [], // array of EMLParty objects
 	            associatedParty : [], // array of EMLParty objects
-	            pubDate: null,
+	            pubdate: null,
 	            language: null,
 	            series: null,
 	            abstract: [],
-	            keywordSet: [], // array of EMLKeyword objects
+	            keywordset: [], // array of EMLKeyword objects
 	            additionalInfo: [],
-	            intellectualRights: [],
+	            intellectualrights: [],
 	            onlineDist: [], // array of EMLOnlineDist objects
 	            offlineDist: [], // array of EMLOfflineDist objects
 	            geographicCoverages : [], //an array for GeographicCoverages
@@ -39,10 +39,15 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
         	
             initialize: function(options) {
                 // Call initialize for the super class
-                this.constructor.__super__.initialize.apply(this, options);
+               // this.constructor.__super__.initialize.apply(this, options);
                 
                 // EML211-specific init goes here
+            	
                 
+            },
+            
+            url: function(){
+            	return MetacatUI.appModel.get("objectServiceUrl") + (this.get("id") || this.get("seriesId"));
             },
             
             /* 
@@ -55,14 +60,35 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
                 
             },
             
+            /*
+             * A proxy to Backbone.Model.fetch() so that we can pass custom options to the AJAX request
+             */
+         /*   _fetch: function(options){
+            	
+            	var fetchOptions = _.extend(options, {
+            		dataType: "text"
+            	});
+            },
+            */
             
             /* 
              Deserialize an EML 2.1.1 XML document
             */
-            parse: function(document) {
-                var EML211;
-                
-                return EML211;
+            parse: function(response) {
+            	//If the response is XML
+            	if((typeof response == "string") && response.indexOf("<") == 0){
+            		var responseElements = $.parseHTML(response.trim());
+            		var emlElement = $(responseElements).filter("eml\\:eml");
+            	}
+            	
+            	var datasetEl;
+            	if(emlElement[0])
+            		datasetEl = $(emlElement[0]).find("dataset");
+            	
+            	if(!datasetEl || !datasetEl.length)
+            		return {};
+            	
+            	return this.xmlToJson(datasetEl[0]);            	
             },
             
             /* 
