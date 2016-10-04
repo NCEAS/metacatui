@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	            fileName: null,
 	            nodeLevel: null,
 	            uploadStatus: null,
-	            uploadFile: null,
+	            uploadFile: null
         	},
         	
             initialize: function(options) {
@@ -63,7 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
     			else if(this.get("seriesId") && !this.get("id"))
     				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
     			
-    			var fl = "formatId,formatType,documents,isDocumentedBy"
+    			var fl = "formatId,formatType,documents,isDocumentedBy";
         		
     			return MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "&fl=*&wt=json";
         	},
