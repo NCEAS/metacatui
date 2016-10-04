@@ -184,25 +184,23 @@ function ($, _, Backbone) {
 			//Save the id in the app model
 			MetacatUI.appModel.set('pid', pid);
 			
-			if(!MetacatUI.appView.datasetView){
-				require(['views/DatasetView'], function(DatasetView){
-					MetacatUI.appView.datasetView = new DatasetView({
-						id: pid,
-						seriesId: seriesId
-					});
+			if(!MetacatUI.appView.metadataView){
+				require(['views/MetadataView'], function(MetadataView){
+					MetacatUI.appView.metadataView = new MetadataView();
+
+					//Send the id(s) to the view
+					MetacatUI.appView.metadataView.seriesId = seriesId;
+					MetacatUI.appView.metadataView.pid = pid;
 					
-					MetacatUI.appView.showView(MetacatUI.appView.datasetView);
+					MetacatUI.appView.showView(MetacatUI.appView.metadataView);
 				});
 			}
 			else{
 				//Send the id(s) to the view
-				var options = {
-					id: pid,
-					seriesId: seriesId	
-				}
-				MetacatUI.appView.datasetView.id = pid;
-				MetacatUI.appView.datasetView.seriesId = seriesId;
-				MetacatUI.appView.showView(MetacatUI.appView.datasetView);
+				MetacatUI.appView.metadataView.seriesId = seriesId;
+				MetacatUI.appView.metadataView.pid = pid;
+				
+				MetacatUI.appView.showView(MetacatUI.appView.metadataView);
 			}
 		},
 		
