@@ -2599,6 +2599,40 @@ input.subtle:focus,
 	font-size: 1.8em;
 }
 /*******************************************
+Editor View
+******************************************/
+.side-nav-item a {
+    width: 100%;
+    display: block;
+    height: 3em;
+    font-size: 1.3em;
+    line-height: 3em;
+    padding-left: 20px;
+    box-sizing: border-box;
+}
+ul.side-nav-items {
+    margin-left: 0px;
+}
+.side-nav-item {
+    list-style: none;
+    display: block;
+}
+.side-nav {
+    position: fixed;
+    background-color: #EEE;
+    height: 100%;
+    width: 140px;
+    margin-left: 0px;
+    border-right: 1px solid #DDD;
+}
+.side-nav + .metadata-container{
+	margin-left: 140px;
+	padding-left: 20px;
+}
+.metadata-container.edit textarea{
+	width: 100%;
+}
+/*******************************************
 Pager View
 ******************************************/
 .pager .pager-link{

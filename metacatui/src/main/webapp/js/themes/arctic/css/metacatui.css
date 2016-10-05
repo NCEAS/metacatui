@@ -1402,6 +1402,19 @@ svg .no-activity,
 	.select-editable input:focus { 
 		outline:none; 
 	}	
+	
+  /* EDITOR CSS
+  -------------------------------------------------- */	
+	.side-nav-item a{
+		color: #1E254F;
+	}
+	.side-nav-item a.active,
+	.side-nav-item a:hover,
+	.side-nav-item a:focus{
+		background-color: #1E254F;
+		color: white;
+		transition: none;
+	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
