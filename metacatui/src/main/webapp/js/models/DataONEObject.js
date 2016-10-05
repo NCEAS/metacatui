@@ -16,28 +16,28 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	            serialversion: null,
 	            id: "urn:uuid:" + uuid.v4(),
 	            formatid: null,
-	            formatType: null,
+	            formattype: null,
 	            size: null,
 	            checksum: null,
-	            checksumAlgorithm: null,
+	            checksumalgorithm: null,
 	            submitter: null,
 	            rightsholder : null,
 	            accesspolicy: [],
 	            replicationpolicy: [],
 	            obsoletes: null,
-	            obsoletedBy: null,
+	            obsoletedby: null,
 	            archived: null,
-	            dateUploaded: null,
+	            dateuploaded: null,
 	            datesysmetadatamodified: null,
 	            originmembernode: null,
 	            authoritativemembernode: null,
 	            replica: [],
-	            seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
-	            mediaType: null,
-	            fileName: null,
-	            nodeLevel: null,
-	            uploadStatus: null,
-	            uploadFile: null
+	            seriesid: null, // uuid.v4(), (decide if we want to auto-set this)
+	            mediatype: null,
+	            filename: null,
+	            nodelevel: null,
+	            upload_status: null,
+	            upload_file: null
         	},
         	
             initialize: function(attrs, options) {
@@ -46,9 +46,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             },
             
         	url: function(){
-        		if(!this.get("id") && !this.get("seriesId")) return "";
+        		if(!this.get("id") && !this.get("seriesid")) return "";
         		
-        		return MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId"));        		
+        		return MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesid"));        		
         	},
         	
             /* Returns the serialized SystemMetadata for the object */
@@ -82,16 +82,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             		//Get basic information 
             		var query = "";
             		//Do not search for seriesId when it is not configured in this model/app
-        			if(typeof this.get("seriesId") === "undefined")
+        			if(typeof this.get("seriesid") === "undefined")
         				query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
-        			//If there is no seriesId set, then search for pid or sid 
-        			else if(!this.get("seriesId"))
+        			//If there is no seriesid set, then search for pid or sid 
+        			else if(!this.get("seriesid"))
         				query += '(id:"' + encodeURIComponent(this.get("id")) + '" OR seriesId:"' + encodeURIComponent(this.get("id")) + '")';
         			//If a seriesId is specified, then search for that
-        			else if(this.get("seriesId") && (this.get("id").length > 0))
-        				query += '(seriesId:"' + encodeURIComponent(this.get("seriesId")) + '" AND id:"' + encodeURIComponent(this.get("id")) + '")';
+        			else if(this.get("seriesid") && (this.get("id").length > 0))
+        				query += '(seriesId:"' + encodeURIComponent(this.get("seriesid")) + '" AND id:"' + encodeURIComponent(this.get("id")) + '")';
         			//If only a seriesId is specified, then just search for the most recent version
-        			else if(this.get("seriesId") && !this.get("id"))
+        			else if(this.get("seriesid") && !this.get("id"))
         				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
         			
         			//The fields to return

@@ -47,7 +47,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
             },
             
             url: function(){
-            	return MetacatUI.appModel.get("objectServiceUrl") + (this.get("id") || this.get("seriesId"));
+            	return MetacatUI.appModel.get("objectServiceUrl") + (this.get("id") || this.get("seriesid"));
             },
             
             /* 
