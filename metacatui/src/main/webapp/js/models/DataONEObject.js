@@ -73,9 +73,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             },
             
             /*
-             * A proxy to Backbone.model.fetch, so that we can set custom options for each fetch() request
+             * Overload Backbone.Model.fetch, so that we can set custom options for each fetch() request
              */
-            _fetch: function(options){
+            fetch: function(options){
             	//If we are using the Solr service to retrieve info about this object, then construct a query
             	if((typeof options != "undefined") && options.solrService){
             		
@@ -123,7 +123,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             	fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
 
             	//Call Backbone.Model.fetch to retrieve the info
-            	this.fetch(fetchOptions);
+                return Backbone.Model.prototype.fetch.call(this, fetchOptions);
             },
             
             /* 
