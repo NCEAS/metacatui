@@ -102,6 +102,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 									return obj.value == matchingChoice.value;
 								});
 							}
+							//availableTags.push(choice);
 						}
 					}
 					
@@ -196,6 +197,68 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 
 				callback(concepts);
 			});
+		},
+
+		bioportalGetConceptsBatch: function(uris, callback) {
+			
+			// make sure we have something to lookup
+			if (!appModel.get('bioportalBatchUrl')) {
+				return;
+			}
+			// prepare the request JSON
+			var batchData = {};
+			batchData["http://www.w3.org/2002/07/owl#Class"] = {};
+			batchData["http://www.w3.org/2002/07/owl#Class"]["display"] = "prefLabel,synonym,definition";
+			batchData["http://www.w3.org/2002/07/owl#Class"]["collection"] = [];
+			_.each(uris, function(uri) {
+				var item = {};
+				item["class"] = uri;
+				item["ontology"] = "http://data.bioontology.org/ontologies/ECSO";
+				batchData["http://www.w3.org/2002/07/owl#Class"]["collection"].push(item);
+			});
+			
+			var url = appModel.get('bioportalBatchUrl');
+			var model = this;
+			$.ajax(url,
+					{
+					method: "POST",	
+					//url: url, 
+					data: JSON.stringify(batchData),
+					contentType: "application/json",
+					headers: {
+						"Authorization": "apikey token="+ appModel.get("bioportalAPIKey")
+					},
+					error: function(e) {
+						alert(e);
+					},
+					success: function(data, textStatus, xhr) {
+			
+						_.each(data["http://www.w3.org/2002/07/owl#Class"], function(obj) {
+							var concept = {};
+							concept.label = obj['prefLabel'];
+							concept.value = obj['@id'];
+							if (obj['definition']) {
+								concept.desc = obj['definition'][0];
+							}
+							// add the synonyms
+							var synonyms = obj['synonym'];
+							if (synonyms) {
+								concept.synonyms = [];
+								_.each(synonyms, function(synonym) {
+									concept.synonyms.push(synonym);
+								});
+							}
+							
+							var conceptList = [];
+							conceptList.push(concept);
+							model.get('concepts')[concept.value] = conceptList;
+		
+						});
+
+						callback.apply();
+					}
+				});
+			
 		},
 		
 		orcidGetConcepts: function(uri, callback) {

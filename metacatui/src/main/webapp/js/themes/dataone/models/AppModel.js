@@ -59,6 +59,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// see: http://bioportal.bioontology.org/account
 			bioportalAPIKey: "24e4775e-54e0-11e0-9d7b-005056aa3316",
 			bioportalSearchUrl: null,
+			bioportalBatchUrl: "https://data.bioontology.org/batch",
 			//bioportalSearchUrl: null, // use this to deactivate the annotator view
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,

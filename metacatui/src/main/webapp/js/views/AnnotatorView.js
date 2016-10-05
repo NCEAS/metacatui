@@ -296,9 +296,31 @@ define(['jquery',
 			this.$el.annotator('subscribe', 'annotationCreated', this.reindexPid);
 			this.$el.annotator('subscribe', 'annotationUpdated', this.reindexPid);
 			this.$el.annotator('subscribe', 'annotationDeleted', this.handleDelete);
-			this.$el.annotator('subscribe', 'annotationsLoaded', this.renderAnnotations);
+			this.$el.annotator('subscribe', 'annotationsLoaded', this.preRenderAnnotations);
 
 
+		},
+		
+		preRenderAnnotations : function(annotations) {
+			
+			var uris = [];
+			
+			//look up the concept details in a batch
+			_.each(annotations, function(annotation) {
+				if (annotation.tags[0]) {					
+					// look up concepts where we can
+					var conceptUri = annotation.tags[0];
+					uris.push(conceptUri);
+				}
+			});
+			
+			// now look them up and render when finished
+			var annotatorEl = (typeof this.$el != "undefined")? this.$el : this,
+					view = $(annotatorEl).data("annotator-view");
+			appLookupModel.bioportalGetConceptsBatch(
+					uris, 
+					function() {view.renderAnnotations(annotations);});
+			
 		},
 		
 		renderAnnotations : function(annotations) {
