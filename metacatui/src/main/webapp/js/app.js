@@ -56,7 +56,8 @@ require.config({
 	LineChart: ['views/LineChartView', null],
 	BarChart: ['views/BarChartView', null],
 	CircleBadge: ['views/CircleBadgeView', null],
-	DonutChart: ['views/DonutChartView', null]
+	DonutChart: ['views/DonutChartView', null],
+    uuid: '../components/uuid'
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
@@ -82,7 +83,10 @@ require.config({
 	},
 	fancybox: {
 		deps: ['jquery']
-	}
+	},
+    uuid: {
+        exports: 'uuid'
+    }
   }
 });
 
@@ -91,7 +95,7 @@ MetacatUI.appView = MetacatUI.appView || {};
 MetacatUI.uiRouter = MetacatUI.uiRouter || {};
 MetacatUI.appSearchResults = MetacatUI.appSearchResults || {};
 MetacatUI.appSearchModel = MetacatUI.appSearchModel || {};
-MetacatUI.dataPackage = MetacatUI.dataPackage || {};
+MetacatUI.rootDataPackage = MetacatUI.rootDataPackage || {};
 MetacatUI.statsModel = MetacatUI.statsModel || {};
 MetacatUI.mapModel = MetacatUI.mapModel || {};
 MetacatUI.appLookupModel = MetacatUI.appLookupModel || {};
@@ -113,18 +117,16 @@ function(Bootstrap, AppView, AppModel) {
 	/* Now require the rest of the libraries for the application */
 	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 
              'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', 
-             'models/UserModel', 'collections/DataPackage'
+             'models/UserModel', 'models/DataONEObject', 'collections/DataPackage'
 	         ],
-	function(Backbone, UIRouter, SolrResultList, Search, Stats, MapModel, LookupModel, NodeModel, UserModel, DataPackage) {
+	function(Backbone, UIRouter, SolrResultList, Search, Stats, MapModel, LookupModel, NodeModel, UserModel, DataONEObject, DataPackage) {
 		'use strict';  
 	    		
 		//Create all the other models and collections first
 		MetacatUI.appSearchResults = new SolrResultList([], {});
 		
 		MetacatUI.appSearchModel = new Search();
-		
-		MetacatUI.dataPackage = new DataPackage();
-		
+				
 		MetacatUI.statsModel = new Stats();
 		
 		MetacatUI.mapModel = (typeof customMapModelOptions == "object")? new MapModel(customMapModelOptions) : new MapModel();

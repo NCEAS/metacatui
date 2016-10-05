@@ -1,7 +1,7 @@
 ﻿/* global define */
 "use strict";
-define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
-    function($, _, Backbone, UserModel){
+define(['jquery', 'underscore', 'backbone', 'uuid'],
+    function($, _, Backbone, uuid){
   
         /* 
          A DataONEObject represents a DataONE object that has a format
@@ -14,7 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
         	defaults: {
 	            type: null,
 	            serialversion: null,
-	            id: null,
+	            id: "urn:uuid:" + uuid.v4(),
 	            formatid: null,
 	            formatType: null,
 	            size: null,
@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	            originmembernode: null,
 	            authoritativemembernode: null,
 	            replica: [],
-	            seriesId: null,
+	            seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
 	            mediaType: null,
 	            fileName: null,
 	            nodeLevel: null,
@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	            uploadFile: null
         	},
         	
-            initialize: function(options) {
+            initialize: function(attrs, options) {
                 console.log("DataONEObject.initialize() called.");
                 
             },
