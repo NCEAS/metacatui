@@ -46,7 +46,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             },
             
         	url: function(){
-        		if(!this.get("id") || !this.get("seriesId")) return "";
+        		if(!this.get("id") && !this.get("seriesId")) return "";
         		
         		return MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId"));        		
         	},
