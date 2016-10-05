@@ -1,7 +1,7 @@
 <% if (concept) {
 %>
 	<a data-id="<%= annotation.id %>" 
-		class="hover-proxy ellipsis annotation tag <% if (annotation.reject) { print(' warning') } %>" 
+		class="hover-proxy ellipsis annotation tag btn <% if (annotation.reject) { print(' warning') } %>" 
 		type="button"
 		title="<%=concept.label %>">
 		<%=concept.label %>
@@ -19,29 +19,46 @@
 		
 <%
 }
+%>
+<div class="btn-group">
+
+	<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    	<span class="caret"></span>
+	</button>
+  <ul class="dropdown-menu">
+<%
 if (canEdit && !annotation.reject) {
 %>
-	<!-- 	<button class="btn btn-warning annotation-delete" 
-			data-id="<%= annotation.id %>"
-		>
-		<i class="icon-remove"></i>
-		</button>-->
+	<li>
 
-		<button class="btn btn-warning annotation-flag tooltip-this" 
+		<a class="annotation-flag tooltip-this" 
 			data-id="<%= annotation.id %>"
 			data-trigger="hover"
 			data-title="Flag as incorrect"
 		>
-		<i class="icon-flag"></i>		
-		</button>
+		Flag as incorrect
+		</a>
+	</li>
 <% } else if(canEdit && annotation.reject){ %>
-		<button class="btn btn-success annotation-flag tooltip-this" 
+	<li>
+		<a class="annotation-flag tooltip-this" 
 			data-id="<%= annotation.id %>"
 			data-trigger="hover"
 			data-title="Mark as correct"
 		>
-		<i class="icon-flag"></i>		
-		</button>
+		Mark as correct
+		</a>
+	</li>
+	<li>
+		<a class="annotation-delete tooltip-this" 
+			data-id="<%= annotation.id %>"
+			data-trigger="hover"
+			data-title="Delete this annotation"
+		>
+		Delete
+		</a>
+	</li>
 <% } %>
 
-
+	</ul>
+</div>
