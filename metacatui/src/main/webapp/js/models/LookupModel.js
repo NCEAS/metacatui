@@ -144,11 +144,28 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 						_.each(synonyms, function(synonym) {
 							terms.push(synonym);
 						});
-					}	
-
+					}
+					// process the descendants
+					var descendantsUrl = obj['links']['descendants'];
+					//if (false) {
+					if (descendantsUrl) {
+						
+						$.get(childrenUrl + "?apikey=" + appModel.get("bioportalAPIKey"), function(data, textStatus, xhr) {
+							_.each(data.collection, function(obj) {
+								var prefLabel = obj['prefLabel'];
+								var synonyms = obj['synonym'];
+								if (synonyms) {
+									_.each(synonyms, function(synonym) {
+										terms.push(synonym);
+									});
+								}
+							});
+							
+							// callback
+							response(terms);
+						});
+					}
 				});
-				
-				response(terms);
 				
 			});
 		},
