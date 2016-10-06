@@ -1,11 +1,13 @@
+<div class="btn-group">
+
 <% if (concept) {
 %>
-	<a data-id="<%= annotation.id %>" 
+	<button data-id="<%= annotation.id %>" 
 		class="hover-proxy ellipsis annotation tag btn <% if (annotation.reject) { print(' warning') } %>" 
 		type="button"
 		title="<%=concept.label %>">
 		<%=concept.label %>
-	</a>
+	</button>
 <%
 } else if (annotation.tags[0]) {
 %>
@@ -20,12 +22,13 @@
 <%
 }
 %>
-<div class="btn-group">
 
 	<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
     	<span class="caret"></span>
 	</button>
   <ul class="dropdown-menu">
+  <li><a>Find similar packages</a></li>
+  
 <%
 if (canEdit && !annotation.reject) {
 %>
@@ -61,4 +64,5 @@ if (canEdit && !annotation.reject) {
 <% } %>
 
 	</ul>
+	
 </div>

@@ -1301,8 +1301,9 @@ img.icon{
 	margin-left: 180px;
 }
 .annotation-container .add-tag{
+	margin-left: 10px;	
 	margin-top: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     text-shadow: none;
 }
 .annotation-attribute-name{
@@ -1334,8 +1335,6 @@ img.icon{
 	padding: 10px;
 }
 .annotation.tag {
-    padding: .35em .75em;
-    margin-right: 5px;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
@@ -1344,11 +1343,8 @@ img.icon{
     text-shadow: none;
     box-shadow: none;
     text-align: center;
-    margin-top: 10px;
-    margin-bottom: 10px;   
 }
 .annotation-viewer-container .annotation.tag{
-	margin-bottom: 10px;
     display: inline-block;
 }
 .annotator-tags,
