@@ -61,8 +61,8 @@
 			if(!this.model.complete) return false;
 
 			// Grab all of our URLs
-			var queryServiceUrl   = MetacatUI.appModel.get('queryServiceUrl');
-			var packageServiceUrl = MetacatUI.appModel.get('packageServiceUrl');
+			var queryServiceUrl   = appModel.get('queryServiceUrl');
+			var packageServiceUrl = appModel.get('packageServiceUrl');
 			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
@@ -338,23 +338,16 @@
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");	
 			
-			if(memberModel.get("size") < MetacatUI.appModel.get("maxDownloadSize")){
-				var downloadButtonHTML = this.downloadButtonTemplate({ 
-					href: url, 
-					fileName: entityName,
-					id: memberModel.get("id"),
-					isPublic: memberModel.get("isPublic"),
-				});
-				var downloadButton = $.parseHTML(downloadButtonHTML.trim());
-				
-				if(MetacatUI.appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
-					$(downloadButton).on("click", null, this, this.download);
-			}
-			else{
-				var downloadButton = $.parseHTML(this.downloadButtonTemplate({ 
-					tooLarge: true
-				}).trim());
-			}
+			var downloadButtonHTML = this.downloadButtonTemplate({ 
+				href: url, 
+				fileName: entityName,
+				id: memberModel.get("id"),
+				isPublic: memberModel.get("isPublic"),
+			});
+			var downloadButton = $.parseHTML(downloadButtonHTML.trim());
+			
+			if(MetacatUI.appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
+				$(downloadButton).on("click", null, this, this.download);
 			
 			$(downloadBtnCell).append(downloadButton);
 			$(tr).append(downloadBtnCell);
@@ -368,7 +361,7 @@
 		},
 
 		download: function(e){				
-			if(e && $(e.target).attr("data-id") && MetacatUI.appUserModel.get("loggedIn")){
+			if(e && $(e.target).attr("data-id") && appUserModel.get("loggedIn")){
 				e.preventDefault();
 				var id = $(e.target).attr("data-id");
 				
