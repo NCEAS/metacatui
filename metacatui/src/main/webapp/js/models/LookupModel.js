@@ -49,7 +49,8 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					if (allValues) {
 						var matchingChoice = _.findWhere(allValues, {value: choice.value});
 						if (matchingChoice) {
-							choice.label = "*" + choice.label;
+							//choice.label = "*" + choice.label;
+							choice.match = true;
 							
 							// remove it from the local value - why have two?
 							if (localValues) {

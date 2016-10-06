@@ -25,6 +25,9 @@
 .strong{
 	font-weight: bold;
 }
+.emphasis{
+	font-style: italic;
+}
 .large{
 	font-size: 1.5em;
     padding: 1em;
