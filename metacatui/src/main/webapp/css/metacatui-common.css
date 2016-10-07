@@ -784,6 +784,94 @@ img.icon{
 	width: calc(100% - 214px);
 }
 
+/* MDQ */
+
+#mdqResult .alert [data-toggle="collapse"]:after
+{
+    /*content: "\e072"; "play" icon */
+    content: "-";
+    float: right;
+    color: #b0c5d8;
+    font-size: 18px;
+    line-height: 22px;
+}
+#mdqResult .alert [data-toggle="collapse"].collapsed:after
+{
+    content: "+";
+}
+
+.mdq .popover {
+	max-width: 50%;
+}
+
+#mdqResult .progress {
+	margin-bottom: 10px;
+	margin-top: 0px;
+}
+
+#mdqResult .progress-bar-success {
+	opacity: 0.50;
+}
+	
+#mdqTypeSummary {
+	float: right; 
+	width: 75%;
+}
+
+#mdqResult #data-chart {
+	height: 220px;
+	width: 250px;
+	margin:0px;	
+}
+
+#mdqResult .panel-heading {
+	overflow: auto;
+}
+
+/* different colors for each pie slice */
+#mdqResult .donut.data > g:nth-child(1) .donut-arc {
+	fill: #dff0d8;
+}
+#mdqResult .donut.data > g:nth-child(1) .donut-arc-label,
+#mdqResult .donut.data > g:nth-child(1) .donut-arc.active {
+	fill: #468847;
+}
+
+#mdqResult .donut.data > g:nth-child(2) .donut-arc {
+	fill: #fcf8e3;
+}
+#mdqResult .donut.data > g:nth-child(2) .donut-arc-label,
+#mdqResult .donut.data > g:nth-child(2) .donut-arc.active {
+	fill: #c09853;
+}
+
+#mdqResult .donut.data > g:nth-child(3) .donut-arc {
+	fill: #f2dede;
+}
+#mdqResult .donut.data > g:nth-child(3) .donut-arc-label,
+#mdqResult .donut.data > g:nth-child(3) .donut-arc.active {
+	fill: #b94a48;
+}
+
+#mdqResult .donut.data > g:nth-child(4) .donut-arc  {
+	fill: #d9edf7;
+}
+#mdqResult .donut.data > g:nth-child(4) .donut-arc-label,
+#mdqResult .donut.data > g:nth-child(4) .donut-arc.active {
+	fill: #3a87ad;
+}
+
+#mdqResult .donut-labels{
+	opacity: 0.0;
+}
+
+#mdqResult .donut-arc.active + .donut-labels,
+#mdqResult .donut-arc.active + .donut-labels .donut-arc-count.rotated{
+	opacity: 1;
+	font-weight: bold;
+}
+
+
 /* Prov chart popovers */
 .prov-chart .popover{
 	min-width: 300px;
