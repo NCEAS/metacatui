@@ -1,6 +1,9 @@
 <div class="metadata-controls-container">
-	<a class="btn copy subtle" data-clipboard-text="<%=citation%>">Copy Citation</a>
-	<span class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</span>
+
+	<a class="btn copy subtle" data-clipboard-text="<%=citation%>"><i class="icon icon-copy"></i> Copy Citation</a>
+	<span class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</span>		
+		
+	<a href="#mdq/<%=model.id%>" class="btn subtle"><i class="icon icon-dashboard"></i> Quality report</a>
 		
 	<% if(!model.isPublic){ %>
 		<div class="info-icons">
