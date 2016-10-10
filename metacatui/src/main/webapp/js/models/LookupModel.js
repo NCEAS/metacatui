@@ -76,7 +76,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			});
 		},
 		
-		bioportalExpand: function(term, response) {
+		bioportalExpand: function(term) {
 			
 			// make sure we have something to lookup
 			if (!appModel.get('bioportalSearchUrl')) {
@@ -85,9 +85,15 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			}
 			
 			var terms = [];
+			var countdown = 0;
 
 			var query = appModel.get('bioportalSearchUrl') + term;
-			$.get(query, function(data, textStatus, xhr) {
+			$.ajax(
+			{
+				url: query, 
+				method: "GET",
+				async: false, // we want to wait for the response!
+				success: function(data, textStatus, xhr) {
 			
 				_.each(data.collection, function(obj) {
 					// use the preferred label
@@ -104,9 +110,16 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					// process the descendants
 					var descendantsUrl = obj['links']['descendants'];
 					//if (false) {
-					if (descendantsUrl) {
+					if (descendantsUrl && countdown > 0) {
 						
-						$.get(childrenUrl + "?apikey=" + appModel.get("bioportalAPIKey"), function(data, textStatus, xhr) {
+						countdown--;
+						
+						$.ajax(
+						{
+						url: descendantsUrl + "?apikey=" + appModel.get("bioportalAPIKey"),
+						method: "GET",
+						async: false,
+						success: function(data, textStatus, xhr) {
 							_.each(data.collection, function(obj) {
 								var prefLabel = obj['prefLabel'];
 								var synonyms = obj['synonym'];
@@ -116,14 +129,13 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 									});
 								}
 							});
-							
-							// callback
-							response(terms);
-						});
+						}
+							});
 					}
 				});
-				
+			}
 			});
+			return terms;
 		},
 		
 		bioportalGetConcepts: function(uri, callback) {
