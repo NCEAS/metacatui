@@ -1078,7 +1078,7 @@ define(['jquery',
 			}
 						
 			//Metacat 2.4.2 and up will have the Online Distribution Link marked 
-			var link = this.$(".entitydetails a[data-id='" + id + "']");
+			var link = this.$(".entitydetails a[data-pid='" + id + "']");
 						
 			//Otherwise, try looking for an anchor with the id matching this object's id
 			if(!link.length)
