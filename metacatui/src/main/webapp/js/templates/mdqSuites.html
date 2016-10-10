@@ -1,0 +1,12 @@
+<p>
+<strong>Suite: </strong> 
+<select id="suiteId" name="suiteId">
+	<%
+		_.each(suiteIds, function(id) {
+	%>
+	<option <% if (id == suiteId) { print("selected='selected'") } %> ><%= id %></option>
+	<%
+		});
+	%>
+</select>
+</p>

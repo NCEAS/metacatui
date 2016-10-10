@@ -1468,6 +1468,9 @@ define(['jquery',
 						        	
 						        	//Set up the popover
 						        	var element = this._super( ul, item );
+						        	if (item.match) {
+				 		        		element.addClass("emphasis");
+				 		        	}
 						        	element.popover({
 				        				placement: "right",
 				        				trigger: "manual",

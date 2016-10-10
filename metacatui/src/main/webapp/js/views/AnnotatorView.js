@@ -2,6 +2,7 @@
 define(['jquery',
         'jqueryui',
         'annotator',
+        'bioportal',
 		'underscore', 
 		'backbone',
 		'models/AnnotationModel',
@@ -11,6 +12,7 @@ define(['jquery',
 	function($, 
 			$ui, 
 			Annotator, 
+			Bioportal,
 			_, 
 			Backbone, 
 			AnnotationModel,
@@ -469,28 +471,30 @@ define(['jquery',
 			}).trim());
 			section.prepend(annotationTag);
 			
+			// this is what we really want to attach to
+			var target = $(annotationTag).find(".hover-proxy");
+
 			//Attach the annotation object for later
-			$(annotationTag).data("annotation", annotationModel);
+			$(target).data("annotation", annotationModel);
 			
 			var view = this;
 			
 			//Create the popover for this element
-			$(annotationTag).on("mouseover", { view: this }, this.showDetails);
+			$(target).on("mouseover", { view: this }, this.showDetails);
 			
 			// bind after rendering
-			var target = $(annotationTag).filter(".hover-proxy");
-			target = $(annotationTag).filter(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
+			//target = $(annotationTag).find(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
 			//$(target).bind("click", this.flagAnnotation);
 			
-			var deleteBtn = $(annotationTag).filter(".annotation-delete");
+			var deleteBtn = $(annotationTag).find(".annotation-delete");
 			$(deleteBtn).tooltip({
 				trigger: "hover",
 				title: "Delete"
 			});
 			
-			$(annotationTag).filter(".tooltip-this").tooltip();
+			$(annotationTag).find(".tooltip-this").tooltip();
 			
-			target = $(annotationTag).filter(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
+			//target = $(annotationTag).find(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
 			//$(target).bind("click", this.deleteAnnotation);
 
 		},
@@ -554,6 +558,7 @@ define(['jquery',
 				html: true,
 				title: annotation.get("concept").label,
 				content: annotationPopover,
+				container: 'body',
 				placement: "top"
 			}).on("mouseenter", function () {
 		        var _this = this;

@@ -45,56 +45,12 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 						choice.desc = obj['definition'][0];
 					}
 					
-					// process the children - just one level
-					var childrenUrl = obj['links']['children'];
-					if (false) {
-					//if (childrenUrl) {
-						
-						$.get(childrenUrl + "?apikey=" + appModel.get("bioportalAPIKey"), function(data, textStatus, xhr) {
-							
-							_.each(data.collection, function(obj) {
-								var choice = {};
-								choice.label = "--" + obj['prefLabel'];
-								var synonyms = obj['synonym'];
-								if (synonyms) {
-									choice.synonyms = [];
-									_.each(synonyms, function(synonym) {
-										choice.synonyms.push(synonym);
-									});
-								}
-								choice.filterLabel = obj['prefLabel'];
-								choice.value = obj['@id'];
-								if (obj['definition']) {
-									choice.desc = obj['definition'][0];
-								}
-								
-								// mark items that we know we have matches for
-								if (allValues) {
-									var matchingChoice = _.findWhere(allValues, {value: choice.value});
-									if (matchingChoice) {
-										choice.label = "*" + choice.label;
-										
-										// remove it from the local value - why have two?
-										if (localValues) {
-											localValues = _.reject(localValues, function(obj) {
-												return obj.value == matchingChoice.value;
-											});
-										}
-									}
-								}
-								
-								availableTags.push(choice);
-
-							})
-						});
-						
-					}
-					
 					// mark items that we know we have matches for
 					if (allValues) {
 						var matchingChoice = _.findWhere(allValues, {value: choice.value});
 						if (matchingChoice) {
-							choice.label = "*" + choice.label;
+							//choice.label = "*" + choice.label;
+							choice.match = true;
 							
 							// remove it from the local value - why have two?
 							if (localValues) {

@@ -25,6 +25,7 @@ function ($, _, Backbone) {
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
+			'mdq(/s=:suiteId)(/:pid)'       : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)'           : 'renderAPI'       // API page 
 		},
 		
@@ -129,6 +130,23 @@ function ($, _, Backbone) {
 				}
 			
 			this.renderText(options);
+		},
+		
+		renderMdqRun: function (suiteId, pid) {
+			this.routeHistory.push("mdq");
+			
+			if (!appView.mdqRunView) {
+				require(["views/MdqRunView"], function(MdqRunView) {
+					appView.mdqRunView = new MdqRunView();
+					appView.mdqRunView.suiteId = suiteId;
+					appView.mdqRunView.pid = pid;
+					appView.showView(appView.mdqRunView);
+				});
+			} else {
+				appView.mdqRunView.suiteId = suiteId;
+				appView.mdqRunView.pid = pid;
+				appView.showView(appView.mdqRunView);
+			}
 		},
 		
 		renderTools: function (anchorId) {
