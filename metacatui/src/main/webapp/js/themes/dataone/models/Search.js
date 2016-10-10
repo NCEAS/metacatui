@@ -219,7 +219,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		getQuery: function(filter){
 			
 			//----All other filters with a basic name:value pair pattern----
-			var otherFilters = ["attribute", "formatType", "rightsHolder", "submitter"];
+			var otherFilters = ["formatType", "rightsHolder", "submitter"];
 			
 			if(this.filterIsAvailable("test_corpus_sm")) otherFilters.push("test_corpus_sm");
 			
@@ -259,6 +259,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					
 					query += "+" + model.fieldNameMap["annotation"] + ":" + filterValue;			
 				});
+			}
+			
+			//---expand attribute using ontology ---
+			if(this.filterIsAvailable("attribute") && ((filter == "attribute") || getAll) && this.get("attribute").length){
+				var attribute = this.get('attribute');
+				if (attribute) {
+					var expandedAttributes = appLookupModel.bioportalExpand(attribute[0].value);
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["attribute"], expandedAttributes, {operator: "OR"});
+				}
 			}
 			
 			//---Identifier---
