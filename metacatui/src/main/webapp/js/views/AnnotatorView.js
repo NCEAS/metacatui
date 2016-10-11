@@ -38,6 +38,7 @@ define(['jquery',
 		events: {
 			"click .add-tag" : "launchEditor",
 			"click .annotation-flag" : "flagAnnotation",
+			"click .annotation-similar" : "similarAnnotation",
 			"click .annotation-delete" : "deleteAnnotation"
 		},
 		
@@ -497,6 +498,40 @@ define(['jquery',
 			//target = $(annotationTag).find(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
 			//$(target).bind("click", this.deleteAnnotation);
 
+		},
+		
+		similarAnnotation : function(e) {
+			
+			//Get the button
+			var btn = e.target;
+			if(!$(btn).is(".annotation-similar")){
+				btn = $(btn).parents(".annotation-similar");
+			}
+
+			//Get the annotation id
+			var uri = $(btn).attr("data-concept-uri");
+			var label = $(btn).attr("data-concept-label");
+			var description = $(btn).attr("data-concept-description");
+			
+			// Clear the search and map model to start a fresh search
+			appSearchModel.clear();
+			appSearchModel.set(appSearchModel.defaults);
+			mapModel.clear();
+			mapModel.set(mapModel.defaults);
+			
+			// construct the filter
+			var filter = { 
+					value: uri,  
+					filterLabel: label, 
+					label: label, 
+					description: description 
+					};
+			
+			// set the search model
+			appSearchModel.set("annotation", [filter]);
+			
+			// navigate to search results
+			uiRouter.navigate('data', {trigger: true});
 		},
 		
 		flagAnnotation : function(e) {

@@ -27,7 +27,16 @@
     	<span class="caret"></span>
 	</button>
   <ul class="dropdown-menu">
-  <li><a>Find similar packages</a></li>
+  <li><a class="annotation-similar tooltip-this" 
+			data-id="<%= annotation.id %>"
+			data-concept-uri="<%= concept.value %>"
+			data-concept-label="<%= concept.label %>"
+			data-concept-description="<%= concept.desc %>"
+			data-trigger="hover"
+			data-title="Find similar packages"
+		>
+		Find similar packages
+		</a></li>
   
 <%
 if (canEdit && !annotation.reject) {
