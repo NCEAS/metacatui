@@ -264,7 +264,8 @@ define(['jquery',
 
 			var tree = $("#bioportal-tree").NCBOTree({
 				  apikey: appModel.get("bioportalAPIKey"),
-				  ontology: "ECSO"
+				  ontology: "ECSO",
+				  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
 				});
 			
 			// set up the listener to jump to search results
