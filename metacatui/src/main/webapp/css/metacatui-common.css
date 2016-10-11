@@ -1530,6 +1530,21 @@ img.icon{
     background-color: #999;
     color: #DDD;
 }
+
+/** Hide the search when in the dropdown menu **/
+.dropdown-menu .ncboAutocomplete {
+	display: none;
+}
+
+/** hide the tree until we have it where we want it **/
+#bioportal-tree {
+	display: none;
+}
+.dropdown-menu #bioportal-tree {
+	display: block;
+}
+
+
 /****************************************** 
 * Images, Maps, and Media
 ********************************************/

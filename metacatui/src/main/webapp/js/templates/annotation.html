@@ -1,4 +1,4 @@
-<div class="btn-group">
+<div class="btn-group" >
 
 <% if (concept) {
 %>
@@ -23,7 +23,7 @@
 }
 %>
 
-	<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	<button type="button" class="btn btn-default dropdown-toggle annotation-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
     	<span class="caret"></span>
 	</button>
   <ul class="dropdown-menu">
@@ -35,8 +35,18 @@
 			data-trigger="hover"
 			data-title="Find similar packages"
 		>
-		Find similar packages
-		</a></li>
+		See similar packages
+	</a></li>
+	<li role="separator" class="divider"></li>
+	<li>
+		<a>Or drill down</a>
+		<div class="tree-container" 
+			data-id="<%= annotation.id %>"
+			data-concept-uri="<%= concept.value %>"
+			data-concept-label="<%= concept.label %>"
+			data-concept-description="<%= concept.desc %>"
+		>
+	</div></li>
   
 <%
 if (canEdit && !annotation.reject) {

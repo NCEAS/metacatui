@@ -29,9 +29,11 @@ define(['jquery',
 		template: null,
 		
 		annotationTemplate: _.template(AnnotationTemplate),
+		
 		annotationPopoverTemplate: _.template(AnnotationPopoverTemplate),
 		
 		rendered: false,
+		
 		annotations: [],
 						
 		// Delegated events for creating new items, and clearing completed ones.
@@ -50,12 +52,17 @@ define(['jquery',
 
 			this.$el.data("annotator-view", this);
 			
-			this.setUpAnnotator();			
+			this.setUpTree();
+			
+			this.setUpAnnotator();
+			
 			return this;
 		},
 		
 		onClose: function () {	
 			if(this.disabled) return;
+			
+			$("#bioportal-tree").remove();
 						
 			// destroy the annotator
 			if ($("body").data('annotator')) {
@@ -63,6 +70,41 @@ define(['jquery',
 			}
 			
 			this.annotations = [];
+		},
+		
+		setUpTree : function() {
+			this.$el.append('<div id="bioportal-tree"></div>');
+			var tree = $("#bioportal-tree").NCBOTree({
+				  apikey: appModel.get("bioportalAPIKey"),
+				  ontology: "ECSO"
+				});
+			
+			// set up the listener to jump to search results
+			tree.on("afterSelect", this.drillDownAnnotation);
+			
+		},
+		
+		moveTree: function(event) {
+			
+			// take it away from it's original home
+			var treeDiv = $("#bioportal-tree").detach();
+			
+			// find the new home
+			var group = $(event.target).closest(".btn-group");
+			var container = $(group).find(".tree-container");
+			
+			// put it where we need it
+			$(container).append(treeDiv);
+			
+			// root at the branch for this concept
+			var classId = $(container).attr("data-concept-uri");
+			
+			var tree = $(treeDiv).data("NCBOTree");
+			var options = tree.options();
+			$.extend(options, {startingRoot: classId});
+
+			tree.jumpToClass(classId);
+			
 		},
 		
 		setUpAnnotator: function() {
@@ -483,6 +525,13 @@ define(['jquery',
 			//Create the popover for this element
 			$(target).on("mouseover", { view: this }, this.showDetails);
 			
+			// subscribe to event
+			var viewRef = this;
+			$(annotationTag).find(".annotation-dropdown").on("click", viewRef.moveTree);
+			$(annotationTag).find(".dropdown-menu").on("click", function (e) {
+				  e.stopPropagation();
+				});
+			
 			// bind after rendering
 			//target = $(annotationTag).find(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
 			//$(target).bind("click", this.flagAnnotation);
@@ -512,6 +561,34 @@ define(['jquery',
 			var uri = $(btn).attr("data-concept-uri");
 			var label = $(btn).attr("data-concept-label");
 			var description = $(btn).attr("data-concept-description");
+			
+			// Clear the search and map model to start a fresh search
+			appSearchModel.clear();
+			appSearchModel.set(appSearchModel.defaults);
+			mapModel.clear();
+			mapModel.set(mapModel.defaults);
+			
+			// construct the filter
+			var filter = { 
+					value: uri,  
+					filterLabel: label, 
+					label: label, 
+					description: description 
+					};
+			
+			// set the search model
+			appSearchModel.set("annotation", [filter]);
+			
+			// navigate to search results
+			uiRouter.navigate('data', {trigger: true});
+		},
+		
+		drillDownAnnotation : function(event, classId, prefLabel, selectedNode) {
+			
+			// Get the concept info
+			var uri = classId;
+			var label = prefLabel;
+			var description = "";
 			
 			// Clear the search and map model to start a fresh search
 			appSearchModel.clear();
