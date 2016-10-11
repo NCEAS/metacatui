@@ -1543,6 +1543,12 @@ img.icon{
 .dropdown-menu #bioportal-tree {
 	display: block;
 }
+#sidebar #bioportal-tree {
+	display: block;
+}
+#sidebar .input-append  {
+	font-size: 1em;
+}
 
 
 /****************************************** 

@@ -3,6 +3,7 @@ define(['jquery',
 				'jqueryui', 
 				'underscore', 
 				'backbone',
+				'bioportal',
 				'collections/SolrResults',
 				'models/Search',
 				'models/Stats',
@@ -16,7 +17,7 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, SearchResults, SearchModel, StatsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -251,7 +252,49 @@ define(['jquery',
 				$(".auto-height-member").resize(this.setAutoHeight);
 			}
 
+			if (appModel.get("bioportalAPIKey")) {
+				this.setUpTree();
+			}
+			
 			return this;
+		},
+		
+		setUpTree : function() {
+			this.$el.data("data-catalog-view", this);
+
+			var tree = $("#bioportal-tree").NCBOTree({
+				  apikey: appModel.get("bioportalAPIKey"),
+				  ontology: "ECSO"
+				});
+			
+			// set up the listener to jump to search results
+			tree.on("afterSelect", this.selectConcept);
+			
+		},
+		
+		selectConcept : function(event, classId, prefLabel, selectedNode) {
+			
+			// Get the concept info
+			var uri = classId;
+			var label = prefLabel;
+			var description = "";
+			
+			var item = {};
+			item.value = uri;
+			item.label = label;
+			item.filterLabel = label;
+			item.desc = "";
+			
+			// set the text field
+			$('#annotation_input').val(item.value);
+			
+			// add to the filter immediately
+			var view = $("#Content").data("data-catalog-view");
+			view.updateTextFilters(event, item);
+			
+			// prevent default action
+			return false;
+			
 		},
 		
 		/*
