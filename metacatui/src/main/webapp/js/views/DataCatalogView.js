@@ -286,6 +286,17 @@ define(['jquery',
 			item.filterLabel = label;
 			item.desc = "";
 			
+			// set the toop tip for the selected class
+			appLookupModel.bioportalGetConcepts(classId, function(concepts) {
+
+				$(selectedNode).tooltip({
+					trigger: "hover",
+					placement: "right",
+					title: concepts[0].desc
+				});
+
+			});
+			
 			// set the text field
 			$('#annotation_input').val(item.value);
 			
