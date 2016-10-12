@@ -633,7 +633,7 @@ define(['jquery',
 							var labelEl = $(georegion).find('label:contains("' + direction + '")');
 							if(labelEl){
 								var coordinate = $(labelEl).next().html();
-								coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
+								if(coordinate.indexOf("&nbsp;") > -1) coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
 							}
 						}
 						else{
