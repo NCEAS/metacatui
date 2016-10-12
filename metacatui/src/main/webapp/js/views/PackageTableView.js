@@ -61,8 +61,8 @@
 			if(!this.model.complete) return false;
 
 			// Grab all of our URLs
-			var queryServiceUrl   = appModel.get('queryServiceUrl');
-			var packageServiceUrl = appModel.get('packageServiceUrl');
+			var queryServiceUrl   = MetacatUI.appModel.get('queryServiceUrl');
+			var packageServiceUrl = MetacatUI.appModel.get('packageServiceUrl');
 			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
