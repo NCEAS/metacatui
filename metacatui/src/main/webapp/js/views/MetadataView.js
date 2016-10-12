@@ -664,7 +664,7 @@ define(['jquery',
 				var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() + 
 						  "&spn=0.003833,0.010568" +
 						  "&t=m" +
-						  "&z=14";
+						  "&z=10";
 				//Create a google map image
 				var mapHTML = "<img class='georegion-map' " +
 							  "src='https://maps.googleapis.com/maps/api/staticmap?" +
@@ -674,6 +674,7 @@ define(['jquery',
 							  "&markers=size:mid|color:0xDA4D3Aff|"+latLngCEN.lat()+","+latLngCEN.lng() +
 							  "&path=color:0xDA4D3Aff|weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
 							  "&visible=" + latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
+							  "&zoom=4" +
 							  "&sensor=false" +
 							  "&key=" + mapKey + "'/>";
 
