@@ -254,21 +254,22 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					// Does this need to be wrapped in quotes?
 					if(model.needsQuotes(filterValue))
 						filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
-					else
-						filterValue = encodeURIComponent(filterValue);
+					else filterValue = encodeURIComponent(filterValue);
 					
+					filterValue = model.escapeSpecialChar(filterValue);
+
 					query += "+" + model.fieldNameMap["annotation"] + ":" + filterValue;			
 				});
 			}
 			
 			//---Identifier---
-			if(this.filterIsAvailable("id") && ((filter == "id") || getAll) && this.get("id").length){
+			if(this.filterIsAvailable("id") && ((filter == "id") || getAll) && this.get('id').length){
 				var identifiers = this.get('id');
 				
 				if(Array.isArray(identifiers))
 					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "AND", subtext: true });				
 				else if(identifiers) 
-					query += "+" + this.fieldNameMap["id"] + ':*' + encodeURIComponent(identifiers) + "*";
+					query += "+" + this.fieldNameMap["id"] + ':*' + this.escapeSpecialChar(encodeURIComponent(identifiers)) + "*";
 			}
 			
 			//---resourceMap---
@@ -283,15 +284,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					query += "+" + this.fieldNameMap["resourceMap"] + ':*';
 			}
 			
-			//---Username: search for this username in rightsHolder ---
-			if(this.filterIsAvailable("username") && ((filter == "username") || getAll) && this.get("username").length){
+			//---Username: search for this username in rightsHolder and submitter ---
+			if(this.filterIsAvailable("username") && ((filter == "username") || getAll) && this.get('username').length){
 				var username = this.get('username');
 				if(username)
 					query += "+" + this.getGroupedQuery(this.fieldNameMap["username"], username, {operator: "OR"});
 			}
 			
 			//---Taxon---
-			if(this.filterIsAvailable("taxon") && ((filter == "taxon") || getAll)){
+			if(this.filterIsAvailable("taxon") && ((filter == "taxon") || getAll) && this.get('taxon').length){
 				var taxon = this.get('taxon');
 				
 				for(var i=0; i<taxon.length; i++){
@@ -349,12 +350,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				
 				query += "+" + this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues,  { operator: "OR" });				
 			}
-			
+	
 			//-----Excluded fields-----
 			if(this.filterIsAvailable("exclude") && ((filter == "exclude") || getAll)){
 				var exclude = this.get("exclude");
 				_.each(exclude, function(excludeField, key, list){
-					query += "+-" + excludeField.field + ":" + excludeField.value;
+					query += "+-" + excludeField.field + ":" + model.escapeSpecialChar(excludeField.value);
 				});
 			}
 			
@@ -367,7 +368,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					//if(this.needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
 					value = encodeURIComponent(additionalCriteria[i]);
 					
-					query += "+" + value;
+					query += "+" + model.escapeSpecialChar(value);
 				}
 			}
 			
@@ -381,9 +382,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						filterValue = filterValue.value;
 					
 					if(this.needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
-					else 					filterValue = encodeURIComponent(filterValue);
-
-					query += "+" + filterValue;
+					else filterValue = encodeURIComponent(filterValue);
+					
+					query += "+" + model.escapeSpecialChar(filterValue);
 				}
 			}
 			
@@ -409,7 +410,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						//Get the field name
 						var fieldName = model.fieldNameMap[filterName] || filterName;
 
-						query += "+" + fieldName + ":" + filterValue;			
+						query += "+" + fieldName + ":" + model.escapeSpecialChar(filterValue);			
 					}
 				}
 			});
@@ -455,7 +456,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				if(Array.isArray(spatial))
 					query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, { operator: "AND", subtext: true });				
 				else if(spatial) 
-					query += "+" + this.fieldNameMap["spatial"] + ':*' + encodeURIComponent(spatial) + "*";
+					query += "+" + this.fieldNameMap["spatial"] + ':*' + model.escapeSpecialChar(encodeURIComponent(spatial)) + "*";
 			}
 			
 			//---Creator---
@@ -465,7 +466,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				if(Array.isArray(creator))
 					query += "+" + this.getGroupedQuery(this.fieldNameMap["creator"], creator, { operator: "AND", subtext: true });				
 				else if(creator) 
-					query += "+" + this.fieldNameMap["creator"] + ':*' + encodeURIComponent(creator) + "*";
+					query += "+" + this.fieldNameMap["creator"] + ':*' + model.escapeSpecialChar(encodeURIComponent(creator)) + "*";
 			}
 						
 			return query;
@@ -522,6 +523,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			return false;
 		},
 		
+		escapeSpecialChar: function(term){
+			term = term.replace(/%7B/g, "\\%7B");
+			term = term.replace(/%7D/g, "\\%7D");
+			
+			return term;
+		},
+		
 		/*
 		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
 		 * Example:  title:(resistance OR salmon OR "pink salmon")
@@ -535,14 +543,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(!values) return "";
 			values = _.compact(values);
 			if(!values.length) return "";
-			
+
 			var query = "",
 				numValues = values.length,
 				model = this;
 			
 			if(Array.isArray(fieldName) && (fieldName.length > 1))
 				return this.getMultiFieldQuery(fieldName, values, options);
-						
+			
 			if(options && (typeof options == "object")){
 				var operator = options.operator,
 					subtext = options.subtext;
@@ -557,25 +565,25 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				if(!Array.isArray(value) && (typeof value === "object") && value.value)
 					value = value.value.trim();
 				
-				if(this.needsQuotes(values[0])) queryAddition = '%22' + encodeURIComponent(value) + '%22';
-				else if(subtext)                queryAddition = "*" + encodeURIComponent(value) + "*";
-				else							queryAddition = encodeURIComponent(value);
+				if(this.needsQuotes(values[0])) queryAddition = '%22' + this.escapeSpecialChar(encodeURIComponent(value)) + '%22';
+				else if(subtext)                queryAddition = "*" + this.escapeSpecialChar(encodeURIComponent(value)) + "*";
+				else							queryAddition = this.escapeSpecialChar(encodeURIComponent(value));
 					
 				query = fieldName + ":" + queryAddition;
 			}
-			else{				
-				_.each(values, function(value, i){
+			else{		
+				_.each(values, function(value, i){					
 					//Check for filter objects
 					if(!Array.isArray(value) && (typeof value === "object") && value.value)
 						value = value.value.trim();
 					
-					if(model.needsQuotes(value)) value = '"' + encodeURIComponent(value) + '"';
+					if(model.needsQuotes(value)) value = '%22' + encodeURIComponent(value) + '%22';
 					else if(subtext)             value = "*" + encodeURIComponent(value) + "*";
 					else                         value = encodeURIComponent(value);
 						
-					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + value;
-					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
-					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
+					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + model.escapeSpecialChar(value);
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + model.escapeSpecialChar(value);
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + model.escapeSpecialChar(value) + ")";
 				});
 			}
 			
@@ -652,7 +660,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			query += ")";
 			
-			return query;			
+			return this.escapeSpecialChar(query);			
 		},
 		
 		/**** Provenance-related functions ****/
