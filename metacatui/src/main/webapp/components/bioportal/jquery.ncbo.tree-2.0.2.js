@@ -142,10 +142,12 @@
         var li = $("<li>");
         var a = $("<a>").attr("href", determineHTTPS(node.links.self)).html(node.prefLabel);
         a.attr("data-id", encodeURIComponent(node["@id"]));
-        a.attr("data-title", node["definition"][0]);
-        a.attr("data-placement", "right");
-        a.addClass("tooltip-this");
-        
+        if (node["definition"]) {
+            a.attr("data-title", node["definition"][0]);
+            a.attr("data-placement", "right");
+            a.addClass("tooltip-this");
+        }
+
         ul.append(li.append(a));
 
         var hasChildrenNotExpanded = typeof node.children !== 'undefined' && node.hasChildren && node.children.length == 0;
@@ -251,6 +253,7 @@
     };
 
     var setTreeNodes = function(obj, useParent) {
+    	$(".tooltip-this").tooltip();
       obj = useParent ? obj.parent() : obj;
       $('li>a', obj).addClass('text').bind('selectstart', function() {
         return false;

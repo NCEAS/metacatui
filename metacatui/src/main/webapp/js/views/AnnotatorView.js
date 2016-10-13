@@ -80,7 +80,14 @@ define(['jquery',
 			
 			// set up the listener to jump to search results
 			tree.on("afterSelect", this.drillDownAnnotation);
-			
+			tree.on("afterExpand", this.afterExpand);
+			tree.on("afterJumpToClass", this.afterExpand);
+
+		},
+		
+		afterExpand : function() {
+			// ensure tooltips are activated
+	    	$(".tooltip-this").tooltip();
 		},
 		
 		moveTree: function(event) {
