@@ -27,26 +27,6 @@
     	<span class="caret"></span>
 	</button>
   <ul class="dropdown-menu">
-  <li><a class="annotation-similar tooltip-this" 
-			data-id="<%= annotation.id %>"
-			data-concept-uri="<%= concept.value %>"
-			data-concept-label="<%= concept.label %>"
-			data-concept-description="<%= concept.desc %>"
-			data-trigger="hover"
-			data-title="Find similar packages"
-		>
-		See similar packages
-	</a></li>
-	<li role="separator" class="divider"></li>
-	<li>
-		<a>Or drill down</a>
-		<div class="tree-container" 
-			data-id="<%= annotation.id %>"
-			data-concept-uri="<%= concept.value %>"
-			data-concept-label="<%= concept.label %>"
-			data-concept-description="<%= concept.desc %>"
-		>
-	</div></li>
   
 <%
 if (canEdit && !annotation.reject) {
@@ -71,6 +51,11 @@ if (canEdit && !annotation.reject) {
 		Mark as correct
 		</a>
 	</li>
+
+<% } %>
+<%
+if (canEdit) {
+%>
 	<li>
 		<a class="annotation-delete tooltip-this" 
 			data-id="<%= annotation.id %>"
@@ -80,8 +65,19 @@ if (canEdit && !annotation.reject) {
 		Delete
 		</a>
 	</li>
-<% } %>
-
+	<li role="separator" class="divider"></li>
+	
+<% } %>  
+	<li>
+		<a>Find other datasets with Measurement:</a>
+		<div class="tree-container" 
+			data-id="<%= annotation.id %>"
+			data-concept-uri="<%= concept.value %>"
+			data-concept-label="<%= concept.label %>"
+			data-concept-description="<%= concept.desc %>"
+		>
+		</div>
+	</li>
 	</ul>
 	
 </div>
