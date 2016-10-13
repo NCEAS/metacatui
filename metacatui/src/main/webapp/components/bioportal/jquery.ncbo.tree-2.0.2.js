@@ -142,7 +142,7 @@
         var li = $("<li>");
         var a = $("<a>").attr("href", determineHTTPS(node.links.self)).html(node.prefLabel);
         a.attr("data-id", encodeURIComponent(node["@id"]));
-        a.attr("data-definition", node["definition"][0]);
+        a.attr("data-title", node["definition"][0]);
         a.attr("data-placement", "right");
         a.addClass("tooltip-this");
         
