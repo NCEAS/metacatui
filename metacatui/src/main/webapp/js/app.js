@@ -44,7 +44,7 @@ require.config({
 	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
     annotator: '../components/annotator/v1.2.10/annotator-full',
-    bioportal: '../components/bioportal/jquery.ncbo.tree-2.0.2.min',
+    bioportal: '../components/bioportal/jquery.ncbo.tree-2.0.2',
     clipboard: '../components/clipboard.min',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: d3URL,

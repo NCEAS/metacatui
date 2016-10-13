@@ -78,7 +78,7 @@
       ROOT.html($("<span>").html("Loading...").css("font-size", "smaller"));
       $.ajax({
         url: determineHTTPS(OPTIONS.ncboAPIURL) + "/ontologies/" + OPTIONS.ontology + "/classes/" + encodeURIComponent(cls) + "/tree",
-        data: {apikey: OPTIONS.apikey, display: "prefLabel,hasChildren", no_context: true},
+        data: {apikey: OPTIONS.apikey, display: "prefLabel,definition,hasChildren", no_context: true},
         contentType: 'json',
         crossDomain: true,
         success: function(roots) {
@@ -142,7 +142,10 @@
         var li = $("<li>");
         var a = $("<a>").attr("href", determineHTTPS(node.links.self)).html(node.prefLabel);
         a.attr("data-id", encodeURIComponent(node["@id"]));
-
+        a.attr("data-definition", node["definition"][0]);
+        a.attr("data-placement", "right");
+        a.addClass("tooltip-this");
+        
         ul.append(li.append(a));
 
         var hasChildrenNotExpanded = typeof node.children !== 'undefined' && node.hasChildren && node.children.length == 0;
@@ -216,7 +219,7 @@
         $.ajax({
           type: "GET",
           url: url,
-          data: {apikey: OPTIONS.apikey, display: "prefLabel,hasChildren", no_context: true},
+          data: {apikey: OPTIONS.apikey, display: "prefLabel,definition,hasChildren", no_context: true},
           crossDomain: true,
           contentType: 'json',
           timeout: OPTIONS.timeout,
@@ -374,7 +377,7 @@
         ROOT.html($("<span>").html("Loading...").css("font-size", "smaller"));
         $.ajax({
           url: determineHTTPS(OPTIONS.ncboAPIURL) + "/ontologies/" + OPTIONS.ontology + "/classes/" + encodeURIComponent(OPTIONS.startingRoot),
-          data: {apikey: OPTIONS.apikey, display: "prefLabel,hasChildren", no_context: true},
+          data: {apikey: OPTIONS.apikey, display: "prefLabel,definition,hasChildren", no_context: true},
           contentType: 'json',
           crossDomain: true,
           success: function(roots) {

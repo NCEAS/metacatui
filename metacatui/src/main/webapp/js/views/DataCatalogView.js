@@ -270,7 +270,9 @@ define(['jquery',
 			
 			// set up the listener to jump to search results
 			tree.on("afterSelect", this.selectConcept);
-			
+			tree.on("afterJumpToClass", this.afterJumpToClass);
+			tree.on("afterExpand", this.afterExpand);
+
 		},
 		
 		selectConcept : function(event, classId, prefLabel, selectedNode) {
@@ -286,17 +288,6 @@ define(['jquery',
 			item.filterLabel = label;
 			item.desc = "";
 			
-			// set the toop tip for the selected class
-			appLookupModel.bioportalGetConcepts(classId, function(concepts) {
-
-				$(selectedNode).tooltip({
-					trigger: "hover",
-					placement: "right",
-					title: concepts[0].desc
-				});
-
-			});
-			
 			// set the text field
 			$('#annotation_input').val(item.value);
 			
@@ -304,8 +295,34 @@ define(['jquery',
 			var view = $("#Content").data("data-catalog-view");
 			view.updateTextFilters(event, item);
 			
+			// reset the tree for next search
+			var tree = $("#bioportal-tree").data("NCBOTree");
+			var options = tree.options();
+			$.extend(options, {startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"});
+			tree.changeOntology("ECSO");
+
 			// prevent default action
 			return false;
+			
+		},
+		
+		afterExpand : function() {
+			// ensure tooltips are activated
+	    	$(".tooltip-this").tooltip();
+		},
+		
+		afterJumpToClass : function(event, classId) {
+			
+			// re-root the tree at this concept
+			var tree = $("#bioportal-tree").data("NCBOTree");
+			var options = tree.options();
+			$.extend(options, {startingRoot: classId});
+
+			// force a re-render
+			tree.init();
+			
+			// ensure the tooltips are activated
+			$(".tooltip-this").tooltip();
 			
 		},
 		
