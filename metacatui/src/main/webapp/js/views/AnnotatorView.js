@@ -381,7 +381,7 @@ define(['jquery',
 			$(view.$el.data('annotator').plugins.Tags.input).val(classId);	
 
 			// make it pretty
-			$("#bioportal-tree-label").html("<a>" + prefLabel + "</a>");
+			$("#bioportal-tree-label").html("<a class='annotation tag btn'>" + prefLabel + "</a>");
 
 			// prevent default action
 			return false;

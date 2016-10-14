@@ -445,10 +445,10 @@ i.glyphicons-icon.white {
 .icon-circle-badge{
 	background-color: #1C6E84;
 }
-.annotator-widget::after,
+/*.annotator-widget::after,
 .annotator-widget a::after{
 	background-image: url('../img/annotator-icons.png');
-}
+}*/
    
 
 /* TABLES 

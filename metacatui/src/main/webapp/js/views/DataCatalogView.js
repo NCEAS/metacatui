@@ -268,6 +268,14 @@ define(['jquery',
 				  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
 				});
 			
+			$("[data-category='annotation'] .expand-collapse-control").popover({
+				html: true,
+				placement: "bottom",
+				trigger:"click",
+				content: tree,
+				container: "#bioportal-popover"
+			});
+			
 			// set up the listener to jump to search results
 			tree.on("afterSelect", this.selectConcept);
 			tree.on("afterJumpToClass", this.afterJumpToClass);
