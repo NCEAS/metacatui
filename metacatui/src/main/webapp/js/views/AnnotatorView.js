@@ -244,11 +244,15 @@ define(['jquery',
 				}
 			});
 			
-			//Change the palceholder text
+			//Change the placeholder text
+			$(this.$el.data('annotator').plugins.Tags.input).attr("style", "display: none;");
 			$(this.$el.data('annotator').plugins.Tags.input).attr("placeholder", "Search for tag terms...");
 			$(this.$el.data("annotator").plugins.Tags.field).prepend("<p>Add an annotation to this attribute</p>" +
 				"<p><strong>Help others find and understand this dataset better by adding semantic annotations</strong></p>")
 				.addClass("annotator-field");
+						
+			$(this.$el).find(".annotator-controls").before("<div id='bioportal-tree-label'></div>");
+			$(this.$el).find(".annotator-controls").before("<div id='bioportal-tree-annotator'></div>");
 			
 			// set up rejection field
 			this.$el.data('annotator').editor.addField({
@@ -300,6 +304,15 @@ define(['jquery',
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
 						$.extend(annotation, {"field": "sem_annotation_bioportal_sm"});
 					}
+					
+					// set up the tree
+					var tree = $("#bioportal-tree-annotator").NCBOTree({
+						  apikey: appModel.get("bioportalAPIKey"),
+						  ontology: "ECSO",
+						  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
+						});
+					
+					tree.on("afterSelect", view.selectConcept);					
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
 				}
@@ -359,6 +372,20 @@ define(['jquery',
 			this.$el.annotator('subscribe', 'annotationsLoaded', this.preRenderAnnotations);
 
 
+		},
+		
+		selectConcept : function(event, classId, prefLabel, selectedNode) {
+			
+			// set in the editor
+			var view = $('#metadata-container').data("annotator-view");
+			$(view.$el.data('annotator').plugins.Tags.input).val(classId);	
+
+			// make it pretty
+			$("#bioportal-tree-label").html("<a>" + prefLabel + "</a>");
+
+			// prevent default action
+			return false;
+			
 		},
 		
 		preRenderAnnotations : function(annotations) {
