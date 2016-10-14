@@ -1249,7 +1249,7 @@
       if (event && this.selectedRanges.length) {
         return this.adder.css(Util.mousePosition(event, this.wrapper[0])).show();
       } else {
-        return this.adder.hide();
+        return this.adder.css("opacity", "0");
       }
     };
 
@@ -1286,7 +1286,7 @@
         event.preventDefault();
       }
       position = this.adder.position();
-      this.adder.hide();
+      this.adder.css("opacity", "0");
       annotation = this.setupAnnotation(this.createAnnotation());
       $(annotation.highlights).addClass('annotator-hl-temporary');
       save = function() {
