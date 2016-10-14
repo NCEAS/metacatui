@@ -1,4 +1,4 @@
-/* Tablets and large screens ----------- */
+﻿/* Tablets and large screens ----------- */
 @media only screen and (min-width : 768px){
     
     #Header {
@@ -13,6 +13,11 @@
   	#Content{
   		max-width: 1024px;
   	}
+    
+    .Editor #Content {
+        max-width: 100%;
+    }
+    
   	.DataCatalog #Content{
   		max-width: 100%;
   	}
