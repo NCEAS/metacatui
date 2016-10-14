@@ -341,8 +341,7 @@ footer{
   box-shadow: none;
 
 }
-.btn,
-.annotator-editor a{
+.btn {
 	border: 1px solid #1C6E84;
     background-image: none;
     color: #1C6E84;

@@ -490,7 +490,7 @@
       }
       return _results;
     })();
-    return "blur focus focusin focusout load resize scroll unload click dblclick\nmousedown mouseup mousemove mouseover mouseout mouseenter mouseleave\nchange select submit keydown keypress keyup error".split(/[^a-z]+/).concat(specials);
+    return "blur focus focusin focusout load resize scroll unload click dblclick mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave change select submit keydown keypress keyup error".split(/[^a-z]+/).concat(specials);
   })();
 
   Delegator._isCustomEvent = function(event) {
@@ -929,7 +929,7 @@
 
     Annotator.prototype._setupEditor = function() {
       this.editor = new Annotator.Editor();
-      this.editor.hide().on('hide', this.onEditorHide).on('save', this.onEditorSubmit).addField({
+      this.editor.hide().on('save', this.onEditorSubmit).addField({
         type: 'textarea',
         label: _t('Comments') + '\u2026',
         load: function(field, annotation) {
@@ -1608,7 +1608,7 @@
     Editor.prototype.checkOrientation = function() {
       var controls, list;
       Editor.__super__.checkOrientation.apply(this, arguments);
-      list = this.element.find('ul');
+      list = this.element.find('ul.annotator-listing');
       controls = this.element.find('.annotator-controls');
       if (this.element.hasClass(this.classes.invert.y)) {
         controls.insertBefore(list);

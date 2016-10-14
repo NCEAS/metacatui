@@ -145,6 +145,8 @@
         if (node["definition"]) {
             a.attr("data-title", node["definition"][0]);
             a.attr("data-placement", "right");
+            a.attr("data-trigger", "hover");
+            a.attr("data-container", "body");
             a.addClass("tooltip-this");
         }
 
@@ -253,7 +255,7 @@
     };
 
     var setTreeNodes = function(obj, useParent) {
-    	$(".tooltip-this").tooltip();
+    	$(".tooltip-this").tooltip({trigger : 'hover'});
       obj = useParent ? obj.parent() : obj;
       $('li>a', obj).addClass('text').bind('selectstart', function() {
         return false;
