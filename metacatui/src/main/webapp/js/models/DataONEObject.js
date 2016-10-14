@@ -50,14 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
         		
         		return MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesid"));        		
         	},
-        	
-            /* Returns the serialized SystemMetadata for the object */
-            getSystemMetadata: function() {
-                var sysmeta = "";
-                
-                return sysmeta;
-            },
-            
+        	            
             /* Updates the SystemMetadata for the object using MN.updateSystemMetadata() */
             updateSystemMetadata: function(sysmeta) {
                 
@@ -124,6 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 
             	//Call Backbone.Model.fetch to retrieve the info
                 return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+                
             },
             
             /* 
@@ -132,10 +126,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
            */
 
             parse: function(response){
-            	//If the response is XML
-            	if((typeof response == "string") && response.indexOf("<") == 0)
+            	// If the response is XML
+            	if( (typeof response == "string") && response.indexOf("<") == 0 ) {
             		return this.xmlToJson($.parseHTML(response)[1]);
             	
+                // Otherwise we have an object already    
+            	} else if ( typeof response === "object") {
+            	    return response;
+                    
+                }
+                
+                // Default to returning the Solr results            	
             	return response.response.docs[0];
             },
             
