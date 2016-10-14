@@ -57,7 +57,9 @@ require.config({
 	BarChart: ['views/BarChartView', null],
 	CircleBadge: ['views/CircleBadgeView', null],
 	DonutChart: ['views/DonutChartView', null],
-    uuid: '../components/uuid'
+    uuid: '../components/uuid',
+    rdflib: '../components/rdflib'
+      
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
@@ -86,6 +88,9 @@ require.config({
 	},
     uuid: {
         exports: 'uuid'
+    },
+    rdflib: {
+        exports: 'rdf'
     }
   }
 });
