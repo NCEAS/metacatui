@@ -784,6 +784,7 @@ define(['jquery',
 			var controlsContainer = this.controlsTemplate({
 					citation: $(this.citationContainer).text(),
 					url: window.location,
+					mdqUrl: appModel.get("mdqUrl"),
 					model: this.model.toJSON()
 				});
 
