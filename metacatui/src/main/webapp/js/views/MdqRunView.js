@@ -13,7 +13,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'text!templates/
 			"change #suiteId" : "switchSuite"
 		},
 				
-		suitesUrl: "/mdq-webapp/webapi/suites/",
+		suitesUrl: appModel.get("mdqUrl") + "suites/",
 
 		url: null,
 		

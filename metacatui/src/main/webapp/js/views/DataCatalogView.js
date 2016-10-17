@@ -303,6 +303,9 @@ define(['jquery',
 			var view = $("#Content").data("data-catalog-view");
 			view.updateTextFilters(event, item);
 			
+			// hide the hover
+			$(selectedNode).trigger("mouseout");
+			
 			// reset the tree for next search
 			var tree = $("#bioportal-tree").data("NCBOTree");
 			var options = tree.options();

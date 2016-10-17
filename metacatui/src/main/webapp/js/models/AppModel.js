@@ -66,7 +66,9 @@ define(['jquery', 'underscore', 'backbone'],
 			//accountsMapsUrl: null,
 			groupsUrl: null,
 			prov: true,
-			useSeriesId: true
+			useSeriesId: true,
+			mdqUrl: null //"/mdq-webapp/webapi/"
+
 		},
 				
 		defaultView: "data",
