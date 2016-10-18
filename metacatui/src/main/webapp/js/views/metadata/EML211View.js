@@ -143,7 +143,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
 	    		var thesInput = $(thesInputTemp).clone();
 	    		
 	    		//Get the thesaurus value
-	    		if(keyword.keywordthesaurus.indexOf("GCMD") > -1)
+	    		if(keyword.keywordthesaurus && keyword.keywordthesaurus.indexOf("GCMD") > -1)
 	    			thesInput.val("GCMD");
 	    		
 	    		keywordsForm.append(keywordInput, thesInput);
