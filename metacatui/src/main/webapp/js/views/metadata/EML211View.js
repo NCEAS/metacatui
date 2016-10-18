@@ -31,6 +31,9 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
     		//This is a new EML doc being created
     		if(!this.model.get("id")) console.log("No data set id is specified");
     		
+    		//Get the current mode
+    		this.edit = options.edit || false;
+    		
             return this;
         },
         
@@ -43,92 +46,129 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
 			this.$container = this.$(".metadata-container");
 	    	
 	    	//Render the different sections of the metadata
-	    	this.renderEditOverview();
-	    	this.renderEditPeople();
-	    	this.renderEditDates();
-	    	this.renderEditLocations();
-	    	this.renderEditTaxa();
-	    	this.renderEditMethods();
-	    	this.renderEditProject();
-	    	this.renderEditSharing();
+	    	this.renderOverview();
+	    	this.renderPeople();
+	    	this.renderDates();
+	    	this.renderLocations();
+	    	this.renderTaxa();
+	    	this.renderMethods();
+	    	this.renderProject();
+	    	this.renderSharing();
 	    	
             return this;
         },
 	    
         /*
-         * Creates the Overview section of the page
+         * Renders the Overview section of the page
          */
-	    renderEditOverview: function(){
+	    renderOverview: function(){
+	    	//Get the overall view mode
+	    	var edit = this.edit;
+	    	
 	    	//Append the empty layout
 	    	var overviewEl = this.$container.find(".overview");
 	    	$(overviewEl).append(this.overviewTemplate());
 	    	
 	    	//Abstract
-	    	var abstractInput = this.createEditAbstract();
-	    	$(overviewEl).find(".abstract").append(abstractInput);
+	    	var abstractEl = this.createAbstract(edit);
+	    	$(overviewEl).find(".abstract").append(abstractEl);
 	    	
 	    	//Keywords
-	    	var keywords = this.createEditKeywords();	    	
+	    	var keywords = this.createKeywords(edit);	    	
 	    	$(overviewEl).find(".keywords").append(keywords);
 	    	
 	    	//Alternate Ids
-	    	var altIds = this.createEditAltIds();
+	    	var altIds = this.createAltIds(edit);
 	    	$(overviewEl).find(".altids").append(altIds);
 	    	
 	    	//Usage
-	    	var usage = this.createEditUsage();
+	    	var usage = this.createUsage(edit);
 	    	$(overviewEl).find(".usage").append(usage);
 	    },
 	    
-	    renderEditPeople: function(){
+	    /*
+         * Renders the People section of the page
+         */
+	    renderPeople: function(){
 	    	
 	    },
 	    
-	    renderEditDates: function(){
+	    /*
+         * Renders the Dates section of the page
+         */
+	    renderDates: function(){
 	    	
 	    },
 	    
-	    renderEditLocations: function(){
+	    /*
+         * Renders the Locations section of the page
+         */
+	    renderLocations: function(){
 	    	
 	    },
 	    
-	    renderEditTaxa: function(){
+	    /*
+         * Renders the Taxa section of the page
+         */
+	    renderTaxa: function(){
 	    	
 	    },
 	    
-	    renderEditMethods: function(){
+	    /*
+         * Renders the Methods section of the page
+         */
+	    renderMethods: function(){
 	    	
 	    },
 	    
-	    renderEditProject: function(){
+	    /*
+         * Renders the Projcet section of the page
+         */
+	    renderProject: function(){
 	    	
 	    },
 	    
-	    renderEditSharing: function(){
+	    /*
+         * Renders the Sharing section of the page
+         */
+	    renderSharing: function(){
 	    	
 	    },
 	    
-	    createEditAbstract: function(){
-	    	//Abstract
+	    /*
+         * Creates the abstract elements
+         */
+	    createAbstract: function(edit){
+	    	//Get the abstract text
 	    	var fullAbstract = this.model.get("abstract"),
-	    		abstractText;
+	    		paragraphs = [],
+	    		abstractText = "";
+	    	
+	    	//Put the abstract in an array format to seperate out paragraphs
 	    	if(typeof fullAbstract.para == "string")
-	    		abstractText = fullAbstract.para;
-	    	else if(Array.isArray(fullAbstract.para)){
-	    		_.each(fullAbstract.para, function(para){
-	    			if(typeof para == "string")
-	    				abstractText += " " + para;
-	    		});
-	    	}
+	    		paragraphs.push(fullAbstract.para);
 	    	else if(typeof fullAbstract == "string")
-	    		abstractText = fullAbstract;
+	    		paragraphs.push(fullAbstract);
+	    	else if(Array.isArray(fullAbstract.para))
+	    		paragraphs = fullAbstract.para;
 	    	
-	    	var abstractInput = $(document.createElement("textarea")).html(abstractText);
+	    	//For each paragraph, insert a new line
+	    	_.each(paragraphs, function(p){	    		
+	    		if(edit)
+	    			abstractText += p + "\n";
+	    		else
+	    			abstractText += "<p>" + p + "</p>";
+	    	});
 	    	
-	    	return abstractInput;
+	    	if(edit)
+	    		var abstractEl = $(document.createElement("textarea")).addClass("xlarge").html(abstractText);
+	    	else
+	    		var abstractEl = $(document.createElement("div")).append(abstractText);
+	    	
+	    	return abstractEl;
 	    },
 	    
-	    createEditKeywords: function(){
+	    createKeywords: function(){
 	    	//Keywords
 	    	var keywords = this.model.get("keywordset"),
 	    		keywordInputTemp = $(document.createElement("input")).attr("type", "text").addClass("keyword span10"),
@@ -154,26 +194,20 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
 	    	return keywordsForm;
 	    },
 	    
-	    createEditAltIds: function(){
+	    createAltIds: function(){
 	    	return "";
 	    },
 	    
-	    createEditUsage: function(){
+	    createUsage: function(){
 	    	return "";
 	    },
         
         /* Close the view and its sub views */
-        close: function() {
+        onClose: function() {
             this.remove(); // remove for the DOM, stop listening           
             this.off();    // remove callbacks, prevent zombies
             
             this.model = null;
-            
-            // Close each subview
-            _.each(this.subviews, function(i, subview) {
-				subview.close();
-                
-            });
             
             this.subviews = [];
 			window.onbeforeunload = null;

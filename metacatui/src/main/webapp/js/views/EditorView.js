@@ -9,8 +9,8 @@ define(['underscore',
         function(_, $, Backbone, DataPackage, EML, EMLView, EditorTemplate){
     
     var EditorView = Backbone.View.extend({
-        
-        el: '#Content',
+                
+        el: "#Content",
         
         /* The initial editor layout */
         template: _.template(EditorTemplate),
@@ -30,25 +30,31 @@ define(['underscore',
         initialize: function(options) {
             
             // If options.id isn't present, generate and render a new package id and metadata id
-            if ( typeof options === "undefined" || !options.id ) {
+            if ( typeof options === "undefined" || !options.pid ) {
                 console.log("EditorView: Creating a new data package.");
                 
             } else {
-                this.id = options.id;
-                console.log("Loading existing package from id " + options.id);
+                this.pid = options.pid;
+                console.log("Loading existing package from id " + options.pid);
                 
                 //TODO: This should create a DataPackage collection 
-                //Create a new EML model for this view
-                var model = new EML({ id: this.id }); 
-                this.model = model;               
+                this.createModel();              
             }            
             return this;
+        },
+        
+        //Create a new EML model for this view        
+        createModel: function(){
+        	var model = new EML({ id: this.pid }); 
+            this.model = model; 
         },
         
         /* Render the view */
         render: function() {
         	//Get the basic template on the page
         	this.$el.append(this.template());
+        	
+        	if(!this.model) this.createModel();
         	
             //Wait until the user info is loaded before we request the Metadata
         	if(MetacatUI.appUserModel.get("loggedIn")) this.model.fetch();
@@ -68,21 +74,26 @@ define(['underscore',
         	console.log("Rendering EML Model ", emlModel);
         	
         	//Create an EML211 View and render it
-        	var emlView = new EMLView({ model: this.model });
+        	var emlView = new EMLView({ 
+        		model: this.model,
+        		edit: true
+        		});
         	this.subviews.push(emlView);
         	emlView.render();
         	
         },
         
         /* Close the view and its sub views */
-        close: function() {
-            this.remove(); // remove for the DOM, stop listening           
+        onClose: function() {
             this.off();    // remove callbacks, prevent zombies         
+            
+            this.model = null;
+            this.pid = null;
             
             // Close each subview
             _.each(this.subviews, function(i, subview) {
-				subview.close();
-                
+				if(subview.onClose)
+					subview.onClose();
             });
             
             this.subviews = [];

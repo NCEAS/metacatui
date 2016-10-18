@@ -2632,6 +2632,9 @@ ul.side-nav-items {
 .metadata-container.edit textarea{
 	width: 100%;
 }
+textarea.xlarge{
+	height: 200px;
+}
 /*******************************************
 Pager View
 ******************************************/
