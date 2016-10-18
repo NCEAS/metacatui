@@ -60,17 +60,6 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
                 
             },
             
-            /*
-             * A proxy to Backbone.Model.fetch() so that we can pass custom options to the AJAX request
-             */
-         /*   _fetch: function(options){
-            	
-            	var fetchOptions = _.extend(options, {
-            		dataType: "text"
-            	});
-            },
-            */
-            
             /* 
              Deserialize an EML 2.1.1 XML document
             */

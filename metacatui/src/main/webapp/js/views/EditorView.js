@@ -51,9 +51,12 @@ define(['underscore',
         	this.$el.append(this.template());
         	
             //Wait until the user info is loaded before we request the Metadata
-            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
-            	this.model.fetch();
-            });
+        	if(MetacatUI.appUserModel.get("loggedIn")) this.model.fetch();
+        	else{        	
+	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+	            	this.model.fetch();
+	            });
+        	}
             
             //When the metadata is retrieved, render it
             this.listenToOnce(this.model, "sync", this.renderMetadata);
