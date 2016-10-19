@@ -10,7 +10,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
         /* Templates */
         
         events: {
-            
+
         },
                 
         /* A list of the subviews */

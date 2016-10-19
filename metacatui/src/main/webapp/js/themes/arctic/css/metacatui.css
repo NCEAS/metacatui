@@ -224,8 +224,8 @@
  
 
 .header #inner-header{
-	max-width: 1024px;
 	margin: 0 auto;
+	padding: 0px 30px;
 }
 .header nav{	
 	display: none;
@@ -890,9 +890,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	min-height: 350px;
   }
   
-  .profile h1{
+  .profile .header{
 	width: 900px;
 	line-height: 90px;
+	margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    padding: 0px 20px;
   }
 
     .profile-title:empty{

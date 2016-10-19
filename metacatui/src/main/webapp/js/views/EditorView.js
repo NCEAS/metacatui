@@ -17,7 +17,9 @@ define(['underscore',
         
         /* Events that apply to the entire editor */
         events: {
-            
+            "change input"    : "showControls",
+            "change select"   : "showControls",
+            "change textarea" : "showControls"
         },
         
         /* The identifier of the root package id being rendered */
@@ -79,9 +81,16 @@ define(['underscore',
         		edit: true
         		});
         	this.subviews.push(emlView);
-        	emlView.render();
-        	
+        	emlView.render();       	
         },
+        
+	    showControls: function(){
+	    	this.$(".editor-controls").slideDown();
+	    },
+	    
+	    hideControls: function(){
+	    	this.$(".editor-controls").slideUp();
+	    },
         
         /* Close the view and its sub views */
         onClose: function() {
