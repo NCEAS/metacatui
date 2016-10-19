@@ -312,7 +312,9 @@ define(['jquery',
 						  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
 						});
 					
-					tree.on("afterSelect", view.selectConcept);					
+					tree.on("afterSelect", view.selectConcept);	
+					tree.on("afterJumpToClass", view.jumpToClass);					
+
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
 				}
@@ -386,6 +388,18 @@ define(['jquery',
 			// prevent default action
 			return false;
 			
+		},
+		
+		jumpToClass : function(event, classId) {
+			
+			// set in the editor
+			// scroll to selected part
+	    	var node = $("#bioportal-tree-annotator").find("a[data-id='" + encodeURIComponent(classId) + "']");
+	    	var position = $(node).position().top - 200;
+
+	    	// scroll to selected part
+	    	$("#bioportal-tree-annotator").scrollTop(position)
+	    	
 		},
 		
 		preRenderAnnotations : function(annotations) {
