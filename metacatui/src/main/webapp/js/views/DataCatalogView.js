@@ -306,6 +306,9 @@ define(['jquery',
 			// hide the hover
 			$(selectedNode).trigger("mouseout");
 			
+			// hide the popover
+			$("[data-category='annotation'] .expand-collapse-control").trigger("click");
+			
 			// reset the tree for next search
 			var tree = $("#bioportal-tree").data("NCBOTree");
 			var options = tree.options();
