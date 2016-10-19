@@ -17,6 +17,7 @@ function ($, _, Backbone) {
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-account'                   : 'renderUserSettings',
 			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
+			'mdq(/s=:suiteId)(/:pid)'   : 'renderMdqRun', // MDQ page
 			'logout'                    : 'logout',          // logout the user
 			'signout'                   : 'logout',          // logout the user
 			'signin'					: 'renderTokenSignIn',
@@ -62,6 +63,23 @@ function ($, _, Backbone) {
 			
 			//Change the hash in the window location back
 			this.navigate(_.last(this.hashHistory), {replace: true});
+		},
+		
+		renderMdqRun: function (suiteId, pid) {
+			this.routeHistory.push("mdq");
+			
+			if (!appView.mdqRunView) {
+				require(["views/MdqRunView"], function(MdqRunView) {
+					appView.mdqRunView = new MdqRunView();
+					appView.mdqRunView.suiteId = suiteId;
+					appView.mdqRunView.pid = pid;
+					appView.showView(appView.mdqRunView);
+				});
+			} else {
+				appView.mdqRunView.suiteId = suiteId;
+				appView.mdqRunView.pid = pid;
+				appView.showView(appView.mdqRunView);
+			}
 		},
 		
 		renderText: function(options){

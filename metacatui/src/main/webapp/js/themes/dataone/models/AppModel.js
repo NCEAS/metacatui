@@ -76,7 +76,7 @@ define(['jquery', 'underscore', 'backbone'],
 			annotatorUrl: null,
 		    prov: true,
 			useSeriesId: true,
-			mdqUrl: "/mdq-webapp/webapi/"
+			mdqUrl: "https://mn-demo-8.test.dataone.org/mdq-webapp/webapi/"
 
 		},
 		
@@ -94,6 +94,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
 			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
+			this.set('objectServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/object/');
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
 			
