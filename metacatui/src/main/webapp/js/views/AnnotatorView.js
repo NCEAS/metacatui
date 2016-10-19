@@ -275,6 +275,21 @@ define(['jquery',
 			
 			var view = this;
 			
+			this.$el.annotator('subscribe', 'annotationEditorShown', function() {
+				// reroot tree at starting class
+				var tree = $("#bioportal-tree-annotator").data("NCBOTree");
+				if (tree) {
+					var options = tree.options();
+					$.extend(options, {startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"});
+					tree.init();
+				}
+				// clear any values that are lingering
+				var view = $('#metadata-container').data("annotator-view");
+				$(view.$el.data('annotator').plugins.Tags.input).val("");	
+				$("#bioportal-tree-label").html("");
+				
+			});
+			
 			// subscribe to annotation events, to get the exact resource being annotated
 			this.$el.annotator('subscribe', 'beforeAnnotationCreated', function(annotation, arg0, arg1) {
 				var annotator = view.$el.data('annotator');
@@ -313,7 +328,9 @@ define(['jquery',
 						});
 					
 					tree.on("afterSelect", view.selectConcept);	
-					tree.on("afterJumpToClass", view.jumpToClass);					
+					tree.on("afterJumpToClass", view.jumpToClass);	
+					tree.on("afterExpand", view.afterExpand); // for the tool tips
+
 
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
@@ -392,14 +409,23 @@ define(['jquery',
 		
 		jumpToClass : function(event, classId) {
 			
-			// set in the editor
-			// scroll to selected part
-	    	var node = $("#bioportal-tree-annotator").find("a[data-id='" + encodeURIComponent(classId) + "']");
-	    	var position = $(node).position().top - 200;
+			var reroot = true; // for easier changing of our minds :)
+			if (reroot) {
+				// reroot tree at new class
+				var tree = $("#bioportal-tree-annotator").data("NCBOTree");
+				var options = tree.options();
+				$.extend(options, {startingRoot: classId});
+				tree.init();
+				
+				// ensure tooltips are activated
+		    	$(".tooltip-this").tooltip();
+			} else {
+				// scroll to selected part
+		    	var node = $("#bioportal-tree-annotator").find("a[data-id='" + encodeURIComponent(classId) + "']");
+		    	var position = $(node).position().top - 200;
+		    	$("#bioportal-tree-annotator").scrollTop(position)
+			}
 
-	    	// scroll to selected part
-	    	$("#bioportal-tree-annotator").scrollTop(position)
-	    	
 		},
 		
 		preRenderAnnotations : function(annotations) {
