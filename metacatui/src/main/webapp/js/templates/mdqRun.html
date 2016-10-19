@@ -143,7 +143,13 @@
 				data-trigger="focus" 
 				data-html="true"
 				data-title="Selectors"
-				data-content="<dl class=''><% _.each(result.check.selector, function(selector) { print('<dt>', selector.name, '</dt>'); print('<dd>', selector.xpath, '</dd>'); }); %></dl>">
+				data-content="<dl class=''><% 
+					_.each(result.check.selector, function(selector) { 
+						print('<dt>', selector.name, '</dt>'); 
+						_.each(selector.xpath.split('|'), function(path) { 
+							print('<dd>', path, '</dd>'); 
+						});
+					}); %></dl>">
 				<i class="icon icon-code"></i>
 			</a>
 			
