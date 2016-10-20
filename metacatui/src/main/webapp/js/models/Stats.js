@@ -329,7 +329,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			var query =  "q=" + this.get('query') +
 								"+formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
 								"+dateUploaded:[" + this.firstPossibleUpload + "%20TO%20NOW]" + //Weeds out badly formatted dates
-								"+-obsoletedBy:*"+    //Only count one version of a revision chain
+								"+-obsoletes:*"+    //Only count one version of a revision chain
 								"&fl=dateUploaded" +
 								"&rows=1" +
 								"&sort=dateUploaded+asc" +
@@ -359,10 +359,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 							model.set('totalUploads', data.response.numFound);	
 							
 							var dataQuery =  "q=" + model.get('query') +
-							  "+-obsoletedBy:*+formatType:DATA";
+							  "+-obsoletes:*+formatType:DATA";
 							
 							var metadataQuery =  "q=" + model.get('query') +
-							  "+-obsoletedBy:*+formatType:METADATA";
+							  "+-obsoletes:*+formatType:METADATA";
 							  
 							var facets =  "&rows=0" +
 										  "&facet=true" +
