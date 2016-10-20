@@ -18,6 +18,7 @@ function ($, _, Backbone) {
 			'signin'					: 'renderTokenSignIn',
 			"signinsuccess"           : "renderSignInSuccess",
 			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
+			'mdq(/s=:suiteId)(/:pid)'       : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)'           : 'renderAPI'       // API page
 		},
 		
@@ -246,6 +247,23 @@ function ($, _, Backbone) {
 				appView.registryView.stage = stage;
 				appView.registryView.pid = pid;
 				appView.showView(appView.registryView);
+			}
+		},
+		
+		renderMdqRun: function (suiteId, pid) {
+			this.routeHistory.push("mdq");
+			
+			if (!appView.mdqRunView) {
+				require(["views/MdqRunView"], function(MdqRunView) {
+					appView.mdqRunView = new MdqRunView();
+					appView.mdqRunView.suiteId = suiteId;
+					appView.mdqRunView.pid = pid;
+					appView.showView(appView.mdqRunView);
+				});
+			} else {
+				appView.mdqRunView.suiteId = suiteId;
+				appView.mdqRunView.pid = pid;
+				appView.showView(appView.mdqRunView);
 			}
 		},
 		

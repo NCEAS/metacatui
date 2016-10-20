@@ -72,7 +72,7 @@ define(['jquery', 'underscore', 'backbone'],
 			checkTokenUrl: null,
 			prov: true,
 			useSeriesId: true,
-			mdqUrl: "/mdq-webapp/webapi/"
+			mdqUrl: "https://mn-demo-8.test.dataone.org/mdq-webapp/webapi/"
 
 		},
 				

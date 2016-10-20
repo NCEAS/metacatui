@@ -267,7 +267,7 @@ define(['jquery',
 				  ontology: "ECSO",
 				  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
 				});
-						
+			
 			$("[data-category='annotation'] .expand-collapse-control").popover({
 				html: true,
 				placement: "bottom",
@@ -322,6 +322,9 @@ define(['jquery',
 			
 			// hide the hover
 			$(selectedNode).trigger("mouseout");
+			
+			// hide the popover
+			$("[data-category='annotation'] .expand-collapse-control").trigger("click");
 			
 			// reset the tree for next search
 			var tree = $("#bioportal-tree").data("NCBOTree");
