@@ -2637,8 +2637,9 @@ ul.side-nav-items {
     position: fixed;
     width: 100%;
     box-sizing: border-box;
-    bottom: 320px;
+    bottom: 0px;
     padding: 20px;
+    z-index:3;
 }
 .editor-controls .btn{
 	float: right;
