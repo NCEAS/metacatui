@@ -267,13 +267,30 @@ define(['jquery',
 				  ontology: "ECSO",
 				  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
 				});
-			
+						
 			$("[data-category='annotation'] .expand-collapse-control").popover({
 				html: true,
 				placement: "bottom",
-				trigger:"click",
+				trigger:"manual",
 				content: tree,
 				container: "#bioportal-popover"
+			}).on("click", function(){
+				if($($(this).data().popover.options.content).is(":visible")){
+					//Detach the tree from the popover so it doesn't get removed by Bootstrap
+					$(this).data().popover.options.content.detach();
+					//Hide the popover
+					$(this).popover("hide");
+				}
+				else{
+					//Get the popover content
+					var content = $(this).data().popoverContent || $(this).data().popover.options.content.detach();
+					//Cache it
+					$(this).data({ popoverContent: content });
+					//Show the popover
+					$(this).popover("show");
+					//Insert the tree into the popover content
+					$(this).data().popover.options.content = content;
+				}
 			});
 			
 			// set up the listener to jump to search results
