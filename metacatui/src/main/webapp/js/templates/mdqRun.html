@@ -99,9 +99,7 @@
 	_.each(groupedResults.GREEN, function(result) {
 	%>
 	
-  		<li class="list-group-item">
-  			<i class="icon icon-check"></i>
-  			
+  		<li class="list-group-item">  			
   			<%
 			_.each(result.output, function(output) {
 			%>				
@@ -109,19 +107,27 @@
 					<!-- render the image -->
 					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
 				<% } else { %>
-					<strong><%- output.value %></strong>
+					<div class="strong check-output"><i class="icon icon-check"></i> <%- output.value %></div>
 				<% } %>
 			<%
 			});
 			%>
-			<br/>
   			
-  			<em><%= result.check.name %></em>
   			<span class="badge pull-right"><%= result.status %></span>
 			<span class="badge pull-right"><%= result.check.level %></span>
 			<span class="badge pull-right"><%= result.check.type %></span>
-			<br/>
-			<%= result.check.description %>
+			
+			<!-- info -->
+			<a 	
+				tabindex="0"
+				role="button"
+				class="popover-this" 
+				data-trigger="focus" 
+				data-html="true"
+				data-title="<%= result.check.name%>"
+				data-content="<%- result.check.description %>">
+				<i class="icon icon-info"></i>
+			</a>
 			
 			<!-- code -->
 			<a 	
@@ -182,9 +188,7 @@
 	_.each(groupedResults.ORANGE, function(result) {
 	%>
 	
-  		<li class="list-group-item">
-  			<i class="icon icon-check-empty"></i>
-  			
+  		<li class="list-group-item">  			
   			<%
 			_.each(result.output, function(output) {
 			%>				
@@ -192,20 +196,27 @@
 					<!-- render the image -->
 					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
 				<% } else { %>
-					<strong><%- output.value %></strong>
+					<div class="strong check-output"><i class="icon icon-check-empty"></i> <%- output.value %></div>
 				<% } %>
 			<%
 			});
 			%>
-			<br/>
   			
-  			<em><%= result.check.name %></em>
   			<span class="badge pull-right"><%= result.status %></span>
 			<span class="badge pull-right"><%= result.check.level %></span>
 			<span class="badge pull-right"><%= result.check.type %></span>
-			<br/>
-			<%= result.check.description %>
-			
+
+			<!-- info -->
+			<a 	
+				tabindex="0"
+				role="button"
+				class="popover-this" 
+				data-trigger="focus" 
+				data-html="true"
+				data-title="<%= result.check.name%>"
+				data-content="<%- result.check.description %>">
+				<i class="icon icon-info"></i>
+			</a>			
 			<!-- code -->
 			<a 	
 				tabindex="0"
@@ -257,9 +268,7 @@
 	_.each(groupedResults.RED, function(result) {
 	%>
 	
-  		<li class="list-group-item">
-  			<i class="icon icon-check-empty"></i>
-  			
+  		<li class="list-group-item">  			
   			<%
 			_.each(result.output, function(output) {
 			%>				
@@ -267,20 +276,27 @@
 					<!-- render the image -->
 					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
 				<% } else { %>
-					<strong><%- output.value %></strong>
+					<div class="strong check-output"><i class="icon icon-check-empty"></i> <%- output.value %></div>
 				<% } %>
 			<%
 			});
 			%>
-			<br/>
   			
-  			<em><%= result.check.name %></em>
   			<span class="badge pull-right"><%= result.status %></span>
 			<span class="badge pull-right"><%= result.check.level %></span>
 			<span class="badge pull-right"><%= result.check.type %></span>
-			<br/>
-			<%= result.check.description %>
 			
+			<!-- info -->
+			<a 	
+				tabindex="0"
+				role="button"
+				class="popover-this" 
+				data-trigger="focus" 
+				data-html="true"
+				data-title="<%= result.check.name%>"
+				data-content="<%- result.check.description %>">
+				<i class="icon icon-info"></i>
+			</a>
 			<!-- code -->
 			<a 	
 				tabindex="0"
@@ -332,7 +348,6 @@
 	_.each(groupedResults.BLUE, function(result) {
 	%>
 		<li class="list-group-item">
-  			<i class="icon icon-info-sign"></i>
   			
 			<%
 			_.each(result.output, function(output) {
@@ -341,19 +356,27 @@
 					<!-- render the image -->
 					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
 				<% } else { %>
-					<strong><%- output.value %></strong>
+					<div class="strong check-output"><i class="icon icon-check-empty"></i> <%- output.value %></div>
 				<% } %>
 			<%
 			});
 			%>
-  			<br/>
   			
-  			<em><%= result.check.name %></em>
 			<span class="badge pull-right"><%= result.status %></span>
 			<span class="badge pull-right"><%= result.check.level %></span>
 			<span class="badge pull-right"><%= result.check.type %></span>
-			<br/>
-			<%= result.check.description %>
+			
+			<!-- info -->
+			<a 	
+				tabindex="0"
+				role="button"
+				class="popover-this" 
+				data-trigger="focus" 
+				data-html="true"
+				data-title="<%= result.check.name%>"
+				data-content="<%- result.check.description %>">
+				<i class="icon icon-info"></i>
+			</a>
 			<!-- code -->
 			<a 	
 				tabindex="0"
