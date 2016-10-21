@@ -324,10 +324,11 @@ define(['jquery',
 			$(selectedNode).trigger("mouseout");
 			
 			// hide the popover
-			$("[data-category='annotation'] .expand-collapse-control").trigger("click");
+			var annotationFilterEl = $("[data-category='annotation'] .expand-collapse-control");
+			annotationFilterEl.trigger("click");
 			
 			// reset the tree for next search
-			var tree = $("#bioportal-tree").data("NCBOTree");
+			var tree = annotationFilterEl.data().popoverContent.data("NCBOTree");
 			var options = tree.options();
 			$.extend(options, {startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"});
 			tree.changeOntology("ECSO");
@@ -345,7 +346,7 @@ define(['jquery',
 		afterJumpToClass : function(event, classId) {
 			
 			// re-root the tree at this concept
-			var tree = $("#bioportal-tree").data("NCBOTree");
+			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.data("NCBOTree");
 			var options = tree.options();
 			$.extend(options, {startingRoot: classId});
 
