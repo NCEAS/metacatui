@@ -1,5 +1,5 @@
-define(['jquery', 'underscore', 'backbone'], 				
-	function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
+	function($, _, Backbone, SolrResult) {
 	'use strict';
 
 	
@@ -8,21 +8,24 @@ define(['jquery', 'underscore', 'backbone'],
 		initialize: function(options){
 			if((options === undefined) || (!options)) var options = {};
 			
-			this.id   		= options.id	 	 || null;
+			this.pid   		= options.pid	 	 || null;
 			this.attributes = options.attributes || null;
 			this.className += options.className  || "";
 			this.model 		= options.model 	 || null;
 			this.metadata   = options.metadata	 || null;
 			this.createLink = (options.createLink == false) ? false : true;
 			
+			//If no model was passed, continue on
+			if(!this.model && !this.metadata)
+				return;
 			//If a metadata doc was passed but no data or package model, then save the metadata as our model, too
-			if(!this.model && this.metadata) this.model = this.metadata;			
+			else if(!this.model && this.metadata) this.model = this.metadata;			
 			//If the model is a Package, then get the metadata doc in this package				
 			else if(this.model.type == "Package") 
 				this.metadata = this.model.getMetadata();
 			//If the model is a metadata doc and there was no other metadata specified, then use the model
 			else if((this.model.get("formatType") == "METADATA") && !this.metadata) 
-				this.metadata = this.model;			
+				this.metadata = this.model;	
 		},
 				
 		tagName : "cite",
@@ -30,7 +33,6 @@ define(['jquery', 'underscore', 'backbone'],
 		className : "citation",
 		
 		events: {
-			//"click .route-to-metadata" : "routeToMetadata"
 		},
 		
 		/*
@@ -38,8 +40,18 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		render: function(){
 			
-			if(!this.model && !this.metadata) return this;
-			
+			//If there is no model provided but there is a pid 
+			if(!this.model && !this.metadata && this.pid){
+				//Create a model
+				this.metadata = new SolrResult({id: this.pid});
+				this.model = this.metadata;
+				
+				//Retrieve the citation info for this model and render once we have it
+				var view = this;
+				this.model.on("change", function(){ view.render.call(view); });
+				this.model.getCitationInfo();			
+				return;
+			}		
 			//Create the citation from the metadata doc if we have one
 			else if(this.metadata){
 				var authors 	 = this.metadata.get("origin"),

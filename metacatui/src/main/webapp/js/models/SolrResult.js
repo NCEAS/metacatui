@@ -246,11 +246,11 @@ define(['jquery', 'underscore', 'backbone'],
 			xhr.send();
 		},
 		
-		getInfo: function(){			
+		getInfo: function(fields){			
 			var model = this;
 			
-//			var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription" 
-			var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i"; 
+			if(!fields)
+				var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i"; 
 				
 			var query = "q=";
 			//Do not search for seriesId when it is not configured in this model/app
@@ -295,6 +295,10 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 						
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+		},
+		
+		getCitationInfo: function(){
+			this.getInfo("id,seriesId,origin,pubDate,dateUploaded,title,datasource");
 		},
 		
 		notFound: function(){

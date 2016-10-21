@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, d3, DonutChart, MdqRunTemplate, SuitesTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationView', 'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, d3, DonutChart, CitationView, MdqRunTemplate, SuitesTemplate, LoadingTemplate) {
 	'use strict';
 	
 	// Build the Footer view of the application
@@ -80,6 +80,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'text!templates/
 				xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
 				xhr.send();  
 				
+				//Render a Citation View for the page header
+				var citationView = new CitationView({ pid: this.pid });
+				citationView.render();
+				this.citationView = citationView;
+				
 			} else {
 				this.$el.html(this.template({}));
 			}
@@ -88,6 +93,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'text!templates/
 		
 		showLoading: function() {
 			this.$el.html(this.loadingTemplate());
+		},
+		
+		showCitation: function(){
+			if(!this.citationView) return false;
+			
+			this.$("#mdqCitation").prepend(this.citationView.el);
 		},
 		
 		show: function() {
@@ -161,6 +172,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'text!templates/
 							viewRef.$el.html(viewRef.template(data));
 							viewRef.drawScoreChart(data.result, groupedResults);
 							viewRef.showAvailableSuites();
+							viewRef.showCitation();
 							viewRef.show();
 							//Initialize all popover elements
 							$('.popover-this').popover();

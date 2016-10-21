@@ -129,8 +129,8 @@
     }
     
     h1{
-    	font-weight: normal;
-    	font-family: "Aller";
+    	font-weight: bold;
+    	
     }
     
     .bold-header{
@@ -1322,13 +1322,21 @@ svg .no-activity,
     	margin-bottom: 20px;
     }
    
-    /**----------------------------------------**/
+/* MDQ CSS
+-------------------------------------------------- */
 
-	.metadata-index {
-		padding: 2%;
-		width: 96%;
-	}
-	
+#mdqTypeSummary #suites{
+	display: none;
+}
+
+/* Metadata Index CSS
+-------------------------------------------------- */
+
+.metadata-index {
+	padding: 2%;
+	width: 96%;
+}
+
 	/* Registry CSS
 	-------------------------------------------------- */
     

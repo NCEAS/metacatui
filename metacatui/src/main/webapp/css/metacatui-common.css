@@ -165,6 +165,10 @@ footer{
 h3{
 	font-size: 1.5em;
 }
+header .citation {
+    margin-bottom: 20px;
+    display: block;
+}
 
 /****************************************** 
 ** Buttons ***
@@ -830,7 +834,7 @@ img.icon{
 
 /* different colors for each pie slice */
 #mdqResult .donut.data > g:nth-child(1) .donut-arc {
-	fill: #dff0d8;
+	fill: #b3e69f;
 }
 #mdqResult .donut.data > g:nth-child(1) .donut-arc-label,
 #mdqResult .donut.data > g:nth-child(1) .donut-arc.active {
@@ -838,7 +842,7 @@ img.icon{
 }
 
 #mdqResult .donut.data > g:nth-child(2) .donut-arc {
-	fill: #fcf8e3;
+	fill: #fff0a1;
 }
 #mdqResult .donut.data > g:nth-child(2) .donut-arc-label,
 #mdqResult .donut.data > g:nth-child(2) .donut-arc.active {
@@ -846,7 +850,7 @@ img.icon{
 }
 
 #mdqResult .donut.data > g:nth-child(3) .donut-arc {
-	fill: #f2dede;
+	fill: #fbb0b0;
 }
 #mdqResult .donut.data > g:nth-child(3) .donut-arc-label,
 #mdqResult .donut.data > g:nth-child(3) .donut-arc.active {
@@ -854,7 +858,7 @@ img.icon{
 }
 
 #mdqResult .donut.data > g:nth-child(4) .donut-arc  {
-	fill: #d9edf7;
+	fill: #91d7fb;
 }
 #mdqResult .donut.data > g:nth-child(4) .donut-arc-label,
 #mdqResult .donut.data > g:nth-child(4) .donut-arc.active {

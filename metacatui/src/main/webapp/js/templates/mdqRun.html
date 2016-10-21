@@ -18,61 +18,57 @@
 
 <% if (typeof result !== 'undefined') { %>
 
-<div class="panel panel-default mdq">
-	<div class="panel-heading">
-			
-		<div id="mdqSummary">
-			<h4>Metadata Quality report for <em><%= objectIdentifier %></em></h4>
-			<!-- <p>Date: <em><%= timestamp %></em></p> -->
-			<!--  Run ID: <%= id %>	-->
-			<p>
-			After running your metadata package against our standard set of metadata, data, and congruency checks, 
-			we have found the following potential issues. 
-			Please assist us in improving the discoverability and reusability of your research data by addressing the issues below.
-			</p>
-		</div>
+<header class="page-header">
+	<h1>Metadata Quality Report</h1>
+	<cite id="mdqCitation"></cite>
+</header>
+
+<div class="mdq">
+	<div id="mdqSummary">
+		<!-- <p>Date: <em><%= timestamp %></em></p> -->
+		<!--  Run ID: <%= id %>	-->
+		<p>
+		After running your metadata against our standard set of metadata, data, and congruency checks, 
+		we have found the following potential issues. 
+		Please assist us in improving the discoverability and reusability of your research data by addressing the issues below.
+		</p>
+	</div>
+	
+	<div id="mdqDonut" class="format-charts-data"></div>		
+	
+	<div id="mdqTypeSummary">			
+		<div id="suites"></div>			
 		
-		<div id="mdqDonut" class="format-charts-data"></div>		
-		
-		<div id="mdqTypeSummary">
-			
-			<div id="suites"></div>			
-			
-			<%
-			var types = _.keys(groupedByType);
-			_.each(types, function(type) {
-				var results = groupedByType[type];
-				var total = results.length;
-				var success = 0;
-				_.each(results, function(result) {
-					if (result.status == "SUCCESS") {
-						success++;
-					}
-				});
-				var width = (success/total) * 100;
-				width = width.toFixed(0);
-				
-			%>			
-					<span class="strong" style="text-transform: capitalize;"><%=type%></span>: <%=width%>% complete
-					<div class="progress">
-						<div class="progress-bar progress-bar-success" 
-						role="progressbar" 
-						aria-valuenow="<%=success%>" 
-						aria-valuemin="0" aria-valuemax="<%=total%>" 
-						style="width: <%=width%>%;">
-						
-						</div>
-					</div>
-			<%
-			
+		<%
+		var types = _.keys(groupedByType);
+		_.each(types, function(type) {
+			var results = groupedByType[type];
+			var total = results.length;
+			var success = 0;
+			_.each(results, function(result) {
+				if (result.status == "SUCCESS") {
+					success++;
+				}
 			});
+			var width = (success/total) * 100;
+			width = width.toFixed(0);
 			
-			%>
-		
-		</div>
-		
-	</div>	
-	<div class="panel-body">
+		%>			
+			<span class="strong" style="text-transform: capitalize;"><%=type%></span>: <%=width%>% complete
+			<div class="progress">
+				<div class="progress-bar progress-bar-success" 
+				role="progressbar" 
+				aria-valuenow="<%=success%>" 
+				aria-valuemin="0" aria-valuemax="<%=total%>" 
+				style="width: <%=width%>%;">
+				
+				</div>
+			</div>
+		<% }); %>		
+	</div>
+	<div class="clear"></div>	
+			
+	<div>
 		<%
 		
 		var total = result.length;
