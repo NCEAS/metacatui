@@ -68,7 +68,6 @@
 	</div>
 	<div class="clear"></div>	
 			
-	<div>
 		<%
 		
 		var total = result.length;
@@ -77,313 +76,201 @@
 		}
 		
 	%>	
-	
-	<% if (groupedResults.GREEN) { %>
-	
-		<div class="alert alert-success" role="alert">
-		<i class="icon icon-check-sign"></i>
-		<a class="collapsed" role="button" data-toggle="collapse" href="#collapseSuccess" aria-expanded="false" aria-controls="collapseSuccess">
-		Passed <%=groupedResults.GREEN.length%> checks out of <%= total %>.
-		</a>
-		Good job!
-		</div>
+	<ul class="list-group">
+		<% if (groupedResults.GREEN) { %>
 		
-		<div class="collapse" id="collapseSuccess">
-		<ul class="list-group">
-	
-	<%
-	_.each(groupedResults.GREEN, function(result) {
-	%>
-	
-  		<li class="list-group-item">
-  			<i class="icon icon-check"></i>
-  			
-  			<%
-			_.each(result.output, function(output) {
-			%>				
-				<% if (output.type && output.type.includes('image')) { %>
-					<!-- render the image -->
-					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
-				<% } else { %>
-					<strong><%- output.value %></strong>
-				<% } %>
-			<%
-			});
-			%>
-			<br/>
-  			
-  			<em><%= result.check.name %></em>
-  			<span class="badge pull-right"><%= result.status %></span>
-			<span class="badge pull-right"><%= result.check.level %></span>
-			<span class="badge pull-right"><%= result.check.type %></span>
-			<br/>
-			<%= result.check.description %>
+			<li class="list-group-item success"  data-toggle="collapse" data-target=".list-group-item.pass">
+				<h4>
+					<i class="icon icon-caret-right"></i>
+					Passed <%=groupedResults.GREEN.length%> checks out of <%= total %>. Good job!
+				</h4>				
+			</li>
 			
-			<!-- code -->
-			<a 	
-				tabindex="0"
-				role="button"
-				class="popover-this" 
-				data-trigger="focus" 
-				data-html="true"
-				data-title="Code (<%= result.check.environment %>)"
-				data-content="<pre><%- result.check.code %></pre>">
-				<i class="icon icon-bug"></i>
-			</a>
-			
-			<!--  selectors -->
-			<a 	
-				tabindex="0"
-				role="button"
-				class="popover-this" 
-				data-trigger="focus" 
-				data-html="true"
-				data-title="Selectors"
-				data-content="<dl class=''><% 
-					_.each(result.check.selector, function(selector) { 
-						print('<dt>', selector.name, '</dt>'); 
-						_.each(selector.xpath.split('|'), function(path) { 
-							print('<dd>', path, '</dd>'); 
-						});
-					}); %></dl>">
-				<i class="icon icon-code"></i>
-			</a>
-			
-  		</li>
-	<%
-	});
-	%>
-	
-		</ul>
-		</div>
+		<!-- <div class="collapse" id="collapseSuccess"> -->
 		
+		<%
+		_.each(groupedResults.GREEN, function(result) {
+		%>
+		
+	  		<li class="list-group-item pass collapse">
+	  			<i class="icon icon-check-sign success"></i>
+	  			
+	  			<%
+				_.each(result.output, function(output) {
+				%>				
+					<% if (output.type && output.type.includes('image')) { %>
+						<!-- render the image -->
+						<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
+					<% } else { %>
+						<span class="check-output"><%- output.value %></span>
+					<% } %>
+				<%
+				});
+				%>
+	  			
+	  			<span class="badge pull-right"><%= result.status %></span>
+				<span class="badge pull-right"><%= result.check.level %></span>
+				<span class="badge pull-right"><%= result.check.type %></span>
+				
+				<!--  selectors -->
+				<a 	
+					tabindex="0"
+					role="button"
+					class="popover-this" 
+					data-trigger="focus" 
+					data-html="true"
+					data-title="<%= result.check.name%>"
+					data-content="<%= result.check.description %>"
+					>
+					<i class="icon icon-question-mark"></i>
+				</a>
+				
+	  		</li>
+		<% }); %>			
 	<% } %>	
 	
-	
+	<% if (groupedResults.ORANGE) { %>	
+		<li class="list-group-item warning" data-toggle="collapse" data-target=".list-group-item.warning-check">
+			<h4>
+				<i class="icon icon-caret-right"></i>
+				Warning for <%=groupedResults.ORANGE.length%> checks. Please review these warnings.			
+			</h4>
+		</li>	
+		<%
+		_.each(groupedResults.ORANGE, function(result) {
+		%>
 		
-	<% if (groupedResults.ORANGE) { %>
-	
-		<div class="alert alert-warning" role="alert">
-		<i class="icon icon-warning-sign"></i>
-		<a class="collapsed" role="button" data-toggle="collapse" href="#collapseWarning" aria-expanded="false" aria-controls="collapseWarning">
-		Warning for <%=groupedResults.ORANGE.length%> checks.
-		</a>
-		Please review these warnings.
-		</div>
-		
-		<div class="collapse" id="collapseWarning">
-		<ul class="list-group">
-	
-	<%
-	_.each(groupedResults.ORANGE, function(result) {
-	%>
-	
-  		<li class="list-group-item">
-  			<i class="icon icon-check-empty"></i>
-  			
-  			<%
-			_.each(result.output, function(output) {
-			%>				
-				<% if (output.type && output.type.includes('image')) { %>
-					<!-- render the image -->
-					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
-				<% } else { %>
-					<strong><%- output.value %></strong>
-				<% } %>
-			<%
-			});
-			%>
-			<br/>
-  			
-  			<em><%= result.check.name %></em>
-  			<span class="badge pull-right"><%= result.status %></span>
-			<span class="badge pull-right"><%= result.check.level %></span>
-			<span class="badge pull-right"><%= result.check.type %></span>
-			<br/>
-			<%= result.check.description %>
-			
-			<!-- code -->
-			<a 	
-				tabindex="0"
-				role="button"
-				class="popover-this" 
-				data-trigger="focus" 
-				data-html="true"
-				data-title="Code (<%= result.check.environment %>)"
-				data-content="<pre><%- result.check.code %></pre>">
-				<i class="icon icon-bug"></i>
-			</a>
-			
-			<!--  selectors -->
-			<a 	
-				tabindex="0"
-				role="button"
-				class="popover-this" 
-				data-trigger="focus" 
-				data-html="true"
-				data-title="Selectors"
-				data-content="<dl class=''><% _.each(result.check.selector, function(selector) { print('<dt>', selector.name, '</dt>'); print('<dd>', selector.xpath, '</dd>'); }); %></dl>">
-				<i class="icon icon-code"></i>
-			</a>
-			
-  		</li>
-	<%
-	});
-	%>
-	
-		</ul>
-		</div>
-		
+	  		<li class="list-group-item warning-check collapse">
+	  			<span class="icon-stack">
+	  				<i class="icon icon-exclamation"></i>
+	  				<i class="icon icon-check-empty"></i>
+	  			</span>
+	  			<%
+				_.each(result.output, function(output) {
+				%>				
+					<% if (output.type && output.type.includes('image')) { %>
+						<!-- render the image -->
+						<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
+					<% } else { %>
+						<span class="check-output"><%- output.value %></span>
+					<% } %>
+				<%
+				});
+				%>
+	  			
+	  			<span class="badge pull-right"><%= result.status %></span>
+				<span class="badge pull-right"><%= result.check.level %></span>
+				<span class="badge pull-right"><%= result.check.type %></span>
+				
+				<!--  selectors -->
+				<a tabindex="0"
+					role="button"
+					class="popover-this" 
+					data-trigger="focus" 
+					data-html="true"
+					data-title="<%= result.check.name %>"
+					data-content="<%= result.check.description %>">
+					<i class="icon icon-question-mark"></i>
+				</a>			
+	  		</li>
+		<% }); %>		
 	<% } %>	
 	
 	<% if (groupedResults.RED) { %>
+		<li class="list-group-item danger" data-toggle="collapse" data-target=".list-group-item.fail">
+			<h4>
+				<i class="icon icon-caret-down"></i>	
+				Failed <%=groupedResults.RED.length%> checks. Please correct these issues.
+			</h4>
+		</li>
 	
-		<div class="alert alert-error" role="alert">
-		<i class="icon icon-remove-sign"></i>
-		<a class="collapsed" role="button" data-toggle="collapse" href="#collapseFail" aria-expanded="false" aria-controls="collapseFail">
-		Failed <%=groupedResults.RED.length%> checks.
-		</a>
-		Please correct these issues.
-		</div>
+		<%
+		_.each(groupedResults.RED, function(result) {
+		%>
 		
-		<div class="collapse" id="collapseFail">
-		<ul class="list-group">
-	
-	<%
-	_.each(groupedResults.RED, function(result) {
-	%>
-	
-  		<li class="list-group-item">
-  			<i class="icon icon-check-empty"></i>
-  			
-  			<%
-			_.each(result.output, function(output) {
-			%>				
-				<% if (output.type && output.type.includes('image')) { %>
-					<!-- render the image -->
-					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
-				<% } else { %>
-					<strong><%- output.value %></strong>
-				<% } %>
-			<%
-			});
-			%>
-			<br/>
-  			
-  			<em><%= result.check.name %></em>
-  			<span class="badge pull-right"><%= result.status %></span>
-			<span class="badge pull-right"><%= result.check.level %></span>
-			<span class="badge pull-right"><%= result.check.type %></span>
-			<br/>
-			<%= result.check.description %>
-			
-			<!-- code -->
-			<a 	
-				tabindex="0"
-				role="button"
-				class="popover-this" 
-				data-trigger="focus" 
-				data-html="true"
-				data-title="Code (<%= result.check.environment %>)"
-				data-content="<pre><%- result.check.code %></pre>">
-				<i class="icon icon-bug"></i>
-			</a>
-			
-			<!--  selectors -->
-			<a 	
-				tabindex="0"
-				role="button"
-				class="popover-this" 
-				data-trigger="focus" 
-				data-html="true"
-				data-title="Selectors"
-				data-content="<dl class=''><% _.each(result.check.selector, function(selector) { print('<dt>', selector.name, '</dt>'); print('<dd>', selector.xpath, '</dd>'); }); %></dl>">
-				<i class="icon icon-code"></i>
-			</a>
-			
-  		</li>
-	<%
-	});
-	%>
-	
-		</ul>
-		</div>
-		
+	  		<li class="list-group-item fail in collapse">
+	  			<span class="icon-stack">
+		  			<i class="icon icon-sign-blank"></i>
+		  			<i class="icon icon-remove"></i>
+	  			</span>
+	  			<%
+				_.each(result.output, function(output) {
+				%>				
+					<% if (output.type && output.type.includes('image')) { %>
+						<!-- render the image -->
+						<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
+					<% } else { %>
+						<span class="check-output"><%- output.value %></span>
+					<% } %>
+				<%
+				});
+				%>
+	  			
+	  			<span class="badge pull-right"><%= result.status %></span>
+				<span class="badge pull-right"><%= result.check.level %></span>
+				<span class="badge pull-right"><%= result.check.type %></span>
+				
+				<!--  selectors -->
+				<a tabindex="0"
+					role="button"
+					class="popover-this" 
+					data-trigger="focus" 
+					data-html="true"
+					data-title="<%= result.check.name %>"
+					data-content="<%= result.check.description %>">
+					<i class="icon icon-question-mark"></i>
+				</a>			
+	  		</li>
+		<% }); %>		
 	<% } %>	
 	
 	<% if (groupedResults.BLUE) { %>
-		<div class="alert alert-info" role="alert">
-		<i class="icon icon-info-sign"></i>
-		<a class="collapsed" role="button" data-toggle="collapse" href="#collapseSkip" aria-expanded="false" aria-controls="collapseSkip">
-		<%=groupedResults.BLUE.length%> informational checks.
-		</a>
-		These may include skips, errors and failures.
-		</div>
-		
-		<div class="collapse" id="collapseSkip">
-		<ul class="list-group">
+		<li class="list-group-item info" data-toggle="collapse" data-target=".list-group-item.info-check">
+			<h4>
+				<i class="icon icon-caret-right"></i>
+				<%=groupedResults.BLUE.length%> informational checks. These may include skips, errors and failures.
+			</h4>
+		</li>
 		
 					
-	<%
-	_.each(groupedResults.BLUE, function(result) {
-	%>
-		<li class="list-group-item">
-  			<i class="icon icon-info-sign"></i>
-  			
-			<%
-			_.each(result.output, function(output) {
-			%>				
-				<% if (output.type && output.type.includes('image')) { %>
-					<!-- render the image -->
-					<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
-				<% } else { %>
-					<strong><%- output.value %></strong>
-				<% } %>
-			<%
-			});
-			%>
-  			<br/>
-  			
-  			<em><%= result.check.name %></em>
-			<span class="badge pull-right"><%= result.status %></span>
-			<span class="badge pull-right"><%= result.check.level %></span>
-			<span class="badge pull-right"><%= result.check.type %></span>
-			<br/>
-			<%= result.check.description %>
-			<!-- code -->
-			<a 	
-				tabindex="0"
-				role="button"
-				class="popover-this" 
-				data-trigger="focus" 
-				data-html="true"
-				data-title="Code (<%= result.check.environment %>)"
-				data-content="<pre><%- result.check.code %></pre>">
-				<i class="icon icon-bug"></i>
-			</a>
-			<!--  selectors -->
-			<a 	
-				tabindex="0"
-				role="button"
-				class="popover-this" 
-				data-trigger="focus" 
-				data-html="true"
-				data-title="Selectors"
-				data-content="<dl class=''><% _.each(result.check.selector, function(selector) { print('<dt>', selector.name, '</dt>'); print('<dd>', selector.xpath, '</dd>'); }); %></dl>">
-				<i class="icon icon-code"></i>
-			</a>
-			
-  		</li>
-	<%
-	});
-	%>
+		<%
+		_.each(groupedResults.BLUE, function(result) {
+		%>
+			<li class="list-group-item info-check collapse">
+	  			<i class="icon icon-info-sign"></i>
+	  			
+				<%
+				_.each(result.output, function(output) {
+				%>				
+					<% if (output.type && output.type.includes('image')) { %>
+						<!-- render the image -->
+						<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
+					<% } else { %>
+						<span class="check-output"><%- output.value %></span>
+					<% } %>
+				<%
+				});
+				%>
+	  			
+				<span class="badge pull-right"><%= result.status %></span>
+				<span class="badge pull-right"><%= result.check.level %></span>
+				<span class="badge pull-right"><%= result.check.type %></span>
 	
-		</ul>
-		</div>
-		
+				<!--  selectors -->
+				<a tabindex="0"
+					role="button"
+					class="popover-this" 
+					data-trigger="focus" 
+					data-html="true"
+					data-title="<%=result.check.name%>"
+					data-content="<%= result.check.description %>">
+					<i class="icon icon-question-sign"></i>
+				</a>
+				
+	  		</li>
+		<% }); %>		
 	<% } %>
-	
-    
+	</ul>
   </div>
   
 </div>

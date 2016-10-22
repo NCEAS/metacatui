@@ -18,6 +18,8 @@
 .badge{
 	margin-left: 10px;
 	margin-right: 10px;
+	text-shadow: none;
+    font-weight: normal;
 }
 .danger{
 	color: #960303;
@@ -38,6 +40,20 @@
 }
 .success{
 	color: green;
+}
+.list-group-item.success {
+    background-color: #dff0d8;
+}
+.list-group-item.warning{
+	background-color: #fcf8e3;
+	color: #c09853;
+}
+.list-group-item.danger {
+    background-color: #f2dede;
+}
+.list-group-item.info{
+	background-color: #d9edf7;
+	color: #3a87ad;
 }
 .tooltip{
 	font-size: 12px;
@@ -248,7 +264,8 @@ header .citation {
 	border-color: #DDD;
 	color: #333;
 }
-.notification.success{
+.notification.success, 
+.icon.success{
 	color: #008000;
 }
 .notification.error{
@@ -817,6 +834,32 @@ img.icon{
 	opacity: 0.50;
 }
 	
+.list-group-item.success .icon-caret-right,
+.list-group-item.success .icon-caret-down,
+.list-group-item.warning .icon-caret-right,
+.list-group-item.warning .icon-caret-down,
+.list-group-item.info .icon-caret-right,
+.list-group-item.info .icon-caret-down,
+.list-group-item.danger .icon-caret-down,
+.list-group-item.danger .icon-caret-down{
+	color: #333;
+}
+.list-group-item.collapse {
+    padding: 0px;
+}
+.list-group-item.collapse.in{
+	padding: 10px 15px;
+}
+.list-group-item.fail .icon{
+	color: #960303;
+}
+.list-group-item.fail .icon-remove{
+	font-size: 1em;
+	color: #FFF;
+}
+.list-group-item.fail .icon-sign-blank{
+	font-size: 1.3em;
+}
 #mdqTypeSummary {
 	float: right; 
 	width: 70%;
@@ -828,9 +871,6 @@ img.icon{
 	margin:0px;	
 }
 
-#mdqResult .panel-heading {
-	overflow: auto;
-}
 
 /* different colors for each pie slice */
 #mdqResult .donut.data > g:nth-child(1) .donut-arc {
