@@ -846,9 +846,13 @@ img.icon{
 }
 .list-group-item.collapse {
     padding: 0px;
+    border: 0px;
+    margin-bottom: 0px;
 }
 .list-group-item.collapse.in{
 	padding: 10px 15px;
+	border: 1px solid #DDD;
+	margin-bottom: -1px;
 }
 .list-group-item.fail .icon{
 	color: #960303;
