@@ -16,7 +16,6 @@
 	margin-top: 10px;
 }
 .badge{
-	margin-left: 10px;
 	margin-right: 10px;
 	text-shadow: none;
     font-weight: normal;
@@ -841,8 +840,16 @@ img.icon{
 .list-group-item.info .icon-caret-right,
 .list-group-item.info .icon-caret-down,
 .list-group-item.danger .icon-caret-down,
-.list-group-item.danger .icon-caret-down{
+.list-group-item.danger .icon-caret-right{
 	color: #333;
+}
+.list-group-item .icon-caret-right,
+.list-group-item.collapsed .icon-caret-down{
+	display: none;
+}
+.list-group-item .icon-caret-down,
+.list-group-item.collapsed .icon-caret-right{
+	display: inline;
 }
 .list-group-item.collapse {
     padding: 0px;
@@ -854,15 +861,39 @@ img.icon{
 	border: 1px solid #DDD;
 	margin-bottom: -1px;
 }
-.list-group-item.fail .icon{
+.check.fail .icon{
 	color: #960303;
 }
-.list-group-item.fail .icon-remove{
+.fail.check .icon-remove{
 	font-size: 1em;
 	color: #FFF;
 }
-.list-group-item.fail .icon-sign-blank{
+.check.fail .icon-sign-blank{
 	font-size: 1.3em;
+}
+.check .icon{
+	font-size: 1.3em;
+	max-width: 20px;
+}
+.check .icon-stack{
+	max-width: 20px;
+}
+.check.warn .icon {
+    color: #c09853;
+    font-size: 1.6em;
+}
+.check.warn .icon-exclamation{
+	font-size: .9em;
+}
+.check.info-check .icon{
+	color: #3a87ad;
+}
+.check.info-check .icon-info{
+	font-size: .8em;
+}
+.check .icon.subtle{
+	color: #999;
+	font-size: 1em;
 }
 #mdqTypeSummary {
 	float: right; 
@@ -2263,6 +2294,10 @@ svg .no-activity,
   margin-bottom: -1px;
   background-color: #fff;
   border: 1px solid #ddd;
+  box-sizing: border-box;
+}
+.list-group-item .badge{
+	margin-top: 10px;
 }
 .panel>.list-identity .list-group-item.active{
 	border-left-width: 5px;

@@ -92,7 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 		},
 		
 		showLoading: function() {
-			this.$el.html(this.loadingTemplate());
+			this.$el.html(this.loadingTemplate({ msg: "Running quality report..."}));
 		},
 		
 		showCitation: function(){
@@ -175,7 +175,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 							viewRef.showCitation();
 							viewRef.show();
 							//Initialize all popover elements
-							$('.popover-this').popover();
+							viewRef.$('.popover-this').popover();
 						}
 				};
 				$.ajax(args);
