@@ -95,7 +95,7 @@
 		
 	  		<li class="list-group-item check pass collapse row-fluid">
 	  			<i class="icon icon-check-sign success span1"></i>	  			
-	  			<span class="span7">
+	  			<span class="span6">
 		  			<%
 					_.each(result.output, function(output) {
 					%>				
@@ -103,11 +103,13 @@
 							<!-- render the image -->
 							<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
 						<% } else { %>
-							<span class="check-output"><%- output.value %></span>
+							<div class="check-output"><%- output.value %></div>
 						<% } %>
 					<%
 					});
 					%>
+				</span>
+				<span class="span1">
 					<a  tabindex="0"
 						role="button"
 						class="popover-this" 
@@ -146,7 +148,7 @@
 	  				<i class="icon icon-check-empty"></i>
 	  			</span>
 	  			
-	  			<span class="span7">
+	  			<span class="span6">
 		  			<%
 					_.each(result.output, function(output) {
 					%>				
@@ -154,11 +156,13 @@
 							<!-- render the image -->
 							<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
 						<% } else { %>
-							<span class="check-output"><%- output.value %></span>
+							<div class="check-output"><%- output.value %></div>
 						<% } %>
 					<%
 					});
 					%>
+				</span>
+				<span class="span1">
 					<a tabindex="0"
 						role="button"
 						class="popover-this" 
@@ -197,7 +201,7 @@
 		  			<i class="icon icon-sign-blank"></i>
 		  			<i class="icon icon-remove"></i>
 	  			</span>
-	  			<span class="span7">
+	  			<span class="span6">
 		  			<%
 					_.each(result.output, function(output) {
 					%>				
@@ -205,11 +209,13 @@
 							<!-- render the image -->
 							<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
 						<% } else { %>
-							<span class="check-output"><%- output.value %></span>
+							<div class="check-output"><%- output.value %></div>
 						<% } %>
 					<%
 					});
 					%>
+				</span>
+	  			<span class="span1">					
 					<a  tabindex="0"
 						role="button"
 						class="popover-this" 
@@ -247,7 +253,7 @@
 		  			<i class="icon icon-check-empty"></i>
 		  			<i class="icon icon-info"></i>
 	  			</span>
-	  			<span class="span7">
+	  			<span class="span6">
 					<%
 					_.each(result.output, function(output) {
 					%>				
@@ -255,11 +261,13 @@
 							<!-- render the image -->
 							<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
 						<% } else { %>
-							<span class="check-output"><%- output.value %></span>
+							<div class="check-output"><%- output.value %></div>
 						<% } %>
 					<%
 					});
 					%>
+				</span>
+	  			<span class="span1">					
 					<a  tabindex="0"
 						role="button"
 						class="popover-this"
