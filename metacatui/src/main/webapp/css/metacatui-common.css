@@ -1073,6 +1073,9 @@ img.icon{
 #metadata-index-details .entitydetails .size{
 	display: inherit;
 }
+.metadata-view{
+	padding: 30px;
+}
 #Metadata  .citation,
 #Content.no-stylesheet .citation,
 #Metadata  > .container > .row-fluid > .citation,
@@ -2626,11 +2629,29 @@ ul.side-nav-items {
     border-right: 1px solid #DDD;
 }
 .side-nav + .metadata-container{
-	margin-left: 140px;
+	margin-left: 14.893617021276595%;
 	padding-left: 20px;
+}
+#editor-footer{
+	background-color: #333;
+    position: fixed;
+    width: 100%;
+    box-sizing: border-box;
+    bottom: 0px;
+    padding: 20px;
+    z-index:3;
+}
+.editor-controls .btn{
+	float: right;
+	margin-left: 10px;
+	color: #FFF;
+	border-color: #FFF;
 }
 .metadata-container.edit textarea{
 	width: 100%;
+}
+textarea.xlarge{
+	height: 200px;
 }
 /*******************************************
 Pager View

@@ -9,10 +9,6 @@
   	.mapMode #Header{
   		opacity: 1;
   	}
-  	
-  	#Content{
-  		max-width: 1024px;
-  	}
     
     .Editor #Content {
         max-width: 100%;

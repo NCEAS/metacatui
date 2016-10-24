@@ -351,7 +351,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                         
                     case "eml://ecoinformatics.org/eml-2.0.0":
                         memberModel = new EML211(context.attributes);
-                        memberModel.fetch();
                         break;
                         
                     case "eml://ecoinformatics.org/eml-2.0.1":
