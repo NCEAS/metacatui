@@ -1,7 +1,9 @@
 ﻿/* global define */
-define(['underscore', 'jquery', 'backbone', 'text!templates/editor.html'], function(_, $, Backbone, EditorTemplate){
+define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'models/metadata/eml211/EML211',
+    'collections/DataPackage', 'views/DataPackageView', 'text!templates/editor.html'], 
+    function(_, $, Backbone, DataONEObject, EML, DataPackage, DataPackageView, EditorTemplate){
     
-    var EditorView = Backbone.View.extend({
+        var EditorView = Backbone.View.extend({
         
         el: '#Content',
         
@@ -13,30 +15,44 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/editor.html'], funct
             
         },
         
-        /* The identifier of the root package id being rendered */
-        id: null,
+        defaults: {
+            /* The identifier of the root package id being rendered */
+            id: null,
+            
+            /* A list of the subviews of the editor */
+            subviews: []
+        },
         
-        /* A list of the subviews of the editor */
-        subviews: [],
-        
-        /* Constructor - initialize a new EditorView */
+        /* Initialize a new EditorView - called post constructor */
         initialize: function(options) {
             
-            // If options.id isn't present, generate and render a new package id and metadata id
-            if ( typeof options === "undefined" || options.id === null ) {
-                console.log("EditorView: Creating a new data package.");
+            var editorView = this;
+            console.log("EditorView: Creating a new data package.");
+            MetacatUI.rootDataPackage = new DataPackage(null, options);
                 
-            } else {
-                this.id = options.id;
-                console.log("Loading existing package from id " + options.id);
+            // And associate a science metadata model with it if not present
+            if ( typeof MetacatUI.rootDataPackage.scienceMetadataModel === "undefined" ||
+                 typeof MetacatUI.rootDataPackage.scienceMetadataModel === null) {
                 
-            }            
+                MetacatUI.rootDataPackage.scienceMetadataModel = new EML({type: "EML211"});
+                
+            }
+            
+            // Get the resource map from the server and populate the model with its members
+            MetacatUI.rootDataPackage.fetch();
+            this.dataPackageView = new DataPackageView({collection: MetacatUI.rootDataPackage});
+            //this.subviews.push(this.dataPackageView);
+
             return this;
         },
         
         /* Render the view */
         render: function() {
-			this.$el.append(this.template());
+			
+            MetacatUI.appModel.set('headerType', 'default');
+			$("body").addClass("Editor");
+            this.$el.html(this.template());
+            //$('#data-package-container').append(this.dataPackageView.render().$el);
             
             return this;
         },
@@ -44,6 +60,8 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/editor.html'], funct
         close: function() {
             this.remove(); // remove for the DOM, stop listening           
             this.off();    // remove callbacks, prevent zombies         
+			
+            $(".Editor").removeClass("Editor");
             
             // Close each subview
             _.each(this.subviews, function(i, subview) {
@@ -55,6 +73,7 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/editor.html'], funct
 			window.onbeforeunload = null;
             
         }
+                
     });
     return EditorView;
 });
