@@ -4,7 +4,7 @@
 	<span class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</span>		
 		
 	<% if (mdqUrl){ %>
-		<a href="#mdq/<%=model.id%>" class="btn subtle"><i class="icon icon-dashboard"></i> Quality report</a>
+		<a href="#mdq/<%=encodeURIComponent(model.id)%>" class="btn subtle"><i class="icon icon-dashboard"></i> Quality report</a>
 	<% } %>
 		
 	<% if(!model.isPublic){ %>
