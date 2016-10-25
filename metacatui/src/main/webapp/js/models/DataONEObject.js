@@ -48,7 +48,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
         	url: function(){
         		if(!this.get("id") && !this.get("seriesid")) return "";
         		
-        		return MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesid"));        		
+        		return MetacatUI.appModel.get("metaServiceUrl") + 
+                    (encodeURIComponent(this.get("id")) || encodeURIComponent(this.get("seriesid")));        		
         	},
         	            
             /* Updates the SystemMetadata for the object using MN.updateSystemMetadata() */
