@@ -10,8 +10,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         */
         var ScienceMetadata = DataONEObject.extend({
         	
+            // Only add fields present in the Solr service to the defaults
         	defaults: _.extend({
-	            type: "Metadata",
 	            abstract: [],
 	            attribute: [],
 	            attributeDescription: [],
@@ -60,6 +60,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	            sensorText: [],
 	            source: [],
 	            scientificName: [],
+                title: [],
 	            species: [],
 	            genus: [],
 	            family: [],
@@ -106,14 +107,64 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	            sem_comment: []        
         	}),
             
+	        type: "Metadata",
+            
+            /* Initialize a ScienceMetadata object */
             initialize: function(options) {
                 // Call initialize for the super class
-            	console.log("Sci Meta initialized");
+            	console.log("ScienceMetadata initialize() called.");
             	
                 //this.constructor.__super__.initialize.apply(this, options);
             	
                 
                 // ScienceMetadata-specific init goes here
+                
+            },
+            
+            /* Construct the Solr query URL to be called */
+            url: function() {
+                
+                // Build the URL to include default fields in ScienceMetadata
+                var fieldList = Object.keys(this.defaults),
+                    lastField = _.last(fieldList),
+                    searchFields = "",
+                    query = "q=",
+                    queryOptions = "&wt=json&fl=",
+                    url = "";
+                                    
+                // Make a list of the search fields
+                _.each(fieldList, function(value, key, list) {
+                    if ( value === lastField ) {
+                        searchFields += value;
+                        
+                    } else {
+                        searchFields += value;
+                        searchFields += ",";
+                        
+                    }
+                });
+                
+                queryOptions += searchFields;
+                query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
+                
+                url = MetacatUI.appModel.get("queryServiceUrl") + query + queryOptions;
+                return url;
+                
+            },
+            
+            /* parse the Solr results and return the first document */
+            parse: function(results) {
+                return results.response.docs[0];
+                
+            },
+            
+            /* Fetch the ScienceMetadata from the MN Solr service */
+            fetch: function(options) {
+            	//Add the authorization options 
+            	fetchOptions = _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
+
+            	//Call Backbone.Model.fetch to retrieve the info
+                return Backbone.Model.prototype.fetch.call(this, fetchOptions);
                 
             }
         });
