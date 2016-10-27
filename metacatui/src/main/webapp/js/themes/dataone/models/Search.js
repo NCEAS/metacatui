@@ -262,6 +262,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				});
 			}
 			
+			//---expand attribute using ontology ---
+			if(this.filterIsAvailable("attribute") && ((filter == "attribute") || getAll) && this.get("attribute").length){
+				var attribute = this.get('attribute');
+				if (attribute) {
+					var expandedAttributes = appLookupModel.bioportalExpand(attribute[0].value);
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["attribute"], expandedAttributes, {operator: "OR"});
+				}
+			}
+			
 			//---Identifier---
 			if(this.filterIsAvailable("id") && ((filter == "id") || getAll) && this.get('id').length){
 				var identifiers = this.get('id');
