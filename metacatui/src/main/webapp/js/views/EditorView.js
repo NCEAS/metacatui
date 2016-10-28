@@ -111,6 +111,7 @@ define(['underscore',
             
         },
         
+        /* Calls the appropriate render method depending on the model type */
         renderMember: function(model, collection, options) {
             
             // Render metadata or package information, based on the packageModel property       
@@ -182,14 +183,7 @@ define(['underscore',
 	    hideControls: function(){
 	    	this.$(".editor-controls").slideUp();
 	    },
-        
-        log: function(model, collection, options) {
-            console.log(model);
-            console.log(collection);
-            console.log(options);
-            
-        },
-        
+                
         /* Close the view and its sub views */
         onClose: function() {
             this.off();    // remove callbacks, prevent zombies         
