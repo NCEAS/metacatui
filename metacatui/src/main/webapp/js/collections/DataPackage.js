@@ -570,6 +570,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                 
             },
             
+            /* Merge package members into the collection as they are fetched */
             mergeMember: function(model, response, options) {
                 
                 // avoid adding unpopulated members (still an xhr object)
