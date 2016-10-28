@@ -60,6 +60,18 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
                 
             },
             
+            /* Fetch the EML from the MN object service */
+            fetch: function(options) {
+            	//Add the authorization options 
+            	fetchOptions = _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
+
+                fetchOptions = _.extend({dataType: "text"}, options);
+                
+            	//Call Backbone.Model.fetch to retrieve the info
+                return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+                
+            },
+            
             /* 
              Deserialize an EML 2.1.1 XML document
             */
