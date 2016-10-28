@@ -4,10 +4,11 @@ define(['underscore',
         'backbone',
         'collections/DataPackage',
         'models/metadata/eml211/EML211',
+        'models/metadata/ScienceMetadata',
         'views/metadata/EML211View',
         'views/DataPackageView',
         'text!templates/editor.html'], 
-        function(_, $, Backbone, DataPackage, EML, EMLView, DataPackageView, EditorTemplate){
+        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, EditorTemplate){
     
     var EditorView = Backbone.View.extend({
                 
@@ -27,9 +28,10 @@ define(['underscore',
             /* The identifier of the root package id being rendered */
             id: null,
             
-            /* A list of the subviews of the editor */
-            subviews: []
         },
+        
+        /* A list of the subviews of the editor */
+        subviews: [],
         
         /* Initialize a new EditorView - called post constructor */
         initialize: function(options) {
@@ -45,16 +47,16 @@ define(['underscore',
                 //TODO: This should create a DataPackage collection 
                 this.createModel();
 
-            }            
+            }
+                        
             return this;
         },
         
         //Create a new EML model for this view        
         createModel: function(){
-        	var model = new EML({ id: this.pid, type: "EML211" });
+        	var model = new ScienceMetadata({ id: this.pid, type: "Metadata" });
             
-            // Once the EML is populated, populate the associated package
-            this.listenToOnce(this.model, "change:resourceMap", this.getPackage);
+            // Once the ScienceMetadata is populated, populate the associated package
             this.model = model;
 
         },
@@ -79,35 +81,98 @@ define(['underscore',
 	            });
         	}
             
-            //When the metadata is retrieved, render it
-            this.listenToOnce(this.model, "sync", this.renderMetadata);
+            //When the basic Solr metadata are retrieved, get the associated package
+            this.listenToOnce(this.model, "sync", this.getDataPackage);
                         
             return this;
         },
         
         /* Get the data package associated with the EML */
-        getPackage: function(emlModel) {
-            console.log("EditorView.getPackage() called.");
+        getDataPackage: function(scimetaModel) {
+            console.log("EditorView.getDataPackage() called.");
+            var resourceMapIds = scimetaModel.get("resourceMap");
             
-            // Get the resource map from the server and populate the model with its members
-            // MetacatUI.rootDataPackage.fetch();
-            // this.dataPackageView = new DataPackageView({collection: MetacatUI.rootDataPackage});
-            // this.subviews.push(this.dataPackageView);
+            if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
+                console.log("Resource map ids could not be found for " + scimetaModel.id);
+                
+                // TODO: Create a fresh package (hmm - shoulda been there)
+                
+            } else {
+                
+                // Set the root data package for the collection
+                MetacatUI.rootDataPackage = new DataPackage(null, {id: resourceMapIds[0]});
+                // As the root collection is updated with models, render the UI
+                this.listenTo(MetacatUI.rootDataPackage, "update", this.renderMember);
+
+                MetacatUI.rootDataPackage.fetch();
+                                
+            }
             
             
         },
         
+        renderMember: function(model, collection, options) {
+            
+            // Render metadata or package information, based on the packageModel property       
+            if ( typeof model.packageModel === "undefined" ) {
+                this.renderMetadata(model, collection, options);
+                
+            } else {
+                this.renderDataPackage(model, collection, options);
+                
+            }
+            
+        },
+        
         /* Renders the metadata section of the EditorView */
-        renderMetadata: function(emlModel){
-        	console.log("Rendering EML Model ", emlModel);
+        renderMetadata: function(model, collection, options){
+            
+            // render metadata as the collection is updated, but only EML passed from the event
+            if ( typeof model.get === "undefined" || 
+                        model.get("formatid") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+                this.listenToOnce(model, "change", this.renderMember);
+                return;
+                
+            } else {
+            	console.log("Rendering EML Model ", model);
         	
-        	//Create an EML211 View and render it
-        	var emlView = new EMLView({ 
-        		model: this.model,
-        		edit: true
-        		});
-        	this.subviews.push(emlView);
-        	emlView.render();       	
+            	//Create an EML211 View and render it
+            	var emlView = new EMLView({ 
+            		model: model,
+            		edit: true
+            		});
+            	this.subviews.push(emlView);
+            	emlView.render();
+                this.off("change", this.renderMember, model); // avoid double renderings      	
+                
+            }
+        },
+        
+        /* Renders the data package section of the EditorView */
+        renderDataPackage: function(model, collection, options) {
+            
+            // render data packages passed in from the update event
+            if ( typeof model.packageModel === "undefined" ) {
+                return;
+                
+            }
+            
+            if ( typeof model.packageModel.get === "undefined" ||
+                        model.packageModel.get("formatid") === "undefined" || 
+                        model.packageModel.get("formatid") !== "http://www.openarchives.org/ore/terms" ) {
+                this.listenToOnce(model, "change", this.renderMember);
+                return;
+                
+            } else {
+            	console.log("Rendering Data Package Model ", model);
+                var dataPackageView = new DataPackageView({
+                    collection: dataPackage,
+                    edit: true});
+                this.subviews.push(dataPackageView);
+                dataPackageView.render();
+                this.off("change", this.renderMember, model); // avoid double renderings      	
+            }
+            
         },
         
 	    showControls: function(){
@@ -117,6 +182,13 @@ define(['underscore',
 	    hideControls: function(){
 	    	this.$(".editor-controls").slideUp();
 	    },
+        
+        log: function(model, collection, options) {
+            console.log(model);
+            console.log(collection);
+            console.log(options);
+            
+        },
         
         /* Close the view and its sub views */
         onClose: function() {
