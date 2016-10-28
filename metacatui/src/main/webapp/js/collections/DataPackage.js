@@ -12,37 +12,35 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
     */
         var DataPackage = Backbone.Collection.extend({
             
-            // Default properties of the DataPackage
-            defaults: {
-                // The package identifier
-                id: null,
+            // The package identifier
+            id: null,
             
-                // The type of the object (DataPackage, Metadata, Data)
-                type: 'DataPackage',
+            // The type of the object (DataPackage, Metadata, Data)
+            type: 'DataPackage',
             
-                // The list of nested child data package members of this data package
-                childPackages: [],
+            // The list of nested child data package members of this data package
+            childPackages: [],
             
-                // Simple queue to enqueue file transfers. Use push() and shift()
-                // to add and remove items. If this gets to large/slow, possibly
-                // switch to http://code.stephenmorley.org/javascript/queues/
-                transferQueue: [],
+            // Simple queue to enqueue file transfers. Use push() and shift()
+            // to add and remove items. If this gets to large/slow, possibly
+            // switch to http://code.stephenmorley.org/javascript/queues/
+            transferQueue: [],
             
-                // A flag ued for the package's edit status. Can be 
-                // set to false to 'lock' the package
-                editable: true,
+            // A flag ued for the package's edit status. Can be 
+            // set to false to 'lock' the package
+            editable: true,
 
-                // The model representing the DataPackage itself 
-                // (i.e. a DataONEObject with sysmeta for the resource map)
-                packageModel: null,
+            // The model representing the DataPackage itself 
+            // (i.e. a DataONEObject with sysmeta for the resource map)
+            packageModel: null,
+            
+            // The RDF graph representing this data package
+            dataPackageGraph: null,
+            
+            // The science metadata identifiers associated with this 
+            // data package (from cito:documents)
+            scienceMetadataIds: [],
                 
-                // The RDF graph representing this data package
-                dataPackageGraph: null,
-                
-                // The science metadata model associated with this data package
-                scienceMetadataModel: null
-            },
-                        
             // Constructor: Initialize a new DataPackage
             initialize: function(models, options) {
                 
@@ -50,7 +48,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                 this.dataPackageGraph = rdf.graph();
                 
                 // Create a packageModel if it's missing 
-                if ( typeof options === "undefined" || typeof options === null || typeof options.id === "undefined") {
+                if ( typeof options === "undefined" || 
+                     typeof options === null || 
+                     typeof options.id === "undefined") {
                     // Initialize the DataPackage system metadata in the packageModel attribute
                     this.packageModel = new DataONEObject({
                         type: "DataPackage",
@@ -310,9 +310,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                     // Get system metadata for each member to eval the formatId
                     _.each(memberStatements, function(memberStatement){
                         memberURIParts = memberStatement.object.value.split('/');
-                        memberPIDStr = memberURIParts[memberURIParts.length - 1];
+                        memberPIDStr = _.last(memberURIParts);
                         memberPID = decodeURIComponent(memberPIDStr);   
-                        console.log(memberPID);
                         
                         if ( memberPID ) {
                             memberModel = new DataONEObject({id: memberPID});
@@ -323,6 +322,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                         }
                         
                     }, this);
+                                        
                 } catch (error) {
                     console.log(error);
                     
@@ -342,12 +342,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                 
                 switch ( context.get("formatid") ) {
                     
-                    /*
                     case "http://www.openarchives.org/ore/terms":
                         memberModel = new DataPackage(context.attributes);
-                        memberModel.fetch();
                         break;
-                    */
                         
                     case "eml://ecoinformatics.org/eml-2.0.0":
                         memberModel = new EML211(context.attributes);
@@ -568,8 +565,30 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                 }
                 
                 // When the object is fetched, merge it into the collection
-                this.listenTo(memberModel, 'change', this.add);
+                this.listenTo(memberModel, 'sync', this.mergeMember);
                 memberModel.fetch({merge: true});
+                
+            },
+            
+            mergeMember: function(model, response, options) {
+                
+                // avoid adding unpopulated members (still an xhr object)
+                if ( typeof model.packageModel === "undefined" ) {
+                    if ( typeof model.get === "undefined" ) { 
+                        return; 
+                    }
+                    
+                } else if (typeof model.packageModel.get === "undefined") { 
+                    return;
+                    
+                }
+                
+                var mergeOptions = _.extend(options, {
+                    merge: true,
+                    remove: false
+                });
+                
+                this.add(model, mergeOptions);
                 
             },
             
