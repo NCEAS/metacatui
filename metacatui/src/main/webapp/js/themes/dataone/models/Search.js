@@ -93,6 +93,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					  seriesId : "seriesId",
 				  rightsHolder : "rightsHolder",
 				     submitter : "submitter",
+                //test_corpus_sm : "test_corpus_sm",
 				      username : ["rightsHolder", "writePermission", "changePermission"],
 				     	 taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 		},
