@@ -42,7 +42,31 @@ define(['jquery',
 	    	});
 	    	
 	    	return formattedText;
-		}
+		},
+		
+		unformatParagraphs: function(htmlText){
+			var paragraphs = htmlText.split("\n"),
+				xmlText = "";
+			
+			_.each(paragraphs, function(p){
+				xmlText += "<para>" + p + "</para>";
+			});
+			
+			return xmlText;
+		},
+		
+	    /*
+	     * When a text element is changed, update the attribute in the model
+	     */
+	    updateText: function(e){
+	    	var textEl = e.target;
+	    	
+	    	//Get the new abstract text
+	    	var newText = this.unformatParagraphs($(textEl).val());
+	    	
+	    	//Update the model
+	    	this.model.set($(textEl).attr("data-category"), newText);
+	    }
 	});
 
 	return ScienceMetadataView;

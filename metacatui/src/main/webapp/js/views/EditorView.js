@@ -21,7 +21,8 @@ define(['underscore',
         events: {
             "change input"    : "showControls",
             "change select"   : "showControls",
-            "change textarea" : "showControls"
+            "change textarea" : "showControls",
+            "click #save-editor" : "save"
         },
         
         defaults: {
@@ -178,6 +179,14 @@ define(['underscore',
                 this.off("change", this.renderMember, model); // avoid double renderings      	
             }
             
+        },
+        
+        /*
+         * Save the editor changes
+         */
+        save: function(){
+        	//Go through all the sections and save the model
+        	
         },
         
 	    showControls: function(){

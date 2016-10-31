@@ -6,13 +6,15 @@ define(['underscore', 'jquery', 'backbone',
 	function(_, $, Backbone, ScienceMetadataView, EML, Template, OverviewTemplate){
     
     var EMLView = ScienceMetadataView.extend({
+    	
+    	type: "EML211",
         
         el: '#metadata-container',
         
         /* Templates */
         
         events: {
-
+        	"change textarea.text" : "updateText"
         },
                 
         /* A list of the subviews */
@@ -148,7 +150,10 @@ define(['underscore', 'jquery', 'backbone',
 	    	var abstractText = this.formatParagraphs(this.model.get("abstract"), edit);
 	    	
 	    	if(edit)
-	    		var abstractEl = $(document.createElement("textarea")).addClass("xlarge").html(abstractText);
+	    		var abstractEl = $(document.createElement("textarea"))
+	    						 .addClass("xlarge text")
+	    						 .attr("data-category", "abstract")
+	    						 .html(abstractText);
 	    	else
 	    		var abstractEl = $(document.createElement("div")).append(abstractText);
 	    	
