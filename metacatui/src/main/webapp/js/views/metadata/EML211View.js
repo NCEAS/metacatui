@@ -1,9 +1,11 @@
-define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
+define(['underscore', 'jquery', 'backbone',
+        'views/metadata/ScienceMetadataView',
+        'models/metadata/eml211/EML211',
         'text!templates/eml.html',
         'text!templates/metadataOverview.html'], 
-	function(_, $, Backbone, EML, Template, OverviewTemplate){
+	function(_, $, Backbone, ScienceMetadataView, EML, Template, OverviewTemplate){
     
-    var EMLView = Backbone.View.extend({
+    var EMLView = ScienceMetadataView.extend({
         
         el: '#metadata-container',
         
@@ -45,6 +47,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
 			this.$el.append(this.template());
 			this.$container = this.$(".metadata-container");
 			
+			//Fetch the metadata model
 			this.listenTo(this.model, "sync", function(){
 		    	//Render the different sections of the metadata
 		    	this.renderOverview();
@@ -142,26 +145,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
          * Creates the abstract elements
          */
 	    createAbstract: function(edit){
-	    	//Get the abstract text
-	    	var fullAbstract = this.model.get("abstract"),
-	    		paragraphs = [],
-	    		abstractText = "";
-	    	
-	    	//Put the abstract in an array format to seperate out paragraphs
-	    	if(typeof fullAbstract.para == "string")
-	    		paragraphs.push(fullAbstract.para);
-	    	else if(typeof fullAbstract == "string")
-	    		paragraphs.push(fullAbstract);
-	    	else if(Array.isArray(fullAbstract.para))
-	    		paragraphs = fullAbstract.para;
-	    	
-	    	//For each paragraph, insert a new line
-	    	_.each(paragraphs, function(p){	    		
-	    		if(edit)
-	    			abstractText += p + "\n";
-	    		else
-	    			abstractText += "<p>" + p + "</p>";
-	    	});
+	    	var abstractText = this.formatParagraphs(this.model.get("abstract"), edit);
 	    	
 	    	if(edit)
 	    		var abstractEl = $(document.createElement("textarea")).addClass("xlarge").html(abstractText);
