@@ -125,7 +125,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             url: function() {
                 
                 // Build the URL to include default fields in ScienceMetadata
-                var fieldList = Object.keys(this.defaults),
+                var fieldList = "*",//Object.keys(this.defaults),
                     lastField = _.last(fieldList),
                     searchFields = "",
                     query = "q=",

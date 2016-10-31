@@ -95,8 +95,9 @@ define(['underscore',
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
-                // TODO: Create a fresh package (hmm - shoulda been there)
-                
+                //Create a new data package
+                MetacatUI.rootDataPackage = new DataPackage();
+                this.renderMetadata(this.model);                
             } else {
                 
                 // Set the root data package for the collection
@@ -117,10 +118,8 @@ define(['underscore',
             // Render metadata or package information, based on the packageModel property       
             if ( typeof model.packageModel === "undefined" ) {
                 this.renderMetadata(model, collection, options);
-                
             } else {
-                this.renderDataPackage(model, collection, options);
-                
+                this.renderDataPackage(model, collection, options);                
             }
             
         },
@@ -130,7 +129,7 @@ define(['underscore',
             
             // render metadata as the collection is updated, but only EML passed from the event
             if ( typeof model.get === "undefined" || 
-                        model.get("formatid") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+                        model.get("formatId") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
                 this.listenToOnce(model, "change", this.renderMember);
                 return;
                 
