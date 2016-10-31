@@ -42,7 +42,6 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
                // this.constructor.__super__.initialize.apply(this, options);
                 
                 // EML211-specific init goes here
-            	
                 
             },
             
@@ -65,7 +64,8 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
             	//Add the authorization options 
             	fetchOptions = _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
 
-                fetchOptions = _.extend({dataType: "text"}, options);
+            	//Add other AJAX options
+                fetchOptions = _.extend({dataType: "text"}, fetchOptions);
                 
             	//Call Backbone.Model.fetch to retrieve the info
                 return Backbone.Model.prototype.fetch.call(this, fetchOptions);

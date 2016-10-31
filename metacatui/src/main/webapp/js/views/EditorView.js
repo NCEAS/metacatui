@@ -135,15 +135,20 @@ define(['underscore',
                 
             } else {
             	console.log("Rendering EML Model ", model);
-        	
+            	
+            	//Create an EML model
+            	var emlModel = new EML(model.toJSON());
+            	
             	//Create an EML211 View and render it
             	var emlView = new EMLView({ 
-            		model: model,
+            		model: emlModel,
             		edit: true
             		});
             	this.subviews.push(emlView);
             	emlView.render();
-                this.off("change", this.renderMember, model); // avoid double renderings      	
+            	
+            	// avoid double renderings
+                this.off("change", this.renderMember, model);      	
                 
             }
         },

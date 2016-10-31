@@ -33,7 +33,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
     		
     		//Get the current mode
     		this.edit = options.edit || false;
-    		
+    		    		
             return this;
         },
         
@@ -44,16 +44,19 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EML211',
 			//Render the basic structure of the page and table of contents
 			this.$el.append(this.template());
 			this.$container = this.$(".metadata-container");
-	    	
-	    	//Render the different sections of the metadata
-	    	this.renderOverview();
-	    	this.renderPeople();
-	    	this.renderDates();
-	    	this.renderLocations();
-	    	this.renderTaxa();
-	    	this.renderMethods();
-	    	this.renderProject();
-	    	this.renderSharing();
+			
+			this.listenTo(this.model, "sync", function(){
+		    	//Render the different sections of the metadata
+		    	this.renderOverview();
+		    	this.renderPeople();
+		    	this.renderDates();
+		    	this.renderLocations();
+		    	this.renderTaxa();
+		    	this.renderMethods();
+		    	this.renderProject();
+		    	this.renderSharing();
+			});
+			this.model.fetch();
 	    	
             return this;
         },
