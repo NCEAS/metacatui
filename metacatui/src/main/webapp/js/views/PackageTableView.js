@@ -71,9 +71,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			members = _.filter(members, function(m){ return(m.type != "Package") });
 			
 			//Filter the members in order of preferred appearance
-			if(members.length < 150)
-				members = this.sort(members);
-			
+			members = this.sort(members);			
 			this.sortedMembers = members;
 			
 			var metadata = this.model.getMetadata();
@@ -160,8 +158,26 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				//If this model doesn't have members, return an empty array or a falsey value
 				if(!models) return models;
 			}
+			
 			// One == already sorted!
 			if(models.length == 1) return models;
+			//If there are too many models to sort (takes too much time) then just get the metadata to display first
+			else if(models.length > 150){
+				var view = this;
+				
+				
+				//Find the metadata doc we are currently viewing
+				var currentMetadata = _.find(models, function(m){ return (m.get("id") == view.currentlyViewing) });
+				//Add it to the front
+				if(currentMetadata){
+					models = _.without(models, currentMetadata);
+					models.unshift(currentMetadata);
+				}
+				
+				//Return the newly sorted array
+				return models;
+			}
+				
 			
 			var view = this,
 				metadataView = this.onMetadataView? this.parentView : null;
@@ -172,7 +188,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				
 					//If we are currently viewing a metadata document, find it
 					if(this.currentlyViewing)			
-						var currentMetadata = _.filter(models, function(m){ return (m.get("id") == view.currentlyViewing) });
+						var currentMetadata = _.find(models, function(m){ return (m.get("id") == view.currentlyViewing) });
 					
 					//For each model, find its position on the Metadata View page
 					var numNotFound = 0;
@@ -193,8 +209,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 						models = _.sortBy(models, "offsetTop");
 						
 						//Move the metadata model that we are currently viewing in the Metadata view to the top		
-						if(currentMetadata)
-							_.without(models, currentMetadata[0]).unshift(currentMetadata);
+						if(currentMetadata){
+							models = _.without(models, currentMetadata);
+							models.unshift(currentMetadata);
+						}
 						
 						//Flatten the array in case we have nesting
 						models = _.flatten(models);
