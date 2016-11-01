@@ -45,14 +45,12 @@ define(['jquery',
 		},
 		
 		unformatParagraphs: function(htmlText){
-			var paragraphs = htmlText.split("\n"),
-				xmlText = "";
+			var paragraphs = htmlText.trim().split("\n"),
+				modelAttr = {};
 			
-			_.each(paragraphs, function(p){
-				xmlText += "<para>" + p + "</para>";
-			});
+			modelAttr.para = paragraphs;
 			
-			return xmlText;
+			return modelAttr;
 		},
 		
 	    /*
@@ -62,10 +60,11 @@ define(['jquery',
 	    	var textEl = e.target;
 	    	
 	    	//Get the new abstract text
-	    	var newText = this.unformatParagraphs($(textEl).val());
+	    	var newAttr = this.unformatParagraphs($(textEl).val());
 	    	
 	    	//Update the model
-	    	this.model.set($(textEl).attr("data-category"), newText);
+	    	this.model.set($(textEl).attr("data-category"), newAttr);
+	    	console.log("Updated text field", this.model);
 	    }
 	});
 

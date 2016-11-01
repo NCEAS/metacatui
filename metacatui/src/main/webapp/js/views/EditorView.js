@@ -83,9 +83,20 @@ define(['underscore',
         	}
             
             //When the basic Solr metadata are retrieved, get the associated package
-            this.listenToOnce(this.model, "sync", this.getDataPackage);
+            this.listenToOnce(this.model, "sync", this.checkFormat);
                         
             return this;
+        },
+        
+        checkFormat: function(){
+	        if (typeof this.model.get === "undefined" || this.model.get("formatId") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+	        	this.listenToOnce(this.model, "change", this.renderMember);
+	        } else {
+	        	//Create an EML model
+	        	var emlModel = new EML(this.model.toJSON());
+	        	this.model = emlModel;	        	
+	        }
+	        this.getDataPackage(this.model);        	
         },
         
         /* Get the data package associated with the EML */
@@ -97,7 +108,7 @@ define(['underscore',
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
                 //Create a new data package
-                MetacatUI.rootDataPackage = new DataPackage();
+                MetacatUI.rootDataPackage = new DataPackage(this.model);
                 this.renderMetadata(this.model);                
             } else {
                 
@@ -106,11 +117,8 @@ define(['underscore',
                 // As the root collection is updated with models, render the UI
                 this.listenTo(MetacatUI.rootDataPackage, "update", this.renderMember);
 
-                MetacatUI.rootDataPackage.fetch();
-                                
-            }
-            
-            
+                MetacatUI.rootDataPackage.fetch();                                
+            }            
         },
         
         /* Calls the appropriate render method depending on the model type */
@@ -129,28 +137,17 @@ define(['underscore',
         renderMetadata: function(model, collection, options){
             
             // render metadata as the collection is updated, but only EML passed from the event
-            if ( typeof model.get === "undefined" || 
-                        model.get("formatId") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
-                this.listenToOnce(model, "change", this.renderMember);
-                return;
-                
-            } else {
-            	console.log("Rendering EML Model ", model);
-            	
-            	//Create an EML model
-            	var emlModel = new EML(model.toJSON());
-            	
+            if (this.model.type = "EML"){            	
             	//Create an EML211 View and render it
             	var emlView = new EMLView({ 
-            		model: emlModel,
+            		model: this.model,
             		edit: true
             		});
             	this.subviews.push(emlView);
             	emlView.render();
             	
             	// avoid double renderings
-                this.off("change", this.renderMember, model);      	
-                
+                this.off("change", this.renderMember, this.model);      	               
             }
         },
         
@@ -185,8 +182,11 @@ define(['underscore',
          * Save the editor changes
          */
         save: function(){
-        	//Go through all the sections and save the model
-        	
+        	//Save the model
+        	_.each(MetacatUI.rootDataPackage.models, function(model){
+        		if(model.hasChanged())
+        			model.serialize();
+        	});
         },
         
 	    showControls: function(){

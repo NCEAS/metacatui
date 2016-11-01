@@ -51,6 +51,7 @@ define(['underscore', 'jquery', 'backbone',
 			
 			//Fetch the metadata model
 			this.listenTo(this.model, "sync", function(){
+				console.log("EML model: ", this.model);
 		    	//Render the different sections of the metadata
 		    	this.renderOverview();
 		    	this.renderPeople();
