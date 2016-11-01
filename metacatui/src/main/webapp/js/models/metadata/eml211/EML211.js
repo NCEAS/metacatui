@@ -110,13 +110,10 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
 	           
 	           //Start the dataset node
 	           var dataset = document.createElement("dataset");
-	           //$(xml).append(dataset);
 	           
 	           //Get the JSON version of the model and pick out only the EML relevant attributes
 	           var modelJSON = this.toJSON();
 	           modelJSON = _.pick(modelJSON, emlAttr);
-	           
-	           
 	           
 	           console.log(this.toXML(modelJSON, dataset));
 	          	           

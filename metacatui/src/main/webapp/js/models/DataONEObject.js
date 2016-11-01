@@ -198,35 +198,44 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
            */
            toXML: function(json, containerNode){   
            	           	
-           	if(typeof json == "string"){
-           		containerNode.textContent = json;
-           		return containerNode;
-           	}
-           	
-           	for(var i=0; i<Object.keys(json).length; i++){
-           		var key = Object.keys(json)[i],
-           			contents = json[key];
-
-           		var node = document.createElement(key);
-           		           		            		
-           	   //Skip this attribute if it is not populated
-           	   if(!contents || (Array.isArray(contents) && !contents.length))
-           		   continue;
-           	   
-           	   //If it's a simple text node
-           	   if(typeof contents == "string"){
-           		   node.textContent = contents;
-           	   }
-           	   else if(Array.isArray(contents)){
-           		   for(var ii=0; ii<contents.length; ii++){ 
-               		   node = this.toXML(contents[ii], node);
-           		   }
-           	   }
-           	   else if(typeof contents == "object"){
-           		   $(node).append(this.toXML(contents, node));
-           	   }
-           	   
-           	   $(containerNode).append(node);
+			if(typeof json == "string"){
+				containerNode.textContent = json;
+				return containerNode;
+			}
+			
+			for(var i=0; i<Object.keys(json).length; i++){
+				var key = Object.keys(json)[i],
+					contents = json[key];
+			
+				var node = document.createElement(key);
+				           		            		
+			   //Skip this attribute if it is not populated
+			   if(!contents || (Array.isArray(contents) && !contents.length))
+				   continue;
+			   
+			   //If it's a simple text node
+			   if(typeof contents == "string"){
+				   node.textContent = contents;
+			   }
+			   else if(Array.isArray(contents)){
+				   var allNewNodes = [];
+				   
+				   for(var ii=0; ii<contents.length; ii++){ 
+					   //if(typeof contents[ii] == "string")
+						 //  node = this.toXML(contents[ii], node);
+					   //else{
+						   allNewNodes.push(this.toXML(contents[ii], $(node).clone()[0]));						   
+					   //}   					   
+				   }
+				   
+				   if(allNewNodes.length)
+					   node = allNewNodes;
+			   }
+			   else if(typeof contents == "object"){
+				   $(node).append(this.toXML(contents, node));
+			   }
+			   
+			   $(containerNode).append(node);
               }
 
               return containerNode;
