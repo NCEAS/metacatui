@@ -29,10 +29,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
             // A flag ued for the package's edit status. Can be 
             // set to false to 'lock' the package
             editable: true,
-
-            // The model representing the DataPackage itself 
-            // (i.e. a DataONEObject with sysmeta for the resource map)
-            packageModel: null,
             
             // The RDF graph representing this data package
             dataPackageGraph: null,
@@ -51,29 +47,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                 if ( typeof options === "undefined" || 
                      typeof options === null || 
                      typeof options.id === "undefined") {
-                    // Initialize the DataPackage system metadata in the packageModel attribute
-                    this.packageModel = new DataONEObject({
-                        type: "DataPackage",
-                        formatid: "http://www.openarchives.org/ore/terms",
-                        formattype: "RESOURCE"
-                    }, null);
-                    this.id = this.packageModel.id;
+                    this.id = "urn:uuid:" + uuid.v4();
+                    this.set("type", "DataPackage");
                 
                 // Otherwise fetch it by id, and populate it    
                 } else {
-                    this.packageModel = new DataONEObject({
-                        id: options.id,
-                        type: "DataPackage",
-                        formattype: "RESOURCE"
-                    }, null);
-                    this.id = this.packageModel.id;
-                    this.packageModel = this.packageModel.fetch();
-                    if ( ! typeof this.packageModel.seriesid === "undefined") {
-                        this.seriesid = this.packageModel.seriesid;
-                        
-                    }
                     
+                    // use the given id
+                    this.id = options.id;
+                    this.set("type", "DataPackage");
+                                        
                 }
+                
                 return this;  
             },
             
@@ -277,7 +262,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
                 return Backbone.Collection.prototype.fetch.call(this, fetchOptions);
             },
             
-            
             /* 
              * Deserialize a Package from OAI-ORE RDF XML
              */
@@ -336,230 +320,284 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
              * and update it appropriately if it is not a data object only
              */
             getMember: function(context, args) {
-                console.log("DataPackage.getMember() called.");
-                console.log("Package member id: " + context.id);
+                console.log("DataPackage.getMember() called for " + context.id);
                 var memberModel = {};
                 
                 switch ( context.get("formatid") ) {
                     
                     case "http://www.openarchives.org/ore/terms":
+                        context.set("type", "DataPackage");
                         memberModel = new DataPackage(context.attributes);
                         break;
                         
                     case "eml://ecoinformatics.org/eml-2.0.0":
+                        context.set("type", "Metadata");
                         memberModel = new EML211(context.attributes);
                         break;
                         
                     case "eml://ecoinformatics.org/eml-2.0.1":
+                        context.set("type", "Metadata");
                         memberModel = new EML211(context.attributes);
                         break;
                     
                     case "eml://ecoinformatics.org/eml-2.1.0":
+                        context.set("type", "Metadata");
                         memberModel = new EML211(context.attributes);
                         break;
                     
                     case "eml://ecoinformatics.org/eml-2.1.1":
+                        context.set("type", "Metadata");
                         memberModel = new EML211(context.attributes);
                         break;
                         
                     case "-//ecoinformatics.org//eml-access-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-access-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-attribute-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-attribute-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-constraint-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-constraint-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-coverage-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-coverage-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-dataset-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-dataset-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-distribution-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-distribution-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-entity-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-entity-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-literature-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-literature-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-party-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-party-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-physical-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-physical-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-project-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-project-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-protocol-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-protocol-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-resource-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-resource-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-software-2.0.0beta4//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-software-2.0.0beta6//EN" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "FGDC-STD-001-1998" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "FGDC-STD-001.1-1999" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "FGDC-STD-001.2-1999" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "INCITS-453-2009" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "ddi:codebook:2_5" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://datacite.org/schema/kernel-3.0" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://datacite.org/schema/kernel-3.1" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://datadryad.org/profile/v3.1" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://ns.dataone.org/metadata/schema/onedcx/v1.0" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://purl.org/dryad/terms/" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://purl.org/ornl/schema/mercury/terms/v1.0" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://rs.tdwg.org/dwc/xsd/simpledarwincore/" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.cuahsi.org/waterML/1.0/" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.cuahsi.org/waterML/1.1/" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.esri.com/metadata/esriprof80.dtd" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.icpsr.umich.edu/DDI" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.isotc211.org/2005/gmd" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.isotc211.org/2005/gmd-noaa" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.loc.gov/METS/" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2" :
+                        context.set("type", "Metadata");
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                         
                     default:
-                        // For other data and metadata formats, keep just the DataONEObject sysmeta
+                        // For other data formats, keep just the DataONEObject sysmeta
+                        context.set("type", "Data");
                         memberModel = context;
                                                 
                 }
@@ -574,25 +612,19 @@ define(['jquery', 'underscore', 'backbone', 'rdflib',
             mergeMember: function(model, response, options) {
                 
                 // avoid adding unpopulated members (still an xhr object)
-                if ( typeof model.packageModel === "undefined" ) {
-                    if ( typeof model.get === "undefined" ) { 
-                        return; 
-                    }
-                    
-                } else if (typeof model.packageModel.get === "undefined") { 
-                    return;
-                    
+                if ( typeof model.get === "undefined" ) { 
+                    return; 
                 }
                 
                 var mergeOptions = _.extend(options, {
                     merge: true,
-                    remove: false
+                    // remove: false
                 });
                 
                 this.add(model, mergeOptions);
                 
             },
-            
+                        
             /* 
              * Serialize the DataPackage to OAI-ORE RDF XML
              */
