@@ -64,7 +64,6 @@ define(['jquery',
 	    	
 	    	//Update the model
 	    	this.model.set($(textEl).attr("data-category"), newAttr);
-	    	console.log("Updated text field", this.model);
 	    }
 	});
 

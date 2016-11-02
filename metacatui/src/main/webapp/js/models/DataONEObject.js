@@ -161,29 +161,42 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             		for(var i = 0; i < xml.childNodes.length; i++) {
             			var item = xml.childNodes.item(i);
             			
+            			//If it's an empty text node, skip it
             			if((item.nodeType == 3) && (!item.nodeValue.trim()))
             				continue;
             			
+            			//Get the node name
             			var nodeName = item.localName;
+            			
+            			//If it's a new container node, convert it to JSON and add as a new object attribute
             			if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 1)) {
-            				obj[nodeName] = this.toJson(item);
+            				obj[nodeName] = { content: this.toJson(item) };
             			}
+            			//If it's a new text node, just store the text value and add as a new object attribute
             			else if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 3)){
             				obj = item.nodeValue;
             			}
+            			//If this node name is already stored as an object attribute...
             			else if(typeof(obj[nodeName]) != "undefined"){	
+            				//Cache what we have now
             				var old = obj[nodeName];
-            				
             				if(!Array.isArray(old))
             					old = [old];
          					
+            				//Add the new node info to the existing array we have now
         					if(item.nodeType == 1)
-        						var newArray = old.concat(this.toJson(item));
+        						var newArray = old.concat({ content: this.toJson(item) });
         					else if(item.nodeType == 3)
-        						var newArray = old.concat(item.nodeValue);
+        						var newArray = old.concat({ content: item.nodeValue });
         						
         					obj[nodeName] = newArray;          				
             			}
+            			
+            			//Store the attributes for this node
+            			_.each(item.attributes, function(attr){
+            				obj[nodeName][attr.localName] = attr.nodeValue;
+            			});
+            			
         			}
             		
             	}

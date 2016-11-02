@@ -106,7 +106,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
 	           var emlAttr = ["title", "creator", "alternateidentifier", "metadataprovider", "associatedparty",
 	                          "contact", "pubdate", "abstract", "coverage", "project", "intellectualrights", 
 	                          "distribution"],
-	               model = this;
+	               model = this;	           
 	           
 	           //Start the dataset node
 	           var dataset = document.createElement("dataset");
