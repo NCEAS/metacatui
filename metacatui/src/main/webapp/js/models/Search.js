@@ -296,7 +296,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					var value = (typeof taxon == "object")? taxon[i].value : taxon[i].trim();
 					value = value.substring(0, 1).toUpperCase() + value.substring(1);
 					
-					query += this.getMultiFieldQuery(this.fieldNameMap["taxon"], value, {subtext: false});
+					query += this.getMultiFieldQuery(this.fieldNameMap["taxon"], value, {subtext: true});
 				}
 			}
 			
@@ -449,9 +449,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var spatial = this.get('spatial');
 				
 				if(Array.isArray(spatial))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, { operator: "AND", subtext: false });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, { operator: "AND", subtext: true });				
 				else if(spatial) 
-					query += "+" + this.fieldNameMap["spatial"] + ':' + model.escapeSpecialChar(encodeURIComponent(spatial));
+					query += "+" + this.fieldNameMap["spatial"] + ':*' + model.escapeSpecialChar(encodeURIComponent(spatial)) + "*";
 			}
 			
 			//---Creator---

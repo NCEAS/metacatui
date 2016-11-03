@@ -148,7 +148,11 @@ define(['underscore', 'jquery', 'backbone',
          * Creates the abstract elements
          */
 	    createAbstract: function(edit){
-	    	var abstractText = this.formatParagraphs(this.model.get("abstract"), edit);
+	    	//Get the raw abstract from the model
+	    	var abstractRaw = this.model.get("abstract");
+	    		
+	    	//Format the abstract text
+	    	var abstractText = this.formatParagraphs(abstractRaw, edit);
 	    	
 	    	if(edit)
 	    		var abstractEl = $(document.createElement("textarea"))
