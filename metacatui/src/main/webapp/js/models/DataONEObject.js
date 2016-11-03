@@ -170,7 +170,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             parse: function(response){
             	// If the response is XML
             	if( (typeof response == "string") && response.indexOf("<") == 0 ) {
-            		return this.xmlToJson($.parseHTML(response)[1]);
+            		return this.toJson($.parseHTML(response)[1]);
             	
                 // Otherwise we have an object already    
             	} else if ( typeof response === "object") {
@@ -192,60 +192,108 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             },
             
             // A utility function for converting XML to JSON
-            xmlToJson: function(xml) {
+            toJson: function(xml) {
             	
             	// Create the return object
             	var obj = {};
-            	
-            /*	if (xml.nodeType == 1) { // element
-            		// do attributes
-            		if (xml.attributes.length > 0) {
-            		obj["@attributes"] = {};
-            			for (var j = 0; j < xml.attributes.length; j++) {
-            				var attribute = xml.attributes.item(j);
-            				obj["@attributes"][attribute.localName] = attribute.nodeValue;
-            			}
-            		}
-            	} else if (xml.nodeType == 3) { // text
-            		obj = xml.nodeValue;
-            	}
-*/
 
             	// do children
             	if (xml.hasChildNodes()) {
             		for(var i = 0; i < xml.childNodes.length; i++) {
             			var item = xml.childNodes.item(i);
             			
+            			//If it's an empty text node, skip it
             			if((item.nodeType == 3) && (!item.nodeValue.trim()))
             				continue;
             			
+            			//Get the node name
             			var nodeName = item.localName;
+            			
+            			//If it's a new container node, convert it to JSON and add as a new object attribute
             			if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 1)) {
-            				obj[nodeName] = this.xmlToJson(item);
+            				obj[nodeName] = { content: this.toJson(item) };
             			}
+            			//If it's a new text node, just store the text value and add as a new object attribute
             			else if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 3)){
             				obj = item.nodeValue;
             			}
+            			//If this node name is already stored as an object attribute...
             			else if(typeof(obj[nodeName]) != "undefined"){	
+            				//Cache what we have now
             				var old = obj[nodeName];
-            				
             				if(!Array.isArray(old))
             					old = [old];
          					
+            				//Add the new node info to the existing array we have now
         					if(item.nodeType == 1)
-        						var newArray = old.concat(this.xmlToJson(item));
+        						var newArray = old.concat({ content: this.toJson(item) });
         					else if(item.nodeType == 3)
-        						var newArray = old.concat(item.nodeValue);
+        						var newArray = old.concat({ content: item.nodeValue });
         						
         					obj[nodeName] = newArray;          				
             			}
+            			
+            			//Store the attributes for this node
+            			_.each(item.attributes, function(attr){
+            				obj[nodeName][attr.localName] = attr.nodeValue;
+            			});
+            			
         			}
             		
             	}
             	return obj;
-            }
+            },
             
-                    
+            /* 
+            Serialize the DataONE object JSON to XML
+            Parameters:
+            	json - the JSON object to convert to XML
+            	containerNode - an HTML element to inser the resulting XML into
+           */
+           toXML: function(json, containerNode){   
+           	           	
+			if(typeof json == "string"){
+				containerNode.textContent = json;
+				return containerNode;
+			}
+			
+			for(var i=0; i<Object.keys(json).length; i++){
+				var key = Object.keys(json)[i],
+					contents = json[key];
+			
+				var node = document.createElement(key);
+				           		            		
+			   //Skip this attribute if it is not populated
+			   if(!contents || (Array.isArray(contents) && !contents.length))
+				   continue;
+			   
+			   //If it's a simple text node
+			   if(typeof contents == "string"){
+				   node.textContent = contents;
+			   }
+			   else if(Array.isArray(contents)){
+				   var allNewNodes = [];
+				   
+				   for(var ii=0; ii<contents.length; ii++){ 
+					   //if(typeof contents[ii] == "string")
+						 //  node = this.toXML(contents[ii], node);
+					   //else{
+						   allNewNodes.push(this.toXML(contents[ii], $(node).clone()[0]));						   
+					   //}   					   
+				   }
+				   
+				   if(allNewNodes.length)
+					   node = allNewNodes;
+			   }
+			   else if(typeof contents == "object"){
+				   $(node).append(this.toXML(contents, node));
+			   }
+			   
+			   $(containerNode).append(node);
+              }
+
+              return containerNode;
+           }          
         }); 
         
         return DataONEObject; 

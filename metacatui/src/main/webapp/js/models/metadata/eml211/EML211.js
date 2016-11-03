@@ -8,41 +8,41 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
         */
         var EML211 = ScienceMetadata.extend({
 
+            type: "EML",            
+
         	defaults: _.extend({
-	            type: "Metadata",            
 	            isEditable: false,
-	            alternateIdentifier: [],
-	            shortName: null,
+	            alternateidentifier: [],
+	            shortname: null,
 	            title: null,
 	            creator: [], // array of EMLParty objects
-	            metadataProvider: [], // array of EMLParty objects
-	            associatedParty : [], // array of EMLParty objects
+	            metadataprovider: [], // array of EMLParty objects
+	            associatedparty : [], // array of EMLParty objects
 	            pubdate: null,
 	            language: null,
 	            series: null,
 	            abstract: [],
 	            keywordset: [], // array of EMLKeyword objects
-	            additionalInfo: [],
+	            additionalinfo: [],
 	            intellectualrights: [],
-	            onlineDist: [], // array of EMLOnlineDist objects
-	            offlineDist: [], // array of EMLOfflineDist objects
-	            geographicCoverages : [], //an array for GeographicCoverages
-	            temporalCoverages : [], //an array of TemporalCoverages
-	            taxonomicClassifications : [], //an array of Taxons
+	            onlinedist: [], // array of EMLOnlineDist objects
+	            offlinedist: [], // array of EMLOfflineDist objects
+	            geographiccoverages : [], //an array for GeographicCoverages
+	            temporalcoverages : [], //an array of TemporalCoverages
+	            taxonomicclassifications : [], //an array of Taxons
 	            purpose: [],
 	            contact: [], // array of EMLParty objects
 	            publisher: [], // array of EMLParty objects
-	            pubPlace: null,
+	            pubplace: null,
 	            methods: [], // array of EMLMethods objects
 	            project: [], // array of EMLProject objects
         	}),
-        	
+
             initialize: function(options) {
                 // Call initialize for the super class
                // this.constructor.__super__.initialize.apply(this, options);
                 
                 // EML211-specific init goes here
-            	
                 
             },
             
@@ -65,7 +65,8 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
             	//Add the authorization options 
             	fetchOptions = _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
 
-                fetchOptions = _.extend({dataType: "text"}, options);
+            	//Add other AJAX options
+                fetchOptions = _.extend({dataType: "text"}, fetchOptions);
                 
             	//Call Backbone.Model.fetch to retrieve the info
                 return Backbone.Model.prototype.fetch.call(this, fetchOptions);
@@ -89,18 +90,35 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
             	if(!datasetEl || !datasetEl.length)
             		return {};
             	
-            	return this.xmlToJson(datasetEl[0]);            	
+            	return this.toJson(datasetEl[0]);            	
             },
             
-            /* 
-             Serialize the EML211 object to XML
-            */
-            toXML: function(){
-                var xml = "";
-                
-                return xml;
-            },
+            serialize: function(){
+            	var eml = '<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1"' +
+            			'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' + 
+            			'xmlns:ds="eml://ecoinformatics.org/dataset-2.1.1"' + 
+            			'xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.1"' +
+            			'packageId="' + this.get("id") + '"' + 
+            			'system="' + MetacatUI.appModel.get("baseUrl") + '"' +
+            			'xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 eml.xsd">';
             
+	           //Get the attributes for EML only
+	           var emlAttr = ["title", "creator", "alternateidentifier", "metadataprovider", "associatedparty",
+	                          "contact", "pubdate", "abstract", "coverage", "project", "intellectualrights", 
+	                          "distribution"],
+	               model = this;	           
+	           
+	           //Start the dataset node
+	           var dataset = document.createElement("dataset");
+	           
+	           //Get the JSON version of the model and pick out only the EML relevant attributes
+	           var modelJSON = this.toJSON();
+	           modelJSON = _.pick(modelJSON, emlAttr);
+	           
+	           console.log(this.toXML(modelJSON, dataset));
+	          	           
+            },
+               
             /*
              Add an entity into the EML 2.1.1 object
             */
