@@ -159,7 +159,7 @@ define(['underscore',
 
             // render metadata as the collection is updated, but only EML passed from the event
             if ( typeof model.get === "undefined" || 
-                        model.get("formatid") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+                        model.get("formatid").content !== "eml://ecoinformatics.org/eml-2.1.1" ) {
                 console.log("Not EML. TODO: Render generic ScienceMetadata.");
                 return;
                 
