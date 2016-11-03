@@ -182,14 +182,30 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             				var old = obj[nodeName];
             				if(!Array.isArray(old))
             					old = [old];
+            				
+            				//Create a new object to store this node info
+            				var newNode = {};
          					
             				//Add the new node info to the existing array we have now
-        					if(item.nodeType == 1)
-        						var newArray = old.concat({ content: this.toJson(item) });
-        					else if(item.nodeType == 3)
-        						var newArray = old.concat({ content: item.nodeValue });
+        					if(item.nodeType == 1){
+        						newNode.content = this.toJson(item);
+        						var newArray = old.concat(newNode);
+        					}
+        					else if(item.nodeType == 3){
+        						newNode.content = item.nodeValue;
+        						var newArray = old.concat(newNode);
+        					}
+        					       					
+                			//Store the attributes for this node
+                			_.each(item.attributes, function(attr){
+                				newNode[attr.localName] = attr.nodeValue;
+                			});
         						
-        					obj[nodeName] = newArray;          				
+                			//Replace the old array with the updated one
+        					obj[nodeName] = newArray; 
+        					
+        					//Exit
+        					continue;
             			}
             			
             			//Store the attributes for this node
@@ -218,41 +234,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 			
 			for(var i=0; i<Object.keys(json).length; i++){
 				var key = Object.keys(json)[i],
-					contents = json[key];
+					contents = json[key].content || json[key];
 			
 				var node = document.createElement(key);
 				           		            		
-			   //Skip this attribute if it is not populated
-			   if(!contents || (Array.isArray(contents) && !contents.length))
-				   continue;
-			   
-			   //If it's a simple text node
-			   if(typeof contents == "string"){
-				   node.textContent = contents;
-			   }
-			   else if(Array.isArray(contents)){
-				   var allNewNodes = [];
+				//Skip this attribute if it is not populated
+				if(!contents || (Array.isArray(contents) && !contents.length))
+					continue;
 				   
-				   for(var ii=0; ii<contents.length; ii++){ 
-					   //if(typeof contents[ii] == "string")
-						 //  node = this.toXML(contents[ii], node);
-					   //else{
-						   allNewNodes.push(this.toXML(contents[ii], $(node).clone()[0]));						   
-					   //}   					   
-				   }
-				   
-				   if(allNewNodes.length)
-					   node = allNewNodes;
-			   }
-			   else if(typeof contents == "object"){
-				   $(node).append(this.toXML(contents, node));
-			   }
-			   
-			   $(containerNode).append(node);
-              }
-
-              return containerNode;
-           }          
+				//If it's a simple text node
+				if(typeof contents == "string"){
+					node.textContent = contents;
+				}
+				else if(Array.isArray(contents)){
+					var allNewNodes = [];
+				
+					for(var ii=0; ii<contents.length; ii++){ 
+						allNewNodes.push(this.toXML(contents[ii], $(node).clone()[0]));						   
+					}
+					   
+					if(allNewNodes.length)
+						node = allNewNodes;
+				}
+				else if(typeof contents == "object"){
+					$(node).append(this.toXML(contents, node));
+					var attributeNames = _.without(Object.keys(json[key]), "content");
+				}
+				
+				//Add the attributes to the node
+				if(attributeNames && Array.isArray(attributeNames)){
+					_.each(attributeNames, function(attr){
+						$(node).attr(attr, json[key][attr]);
+					});
+				}
+				
+				$(containerNode).append(node);
+			}
+			
+			return containerNode;
+		  }          
         }); 
         
         return DataONEObject; 
