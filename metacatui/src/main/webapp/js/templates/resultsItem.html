@@ -28,7 +28,7 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route tooltip-this" title="Click to Download" href="', package_service, URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
+				print('<a class="download stop-route tooltip-this" title="Click to Download" download href="', appModel.get('objectServiceUrl'), URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
 			}			
           	%>          
       </div>
