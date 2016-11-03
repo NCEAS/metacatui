@@ -1,11 +1,15 @@
 ﻿<!-- Icon column -->
 <td></td>
 <!-- Files column -->
-<% if ( typeof title !== "undefined" && title !== null ) { %>
-    <td><%= title %></td>
+<% if ( typeof title !== "undefined" && 
+        title !== null &&      
+        typeof title.content !== "undefined" ) { %>
+    <td><%= title.content %></td>
     
-<% } else if ( typeof filename !== "undefined" && filename !== null) { %>
-    <td><%= filename %></td>
+<% } else if ( typeof filename !== "undefined" && 
+               filename !== null &&
+               typeof filename.content !== "undefined" ) { %>
+    <td><%= filename.content %></td>
     
 <% } else {%>
     <td><%= id %></td>
@@ -17,14 +21,16 @@
     <td><%= sizeStr %></td>
     
 <% } else {%>
-    <td><%= size %></td>
+    <td><%= size.content %></td>
     
 <% } %>
 <!-- Type column -->
-<% if (typeof type !== "undefined" && type !== null ) { %>
+<% if (typeof type !== "undefined" && 
+       type !== null ) { %>
     <td><%= type %></td>
 <% } else { %>
     <td></td>
+    
 <% } %>
 <!-- Guide or Status column -->
 <!--td></td-->
