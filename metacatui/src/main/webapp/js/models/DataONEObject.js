@@ -49,9 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             /**
              * Convert number of bytes into human readable format
              *
-             * @param integer bytes     Number of bytes to convert
-             * @param integer precision Number of digits after the decimal separator
-             * @return string
+             * @return sizeStr for the given model
              */
             bytesToSize: function(){  
                 var kilobyte = 1024;
@@ -60,7 +58,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 var terabyte = gigabyte * 1024;
                 var precision = 0;
             
-                var bytes = this.get("size");                        
+                var bytes = this.get("size").content;                        
            
                 if ((bytes >= 0) && (bytes < kilobyte)) {
                     this.set("sizeStr", bytes + ' B');
