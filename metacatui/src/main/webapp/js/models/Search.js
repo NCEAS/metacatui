@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				all: [],
 				creator: [],
 				taxon: [],
-				resourceMap: false,
+				//resourceMap: false,
 				yearMin: 1900, //The user-selected minimum year
 				yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
 				pubYear: false,
