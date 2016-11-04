@@ -13,7 +13,7 @@
 		    	<ul id="current-attribute-filters" class="current-filters" data-category="attribute"></ul>
 		    	<ul id="current-annotation-filters" class="current-filters" data-category="annotation"></ul>
 		    	<ul id="current-resourceMap-filters" class="current-filters" data-category="resourceMap">
-		    		<% if (resourceMap){ %>
+		    		<% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ %>
 		    			<li class="current-filter"><span class="category"><%=searchModelRef.fieldLabels["resourceMap"]%></span><i class="icon-remove remove-filter"></i></li>
 		    		<% } %>
 		    	</ul>
@@ -71,26 +71,28 @@
 			    
 			    <% } %>
 			    
-				<div class="filter-contain collapsable" id="includes-files" data-category="resourceMap">
-					<label class="expand-collapse-control">
-						<i class="icon icon-caret-right expand"></i>					
-						<i class="icon icon-caret-down collapse"></i>
-						<img src="img/data-table.png" class="icon" />
-						<span class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top">
-							Data files
-						</span>
-					</label>
-					<div class="filter-input-contain clear" id="includes-files-buttonset">
-						<label for="includes_data">
-							<i class="icon icon-check"></i>
-							<i class="icon icon-check-empty"></i>
-							Only results with data
+			   <% if(searchModelRef.filterIsAvailable("resourceMap")){ %>
+				   <div class="filter-contain collapsable" id="includes-files" data-category="resourceMap">
+						<label class="expand-collapse-control">
+							<i class="icon icon-caret-right expand"></i>					
+							<i class="icon icon-caret-down collapse"></i>
+							<img src="img/data-table.png" class="icon" />
+							<span class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top">
+								Data files
+							</span>
 						</label>
-						<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
-						<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-title="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
+						<div class="filter-input-contain clear" id="includes-files-buttonset">
+							<label for="includes_data">
+								<i class="icon icon-check"></i>
+								<i class="icon icon-check-empty"></i>
+								Only results with data
+							</label>
+							<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ print("checked"); } %> />
+							<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-title="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
+						</div>
+						<div class="clear"></div>
 					</div>
-					<div class="clear"></div>
-				</div>
+				<% } %>
 				
 				<% if(searchModelRef.filterIsAvailable("dataSource")){ %>
 					<div class="filter-contain collapsable" id="member-nodes-container" data-category="dataSource">

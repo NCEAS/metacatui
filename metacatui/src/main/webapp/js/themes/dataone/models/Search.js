@@ -86,10 +86,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						   all : "",
 					   creator : "originText",
 					   spatial : "siteText",
-				   resourceMap : "resourceMap",
+				   resourceMap : "documents",
 				   	   pubYear : ["dateUploaded", "datePublished"],
 				   	dataSource : "datasource",
-				   			id : "id",
+		   	   				id : ["id", "documents", "resourceMap"],
 					  seriesId : "seriesId",
 				  rightsHolder : "rightsHolder",
 				     submitter : "submitter",
@@ -273,11 +273,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			
 			//---Identifier---
-			if(this.filterIsAvailable("id") && ((filter == "id") || getAll) && this.get('id').length){
+			if(this.filterIsAvailable("id") && ((filter == "id") || getAll) && this.get("id").length){
 				var identifiers = this.get('id');
 				
 				if(Array.isArray(identifiers))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "AND", subtext: true });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "OR", subtext: true });				
 				else if(identifiers) 
 					query += "+" + this.fieldNameMap["id"] + ':*' + this.escapeSpecialChar(encodeURIComponent(identifiers)) + "*";
 			}
@@ -549,19 +549,24 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		/*
 		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
 		 * Example:  title:(resistance OR salmon OR "pink salmon")
+		 * Options: 
+		 * 		- operator (OR or AND)
+		 * 		- subtext (binary) - will surround search value with wildcards to search for partial matches
+		 * 		- Example:
+		 * 			var options = { operator: "OR", subtext: true }
 		 */
 		getGroupedQuery: function(fieldName, values, options){
 			if(!values) return "";
 			values = _.compact(values);
 			if(!values.length) return "";
-
+			
 			var query = "",
 				numValues = values.length,
 				model = this;
 			
 			if(Array.isArray(fieldName) && (fieldName.length > 1))
 				return this.getMultiFieldQuery(fieldName, values, options);
-			
+						
 			if(options && (typeof options == "object")){
 				var operator = options.operator,
 					subtext = options.subtext;
@@ -644,7 +649,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var valueString = "";
 			if(Array.isArray(value)){
 				var model = this;
-				_.each(value, function(v, i){	
+				_.each(value, function(v, i){
+					if((typeof v == "object") && v.value)
+						v = v.value;
+					
 					if((value.length > 1) && (i == 0)) valueString += "("
 						
 					if(model.needsQuotes(v)) valueString += '"' + encodeURIComponent(v.trim()) + '"';

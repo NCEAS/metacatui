@@ -24,15 +24,28 @@
 			    	</ul>
 			    </div>
 				
-				<div class="filter-contain">
-					<h3 class="nav-header">
-						<img src="img/data-table.png" class="icon" />
-						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
-						<label for="includes_data" class="popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top">
-						Only results with data
+				<% if(searchModelRef.filterIsAvailable("resourceMap")){ %>
+				   <div class="filter-contain collapsable" id="includes-files" data-category="resourceMap">
+						<label class="expand-collapse-control">
+							<i class="icon icon-caret-right expand"></i>					
+							<i class="icon icon-caret-down collapse"></i>
+							<img src="img/data-table.png" class="icon" />
+							<span class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top">
+								Data files
+							</span>
 						</label>
-					</h3>
-				</div>
+						<div class="filter-input-contain clear" id="includes-files-buttonset">
+							<label for="includes_data">
+								<i class="icon icon-check"></i>
+								<i class="icon icon-check-empty"></i>
+								Only results with data
+							</label>
+							<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ print("checked"); } %> />
+							<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-title="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
+						</div>
+						<div class="clear"></div>
+					</div>
+				<% } %>
 				
 				<div class="input-append filter-contain">
 					<h3 class="nav-header"><i class="icon icon-user"></i><label>Created by</label></h3>

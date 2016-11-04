@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				all: [],
 				creator: [],
 				taxon: [],
-				resourceMap: false,
+				//resourceMap: false,
 				yearMin: 1900, //The user-selected minimum year
 				yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
 				pubYear: false,
@@ -89,7 +89,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					   spatial : "siteText",
 				   resourceMap : "documents",
 				   	   pubYear : ["datePublished", "dateUploaded"],
-				   	   		id : ["id", "documents", "resourceMap"],
+			   	   		    id : ["id", "documents", "resourceMap"],
 				  rightsHolder : "rightsHolder",
 				     submitter : "submitter",
 				      username : ["rightsHolder", "writePermission", "changePermission"],
@@ -631,7 +631,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var valueString = "";
 			if(Array.isArray(value)){
 				var model = this;
-				_.each(value, function(v, i){	
+				_.each(value, function(v, i){
 					if((typeof v == "object") && v.value)
 						v = v.value;
 					
