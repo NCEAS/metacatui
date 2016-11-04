@@ -1926,6 +1926,11 @@ tfoot .control i{
 	margin-bottom: 0px;
 }
 
+.service-table span.copy-success {
+	position: absolute;
+	margin-top: 4px;
+	margin-left: 10px;
+}
 
 /**----------------------------------------**/
 

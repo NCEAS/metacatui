@@ -64,7 +64,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 					row_html += '&nbsp;<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-title="' + viewRef.tooltip_text[d.type] + '" data-placement="top" data-original-title="" title=""></i>';
 				}
 
-				row_html += '</td><td class="service-endpoint"><input type="text" value="' + d.endpoint + '" /><button class="btn" data-endpoint-url="' + d.endpoint + '">Copy</button></td></tr>';
+				row_html += '</td><td class="service-endpoint"><input type="text" value="' + d.endpoint + '" /><button class="btn" data-clipboard-text="' + d.endpoint + '">Copy</button><span class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</span></td></tr>';
 
 				$(tbody).append(row_html);
 
@@ -77,9 +77,35 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 
 			// Add Clipboard.js copy functionality to each endpoint
 			$(viewRef.$el).find('button').each(function(i) {
-				new Clipboard(this, {
+				var clipboard = new Clipboard(this, {
 					target: function(trigger) {
-						return trigger.previousElementSibling;
+						return trigger.prev;
+					}
+				});
+
+				clipboard.on("success", function(e){
+					$(e.trigger).siblings(".copy-success").show().delay(1000).fadeOut();
+				});
+
+				clipboard.on("error", function(e){
+					// Get a ref to the <input> element associated with this Copy element
+					var $target = $(e.trigger).prev("input");
+
+					// Show or hide the tooltip depending on the state
+					console.log('attr is `' + $target.attr("data-original-title") + '`');
+					console.log('data is `' + $target.data("original-title") + '`');
+
+					if($target.data("original-title") !== null) {
+						console.log('showing tip');
+						$target.tooltip({
+							title: "Press Ctrl+c to copy",
+							placement: "top"
+						}).tooltip('show');
+						$target.select();
+					} else {
+						console.log('hiding tip');
+						$target.tooltip("hide");
+						$target.tooltip("destroy");
 					}
 				});
 			});
