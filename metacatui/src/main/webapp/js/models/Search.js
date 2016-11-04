@@ -87,9 +87,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						   all : "",
 					   creator : "originText",
 					   spatial : "siteText",
-				   resourceMap : "resourceMap",
+				   resourceMap : "documents",
 				   	   pubYear : ["datePublished", "dateUploaded"],
-				   	   		id : "id",
+				   	   		id : ["id", "documents", "resourceMap"],
 				  rightsHolder : "rightsHolder",
 				     submitter : "submitter",
 				      username : ["rightsHolder", "writePermission", "changePermission"],
@@ -264,7 +264,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var identifiers = this.get('id');
 				
 				if(Array.isArray(identifiers))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "AND", subtext: true });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "OR", subtext: true });				
 				else if(identifiers) 
 					query += "+" + this.fieldNameMap["id"] + ':*' + this.escapeSpecialChar(encodeURIComponent(identifiers)) + "*";
 			}
@@ -296,7 +296,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					var value = (typeof taxon == "object")? taxon[i].value : taxon[i].trim();
 					value = value.substring(0, 1).toUpperCase() + value.substring(1);
 					
-					query += this.getMultiFieldQuery(this.fieldNameMap["taxon"], value, {subtext: true});
+					query += this.getMultiFieldQuery(this.fieldNameMap["taxon"], value, {subtext: false});
 				}
 			}
 			
@@ -449,9 +449,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var spatial = this.get('spatial');
 				
 				if(Array.isArray(spatial))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, { operator: "AND", subtext: true });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, { operator: "AND", subtext: false });				
 				else if(spatial) 
-					query += "+" + this.fieldNameMap["spatial"] + ':*' + model.escapeSpecialChar(encodeURIComponent(spatial)) + "*";
+					query += "+" + this.fieldNameMap["spatial"] + ':' + model.escapeSpecialChar(encodeURIComponent(spatial));
 			}
 			
 			//---Creator---
@@ -624,11 +624,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(Array.isArray(value)){
 				var model = this;
 				_.each(value, function(v, i){	
+					if((typeof v == "object") && v.value)
+						v = v.value;
+					
 					if((value.length > 1) && (i == 0)) valueString += "("
 						
 					if(model.needsQuotes(v)) valueString += '"' + encodeURIComponent(v.trim()) + '"';
-					else if(subtext)        valueString += "*" + encodeURIComponent(v.trim()) + "*";
-					else                    valueString += encodeURIComponent(v.trim());
+					else if(subtext)         valueString += "*" + encodeURIComponent(v.trim()) + "*";
+					else                     valueString += encodeURIComponent(v.trim());
 					
 					if(i < value.length-1)
 						valueString += " OR ";

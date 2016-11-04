@@ -23,6 +23,7 @@ MetacatUI.themeMap =
 		'models/AppModel' : 'js/themes/' + MetacatUI.theme + '/models/AppModel.js',
 		'models/NodeModel' : 'js/themes/' + MetacatUI.theme + '/models/NodeModel.js',
 		'models/Map' : 'js/themes/' + MetacatUI.theme + '/models/Map.js',
+		'models/Search' : 'js/themes/' + MetacatUI.theme + '/models/Search.js',
 		'routers/router' : 'js/themes/' + MetacatUI.theme + '/routers/router.js'
 		}
 };

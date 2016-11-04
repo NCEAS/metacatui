@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
 	function($, _, Backbone, SolrResult) {
 	'use strict';
@@ -14,12 +14,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		 * value - the value that will be included in the query
 		 * description - a longer text description of the filter value
 		 */
-		defaults: function(){ 
+		defaults: function(){
 			return {
 				all: [],
 				creator: [],
 				taxon: [],
-				resourceMap: false,
+				//resourceMap: false,
 				yearMin: 1900, //The user-selected minimum year
 				yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
 				pubYear: false,
@@ -34,15 +34,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				geohashes: [],
 				geohashLevel: 9,
 				geohashGroups: {},
-				spatial: [],
+				//dataSource: [],
+				username: [],
 				rightsHolder: [],
 				submitter: [],
-				username: [],
+				spatial: [],
 				attribute: [],
-				annotation: [],
-				//test_corpus_sm: "F",
+				//annotation: [],
 				additionalCriteria: [],
-				dataSource: [],
 				id: [],
 				seriesId: [],
 				formatType: [{
@@ -73,28 +72,28 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		     dataYear : "Data coverage",
 		      pubYear : "Publish year",
 		      	   id : "Identifier",
+		     seriesId : "seriesId",
 		        taxon : "Taxon",
 		      spatial : "Location",
-		    	  all : ""
+		      	  all : ""
 		},
 		
 		//Map the filter names to their index field names
 		fieldNameMap: {
-					 attribute : "attributeName",
+					 attribute : "attribute",
 					annotation : "sem_annotation_bioportal_sm",
+					dataSource : "datasource",
 					formatType : "formatType",
 						   all : "",
 					   creator : "originText",
 					   spatial : "siteText",
 				   resourceMap : "documents",
-				   	   pubYear : ["dateUploaded", "datePublished"],
-				   	dataSource : "datasource",
-		   	   				id : ["id", "documents", "resourceMap"],
-					  seriesId : "seriesId",
+				   	   pubYear : ["datePublished", "dateUploaded"],
+			   	   		    id : ["id", "documents", "resourceMap"],
 				  rightsHolder : "rightsHolder",
 				     submitter : "submitter",
 				      username : ["rightsHolder", "writePermission", "changePermission"],
-				     	 taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
+			     	     taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 		},
 		
 		currentFilters: function(){
@@ -158,7 +157,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				else if(Array.isArray(currentFilterValues)){
 					var newFilterValues = _.without(currentFilterValues, filterValueToRemove);
 					_.each(currentFilterValues, function(currentFilterValue, key){
-						var valueString = (typeof currentFilterValue == "object")? currentFilterValue.value : currentFilterValue;	
+						var valueString = (typeof currentFilterValue == "object")? currentFilterValue.value : currentFilterValue;
 						if(valueString == filterValueToRemove){
 							newFilterValues = _.without(newFilterValues, currentFilterValue);
 						}
@@ -220,8 +219,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			//----All other filters with a basic name:value pair pattern----
 			var otherFilters = ["attribute", "formatType", "rightsHolder", "submitter"];
-			
-			if(this.filterIsAvailable("test_corpus_sm")) otherFilters.push("test_corpus_sm");
 			
 			//Start the query string
 			var query = "";
@@ -314,6 +311,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					
 					//Add to the query if we are searching publication year
 					query += "+" + this.getMultiFieldQuery(this.fieldNameMap["pubYear"], "[" + yearMin + "-01-01T00:00:00Z TO " + yearMax + "-12-31T00:00:00Z]");
+					//query += "+" + this.fieldNameMap["pubYear"] + ":%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";				
 				}
 			}
 			
@@ -326,8 +324,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					var yearMin = this.get('yearMin');
 					var yearMax = this.get('yearMax');	
 					
-					query += "+beginDate:%5B" + yearMin + "-01-01T00:00:00Z%20TO%20*%5D" +
-					 		 "+endDate:%5B*%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";
+					query += "+beginDate:[" + yearMin + "-01-01T00:00:00Z%20TO%20*]" +
+					 		 "+endDate:[*%20TO%20" + yearMax + "-12-31T00:00:00Z]";
 				}
 			}
 			
@@ -388,6 +386,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				}
 			}
 			
+			//-----Theme restrictions from Registry Model-----
+			if((filter == "registryCriteria") || getAll){
+				var registryCriteria = registryModel.get('searchFields');
+				_.each(registryCriteria, function(value, key, list) {
+					query += "+" + model.escapeSpecialChar(value);
+				});
+			}
+			
 			//-----Other Filters/Basic Filters-----			
 			_.each(otherFilters, function(filterName, key, list){
 				if(model.filterIsAvailable(filterName) && ((filter == filterName) || getAll)){
@@ -406,11 +412,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						// Does this need to be wrapped in quotes?
 						if(model.needsQuotes(filterValue)) filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
 						else filterValue = encodeURIComponent(filterValue);
-						
-						//Get the field name
-						var fieldName = model.fieldNameMap[filterName] || filterName;
 
-						query += "+" + fieldName + ":" + model.escapeSpecialChar(filterValue);			
+						query += "+" + model.fieldNameMap[filterName] + ":" + model.escapeSpecialChar(filterValue);			
 					}
 				}
 			});
@@ -519,7 +522,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Check for the colon : character (and encoded colons)
 			if((value.indexOf(":") > -1) || value.indexOf("%3A") > -1)
 				return true;
-		
+			
 			return false;
 		},
 		
@@ -533,17 +536,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		/*
 		 * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
 		 * Example:  title:(resistance OR salmon OR "pink salmon")
-		 * Options: 
-		 * 		- operator (OR or AND)
-		 * 		- subtext (binary) - will surround search value with wildcards to search for partial matches
-		 * 		- Example:
-		 * 			var options = { operator: "OR", subtext: true }
 		 */
 		getGroupedQuery: function(fieldName, values, options){
 			if(!values) return "";
 			values = _.compact(values);
 			if(!values.length) return "";
-			
+
 			var query = "",
 				numValues = values.length,
 				model = this;
@@ -640,8 +638,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					if((value.length > 1) && (i == 0)) valueString += "("
 						
 					if(model.needsQuotes(v)) valueString += '"' + encodeURIComponent(v.trim()) + '"';
-					else if(subtext)        valueString += "*" + encodeURIComponent(v.trim()) + "*";
-					else                    valueString += encodeURIComponent(v.trim());
+					else if(subtext)         valueString += "*" + encodeURIComponent(v.trim()) + "*";
+					else                     valueString += encodeURIComponent(v.trim());
 					
 					if(i < value.length-1)
 						valueString += " OR ";

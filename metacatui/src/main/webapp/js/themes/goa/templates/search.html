@@ -24,15 +24,17 @@
 			    	</ul>
 			    </div>
 				
-				<div class="filter-contain">
-					<h3 class="nav-header">
-						<img src="img/data-table.png" class="icon" />
-						<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
-						<label for="includes_data" class="popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top">
-						Only results with data
-						</label>
-					</h3>
-				</div>
+				<% if(searchModelRef.filterIsAvailable("resourceMap")){ %>
+					<div class="filter-contain">
+						<h3 class="nav-header">
+							<img src="img/data-table.png" class="icon" />
+							<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
+							<label for="includes_data" class="popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top">
+							Only results with data
+							</label>
+						</h3>
+					</div>
+				<% } %>
 				
 				<div class="input-append filter-contain">
 					<h3 class="nav-header"><i class="icon icon-user"></i><label>Created by</label></h3>
