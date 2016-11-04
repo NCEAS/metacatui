@@ -1886,6 +1886,7 @@ tfoot .control i{
 
 .service-table td {
 	height: 1em;
+	vertical-align: middle;
 }
 .service-table td.service-name {
 	width: 150px;
