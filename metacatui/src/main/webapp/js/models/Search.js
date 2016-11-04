@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				all: [],
 				creator: [],
 				taxon: [],
-				//resourceMap: false,
+				resourceMap: false,
 				yearMin: 1900, //The user-selected minimum year
 				yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
 				pubYear: false,
@@ -87,9 +87,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						   all : "",
 					   creator : "originText",
 					   spatial : "siteText",
-				   resourceMap : "resourceMap",
+				   resourceMap : "documents",
 				   	   pubYear : ["datePublished", "dateUploaded"],
-				   	   		id : "id",
+				   	   		id : ["id", "documents", "resourceMap"],
 				  rightsHolder : "rightsHolder",
 				     submitter : "submitter",
 				      username : ["rightsHolder", "writePermission", "changePermission"],
@@ -264,7 +264,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var identifiers = this.get('id');
 				
 				if(Array.isArray(identifiers))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "AND", subtext: true });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, { operator: "OR", subtext: true });				
 				else if(identifiers) 
 					query += "+" + this.fieldNameMap["id"] + ':*' + this.escapeSpecialChar(encodeURIComponent(identifiers)) + "*";
 			}
@@ -632,11 +632,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(Array.isArray(value)){
 				var model = this;
 				_.each(value, function(v, i){	
+					if((typeof v == "object") && v.value)
+						v = v.value;
+					
 					if((value.length > 1) && (i == 0)) valueString += "("
 						
 					if(model.needsQuotes(v)) valueString += '"' + encodeURIComponent(v.trim()) + '"';
-					else if(subtext)        valueString += "*" + encodeURIComponent(v.trim()) + "*";
-					else                    valueString += encodeURIComponent(v.trim());
+					else if(subtext)         valueString += "*" + encodeURIComponent(v.trim()) + "*";
+					else                     valueString += encodeURIComponent(v.trim());
 					
 					if(i < value.length-1)
 						valueString += " OR ";
