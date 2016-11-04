@@ -18,24 +18,22 @@ define([
          *  sidebar, and a metadata content section.
          */
         var DataPackageView = Backbone.View.extend({
-            
+                        
             tagName: "table",
             
             className: "table table-striped table-hover",
             
             id: "data-package-table",
             
-            dataPackage: null,
-            
             subviews: [],
             
             template: _.template(DataPackageTemplate),
             
-            initialize: function(models, options) {
+            initialize: function(options) {
+                // listen for change (not add) events because models are being merged
+                this.listenTo(MetacatUI.rootDataPackage, 'change', this.addOne); // render new items
+                this.listenTo(MetacatUI.rootDataPackage, 'reset', this.addAll); // render all items
                 
-                this.listenTo(MetacatUI.rootDataPackage, 'add', this.addOne); // render new items
-                this.listenTo(MetacatUI.rootDataPackage, 'reset', this.AddAll) // render all items
-                                
                 return this;
                 
             },
@@ -54,6 +52,8 @@ define([
              * Add a single DataItemView row to the DataPackageView
              */
             addOne: function(item) {
+                console.log("DataPackageView.addOne called for " + item);
+                
                 var dataItemView = new DataItemView({model: item});
                 this.subviews.push(dataItemView); // keep track of all views
                 $('#data-package-table-body').append(dataItemView.render().el);
@@ -66,12 +66,16 @@ define([
             addAll: function() {
                 this.$('data-package-table-body').html(''); // clear the table first
                 MetacatUI.rootDataPackage.each(this.addOne, this);
+                
             },
             
-            close: function() {
+            /*
+             * Close subviews as needed
+             */
+            onClose: function() {
                 // Close each subview
                 _.each(this.subviews, function(i, subview) {
-    				subview.close();
+    				subview.onClose();
                 
                 });
             

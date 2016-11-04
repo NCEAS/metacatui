@@ -18,6 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	            formatid: null,
 	            formattype: null,
 	            size: null,
+	            sizeStr: null,
 	            checksum: null,
 	            checksumalgorithm: null,
 	            submitter: null,
@@ -42,7 +43,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
         	
             initialize: function(attrs, options) {
                 console.log("DataONEObject.initialize() called.");
-                
+                this.on("change:size", this.bytesToSize);
+            },
+
+            /**
+             * Convert number of bytes into human readable format
+             *
+             * @return sizeStr for the given model
+             */
+            bytesToSize: function(){  
+                var kilobyte = 1024;
+                var megabyte = kilobyte * 1024;
+                var gigabyte = megabyte * 1024;
+                var terabyte = gigabyte * 1024;
+                var precision = 0;
+            
+                var bytes = this.get("size").content;                        
+           
+                if ((bytes >= 0) && (bytes < kilobyte)) {
+                    this.set("sizeStr", bytes + ' B');
+         
+                } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+                    this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
+         
+                } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
+         
+                } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
+         
+                } else if (bytes >= terabyte) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
+         
+                } else {
+                    this.set("sizeStr", bytes + ' B');
+                    
+                }
             },
             
         	url: function(){

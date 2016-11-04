@@ -34,7 +34,7 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             /* Render the template into the DOM */
             render: function() {
                 console.log('DataItemView: render()');
-                this.$el.html( this.template() ); // use this.model.attributes
+                this.$el.html( this.template(this.model.attributes) );
 
                 
                 return this;

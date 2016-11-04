@@ -1,24 +1,50 @@
 ﻿<!-- Icon column -->
 <td></td>
 <!-- Files column -->
-<td></td>
+<% if ( typeof title !== "undefined" && 
+        title !== null &&      
+        typeof title.content !== "undefined" ) { %>
+    <td><%= title.content %></td>
+    
+<% } else if ( typeof filename !== "undefined" && 
+               filename !== null &&
+               typeof filename.content !== "undefined" ) { %>
+    <td><%= filename.content %></td>
+    
+<% } else {%>
+    <td><%= id %></td>
+    
+<% } %>
+    
 <!-- Size column -->
-<td></td>
+<% if ( typeof sizeStr !== "undefined" && sizeStr !== null ) { %>
+    <td><%= sizeStr %></td>
+    
+<% } else {%>
+    <td><%= size.content %></td>
+    
+<% } %>
 <!-- Type column -->
-<td></td>
+<% if (typeof type !== "undefined" && 
+       type !== null ) { %>
+    <td><%= type %></td>
+<% } else { %>
+    <td></td>
+    
+<% } %>
 <!-- Guide or Status column -->
-<td></td>
+<!--td></td-->
 <!-- Button column -->
 <td>
-  <button id="edit-12345" type="button" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-    <i class="glyphicons-pencil"></i> Edit <span class="caret"></span>
+  <button id="edit-12345" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+    <i class="icon-large icon-pencil"></i>  Edit  <span class="caret"></span>
     <ul class="dropdown-menu">
-      <li><a href="#"><i class="glyphicons-pencil"></i>Rename ...</a></li>
-      <li><a href="#"><i class="glyphicons-pencil"></i>Duplicate</a></li>
-      <li><a href="#"><i class="glyphicons-pencil"></i>Add Folder ...</a></li>
-      <li><a href="#"><i class="glyphicons-pencil"></i>Add Files ...</a></li>
+      <li><a href="#"><i class="icon-pencil"></i>Rename ...</a></li>
+      <li><a href="#"><i class="icon-pencil"></i>Duplicate</a></li>
+      <li><a href="#"><i class="icon-pencil"></i>Add Folder ...</a></li>
+      <li><a href="#"><i class="icon-pencil"></i>Add Files ...</a></li>
       <li role="separator" class="divider"></li>
-      <li><a href="#"><i class="glyphicons-pencil"></i>Remove ...</a></li>
+      <li><a href="#"><i class="icon-pencil"></i>Remove ...</a></li>
     </ul>    
   </button>
 </td>
