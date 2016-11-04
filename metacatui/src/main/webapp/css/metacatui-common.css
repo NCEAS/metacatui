@@ -1894,6 +1894,50 @@ tfoot .control i{
 /**----------------------------------------**/
 
 /****************************************** 
+
+
+/******************************************
+* Service Registration table
+********************************************/
+.service-table {
+	margin-top: 2em;
+}
+
+.service-table td {
+	height: 1em;
+}
+.service-table td.service-name {
+	width: 50px;
+}
+
+.service-table td.service-description {
+	min-width: 200px;
+	max-width: 300px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.service-table td.service-type {
+	width: 50px;
+}
+
+.service-table td.service-endpoint {
+	width: 200px;
+}
+
+.service-table td.service-endpoint input {
+	width: 120px;
+}
+
+.service-table td.service-endpoint button {
+	width: 60px;
+}
+
+/**----------------------------------------**/
+
+
+/******************************************
 * Citations and Citation Popovers
 ********************************************/
 .popover .citation .id{
