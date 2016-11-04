@@ -16,14 +16,18 @@
 	margin-top: 10px;
 }
 .badge{
-	margin-left: 10px;
 	margin-right: 10px;
+	text-shadow: none;
+    font-weight: normal;
 }
 .danger{
 	color: #960303;
 }
 .strong{
 	font-weight: bold;
+}
+.emphasis{
+	font-style: italic;
 }
 .large{
 	font-size: 1.5em;
@@ -35,6 +39,20 @@
 }
 .success{
 	color: green;
+}
+.list-group-item.success {
+    background-color: #dff0d8;
+}
+.list-group-item.warning{
+	background-color: #fcf8e3;
+	color: #c09853;
+}
+.list-group-item.danger {
+    background-color: #f2dede;
+}
+.list-group-item.info{
+	background-color: #d9edf7;
+	color: #3a87ad;
 }
 .tooltip{
 	font-size: 12px;
@@ -162,6 +180,10 @@ footer{
 h3{
 	font-size: 1.5em;
 }
+header .citation {
+    margin-bottom: 20px;
+    display: block;
+}
 
 /****************************************** 
 ** Buttons ***
@@ -241,7 +263,8 @@ h3{
 	border-color: #DDD;
 	color: #333;
 }
-.notification.success{
+.notification.success, 
+.icon.success{
 	color: #008000;
 }
 .notification.error{
@@ -781,6 +804,153 @@ img.icon{
 	width: calc(100% - 214px);
 }
 
+/* MDQ */
+
+#mdqResult .alert [data-toggle="collapse"]:after
+{
+    /*content: "\e072"; "play" icon */
+    content: "-";
+    float: right;
+    color: #b0c5d8;
+    font-size: 18px;
+    line-height: 22px;
+}
+#mdqResult .alert [data-toggle="collapse"].collapsed:after
+{
+    content: "+";
+}
+
+.mdq .popover {
+	max-width: 50%;
+}
+
+#mdqResult .progress {
+	margin-bottom: 10px;
+	margin-top: 0px;
+}
+
+#mdqResult .progress-bar-success {
+	opacity: 0.50;
+}
+	
+.list-group-item.success .icon-caret-right,
+.list-group-item.success .icon-caret-down,
+.list-group-item.warning .icon-caret-right,
+.list-group-item.warning .icon-caret-down,
+.list-group-item.info .icon-caret-right,
+.list-group-item.info .icon-caret-down,
+.list-group-item.danger .icon-caret-down,
+.list-group-item.danger .icon-caret-right{
+	color: #333;
+}
+.list-group-item .icon-caret-right,
+.list-group-item.collapsed .icon-caret-down{
+	display: none;
+}
+.list-group-item .icon-caret-down,
+.list-group-item.collapsed .icon-caret-right{
+	display: inline;
+}
+.list-group-item.collapse {
+    padding: 0px;
+    border: 0px;
+    margin-bottom: 0px;
+}
+.list-group-item.collapse.in{
+	padding: 10px 15px;
+	border: 1px solid #DDD;
+	margin-bottom: -1px;
+}
+.check.fail .icon{
+	color: #960303;
+}
+.fail.check .icon-remove{
+	font-size: 1em;
+	color: #FFF;
+}
+.check.fail .icon-sign-blank{
+	font-size: 1.3em;
+}
+.check .icon{
+	font-size: 1.3em;
+	max-width: 20px;
+}
+.check .icon-stack{
+	max-width: 20px;
+}
+.check.warn .icon {
+    color: #c09853;
+    font-size: 1.6em;
+}
+.check.warn .icon-exclamation{
+	font-size: .9em;
+}
+.check.info-check .icon{
+	color: #3a87ad;
+}
+.check.info-check .icon-info{
+	font-size: .8em;
+}
+.check .icon.subtle{
+	color: #999;
+	font-size: 1em;
+}
+#mdqTypeSummary {
+	float: right; 
+	width: 70%;
+}
+
+#mdqResult #data-chart {
+	height: 220px;
+	width: 250px;
+	margin:0px;	
+}
+
+
+/* different colors for each pie slice */
+#mdqResult .donut.data > g:nth-child(1) .donut-arc {
+	fill: #b3e69f;
+}
+#mdqResult .donut.data > g:nth-child(1) .donut-arc-label,
+#mdqResult .donut.data > g:nth-child(1) .donut-arc.active {
+	fill: #468847;
+}
+
+#mdqResult .donut.data > g:nth-child(2) .donut-arc {
+	fill: #fff0a1;
+}
+#mdqResult .donut.data > g:nth-child(2) .donut-arc-label,
+#mdqResult .donut.data > g:nth-child(2) .donut-arc.active {
+	fill: #c09853;
+}
+
+#mdqResult .donut.data > g:nth-child(3) .donut-arc {
+	fill: #fbb0b0;
+}
+#mdqResult .donut.data > g:nth-child(3) .donut-arc-label,
+#mdqResult .donut.data > g:nth-child(3) .donut-arc.active {
+	fill: #b94a48;
+}
+
+#mdqResult .donut.data > g:nth-child(4) .donut-arc  {
+	fill: #91d7fb;
+}
+#mdqResult .donut.data > g:nth-child(4) .donut-arc-label,
+#mdqResult .donut.data > g:nth-child(4) .donut-arc.active {
+	fill: #3a87ad;
+}
+
+#mdqResult .donut-labels{
+	opacity: 0.0;
+}
+
+#mdqResult .donut-arc.active + .donut-labels,
+#mdqResult .donut-arc.active + .donut-labels .donut-arc-count.rotated{
+	opacity: 1;
+	font-weight: bold;
+}
+
+
 /* Prov chart popovers */
 .prov-chart .popover{
 	min-width: 300px;
@@ -1073,9 +1243,6 @@ img.icon{
 #metadata-index-details .entitydetails .size{
 	display: inherit;
 }
-.metadata-view{
-	padding: 30px;
-}
 #Metadata  .citation,
 #Content.no-stylesheet .citation,
 #Metadata  > .container > .row-fluid > .citation,
@@ -1301,8 +1468,9 @@ img.icon{
 	margin-left: 180px;
 }
 .annotation-container .add-tag{
+	margin-left: 10px;	
 	margin-top: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     text-shadow: none;
 }
 .annotation-attribute-name{
@@ -1334,8 +1502,6 @@ img.icon{
 	padding: 10px;
 }
 .annotation.tag {
-    padding: .35em .75em;
-    margin-right: 5px;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
@@ -1344,11 +1510,8 @@ img.icon{
     text-shadow: none;
     box-shadow: none;
     text-align: center;
-    margin-top: 10px;
-    margin-bottom: 10px;   
 }
 .annotation-viewer-container .annotation.tag{
-	margin-bottom: 10px;
     display: inline-block;
 }
 .annotator-tags,
@@ -1446,6 +1609,53 @@ img.icon{
     background-color: #999;
     color: #DDD;
 }
+
+/** Hide the search when in the dropdown menu **/
+.dropdown-menu .ncboAutocomplete {
+	display: none;
+}
+
+#bioportal-tree-annotator {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+#bioportal-tree-label .annotation.tag.btn {
+    margin-left: 10px;
+    margin-top: -20px;
+    margin-bottom: 10px;
+}
+
+.ncboAutocomplete .ui-menu .ui-menu-item a.ui-state-focus, .ncboAutocomplete .ui-menu .ui-menu-item a.ui-state-hover, .ncboAutocomplete .ui-menu .ui-menu-item a.ui-state-active, .ui-menu-item a {
+    text-shadow: none;
+    font-size: 1.3em;
+}
+/** hide the tree until we have it where we want it **/
+#bioportal-tree {
+	display: none;
+}
+.dropdown-menu #bioportal-tree {
+	display: block;
+}
+#bioportal-popover #bioportal-tree {
+	display: block;
+}
+#sidebar .input-append  {
+	font-size: 1em;
+}
+#bioportal-popover .popover{
+	max-width: 400px;
+	width: 400px;
+	
+}
+#bioportal-popover .popover-content{
+	width: 95%;
+}
+#bioportal-popover #bioportal-tree{
+	overflow-y: scroll;
+    max-height: 300px;
+    overflow-x: visible;
+}
+
 /****************************************** 
 * Images, Maps, and Media
 ********************************************/
@@ -1661,28 +1871,71 @@ tfoot .control i{
 .expand-collapse-control > a > .icon{
 	margin-right: 5px;
 }
-.download-contents.service .popover{
-	max-width: 600px;
-	background-color: rgba(0,0,0,0.9);
-    color: white;
-}
-.download-contents.service .popover .popover-title{
-	font-weight: bold;
-    font-size: 1.2em;
-    line-height: 1.5em;
-    background-color: rgba(0,0,0,0.9);
-    color: #6eb0e6;
-}
-.download-contents.service .popover .popover-content h4{
-	color: white;
-}
-.download-contents.service .popover .arrow,
-.download-contents.service .popover .arrow:after{
-	    border-top-color: rgba(0,0,0,0.9);
-}
 /**----------------------------------------**/
 
 /****************************************** 
+
+
+/******************************************
+* Service Registration table
+********************************************/
+.service-table {
+	margin-top: 2em;
+}
+
+.service-table td {
+	height: 1em;
+	vertical-align: middle;
+}
+.service-table td.service-name {
+	width: 150px;
+}
+
+.service-table td.service-description {
+	min-width: 200px;
+	max-width: 300px;
+}
+.service-description p{
+	display: inline;
+	margin-right: 5px;
+}
+.service-description .ellipsis {
+	width: 80%;
+    width: calc(100% - 48px);
+    display: inline-block;
+    margin: 0px;
+}
+.service-description .expand-collapse{
+	vertical-align: top;
+}
+.service-table td.service-type {
+	width: 50px;
+}
+
+.service-table td.service-endpoint {
+	width: 200px;
+}
+
+.service-table td.service-endpoint input {
+	width: 120px;
+	margin-bottom: 0px;
+}
+
+.service-table td.service-endpoint button {
+	width: 60px;
+	margin-bottom: 0px;
+}
+
+.service-table span.copy-success {
+	position: absolute;
+	margin-top: 4px;
+	margin-left: 10px;
+}
+
+/**----------------------------------------**/
+
+
+/******************************************
 * Citations and Citation Popovers
 ********************************************/
 .popover .citation .id{
@@ -2083,6 +2336,10 @@ svg .no-activity,
   margin-bottom: -1px;
   background-color: #fff;
   border: 1px solid #ddd;
+  box-sizing: border-box;
+}
+.list-group-item .badge{
+	margin-top: 10px;
 }
 .panel>.list-identity .list-group-item.active{
 	border-left-width: 5px;

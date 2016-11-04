@@ -1,5 +1,5 @@
 ﻿/*global define */
-define(['jquery', 'underscore', 'backbone'], 				
+define(['jquery', 'underscore', 'backbone'],
 	function($, _, Backbone) {
 
 	// SolrResult Model
@@ -64,22 +64,22 @@ define(['jquery', 'underscore', 'backbone'],
 			prov_wasGeneratedBy: null,
 			prov_wasInformedBy: null
 		},
-		
+
 		initialize: function(){
 			this.setURL();
 			this.on("change:id", this.setURL);
-			
+
 			this.set("type", this.getType());
 			this.on("change:read_count_i", function(){ this.set("reads", this.get("read_count_i"))});
 		},
-		
+
 		type: "SolrResult",
-		
+
 		// Toggle the `selected` state of the result
 		toggle: function () {
 			this.selected = !this.get('selected');
 		},
-		
+
 		//Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
 		getType: function(){
 			//The list of formatIds that are images
@@ -93,30 +93,30 @@ define(['jquery', 'underscore', 'backbone'],
 			//The list of formatIds that are images
 			var pdfIds = ["application/pdf"];
 			var annotationIds = ["http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html"];
-			
+
 			//Determine the type via provONE
 			var instanceOfClass = this.get("prov_instanceOfClass");
 			if(typeof instanceOfClass !== "undefined"){
 				var programClass = _.filter(instanceOfClass, function(className){
 					return (className.indexOf("#Program") > -1);
 				});
-				if((typeof programClass !== "undefined") && programClass.length) 
-					return "program";		
+				if((typeof programClass !== "undefined") && programClass.length)
+					return "program";
 			}
 			else{
 				if(this.get("prov_generated") || this.get("prov_used"))
-					return "program";					
+					return "program";
 			}
-			
+
 			//Determine the type via file format
 			if(this.get("formatType") == "METADATA") return "metadata";
 			if(_.contains(imageIds, this.get("formatId"))) return "image";
 			if(_.contains(pdfIds, this.get("formatId")))   return "PDF";
 			if(_.contains(annotationIds, this.get("formatId")))   return "annotation";
-						
+
 			else return "data";
 		},
-		
+
 		//Returns a plain-english version of the specific format ID (for selected ids)
 		getFormat: function(){
 			var formatMap = {
@@ -130,7 +130,7 @@ define(['jquery', 'underscore', 'backbone'],
 				"text/html" : "HTML",
 				"text/plain": "plain text (.txt)",
 				"video/avi" : "Microsoft AVI file",
-				"video/x-ms-wmv" : "Windows Media Video (.wmv)", 
+				"video/x-ms-wmv" : "Windows Media Video (.wmv)",
 				"audio/x-ms-wma" : "Windows Media Audio (.wma)",
 				"application/vnd.google-earth.kml xml" : "Google Earth Keyhole Markup Language (KML)",
 				"http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html" : "annotation",
@@ -162,17 +162,17 @@ define(['jquery', 'underscore', 'backbone'],
 				"eml://ecoinformatics.org/eml-2.0.1" : "EML v2.0.1",
 				"eml://ecoinformatics.org/eml-2.0.0" : "EML v2.0.0"
 			}
-		
+
 			return formatMap[this.get("formatId")] || this.get("formatId");
 		},
-		
-		setURL: function(){	
+
+		setURL: function(){
 			if(MetacatUI.appModel.get("objectServiceUrl"))
 				this.set("url", MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id")));
 			else if(MetacatUI.appModel.get("resolveServiceUrl"))
 				this.set("url", MetacatUI.appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("id")));
 		},
-		
+
 		// checks if the pid is already a DOI
 		isDOI: function() {
 			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."];
@@ -183,15 +183,15 @@ define(['jquery', 'underscore', 'backbone'],
 			return false;
 		},
 
-		/* 
-		 * Checks if the currently-logged-in user is authorized to change permissions on this doc 
+		/*
+		 * Checks if the currently-logged-in user is authorized to change permissions on this doc
 		 */
 		checkAuthority: function(){
 			var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
 			if(!authServiceUrl) return false;
-			
+
 			var model = this;
-			
+
 			var requestSettings = {
 				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=changePermission",
 				type: "GET",
@@ -205,22 +205,22 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
-		
+
 		/*
 		 * This method will download this object while sending the user's auth token in the request.
 		 */
 		downloadWithCredentials: function(){
 			if(this.get("isPublic")) return;
-				
+
 			//Get info about this object
-			var filename = this.get("fileName") || this.get("title") || "",					
+			var filename = this.get("fileName") || this.get("title") || "",
 				url = this.get("url");
-			
+
 			//If we are accessing objects via the resolve service, we need to find the direct URL
 			if(url.indexOf("/resolve/") > -1){
 				var dataSource = MetacatUI.nodeModel.getMember(this.get("datasource")),
 					version = dataSource.readv2? "v2" : "v1";
-				
+
 				url = dataSource.baseURL + "/" + version + "/object/" + this.get("id");
 			}
 
@@ -228,9 +228,9 @@ define(['jquery', 'underscore', 'backbone'],
 			var xhr = new XMLHttpRequest();
 			xhr.responseType = "blob";
 			xhr.withCredentials = true;
-			
+
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
-			xhr.onload = function(){ 
+			xhr.onload = function(){
 			    var a = document.createElement('a');
 			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
 			    a.download = filename.trim(); // Set the file name.
@@ -239,24 +239,24 @@ define(['jquery', 'underscore', 'backbone'],
 			    a.click();
 			    delete a;
 			};
-			
+
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
 			xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
 			xhr.send();
 		},
-		
-		getInfo: function(){			
+
+		getInfo: function(fields){
 			var model = this;
-			
-//			var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription" 
-			var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i"; 
-				
+
+			if(!fields)
+				var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
+
 			var query = "q=";
 			//Do not search for seriesId when it is not configured in this model/app
 			if(typeof this.get("seriesId") === "undefined")
 				query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
-			//If there is no seriesId set, then search for pid or sid 
+			//If there is no seriesId set, then search for pid or sid
 			else if(!this.get("seriesId"))
 				query += '(id:"' + encodeURIComponent(this.get("id")) + '" OR seriesId:"' + encodeURIComponent(this.get("id")) + '")';
 			//If a seriesId is specified, then search for that
@@ -265,7 +265,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//If only a seriesId is specified, then just search for the most recent version
 			else if(this.get("seriesId") && !this.get("id"))
 				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
-				
+
 			var requestSettings = {
 				url: MetacatUI.appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json',
 				type: "GET",
@@ -280,7 +280,7 @@ define(['jquery', 'underscore', 'backbone'],
 						var mostRecent = _.reject(docs, function(doc){
 							return (typeof doc.obsoletedBy !== "undefined");
 						});
-						
+
 						if(mostRecent.length > 0)
 							model.set(mostRecent[0]);
 						else
@@ -293,17 +293,21 @@ define(['jquery', 'underscore', 'backbone'],
 					model.trigger("getInfoError");
 				}
 			}
-						
+
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
-		
+
+		getCitationInfo: function(){
+			this.getInfo("id,seriesId,origin,pubDate,dateUploaded,title,datasource");
+		},
+
 		notFound: function(){
 			this.set({"notFound": true}, {silent: true});
 			this.trigger("404");
 		},
-		
+
 		//Transgresses the obsolence chain until it finds the newest version that this user is authorized to read
-		findLatestVersion: function(newestVersion, possiblyNewer) {			
+		findLatestVersion: function(newestVersion, possiblyNewer) {
 			// Make sure we have the /meta service configured
 			if(! MetacatUI.appModel.get('metaServiceUrl')) return;	
 			
@@ -312,46 +316,46 @@ define(['jquery', 'underscore', 'backbone'],
 				var newestVersion = this.get("id");
 				var possiblyNewer = this.get("obsoletedBy");
 			}
-			
+
 			//If this isn't obsoleted by anything, then there is no newer version
 			if(!possiblyNewer){
 				this.set("newestVersion", newestVersion);
 				return;
 			}
-			
-			var model = this;		
-			
+
+			var model = this;
+
 			//Get the system metadata for the possibly newer version
 			var requestSettings = {
 				url: MetacatUI.appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer), 
 				type: "GET",
 				success: function(data) {
-							
+
 					// the response may have an obsoletedBy element
 					var obsoletedBy = $(data).find("obsoletedBy").text();
-					
+
 					//If there is an even newer version, then get it and rerun this function
 					if(obsoletedBy)
 						model.findLatestVersion(possiblyNewer, obsoletedBy);
 					//If there isn't a newer version, then this is it
 					else
-						model.set("newestVersion", possiblyNewer);		
-					
+						model.set("newestVersion", possiblyNewer);
+
 				},
 				error: function(xhr){
 					//If this newer version isn't accessible, link to the latest version that is
 					if(xhr.status == "401")
-						model.set("newestVersion", newestVersion);	
+						model.set("newestVersion", newestVersion);
 				}
 			}
 			
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));		
 			
 		},
-		
+
 		/**** Provenance-related functions ****/
 		/*
-		 * Returns true if this provenance field points to a source of this data or metadata object 
+		 * Returns true if this provenance field points to a source of this data or metadata object
 		 */
 		isSourceField: function(field){
 			if((typeof field == "undefined") || !field) return false;
@@ -361,27 +365,27 @@ define(['jquery', 'underscore', 'backbone'],
 			   field == "prov_generatedByProgram"   ||
 			   field == "prov_used" 		  		||
 			   field == "prov_wasDerivedFrom" 		||
-			   field == "prov_wasInformedBy") 
+			   field == "prov_wasInformedBy")
 				return true;
 			else
 				return false;
 		},
-		
+
 		/*
-		 * Returns true if this provenance field points to a derivation of this data or metadata object 		 
-		 */		
+		 * Returns true if this provenance field points to a derivation of this data or metadata object
+		 */
 		isDerivationField: function(field){
 			if((typeof field == "undefined") || !field) return false;
 			if(!_.contains(MetacatUI.appSearchModel.getProvFields(), field)) return false;
-			
+
 			if(field == "prov_usedByExecution" ||
 			   field == "prov_usedByProgram"   ||
 			   field == "prov_generated")
 				return true;
 			else
-				return false;			
+				return false;
 		},
-		
+
 		/*
 		 * Returns true if this SolrResult has a provenance trace (i.e. has either sources or derivations)
 		 */
@@ -390,50 +394,50 @@ define(['jquery', 'underscore', 'backbone'],
 				if(this.get("prov_hasSources") || this.get("prov_hasDerivations"))
 					return true;
 			}
-				
+
 			var fieldNames = MetacatUI.appSearchModel.getProvFields(),
 				currentField = "";
-			
+
 			for(var i=0; i < fieldNames.length; i++){
 				currentField = fieldNames[i];
-				if(this.has(currentField)) 
+				if(this.has(currentField))
 					return true;
 			}
-			
+
 			return false;
 		},
-		
-		/* 
-		 * Returns an array of all the IDs of objects that are sources of this object 
+
+		/*
+		 * Returns an array of all the IDs of objects that are sources of this object
 		 */
 		getSources: function(){
 			var sources = new Array(),
 				model = this;
-			
+
 			_.each(MetacatUI.appSearchModel.getProvFields(), function(provField, i){
 				if(model.isSourceField(provField) && model.has(provField))
 					sources.push(model.get(provField));
 			});
-			
+
 			return _.uniq(_.flatten(sources));
 		},
-		
-		/* 
-		 * Returns an array of all the IDs of objects that are derivations of this object 
-		 */		
+
+		/*
+		 * Returns an array of all the IDs of objects that are derivations of this object
+		 */
 		getDerivations: function(){
 			var derivations = new Array(),
 				model = this;
-		
+
 			_.each(MetacatUI.appSearchModel.getProvFields(), function(provField, i){
 				if(model.isDerivationField(provField) && model.get(provField))
 					derivations.push(model.get(provField));
-			});	
-			
+			});
+
 			return _.uniq(_.flatten(derivations));
 		},
 		/****************************/
-		
+
 		/**
 		 * Convert number of bytes into human readable format
 		 *
@@ -441,29 +445,29 @@ define(['jquery', 'underscore', 'backbone'],
 		 * @param integer precision Number of digits after the decimal separator
 		 * @return string
 		 */
-		bytesToSize: function(bytes, precision){  
+		bytesToSize: function(bytes, precision){
 		    var kilobyte = 1024;
 		    var megabyte = kilobyte * 1024;
 		    var gigabyte = megabyte * 1024;
 		    var terabyte = gigabyte * 1024;
-		    
-		    if(typeof bytes === "undefined") var bytes = this.get("size");		    		    
-		   
+
+		    if(typeof bytes === "undefined") var bytes = this.get("size");
+
 		    if ((bytes >= 0) && (bytes < kilobyte)) {
 		        return bytes + ' B';
-		 
+
 		    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
 		        return (bytes / kilobyte).toFixed(precision) + ' KB';
-		 
+
 		    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
 		        return (bytes / megabyte).toFixed(precision) + ' MB';
-		 
+
 		    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
 		        return (bytes / gigabyte).toFixed(precision) + ' GB';
-		 
+
 		    } else if (bytes >= terabyte) {
 		        return (bytes / terabyte).toFixed(precision) + ' TB';
-		 
+
 		    } else {
 		        return bytes + ' B';
 		    }

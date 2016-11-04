@@ -1,7 +1,7 @@
 ﻿/*global define */
 define(['jquery',
         'jqueryui',
-		'underscore', 
+		'underscore',
 		'backbone',
 		'gmaps',
 		'fancybox',
@@ -15,6 +15,7 @@ define(['jquery',
 		'views/PackageTableView',
 		'views/AnnotatorView',
 		'views/CitationView',
+		'views/ServiceTableView',
 		'text!templates/metadata.html',
 		'text!templates/dataSource.html',
 		'text!templates/publishDOI.html',
@@ -28,23 +29,23 @@ define(['jquery',
 		'text!templates/editMetadata.html',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html'
-		], 				
-	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, Package, SolrResult, 
-			 ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable, 
-			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate, 
-			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadButtonTemplate, 
-			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate, 
+		],
+	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, Package, SolrResult,
+			 ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+			 AnnotatorView, CitationView, ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadButtonTemplate,
+			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
 			 MapTemplate, AnnotationTemplate) {
 	'use strict';
 
-	
+
 	var MetadataView = Backbone.View.extend({
-		
+
 		subviews: [],
-		
+
 		pid: null,
 		seriesId: null,
-		
+
 		model: new SolrResult(),
 		packageModels: new Array(),
 
@@ -58,9 +59,9 @@ define(['jquery',
 		parentLinkContainer: "#parent-link-container",
 		dataSourceContainer: "#data-source-container",
 		articleContainer: "#article-container",
-		
+
 		type: "Metadata",
-		
+
 		//Templates
 		template: _.template(MetadataTemplate),
 		alertTemplate: _.template(AlertTemplate),
@@ -75,9 +76,9 @@ define(['jquery',
 		editMetadataTemplate: _.template(EditMetadataTemplate),
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
 		mapTemplate: _.template(MapTemplate),
-				
+
 		objectIds: [],
-				
+
 		// Delegated events for creating new items, and clearing completed ones.
 		events: {
 			"click #publish"             : "publish",
@@ -85,41 +86,41 @@ define(['jquery',
 			"mouseout  .highlight-node"  : "highlightNode",
 			"click     .preview" 	     : "previewData"
 		},
-		
+
 		initialize: function (options) {
 			if((options === undefined) || (!options)) var options = {};
 
 			this.pid = options.pid || options.id || MetacatUI.appModel.get("pid") || null;
-			
+
 			if(typeof options.el !== "undefined")
 				this.setElement(options.el);			
 		},
-				
+
 		// Render the main metadata view
 		render: function () {
 
 			this.stopListening();
-			
+
 			MetacatUI.appModel.set('headerType', 'default');
 			//	this.showLoading("Loading...");
-						
+
 			//Reset various properties of this view first
 			this.classMap = new Array();
 			this.subviews = new Array();
 			this.model.set(this.model.defaults);
 			this.packageModels = new Array();
-			
+
 			// get the pid to render
 			if(!this.pid)
 				this.pid = MetacatUI.appModel.get("pid");
-			
+
 			this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
-						
-			this.getModel();	
-						
+
+			this.getModel();
+
 			return this;
 		},
-		
+
 		/*
 		 * Retrieves information from the index about this object, given the id (passed from the URL)
 		 * When the object info is retrieved from the index, we set up models depending on the type of object this is
@@ -130,13 +131,13 @@ define(['jquery',
 			if((typeof this.seriesId !== "undefined") && this.seriesId) var sid = this.seriesId;
 
 			var viewRef = this;
-			
-			//Get the package ID 
+
+			//Get the package ID
 			this.model.set({ id: pid, seriesId: sid });
 			var model = this.model;
-			
+
 			this.listenToOnce(model, "change", function(model){
-					
+
 				if(model.get("formatType") == "METADATA"){
 					viewRef.model = model;
 					viewRef.renderMetadata();
@@ -155,41 +156,41 @@ define(['jquery',
 					var packageModel = new Package({ id: model.get("id") });
 					packageModel.on("complete", function(){
 						var metadata = packageModel.getMetadata();
-						
+
 						if(!metadata){
 							viewRef.noMetadata(packageModel);
 						}
 						else{
-							viewRef.model = metadata;							
+							viewRef.model = metadata;
 							viewRef.pid = viewRef.model.get("id");
 							viewRef.renderMetadata();
 							if(viewRef.model.get("resourceMap"))
 								viewRef.getPackageDetails(viewRef.model.get("resourceMap"));
-						}		
+						}
 					});
 					packageModel.getMembers();
 					return;
 				}
-				
+
 				//Get the package information
 				viewRef.getPackageDetails(model.get("resourceMap"));
-				
+
 			});
 			this.listenToOnce(model, "404", this.showNotFound);
-			model.getInfo();			
+			model.getInfo();
 		},
-		
+
 		renderMetadata: function(){
 			var pid = this.pid,
 				view = this;
-			
+
 			this.hideLoading();
 			//Load the template which holds the basic structure of the view
 			this.$el.html(this.template());
-			this.$(this.tableContainer).html(this.loadingTemplate({ 
+			this.$(this.tableContainer).html(this.loadingTemplate({
 					msg: "Retrieving data set details..."
 				}));
-			
+
 			//Insert the breadcrumbs
 			this.insertBreadcrumbs();
 			//Insert the citation
@@ -202,9 +203,12 @@ define(['jquery',
 			this.insertControls();
 			this.insertOwnerControls();
 
+			// Service table
+			this.insertServiceTable();
+
 			//Show loading icon in metadata section
 			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
-			
+
 			// Check for a view service in this appModel
 			if((MetacatUI.appModel.get('viewServiceUrl') !== undefined) && (MetacatUI.appModel.get('viewServiceUrl'))) 
 				var endpoint = MetacatUI.appModel.get('viewServiceUrl') + pid;
@@ -213,9 +217,9 @@ define(['jquery',
 				var viewRef = this;
 				var loadSettings = {
 						url: endpoint,
-						success: function(response, status, xhr) {						
+						success: function(response, status, xhr) {
 							//Our fallback is to show the metadata details from the Solr index
-							if (status=="error") 
+							if (status=="error")
 								viewRef.renderMetadataFromIndex();
 							else{
 								//Check for a response that is a 200 OK status, but is an error msg
@@ -223,25 +227,25 @@ define(['jquery',
 									viewRef.renderMetadataFromIndex();
 									return;
 								}
-								
+
 								//Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
 								if(response.indexOf('id="Metadata"') == -1){
 									viewRef.$el.addClass("container no-stylesheet");
 									viewRef.renderMetadataFromIndex();
 									return;
 								}
-								
+
 								//Now show the response from the view service
 								view.$(view.metadataContainer).html(response);
-								
+
 								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
-								
+
 								viewRef.trigger("metadataLoaded");
-								
+
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
-								
+
 								viewRef.setUpAnnotator();
 							}
 						},
@@ -249,84 +253,84 @@ define(['jquery',
 							view.renderMetadataFromIndex();
 						}
 				}
-				
+
 				$.ajax(_.extend(loadSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			}
-			else this.renderMetadataFromIndex();				
+			else this.renderMetadataFromIndex();
 		},
 
 		/* If there is no view service available, then display the metadata fields from the index */
 		renderMetadataFromIndex: function(){
-			var metadataFromIndex = new MetadataIndex({ 
-				pid: this.pid, 
-				parentView: this 
+			var metadataFromIndex = new MetadataIndex({
+				pid: this.pid,
+				parentView: this
 				});
 			this.subviews.push(metadataFromIndex);
-			
+
 			//Add the metadata HTML
 			this.$(this.metadataContainer).html(metadataFromIndex.render().el);
-			
+
 			var view = this;
-			
+
 			this.listenTo(metadataFromIndex, "complete", function(){
 				//Add the package contents
 				view.insertPackageDetails();
-				
+
 				//Add a map of the spatial coverage
 				if(gmaps) view.insertSpatialCoverageMap();
-				
+
 				// render annotator from index content, too
 				view.setUpAnnotator();
-			});			
+			});
 		},
-		
+
 		removeCitation: function(){
 			var citation = "",
 				citationEl = null;
-			
+
 			//Find the citation element
 			if(this.$(".citation").length > 0){
 				//Get the text for the citation
 				citation = this.$(".citation").text();
-				
+
 				//Save this element in the view
 				citationEl = this.$(".citation");
 			}
-			//Older versions of Metacat (v2.4.3 and older) will not have the citation class in the XSLT. Find the citation another way 
+			//Older versions of Metacat (v2.4.3 and older) will not have the citation class in the XSLT. Find the citation another way
 			else{
 				//Find the DOM element with the citation
 				var wells = this.$('.well'),
-					viewRef = this;		
-				
+					viewRef = this;
+
 				//Find the div.well with the citation. If we never find it, we don't insert the list of contents
 				_.each(wells, function(well){
 					if(!citationEl && ($(well).find('#viewMetadataCitationLink').length > 0) || ($(well).children(".row-fluid > .span10 > a"))){
-						
+
 						//Save this element in the view
 						citationEl = well;
-						
+
 						//Mark this in the DOM for CSS styling
-						$(well).addClass('citation');	
-						
+						$(well).addClass('citation');
+
 						//Save the text of the citation
 						citation = $(well).text();
 					}
 				});
-				
+
 		    	//Remove the unnecessary classes that are used in older versions of Metacat (2.4.3 and older)
 		    	var citationText = $(citationEl).find(".span10");
 				$(citationText).removeClass("span10").addClass("span12");
 			}
-			
+
 			//Set the document title to the citation
 			MetacatUI.appModel.set("title", citation);
-			
+
 			citationEl.remove();
-			
+
 		},
-		
+
 		insertBreadcrumbs: function(){
-			
+
 			var breadcrumbs = $(document.createElement("ol"))
 						      .addClass("breadcrumb")
 						      .append($(document.createElement("li"))
@@ -346,7 +350,7 @@ define(['jquery',
 						    				  .attr("href", "#" + Backbone.history.fragment)
 						    				  .addClass("inactive")
 						    				  .text("Metadata")));
-			
+
 			if(MetacatUI.uiRouter.lastRoute() == "data"){
 				$(breadcrumbs).prepend($(document.createElement("a"))
 						         .attr("href", "#data/page/" + MetacatUI.appModel.get("page"))
@@ -357,19 +361,19 @@ define(['jquery',
 						        		  .addClass("icon-angle-left")));
 				$(breadcrumbs).find("a.search").addClass("inactive");
 			}
-			
+
 			this.$(this.breadcrumbContainer).html(breadcrumbs);
 		},
-		
+
 		showNotFound: function(){
 			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
 			if(!MetacatUI.appUserModel.get("checked")){
 				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
 				return;
 			}
-			
+
 			if(!this.model.get("notFound")) return;
-			
+
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 					  "<ul class='indent'>" +
 					  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
@@ -379,10 +383,10 @@ define(['jquery',
 			this.hideLoading();
 			this.showError(msg);
 		},
-		
-		getPackageDetails: function(packageIDs){			
+
+		getPackageDetails: function(packageIDs){
 			var viewRef = this;
-			
+
 			var completePackages = 0;
 
 			//This isn't a package, but just a lonely metadata doc...
@@ -394,7 +398,7 @@ define(['jquery',
 			}
 			else{
 				_.each(packageIDs, function(thisPackageID, i){
-					
+
 					//Create a model representing the data package
 					var thisPackage = new Package({ id: thisPackageID });
 
@@ -403,7 +407,7 @@ define(['jquery',
 
 					//When the package info is fully retrieved
 					viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
-	
+
 						//When all packages are fully retrieved
 						completePackages++;
 						if(completePackages >= packageIDs.length){
@@ -414,61 +418,61 @@ define(['jquery',
 							viewRef.insertPackageDetails(latestPackages);
 						}
 					});
-	
+
 					//Save the package in the view
 					viewRef.packageModels.push(thisPackage);
-										
+
 					//Get the members
-					thisPackage.getMembers({getParentMetadata: true });	
-				});	
+					thisPackage.getMembers({getParentMetadata: true });
+				});
 			}
 		},
-		
+
 		alterMarkup: function(){
 			//Find the taxonomic range and give it a class for styling - for older versions of Metacat only (v2.4.3 and older)
 			if(!this.$(".taxonomicCoverage").length)
 				this.$('h4:contains("Taxonomic Range")').parent().addClass('taxonomicCoverage');
-			
+
 			//Remove ecogrid links and replace them with workable links
 			this.replaceEcoGridLinks();
 		},
-		
+
 		/*
 		 * Inserts a table with all the data package member information and sends the call to display annotations
 		 */
-		insertPackageDetails: function(packages){	
-			
+		insertPackageDetails: function(packages){
+
 			//Don't insert the package details twice
 			var tableEls = this.$(this.tableContainer).children().not(".loading");
 			if(tableEls.length > 0) return;
-			
+
 			//wait for the metadata to load
 			var metadataEls = this.$(this.metadataContainer).children();
 			if(!metadataEls.length || metadataEls.first().is(".loading")){
 				this.once("metadataLoaded", this.insertPackageDetails);
 				return;
 			}
-						
+
 			var viewRef = this;
-			
+
 			if(!packages) var packages = this.packageModels;
-			
+
 			//Get the entity names from this page/metadata
 			this.getEntityNames(packages);
-			
+
 			_.each(packages, function(packageModel){
 
 				//If the package model is not complete, don't do anything
 				if(!packageModel.complete) return;
-				
+
 				//Insert a package table for each package in viewRef dataset
 				var nestedPckgs = packageModel.getNestedPackages();
 				if(nestedPckgs.length > 0){
-										
+
 					var title = 'Current Data Set (1 of ' + (nestedPckgs.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
 					viewRef.insertPackageTable(packageModel, { title: title });
-						
-					_.each(nestedPckgs, function(nestedPackage, i, list){						
+
+					_.each(nestedPckgs, function(nestedPackage, i, list){
 						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
@@ -478,19 +482,19 @@ define(['jquery',
 					title = "Files in this dataset " + title;
 					viewRef.insertPackageTable(packageModel, {title: title});
 				}
-								
+
 				//Remove the extra download button returned from the XSLT since the package table will have all the download links
 				$("#downloadPackage").remove();
-			    
-			    //Show the provenance trace for this package			
-				if(packageModel.get("provenanceFlag") == "complete") 
+
+			    //Show the provenance trace for this package
+				if(packageModel.get("provenanceFlag") == "complete")
 					viewRef.drawProvCharts(packageModel);
 				else{
 					viewRef.listenToOnce(packageModel, "change:provenanceFlag", viewRef.drawProvCharts);
 					packageModel.getProvTrace();
 				}
 			});
-						
+
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
 				numTables = additionalTables.children(".download-contents").length,
@@ -510,53 +514,53 @@ define(['jquery',
 								.text("Hide nested " + item)
 								.hide(),
 					expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
-				
+
 				additionalTables.before(expandControl);
 			}
-			
+
 			//If this metadata doc is not in a package, but is just a lonely metadata doc...
 			if(!packages.length){
-				var packageModel = new Package({ 
+				var packageModel = new Package({
 					members: [this.model],
-					
+
 				});
 				packageModel.complete = true;
 				viewRef.insertPackageTable(packageModel);
 			}
-			
-			//Insert the data details sections 
+
+			//Insert the data details sections
 			this.insertDataDetails();
-			
+
 			//Initialize tooltips in the package table(s)
 			this.$(".tooltip-this").tooltip();
 
 		    return this;
 		},
-		
+
 		insertPackageTable: function(packageModel, options){
 			var viewRef = this;
-			
+
 			if(options){
 				var title = options.title || "";
 				var nested = (typeof options.nested === "undefined")? false : options.nested;
 			}
 			else
 				var title = "", nested = false;
-			
+
 			if(typeof packageModel === "undefined") return;
-			
-			//** Draw the package table **//	
-			var tableView = new PackageTable({ 
-				model: packageModel, 
-				currentlyViewing: this.pid, 
+
+			//** Draw the package table **//
+			var tableView = new PackageTable({
+				model: packageModel,
+				currentlyViewing: this.pid,
 				parentView: this,
 				title: title,
 				nested: nested
 			});
-			
+
 			//Get the package table container
 			var tablesContainer = this.$(this.tableContainer);
-			
+
 			//After the first table, start collapsing them
 			var numTables = $(tablesContainer).find("table.download-contents").length;
 			if(numTables == 1){
@@ -565,21 +569,21 @@ define(['jquery',
 				$(tablesContainer).append(tableContainer);
 			}
 			else if(numTables > 1)
-				var tableContainer = this.$("#additional-tables-for-" + this.cid);				
+				var tableContainer = this.$("#additional-tables-for-" + this.cid);
 			else
 				var tableContainer = tablesContainer;
-						
-			//Insert the package table HTML 
+
+			//Insert the package table HTML
 			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
-			
-			this.subviews.push(tableView);		
+
+			this.subviews.push(tableView);
 		},
-		
+
 		insertParentLink: function(packageModel){
 			var parentPackageMetadata = packageModel.get("parentPackageMetadata"),
 				view = this;
-			
+
 			_.each(parentPackageMetadata, function(m, i){
 				var title = m.get("title"),
 					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-level-up"),
@@ -587,24 +591,24 @@ define(['jquery',
 														 .addClass("parent-link")
 														 .text("Parent dataset: " + title)
 														 .prepend(icon);
-					
+
 				view.$(view.parentLinkContainer).append(link);
 			});
-			
+
 		},
-				
+
 		insertSpatialCoverageMap: function(customCoordinates){
-			
+
 			//Find the geographic region container. Older versions of Metacat (v2.4.3 and less) will not have it classified so look for the header text
 			if(!this.$(".geographicCoverage").length){
 				//For EML
 				var title = this.$('h4:contains("Geographic Region")');
-				
+
 				//For FGDC
 				if(title.length == 0){
 					title = this.$('label:contains("Bounding Coordinates")');
 				}
-				
+
 				var georegionEls = $(title).parent();
 				var parseText = true;
 				var directions = new Array('North', 'South', 'East', 'West');
@@ -613,10 +617,10 @@ define(['jquery',
 				var georegionEls = this.$(".geographicCoverage");
 				var directions = new Array('north', 'south', 'east', 'west');
 			}
-			
+
 			for(var i=0; i<georegionEls.length; i++){
 				var georegion = georegionEls[i];
-				
+
 				if(typeof customCoordinates !== "undefined"){
 					//Extract the coordinates
 					var n = customCoordinates[0];
@@ -626,7 +630,7 @@ define(['jquery',
 				}
 				else{
 					var coordinates = new Array();
-					
+
 					_.each(directions, function(direction){
 						//Parse text for older versions of Metacat (v2.4.3 and earlier)
 						if(parseText){
@@ -639,24 +643,24 @@ define(['jquery',
 						else{
 							var coordinate = $(georegion).find("." + direction + "BoundingCoordinate").attr("data-value");
 						}
-						
+
 						//Save our coordinate value
-						coordinates.push(coordinate);	
+						coordinates.push(coordinate);
 					});
-					
+
 					//Extract the coordinates
 					var n = coordinates[0];
 					var s = coordinates[1];
 					var e = coordinates[2];
 					var w = coordinates[3];
 				}
-				
+
 				//Create Google Map LatLng objects out of our coordinates
 				var latLngSW = new gmaps.LatLng(s, w);
 				var latLngNE = new gmaps.LatLng(n, e);
 				var latLngNW = new gmaps.LatLng(n, w);
 				var latLngSE = new gmaps.LatLng(s, e);
-				
+
 				//Get the centertroid location of this data item
 				var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
 				var latLngCEN = bounds.getCenter();
@@ -685,7 +689,7 @@ define(['jquery',
 					map: mapHTML,
 					url: url
 				}));
-				
+
 				$('.fancybox-media').fancybox({
 					openEffect  : 'elastic',
 					closeEffect : 'elastic',
@@ -693,31 +697,31 @@ define(['jquery',
 						media: {}
 					}
 				})
-				
+
 			}
-			
+
 			return true;
 
 		},
-		
+
 		insertCitation: function(){
 			if(!this.model) return false;
-			
+
 			//Create a citation element from the model attributes
 			var citation = new CitationView({
-									model: this.model, 
+									model: this.model,
 									createLink: false }).render().el;
-			this.$(this.citationContainer).html(citation);	
+			this.$(this.citationContainer).html(citation);
 		},
-		
+
 		insertDataSource: function(){
 			if(!this.model || !MetacatUI.nodeModel || !MetacatUI.nodeModel.get("members").length || !this.$(this.dataSourceContainer).length) return;
-			
+
 			var dataSource = MetacatUI.nodeModel.getMember(this.model);
-			
+
 			if(dataSource && dataSource.logo){
 				this.$("img.data-source").remove();
-				
+
 				//Insert the data source template
 				this.$(this.dataSourceContainer).html(this.dataSourceTemplate({
 					node : dataSource
@@ -837,6 +841,47 @@ define(['jquery',
 			this.$(".tooltip-this").tooltip();
 		},
 		
+		// Create, render, and insert the View for the ServiceType
+		insertServiceTable: function() {
+			if (!this.model.attributes.isService) return;
+
+			var serviceData = this.parseServiceInformation();
+			var serviceTable = new ServiceTable(serviceData);
+			this.$(this.tableContainer).after(serviceTable.render().$el);
+		},
+
+		// Collect information about services into an Array of Objects
+		//
+		// Returns: Array of Objects, each object should have keys:
+		//   name, description, type, and endpoint
+		parseServiceInformation: function() {
+			// The serviceTitle and serviceDescription Solr fields are concatenated
+			// fields where a colon (:) separates each value. Since they may container
+			// URIs, we can't just split on ':' and instead we have to use a fancy
+			// regex. Here, I use a Negative Lookahead which causes the regex to split
+			// on : but not when the : is immediately followed by a // or a number
+			// (the number case catches ports, e.g. http://example.com:5000)
+			var split_pattern = /:(?!\/\/|\d)/;
+
+			// Collect values
+			var names = this.model.attributes.serviceTitle.split(split_pattern);
+			var descriptions = this.model.attributes.serviceDescription.split(split_pattern);
+			var types = this.model.attributes.serviceType; // Already comes as an Array
+			var endpoints = this.model.attributes.serviceEndpoint; // Already comes as an Array
+
+			// Create our Array of Objects, filling in defaults for each property
+			var data = _.map(_.range(endpoints.length), function(i) {
+				return {
+					name: names[i] || 'No name provided',
+					description: descriptions[i] || 'No description provided',
+					type: types[i] || 'Unknown Type',
+					endpoint: endpoints[i] || null
+				}
+			});
+
+			return data;
+		},
+
 		/*
 		 * Renders ProvChartViews on the page to display provenance on a package level and on an individual object level.
 		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations 
@@ -1672,31 +1717,31 @@ define(['jquery',
 		
 		onClose: function () {	
 			var viewRef = this;
-			
+
 			this.stopListening();
-			
+
 			_.each(this.subviews, function(subview) {
 				if(subview.el != viewRef.el)
 					subview.remove();
 			});
-			
+
 			this.packageModels =  new Array();
 			this.model.set(this.model.defaults);
 			this.pid = null;
 			this.seriesId = null;
 			this.$detached = null;
 			this.$loading = null;
-			
+
 			//Put the document title back to the default
 			MetacatUI.appModel.set("title", MetacatUI.appModel.defaults.title);
 			
 			//Remove view-specific classes
 			this.$el.removeClass("container no-stylesheet");
-			
-			this.$el.empty();			
+
+			this.$el.empty();
 		}
-		
+
 	});
-	
-	return MetadataView;		
+
+	return MetadataView;
 });
