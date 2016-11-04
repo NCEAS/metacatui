@@ -1872,25 +1872,6 @@ tfoot .control i{
 .expand-collapse-control > a > .icon{
 	margin-right: 5px;
 }
-.download-contents.service .popover{
-	max-width: 600px;
-	background-color: rgba(0,0,0,0.9);
-    color: white;
-}
-.download-contents.service .popover .popover-title{
-	font-weight: bold;
-    font-size: 1.2em;
-    line-height: 1.5em;
-    background-color: rgba(0,0,0,0.9);
-    color: #6eb0e6;
-}
-.download-contents.service .popover .popover-content h4{
-	color: white;
-}
-.download-contents.service .popover .arrow,
-.download-contents.service .popover .arrow:after{
-	    border-top-color: rgba(0,0,0,0.9);
-}
 /**----------------------------------------**/
 
 /****************************************** 
@@ -1913,11 +1894,20 @@ tfoot .control i{
 .service-table td.service-description {
 	min-width: 200px;
 	max-width: 300px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
 }
-
+.service-description p{
+	display: inline;
+	margin-right: 5px;
+}
+.service-description .ellipsis {
+	width: 80%;
+    width: calc(100% - 48px);
+    display: inline-block;
+    margin: 0px;
+}
+.service-description .expand-collapse{
+	vertical-align: top;
+}
 .service-table td.service-type {
 	width: 50px;
 }
@@ -1928,11 +1918,14 @@ tfoot .control i{
 
 .service-table td.service-endpoint input {
 	width: 120px;
+	margin-bottom: 0px;
 }
 
 .service-table td.service-endpoint button {
 	width: 60px;
+	margin-bottom: 0px;
 }
+
 
 /**----------------------------------------**/
 

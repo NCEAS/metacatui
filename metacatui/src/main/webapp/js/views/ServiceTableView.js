@@ -6,6 +6,10 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 	var ServiceTable = Backbone.View.extend({
 		tagName : "div",
 		className : "service-table",
+		
+		events: {
+			"click .expand-collapse" : "toggleExpand"
+		},
 
 		// Map some less friendly names to friendlier names
 		friendly_type_names: {
@@ -44,8 +48,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 			// Add each service as a row in the table
 			_.each(this.data, function(d) {
 				var row_html = '<tr><td class="service-name">' + d.name + '</td>' +
-											 '<td class="service-description">' + d.description + '</td>';
-
+											 '<td class="service-description"><p class="ellipsis collapse-expand-target">' + d.description + '</p></td>';
+				
 				// Replace server type with riendly names if on exists
 				var service_type = d.type;
 
@@ -71,22 +75,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 			this.$el.append(header);
 			this.$el.append(table);
 
-			// Allow collapsing and expanding Descriptions
-			// TODO: Implement this fully, accoridng to the mockups
-			setTimeout(function() {
-				$(viewRef.$el).find('td.service-description').each(function(i) {
-					if (viewRef.isOverflowing(this)) {
-						$(this).click(function() {
-							if(viewRef.isOverflowing(this)) {
-								$(this).css('white-space', 'normal');
-							} else {
-								$(this).css('white-space', 'nowrap');
-							}
-						});
-					}
-				});
-			}, 100);
-
 			// Add Clipboard.js copy functionality to each endpoint
 			$(viewRef.$el).find('button').each(function(i) {
 				new Clipboard(this, {
@@ -95,6 +83,18 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 					}
 				});
 			});
+			
+			//Wait for the page to load a bit and check if service descriptions are overflowing
+			setTimeout(function() {
+				viewRef.$('td.service-description .ellipsis').each(function(i) {
+					//If it is overflowing, insert a link to see more text
+					if (viewRef.isOverflowing(this)) {						
+						//Create a toggle link and insert after the text
+						var expandLink = '<a class="expand-collapse pointer">(more)</a>';
+						$(this).after(expandLink);
+					}
+				});
+			}, 100);
 
 			return this;
 		},
@@ -112,6 +112,24 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 			el.style.overflow = curOverflow;
 
 			return isOverflowing;
+		},
+		
+		toggleExpand: function(e){
+			var toggleLink = e.target;
+			
+			//Get the text to expand/collapse
+			var toggleTarget = $(toggleLink).prev(".collapse-expand-target");
+			if(!toggleTarget || !toggleTarget.length) return;
+			
+			if($(toggleTarget).hasClass("ellipsis")){
+				$(toggleTarget).removeClass("ellipsis");
+				$(toggleLink).text("(less)");
+			}
+			else{
+				$(toggleTarget).addClass("ellipsis");
+				$(toggleLink).text("(more)");
+			}
+				
 		}
 	});
 
