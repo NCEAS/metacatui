@@ -1910,7 +1910,7 @@ tfoot .control i{
 	vertical-align: top;
 }
 .service-table td.service-type {
-	width: 50px;
+	width: 100px;
 }
 
 .service-table td.service-endpoint {
