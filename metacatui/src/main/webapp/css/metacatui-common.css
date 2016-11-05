@@ -1888,6 +1888,7 @@ tfoot .control i{
 	height: 1em;
 	vertical-align: middle;
 }
+
 .service-table td.service-name {
 	width: 150px;
 }
@@ -1896,19 +1897,23 @@ tfoot .control i{
 	min-width: 200px;
 	max-width: 300px;
 }
-.service-description p{
+
+.service-description p {
 	display: inline;
 	margin-right: 5px;
 }
+
 .service-description .ellipsis {
 	width: 80%;
     width: calc(100% - 48px);
     display: inline-block;
     margin: 0px;
 }
-.service-description .expand-collapse{
+
+.service-description .expand-collapse {
 	vertical-align: top;
 }
+
 .service-table td.service-type {
 	width: 100px;
 }
