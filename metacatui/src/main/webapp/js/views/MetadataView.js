@@ -880,7 +880,10 @@ define(['jquery',
 				}
 			});
 
-			return data;
+			// Sort the informaton by Name
+			var sorted = _.sortBy(data, 'name');
+
+			return sorted;
 		},
 
 		/*
