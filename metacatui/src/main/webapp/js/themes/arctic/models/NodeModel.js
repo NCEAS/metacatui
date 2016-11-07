@@ -55,7 +55,7 @@ define(['jquery', 'underscore', 'backbone'],
 				type: "mn"
 			}],
 			coordinators: [],
-			replicaMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
+			hiddenMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
 			currentMemberNode: appModel.get("nodeId") || null,
 			checked: false
 		},

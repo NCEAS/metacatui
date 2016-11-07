@@ -52,7 +52,7 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			members: [],
 			coordinators: [],
-			replicaMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
+			hiddenMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
 			currentMemberNode: appModel.get("nodeId") || null,
 			checked: false
 		},

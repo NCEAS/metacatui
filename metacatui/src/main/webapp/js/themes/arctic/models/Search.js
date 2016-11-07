@@ -353,7 +353,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(this.filterIsAvailable("exclude") && ((filter == "exclude") || getAll)){
 				var exclude = this.get("exclude");
 				_.each(exclude, function(excludeField, key, list){
-					query += "+-" + excludeField.field + ":" + model.escapeSpecialChar(excludeField.value);
+					
+					if(model.needsQuotes(excludeField.value)) var filterValue = "%22" + encodeURIComponent(excludeField.value) + "%22";
+					else var filterValue = encodeURIComponent(excludeField.value);
+					
+					filterValue =  model.escapeSpecialChar(filterValue);
+					
+					query += "+-" + excludeField.field + ":" + filterValue;
 				});
 			}
 			

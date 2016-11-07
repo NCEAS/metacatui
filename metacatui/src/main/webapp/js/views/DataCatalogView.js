@@ -1196,7 +1196,7 @@ define(['jquery',
 			
 			//Get the member nodes
 			var members = _.sortBy(nodeModel.get("members"), function(m){ return m.name });
-			var filteredMembers = _.reject(members, function(m){ return(_.contains(nodeModel.get("replicaMembers"), m.identifier)); });
+			var filteredMembers = _.reject(members, function(m){ return(_.contains(nodeModel.get("hiddenMembers"), m.identifier)); });
 			
 			//Get the current search filters for data source
 			var currentFilters = this.searchModel.get("dataSource");
