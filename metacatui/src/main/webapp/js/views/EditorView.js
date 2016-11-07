@@ -24,12 +24,9 @@ define(['underscore',
             "change textarea" : "showControls"
         },
         
-        defaults: {
-            /* The identifier of the root package id being rendered */
-            id: null,
-            
-        },
-        
+        /* The identifier of the root package id being rendered */
+        id: null,
+
         /* A list of the subviews of the editor */
         subviews: [],
         
@@ -74,6 +71,9 @@ define(['underscore',
         	
         	if(!this.model) this.createModel();
         	
+            //When the basic Solr metadata are retrieved, get the associated package
+            this.listenToOnce(this.model, "sync", this.getDataPackage);
+        	
             //Wait until the user info is loaded before we request the Metadata
         	if(MetacatUI.appUserModel.get("loggedIn")) {
               this.model.fetch();
@@ -83,9 +83,6 @@ define(['underscore',
 	            	this.model.fetch();
 	            });
         	}
-
-            //When the basic Solr metadata are retrieved, get the associated package
-            this.listenToOnce(this.model, "sync", this.getDataPackage);
                         
             return this;
         },
@@ -98,7 +95,9 @@ define(['underscore',
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
-                // TODO: Create a fresh package (hmm - shoulda been there)
+                // Create a fresh package
+                MetacatUI.rootDataPackage = new DataPackage(this.model);
+                this.renderMetadata(this.model);
                 
             } else {
                 
@@ -159,7 +158,7 @@ define(['underscore',
 
             // render metadata as the collection is updated, but only EML passed from the event
             if ( typeof model.get === "undefined" || 
-                        model.get("formatid").content !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+                        model.get("formatId") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
                 console.log("Not EML. TODO: Render generic ScienceMetadata.");
                 return;
                 

@@ -386,14 +386,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				}
 			}
 			
-			//-----Theme restrictions from Registry Model-----
-			if((filter == "registryCriteria") || getAll){
-				var registryCriteria = registryModel.get('searchFields');
-				_.each(registryCriteria, function(value, key, list) {
-					query += "+" + model.escapeSpecialChar(value);
-				});
-			}
-			
 			//-----Other Filters/Basic Filters-----			
 			_.each(otherFilters, function(filterName, key, list){
 				if(model.filterIsAvailable(filterName) && ((filter == filterName) || getAll)){

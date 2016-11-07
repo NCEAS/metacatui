@@ -283,7 +283,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 				   
 				//If it's a simple text node
 				if(typeof contents == "string"){
-					node.textContent = contents;
+					containerNode.textContent = contents;
+					return containerNode;
 				}
 				else if(Array.isArray(contents)){
 					var allNewNodes = [];

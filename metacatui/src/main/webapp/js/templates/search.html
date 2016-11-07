@@ -13,7 +13,7 @@
 		    	<ul id="current-attribute-filters" class="current-filters" data-category="attribute"></ul>
 		    	<ul id="current-annotation-filters" class="current-filters" data-category="annotation"></ul>
 		    	<ul id="current-resourceMap-filters" class="current-filters" data-category="resourceMap">
-		    		<% if (resourceMap){ %>
+		    		<% if ((typeof resourceMap !== "undefined") && resourceMap){ %>
 		    			<li class="current-filter"><span class="category"><%=searchModelRef.fieldLabels["resourceMap"]%></span><i class="icon-remove remove-filter"></i></li>
 		    		<% } %>
 		    	</ul>

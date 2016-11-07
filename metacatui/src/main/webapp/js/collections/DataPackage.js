@@ -1,9 +1,9 @@
 ﻿/* global define */
 "use strict";
 
-define(['jquery', 'underscore', 'backbone', 'rdflib',
+define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
     'models/DataONEObject', 'models/metadata/ScienceMetadata', 'models/metadata/eml211/EML211'],
-    function($, _, Backbone, rdf, DataONEObject, ScienceMetadata, EML211) {
+    function($, _, Backbone, rdf, uuid, DataONEObject, ScienceMetadata, EML211) {
     
     /* 
      A DataPackage represents a hierarchical collection of 

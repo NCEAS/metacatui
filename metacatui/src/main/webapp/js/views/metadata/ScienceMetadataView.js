@@ -53,13 +53,13 @@ define(['jquery',
 		
 		unformatParagraphs: function(htmlText){
 			var paragraphs = htmlText.trim().split("\n"),
-				modelAttr = {};
+				paragraphsJSON = [];
 			
 			_.each(paragraphs, function(p){
-				modelAttr.para = { content: p };
+				paragraphsJSON.push({ content: p });
 			});
 			
-			return modelAttr;
+			return paragraphsJSON;
 		},
 		
 	    /*
@@ -72,7 +72,7 @@ define(['jquery',
 	    	var newAttr = this.unformatParagraphs($(textEl).val());
 	    	
 	    	//Update the model
-	    	this.model.set($(textEl).attr("data-category"), newAttr);
+	    	this.model.set($(textEl).attr("data-category").content, newAttr);
 	    }
 	});
 
