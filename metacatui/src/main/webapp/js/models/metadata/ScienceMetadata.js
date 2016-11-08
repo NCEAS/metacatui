@@ -160,11 +160,14 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             
             /* Fetch the ScienceMetadata from the MN Solr service */
             fetch: function(options) {
+            	if(!options)
+            		var options = {};
+            	
             	//Add the authorization options 
-            	fetchOptions = _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
+            	_.extend(options, MetacatUI.appUserModel.createAjaxSettings());
 
             	//Call Backbone.Model.fetch to retrieve the info
-                return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+                return Backbone.Model.prototype.fetch.call(this, options);
                 
             }
         });

@@ -323,7 +323,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                 console.log("DataPackage.getMember() called for " + context.id);
                 var memberModel = {};
                 
-                switch ( context.get("formatid").content ) {
+                switch ( context.get("formatid") ) {
                     
                     case "http://www.openarchives.org/ore/terms":
                         context.set("type", "DataPackage");

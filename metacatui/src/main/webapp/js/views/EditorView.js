@@ -146,7 +146,6 @@ define(['underscore',
                     
                     default:
                         console.log("model.type is not set correctly");
-                        
                 }
             }            
         },
@@ -164,10 +163,13 @@ define(['underscore',
                 
             } else {
             	console.log("Rendering EML Model ", model);
+            	
+            	//Create an EML model
+            	var emlModel = new EML(model.toJSON());
         	
             	//Create an EML211 View and render it
             	emlView = new EMLView({ 
-            		model: model,
+            		model: emlModel,
             		edit: true
             		});
             	this.subviews.push(emlView);

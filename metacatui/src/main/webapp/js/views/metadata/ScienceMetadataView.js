@@ -29,15 +29,15 @@ define(['jquery',
 	    		formattedText = "";
 	    	
 	    	//Get the text from the content attribute is it exists
-	    	if(text && text.content) text = text.content;
+	    	if(text) text = text;
 
 	    	//Put the abstract in an array format to seperate out paragraphs
-	    	if(typeof text.para.content == "string")
-	    		paragraphs.push(text.para.content);
+	    	if(typeof text.para == "string")
+	    		paragraphs.push(text.para);
 	    	else if(typeof text == "string")
-	    		paragraphs.push(text.content || text);
+	    		paragraphs.push(text || text);
 	    	else if(Array.isArray(text.para)){
-	    		paragraphs = _.pluck(text.para, "content");
+	    		paragraphs = text.para;
 	    	}
 	    	
 	    	//For each paragraph, insert a new line
@@ -56,7 +56,7 @@ define(['jquery',
 				paragraphsJSON = [];
 			
 			_.each(paragraphs, function(p){
-				paragraphsJSON.push({ content: p });
+				paragraphsJSON.push(p);
 			});
 			
 			return paragraphsJSON;
@@ -72,7 +72,7 @@ define(['jquery',
 	    	var newAttr = this.unformatParagraphs($(textEl).val());
 	    	
 	    	//Update the model
-	    	this.model.set($(textEl).attr("data-category").content, newAttr);
+	    	this.model.set($(textEl).attr("data-category"), newAttr);
 	    }
 	});
 

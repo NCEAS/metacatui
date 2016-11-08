@@ -150,7 +150,7 @@ define(['underscore', 'jquery', 'backbone',
 	    createAbstract: function(edit){
 	    	//Get the raw abstract from the model
 	    	var abstractRaw = this.model.get("abstract");
-	    		
+	    		    		
 	    	//Format the abstract text
 	    	var abstractText = this.formatParagraphs(abstractRaw, edit);
 	    	

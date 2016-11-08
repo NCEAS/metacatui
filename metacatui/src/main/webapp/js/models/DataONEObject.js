@@ -58,7 +58,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 var terabyte = gigabyte * 1024;
                 var precision = 0;
             
-                var bytes = this.get("size").content;                        
+                var bytes = this.get("size");                        
            
                 if ((bytes >= 0) && (bytes < kilobyte)) {
                     this.set("sizeStr", bytes + ' B');
@@ -209,7 +209,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             			
             			//If it's a new container node, convert it to JSON and add as a new object attribute
             			if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 1)) {
-            				obj[nodeName] = { content: this.toJson(item) };
+            				obj[nodeName] = this.toJson(item);
             			}
             			//If it's a new text node, just store the text value and add as a new object attribute
             			else if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 3)){
@@ -227,11 +227,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
          					
             				//Add the new node info to the existing array we have now
         					if(item.nodeType == 1){
-        						newNode.content = this.toJson(item);
+        						newNode = this.toJson(item);
         						var newArray = old.concat(newNode);
         					}
         					else if(item.nodeType == 3){
-        						newNode.content = item.nodeValue;
+        						newNode = item.nodeValue;
         						var newArray = old.concat(newNode);
         					}
         					       					
@@ -273,7 +273,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 			
 			for(var i=0; i<Object.keys(json).length; i++){
 				var key = Object.keys(json)[i],
-					contents = json[key].content || json[key];
+					contents = json[key] || json[key];
 			
 				var node = document.createElement(key);
 				           		            		

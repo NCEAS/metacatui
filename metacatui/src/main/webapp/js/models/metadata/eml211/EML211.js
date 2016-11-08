@@ -1,6 +1,11 @@
 ﻿/* global define */
-define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'], 
-    function($, _, Backbone, ScienceMetadata) {
+define(['jquery', 'underscore', 'backbone', 
+        'models/metadata/ScienceMetadata',
+        'models/metadata/eml211/EMLCoverage', 
+        'models/metadata/eml211/EMLDistribution', 
+        'models/metadata/eml211/EMLParty', 
+        'models/metadata/eml211/EMLProject'], 
+    function($, _, Backbone, ScienceMetadata, EMLCoverage, EMLDistribution, EMLParty, EMLProject) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -62,17 +67,60 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
             
             /* Fetch the EML from the MN object service */
             fetch: function(options) {
-            	//Add the authorization options 
-            	fetchOptions = _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
+            	if(!options)
+            		var options = {};
+            	
+            	//Add the authorization header and other AJAX settings
+            	 _.extend(options, MetacatUI.appUserModel.createAjaxSettings(), {dataType: "text"});
 
-            	//Add other AJAX options
-                fetchOptions = _.extend({dataType: "text"}, fetchOptions);
-                
             	//Call Backbone.Model.fetch to retrieve the info
-                return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+                return Backbone.Model.prototype.fetch.call(this, options);
                 
             },
             
+         /*   get: function(attr, options){
+            	if(options && options.raw) return Backbone.Model.prototype.get.call(this, attr);
+            	
+            	var parts = attr.split("."),
+            		getValue = Backbone.Model.prototype.get.call(this, parts[0]);
+            	
+            	var lastValue = this.parseJSONSnippet(getValue, parts);
+            	
+            	if(typeof lastValue == "object"){
+            		var keys = Object.keys(lastValue),
+            			newObject = {};
+            		
+            	    for(var i=0; i<keys.length; i++){
+            	    	newObject[keys[i]] = this.parseJSONSnippet(lastValue[keys[i]]);
+            	    }            	    
+            	}
+            	
+            	return lastValue;
+            },
+            
+            parseJSONSnippet: function(jsonSnippet, attr){
+            	var lastValue;
+            	
+            	for(var i=0; i<attr.length; i++){
+            		var attrPart = attr[i];
+            		
+            		if(i==0)
+            			lastValue = Backbone.Model.prototype.get.call(this, attrPart);
+            		else if(typeof lastValue[attrPart] !== "undefined")
+            			lastValue = lastValue[attrPart];
+            		
+            		
+            		if((typeof lastValue.content !== "undefined") && !Array.isArray(lastValue)){
+            			lastValue = lastValue.content;
+            		}
+            		else if(Array.isArray(lastValue)){
+            			lastValue = _.pluck(lastValue, "content");
+            		}
+            	}
+            	
+            	return lastValue;
+            },*/
+                        
             /* 
              Deserialize an EML 2.1.1 XML document
             */
@@ -89,8 +137,51 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/ScienceMetadata'],
             	
             	if(!datasetEl || !datasetEl.length)
             		return {};
+            		
+            	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact"],
+            		emlDistribution = ["distribution"],
+            		emlProject = ["project"],
+            		skipNodes = ["datatable"];
+            		
+            	var nodes = datasetEl.children(),
+            		modelJSON = {},
+            		skippedXML = [];
             	
-            	return this.toJson(datasetEl[0]);            	
+            	for(var i=0; i<nodes.length; i++){
+            		console.log(nodes[i]);
+            		var thisNode = nodes[i];
+            		
+            		if(_.contains(emlParties, thisNode.localName))
+            			modelJSON[thisNode.localName] = new EMLParty({ xml: thisNode });
+            		else if(_.contains(emlDistribution, thisNode.localName))
+            			modelJSON[thisNode.localName] = new EMLDistribution({ xml: thisNode });
+            		else if(_.contains(emlProject, thisNode.localName))
+            			modelJSON[thisNode.localName] = new EMLProject({ xml: thisNode });
+            		else if(thisNode.localName == "coverage"){
+            			modelJSON.coverage = [];
+            			
+            			var temporal = $(thisNode).children("temporalCoverage"),
+            				geo = $(thisNode).children("geographicCoverage");
+            			
+            			if(temporal.length)
+            				modelJSON.coverage.push(new EMLCoverage({ xml: temporal }));
+            			if(geo.length)
+            				modelJSON.coverage.push(new EMLCoverage({ xml: geo }));
+            		}
+            		else if(_.contains(skipNodes, thisNode.localName)){
+            			skippedXML.push(thisNode);
+            		}
+            		else
+            			modelJSON[thisNode.localName] = this.toJson(thisNode);
+            		
+            	}
+            	
+            	//Save the XML nodes we skipped over as-is in the model
+            	this.set("unsupportedXML", skippedXML);
+            	
+            	console.log(modelJSON);
+            	
+            	return modelJSON;           	
             },
             
             serialize: function(){

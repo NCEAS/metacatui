@@ -3,13 +3,13 @@
 <!-- Files column -->
 <% if ( typeof title !== "undefined" && 
         title !== null &&      
-        typeof title.content !== "undefined" ) { %>
-    <td><%= title.content %></td>
+        typeof title !== "undefined" ) { %>
+    <td><%= title %></td>
     
 <% } else if ( typeof filename !== "undefined" && 
                filename !== null &&
-               typeof filename.content !== "undefined" ) { %>
-    <td><%= filename.content %></td>
+               typeof filename !== "undefined" ) { %>
+    <td><%= filename %></td>
     
 <% } else {%>
     <td><%= id %></td>
@@ -21,7 +21,7 @@
     <td><%= sizeStr %></td>
     
 <% } else {%>
-    <td><%= size.content %></td>
+    <td><%= size %></td>
     
 <% } %>
 <!-- Type column -->
