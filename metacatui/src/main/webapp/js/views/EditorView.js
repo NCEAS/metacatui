@@ -66,23 +66,23 @@ define(['underscore',
 
             MetacatUI.appModel.set('headerType', 'default');
             $("body").addClass("Editor");
-        	//Get the basic template on the page
-        	this.$el.append(this.template());
-        	
-        	if(!this.model) this.createModel();
-        	
-            //When the basic Solr metadata are retrieved, get the associated package
-            this.listenToOnce(this.model, "sync", this.getDataPackage);
-        	
-            //Wait until the user info is loaded before we request the Metadata
-        	if(MetacatUI.appUserModel.get("loggedIn")) {
-              this.model.fetch();
-
-        	} else {        	
+	        	//Get the basic template on the page
+	        	this.$el.append(this.template());
+	        	
+	        	if(!this.model) this.createModel();
+	        	
+	        //When the basic Solr metadata are retrieved, get the associated package
+	        this.listenToOnce(this.model, "sync", this.getDataPackage);
+	        	
+	            //Wait until the user info is loaded before we request the Metadata
+	        	if(MetacatUI.appUserModel.get("loggedIn")) {
+	          this.model.fetch();
+	
+	    		} else {        	
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
 	            	this.model.fetch();
 	            });
-        	}
+	    		}
                         
             return this;
         },
@@ -104,7 +104,7 @@ define(['underscore',
                 // Set the root data package for the collection
                 MetacatUI.rootDataPackage = new DataPackage(null, {id: resourceMapIds[0]});
                 // As the root collection is updated with models, render the UI
-                this.listenTo(MetacatUI.rootDataPackage, "change", this.renderMember);
+                this.listenTo(MetacatUI.rootDataPackage, "added", this.renderMember);
 
                 // Render the package table framework
                 this.dataPackageView = new DataPackageView({edit: true});
@@ -157,7 +157,7 @@ define(['underscore',
 
             // render metadata as the collection is updated, but only EML passed from the event
             if ( typeof model.get === "undefined" || 
-                        model.get("formatId") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+                        model.get("formatid") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
                 console.log("Not EML. TODO: Render generic ScienceMetadata.");
                 return;
                 

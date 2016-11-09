@@ -77,6 +77,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
              * Return the correct model based on the type
              */
             model: function (attrs, options) {
+            	
+            		//if(!attrs.formatid) return;
+            	            			
                 switch ( attrs.formatid ) {
                 
                     case "eml://ecoinformatics.org/eml-2.0.0":
@@ -291,20 +294,29 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                     memberStatements = this.dataPackageGraph.statementsMatching(
                         undefined, ORE('aggregates'), undefined, undefined);
                     
+                    var memberPIDs = [];
+                    
                     // Get system metadata for each member to eval the formatId
                     _.each(memberStatements, function(memberStatement){
                         memberURIParts = memberStatement.object.value.split('/');
                         memberPIDStr = _.last(memberURIParts);
                         memberPID = decodeURIComponent(memberPIDStr);   
                         
-                        if ( memberPID ) {
-                            memberModel = new DataONEObject({id: memberPID});
-                            this.listenTo(memberModel, 'change:formatid', this.getMember);
-                            memberModel.fetch();
-                            models.push(memberModel.attributes);
-                            
-                        }
                         
+                        if ( memberPID ) 
+                        		memberPIDs.push(memberPID);
+                        
+                    }, this);
+                    
+                    //Keep the pids in the collection for easy access later
+                    this.pids = memberPIDs;
+                    
+                    //Retrieve the model for each member 
+                    _.each(memberPIDs, function(pid){
+                	        memberModel = new DataONEObject({id: pid});
+                        this.listenTo(memberModel, 'change:formatid', this.getMember);
+                        memberModel.fetch();
+                        models.push(memberModel.attributes);
                     }, this);
                                         
                 } catch (error) {
@@ -622,6 +634,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                 });
                 
                 this.add(model, mergeOptions);
+                this.trigger("added", model, this);
+                
+                //Check if the collection is done being retrieved
+                if(this.length == this.pids.length){
+                		this.trigger("complete", this);
+                }
                 
             },
                         

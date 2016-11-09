@@ -168,7 +168,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             parse: function(response){
             	// If the response is XML
             	if( (typeof response == "string") && response.indexOf("<") == 0 ) {
-            		return this.toJson($.parseHTML(response)[1]);
+            		var responseDoc = $.parseHTML(response),
+            			systemMetadata;
+            		for(var i=0; i<responseDoc.length; i++){
+            			if((responseDoc[i].nodeType == 1) && (responseDoc[i].localName.indexOf("systemmetadata") > -1)){
+            				systemMetadata = responseDoc[i];
+            				break;
+            			}
+            		}
+            		
+            		return this.toJson(systemMetadata);
             	
                 // Otherwise we have an object already    
             	} else if ( typeof response === "object") {
@@ -248,9 +257,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             			}
             			
             			//Store the attributes for this node
-            			_.each(item.attributes, function(attr){
+            			/*_.each(item.attributes, function(attr){
             				obj[nodeName][attr.localName] = attr.nodeValue;
-            			});
+            			});*/
             			
         			}
             		
@@ -302,11 +311,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 				}
 				
 				//Add the attributes to the node
-				if(attributeNames && Array.isArray(attributeNames)){
+				/*if(attributeNames && Array.isArray(attributeNames)){
 					_.each(attributeNames, function(attr){
 						$(node).attr(attr, json[key][attr]);
 					});
-				}
+				}*/
 				
 				$(containerNode).append(node);
 			}

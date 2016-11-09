@@ -13,7 +13,7 @@ define(['jquery', 'underscore', 'backbone',
         */
         var EML211 = ScienceMetadata.extend({
 
-            type: "EML",            
+        type: "EML",            
 
         	defaults: _.extend({
 	            isEditable: false,
@@ -41,6 +41,7 @@ define(['jquery', 'underscore', 'backbone',
 	            pubplace: null,
 	            methods: [], // array of EMLMethods objects
 	            project: [], // array of EMLProject objects
+	            //type: "Metadata"
         	}),
 
             initialize: function(options) {
