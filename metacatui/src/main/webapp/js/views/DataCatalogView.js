@@ -1525,7 +1525,7 @@ define(['jquery',
 					}
 					
 					// suggest annotation concepts
-					var annotationSuggestions = facetCounts.sem_annotation_bioportal_sm;
+					var annotationSuggestions = facetCounts.sem_annotation;
 					if(annotationSuggestions){
 						var rankedAnnotationSuggestions = new Array();
 						for (var i=0; i < Math.min(annotationSuggestions.length-1, facetLimit); i+=2) {

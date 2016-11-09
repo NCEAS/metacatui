@@ -46,11 +46,11 @@ define(['jquery',
 			
 			// use these to tailor the annotation ui widget
 			this.semanticFields = {
-					attribute: "sem_annotation_bioportal_sm",
-					attributeName: "sem_annotation_bioportal_sm",
-					attributeLabel: "sem_annotation_bioportal_sm",
-					attributeDescription: "sem_annotation_bioportal_sm",
-					attributeUnit: "sem_annotation_bioportal_sm",
+					attribute: "sem_annotation",
+					attributeName: "sem_annotation",
+					attributeLabel: "sem_annotation",
+					attributeDescription: "sem_annotation",
+					attributeUnit: "sem_annotation",
 					origin: "orcid_sm",
 					investigator: "orcid_sm"
 			}
@@ -261,7 +261,7 @@ define(['jquery',
 			var html = "",
 				view = this,
 				embeddedAttributes = "",
-				type = "sem_annotation_bioportal_sm";
+				type = "sem_annotation";
 			
 			// see if there is special handling for this field
 			if (this.semanticFields[attribute]) {

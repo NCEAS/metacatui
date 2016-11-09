@@ -317,7 +317,7 @@ define(['jquery',
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
-						$.extend(annotation, {"field": "sem_annotation_bioportal_sm"});
+						$.extend(annotation, {"field": "sem_annotation"});
 					}
 					
 					// set up the tree
