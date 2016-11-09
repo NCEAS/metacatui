@@ -2889,6 +2889,11 @@ ul.side-nav-items {
 	margin-left: 14.893617021276595%;
 	padding-left: 20px;
 }
+.Editor #Footer {
+    position: relative;
+    margin-left: 14.9%;
+    width: 85.1%;
+}
 #editor-footer{
 	background-color: #333;
     position: fixed;
@@ -2909,6 +2914,9 @@ ul.side-nav-items {
 }
 textarea.xlarge{
 	height: 200px;
+}
+.Editor #data-package-table{
+	margin-bottom: 0px;
 }
 /*******************************************
 Pager View
