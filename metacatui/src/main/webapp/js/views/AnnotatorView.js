@@ -317,7 +317,7 @@ define(['jquery',
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
-						$.extend(annotation, {"field": "sem_annotation_bioportal_sm"});
+						$.extend(annotation, {"field": "sem_annotation"});
 					}
 					
 					// set up the tree
@@ -475,6 +475,13 @@ define(['jquery',
 				return ann.resource;
 			});
 			
+			// only want to show the manual annotations
+			console.log("All annotation count: " + annotations.length);
+			annotations = _.filter(annotations, function(ann){
+				return (ann.field == "sem_annotation");
+			});
+			console.log("Filtered for sem_annotation: " + annotations.length);
+			
 			//Now extract the rejeced annotations
 			var rejectedAnnotations = _.filter(annotations, function(ann){
 				return ann.reject;
@@ -583,10 +590,16 @@ define(['jquery',
 				tabControl.prepend("<i class='icon-tag'></i>")
 			}
 			
+			
 			if (!section.html()) {
+				//console.log("Highlights not completed yet - cannot render annotation: " +  annotationModel.get("id"));
 				console.log("Highlights not completed yet - cannot render annotation");
 				return;
 			}
+			
+			//console.log("Rendering annotation: " + annotationModel.get("id"));
+			//console.log("Rendering annotation");
+
 						
 			//Render the annotation tag itself
 			var annotationTag = $.parseHTML(this.annotationTemplate({

@@ -246,8 +246,20 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 		
 		groupByType: function(results) {
 			var groupedResults = _.groupBy(results, function(result) {
+				if (result.status == "ERROR" || result.status == "SKIP") {
+					// orange or blue
+					return "removeMe";
+				}
+				if (result.status == "FAILURE" && result.check.level == "OPTIONAL") {
+					// orange
+					return "removeMe";
+				}
+				
 				return result.check.type || "uncategorized";
 			});
+			
+			// get rid of the ones that should not be counted in our totals
+			delete groupedResults["removeMe"];
 			
 			return groupedResults;
 		},
