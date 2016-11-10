@@ -11,7 +11,7 @@
         		<li><a href="#profile">Summary</a></li>
         	</ul>
         </li>
-        <li><a href="#share">Share</a></li>
+        <li><a href="#share" class="show-new-editor">Share</a></li>
         <li><a href="#tools">Tools</a></li>
         <li class="input input-append">
         	<form id="direct-search" action="#">
@@ -28,7 +28,7 @@
 				</a>
 				<ul class="dropdown-menu">
 					<li class="dropdown-header"><%=formattedName%></li>
-					<li><a href="#share">Upload data</a></li>
+					<li><a href="#share" class="show-new-editor">Upload data</a></li>
 					<% if(appModel.get("userProfiles")){ %><li><a href="#profile/<%=username%>">My profile</a></li> <% } %>
 					<li><a href="#data/my-data">My data sets</a></li>
 					<li class="divider"></li>

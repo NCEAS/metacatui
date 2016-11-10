@@ -15,6 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 						  'click #search_btn' : 'triggerSearch',
 					   'keypress #search_txt' : 'triggerOnEnter',
 			         'click .show-new-search' : 'resetSearch',
+			         'click .show-new-editor' : 'resetEditor',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
 			 		 	    'click .dropdown' : 'hideDropdown',
 			 		 	'mouseover .dropdown' : 'showDropdown',
@@ -85,6 +86,17 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		resetSearch: function(e){ 
 			e.preventDefault();
 			appView.resetSearch(); 
+		},
+		
+		resetEditor: function(e){
+			e.preventDefault();
+			
+			//If we're currently on the editor view then refresh
+			if(appView.currentView.type == "Editor")
+				appView.showView(appView.registryView);
+			//Otherwise, just navigate to it
+			else
+				uiRouter.navigate("share", { trigger: true });
 		},
 		
 		hideDropdown: function(){

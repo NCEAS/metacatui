@@ -6,6 +6,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 	
 	// Build the main header view of the application
 	var RegistryView = Backbone.View.extend({
+		
+		type: "Editor",
 
 		el: '#Content',
 		loginEl: '#RegistryLogin',
