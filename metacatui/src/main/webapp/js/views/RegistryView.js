@@ -472,7 +472,21 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 			this.submitForm('editForm');
 		},
 		
-		submitConfirmYesForm: function() {
+		submitConfirmYesForm: function(e) {
+			
+			//When the confirmation/review form is submitted, make sure the user can't click the submit button twice
+			//Remove the submit button
+			$(e.target).remove();
+			
+			var cancelBtn = $("#dataWrongButton"),
+				loading = $(document.createElement("span"))
+							.append($(document.createElement("i")).addClass("icon icon-on-left icon-spinner icon-spin"))
+							.append("Submitting, please wait...");
+			
+			cancelBtn.before(loading);			
+			cancelBtn.remove();
+
+			//Submit the form now
 			this.submitForm('confirmForm');
 		},
 		
