@@ -214,7 +214,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 						"Authorization": "apikey token="+ appModel.get("bioportalAPIKey")
 					},
 					error: function(e) {
-						alert(e);
+						console.log(e);
 					},
 					success: function(data, textStatus, xhr) {
 			
