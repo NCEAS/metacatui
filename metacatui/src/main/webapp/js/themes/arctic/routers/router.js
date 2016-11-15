@@ -292,7 +292,7 @@ function ($, _, Backbone) {
 			this.routeHistory.push("signin");
 
 			if(!appView.signInView){
-				require('views/SignInView', function(SignInView){
+				require(['views/SignInView'], function(SignInView){
 					appView.signInView = new SignInView({ el: "#Content"});
 					appView.showView(appView.signInView);
 				});
