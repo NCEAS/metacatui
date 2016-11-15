@@ -98,10 +98,12 @@ function ($, _, Backbone) {
 			this.routeHistory.push("data");
 			
 			///Check for a page URL parameter
-			if(typeof page === "undefined")
+			if((typeof page === "undefined") || !page)
 				appModel.set("page", 0);
+			else if(page == 0)
+				appModel.set('page', 0);
 			else
-				appModel.set('page', page);
+				appModel.set('page', page-1);
 
 			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){
