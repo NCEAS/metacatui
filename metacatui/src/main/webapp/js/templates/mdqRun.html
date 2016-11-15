@@ -135,7 +135,7 @@
 			<h4>
 				<i class="icon icon-caret-right"></i>
 				<i class="icon icon-caret-down"></i>
-				Warning for <%=groupedResults.ORANGE.length%> checks. Please review these warnings.			
+				Warning for <%=groupedResults.ORANGE.length%> check<% if (groupedResults.ORANGE.length > 1) {print('s')}%>. <% if (groupedResults.ORANGE.length > 0) {print('Please review these warnings.')}%>			
 			</h4>
 		</li>	
 		<%
@@ -188,7 +188,7 @@
 			<h4>
 				<i class="icon icon-caret-down"></i>	
 				<i class="icon icon-caret-right"></i>
-				Failed <%=groupedResults.RED.length%> checks. Please correct these issues.
+				Failed <%=groupedResults.RED.length%> check<% if (groupedResults.RED.length > 1) {print('s')}%>. <% if (groupedResults.RED.length > 0) {print('Please correct these issues.')}%>			
 			</h4>
 		</li>
 	
@@ -241,7 +241,7 @@
 			<h4>
 				<i class="icon icon-caret-right"></i>
 				<i class="icon icon-caret-down"></i>
-				<%=groupedResults.BLUE.length%> informational checks. These may include skips, errors and failures.
+				<%=groupedResults.BLUE.length%> informational check<% if (groupedResults.RED.length > 1) {print('s')}%>. These may include skips, errors and failures.
 			</h4>
 		</li>
 
