@@ -72,9 +72,9 @@ define(['jquery',
 					if(data.response.numFound == 0){
 						var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 								  "<ul class='indent'>" +
-									  "<li>The content was removed because it was invalid or inappropriate.</li>" +
-									  "<li>You do not have permission to view this content.</li>" +
-									  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
+								  	  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
+									  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+									  "<li>The content was removed because it was invalid.</li>" +
 								  "</ul>";
 						view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
 						view.flagComplete();

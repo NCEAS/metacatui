@@ -267,7 +267,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			}
 			//Use the metadata title instead of the ID
 			if(!entityName && (formatType == "METADATA")) entityName = memberModel.get("title");
-			if(formatType == "METADATA") entityName =  "Metadata: " + entityName;
+			if((formatType == "METADATA") && entityName) entityName =  "Metadata: " + entityName;
+			else if((formatType == "METADATA") && !entityName) entityName = "Metadata";
 	
 			//Display the id in the table if not name is present
 			if((typeof entityName === "undefined") || !entityName) entityName = id;

@@ -130,42 +130,40 @@ define(['jquery',
 			if((typeof pid === "undefined") || !pid) var pid = this.pid;
 			if((typeof this.seriesId !== "undefined") && this.seriesId) var sid = this.seriesId;
 
-			var viewRef = this;
-
 			//Get the package ID
 			this.model.set({ id: pid, seriesId: sid });
 			var model = this.model;
 
-			this.listenToOnce(model, "change", function(model){
+			this.listenToOnce(model, "sync", function(){
 
-				if(model.get("formatType") == "METADATA"){
-					viewRef.model = model;
-					viewRef.renderMetadata();
+				if(this.model.get("formatType") == "METADATA"){
+					this.model = model;
+					this.renderMetadata();
 				}
-				else if(model.get("formatType") == "DATA"){
-					if(model.get("isDocumentedBy")){
-						viewRef.pid = _.first(model.get("isDocumentedBy"));
-						viewRef.getModel(viewRef.pid);
+				else if(this.model.get("formatType") == "DATA"){
+					if(this.model.get("isDocumentedBy")){
+						this.pid = _.first(this.model.get("isDocumentedBy"));
+						this.getModel(this.pid);
 						return;
 					}
 					else{
-						viewRef.noMetadata(model);
+						this.noMetadata(this.model);
 					}
 				}
-				else if(model.get("formatType") == "RESOURCE"){
-					var packageModel = new Package({ id: model.get("id") });
+				else if(this.model.get("formatType") == "RESOURCE"){
+					var packageModel = new Package({ id: this.model.get("id") });
 					packageModel.on("complete", function(){
 						var metadata = packageModel.getMetadata();
 
 						if(!metadata){
-							viewRef.noMetadata(packageModel);
+							this.noMetadata(packageModel);
 						}
 						else{
-							viewRef.model = metadata;
-							viewRef.pid = viewRef.model.get("id");
-							viewRef.renderMetadata();
-							if(viewRef.model.get("resourceMap"))
-								viewRef.getPackageDetails(viewRef.model.get("resourceMap"));
+							this.model = metadata;
+							this.pid = this.model.get("id");
+							this.renderMetadata();
+							if(this.model.get("resourceMap"))
+								this.getPackageDetails(this.model.get("resourceMap"));
 						}
 					});
 					packageModel.getMembers();
@@ -173,7 +171,7 @@ define(['jquery',
 				}
 
 				//Get the package information
-				viewRef.getPackageDetails(model.get("resourceMap"));
+				this.getPackageDetails(model.get("resourceMap"));
 
 			});
 			this.listenToOnce(model, "404", this.showNotFound);
@@ -181,8 +179,7 @@ define(['jquery',
 		},
 
 		renderMetadata: function(){
-			var pid = this.pid,
-				view = this;
+			var pid = this.pid;
 
 			this.hideLoading();
 			//Load the template which holds the basic structure of the view
@@ -223,20 +220,26 @@ define(['jquery',
 								viewRef.renderMetadataFromIndex();
 							else{
 								//Check for a response that is a 200 OK status, but is an error msg
-								if((response.length < 250) && (response.indexOf("Error transforming document") > -1)){
+								if((response.length < 250) && (response.indexOf("Error transforming document") > -1) && viewRef.model.get("indexed")){
 									viewRef.renderMetadataFromIndex();
 									return;
 								}
-
 								//Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
-								if(response.indexOf('id="Metadata"') == -1){
+								else if((response.indexOf('id="Metadata"') == -1)){
 									viewRef.$el.addClass("container no-stylesheet");
-									viewRef.renderMetadataFromIndex();
-									return;
+									
+									if(viewRef.model.get("indexed")){
+										viewRef.renderMetadataFromIndex();
+										return;
+									}
 								}
 
 								//Now show the response from the view service
-								view.$(view.metadataContainer).html(response);
+								viewRef.$(viewRef.metadataContainer).html(response);
+								
+								//If there is no info from the index and there is no metadata doc rendered either, then display a message
+								if(viewRef.$el.is(".no-stylesheet") && !viewRef.model.get("indexed"))
+									viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
 
 								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
@@ -250,7 +253,7 @@ define(['jquery',
 							}
 						},
 						error: function(xhr, textStatus, errorThrown){
-							view.renderMetadataFromIndex();
+							viewRef.renderMetadataFromIndex();
 						}
 				}
 
@@ -377,8 +380,8 @@ define(['jquery',
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 					  "<ul class='indent'>" +
 					  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
-						  "<li>You do not have permission to view this content.</li>" +
-						  "<li>The content was removed because it was invalid or inappropriate.</li>" +
+						  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+						  "<li>The content was removed because it was invalid.</li>" +
 					  "</ul>";
 			this.hideLoading();
 			this.showError(msg);
@@ -844,7 +847,7 @@ define(['jquery',
 
 		// Create, render, and insert the View for the ServiceType
 		insertServiceTable: function() {
-			if (!this.model.attributes.isService) return;
+			if (!this.model.get("isService")) return;
 
 			var serviceData = this.parseServiceInformation();
 			var serviceTable = new ServiceTable(serviceData);
@@ -865,10 +868,10 @@ define(['jquery',
 			var split_pattern = /:(?!\/\/|\d)/;
 
 			// Collect values
-			var names = this.model.attributes.serviceTitle.split(split_pattern);
-			var descriptions = this.model.attributes.serviceDescription.split(split_pattern);
-			var types = this.model.attributes.serviceType; // Already comes as an Array
-			var endpoints = this.model.attributes.serviceEndpoint; // Already comes as an Array
+			var names = this.model.get("serviceTitle").split(split_pattern) || [];
+			var descriptions = this.model.get("serviceDescription").split(split_pattern) || [];
+			var types = this.model.get("serviceType") || []; // Already comes as an Array
+			var endpoints = this.model.get("serviceEndpoint") || []; // Already comes as an Array
 
 			// Create our Array of Objects, filling in defaults for each property
 			var data = _.map(_.range(endpoints.length), function(i) {

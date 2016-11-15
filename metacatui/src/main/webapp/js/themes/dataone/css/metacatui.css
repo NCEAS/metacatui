@@ -847,6 +847,10 @@ label.control-label{
 	text-shadow: none;
 }
 
+.service-table td.service-endpoint input{
+	border-color: #146660;
+}
+
 .search-results a.btn{
 	font-weight: 700;
 }

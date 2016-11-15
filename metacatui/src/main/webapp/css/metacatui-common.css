@@ -1390,6 +1390,15 @@ img.icon{
 	top: 5px;
     position: relative;
 }
+.metadata-controls-container{
+	position: relative;
+}
+.metadata-controls-container .copy-success{
+	position: absolute;
+    top: -24px;
+    left: 17px;
+    font-size: .9em;
+}
 .citation-container ~ .data-source .ORNLDAAC,
 .citation-container ~ .data-source .CDL,
 .citation-container ~ .data-source .PISCO,
@@ -1913,7 +1922,9 @@ tfoot .control i{
 .service-description .expand-collapse {
 	vertical-align: top;
 }
-
+.service-table thead{
+	font-weight: bold;
+}
 .service-table td.service-type {
 	width: 100px;
 }
@@ -1925,11 +1936,17 @@ tfoot .control i{
 .service-table td.service-endpoint input {
 	width: 120px;
 	margin-bottom: 0px;
+	border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-color: #e6e6e6;
 }
 
 .service-table td.service-endpoint button {
-	width: 60px;
 	margin-bottom: 0px;
+    border-left: 0px;
+    padding: 4px 7px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
 }
 
 .service-table span.copy-success {

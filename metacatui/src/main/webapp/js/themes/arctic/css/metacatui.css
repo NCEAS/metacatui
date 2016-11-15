@@ -1237,6 +1237,10 @@ MDQ items
 		background-color: #1f254f;
 	}
 	
+	.service-table td.service-endpoint input{
+		border-color: #146660;
+	}
+	
 	.prov-chart,
 	.prov-chart .node
 	.prov-chart .connecter{

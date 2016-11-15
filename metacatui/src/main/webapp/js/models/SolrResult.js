@@ -9,6 +9,8 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			abstract: null,
 			entityName: null,
+			indexed: true,
+			archived: false,
 			origin: '',
 			title: '',
 			pubDate: '',
@@ -275,6 +277,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 					if(docs.length == 1){
 						model.set(docs[0]);
+						model.trigger("sync");
 					}
 					//If we searched by seriesId, then let's find the most recent version in the series
 					else if(docs.length > 1){
@@ -286,11 +289,17 @@ define(['jquery', 'underscore', 'backbone'],
 							model.set(mostRecent[0]);
 						else
 							model.set(docs[0]); //Just default to the first doc found
+						
+						model.trigger("sync");
 					}
-					else
-						model.notFound();
+					else{
+						model.set("indexed", false);
+						//Try getting the system metadata as a backup
+						model.getSysMeta();
+					}
 				},
 				error: function(xhr, textStatus, errorThrown){
+					model.set("indexed", false);
 					model.trigger("getInfoError");
 				}
 			}
@@ -300,6 +309,59 @@ define(['jquery', 'underscore', 'backbone'],
 
 		getCitationInfo: function(){
 			this.getInfo("id,seriesId,origin,pubDate,dateUploaded,title,datasource");
+		},
+		
+		/*
+		 * Get the system metadata for this object
+		 */
+		getSysMeta: function(){
+			var url = appModel.get("metaServiceUrl") + this.get("id"),
+				model = this;
+
+			var requestSettings = {
+				url: url,
+				type: "GET",
+				dataType: "text",
+				success: function(data, response, xhr){
+					//Check if this is archvied
+					var archived = ($(data).find("archived").text() == "true");
+					model.set("archived", archived);
+					
+					//Get the file size
+					model.set("size", ($(data).find("size").text() || ""));
+					
+					//Get the entity name
+					model.set("filename", ($(data).find("filename").text() || ""));
+					
+					//Check if this is a metadata doc
+					var formatId = $(data).find("formatid").text() || "",
+						formatType;
+					model.set("formatId", formatId);
+					if((formatId.indexOf("ecoinformatics.org") > -1) || 
+							(formatId.indexOf("FGDC") > -1) || 
+							(formatId.indexOf("INCITS") > -1) || 
+							(formatId.indexOf("namespaces/netcdf") > -1) || 
+							(formatId.indexOf("waterML") > -1) || 
+							(formatId.indexOf("darwin") > -1) || 
+							(formatId.indexOf("dryad") > -1) || 
+							(formatId.indexOf("http://www.loc.gov/METS") > -1) || 
+							(formatId.indexOf("ddi:codebook:2_5") > -1) || 
+							(formatId.indexOf("http://www.icpsr.umich.edu/DDI") > -1) || 
+							(formatId.indexOf("http://purl.org/ornl/schema/mercury/terms/v1.0") > -1) || 
+							(formatId.indexOf("datacite") > -1) || 
+							(formatId.indexOf("isotc211") > -1) || 
+							(formatId.indexOf("metadata") > -1))
+						model.set("formatType", "METADATA");
+					
+					//Trigger the sync event so the app knows we found the model info
+					model.trigger("sync");
+				},
+				error: function(){
+					model.trigger("404")
+				}
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 
 		notFound: function(){

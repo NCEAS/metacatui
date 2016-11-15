@@ -51,7 +51,22 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				this.model.on("change", function(){ view.render.call(view); });
 				this.model.getCitationInfo();			
 				return;
-			}		
+			}	
+			else if(this.metadata && this.metadata.get("archived")){
+				this.$el.append('<span class="danger">This content has been archived. </span>');
+				
+				//The ID
+				var idEl = $(document.createElement("span")).addClass("id");
+				if(this.metadata.get("seriesId")){
+					$(idEl).text(this.metadata.get("seriesId") + ", version: " + this.metadata.get("id") + ". ");
+				}
+				else{
+			        $(idEl).text("" + this.metadata.get("id") + ". ");				
+				}
+				this.$el.append(idEl);
+				
+				return this;
+			}
 			//Create the citation from the metadata doc if we have one
 			else if(this.metadata){
 				var authors 	 = this.metadata.get("origin"),
