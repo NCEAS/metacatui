@@ -72,7 +72,7 @@ define(['jquery', 'underscore', 'backbone'],
 			checkTokenUrl: null,
 			prov: true,
 			useSeriesId: true,
-			mdqUrl: "https://mn-demo-8.test.dataone.org/mdq-webapp/webapi/"
+			mdqUrl: null
 
 		},
 				
@@ -105,6 +105,10 @@ define(['jquery', 'underscore', 'backbone'],
 			//Set the NSF Award API proxy
 			if(typeof this.get("grantsUrl") != "undefined")
 				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
+			
+			//Set the Metadata Quality engine URL
+			if(typeof this.get("mdqUrl") !== "undefined")
+				this.set("mdqUrl", this.get("baseUrl") + "/mdq-webapp/webapi/");
 			
 			//DataONE CN API 
 			if(this.get("d1CNBaseUrl")){

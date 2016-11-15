@@ -67,7 +67,7 @@ define(['jquery', 'underscore', 'backbone'],
 			groupsUrl: null,
 			prov: true,
 			useSeriesId: true,
-			mdqUrl: null //"/mdq-webapp/webapi/"
+			mdqUrl: null
 
 		},
 				
@@ -99,6 +99,10 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			if(typeof this.get("grantsUrl") !== "undefined")
 				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
+			
+			//Set the Metadata Quality engine URL
+			if(typeof this.get("mdqUrl") !== "undefined")
+				this.set("mdqUrl", this.get("baseUrl") + "/mdq-webapp/webapi/");
 			
 			//DataONE CN API 
 			if(this.get("d1CNBaseUrl")){

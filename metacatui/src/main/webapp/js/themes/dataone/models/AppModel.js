@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			maxDownloadSize: 3000000000,
 			
 			metcatVersion: "2.8.0", 
-			baseUrl: "https://cn.dataone.org",//window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
@@ -76,7 +76,7 @@ define(['jquery', 'underscore', 'backbone'],
 			annotatorUrl: null,
 		    prov: true,
 			useSeriesId: true,
-			mdqUrl: "https://mn-demo-8.test.dataone.org/mdq-webapp/webapi/"
+			mdqUrl: null
 
 		},
 		
@@ -115,6 +115,10 @@ define(['jquery', 'underscore', 'backbone'],
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
 			if(this.get("useJsonp"))
 				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");
+			
+			//Set the Metadata Quality engine URL
+			if(typeof this.get("mdqUrl") !== "undefined")
+				this.set("mdqUrl", this.get("baseUrl") + "/mdq-webapp/webapi/");			
 			
 			//Settings for the DataONE API v2 only
 			if(this.get("d1CNService").indexOf("v2") > -1){
