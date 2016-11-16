@@ -98,6 +98,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				     	 taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 		},
 		
+		facetNameMap: {
+			"creator"    : "origin",
+			"attribute"  : "attribute",
+			"annotation" : "sem_annotation",
+			"spatial"    : "site",
+    	    "taxon"      : ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
+     		"all"        : "keywords"
+		},
+		
 		currentFilters: function(){
 			var changedAttr = this.changedAttributes(_.clone(this.defaults()));
 			
@@ -494,25 +503,32 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			return query;
 		},
 		
-		getFacetQuery: function(){
+		getFacetQuery: function(fields){
 			
 			var facetQuery = "&facet=true" +
 							 "&facet.sort=count" +
 							 "&facet.mincount=1" +
-							 "&facet.limit=-1" +
-							 "&facet.field=keywords" +
-							 "&facet.field=origin" +
-							 "&facet.field=family" +
-							 "&facet.field=species" +
-							 "&facet.field=genus" +
-							 "&facet.field=kingdom" + 
-							 "&facet.field=phylum" + 
-							 "&facet.field=order" +
-							 "&facet.field=class" +
-							 "&facet.field=site";
-			if(this.filterIsAvailable("attribute")) facetQuery += "&facet.field=attributeName&facet.field=attributeLabel";
-			if(this.filterIsAvailable("annotation")) facetQuery += "&facet.field=sem_annotation";
+							 "&facet.limit=-1";
 			
+			//Get the list of fields
+			if(!fields){
+				var fields = "keywords,origin,family,species,genus,kingdom,phylum,order,class,site";
+				if(this.filterIsAvailable("annotation")) fields += "," + this.facetNameMap["annotation"];
+				if(this.filterIsAvailable("attribute"))  fields += ",attributeName,attributeLabel";
+			}
+			
+			var model = this;
+			//Add the fields to the query string
+			_.each(fields.split(","), function(f){	
+				var fieldNames = model.facetNameMap[f] || f;
+				
+				if(typeof fieldNames == "string") fieldNames = [fieldNames];
+				
+				_.each(fieldNames, function(fName){
+					facetQuery += "&facet.field=" + fName;
+				});
+			});
+						
 			return facetQuery;
 		},
 		

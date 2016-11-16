@@ -2589,16 +2589,34 @@ body.mapMode{
 	width: 75%;
 	width: calc(100% - 60px);
 	margin-left: 0px;
+	margin-right: -3px;
 }
 .filter-input-contain input.filter{
-	width: 64%;
 	min-width: 120px;
+	margin-right: -3px;
+	border-radius: 5px 0px 0px 5px;
+   	-webkit-border-radius: 5px 0px 0px 5px;
+   	-moz-border-radius: 5px 0px 0px 5px;
+   	border: 1px solid #AAAAAA;
+   	border-right: 0px;
+   	height: 20px;
+   	width: 75%;
 }
 #filter-year{
 	width: 90%;
 }
 #filter-year input[type='text']{
 	max-width: 50px;
+}
+#sidebar .ui-helper-hidden-accessible{
+	display: none;
+}
+.filter-autocomplete .ui-menu-item a{
+	font-size: 1em;
+}
+.filter-autocomplete .ui-menu-item a:hover,
+.filter-autocomplete .ui-menu-item a:focus{
+	border: 0px;
 }
 /*-- Pagination and sort --*/
 .sort-by{

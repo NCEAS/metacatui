@@ -1635,16 +1635,6 @@ svg .no-activity,
     	padding:0px;
     }
     
-    input.filter{
-    	border-radius: 5px 0px 0px 5px;
-    	-webkit-border-radius: 5px 0px 0px 5px;
-    	-moz-border-radius: 5px 0px 0px 5px;
-    	border: 1px solid #AAAAAA;
-    	border-right: 0px;
-    	height: 20px;
-    	width: 75%;
-    }
-    
     /* Filter checkboxes */
     input.filter[type="checkbox"]{
     	display: none;

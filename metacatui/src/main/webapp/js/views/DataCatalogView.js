@@ -73,6 +73,7 @@ define(['jquery',
 	       			   		   'click .pagerLink' : 'navigateToPage',
 							  'click .filter.btn' : 'updateTextFilters',
 			 'keypress input[type="text"].filter' : 'triggerOnEnter',
+			    'focus input[type="text"].filter' : 'getAutocompletes',
 							  'change #sortOrder' : 'triggerSearch',
 							   'change #min_year' : 'updateYearRange',
 							   'change #max_year' : 'updateYearRange',
@@ -1419,361 +1420,108 @@ define(['jquery',
 		},
 
 		//Get the facet counts
-		getAutoCompletes: function(){
-			if(!this.filters) return;
+		getAutocompletes: function(e){
+			if(!e) return;
+			
+			//Get the text input to determine the filter type
+			var input = $(e.target),
+				category = input.attr("data-category");
+						
+			if(!this.filters || !category) return;
 
 			var viewRef = this;
 			
 			//Create the facet query by using our current search query 
 			var facetQuery = "q=" + this.searchResults.currentquery +
 							 "&rows=0" +
-							 this.searchModel.getFacetQuery() +
-							 "&wt=json&json.wrf=?";
+							 this.searchModel.getFacetQuery(category) +
+							 "&wt=json&";
 
+			//If we've cached these filter results, then use the cache instead of sending a new request
+			if(!appSearchModel.autocompleteCache) appSearchModel.autocompleteCache = {}; 
+			else if(appSearchModel.autocompleteCache[facetQuery]){
+				this.setupAutocomplete(appSearchModel.autocompleteCache[facetQuery]);
+				return;
+			}
+
+			//Get the facet counts for the autocomplete
 			var requestSettings = {
 				url: appModel.get('queryServiceUrl') + facetQuery,
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr){
-					
-					var facetCounts = data.facet_counts.facet_fields,
-						facetLimit  = 999;
-									
-					//***Set up the autocomplete (jQueryUI) feature for each text input****//				
-					//For the 'all' filter, use keywords
-					var allSuggestions = facetCounts.keywords;
-					var rankedSuggestions = new Array();
-					for (var i=0; i < Math.min(allSuggestions.length-1, facetLimit); i+=2) {
-						rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + "+)"});
-					}
-	
-					$('#all_input').autocomplete({
-						source: function (request, response) {
-				            var term = $.ui.autocomplete.escapeRegex(request.term)
-				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedSuggestions, function(value) {
-				                    return startsWithMatcher.test(value.label || value.value || value);
-				                })
-				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedSuggestions, function (value) {
-				                    return $.inArray(value, startsWith) < 0 && 
-				                        containsMatcher.test(value.label || value.value || value);
-				                });
-				            
-				            response(startsWith.concat(contains));
-				        },
-						select: function(event, ui) {
-							// set the text field
-							$('#all_input').val(ui.item.value);
-							// add to the filter immediately
-							viewRef.updateTextFilters(event, ui.item);
-							// prevent default action
-							return false;
-						},
-						position: {
-							my: "left top",
-							at: "left bottom",
-							collision: "flipfit"
-						}
-					});
-					
-					// suggest attribute criteria
-					var attributeNameSuggestions = facetCounts.attributeName;
-					var attributeLabelSuggestions = facetCounts.attributeLabel;
-					// NOTE: only using attributeName for auto-complete suggestions.
-					attributeLabelSuggestions = null;
-					
-					if(attributeNameSuggestions){
-						var attributeSuggestions = [];
-						attributeSuggestions = 
-							attributeSuggestions.concat(
-								attributeNameSuggestions, 
-								attributeLabelSuggestions);
-						var rankedAttributeSuggestions = new Array();
-						for (var i=0; i < Math.min(attributeSuggestions.length-1, facetLimit); i+=2) {
-							rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
-						}
-						$('#attribute_input').autocomplete({
-							source: function (request, response) {
-					            var term = $.ui.autocomplete.escapeRegex(request.term)
-					                , startsWithMatcher = new RegExp("^" + term, "i")
-					                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
-					                    return startsWithMatcher.test(value.label || value.value || value);
-					                })
-					                , containsMatcher = new RegExp(term, "i")
-					                , contains = $.grep(rankedAttributeSuggestions, function (value) {
-					                    return $.inArray(value, startsWith) < 0 && 
-					                        containsMatcher.test(value.label || value.value || value);
-					                });
-					            
-					            response(startsWith.concat(contains));
-					        },
-							select: function(event, ui) {
-								// set the text field
-								$('#attribute_input').val(ui.item.value);
-								// add to the filter immediately
-								viewRef.updateTextFilters(event, ui.item);
-								// prevent default action
-								return false;
-							},
-							position: {
-								my: "left top",
-								at: "left bottom",
-								collision: "flipfit"
-							}
-						});
-					}
-					
-					// suggest annotation concepts
-					var annotationSuggestions = facetCounts.sem_annotation;
-					if(annotationSuggestions){
-						var rankedAnnotationSuggestions = new Array();
-						for (var i=0; i < Math.min(annotationSuggestions.length-1, facetLimit); i+=2) {
-							rankedAnnotationSuggestions.push({
-								value: annotationSuggestions[i], 
-								label: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")), 
-								filterLabel: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")),
-								desc: annotationSuggestions[i], 
-	
-							});
-						}
-						
-						//Set up the hover autocomplete for semantics pick lists
-						 $.widget( "app.semHoverAutocomplete", $.ui.autocomplete, {
-						        
-						        // Set the content attribute as the "item.desc" value.
-						        // This becomes the tooltip content.
-						        _renderItem: function( ul, item ) {
-						        	// if we have a label, use it for the title
-						        	var title = item.value;
-						        	if (item.label) {
-						        		title = item.label;
-						        	}
-						        	
-						        	// if we have a description, use it for the content
-						        	var content = '<div class="annotation-viewer-container">';
-						        	if (item.desc) {
-						        		content += '<span class="annotation tag">' + item.label + '</span>'; 
-						        		if (item.synonyms) {
-							        		content += '<p><strong>Synonyms: </strong>';
-							        		_.each(item.synonyms, function(synonym) {
-								        		content += synonym + "<br/>";
-											});
-							        		
-							        		content += '</p>';
 
-						        		}
-						        		if (item.desc != item.value) {
-							        		content += '<p><strong>Definition: </strong>' + item.desc + '</p>';
-							        		content += '<p class="subtle concept">Concept URI: <a href="' + item.value + '" target="_blank">' + item.value + '</a></p>';
-						        		}
-						        	}
-						        	content += "</div>"
-						        	
-						        	//Set up the popover
-						        	var element = this._super( ul, item );
-						        	if (item.match) {
-				 		        		element.addClass("emphasis");
-				 		        	}
-						        	element.popover({
-				        				placement: "right",
-				        				trigger: "manual",
-				        				container: 'body',
-				        				title: title,
-				        				html: true,
-				        				content: content
-				        			})
-				        			.on("mouseenter", function () {
-				    			        var _this = this;
-				    			        $(this).popover("show");
-				    			        $(".popover").on("mouseleave", function () {
-				    			            $(_this).popover('hide');
-				    			        });
-				    			    })
-				    			    .on("mouseleave", function () {
-				    			        var _this = this;
-				    			        setTimeout(function () {
-				    			            if (!$(".popover:hover").length) {
-				    			                $(_this).popover("hide");
-				    			            }
-				    			        }, 300);
-				    			    });
-						            return element;
-						        }
-						    });
-						    
-						 
-						$('#annotation_input').semHoverAutocomplete({
-							source: 
-								function (request, response) {
-						            var term = $.ui.autocomplete.escapeRegex(request.term)
-						                , startsWithMatcher = new RegExp("^" + term, "i")
-						                , startsWith = $.grep(rankedAnnotationSuggestions, function(value) {
-						                    return startsWithMatcher.test(value.label || value.value || value);
-						                })
-						                , containsMatcher = new RegExp(term, "i")
-						                , contains = $.grep(rankedAnnotationSuggestions, function (value) {
-						                    return $.inArray(value, startsWith) < 0 && 
-						                        containsMatcher.test(value.label || value.value || value);
-						                });
-						            					            
-						            // use local values from facet
-						            var localValues = startsWith.concat(contains);
-						            
-						            // pass to bioportal search to complete the list and do the call back
-						            appLookupModel.bioportalSearch(request, response, localValues, rankedAnnotationSuggestions);
-						            
-					        },
-							select: function(event, ui) {
-								// set the text field
-								$('#annotation_input').val(ui.item.value);
-								// add to the filter immediately
-								viewRef.updateTextFilters(event, ui.item);
-								// prevent default action
-								return false;
-							},
-							position: {
-								my: "left top",
-								at: "left bottom",
-								collision: "flipfit"
-							}
+					var suggestions = [],
+						facetLimit  = 999;
+					
+					//Get all the facet counts
+					_.each(category.split(","), function(c){
+						if(typeof c == "string") c = [c];
+						_.each(c, function(thisCategory){
+							//Get the field name(s)
+							var fieldNames = appSearchModel.facetNameMap[thisCategory];
+							if(typeof fieldNames == "string") fieldNames = [fieldNames];
+							
+							//Get the facet counts
+							_.each(fieldNames, function(fieldName){
+								suggestions.push(data.facet_counts.facet_fields[fieldName]);								
+							});
 						});
-					}
-					
-					
-					// suggest creator names/organizations
-					var originSuggestions = facetCounts.origin;
-					if(originSuggestions){
-						var rankedOriginSuggestions = new Array();
-						for (var i=0; i < Math.min(originSuggestions.length-1, facetLimit); i+=2) {
-							rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
-						}
-						$('#creator_input').autocomplete({
-							source: function (request, response) {
-					            var term = $.ui.autocomplete.escapeRegex(request.term)
-					                , startsWithMatcher = new RegExp("^" + term, "i")
-					                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
-					                    return startsWithMatcher.test(value.label || value.value || value);
-					                })
-					                , containsMatcher = new RegExp(term, "i")
-					                , contains = $.grep(rankedOriginSuggestions, function (value) {
-					                    return $.inArray(value, startsWith) < 0 && 
-					                        containsMatcher.test(value.label || value.value || value);
-					                });
-					            
-					            // use local values from facet
-					            var localValues = startsWith.concat(contains);
-					            
-					            // pass to orcid search to complete the list and do the call back
-					            appLookupModel.orcidSearch(request, response, localValues);
-					        },
-							select: function(event, ui) {
-								// set the text field
-								$('#creator_input').val(ui.item.value);
-								// add to the filter immediately
-								viewRef.updateTextFilters(event, ui.item);
-								// prevent default action
-								return false;
-							},
-							position: {
-								my: "left top",
-								at: "left bottom",
-								collision: "flipfit"
-							}
-						});
-					}
-					
-					// suggest taxonomic criteria
-					var familySuggestions  = facetCounts.family;
-					var speciesSuggestions = facetCounts.species;
-					var genusSuggestions   = facetCounts.genus;
-					var kingdomSuggestions = facetCounts.kingdom;
-					var phylumSuggestions  = facetCounts.phylum;
-					var orderSuggestions   = facetCounts.order;
-					var classSuggestions   = facetCounts["class"];
-					
-					var taxonSuggestions = [];
-					taxonSuggestions = 
-						taxonSuggestions.concat(
-							familySuggestions, 
-							speciesSuggestions, 
-							genusSuggestions, 
-							kingdomSuggestions,
-							phylumSuggestions,
-							orderSuggestions,
-							classSuggestions);
-					var rankedTaxonSuggestions = new Array();
-					for (var i=0; i < Math.min(taxonSuggestions.length-1, facetLimit); i+=2) {
-						rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
-					}
-					$('#taxon_input').autocomplete({
-						source: function (request, response) {
-				            var term = $.ui.autocomplete.escapeRegex(request.term)
-				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
-				                    return startsWithMatcher.test(value.label || value.value || value);
-				                })
-				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedTaxonSuggestions, function (value) {
-				                    return $.inArray(value, startsWith) < 0 && 
-				                        containsMatcher.test(value.label || value.value || value);
-				                });
-				            
-				            response(startsWith.concat(contains));
-				        },
-						position: {
-							my: "left top",
-							at: "left bottom",
-							collision: "none"
-						},
-						select: function(event, ui) {
-							// set the text field
-							$('#taxon_input').val(ui.item.value);
-							// add to the filter immediately
-							viewRef.updateTextFilters(event, ui.item);
-							// prevent default action
-							return false;
-						}
-					});	
-					
-					// suggest location names
-					var spatialSuggestions = facetCounts.site;
-					var rankedSpatialSuggestions = new Array();
-					for (var i=0; i < Math.min(spatialSuggestions.length-1, facetLimit); i+=2) {
-						rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
-					}
-					$('#spatial_input').autocomplete({
-						source: function (request, response) {
-				            var term = $.ui.autocomplete.escapeRegex(request.term)
-				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
-				                    return startsWithMatcher.test(value.label || value.value || value);
-				                })
-				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedSpatialSuggestions, function (value) {
-				                    return $.inArray(value, startsWith) < 0 && 
-				                        containsMatcher.test(value.label || value.value || value);
-				                });
-				            
-				            response(startsWith.concat(contains));
-				        },
-						select: function(event, ui) {
-							// set the text field
-							$('#spatial_input').val(ui.item.value);
-							// add to the filter immediately
-							viewRef.updateTextFilters(event, ui.item);
-							// prevent default action
-							return false;
-						},
-						position: {
-							my: "left top",
-							at: "left bottom",
-							collision: "flipfit"
-						}
 					});
+					suggestions = _.flatten(suggestions);
+					
+					//Format the suggestions 
+					var rankedSuggestions = new Array();
+					for (var i=0; i < Math.min(suggestions.length-1, facetLimit); i+=2) {
+						rankedSuggestions.push({value: suggestions[i], label: suggestions[i] + " (" + suggestions[i+1] + ")"});
+					}
+					
+					//Save these facets in the app so we don't have to send another query
+					appSearchModel.autocompleteCache[facetQuery] = rankedSuggestions;
+					
+					//Now setup the actual autocomplete menu
+					viewRef.setupAutocomplete(input, rankedSuggestions);
 				}
 			}
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+		},
+		
+		setupAutocomplete: function(input, rankedSuggestions){
+			var viewRef = this;
+			
+			input.autocomplete({
+				source: function (request, response) {
+		            var term = $.ui.autocomplete.escapeRegex(request.term)
+		                , startsWithMatcher = new RegExp("^" + term, "i")
+		                , startsWith = $.grep(rankedSuggestions, function(value) {
+		                    return startsWithMatcher.test(value.label || value.value || value);
+		                })
+		                , containsMatcher = new RegExp(term, "i")
+		                , contains = $.grep(rankedSuggestions, function (value) {
+		                    return $.inArray(value, startsWith) < 0 && 
+		                        containsMatcher.test(value.label || value.value || value);
+		                });
+		            
+		            response(startsWith.concat(contains));
+		        },
+				select: function(event, ui) {
+					// set the text field
+					input.val(ui.item.value);
+					// add to the filter immediately
+					viewRef.updateTextFilters(event, ui.item);
+					// prevent default action
+					return false;
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					collision: "flipfit"
+				}
+			});
+			
+			//Add a class
+			if(input.data("uiAutocomplete"))
+				$(input.data("uiAutocomplete").menu.element).addClass("filter-autocomplete");
 		},
 		
 		hideClearButton: function(){
@@ -2832,7 +2580,7 @@ define(['jquery',
 			}
 			
 			//After all the results are loaded, query for our facet counts in the background
-			this.getAutoCompletes();
+			//this.getAutocompletes();
 		},
 		
 		renderAll: function(){
