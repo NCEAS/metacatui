@@ -458,17 +458,6 @@ define(['jquery',
 				return;
 			}
 			this.rendered = true;
-			
-			var view = this;
-			
-			//Create a new model for each annotation
-			_.each(annotations, function(annotation){
-				var annModel = new AnnotationModel().set(annotation);
-				if(Array.isArray(view.annotations))
-					view.annotations.push(annModel);
-				else
-					view.annotations = [annModel];
-			});
 
 			// sort the annotations by xpath
 			annotations = _.sortBy(annotations, function(ann) {
@@ -489,6 +478,17 @@ define(['jquery',
 			
 			//Add the rejected annotations to the end of the list (we want to display them last)
 			annotations = annotations.concat(rejectedAnnotations);
+			
+			var view = this;
+			
+			//Create a new model for each annotation
+			_.each(annotations, function(annotation){
+				var annModel = new AnnotationModel().set(annotation);
+				if(Array.isArray(view.annotations))
+					view.annotations.push(annModel);
+				else
+					view.annotations = [annModel];
+			});
 			
 			// clear them out!
 			$(".hover-proxy").remove();
