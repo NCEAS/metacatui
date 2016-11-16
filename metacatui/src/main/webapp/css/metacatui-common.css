@@ -2594,6 +2594,7 @@ body.mapMode{
 .filter-input-contain input.filter{
 	min-width: 120px;
 	margin-right: -3px;
+	margin-left: 0px;
 	border-radius: 5px 0px 0px 5px;
    	-webkit-border-radius: 5px 0px 0px 5px;
    	-moz-border-radius: 5px 0px 0px 5px;
