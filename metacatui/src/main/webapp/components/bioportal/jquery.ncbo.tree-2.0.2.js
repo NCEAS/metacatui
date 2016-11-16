@@ -143,16 +143,16 @@
         var li = $("<li>");
         var a = $("<a>").attr("href", determineHTTPS(node.links.self)).html(node.prefLabel);
         a.attr("data-id", encodeURIComponent(node["@id"]));
-        var def = "No definition provided.";
         if (node["definition"]) {
+            var def = "No definition provided.";
         	def = node["definition"][0];
+        	a.attr("data-title", def);
+            a.attr("data-placement", "right");
+            a.attr("data-trigger", "hover");
+            a.attr("data-container", "body");
+            a.addClass("tooltip-this");
         }
-        a.attr("data-title", def);
-        a.attr("data-placement", "right");
-        a.attr("data-trigger", "hover");
-        a.attr("data-container", "body");
-        a.addClass("tooltip-this");
-
+        
         ul.append(li.append(a));
 
         var hasChildrenNotExpanded = typeof node.children !== 'undefined' && node.hasChildren && node.children.length == 0;
