@@ -35,11 +35,11 @@ define(['jquery', 'underscore', 'backbone'],
 			maxDownloadSize: 3000000000,
 
 			metacatVersion: "2.8.0",
-			baseUrl: "https://test.arcticdata.io",//window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
-			d1CNBaseUrl: "https://cn-sandbox-2.test.dataone.org/",
+			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
