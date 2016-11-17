@@ -333,7 +333,7 @@ define(['jquery',
 		},
 
 		insertBreadcrumbs: function(){
-
+			
 			var breadcrumbs = $(document.createElement("ol"))
 						      .addClass("breadcrumb")
 						      .append($(document.createElement("li"))
@@ -345,7 +345,7 @@ define(['jquery',
 		    				  .append($(document.createElement("li"))
 		    						  .addClass("search")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#data/page/" + appModel.get("page"))
+						    				  .attr("href", "#data" + ((appModel.get("page") > 0)? ("/page/" + (parseInt(appModel.get("page"))+1)) : ""))
 						    				  .addClass("search")
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
