@@ -1,9 +1,9 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery',	'underscore', 'backbone'], 				
+define(['jquery',	'underscore', 'backbone'],
 function ($, _, Backbone) {
-	
+
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
@@ -17,29 +17,29 @@ function ($, _, Backbone) {
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-account'                   : 'renderUserSettings',
 			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
-			'mdq(/s=:suiteId)(/:pid)'   : 'renderMdqRun', // MDQ page
+			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
 			'logout'                    : 'logout',          // logout the user
 			'signout'                   : 'logout',          // logout the user
 			'signin'					: 'renderTokenSignIn',
 		},
-		
+
 		helpPages: {
 			"search" : "searchTips",
 			defaultPage : "searchTips"
 		},
-		
+
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
-			
+
 			//Track the history of hashes
 			this.on("route", this.trackHash);
 		},
-		
+
 		//Keep track of navigation movements
 		routeHistory: new Array(),
 		hashHistory: new Array(),
-		
-		// Will return the last route, which is actually the second to last item in the route history, 
+
+		// Will return the last route, which is actually the second to last item in the route history,
 		// since the last item is the route being currently viewed
 		lastRoute: function(){
 			if((typeof this.routeHistory === "undefined") || (this.routeHistory.length <= 1))
@@ -47,12 +47,12 @@ function ($, _, Backbone) {
 			else
 				return this.routeHistory[this.routeHistory.length-2];
 		},
-		
+
 		trackHash: function(e){
 			if(_.last(this.hashHistory) != window.location.hash)
 				this.hashHistory.push(window.location.hash);
 		},
-		
+
 		//If the user or app cancelled the last route, call this function to revert the window location hash back to the correct value
 		undoLastRoute: function(){
 			this.routeHistory.pop();
@@ -60,14 +60,14 @@ function ($, _, Backbone) {
 			//Remove the last route and hash from the history
 			if(_.last(this.hashHistory) == window.location.hash)
 				this.hashHistory.pop();
-			
+
 			//Change the hash in the window location back
 			this.navigate(_.last(this.hashHistory), {replace: true});
 		},
-		
+
 		renderMdqRun: function (suiteId, pid) {
-			this.routeHistory.push("mdq");
-			
+			this.routeHistory.push("quality");
+
 			if (!appView.mdqRunView) {
 				require(["views/MdqRunView"], function(MdqRunView) {
 					appView.mdqRunView = new MdqRunView();
@@ -81,7 +81,7 @@ function ($, _, Backbone) {
 				appView.showView(appView.mdqRunView);
 			}
 		},
-		
+
 		renderText: function(options){
 			if(!appView.textView){
 				require(['views/TextView'], function(TextView){
@@ -92,24 +92,24 @@ function ($, _, Backbone) {
 			else
 				appView.showView(appView.textView, options);
 		},
-		
+
 		renderHelp: function(page, anchorId){
 			this.routeHistory.push("help");
 			appModel.set('anchorId', anchorId);
-			
+
 			if(page)
 				var pageName = this.helpPages[page];
 			else
 				var pageName = this.helpPages["defaultPage"]; //default
-			
+
 			var options = {
 				pageName: pageName,
 				anchorId: anchorId
 			}
-			
+
 			this.renderText(options);
 		},
-		
+
 		renderAbout: function (anchorId) {
 			this.routeHistory.push("about");
 			appModel.set('anchorId', anchorId);
@@ -117,13 +117,13 @@ function ($, _, Backbone) {
 					pageName: "about",
 					anchorId: anchorId
 				}
-			
+
 			this.renderText(options);
 		},
 
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
-			
+
 			///Check for a page URL parameter
 			if((typeof page === "undefined") || !page)
 				appModel.set("page", 0);
@@ -138,15 +138,15 @@ function ($, _, Backbone) {
 				customQuery.push(query);
 				appSearchModel.set('additionalCriteria', customQuery);
 			}
-			
+
 			if(!appView.dataCatalogView){
 				require(['views/DataCatalogView'], function(DataCatalogView){
 					appView.dataCatalogView = new DataCatalogView();
-					
+
 					//Check for a search mode URL parameter
 					if((typeof mode !== "undefined") && mode)
 						appView.dataCatalogView.mode = mode;
-					
+
 					appView.showView(appView.dataCatalogView);
 				});
 			}
@@ -154,65 +154,65 @@ function ($, _, Backbone) {
 				//Check for a search mode URL parameter
 				if((typeof mode !== "undefined") && mode)
 					appView.dataCatalogView.mode = mode;
-				
+
 				appView.showView(appView.dataCatalogView);
 			}
 		},
-		
+
 		renderMyData: function(page){
 			//Only display this is the user is logged in
 			if(!appUserModel.get("loggedIn") && appUserModel.get("checked")) this.navigate("data", { trigger: true });
 			else if(!appUserModel.get("checked")){
 				var router = this;
-				
+
 				this.listenToOnce(appUserModel, "change:checked", function(){
-					
+
 					if(appUserModel.get("loggedIn"))
 						router.renderMyData(page);
 					else
 						this.navigate("data", { trigger: true });
 				});
-				
+
 				return;
 			}
-			
+
 			this.routeHistory.push("data");
-			
+
 			///Check for a page URL parameter
 			if(typeof page === "undefined")
 				appModel.set("page", 0);
 			else
 				appModel.set('page', page);
-			
+
 			if(!appView.dataCatalogView){
 				require(['views/DataCatalogView'], function(DataCatalogView){
 					appView.dataCatalogView = new DataCatalogView();
-					appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 
+					appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone();
 					appView.showView(appView.dataCatalogView);
 				});
 			}
 			else{
-				appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone(); 				
+				appView.dataCatalogView.searchModel = appUserModel.get("searchModel").clone();
 				appView.showView(appView.dataCatalogView);
 			}
-		},		
-		
+		},
+
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
-			
+
 			var seriesId;
-						
+
 			//Check for a seriesId
 			if(appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
 				seriesId = pid.substr(0, pid.indexOf(", version:"));
-				
-				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);				
+
+				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);
 			}
-			
+
 			//Save the id in the app model
 			appModel.set('pid', pid);
-			
+
 			if(!appView.metadataView){
 				require(['views/MetadataView'], function(MetadataView){
 					appView.metadataView = new MetadataView();
@@ -220,7 +220,7 @@ function ($, _, Backbone) {
 					//Send the id(s) to the view
 					appView.metadataView.seriesId = seriesId;
 					appView.metadataView.pid = pid;
-					
+
 					appView.showView(appView.metadataView);
 				});
 			}
@@ -228,24 +228,24 @@ function ($, _, Backbone) {
 				//Send the id(s) to the view
 				appView.metadataView.seriesId = seriesId;
 				appView.metadataView.pid = pid;
-				
+
 				appView.showView(appView.metadataView);
 			}
 		},
-		
+
 		renderProfile: function(username, section, subsection){
-			this.closeLastView();	
-			
+			this.closeLastView();
+
 			var viewChoice;
-			
+
 			if(!username || !appModel.get("userProfiles")){
 				this.routeHistory.push("summary");
-				
+
 				if(!appView.statsView){
 					require(["views/StatsView"], function(StatsView){
 						appView.statsView = new StatsView();
 
-						appView.showView(appView.statsView);						
+						appView.showView(appView.statsView);
 					});
 				}
 				else
@@ -254,28 +254,28 @@ function ($, _, Backbone) {
 			else{
 				this.routeHistory.push("profile");
 				appModel.set("profileUsername", username);
-				
+
 				if(section || subsection){
 					var viewOptions = { section: section, subsection: subsection }
 				}
-				
+
 				if(!appView.userView){
-					
+
 					require(['views/UserView'], function(UserView){
 						appView.userView = new UserView();
-	
-						appView.showView(appView.userView, viewOptions);						
+
+						appView.showView(appView.userView, viewOptions);
 					});
 				}
 				else
 					appView.showView(appView.userView, viewOptions);
 			}
 		},
-		
+
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-			
+
 			if(((typeof appModel.get("tokenUrl") == "undefined") || !appModel.get("tokenUrl")) && !appView.registryView){
 				require(['views/RegistryView'], function(RegistryView){
 					appView.registryView = new RegistryView();
@@ -288,28 +288,28 @@ function ($, _, Backbone) {
 				if(appView.currentView.onClose)
 					appView.currentView.onClose();
 				appUserModel.logout();
-			}	
+			}
 		},
-		
+
 		renderTokenSignIn: function(){
 			this.routeHistory.push("signin");
-			
+
 			if(!appView.signInView){
 				require(["views/SignInView"], function(SignInView){
 					appView.signInView = new SignInView();
-					appView.showView(appView.signInView);					
+					appView.showView(appView.signInView);
 				});
 			}
 			else
 				appView.showView(appView.signInView);
 		},
-		
+
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
 			this.routeHistory.push("external");
-			
+
 			if(!appView.externalView){
-				require(['views/ExternalView'], function(ExternalView){				
+				require(['views/ExternalView'], function(ExternalView){
 					appView.externalView = new ExternalView();
 					appView.externalView.url = url;
 					appView.showView(appView.externalView);
@@ -317,25 +317,25 @@ function ($, _, Backbone) {
 			}
 			else{
 				appView.externalView.url = url;
-				appView.showView(appView.externalView);	
+				appView.showView(appView.externalView);
 			}
 		},
-		
+
 		navigateToDefault: function(){
 			//Navigate to the default view
 			this.navigate(appModel.defaultView, {trigger: true});
 		},
-		
+
 		closeLastView: function(){
 			//Get the last route and close the view
 			var lastRoute = _.last(this.routeHistory);
-			
+
 			if(lastRoute == "summary")
-				appView.statsView.onClose();				
+				appView.statsView.onClose();
 			else if(lastRoute == "profile")
 				appView.userView.onClose();
 		}
-		
+
 	});
 
 	return UIRouter;

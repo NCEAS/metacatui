@@ -1,51 +1,51 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationView', 'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading.html'], 				
+define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationView', 'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading.html'],
 	function($, _, Backbone, d3, DonutChart, CitationView, MdqRunTemplate, SuitesTemplate, LoadingTemplate) {
 	'use strict';
-	
+
 	// Build the Footer view of the application
 	var MdqRunView = Backbone.View.extend({
 
 		el: '#Content',
-				
+
 		events: {
 			"click input[type='submit']"	:	"submitForm",
 			"change #suiteId" : "switchSuite"
 		},
-				
+
 		suitesUrl: appModel.get("mdqUrl") + "suites/",
 
 		url: null,
-		
+
 		pid: null,
-		
+
 		suiteId: null,
-		
+
 		loadingTemplate: _.template(LoadingTemplate),
 
 		template: _.template(MdqRunTemplate),
-		
+
 		suitesTemplate: _.template(SuitesTemplate),
 
-		
+
 		initialize: function () {
-			
+
 		},
-		
+
 		switchSuite: function(event) {
 			console.log("Switching Suite");
-			
+
 			var select = $(event.target);
 
 			var suiteId = $(select).val();
-			
-			uiRouter.navigate("mdq/s=" + suiteId + "/" + this.pid, {trigger: true});
-			
+
+			uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: true});
+
 			return false;
 		},
-				
+
 		render: function () {
-			
+
 			// use the requested suite if provided
 			if (!this.suiteId) {
 				this.suiteId = "arctic.data.center.suite.1";
@@ -55,9 +55,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 			var viewRef = this;
 
 			if (this.pid) {
-				
+
 				this.showLoading();
-				
+
 				// fetch the metadata contents by the pid
 				var xhr = new XMLHttpRequest();
 				xhr.onreadystatechange = function(){
@@ -78,40 +78,40 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 				xhr.responseType = 'blob';
 				xhr.withCredentials = true;
 				xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
-				xhr.send();  
-				
+				xhr.send();
+
 				//Render a Citation View for the page header
 				var citationView = new CitationView({ pid: this.pid });
 				citationView.render();
 				this.citationView = citationView;
-				
+
 			} else {
 				this.$el.html(this.template({}));
 			}
-			
+
 		},
-		
+
 		showLoading: function() {
 			this.$el.html(this.loadingTemplate({ msg: "Running quality report..."}));
 		},
-		
+
 		showCitation: function(){
 			if(!this.citationView) return false;
-			
+
 			this.$("#mdqCitation").prepend(this.citationView.el);
 		},
-		
+
 		show: function() {
 			var view = this;
 			this.$el.hide();
 			this.$el.fadeIn({duration: "slow"});
 		},
-		
+
 		// lookup the suites we can run
 		showAvailableSuites: function() {
 			var viewRef = this;
-			
-			try {				
+
+			try {
 				var args = {
 						url: this.suitesUrl,
 					    type: 'GET',
@@ -131,25 +131,25 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 				console.log(error.stack);
 			}
 		},
-		
+
 		submitForm: function(event) {
 			console.log("Submitting form to MDQ");
-				
+
 			var form = $(event.target).parents("form");
 
 			var formData = new FormData($(form)[0]);
 
 			this.showResults(formData);
-			
+
 			return false;
 
 		},
-		
+
 		// do the work of sending the data and rendering the results
 		showResults: function(formData) {
 			var viewRef = this;
-			
-			try {				
+
+			try {
 				var args = {
 						url: this.url,
 						cache: false,
@@ -161,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 							var groupedResults = viewRef.groupResults(data.result);
 							var groupedByType = viewRef.groupByType(data.result);
 
-							data = _.extend(data, 
+							data = _.extend(data,
 									{
 										objectIdentifier: viewRef.pid,
 										suiteId: viewRef.suiteId,
@@ -183,11 +183,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 				console.log(error.stack);
 			}
 		},
-		
+
 		groupResults: function(results) {
 			var groupedResults = _.groupBy(results, function(result) {
 				var color;
-				
+
 				// simple cases
 				// always blue for info and skip
 				if (result.check.level == 'INFO') {
@@ -202,8 +202,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 				if (result.status == 'SUCCESS') {
 					color = 'GREEN';
 					return color;
-				} 
-				
+				}
+
 				// handle failures and warnings
 				if (result.status == 'FAILURE') {
 					color = 'RED';
@@ -219,9 +219,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 				}
 				//console.log("result color:" + color);
 				return color;
-				
+
 			});
-			
+
 			// make sure we have everything, even if empty
 			if (!groupedResults.BLUE) {
 				groupedResults.BLUE = [];
@@ -235,15 +235,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 			if (!groupedResults.RED) {
 				groupedResults.RED = [];
 			}
-			
+
 			var total = results.length;
 			if (groupedResults.BLUE) {
 				total = total - groupedResults.BLUE.length;
 			}
-			
+
 			return groupedResults;
 		},
-		
+
 		groupByType: function(results) {
 			var groupedResults = _.groupBy(results, function(result) {
 				if (result.status == "ERROR" || result.status == "SKIP") {
@@ -254,21 +254,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 					// orange
 					return "removeMe";
 				}
-				
+
 				return result.check.type || "uncategorized";
 			});
-			
+
 			// get rid of the ones that should not be counted in our totals
 			delete groupedResults["removeMe"];
-			
+
 			return groupedResults;
 		},
-		
+
 		drawScoreChart: function(results, groupedResults){
-						
+
 			var dataCount = results.length;
-			
-			
+
+
 			var data = [
 			            {label: "Pass", count: groupedResults.GREEN.length, perc: groupedResults.GREEN.length/results.length },
 			            {label: "Warn", count:  groupedResults.ORANGE.length, perc: groupedResults.ORANGE.length/results.length},
@@ -283,22 +283,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 			            "Info", groupedResults.BLUE.length,
 			        ];
 			 */
-			
+
 			var svgClass = "data";
-			
+
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
 				this.$('.format-charts-data').html("<h2 class='" + svgClass + " fallback'>" + appView.commaSeparateNumber(dataCount) + " data files</h2>");
-				
+
 				return;
 			}
-			
+
 			//Draw a donut chart
 			var donut = new DonutChart({
 							id: "data-chart",
-							data: data, 
+							data: data,
 							total: dataCount,
-							titleText: "checks", 
+							titleText: "checks",
 							titleCount: dataCount,
 							svgClass: svgClass,
 							countClass: "data",
@@ -311,7 +311,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 						});
 			this.$('.format-charts-data').html(donut.render().el);
 		}
-				
+
 	});
-	return MdqRunView;		
+	return MdqRunView;
 });
