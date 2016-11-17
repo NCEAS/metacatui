@@ -35,11 +35,11 @@ define(['jquery', 'underscore', 'backbone'],
 			maxDownloadSize: 3000000000,
 
 			metcatVersion: "2.8.0",
-			baseUrl: "https://search-sandbox-2.test.dataone.org",//window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn-sandbox-2.test.dataone.org",
+			d1CNBaseUrl:  "https://cn.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
