@@ -1,5 +1,5 @@
 /**
- *   MetacatUI v1.11.0
+ *   MetacatUI
  *   https://github.com/NCEAS/metacatui
  *   MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.
  **/
