@@ -12,7 +12,7 @@ if ((mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!mapKey)) mapKey = null;
 var useD3 = true; 
 
 //This version of Metacat UI - used for cache busting
-window.metacatUIVersion = "1.13.0";
+window.metacatUIVersion = "1.13.1";
 
 // Step 2: let everything else be taken care of by the app
 preventCompatibilityIssues();
