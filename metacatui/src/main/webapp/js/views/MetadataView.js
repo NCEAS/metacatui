@@ -165,7 +165,7 @@ define(['jquery',
 							if(this.model.get("resourceMap"))
 								this.getPackageDetails(this.model.get("resourceMap"));
 						}
-					});
+					}, this);
 					packageModel.getMembers();
 					return;
 				}
