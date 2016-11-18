@@ -375,8 +375,6 @@ define(['jquery',
 				return;
 			}
 
-			if(!this.model.get("notFound")) return;
-
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 					  "<ul class='indent'>" +
 					  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
@@ -868,10 +866,10 @@ define(['jquery',
 			var split_pattern = /:(?!\/\/|\d)/;
 
 			// Collect values
-			var names = this.model.get("serviceTitle").split(split_pattern) || [];
-			var descriptions = this.model.get("serviceDescription").split(split_pattern) || [];
-			var types = this.model.get("serviceType") || []; // Already comes as an Array
-			var endpoints = this.model.get("serviceEndpoint") || []; // Already comes as an Array
+			var names = this.model.get("serviceTitle") ? this.model.get("serviceTitle").split(split_pattern) : [],
+				descriptions = this.model.get("serviceDescription") ? this.model.get("serviceDescription").split(split_pattern) : [],
+				types = this.model.get("serviceType") || [],
+				endpoints = this.model.get("serviceEndpoint") || [];
 
 			// Create our Array of Objects, filling in defaults for each property
 			var data = _.map(_.range(endpoints.length), function(i) {
