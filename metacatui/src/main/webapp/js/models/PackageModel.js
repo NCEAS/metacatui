@@ -50,6 +50,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				this.set("url", appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id")));
 		},
 		
+		/*
+		 * Set the URL for fetch
+		 */
+		url: function(){
+			return appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
+		},
+		
 		/* Retrieve the id of the resource map/package that this id belongs to */
 		getMembersByMemberID: function(id){
 			this.pending = true;
@@ -152,6 +159,30 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			
 			return this;
+		},
+		
+		/*
+		 * Send custom options to the Backbone.Model.fetch() function
+		 */
+		fetch: function(options){
+			if(!options) var options = {};
+			
+			var fetchOptions = _.extend({dataType: "text"}, options);
+            
+            //Add the authorization options 
+            fetchOptions = _.extend(fetchOptions, appUserModel.createAjaxSettings());
+            
+            
+            return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+		},
+		
+		/*
+		 * Override Backbone parse to parse the RDF XML
+		 */
+		parse: function(response, options){
+			this.set("xml", response);
+			
+			return [];
 		},
 		
 		getParentMetadata: function(){
@@ -724,7 +755,26 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 		
 		//Check authority of the Metadata SolrResult model instead
 		checkAuthority: function(){
-			return this.getMetadata().checkAuthority();
+			console.log("check auth of package");
+			
+			//Call the auth service
+			var authServiceUrl = appModel.get('authServiceUrl');
+			if(!authServiceUrl) return false;
+
+			var model = this;
+
+			var requestSettings = {
+				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=write",
+				type: "GET",
+				success: function(data, textStatus, xhr) {
+					model.set("isAuthorized", true);
+					model.trigger("change:isAuthorized");
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					model.set("isAuthorized", false);
+				}
+			}
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 		
 		flagComplete: function(){

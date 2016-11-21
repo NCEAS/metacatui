@@ -778,6 +778,21 @@ define(['jquery',
 							identifier: pid
 						}));
 				}
+				
+				//Check the authority on the package models
+				//If there is no package, then exit now
+				if(!viewRef.packageModels || !viewRef.packageModels.length) return;
+				
+				//Check for authorization on the resource map
+				var packageModel = this.packageModels[0];
+				
+				//Listen for changes to the authorization flag
+				packageModel.on("change:isAuthorized", viewRef.createProvEditor, viewRef);
+				packageModel.on("sync", viewRef.createProvEditor, viewRef); 
+						
+				//Now get the RDF XML and check for the user's authority on this resource map
+				packageModel.fetch();				
+				packageModel.checkAuthority();
 			});
 			this.model.checkAuthority();
 		},
@@ -994,6 +1009,21 @@ define(['jquery',
 					}
 				});
 			}
+		},
+		
+		/*
+		 * Creates a provenance editor
+		 */
+		createProvEditor: function(){
+			//Get the package - just get the first one for now
+			//TODO: Make sure this is the parent resource map
+			var packageModel = this.packageModels[0];
+			
+			//If this user is not authorized to edit this resource map, then exit
+			//Or if this is package hasn't been retrieved yet, then exit
+			if(!packageModel.get("isAuthorized") || !packageModel.get("xml")) return;
+			
+			
 		},
 
 		/*
