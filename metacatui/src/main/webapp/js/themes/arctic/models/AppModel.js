@@ -72,7 +72,7 @@ define(['jquery', 'underscore', 'backbone'],
 			checkTokenUrl: null,
 			prov: true,
 			useSeriesId: true,
-			mdqUrl: (window.location.origin || (window.location.protocol + "//" + window.location.host)) + "/mdq-webapp/webapi/"
+			mdqUrl: (window.location.origin || (window.location.protocol + "//" + window.location.host)) + "/quality/"
 
 		},
 

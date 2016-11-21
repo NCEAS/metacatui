@@ -357,7 +357,7 @@ define(['jquery', 'underscore', 'backbone'],
 					model.trigger("sync");
 				},
 				error: function(){
-					model.trigger("404")
+					model.notFound();
 				}
 			}
 			

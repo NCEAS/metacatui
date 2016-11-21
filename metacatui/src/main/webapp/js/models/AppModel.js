@@ -68,7 +68,6 @@ define(['jquery', 'underscore', 'backbone'],
 			prov: true,
 			useSeriesId: true,
 			mdqUrl: null
-
 		},
 
 		defaultView: "data",

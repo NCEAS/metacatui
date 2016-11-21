@@ -165,7 +165,7 @@ define(['jquery',
 							if(this.model.get("resourceMap"))
 								this.getPackageDetails(this.model.get("resourceMap"));
 						}
-					});
+					}, this);
 					packageModel.getMembers();
 					return;
 				}
@@ -374,6 +374,8 @@ define(['jquery',
 				this.listenToOnce(appUserModel, "change:checked", this.showNotFound);
 				return;
 			}
+			
+			if(!this.model.get("notFound")) return;
 
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 					  "<ul class='indent'>" +
