@@ -51,7 +51,7 @@ define(['jquery', 'underscore', 'backbone'],
 			ldapwebServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
-			objectServiceUrl: null,
+			//objectServiceUrl: null,
 			resolveServiceUrl: null,
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
@@ -93,7 +93,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
 			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
-			this.set('objectServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/object/');
+			//this.set('objectServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/object/');
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
 
