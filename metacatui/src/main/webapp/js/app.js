@@ -28,7 +28,7 @@ require.config({
   map: themeMap,
   urlArgs: "v=" + window.metacatUIVersion,
   paths: {
-    jquery: '../components/jquery',
+    jquery: 'https://code.jquery.com/jquery-1.9.1',//'../components/jquery',
     jqueryui: '../components/jquery-ui-1.10.3.custom.min',
     jqueryform: '../components/jquery.form',
     underscore: '../components/underscore-min',
@@ -46,6 +46,7 @@ require.config({
     annotator: '../components/annotator/v1.2.10/annotator-full',
     bioportal: '../components/bioportal/jquery.ncbo.tree-2.0.2',
     clipboard: '../components/clipboard.min',
+    uuid: '../components/uuid',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: d3URL,
 	LineChart: ['views/LineChartView', null],

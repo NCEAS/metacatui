@@ -1023,7 +1023,7 @@ define(['jquery',
 			//Or if this is package hasn't been retrieved yet, then exit
 			if(!packageModel.get("isAuthorized") || !packageModel.get("xml")) return;
 			
-			
+			//packageModel.save(null, { sysMetaOnly: true });
 		},
 
 		/*

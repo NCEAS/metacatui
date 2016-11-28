@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSearch'], 				
-	function($, _, Backbone, SolrResult, LogsSearch) {
+define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models/LogsSearch'], 				
+	function($, _, Backbone, uuid, SolrResult, LogsSearch) {
 
 	// Package Model 
 	// ------------------
@@ -182,8 +182,169 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 		parse: function(response, options){
 			this.set("xml", response);
 			
-			return [];
+			return {};
 		},
+		
+		/*
+		 * Overwrite the Backbone.Model.save() function to set custom options
+		 */
+		save: function(attrs, options){
+			if(!options) var options = {};
+			
+			//Get the system metadata first
+			if(!this.get("hasSystemMetadata")){
+				var model = this;
+				var requestSettings = {
+						url: appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
+						success: function(response){
+							model.parseSysMeta(response);
+							
+							console.log(response);
+							console.log(model.toJSON());
+							
+							model.set("hasSystemMetadata", true);
+							model.save.call(model, null, options);
+						},
+						dataType: "text"
+				}
+				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+				return;
+			}
+			
+			//Create the system metadata
+			var sysMetaXML = this.serializeSysMeta();
+			
+			//Send the new pid, old pid, and system metadata 
+			console.log("now let's save");
+			
+			//Let's try updating the system metadata for now
+			if(options.sysMetaOnly){
+				var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
+				var formData = new FormData();
+				formData.append("pid", this.get("id"), "pid");
+				formData.append("sysmeta", xmlBlob, "sysmeta");
+				
+				var requestSettings = {
+						url: "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/meta",
+						type: "PUT",
+						cache: false,
+					    contentType: "multipart/form-data",
+					    processData: false,
+						data: formData,
+						success: function(response){
+							console.log('yay');
+						},
+						error: function(data){
+							console.log("error updating system metadata");
+						}
+				}
+				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			}
+		},
+		
+		parseSysMeta: function(response){
+        	// If the response is XML
+    		var responseDoc = $.parseHTML(response),
+    			systemMetadata,
+    			prependXML = "",
+    			appendXML = "";
+    		
+    		for(var i=0; i<responseDoc.length; i++){
+    			if((responseDoc[i].nodeType == 1) && (responseDoc[i].localName.indexOf("systemmetadata") > -1)){
+    				systemMetadata = responseDoc[i];
+    				
+    				var namespaces = [];
+    				//Get the attributes on the systemmetadata node - most likely namespace declarations
+    				_.each(systemMetadata.attributes, function(att){
+    					//Save the namespaces
+    					namespaces.push({
+    						name: att.localName,
+    						value: att.value
+    					});
+    				});
+    				this.set("namespaces", namespaces);
+    			}
+    			else if((responseDoc[i].nodeType == 8) && !systemMetadata)
+    				prependXML += "<" + responseDoc[i].nodeValue + ">";
+    			else if((responseDoc[i].nodeType == 3) && !systemMetadata)
+    				prependXML += responseDoc[i].nodeValue;
+    			else if((responseDoc[i].nodeType == 8) && systemMetadata)
+    				appendXML += "<" + responseDoc[i].nodeValue + ">";
+    			else if((responseDoc[i].nodeType == 3) && systemMetadata)
+    				appendXML += responseDoc[i].nodeValue;
+    		}
+    		
+    		this.set("prependedSysMetaXML", prependXML);
+    		this.set("appendedSysMetaXML", appendXML);
+    		
+    		//Parse the basic XML
+    		this.set(this.toJson(systemMetadata));
+    		
+    		//Get some custom XML fields
+    		var repPolicy = this.get("replicationpolicy");
+    		if(!repPolicy || !repPolicy.length) this.set("replicationAllowed", false);
+        },
+        
+        serializeSysMeta: function(){
+        	var xml = "";
+        	
+        	//Get the prepended XML
+        	xml += this.get("prependedSysMetaXML");
+        	
+        	//Create the system metadata
+        	xml += '<"ns1:systemMetadata ns1="http://ns.dataone.org/service/types/v2.0">' +
+        		'<serialVersion>' + this.get("serialversion") + '</serialVersion>' +
+        		'<identifier>' + this.get("id") + '</identifier>' + //TODO: Get the new id
+        		'<formatId>' + this.get("formatid") + '</formatId>' +
+        		'<size>' + this.get("size") + '</size>' + //TODO: Get new size
+        		'<checksum algorithm="MD5">' + this.get("checksum") + '</checksum>' + //TODO: Get new checksum
+        		'<submitter>' + this.get("submitter") + '</submitter>' +
+        		'<rightsHolder>' + this.get("rightsHolder") + '</rightsHolder>' +
+        		'<accessPolicy>';
+        		
+        	//Write the access policy
+        	_.each(this.get("accesspolicy"), function(policy, policyName, all){
+    			var fullPolicy = all[policyName];
+    			
+    			xml += '<' + policyName + '>';
+    			
+    			_.each(fullPolicy, function(policyPart){
+        			xml += '<subject>' + policyPart.subject + '</subject>';
+            		
+        			_.each(policyPart.permission, function(perm){
+            			xml += '<permission>' + perm + '</permission>';
+            		});
+    			});
+        	});
+        	
+        	xml += '</accessPolicy>' +
+        		'<replicationPolicy replicationAllowed="' + this.get("replicationAllowed") +'"';
+        	
+        	//TODO
+        	//Write the replication policy
+        	if(this.get("replicationAllowed")){
+        		xml += '>';
+        		xml += '</replicationPolicy>';
+        	}
+        	else
+        		xml += '/>';
+        			
+        	xml += (this.get("obsoletes")? ('<obsoletes>' + this.get("obsoletes") + '</obsoletes>') : "") +
+        		(this.get("obsoletedBy")? ('<obsoletedBy>' + this.get("obsoletedBy") + '</obsoletedBy>') : "") +
+        		'<archived>' + this.get("archived") +  '</archived>' +
+        		'<dateUploaded>' + this.get("dateuploaded") + '</dateUploaded>' +
+        		'<dateSysMetaModified>' + this.get("datesysmetadatamodified") + '</dateSysMetaModified>' +
+        		'<originMemberNode>' + this.get("originmembernode") + '</originMemberNode>' +
+        		'<authoritativeMemberNode>' + this.get("authoritativemembernode") + '</authoritativeMemberNode>' +
+        		'</ns1:systemMetadata>';
+
+        	//Get the appended XML
+        	xml += this.get("appendedSysMetaXML");
+        	
+        	console.log("new sys meta: ", xml);
+        	
+        	return xml;
+        },
 		
 		getParentMetadata: function(){
 			var rMapIds = this.get("resourceMap");
@@ -782,6 +943,75 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			this.pending = false;
 			this.trigger("complete", this);
 		},
+		
+		// A utility function for converting XML to JSON
+        toJson: function(xml) {
+        	
+        	// Create the return object
+        	var obj = {};
+
+        	// do children
+        	if (xml.hasChildNodes()) {
+        		for(var i = 0; i < xml.childNodes.length; i++) {
+        			var item = xml.childNodes.item(i);
+        			
+        			//If it's an empty text node, skip it
+        			if((item.nodeType == 3) && (!item.nodeValue.trim()))
+        				continue;
+        			
+        			//Get the node name
+        			var nodeName = item.localName;
+        			
+        			//If it's a new container node, convert it to JSON and add as a new object attribute
+        			if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 1)) {
+        				obj[nodeName] = this.toJson(item);
+        			}
+        			//If it's a new text node, just store the text value and add as a new object attribute
+        			else if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 3)){
+        				obj = item.nodeValue;
+        			}
+        			//If this node name is already stored as an object attribute...
+        			else if(typeof(obj[nodeName]) != "undefined"){	
+        				//Cache what we have now
+        				var old = obj[nodeName];
+        				if(!Array.isArray(old))
+        					old = [old];
+        				
+        				//Create a new object to store this node info
+        				var newNode = {};
+     					
+        				//Add the new node info to the existing array we have now
+    					if(item.nodeType == 1){
+    						newNode = this.toJson(item);
+    						var newArray = old.concat(newNode);
+    					}
+    					else if(item.nodeType == 3){
+    						newNode = item.nodeValue;
+    						var newArray = old.concat(newNode);
+    					}
+    					       					
+            			//Store the attributes for this node
+            			_.each(item.attributes, function(attr){
+            				newNode[attr.localName] = attr.nodeValue;
+            			});
+    						
+            			//Replace the old array with the updated one
+    					obj[nodeName] = newArray; 
+    					
+    					//Exit
+    					continue;
+        			}
+        			
+        			//Store the attributes for this node
+        			/*_.each(item.attributes, function(attr){
+        				obj[nodeName][attr.localName] = attr.nodeValue;
+        			});*/
+        			
+    			}
+        		
+        	}
+        	return obj;
+        },
 		
 		//Sums up the byte size of each member
 		getTotalSize: function(){
