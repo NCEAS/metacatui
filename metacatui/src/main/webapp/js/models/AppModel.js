@@ -50,7 +50,7 @@ define(['jquery', 'underscore', 'backbone'],
 			queryServiceUrl: null,
 			metaServiceUrl: null,
 			registryServiceUrl: null,
-			ldapwebServiceUrl: null,
+			//ldapwebServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
@@ -58,13 +58,18 @@ define(['jquery', 'underscore', 'backbone'],
 			//bioportalSearchUrl: null,
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
-			//tokenUrl: null,
-			//checkTokenUrl: null,
+			signInUrl: null,
+			signOutUrl: null,
+			signInUrlOrcid: null,
+			signInUrlLdap: null,
+			tokenUrl: null,
+			checkTokenUrl: null,
 			//annotatorUrl: null,
 			accountsUrl: null,
-			//pendingMapsUrl: null,
-			//accountsMapsUrl: null,
+			pendingMapsUrl: null,
+			accountsMapsUrl: null,
 			groupsUrl: null,
+			portalUrl: null,
 			prov: true,
 			useSeriesId: true,
 			mdqUrl: null
@@ -89,7 +94,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
-			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
+			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
@@ -116,9 +121,6 @@ define(['jquery', 'underscore', 'backbone'],
 						this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
 				}
 
-				if(typeof this.get("d1LogServiceUrl") != "undefined")
-					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
-
 				if(this.get("useJsonp") && (typeof this.get("d1LogServiceUrl") != "undefined"))
 					this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
 
@@ -130,8 +132,23 @@ define(['jquery', 'underscore', 'backbone'],
 
 					//Token URLs
 					if(typeof this.get("tokenUrl") != "undefined"){
-						this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/token");
+						this.set("tokenUrl", this.get("d1CNBaseUrl") + "portal/token");
 						this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
+						
+						//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
+						if(typeof this.get("signInUrl") !== "undefined")
+							this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
+						if(typeof this.get("signInUrlOrcid") !== "undefined")
+							this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
+						if(typeof this.get("signInUrlLdap") !== "undefined")
+							this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+						if(this.get('orcidBaseUrl'))
+							this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+						if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
+							this.set("signOutUrl", this.get('portalUrl') + "logout");
+						if(typeof this.get("d1LogServiceUrl") != "undefined")
+							this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
+
 					}
 
 					//ORCID search
