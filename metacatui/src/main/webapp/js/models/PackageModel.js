@@ -213,22 +213,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models
 			
 			//Create the system metadata
 			var sysMetaXML = this.serializeSysMeta();
-			
-			//Send the new pid, old pid, and system metadata 
-			console.log("now let's save");
-			
+						
 			//Let's try updating the system metadata for now
 			if(options.sysMetaOnly){
+				//Send the new pid, old pid, and system metadata 
 				var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
 				var formData = new FormData();
-				formData.append("pid", this.get("id"), "pid");
+				formData.append("pid", this.get("id"));
 				formData.append("sysmeta", xmlBlob, "sysmeta");
 				
 				var requestSettings = {
 						url: "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/meta",
 						type: "PUT",
 						cache: false,
-					    contentType: "multipart/form-data",
+					    contentType: false,
 					    processData: false,
 						data: formData,
 						success: function(response){
@@ -292,50 +290,57 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models
         	xml += this.get("prependedSysMetaXML");
         	
         	//Create the system metadata
-        	xml += '<"ns1:systemMetadata ns1="http://ns.dataone.org/service/types/v2.0">' +
-        		'<serialVersion>' + this.get("serialversion") + '</serialVersion>' +
-        		'<identifier>' + this.get("id") + '</identifier>' + //TODO: Get the new id
-        		'<formatId>' + this.get("formatid") + '</formatId>' +
-        		'<size>' + this.get("size") + '</size>' + //TODO: Get new size
-        		'<checksum algorithm="MD5">' + this.get("checksum") + '</checksum>' + //TODO: Get new checksum
-        		'<submitter>' + this.get("submitter") + '</submitter>' +
-        		'<rightsHolder>' + this.get("rightsHolder") + '</rightsHolder>' +
-        		'<accessPolicy>';
+        	xml += '<ns1:systemMetadata xmlns:ns1="http://ns.dataone.org/service/types/v2.0">\n' +
+        		'<serialVersion>' + this.get("serialversion") + '</serialVersion>\n' +
+        		'<identifier>' + this.get("id") + '</identifier>\n' + //TODO: Get the new id
+        		'<formatId>' + this.get("formatid") + '</formatId>\n' +
+        		'<size>' + this.get("size") + '</size>\n' + //TODO: Get new size
+        		'<checksum algorithm="MD5">' + this.get("checksum") + '</checksum>\n' + //TODO: Get new checksum
+        		'<submitter>' + this.get("submitter") + '</submitter>\n' +
+        		'<rightsHolder>' + this.get("rightsHolder") + '</rightsHolder>\n' +
+        		'<accessPolicy>\n';
         		
         	//Write the access policy
-        	_.each(this.get("accesspolicy"), function(policy, policyName, all){
-    			var fullPolicy = all[policyName];
-    			
-    			xml += '<' + policyName + '>';
-    			
+        	_.each(this.get("accesspolicy"), function(policy, policyType, all){
+    			var fullPolicy = all[policyType];
+    			    			
     			_.each(fullPolicy, function(policyPart){
-        			xml += '<subject>' + policyPart.subject + '</subject>';
+        			xml += '\t<' + policyType + '>\n';
+        			
+        			xml += '\t\t<subject>' + policyPart.subject + '</subject>\n';
             		
-        			_.each(policyPart.permission, function(perm){
-            			xml += '<permission>' + perm + '</permission>';
+        			var permissions = Array.isArray(policyPart.permission)? policyPart.permission : [policyPart.permission];
+        			_.each(permissions, function(perm){
+            			xml += '\t\t<permission>' + perm + '</permission>\n';
             		});
-    			});
+        			
+        			xml += '\t</' + policyType + '>\n';
+    			});    			
         	});
         	
-        	xml += '</accessPolicy>' +
+        	xml += '</accessPolicy>\n' +
         		'<replicationPolicy replicationAllowed="' + this.get("replicationAllowed") +'"';
         	
         	//TODO
         	//Write the replication policy
         	if(this.get("replicationAllowed")){
-        		xml += '>';
-        		xml += '</replicationPolicy>';
+        		xml += '>\n';
+        		xml += '</replicationPolicy>\n';
         	}
         	else
-        		xml += '/>';
+        		xml += '/>\n';
         			
-        	xml += (this.get("obsoletes")? ('<obsoletes>' + this.get("obsoletes") + '</obsoletes>') : "") +
-        		(this.get("obsoletedBy")? ('<obsoletedBy>' + this.get("obsoletedBy") + '</obsoletedBy>') : "") +
-        		'<archived>' + this.get("archived") +  '</archived>' +
-        		'<dateUploaded>' + this.get("dateuploaded") + '</dateUploaded>' +
-        		'<dateSysMetaModified>' + this.get("datesysmetadatamodified") + '</dateSysMetaModified>' +
-        		'<originMemberNode>' + this.get("originmembernode") + '</originMemberNode>' +
-        		'<authoritativeMemberNode>' + this.get("authoritativemembernode") + '</authoritativeMemberNode>' +
+        	xml += (this.get("obsoletes")? ('<obsoletes>' + this.get("obsoletes") + '</obsoletes>\n') : "") +
+        		(this.get("obsoletedBy")? ('<obsoletedBy>' + this.get("obsoletedBy") + '</obsoletedBy>\n') : "") +
+        		'<archived>' + this.get("archived") +  '</archived>\n' +
+        		'<dateUploaded>' + this.get("dateuploaded") + '</dateUploaded>\n';
+        	
+        	//Set the date of the sys meta modification
+        	var time = this.get("datesysmetadatamodified") || new Date().toISOString();
+        		
+        	xml += '<dateSysMetadataModified>' + time + '</dateSysMetadataModified>\n' +
+        		'<originMemberNode>' + this.get("originmembernode") + '</originMemberNode>\n' +
+        		'<authoritativeMemberNode>' + this.get("authoritativemembernode") + '</authoritativeMemberNode>\n' +
         		'</ns1:systemMetadata>';
 
         	//Get the appended XML

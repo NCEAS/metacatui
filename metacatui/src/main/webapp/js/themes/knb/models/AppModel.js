@@ -132,7 +132,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 					//Token URLs
 					if(typeof this.get("tokenUrl") != "undefined"){
-						this.set("tokenUrl", this.get("d1CNBaseUrl") + "portal/token");
+						this.set("portalUrl", this.get("d1CNBaseUrl") + "portal/");
+						this.set("tokenUrl", this.get("portalUrl") + "token");
 						this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 						
 						//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
