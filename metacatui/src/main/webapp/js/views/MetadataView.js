@@ -1469,7 +1469,7 @@ define(['jquery',
 				//Create an element using the dataDisplay template
 				html = this.dataDisplayTemplate({
 					 type : "pdf",
-					  src : appModel.get('objectServiceUrl') + pdfs[i].id,
+					  src : (appModel.get('objectServiceUrl') || appModel.get('resolveServiceUrl')) + pdfs[i].id,
 					title : title
 				});
 

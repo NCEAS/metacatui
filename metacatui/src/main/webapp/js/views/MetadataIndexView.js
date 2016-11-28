@@ -340,7 +340,7 @@ define(['jquery',
 				
 				var icon   = $(document.createElement("i")).addClass(icon),
 					title  = $(document.createElement("span")).text(solrResult.get("id")).addClass("title"),
-					downloadBtn = view.downloadButtonTemplate({ href: appModel.get("objectServiceUrl") + encodeURIComponent(solrResult.get("id")), className: "btn btn-primary" }),
+					downloadBtn = view.downloadButtonTemplate({ href: solrResult.get("url"), className: "btn btn-primary" }),
 					anchor = $(document.createElement("a")).attr("name", encodeURIComponent(solrResult.get("id"))),
 					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn);
 				
