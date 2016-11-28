@@ -8,6 +8,7 @@ var themeMap =
 		// Resources (js) omit extension
 		//'views/AboutView' : 'themes/' + theme + '/views/AboutView',
 		//'routers/router' : 'themes/' + theme + '/routers/router',
+		'models/AppModel' : 'themes/' + theme + '/models/AppModel',
 		
 		// Templates include extension
 		'templates/app.html' : 'themes/' + theme + '/templates/app.html',
@@ -15,6 +16,7 @@ var themeMap =
 		'templates/featuredData.html' : 'themes/' + theme + '/templates/featuredData.html',
 		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
 		'templates/mainContent.html' : 'themes/' + theme + '/templates/mainContent.html',
+		'templates/metadataControls.html' : 'themes/' + theme + '/templates/metadataControls.html',
 		'templates/altHeader.html' : 'themes/' + theme + '/templates/altHeader.html',
 		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
 		'templates/tools.html' : 'themes/' + theme + '/templates/tools.html',
