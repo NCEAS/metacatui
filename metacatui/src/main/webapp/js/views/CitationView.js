@@ -32,9 +32,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		
 		className : "citation",
 		
-		events: {
-		},
-		
 		/*
 		 * Creates a citation
 		 */
@@ -82,13 +79,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					authorText = "";
 				_.each(authors, function(author) {
 		             count++;
-		             if (count > 1 && authors.length > 2) authorText += ",";
-		     		                
+		             
+		             if(count == 6){
+		            	 authorText += ", et al. ";
+		            	 return;
+		             }
+		             else if(count > 6) return;
+		             
+		             if(count > 1 && authors.length > 2) authorText += ",";		     		                
+		             
 		             if (count > 1 && count == authors.length) authorText += " and";
 		     
 		             if(authors.length > 1) authorText += " ";
 
-		             authorText += author
+		             authorText += author;
 		                
 		             if (count == authors.length) authorText += ". ";
 		        });
