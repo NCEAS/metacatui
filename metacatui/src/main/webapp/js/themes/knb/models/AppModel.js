@@ -72,7 +72,7 @@ define(['jquery', 'underscore', 'backbone'],
 			portalUrl: null,
 			prov: true,
 			useSeriesId: true,
-			mdqUrl: "https://quality.nceas.ucsb.edu/quality/"
+			mdqUrl: "https://mn-demo-8.test.dataone.org/quality/" //"https://quality.nceas.ucsb.edu/quality/"
 		},
 
 		defaultView: "data",
