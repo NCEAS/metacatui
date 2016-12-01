@@ -47,6 +47,7 @@ require.config({
     bioportal: '../components/bioportal/jquery.ncbo.tree-2.0.2',
     clipboard: '../components/clipboard.min',
     uuid: '../components/uuid',
+    md5: '../components/md5',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: d3URL,
 	LineChart: ['views/LineChartView', null],

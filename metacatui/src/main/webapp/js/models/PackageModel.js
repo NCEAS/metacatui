@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models/LogsSearch'], 				
-	function($, _, Backbone, uuid, SolrResult, LogsSearch) {
+define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'models/SolrResult', 'models/LogsSearch'], 				
+	function($, _, Backbone, uuid, md5, SolrResult, LogsSearch) {
 
 	// Package Model 
 	// ------------------
@@ -199,9 +199,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models
 						success: function(response){
 							model.parseSysMeta(response);
 							
-							console.log(response);
-							console.log(model.toJSON());
-							
 							model.set("hasSystemMetadata", true);
 							model.save.call(model, null, options);
 						},
@@ -211,19 +208,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models
 				return;
 			}
 			
+			//Create a new pid if we are updating the object
+			if(!options.sysMetaOnly){
+				this.set("newPid", "urn:uuid:" + uuid.v4());
+				this.set("obsoletes", this.get("id"));
+				this.set("obsoletedBy", null);
+				this.set("archived", false);
+			}
+			
 			//Create the system metadata
 			var sysMetaXML = this.serializeSysMeta();
+			
+			//Send the new pid, old pid, and system metadata 
+			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
+			var formData = new FormData();
+			formData.append("pid", this.get("id"));
+			formData.append("sysmeta", xmlBlob, "sysmeta");
 						
 			//Let's try updating the system metadata for now
-			if(options.sysMetaOnly){
-				//Send the new pid, old pid, and system metadata 
-				var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
-				var formData = new FormData();
-				formData.append("pid", this.get("id"));
-				formData.append("sysmeta", xmlBlob, "sysmeta");
-				
+			if(options.sysMetaOnly){				
 				var requestSettings = {
-						url: "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/meta",
+						url: appModel.get("metaServiceUrl"),
 						type: "PUT",
 						cache: false,
 					    contentType: false,
@@ -234,6 +239,41 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models
 						},
 						error: function(data){
 							console.log("error updating system metadata");
+						}
+				}
+				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			}
+			else{
+				//Create a new id
+				formData.append("newPid", this.get("newPid"));
+				
+				//Create the resource map XML
+				var mapXML = this.serialize();
+				var mapBlob = new Blob([mapXML], {type : 'application/xml'});
+				formData.append("object", mapBlob);
+				
+				//Get the size of the new resource map
+				this.set("size", mapBlob.size);
+				
+				//Get the new checksum of the resource map
+				var checksum = md5(mapXML);
+				this.set("checksum", checksum);
+				
+				console.log("new package id: " + this.get("newPid"));
+				console.log(mapXML);
+				
+				var requestSettings = {
+						url: appModel.get("objectServiceUrl"),
+						type: "PUT",
+						cache: false,
+						contentType: false,
+						processData: false,
+						data: formData,
+						success: function(response){
+							console.log("yay, map is updated");
+						},
+						error: function(data){
+							console.log("error udpating object");
 						}
 				}
 				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
@@ -283,6 +323,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models
     		if(!repPolicy || !repPolicy.length) this.set("replicationAllowed", false);
         },
         
+        serialize: function(){
+        	if(!this.get("xml")) return;
+        	
+        	var xml = this.get("xml");
+        	
+        	
+        	if(this.get("newPid")){
+        		var id = this.get("id"),
+        			regex = new RegExp(id, "g");
+        		xml = xml.replace(regex, this.get("newPid"));
+        	}
+        	
+        	//Get the members that are aggregated
+        	_.each(this.get("members"), function(member, i, allMembers){
+        		
+        	});
+        	
+        	return xml;
+        },
+        
         serializeSysMeta: function(){
         	var xml = "";
         	
@@ -291,8 +351,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'models/SolrResult', 'models
         	
         	//Create the system metadata
         	xml += '<ns1:systemMetadata xmlns:ns1="http://ns.dataone.org/service/types/v2.0">\n' +
-        		'<serialVersion>' + this.get("serialversion") + '</serialVersion>\n' +
-        		'<identifier>' + this.get("id") + '</identifier>\n' + //TODO: Get the new id
+        		'<serialVersion>' + this.get("serialversion") + '</serialVersion>\n' +        	
+        		'<identifier>' + (this.get("newPid") || this.get("id")) + '</identifier>\n' + //TODO: Get the new id
         		'<formatId>' + this.get("formatid") + '</formatId>\n' +
         		'<size>' + this.get("size") + '</size>\n' + //TODO: Get new size
         		'<checksum algorithm="MD5">' + this.get("checksum") + '</checksum>\n' + //TODO: Get new checksum
