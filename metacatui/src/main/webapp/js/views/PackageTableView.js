@@ -365,8 +365,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			});
 			var downloadButton = $.parseHTML(downloadButtonHTML.trim());
 			
-			if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
-				$(downloadButton).on("click", null, this, this.download);
+			//if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
+			$(downloadButton).on("click", null, this, this.download);
 			
 			$(downloadBtnCell).append(downloadButton);
 			$(tr).append(downloadBtnCell);
@@ -389,13 +389,13 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				if(!packageModel) return true;
 					
 				//Find the model with this ID
-				packageModel = (packageModel.get("id") == id) ? packageModel : _.find(packageModel.get("members"), function(m){
+				var modelToDownload = (packageModel.get("id") == id) ? packageModel : _.find(packageModel.get("members"), function(m){
 					return (m.get("id") == id);
 				});
 				
 				//If we found a model, fire the download event
-				if(packageModel && !packageModel.get("isPublic")) 
-					packageModel.downloadWithCredentials();
+				if(modelToDownload) 
+					modelToDownload.downloadWithCredentials();
 			}
 			else
 				return true;			
