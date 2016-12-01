@@ -7,7 +7,7 @@
 		<a href="#quality/<%=encodeURIComponent(model.id)%>" class="btn"><i class="icon icon-dashboard"></i> Quality report</a>
 	<% } %>
 
-	<% if(!model.isPublic){ %>
+	<% if(model.isPublic == false){ %>
 		<div class="info-icons">
 				<div class="private icons"><i class="icon icon-lock tooltip-this private" 
 				data-toggle="tooltip"
