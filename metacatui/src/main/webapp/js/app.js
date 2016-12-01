@@ -48,6 +48,7 @@ require.config({
     clipboard: '../components/clipboard.min',
     uuid: '../components/uuid',
     md5: '../components/md5',
+    rdflib: '../components/rdflib.min',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: d3URL,
 	LineChart: ['views/LineChartView', null],

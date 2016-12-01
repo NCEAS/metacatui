@@ -853,10 +853,6 @@ define(['jquery',
 				});
 			});
 
-			//Initialize the fancybox elements
-			this.$(".fancybox").fancybox({
-				transitionIn: "elastic"
-			});
 			this.$(".tooltip-this").tooltip();
 		},
 
