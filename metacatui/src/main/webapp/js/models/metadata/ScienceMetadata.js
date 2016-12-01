@@ -112,8 +112,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             /* Initialize a ScienceMetadata object */
             initialize: function(options) {
                 // Call initialize for the super class
-            	console.log("ScienceMetadata initialize() called.");
-            	
                 //this.constructor.__super__.initialize.apply(this, options);
             	
                 
