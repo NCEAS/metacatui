@@ -21,7 +21,7 @@ define([
                         
             tagName: "table",
             
-            className: "table table-striped table-hover",
+            className: "table table-striped table-hover table-condensed",
             
             id: "data-package-table",
             
@@ -31,8 +31,8 @@ define([
             
             initialize: function(options) {
                 // listen for change (not add) events because models are being merged
-                this.listenTo(MetacatUI.rootDataPackage, 'change', this.addOne); // render new items
-                this.listenTo(MetacatUI.rootDataPackage, 'reset', this.addAll); // render all items
+                //this.listenTo(MetacatUI.rootDataPackage, 'change', this.addOne); // render new items
+                this.listenTo(MetacatUI.rootDataPackage, 'complete', this.addAll); // render all items
                 
                 return this;
                 
@@ -64,7 +64,12 @@ define([
              * Add all rows to the DataPackageView
              */
             addAll: function() {
-                this.$('data-package-table-body').html(''); // clear the table first
+                console.log("Children of #data-package-table-body before clearing.");
+                console.log($('#data-package-table-body').children());
+                $('data-package-table-body').html(''); // clear the table first
+                console.log("Children of #data-package-table-body after clearing.");
+                console.log($('#data-package-table-body').children());
+                MetacatUI.rootDataPackage.sort();
                 MetacatUI.rootDataPackage.each(this.addOne, this);
                 
             },
