@@ -36,14 +36,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	            seriesid: null, // uuid.v4(), (decide if we want to auto-set this)
 	            mediatype: null,
 	            filename: null,
-	            nodelevel: null,
+	            nodelevel: 0,
+                order: null,
+                synced: false,
 	            upload_status: null,
 	            upload_file: null
         	},
         	
             initialize: function(attrs, options) {
-                console.log("DataONEObject.initialize() called.");
                 this.on("change:size", this.bytesToSize);
+				
             },
 
             /**
