@@ -57,34 +57,50 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 			if (this.pid) {
 
 				this.showLoading();
-
-				// fetch the metadata contents by the pid
+								
+				// fetch SystemMetadata		
 				var xhr = new XMLHttpRequest();
-				xhr.onreadystatechange = function(){
+				xhr.onreadystatechange = function() {
 				    if (this.readyState == 4 && this.status == 200){
 				        //this.response is what you're looking for
-				        //handler(this.response);
 				        console.log(this.response, typeof this.response);
-				        var documentBlob = this.response;
-				        // send to MDQ as blob
-						var formData = new FormData();
-						formData.append('document', documentBlob);
-						console.log("Submitting Blob to MDQ");
-						viewRef.showResults(formData);
+				        var sysMetaBlob = this.response;
+				        
+				        // fetch the metadata contents by the pid
+						var xhr = new XMLHttpRequest();
+						xhr.onreadystatechange = function() {
+						    if (this.readyState == 4 && this.status == 200){
+						        //this.response is what you're looking for
+						        console.log(this.response, typeof this.response);
+						        var documentBlob = this.response;
+						        // send to MDQ as blob
+								var formData = new FormData();
+								formData.append('document', documentBlob);
+								formData.append('systemMetadata', sysMetaBlob);
+								console.log("Submitting object to MDQ engine");
+								viewRef.showResults(formData);
+						    }
+						}
+						var url = appModel.get("objectServiceUrl") + viewRef.pid;
+						xhr.open('GET', url);
+						xhr.responseType = 'blob';
+						xhr.withCredentials = true;
+						xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+						xhr.send();
+		
+						//Render a Citation View for the page header
+						var citationView = new CitationView({ pid: viewRef.pid });
+						citationView.render();
+						viewRef.citationView = citationView;
 				    }
 				}
-				var url = appModel.get("objectServiceUrl") + this.pid;
+				var url = appModel.get("metaServiceUrl") + this.pid;
 				xhr.open('GET', url);
 				xhr.responseType = 'blob';
 				xhr.withCredentials = true;
 				xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
 				xhr.send();
-
-				//Render a Citation View for the page header
-				var citationView = new CitationView({ pid: this.pid });
-				citationView.render();
-				this.citationView = citationView;
-
+				
 			} else {
 				this.$el.html(this.template({}));
 			}
