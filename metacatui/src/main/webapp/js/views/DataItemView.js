@@ -11,7 +11,7 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
         */
         var DataItemView = Backbone.View.extend({
            
-            tagName: 'tr',
+            tagName: "tr",
             
             id: null,
             
@@ -26,14 +26,17 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             /* Initialize the object - post constructor */
             initialize: function(options) {
                 console.log('DataItemView: initialize()');
-                this.id = this.generateId();
+                this.id = this.model.id;
+                //this.id = this.generateId();
                 this.listenTo(this.model, 'change', this.render); // render changes to the item
+                
                 
             },
             
             /* Render the template into the DOM */
             render: function() {
                 console.log('DataItemView: render()');
+                this.el.id = this.model.id;
                 this.$el.html( this.template(this.model.attributes) );
 
                 
@@ -41,11 +44,11 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             },
             
             /* Close the view and remove it from the DOM */
-            close: function(){
+            onClose: function(){
                 console.log('DataItemView: onClose()');
                 this.remove(); // remove for the DOM, stop listening           
                 this.off();    // remove callbacks, prevent zombies         
-			                    
+                                
             },
             
             /* 
