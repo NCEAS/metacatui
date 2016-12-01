@@ -1,4 +1,4 @@
-
+﻿
 /****************************************** 
 ** General Styling ***
 ******************************************/
@@ -2915,9 +2915,32 @@ ul.side-nav-items {
 textarea.xlarge{
 	height: 200px;
 }
-.Editor #data-package-table{
+
+.Editor #data-package-table {
 	margin-bottom: 0px;
+	border-bottom: 1px solid #dddddd;
 }
+
+.Editor #data-package-table > tbody > tr > td {
+	vertical-align: middle;
+}
+
+.Editor #data-package-table > tbody > tr > td:first-of-type {
+	padding-left: 20px;
+}
+
+.Editor #data-package-table > tbody > tr > td:nth-of-type(2) {
+	min-width: 10%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.Editor #data-package-table > tbody > tr > td:last-of-type {
+	text-align: right;
+	padding-right: 20px;
+}
+
 /*******************************************
 Pager View
 ******************************************/
