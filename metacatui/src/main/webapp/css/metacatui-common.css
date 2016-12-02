@@ -2925,6 +2925,10 @@ textarea.xlarge{
 	vertical-align: middle;
 }
 
+.Editor #data-package-table > tbody > tr > td {
+	white-space: nowrap;
+}
+
 .Editor #data-package-table > tbody > tr > td:first-of-type {
 	padding-left: 20px;
 }
@@ -2934,11 +2938,17 @@ textarea.xlarge{
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+    width: 20%;
 }
 
 .Editor #data-package-table > tbody > tr > td:last-of-type {
 	text-align: right;
 	padding-right: 20px;
+}
+
+.Editor #data-package-table > tbody > tr > td:last-of-type > button {
+	width: 70px;
+	height: 30px;
 }
 
 /*******************************************
