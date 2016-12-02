@@ -152,7 +152,7 @@ define(['jquery',
 			if(this.parentView && this.parentView.model){
 				var formatId = this.parentView.model.get("formatId");
 				if(formatId.indexOf("eml://") >= 0){
-					var url = appModel.get("baseUrl") + appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
+					var url = appModel.get("baseUrl") + appModel.get("context") + appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
 					
 					var requestSettings = {
 						url: url, 
