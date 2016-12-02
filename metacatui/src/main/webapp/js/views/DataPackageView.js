@@ -52,11 +52,36 @@ define([
              * Add a single DataItemView row to the DataPackageView
              */
             addOne: function(item) {
-                console.log("DataPackageView.addOne called for " + item);
+                console.log("DataPackageView.addOne called for " + item.id);
                 
                 var dataItemView = new DataItemView({model: item});
                 this.subviews.push(dataItemView); // keep track of all views
-                $('#data-package-table-body').append(dataItemView.render().el);
+                var scimetaParent = item.get("scienceMetadata");
+                
+                var parentRow;
+                if ( typeof scimetaParent !== "undefined" ) {
+                    
+                    if ( scimetaParent !== null ) {
+                        
+                        // Using DOM methods is easier than escaping special chars
+                        // !"#$%&'()*+,./:;<=>?@[\]^`{|}~ in jquery $('selector')
+                        parentRow = document.getElementById(scimetaParent);
+                    
+                        if ( typeof parentRow !== undefined ) {
+                            parentRow.insertAdjacentElement("afterend", dataItemView.render().el)                        
+                        } else {
+                            console.log("Couldn't render " + item.id + ". No parent =(.");
+                        
+                        }
+                        
+                    } else {
+                        $('#data-package-table-body').append(dataItemView.render().el);
+                        
+                    }
+                } else {
+                    $('#data-package-table-body').append(dataItemView.render().el);
+                    
+                }
                 
             },
             
@@ -66,7 +91,7 @@ define([
             addAll: function() {
                 console.log("Children of #data-package-table-body before clearing.");
                 console.log($('#data-package-table-body').children());
-                $('data-package-table-body').html(''); // clear the table first
+                $('#data-package-table-body').html(''); // clear the table first
                 console.log("Children of #data-package-table-body after clearing.");
                 console.log($('#data-package-table-body').children());
                 MetacatUI.rootDataPackage.sort();
