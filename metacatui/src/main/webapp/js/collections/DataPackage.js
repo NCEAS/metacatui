@@ -5,11 +5,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
     'models/DataONEObject', 'models/metadata/ScienceMetadata', 'models/metadata/eml211/EML211'],
     function($, _, Backbone, rdf, uuid, DataONEObject, ScienceMetadata, EML211) {
     
-    /* 
-     A DataPackage represents a hierarchical collection of 
-     packages, metadata, and data objects, modeling an OAI-ORE RDF graph.
-     TODO: incorporate Backbone.UniqueModel
-    */
+        /* 
+         A DataPackage represents a hierarchical collection of 
+         packages, metadata, and data objects, modeling an OAI-ORE RDF graph.
+         TODO: incorporate Backbone.UniqueModel
+        */
         var DataPackage = Backbone.Collection.extend({
             
             // The package identifier
@@ -34,11 +34,30 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
             dataPackageGraph: null,
             
             // The science metadata identifiers associated with this 
-            // data package (from cito:documents)
-            scienceMetadataIds: [],
+            // data package (from cito:documents), mapped to a list of science data
+            // identifiers that they document
+            scienceMetadataMap: {},
+                  
+            // Keep the collection sorted by model "order".  The three model types
+            // are ordered as:
+            //  Metadata: 1
+            //  Data: 2
+            //  DataPackage: 3
+            // See getMember(). We do this so that Metadata get rendered first, and Data are
+            // rendered as DOM siblings of the Metadata rows of the DataPackage table.
+            comparator: "order",
                 
             // Constructor: Initialize a new DataPackage
             initialize: function(models, options) {
+                
+                // Set the nesting level of the data package hierarchy
+                // if ( typeof this.get("nodelevel") === "undefined" ) {
+                //       this.set("nodelevel", 1);
+                //       
+                // } else {
+                //       this.set("nodelevel", this.get("nodelevel") + 1 );
+                //       
+                // }
                 
                 // Create an initial RDF graph 
                 this.dataPackageGraph = rdf.graph();
@@ -52,7 +71,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                 
                 // Otherwise fetch it by id, and populate it    
                 } else {
-                    
                     // use the given id
                     this.id = options.id;
                     this.set("type", "DataPackage");
@@ -77,9 +95,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
              * Return the correct model based on the type
              */
             model: function (attrs, options) {
-            	
-            		//if(!attrs.formatid) return;
-            	            			
+                  
+                        //if(!attrs.formatid) return;
+                                                
                 switch ( attrs.formatid ) {
                 
                     case "eml://ecoinformatics.org/eml-2.0.0":
@@ -284,27 +302,61 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                     memberURIParts,
                     memberPIDStr,
                     memberPID,
+                    memberPIDs = [],
                     memberModel,
+                    documentsStatements,
+                    scimetaID, // documentor
+                    scidataID, // documentee
+                    scidataIDs = [], // the list of data ids documented by a scienceMetadataID
                     models = []; // the models returned by parse()
                     
                 try {
                     rdf.parse(response, this.dataPackageGraph, this.url(), 'application/rdf+xml');
                     
-                    // List the package members
-                    memberStatements = this.dataPackageGraph.statementsMatching(
-                        undefined, ORE('aggregates'), undefined, undefined);
+                              // List the metadata/data relationships and store them in the scienceMetadataMap
+                              documentsStatements = this.dataPackageGraph.statementsMatching(
+                                  undefined, CITO("documents"), undefined, undefined);
+                                  
+                                  _.each(documentsStatements, function(documentsStatement) {
+                                  
+                                        // Extract and URI-decode the metadata pid
+                                        scimetaID = decodeURIComponent(
+                                              _.last(documentsStatement.subject.value.split("/")));
+                                        
+                                        // Extract and URI-decode the data pid
+                                        scidataID = decodeURIComponent(
+                                  
+                                        _.last(documentsStatement.object.value.split("/")));
+                                  
+                                        // If needed, create a new map entry
+                                        if ( typeof this.scienceMetadataMap[scimetaID] === "undefined" ) {
+                                              scidataIDs.push(scidataID);
+                                              this.scienceMetadataMap[scimetaID] = scidataIDs;
+                                  
+                                        // Or add to an existing entry      
+                                        } else {
+                                              scidataIDs = this.scienceMetadataMap[scimetaID];
+                                              scidataIDs.push(scidataID);
+                                              this.scienceMetadataMap[scimetaID] = scidataIDs;
+                                        
+                                        }
+                                  }, this);            
                     
-                    var memberPIDs = [];
+                      // List the package members
+                      memberStatements = this.dataPackageGraph.statementsMatching(
+                          undefined, ORE("aggregates"), undefined, undefined);
                     
                     // Get system metadata for each member to eval the formatId
                     _.each(memberStatements, function(memberStatement){
-                        memberURIParts = memberStatement.object.value.split('/');
+                        memberURIParts = memberStatement.object.value.split("/");
                         memberPIDStr = _.last(memberURIParts);
                         memberPID = decodeURIComponent(memberPIDStr);   
                         
                         
-                        if ( memberPID ) 
-                        		memberPIDs.push(memberPID);
+                        if ( memberPID ) {
+                            memberPIDs.push(memberPID);
+
+                        }
                         
                     }, this);
                     
@@ -313,11 +365,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                     
                     //Retrieve the model for each member 
                     _.each(memberPIDs, function(pid){
-                	        memberModel = new DataONEObject({id: pid});
+                        memberModel = new DataONEObject({id: pid});
                         this.listenTo(memberModel, 'change:formatid', this.getMember);
                         memberModel.fetch();
                         models.push(memberModel.attributes);
                     }, this);
+
                                         
                 } catch (error) {
                     console.log(error);
@@ -332,290 +385,292 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
              * and update it appropriately if it is not a data object only
              */
             getMember: function(context, args) {
-                console.log("DataPackage.getMember() called for " + context.id);
                 var memberModel = {};
                 
                 switch ( context.get("formatid") ) {
                     
                     case "http://www.openarchives.org/ore/terms":
-                        context.set("type", "DataPackage");
+                        context.set({type: "DataPackage", order: 3});
                         memberModel = new DataPackage(context.attributes);
+                                    this.childPackages.push(memberModel);
                         break;
                         
                     case "eml://ecoinformatics.org/eml-2.0.0":
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new EML211(context.attributes);
                         break;
                         
                     case "eml://ecoinformatics.org/eml-2.0.1":
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new EML211(context.attributes);
                         break;
                     
                     case "eml://ecoinformatics.org/eml-2.1.0":
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new EML211(context.attributes);
                         break;
                     
                     case "eml://ecoinformatics.org/eml-2.1.1":
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new EML211(context.attributes);
                         break;
                         
                     case "-//ecoinformatics.org//eml-access-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-access-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-attribute-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-attribute-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-constraint-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-constraint-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-coverage-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-coverage-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-dataset-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-dataset-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-distribution-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-distribution-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-entity-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-entity-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-literature-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-literature-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-party-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-party-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-physical-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-physical-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-project-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-project-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-protocol-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-protocol-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-resource-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-resource-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-software-2.0.0beta4//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "-//ecoinformatics.org//eml-software-2.0.0beta6//EN" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "FGDC-STD-001-1998" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "FGDC-STD-001.1-1999" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "FGDC-STD-001.2-1999" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "INCITS-453-2009" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "ddi:codebook:2_5" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://datacite.org/schema/kernel-3.0" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://datacite.org/schema/kernel-3.1" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://datadryad.org/profile/v3.1" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://ns.dataone.org/metadata/schema/onedcx/v1.0" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://purl.org/dryad/terms/" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://purl.org/ornl/schema/mercury/terms/v1.0" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://rs.tdwg.org/dwc/xsd/simpledarwincore/" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.cuahsi.org/waterML/1.0/" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.cuahsi.org/waterML/1.1/" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.esri.com/metadata/esriprof80.dtd" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.icpsr.umich.edu/DDI" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.isotc211.org/2005/gmd" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.isotc211.org/2005/gmd-noaa" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.loc.gov/METS/" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                     
                     case "http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2" :
-                        context.set("type", "Metadata");
+                        context.set({type: "Metadata", order: 1});
                         memberModel = new ScienceMetadata(context.attributes);
                         break;
                         
                     default:
                         // For other data formats, keep just the DataONEObject sysmeta
-                        context.set("type", "Data");
+                        context.set({type: "Data", order: 2});
                         memberModel = context;
                                                 
                 }
                 
                 // When the object is fetched, merge it into the collection
                 this.listenTo(memberModel, 'sync', this.mergeMember);
+                memberModel.set("nodelevel", this.get("nodelevel")); // same level for all members 
+                memberModel.set("synced", false); // initialize the sync status
                 memberModel.fetch({merge: true});
                 
             },
@@ -633,16 +688,24 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                     // remove: false
                 });
                 
+                model.set({synced: true});
                 this.add(model, mergeOptions);
                 this.trigger("added", model, this);
                 
                 //Check if the collection is done being retrieved
-                if(this.length == this.pids.length){
-                		this.trigger("complete", this);
+                var notSynced = this.where({synced: false});
+                
+                if( notSynced.length > 0 ){
+                    return;
+                    
+                } else {
+                    this.sort();
+                    this.trigger("complete", this);
+                    
                 }
                 
             },
-                        
+            
             /* 
              * Serialize the DataPackage to OAI-ORE RDF XML
              */
