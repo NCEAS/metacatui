@@ -39,6 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	            nodelevel: 0,
                 order: null,
                 synced: false,
+                scienceMetadata: null,
 	            upload_status: null,
 	            upload_file: null
         	},
