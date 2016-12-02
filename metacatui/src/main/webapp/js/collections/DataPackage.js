@@ -33,9 +33,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
             // The RDF graph representing this data package
             dataPackageGraph: null,
             
-            // The science metadata identifiers associated with this 
-            // data package (from cito:documents), mapped to a list of science data
-            // identifiers that they document
+            // The science data identifiers associated with this 
+            // data package (from cito:documents), mapped to the science metadata
+            // identifier that documents it
             scienceMetadataMap: {},
                   
             // Keep the collection sorted by model "order".  The three model types
@@ -307,40 +307,29 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                     documentsStatements,
                     scimetaID, // documentor
                     scidataID, // documentee
-                    scidataIDs = [], // the list of data ids documented by a scienceMetadataID
                     models = []; // the models returned by parse()
                     
                 try {
                     rdf.parse(response, this.dataPackageGraph, this.url(), 'application/rdf+xml');
                     
-                              // List the metadata/data relationships and store them in the scienceMetadataMap
-                              documentsStatements = this.dataPackageGraph.statementsMatching(
-                                  undefined, CITO("documents"), undefined, undefined);
-                                  
-                                  _.each(documentsStatements, function(documentsStatement) {
-                                  
-                                        // Extract and URI-decode the metadata pid
-                                        scimetaID = decodeURIComponent(
-                                              _.last(documentsStatement.subject.value.split("/")));
-                                        
-                                        // Extract and URI-decode the data pid
-                                        scidataID = decodeURIComponent(
-                                  
-                                        _.last(documentsStatement.object.value.split("/")));
-                                  
-                                        // If needed, create a new map entry
-                                        if ( typeof this.scienceMetadataMap[scimetaID] === "undefined" ) {
-                                              scidataIDs.push(scidataID);
-                                              this.scienceMetadataMap[scimetaID] = scidataIDs;
-                                  
-                                        // Or add to an existing entry      
-                                        } else {
-                                              scidataIDs = this.scienceMetadataMap[scimetaID];
-                                              scidataIDs.push(scidataID);
-                                              this.scienceMetadataMap[scimetaID] = scidataIDs;
-                                        
-                                        }
-                                  }, this);            
+                    // List the metadata/data relationships and store them in the scienceMetadataMap
+                    documentsStatements = this.dataPackageGraph.statementsMatching(
+                        undefined, CITO("documents"), undefined, undefined);
+                        
+                    _.each(documentsStatements, function(documentsStatement) {
+                    
+                          // Extract and URI-decode the metadata pid
+                          scimetaID = decodeURIComponent(
+                                _.last(documentsStatement.subject.value.split("/")));
+                          
+                          // Extract and URI-decode the data pid
+                          scidataID = decodeURIComponent(
+                              _.last(documentsStatement.object.value.split("/")));
+                    
+                          // Store the relationship
+                          this.scienceMetadataMap[scidataID] = scimetaID;
+                    
+                    }, this);            
                     
                       // List the package members
                       memberStatements = this.dataPackageGraph.statementsMatching(
@@ -365,7 +354,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                     
                     //Retrieve the model for each member 
                     _.each(memberPIDs, function(pid){
-                        memberModel = new DataONEObject({id: pid});
+                        memberModel = new DataONEObject(
+                            {id: pid, 
+                             scienceMetadata: this.scienceMetadataMap[pid]}
+                        );
                         this.listenTo(memberModel, 'change:formatid', this.getMember);
                         memberModel.fetch();
                         models.push(memberModel.attributes);
