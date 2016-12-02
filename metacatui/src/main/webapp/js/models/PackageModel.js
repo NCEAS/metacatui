@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'models/SolrResult', 'models/LogsSearch'], 				
-	function($, _, Backbone, uuid, md5, SolrResult, LogsSearch) {
+define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/SolrResult', 'models/LogsSearch'], 				
+	function($, _, Backbone, uuid, md5, rdf, SolrResult, LogsSearch) {
 
 	// Package Model 
 	// ------------------
@@ -34,15 +34,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'models/SolrResult', 
 			}
 		},
 		
+		//Define the namespaces
+        namespaces: {
+			RDF:     "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+			FOAF:    "http://xmlns.com/foaf/0.1/",
+			OWL:     "http://www.w3.org/2002/07/owl#",
+			DC:      "http://purl.org/dc/elements/1.1/",
+			ORE:     "http://www.openarchives.org/ore/terms/",
+			DCTERMS: "http://purl.org/dc/terms/",
+			CITO:    "http://purl.org/spar/cito/"
+		},
+		
 		complete: false,
 		
 		pending: false,
 		
 		type: "Package",
 		
+		// The RDF graph representing this data package
+        dataPackageGraph: null,
+		
 		initialize: function(options){
 			this.on("complete", this.getLogInfo);
 			this.setURL();
+			
+			// Create an initial RDF graph 
+            this.dataPackageGraph = rdf.graph();
 		},
 		
 		setURL: function(){	
@@ -176,14 +193,94 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'models/SolrResult', 
             return Backbone.Model.prototype.fetch.call(this, fetchOptions);
 		},
 		
-		/*
-		 * Override Backbone parse to parse the RDF XML
-		 */
-		parse: function(response, options){
-			this.set("xml", response);
-			
-			return {};
-		},
+		/* 
+         * Deserialize a Package from OAI-ORE RDF XML
+         */
+        parse: function(response, options) {
+            console.log("DataPackage: parse() called.")
+            
+            //Save the raw XML in case it needs to be used later
+            this.set("xml", response);
+            
+            //Define the namespaces
+            var RDF =     rdf.Namespace(this.namespaces.RDF),
+                FOAF =    rdf.Namespace(this.namespaces.FOAF),
+                OWL =     rdf.Namespace(this.namespaces.OWL),
+                DC =      rdf.Namespace(this.namespaces.DC),
+                ORE =     rdf.Namespace(this.namespaces.ORE),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                CITO =    rdf.Namespace(this.namespaces.CITO);
+                
+            var memberStatements = [],
+                memberURIParts,
+                memberPIDStr,
+                memberPID,
+                memberModel,
+                models = []; // the models returned by parse()
+                
+            try {
+                rdf.parse(response, this.dataPackageGraph, appModel.get("objectServiceUrl") + (encodeURIComponent(this.id) || encodeURIComponent(this.seriesid)), 'application/rdf+xml');
+                
+                // List the package members
+                memberStatements = this.dataPackageGraph.statementsMatching(
+                    undefined, ORE('aggregates'), undefined, undefined);
+                
+                var memberPIDs = [],
+                	members = [],
+                	model = this;
+                
+                // Get system metadata for each member to eval the formatId
+                _.each(memberStatements, function(memberStatement){
+                    memberURIParts = memberStatement.object.value.split('/');
+                    memberPIDStr = _.last(memberURIParts);
+                    memberPID = decodeURIComponent(memberPIDStr);   
+                                       
+                    if ( memberPID ){
+                    	memberPIDs.push(memberPID);
+                    	members.push(new SolrResult({
+                    		id: decodeURIComponent(memberPID)
+                    	}));
+                    }
+                    
+                }, this);
+                
+                //Get the documents relationships
+                var documentedByStatements = this.dataPackageGraph.statementsMatching(
+                        undefined, CITO('isDocumentedBy'), undefined, undefined),
+                    metadataPids = [];
+                
+                _.each(documentedByStatements, function(statement){
+                	//Get the data object that is documentedBy metadata
+                	var dataPid = decodeURIComponent(_.last(statement.subject.value.split('/'))),
+                		dataObj = _.find(members, function(m){ return (m.get("id") == dataPid) }),
+                		metadataPid = _.last(statement.object.value.split('/'));
+                	
+                	//Save this as a metadata model
+                	metadataPids.push(metadataPid);
+                	
+                	//Set the isDocumentedBy field
+                	var isDocBy = dataObj.get("isDocumentedBy");
+                	if(isDocBy && Array.isArray(isDocBy)) isDocBy.push(metadataPid);
+                	else if(isDocBy && !Array.isArray(isDocBy)) isDocBy = [isDocBy, metadataPid];
+                	else isDocBy = [metadataPid];
+                	
+                	dataObj.set("isDocumentedBy", isDocBy);
+                }, this);
+                
+                //Get the metadata models and mark them as metadata
+                var metadataModels = _.filter(members, function(m){ return _.contains(metadataPids, m.get("id")) });
+                _.invoke(metadataModels, "set", "formatType", "METADATA");
+                
+                //Keep the pids in the collection for easy access later
+                this.set("memberIds", memberPIDs);
+                this.set("members", members);
+                                    
+            } catch (error) {
+                console.log(error);                
+            }
+            return models;            
+        },
+
 		
 		/*
 		 * Overwrite the Backbone.Model.save() function to set custom options
@@ -276,7 +373,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'models/SolrResult', 
 							console.log("error udpating object");
 						}
 				}
-				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+				//$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 			}
 		},
 		
@@ -326,9 +423,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'models/SolrResult', 
         serialize: function(){
         	if(!this.get("xml")) return;
         	
+        	//Save the raw XML
         	var xml = this.get("xml");
         	
-        	
+        	//TODO: Remove this simple stub code
         	if(this.get("newPid")){
         		var id = this.get("id"),
         			regex = new RegExp(id, "g");
