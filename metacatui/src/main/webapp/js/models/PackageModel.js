@@ -45,6 +45,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			CITO:    "http://purl.org/spar/cito/"
 		},
 		
+		sysMetaNodeMap: {
+			accesspolicy: "accessPolicy",
+			accessrule: "accessRule",
+			authoritativemembernode: "authoritativeMemberNode",
+			dateuploaded: "dateUploaded",
+			datesysmetadatamodified: "dateSysMetadataModified",
+			dateuploaded: "dateUploaded",
+			formatid: "formatId",
+			nodereference: "nodeReference",
+			obsoletedby: "obsoletedBy",
+			originmembernode: "originMemberNode",
+			replicamembernode: "replicaMemberNode",
+			replicapolicy: "replicaPolicy",
+			replicationstatus: "replicationStatus",
+			replicaverified: "replicaVerified",		
+			rightsholder: "rightsHolder",
+			serialversion: "serialVersion"
+		},
+		
 		complete: false,
 		
 		pending: false,
@@ -200,7 +219,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
             console.log("DataPackage: parse() called.")
             
             //Save the raw XML in case it needs to be used later
-            this.set("xml", response);
+            this.set("objectXML", response);
             
             //Define the namespaces
             var RDF =     rdf.Namespace(this.namespaces.RDF),
@@ -378,53 +397,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 		},
 		
 		parseSysMeta: function(response){
-        	// If the response is XML
+        	this.set("sysMetaXML", $.parseHTML(response));
+			
     		var responseDoc = $.parseHTML(response),
     			systemMetadata,
     			prependXML = "",
     			appendXML = "";
     		
     		for(var i=0; i<responseDoc.length; i++){
-    			if((responseDoc[i].nodeType == 1) && (responseDoc[i].localName.indexOf("systemmetadata") > -1)){
+    			if((responseDoc[i].nodeType == 1) && (responseDoc[i].localName.indexOf("systemmetadata") > -1))
     				systemMetadata = responseDoc[i];
-    				
-    				var namespaces = [];
-    				//Get the attributes on the systemmetadata node - most likely namespace declarations
-    				_.each(systemMetadata.attributes, function(att){
-    					//Save the namespaces
-    					namespaces.push({
-    						name: att.localName,
-    						value: att.value
-    					});
-    				});
-    				this.set("namespaces", namespaces);
-    			}
-    			else if((responseDoc[i].nodeType == 8) && !systemMetadata)
-    				prependXML += "<" + responseDoc[i].nodeValue + ">";
-    			else if((responseDoc[i].nodeType == 3) && !systemMetadata)
-    				prependXML += responseDoc[i].nodeValue;
-    			else if((responseDoc[i].nodeType == 8) && systemMetadata)
-    				appendXML += "<" + responseDoc[i].nodeValue + ">";
-    			else if((responseDoc[i].nodeType == 3) && systemMetadata)
-    				appendXML += responseDoc[i].nodeValue;
     		}
     		
-    		this.set("prependedSysMetaXML", prependXML);
-    		this.set("appendedSysMetaXML", appendXML);
-    		
-    		//Parse the basic XML
+    		//Parse the XML
     		this.set(this.toJson(systemMetadata));
-    		
-    		//Get some custom XML fields
-    		var repPolicy = this.get("replicationpolicy");
-    		if(!repPolicy || !repPolicy.length) this.set("replicationAllowed", false);
         },
         
         serialize: function(){
-        	if(!this.get("xml")) return;
+        	if(!this.get("objectXML")) return;
         	
         	//Save the raw XML
-        	var xml = this.get("xml");
+        	var xml = this.get("objectXML");
         	
         	//TODO: Remove this simple stub code
         	if(this.get("newPid")){
@@ -442,71 +435,66 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
         },
         
         serializeSysMeta: function(){
-        	var xml = "";
+        	//Get the system metadata XML that currently exists in the system
+        	var xml = $(this.get("sysMetaXML"));
         	
-        	//Get the prepended XML
-        	xml += this.get("prependedSysMetaXML");
-        	
+        	//Update the system metadata values
+        	xml.find("serialversion").text(this.get("serialversion"));
+        	xml.find("identifier").text((this.get("newPid") || this.get("id")));
+        	xml.find("formatid").text(this.get("formatid"));
+        	xml.find("size").text(this.get("size"));
+        	xml.find("checksum").text(this.get("checksum"));
+        	xml.find("submitter").text(this.get("submitter"));
+        	xml.find("rightsholder").text(this.get("rightsholder"));
+        	xml.find("obsoletes").text(this.get("obsoletes"));
+        	xml.find("obsoletedby").text(this.get("obsoletedby"));
+        	xml.find("archived").text(this.get("archived"));
+        	xml.find("dateuploaded").text(this.get("dateuploaded"));
+        	xml.find("datesysmetadatamodified").text(this.get("datesysmetadatamodified") || new Date().toISOString());
+        	xml.find("originmembernode").text(this.get("originmembernode"));
+        	xml.find("authoritativemembernode").text(this.get("authoritativemembernode"));
+
         	//Create the system metadata
-        	xml += '<ns1:systemMetadata xmlns:ns1="http://ns.dataone.org/service/types/v2.0">\n' +
-        		'<serialVersion>' + this.get("serialversion") + '</serialVersion>\n' +        	
-        		'<identifier>' + (this.get("newPid") || this.get("id")) + '</identifier>\n' + //TODO: Get the new id
-        		'<formatId>' + this.get("formatid") + '</formatId>\n' +
-        		'<size>' + this.get("size") + '</size>\n' + //TODO: Get new size
-        		'<checksum algorithm="MD5">' + this.get("checksum") + '</checksum>\n' + //TODO: Get new checksum
-        		'<submitter>' + this.get("submitter") + '</submitter>\n' +
-        		'<rightsHolder>' + this.get("rightsHolder") + '</rightsHolder>\n' +
-        		'<accessPolicy>\n';
-        		
+
         	//Write the access policy
+        	var accessPolicyXML = '<accessPolicy>\n';        		
         	_.each(this.get("accesspolicy"), function(policy, policyType, all){
     			var fullPolicy = all[policyType];
     			    			
     			_.each(fullPolicy, function(policyPart){
-        			xml += '\t<' + policyType + '>\n';
+    				accessPolicyXML += '\t<' + policyType + '>\n';
         			
-        			xml += '\t\t<subject>' + policyPart.subject + '</subject>\n';
+        			accessPolicyXML += '\t\t<subject>' + policyPart.subject + '</subject>\n';
             		
         			var permissions = Array.isArray(policyPart.permission)? policyPart.permission : [policyPart.permission];
         			_.each(permissions, function(perm){
-            			xml += '\t\t<permission>' + perm + '</permission>\n';
+        				accessPolicyXML += '\t\t<permission>' + perm + '</permission>\n';
             		});
         			
-        			xml += '\t</' + policyType + '>\n';
+        			accessPolicyXML += '\t</' + policyType + '>\n';
     			});    			
-        	});
-        	
-        	xml += '</accessPolicy>\n' +
-        		'<replicationPolicy replicationAllowed="' + this.get("replicationAllowed") +'"';
-        	
-        	//TODO
-        	//Write the replication policy
-        	if(this.get("replicationAllowed")){
-        		xml += '>\n';
-        		xml += '</replicationPolicy>\n';
-        	}
-        	else
-        		xml += '/>\n';
-        			
-        	xml += (this.get("obsoletes")? ('<obsoletes>' + this.get("obsoletes") + '</obsoletes>\n') : "") +
-        		(this.get("obsoletedBy")? ('<obsoletedBy>' + this.get("obsoletedBy") + '</obsoletedBy>\n') : "") +
-        		'<archived>' + this.get("archived") +  '</archived>\n' +
-        		'<dateUploaded>' + this.get("dateuploaded") + '</dateUploaded>\n';
-        	
-        	//Set the date of the sys meta modification
-        	var time = this.get("datesysmetadatamodified") || new Date().toISOString();
-        		
-        	xml += '<dateSysMetadataModified>' + time + '</dateSysMetadataModified>\n' +
-        		'<originMemberNode>' + this.get("originmembernode") + '</originMemberNode>\n' +
-        		'<authoritativeMemberNode>' + this.get("authoritativemembernode") + '</authoritativeMemberNode>\n' +
-        		'</ns1:systemMetadata>';
-
-        	//Get the appended XML
-        	xml += this.get("appendedSysMetaXML");
+        	});       	
+        	accessPolicyXML += '</accessPolicy>\n';
+        	//Replace the old access policy with the new one
+        	xml.find("accesspolicy").replaceWith(accessPolicyXML);        	
         	
         	console.log("new sys meta: ", xml);
         	
-        	return xml;
+        	var xmlString = $(document.createElement("div")).append(xml.clone()).html();
+        	
+        	//Now camel case the nodes 
+        	_.each(Object.keys(this.sysMetaNodeMap), function(name, i, allNodeNames){
+        		var regEx = new RegExp("<" + name, "g");
+        		xmlString = xmlString.replace(regEx, "<" + this.sysMetaNodeMap[name]);
+        		var regEx = new RegExp(name + ">", "g");
+        		xmlString = xmlString.replace(regEx, this.sysMetaNodeMap[name] + ">");
+        	}, this);
+        	
+        	xmlString = xmlString.replace(/systemmetadata/g, "systemMetadata");
+        	
+        	console.log(xmlString);
+        	
+        	return xmlString;
         },
 		
 		getParentMetadata: function(){
