@@ -477,9 +477,11 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		getSources: function(){
 			var sources = new Array(),
-				model = this;
+				model = this,
+				//Get the prov fields but leave out references to executions which are not used in the UI yet
+				fields = _.reject(appSearchModel.getProvFields(), function(f){ return f.indexOf("xecution") > -1 }); //Leave out the first e in execution so we don't have to worry about case sensitivity
 
-			_.each(appSearchModel.getProvFields(), function(provField, i){
+			_.each(fields, function(provField, i){
 				if(model.isSourceField(provField) && model.has(provField))
 					sources.push(model.get(provField));
 			});
@@ -492,15 +494,26 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		getDerivations: function(){
 			var derivations = new Array(),
-				model = this;
+				model = this,
+				//Get the prov fields but leave out references to executions which are not used in the UI yet
+				fields = _.reject(appSearchModel.getProvFields(), function(f){ return f.indexOf("xecution") > -1 }); //Leave out the first e in execution so we don't have to worry about case sensitivity
 
-			_.each(appSearchModel.getProvFields(), function(provField, i){
+			_.each(fields, function(provField, i){
 				if(model.isDerivationField(provField) && model.get(provField))
 					derivations.push(model.get(provField));
 			});
 
 			return _.uniq(_.flatten(derivations));
 		},
+		
+		getInputs: function(){
+			return this.get("prov_used");
+		},
+		
+		getOutputs: function(){
+			return this.get("prov_generated");
+		},
+		
 		/****************************/
 
 		/**
