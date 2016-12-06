@@ -1005,15 +1005,35 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						relatedModelIDs.push(doc.get("id"));
 					}
 				});
-				_.each(members, function(doc, i){
-					//Is this package member a direct derivation of this package member?
-					if(_.contains(memberDerIDs, doc.get("id")))
-						//Save this derivation package member as a derivation of this member
-						member.set("provDerivations", _.union(member.get("provDerivations"), [doc]));
-					//Is this package member a direct source of this package member?
-					if(_.contains(memberSourceIDs, doc.get("id")))
-						//Save this source package member as a source of this member
-						member.set("provSources", _.union(member.get("provSources"), [doc]));
+				_.each(members, function(otherMember, i){
+					//Is this other package member a direct derivation of this package member?
+					if(_.contains(memberDerIDs, otherMember.get("id")))
+						//Save this other derivation package member as a derivation of this member
+						member.set("provDerivations", _.union(member.get("provDerivations"), [otherMember]));
+					//Is this other package member a direct source of this package member?
+					if(_.contains(memberSourceIDs, otherMember.get("id")))
+						//Save this other source package member as a source of this member
+						member.set("provSources", _.union(member.get("provSources"), [otherMember]));
+					
+					//Is this other package member an indirect source or derivation?
+					if((otherMember.get("type") == "program") && (_.contains(member.get("prov_generatedByProgram"), otherMember.get("id")))){
+						var indirectSources = _.filter(members, function(m){
+							return _.contains(otherMember.getInputs(), m.get("id"));
+						});
+						indirectSourcesIds = _.each(indirectSources, function(m){ return m.get("id") });
+						member.set("prov_wasDerivedFrom", _.union(member.get("prov_wasDerivedFrom"), indirectSourcesIds));
+						//otherMember.set("prov_hasDerivations", _.union(otherMember.get("prov_hasDerivations"), [member.get("id")]));
+						member.set("provSources", _.union(member.get("provSources"), indirectSources));
+					}
+					if((otherMember.get("type") == "program") && (_.contains(member.get("prov_usedByProgram"), otherMember.get("id")))){
+						var indirectDerivations = _.filter(members, function(m){
+							return _.contains(otherMember.getOutputs(), m.get("id"));
+						});
+						indirectDerivationsIds = _.each(indirectDerivations, function(m){ return m.get("id") });
+						member.set("prov_hasDerivations", _.union(member.get("prov_hasDerivations"), indirectDerivationsIds));
+						//otherMember.set("prov_wasDerivedFrom", _.union(otherMember.get("prov_wasDerivedFrom"), [member.get("id")]));
+						member.set("provDerivations", _.union(member.get("provDerivations"), indirectDerivationsIds));
+					}					
 				});
 				
 				//Add this member to the list of related models
