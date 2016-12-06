@@ -219,7 +219,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
             console.log("DataPackage: parse() called.")
             
             //Save the raw XML in case it needs to be used later
-            this.set("objectXML", response);
+            this.set("objectXML", $.parseHTML(response));
             
             //Define the namespaces
             var RDF =     rdf.Namespace(this.namespaces.RDF),
@@ -413,23 +413,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
     		this.set(this.toJson(systemMetadata));
         },
         
-        serialize: function(){
-        	if(!this.get("objectXML")) return;
+        serialize: function(){        	
+        	//Create an RDF serializer
+        	var serializer = rdf.Serializer();
+        	serializer.store = this.dataPackageGraph;
         	
-        	//Save the raw XML
-        	var xml = this.get("objectXML");
+        	//Define the namespaces
+            var ORE = rdf.Namespace(this.namespaces.ORE);
         	
-        	//TODO: Remove this simple stub code
-        	if(this.get("newPid")){
-        		var id = this.get("id"),
-        			regex = new RegExp(id, "g");
-        		xml = xml.replace(regex, this.get("newPid"));
-        	}
+        	//Get the pid of this package - depends on whether we are updating or creating a resource map
+            var pid = this.get("newPid") || this.get("id");
         	
-        	//Get the members that are aggregated
-        	_.each(this.get("members"), function(member, i, allMembers){
-        		
-        	});
+    		// Change all the isAggregatedBy IDs
+            var aggByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE('isAggregatedBy'));            
+            // Get system metadata for each member to eval the formatId
+            _.each(aggByStatements, function(statement){
+                statement.object.value = appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("newPid"));
+            }, this);
+            
+            //Change all the Description nodes for the resource map aggregation
+           // var aggByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE('aggregates'));            
+            
+            //Now serialize the RDF XML
+            var serializer = rdf.Serializer();
+            serializer.store = this.dataPackageGraph;
+            
+            var xml = serializer.statementsToXML(this.dataPackageGraph.statements);
         	
         	return xml;
         },

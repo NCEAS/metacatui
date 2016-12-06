@@ -786,12 +786,15 @@ define(['jquery',
 				//Check for authorization on the resource map
 				var packageModel = this.packageModels[0];
 				
+				//if there is no package, then exit now
+				if(!packageModel.get("id")) return;
+				
 				//Listen for changes to the authorization flag
-				packageModel.on("change:isAuthorized", viewRef.createProvEditor, viewRef);
-				packageModel.on("sync", viewRef.createProvEditor, viewRef); 
+				packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
+				packageModel.once("sync", viewRef.createProvEditor, viewRef); 
 						
 				//Now get the RDF XML and check for the user's authority on this resource map
-				packageModel.fetch();				
+				packageModel.fetch();
 				packageModel.checkAuthority();
 			});
 			this.model.checkAuthority();
@@ -1014,10 +1017,10 @@ define(['jquery',
 			//Get the package - just get the first one for now
 			//TODO: Make sure this is the parent resource map
 			var packageModel = this.packageModels[0];
-			
+						
 			//If this user is not authorized to edit this resource map, then exit
 			//Or if this is package hasn't been retrieved yet, then exit
-			if(!packageModel.get("isAuthorized") || !packageModel.get("xml")) return;
+			if(!packageModel.get("id") || !packageModel.get("isAuthorized") || !packageModel.get("objectXML")) return;
 			
 			//packageModel.save(null);
 		},
