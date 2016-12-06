@@ -420,26 +420,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
         	
         	//Define the namespaces
             var ORE = rdf.Namespace(this.namespaces.ORE);
-        	
+        	            
         	//Get the pid of this package - depends on whether we are updating or creating a resource map
-            var pid = this.get("newPid") || this.get("id");
-        	
-    		// Change all the isAggregatedBy IDs
-            var aggByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE('isAggregatedBy'));            
-            // Get system metadata for each member to eval the formatId
-            _.each(aggByStatements, function(statement){
-                statement.object.value = appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("newPid"));
-            }, this);
+            var pid = this.get("newPid") || this.get("id"),
+            	updating = (pid == this.get("newPid"));
             
-            //Change all the Description nodes for the resource map aggregation
-           // var aggByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE('aggregates'));            
+            //Update the pids in the RDF graph only if we are updating the resource map with a new pid
+            if(updating){
+	            //Change all the aggregation subject nodes in the RDF graph
+	            var aggregationNode =  rdf.sym(appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("id")) + "#aggregation");
+	            var aggregationSubjStatements = this.dataPackageGraph.statementsMatching(aggregationNode);
+	            _.each(aggregationSubjStatements, function(statement){
+	            	statement.subject.value = appModel.get("resolveServiceUrl") + encodeURIComponent(pid) + "#aggregation";
+	            });
+	            
+	            //Change all the aggregation object nodes in the RDF graph
+	            var aggregationObjStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, aggregationNode);
+	            _.each(aggregationObjStatements, function(statement){
+	            	statement.object.value = appModel.get("resolveServiceUrl") + encodeURIComponent(pid) + "#aggregation";
+	            });
+
+				//Change all the resource map subject nodes in the RDF graph
+				var rMapNode =  rdf.sym(appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("id")));
+			    var rMapStatements = this.dataPackageGraph.statementsMatching(rMapNode);
+			    _.each(rMapStatements, function(statement){
+			    	statement.subject.value = appModel.get("resolveServiceUrl") + encodeURIComponent(pid);
+			    });
+			    
+			    //Change all the resource map identifier literal node in the RDF graph
+				var idNode =  rdf.lit(this.get("id"));
+				var idStatement = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
+				if(idStatement[0]) idStatement[0].object.value = pid;
+            }
             
             //Now serialize the RDF XML
             var serializer = rdf.Serializer();
             serializer.store = this.dataPackageGraph;
             
             var xml = serializer.statementsToXML(this.dataPackageGraph.statements);
-        	
+                    	
         	return xml;
         },
         

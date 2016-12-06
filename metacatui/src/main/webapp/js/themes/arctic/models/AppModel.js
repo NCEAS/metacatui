@@ -35,11 +35,11 @@ define(['jquery', 'underscore', 'backbone'],
 			maxDownloadSize: 3000000000,
 
 			metacatVersion: "2.8.0",
-			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: "https://dev.nceas.ucsb.edu", //window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
-			d1CNBaseUrl: "https://cn.dataone.org/",
+			d1CNBaseUrl: "https://cn-stage-2.test.dataone.org/",
 			d1CNService: "cn/v2",
 			//d1LogServiceUrl: null,
 			nodeServiceUrl: null,
@@ -54,6 +54,7 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
+			resolveServiceUrl: null,
 			//bioportalSearchUrl: null,
 			orcidBaseUrl: "https:/orcid.org",
 			//orcidSearchUrl: null,
@@ -109,6 +110,9 @@ define(['jquery', 'underscore', 'backbone'],
 			//DataONE CN API
 			if(this.get("d1CNBaseUrl")){
 
+//				this.set("resolveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/resolve/");
+				this.set("resolveServiceUrl",  "https://cn.dataone.org/cn/v2/resolve/");
+				
 				//Account services
 				if(typeof this.get("accountsUrl") != "undefined"){
 					this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
