@@ -39,7 +39,8 @@ define(['jquery',
 					 		 	  "focus input.copy" : "higlightInput",
 					 		   "click textarea.copy" : "higlightInput", 
 					 		   "focus textarea.copy" : "higlightInput",
-					 		 	  "click .open-chat" : "openChatWithMessage"
+					 		 	  "click .open-chat" : "openChatWithMessage",
+					 		 "click .login.redirect" : "sendToLogin"
 		},
 				
 		initialize: function () {
@@ -215,6 +216,16 @@ define(['jquery',
 				return;		
 			else
 				this.routeToMetadata(e);
+		},
+		
+		sendToLogin: function(e){
+			if(e) e.preventDefault();
+			
+			var url = $(e.target).attr("href");
+			url = url.substring(0, url.indexOf("target=")+7);
+			url += window.location.href;
+			
+			window.location.href = url;
 		},
 		
 		resetSearch: function(){

@@ -129,8 +129,12 @@
 		color: #555555;
 	}
 
-	
-
+/* BUTTONS CUSTOMIZATIONS
+-------------------------------------------------- */	
+.btn.subtle {
+    color: #333;
+    font-weight: normal;
+}
 
 /* HEADER CSS
 -------------------------------------------------- */    
@@ -148,26 +152,9 @@
     min-height: 400px;      
   }
 
-/* NOTIFICATION AREA CSS
+/* NOTIFICATIONS CSS
  * -------------------------------------------------- */    
-  .notification {
-    position: relative;
-    top: 95px;
-    margin: 50px auto;
-    font-size: 40px;
-  }
   
-  .notification i{
-  	font-size: 40px;
-  	margin-left: 43%;
-  }
-  
-  .notification p{
-  	font-size: 20px;
-  	width: 350px;
-  	margin: 20px auto;
-  	display: block;
-  }
     .filter-contain .notification i{
   	color: #999;
   	font-size: .5em;
@@ -206,130 +193,6 @@
     	text-decoration: underline;
     }
 
- 
-    
-/* FEATURES CSS
--------------------------------------------------- */    
-    
-    #Features {
-      position: relative;
-      background-color: #899CA6;
-      padding-top: 20px;
-      color: #FDFDFD;
-	  min-height: 400px;
-    }
-
-    section#Features h4 {
-      font-size: 160%;
-      font-weight: 400;
-    }
-
-    section#Features p {
-      font-size: 110%;
-      font-weight: 400;
-      line-height: 1.75;
-      margin-bottom: 30px;
-    }
-    
-    section#Features a.btn-info {
-      background-color: #6C94A4;
-      color: #FFFFFF;
-      /*border: none;
-      text-shadow: none;
-      box-shadow: none;*/
-    }
-
-    section#Features a.btn-info:hover {
-      background-color: #5C7F8C;
-    
-    } 
-    
-/* FEATURED DATA CSS
--------------------------------------------------- */    
-
-    #FeaturedData {
-      position: relative;
-      background-color: #878787;
-      color: #FDFDFD;
-      /*min-height: 1200px;*/
-    }
-
-    #FeaturedData > section {
-      border-top: 1px solid #878787;
-    }
-		
-	  #FeaturedData h2 {
-	  	font-weight: 400;
-        color: #FDFDFD;
-        text-decoration: none;
-        width: 450px;
-	  }
-        
-    #FeaturedData h2 a {
-      color: #FDFDFD;
-      text-decoration: none;      
-    }
-
-    #FeaturedData .accordion-inner {
-      border-top: 0px;
-      padding-bottom: 40px;
-      margin: 20px 10px 20px 10px;
-      background: rgba(0,0,0,0.6);
-      color: #FFFFFF;
-      border-radius: 6px 6px 6px 6px;
-    }
-    
-    #featured01 {
-      position: relative;
-      top: 0px;
-    }
-    
-    #featured02 {
-      position: relative;
-      top: 0px;
-    }
-    
-    #featured03 {
-      position: relative;
-      top: 0px;
-    }
-    
-    #featured01_info {
-      position: absolute;
-      top: 40px;
-      left: 80px;
-      width: 75%;
-    }
-    
-    #featured02_info {
-      position: absolute;
-      top: 40px;
-      left: 60%;
-    }
-    
-    #featured03_info {
-      position: absolute;
-      top: 40px;
-      left: 80px;
-      width: 75%;
-    }
-
-    #FeaturedData .collapse {
-      position: absolute;
-      top: 0px;
-    }
-
-    #collapse01, #collapse03 {
-      position: absolute;
-      left: 420px;
-      max-width: 600px;
-    }
-    
-    #collapse02 {
-      position: absolute;
-      left: -600px;
-      max-width: 600px;
-    }
     
  
 /* CUSTOMIZE THE ACCORDIAN 
@@ -504,107 +367,6 @@
 	    top: 11px;
 	    left: -6px;
 	}
-	
-    /* CAROUSEL CSS
-    -------------------------------------------------- */
-
-    #Slides {
-      position: relative;
-      top: 0px;
-      z-index: 110;
-    }
-
-    /* Carousel base class */
-    .carousel {
-      width: 100%;
-      margin-bottom: 0px;
-      max-height: 400px;
-      
-    }
-
-    .carousel-control {
-      height: 80px;
-      margin-top: 0;
-      font-size: 120px;
-      font-weight: 400;
-      text-shadow: 0 1px 1px rgba(0,0,0,.4);
-      background-color: transparent;
-      border: 0;
-      z-index: 189;
-    }
-
-    .carousel .left {
-      left: 50px;
-      z-index: 190;
-    }
-    
-    .carousel .right {
-      right: 30px;
-      z-index: 191;
-    }
-
-    .carousel .item {
-      background-color: #FDFDFD; /* Fallback to solid color if the gradient fails */
-      background-image: -webkit-gradient(
-       linear,
-       left bottom,
-       left top,
-       color-stop(0.9, #FFFFFF),
-       color-stop(0.3, #FDFDFD)
-      );
-      z-index: 170;
-      /*
-      -webkit-transition: opacity 4s; 
-      -moz-transition: opacity 4s; 
-      -ms-transition: opacity 4s; 
-      -o-transition: opacity 4s; 
-      transition: opacity 4s;
-      */
-    	-webkit-transition:0.6s ease-in-out left;
-    	-moz-transition:0.6s ease-in-out left;
-    	-ms-transition:0.6s ease-in-out left;
-    	-o-transition:0.6s ease-in-out left;
-    	transition:0.6s ease-in-out left;
-      max-height: 400px;
-      overflow: hidden;
-    }
-    
-    .carousel-caption {
-      background: rgba(0,0,0,0.3);
-      position: absolute;
-      top: 150px;
-      left: 50%;
-      margin: 0px 0px 0px -250px;
-      width: 500px;
-      max-height: 130px;
-      z-index: 200;
-      padding: 10px 20px 10px 20px;
-      -webkit-border-radius: 6px;
-         -moz-border-radius: 6px;
-              border-radius: 6px;
-      
-    }
-    
-    .carousel-caption h1 {
-      margin: 0px;
-      line-height: 1.25;
-      font-weight: 400;
-      font-size: 36px;
-      color: #FDFDFD;
-    }
-    
-    .carousel-caption .lead {
-      margin: 0;
-      line-height: 1;
-      font-weight: 400;
-      font-size: 24px;
-      color: #FDFDFD;
-    }
-    .carousel-caption .btn-primary {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-    }
 
   /* MAIN BODY CSS
   -------------------------------------------------- */
