@@ -2933,6 +2933,9 @@ textarea.xlarge{
 	padding-left: 20px;
 }
 
+.Editor #data-package-table > tbody > tr > td > i.icon-chevron-down {
+    margin-right: 10px;
+}
 .Editor #data-package-table > tbody > tr > td:nth-of-type(2) {
 	min-width: 10%;
 	white-space: nowrap;
