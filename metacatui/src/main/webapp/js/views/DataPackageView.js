@@ -56,8 +56,11 @@ define([
                 
                 var dataItemView = new DataItemView({model: item});
                 this.subviews.push(dataItemView); // keep track of all views
-                var scimetaParent = item.get("scienceMetadata");
-                
+                var scimetaParent = item.get("isDocumentedBy");
+                if ( typeof scimetaParent !== "undefined" ) {
+                    scimetaParent = scimetaParent[0];
+                    
+                }
                 var parentRow;
                 if ( typeof scimetaParent !== "undefined" ) {
                     
