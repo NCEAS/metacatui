@@ -11,15 +11,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
          TODO: incorporate Backbone.UniqueModel
         */
         var DataPackage = Backbone.Collection.extend({
-            
+                        
             // The package identifier
             id: null,
             
             // The type of the object (DataPackage, Metadata, Data)
             type: 'DataPackage',
             
-            // The list of nested child data package members of this data package
-            childPackages: [],
+            // The map of nested child data package members of this data package
+            childPackages: {},
             
             // Simple queue to enqueue file transfers. Use push() and shift()
             // to add and remove items. If this gets to large/slow, possibly
@@ -46,35 +46,26 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
             // See getMember(). We do this so that Metadata get rendered first, and Data are
             // rendered as DOM siblings of the Metadata rows of the DataPackage table.
             comparator: "order",
-                
+            
+            // The nesting level in a data package hierarchy
+            nodelevel: 0,
+            
             // Constructor: Initialize a new DataPackage
             initialize: function(models, options) {
-                
-                // Set the nesting level of the data package hierarchy
-                // if ( typeof this.get("nodelevel") === "undefined" ) {
-                //       this.set("nodelevel", 1);
-                //       
-                // } else {
-                //       this.set("nodelevel", this.get("nodelevel") + 1 );
-                //       
-                // }
                 
                 // Create an initial RDF graph 
                 this.dataPackageGraph = rdf.graph();
                 
-                // Create a packageModel if it's missing 
                 if ( typeof options === "undefined" || 
                      typeof options === null || 
                      typeof options.id === "undefined") {
                     this.id = "urn:uuid:" + uuid.v4();
-                    this.set("type", "DataPackage");
                 
                 // Otherwise fetch it by id, and populate it    
                 } else {
                     // use the given id
                     this.id = options.id;
-                    this.set("type", "DataPackage");
-                                        
+                    
                 }
                 
                 return this;  
@@ -100,6 +91,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                                                 
                 switch ( attrs.formatid ) {
                 
+                    case "http://www.openarchives.org/ore/terms":
+                        return new DataPackage(null, attrs); // TODO: is this correct?
+                        
                     case "eml://ecoinformatics.org/eml-2.0.0":
                         return new EML211(attrs, options);
                                                                         
@@ -354,9 +348,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                     
                     //Retrieve the model for each member 
                     _.each(memberPIDs, function(pid){
+                        var isDocumentedBy;
+                        if ( typeof this.scienceMetadataMap[pid] !== "undefined") {
+                            isDocumentedBy = [this.scienceMetadataMap[pid]];
+                        }
                         memberModel = new DataONEObject(
                             {id: pid, 
-                             scienceMetadata: this.scienceMetadataMap[pid]}
+                             isDocumentedBy: isDocumentedBy,
+                             resourceMap: [this.id]}
                         );
                         this.listenTo(memberModel, 'change:formatid', this.getMember);
                         memberModel.fetch();
@@ -373,7 +372,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
             },
             
             /*
-             * When a data package member updates, we evaluate it for it's formatid,
+             * When a data package member updates, we evaluate it for its formatid,
              * and update it appropriately if it is not a data object only
              */
             getMember: function(context, args) {
@@ -382,9 +381,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                 switch ( context.get("formatid") ) {
                     
                     case "http://www.openarchives.org/ore/terms":
-                        context.set({type: "DataPackage", order: 3});
-                        memberModel = new DataPackage(context.attributes);
-                                    this.childPackages.push(memberModel);
+                        context.attributes.id = context.id;
+                        context.attributes.type = "DataPackage";
+                        memberModel = new DataPackage(null, context.attributes);
+                        this.childPackages[memberModel.id] = memberModel;
                         break;
                         
                     case "eml://ecoinformatics.org/eml-2.0.0":
@@ -659,11 +659,21 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
                                                 
                 }
                 
-                // When the object is fetched, merge it into the collection
-                this.listenTo(memberModel, 'sync', this.mergeMember);
-                memberModel.set("nodelevel", this.get("nodelevel")); // same level for all members 
-                memberModel.set("synced", false); // initialize the sync status
-                memberModel.fetch({merge: true});
+                if ( memberModel.type !== "DataPackage" ) {
+                    // We have a model
+                    memberModel.set("nodelevel", this.nodelevel); // same level for all members 
+                    memberModel.set("synced", false); // initialize the sync status
+                    // When the object is fetched, merge it into the collection
+                    this.listenTo(memberModel, 'sync', this.mergeMember);
+                
+                    memberModel.fetch({merge: true});
+                    
+                } else {
+                    // We have a nested collection
+                    memberModel.nodelevel = this.nodelevel + 1;
+                    this.listenTo(memberModel, 'sync', this.mergeMember);
+                    memberModel.fetch({merge: true});
+                }
                 
             },
             
