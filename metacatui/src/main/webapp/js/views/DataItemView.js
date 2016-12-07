@@ -25,7 +25,6 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             
             /* Initialize the object - post constructor */
             initialize: function(options) {
-                console.log('DataItemView: initialize()');
                 this.id = this.model.id;
                 //this.id = this.generateId();
                 this.listenTo(this.model, 'change', this.render); // render changes to the item
@@ -35,7 +34,6 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             
             /* Render the template into the DOM */
             render: function() {
-                console.log('DataItemView: render()');
                 this.el.id = this.model.id;
                 this.$el.html( this.template(this.model.attributes) );
 
