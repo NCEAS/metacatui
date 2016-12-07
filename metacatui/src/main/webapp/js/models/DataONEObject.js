@@ -12,7 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
         var DataONEObject = Backbone.Model.extend({
             
         	defaults: {
-	            type: null,
+                // System Metadata attributes
 	            serialversion: null,
 	            id: "urn:uuid:" + uuid.v4(),
 	            formatid: null,
@@ -36,12 +36,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	            seriesid: null, // uuid.v4(), (decide if we want to auto-set this)
 	            mediatype: null,
 	            filename: null,
-	            nodelevel: 0,
-                order: null,
-                synced: false,
-                scienceMetadata: null,
-	            upload_status: null,
-	            upload_file: null
+                // Non-system metadata attributes:
+	            type: null, // Data, Metadata, or DataPackage
+	            nodelevel: 0, // Indicates hierarchy level in the view for indentation
+                order: null, // Metadata: 1, Data: 2, DataPackage: 3
+                synced: false, // True if the full model has been synced
+	            uploadStatus: null,
+	            uploadFile: null
         	},
         	
             initialize: function(attrs, options) {
