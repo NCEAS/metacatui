@@ -96,7 +96,7 @@ define(['underscore',
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
                 // Create a fresh package
-                MetacatUI.rootDataPackage = new DataPackage(this.model);
+                MetacatUI.rootDataPackage = new DataPackage(null, this.model);
                 this.renderMetadata(this.model);
                 
             } else {
