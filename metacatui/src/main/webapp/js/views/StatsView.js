@@ -43,6 +43,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			this.listenTo(statsModel, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
 			
+			// mdq
+			this.listenTo(statsModel, 'change:mdqStats',	  	  this.drawMdqStats);
+
 			// set the header type
 			appModel.set('headerType', 'default');
 			
@@ -446,6 +449,23 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Find the year range element
 			this.$('#data-coverage-year-range').text(yearRange);
+		},
+		
+		drawMdqStats: function() {
+			if (!statsModel.get("mdqStats")) {
+				return;
+			}
+			
+			var stats = statsModel.get("mdqStats");
+			var mdqCompositeStats= stats.mdq_composite_d;
+			
+			if (mdqCompositeStats) {
+				$("#mdq-composite-mean-container").text( (mdqCompositeStats.mean*100).toFixed(0) + "%");
+				$("#mdq-composite-min-container").text((mdqCompositeStats.min*100).toFixed(0) + "%");
+				$("#mdq-composite-max-container").text((mdqCompositeStats.max*100).toFixed(0) + "%");	
+			}
+			
+
 		},
 		
 		onClose: function () {			

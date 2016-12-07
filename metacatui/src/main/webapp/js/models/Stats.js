@@ -32,6 +32,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			temporalCoverage: 0,
 			coverageYears: 0,
 			
+			// complex objects like this
+			// {mdq_composite_d: {"min":0.25,"max":1.0,"count":11,"missing":0,"sum":6.682560903149138,"sumOfSquares":4.8545478685001076,"mean":0.6075055366499217,"stddev":0.2819317507548068}}
+			mdqStats: {},
+			
 			supportDownloads: (appModel.get("nodeId") && appModel.get("d1LogServiceUrl"))
 		},
 		
@@ -91,6 +95,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			this.getFormatTypes();
 			this.getUploads();
 			this.getDownloadDates();
+			this.getMdqStats();
 			//this.getDataDownloadDates();
 			//this.getMetadataDownloadDates();
 		},
@@ -640,7 +645,45 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			this.set("downloads", this.get("dataDownloads") + this.get("metadataDownloads"));
 			
 			if(this.get("downloads") == 0) this.trigger("change:downloads");			
+		},
+		
+		/**
+		** getMdqStats will query SOLR for MDQ stats and will update the model accordingly
+		**/
+		getMdqStats: function(){
+			var model = this;
+			
+			//Build the query to get the MDQ stats
+			var query = this.get('query') + 
+						"+formatId:%22https:%2F%2Fnceas.ucsb.edu%2Fmdqe%2Fv1%23run%22+-obsoletedBy:*";
+			var otherParams = "&rows=0" +
+						 	  "&stats=true" +
+							  "&stats.field=mdq_composite_d" +
+							  "&stats.field=mdq_discovery_d" +
+							  "&stats.field=mdq_interpretation_d" +
+							  "&stats.field=mdq_identification_d" +
+							  //"&stats.facet=mdq_metadata_rightsHolder_s" +
+							  //"&sort=mdq_metadata_rightsHolder_s%20desc" +			
+							  "&wt=json";
+
+			//Run the query for stats
+			var requestSettings = {
+				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
+				type: "GET",
+				dataType: "json",
+				success: function(data, textStatus, xhr) {
+
+					var mdqStats = data.stats.stats_fields;
+					
+					// Set the pertinent information in the model
+					model.set('mdqStats', mdqStats);
+						
+				}
+			};
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		}
+		
 	});
 	return Stats;
 });
