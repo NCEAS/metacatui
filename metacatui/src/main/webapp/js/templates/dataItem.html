@@ -1,9 +1,11 @@
 ﻿<!-- Icon column -->
 <% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
-    <td><i class="icon icon-chevron-down" style="margin-right: 10px"></i><i class="icon-large icon-folder-open"></i></td>
+    <% var indentFolder = nodelevel * 60; %>
+    <td><i class="icon icon-chevron-down"></i><i class="icon-large icon-folder-open"></i></td>
     
 <% } else { %>
-    <td style="padding-left: 60px"><i class="icon-large icon-file"></i></td>
+    <% var indentFile = (nodelevel + 1) * 60; %>
+    <td><i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i></td>
     
 <% } %>
 
