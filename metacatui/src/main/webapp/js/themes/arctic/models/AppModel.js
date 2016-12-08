@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			maxDownloadSize: 3000000000,
 
 			metacatVersion: "2.8.0",
-			baseUrl: "https://dev.nceas.ucsb.edu", //window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
@@ -110,8 +110,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//DataONE CN API
 			if(this.get("d1CNBaseUrl")){
 
-//				this.set("resolveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/resolve/");
-				this.set("resolveServiceUrl",  "https://cn.dataone.org/cn/v2/resolve/");
+				this.set("resolveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/resolve/");
 				
 				//Account services
 				if(typeof this.get("accountsUrl") != "undefined"){
