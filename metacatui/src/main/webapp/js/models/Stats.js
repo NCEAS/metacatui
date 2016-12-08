@@ -35,6 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			// complex objects like this
 			// {mdq_composite_d: {"min":0.25,"max":1.0,"count":11,"missing":0,"sum":6.682560903149138,"sumOfSquares":4.8545478685001076,"mean":0.6075055366499217,"stddev":0.2819317507548068}}
 			mdqStats: {},
+			mdqStatsTotal: {},
 			
 			supportDownloads: (appModel.get("nodeId") && appModel.get("d1LogServiceUrl"))
 		},
@@ -95,7 +96,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			this.getFormatTypes();
 			this.getUploads();
 			this.getDownloadDates();
-			this.getMdqStats();
+			this.getMdqStatsTotal();
 			//this.getDataDownloadDates();
 			//this.getMetadataDownloadDates();
 		},
@@ -682,7 +683,47 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			};
 			
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+		},
+		
+		/**
+		** getMdqStatsTotal will query SOLR for ALL MDQ stats and will update the model accordingly
+		**/
+		getMdqStatsTotal: function(){
+			var model = this;
+			
+			//Build the query to get ALL MDQ stats - not filtered!
+			var query =  "formatId:%22https:%2F%2Fnceas.ucsb.edu%2Fmdqe%2Fv1%23run%22+-obsoletedBy:*";
+			var otherParams = "&rows=0" +
+						 	  "&stats=true" +
+							  "&stats.field=mdq_composite_d" +
+							  "&stats.field=mdq_discovery_d" +
+							  "&stats.field=mdq_interpretation_d" +
+							  "&stats.field=mdq_identification_d" +
+							  //"&stats.facet=mdq_metadata_rightsHolder_s" +
+							  //"&sort=mdq_metadata_rightsHolder_s%20desc" +			
+							  "&wt=json";
+
+			//Run the query for stats
+			var requestSettings = {
+				url: appModel.get('queryServiceUrl') + "q=" + query + otherParams, 
+				type: "GET",
+				dataType: "json",
+				success: function(data, textStatus, xhr) {
+
+					var mdqStatsTotal = data.stats.stats_fields;
+					
+					// Set total in the model
+					model.set('mdqStatsTotal', mdqStatsTotal);
+					
+					// get the specific stats which will trigger rendering
+					model.getMdqStats();
+						
+				}
+			};
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		}
+		
 		
 	});
 	return Stats;

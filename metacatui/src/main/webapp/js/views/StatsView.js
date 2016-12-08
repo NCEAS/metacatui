@@ -456,15 +456,37 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				return;
 			}
 			
-			var stats = statsModel.get("mdqStats");
-			var mdqCompositeStats= stats.mdq_composite_d;
+			
+			var mdqCompositeStats= statsModel.get("mdqStats").mdq_composite_d;
 			
 			if (mdqCompositeStats) {
-				$("#mdq-composite-mean-container").text( (mdqCompositeStats.mean*100).toFixed(0) + "%");
+				$("#mdq-composite-mean-container").text((mdqCompositeStats.mean*100).toFixed(0) + "%");
 				$("#mdq-composite-min-container").text((mdqCompositeStats.min*100).toFixed(0) + "%");
 				$("#mdq-composite-max-container").text((mdqCompositeStats.max*100).toFixed(0) + "%");	
 			}
 			
+			var mdqTotalStats = statsModel.get("mdqStatsTotal").mdq_composite_d;
+
+			if (!statsModel.get("mdqStatsTotal")) {
+				return;
+			}
+			if (mdqTotalStats) {
+				var diff = mdqCompositeStats.mean - mdqTotalStats.mean;
+				var repoAvg = (mdqTotalStats.mean*100).toFixed(0) + "%";
+				console.log("mdq diff: " + diff);
+				if (diff < 0) {
+					$("#mdq-percentile-container").attr("data-content", "Below repository average score of " + repoAvg);
+					$("#mdq-percentile-container").addClass("icon-thumbs-down");
+				}
+				if (diff > 0) {
+					$("#mdq-percentile-container").attr("data-content", "Above repository average score of " + repoAvg);
+					$("#mdq-percentile-container").addClass("icon-thumbs-up");
+				}
+				if (diff == 0) {
+					$("#mdq-percentile-container").attr("data-content", "At repository average score of " + repoAvg);
+					$("#mdq-percentile-container").addClass("icon-star");
+				}
+			}
 
 		},
 		
