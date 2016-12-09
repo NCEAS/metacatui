@@ -110,8 +110,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//DataONE CN API
 			if(this.get("d1CNBaseUrl")){
 
-//				this.set("resolveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/resolve/");
-				this.set("resolveServiceUrl",  "https://cn.dataone.org/cn/v2/resolve/");
+				this.set("resolveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/resolve/");
 				
 				//Account services
 				if(typeof this.get("accountsUrl") != "undefined"){
