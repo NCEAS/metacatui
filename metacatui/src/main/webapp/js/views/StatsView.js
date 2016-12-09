@@ -475,17 +475,39 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var repoAvg = (mdqTotalStats.mean*100).toFixed(0) + "%";
 				console.log("mdq diff: " + diff);
 				if (diff < 0) {
-					$("#mdq-percentile-container").attr("data-content", "Below repository average score of " + repoAvg);
-					$("#mdq-percentile-container").addClass("icon-thumbs-down");
+					$("#mdq-percentile-container").text("Below repository average");
+					$("#mdq-percentile-icon").addClass("icon-thumbs-down");
 				}
 				if (diff > 0) {
-					$("#mdq-percentile-container").attr("data-content", "Above repository average score of " + repoAvg);
-					$("#mdq-percentile-container").addClass("icon-thumbs-up");
+					$("#mdq-percentile-container").text("Above repository average");
+					$("#mdq-percentile-icon").addClass("icon-thumbs-up");
 				}
 				if (diff == 0) {
-					$("#mdq-percentile-container").attr("data-content", "At repository average score of " + repoAvg);
-					$("#mdq-percentile-container").addClass("icon-star");
+					$("#mdq-percentile-container").text("At repository average");
+					$("#mdq-percentile-icon").addClass("icon-star");
 				}
+				
+				// for the box plot
+				// top arrow for this view
+				$("#mdq-score-num").text((mdqCompositeStats.mean*100).toFixed(0) + "%");
+				$("#mdq-score").css(
+				{
+					  "margin-left": (mdqCompositeStats.mean*100).toFixed(0) + "%"
+				});
+				// the range
+				$("#mdq-box").css(
+				{
+					"width": ((mdqCompositeStats.max - mdqCompositeStats.min) * 100).toFixed(0) + "%",
+					"margin-left": (mdqCompositeStats.min*100).toFixed(0) + "%"
+				});
+				$("#mdq-box").attr("data-content", mdqCompositeStats.count + " scores range from " + (mdqCompositeStats.min*100).toFixed(0) + "%" + " to " + (mdqCompositeStats.max*100).toFixed(0) + "%");
+				// the bottom arrow for repo
+				$("#mdq-repo-score-num").text((mdqTotalStats.mean*100).toFixed(0) + "%");
+				$("#mdq-repo-score").css(
+				{
+					  "margin-left": (mdqTotalStats.mean*100).toFixed(0) + "%"
+				});
+	
 			}
 
 		},
