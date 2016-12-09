@@ -455,21 +455,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if (!statsModel.get("mdqStats")) {
 				return;
 			}
-			
-			
-			var mdqCompositeStats= statsModel.get("mdqStats").mdq_composite_d;
-			
-			if (mdqCompositeStats) {
-				$("#mdq-composite-mean-container").text((mdqCompositeStats.mean*100).toFixed(0) + "%");
-				$("#mdq-composite-min-container").text((mdqCompositeStats.min*100).toFixed(0) + "%");
-				$("#mdq-composite-max-container").text((mdqCompositeStats.max*100).toFixed(0) + "%");	
-			}
-			
-			var mdqTotalStats = statsModel.get("mdqStatsTotal").mdq_composite_d;
-
 			if (!statsModel.get("mdqStatsTotal")) {
 				return;
 			}
+			var mdqCompositeStats= statsModel.get("mdqStats").mdq_composite_d;
+			
+			var mdqTotalStats = statsModel.get("mdqStatsTotal").mdq_composite_d;
+			
 			if (mdqTotalStats) {
 				var diff = mdqCompositeStats.mean - mdqTotalStats.mean;
 				var repoAvg = (mdqTotalStats.mean*100).toFixed(0) + "%";
@@ -509,7 +501,51 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				});
 	
 			}
+			
+			// now draw the chart
+			this.drawMdqFacets();
 
+		},
+		
+		drawMdqFacets: function() {
+			
+			var mdqCompositeStats= statsModel.get("mdqStats").mdq_composite_d;
+			
+			if (mdqCompositeStats) {
+				// keys are the facet values, values are the stats (min, max, mean, etc...)
+				var datasourceFacets = mdqCompositeStats.facets.mdq_metadata_datasource_s;
+				var formatIdFacets = mdqCompositeStats.facets.mdq_metadata_formatId_s;
+				var rightsHolderFacets = mdqCompositeStats.facets.mdq_metadata_rightsHolder_s;
+				var suiteIdFacets = mdqCompositeStats.facets.mdq_suiteId_s;
+				
+				this.drawMdqChart(datasourceFacets);
+			}
+		},
+		
+		//Draw a bar chart for the slice
+		drawMdqChart: function(data){
+			
+			//Get the width of the chart by using the parent container width
+			var parentEl = this.$('.mdq-chart');
+			var width = parentEl.width() || null;			
+			
+			var options = {
+					data: data,
+					formatFromSolrFacets: true,
+					solrFacetField: "mean",
+					id: "mdq-slice-chart",
+					yLabel: "mean score",
+					yFormat: d3.format(",%"),
+					barClass: "packages",
+					roundedRect: true,
+					roundedRadius: 10,
+					barLabelClass: "packages",
+					width: width
+				};
+			
+			var barChart = new BarChart(options);
+			parentEl.html(barChart.render().el);
+			
 		},
 		
 		onClose: function () {			
