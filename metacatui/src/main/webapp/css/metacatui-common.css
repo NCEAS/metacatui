@@ -950,6 +950,33 @@ img.icon{
 	font-weight: bold;
 }
 
+/* MDQ boxplot */
+#mdq-score{
+  margin-left: 0%;
+}
+#mdq-score-num {
+	font-weight: bold;
+	font-size: 1.5em;
+}
+#mdq-score .icon{
+  margin-left: 10px
+}
+#mdq-box-plot{
+	margin-bottom: 0px;
+    margin-top: 0px;
+}
+#mdq-box {
+  width: 0%;
+  height: 20px;
+  margin-left: 0%;
+}
+#mdq-repo-score{
+  margin-left: 0%;
+}
+#mdq-repo-score .icon{
+  margin-left: 10px
+}
+
 
 /* Prov chart popovers */
 .prov-chart .popover{
