@@ -429,6 +429,8 @@ define(['jquery',
 		commaSeparateNumber: function(val){
 			if(!val) return 0;
 			
+			if(val < 1) return  Math.round(val * 100) / 100;
+			
 		    while (/(\d+)(\d{3})/.test(val.toString())){
 		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
 		    }

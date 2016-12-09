@@ -129,8 +129,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 			  
 			  x.domain(this.data.map(function(d) { return d.x; }));
-			  y.domain([1, max]);
-
+			  
+			  if(max > 1)
+				  y.domain([1, max]);
+			  else
+				  y.domain([0, 1]);
 		  
 			  chart.append("g")
 			      .attr("class", "x axis")
