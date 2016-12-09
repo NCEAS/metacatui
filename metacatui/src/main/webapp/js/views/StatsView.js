@@ -500,6 +500,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					"width": ((mdqCompositeStats.max - mdqCompositeStats.min) * 100).toFixed(0) + "%",
 					"margin-left": (mdqCompositeStats.min*100).toFixed(0) + "%"
 				});
+				$("#mdq-box").attr("data-content", mdqCompositeStats.count + " scores range from " + (mdqCompositeStats.min*100).toFixed(0) + "%" + " to " + (mdqCompositeStats.max*100).toFixed(0) + "%");
 				// the bottom arrow for repo
 				$("#mdq-repo-score-num").text((mdqTotalStats.mean*100).toFixed(0) + "%");
 				$("#mdq-repo-score").css(
