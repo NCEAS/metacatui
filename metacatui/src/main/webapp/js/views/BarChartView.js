@@ -297,7 +297,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								  							  									  		
 								  		return yPos + labelYPadding * 2; 
 								  	})
-								    .text(function(d){ return d.x + ": " + appView.commaSeparateNumber(d.y); })
+								    .text(function(d){ 
+								    	var val = appView.commaSeparateNumber(d.y);
+								  		  if((max < 1) && (viewRef.yFormat().indexOf("%") > -1))
+								  			  val = (val * 100) + "%";
+								    	return d.x + ": " + val; })
 								    .attr("class", "bar-label " + this.barLabelClass)
 								    .attr("text-anchor", "start")
 								    .attr("data-id", function(d){ return d.x });
@@ -309,7 +313,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					  		  	  textY = y(d.y) - 10;
 					  		  
 					  		  return "translate(" + textX + "," + textY + ")"; })
-					  	  .text(function(d){ return appView.commaSeparateNumber(d.y); })
+					  	  .text(function(d){ 
+					  		  var val = appView.commaSeparateNumber(d.y);
+					  		  if((max < 1) && (viewRef.yFormat().indexOf("%") > -1))
+					  			  val = (val * 100) + "%";
+					  		  return val;
+					  		  })
 					  	  .attr("text-anchor", "middle")
 					  	  .attr("class", this.barLabelClass);
 				  }
