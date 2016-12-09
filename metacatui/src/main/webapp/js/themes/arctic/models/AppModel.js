@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			maxDownloadSize: 3000000000,
 
 			metacatVersion: "2.8.0",
-			baseUrl: "https://mn-demo-8.test.dataone.org", //window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
