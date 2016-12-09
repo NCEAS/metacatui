@@ -475,15 +475,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var repoAvg = (mdqTotalStats.mean*100).toFixed(0) + "%";
 				console.log("mdq diff: " + diff);
 				if (diff < 0) {
-					$("#mdq-percentile-container").text("Scored below repository average");
+					$("#mdq-percentile-container").text("Below repository average");
 					$("#mdq-percentile-icon").addClass("icon-thumbs-down");
 				}
 				if (diff > 0) {
-					$("#mdq-percentile-container").text("Scored above repository average");
+					$("#mdq-percentile-container").text("Above repository average");
 					$("#mdq-percentile-icon").addClass("icon-thumbs-up");
 				}
 				if (diff == 0) {
-					$("#mdq-percentile-container").text("Scored equal to repository average");
+					$("#mdq-percentile-container").text("At repository average");
 					$("#mdq-percentile-icon").addClass("icon-star");
 				}
 				
