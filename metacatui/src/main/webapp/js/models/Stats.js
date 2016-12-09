@@ -700,12 +700,17 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			var query =  "formatId:%22https:%2F%2Fnceas.ucsb.edu%2Fmdqe%2Fv1%23run%22+-obsoletedBy:*";
 			var otherParams = "&rows=0" +
 						 	  "&stats=true" +
+						 	  // fields
 							  "&stats.field=mdq_composite_d" +
 							  "&stats.field=mdq_discovery_d" +
 							  "&stats.field=mdq_interpretation_d" +
 							  "&stats.field=mdq_identification_d" +
+							  // facets
+							  //"&stats.facet=mdq_metadata_formatId_s" +
 							  //"&stats.facet=mdq_metadata_rightsHolder_s" +
-							  //"&sort=mdq_metadata_rightsHolder_s%20desc" +			
+							  //"&stats.facet=mdq_metadata_datasource_s" +
+							  //"&stats.facet=mdq_suiteId_s" +
+							  //"&sort=mdq_metadata_formatId_s%20desc" +			
 							  "&wt=json";
 
 			//Run the query for stats
