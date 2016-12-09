@@ -518,7 +518,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var rightsHolderFacets = mdqCompositeStats.facets.mdq_metadata_rightsHolder_s;
 				var suiteIdFacets = mdqCompositeStats.facets.mdq_suiteId_s;
 				
-				this.drawMdqChart(datasourceFacets);
+				//this.drawMdqChart(datasourceFacets);
+				//this.drawMdqChart(rightsHolderFacets);
+				this.drawMdqChart(_.extend(formatIdFacets, datasourceFacets, suiteIdFacets));
+
 			}
 		},
 		
