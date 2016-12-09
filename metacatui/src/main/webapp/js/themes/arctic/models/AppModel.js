@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			maxDownloadSize: 3000000000,
 
 			metacatVersion: "2.8.0",
-			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: "https://mn-demo-8.test.dataone.org", //window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
@@ -133,7 +133,7 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
 
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
-				//this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
+				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
 
 				//Settings for the DataONE API v2 only
 				if(this.get("d1CNService").indexOf("v2") > -1){

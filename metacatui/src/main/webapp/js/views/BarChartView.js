@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.barLabelClass	 = options.barLabelClass   || "";
 			
 			if(options.formatFromSolrFacets)
-				this.data = this.formatFromSolrFacets(this.data);
+				this.data = this.formatFromSolrFacets(this.data, options.solrFacetField);
 			
 			if(options.formatFromSolrFacetRanges)
 				this.data = this.formatFromSolrFacetRanges(this.data);
@@ -331,13 +331,19 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		
 		// This function will take a single object of key:value pairs (identical to the format that Solr returns for facets) and format it as needed to draw a bar chart
 		// param rawData: Format example: {"cats": 5, "dogs": 6, "fish": 10}
-		formatFromSolrFacets: function(rawData){
+		// param field: optional field to use when extracting from a complex value, e.g., "mean". For example:
+		// {"urn:node:mnDemo5": {"min":0.25,"max":1.0,"count":11,"missing":0,"sum":6.682560903149138,"sumOfSquares":4.8545478685001076,"mean":0.6075055366499217,"stddev":0.2819317507548068}}
+		formatFromSolrFacets: function(rawData, field){
 			var keys = Object.keys(rawData);
 			var data = [];
 			for(var i=0; i<keys.length; i++){
+				var value = rawData[keys[i]];
+				if (field) {
+					value = rawData[keys[i]][field];
+				}
 				data.push({
 					x: keys[i],
-					y: rawData[keys[i]]
+					y: value
 				});
 			}
 			
