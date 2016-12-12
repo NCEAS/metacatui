@@ -741,8 +741,8 @@ define(['jquery',
 		 */
 		insertOwnerControls: function(){
 			//Don't display editing controls when we are pointing to a CN
-			if(appModel.get("d1Service").toLowerCase().indexOf("cn") > -1)
-				return false;
+		//	if(appModel.get("d1Service").toLowerCase().indexOf("cn") > -1)
+		//		return false;
 
 			//Do not show user controls for older versions of data sets
 			if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
@@ -1022,7 +1022,74 @@ define(['jquery',
 			//Or if this is package hasn't been retrieved yet, then exit
 			if(!packageModel.get("id") || !packageModel.get("isAuthorized") || !packageModel.get("objectXML")) return;
 			
-			//packageModel.save(null);
+			//Render the prov charts in the gutters
+			_.each(this.$(".entitydetails"), function(entityDetailsEl){
+				//If this section doesn't have a prov chart already, create a new blank one
+				if(!$(entityDetailsEl).is(".hasProvLeft") || !$(entityDetailsEl).is(".hasProvRight")){
+
+					$(entityDetailsEl).parent().addClass("gutters");
+					
+					//Get the id of this entity
+					var entityId = $(entityDetailsEl).attr("data-id"),
+						model,
+						packageModel;
+
+					//Get the model for this entity and its package model
+					findMember: for(var i=0; i<this.packageModels.length; i++){
+						packageModel = this.packageModels[i];
+						var members = packageModel.get("members");
+						//Find the member by id
+						for(var ii=0; ii<members.length; ii++){
+							if(members[ii].get("id") == entityId){
+								model = members[ii];
+								break findMember;
+							}							
+						}
+					}
+					
+					//Create the blank prov chart editor for sources
+					if(!$(entityDetailsEl).is(".hasProvLeft")){
+						//Create the chart view
+						var sourcesProvEditor = new ProvChart({
+							context      : model,
+							contextEl    : entityDetailsEl,
+							packageModel : packageModel,
+							parentView   : this,
+							editor       : true,
+							editorType   : "sources"
+						});
+						//Add the view to the subviews list
+						this.subviews.push(sourcesProvEditor);
+						
+						//Render the chart and insert into the page
+						$(entityDetailsEl).before(sourcesProvEditor.render().el);
+						
+						//Add space for the new prov chart
+						$(entityDetailsEl).addClass("hasProvLeft");
+					}
+					
+					//Create the blank prov chart editor for derivations
+					if(!$(entityDetailsEl).is(".hasProvRight")){	
+						//Create the chart view
+						var derivationsProvEditor = new ProvChart({
+							context      : model,
+							contextEl    : entityDetailsEl,
+							packageModel : packageModel,
+							parentView   : this,
+							editor       : true,
+							editorType   : "derivations"
+						});
+						//Add the view to the subviews list
+						this.subviews.push(derivationsProvEditor);
+						
+						//Render the chart and insert into the page
+						$(entityDetailsEl).after(derivationsProvEditor.render().el);
+						
+						//Add space for the new prov chart
+						$(entityDetailsEl).addClass("hasProvRight");
+					}
+				}
+			}, this);
 		},
 
 		/*
@@ -1135,10 +1202,6 @@ define(['jquery',
 			}
 
 			return entityName;
-		},
-
-		updateEntityName: function(){
-
 		},
 
 		//Checks if the metadata has entity details sections

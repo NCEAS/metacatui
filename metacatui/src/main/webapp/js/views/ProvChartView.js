@@ -17,6 +17,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			this.pointerHeight = options.pointerHeight || 15;     //Pixel height of the pointer/arrow image
 			this.offsetTop     = options.offsetTop     || this.nodeHeight; //The top margin of the chart, in pixels
 			this.title 		   = options.title         || "";
+			this.editor 	   = options.editor        || false;
+			this.editorType    = options.editorType    || null;
 
 			//For Sources charts
 			if(!this.derivations && this.sources){
@@ -34,6 +36,18 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				this.numDerivations  = this.derivations.length;
 				this.numProvEntities = this.numDerivations;
 				this.numSources      = 0;
+			}
+			
+			//For editor charts
+			if(this.editor && !this.numProvEntities){
+				this.type = options.editorType || null;
+				this.sources = [];
+				this.derivations = [];
+				this.provEntities = [];
+				this.numDerivations = 0;
+				this.numSources = 0;
+				this.numProvEntities = 0;
+				this.className += " editor empty";
 			}
 			
 			//Add the chart type to the class list
@@ -67,7 +81,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		subviews: new Array(),
 		
 		render: function(){
-			if(!this.numProvEntities) return false;
+			//Nothing to do if there are no entities and it isn't an editor
+			if(!this.numProvEntities && !this.editor) return false;
 			
 			var view = this;
 			
@@ -110,6 +125,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				//Source charts have a connector for each node and one pointer
 				if(view.type == "sources")	view.$el.append(view.createConnecter(i));
 			});	
+			
+			//If we are drawing a blank editor
+			if(this.editor){
+				this.$el.append(this.createEditorNode());
+				
+				//Derivation charts have a pointer for each node
+				if(this.type == "derivations") this.$el.append(this.createPointer(this.numProvEntities));
+				//Source charts have a connector for each node and one pointer
+				if(this.type == "sources")	this.$el.append(this.createConnecter(this.numProvEntities));
+			}
 			
 			//Move the last-viewed prov node to the top of the chart so it is always displayed first
 			if(this.$(".node.previous").length > 0)
@@ -326,6 +351,29 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		 			});
 				}
 			}
+			
+			return nodeEl;
+		},
+		
+		createEditorNode: function(){
+			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
+			var position = this.numProvEntities,
+				top = (position * this.nodeHeight) - (this.nodeHeight/2),
+				isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";			
+			
+			//Create a DOM element to represent the node	
+			var nodeEl = $(document.createElement("div"))
+						 .addClass(this.type + " node pointer popover-this editor " + isCollapsed)
+						 .attr("tabindex", 0)
+						 .attr("data-id", "")
+						 .css("top", top);
+			
+			//Create the plus icon
+			var iconEl = $(document.createElement("i"))
+						 .addClass("editor icon icon-plus");
+			
+			//Put the icon in the node
+			$(nodeEl).append(iconEl);
 			
 			return nodeEl;
 		},

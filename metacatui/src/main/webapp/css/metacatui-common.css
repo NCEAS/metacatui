@@ -546,7 +546,7 @@ img.icon{
 	left: 0px;
 }
 .prov-chart > .title{
-	font-size: 1em;
+	font-size: .9em;
 	font-weight: normal;
 	width: 90px;
 	line-height: 1em;
@@ -575,7 +575,17 @@ img.icon{
 	background-size: cover;
 	background-position: 50% 50%;
 }
-
+.prov-chart .node.editor{
+	border-color: #333;
+    border-style: dashed;
+}
+.prov-chart.editor.empty .prov-pointer{
+	-webkit-filter: saturate(0);
+    filter: saturate(0);
+}
+.node .editor.icon {
+    margin-left: 3px;
+}
 /********* The Prov Chart colors *******/		
 .prov-chart .node.uniqueNode1,
 .entitydetails.uniqueNode1{
