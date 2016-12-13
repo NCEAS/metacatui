@@ -58,7 +58,8 @@ require.config({
 	CircleBadge: ['views/CircleBadgeView', null],
 	DonutChart: ['views/DonutChartView', null],
     uuid: '../components/uuid',
-    rdflib: '../components/rdflib'
+    rdflib: '../components/rdflib',
+    md5: '../components/md5'
       
   },
   shim: { /* used for libraries without native AMD support */

@@ -74,15 +74,15 @@ define(['underscore',
 	        //When the basic Solr metadata are retrieved, get the associated package
 	        this.listenToOnce(this.model, "sync", this.getDataPackage);
 	        	
-	            //Wait until the user info is loaded before we request the Metadata
-	        	if(MetacatUI.appUserModel.get("loggedIn")) {
-	          this.model.fetch();
-	
-	    		} else {        	
+            //Wait until the user info is loaded before we request the Metadata
+        	if(MetacatUI.appUserModel.get("loggedIn")) {
+        		this.model.fetch();
+
+    		} else {        	
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
 	            	this.model.fetch();
 	            });
-	    		}
+    		}
                         
             return this;
         },
@@ -103,15 +103,22 @@ define(['underscore',
                 
                 // Set the root data package for the collection
                 MetacatUI.rootDataPackage = new DataPackage(null, {id: resourceMapIds[0]});
+                
+                var view = this;
                 // As the root collection is updated with models, render the UI
-                this.listenTo(MetacatUI.rootDataPackage, "added", this.renderMember);
+                this.listenTo(MetacatUI.rootDataPackage, "add", function(model){
+                	if(!model.get("synced") && model.get('id'))
+                		model.on("sync", view.renderMember);
+                	else if(model.get("synced"))
+                		view.renderMember(model);
+                });
 
                 // Render the package table framework
                 this.dataPackageView = new DataPackageView({edit: true});
                 var $packageTableContainer = this.$("#data-package-container");
                 $packageTableContainer.append(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
-            
+                
 
                 MetacatUI.rootDataPackage.fetch();
                                 
@@ -146,6 +153,7 @@ define(['underscore',
                     
                     default:
                         console.log("model.type is not set correctly");
+                    	
                 }
             }            
         },
@@ -157,7 +165,7 @@ define(['underscore',
 
             // render metadata as the collection is updated, but only EML passed from the event
             if ( typeof model.get === "undefined" || 
-                        model.get("formatid") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+                        model.get("formatId") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
                 console.log("Not EML. TODO: Render generic ScienceMetadata.");
                 return;
                 
