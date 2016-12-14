@@ -308,7 +308,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 console.log("DataPackage: parse() called.")
                 
                 //Save the raw XML in case it needs to be used later
-                this.set("objectXML", $.parseHTML(response));
+                this.objectXML = $.parseHTML(response);
                 
                 var RDF =     rdf.Namespace(this.namespaces.RDF),
                     FOAF =    rdf.Namespace(this.namespaces.FOAF),
