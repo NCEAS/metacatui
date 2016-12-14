@@ -42,7 +42,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 order: null, // Metadata: 1, Data: 2, DataPackage: 3
                 synced: false, // True if the full model has been synced
 	            uploadStatus: null,
-	            uploadFile: null
+	            uploadFile: null,
+	            isNew: false
         	},
         	
             initialize: function(attrs, options) {
@@ -62,7 +63,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
     			obsoletedby: "obsoletedBy",
     			originmembernode: "originMemberNode",
     			replicamembernode: "replicaMemberNode",
-    			replicapolicy: "replicaPolicy",
+    			replicationallowed: "replicationAllowed",
+    			replicationpolicy: "replicationPolicy",
     			replicationstatus: "replicationStatus",
     			replicaverified: "replicaVerified",		
     			rightsholder: "rightsHolder",
@@ -355,7 +357,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 			}
 			
 			//Send the XHR
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+			//$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		  },
 		  
 		  serializeSysMeta: function(){
@@ -413,10 +415,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	
 	        	//Now camel case the nodes 
 	        	_.each(Object.keys(this.sysMetaNodeMap), function(name, i, allNodeNames){
+	        		var originalXMLString = xmlString;
+	        		
+	        		//Camel case node names
 	        		var regEx = new RegExp("<" + name, "g");
 	        		xmlString = xmlString.replace(regEx, "<" + this.sysMetaNodeMap[name]);
 	        		var regEx = new RegExp(name + ">", "g");
 	        		xmlString = xmlString.replace(regEx, this.sysMetaNodeMap[name] + ">");
+	        		
+	        		//If node names haven't been changed, then find an attribute
+	        		if(xmlString == originalXMLString){
+	        			var regEx = new RegExp(" " + name + "=", "g");
+	        			xmlString = xmlString.replace(regEx, " " + this.sysMetaNodeMap[name] + "=");
+	        		}
 	        	}, this);
 	        	
 	        	xmlString = xmlString.replace(/systemmetadata/g, "systemMetadata");
