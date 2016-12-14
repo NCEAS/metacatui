@@ -6,11 +6,11 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		defaults: {
 			originalXML: null,
-			mediumname: null,
-			mediumvolume: null,
-			mediumformat: null,
-			mediumnote: null,
-			onlinedescription: null
+			mediumName: null,
+			mediumVolume: null,
+			mediumFormat: null,
+			mediumNote: null,
+			onlineDescription: null
 		},
 		
 		initialize: function(options){
