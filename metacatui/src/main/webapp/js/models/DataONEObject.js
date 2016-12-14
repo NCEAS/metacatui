@@ -15,34 +15,35 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 // System Metadata attributes
 	            serialversion: null,
 	            id: "urn:uuid:" + uuid.v4(),
-	            formatid: null,
-	            formattype: null,
+	            formatId: null,
+	            formatType: null,
 	            size: null,
 	            sizeStr: null,
 	            checksum: null,
 	            checksumalgorithm: null,
 	            submitter: null,
-	            rightsholder : null,
-	            accesspolicy: [],
-	            replicationpolicy: [],
+	            rightsHolder : null,
+	            accessPolicy: [],
+	            replicationPolicy: [],
 	            obsoletes: null,
-	            obsoletedby: null,
+	            obsoletedBy: null,
 	            archived: null,
-	            dateuploaded: null,
-	            datesysmetadatamodified: null,
-	            originmembernode: null,
-	            authoritativemembernode: null,
+	            dateUploaded: null,
+	            dateSysMetadataModified: null,
+	            originMemberNode: null,
+	            authoritativeMemberNode: null,
 	            replica: [],
-	            seriesid: null, // uuid.v4(), (decide if we want to auto-set this)
-	            mediatype: null,
-	            filename: null,
+	            seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
+	            mediaType: null,
+	            fileName: null,
                 // Non-system metadata attributes:
 	            type: null, // Data, Metadata, or DataPackage
 	            nodelevel: 0, // Indicates hierarchy level in the view for indentation
                 order: null, // Metadata: 1, Data: 2, DataPackage: 3
                 synced: false, // True if the full model has been synced
 	            uploadStatus: null,
-	            uploadFile: null
+	            uploadFile: null,
+	            isNew: false
         	},
         	
             initialize: function(attrs, options) {
@@ -58,11 +59,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
     			datesysmetadatamodified: "dateSysMetadataModified",
     			dateuploaded: "dateUploaded",
     			formatid: "formatId",
+    			filename: "fileName",
     			nodereference: "nodeReference",
     			obsoletedby: "obsoletedBy",
     			originmembernode: "originMemberNode",
     			replicamembernode: "replicaMemberNode",
-    			replicapolicy: "replicaPolicy",
+    			replicationallowed: "replicationAllowed",
+    			replicationpolicy: "replicationPolicy",
     			replicationstatus: "replicationStatus",
     			replicaverified: "replicaVerified",		
     			rightsholder: "rightsHolder",
@@ -360,7 +363,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 		  
 		  serializeSysMeta: function(){
 	        	//Get the system metadata XML that currently exists in the system
-	        	var xml = $(this.get("sysMetaXML"));
+	        	var xml = $(this.get("sysMetaXML")).clone();
 	        	
 	        	//Update the system metadata values
 	        	xml.find("serialversion").text(this.get("serialVersion") || "0");
@@ -376,13 +379,37 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	xml.find("originmembernode").text(this.get("originMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 	        	xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 
+	        	//Set the object file name
+	        	if(this.get("fileName")){
+	        		//Get the filename node
+		        	var fileNameNode = xml.find("filename");
+		        	
+		        	//If the filename node doesn't exist, then create one
+		        	if(!fileNameNode.length){
+		        		fileNameNode = $(document.createElement("filename"));
+		        		xml.find("authoritativemembernode").after(fileNameNode);
+		        	}
+		        	
+		        	//Add the file name to the node
+		        	$(fileNameNode).text(this.get("fileName"));
+	        	}
+	        	
 	        	if(this.get("obsoletes"))
 	        		xml.find("obsoletes").text(this.get("obsoletes"));
 	        	else
 	        		xml.find("obsoletes").remove();
 	        	
-	        	if(this.get("obsoletedBy"))
-	        		xml.find("obsoletedby").text(this.get("obsoletedBy"));
+	        	//If this object is obsoleted by another object
+	        	if(this.get("obsoletedBy")){
+	        		//Create a new obsoletedBy node if needed
+	        		if(!xml.find("obsoletedby").length){
+	        			xml.find("authoritativemembernode").after($(document.createElement("obsoletedby")).text(this.get("obsoletedBy")));
+	        		}
+	        		//Or update the existing obsoletedBy node
+	        		else
+	        			xml.find("obsoletedby").text(thisget("obsoletedBy"));
+	        	}
+	        	//If it's not obsoleted by another object, remove the node
 	        	else
 	        		xml.find("obsoletedby").remove();
 
@@ -413,10 +440,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	
 	        	//Now camel case the nodes 
 	        	_.each(Object.keys(this.sysMetaNodeMap), function(name, i, allNodeNames){
+	        		var originalXMLString = xmlString;
+	        		
+	        		//Camel case node names
 	        		var regEx = new RegExp("<" + name, "g");
 	        		xmlString = xmlString.replace(regEx, "<" + this.sysMetaNodeMap[name]);
 	        		var regEx = new RegExp(name + ">", "g");
 	        		xmlString = xmlString.replace(regEx, this.sysMetaNodeMap[name] + ">");
+	        		
+	        		//If node names haven't been changed, then find an attribute
+	        		if(xmlString == originalXMLString){
+	        			var regEx = new RegExp(" " + name + "=", "g");
+	        			xmlString = xmlString.replace(regEx, " " + this.sysMetaNodeMap[name] + "=");
+	        		}
 	        	}, this);
 	        	
 	        	xmlString = xmlString.replace(/systemmetadata/g, "systemMetadata");

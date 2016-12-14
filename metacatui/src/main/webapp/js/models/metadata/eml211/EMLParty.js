@@ -6,13 +6,13 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		defaults: {
 			originalXML: null,
-			individualname: null,
-			organizationname: null,
+			individualName: null,
+			organizationName: null,
 			role: null,
 			address: null,
 			phone: null,
 			fax: null,
-			electronicmailaddress: null,
+			electronicMailAddress: null,
 			onlineUrl: null,
 			references: null,
 			userId: null,
@@ -32,14 +32,14 @@ define(['jquery', 'underscore', 'backbone'],
 				var xml = this.get("originalXML");
 			
 			//Set the name
-			var name = $(xml).children("individualname"),
+			var name = $(xml).children("individualName"),
 				nameJSON = {};
 			
 			if(name.length){
 				nameJSON.givenname = $(name).children("givenname").text();
 				nameJSON.surname   = $(name).children("surname").text();
 			}
-			this.set("individualname", nameJSON);
+			this.set("individualName", nameJSON);
 			
 			//Set the phone numbers
 			var phones = $(xml).children("phone"),

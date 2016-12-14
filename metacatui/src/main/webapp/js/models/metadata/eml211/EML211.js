@@ -17,24 +17,24 @@ define(['jquery', 'underscore', 'backbone',
 
         	defaults: _.extend({
 	            isEditable: false,
-	            alternateidentifier: [],
-	            shortname: null,
+	            alternateIdentifier: [],
+	            shortName: null,
 	            title: null,
 	            creator: [], // array of EMLParty objects
-	            metadataprovider: [], // array of EMLParty objects
-	            associatedparty : [], // array of EMLParty objects
-	            pubdate: null,
+	            metadataProvider: [], // array of EMLParty objects
+	            associatedParty : [], // array of EMLParty objects
+	            pubDate: null,
 	            language: null,
 	            series: null,
 	            abstract: [],
-	            keywordset: [], // array of EMLKeyword objects
-	            additionalinfo: [],
-	            intellectualrights: [],
-	            onlinedist: [], // array of EMLOnlineDist objects
-	            offlinedist: [], // array of EMLOfflineDist objects
-	            geographiccoverages : [], //an array for GeographicCoverages
-	            temporalcoverages : [], //an array of TemporalCoverages
-	            taxonomicclassifications : [], //an array of Taxons
+	            keywordSet: [], // array of EMLKeyword objects
+	            additionalInfo: [],
+	            intellectualRights: [],
+	            onlineDist: [], // array of EMLOnlineDist objects
+	            offlineDist: [], // array of EMLOfflineDist objects
+	            geographicCoverages : [], //an array for GeographicCoverages
+	            temporalCoverages : [], //an array of TemporalCoverages
+	            taxonomicClassifications : [], //an array of Taxons
 	            purpose: [],
 	            contact: [], // array of EMLParty objects
 	            publisher: [], // array of EMLParty objects
@@ -176,9 +176,6 @@ define(['jquery', 'underscore', 'backbone',
             			modelJSON[thisNode.localName] = this.toJson(thisNode);
             		
             	}
-            	
-            	//Save the XML nodes we skipped over as-is in the model
-            	this.set("unsupportedXML", skippedXML);
             	
             	console.log(modelJSON);
             	
