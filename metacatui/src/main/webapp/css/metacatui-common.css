@@ -1215,6 +1215,9 @@ img.icon{
 /****************************************** 
 ** The Metadata and MetadataIndex View **
 ******************************************/	
+.metadata-view{
+	padding: 20px;
+}
 #metadata-index-details .General .title,
 #metadata-index-details .Other .text,
 #metadata-index-details .Other .attributeDescription,

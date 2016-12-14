@@ -28115,7 +28115,7 @@ var Serializer = function () {
             var roots = stats.roots;
             var results = [];
             for (var i = 0; i < roots.length; i++) {
-                root = roots[i];
+                var root = roots[i];
                 results.push(subjectXMLTree(root, stats));
             }
             return results;

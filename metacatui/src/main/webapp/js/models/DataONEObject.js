@@ -49,44 +49,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 this.on("change:size", this.bytesToSize);
 				
             },
-
-            /**
-             * Convert number of bytes into human readable format
-             *
-             * @return sizeStr for the given model
-             */
-            bytesToSize: function(){  
-                var kilobyte = 1024;
-                var megabyte = kilobyte * 1024;
-                var gigabyte = megabyte * 1024;
-                var terabyte = gigabyte * 1024;
-                var precision = 0;
             
-                var bytes = this.get("size");                        
-           
-                if ((bytes >= 0) && (bytes < kilobyte)) {
-                    this.set("sizeStr", bytes + ' B');
-         
-                } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-                    this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
-         
-                } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-                    precision = 2;
-                    this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
-         
-                } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-                    precision = 2;
-                    this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
-         
-                } else if (bytes >= terabyte) {
-                    precision = 2;
-                    this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
-         
-                } else {
-                    this.set("sizeStr", bytes + ' B');
-                    
-                }
-            },
+            sysMetaNodeMap: {
+    			accesspolicy: "accessPolicy",
+    			accessrule: "accessRule",
+    			authoritativemembernode: "authoritativeMemberNode",
+    			dateuploaded: "dateUploaded",
+    			datesysmetadatamodified: "dateSysMetadataModified",
+    			dateuploaded: "dateUploaded",
+    			formatid: "formatId",
+    			nodereference: "nodeReference",
+    			obsoletedby: "obsoletedBy",
+    			originmembernode: "originMemberNode",
+    			replicamembernode: "replicaMemberNode",
+    			replicapolicy: "replicaPolicy",
+    			replicationstatus: "replicationStatus",
+    			replicaverified: "replicaVerified",		
+    			rightsholder: "rightsHolder",
+    			serialversion: "serialVersion"
+    		},
             
         	url: function(){
         		if(!this.get("id") && !this.get("seriesid")) return "";
@@ -172,8 +153,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             parse: function(response){
             	// If the response is XML
             	if( (typeof response == "string") && response.indexOf("<") == 0 ) {
+            		
             		var responseDoc = $.parseHTML(response),
             			systemMetadata;
+            		
+            		//Save the raw XML in case it needs to be used later
+                    this.set("sysMetaXML", responseDoc);
+            		
             		for(var i=0; i<responseDoc.length; i++){
             			if((responseDoc[i].nodeType == 1) && (responseDoc[i].localName.indexOf("systemmetadata") > -1)){
             				systemMetadata = responseDoc[i];
@@ -181,25 +167,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             			}
             		}
             		
-            		return this.toJson(systemMetadata);
+            		//Parse the XML to JSON
+            		var sysMetaValues = this.toJson(systemMetadata);
+            		
+            		//Convert the JSON to a camel-cased version, which matches Solr and is easier to work with in code
+            		_.each(Object.keys(sysMetaValues), function(key){
+            			var camelCasedKey = this.sysMetaNodeMap[key];
+            			if(camelCasedKey){
+            				sysMetaValues[camelCasedKey] = sysMetaValues[key];
+            				delete sysMetaValues[key];
+            			}
+            		}, this);
+            		
+            		return sysMetaValues;
             	
                 // Otherwise we have an object already    
             	} else if ( typeof response === "object") {
-            	    return response;
-                    
+            	    return response;                   
                 }
                 
                 // Default to returning the Solr results            	
             	return response.response.docs[0];
-            },
-            
-            /*
-             Serializes the DataONEObject into a SystemMetadata document.
-            */
-            toXML: function() {
-                var sysmeta = "";
-                
-                return sysmeta;
             },
             
             // A utility function for converting XML to JSON
@@ -325,7 +313,188 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 			}
 			
 			return containerNode;
-		  }          
+		  },
+		  
+		  /*
+		   * Saves the DataONEObject System Metadata to the server
+		   */
+		  save: function(attributes, options){
+			 
+			  //Set the request type
+			  var type;
+			 if(this.get("isNew")) type = "POST";
+			 else type = "PUT";
+			 
+			//Create a FormData object to send data with our XHR
+			var formData = new FormData();
+  			
+			//Create the system metadata XML
+  			var sysMetaXML = this.serializeSysMeta();
+  			//Send the system metadata as a Blob 
+			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
+  			//Add the system metadata XML to the XHR data
+  			formData.append("sysmeta", xmlBlob, "sysmeta");
+  			
+  			//Add the identifier to the XHR data
+			formData.append("pid", this.get("id"));
+
+			//Put together the AJAX options
+			var requestSettings = {
+					url: this.url(),
+					type: type,
+					cache: false,
+				    contentType: false,
+				    processData: false,
+					data: formData,
+					success: function(response){
+						console.log('yay, DataONEObject has been saved');
+					},
+					error: function(data){
+						console.log("error updating system metadata");
+					}
+			}
+			
+			//Send the XHR
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+		  },
+		  
+		  serializeSysMeta: function(){
+	        	//Get the system metadata XML that currently exists in the system
+	        	var xml = $(this.get("sysMetaXML"));
+	        	
+	        	//Update the system metadata values
+	        	xml.find("serialversion").text(this.get("serialVersion") || "0");
+	        	xml.find("identifier").text((this.get("newPid") || this.get("id")));
+	        	xml.find("formatid").text(this.get("formatId"));
+	        	xml.find("size").text(this.get("size"));
+	        	xml.find("checksum").text(this.get("checksum"));
+	        	xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
+	        	xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
+	        	xml.find("archived").text(this.get("archived") || "false");
+	        	xml.find("dateuploaded").text(this.get("dateUploaded") || new Date().toISOString());
+	        	xml.find("datesysmetadatamodified").text(this.get("dateSysMetadataModified") || new Date().toISOString());
+	        	xml.find("originmembernode").text(this.get("originMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
+	        	xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
+
+	        	if(this.get("obsoletes"))
+	        		xml.find("obsoletes").text(this.get("obsoletes"));
+	        	else
+	        		xml.find("obsoletes").remove();
+	        	
+	        	if(this.get("obsoletedBy"))
+	        		xml.find("obsoletedby").text(this.get("obsoletedBy"));
+	        	else
+	        		xml.find("obsoletedby").remove();
+
+	        	//Write the access policy
+	        	var accessPolicyXML = '<accessPolicy>\n';        		
+	        	_.each(this.get("accessPolicy"), function(policy, policyType, all){
+	    			var fullPolicy = all[policyType];
+	    			    			
+	    			_.each(fullPolicy, function(policyPart){
+	    				accessPolicyXML += '\t<' + policyType + '>\n';
+	        			
+	        			accessPolicyXML += '\t\t<subject>' + policyPart.subject + '</subject>\n';
+	            		
+	        			var permissions = Array.isArray(policyPart.permission)? policyPart.permission : [policyPart.permission];
+	        			_.each(permissions, function(perm){
+	        				accessPolicyXML += '\t\t<permission>' + perm + '</permission>\n';
+	            		});
+	        			
+	        			accessPolicyXML += '\t</' + policyType + '>\n';
+	    			});    			
+	        	});       	
+	        	accessPolicyXML += '</accessPolicy>';
+	        	
+	        	//Replace the old access policy with the new one
+	        	xml.find("accesspolicy").replaceWith(accessPolicyXML);        	
+	        	        	
+	        	var xmlString = $(document.createElement("div")).append(xml.clone()).html();
+	        	
+	        	//Now camel case the nodes 
+	        	_.each(Object.keys(this.sysMetaNodeMap), function(name, i, allNodeNames){
+	        		var regEx = new RegExp("<" + name, "g");
+	        		xmlString = xmlString.replace(regEx, "<" + this.sysMetaNodeMap[name]);
+	        		var regEx = new RegExp(name + ">", "g");
+	        		xmlString = xmlString.replace(regEx, this.sysMetaNodeMap[name] + ">");
+	        	}, this);
+	        	
+	        	xmlString = xmlString.replace(/systemmetadata/g, "systemMetadata");
+	        	
+	        	console.log(xmlString);
+	        	
+	        	return xmlString;
+	        },
+	        
+	        updateID: function(id){
+	        	//Save the attributes so we can reset the ID later
+	        	this.attributeCache = this.toJSON();
+	        	
+	        	//Set the old identifier
+	        	var oldPid = this.get("id");
+				this.set("oldPid", oldPid);
+				
+				//Set the new identifier
+				if(id)
+					this.set("id", id);
+				else
+					this.set("id", "urn:uuid:" + uuid.v4());
+				
+				//Update the obsoletes and obsoletedBy
+				this.set("obsoletes", oldPid);
+				this.set("obsoletedBy", null);
+				
+				//Set the archived option to false
+				this.set("archived", false);
+	        },
+	        
+	        resetID: function(){
+	        	if(!this.attributeCache) return false;
+	        	
+	        	this.set("oldPid", this.attributeCache.oldPid);
+	        	this.set("id", this.attributeCache.id);
+	        	this.set("obsoletes", this.attributeCache.obsoletes);
+	        	this.set("obsoletedBy", this.attributeCache.obsoletedBy);
+	        	this.set("archived", this.attributeCache.archived);
+	        },
+		  
+          /**
+           * Convert number of bytes into human readable format
+           *
+           * @return sizeStr for the given model
+           */
+          bytesToSize: function(){  
+              var kilobyte = 1024;
+              var megabyte = kilobyte * 1024;
+              var gigabyte = megabyte * 1024;
+              var terabyte = gigabyte * 1024;
+              var precision = 0;
+          
+              var bytes = this.get("size");                        
+         
+              if ((bytes >= 0) && (bytes < kilobyte)) {
+                  this.set("sizeStr", bytes + ' B');
+       
+              } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+                  this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
+       
+              } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+                  precision = 2;
+                  this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
+       
+              } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+                  precision = 2;
+                  this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
+       
+              } else if (bytes >= terabyte) {
+                  precision = 2;
+                  this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
+       
+              } else {
+                  this.set("sizeStr", bytes + ' B');
+                  
+              }
+          }
         }); 
         
         return DataONEObject; 
