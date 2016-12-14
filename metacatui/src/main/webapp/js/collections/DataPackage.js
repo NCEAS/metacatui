@@ -283,6 +283,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid",
             parse: function(response, options) {
                 console.log("DataPackage: parse() called.")
                 
+                if ( typeof response !== "string" ) {
+                    console.log("RDF is not a string. Skipping.");
+                    return;
+                }
                 
                 var RDF =     rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
                     FOAF =    rdf.Namespace("http://xmlns.com/foaf/0.1/"),
