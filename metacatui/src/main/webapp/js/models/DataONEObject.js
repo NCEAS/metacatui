@@ -325,7 +325,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 		  save: function(attributes, options){
 			 
 			  //Set the request type
-			  var type;
+			 var type;
 			 if(this.get("isNew")) type = "POST";
 			 else type = "PUT";
 			 
@@ -342,24 +342,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
   			//Add the identifier to the XHR data
 			formData.append("pid", this.get("id"));
 
-			//Put together the AJAX options
+			//Put together the AJAX and Backbone.save() options
 			var requestSettings = {
 					url: this.url(),
 					type: type,
 					cache: false,
 				    contentType: false,
+				    dataType: "text",
 				    processData: false,
 					data: formData,
+					parse: false,
 					success: function(response){
 						console.log('yay, DataONEObject has been saved');
 					},
-					error: function(data){
+					error: function(context, model, response){
 						console.log("error updating system metadata");
 					}
 			}
 			
-			//Send the XHR
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+			//Add the user settings
+			requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+			
+			//Send the Save request
+			Backbone.Model.prototype.save.call(this, null, requestSettings);
 		  },
 		  
 		  serializeSysMeta: function(){
@@ -376,7 +381,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
 	        	xml.find("archived").text(this.get("archived") || "false");
 	        	xml.find("dateuploaded").text(this.get("dateUploaded") || new Date().toISOString());
-	        	xml.find("datesysmetadatamodified").text(this.get("dateSysMetadataModified") || new Date().toISOString());
+	        	//	xml.find("datesysmetadatamodified").text(new Date().toISOString());
 	        	xml.find("originmembernode").text(this.get("originMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 	        	xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 
