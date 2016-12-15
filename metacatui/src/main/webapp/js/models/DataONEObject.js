@@ -39,7 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 // Non-system metadata attributes:
 	            type: null, // Data, Metadata, or DataPackage
 	            nodelevel: 0, // Indicates hierarchy level in the view for indentation
-                order: null, // Metadata: 1, Data: 2, DataPackage: 3
+                sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                 synced: false, // True if the full model has been synced
 	            uploadStatus: null,
 	            uploadFile: null,
