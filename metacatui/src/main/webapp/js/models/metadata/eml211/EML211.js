@@ -16,6 +16,7 @@ define(['jquery', 'underscore', 'backbone',
         type: "EML",            
 
         	defaults: _.extend({
+        		objectXML: null,
 	            isEditable: false,
 	            alternateIdentifier: [],
 	            shortName: null,
@@ -128,8 +129,8 @@ define(['jquery', 'underscore', 'backbone',
             parse: function(response) {
             	//If the response is XML
             	if((typeof response == "string") && response.indexOf("<") == 0){
-            		var responseElements = $.parseHTML(response.trim());
-            		var emlElement = $(responseElements).filter("eml\\:eml");
+            		this.set("objectXML", $.parseHTML(response));
+            		var emlElement = $(this.get("objectXML")).filter("eml\\:eml");
             	}
             	
             	var datasetEl;
@@ -183,30 +184,31 @@ define(['jquery', 'underscore', 'backbone',
             },
             
             serialize: function(){
-            	var eml = '<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1"' +
-            			'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' + 
-            			'xmlns:ds="eml://ecoinformatics.org/dataset-2.1.1"' + 
-            			'xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.1"' +
-            			'packageId="' + this.get("id") + '"' + 
-            			'system="' + MetacatUI.appModel.get("baseUrl") + '"' +
-            			'xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 eml.xsd">';
-            
-	           //Get the attributes for EML only
-	           var emlAttr = ["title", "creator", "alternateidentifier", "metadataprovider", "associatedparty",
+
+            	//Get the attributes for EML only
+            	var emlAttr = ["title", "creator", "alternateidentifier", "metadataprovider", "associatedparty",
 	                          "contact", "pubdate", "abstract", "coverage", "project", "intellectualrights", 
 	                          "distribution"],
 	               model = this;	           
 	           
-	           //Start the dataset node
-	           var dataset = document.createElement("dataset");
+	           	//Get the EML document
+	           	var eml = this.get("objectXML");
 	           
-	           //Get the JSON version of the model and pick out only the EML relevant attributes
-	           var modelJSON = this.toJSON();
-	           modelJSON = _.pick(modelJSON, emlAttr);
-	           
-	           console.log(this.toXML(modelJSON, dataset));
-	          	           
+				//TODO: Change the EML nodes as needed
+				//TODO: Camel case the XML string
+	           	return $(document.createElement("div")).append(eml).html();
             },
+            
+            /*
+	         * Checks if this model has updates that need to be synced with the server.
+	         */
+	        hasUpdates: function(){
+	        	return false;
+	        	if(this.constructor.__super__.hasUpdates.call(this)) return true;	    
+	        	
+	        	//If nothing else has been changed, then this object hasn't had any updates
+	        	return false;
+	        },
                
             /*
              Add an entity into the EML 2.1.1 object

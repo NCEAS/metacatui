@@ -424,7 +424,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             /*
     		 * Overwrite the Backbone.Collection.sync() function to set custom options
     		 */
-    		save: function(attributes, options){
+    		save: function(options){
     			if(!options) var options = {};
     			
     			//Get the system metadata first if we haven't retrieved it yet
@@ -432,17 +432,34 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				var collection = this;
     				this.packageModel.fetch({
     					success: function(){
-    						collection.save(attributes, options);
+    						collection.save(options);
     					}
     				});
     				return;
     			}
     			
-    			//Create a new pid if we are updating the object
+    			//If we want to update the system metadata only, 
+    			// then update via the DataONEObject model and exit
     			if(options.sysMetaOnly){
-    				this.packageModel.save(attributes, options);
+    				this.packageModel.save(null, options);
     				return;
     			}
+    			
+    			//First save all the models of the collection, if needed
+    			var modelsInProgress = [];
+    			this.forEach(function(model){
+    				//If this model is in progress or in the queue
+    				if(model.get("uploadStatus") == "p")
+    					modelsInProgress.push(model);
+    				else if(model.get("uploadStatus") == "q"){
+    					model.save();  				
+    					modelsInProgress.push(model);
+    					this.listenTo(model, "sync", this.save);
+    				}
+    			}, this);
+
+    			//If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
+    			if(modelsInProgress.length) return;
     			
     			var requestType;
     			
@@ -469,8 +486,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					formData.append("pid", this.packageModel.get("oldPid"));
     			}
     			
-				//Create the resource map XML
-				var mapXML = this.serialize();
+    			try{
+					//Create the resource map XML
+					var mapXML = this.serialize();
+    			}
+    			catch{
+    				//If serialization failed, revert back to our old id
+    				this.resetID();
+    				return;
+    			}
 				var mapBlob = new Blob([mapXML], {type : 'application/xml'});
 				formData.append("object", mapBlob);
 				
@@ -501,6 +525,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 						data: formData,
 						success: function(response){
 							console.log("yay, map is saved");
+							
+							//Update the object XML
+							this.set("objectXML", mapXML);
 						},
 						error: function(data){
 							console.log("error udpating object");
@@ -877,7 +904,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     					idStatement = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
     				
     				//Get the CN Resolve Service base URL from the resource map (mostly important in dev environments where it will not always be cn.dataone.org)
-    				var	cnResolveUrl = idStatement[0].subject.value.substring(0, idStatement[0].subject.value.indexOf(oldPid));
+    				var	cnResolveUrl = this.dataPackageGraph.cnResolveUrl || idStatement[0].subject.value.substring(0, idStatement[0].subject.value.indexOf(oldPid));
     				this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
     				
     				//Create variations of the resource map ID using the resolve URL so we can always find it in the RDF graph
