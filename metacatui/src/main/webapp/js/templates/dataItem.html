@@ -1,5 +1,5 @@
 ﻿<!-- Icon column -->
-<% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
+<% if ( typeof type !== "undefined" && type == "Metadata" ) { %>
     <% var indentFolder = nodelevel * 40; %>
     <td><i class="icon icon-chevron-down" style="padding-left:<%=indentFolder %>px"></i><i class="icon-large icon-folder-open"></i></td>
     
@@ -10,11 +10,11 @@
 <% } %>
 
 <!-- Files column -->
-<% if ( typeof title !== "undefined" &&  title !== null ) { %>
+<% if ( typeof title != "undefined" && title) { %>
     <td><%= title %></td>
     
-<% } else if ( typeof filename !== "undefined" && filename !== null ) { %>
-    <td><%= filename %></td>
+<% } else if ( typeof fileName != "undefined" && fileName) { %>
+    <td><%= fileName %></td>
     
 <% } else { %>
     <td><%= id %></td>
@@ -22,7 +22,7 @@
 <% } %>
     
 <!-- Size column -->
-<% if ( typeof sizeStr !== "undefined" && sizeStr !== null ) { %>
+<% if ( typeof sizeStr != "undefined" && sizeStr ) { %>
     <td><%= sizeStr %></td>
     
 <% } else {%>
@@ -30,7 +30,7 @@
     
 <% } %>
 <!-- Type column -->
-<% if (typeof type !== "undefined" && type !== null ) { %>
+<% if (type ) { %>
     <td><%= type %></td>
 <% } else { %>
     <td></td>

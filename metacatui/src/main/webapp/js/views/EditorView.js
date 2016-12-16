@@ -102,7 +102,8 @@ define(['underscore',
             } else {
                 
                 // Set the root data package for the collection
-                MetacatUI.rootDataPackage = new DataPackage(null, {id: resourceMapIds[0]});
+            	//TODO: Find the most recent resource map ID if there is more than one
+                MetacatUI.rootDataPackage = new DataPackage([scimetaModel], {id: resourceMapIds[0]});
                 
                 var view = this;
                 // As the root collection is updated with models, render the UI
