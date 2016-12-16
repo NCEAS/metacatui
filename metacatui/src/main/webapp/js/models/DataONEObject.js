@@ -10,6 +10,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
          TODO: incorporate Backbone.UniqueModel
         */
         var DataONEObject = Backbone.Model.extend({
+        	
+        	type: "DataONEObject",
             
         	defaults: {
                 // System Metadata attributes
