@@ -486,11 +486,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					formData.append("pid", this.packageModel.get("oldPid"));
     			}
     			
-    			try{
+    			try {
 					//Create the resource map XML
 					var mapXML = this.serialize();
     			}
-    			catch{
+    			catch (serializationException) {
     				//If serialization failed, revert back to our old id
     				this.resetID();
     				return;
