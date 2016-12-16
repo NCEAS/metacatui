@@ -13,14 +13,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             
         	defaults: {
                 // System Metadata attributes
-	            serialversion: null,
+	            serialVersion: null,
 	            id: "urn:uuid:" + uuid.v4(),
 	            formatId: null,
 	            formatType: null,
 	            size: null,
 	            sizeStr: null,
 	            checksum: null,
-	            checksumalgorithm: null,
+	            checksumAlgorithm: null,
 	            submitter: null,
 	            rightsHolder : null,
 	            accessPolicy: [],
@@ -41,20 +41,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	            nodelevel: 0, // Indicates hierarchy level in the view for indentation
                 sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                 synced: false, // True if the full model has been synced
-	            uploadStatus: null,
+	            uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
 	            uploadFile: null,
 	            isNew: false
         	},
         	
             initialize: function(attrs, options) {
                 this.on("change:size", this.bytesToSize);
-				
+                
+                //When the model has been retrieved the first time, listen for changes to it so we can keep track of user changes
+                this.once("sync", this.listenForChanges);
             },
             
             sysMetaNodeMap: {
     			accesspolicy: "accessPolicy",
     			accessrule: "accessRule",
     			authoritativemembernode: "authoritativeMemberNode",
+    			checksumalgorithm: "checksumAlgorithm",
     			dateuploaded: "dateUploaded",
     			datesysmetadatamodified: "dateSysMetadataModified",
     			dateuploaded: "dateUploaded",
@@ -322,9 +325,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 		   * Saves the DataONEObject System Metadata to the server
 		   */
 		  save: function(attributes, options){
+			  
+			 if(!this.hasUpdates()){
+				 this.set("uploadStatus", null);
+				 return;
+			 }
+			 
+			 //Set the upload transfer as in progress
+			 this.set("uploadStatus", "p");
 			 
 			  //Set the request type
-			  var type;
+			 var type;
 			 if(this.get("isNew")) type = "POST";
 			 else type = "PUT";
 			 
@@ -341,27 +352,35 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
   			//Add the identifier to the XHR data
 			formData.append("pid", this.get("id"));
 
-			//Put together the AJAX options
+			//Put together the AJAX and Backbone.save() options
 			var requestSettings = {
 					url: this.url(),
 					type: type,
 					cache: false,
 				    contentType: false,
+				    dataType: "text",
 				    processData: false,
 					data: formData,
-					success: function(response){
+					parse: false,
+					success: function(model, response, xhr){
 						console.log('yay, DataONEObject has been saved');
+						
+						model.set("uploadStatus", "c");
 					},
-					error: function(data){
+					error: function(context, model, response){
 						console.log("error updating system metadata");
+						model.set("uploadStatus", "e");
 					}
 			}
 			
-			//Send the XHR
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+			//Add the user settings
+			requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+			
+			//Send the Save request
+			Backbone.Model.prototype.save.call(this, null, requestSettings);
 		  },
 		  
-		  serializeSysMeta: function(){
+		  serializeSysMeta: function(options){
 	        	//Get the system metadata XML that currently exists in the system
 	        	var xml = $(this.get("sysMetaXML")).clone();
 	        	
@@ -375,7 +394,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
 	        	xml.find("archived").text(this.get("archived") || "false");
 	        	xml.find("dateuploaded").text(this.get("dateUploaded") || new Date().toISOString());
-	        	xml.find("datesysmetadatamodified").text(this.get("dateSysMetadataModified") || new Date().toISOString());
+	        	//	xml.find("datesysmetadatamodified").text(new Date().toISOString());
 	        	xml.find("originmembernode").text(this.get("originMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 	        	xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 
@@ -414,27 +433,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        		xml.find("obsoletedby").remove();
 
 	        	//Write the access policy
-	        	var accessPolicyXML = '<accessPolicy>\n';        		
-	        	_.each(this.get("accessPolicy"), function(policy, policyType, all){
-	    			var fullPolicy = all[policyType];
-	    			    			
-	    			_.each(fullPolicy, function(policyPart){
-	    				accessPolicyXML += '\t<' + policyType + '>\n';
-	        			
-	        			accessPolicyXML += '\t\t<subject>' + policyPart.subject + '</subject>\n';
-	            		
-	        			var permissions = Array.isArray(policyPart.permission)? policyPart.permission : [policyPart.permission];
-	        			_.each(permissions, function(perm){
-	        				accessPolicyXML += '\t\t<permission>' + perm + '</permission>\n';
-	            		});
-	        			
-	        			accessPolicyXML += '\t</' + policyType + '>\n';
-	    			});    			
-	        	});       	
-	        	accessPolicyXML += '</accessPolicy>';
+	        	var accessPolicyXML = this.serializeAccessPolicy();
 	        	
 	        	//Replace the old access policy with the new one
-	        	xml.find("accesspolicy").replaceWith(accessPolicyXML);        	
+	        	xml.find("accesspolicy").replaceWith(accessPolicyXML); 
 	        	        	
 	        	var xmlString = $(document.createElement("div")).append(xml.clone()).html();
 	        	
@@ -460,6 +462,30 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	console.log(xmlString);
 	        	
 	        	return xmlString;
+	        },
+	        
+	        serializeAccessPolicy: function(){
+	        	//Write the access policy
+	        	var accessPolicyXML = '<accessPolicy>\n';        		
+	        	_.each(this.get("accessPolicy"), function(policy, policyType, all){
+	    			var fullPolicy = all[policyType];
+	    			    			
+	    			_.each(fullPolicy, function(policyPart){
+	    				accessPolicyXML += '\t<' + policyType + '>\n';
+	        			
+	        			accessPolicyXML += '\t\t<subject>' + policyPart.subject + '</subject>\n';
+	            		
+	        			var permissions = Array.isArray(policyPart.permission)? policyPart.permission : [policyPart.permission];
+	        			_.each(permissions, function(perm){
+	        				accessPolicyXML += '\t\t<permission>' + perm + '</permission>\n';
+	            		});
+	        			
+	        			accessPolicyXML += '\t</' + policyType + '>\n';
+	    			});    			
+	        	});       	
+	        	accessPolicyXML += '</accessPolicy>';
+	        	
+	        	return accessPolicyXML;
 	        },
 	        
 	        updateID: function(id){
@@ -492,6 +518,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	this.set("obsoletes", this.attributeCache.obsoletes);
 	        	this.set("obsoletedBy", this.attributeCache.obsoletedBy);
 	        	this.set("archived", this.attributeCache.archived);
+	        },
+	        
+	        /*
+	         * Checks if this model has updates that need to be synced with the server.
+	         */
+	        hasUpdates: function(){
+	        	if(this.get("isNew") || !this.get("sysMetaXML")) return true;
+	        	
+	        	//Compare the new system metadata XML to the old system metadata XML
+	        	var newSysMeta = this.serializeSysMeta(),
+	        		oldSysMeta = $(document.createElement("div")).append($(this.get("sysMetaXML"))).html();
+	        	
+	        	return !(newSysMeta == oldSysMeta);
+	        },
+	        
+	        /*
+	         * Listens to attributes on the model for changes that will require an update
+	         */
+	        listenForChanges: function(){
+	        	this.on("change", function(model){
+	        		if(this.changedAttributes().uploadStatus) return;
+	        			
+	        		if((this.get("uploadStatus") == "c") || !this.get("uploadStatus"))
+	        			this.set("uploadStatus", "q", {silent: true});
+	        	});
 	        },
 		  
           /**
