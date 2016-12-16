@@ -35,7 +35,7 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             /* Render the template into the DOM */
             render: function() {
                 this.el.id = this.model.id;
-                this.$el.html( this.template(this.model.attributes) );
+                this.$el.html( this.template(this.model.toJSON()) );
 
                 
                 return this;
