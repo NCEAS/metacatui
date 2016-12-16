@@ -19,9 +19,6 @@ define(['underscore',
         
         /* Events that apply to the entire editor */
         events: {
-            "change input"    : "showControls",
-            "change select"   : "showControls",
-            "change textarea" : "showControls"
         },
         
         /* The identifier of the root package id being rendered */
@@ -112,6 +109,9 @@ define(['underscore',
                 		model.on("sync", view.renderMember);
                 	else if(model.get("synced"))
                 		view.renderMember(model);
+                	
+                	//Listen for changes on this member
+                	this.listenTo(model, "change:uploadStatus", view.showControls);
                 });
 
                 // Render the package table framework
@@ -124,8 +124,7 @@ define(['underscore',
                 MetacatUI.rootDataPackage.fetch();
                                 
             }
-            
-            
+
         },
         
         /* Calls the appropriate render method depending on the model type */
@@ -208,8 +207,9 @@ define(['underscore',
             }
         },
         
-	    showControls: function(){
-	    	this.$(".editor-controls").slideDown();
+	    showControls: function(model){
+	    	if(model.get("uploadStatus") == "q")
+	    		this.$(".editor-controls").slideDown();
 	    },
 	    
 	    hideControls: function(){

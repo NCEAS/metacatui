@@ -543,7 +543,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        		if(this.changedAttributes().uploadStatus) return;
 	        			
 	        		if((this.get("uploadStatus") == "c") || !this.get("uploadStatus"))
-	        			this.set("uploadStatus", "q", {silent: true});
+	        			this.set("uploadStatus", "q");
 	        	});
 	        },
 		  

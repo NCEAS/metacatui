@@ -10,17 +10,17 @@
 <% } %>
 
 <!-- Files column -->
-<% if ( typeof title != "undefined" && title) { %>
-    <td><%= title %></td>
-    
-<% } else if ( typeof fileName != "undefined" && fileName) { %>
-    <td><%= fileName %></td>
-    
-<% } else { %>
-    <td><%= id %></td>
-    
-<% } %>
-    
+
+<td class="name" contenteditable="true">
+	<% if ( typeof title != "undefined" && title) { %>
+	    <%= title %>    
+	<% } else if ( typeof fileName != "undefined" && fileName) { %>
+	    <%= fileName %>
+	<% } else { %>
+	    <%= id %>
+	<% } %>
+</td>
+
 <!-- Size column -->
 <% if ( typeof sizeStr != "undefined" && sizeStr ) { %>
     <td><%= sizeStr %></td>

@@ -20,7 +20,7 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             
             /* Events this view listens to */
             events: {
-                
+                "focusout .name" : "updateName"
             },
             
             /* Initialize the object - post constructor */
@@ -63,6 +63,13 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
                 }
                 
                 return idStr;
+            },
+            
+            updateName: function(e){
+            	if(this.model.get("type") == "Metadata")
+            		this.model.set("title", $(e.target).text().trim());
+            	else
+            		this.model.set("fileName", $(e.target).text().trim());
             }
             
         });
