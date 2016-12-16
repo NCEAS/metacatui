@@ -8,7 +8,8 @@ define(['underscore',
         'views/metadata/EML211View',
         'views/DataPackageView',
         'text!templates/editor.html'], 
-        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, EditorTemplate){
+        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, 
+        		EditorTemplate){
     
     var EditorView = Backbone.View.extend({
                 
@@ -19,6 +20,7 @@ define(['underscore',
         
         /* Events that apply to the entire editor */
         events: {
+        	"click .cancel" : "cancel"
         },
         
         /* The identifier of the root package id being rendered */
@@ -62,20 +64,25 @@ define(['underscore',
         render: function() {
 
             MetacatUI.appModel.set('headerType', 'default');
-            $("body").addClass("Editor");
-	        	//Get the basic template on the page
-	        	this.$el.append(this.template());
-	        	
-	        	if(!this.model) this.createModel();
+            
+        	//Inert the basic template on the page
+        	this.$el.html(this.template({
+        		loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."})
+        	}));
+        	
+        	//If we don't have a model at this point, create one
+        	if(!this.model) this.createModel();
 	        	
 	        //When the basic Solr metadata are retrieved, get the associated package
 	        this.listenToOnce(this.model, "sync", this.getDataPackage);
+	        //If no object is found with this ID, then tell the user
+	        this.listenToOnce(this.model, "change:notFound", this.showNotFound);
 	        	
             //Wait until the user info is loaded before we request the Metadata
         	if(MetacatUI.appUserModel.get("loggedIn")) {
         		this.model.fetch();
 
-    		} else {        	
+    		} else {   
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
 	            	this.model.fetch();
 	            });
@@ -117,7 +124,7 @@ define(['underscore',
                 // Render the package table framework
                 this.dataPackageView = new DataPackageView({edit: true});
                 var $packageTableContainer = this.$("#data-package-container");
-                $packageTableContainer.append(this.dataPackageView.render().el);
+                $packageTableContainer.html(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
                 
 
@@ -171,6 +178,9 @@ define(['underscore',
                 
             } else {
             	console.log("Rendering EML Model ", model);
+            	               
+            	//Style the body as an Editor
+                $("body").addClass("Editor");
             	
             	//Create an EML model
             	var emlModel = new EML(model.toJSON());
@@ -207,6 +217,36 @@ define(['underscore',
             }
         },
         
+        /*
+         * Called when there is no object found with this ID
+         */
+        showNotFound: function(){
+			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
+			if(!MetacatUI.appUserModel.get("checked")){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
+				return;
+			}
+
+			if(!this.model.get("notFound")) return;
+
+			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
+			  "<ul class='indent'>" +
+			  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
+				  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+				  "<li>The content was removed because it was invalid.</li>" +
+			  "</ul>";
+			this.hideLoading();
+			MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
+			
+		},
+        
+        /*
+         * Cancel all edits in the editor
+         */
+        cancel: function(){
+        	this.render();
+        },
+        
 	    showControls: function(model){
 	    	if(model.get("uploadStatus") == "q")
 	    		this.$(".editor-controls").slideDown();
@@ -215,7 +255,21 @@ define(['underscore',
 	    hideControls: function(){
 	    	this.$(".editor-controls").slideUp();
 	    },
-                
+	    
+	    showLoading: function(container, message){
+	    	if(typeof container == "undefined" || !container)
+	    		var container = this.$el;
+	    	
+	    	$(container).html(MetacatUI.appView.loadingTemplate({ msg: message }));
+	    },
+              
+	    hideLoading: function(container){
+	    	if(typeof container == "undefined" || !container)
+	    		var container = this.$el;
+	    	
+	    	$(container).find(".loading").remove();
+	    },
+	    
         /* Close the view and its sub views */
         onClose: function() {
             this.off();    // remove callbacks, prevent zombies         

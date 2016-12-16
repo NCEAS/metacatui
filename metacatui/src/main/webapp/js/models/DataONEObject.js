@@ -45,7 +45,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 synced: false, // True if the full model has been synced
 	            uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
 	            uploadFile: null,
-	            isNew: false
+	            isNew: false,
+	            notFound: false //Whether or not this object was found in the system
         	},
         	
             initialize: function(attrs, options) {
@@ -125,7 +126,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
         			
         			//Use the Solr query URL
 	            	var solrOptions = {
-	            		url: MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "&fl=" + fl + "&wt=json"
+	            		url: MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "&fl=" + fl + "&wt=json",
+	            		
 	            	}
 	            	
 	            	//Merge with the options passed to this function
@@ -189,13 +191,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             		
             		return sysMetaValues;
             	
-                // Otherwise we have an object already    
-            	} else if ( typeof response === "object") {
-            	    return response;                   
+                // If the response is a list of Solr docs   
+            	} else if (( typeof response === "object") && (response.response && response.response.docs)){
+            		if(!response.response.docs.length){
+            			this.set("notFound", true);
+            		}
+            		
+            	    return response.response.docs[0];                   
                 }
-                
-                // Default to returning the Solr results            	
-            	return response.response.docs[0];
+            	else
+            		// Default to returning the raw response           	
+            		return response;
             },
             
             // A utility function for converting XML to JSON

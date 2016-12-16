@@ -7,8 +7,10 @@ define([
     'models/DataONEObject',
     'models/metadata/ScienceMetadata',
     'models/metadata/eml211/EML211', 'views/DataItemView',
-    'text!templates/dataPackage.html'], 
-    function($, _, Backbone, DataPackage, DataONEObject, ScienceMetadata, EML211, DataItemView, DataPackageTemplate) {
+    'text!templates/dataPackage.html',
+    'text!templates/loading.html'], 
+    function($, _, Backbone, DataPackage, DataONEObject, ScienceMetadata, EML211, DataItemView, 
+    		DataPackageTemplate) {
         'use strict';
         
         /*
@@ -47,7 +49,9 @@ define([
              */
             render: function() {
 
-                this.$el.append(this.template());
+                this.$el.append(this.template({
+                	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "})
+                }));
                 
                 return this;
             },

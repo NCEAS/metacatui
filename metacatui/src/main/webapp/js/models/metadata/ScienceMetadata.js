@@ -151,10 +151,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             },
             
             /* parse the Solr results and return the first document */
-            parse: function(results) {
+            /////Commenting out for now because the DataONEObject.parse() already does this
+            /*parse: function(results) {
                 return results.response.docs[0];
                 
-            },
+            },*/
             
             /* Fetch the ScienceMetadata from the MN Solr service */
             fetch: function(options) {
