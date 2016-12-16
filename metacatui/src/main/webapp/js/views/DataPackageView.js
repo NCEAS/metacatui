@@ -29,10 +29,14 @@ define([
             
             template: _.template(DataPackageTemplate),
             
+            // Models waiting for their parent folder to be rendered, hashed by parent id:
+            // {'parentid': [model1, model2, ...]}
+            delayedModels: {},
+            
             initialize: function(options) {
-                // listen for change (not add) events because models are being merged
-                //this.listenTo(MetacatUI.rootDataPackage, 'change', this.addOne); // render new items
-                this.listenTo(MetacatUI.rootDataPackage, 'complete', this.addAll); // render all items
+                // listen for  add events because models are being merged
+                this.listenTo(MetacatUI.rootDataPackage, 'add', this.addOne); // render new items
+                //this.listenTo(MetacatUI.rootDataPackage, 'complete', this.addAll); // render all items
                 
                 return this;
                 
@@ -55,13 +59,17 @@ define([
                 console.log("DataPackageView.addOne called for " + item.id);
                 
                 var dataItemView = new DataItemView({model: item});
-                this.subviews.push(dataItemView); // keep track of all views
+                
+                if ( Array.isArray(this.subviews) ) {
+                    this.subviews.push(dataItemView); // keep track of all views
+                    
+                }
                 var scimetaParent = item.get("isDocumentedBy");
                 if ( typeof scimetaParent !== "undefined" ) {
                     scimetaParent = scimetaParent[0];
                     
                 }
-                var parentRow;
+                var parentRow, delayed_models;
                 if ( typeof scimetaParent !== "undefined" ) {
                     
                     if ( scimetaParent !== null ) {
@@ -70,20 +78,62 @@ define([
                         // !"#$%&'()*+,./:;<=>?@[\]^`{|}~ in jquery $('selector')
                         parentRow = document.getElementById(scimetaParent);
                     
-                        if ( typeof parentRow !== undefined ) {
-                            parentRow.insertAdjacentElement("afterend", dataItemView.render().el)                        
+                        if ( typeof parentRow !== undefined && parentRow != null ) {
+                            // This is a data row, insert below it's metadata parent folder
+                            parentRow.insertAdjacentElement("afterend", dataItemView.render().el);
+                            
+                            // Remove it from the delayedModels list if necessary
+                            if ( _.contains(Object.keys(this.delayedModels), scimetaParent) ) {
+                                delayed_models = this.delayedModels[scimetaParent];
+                                var index = _.indexOf(delayed_models, item);
+                                delayed_models = delayed_models.splice(index, 1);
+                                
+                                // Put the shortened array back if delayed models remains
+                                if ( delayed_models.length > 0 ) {
+                                    this.delayedModels[scimetaParent] = delayed_models;
+                                    
+                                } else {
+                                    this.delayedModels[scimetaParent] = undefined;
+                                    
+                                }
+                            }
                         } else {
-                            console.log("Couldn't render " + item.id + ". No parent =(.");
-                        
+                            console.log("Couldn't render " + item.id + "Delayed until parent is rendered.");
+                            // Postpone the data row until the parent is rendered
+                            delayed_models = this.delayedModels[scimetaParent];
+                            
+                            // Delay the model rendering if it isn't already delayed
+                            if ( typeof delayed_models !== "undefined" ) {
+                                
+                                if ( ! _.contains(delayed_models, item) ) {
+                                    delayed_models.push(item);
+                                    this.delayedModels[scimetaParent] = delayed_models;
+                                    
+                                }
+                                
+                            } else {
+                                delayed_models = [];
+                                delayed_models.push(item);
+                                this.delayedModels[scimetaParent] = delayed_models;
+                            }                        
                         }
                         
                     } else {
+                        // Not sure we ever get here - still append metadata folder row
                         $('#data-package-table-body').append(dataItemView.render().el);
                         
                     }
                 } else {
+                    // This is a metadata folder row, append it to the table
                     $('#data-package-table-body').append(dataItemView.render().el);
                     
+                    // Render any delayed models if this is the parent
+                    if ( _.contains(Object.keys(this.delayedModels), dataItemView.id) ) {
+                        
+                        delayed_models = this.delayedModels[dataItemView.id];
+                        _.each(delayed_models, this.addOne, this);
+                        
+                    }
                 }
                 
             },
@@ -92,11 +142,7 @@ define([
              * Add all rows to the DataPackageView
              */
             addAll: function() {
-                console.log("Children of #data-package-table-body before clearing.");
-                console.log($('#data-package-table-body').children());
                 $('#data-package-table-body').html(''); // clear the table first
-                console.log("Children of #data-package-table-body after clearing.");
-                console.log($('#data-package-table-body').children());
                 MetacatUI.rootDataPackage.sort();
                 MetacatUI.rootDataPackage.each(this.addOne, this);
                 
