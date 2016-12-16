@@ -256,7 +256,7 @@ define(['jquery',
 			});		
 		},
 		
-		showAlert: function(msg, classes, container, delay) {
+		showAlert: function(msg, classes, container, delay, options) {
 			if(!classes)
 				var classes = 'alert-success';
 			if(!container || !$(container).length)
@@ -266,9 +266,19 @@ define(['jquery',
 			if($(container).children(".alert-container").length > 0)
 				$(container).children(".alert-container").remove();
 			
+			//Allow messages to be HTML or strings
+			if(typeof msg != "string")
+				msg = $(document.createElement("div")).append($(msg)).html();
+			
+			var emailOptions = "";
+			//Check for more options
+			if(typeof options != "undefined" && options.emailBody)
+				emailOptions += "?body=" + options.emailBody;
+			
 			var alert = $.parseHTML(this.alertTemplate({
 				msg: msg,
-				classes: classes
+				classes: classes,
+				emailOptions: emailOptions
 			}).trim());
 			
 			if(delay){

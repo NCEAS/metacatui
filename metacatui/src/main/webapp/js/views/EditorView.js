@@ -20,7 +20,8 @@ define(['underscore',
         
         /* Events that apply to the entire editor */
         events: {
-        	"click .cancel" : "cancel"
+        	"click .cancel"      : "cancel",
+        	"click #save-editor" : "save"
         },
         
         /* The identifier of the root package id being rendered */
@@ -119,6 +120,7 @@ define(['underscore',
                 	
                 	//Listen for changes on this member
                 	this.listenTo(model, "change:uploadStatus", view.showControls);
+
                 });
 
                 // Render the package table framework
@@ -132,6 +134,7 @@ define(['underscore',
                                 
             }
 
+            this.listenTo(MetacatUI.rootDataPackage, "error", this.errorSaving);
         },
         
         /* Calls the appropriate render method depending on the model type */
@@ -215,6 +218,48 @@ define(['underscore',
                 dataPackageView.render();
                 
             }
+        },
+        
+        /*
+         * Saves all edits in the collection
+         */
+        save: function(e){
+        	var btn = (e && e.target)? $(e.target) : this.$("#save-editor");
+        	
+        	//If the save button is disabled, then we don't want to save right now
+        	if(btn.is(".btn-disabled")) return;
+        	
+        	//Change the style of the save button
+        	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
+        	        	
+        	//When the package is saved, revert the button back to normal
+        	this.listenToOnce(MetacatUI.rootDataPackage, "sync", function(){
+        		btn.html("Save").removeClass("btn-disabled");
+        		this.hideControls();
+        	});
+        	
+        	//Save the package!
+        	MetacatUI.rootDataPackage.save();
+        },
+        
+        /*
+         * When the data package collection fails to save, tell the user
+         */
+        errorSaving: function(errorMsg){
+        	var errorId = "error" + Math.round(Math.random()*100),
+        		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
+        	
+        	message.append($(document.createElement("a"))
+        						.text("See details")
+        						.attr("data-toggle", "collapse")
+        						.attr("data-target", "#" + errorId)
+        						.addClass("pointer"),
+        					$(document.createElement("div"))
+        						.addClass("collapse")
+        						.attr("id", errorId)
+        						.append($(document.createElement("pre")).text(errorMsg)));
+
+        	MetacatUI.appView.showAlert(message, "alert-error", this.$el, null, { emailBody: "Error message: Data Package save error: " + errorMsg });
         },
         
         /*

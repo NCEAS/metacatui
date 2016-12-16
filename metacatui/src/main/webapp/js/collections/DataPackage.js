@@ -492,7 +492,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			}
     			catch (serializationException) {
     				//If serialization failed, revert back to our old id
-    				this.resetID();
+    				this.packageModel.resetID();
     				return;
     			}
 				var mapBlob = new Blob([mapXML], {type : 'application/xml'});
@@ -528,12 +528,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 							
 							//Update the object XML
 							this.set("objectXML", mapXML);
+							
 						},
 						error: function(data){
 							console.log("error udpating object");
 							
 							//Reset the id back to its original state
 							collection.packageModel.resetID();
+							
+							collection.trigger("error", data.responseText);
 						}
 				}
 				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
