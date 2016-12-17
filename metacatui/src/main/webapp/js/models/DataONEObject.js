@@ -13,7 +13,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
         	
         	type: "DataONEObject",
             
-        	defaults: {
+        	defaults: _.extend({
                 // System Metadata attributes
 	            serialVersion: null,
 	            id: "urn:uuid:" + uuid.v4(),
@@ -46,8 +46,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	            uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
 	            uploadFile: null,
 	            isNew: false,
-	            notFound: false //Whether or not this object was found in the system
-        	},
+	            notFound: false, //Whether or not this object was found in the system
+	            collections: [] //References to collections that this model is in
+        	}),
         	
             initialize: function(attrs, options) {
                 this.on("change:size", this.bytesToSize);
@@ -168,7 +169,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             			systemMetadata;
             		
             		//Save the raw XML in case it needs to be used later
-                    this.set("sysMetaXML", responseDoc);
+                    this.set("sysMetaXML", response);
             		
             		for(var i=0; i<responseDoc.length; i++){
             			if((responseDoc[i].nodeType == 1) && (responseDoc[i].localName.indexOf("systemmetadata") > -1)){
@@ -390,7 +391,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 		  
 		  serializeSysMeta: function(options){
 	        	//Get the system metadata XML that currently exists in the system
-	        	var xml = $(this.get("sysMetaXML")).clone();
+	        	var xml = $($.parseHTML(this.get("sysMetaXML")));
 	        	
 	        	//Update the system metadata values
 	        	xml.find("serialversion").text(this.get("serialVersion") || "0");
@@ -513,6 +514,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 				//Update the obsoletes and obsoletedBy
 				this.set("obsoletes", oldPid);
 				this.set("obsoletedBy", null);
+				
+				//Update the collection this object is in
+				
 				
 				//Set the archived option to false
 				this.set("archived", false);

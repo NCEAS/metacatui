@@ -13,7 +13,7 @@ define(['jquery', 'underscore', 'backbone',
         */
         var EML211 = ScienceMetadata.extend({
 
-        type: "EML",            
+        	type: "EML",            
 
         	defaults: _.extend({
         		objectXML: null,
@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone',
 	            methods: [], // array of EMLMethods objects
 	            project: [], // array of EMLProject objects
 	            //type: "Metadata"
-        	}),
+        	}, ScienceMetadata.prototype.defaults),
 
             initialize: function(options) {
                 // Call initialize for the super class

@@ -39,7 +39,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             // The science data identifiers associated with this 
             // data package (from cito:documents), mapped to the science metadata
             // identifier that documents it
-            scienceMetadataMap: {},
+            // Not to be changed after initial fetch - this is to keep track of the relationships in their original state
+            originalIsDocBy: {},
                   
             // Keep the collection sorted by model "sortOrder".  The three model types
             // are ordered as:
@@ -87,6 +88,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 	this.packageModel.set("id", options.id);
                     
                 }
+                
+                this.on("add", this.saveReference);
                 
                 return this;  
             },
@@ -308,7 +311,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 console.log("DataPackage: parse() called.")
                 
                 //Save the raw XML in case it needs to be used later
-                this.objectXML = $.parseHTML(response);
+                this.objectXML = response;
                 
                 var RDF =     rdf.Namespace(this.namespaces.RDF),
                     FOAF =    rdf.Namespace(this.namespaces.FOAF),
@@ -366,10 +369,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                               
                     }, this);    
                     
+                    //Save the list of original ids
+                    this.originalMembers = memberPIDs; 
+                    
                     // Get the isDocumentedBy relationships
                     documentsStatements = this.dataPackageGraph.statementsMatching(
                         undefined, CITO("documents"), undefined, undefined);
-                        
+                                            
                     _.each(documentsStatements, function(documentsStatement) {
                     
                           // Extract and URI-decode the metadata pid
@@ -379,6 +385,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                           // Extract and URI-decode the data pid
                           scidataID = decodeURIComponent(
                               _.last(documentsStatement.object.value.split("/")));
+                          
+                          // Store the isDocumentedBy relationship
+                          if(typeof this.originalIsDocBy[scidataID] == "undefined")
+                               this.originalIsDocBy[scidataID] = [scimetaID];
+                          else if(Array.isArray(this.originalIsDocBy[scidataID]) && !_.contains(this.originalIsDocBy[scidataID], scimetaID))
+                        	  this.originalIsDocBy[scidataID].push(scimetaID);
+                          else
+                        	  this.originalIsDocBy[scidataID] = _.uniq([this.originalIsDocBy[scidataID], scimetaID]);
                     
                           //Find the model in this collection for this data object
                           var dataObj = this.get(scidataID);
@@ -410,8 +424,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     console.log(error);
                     
                 }
-                return models;
-                
+                                
+                return models;                
             },
             
             /*
@@ -461,6 +475,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			//If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
     			if(modelsInProgress.length) return;
     			
+    			//Do we need to update this resource map?
+    			if(!this.needsUpdate()) return;
+    			
     			var requestType;
     			
 				//Set a new id and keep our old id
@@ -495,6 +512,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				this.packageModel.resetID();
     				return;
     			}
+    			
 				var mapBlob = new Blob([mapXML], {type : 'application/xml'});
 				formData.append("object", mapBlob);
 				
@@ -527,7 +545,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 							console.log("yay, map is saved");
 							
 							//Update the object XML
-							this.set("objectXML", mapXML);
+							this.objectXML = mapXML;
 							
 						},
 						error: function(data){
@@ -1061,6 +1079,55 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	
     			this.dataPackageGraph.removeStatements(statements);
             },
+            
+            /*
+             * Checks if this resource map has had any changes that requires an update
+             */
+            needsUpdate: function(){
+            	//Check for changes to the list of aggregated members
+            	var ids = this.pluck("id");
+            	if(this.originalMembers.length != ids.length || _.intersection(this.originalMembers, ids).length != ids.length)
+            		return true;
+
+            	//Check for changes to the isDocumentedBy relationships
+            	var isDifferent = false,
+            		i = 0;
+            	
+            	//Keep going until we find a difference
+            	while(!isDifferent && i<this.length){
+            		//Get the original isDocBy relationships from the resource map, and the new isDocBy relationships from the models
+            		var isDocBy = this.models[i].get("isDocumentedBy"),
+            			id = this.models[i].get("id"),
+            			origIsDocBy = this.originalIsDocBy[id];
+            		
+            		//Make sure they are both formatted as arrays for these checks
+            		isDocBy = _.compact(Array.isArray(isDocBy)? isDocBy : [isDocBy]);
+            		origIsDocBy = _.compact(Array.isArray(origIsDocBy)? origIsDocBy : [origIsDocBy]);
+
+            		//Simply check if they are the same
+            		if(origIsDocBy === isDocBy){
+            			i++; 
+            			continue;
+            		}
+            		//Are the number of relationships different?
+            		else if(isDocBy.length != origIsDocBy.length)
+            			isDifferent = true;
+            		//Are the arrays the same?
+            		else if(_.intersection(isDocBy, origIsDocBy).length != origIsDocBy.length)
+            			isDifferent = true;
+
+            		i++;
+            	}
+            	
+            	return isDifferent;
+            },
+            
+            saveReference: function(model){
+            	//Save a reference to this collection in the model
+            	var currentCollections = model.get("collections");
+            	if(currentCollections.length > 0) currentCollections.push(this);
+            	model.set("collections", _.uniq(currentCollections));
+            }
             
         });
         return DataPackage;
