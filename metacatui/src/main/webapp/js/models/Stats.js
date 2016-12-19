@@ -668,6 +668,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 							  "&stats.facet=mdq_metadata_formatId_s" +
 							  "&stats.facet=mdq_metadata_rightsHolder_s" +
 							  "&stats.facet=mdq_metadata_datasource_s" +
+							  "&stats.facet=mdq_metadata_funder_sm" +
 							  "&stats.facet=mdq_suiteId_s" +
 							  //"&sort=mdq_metadata_formatId_s%20desc" +			
 							  "&wt=json";
