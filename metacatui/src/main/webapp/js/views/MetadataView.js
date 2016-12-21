@@ -926,7 +926,7 @@ define(['jquery',
 					parentView   : view
 				});
 				this.subviews.push(sourceProvChart);
-				this.$(this.articleContainer).before(sourceProvChart.render().el).addClass("hasProvLeft");
+				this.$(this.articleContainer).before(sourceProvChart.render().el);
 			}
 			if(Object.keys(packageDerivations).length){
 				var derivationProvChart = new ProvChart({
@@ -937,7 +937,7 @@ define(['jquery',
 					parentView   : view
 				});
 				this.subviews.push(derivationProvChart);
-				this.$(this.articleContainer).after(derivationProvChart.render().el).addClass("hasProvRight");
+				this.$(this.articleContainer).after(derivationProvChart.render().el);
 			}
 
 			if(packageModel.get("sources").length || packageModel.get("derivations").length){
@@ -959,7 +959,7 @@ define(['jquery',
 							parentView   : view
 						});
 						view.subviews.push(memberSourcesProvChart);
-						$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
+						$(entityDetailsSection).before(memberSourcesProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
 					}
 					if(memberDerivations.length){
@@ -972,7 +972,7 @@ define(['jquery',
 							parentView   : view
 						});
 						view.subviews.push(memberDerivationsProvChart);
-						$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");
+						$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
 					}
 				});
@@ -1063,9 +1063,6 @@ define(['jquery',
 						
 						//Render the chart and insert into the page
 						$(entityDetailsEl).before(sourcesProvEditor.render().el);
-						
-						//Add space for the new prov chart
-						$(entityDetailsEl).addClass("hasProvLeft");
 					}
 					
 					//Create the blank prov chart editor for derivations
@@ -1084,9 +1081,6 @@ define(['jquery',
 						
 						//Render the chart and insert into the page
 						$(entityDetailsEl).after(derivationsProvEditor.render().el);
-						
-						//Add space for the new prov chart
-						$(entityDetailsEl).addClass("hasProvRight");
 					}
 				}
 			}, this);

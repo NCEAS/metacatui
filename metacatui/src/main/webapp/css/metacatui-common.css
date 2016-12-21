@@ -468,6 +468,16 @@ img.icon{
 	border-left-width: 1px;
    	border-left-style: solid;	
 }
+.sources-programs{
+	padding-left: 0px;
+    padding-right: 0px;
+    margin-left: 84px;
+}
+.derivations-programs{
+	padding-left: 0px;
+    padding-right: 0px;
+    margin-left: -84px;
+}
 .prov-chart .node{
 	border-width: 1px;
 	border-style: solid;
@@ -812,6 +822,18 @@ img.icon{
 #article-container.hasProvLeft.hasProvRight{
 	width: 70%;
 	width: calc(100% - 214px);
+}
+/* The metadata is narrowed even more when there are programs */
+.entitydetails.hasPrograms.hasProvLeft{
+	margin-left: 57px;
+	width: calc(100% - 272px); /* When there is a program column on one side */
+}
+.entitydetails.hasPrograms.hasProvRight{
+	margin-right: 57px;
+	width: calc(100% - 272px); /* When there is a program column on one side */
+}
+.entitydetails.hasProvLeft.hasProvRight.hasPrograms{
+	width: calc(100% - 329px); /* When there are program columns on both sides */
 }
 
 /* MDQ */

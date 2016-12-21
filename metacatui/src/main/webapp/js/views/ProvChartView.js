@@ -24,25 +24,55 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			if(!this.derivations && this.sources){
 				this.type 		    = "sources";
 				this.provEntities   = this.sources;
-				this.numSources     = this.sources.length;
+				
+				//Find the number of sources and programs
+				var sources = [], programs = [];
+				_.each(this.sources, function(model){
+					if(model.get("type") == "program")
+						programs.push(model);
+					else
+						sources.push(model);
+				});
+				
+				this.sources = sources;
+				this.programs = programs;
+				
+				this.numSources      = this.sources.length;
+				this.numPrograms     = this.programs.length;
 				this.numProvEntities = this.numSources;
+				this.numPrograms     = this.programs.length;
 				this.numDerivations = 0;
 			}
 			
 			//For Derivations charts
 			if(!this.sources && this.derivations){
 				this.type 	   	     = "derivations";
-				this.provEntities    = this.derivations;
+				this.provEntities = this.derivations;
+				
+				//Find the number of derivations and programs
+				var derivations = [], programs = [];
+				_.each(this.derivations, function(model){
+					if(model.get("type") == "program")
+						programs.push(model);
+					else
+						derivations.push(model);
+				});
+				
+				this.derivations  = derivations;
+				this.programs     = programs;
+				
 				this.numDerivations  = this.derivations.length;
 				this.numProvEntities = this.numDerivations;
+				this.numPrograms     = this.programs.length;
 				this.numSources      = 0;
 			}
 			
-			//For editor charts
-			if(this.editor && !this.numProvEntities){
+			//For empty editor charts
+			if(this.editor && !this.provEntities.length){
 				this.type = options.editorType || null;
 				this.sources = [];
 				this.derivations = [];
+				this.programs = [];
 				this.provEntities = [];
 				this.numDerivations = 0;
 				this.numSources = 0;
@@ -86,10 +116,18 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			var view = this;
 			
-			_.each(this.provEntities, function(entity, i){	
+			//Are there any programs?
+			if(this.programs.length && !this.editor){
+				this.$el.append($(document.createElement("div")).addClass(this.type + "-programs programs"));
+			}
+			
+			var position = 0,
+				programPosition = 0;
+			_.each(this.provEntities, function(entity, i){
+				
 				//Create the HTML node and line connecter
 				if(entity.type == "Package")
-					view.$el.append(view.createNode(entity, i, _.find(entity.get("members"), function(member){ return member.get("formatType") == "METADATA"; })));	
+					view.$el.append(view.createNode(entity, position, _.find(entity.get("members"), function(member){ return member.get("formatType") == "METADATA"; })));	
 				else{
 					//Find the id of the metadata that documents this object
 					var metadataID = entity.get("isDocumentedBy"),
@@ -113,18 +151,27 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 						});
 					}
 
-					//If we found the metadata doc that matches the ID, then draw the node using that metadata
-					if(metadata) 
-						view.$el.append(view.createNode(entity, i, metadata));						
+					//Programs will be positioned at a different point in the graph
+					if(entity.get("type") == "program"){
+						//Find the program position
+						this.$(".programs").append(this.createNode(entity, programPosition, metadata));
+					}
 					else
-						view.$el.append(view.createNode(entity, i));
+						this.$el.append(view.createNode(entity, position, metadata));						
 				}
 				
 				//Derivation charts have a pointer for each node
-				if(view.type == "derivations") view.$el.append(view.createPointer(i));
+				if(view.type == "derivations") view.$el.append(view.createPointer(position));
 				//Source charts have a connector for each node and one pointer
-				if(view.type == "sources")	view.$el.append(view.createConnecter(i));
-			});	
+				if(view.type == "sources")	view.$el.append(view.createConnecter(position));
+				
+				//Bump the position for non-programs only
+				if(entity.get("type") == "program")
+					programPosition++;
+				else
+					position++;
+				
+			}, this);	
 			
 			//If we are drawing a blank editor
 			if(this.editor){
@@ -140,10 +187,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			if(this.$(".node.previous").length > 0)
 				this.switchNodes(this.$(".node.previous").first(), this.$(".node").first());
 	
+			//Add classes
 			this.$el.addClass(this.className);
+			var contextClasses = this.type == "sources" ? "hasProvLeft" : "hasProvRight";
+			if(this.numPrograms > 0) contextClasses += " hasPrograms";
+			$(this.contextEl).addClass(contextClasses);
 			
 			if(this.type == "derivations") this.$el.append(this.createConnecter());
 			if(this.type == "sources")     this.$el.append(this.createPointer());
+			if(this.programs.length && (this.type == "derivations")) this.$(".programs").append(this.createConnecter());
+			if(this.programs.length && (this.type == "sources"))     this.$(".programs").append(this.createPointer());
 			
 			if(this.$(".collapsed").length){
 				var expandIcon   = $(document.createElement("i")).addClass("icon icon-expand-alt"),
@@ -203,9 +256,17 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var id   = provEntity.get("id");
 			
 			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
-			var top = (position * this.nodeHeight) - (this.nodeHeight/2),
-				isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";			
-			
+			if(provEntity.get("type") == "program"){
+				var distanceFromMiddle = (position * this.nodeHeight) - (this.nodeHeight/2),
+					operator           = distanceFromMiddle > 0 ? "+" : "-",
+				    top                = "calc(50% " + operator + " " + Math.abs(distanceFromMiddle).toString() + "px)",
+					isCollapsed        = "expanded";
+			}
+			else{
+				var top = (position * this.nodeHeight) - (this.nodeHeight/2),
+					isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";					
+			}
+
 			//Create a DOM element to represent the node	
 			var nodeEl = $(document.createElement("div"))
 						 .addClass(type + " node pointer popover-this " + isCollapsed)
