@@ -518,11 +518,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var rightsHolderFacets = mdqCompositeStats.facets.mdq_metadata_rightsHolder_s;
 				var suiteIdFacets = mdqCompositeStats.facets.mdq_suiteId_s;
 				var funderFacets = mdqCompositeStats.facets.mdq_metadata_funder_sm;
-
+				var groupFacets = mdqCompositeStats.facets.mdq_metadata_group_sm;
 				
 				//this.drawMdqChart(datasourceFacets);
 				//this.drawMdqChart(rightsHolderFacets);
-				this.drawMdqChart(_.extend(formatIdFacets, datasourceFacets, suiteIdFacets, funderFacets));
+				this.drawMdqChart(_.extend(formatIdFacets, datasourceFacets, suiteIdFacets, funderFacets, groupFacets));
 
 			}
 		},
