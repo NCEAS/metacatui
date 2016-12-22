@@ -995,8 +995,12 @@ define(['jquery',
 					//Don't use the unique class on images since they will look a lot different anyway by their image
 					if(!$(matchingNodes).first().hasClass("image")){
 						var className = "uniqueNode" + i;
+						
 						//Add the unique class and up the iterator
-						$(matchingNodes).addClass(className);
+						if(matchingNodes.prop("tagName") != "polygon")
+							$(matchingNodes).addClass(className);
+						else
+							$(matchingNodes).attr("class", $(matchingNodes).attr("class") + " " + className);
 
 					/*	if(matchingEntityDetails)
 							$(matchingEntityDetails).addClass(className);*/

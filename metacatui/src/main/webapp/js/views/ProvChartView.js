@@ -193,10 +193,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			if(this.numPrograms > 0) contextClasses += " hasPrograms";
 			$(this.contextEl).addClass(contextClasses);
 			
-			if(this.type == "derivations") this.$el.append(this.createConnecter());
-			if(this.type == "sources")     this.$el.append(this.createPointer());
-			if(this.programs.length && (this.type == "derivations")) this.$(".programs").append(this.createConnecter());
-			if(this.programs.length && (this.type == "sources"))     this.$(".programs").append(this.createPointer());
+			//If it's a derivation chart, add a connector line
+			if(this.type == "derivations" && !this.numPrograms) this.$el.append(this.createConnecter());
+			//If it's a sources chart, add a pointer arrow
+			if((this.type == "sources") && !this.numPrograms) this.$el.append(this.createPointer());
+			
+			if(this.programs.length && (this.type == "sources")) this.$(".programs").append(this.createConnecter());
 			
 			if(this.$(".collapsed").length){
 				var expandIcon   = $(document.createElement("i")).addClass("icon icon-expand-alt"),
@@ -230,9 +232,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			if(provEntity.type == "SolrResult"){
 				type = provEntity.getType();
 				
-				if(type == "program")
-					icon = "icon-code";
-				else if(type == "data")
+				if(type == "data")
 					icon = "icon-table";
 				else if(type == "metadata")
 					icon = "icon-file-text";
@@ -267,12 +267,38 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 					isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";					
 			}
 
-			//Create a DOM element to represent the node	
-			var nodeEl = $(document.createElement("div"))
-						 .addClass(type + " node pointer popover-this " + isCollapsed)
-						 .attr("tabindex", 0)
-						 .attr("data-id", provEntity.get("id"))
-						 .css("top", top);
+			if(provEntity.get("type") != "program"){
+				//Create a DOM element to represent the node	
+				var nodeEl = $(document.createElement("div")).css("top", top);;
+			}
+			else{
+				//Create an SVG drawing for the program arrow shape
+				var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+					nodeEl = $(document.createElementNS("http://www.w3.org/2000/svg", "polygon"))
+					    		 .attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20")
+					    		 .css("stroke-width", "1");
+
+				//Set a viewBox, height, width, and top position
+				svg.setAttribute("viewBox", "0 0 " + this.nodeHeight + " " + this.nodeHeight);
+				$(svg).attr("width", this.nodeHeight + "px").attr("height", this.nodeHeight + "px").css("top", top);
+				
+				//Insert the code icon
+				var icon = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+							.text("\u{F121}")
+							.attr("class", "icon icon-foo program-icon")
+							.attr("transform", "translate(18,43)");
+				
+				//Glue it all together
+				$(svg).append(nodeEl, icon);
+				
+			}
+			
+			//Add classes via .attr() so it works for SVG, too
+			var currentClasses = $(nodeEl).attr("class") || "";
+			$(nodeEl).attr("class", currentClasses + " " + type + " node pointer popover-this " + isCollapsed)
+					 .attr("tabindex", 0)
+					 //Reference the id of the data object
+					 .attr("data-id", provEntity.get("id"));
 			
 			//Display images in the prov chart node
 			if(type == "image"){
@@ -358,8 +384,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var classMap = this.parentView.classMap || null;
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
-			var view = this;
-			$(nodeEl).popover({
+			var view = this,
+				popoverTriggerEl = $(nodeEl).prop("tagName") == "polygon" ? [nodeEl, $(nodeEl).find(".icon")] : nodeEl;
+			$(popoverTriggerEl).popover({
 				html: true,
 				placement: placement,
 				trigger: "click",
@@ -413,7 +440,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				}
 			}
 			
-			return nodeEl;
+			//If this node is rendered as an SVG, return that. Otherwise return the node element created.
+			return (typeof svg != "undefined")? svg : nodeEl;
 		},
 		
 		createEditorNode: function(){
