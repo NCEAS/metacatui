@@ -161,7 +161,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				}
 				
 				//Derivation charts have a pointer for each node
-				if(view.type == "derivations") view.$el.append(view.createPointer(position));
+				if(view.type == "derivations")
+					view.$el.append(view.createConnecter(position));
+				
 				//Source charts have a connector for each node and one pointer
 				if(view.type == "sources")	view.$el.append(view.createConnecter(position));
 				
@@ -178,7 +180,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				this.$el.append(this.createEditorNode());
 				
 				//Derivation charts have a pointer for each node
-				if(this.type == "derivations") this.$el.append(this.createPointer(this.numProvEntities));
+				if(this.type == "derivations") this.$el.append(this.createConnecter(this.numProvEntities));
 				//Source charts have a connector for each node and one pointer
 				if(this.type == "sources")	this.$el.append(this.createConnecter(this.numProvEntities));
 			}
@@ -189,16 +191,21 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 	
 			//Add classes
 			this.$el.addClass(this.className);
+			if(this.numPrograms > 0) this.$el.addClass("has-programs");
+			if(this.numDerivations == 1 && !this.numPrograms) this.$el.addClass("one-derivation");
+			
 			var contextClasses = this.type == "sources" ? "hasProvLeft" : "hasProvRight";
 			if(this.numPrograms > 0) contextClasses += " hasPrograms";
 			$(this.contextEl).addClass(contextClasses);
 			
 			//If it's a derivation chart, add a connector line
-			if(this.type == "derivations" && !this.numPrograms) this.$el.append(this.createConnecter());
+			if(this.type == "derivations" && !this.numPrograms) this.$el.append(this.createPointer());
 			//If it's a sources chart, add a pointer arrow
 			if((this.type == "sources") && !this.numPrograms) this.$el.append(this.createPointer());
 			
-			if(this.programs.length && (this.type == "sources")) this.$(".programs").append(this.createConnecter());
+			//Charts with programs need an extra connecter
+			if(this.programs.length) 
+				this.$(".programs").append(this.createConnecter());
 			
 			if(this.$(".collapsed").length){
 				var expandIcon   = $(document.createElement("i")).addClass("icon icon-expand-alt"),

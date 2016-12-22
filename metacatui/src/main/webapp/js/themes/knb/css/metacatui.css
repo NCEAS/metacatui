@@ -1436,7 +1436,7 @@ svg .no-activity,
 	}	
 	
 	.prov-chart,
-	.prov-chart .node
+	.prov-chart .node,
 	.prov-chart .connecter{
 		border-color: #006699;
 	}
