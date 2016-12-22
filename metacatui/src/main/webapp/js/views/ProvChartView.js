@@ -275,21 +275,26 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				//Create an SVG drawing for the program arrow shape
 				var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
 					nodeEl = $(document.createElementNS("http://www.w3.org/2000/svg", "polygon"))
-					    		 .attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20")
-					    		 .css("stroke-width", "1");
+					    		 .attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20");
 
 				//Set a viewBox, height, width, and top position
 				svg.setAttribute("viewBox", "0 0 " + this.nodeHeight + " " + this.nodeHeight);
+				svg.setAttribute("class", "popover-this");
 				$(svg).attr("width", this.nodeHeight + "px").attr("height", this.nodeHeight + "px").css("top", top);
 				
-				//Insert the code icon
-				var icon = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+				//Create the code icon
+				var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
 							.text("\u{F121}")
-							.attr("class", "icon icon-foo program-icon")
-							.attr("transform", "translate(18,43)");
+							.attr("class", "icon icon-foo program-icon pointer");
+				
+				//Create a group element to contain the icon
+				var g = $(document.createElementNS("http://www.w3.org/2000/svg", "g"))
+						.attr("transform", "translate(18,43)")
+						.attr("class", "popover-this program-icon pointer");
 				
 				//Glue it all together
-				$(svg).append(nodeEl, icon);
+				$(g).append(iconEl);
+				$(svg).append(nodeEl, g);
 				
 			}
 			
@@ -364,7 +369,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			//Glue all the parts together
 			var headerContainer = $(document.createElement("div")).addClass("well header").append(citationHeader, citationEl, linkEl);
-			var popoverContent = $(document.createElement("div")).append(headerContainer, provStatementEl);
+			var popoverContent = $(document.createElement("div")).append(headerContainer, provStatementEl).attr("data-id", provEntity.get("id"));
+			
+			//Add the name of the data object to the popover
 			if(name)
 				$(headerContainer).prepend(nameEl);
 			
@@ -385,8 +392,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			var view = this,
-				popoverTriggerEl = $(nodeEl).prop("tagName") == "polygon" ? [nodeEl, $(nodeEl).find(".icon")] : nodeEl;
-			$(popoverTriggerEl).popover({
+				popoverTriggerEl = (provEntity.get("type") == "program") ? $(nodeEl).add(g) : nodeEl;
+			
+			$(nodeEl).popover({
 				html: true,
 				placement: placement,
 				trigger: "click",
@@ -413,15 +421,36 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 				}
 			}).on("show.bs.popover", function(){
 				//Close the last open node popover
-				$(".node.popover-this.active").popover("hide");
-				
+				$(".popover-this.active").popover("hide");
+								
 				//Toggle the active class
-				$(this).toggleClass("active");
+				if($(this).parent("svg").length) 
+						$(this).attr("class", $(this).attr("class") + " active");
+				else
+					$(this).toggleClass("active");
 				
-			}).on("hide.bs.popover", function(){
+			}).on("hide.bs.popover", function(){				
 				//Toggle the active class
-				$(this).toggleClass("active");
+				if($(this).parent("svg").length) 
+					$(this).attr("class", $(this).attr("class").replace(" active", " "));
+				else
+					$(this).toggleClass("active");
 			});
+			
+			/*
+			 * Set a separate event listener on the program icon since it is overlapped with the program arrow
+			 */
+			if(provEntity.get("type") == "program"){
+				$(g).on("click", function(){
+					var programNode = $(this).prev("polygon"),
+						isOpen = $(programNode).attr("class").indexOf("active") > -1;
+					
+						if(isOpen)
+							$(programNode).popover("hide");
+						else
+							$(programNode).popover("show");
+				});
+			}
 			
 			// If the prov statement views in the popover content have an expand collapse list view, then we want to delegate events 
 			//  again when the popover is done displaying. This is because the ExpandCollapseList view hides/shows DOM elements, and each time

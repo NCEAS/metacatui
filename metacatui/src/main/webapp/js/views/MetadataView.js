@@ -1780,10 +1780,15 @@ define(['jquery',
 		},
 
 		closePopovers: function(e){
-			if($(e.target).hasClass("popover-this") ||
+			//If this is a popover element or an element that has a popover, don't close anything. 
+			//Check with the .classList attribute to account for SVG elements
+			var svg = $(e.target).parents("svg");
+			
+			if(_.contains(e.target.classList, "popover-this") ||
 			  ($(e.target).parents(".popover-this").length > 0)  ||
 			  ($(e.target).parents(".popover").length > 0) ||
-			  $(e.target).hasClass("popover")) return;
+			  _.contains(e.target.classList, "popover") ||
+			  (svg.length && _.contains(svg[0].classList, "popover-this"))) return;
 
 			//Close all active popovers
 			this.$(".popover-this.active").popover("hide");

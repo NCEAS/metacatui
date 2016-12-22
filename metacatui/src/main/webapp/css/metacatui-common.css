@@ -512,6 +512,7 @@ img.icon{
 #article-container.active,
 .entitydetails.active{
 	box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
+	-webkit-box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
 }
 .prov-chart .node.previous{
 	border-width: 3px;
@@ -605,6 +606,11 @@ img.icon{
 }
 .node .editor.icon {
     margin-left: 3px;
+}
+.prov-chart .program.node.active{
+	stroke: #00eb89;
+	stroke-width: 2px;
+	transition: stroke 200ms; 
 }
 .program-icon{
 	font-size: 25px;
