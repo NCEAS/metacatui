@@ -138,11 +138,13 @@ define(['underscore',
                 });
 
                 // Render the package table framework
-                this.dataPackageView = new DataPackageView({edit: true});
+                this.dataPackageView = new DataPackageView({
+                	edit: true,
+                	dataPackage: MetacatUI.rootDataPackage
+                	});
                 var $packageTableContainer = this.$("#data-package-container");
                 $packageTableContainer.html(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
-                
 
                 MetacatUI.rootDataPackage.fetch();
                                 
@@ -227,8 +229,9 @@ define(['underscore',
             // Only create the package table if it hasn't been created            
             if ( ! hasPackageSubView ) {
                 this.dataPackageView = new DataPackageView({
-                    collection: MetacatUI.rootDataPackage,
-                    edit: true});
+                    dataPackage: MetacatUI.rootDataPackage,
+                    edit: true
+                    });
                 this.subviews.push(this.dataPackageView);
                 dataPackageView.render();
                 

@@ -36,9 +36,22 @@ define([
             delayedModels: {},
             
             initialize: function(options) {
+            	//Get the options sent to this view
+            	if(typeof options == "object"){
+            		//The edit option will allow the user to edit the table
+            		this.edit = options.edit || false;
+            		
+            		//The data package to render
+            		this.dataPackage = options.dataPackage || new DataPackage();
+            	}
+            	//Create a new DataPackage collection if one wasn't sent
+            	else if(!this.dataPackage){
+            		this.dataPackage = new DataPackage();
+            	}
+            	
                 // listen for  add events because models are being merged
-                this.listenTo(MetacatUI.rootDataPackage, 'add', this.addOne); // render new items
-                //this.listenTo(MetacatUI.rootDataPackage, 'complete', this.addAll); // render all items
+                this.listenTo(this.dataPackage, 'add', this.addOne); // render new items
+                //this.listenTo(this.dataPackage, 'complete', this.addAll); // render all items
                 
                 return this;
                 
@@ -50,7 +63,8 @@ define([
             render: function() {
 
                 this.$el.append(this.template({
-                	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "})
+                	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
+                	id: this.dataPackage.get("id")
                 }));
                 
                 return this;
@@ -73,62 +87,10 @@ define([
                     scimetaParent = scimetaParent[0];
                     
                 }
+                
                 var parentRow, delayed_models;
-                if ( typeof scimetaParent !== "undefined" ) {
-                    
-                    if ( scimetaParent !== null ) {
-                        
-                        // Using DOM methods is easier than escaping special chars
-                        // !"#$%&'()*+,./:;<=>?@[\]^`{|}~ in jquery $('selector')
-                        parentRow = document.getElementById(scimetaParent);
-                    
-                        if ( typeof parentRow !== undefined && parentRow != null ) {
-                            // This is a data row, insert below it's metadata parent folder
-                            parentRow.insertAdjacentElement("afterend", dataItemView.render().el);
-                            
-                            // Remove it from the delayedModels list if necessary
-                            if ( _.contains(Object.keys(this.delayedModels), scimetaParent) ) {
-                                delayed_models = this.delayedModels[scimetaParent];
-                                var index = _.indexOf(delayed_models, item);
-                                delayed_models = delayed_models.splice(index, 1);
-                                
-                                // Put the shortened array back if delayed models remains
-                                if ( delayed_models.length > 0 ) {
-                                    this.delayedModels[scimetaParent] = delayed_models;
-                                    
-                                } else {
-                                    this.delayedModels[scimetaParent] = undefined;
-                                    
-                                }
-                            }
-                        } else {
-                            console.log("Couldn't render " + item.id + "Delayed until parent is rendered.");
-                            // Postpone the data row until the parent is rendered
-                            delayed_models = this.delayedModels[scimetaParent];
-                            
-                            // Delay the model rendering if it isn't already delayed
-                            if ( typeof delayed_models !== "undefined" ) {
-                                
-                                if ( ! _.contains(delayed_models, item) ) {
-                                    delayed_models.push(item);
-                                    this.delayedModels[scimetaParent] = delayed_models;
-                                    
-                                }
-                                
-                            } else {
-                                delayed_models = [];
-                                delayed_models.push(item);
-                                this.delayedModels[scimetaParent] = delayed_models;
-                            }                        
-                        }
-                        
-                    } else {
-                        // Not sure we ever get here - still append metadata folder row
-                        $('#data-package-table-body').append(dataItemView.render().el);
-                        
-                    }
-                } else {
-                    // This is a metadata folder row, append it to the table
+                if(scimetaParent == item.get("id")){
+                	// This is a metadata folder row, append it to the table
                     $('#data-package-table-body').append(dataItemView.render().el);
                     
                     // Render any delayed models if this is the parent
@@ -139,6 +101,52 @@ define([
                         
                     }
                 }
+                else{
+                    // Find the parent row by it's id, stored in a custom attribute
+                	if(scimetaParent)
+                		parentRow = this.$("[data-id='" + scimetaParent + "']");
+                
+                    if ( typeof parentRow !== undefined && parentRow.length ) {
+                        // This is a data row, insert below it's metadata parent folder
+                        parentRow.after(dataItemView.render().el);
+                        
+                        // Remove it from the delayedModels list if necessary
+                        if ( _.contains(Object.keys(this.delayedModels), scimetaParent) ) {
+                            delayed_models = this.delayedModels[scimetaParent];
+                            var index = _.indexOf(delayed_models, item);
+                            delayed_models = delayed_models.splice(index, 1);
+                            
+                            // Put the shortened array back if delayed models remains
+                            if ( delayed_models.length > 0 ) {
+                                this.delayedModels[scimetaParent] = delayed_models;
+                                
+                            } else {
+                                this.delayedModels[scimetaParent] = undefined;
+                                
+                            }
+                        }
+                    } else {
+                        console.log("Couldn't render " + item.id + "Delayed until parent is rendered.");
+                        // Postpone the data row until the parent is rendered
+                        delayed_models = this.delayedModels[scimetaParent];
+                        
+                        // Delay the model rendering if it isn't already delayed
+                        if ( typeof delayed_models !== "undefined" ) {
+                            
+                            if ( ! _.contains(delayed_models, item) ) {
+                                delayed_models.push(item);
+                                this.delayedModels[scimetaParent] = delayed_models;
+                                
+                            }
+                            
+                        } else {
+                            delayed_models = [];
+                            delayed_models.push(item);
+                            this.delayedModels[scimetaParent] = delayed_models;
+                        }                        
+                    }
+                    
+                }
                 
             },
             
@@ -147,8 +155,8 @@ define([
              */
             addAll: function() {
                 $('#data-package-table-body').html(''); // clear the table first
-                MetacatUI.rootDataPackage.sort();
-                MetacatUI.rootDataPackage.each(this.addOne, this);
+                this.dataPackage.sort();
+                this.dataPackage.each(this.addOne, this);
                 
             },
             
