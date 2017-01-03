@@ -92,17 +92,24 @@ define(['underscore',
             console.log("EditorView.getDataPackage() called.");
             var resourceMapIds = scimetaModel.get("resourceMap");
             
+            var packageModel = {
+            	formatType: "RESOURCE",
+                type: "DataPackage",
+                childPackages: {}
+            };
+            
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
                 // Create a fresh package
-                MetacatUI.rootDataPackage = new DataPackage(null, this.model);
+                MetacatUI.rootDataPackage = new DataPackage(null, {packageModel: packageModel});
                 this.renderMetadata(this.model);
                 
             } else {
                 
                 // Set the root data package for the collection
-                MetacatUI.rootDataPackage = new DataPackage(null, {id: resourceMapIds[0]});
+                packageModel.id = resourceMapIds[0];
+                MetacatUI.rootDataPackage = new DataPackage(null, {packageModel: packageModel});
                 
                 var view = this;
                 // As the root collection is updated with models, render the UI
@@ -119,11 +126,18 @@ define(['underscore',
                 $packageTableContainer.append(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
                 
-
                 MetacatUI.rootDataPackage.fetch();
-                                
+                
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
             }
             
+            
+        },
+        
+        renderChildren: function(model, options) {
+            console.log("EditorView.renderChildren() called.");
+            console.log(model);
+            console.log(options);
             
         },
         

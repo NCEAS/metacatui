@@ -1,10 +1,10 @@
 ﻿<!-- Icon column -->
 <% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
-    <% var indentFolder = nodelevel * 40; %>
+    <% var indentFolder = nodeLevel * 40; %>
     <td><i class="icon icon-chevron-down" style="padding-left:<%=indentFolder %>px"></i><i class="icon-large icon-folder-open"></i></td>
     
 <% } else { %>
-    <% var indentFile = (nodelevel + 1) * 40; %>
+    <% var indentFile = (nodeLevel + 1) * 40; %>
     <td><i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i></td>
     
 <% } %>
