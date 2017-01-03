@@ -8,6 +8,10 @@
 .subtle{
 	color: #999;
 }
+.btn-disabled{
+	pointer-events: none;
+	opacity: .8;
+}
 .footnote{
 	font-size: .7em;
 }

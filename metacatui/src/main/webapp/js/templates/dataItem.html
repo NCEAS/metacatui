@@ -10,19 +10,19 @@
 <% } %>
 
 <!-- Files column -->
-<% if ( typeof title !== "undefined" &&  title !== null ) { %>
-    <td><%= title %></td>
-    
-<% } else if ( typeof filename !== "undefined" && filename !== null ) { %>
-    <td><%= filename %></td>
-    
-<% } else { %>
-    <td><%= id %></td>
-    
-<% } %>
-    
+
+<td class="name" contenteditable="true">
+	<% if ( typeof title != "undefined" && title) { %>
+	    <%= title %>    
+	<% } else if ( typeof fileName != "undefined" && fileName) { %>
+	    <%= fileName %>
+	<% } else { %>
+	    <%= id %>
+	<% } %>
+</td>
+
 <!-- Size column -->
-<% if ( typeof sizeStr !== "undefined" && sizeStr !== null ) { %>
+<% if ( typeof sizeStr != "undefined" && sizeStr ) { %>
     <td><%= sizeStr %></td>
     
 <% } else {%>
@@ -30,7 +30,7 @@
     
 <% } %>
 <!-- Type column -->
-<% if (typeof type !== "undefined" && type !== null ) { %>
+<% if (type ) { %>
     <td><%= type %></td>
 <% } else { %>
     <td></td>

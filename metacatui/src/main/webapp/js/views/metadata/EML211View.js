@@ -46,7 +46,7 @@ define(['underscore', 'jquery', 'backbone',
 			MetacatUI.appModel.set('headerType', 'default');
 
 			//Render the basic structure of the page and table of contents
-			this.$el.append(this.template());
+			this.$el.html(this.template());
 			this.$container = this.$(".metadata-container");
 			
 			//Fetch the metadata model

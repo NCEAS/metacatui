@@ -7,8 +7,10 @@ define(['underscore',
         'models/metadata/ScienceMetadata',
         'views/metadata/EML211View',
         'views/DataPackageView',
+        'views/SignInView',
         'text!templates/editor.html'], 
-        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, EditorTemplate){
+        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView,
+        		EditorTemplate){
     
     var EditorView = Backbone.View.extend({
                 
@@ -19,9 +21,8 @@ define(['underscore',
         
         /* Events that apply to the entire editor */
         events: {
-            "change input"    : "showControls",
-            "change select"   : "showControls",
-            "change textarea" : "showControls"
+        	"click .cancel"      : "cancel",
+        	"click #save-editor" : "save"
         },
         
         /* The identifier of the root package id being rendered */
@@ -35,26 +36,18 @@ define(['underscore',
         
         /* Initialize a new EditorView - called post constructor */
         initialize: function(options) {
-            
-            // If options.id isn't present, generate and render a new package id and metadata id
-            if ( typeof options === "undefined" || !options.pid ) {
-                console.log("EditorView: Creating a new data package.");
-                
-            } else {
-                this.pid = options.pid;
-                console.log("Loading existing package from id " + options.pid);
-                
-                //TODO: This should create a DataPackage collection 
-                this.createModel();
-
-            }
 
             return this;
         },
         
         //Create a new EML model for this view        
         createModel: function(){
-        	var model = new ScienceMetadata({ id: this.pid, type: "Metadata" });
+        	//If no pid is given, create a new EML model
+        	if(!this.pid)
+        		var model = new EML();
+        	//Otherwise create a generic metadata model until we find out the formatId
+        	else
+        		var model = new ScienceMetadata({ id: this.pid });
             
             // Once the ScienceMetadata is populated, populate the associated package
             this.model = model;
@@ -65,22 +58,44 @@ define(['underscore',
         render: function() {
 
             MetacatUI.appModel.set('headerType', 'default');
-            $("body").addClass("Editor");
-	        	//Get the basic template on the page
-	        	this.$el.append(this.template());
-	        	
-	        	if(!this.model) this.createModel();
+            
+        	//Inert the basic template on the page
+        	this.$el.html(this.template({
+        		loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."})
+        	}));
+        	
+        	//If we don't have a model at this point, create one
+        	if(!this.model) this.createModel();
 	        	
 	        //When the basic Solr metadata are retrieved, get the associated package
 	        this.listenToOnce(this.model, "sync", this.getDataPackage);
+	        //If no object is found with this ID, then tell the user
+	        this.listenToOnce(this.model, "change:notFound", this.showNotFound);
 	        	
-            //Wait until the user info is loaded before we request the Metadata
+            //If the user is logged in, fetch the Metadata
         	if(MetacatUI.appUserModel.get("loggedIn")) {
-        		this.model.fetch();
-
-    		} else {        	
+        		if(!this.pid) 
+        			this.model.trigger("sync");
+        		else 
+        			this.model.fetch();
+    		}
+        	//If we checked for authentication and the user is not logged in
+        	else if(MetacatUI.appUserModel.get("checked")){
+        		this.showSignIn();
+        	}
+        	//If we haven't checked for authentication yet
+        	else {   
+        		//Wait until the user info is loaded before we request the Metadata
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
-	            	this.model.fetch();
+	            	if(!MetacatUI.appUserModel.get("loggedIn")){
+	            		this.showSignIn();
+	            		return;
+	            	}
+	            		
+	            	if(!this.pid) 
+	        			this.model.trigger("sync");
+	        		else 
+	        			this.model.fetch();
 	            });
     		}
                         
@@ -90,6 +105,10 @@ define(['underscore',
         /* Get the data package associated with the EML */
         getDataPackage: function(scimetaModel) {
             console.log("EditorView.getDataPackage() called.");
+            
+            if(!scimetaModel)
+            	var scimetaModel = this.model;
+            
             var resourceMapIds = scimetaModel.get("resourceMap");
             
             var packageModel = {
@@ -118,20 +137,24 @@ define(['underscore',
                 		model.on("sync", view.renderMember);
                 	else if(model.get("synced"))
                 		view.renderMember(model);
+                	
+                	//Listen for changes on this member
+                	this.listenTo(model, "change:uploadStatus", view.showControls);
+
                 });
 
                 // Render the package table framework
                 this.dataPackageView = new DataPackageView({edit: true});
                 var $packageTableContainer = this.$("#data-package-container");
-                $packageTableContainer.append(this.dataPackageView.render().el);
+                $packageTableContainer.html(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
                 
                 MetacatUI.rootDataPackage.fetch();
                 
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
             }
-            
-            
+
+            this.listenTo(MetacatUI.rootDataPackage, "error", this.errorSaving);
         },
         
         renderChildren: function(model, options) {
@@ -185,19 +208,23 @@ define(['underscore',
                 
             } else {
             	console.log("Rendering EML Model ", model);
+            	               
+            	//Style the body as an Editor
+                $("body").addClass("Editor");
             	
             	//Create an EML model
-            	var emlModel = new EML(model.toJSON());
+                if(model.type != "EML")
+                	model = new EML(model.toJSON());
         	
             	//Create an EML211 View and render it
             	emlView = new EMLView({ 
-            		model: emlModel,
+            		model: model,
             		edit: true
             		});
             	this.subviews.push(emlView);
             	emlView.render();
                 // this.renderDataPackageItem(model, collection, options);
-                this.off("change", this.renderMember, model); // avoid double renderings      	
+               // this.off("change", this.renderMember, model); // avoid double renderings      	
                 
             }
         },
@@ -221,14 +248,113 @@ define(['underscore',
             }
         },
         
-	    showControls: function(){
-	    	this.$(".editor-controls").slideDown();
+        /*
+         * Saves all edits in the collection
+         */
+        save: function(e){
+        	var btn = (e && e.target)? $(e.target) : this.$("#save-editor");
+        	
+        	//If the save button is disabled, then we don't want to save right now
+        	if(btn.is(".btn-disabled")) return;
+        	
+        	//Change the style of the save button
+        	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
+        	        	
+        	//When the package is saved, revert the button back to normal
+        	this.listenToOnce(MetacatUI.rootDataPackage, "sync", function(){
+        		btn.html("Save").removeClass("btn-disabled");
+        		this.hideControls();
+        	});
+        	
+        	//Save the package!
+        	MetacatUI.rootDataPackage.save();
+        },
+        
+        /*
+         * When the data package collection fails to save, tell the user
+         */
+        errorSaving: function(errorMsg){
+        	var errorId = "error" + Math.round(Math.random()*100),
+        		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
+        	
+        	message.append($(document.createElement("a"))
+        						.text("See details")
+        						.attr("data-toggle", "collapse")
+        						.attr("data-target", "#" + errorId)
+        						.addClass("pointer"),
+        					$(document.createElement("div"))
+        						.addClass("collapse")
+        						.attr("id", errorId)
+        						.append($(document.createElement("pre")).text(errorMsg)));
+
+        	MetacatUI.appView.showAlert(message, "alert-error", this.$el, null, { emailBody: "Error message: Data Package save error: " + errorMsg });
+        },
+        
+        /*
+         * Called when there is no object found with this ID
+         */
+        showNotFound: function(){
+			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
+			if(!MetacatUI.appUserModel.get("checked")){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
+				return;
+			}
+			//If the user is not logged in
+			else if(!MetacatUI.appUserModel.get("loggedIn")){
+				this.showSignIn();
+				return;
+			}
+
+			if(!this.model.get("notFound")) return;
+
+			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
+			  "<ul class='indent'>" +
+			  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
+				  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+				  "<li>The content was removed because it was invalid.</li>" +
+			  "</ul>";
+			this.hideLoading();
+			MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
+			
+		},
+		
+		showSignIn: function(){
+    		var container = $(document.createElement("div")).addClass("container center");
+    		this.$el.html(container);
+    		var signInButtons = new SignInView().render().el;
+    		$(container).append('<h1>Sign in to submit data</h1>', signInButtons);
+		},
+        
+        /*
+         * Cancel all edits in the editor
+         */
+        cancel: function(){
+        	this.render();
+        },
+        
+	    showControls: function(model){
+	    	if(model.get("uploadStatus") == "q")
+	    		this.$(".editor-controls").slideDown();
 	    },
 	    
 	    hideControls: function(){
 	    	this.$(".editor-controls").slideUp();
 	    },
-                
+	    
+	    showLoading: function(container, message){
+	    	if(typeof container == "undefined" || !container)
+	    		var container = this.$el;
+	    	
+	    	$(container).html(MetacatUI.appView.loadingTemplate({ msg: message }));
+	    },
+              
+	    hideLoading: function(container){
+	    	if(typeof container == "undefined" || !container)
+	    		var container = this.$el;
+	    	
+	    	$(container).find(".loading").remove();
+	    },
+	    
         /* Close the view and its sub views */
         onClose: function() {
             this.off();    // remove callbacks, prevent zombies         

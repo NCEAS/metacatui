@@ -11,7 +11,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         var ScienceMetadata = DataONEObject.extend({
         	
             // Only add fields present in the Solr service to the defaults
-        	defaults: _.extend({
+        	defaults: _.extend(DataONEObject.prototype.defaults, {
 	            abstract: [],
 	            attribute: [],
 	            attributeDescription: [],
@@ -61,6 +61,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	            source: [],
 	            scientificName: [],
                 title: [],
+                type: "Metadata",
 	            species: [],
 	            genus: [],
 	            family: [],
@@ -151,10 +152,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             },
             
             /* parse the Solr results and return the first document */
-            parse: function(results) {
+            /////Commenting out for now because the DataONEObject.parse() already does this
+            /*parse: function(results) {
                 return results.response.docs[0];
                 
-            },
+            },*/
             
             /* Fetch the ScienceMetadata from the MN Solr service */
             fetch: function(options) {

@@ -10,8 +10,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
          TODO: incorporate Backbone.UniqueModel
         */
         var DataONEObject = Backbone.Model.extend({
+        	
+        	type: "DataONEObject",
             
-        	defaults: {
+        	defaults: _.extend({
                 // System Metadata attributes
 	            serialVersion: null,
 	            id: "urn:uuid:" + uuid.v4(),
@@ -43,8 +45,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 synced: false, // True if the full model has been synced
 	            uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
 	            uploadFile: null,
-	            isNew: false
-        	},
+	            isNew: false,
+	            notFound: false, //Whether or not this object was found in the system
+	            collections: [] //References to collections that this model is in
+        	}),
         	
             initialize: function(attrs, options) {
                 this.on("change:size", this.bytesToSize);
@@ -123,7 +127,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
         			
         			//Use the Solr query URL
 	            	var solrOptions = {
-	            		url: MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "&fl=" + fl + "&wt=json"
+	            		url: MetacatUI.appModel.get("queryServiceUrl") + 'q=' + query + "&fl=" + fl + "&wt=json",
+	            		
 	            	}
 	            	
 	            	//Merge with the options passed to this function
@@ -164,7 +169,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             			systemMetadata;
             		
             		//Save the raw XML in case it needs to be used later
-                    this.set("sysMetaXML", responseDoc);
+                    this.set("sysMetaXML", response);
             		
             		for(var i=0; i<responseDoc.length; i++){
             			if((responseDoc[i].nodeType == 1) && (responseDoc[i].localName.indexOf("systemmetadata") > -1)){
@@ -187,13 +192,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             		
             		return sysMetaValues;
             	
-                // Otherwise we have an object already    
-            	} else if ( typeof response === "object") {
-            	    return response;                   
+                // If the response is a list of Solr docs   
+            	} else if (( typeof response === "object") && (response.response && response.response.docs)){
+            		if(!response.response.docs.length){
+            			this.set("notFound", true);
+            		}
+            		
+            	    return response.response.docs[0];                   
                 }
-                
-                // Default to returning the Solr results            	
-            	return response.response.docs[0];
+            	else
+            		// Default to returning the raw response           	
+            		return response;
             },
             
             // A utility function for converting XML to JSON
@@ -382,7 +391,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 		  
 		  serializeSysMeta: function(options){
 	        	//Get the system metadata XML that currently exists in the system
-	        	var xml = $(this.get("sysMetaXML")).clone();
+	        	var xml = $($.parseHTML(this.get("sysMetaXML")));
 	        	
 	        	//Update the system metadata values
 	        	xml.find("serialversion").text(this.get("serialVersion") || "0");
@@ -506,6 +515,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 				this.set("obsoletes", oldPid);
 				this.set("obsoletedBy", null);
 				
+				//Update the collection this object is in
+				
+				
 				//Set the archived option to false
 				this.set("archived", false);
 	        },
@@ -541,7 +553,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        		if(this.changedAttributes().uploadStatus) return;
 	        			
 	        		if((this.get("uploadStatus") == "c") || !this.get("uploadStatus"))
-	        			this.set("uploadStatus", "q", {silent: true});
+	        			this.set("uploadStatus", "q");
 	        	});
 	        },
 		  
