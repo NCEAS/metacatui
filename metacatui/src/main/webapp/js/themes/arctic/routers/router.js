@@ -242,6 +242,7 @@ function ($, _, Backbone) {
 			if( ! MetacatUI.appView.editorView ){
 				require(['views/EditorView'], function(EditorView) {
 					MetacatUI.appView.editorView = new EditorView({pid: pid});
+					MetacatUI.appView.editorView.pid = pid;
 					MetacatUI.appView.showView(MetacatUI.appView.editorView);
 				});
                 

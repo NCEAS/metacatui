@@ -36,26 +36,18 @@ define(['underscore',
         
         /* Initialize a new EditorView - called post constructor */
         initialize: function(options) {
-            
-            // If options.id isn't present, generate and render a new package id and metadata id
-            if ( typeof options === "undefined" || !options.pid ) {
-                console.log("EditorView: Creating a new data package.");
-                
-            } else {
-                this.pid = options.pid;
-                console.log("Loading existing package from id " + options.pid);
-                
-                //TODO: This should create a DataPackage collection 
-                this.createModel();
-
-            }
 
             return this;
         },
         
         //Create a new EML model for this view        
         createModel: function(){
-        	var model = new ScienceMetadata({ id: this.pid, type: "Metadata" });
+        	//If no pid is given, create a new EML model
+        	if(!this.pid)
+        		var model = new EML();
+        	//Otherwise create a generic metadata model until we find out the formatId
+        	else
+        		var model = new ScienceMetadata({ id: this.pid });
             
             // Once the ScienceMetadata is populated, populate the associated package
             this.model = model;
@@ -82,8 +74,10 @@ define(['underscore',
 	        	
             //If the user is logged in, fetch the Metadata
         	if(MetacatUI.appUserModel.get("loggedIn")) {
-        		this.model.fetch();
-
+        		if(!this.pid) 
+        			this.model.trigger("sync");
+        		else 
+        			this.model.fetch();
     		}
         	//If we checked for authentication and the user is not logged in
         	else if(MetacatUI.appUserModel.get("checked")){
@@ -93,7 +87,10 @@ define(['underscore',
         	else {   
         		//Wait until the user info is loaded before we request the Metadata
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
-	            	this.model.fetch();
+	            	if(!this.pid) 
+	        			this.model.trigger("sync");
+	        		else 
+	        			this.model.fetch();
 	            });
     		}
                         
@@ -103,6 +100,10 @@ define(['underscore',
         /* Get the data package associated with the EML */
         getDataPackage: function(scimetaModel) {
             console.log("EditorView.getDataPackage() called.");
+            
+            if(!scimetaModel)
+            	var scimetaModel = this.model;
+            
             var resourceMapIds = scimetaModel.get("resourceMap");
             
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
@@ -194,17 +195,18 @@ define(['underscore',
                 $("body").addClass("Editor");
             	
             	//Create an EML model
-            	var emlModel = new EML(model.toJSON());
+                if(model.type != "EML")
+                	model = new EML(model.toJSON());
         	
             	//Create an EML211 View and render it
             	emlView = new EMLView({ 
-            		model: emlModel,
+            		model: model,
             		edit: true
             		});
             	this.subviews.push(emlView);
             	emlView.render();
                 // this.renderDataPackageItem(model, collection, options);
-                this.off("change", this.renderMember, model); // avoid double renderings      	
+               // this.off("change", this.renderMember, model); // avoid double renderings      	
                 
             }
         },

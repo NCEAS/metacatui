@@ -1,11 +1,11 @@
 ﻿/* global define */
-define(['jquery', 'underscore', 'backbone', 
+define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/ScienceMetadata',
         'models/metadata/eml211/EMLCoverage', 
         'models/metadata/eml211/EMLDistribution', 
         'models/metadata/eml211/EMLParty', 
         'models/metadata/eml211/EMLProject'], 
-    function($, _, Backbone, ScienceMetadata, EMLCoverage, EMLDistribution, EMLParty, EMLProject) {
+    function($, _, Backbone, uuid, ScienceMetadata, EMLCoverage, EMLDistribution, EMLParty, EMLProject) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -15,7 +15,9 @@ define(['jquery', 'underscore', 'backbone',
 
         	type: "EML",            
 
-        	defaults: _.extend({
+        	defaults: _.extend(ScienceMetadata.prototype.defaults, {
+        		id: "urn:uuid:" + uuid.v4(),
+        		formatId: "eml://ecoinformatics.org/eml-2.1.1",
         		objectXML: null,
 	            isEditable: false,
 	            alternateIdentifier: [],
@@ -43,7 +45,7 @@ define(['jquery', 'underscore', 'backbone',
 	            methods: [], // array of EMLMethods objects
 	            project: [], // array of EMLProject objects
 	            //type: "Metadata"
-        	}, ScienceMetadata.prototype.defaults),
+        	}),
 
             initialize: function(options) {
                 // Call initialize for the super class
