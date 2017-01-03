@@ -7,8 +7,9 @@ define(['underscore',
         'models/metadata/ScienceMetadata',
         'views/metadata/EML211View',
         'views/DataPackageView',
+        'views/SignInView',
         'text!templates/editor.html'], 
-        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, 
+        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView,
         		EditorTemplate){
     
     var EditorView = Backbone.View.extend({
@@ -79,11 +80,18 @@ define(['underscore',
 	        //If no object is found with this ID, then tell the user
 	        this.listenToOnce(this.model, "change:notFound", this.showNotFound);
 	        	
-            //Wait until the user info is loaded before we request the Metadata
+            //If the user is logged in, fetch the Metadata
         	if(MetacatUI.appUserModel.get("loggedIn")) {
         		this.model.fetch();
 
-    		} else {   
+    		}
+        	//If we checked for authentication and the user is not logged in
+        	else if(MetacatUI.appUserModel.get("checked")){
+        		this.showSignIn();
+        	}
+        	//If we haven't checked for authentication yet
+        	else {   
+        		//Wait until the user info is loaded before we request the Metadata
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
 	            	this.model.fetch();
 	            });
@@ -271,6 +279,11 @@ define(['underscore',
 				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
 				return;
 			}
+			//If the user is not logged in
+			else if(!MetacatUI.appUserModel.get("loggedIn")){
+				this.showSignIn();
+				return;
+			}
 
 			if(!this.model.get("notFound")) return;
 
@@ -283,6 +296,13 @@ define(['underscore',
 			this.hideLoading();
 			MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
 			
+		},
+		
+		showSignIn: function(){
+    		var container = $(document.createElement("div")).addClass("container center");
+    		this.$el.html(container);
+    		var signInButtons = new SignInView().render().el;
+    		$(container).append('<h1>Sign in to submit data</h1>', signInButtons);
 		},
         
         /*
