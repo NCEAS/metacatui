@@ -87,6 +87,11 @@ define(['underscore',
         	else {   
         		//Wait until the user info is loaded before we request the Metadata
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+	            	if(!MetacatUI.appUserModel.get("loggedIn")){
+	            		this.showSignIn();
+	            		return;
+	            	}
+	            		
 	            	if(!this.pid) 
 	        			this.model.trigger("sync");
 	        		else 
