@@ -151,11 +151,6 @@ define(['underscore',
                 var $packageTableContainer = this.$("#data-package-container");
                 $packageTableContainer.html(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
-<<<<<<< HEAD
-
-=======
-                
->>>>>>> branch 'METACATUI_2_0_BRANCH' of https://github.com/NCEAS/metacatui.git
                 MetacatUI.rootDataPackage.fetch();
                 
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
