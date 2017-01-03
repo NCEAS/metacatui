@@ -18,9 +18,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             // The type of the object (DataPackage, Metadata, Data)
             type: 'DataPackage',
             
-            // The map of nested child data package members of this data package
-            childPackages: {},
-            
             // Simple queue to enqueue file transfers. Use push() and shift()
             // to add and remove items. If this gets to large/slow, possibly
             // switch to http://code.stephenmorley.org/javascript/queues/
@@ -52,7 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             comparator: "sortOrder",
             
             // The nesting level in a data package hierarchy
-            nodelevel: 0,
+            nodeLevel: 0,
             
             //Define the namespaces used in the RDF XML
             namespaces: {
@@ -72,22 +69,20 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 // Create an initial RDF graph 
                 this.dataPackageGraph = rdf.graph();
                 
-                //Create a DataONEObject to represent this resource map
+                // Create a DataONEObject to represent this resource map
                 this.packageModel = new DataONEObject({
-                	formatType: "RESOURCE"
+                	formatType: "RESOURCE",
+                    type: "DataPackage",
+                    childPackages: {},
+            
                 });
                 
-                if ( typeof options === "undefined" || 
-                     typeof options === null || 
-                     typeof options.id === "undefined") {
-                    this.packageModel.set("id", "urn:uuid:" + uuid.v4());
-                
-                // Otherwise fetch it by id, and populate it    
-                } else {
-                    // use the given id
-                	this.packageModel.set("id", options.id);
+                if ( typeof options.packageModel !== "undefined" ) {
+                    // use the given package model
+                	this.packageModel = new DataONEObject(options.packageModel);
                     
                 }
+                this.id = this.packageModel.id;
                 
                 this.on("add", this.saveReference);
                 
@@ -115,7 +110,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 switch ( attrs.formatid ) {
                 
                     case "http://www.openarchives.org/ore/terms":
-                        return new DataPackage(null, attrs); // TODO: is this correct?
+                        return new DataPackage(null, {packageModel: attrs}); // TODO: is this correct?
                         
                     case "eml://ecoinformatics.org/eml-2.0.0":
                         return new EML211(attrs, options);
@@ -572,8 +567,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     case "http://www.openarchives.org/ore/terms":
                         context.attributes.id = context.id;
                         context.attributes.type = "DataPackage";
-                        memberModel = new DataPackage(null, context.attributes);
-                        this.childPackages[memberModel.id] = memberModel;
+                        context.attributes.childPackages = {};
+                        memberModel = new DataPackage(null, {packageModel: context.attributes});
+                        this.packageModel.get("childPackages")[memberModel.packageModel.id] = memberModel;
                         break;
                         
                     case "eml://ecoinformatics.org/eml-2.0.0":
@@ -848,9 +844,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                                 
                 }
                 
-                if ( memberModel.type !== "DataPackage" ) {
+                if ( ! memberModel.packageModel ) {
                     // We have a model
-                    memberModel.set("nodelevel", this.nodelevel); // same level for all members 
+                    memberModel.set("nodeLevel", this.packageModel.get("nodeLevel")); // same level for all members 
                     this.mergeMember(memberModel);
                  
                     //TODO Find out if this code is necessary - getMember should be called after fetch so we may not need to fetch twice
@@ -862,9 +858,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     
                 } else {
                     // We have a nested collection
-                    memberModel.nodelevel = this.nodelevel + 1;
-                    this.listenTo(memberModel, 'sync', this.mergeMember);
-                    memberModel.fetch({merge: true});
+                    memberModel.packageModel.set("nodeLevel", this.packageModel.get("nodeLevel") + 1);
+                    // this.listenTo(memberModel, 'sync', this.mergeMember);
+                    // memberModel.fetch({merge: true});
                 }
                 
             },

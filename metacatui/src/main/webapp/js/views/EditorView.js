@@ -111,18 +111,24 @@ define(['underscore',
             
             var resourceMapIds = scimetaModel.get("resourceMap");
             
+            var packageModel = {
+            	formatType: "RESOURCE",
+                type: "DataPackage",
+                childPackages: {}
+            };
+            
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
                 // Create a fresh package
-                MetacatUI.rootDataPackage = new DataPackage(null, this.model);
+                MetacatUI.rootDataPackage = new DataPackage(null, {packageModel: packageModel});
                 this.renderMetadata(this.model);
                 
             } else {
                 
                 // Set the root data package for the collection
-            	//TODO: Find the most recent resource map ID if there is more than one
-                MetacatUI.rootDataPackage = new DataPackage([scimetaModel], {id: resourceMapIds[0]});
+                packageModel.id = resourceMapIds[0];
+                MetacatUI.rootDataPackage = new DataPackage(null, {packageModel: packageModel});
                 
                 var view = this;
                 // As the root collection is updated with models, render the UI
@@ -145,12 +151,24 @@ define(['underscore',
                 var $packageTableContainer = this.$("#data-package-container");
                 $packageTableContainer.html(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> branch 'METACATUI_2_0_BRANCH' of https://github.com/NCEAS/metacatui.git
                 MetacatUI.rootDataPackage.fetch();
-                                
+                
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
             }
 
             this.listenTo(MetacatUI.rootDataPackage, "error", this.errorSaving);
+        },
+        
+        renderChildren: function(model, options) {
+            console.log("EditorView.renderChildren() called.");
+            console.log(model);
+            console.log(options);
+            
         },
         
         /* Calls the appropriate render method depending on the model type */
