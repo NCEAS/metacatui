@@ -8,16 +8,15 @@ define(['jquery', 'underscore', 'backbone'],
 			originalXML: null,
 			individualName: null,
 			organizationName: null,
-			role: null,
-			address: null,
-			phone: null,
-			fax: null,
-			electronicMailAddress: null,
-			onlineUrl: null,
+			positionName: null,
+			address: [],
+			phone: [],
+			fax: [],
+			email: [],
+			onlineUrl: [],
 			references: null,
-			userId: null,
-			id: null
-		
+			userId: [],
+			id: null		
 		},
 		
 		initialize: function(options){
@@ -27,53 +26,63 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 		},
 		
+		nodeNameMap: {
+			"administrativearea"    : "administrativeArea",
+			"deliverypoint"         : "deliveryPoint",
+			"electronicmailaddress" : "electronicMailAddress",
+			"givenname"             : "givenName",
+			"individualname"        : "individualName",
+			"onlineurl"             : "onlineUrl",
+			"organizationname"      : "organizationName",
+			"positionname"          : "positionName",
+			"postalcode"            : "postalCode",
+			"surname"               : "surName",
+			"userid"                : "userId",
+		},
+		
 		parse: function(xml){
 			if(!xml)
 				var xml = this.get("originalXML");
 			
+			var model = this;
+			
 			//Set the name
-			var name = $(xml).children("individualName"),
-				nameJSON = {};
+			var person = $(xml).children("individualName");
 			
-			if(name.length){
-				nameJSON.givenname = $(name).children("givenname").text();
-				nameJSON.surname   = $(name).children("surname").text();
-			}
-			this.set("individualName", nameJSON);
+			if(person.length)
+				this.set("individualName", this.parsePerson(person));
 			
-			//Set the phone numbers
+			//Set the phone and fax numbers
 			var phones = $(xml).children("phone"),
-				phonesJSON = [];
+				phoneNums = [],
+				faxNums = [];
 			
 			phones.each(function(i, phone){
-				phonesJSON.push({
-					number: $(phone).text(),
-					phonetype: $(phone).attr("phonetype")
-				});
+				if($(phone).attr("phonetype") == "voice")
+					phoneNums.push($(phone).text());
+				else if($(phone).attr("phonetype") == "facsimile")
+					faxNums.push($(phone).text());
 			});
-			this.set("phone", phonesJSON);
+			
+			this.set("phone", phoneNums);
+			this.set("fax", faxNums);
 			
 			//Set the address
-			var address = $(xml).children("address"),
-				addressJSON = {},
-				delPoint = $(address).find("deliverypoint"),
-				city = $(address).find("city"),
-				adminArea = $(address).find("administrativearea"),
-				postalCode = $(address).find("postalcode"),
-				country = $(address).find("country");
+			var addresses = $(xml).children("address"),
+				addressesJSON = [];
 			
-			addressJSON.deliverypoint = delPoint.length? delPoint.text() : null;
-			addressJSON.city = city.length? city.text() : null;
-			addressJSON.administrativearea = adminArea.length? adminArea.text() : null;
-			addressJSON.postalcode = postalCode.length? postalCode.text() : null;
-			addressJSON.country = country.length? country.text() : null;				
-			this.set("address", addressJSON);
+			addresses.each(function(i, address){
+				addressesJSON.push(model.parseAddress(address));
+			});
+				
+			this.set("address", addressesJSON);
 			
-			//Set the text fields
-			var textfields = ["organizationname", "positionname", "electronicmailaddress", "references"];			
-			for(var i=0; i<textfields.length; i++){
-				this.parseNode($(xml).children(textfields[i])[0]);
-			}
+			//Set the other misc. text fields
+			this.set("organizationName", $(xml).children("organizationname").text());
+			this.set("positionName", $(xml).children("positionname").text());
+			this.set("email", _.map($(xml).children("electronicmailaddress"), function(email){
+				return  $(email).text();
+			}));
 			
 			//Set the id attribute
 			this.set("id", $(xml).attr("id"));
@@ -85,6 +94,61 @@ define(['jquery', 'underscore', 'backbone'],
 				return;
 			
 			this.set($(node)[0].localName, $(node).text());
+		},
+		
+		parsePerson: function(personXML){
+			var person = {
+					givenName: [],
+					surName: "",
+					salutation: []
+				},
+				givenNames  = $(personXML).find("givenName"),
+				surName     = $(personXML).find("surName"),
+				salutations = $(personXML).find("salutation");
+			
+			givenNames.each(function(i, name){
+				person.givenName.push($(name).text());
+			});
+			
+			person.surName = surName.text();
+			
+			salutations.each(function(i, name){
+				person.salutation.push(name.text());
+			});
+			
+			return person;
+		},
+		
+		serializePerson: function(personJSON){
+			
+		},
+		
+		parseAddress: function(addressXML){
+			var address    = {},
+				delPoint   = $(addressXML).find("deliverypoint"),
+				city       = $(addressXML).find("city"),
+				adminArea  = $(addressXML).find("administrativearea"),
+				postalCode = $(addressXML).find("postalcode"),
+				country    = $(addressXML).find("country");
+		
+			address.city               = city.length? city.text() : "";
+			address.administrativeArea = adminArea.length? adminArea.text() : "";
+			address.postalCode         = postalCode.length? postalCode.text() : "";
+			address.country            = country.length? country.text() : "";	
+			
+			//Get an array of all the address line (or delivery point) values
+			var addressLines = [];
+			_.each(delPoint, function(i, addressLine){
+				addressLines.push($(addressLine).text());
+			}, this);
+			
+			address.deliveryPoint = addressLines;
+			
+			return  address;
+		},
+		
+		serializeAddress: function(addressJSON){
+			
 		},
 		
 		toXML: function(){
