@@ -15,9 +15,7 @@ define([
         
         /*
          *  The main view of a Data Package in the editor.  The view is
-         *  composed of a citation section at the top, a file/folder browser
-         *  below it, followed by a metadata viewer below that, which has a nav
-         *  sidebar, and a metadata content section.
+         *  a file/folder browser
          */
         var DataPackageView = Backbone.View.extend({
                         
