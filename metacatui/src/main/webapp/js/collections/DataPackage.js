@@ -1099,7 +1099,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             		//Make sure they are both formatted as arrays for these checks
             		isDocBy = _.compact(Array.isArray(isDocBy)? isDocBy : [isDocBy]);
             		origIsDocBy = _.compact(Array.isArray(origIsDocBy)? origIsDocBy : [origIsDocBy]);
-
+            		
+            		//Remove the id of this object so metadata can not be "isDocumentedBy" itself
+            		isDocBy = _.without(isDocBy, id);
+            		
             		//Simply check if they are the same
             		if(origIsDocBy === isDocBy){
             			i++; 
