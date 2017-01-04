@@ -35,9 +35,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            intellectualRights: [],
 	            onlineDist: [], // array of EMLOnlineDist objects
 	            offlineDist: [], // array of EMLOfflineDist objects
-	            geographicCoverages : [], //an array for GeographicCoverages
-	            temporalCoverages : [], //an array of TemporalCoverages
-	            taxonomicClassifications : [], //an array of Taxons
+	            geographicCoverage : [], //an array for GeographicCoverages
+	            temporalCoverage : [], //an array of TemporalCoverages
+	            taxonomicCoverage : [], //an array of Taxons
 	            purpose: [],
 	            contact: [], // array of EMLParty objects
 	            publisher: [], // array of EMLParty objects
@@ -51,12 +51,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 // Call initialize for the super class
                // this.constructor.__super__.initialize.apply(this, options);
                 
-                // EML211-specific init goes here
-                
+                // EML211-specific init goes here                
             },
             
             url: function(){
             	return MetacatUI.appModel.get("objectServiceUrl") + (this.get("id") || this.get("seriesid"));
+            },
+            
+            nodeNameMap: {
+            	"alternateidentifier" : "alternateIdentifier",
+            	"additionalinfo" : "additionalInfo",
+            	"intellectualrights" : "intellectualRights",
+            	"keywordset" : "keywordSet",
+            	"metadataprovider" : "metadataProvider",
+            	"otherentity" : "otherEntity",
+            	"pubdate" : "pubDate",
+            	"geographiccoverage" : "geographicCoverage",
+            	"taxonomiccoverage" : "taxonomicCoverage",
+            	"temporalcoverage" : "temporalCoverage"
             },
             
             /* 
@@ -144,23 +156,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact"],
             		emlDistribution = ["distribution"],
-            		emlProject = ["project"],
-            		skipNodes = ["datatable"];
+            		emlProject = ["project"];
             		
             	var nodes = datasetEl.children(),
-            		modelJSON = {},
-            		skippedXML = [];
+            		modelJSON = {};
             	
             	for(var i=0; i<nodes.length; i++){
             		console.log(nodes[i]);
             		var thisNode = nodes[i];
             		
+            		//EML Party modules are stored in EMLParty models
             		if(_.contains(emlParties, thisNode.localName))
             			modelJSON[thisNode.localName] = new EMLParty({ xml: thisNode });
+            		//EML Distribution modules are stored in EMLDistribution models
             		else if(_.contains(emlDistribution, thisNode.localName))
             			modelJSON[thisNode.localName] = new EMLDistribution({ xml: thisNode });
+            		//EML Project modules are stored in EMLProject models
             		else if(_.contains(emlProject, thisNode.localName))
             			modelJSON[thisNode.localName] = new EMLProject({ xml: thisNode });
+            		//EML Temporal and Geographic Coverage modules are stored as EMLCoverage models
             		else if(thisNode.localName == "coverage"){
             			modelJSON.coverage = [];
             			
@@ -172,11 +186,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			if(geo.length)
             				modelJSON.coverage.push(new EMLCoverage({ xml: geo }));
             		}
-            		else if(_.contains(skipNodes, thisNode.localName)){
-            			skippedXML.push(thisNode);
+            		else{
+            			var convertedName = this.nodeNameMap[thisNode.localName];
+            			//Is this a multi-valued field in EML?
+            			if(Array.isArray(this.get(convertedName))){
+            				//If we already have a value for this field, then add this value to the array
+            				if(Array.isArray(modelJSON[convertedName]))
+            					modelJSON[convertedName].push(this.toJson(thisNode));
+            				//If it's the first value for this field, then create a new array
+            				else
+            					modelJSON[convertedName] = [this.toJson(thisNode)];
+            			}
+            			else
+            				modelJSON[convertedName] = this.toJson(thisNode);
             		}
-            		else
-            			modelJSON[thisNode.localName] = this.toJson(thisNode);
             		
             	}
             	

@@ -57,7 +57,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 this.once("sync", this.listenForChanges);
             },
             
-            sysMetaNodeMap: {
+            nodeNameMap: {
     			accesspolicy: "accessPolicy",
     			accessrule: "accessRule",
     			authoritativemembernode: "authoritativeMemberNode",
@@ -183,7 +183,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             		
             		//Convert the JSON to a camel-cased version, which matches Solr and is easier to work with in code
             		_.each(Object.keys(sysMetaValues), function(key){
-            			var camelCasedKey = this.sysMetaNodeMap[key];
+            			var camelCasedKey = this.nodeNameMap[key];
             			if(camelCasedKey){
             				sysMetaValues[camelCasedKey] = sysMetaValues[key];
             				delete sysMetaValues[key];
@@ -450,19 +450,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	var xmlString = $(document.createElement("div")).append(xml.clone()).html();
 	        	
 	        	//Now camel case the nodes 
-	        	_.each(Object.keys(this.sysMetaNodeMap), function(name, i, allNodeNames){
+	        	_.each(Object.keys(this.nodeNameMap), function(name, i, allNodeNames){
 	        		var originalXMLString = xmlString;
 	        		
 	        		//Camel case node names
 	        		var regEx = new RegExp("<" + name, "g");
-	        		xmlString = xmlString.replace(regEx, "<" + this.sysMetaNodeMap[name]);
+	        		xmlString = xmlString.replace(regEx, "<" + this.nodeNameMap[name]);
 	        		var regEx = new RegExp(name + ">", "g");
-	        		xmlString = xmlString.replace(regEx, this.sysMetaNodeMap[name] + ">");
+	        		xmlString = xmlString.replace(regEx, this.nodeNameMap[name] + ">");
 	        		
 	        		//If node names haven't been changed, then find an attribute
 	        		if(xmlString == originalXMLString){
 	        			var regEx = new RegExp(" " + name + "=", "g");
-	        			xmlString = xmlString.replace(regEx, " " + this.sysMetaNodeMap[name] + "=");
+	        			xmlString = xmlString.replace(regEx, " " + this.nodeNameMap[name] + "=");
 	        		}
 	        	}, this);
 	        	
