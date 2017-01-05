@@ -45,7 +45,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 synced: false, // True if the full model has been synced
 	            uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
 	            uploadFile: null,
-	            isNew: false,
 	            notFound: false, //Whether or not this object was found in the system
 	            collections: [] //References to collections that this model is in
         	}),
@@ -57,6 +56,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 this.once("sync", this.listenForChanges);
             },
             
+            /*
+             * Maps the lower-case sys meta node names (valid in HTML DOM) to the camel-cased sys meta node names (valid in DataONE). 
+             * Used during parse() and serialize()
+             */
             nodeNameMap: {
     			accesspolicy: "accessPolicy",
     			accessrule: "accessRule",
@@ -343,11 +346,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 			 //Set the upload transfer as in progress
 			 this.set("uploadStatus", "p");
 			 
-			  //Set the request type
-			 var type;
-			 if(this.get("isNew")) type = "POST";
-			 else type = "PUT";
-			 
 			//Create a FormData object to send data with our XHR
 			var formData = new FormData();
   			
@@ -364,7 +362,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 			//Put together the AJAX and Backbone.save() options
 			var requestSettings = {
 					url: this.url(),
-					type: type,
 					cache: false,
 				    contentType: false,
 				    dataType: "text",
@@ -376,9 +373,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 						
 						model.set("uploadStatus", "c");
 					},
-					error: function(context, model, response){
+					error: function(model, response, xhr){
 						console.log("error updating system metadata");
 						model.set("uploadStatus", "e");
+						model.trigger("errorSaving", response.responseText);
 					}
 			}
 			
@@ -536,13 +534,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	         * Checks if this model has updates that need to be synced with the server.
 	         */
 	        hasUpdates: function(){
-	        	if(this.get("isNew") || !this.get("sysMetaXML")) return true;
+	        	if(this.isNew() || !this.get("sysMetaXML")) return true;
 	        	
 	        	//Compare the new system metadata XML to the old system metadata XML
 	        	var newSysMeta = this.serializeSysMeta(),
 	        		oldSysMeta = $(document.createElement("div")).append($(this.get("sysMetaXML"))).html();
 	        	
 	        	return !(newSysMeta == oldSysMeta);
+	        },
+	        
+	        isNew: function(){
+	        	//Check if there is an original XML document that was retrieved from the server
+	        	if(!this.get("objectXML")) return true;
+	        	else return false;
 	        },
 	        
 	        /*

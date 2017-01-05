@@ -1,4 +1,4 @@
-﻿/* global define */
+﻿﻿/* global define */
 define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/ScienceMetadata',
         'models/metadata/eml211/EMLCoverage', 
@@ -58,6 +58,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	return MetacatUI.appModel.get("objectServiceUrl") + (this.get("id") || this.get("seriesid"));
             },
             
+            /*
+             * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML). 
+             * Used during parse() and serialize()
+             */
             nodeNameMap: {
             	"alternateidentifier" : "alternateIdentifier",
             	"additionalinfo" : "additionalInfo",
@@ -143,8 +147,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             parse: function(response) {
             	//If the response is XML
             	if((typeof response == "string") && response.indexOf("<") == 0){
-            		this.set("objectXML", $.parseHTML(response));
-            		var emlElement = $(this.get("objectXML")).filter("eml\\:eml");
+            		this.set("objectXML", response);
+            		var emlElement = $($.parseHTML(response)).filter("eml\\:eml");
             	}
             	
             	var datasetEl;
@@ -208,20 +212,49 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	return modelJSON;           	
             },
             
+            /*
+             * Retireves the model attributes and serializes into EML XML, to produce the new or modified EML document.
+             * Returns the EML XML as a string.
+             * TODO: Use the EML submodels to serialize certain sections, such as EMLParty.
+             */
             serialize: function(){
-
-            	//Get the attributes for EML only
-            	var emlAttr = ["title", "creator", "alternateidentifier", "metadataprovider", "associatedparty",
-	                          "contact", "pubdate", "abstract", "coverage", "project", "intellectualrights", 
-	                          "distribution"],
-	               model = this;	           
+            	//TODO: Flush out this function. This is a stub right now that just returns the original XML.
 	           
 	           	//Get the EML document
 	           	var eml = this.get("objectXML");
 	           
-				//TODO: Change the EML nodes as needed
 				//TODO: Camel case the XML string
 	           	return $(document.createElement("div")).append(eml).html();
+            },
+            
+            /*
+             * Saves the EML document to the server using the DataONE API
+             */
+            save: function(attributes, options){
+            	 //Set the upload transfer as in progress
+   			 	this.set("uploadStatus", "p");
+   			 
+   			 	try{
+   			 		var xml = this.serialize();
+   			 	}
+   			 	catch(error){
+   			 		console.log("error serializing the EML.", error);
+   			 		this.trigger("error");
+   			 		return;
+   			 	}
+   			 	
+	   			//Create a FormData object to send data with our XHR
+	   			var formData = new FormData();
+     			
+   			//Create the system metadata XML
+     			var sysMetaXML = this.serializeSysMeta();
+     			//Send the system metadata as a Blob 
+   			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
+     			//Add the system metadata XML to the XHR data
+     			formData.append("sysmeta", xmlBlob, "sysmeta");
+     			
+     			//Add the identifier to the XHR data
+   			formData.append("pid", this.get("id"));
             },
             
             /*

@@ -25,8 +25,8 @@ define(['underscore',
         	"click #save-editor" : "save"
         },
         
-        /* The identifier of the root package id being rendered */
-        id: null,
+        /* The identifier of the root package EML being rendered */
+        pid: null,
 
         /* A list of the subviews of the editor */
         subviews: [],
@@ -66,7 +66,7 @@ define(['underscore',
         	
         	//If we don't have a model at this point, create one
         	if(!this.model) this.createModel();
-	        	
+        		
 	        //When the basic Solr metadata are retrieved, get the associated package
 	        this.listenToOnce(this.model, "sync", this.getDataPackage);
 	        //If no object is found with this ID, then tell the user
@@ -111,24 +111,17 @@ define(['underscore',
             
             var resourceMapIds = scimetaModel.get("resourceMap");
             
-            var packageModel = {
-            	formatType: "RESOURCE",
-                type: "DataPackage",
-                childPackages: {}
-            };
-            
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
                 // Create a fresh package
-                MetacatUI.rootDataPackage = new DataPackage(null, {packageModel: packageModel});
+                MetacatUI.rootDataPackage = new DataPackage(null);
                 this.renderMetadata(this.model);
                 
             } else {
                 
-                // Set the root data package for the collection
-                packageModel.id = resourceMapIds[0];
-                MetacatUI.rootDataPackage = new DataPackage(null, {packageModel: packageModel});
+                // Create a new data package with this id
+                MetacatUI.rootDataPackage = new DataPackage(null, { id: resourceMapIds[0] });
                 
                 var view = this;
                 // As the root collection is updated with models, render the UI
@@ -156,7 +149,7 @@ define(['underscore',
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
             }
 
-            this.listenTo(MetacatUI.rootDataPackage, "error", this.errorSaving);
+            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.errorSaving);
         },
         
         renderChildren: function(model, options) {

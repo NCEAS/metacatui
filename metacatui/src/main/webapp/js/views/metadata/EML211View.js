@@ -49,22 +49,22 @@ define(['underscore', 'jquery', 'backbone',
 			this.$el.html(this.template());
 			this.$container = this.$(".metadata-container");
 			
-			//Fetch the metadata model
-			this.listenTo(this.model, "sync", function(){
-				console.log("EML model: ", this.model);
-		    	//Render the different sections of the metadata
-		    	this.renderOverview();
-		    	this.renderPeople();
-		    	this.renderDates();
-		    	this.renderLocations();
-		    	this.renderTaxa();
-		    	this.renderMethods();
-		    	this.renderProject();
-		    	this.renderSharing();
-			});
-			this.model.fetch();
+			//Render all the EML sections when the model is synced
+			if(this.model.get("synced")) this.renderAllSections();
+			else this.listenTo(this.model, "sync", this.renderAllSections);
 	    	
             return this;
+        },
+        
+        renderAllSections: function(){
+        	this.renderOverview();
+	    	this.renderPeople();
+	    	this.renderDates();
+	    	this.renderLocations();
+	    	this.renderTaxa();
+	    	this.renderMethods();
+	    	this.renderProject();
+	    	this.renderSharing();
         },
 	    
         /*

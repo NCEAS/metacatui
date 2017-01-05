@@ -65,16 +65,21 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             
             // Constructor: Initialize a new DataPackage
             initialize: function(models, options) {
+                if(typeof options == "undefined")
+                	var options = {};
                 
                 // Create an initial RDF graph 
                 this.dataPackageGraph = rdf.graph();
+                
+                //Set the id or create a new one
+                this.id = options.id || "urn:uuid:" + uuid.v4();
                 
                 // Create a DataONEObject to represent this resource map
                 this.packageModel = new DataONEObject({
                 	formatType: "RESOURCE",
                     type: "DataPackage",
                     childPackages: {},
-            
+                    id: this.id
                 });
                 
                 if ( typeof options.packageModel !== "undefined" ) {
@@ -476,7 +481,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			var requestType;
     			
 				//Set a new id and keep our old id
-    			if(this.packageModel.get("isNew")){					
+    			if(this.packageModel.isNew()){					
 					requestType = "POST";
     			}
     			else{
@@ -489,7 +494,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			var formData = new FormData();
 
     			//Add the identifier to the XHR data
-    			if(this.packageModel.get("isNew")){
+    			if(this.packageModel.isNew()){
     				formData.append("pid", this.packageModel.get("id"));
     			}
     			else{
