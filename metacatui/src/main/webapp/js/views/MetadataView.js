@@ -1128,7 +1128,7 @@ define(['jquery',
 						
 			//Otherwise, try looking for an anchor with the id matching this object's id
 			if(!link.length)
-				link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
+				link = $(document.getElementById(id));
 
 			//Get metadata index view
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
