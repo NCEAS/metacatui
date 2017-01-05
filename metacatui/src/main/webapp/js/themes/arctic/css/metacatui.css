@@ -547,7 +547,31 @@ footer .logos a:hover, a:focus{
     	background-color: #19B36A;
     }
     
- 
+/* EDITOR 
+----------------------- */
+    .Editor .dropdown-menu li {
+        float: left;
+        position: relative;
+        width: 100%;
+    }
+    
+    .Editor .dropdown-menu li a {
+        background-color: #1F254F;
+        background-image: none;
+        color: #FFF;
+        font-weight: lighter;
+        font-family: "AllerLight";
+        font-size: 1em;
+        text-align: left;
+        padding: .75em;
+        box-sizing: border-box;
+        text-align: center;
+    }
+      
+    .Editor .dropdown-menu li a:hover {
+        background-color: #19B36A;
+    }
+    
 /* MAPS 
 --------------------------------- */
 #map-container{

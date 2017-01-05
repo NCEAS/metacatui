@@ -2923,44 +2923,93 @@ textarea.xlarge{
 	height: 200px;
 }
 
+/* Editor package table */
 .Editor #data-package-table {
 	margin-bottom: 0px;
 	border-bottom: 1px solid #dddddd;
 }
 
-.Editor #data-package-table > tbody > tr > td {
-	vertical-align: middle;
+/* Editor package table row */
+.Editor #data-package-table td {
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
-.Editor #data-package-table > tbody > tr > td {
-	white-space: nowrap;
-}
-
-.Editor #data-package-table > tbody > tr > td:first-of-type {
+/* Editor package table column 1 */
+.Editor #data-package-table  td:first-of-type {
 	padding-left: 20px;
+    width: 100px;
 }
 
-.Editor #data-package-table > tbody > tr > td > i.icon-chevron-down {
+
+/* Editor package table column icons */
+.Editor #data-package-table td > i.icon-chevron-down {
     margin-right: 10px;
 }
-.Editor #data-package-table > tbody > tr > td:nth-of-type(2) {
-	min-width: 10%;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-    width: 20%;
+
+/* Editor package table column 2 */
+.Editor #data-package-table td:nth-of-type(2) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.Editor #data-package-table > tbody > tr > td:last-of-type {
-	text-align: right;
-	padding-right: 20px;
+/* Editor package table column 3 */
+.Editor #data-package-table td:nth-of-type(3) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100px;
 }
 
-.Editor #data-package-table > tbody > tr > td:last-of-type > button {
-	width: 70px;
-	height: 30px;
+/* Editor package table column 4 */
+.Editor #data-package-table td:nth-of-type(4) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100px;
 }
 
+/* Editor package table column 5 */
+.Editor #data-package-table td:last-of-type {
+    text-align: right;
+    padding-right: 20px;
+    padding-left: 0px;
+    width: 100px;
+}
+
+
+/* Editor package table last column buttons */
+.Editor #data-package-table td:last-of-type > button {
+    text-align: center;
+    height: 2.5em;
+}
+
+/* Give icons breathing */
+.Editor #data-package-table button i {
+    margin-left: .3em;
+    margin-right: .3em;
+}
+
+.Editor #data-package-table li a span {
+    margin-left: .3em;
+    margin-right: .3em;
+    text-align: right;
+}
+
+.Editor #data-package-table button li i {
+    margin-left: .3em;
+    margin-right: .3em;
+}
+
+
+/* Editor package table button dropdown */
+.Editor #data-package-table td:last-of-type > button > ul {
+    margin-right: 20px;
+    background-color: #1F254F;
+}  
+    
+}
 /*******************************************
 Pager View
 ******************************************/
