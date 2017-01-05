@@ -20,7 +20,12 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             
             /* Events this view listens to */
             events: {
-                "focusout .name" : "updateName"
+                "focusout .name"   : "updateName",
+                /* "click .rename"    : "rename", */
+                "click .duplicate" : "duplicate",
+                "click .addFolder" : "addFolder",
+                "click .addFiles"  : "addFiles",
+                "click .remove"    : "remove"
             },
             
             /* Initialize the object - post constructor */
@@ -35,8 +40,8 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             render: function() {
                 this.$el.attr("data-id", this.model.get("id"));
                 this.$el.html( this.template(this.model.toJSON()) );
+                this.$el.find(".dropdown-toggle").dropdown("toggle");
 
-                
                 return this;
             },
             
@@ -64,11 +69,42 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
                 return idStr;
             },
             
+            /* Update the folder name based on the scimeta title */
             updateName: function(e){
             	if(this.model.get("type") == "Metadata")
             		this.model.set("title", $(e.target).text().trim());
             	else
             		this.model.set("fileName", $(e.target).text().trim());
+            },
+            
+            /* rename a file or folder TODO: decide if we need this */ 
+            rename: function(event) {
+                console.log("DataItemView.rename() called.");
+                
+            },
+            
+            /* Duplicate a file or folder */
+            duplicate: function(event) {
+                console.log("DataItemView.duplicate() called.");
+                
+            },
+            
+            /* Add a folder */
+            addFolder: function(event) {
+                console.log("DataItemView.addFolder() called.");
+                
+            },
+            
+            /* Add files to the parent folder */
+            addFiles: function(event) {
+                console.log("DataItemView.addFiles() called.");
+                
+            },
+            
+            /* Remove a file or folder */
+            remove: function(event) {
+                console.log("DataItemView.remove() called.");
+                
             }
             
         });
