@@ -115,19 +115,20 @@ define(['underscore',
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
                 // Create a fresh package
-                MetacatUI.rootDataPackage = new DataPackage(null);
+                MetacatUI.rootDataPackage = new DataPackage([this.model]);
                 this.renderMetadata(this.model);
                 
             } else {
                 
                 // Create a new data package with this id
-                MetacatUI.rootDataPackage = new DataPackage(null, { id: resourceMapIds[0] });
+                MetacatUI.rootDataPackage = new DataPackage([this.model], { id: resourceMapIds[0] });
                 
                 var view = this;
                 // As the root collection is updated with models, render the UI
                 this.listenTo(MetacatUI.rootDataPackage, "add", function(model){
+                	
                 	if(!model.get("synced") && model.get('id'))
-                		model.on("sync", view.renderMember);
+                		this.listenTo(model, "sync", view.renderMember);
                 	else if(model.get("synced"))
                 		view.renderMember(model);
                 	
@@ -144,6 +145,8 @@ define(['underscore',
                 var $packageTableContainer = this.$("#data-package-container");
                 $packageTableContainer.html(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
+                
+                //Fetch the data package
                 MetacatUI.rootDataPackage.fetch();
                 
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)

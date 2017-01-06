@@ -411,13 +411,32 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     
                     //Retrieve the model for each member 
                     _.each(memberPIDs, function(pid){
+                    	
                     	memberModel = this.get(pid);
-                        var collection = this;
-                        memberModel.fetch({
-                        	success: function(model){
-                        		collection.getMember(model);
-                        	}
-                        });
+                        
+                    	var collection = this;
+                        
+                    	memberModel.fetch();
+                    	memberModel.once("sync",
+                        	function(model){
+                        		
+                        		memberModel = collection.getMember(model);
+                        		              
+                                //If the model type has changed, then mark the model as unsynced, since there may be custom fetch() options for the new model
+                                if(model.type != memberModel.type){
+                                	memberModel.set("synced", false);
+                                	
+                                	memberModel.fetch();
+                                	memberModel.once("sync", function(fetchedModel){
+                                			fetchedModel.set("synced", true);
+                                			collection.add(fetchedModel, { merge: true }); 
+                                		});
+                                }
+                                else{
+                                	collection.add(memberModel, { replace: true });  
+                                }
+                        	});
+                    	
                     }, this);
                                      
                 } catch (error) {
@@ -852,7 +871,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 if ( ! memberModel.packageModel ) {
                     // We have a model
                     memberModel.set("nodeLevel", this.packageModel.get("nodeLevel")); // same level for all members 
-                    this.mergeMember(memberModel);
+                  //  this.mergeMember(memberModel);
                  
                     //TODO Find out if this code is necessary - getMember should be called after fetch so we may not need to fetch twice
                     //   memberModel.set("synced", false); // initialize the sync status
@@ -867,6 +886,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // this.listenTo(memberModel, 'sync', this.mergeMember);
                     // memberModel.fetch({merge: true});
                 }
+                
+                return memberModel;
                 
             },
             
