@@ -44,7 +44,7 @@ define(['underscore',
         createModel: function(){
         	//If no pid is given, create a new EML model
         	if(!this.pid)
-        		var model = new EML();
+        		var model = new EML({'synced': true});
         	//Otherwise create a generic metadata model until we find out the formatId
         	else
         		var model = new ScienceMetadata({ id: this.pid });
