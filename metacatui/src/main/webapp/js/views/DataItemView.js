@@ -32,7 +32,6 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
             initialize: function(options) {
                 this.id = this.model.get("id");
                 //this.id = this.generateId();
-                this.listenTo(this.model, 'change', this.render); // render changes to the item
                 
             },
             
@@ -41,6 +40,8 @@ define(['underscore', 'jquery', 'backbone', 'text!templates/dataItem.html'],
                 this.$el.attr("data-id", this.model.get("id"));
                 this.$el.html( this.template(this.model.toJSON()) );
                 this.$el.find(".dropdown-toggle").dropdown("toggle");
+                
+                this.listenTo(this.model, 'change', this.render); // render changes to the item
 
                 return this;
             },
