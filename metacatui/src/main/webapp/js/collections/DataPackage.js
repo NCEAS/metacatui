@@ -74,6 +74,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //Set the id or create a new one
                 this.id = options.id || "urn:uuid:" + uuid.v4();
                 
+                this.originalMembers = [];
+
                 // Create a DataONEObject to represent this resource map
                 this.packageModel = new DataONEObject({
                 	formatType: "RESOURCE",
