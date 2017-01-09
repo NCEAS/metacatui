@@ -72,6 +72,8 @@ define([
              * Add a single DataItemView row to the DataPackageView
              */
             addOne: function(item) {
+            	if(!item) return false;
+            	
                 console.log("DataPackageView.addOne called for " + item.id);
                 
                 var dataItemView = new DataItemView({model: item});
