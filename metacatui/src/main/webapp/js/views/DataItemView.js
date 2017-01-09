@@ -178,14 +178,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 }
                 // For each file, create a DataONEObject and add it to the correct collection
                 _.each(fileList, function(file) {
-                    console.log("Processing " + file.name + ", size: " + file.size);
+                    // console.log("Processing " + file.name + ", size: " + file.size);
                     
                     dataONEObject = new DataONEObject({
                         type: "Data",
                         fileName: file.name,
                         size: file.size,
                         mediaType: file.type,
-                        uploadFile: file
+                        uploadFile: file,
+                        isDocumentedBy: [parentSciMeta.id],
+                        resourceMap: [parentResourceMapId]
                     });
                     dataONEObject.bytesToSize();
                     this.collection.add(dataONEObject);
