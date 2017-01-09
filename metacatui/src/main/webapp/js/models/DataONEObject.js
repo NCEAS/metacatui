@@ -44,9 +44,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                 synced: false, // True if the full model has been synced
 	            uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
-	            uploadFile: null,
+	            uploadFile: null, // The file reference to be uploaded (JS object: File)
 	            notFound: false, //Whether or not this object was found in the system
-	            collections: [] //References to collections that this model is in
+	            collections: [], //References to collections that this model is in
         	}),
         	
             initialize: function(attrs, options) {
