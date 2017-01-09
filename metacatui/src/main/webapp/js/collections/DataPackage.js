@@ -38,6 +38,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             // identifier that documents it
             // Not to be changed after initial fetch - this is to keep track of the relationships in their original state
             originalIsDocBy: {},
+            
+            // An array of ids that are aggregated in the resource map on the server. 
+            // Taken from the original RDF XML that was fetched from the server.
+            // Used for comparing the original aggregation with the aggregation of this collection.
+            originalMembers: [],
                   
             // Keep the collection sorted by model "sortOrder".  The three model types
             // are ordered as:
@@ -74,8 +79,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //Set the id or create a new one
                 this.id = options.id || "urn:uuid:" + uuid.v4();
                 
-                this.originalMembers = [];
-
                 // Create a DataONEObject to represent this resource map
                 this.packageModel = new DataONEObject({
                 	formatType: "RESOURCE",
