@@ -40,22 +40,38 @@
 <!--td></td-->
 <!-- Button column -->
 <td class="dropdown">
-    <button type="button" class="btn-small btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
+    <button type="button" class="edit-btn btn-small btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <i class="icon-large icon-pencil"></i>
-        <span class="edit">Edit</span>
+        <span>Edit</span>
         <i class="caret"></i>
-        <ul class="dropdown-menu pull-right" role="menu">
-          <% if ( type === "Metadata" ) { %>
-          <!--li class="duplicate disabled"><a href="#"><i class="icon-large icon-pencil pull-left"></i><span>Duplicate</span></a></li -->
-          <!-- li class="addFolder disabled"><a href="#"><i class="icon-large icon-pencil pull-left"></i><span>Add Folder ...</span></a></li -->
-          <li class="addFiles enabled"><a href="#"><i class="icon-large  icon-cloud-upload pull-left"></i><span>Add Files ...</span></a></li>
-          <li role="separator" class="divider"></li>
-          <li class="remove enabled"><a href="#"><i class="icon-large icon-remove pull-left"></i><span>Remove ...</span></a></li>
-          
-          <% } else { %>
-          <li class="remove enabled"><a href="#"><i class="icon-large icon-remove pull-left"></i><span>Remove ...</span></a></li>
-              
-          <% } %>
-        </ul>    
     </button>
+    <ul class="dropdown-menu pull-right">
+      <% if ( type === "Metadata" ) { %>
+      <!--li class="duplicate disabled"><a href="#"><i class="icon-large icon-pencil pull-left"></i><span>Duplicate</span></a></li -->
+      <!-- li class="addFolder disabled"><a href="#"><i class="icon-large icon-pencil pull-left"></i><span>Add Folder ...</span></a></li -->
+      <li class="addFiles enabled">
+          <a data-target="#" href="#">
+              <i class="icon-large icon-cloud-upload pull-left"></i>
+              <span>Add Files ...</span>
+          </a>
+      </li>
+      <li role="separator" class="divider"></li>
+      <li class="remove enabled">
+          <a data-target="#">
+              <i class="icon-large icon-remove pull-left"></i>
+              <span>Remove ...</span>
+          </a>
+      </li>
+      
+      <% } else { %>
+      <li class="remove enabled">
+          <a href="#">
+              <i class="icon-large icon-remove pull-left"></i>
+              <span>Remove ...</span>
+          </a></li>
+          
+      <% } %>
+    </ul>    
+    
 </td>
