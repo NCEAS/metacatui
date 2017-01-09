@@ -13,6 +13,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
         	
         	type: "DataONEObject",
             
+<<<<<<< HEAD
         	defaults: _.extend({
                 // System Metadata attributes
 	            serialVersion: null,
@@ -48,6 +49,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	            notFound: false, //Whether or not this object was found in the system
 	            collections: [], //References to collections that this model is in
         	}),
+=======
+        	defaults: function(){
+        		return{
+	                // System Metadata attributes
+		            serialVersion: null,
+		            id: "urn:uuid:" + uuid.v4(),
+		            formatId: null,
+		            formatType: null,
+		            size: null,
+		            sizeStr: null,
+		            checksum: null,
+		            checksumAlgorithm: null,
+		            submitter: null,
+		            rightsHolder : null,
+		            accessPolicy: [],
+		            replicationPolicy: [],
+		            obsoletes: null,
+		            obsoletedBy: null,
+		            archived: null,
+		            dateUploaded: null,
+		            dateSysMetadataModified: null,
+		            originMemberNode: null,
+		            authoritativeMemberNode: null,
+		            replica: [],
+		            seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
+		            mediaType: null,
+		            fileName: null,
+	                // Non-system metadata attributes:
+		            type: null, // Data, Metadata, or DataPackage
+		            nodeLevel: 0, // Indicates hierarchy level in the view for indentation
+	                sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
+	                synced: false, // True if the full model has been synced
+		            uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
+		            uploadFile: null,
+		            notFound: false, //Whether or not this object was found in the system
+		            collections: [] //References to collections that this model is in
+	        	}
+        	},
+>>>>>>> 3a0e47db846a78fc14c1087adead2ad2a24c5d6d
         	
             initialize: function(attrs, options) {
                 this.on("change:size", this.bytesToSize);
@@ -107,6 +147,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
              * Overload Backbone.Model.fetch, so that we can set custom options for each fetch() request
              */
             fetch: function(options){
+            	console.log("Fetching " + this.get("id"));
+            	
             	//If we are using the Solr service to retrieve info about this object, then construct a query
             	if((typeof options != "undefined") && options.solrService){
             		
@@ -165,6 +207,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
            */
 
             parse: function(response){
+            	console.log("Parsing " + this.get("id"));
+            	
             	// If the response is XML
             	if( (typeof response == "string") && response.indexOf("<") == 0 ) {
             		

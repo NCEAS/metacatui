@@ -15,7 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         	type: "EML",            
 
-        	defaults: _.extend(ScienceMetadata.prototype.defaults, {
+        	defaults: _.extend(ScienceMetadata.prototype.defaults(), {
         		id: "urn:uuid:" + uuid.v4(),
         		formatId: "eml://ecoinformatics.org/eml-2.1.1",
         		objectXML: null,

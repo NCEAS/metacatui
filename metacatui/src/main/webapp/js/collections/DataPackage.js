@@ -74,6 +74,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //Set the id or create a new one
                 this.id = options.id || "urn:uuid:" + uuid.v4();
                 
+                this.originalMembers = [];
+
                 // Create a DataONEObject to represent this resource map
                 this.packageModel = new DataONEObject({
                 	formatType: "RESOURCE",
@@ -90,6 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 this.id = this.packageModel.id;
                 
                 this.on("add", this.saveReference);
+                this.on("add", this.triggerComplete);
                 
                 return this;  
             },
@@ -411,13 +414,33 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     
                     //Retrieve the model for each member 
                     _.each(memberPIDs, function(pid){
+                    	
                     	memberModel = this.get(pid);
-                        var collection = this;
-                        memberModel.fetch({
-                        	success: function(model){
-                        		collection.getMember(model);
-                        	}
-                        });
+                        
+                    	var collection = this;
+                        
+                    	memberModel.fetch();
+                    	memberModel.once("sync",
+                        	function(model){
+                        		
+                        		memberModel = collection.getMember(model);
+                        		              
+                                //If the model type has changed, then mark the model as unsynced, since there may be custom fetch() options for the new model
+                                if(model.type != memberModel.type){
+                                	memberModel.set("synced", false);
+                                	
+                                	memberModel.fetch();
+                                	memberModel.once("sync", function(fetchedModel){
+                                			fetchedModel.set("synced", true);
+                                			collection.add(fetchedModel, { merge: true }); 
+                                		});
+                                }
+                                else{
+                                	memberModel.set("synced", true);
+                                	collection.add(memberModel, { replace: true });  
+                                }
+                        	});
+                    	
                     }, this);
                                      
                 } catch (error) {
@@ -852,52 +875,34 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 if ( ! memberModel.packageModel ) {
                     // We have a model
                     memberModel.set("nodeLevel", this.packageModel.get("nodeLevel")); // same level for all members 
-                    this.mergeMember(memberModel);
-                 
-                    //TODO Find out if this code is necessary - getMember should be called after fetch so we may not need to fetch twice
-                    //   memberModel.set("synced", false); // initialize the sync status
-                    // When the object is fetched, merge it into the collection
-                  //  this.listenTo(memberModel, 'sync', this.mergeMember);
-                
-                   // memberModel.fetch({merge: true});
                     
                 } else {
                     // We have a nested collection
                     memberModel.packageModel.set("nodeLevel", this.packageModel.get("nodeLevel") + 1);
-                    // this.listenTo(memberModel, 'sync', this.mergeMember);
-                    // memberModel.fetch({merge: true});
                 }
+                
+                return memberModel;
                 
             },
             
-            /* Merge package members into the collection as they are fetched */
-            mergeMember: function(model, response, options) {
-                
-                // avoid adding unpopulated members (still an xhr object)
-                if ( typeof model.get === "undefined" ) { 
-                    return; 
-                }
-                
-                var mergeOptions = _.extend(options, {
-                    merge: true,
-                    // remove: false
+            triggerComplete: function(model){
+            	//Check if the collection is done being retrieved
+                var notSynced = this.reject(function(m){
+                	return (m.get("synced") || m.get("id") == model.get("id"));
                 });
                 
-                model.set({synced: true});
-                this.add(model, mergeOptions);
-                
-                //Check if the collection is done being retrieved
-                var notSynced = this.where({synced: false});
-                
-                if( notSynced.length > 0 ){
+                //If there are any models that are not synced yet, the collection is not complete
+                if( notSynced.length > 0 )
                     return;
-                    
-                } else {
-                    this.sort();
-                    this.trigger("complete", this);
-                    
-                }
                 
+                //If the number of models in this collection does not equal the number of objects referenced in the RDF XML, the collection is not complete
+                if(this.originalMembers.length > this.length)
+                	return;
+                    
+                this.sort();
+                this.trigger("complete", this);  
+                
+                console.log("DataPackage is complete. All " + this.length + " models have been synced and added.");
             },
             
             /* 

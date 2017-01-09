@@ -87,7 +87,7 @@ define([
                 }
                 
                 var parentRow, delayed_models;
-                if(scimetaParent == item.get("id")){
+                if((scimetaParent == item.get("id")) || (!scimetaParent && item.get("type") == "Metadata")) {
                 	// This is a metadata folder row, append it to the table
                     $('#data-package-table-body').append(dataItemView.render().el);
                     
@@ -104,7 +104,7 @@ define([
                 	if(scimetaParent)
                 		parentRow = this.$("[data-id='" + scimetaParent + "']");
                 
-                    if ( typeof parentRow !== undefined && parentRow.length ) {
+                    if ( typeof parentRow !== "undefined" && parentRow.length ) {
                         // This is a data row, insert below it's metadata parent folder
                         parentRow.after(dataItemView.render().el);
                         

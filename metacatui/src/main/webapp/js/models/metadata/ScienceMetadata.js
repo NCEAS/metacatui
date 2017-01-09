@@ -11,7 +11,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         var ScienceMetadata = DataONEObject.extend({
         	
             // Only add fields present in the Solr service to the defaults
-        	defaults: _.extend(DataONEObject.prototype.defaults, {
+        	defaults: function(){ return _.extend(DataONEObject.prototype.defaults(), {
 	            abstract: [],
 	            attribute: [],
 	            attributeDescription: [],
@@ -106,9 +106,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	            sem_annotates: [],
 	            sem_annotation: [],
 	            sem_comment: []        
-        	}),
+        	}) },
             
-	        type: "Metadata",
+	        type: "ScienceMetadata",
             
             /* Initialize a ScienceMetadata object */
             initialize: function(options) {

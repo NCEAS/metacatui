@@ -8,8 +8,9 @@ define(['underscore',
         'views/metadata/EML211View',
         'views/DataPackageView',
         'views/SignInView',
+        'views/CitationView',
         'text!templates/editor.html'], 
-        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView,
+        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView, CitationView,
         		EditorTemplate){
     
     var EditorView = Backbone.View.extend({
@@ -44,7 +45,7 @@ define(['underscore',
         createModel: function(){
         	//If no pid is given, create a new EML model
         	if(!this.pid)
-        		var model = new EML();
+        		var model = new EML({'synced' : true});
         	//Otherwise create a generic metadata model until we find out the formatId
         	else
         		var model = new ScienceMetadata({ id: this.pid });
@@ -114,20 +115,52 @@ define(['underscore',
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
-                // Create a fresh package
+                // Create a new Data packages
                 MetacatUI.rootDataPackage = new DataPackage(null);
+
+                var view = this;
+                // As the root collection is updated with models, render the UI
+                this.listenTo(MetacatUI.rootDataPackage, "add", function(model){
+                	
+                	if(!model.get("synced") && model.get('id'))
+                		this.listenTo(model, "sync", view.renderMember);
+                	else if(model.get("synced"))
+                		view.renderMember(model);
+                	
+                	//Listen for changes on this member
+                	this.listenTo(model, "change:uploadStatus", view.showControls);
+
+                });
+
+                // Create and render the Data Package table view
+                this.dataPackageView = new DataPackageView({
+                	edit: true,
+                	dataPackage: MetacatUI.rootDataPackage
+                });
+
+                var $packageTableContainer = this.$("#data-package-container");
+                $packageTableContainer.html(this.dataPackageView.render().el);
+                this.subviews.push(this.dataPackageView);
+
+                // Trigger the addition of our new scimeta to the Data Package
+                MetacatUI.rootDataPackage.trigger("add", scimetaModel);
+
+                // Force a render of the metadata
                 this.renderMetadata(this.model);
-                
+
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
+
             } else {
                 
                 // Create a new data package with this id
-                MetacatUI.rootDataPackage = new DataPackage(null, { id: resourceMapIds[0] });
+                MetacatUI.rootDataPackage = new DataPackage([this.model], { id: resourceMapIds[0] });
                 
                 var view = this;
                 // As the root collection is updated with models, render the UI
                 this.listenTo(MetacatUI.rootDataPackage, "add", function(model){
+                	
                 	if(!model.get("synced") && model.get('id'))
-                		model.on("sync", view.renderMember);
+                		this.listenTo(model, "sync", view.renderMember);
                 	else if(model.get("synced"))
                 		view.renderMember(model);
                 	
@@ -144,6 +177,8 @@ define(['underscore',
                 var $packageTableContainer = this.$("#data-package-container");
                 $packageTableContainer.html(this.dataPackageView.render().el);
                 this.subviews.push(this.dataPackageView);
+                
+                //Fetch the data package
                 MetacatUI.rootDataPackage.fetch();
                 
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
@@ -221,6 +256,14 @@ define(['underscore',
                 // this.renderDataPackageItem(model, collection, options);
                // this.off("change", this.renderMember, model); // avoid double renderings      	
                 
+
+                // Create a citation view and render it
+                var citationView = new CitationView({
+                            model: model,
+                            createLink: false });
+
+                this.subviews.push(citationView);
+                $("#citation-container").html(citationView.render().$el);  	
             }
         },
         
