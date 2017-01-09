@@ -15,39 +15,39 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             
         	defaults: function(){
         		return{
-	                // System Metadata attributes
-		            serialVersion: null,
-		            id: "urn:uuid:" + uuid.v4(),
-		            formatId: null,
-		            formatType: null,
-		            size: null,
-		            sizeStr: null,
-		            checksum: null,
-		            checksumAlgorithm: null,
-		            submitter: null,
-		            rightsHolder : null,
-		            accessPolicy: [],
-		            replicationPolicy: [],
-		            obsoletes: null,
-		            obsoletedBy: null,
-		            archived: null,
-		            dateUploaded: null,
-		            dateSysMetadataModified: null,
-		            originMemberNode: null,
-		            authoritativeMemberNode: null,
-		            replica: [],
-		            seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
-		            mediaType: null,
-		            fileName: null,
-	                // Non-system metadata attributes:
-		            type: null, // Data, Metadata, or DataPackage
-		            nodeLevel: 0, // Indicates hierarchy level in the view for indentation
-	                sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
-	                synced: false, // True if the full model has been synced
-		            uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
-		            uploadFile: null,
-		            notFound: false, //Whether or not this object was found in the system
-		            collections: [] //References to collections that this model is in
+                    // System Metadata attributes
+                    serialVersion: null,
+                    id: "urn:uuid:" + uuid.v4(),
+                    formatId: null,
+                    formatType: null,
+                    size: null,
+                    sizeStr: null,
+                    checksum: null,
+                    checksumAlgorithm: null,
+                    submitter: null,
+                    rightsHolder : null,
+                    accessPolicy: [],
+                    replicationPolicy: [],
+                    obsoletes: null,
+                    obsoletedBy: null,
+                    archived: null,
+                    dateUploaded: null,
+                    dateSysMetadataModified: null,
+                    originMemberNode: null,
+                    authoritativeMemberNode: null,
+                    replica: [],
+                    seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
+                    mediaType: null,
+                    fileName: null,
+                    // Non-system metadata attributes:
+                    type: null, // Data, Metadata, or DataPackage
+                    nodeLevel: 0, // Indicates hierarchy level in the view for indentation
+                    sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
+                    synced: false, // True if the full model has been synced
+                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
+                    uploadFile: null, // The file reference to be uploaded (JS object: File)
+                    notFound: false, //Whether or not this object was found in the system
+                    collections: [] //References to collections that this model is in
 	        	}
         	},
         	
