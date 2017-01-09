@@ -43,7 +43,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             render: function() {
                 this.$el.attr("data-id", this.model.get("id"));
                 this.$el.html( this.template(this.model.toJSON()) );
-                this.$el.find(".dropdown-toggle").dropdown("toggle");
+                this.$el.find(".dropdown-toggle").dropdown();
                 this.listenTo(this.model, 'change', this.render); // render changes to the item
 
                 return this;
