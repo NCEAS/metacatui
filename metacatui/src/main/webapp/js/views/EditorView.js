@@ -116,74 +116,29 @@ define(['underscore',
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
                 // Create a new Data packages
-                MetacatUI.rootDataPackage = new DataPackage(null);
-
-                var view = this;
-                // As the root collection is updated with models, render the UI
-                this.listenTo(MetacatUI.rootDataPackage, "add", function(model){
-                	
-                	if(!model.get("synced") && model.get('id'))
-                		this.listenTo(model, "sync", view.renderMember);
-                	else if(model.get("synced"))
-                		view.renderMember(model);
-                	
-                	//Listen for changes on this member
-                	this.listenTo(model, "change:uploadStatus", view.showControls);
-
-                });
-
-                // Create and render the Data Package table view
-                this.dataPackageView = new DataPackageView({
-                	edit: true,
-                	dataPackage: MetacatUI.rootDataPackage
-                });
-
-                var $packageTableContainer = this.$("#data-package-container");
-                $packageTableContainer.html(this.dataPackageView.render().el);
-                this.subviews.push(this.dataPackageView);
-
-                // Trigger the addition of our new scimeta to the Data Package
-                MetacatUI.rootDataPackage.trigger("add", scimetaModel);
-
-                // Force a render of the metadata
-                this.renderMetadata(this.model);
-
-                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
+                MetacatUI.rootDataPackage = new DataPackage([this.model]);
+                
+                //Render the data package
+                this.renderDataPackage();
+                
+                //Render the metadata
+                this.renderMetadata();
 
             } else {
                 
                 // Create a new data package with this id
                 MetacatUI.rootDataPackage = new DataPackage([this.model], { id: resourceMapIds[0] });
                 
-                var view = this;
-                // As the root collection is updated with models, render the UI
-                this.listenTo(MetacatUI.rootDataPackage, "add", function(model){
-                	
-                	if(!model.get("synced") && model.get('id'))
-                		this.listenTo(model, "sync", view.renderMember);
-                	else if(model.get("synced"))
-                		view.renderMember(model);
-                	
-                	//Listen for changes on this member
-                	this.listenTo(model, "change:uploadStatus", view.showControls);
-
-                });
-
-                // Render the package table framework
-                this.dataPackageView = new DataPackageView({
-                	edit: true,
-                	dataPackage: MetacatUI.rootDataPackage
-                	});
-                var $packageTableContainer = this.$("#data-package-container");
-                $packageTableContainer.html(this.dataPackageView.render().el);
-                this.subviews.push(this.dataPackageView);
-                
                 //Fetch the data package
-                MetacatUI.rootDataPackage.fetch();
+                MetacatUI.rootDataPackage.fetch(); 
                 
-                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren)
+                //Render the Data Package table
+                this.renderDataPackage();              
             }
+            
+            
 
+            //If the Data Package failed saving, display an error message
             this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.errorSaving);
         },
         
@@ -192,6 +147,38 @@ define(['underscore',
             console.log(model);
             console.log(options);
             
+        },
+        
+        renderDataPackage: function(){
+        	var view = this;
+        	
+        	// As the root collection is updated with models, render the UI
+            this.listenTo(MetacatUI.rootDataPackage, "add", function(model){
+            	
+            	if(!model.get("synced") && model.get('id'))
+            		this.listenTo(model, "sync", view.renderMember);
+            	else if(model.get("synced"))
+            		view.renderMember(model);
+            	
+            	//Listen for changes on this member
+            	this.listenTo(model, "change:uploadStatus", view.showControls);
+
+            });
+                       
+        	//Render the Data Package view
+            this.dataPackageView = new DataPackageView({
+            	edit: true,
+            	dataPackage: MetacatUI.rootDataPackage
+            	});
+            
+            //Render the view
+            var $packageTableContainer = this.$("#data-package-container");
+            $packageTableContainer.html(this.dataPackageView.render().el);
+            
+            //Save the view as a subview
+            this.subviews.push(this.dataPackageView);
+            
+            this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren);
         },
         
         /* Calls the appropriate render method depending on the model type */
@@ -228,6 +215,9 @@ define(['underscore',
         /* Renders the metadata section of the EditorView */
         renderMetadata: function(model, collection, options){
             
+        	if(!model && this.model) var model = this.model;
+        	if(!model) return;
+        	
             var emlView, dataPackageView;
 
             // render metadata as the collection is updated, but only EML passed from the event

@@ -551,7 +551,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        
 	        isNew: function(){
 	        	//Check if there is an original XML document that was retrieved from the server
-	        	if(!this.get("objectXML")) return true;
+	        	if(!this.get("objectXML") && this.get("synced")) return true;
 	        	else return false;
 	        },
 	        

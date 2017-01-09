@@ -246,10 +246,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	   			//Create a FormData object to send data with our XHR
 	   			var formData = new FormData();
      			
-   			//Create the system metadata XML
+	   			//Create the system metadata XML
      			var sysMetaXML = this.serializeSysMeta();
      			//Send the system metadata as a Blob 
-   			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
+     			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
      			//Add the system metadata XML to the XHR data
      			formData.append("sysmeta", xmlBlob, "sysmeta");
      			

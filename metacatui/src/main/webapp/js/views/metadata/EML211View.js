@@ -50,8 +50,8 @@ define(['underscore', 'jquery', 'backbone',
 			this.$container = this.$(".metadata-container");
 			
 			//Render all the EML sections when the model is synced
-			if(this.model.get("synced")) this.renderAllSections();
-			else this.listenTo(this.model, "sync", this.renderAllSections);
+			this.renderAllSections();
+			this.listenTo(this.model, "sync", this.renderAllSections);
 	    	
             return this;
         },

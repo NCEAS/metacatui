@@ -2991,25 +2991,35 @@ textarea.xlarge{
     margin-right: .3em;
 }
 
-.Editor #data-package-table li a span {
+.Editor #data-package-table ul li a span {
     margin-left: .3em;
     margin-right: .3em;
     text-align: right;
 }
 
-.Editor #data-package-table button li i {
+.Editor #data-package-table ul li i {
     margin-left: .3em;
     margin-right: .3em;
 }
 
 
 /* Editor package table button dropdown */
-.Editor #data-package-table td:last-of-type > button > ul {
+.Editor #data-package-table td:last-of-type ul {
+    margin-right: 20px;
+    background-color: #1F254F;
+}  
+
+/* Editor package table button dropdown list items */
+.Editor #data-package-table td:last-of-type ul li {
     margin-right: 20px;
     background-color: #1F254F;
 }  
     
-}
+/* Highlight drop zones with a dashed border */
+.droppable {
+    border: 2px dashed #1F254F;
+    
+}    
 /*******************************************
 Pager View
 ******************************************/
