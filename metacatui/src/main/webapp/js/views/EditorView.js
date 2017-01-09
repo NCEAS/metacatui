@@ -8,8 +8,9 @@ define(['underscore',
         'views/metadata/EML211View',
         'views/DataPackageView',
         'views/SignInView',
+        'views/CitationView',
         'text!templates/editor.html'], 
-        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView,
+        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView, CitationView,
         		EditorTemplate){
     
     var EditorView = Backbone.View.extend({
@@ -255,6 +256,14 @@ define(['underscore',
                 // this.renderDataPackageItem(model, collection, options);
                // this.off("change", this.renderMember, model); // avoid double renderings      	
                 
+
+                // Create a citation view and render it
+                var citationView = new CitationView({
+                            model: model,
+                            createLink: false });
+
+                this.subviews.push(citationView);
+                $("#citation-container").html(citationView.render().$el);  	
             }
         },
         
