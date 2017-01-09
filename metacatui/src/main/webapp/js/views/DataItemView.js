@@ -36,11 +36,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             /* Initialize the object - post constructor */
             initialize: function(options) {
                 this.id = this.model.get("id");
-                //this.id = this.generateId();
-<<<<<<< HEAD
-                this.listenTo(this.model, "change", this.render); // render changes to the item
-=======
->>>>>>> 3a0e47db846a78fc14c1087adead2ad2a24c5d6d
                 
             },
             
@@ -48,15 +43,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             render: function() {
                 this.$el.attr("data-id", this.model.get("id"));
                 this.$el.html( this.template(this.model.toJSON()) );
-<<<<<<< HEAD
-                this.$el.find(".dropdown-toggle").dropdown();
-                
-=======
                 this.$el.find(".dropdown-toggle").dropdown("toggle");
-                
                 this.listenTo(this.model, 'change', this.render); // render changes to the item
 
->>>>>>> 3a0e47db846a78fc14c1087adead2ad2a24c5d6d
                 return this;
             },
             
