@@ -2923,6 +2923,13 @@ textarea.xlarge{
 	height: 200px;
 }
 
+/* Editor package table container */
+.Editor #data-package-container {
+    max-height: 200px;
+    overflow: auto;
+    
+}
+
 /* Editor package table */
 .Editor #data-package-table {
 	margin-bottom: 0px;
