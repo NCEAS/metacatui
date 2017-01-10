@@ -191,6 +191,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     });
                     dataONEObject.bytesToSize();
                     this.collection.add(dataONEObject);
+                    dataONEObject.set("uploadStatus", "q");
                 }, this);
                 
             },
