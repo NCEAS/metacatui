@@ -136,8 +136,6 @@ define(['underscore',
                 this.renderDataPackage();              
             }
             
-            
-
             //If the Data Package failed saving, display an error message
             this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.errorSaving);
         },
@@ -227,7 +225,7 @@ define(['underscore',
                 return;
                 
             } else {
-            	console.log("Rendering EML Model ", model);
+            	console.log("Rendering EML Model ", model.get("id"));
             	               
             	//Style the body as an Editor
                 $("body").addClass("Editor");

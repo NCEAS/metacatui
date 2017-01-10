@@ -268,10 +268,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
    			 		return;
    			 	}
    			 	
-     			
 	   			//Create a FormData object to send data with our XHR
 	   			var formData = new FormData();
-	   			
      			
 	   			try{
 	     			

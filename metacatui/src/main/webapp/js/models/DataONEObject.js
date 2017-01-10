@@ -44,7 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
-                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
+                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
                     collections: [] //References to collections that this model is in
@@ -55,7 +55,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 this.on("change:size", this.bytesToSize);
                 
                 //When the model has been retrieved the first time, listen for changes to it so we can keep track of user changes
-                this.once("sync", this.listenForChanges);
+                this.once("sync", this.updateUploadStatus);
             },
             
             /*
@@ -534,14 +534,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 				this.set("archived", false);
 	        },
 	        
+	        /*
+	         * Reset
+	         */
 	        resetID: function(){
 	        	if(!this.attributeCache) return false;
 	        	
-	        	this.set("oldPid", this.attributeCache.oldPid);
-	        	this.set("id", this.attributeCache.id);
-	        	this.set("obsoletes", this.attributeCache.obsoletes);
-	        	this.set("obsoletedBy", this.attributeCache.obsoletedBy);
-	        	this.set("archived", this.attributeCache.archived);
+	        	this.set("oldPid", this.attributeCache.oldPid, {silent:true});
+	        	this.set("id", this.attributeCache.id, {silent: true});
+	        	this.set("obsoletes", this.attributeCache.obsoletes, {silent: true});
+	        	this.set("obsoletedBy", this.attributeCache.obsoletedBy, {silent: true});
+	        	this.set("archived", this.attributeCache.archived, {silent: true});
+	        	
+	        	//Reset the attribute cache
+	        	this.attributeCache = {};
 	        },
 	        
 	        /*
@@ -566,10 +572,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        /*
 	         * Listens to attributes on the model for changes that will require an update
 	         */
-	        listenForChanges: function(){
+	        updateUploadStatus: function(){
 	        	this.on("change", function(model){
-	        		if(this.changedAttributes().uploadStatus) return;
+	        		//If the object is already in the upload queue, then exit.
+	        		if(this.get("uploadStatus") == "q" || this.get("uploadStatus") == "p");
+	        		
+	        		//Some attributes should be ignored when determining a change worthy of putting this object in the upload queue
+	        		var ignoredAttributes = ["uploadStatus", "type", "sortOrder", "synced", "oldPid"],
+	        		//Filter out the ignored attributes
+	        			changedAttributes = _.difference(Object.keys(this.changedAttributes()), ignoredAttributes);
+	        		
+	        		//Exit if nothing has changed
+	        		if(!changedAttributes.length) return;
 	        			
+	        		//Add this item to the queue
 	        		if((this.get("uploadStatus") == "c") || !this.get("uploadStatus"))
 	        			this.set("uploadStatus", "q");
 	        	});

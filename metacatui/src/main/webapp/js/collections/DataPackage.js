@@ -534,8 +534,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					var mapXML = this.serialize();
     			}
     			catch (serializationException) {
+    				console.log(serializationException);
+    				    				
     				//If serialization failed, revert back to our old id
     				this.packageModel.resetID();
+    				
+    				this.trigger("errorSaving");
+
     				return;
     			}
     			
@@ -1052,7 +1057,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			this.dataPackageGraph.addStatement(rdf.st(objectNode, DCTERMS("identifier"), idNode));
     			
     			//Find the metadata doc that describes this object
-    			var model   = _.find(this.get("members"), function(m){ return m.get("id") == id }),
+    			var model   = _.find(this.models, function(m){ return m.get("id") == id }),
     				isDocBy = model.get("isDocumentedBy");
     			
     			//If this object is documented by any metadata...
