@@ -30,7 +30,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 "dragend"             : "hideDropzone",     // Drag & drop, hide the dropzone for this row
                 "dragleave"           : "hideDropzone",     // Drag & drop, hide the dropzone for this row
                 "drop"                : "addFiles",         // Drag & drop, adds the files into the collection
-                "click .remove"       : "handleRemove"      // Edit dropdown, remove sci{data,meta} from collection
+                "click .removeFiles"  : "handleRemove"      // Edit dropdown, remove sci{data,meta} from collection
             },
             
             /* Initialize the object - post constructor */
@@ -124,10 +124,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 console.log("DataItemView.addFiles() called.");
                 
                 var fileList,            // The list of chosen files
-                    parentSciMetas,      // The list of science metadata (should be just 1)
                     parentSciMeta,       // The science metadata object for this row
-                    parentResourceMaps,  // The id of the first resource of this row's scimeta
-                    parentResourceMapId, // The id of the first resource of this row's scimeta
+                    parentDataPackage,   // The id of the first resource of this row's scimeta
                     dataONEObject;       // The dataONEObject to represent this file
                 
                 event.stopPropagation();
@@ -145,54 +143,30 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 event.preventDefault();
                 this.$el.removeClass("droppable");
                 
-                console.log(event);
-
                 // Find the correct collection to add to. Use JQuery's delegateTarget
                 // attribute corresponding to the element where the event handler was attached
                 if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
-                    parentSciMetas = MetacatUI.rootDataPackage.where({
-                        id: event.delegateTarget.dataset.id
-                    });
+                    parentSciMeta = this.getParentScienceMetadata(event);
+                    this.collection = this.getParentDataPackage(event);
                     
-                    if ( parentSciMetas.length > 0 ) {
-                        parentSciMeta = parentSciMetas[0];
-                    }
-                    
-                    if ( parentSciMeta.get && parentSciMeta.get("resourceMap").length > 0 ) {
-                        parentResourceMaps = parentSciMeta.get("resourceMap");
+                    // For each file, create a DataONEObject and add it to the correct collection
+                    _.each(fileList, function(file) {
+                        // console.log("Processing " + file.name + ", size: " + file.size);
                         
-                        if ( parentResourceMaps.length > 0 ) {
-                            parentResourceMapId = parentResourceMaps[0];
-                        }
-                        
-                    }
-                    
-                    // Is this the root package or a nested package?
-                    if ( MetacatUI.rootDataPackage.packageModel.id === parentResourceMapId ) {
-                        this.collection = MetacatUI.rootDataPackage;
-                    
-                    // A nested package    
-                    } else {
-                        this.collection = MetacatUI.rootDataPackage.where({id: parentResourceMapId})[0];
-                    }
+                        dataONEObject = new DataONEObject({
+                            type: "Data",
+                            fileName: file.name,
+                            size: file.size,
+                            mediaType: file.type,
+                            uploadFile: file,
+                            isDocumentedBy: [parentSciMeta.id],
+                            resourceMap: [this.collection.packageModel.id]
+                        });
+                        dataONEObject.bytesToSize();
+                        this.collection.add(dataONEObject);
+                        dataONEObject.set("uploadStatus", "q");
+                    }, this);
                 }
-                // For each file, create a DataONEObject and add it to the correct collection
-                _.each(fileList, function(file) {
-                    // console.log("Processing " + file.name + ", size: " + file.size);
-                    
-                    dataONEObject = new DataONEObject({
-                        type: "Data",
-                        fileName: file.name,
-                        size: file.size,
-                        mediaType: file.type,
-                        uploadFile: file,
-                        isDocumentedBy: [parentSciMeta.id],
-                        resourceMap: [parentResourceMapId]
-                    });
-                    dataONEObject.bytesToSize();
-                    this.collection.add(dataONEObject);
-                    dataONEObject.set("uploadStatus", "q");
-                }, this);
                 
             },
             
@@ -211,11 +185,67 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             },
             
             /* Remove a file or folder */
-            remove: function(event) {
-                console.log("DataItemView.remove() called.");
+            handleRemove: function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                console.log("DataItemView.handleRemove() called.");
                 
-            }
+            },
             
+            /* 
+             * Return the parent science metadata model associated with the
+             * data or metadata row of the UI event
+             */
+            getParentScienceMetadata: function(event) {
+                var parentMetadata,
+                    parentSciMeta;
+                
+                if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
+                    parentMetadata = MetacatUI.rootDataPackage.where({
+                        id: event.delegateTarget.dataset.id
+                    });
+                    
+                    if ( parentMetadata.length > 0 ) {
+                        parentSciMeta = parentMetadata[0];
+                    }
+                }
+                
+                return parentSciMeta;
+            },
+            
+            /* 
+             * Return the parent data package collection associated with the
+             * data or metadata row of the UI event
+             */
+            getParentDataPackage: function(event) {
+                var parentSciMeta,
+                    parenResourceMaps,
+                    parentResourceMapId;
+                
+                if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
+
+                    parentSciMeta = this.getParentScienceMetadata(event);
+
+                    if ( parentSciMeta.get && parentSciMeta.get("resourceMap").length > 0 ) {
+                        parentResourceMaps = parentSciMeta.get("resourceMap");
+                        
+                        if ( parentResourceMaps.length > 0 ) {
+                            parentResourceMapId = parentResourceMaps[0];
+                        }
+                        
+                    }
+                    
+                    // Is this the root package or a nested package?
+                    if ( MetacatUI.rootDataPackage.packageModel.id === parentResourceMapId ) {
+                        return MetacatUI.rootDataPackage;
+                    
+                    // A nested package    
+                    } else {
+                        return MetacatUI.rootDataPackage.where({id: parentResourceMapId})[0];
+                        
+                    }
+                }
+            }
         });
         
         return DataItemView;
