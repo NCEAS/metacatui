@@ -562,11 +562,10 @@ footer .logos a:hover, a:focus{
         font-weight: lighter;
         font-family: "AllerLight";
         text-align: left;
-        padding: .75em;
         box-sizing: border-box;
         text-align: center;
     }
-      
+
     .Editor .dropdown-menu li a:hover {
         background-color: #19B36A;
     }

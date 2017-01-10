@@ -2871,9 +2871,9 @@ Editor View
 .side-nav-item a {
     width: 100%;
     display: block;
-    height: 3em;
+    height: 2em;
     font-size: 1.3em;
-    line-height: 3em;
+    line-height: 2em;
     padding-left: 20px;
     box-sizing: border-box;
 }
@@ -2926,8 +2926,7 @@ textarea.xlarge{
 /* Editor package table container */
 .Editor #data-package-container {
     max-height: 200px;
-    overflow: auto;
-    
+    overflow: auto;   
 }
 
 /* Editor package table */
@@ -2989,7 +2988,9 @@ textarea.xlarge{
 /* Editor package table last column buttons */
 .Editor #data-package-table td:last-of-type > button {
     text-align: center;
-    height: 2.5em;
+    vertical-align: middle;
+    height: 2.0em;
+    padding-top: .2em;
 }
 
 /* Give icons breathing */
@@ -3014,6 +3015,7 @@ textarea.xlarge{
 .Editor #data-package-table td:last-of-type ul {
     margin-right: 20px;
     background-color: #1F254F;
+    border-radius: 4px;
 }  
 
 /* Editor package table button dropdown list items */
@@ -3021,7 +3023,12 @@ textarea.xlarge{
     margin-right: 20px;
     background-color: #1F254F;
 }  
-    
+
+.Editor .dropdown-menu li a i {
+    vertical-align: middle;
+}      
+
+
 /* Highlight drop zones with a dashed border */
 .droppable {
     border: 2px dashed #1F254F;
