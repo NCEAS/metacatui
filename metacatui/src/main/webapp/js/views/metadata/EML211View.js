@@ -76,7 +76,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Append the empty layout
 	    	var overviewEl = this.$container.find(".overview");
-	    	$(overviewEl).append(this.overviewTemplate());
+	    	$(overviewEl).html(this.overviewTemplate());
 	    	
 	    	//Abstract
 	    	var abstractEl = this.createAbstract(edit);

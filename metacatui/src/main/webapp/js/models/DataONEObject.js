@@ -62,27 +62,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
              * Maps the lower-case sys meta node names (valid in HTML DOM) to the camel-cased sys meta node names (valid in DataONE). 
              * Used during parse() and serialize()
              */
-            nodeNameMap: {
-    			accesspolicy: "accessPolicy",
-    			accessrule: "accessRule",
-    			authoritativemembernode: "authoritativeMemberNode",
-    			checksumalgorithm: "checksumAlgorithm",
-    			dateuploaded: "dateUploaded",
-    			datesysmetadatamodified: "dateSysMetadataModified",
-    			dateuploaded: "dateUploaded",
-    			formatid: "formatId",
-    			filename: "fileName",
-    			nodereference: "nodeReference",
-    			obsoletedby: "obsoletedBy",
-    			originmembernode: "originMemberNode",
-    			replicamembernode: "replicaMemberNode",
-    			replicationallowed: "replicationAllowed",
-    			replicationpolicy: "replicationPolicy",
-    			replicationstatus: "replicationStatus",
-    			replicaverified: "replicaVerified",		
-    			rightsholder: "rightsHolder",
-    			serialversion: "serialVersion"
-    		},
+            nodeNameMap: function(){
+            	return{
+	    			accesspolicy: "accessPolicy",
+	    			accessrule: "accessRule",
+	    			authoritativemembernode: "authoritativeMemberNode",
+	    			checksumalgorithm: "checksumAlgorithm",
+	    			dateuploaded: "dateUploaded",
+	    			datesysmetadatamodified: "dateSysMetadataModified",
+	    			dateuploaded: "dateUploaded",
+	    			formatid: "formatId",
+	    			filename: "fileName",
+	    			nodereference: "nodeReference",
+	    			obsoletedby: "obsoletedBy",
+	    			originmembernode: "originMemberNode",
+	    			replicamembernode: "replicaMemberNode",
+	    			replicationallowed: "replicationAllowed",
+	    			replicationpolicy: "replicationPolicy",
+	    			replicationstatus: "replicationStatus",
+	    			replicaverified: "replicaVerified",		
+	    			rightsholder: "rightsHolder",
+	    			serialversion: "serialVersion"
+            	};
+            },
             
         	url: function(){
         		if(!this.get("id") && !this.get("seriesid")) return "";
@@ -192,7 +194,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             		
             		//Convert the JSON to a camel-cased version, which matches Solr and is easier to work with in code
             		_.each(Object.keys(sysMetaValues), function(key){
-            			var camelCasedKey = this.nodeNameMap[key];
+            			var camelCasedKey = this.nodeNameMap()[key];
             			if(camelCasedKey){
             				sysMetaValues[camelCasedKey] = sysMetaValues[key];
             				delete sysMetaValues[key];
@@ -426,8 +428,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 		        	$(fileNameNode).text(this.get("fileName"));
 	        	}
 	        	
-	        	if(this.get("obsoletes"))
-	        		xml.find("obsoletes").text(this.get("obsoletes"));
+	        	if(this.get("obsoletes")){
+	        		
+	        		if(xml.find("obsoletes").length)
+	        			xml.find("obsoletes").text(this.get("obsoletes"));
+	        		else
+	        			xml.append($(document.createElement("obsoletes")).text(this.get("obsoletes")));
+	        	}
 	        	else
 	        		xml.find("obsoletes").remove();
 	        	
@@ -435,7 +442,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	if(this.get("obsoletedBy")){
 	        		//Create a new obsoletedBy node if needed
 	        		if(!xml.find("obsoletedby").length){
-	        			xml.find("authoritativemembernode").after($(document.createElement("obsoletedby")).text(this.get("obsoletedBy")));
+	        			xml.append($(document.createElement("obsoletedby")).text(this.get("obsoletedBy")));
 	        		}
 	        		//Or update the existing obsoletedBy node
 	        		else
@@ -454,19 +461,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	var xmlString = $(document.createElement("div")).append(xml.clone()).html();
 	        	
 	        	//Now camel case the nodes 
-	        	_.each(Object.keys(this.nodeNameMap), function(name, i, allNodeNames){
+	        	var nodeNameMap = this.nodeNameMap();
+	        	_.each(Object.keys(nodeNameMap), function(name, i){
 	        		var originalXMLString = xmlString;
 	        		
 	        		//Camel case node names
 	        		var regEx = new RegExp("<" + name, "g");
-	        		xmlString = xmlString.replace(regEx, "<" + this.nodeNameMap[name]);
+	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name]);
 	        		var regEx = new RegExp(name + ">", "g");
-	        		xmlString = xmlString.replace(regEx, this.nodeNameMap[name] + ">");
+	        		xmlString = xmlString.replace(regEx, nodeNameMap[name] + ">");
 	        		
 	        		//If node names haven't been changed, then find an attribute
 	        		if(xmlString == originalXMLString){
 	        			var regEx = new RegExp(" " + name + "=", "g");
-	        			xmlString = xmlString.replace(regEx, " " + this.nodeNameMap[name] + "=");
+	        			xmlString = xmlString.replace(regEx, " " + nodeNameMap[name] + "=");
 	        		}
 	        	}, this);
 	        	
@@ -540,7 +548,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	         * Checks if this model has updates that need to be synced with the server.
 	         */
 	        hasUpdates: function(){
-	        	if(this.isNew() || !this.get("sysMetaXML")) return true;
+	        	if(this.isNew()) return true;
 	        	
 	        	//Compare the new system metadata XML to the old system metadata XML
 	        	var newSysMeta = this.serializeSysMeta(),
