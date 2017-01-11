@@ -284,7 +284,7 @@ define(['jquery',
 			if(delay){
 				$(alert).hide();
 				$(container).prepend(alert);
-				$(alert).show().delay(3000).fadeOut();
+				$(alert).show().delay(typeof delay == "number"? delay : 3000).fadeOut();
 			}
 			else
 				$(container).prepend(alert);

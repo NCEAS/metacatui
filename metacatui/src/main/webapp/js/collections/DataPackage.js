@@ -494,7 +494,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				else if(model.get("uploadStatus") == "q"){
     					model.save();  				
     					modelsInProgress.push(model);
-    					this.listenTo(model, "sync", this.save);
+    					this.listenToOnce(model, "sync", this.save);
     				}
     			}, this);
 
@@ -576,8 +576,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 							console.log("yay, map is saved");
 							
 							//Update the object XML
-							this.objectXML = mapXML;
+							collection.objectXML = mapXML;
 							
+							collection.trigger("successSaving");
 						},
 						error: function(data){
 							console.log("error udpating object");
@@ -978,12 +979,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     	           	});
     	            
                 	//Remove any other isAggregatedBy statements that are not listed as members of this model
-    	            _.each(aggByStatements, function(statement){
+    	            for(var i=0; i<aggByStatements.length; i++){
+    	            	var statement = aggByStatements[i];
+    	            
     	            	if(!_.contains(allMemberIds, statement.subject.value))
     	            		this.removeFromAggregation(statement.subject.value);
     	            	else if(_.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) }))
-    	            		statement.object.value = cnResolveUrl+ encodeURIComponent(pid) + "#aggregation";            	
-    	            }, this);
+    	            		statement.object.value = cnResolveUrl+ encodeURIComponent(pid) + "#aggregation";          
+    	            }
     	            
                 	//Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
     	            var aggregationSubjStatements = this.dataPackageGraph.statementsMatching(aggregationNode);
@@ -1062,7 +1065,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				documents = model.get("documents");
     			
     			//If this object is documented by any metadata...
-    			if(isDocBy){
+    			if(isDocBy && isDocBy.length){
     				//Get the ids of all the metadata objects in this package
     				var	metadataInPackage = _.compact(_.map(this.get("members"), function(m){ if(m.get("formatType") == "METADATA") return m.get("id"); }));
     				//Find the metadata IDs that are in this package that also documents this data object 
@@ -1082,7 +1085,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			}
     			
     			//If this object documents a data object
-    			if(documents){
+    			if(documents && documents.length){
     				//Create a literal node for it
     				var metadataNode = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id));
     				

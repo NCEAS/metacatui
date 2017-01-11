@@ -382,6 +382,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        	//If nothing else has been changed, then this object hasn't had any updates
 	        	return false;
 	        },
+	        
+	        isNew: function(){
+	        	//Check if there is an original XML document that was retrieved from the server
+	        	if(!this.get("objectXML") && this.get("synced")) return true;
+	        	else return false;
+	        },
                
             /*
              Add an entity into the EML 2.1.1 object

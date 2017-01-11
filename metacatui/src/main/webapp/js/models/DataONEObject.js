@@ -74,6 +74,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	    			formatid: "formatId",
 	    			filename: "fileName",
 	    			nodereference: "nodeReference",
+	    			numberreplicas: "numberReplicas",
 	    			obsoletedby: "obsoletedBy",
 	    			originmembernode: "originMemberNode",
 	    			replicamembernode: "replicaMemberNode",
@@ -565,7 +566,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        
 	        isNew: function(){
 	        	//Check if there is an original XML document that was retrieved from the server
-	        	if(!this.get("objectXML") && this.get("synced")) return true;
+	        	if(!this.get("sysMetaXML") && this.get("synced")) return true;
 	        	else return false;
 	        },
 	        

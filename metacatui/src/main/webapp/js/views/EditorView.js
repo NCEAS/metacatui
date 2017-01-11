@@ -60,6 +60,9 @@ define(['underscore',
 
             MetacatUI.appModel.set('headerType', 'default');
             
+            //Reset the listeners
+            this.stopListening();
+            
         	//Inert the basic template on the page
         	this.$el.html(this.template({
         		loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."})
@@ -137,7 +140,7 @@ define(['underscore',
             }
             
             //If the Data Package failed saving, display an error message
-            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.errorSaving);
+            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
         },
         
         renderChildren: function(model, options) {
@@ -287,10 +290,14 @@ define(['underscore',
         	//Change the style of the save button
         	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
         	        	
-        	//When the package is saved, revert the button back to normal
-        	this.listenToOnce(MetacatUI.rootDataPackage, "sync", function(){
+        	//Listen for when the package has been successfully saved
+        	this.listenToOnce(MetacatUI.rootDataPackage, "successSaving", function(){
+            	//When the package is saved, revert the button back to normal
         		btn.html("Save").removeClass("btn-disabled");
         		this.hideControls();
+        		
+        		//Show a success message
+        		this.saveSuccess();
         	});
         	
         	//Save the package!
@@ -298,9 +305,16 @@ define(['underscore',
         },
         
         /*
+         * When the data package collection saves successfully, tell the user
+         */
+        saveSuccess: function(){
+        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
+        },
+        
+        /*
          * When the data package collection fails to save, tell the user
          */
-        errorSaving: function(errorMsg){
+        saveError: function(errorMsg){
         	var errorId = "error" + Math.round(Math.random()*100),
         		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
         	
