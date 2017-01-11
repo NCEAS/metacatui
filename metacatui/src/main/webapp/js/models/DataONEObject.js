@@ -586,7 +586,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        		if(!changedAttributes.length) return;
 	        			
 	        		//Add this item to the queue
-	        		if((this.get("uploadStatus") == "c") || !this.get("uploadStatus"))
+	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus"))
 	        			this.set("uploadStatus", "q");
 	        	});
 	        },
