@@ -1045,8 +1045,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	
             	//Create a node for this object, the identifier, the resource map, and the aggregation
             	var objectNode = rdf.sym(fullID),
-            		mapNode    = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.get("id"))),
-            		aggNode    = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.get("id")) + "#aggregation"),
+            		mapNode    = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id"))),
+            		aggNode    = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id")) + "#aggregation"),
             		idNode     = rdf.literal(id, undefined, XML("string"));
             	
             	//Add the statement: this object isAggregatedBy the resource map aggregation
@@ -1058,7 +1058,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			
     			//Find the metadata doc that describes this object
     			var model   = _.find(this.models, function(m){ return m.get("id") == id }),
-    				isDocBy = model.get("isDocumentedBy");
+    				isDocBy = model.get("isDocumentedBy"),
+    				documents = model.get("documents");
     			
     			//If this object is documented by any metadata...
     			if(isDocBy){
@@ -1070,10 +1071,29 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				//For each metadata that documents this object, add a CITO:isDocumentedBy and CITO:documents statement
     				_.each(metadataIds, function(metaId){
     					//Create the named nodes and statements
-    					var memberNode       = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id)),
+    					var dataNode         = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id)),
     						metadataNode     = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(metaId)),
-    						isDocByStatement = rdf.st(memberNode, CITO("isDocumentedBy"), metadataNode),
-    						documentsStatement = rdf.st(metadataNode, CITO("documents"), memberNode);
+    						isDocByStatement = rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode),
+    						documentsStatement = rdf.st(metadataNode, CITO("documents"), dataNode);
+    					//Add the statements
+    					this.dataPackageGraph.addStatement(isDocByStatement);
+    					this.dataPackageGraph.addStatement(documentsStatement);
+    				}, this);
+    			}
+    			
+    			//If this object documents a data object
+    			if(documents){
+    				//Create a literal node for it
+    				var metadataNode = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id));
+    				
+    				_.each(documents, function(dataID){
+    					//Create a named node for the data object
+    					var dataNode = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(dataID)),
+    					//Create a statement: This metadata documents this data
+    						documentsStatement = rdf.st(metadataNode, CITO("documents"), dataNode),
+    					//Create a statement: This data is documented by this metadata
+    						isDocByStatement = rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode);
+    					
     					//Add the statements
     					this.dataPackageGraph.addStatement(isDocByStatement);
     					this.dataPackageGraph.addStatement(documentsStatement);
@@ -1085,12 +1105,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              * Removes an object from the aggregation in the RDF graph
              */
             removeFromAggregation: function(id){
-            	if(!id.indexOf(this.dataPackageGraph.cnResolveUrl)) id = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
+            	if(id.indexOf(this.dataPackageGraph.cnResolveUrl) == -1) id = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
             	
+            	//Create a literal node for the removed object
             	var removedObjNode = rdf.sym(id),
+            	//Get the statements from the RDF where the removed object is the subject or object
             		statements = _.union(this.dataPackageGraph.statementsMatching(undefined, undefined, removedObjNode),
             						this.dataPackageGraph.statementsMatching(removedObjNode));
             	
+            	//Remove all the statements mentioning this object
     			this.dataPackageGraph.removeStatements(statements);
             },
             
