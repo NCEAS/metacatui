@@ -44,7 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
-                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error
+                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
                     collections: [] //References to collections that this model is in
@@ -55,34 +55,36 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                 this.on("change:size", this.bytesToSize);
                 
                 //When the model has been retrieved the first time, listen for changes to it so we can keep track of user changes
-                this.once("sync", this.listenForChanges);
+                this.once("sync", this.updateUploadStatus);
             },
             
             /*
              * Maps the lower-case sys meta node names (valid in HTML DOM) to the camel-cased sys meta node names (valid in DataONE). 
              * Used during parse() and serialize()
              */
-            nodeNameMap: {
-    			accesspolicy: "accessPolicy",
-    			accessrule: "accessRule",
-    			authoritativemembernode: "authoritativeMemberNode",
-    			checksumalgorithm: "checksumAlgorithm",
-    			dateuploaded: "dateUploaded",
-    			datesysmetadatamodified: "dateSysMetadataModified",
-    			dateuploaded: "dateUploaded",
-    			formatid: "formatId",
-    			filename: "fileName",
-    			nodereference: "nodeReference",
-    			obsoletedby: "obsoletedBy",
-    			originmembernode: "originMemberNode",
-    			replicamembernode: "replicaMemberNode",
-    			replicationallowed: "replicationAllowed",
-    			replicationpolicy: "replicationPolicy",
-    			replicationstatus: "replicationStatus",
-    			replicaverified: "replicaVerified",		
-    			rightsholder: "rightsHolder",
-    			serialversion: "serialVersion"
-    		},
+            nodeNameMap: function(){
+            	return{
+	    			accesspolicy: "accessPolicy",
+	    			accessrule: "accessRule",
+	    			authoritativemembernode: "authoritativeMemberNode",
+	    			checksumalgorithm: "checksumAlgorithm",
+	    			dateuploaded: "dateUploaded",
+	    			datesysmetadatamodified: "dateSysMetadataModified",
+	    			dateuploaded: "dateUploaded",
+	    			formatid: "formatId",
+	    			filename: "fileName",
+	    			nodereference: "nodeReference",
+	    			obsoletedby: "obsoletedBy",
+	    			originmembernode: "originMemberNode",
+	    			replicamembernode: "replicaMemberNode",
+	    			replicationallowed: "replicationAllowed",
+	    			replicationpolicy: "replicationPolicy",
+	    			replicationstatus: "replicationStatus",
+	    			replicaverified: "replicaVerified",		
+	    			rightsholder: "rightsHolder",
+	    			serialversion: "serialVersion"
+            	};
+            },
             
         	url: function(){
         		if(!this.get("id") && !this.get("seriesid")) return "";
@@ -192,7 +194,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
             		
             		//Convert the JSON to a camel-cased version, which matches Solr and is easier to work with in code
             		_.each(Object.keys(sysMetaValues), function(key){
-            			var camelCasedKey = this.nodeNameMap[key];
+            			var camelCasedKey = this.nodeNameMap()[key];
             			if(camelCasedKey){
             				sysMetaValues[camelCasedKey] = sysMetaValues[key];
             				delete sysMetaValues[key];
@@ -426,8 +428,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 		        	$(fileNameNode).text(this.get("fileName"));
 	        	}
 	        	
-	        	if(this.get("obsoletes"))
-	        		xml.find("obsoletes").text(this.get("obsoletes"));
+	        	if(this.get("obsoletes")){
+	        		
+	        		if(xml.find("obsoletes").length)
+	        			xml.find("obsoletes").text(this.get("obsoletes"));
+	        		else
+	        			xml.append($(document.createElement("obsoletes")).text(this.get("obsoletes")));
+	        	}
 	        	else
 	        		xml.find("obsoletes").remove();
 	        	
@@ -435,7 +442,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	if(this.get("obsoletedBy")){
 	        		//Create a new obsoletedBy node if needed
 	        		if(!xml.find("obsoletedby").length){
-	        			xml.find("authoritativemembernode").after($(document.createElement("obsoletedby")).text(this.get("obsoletedBy")));
+	        			xml.append($(document.createElement("obsoletedby")).text(this.get("obsoletedBy")));
 	        		}
 	        		//Or update the existing obsoletedBy node
 	        		else
@@ -454,19 +461,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	var xmlString = $(document.createElement("div")).append(xml.clone()).html();
 	        	
 	        	//Now camel case the nodes 
-	        	_.each(Object.keys(this.nodeNameMap), function(name, i, allNodeNames){
+	        	var nodeNameMap = this.nodeNameMap();
+	        	_.each(Object.keys(nodeNameMap), function(name, i){
 	        		var originalXMLString = xmlString;
 	        		
 	        		//Camel case node names
 	        		var regEx = new RegExp("<" + name, "g");
-	        		xmlString = xmlString.replace(regEx, "<" + this.nodeNameMap[name]);
+	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name]);
 	        		var regEx = new RegExp(name + ">", "g");
-	        		xmlString = xmlString.replace(regEx, this.nodeNameMap[name] + ">");
+	        		xmlString = xmlString.replace(regEx, nodeNameMap[name] + ">");
 	        		
 	        		//If node names haven't been changed, then find an attribute
 	        		if(xmlString == originalXMLString){
 	        			var regEx = new RegExp(" " + name + "=", "g");
-	        			xmlString = xmlString.replace(regEx, " " + this.nodeNameMap[name] + "=");
+	        			xmlString = xmlString.replace(regEx, " " + nodeNameMap[name] + "=");
 	        		}
 	        	}, this);
 	        	
@@ -526,21 +534,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 				this.set("archived", false);
 	        },
 	        
+	        /*
+	         * Reset
+	         */
 	        resetID: function(){
 	        	if(!this.attributeCache) return false;
 	        	
-	        	this.set("oldPid", this.attributeCache.oldPid);
-	        	this.set("id", this.attributeCache.id);
-	        	this.set("obsoletes", this.attributeCache.obsoletes);
-	        	this.set("obsoletedBy", this.attributeCache.obsoletedBy);
-	        	this.set("archived", this.attributeCache.archived);
+	        	this.set("oldPid", this.attributeCache.oldPid, {silent:true});
+	        	this.set("id", this.attributeCache.id, {silent: true});
+	        	this.set("obsoletes", this.attributeCache.obsoletes, {silent: true});
+	        	this.set("obsoletedBy", this.attributeCache.obsoletedBy, {silent: true});
+	        	this.set("archived", this.attributeCache.archived, {silent: true});
+	        	
+	        	//Reset the attribute cache
+	        	this.attributeCache = {};
 	        },
 	        
 	        /*
 	         * Checks if this model has updates that need to be synced with the server.
 	         */
 	        hasUpdates: function(){
-	        	if(this.isNew() || !this.get("sysMetaXML")) return true;
+	        	if(this.isNew()) return true;
 	        	
 	        	//Compare the new system metadata XML to the old system metadata XML
 	        	var newSysMeta = this.serializeSysMeta(),
@@ -558,10 +572,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        /*
 	         * Listens to attributes on the model for changes that will require an update
 	         */
-	        listenForChanges: function(){
+	        updateUploadStatus: function(){
 	        	this.on("change", function(model){
-	        		if(this.changedAttributes().uploadStatus) return;
+	        		//If the object is already in the upload queue, then exit.
+	        		if(this.get("uploadStatus") == "q" || this.get("uploadStatus") == "p");
+	        		
+	        		//Some attributes should be ignored when determining a change worthy of putting this object in the upload queue
+	        		var ignoredAttributes = ["uploadStatus", "type", "sortOrder", "synced", "oldPid"],
+	        		//Filter out the ignored attributes
+	        			changedAttributes = _.difference(Object.keys(this.changedAttributes()), ignoredAttributes);
+	        		
+	        		//Exit if nothing has changed
+	        		if(!changedAttributes.length) return;
 	        			
+	        		//Add this item to the queue
 	        		if((this.get("uploadStatus") == "c") || !this.get("uploadStatus"))
 	        			this.set("uploadStatus", "q");
 	        	});

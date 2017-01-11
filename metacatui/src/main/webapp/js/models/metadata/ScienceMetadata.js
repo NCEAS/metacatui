@@ -109,6 +109,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         	}) },
             
 	        type: "ScienceMetadata",
+	        
+	        nodeNameMap: function(){ return _.clone(this.constructor.__super__.nodeNameMap()); },
             
             /* Initialize a ScienceMetadata object */
             initialize: function(options) {
