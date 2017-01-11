@@ -124,7 +124,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 console.log("DataItemView.addFiles() called.");
                 
                 var fileList,            // The list of chosen files
-                    parentSciMeta,       // The science metadata object for this row
                     parentDataPackage,   // The id of the first resource of this row's scimeta
                     dataONEObject;       // The dataONEObject to represent this file
                 
@@ -146,7 +145,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 // Find the correct collection to add to. Use JQuery's delegateTarget
                 // attribute corresponding to the element where the event handler was attached
                 if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
-                    parentSciMeta = this.getParentScienceMetadata(event);
+                    this.parentSciMeta = this.getParentScienceMetadata(event);
                     this.collection = this.getParentDataPackage(event);
                     
                     // For each file, create a DataONEObject and add it to the correct collection
@@ -159,9 +158,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                             size: file.size,
                             mediaType: file.type,
                             uploadFile: file,
-                            isDocumentedBy: [parentSciMeta.id],
+                            isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });
+                        this.parentSciMeta.get("documents").push(dataONEObject.id);
                         dataONEObject.bytesToSize();
                         this.collection.add(dataONEObject);
                         dataONEObject.set("uploadStatus", "q");
@@ -184,11 +184,59 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 
             },
             
-            /* Remove a file or folder */
+            /* Handle remove events for this row in the data package table */
             handleRemove: function(event) {
+                console.log("DataItemView.remove() called.");
+                var eventId,         // The id of the row of this event
+                    removalIds = [], // The list of target ids to remove
+                    dataONEObject,   // The model represented by this row
+                    documents;       // The list of ids documented by this row (if meta)
+                
                 event.stopPropagation();
+                this.$el.find(".dropdown-menu").dropdown("toggle"); // close the menu
+                
+                // Get the row id, add it to the remove list
+                if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
+                    eventId = event.delegateTarget.dataset.id;
+                    removalIds.push(eventId);
+                    
+                }
+
+                this.parentSciMeta = this.getParentScienceMetadata(event);
+                this.collection = this.getParentDataPackage(event);
+                                
+                // Get the corresponding model
+                if ( typeof eventId !== "undefined" ) {
+                    dataONEObject = this.collection.get(eventId);
+                }
+                
+                // Is it nested science metadata?
+                if ( dataONEObject && dataONEObject.get("type") == "Metadata" ) {
+                    
+                    // We also remove the data documented by these metadata
+                    documents = dataONEObject.get("documents");
+                    
+                    if ( documents.length > 0 ) {
+                        _.each(documents, removalIds.push());
+                    }
+                }
+                
+                // Remove the id from the documents array in the science metadata
+                _.each(removalIds, function(id) {
+                    var documents = this.parentSciMeta.get("documents");
+                    var index = documents.indexOf(id);
+                    if ( index > -1 ) {
+                        this.parentSciMeta.get("documents").splice(index, 1);
+                        
+                    }
+                }, this);
+                
+                // Remove each object from the collection
+                this.collection.remove(removalIds);
+                
+                // Remove the row
+                this.remove();
                 event.preventDefault();
-                console.log("DataItemView.handleRemove() called.");
                 
             },
             
@@ -197,20 +245,45 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
              * data or metadata row of the UI event
              */
             getParentScienceMetadata: function(event) {
-                var parentMetadata,
-                    parentSciMeta;
+                var parentMetadata,  // The parent metadata array in the collection
+                    eventModels,     // The models associated with the event's table row
+                    eventModel,      // The model associated with the event's table row
+                    parentSciMeta;   // The parent science metadata for the event model
                 
                 if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
-                    parentMetadata = MetacatUI.rootDataPackage.where({
+                    eventModels = MetacatUI.rootDataPackage.where({
                         id: event.delegateTarget.dataset.id
                     });
                     
-                    if ( parentMetadata.length > 0 ) {
-                        parentSciMeta = parentMetadata[0];
+                    if ( eventModels.length > 0 ) {
+                        eventModel = eventModels[0];
+                        
+                    } else {
+                        console.log("The model of the event isn't in the root package.");
+                        console.log("TODO: Check in nested packages.");
+                    }
+                    
+                    // Is this a Data or Metadata model?
+                    if ( eventModel.get("type") === "Metadata" ) {
+                        return eventModel;
+                        
+                    } else {
+                        // It's data, get the parent scimeta
+                        parentMetadata = MetacatUI.rootDataPackage.where({
+                            id: eventModel.get("isDocumentedBy")[0]
+                        });
+                        
+                        if ( parentMetadata.length > 0 ) {
+                            parentSciMeta = parentMetadata[0];
+                            return parentSciMeta;
+                            
+                        } else {
+                            console.log("The model of the event has no isDocumentedBy value.");
+                            console.log("TODO: When parsing packages, ensure documents/isDocumentedBy values are present.");
+                            
+                        }
                     }
                 }
-                
-                return parentSciMeta;
             },
             
             /* 
