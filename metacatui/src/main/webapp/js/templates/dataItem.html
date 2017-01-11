@@ -56,14 +56,15 @@
               <span>Add Files ...</span>
           </a>
       </li>
-      <li role="separator" class="divider"></li>
-      <li class="remove enabled">
-          <a data-target="#">
-              <i class="icon-large icon-remove pull-left"></i>
-              <span>Remove ...</span>
-          </a>
-      </li>
-      
+          <% if ( nodeLevel > 0 ) {%>
+          <li role="separator" class="divider"></li>
+          <li class="remove enabled">
+              <a data-target="#">
+                  <i class="icon-large icon-remove pull-left"></i>
+                  <span>Remove ...</span>
+              </a>
+          </li>
+          <% } %>
       <% } else { %>
       <li class="removeFiles enabled">
           <a data-target="#">
