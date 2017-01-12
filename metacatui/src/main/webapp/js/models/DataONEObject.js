@@ -399,8 +399,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 		  
 		  serializeSysMeta: function(options){
 	        	//Get the system metadata XML that currently exists in the system
-	        	var xml = $($.parseHTML(this.get("sysMetaXML")));
+                var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
+                    xml; // sysmeta as DOM object
 	        	
+                if ( typeof sysMetaXML === "undefined") {
+                    xml = this.createSysMeta();
+                    
+                } else {
+                    xml = $($.parseHTML(sysMetaXML));
+                }
+                
 	        	//Update the system metadata values
 	        	xml.find("serialversion").text(this.get("serialVersion") || "0");
 	        	xml.find("identifier").text((this.get("newPid") || this.get("id")));
@@ -487,6 +495,37 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	return xmlString;
 	        },
 	        
+            /*
+             * Build a fresh system metadata document for this object when it is new
+             * Return it as a DOM object
+             */
+            createSysMeta: function() {
+                var sysmetaDOM, // The DOM
+                    sysmetaXML = []; // The document as a string array
+                    
+                    sysmetaXML.push(
+                        '<?xml version="1.0" encoding="UTF-8"?>',
+                        '<d1_v2.0:systemMetadata', 
+                        '    xmlns:d1_v2.0="http://ns.dataone.org/service/types/v2.0"', 
+                        '    xmlns:d1="http://ns.dataone.org/service/types/v1">',
+                        '    <serialVersion />',
+                        '    <identifier />',
+                        '    <formatId />',
+                        '    <size />',
+                        '    <checksum />',
+                        '    <submitter />',
+                        '    <rightsHolder />',
+                        '    <originMemberNode />',
+                        '    <authoritativeMemberNode />',
+                        '    <fileName />',
+                        '</d1_v2.0:systemMetadata>'
+                    );
+                    
+                    
+                    sysmetaDOM = $($.parseXML(sysmetaXML.join("")));
+                    return sysmetaDOM;
+            },
+            
 	        serializeAccessPolicy: function(){
 	        	//Write the access policy
 	        	var accessPolicyXML = '<accessPolicy>\n';        		
