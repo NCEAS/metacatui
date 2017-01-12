@@ -41,9 +41,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             
             /* Render the template into the DOM */
             render: function() {
+            	//Reset all the listeners
+            	this.stopListening();
+            	
                 this.$el.attr("data-id", this.model.get("id"));
                 this.$el.html( this.template(this.model.toJSON()) );
                 this.$el.find(".dropdown-toggle").dropdown();
+                
+                //listen for changes to rerender the view
                 this.listenTo(this.model, 'change', this.render); // render changes to the item
 
                 return this;

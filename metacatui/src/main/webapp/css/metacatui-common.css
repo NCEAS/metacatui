@@ -2868,6 +2868,12 @@ input.subtle:focus,
 /*******************************************
 Editor View
 ******************************************/
+#editor-header .citation{
+	padding: 1em;
+    margin-bottom: 0px;
+    font-size: 1.1em;
+    line-height: 1.6em;
+}
 .side-nav-item a {
     width: 100%;
     display: block;

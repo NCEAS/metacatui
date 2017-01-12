@@ -54,10 +54,6 @@ define([
             	else if(!this.dataPackage){
             		this.dataPackage = new DataPackage();
             	}
-            	
-                // listen for  add events because models are being merged
-                this.listenTo(this.dataPackage, 'add', this.addOne); // render new items
-                //this.listenTo(this.dataPackage, 'complete', this.addAll); // render all items
                 
                 return this;
                 
@@ -67,11 +63,18 @@ define([
              *  Render the DataPackage HTML
              */
             render: function() {
+            	
+            	//Reset the listeners
+            	this.stopListening();
 
                 this.$el.append(this.template({
                 	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
                 	id: this.dataPackage.get("id")
                 }));
+                
+                // listen for  add events because models are being merged
+                this.listenTo(this.dataPackage, 'add', this.addOne); // render new items
+                //this.listenTo(this.dataPackage, 'complete', this.addAll); // render all items
                 
                 return this;
             },

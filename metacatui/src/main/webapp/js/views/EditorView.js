@@ -60,6 +60,9 @@ define(['underscore',
 
             MetacatUI.appModel.set('headerType', 'default');
             
+            //Reset the listeners
+            this.stopListening();
+            
         	//Inert the basic template on the page
         	this.$el.html(this.template({
         		loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."})
@@ -110,6 +113,12 @@ define(['underscore',
             if(!scimetaModel)
             	var scimetaModel = this.model;
             
+            //Check if this package is obsoleted
+            if(this.model.get("obsoletedBy")){
+            	this.showLatestVersion();
+            	return;
+            }
+            
             var resourceMapIds = scimetaModel.get("resourceMap");
             
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
@@ -137,7 +146,7 @@ define(['underscore',
             }
             
             //If the Data Package failed saving, display an error message
-            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.errorSaving);
+            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
         },
         
         renderChildren: function(model, options) {
@@ -287,10 +296,14 @@ define(['underscore',
         	//Change the style of the save button
         	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
         	        	
-        	//When the package is saved, revert the button back to normal
-        	this.listenToOnce(MetacatUI.rootDataPackage, "sync", function(){
+        	//Listen for when the package has been successfully saved
+        	this.listenToOnce(MetacatUI.rootDataPackage, "successSaving", function(){
+            	//When the package is saved, revert the button back to normal
         		btn.html("Save").removeClass("btn-disabled");
         		this.hideControls();
+        		
+        		//Show a success message
+        		this.saveSuccess();
         	});
         	
         	//Save the package!
@@ -298,9 +311,16 @@ define(['underscore',
         },
         
         /*
+         * When the data package collection saves successfully, tell the user
+         */
+        saveSuccess: function(){
+        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
+        },
+        
+        /*
          * When the data package collection fails to save, tell the user
          */
-        errorSaving: function(errorMsg){
+        saveError: function(errorMsg){
         	var errorId = "error" + Math.round(Math.random()*100),
         		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
         	
@@ -343,6 +363,38 @@ define(['underscore',
 			this.hideLoading();
 			MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
 			
+		},
+		
+		showLatestVersion: function(){
+			var view = this;
+			
+			//When the latest version is found,
+			this.listenToOnce(this.model, "change:latestVersion", function(){
+				//Make sure it has a newer version, and if so,
+				if(view.model.get("latestVersion") != view.model.get("id")){
+					//Get the obsoleted id
+					var oldID = view.model.get("id");
+					
+					//Reset the current model
+					view.pid = view.model.get("latestVersion");
+					view.model = null;
+					
+					//Update the URL
+					MetacatUI.uiRouter.navigate("#share/" + view.pid, { trigger: false, replace: true });
+					
+					//Render the new model
+					view.render();
+					
+					//Show a warning that the user was trying to edit old content
+					MetacatUI.appView.showAlert("You've been forwarded to the newest version of your dataset for editing.", 
+							"alert-warning", this.$el, 12000);
+				}
+				else
+					view.getDataPackage();
+			});
+			
+			//Find the latest version of this metadata object
+			this.model.findLatestVersion();
 		},
 		
 		showSignIn: function(){

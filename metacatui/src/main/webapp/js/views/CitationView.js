@@ -42,6 +42,9 @@
 
 			//Create the citation from the metadata doc if we have one
 			else if (this.metadata) {
+				//Clear the element
+				this.$el.html("");
+				
 				var authors = this.metadata.get("origin"),
 					pubDate = this.metadata.get("pubDate"),
 					dateUploaded = this.metadata.get("dateUploaded"),
@@ -140,6 +143,9 @@
 			//Put together all the citation parts
 			$(linkEl).append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
 			this.$el.append(linkEl);
+		
+			//If anything in the model changes, rerender this citation
+			this.listenTo(this.metadata, "cahnge:origin change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource", this.render);
 
 			return this;
 		},
