@@ -158,6 +158,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                         // console.log("Processing " + file.name + ", size: " + file.size);
                         
                         dataONEObject = new DataONEObject({
+                            synced: true,
                             type: "Data",
                             fileName: file.name,
                             size: file.size,
