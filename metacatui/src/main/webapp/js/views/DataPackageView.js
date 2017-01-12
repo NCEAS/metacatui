@@ -25,13 +25,21 @@ define([
             
             id: "data-package-table",
             
-            subviews: [],
+            events: {
+                "click .toggle-rows" : "toggleRows" // Show/hide rows associated with event's metadata row
+                
+            },
+            
+            subviews: {},
             
             template: _.template(DataPackageTemplate),
             
             // Models waiting for their parent folder to be rendered, hashed by parent id:
             // {'parentid': [model1, model2, ...]}
             delayedModels: {},
+            
+            /* Flag indicating the open or closed state of the package rows */
+            isOpen: true,
             
             initialize: function(options) {
             	//Get the options sent to this view
@@ -75,14 +83,12 @@ define([
             	if(!item) return false;
             	
                 console.log("DataPackageView.addOne called for " + item.id);
-                
+                                
                 var dataItemView = new DataItemView({model: item});
                 
-                if ( Array.isArray(this.subviews) ) {
-                    this.subviews.push(dataItemView); // keep track of all views
+                    this.subviews[item.id] = dataItemView; // keep track of all views
                     
-                }
-                var scimetaParent = item.get("isDocumentedBy");
+                    var scimetaParent = item.get("isDocumentedBy");
                 if ( typeof scimetaParent !== "undefined" ) {
                     scimetaParent = scimetaParent[0];
                     
@@ -165,14 +171,78 @@ define([
              */
             onClose: function() {
                 // Close each subview
-                _.each(this.subviews, function(i, subview) {
-    				subview.onClose();
+                _.each(Object.keys(this.subviews), function(id) {
+    				var subview = this.subviews(id);
+                    subview.onClose();
                 
-                });
+                }, this);
             
-                this.subviews = [];
+                this.subviews = {};
                 
-            }
+            },
+            
+            /* Show or hide the data rows associated with the event row science metadata */
+            toggleRows: function(event) {
+                console.log("DataPackageView.toggleRows() called.");
+                
+                if ( this.isOpen ) {
+                    
+                    // Get the DataItemView associated with each id
+                    _.each(Object.keys(this.subviews), function(id) {
+                        
+                        var subview = this.subviews[id];
+                        
+                        if ( subview.model.get("type") === "Data" && subview.remove ) {
+                            // Remove the view from the DOM
+                            subview.remove();
+                            // And from the subviews list
+                            delete this.subviews[id]; 
+                            
+                        }
+                        
+                    }, this);
+                    
+                    // And then close the folder
+                    this.$el.find(".open")
+                        .removeClass("open")
+                        .addClass("closed")
+                        .removeClass("icon-chevron-down")
+                        .addClass("icon-chevron-right");
+                    
+                    this.$el.find(".icon-folder-open")
+                        .removeClass("icon-folder-open")
+                        .addClass("icon-folder-close");
+                    
+                    this.isOpen = false;
+                    
+                } else {
+                    
+                    // Add sub rows to the view
+                    var dataModels =  this.dataPackage.where({type: "Data"});
+                    _.each(dataModels, function(model) {
+                            this.addOne(model);
+                    }, this);
+                    
+                    // And then open the folder
+                    this.$el.find(".closed")
+                        .removeClass("closed")
+                        .addClass("open")
+                        .removeClass("icon-folder-close")
+                        .addClass("icon-chevron-down");
+                        
+                    this.$el.find(".icon-folder-close")
+                        .removeClass("icon-folder-close")
+                        .addClass("icon-folder-open");
+                
+                    this.isOpen = true;
+
+                }
+                    
+                event.stopPropagation();
+                event.preventDefault();
+            },
+            
+            
             
         });
         return DataPackageView;
