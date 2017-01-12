@@ -113,6 +113,12 @@ define(['underscore',
             if(!scimetaModel)
             	var scimetaModel = this.model;
             
+            //Check if this package is obsoleted
+            if(this.model.get("obsoletedBy")){
+            	this.showLatestVersion();
+            	return;
+            }
+            
             var resourceMapIds = scimetaModel.get("resourceMap");
             
             if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
@@ -357,6 +363,38 @@ define(['underscore',
 			this.hideLoading();
 			MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
 			
+		},
+		
+		showLatestVersion: function(){
+			var view = this;
+			
+			//When the latest version is found,
+			this.listenToOnce(this.model, "change:latestVersion", function(){
+				//Make sure it has a newer version, and if so,
+				if(view.model.get("latestVersion") != view.model.get("id")){
+					//Get the obsoleted id
+					var oldID = view.model.get("id");
+					
+					//Reset the current model
+					view.pid = view.model.get("latestVersion");
+					view.model = null;
+					
+					//Update the URL
+					MetacatUI.uiRouter.navigate("#share/" + view.pid, { trigger: false, replace: true });
+					
+					//Render the new model
+					view.render();
+					
+					//Show a warning that the user was trying to edit old content
+					MetacatUI.appView.showAlert("You've been forwarded to the newest version of your dataset for editing.", 
+							"alert-warning", this.$el, 12000);
+				}
+				else
+					view.getDataPackage();
+			});
+			
+			//Find the latest version of this metadata object
+			this.model.findLatestVersion();
 		},
 		
 		showSignIn: function(){

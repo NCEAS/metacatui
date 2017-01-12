@@ -28,6 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                     rightsHolder : null,
                     accessPolicy: [],
                     replicationPolicy: [],
+                    latestVersion: null,
                     obsoletes: null,
                     obsoletedBy: null,
                     archived: null,
@@ -590,6 +591,54 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus"))
 	        			this.set("uploadStatus", "q");
 	        	});
+	        },
+	        
+	        /*
+	         * Finds the latest version of this object by travesing the obsolescence chain
+	         */
+	        findLatestVersion: function(){
+	        	// Make sure we have the /meta service configured
+				if(! MetacatUI.appModel.get('metaServiceUrl')) return;	
+				
+				//If no pid was supplied, use this model's id
+				if(!latestVersion){
+					var latestVersion = this.get("id");
+					var possiblyNewer = this.get("obsoletedBy");
+				}
+
+				//If this isn't obsoleted by anything, then there is no newer version
+				if(!possiblyNewer){
+					this.set("latestVersion", latestVersion);
+					return;
+				}
+
+				var model = this;
+
+				//Get the system metadata for the possibly newer version
+				var requestSettings = {
+					url: MetacatUI.appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer), 
+					type: "GET",
+					success: function(data) {
+
+						// the response may have an obsoletedBy element
+						var obsoletedBy = $(data).find("obsoletedBy").text();
+
+						//If there is an even newer version, then get it and rerun this function
+						if(obsoletedBy)
+							model.findLatestVersion(possiblyNewer, obsoletedBy);
+						//If there isn't a newer version, then this is it
+						else
+							model.set("latestVersion", possiblyNewer);
+
+					},
+					error: function(xhr){
+						//If this newer version isn't accessible, link to the latest version that is
+						if(xhr.status == "401")
+							model.set("latestVersion", latestVersion);
+					}
+				}
+				
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));		
 	        },
 		  
           /**
