@@ -2932,7 +2932,7 @@ textarea.xlarge{
 /* Editor package table */
 .Editor #data-package-table {
 	margin-bottom: 0px;
-	border-bottom: 1px solid #dddddd;
+	border-bottom: 1px solid #DDDDDD;
 }
 
 /* Editor package table row */
@@ -2947,10 +2947,10 @@ textarea.xlarge{
     width: 100px;
 }
 
-
 /* Editor package table column icons */
-.Editor #data-package-table td > i.icon-chevron-down {
+.Editor #data-package-table td > i:first-of-type {
     margin-right: 10px;
+    cursor: pointer;
 }
 
 /* Editor package table column 2 */
