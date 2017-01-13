@@ -294,7 +294,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					this.set("size", xmlBlob.size);
 					
 					//Get the new checksum of the EML XML
-					var checksum =     (xmlBlob);
+					var checksum = md5(xmlBlob);
 					this.set("checksum", checksum);
 	     			
 	     			//Create the system metadata XML
