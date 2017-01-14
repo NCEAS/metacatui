@@ -9,9 +9,10 @@ define(['underscore',
         'views/DataPackageView',
         'views/SignInView',
         'views/CitationView',
-        'text!templates/editor.html'], 
+        'text!templates/editor.html',
+        'collections/ObjectFormats'], 
         function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView, CitationView,
-        		EditorTemplate){
+        		EditorTemplate, ObjectFormats){
     
     var EditorView = Backbone.View.extend({
                 
@@ -38,6 +39,12 @@ define(['underscore',
         /* Initialize a new EditorView - called post constructor */
         initialize: function(options) {
 
+            // Ensure the object formats are cached for the editor's use
+            if ( typeof MetacatUI.objectFormats === "undefined" ) {
+                MetacatUI.objectFormats = new ObjectFormats();
+                MetacatUI.objectFormats.fetch();
+                
+            }             
             return this;
         },
         
