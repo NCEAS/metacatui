@@ -126,7 +126,7 @@ define(['jquery', 'underscore', 'backbone'],
                     // Object format list
                     if ( typeof this.get("formatsUrl") != "undefined" ) {
                         this.set("formatsServiceUrl", 
-                            this.get("d1CNbaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+                            this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
                     }
 				}
 			}
