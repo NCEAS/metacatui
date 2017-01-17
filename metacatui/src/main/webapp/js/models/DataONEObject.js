@@ -1,4 +1,4 @@
-﻿/* global define */
+﻿﻿/* global define */
 "use strict";
 define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats', 'md5'],
     function($, _, Backbone, uuid, ObjectFormats, md5){
@@ -722,7 +722,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        /*
 	         * Finds the latest version of this object by travesing the obsolescence chain
 	         */
-	        findLatestVersion: function(){
+	        findLatestVersion: function(latestVersion, possiblyNewer){
 	        	// Make sure we have the /meta service configured
 				if(! MetacatUI.appModel.get('metaServiceUrl')) return;	
 				

@@ -59,7 +59,13 @@ define(['underscore',
             
             // Once the ScienceMetadata is populated, populate the associated package
             this.model = model;
-
+            
+            //Listen for the replace event on this model 
+            var view = this;
+            this.listenTo(this.model, "replace", function(newModel){
+            	if(view.model.get("id") == newModel.get("id"))
+            		view.model = newModel;
+            });
         },
         
         /* Render the view */
@@ -322,6 +328,9 @@ define(['underscore',
          */
         saveSuccess: function(){
         	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
+        	
+        	//Change the URL to the new id
+        	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });
         },
         
         /*

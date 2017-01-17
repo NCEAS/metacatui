@@ -864,10 +864,10 @@ define(['jquery',
 			var split_pattern = /:(?!\/\/|\d)/;
 
 			// Collect values
-			var names = this.model.attributes.serviceTitle.split(split_pattern);
-			var descriptions = this.model.attributes.serviceDescription.split(split_pattern);
-			var types = this.model.attributes.serviceType; // Already comes as an Array
-			var endpoints = this.model.attributes.serviceEndpoint; // Already comes as an Array
+			var names = this.model.get("serviceTitle").split(split_pattern);
+			var descriptions = this.model.get("serviceDescription").split(split_pattern);
+			var types = this.model.get("serviceType"); // Already comes as an Array
+			var endpoints = this.model.get("serviceEndpoint"); // Already comes as an Array
 
 			// Create our Array of Objects, filling in defaults for each property
 			var data = _.map(_.range(endpoints.length), function(i) {

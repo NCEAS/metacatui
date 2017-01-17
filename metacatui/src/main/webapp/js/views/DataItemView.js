@@ -1,4 +1,4 @@
-﻿/* global define */
+﻿﻿/* global define */
 define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templates/dataItem.html'], 
     function(_, $, Backbone, DataONEObject, DataItemTemplate){
         

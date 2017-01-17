@@ -435,7 +435,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                 	memberModel.fetch();
                                 	memberModel.once("sync", function(fetchedModel){
                                 			fetchedModel.set("synced", true);
-                                			collection.add(fetchedModel, { merge: true }); 
+                                			collection.add(fetchedModel, { merge: true });
+                                			
+                                			//Trigger a replace event so other parts of the app know when a model has been replaced with a different type
+                                			fetchedModel.trigger("replace");
                                 		});
                                 }
                                 else{
@@ -939,7 +942,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     					idStatement = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
     				
     				//Get the CN Resolve Service base URL from the resource map (mostly important in dev environments where it will not always be cn.dataone.org)
-    				var	cnResolveUrl = this.dataPackageGraph.cnResolveUrl || idStatement[0].subject.value.substring(0, idStatement[0].subject.value.indexOf(oldPid));
+    				var	cnResolveUrl = this.dataPackageGraph.cnResolveUrl || 
+    					idStatement[0].subject.value.substring(0, idStatement[0].subject.value.indexOf(oldPid)) ||
+    					idStatement[0].subject.value.substring(0, idStatement[0].subject.value.indexOf(encodeURIComponent(oldPid)));
     				this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
     				
     				//Create variations of the resource map ID using the resolve URL so we can always find it in the RDF graph
@@ -1010,7 +1015,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			    //Change the idDescribedBy statement
     			    var isDescribedByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE("isDescribedBy"), rdf.sym(cnResolveUrl + encodeURIComponent(oldPid)));
     			    if(isDescribedByStatements[0])
-    			    	isDescribedByStatements[0].object.value = pid;
+    			    	isDescribedByStatements[0].object.value = cnResolveUrl + encodeURIComponent(pid);;
     			    			    
                 	//Add nodes for new package members
                 	_.each(addedIds, function(id){
