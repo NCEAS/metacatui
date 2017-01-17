@@ -23,7 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     size: null,
                     sizeStr: null,
                     checksum: null,
-                    checksumAlgorithm: null,
+                    checksumAlgorithm: "MD5",
                     submitter: null,
                     rightsHolder : null,
                     accessPolicy: [],
@@ -383,6 +383,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 						console.log('yay, DataONEObject has been saved');
 						
 						model.set("uploadStatus", "c");
+						model.trigger("successSaving");
 					},
 					error: function(model, response, xhr){
 						console.log("error updating system metadata");
@@ -672,7 +673,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        updateUploadStatus: function(){
 	        	this.on("change", function(model){
 	        		//If the object is already in the upload queue, then exit.
-	        		if(this.get("uploadStatus") == "q" || this.get("uploadStatus") == "p");
+	        		if(this.get("uploadStatus") == "q" || this.get("uploadStatus") == "p") return;
 	        		
 	        		//Some attributes should be ignored when determining a change worthy of putting this object in the upload queue
 	        		var ignoredAttributes = ["uploadStatus", "type", "sortOrder", "synced", "oldPid"],
