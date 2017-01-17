@@ -1,4 +1,4 @@
-﻿﻿/* global define */
+﻿/* global define */
 define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/ScienceMetadata',
         'models/DataONEObject',

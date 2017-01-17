@@ -63,34 +63,38 @@ require.config({
         x2js: '../components/xml2json'
         
     },
-    backbone: {
-      deps: ['underscore', 'jquery'],
-      exports: 'Backbone'
-    },
-    bootstrap: { 
-    	deps: ['jquery'],
-    	exports: 'Bootstrap'
-    },
-    annotator: {
-    	exports: 'Annotator'
-    },
-    jws: {
-    	exports: 'JWS',
-        deps: ['jsrasign'],
-    },
-	nGeohash: {
-		exports: "geohash"
-	},
-	fancybox: {
-		deps: ['jquery']
-	},
-    uuid: {
-        exports: 'uuid'
-    },
-    rdflib: {
-        exports: 'rdf'
+    shim: { /* used for libraries without native AMD support */
+        underscore: {
+            exports: '_'
+        },
+        backbone: {
+            deps: ['underscore', 'jquery'],
+            exports: 'Backbone'
+        },
+        bootstrap: { 
+            deps: ['jquery'],
+            exports: 'Bootstrap'
+        },
+        annotator: {
+            exports: 'Annotator'
+        },
+        jws: {
+            exports: 'JWS',
+            deps: ['jsrasign'],
+        },
+        	nGeohash: {
+        		exports: "geohash"
+        	},
+        	fancybox: {
+        		deps: ['jquery']
+        	},
+        uuid: {
+            exports: 'uuid'
+        },
+        rdflib: {
+            exports: 'rdf'
+        }
     }
-  }
 });
 
 MetacatUI.appModel = MetacatUI.appModel || {};
