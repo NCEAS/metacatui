@@ -20,17 +20,19 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             
             /* Events this view listens to */
             events: {
-                "focusout .name"      : "updateName",
-                /* "click .rename"    : "rename", */
-                "click .duplicate"    : "duplicate",        // Edit dropdown, duplicate scimeta/rdf
-                "click .addFolder"    : "handleAddFolder",  // Edit dropdown, add nested scimeta/rdf
-                "click .addFiles"     : "handleAddFiles",   // Edit dropdown, open file picker dialog
-                "change .file-upload" : "addFiles",         // Adds the files into the collection
-                "dragover"            : "showDropzone",     // Drag & drop, show the dropzone for this row
-                "dragend"             : "hideDropzone",     // Drag & drop, hide the dropzone for this row
-                "dragleave"           : "hideDropzone",     // Drag & drop, hide the dropzone for this row
-                "drop"                : "addFiles",         // Drag & drop, adds the files into the collection
-                "click .removeFiles"  : "handleRemove"      // Edit dropdown, remove sci{data,meta} from collection
+                "focusout .name"       : "updateName",
+                /* "click .rename"     : "rename", */
+                "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
+                "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
+                "click .addFiles"      : "handleAddFiles",    // Edit dropdown, open file picker dialog
+                "change .file-upload"  : "addFiles",          // Adds the files into the collection
+                "dragover"             : "showDropzone",      // Drag & drop, show the dropzone for this row
+                "dragend"              : "hideDropzone",      // Drag & drop, hide the dropzone for this row
+                "dragleave"            : "hideDropzone",      // Drag & drop, hide the dropzone for this row
+                "drop"                 : "addFiles",          // Drag & drop, adds the files into the collection
+                "click .removeFiles"   : "handleRemove",      // Edit dropdown, remove sci{data,meta} from collection
+                "click .cancel"        : "handleCancel",      // Cancel a file load
+                "change: percentLoaded": "updateLoadProgress" // Update the file read progress bar
             },
             
             /* Initialize the object - post constructor */
@@ -130,9 +132,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 
                 var fileList,            // The list of chosen files
                     parentDataPackage,   // The id of the first resource of this row's scimeta
-                    dataONEObject;       // The dataONEObject to represent this file
+                    dataONEObject,       // The dataONEObject to represent this file
+                    self = this;         // A reference to this view
                 
                 event.stopPropagation();
+                event.preventDefault();
                 // handle drag and drop files
                 if ( typeof event.originalEvent.dataTransfer !== "undefined" ) {
                     fileList = event.originalEvent.dataTransfer.files;
@@ -144,7 +148,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     }
                     
                 }
-                event.preventDefault();
                 this.$el.removeClass("droppable");
                 
                 // Find the correct collection to add to. Use JQuery's delegateTarget
@@ -153,10 +156,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     this.parentSciMeta = this.getParentScienceMetadata(event);
                     this.collection = this.getParentDataPackage(event);
                     
-                    // For each file, create a DataONEObject and add it to the correct collection
+                    // Read each file, and make a DataONEObject
                     _.each(fileList, function(file) {
-                        // console.log("Processing " + file.name + ", size: " + file.size);
+                        console.log("Processing " + file.name + ", size: " + file.size);
                         
+                        var reader = new FileReader();
                         dataONEObject = new DataONEObject({
                             synced: true,
                             type: "Data",
@@ -164,15 +168,89 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                             size: file.size,
                             mediaType: file.type,
                             uploadFile: file,
+                            uploadReader: reader,
                             isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });
+                        dataONEObject.set("uploadStatus", "l"); // loading the file
                         this.parentSciMeta.get("documents").push(dataONEObject.id);
                         dataONEObject.bytesToSize();
                         this.collection.add(dataONEObject);
-                        dataONEObject.set("uploadStatus", "q");
+                        
+                        // Set up the reader event handlers and
+                        // pass the event *and* the dataONEObject to the handlers
+                        reader.onprogress = function(event) {
+                            self.handleLoadProgress(event, dataONEObject);
+                        }
+                        
+                        reader.onerror = function(event) {
+                            self.handleLoadError(event, dataONEObject);
+                        }
+                        
+                        reader.onload = function(event) {
+                            self.handleLoadSuccess(event, dataONEObject);
+                        }
+                        
+                        reader.onabort = function(event) {
+                            self.handleLoadAbort(event, dataONEObject);
+                        }
+                        
+                        // Now initiate the file read
+                        reader.readAsArrayBuffer(file);
+                        
                     }, this);
                 }
+                
+            },
+            
+            /* During file reading, handle the user's cancel request */
+            handleCancel: function(event) {
+                // TODO: enable canceling of the file read from disk
+                // Need to get a reference to the FileReader to call abort
+                // 
+                // dataONEObject.uploadReader.abort(); ?
+                
+            },
+            
+            /* During file reading, deal with abort events */
+            handleLoadAbort: function(event, dataONEObject) {
+                // When file reading is aborted, update the model upload status
+                
+            },
+            
+            /* During file reading, deal with read errors */ 
+            handleLoadError: function(event, dataONEObject) {
+                // On error, update the model upload status
+            },
+            
+            /* During file reading, update the import progress in the model */
+            handleLoadProgress: function(event, dataONEObject) {
+                // event is a ProgressEvent - use it to update the import progress bar
+                
+                if ( event.lengthComputable ) {
+                    var percentLoaded = Math.round((event.loaded/event.total) * 100);
+                    dataONEObject.set("percentLoaded", percentLoaded);
+                }
+            },
+            
+            /* During file reading, update the progress bar */
+            updateLoadProgress: function(event) {
+                console.log(event);
+                
+                // TODO: Update the progress bar
+                
+            },
+            
+            /* During file reading, handle a successful read */
+            handleLoadSuccess: function(event, dataONEObject) {
+                // event.target.result has the file object bytes
+                
+                // Make the DataONEObject for the file, add it to the collection
+                var checksum = md5(event.target.result);
+                dataONEObject.set("checksum", checksum);
+                dataONEObject.set("checksumAlgorithm", "MD5");
+                dataONEObject.set("uploadStatus", "q"); // set status to queued
+                delete event; // Let large files be garbage collected
                 
             },
             
