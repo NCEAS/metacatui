@@ -9,9 +9,10 @@ define(['underscore',
         'views/DataPackageView',
         'views/SignInView',
         'views/CitationView',
-        'text!templates/editor.html'], 
+        'text!templates/editor.html',
+        'collections/ObjectFormats'], 
         function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView, CitationView,
-        		EditorTemplate){
+        		EditorTemplate, ObjectFormats){
     
     var EditorView = Backbone.View.extend({
                 
@@ -38,6 +39,12 @@ define(['underscore',
         /* Initialize a new EditorView - called post constructor */
         initialize: function(options) {
 
+            // Ensure the object formats are cached for the editor's use
+            if ( typeof MetacatUI.objectFormats === "undefined" ) {
+                MetacatUI.objectFormats = new ObjectFormats();
+                MetacatUI.objectFormats.fetch();
+                
+            }             
             return this;
         },
         
@@ -52,7 +59,13 @@ define(['underscore',
             
             // Once the ScienceMetadata is populated, populate the associated package
             this.model = model;
-
+            
+            //Listen for the replace event on this model 
+            var view = this;
+            this.listenTo(this.model, "replace", function(newModel){
+            	if(view.model.get("id") == newModel.get("id"))
+            		view.model = newModel;
+            });
         },
         
         /* Render the view */
@@ -315,6 +328,9 @@ define(['underscore',
          */
         saveSuccess: function(){
         	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
+        	
+        	//Change the URL to the new id
+        	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });
         },
         
         /*

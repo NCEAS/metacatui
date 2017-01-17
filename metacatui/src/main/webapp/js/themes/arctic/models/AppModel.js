@@ -49,6 +49,8 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
+            formatsServiceUrl: null,
+            formatsUrl: "/formats",
 			//bioportalSearchUrl: null,
 			orcidBaseUrl: "https:/orcid.org",
 			//orcidSearchUrl: null,
@@ -135,6 +137,12 @@ define(['jquery', 'underscore', 'backbone'],
 						this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 					if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
 						this.set("signOutUrl", this.get('portalUrl') + "logout");
+                    
+                    // Object format list
+                    if ( typeof this.get("formatsUrl") != "undefined" ) {
+                        this.set("formatsServiceUrl", 
+                            this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+                    }
 				}
 			}			
 	

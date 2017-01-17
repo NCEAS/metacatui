@@ -31,40 +31,37 @@ if ( MetacatUI.useD3 ) {
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
 require.config({
-  baseUrl: 'js/',
-  waitSeconds: 180, //wait 3 minutes before throwing a timeout error
-  map: MetacatUI.themeMap,
-  urlArgs: "v=" + MetacatUI.metacatUIVersion,
-  paths: {
-    jquery: '../components/jquery',
-    jqueryui: '../components/jquery-ui-1.10.3.custom.min',
-    jqueryform: '../components/jquery.form',
-    underscore: '../components/underscore-min',
-    backbone: '../components/backbone-min',
-    bootstrap: '../components/bootstrap.min',
-    text: '../components/require-text',
-    jws: '../components/jws-3.2.min',
-    jsrasign: '../components/jsrsasign-4.9.0.min',    
-    async: '../components/async',
-    recaptcha: [MetacatUI.recaptchaURL, 'scripts/placeholder'],
-	nGeohash: '../components/geohash/main',
-	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
-    annotator: '../components/annotator/v1.2.10/annotator-full',
-    clipboard: '../components/clipboard.min',
-	//Have a null fallback for our d3 components for browsers that don't support SVG
-	d3: MetacatUI.d3URL,
-	LineChart: ['views/LineChartView', null],
-	BarChart: ['views/BarChartView', null],
-	CircleBadge: ['views/CircleBadgeView', null],
-	DonutChart: ['views/DonutChartView', null],
-    uuid: '../components/uuid',
-    rdflib: '../components/rdflib',
-    md5: '../components/md5'
-      
-  },
-  shim: { /* used for libraries without native AMD support */
-    underscore: {
-      exports: '_'
+    baseUrl: 'js/',
+    waitSeconds: 180, //wait 3 minutes before throwing a timeout error
+    map: MetacatUI.themeMap,
+    urlArgs: "v=" + MetacatUI.metacatUIVersion,
+    paths: {
+        jquery: '../components/jquery',
+        jqueryui: '../components/jquery-ui-1.10.3.custom.min',
+        jqueryform: '../components/jquery.form',
+        underscore: '../components/underscore-min',
+        backbone: '../components/backbone-min',
+        bootstrap: '../components/bootstrap.min',
+        text: '../components/require-text',
+        jws: '../components/jws-3.2.min',
+        jsrasign: '../components/jsrsasign-4.9.0.min',    
+        async: '../components/async',
+        recaptcha: [MetacatUI.recaptchaURL, 'scripts/placeholder'],
+        nGeohash: '../components/geohash/main',
+        fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
+        annotator: '../components/annotator/v1.2.10/annotator-full',
+        clipboard: '../components/clipboard.min',
+        //Have a null fallback for our d3 components for browsers that don't support SVG
+        d3: MetacatUI.d3URL,
+        LineChart: ['views/LineChartView', null],
+        BarChart: ['views/BarChartView', null],
+        CircleBadge: ['views/CircleBadgeView', null],
+        DonutChart: ['views/DonutChartView', null],
+        uuid: '../components/uuid',
+        rdflib: '../components/rdflib',
+        md5: '../components/md5',
+        x2js: '../components/xml2json'
+        
     },
     backbone: {
       deps: ['underscore', 'jquery'],
