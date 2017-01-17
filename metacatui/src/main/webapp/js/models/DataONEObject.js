@@ -89,18 +89,42 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             	};
             },
             
+            /* Provide the model URL on the server based on the newness of the object */
         	url: function(){
-        		if(!this.get("id") && !this.get("seriesid")) return "";
-        		
-        		return MetacatUI.appModel.get("metaServiceUrl") + 
-                    (encodeURIComponent(this.get("id")) || encodeURIComponent(this.get("seriesid")));        		
-        	},
-        	            
-            /* Updates the SystemMetadata for the object using MN.updateSystemMetadata() */
-            updateSystemMetadata: function(sysmeta) {
                 
-                return this.id;
-            },
+                // With no id, we can't do anything
+        		if( !this.get("id") && !this.get("seriesid") ) return "";
+        		
+                // Determine if we're updating a new/existing object,
+                // or just its system metadata
+                if ( this.isNew() ) {
+                    // This is a new upload, use MN.create()
+    		        return MetacatUI.appModel.get("objectServiceUrl") + 
+                        (encodeURIComponent(this.get("id")));
+                                		
+                } else {
+                    if ( this.hasUpdates() ) {
+                        if ( this.hasContentUpdates() ) {
+                            // Exists on the server, use MN.update()
+    		                return MetacatUI.appModel.get("objectServiceUrl") + 
+                            (encodeURIComponent(this.get("id")));
+                            
+                        } else {
+                            // Exists on the server, use MN.updateSystemMetadata()
+    		                return MetacatUI.appModel.get("metaServiceUrl") + 
+                                (encodeURIComponent(this.get("id")));
+                            
+                        }
+                        
+                    } else {
+                        // Use MN.getSystemMetadata() 
+        		        return MetacatUI.appModel.get("metaServiceUrl") + 
+                            (encodeURIComponent(this.get("id")) || 
+                             encodeURIComponent(this.get("seriesid")));        		
+                    }
+                    
+                }
+        	},
             
             /* Validates the objects attributes on set() */
             validate: function() {
@@ -659,6 +683,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	
 	        	return !(newSysMeta == oldSysMeta);
 	        },
+            
+            /* Checks if the data or metadata content has changed */
+            hasContentUpdates: function() {
+                var hasContentUpdates = false;
+                
+                return hasContentUpdates;
+            },
 	        
 	        isNew: function(){
 	        	//Check if there is an original XML document that was retrieved from the server
