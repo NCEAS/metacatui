@@ -115,6 +115,10 @@ define(['underscore',
 	        			this.model.fetch();
 	            });
     		}
+        	
+        	//When the user tries to navigate away, confirm with the user
+        	var view = this;
+        	window.onbeforeunload = function(){ view.confirmClose() };
                         
             return this;
         },
@@ -449,6 +453,20 @@ define(['underscore',
 	    	
 	    	$(container).find(".loading").remove();
 	    },
+	    
+	    /*
+	     * Alerts the user that changes will not be saved if s/he navigates away from this view.
+	     */
+		confirmClose: function(){
+			//If the user isn't logged in, we can leave this page
+			if(!MetacatUI.appUserModel.get("loggedIn")) return true;
+						
+			//If the form hasn't been edited, we can close this view without confirmation
+			if(!MetacatUI.rootDataPackage.getQueue().length) return true;
+			
+			var isLeaving = confirm("Do you want to leave this page? All information you've entered will be lost.");
+			return isLeaving;
+		},
 	    
         /* Close the view and its sub views */
         onClose: function() {
