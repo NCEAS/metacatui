@@ -1,7 +1,7 @@
 ﻿/* global define */
 "use strict";
-define(['jquery', 'underscore', 'backbone', 'uuid'],
-    function($, _, Backbone, uuid){
+define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats', 'md5'],
+    function($, _, Backbone, uuid, ObjectFormats, md5){
   
         /* 
          A DataONEObject represents a DataONE object that has a format
@@ -46,6 +46,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
                     uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
+                    percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
                     collections: [] //References to collections that this model is in
@@ -412,9 +413,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        	//Update the system metadata values
 	        	xml.find("serialversion").text(this.get("serialVersion") || "0");
 	        	xml.find("identifier").text((this.get("newPid") || this.get("id")));
-	        	xml.find("formatid").text(this.get("formatId"));
+                
+	        	xml.find("formatid").text(this.get("formatId") || this.getFormatId());                                
 	        	xml.find("size").text(this.get("size"));
 	        	xml.find("checksum").text(this.get("checksum"));
+                xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
 	        	xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
 	        	xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
 	        	xml.find("archived").text(this.get("archived") || "false");
@@ -496,6 +499,59 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
 	        },
 	        
             /*
+             * Get the object format identifier for this object
+             */
+            getFormatId: function() {
+                console.log("DataONEObject.setFormatId() called.");
+                
+                var formatId = "application/octet-stream", // default to untyped data
+                objectFormats = [],  // The list of potential format matches
+                ext; // The extension of the filename for this object
+                
+                if ( MetacatUI.objectFormats.length > 0 ) {
+                    
+                    // Does the media type match the object format id?
+                    objectFormats = MetacatUI.objectFormats.where({formatId: this.get("mediaType")});
+                    
+                    if ( objectFormats.length > 0 ) {
+                        formatId = objectFormats[0].get("formatId");
+                        objectFormats = [];
+                        return formatId;
+                        
+                    }
+                    
+                    // Does the media type match the media type name?
+                    objectFormats = MetacatUI.objectFormats.where({mediaType: {_name: this.get("mediaType")}});
+                    
+                    if ( objectFormats.length > 0 ) {
+                        formatId = objectFormats[0].get("formatId");
+                        objectFormats = [];
+                        return formatId;
+                        
+                    }
+                    
+                    // Does the extension match the extension?
+                    // TODO: multiple formats have the same extension - need to discern them, but how?
+                    if ( typeof this.get("fileName") !== "undefined" && this.get("fileName").length > 1 ) {
+                        
+                        ext = this.get("fileName").substring(
+                                    this.get("fileName").lastIndexOf(".") + 1, 
+                                    this.get("fileName").length);
+                        objectFormats = MetacatUI.objectFormats.where({extension: ext});
+                    
+                        if ( objectFormats.length > 0 ) {
+                            formatId = objectFormats[0].get("formatId");
+                            objectFormats = [];
+                            return formatId;
+                        
+                        }
+                    }
+                }
+                return formatId;
+                
+            },
+            
+            /*
              * Build a fresh system metadata document for this object when it is new
              * Return it as a DOM object
              */
@@ -504,25 +560,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid'],
                     sysmetaXML = []; // The document as a string array
                     
                     sysmetaXML.push(
-                        '<?xml version="1.0" encoding="UTF-8"?>',
-                        '<d1_v2.0:systemMetadata', 
+                        //'<?xml version="1.0" encoding="UTF-8"?>',
+                        '<d1_v2.0:systemmetadata', 
                         '    xmlns:d1_v2.0="http://ns.dataone.org/service/types/v2.0"', 
                         '    xmlns:d1="http://ns.dataone.org/service/types/v1">',
-                        '    <serialVersion />',
+                        '    <serialversion />',
                         '    <identifier />',
-                        '    <formatId />',
+                        '    <formatid />',
                         '    <size />',
                         '    <checksum />',
                         '    <submitter />',
-                        '    <rightsHolder />',
-                        '    <originMemberNode />',
-                        '    <authoritativeMemberNode />',
-                        '    <fileName />',
-                        '</d1_v2.0:systemMetadata>'
+                        '    <rightsholder />',
+                        '    <originmembernode />',
+                        '    <authoritativemembernode />',
+                        '    <filename />',
+                        '</d1_v2.0:systemmetadata>'
                     );
                     
                     
-                    sysmetaDOM = $($.parseXML(sysmetaXML.join("")));
+                    sysmetaDOM = $($.parseHTML(sysmetaXML.join("")));
                     return sysmetaDOM;
             },
             
