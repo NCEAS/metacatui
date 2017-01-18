@@ -404,7 +404,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
                     xml; // sysmeta as DOM object
 	        	
-                if ( typeof sysMetaXML === "undefined") {
+                if ( typeof sysMetaXML === "undefined" || !sysMetaXML) {
                     xml = this.createSysMeta();
                     
                 } else {
@@ -735,6 +735,53 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				}
 				
 				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));		
+	        },
+	        
+	        /*
+	         * Will format an XML string or XML nodes by camel-casing the node names, as necessary
+	         */
+	        formatXML: function(xml){
+	        	var nodeNameMap = this.nodeNameMap(),
+	        		xmlString = "";
+	        	
+	        	//XML must be provided for this function
+	        	if(!xml) return;
+	        	//Support XML strings
+	        	else if(typeof xml == "string") 
+	        		xmlString = xml;
+	        	//Support DOMs
+	        	else if(typeof xml == "object" && xml.nodeType){
+	        		//XML comments should be formatted with start and end carets
+	        		if(xml.nodeType == 8) 
+	        			xmlString = "<" + xml.nodeValue + ">";
+	        		//XML nodes have the entire XML string available in the outerHTML attribute
+	        		else if(xml.nodeType == 1) 
+	        			xmlString = xml.outerHTML;
+	        		//Text node types are left as-is 
+	        		else if(xml.nodeType == 3)
+	        			return xml.nodeValue;
+	        	}
+	        	
+	        	//Return empty strings if something went wrong
+	        	if(!xmlString) return "";
+	        	
+	        	_.each(Object.keys(nodeNameMap), function(name, i){
+	        		var originalXMLString = xmlString;
+	        		
+	        		//Camel case node names
+	        		var regEx = new RegExp("<" + name, "g");
+	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name]);
+	        		var regEx = new RegExp(name + ">", "g");
+	        		xmlString = xmlString.replace(regEx, nodeNameMap[name] + ">");
+	        		
+	        		//If node names haven't been changed, then find an attribute
+	        		if(xmlString == originalXMLString){
+	        			var regEx = new RegExp(" " + name + "=", "g");
+	        			xmlString = xmlString.replace(regEx, " " + nodeNameMap[name] + "=");
+	        		}
+	        	}, this);
+	        	
+	        	return xmlString;
 	        },
 		  
           /**

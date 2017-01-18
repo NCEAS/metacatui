@@ -2,11 +2,14 @@
 define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/ScienceMetadata',
         'models/DataONEObject',
-        'models/metadata/eml211/EMLCoverage', 
+        'models/metadata/eml211/EMLGeoCoverage', 
+        'models/metadata/eml211/EMLTaxonCoverage', 
+        'models/metadata/eml211/EMLTemporalCoverage', 
         'models/metadata/eml211/EMLDistribution', 
         'models/metadata/eml211/EMLParty', 
         'models/metadata/eml211/EMLProject'], 
-    function($, _, Backbone, uuid, ScienceMetadata, DataONEObject, EMLCoverage, EMLDistribution, EMLParty, EMLProject) {
+    function($, _, Backbone, uuid, ScienceMetadata, DataONEObject, 
+    		EMLGeoCoverage, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLParty, EMLProject) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -27,6 +30,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            creator: [], // array of EMLParty objects
 	            metadataProvider: [], // array of EMLParty objects
 	            associatedParty : [], // array of EMLParty objects
+	            contact: [], // array of EMLParty objects
+	            publisher: [], // array of EMLParty objects
 	            pubDate: null,
 	            language: null,
 	            series: null,
@@ -36,12 +41,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            intellectualRights: [],
 	            onlineDist: [], // array of EMLOnlineDist objects
 	            offlineDist: [], // array of EMLOfflineDist objects
-	            geographicCoverage : [], //an array for GeographicCoverages
-	            temporalCoverage : [], //an array of TemporalCoverages
-	            taxonomicCoverage : [], //an array of Taxons
+	            geoCoverage : [], //an array for EMLGeoCoverages
+	            temporalCoverage : [], //an array of EMLTempCoverages
+	            taxonCoverage : [], //an array of EMLTaxonCoverages
 	            purpose: [],
-	            contact: [], // array of EMLParty objects
-	            publisher: [], // array of EMLParty objects
 	            pubplace: null,
 	            methods: [], // array of EMLMethods objects
 	            project: [], // array of EMLProject objects
@@ -64,18 +67,43 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Used during parse() and serialize()
              */
             nodeNameMap: function(){
-            	return _.extend(_.clone(this.constructor.__super__.nodeNameMap()), {
-	            	"alternateidentifier" : "alternateIdentifier",
-	            	"additionalinfo" : "additionalInfo",
-	            	"intellectualrights" : "intellectualRights",
-	            	"keywordset" : "keywordSet",
-	            	"metadataprovider" : "metadataProvider",
-	            	"otherentity" : "otherEntity",
-	            	"pubdate" : "pubDate",
-	            	"geographiccoverage" : "geographicCoverage",
-	            	"taxonomiccoverage" : "taxonomicCoverage",
-	            	"temporalcoverage" : "temporalCoverage"
-	            });
+            	return _.extend(
+            			this.constructor.__super__.nodeNameMap(),
+            			EMLGeoCoverage.prototype.nodeNameMap(),
+            			EMLTaxonCoverage.prototype.nodeNameMap(),
+            			EMLTemporalCoverage.prototype.nodeNameMap(),
+            			EMLDistribution.prototype.nodeNameMap(),
+            			EMLParty.prototype.nodeNameMap(),
+            		//	EMLProject.prototype.nodeNameMap(),
+            			{
+			            	"additionalinfo" : "additionalInfo",
+			            	"allowfirst" : "allowFirst",
+			            	"alternateidentifier" : "alternateIdentifier",
+			            	"asneeded" : "asNeeded",
+			            	"changehistory" : "changeHistory",
+			            	"changedate" : "changeDate",
+			            	"changescope" : "changeScope",
+			            	"dataformat" : "dataFormat",
+			            	"entityname" : "entityName",
+			            	"entitytype" : "entityType",
+			            	"externallydefinedformat" : "externallyDefinedFormat",
+			            	"formatname" : "formatName",
+			            	"intellectualrights" : "intellectualRights",
+			            	"keywordset" : "keywordSet",
+			            	"keywordthesaurus" : "keywordThesaurus",
+			            	"maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
+			            	"methodstep" : "methodStep",
+			            	"notplanned" : "notPlanned",
+			            	"objectname" : "objectName",
+			            	"oldvalue" : "oldValue",
+			            	"otherentity" : "otherEntity",
+			            	"othermaintenanceperiod" : "otherMaintenancePeriod",
+			            	"pubdate" : "pubDate",
+			            	"pubplace" : "pubPlace",
+			            	"samplingdescription" : "samplingDescription",
+			            	"studyextent" : "studyExtent"
+            			}
+            	);
             },
             
             /* 
@@ -168,9 +196,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	if(!datasetEl || !datasetEl.length)
             		return {};
             		
-            	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact"],
-            		emlDistribution = ["distribution"],
-            		emlProject = ["project"];
+            	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
+            		emlDistribution = ["distribution"];
+           // 		emlProject = ["project"];
             		
             	var nodes = datasetEl.children(),
             		modelJSON = {};
@@ -180,25 +208,53 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		var thisNode = nodes[i];
             		
             		//EML Party modules are stored in EMLParty models
-            		if(_.contains(emlParties, thisNode.localName))
-            			modelJSON[thisNode.localName] = new EMLParty({ xml: thisNode });
+            		if(_.contains(emlParties, thisNode.localName)){
+            			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
+            			
+            			modelJSON[thisNode.localName].push(new EMLParty({ objectDOM: thisNode }));
+            		}
             		//EML Distribution modules are stored in EMLDistribution models
-            		else if(_.contains(emlDistribution, thisNode.localName))
-            			modelJSON[thisNode.localName] = new EMLDistribution({ xml: thisNode });
+            		else if(_.contains(emlDistribution, thisNode.localName)){
+            			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
+
+            			modelJSON[thisNode.localName].push(new EMLDistribution({ objectDOM: thisNode }));
+            		}
             		//EML Project modules are stored in EMLProject models
-            		else if(_.contains(emlProject, thisNode.localName))
-            			modelJSON[thisNode.localName] = new EMLProject({ xml: thisNode });
-            		//EML Temporal and Geographic Coverage modules are stored as EMLCoverage models
+            	/*	else if(_.contains(emlProject, thisNode.localName))
+            	 *      if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
+
+            			modelJSON[thisNode.localName].push(new EMLProject({ objectDOM: thisNode })); 
+            	*/
+            		//EML Temporal, Taxonomic, and Geographic Coverage modules are stored in their own models
             		else if(thisNode.localName == "coverage"){
-            			modelJSON.coverage = [];
             			
-            			var temporal = $(thisNode).children("temporalCoverage"),
-            				geo = $(thisNode).children("geographicCoverage");
+            			var temporal = $(thisNode).children("temporalcoverage"),
+            				geo      = $(thisNode).children("geographiccoverage"),
+            				taxon    = $(thisNode).children("taxonomiccoverage");
             			
-            			if(temporal.length)
-            				modelJSON.coverage.push(new EMLCoverage({ xml: temporal }));
-            			if(geo.length)
-            				modelJSON.coverage.push(new EMLCoverage({ xml: geo }));
+            			if(temporal.length){
+            				modelJSON.temporalCoverage = [];
+            				_.each(temporal, function(t){
+            					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ objectDOM: t }));
+            				});
+            			}
+            						
+            			if(geo.length){
+            				modelJSON.geoCoverage = [];
+            				_.each(geo, function(g){
+                				modelJSON.geoCoverage.push(new EMLGeoCoverage({ objectDOM: g }));
+            				});
+            				
+            			}
+            			
+            			if(taxon.length){
+            				modelJSON.taxonCoverage = [];
+            				_.each(taxon, function(t){
+                				modelJSON.taxonCoverage.push(new EMLTaxonCoverage({ objectDOM: t }));
+            				});
+            				
+            			}
+
             		}
             		else{
             			var convertedName = this.nodeNameMap()[thisNode.localName];
@@ -225,16 +281,62 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             /*
              * Retireves the model attributes and serializes into EML XML, to produce the new or modified EML document.
              * Returns the EML XML as a string.
-             * TODO: Use the EML submodels to serialize certain sections, such as EMLParty.
              */
             serialize: function(){
-            	//TODO: Flush out this function. This is a stub right now that just returns the original XML.
 	           
 	           	//Get the EML document
-	           	var eml = this.get("objectXML");
-	           
-				//TODO: Camel case the XML string
-	           	return eml;
+	           	var xmlString = this.get("objectXML"),
+	           		eml = $.parseHTML(xmlString);
+	           	
+	           	//Update some basic text fields in the EML 
+	           	
+	           	//Serialize the geographic coverage
+	           	_.each(this.get("geoCoverage"), function(geoCoverage){
+		           	$(eml).find("geographiccoverage").replaceWith(geoCoverage.updateDOM());
+	           	});
+	           	
+	           	//Serialize the taxonomic coverage
+	           	_.each(this.get("taxonCoverage"), function(taxonCoverage){
+	           		$(eml).find("taxonomiccoverage").replaceWith(taxonCoverage.updateDOM());
+	           	});	 
+	           	
+	        	//Serialize the temporal coverage
+	           	_.each(this.get("temporalCoverage"), function(temporalCoverage){
+		           	$(eml).find("temporalcoverage").replaceWith(temporalCoverage.updateDOM());
+	           	});
+	           	
+	           	//Serialize the metadata providers
+	           	_.each(this.get("metadataProvider"), function(metadataProvider){
+	           		$(eml).find("metadataprovider#" + metadataProvider.get("id")).replaceWith(metadataProvider.updateDOM());
+	           	});
+	           	
+	           	//Serialize the creators
+	           	_.each(this.get("creator"), function(creator){
+	           		$(eml).find("creator#" + creator.get("id")).replaceWith(creator.updateDOM());
+	           	});
+	           	
+	        	//Serialize the associated parties
+	           	_.each(this.get("associatedParty"), function(associatedParty){
+	           		$(eml).find("associatedparty#" + associatedParty.get("id")).replaceWith(associatedParty.updateDOM());
+	           	});
+	           	
+	           	//Serialize the contacts
+	           	_.each(this.get("contact"), function(contact){
+	           		$(eml).find("contact#" + contact.get("id")).replaceWith(contact.updateDOM());
+	           	});
+	           	
+	           	//Serialize the publishers
+	           	_.each(this.get("publisher"), function(publisher){
+	           		$(eml).find("publisher#" + publisher.get("id")).replaceWith(publisher.updateDOM());
+	           	});
+	              	           	
+	           	//Camel-case the XML
+		    	var emlString = 
+		    			_.map(eml, function(rootEMLNode){ 
+		    				return this.formatXML(rootEMLNode);
+		    				}, this);
+		    	           	           
+	           	return xmlString;
             },
             
             /*

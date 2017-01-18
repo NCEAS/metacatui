@@ -1,11 +1,12 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone'], 
-    function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'], 
+    function($, _, Backbone, DataONEObject) {
 
 	var EMLDistribution = Backbone.Model.extend({
 		
 		defaults: {
-			originalXML: null,
+			objectXML: null,
+			objectDOM: null,
 			mediumName: null,
 			mediumVolume: null,
 			mediumFormat: null,
@@ -13,16 +14,29 @@ define(['jquery', 'underscore', 'backbone'],
 			onlineDescription: null
 		},
 		
-		initialize: function(options){
-			if(options && options.xml){
-				this.set("originalXML", options.xml);
-				this.parse(options.xml);
+		initialize: function(attributes){
+			if(attributes.objectDOM) this.parse(attributes.objectDOM);
+
+		},
+
+		/*
+         * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML). 
+         * Used during parse() and serialize()
+         */
+		nodeNameMap: function(){
+			return{
+				"authsystem" : "authSystem",
+				"mediumformat" : "mediumFormat",
+				"mediumname" : "mediumName",
+				"mediumnote" : "mediumNote",
+				"mediumvolume" : "mediumVolume",
+				"onlinedescription" : "onlineDescription"
 			}
 		},
 		
-		parse: function(xml){
-			if(!xml)
-				var xml = this.get("originalXML");
+		parse: function(objectDOM){
+			if(!objectDOM)
+				var xml = this.get("objectDOM");
 			
 			var offline = $(xml).find("offline"),
 				online = $(xml).find("online");
@@ -46,8 +60,27 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set($(node)[0].localName, $(node).text());
 		},
 		
-		toXML: function(){
-			
+		serialize: function(){
+			var objectDOM = this.updateDOM(),
+				xmlString = objectDOM.outerHTML;
+		
+			//Camel-case the XML
+	    	xmlString = this.formatXML(xmlString);
+    	
+	    	return xmlString;
+		},
+		
+		/*
+		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
+		 */
+		updateDOM: function(){
+			 var objectDOM = this.get("objectDOM").cloneNode(true);
+			 
+			 return objectDOM;
+		},
+		
+		formatXML: function(xmlString){
+			return DataONEObject.prototype.formatXML.call(this, xmlString);
 		}
 	});
 	

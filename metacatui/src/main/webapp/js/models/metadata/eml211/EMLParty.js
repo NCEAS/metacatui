@@ -1,11 +1,12 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone'], 
-    function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'], 
+    function($, _, Backbone, DataONEObject) {
 
 	var EMLParty = Backbone.Model.extend({
 		
 		defaults: {
-			originalXML: null,
+			objectXML: null,
+			objectDOM: null,
 			individualName: null,
 			organizationName: null,
 			positionName: null,
@@ -19,41 +20,45 @@ define(['jquery', 'underscore', 'backbone'],
 			id: null		
 		},
 		
-		initialize: function(options){
-			if(options && options.xml){
-				this.set("originalXML", options.xml);
-				this.parse(options.xml);
+		initialize: function(attributes){
+			if(attributes.objectDOM) this.parse(attributes.objectDOM);
+		},
+
+		/*
+         * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML). 
+         * Used during parse() and serialize()
+         */
+		nodeNameMap: function(){
+			return {
+				"administrativearea"    : "administrativeArea",
+				"deliverypoint"         : "deliveryPoint",
+				"electronicmailaddress" : "electronicMailAddress",
+				"givenname"             : "givenName",
+				"individualname"        : "individualName",
+				"metadataprovider"		: "metadataProvider",
+				"onlineurl"             : "onlineUrl",
+				"organizationname"      : "organizationName",
+				"positionname"          : "positionName",
+				"postalcode"            : "postalCode",
+				"surname"               : "surName",
+				"userid"                : "userId"
 			}
 		},
 		
-		nodeNameMap: {
-			"administrativearea"    : "administrativeArea",
-			"deliverypoint"         : "deliveryPoint",
-			"electronicmailaddress" : "electronicMailAddress",
-			"givenname"             : "givenName",
-			"individualname"        : "individualName",
-			"onlineurl"             : "onlineUrl",
-			"organizationname"      : "organizationName",
-			"positionname"          : "positionName",
-			"postalcode"            : "postalCode",
-			"surname"               : "surName",
-			"userid"                : "userId",
-		},
-		
-		parse: function(xml){
-			if(!xml)
-				var xml = this.get("originalXML");
+		parse: function(objectDOM){
+			if(!objectDOM)
+				var objectDOM = this.get("objectDOM");				
 			
 			var model = this;
 			
 			//Set the name
-			var person = $(xml).children("individualName");
+			var person = $(objectDOM).children("individualName");
 			
 			if(person.length)
 				this.set("individualName", this.parsePerson(person));
 			
 			//Set the phone and fax numbers
-			var phones = $(xml).children("phone"),
+			var phones = $(objectDOM).children("phone"),
 				phoneNums = [],
 				faxNums = [];
 			
@@ -68,7 +73,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set("fax", faxNums);
 			
 			//Set the address
-			var addresses = $(xml).children("address"),
+			var addresses = $(objectDOM).children("address"),
 				addressesJSON = [];
 			
 			addresses.each(function(i, address){
@@ -78,14 +83,14 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set("address", addressesJSON);
 			
 			//Set the other misc. text fields
-			this.set("organizationName", $(xml).children("organizationname").text());
-			this.set("positionName", $(xml).children("positionname").text());
-			this.set("email", _.map($(xml).children("electronicmailaddress"), function(email){
+			this.set("organizationName", $(objectDOM).children("organizationname").text());
+			this.set("positionName", $(objectDOM).children("positionname").text());
+			this.set("email", _.map($(objectDOM).children("electronicmailaddress"), function(email){
 				return  $(email).text();
 			}));
 			
 			//Set the id attribute
-			this.set("id", $(xml).attr("id"));
+			this.set("id", $(objectDOM).attr("id"));
 			
 		},
 		
@@ -151,8 +156,27 @@ define(['jquery', 'underscore', 'backbone'],
 			
 		},
 		
-		toXML: function(){
-			
+		serialize: function(){
+			var objectDOM = this.updateDOM(),
+				xmlString = objectDOM.outerHTML;
+		
+			//Camel-case the XML
+	    	xmlString = this.formatXML(xmlString);
+	    	
+	    	return xmlString;
+		},
+		
+		/*
+		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
+		 */
+		updateDOM: function(){
+			 var objectDOM = this.get("objectDOM").cloneNode(true);
+			 
+			 return objectDOM;
+		},
+		
+		formatXML: function(xmlString){
+			return DataONEObject.prototype.formatXML.call(this, xmlString);
 		}
 	});
 	
