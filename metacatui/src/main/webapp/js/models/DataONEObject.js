@@ -401,10 +401,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
   			//Send the system metadata as a Blob 
 			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
   			//Add the system metadata XML to the XHR data
-  			formData.append("sysmeta", xmlBlob, "sysmeta");
+  			formData.append("sysmeta", xmlBlob, "sysmeta.xml");
   			
   			//Add the identifier to the XHR data
 			formData.append("pid", this.get("id"));
+            
+            if ( this.isNew() ) {
+                // Create the new object (MN.create())
+                formData.append("object", this.get("uploadFile"), this.get("fileName"));
+                
+            } else {
+                if ( this.hasContentUpdates ) {
+                    // Update the object (MN.update())
+                    
+                } else {
+                    // Don't add the object (MN.updateSystemMetadata())
+                    
+                }
+            }
 
 			//Put together the AJAX and Backbone.save() options
 			var requestSettings = {
@@ -442,7 +456,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
                     xml; // sysmeta as DOM object
 	        	
-                if ( typeof sysMetaXML === "undefined") {
+                if ( typeof sysMetaXML === "undefined" || sysMetaXML === null ) {
                     xml = this.createSysMeta();
                     
                 } else {
@@ -541,7 +555,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
              * Get the object format identifier for this object
              */
             getFormatId: function() {
-                console.log("DataONEObject.setFormatId() called.");
+                console.log("DataONEObject.getFormatId() called.");
                 
                 var formatId = "application/octet-stream", // default to untyped data
                 objectFormats = [],  // The list of potential format matches
