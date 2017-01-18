@@ -17,18 +17,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
         		return{
                     // System Metadata attributes
                     serialVersion: null,
-                    id: "urn:uuid:" + uuid.v4(),
+                    identifier: null,
                     formatId: null,
-                    formatType: null,
                     size: null,
-                    sizeStr: null,
                     checksum: null,
                     checksumAlgorithm: null,
                     submitter: null,
                     rightsHolder : null,
                     accessPolicy: [],
                     replicationPolicy: [],
-                    latestVersion: null,
                     obsoletes: null,
                     obsoletedBy: null,
                     archived: null,
@@ -41,7 +38,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     mediaType: null,
                     fileName: null,
                     // Non-system metadata attributes:
+                    id: "urn:uuid:" + uuid.v4(),
+                    sizeStr: null,
                     type: null, // Data, Metadata, or DataPackage
+                    formatType: null,
+                    latestVersion: null,
+                    isDocumentedBy: null,
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
@@ -49,6 +51,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
+                    originalAttrs: [], // An array of original attributes in a DataONEObject
+                    hasContentUpdates: false, // If attributes outside of originalAttrs have been changed
+                    sysMetaXML: null, // A cached original version of the fetched system metadata document
                     collections: [] //References to collections that this model is in
 	        	}
         	},
@@ -56,12 +61,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             initialize: function(attrs, options) {
                 this.on("change:size", this.bytesToSize);
                 
-                //When the model has been retrieved the first time, listen for changes to it so we can keep track of user changes
+                // Cache an array of original attribute names to help in handleChange()
+                this.set("originalAttrs", Object.keys(this.attributes));
+                
+                // Register a listener for any attribute change
+                this.on("change", this.handleChange, this);
+                
+                // When the model has been retrieved the first time, listen for 
+                // changes to it so we can keep track of user changes
                 this.once("sync", this.updateUploadStatus);
             },
             
             /*
-             * Maps the lower-case sys meta node names (valid in HTML DOM) to the camel-cased sys meta node names (valid in DataONE). 
+             * Maps the lower-case sys meta node names (valid in HTML DOM) to the 
+             * camel-cased sys meta node names (valid in DataONE). 
              * Used during parse() and serialize()
              */
             nodeNameMap: function(){
@@ -104,7 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                                 		
                 } else {
                     if ( this.hasUpdates() ) {
-                        if ( this.hasContentUpdates() ) {
+                        if ( this.hasContentUpdates ) {
                             // Exists on the server, use MN.update()
     		                return MetacatUI.appModel.get("objectServiceUrl") + 
                             (encodeURIComponent(this.get("id")));
@@ -195,8 +208,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             /* 
              * This function is called by Backbone.Model.fetch.
              * It deserializes the incoming XML from the /meta REST endpoint and converts it into JSON.
-           */
-
+             */
             parse: function(response){
             	console.log("Parsing " + this.get("id"));
             	
@@ -420,6 +432,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 			
 			//Send the Save request
 			Backbone.Model.prototype.save.call(this, null, requestSettings);
+            
+            // Reset the content changes status
+            this.hasContentChanges = false;
 		  },
 		  
 		  serializeSysMeta: function(options){
@@ -556,7 +571,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     
                     // Does the extension match the extension?
                     // TODO: multiple formats have the same extension - need to discern them, but how?
-                    if ( typeof this.get("fileName") !== "undefined" && this.get("fileName").length > 1 ) {
+                    if ( typeof this.get("fileName") !== "undefined" && 
+                         this.get("fileName") !== null && this.get("fileName").length > 1 ) {
                         
                         ext = this.get("fileName").substring(
                                     this.get("fileName").lastIndexOf(".") + 1, 
@@ -681,14 +697,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	var newSysMeta = this.serializeSysMeta(),
 	        		oldSysMeta = $(document.createElement("div")).append($(this.get("sysMetaXML"))).html();
 	        	
+                if ( oldSysMeta === "" ) return false;
+                    
 	        	return !(newSysMeta == oldSysMeta);
 	        },
             
-            /* Checks if the data or metadata content has changed */
-            hasContentUpdates: function() {
-                var hasContentUpdates = false;
+            /* Set the hasContentUpdates flag on attribute changes 
+             * that are not listed in the originalAttrs array
+             */
+            handleChange: function(model, options) {
+                var changed = Object.keys(model.changedAttributes());
                 
-                return hasContentUpdates;
+                // If an attribute change isn't in the originalAttrs list,
+                // we know it is outside of the DataONEObject scope,
+                // and should be an attribute from ScienceMetadata, EML211, etc.
+                _.each(changed, function(attr) {
+                    if ( ! _.contains(this.get("originalAttrs"), attr) ) {
+                        this.hasContentChanges = true;
+                        
+                    } 
+                }, this);
             },
 	        
 	        isNew: function(){
