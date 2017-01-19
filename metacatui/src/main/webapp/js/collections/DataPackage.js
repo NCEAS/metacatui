@@ -1171,6 +1171,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	return isDifferent;
             },
             
+            /*
+             * Returns an array of the models that are in the queue or in progress of uploading
+             */
+            getQueue: function(){
+            	return this.filter(function(m){ return m.get("uploadStatus") == "q" || m.get("uploadStatus") == "p" });
+            },
+            
             saveReference: function(model){
             	//Save a reference to this collection in the model
             	var currentCollections = model.get("collections");
