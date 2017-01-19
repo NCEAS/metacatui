@@ -493,7 +493,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
                 // Create an access policy node if needed
                 if ( ! accessPolicyNode ) {
-                    accessPolicyNode = $(document.createElement"accesspolicy");
+                    accessPolicyNode = $(document.createElement("accesspolicy"));
                     xml.find("rightsholder").after(accessPolicyNode);
                     
                 }
