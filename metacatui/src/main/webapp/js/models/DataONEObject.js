@@ -17,18 +17,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
         		return{
                     // System Metadata attributes
                     serialVersion: null,
-                    id: "urn:uuid:" + uuid.v4(),
+                    identifier: null,
                     formatId: null,
-                    formatType: null,
                     size: null,
-                    sizeStr: null,
                     checksum: null,
                     checksumAlgorithm: "MD5",
                     submitter: null,
                     rightsHolder : null,
                     accessPolicy: [],
                     replicationPolicy: [],
-                    latestVersion: null,
                     obsoletes: null,
                     obsoletedBy: null,
                     archived: null,
@@ -41,7 +38,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     mediaType: null,
                     fileName: null,
                     // Non-system metadata attributes:
+                    id: "urn:uuid:" + uuid.v4(),
+                    sizeStr: null,
                     type: null, // Data, Metadata, or DataPackage
+                    formatType: null,
+                    latestVersion: null,
+                    isDocumentedBy: null,
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
@@ -49,6 +51,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
+                    originalAttrs: [], // An array of original attributes in a DataONEObject
+                    hasContentUpdates: false, // If attributes outside of originalAttrs have been changed
+                    sysMetaXML: null, // A cached original version of the fetched system metadata document
                     collections: [] //References to collections that this model is in
 	        	}
         	},
@@ -56,12 +61,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             initialize: function(attrs, options) {
                 this.on("change:size", this.bytesToSize);
                 
-                //When the model has been retrieved the first time, listen for changes to it so we can keep track of user changes
+                // Cache an array of original attribute names to help in handleChange()
+                this.set("originalAttrs", Object.keys(this.attributes));
+                
+                // Register a listener for any attribute change
+                this.on("change", this.handleChange, this);
+                
+                // When the model has been retrieved the first time, listen for 
+                // changes to it so we can keep track of user changes
                 this.once("sync", this.updateUploadStatus);
             },
             
             /*
-             * Maps the lower-case sys meta node names (valid in HTML DOM) to the camel-cased sys meta node names (valid in DataONE). 
+             * Maps the lower-case sys meta node names (valid in HTML DOM) to the 
+             * camel-cased sys meta node names (valid in DataONE). 
              * Used during parse() and serialize()
              */
             nodeNameMap: function(){
@@ -89,18 +102,42 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             	};
             },
             
+            /* Provide the model URL on the server based on the newness of the object */
         	url: function(){
-        		if(!this.get("id") && !this.get("seriesid")) return "";
-        		
-        		return MetacatUI.appModel.get("metaServiceUrl") + 
-                    (encodeURIComponent(this.get("id")) || encodeURIComponent(this.get("seriesid")));        		
-        	},
-        	            
-            /* Updates the SystemMetadata for the object using MN.updateSystemMetadata() */
-            updateSystemMetadata: function(sysmeta) {
                 
-                return this.id;
-            },
+                // With no id, we can't do anything
+        		if( !this.get("id") && !this.get("seriesid") ) return "";
+        		
+                // Determine if we're updating a new/existing object,
+                // or just its system metadata
+                if ( this.isNew() ) {
+                    // This is a new upload, use MN.create()
+    		        return MetacatUI.appModel.get("objectServiceUrl") + 
+                        (encodeURIComponent(this.get("id")));
+                                		
+                } else {
+                    if ( this.hasUpdates() ) {
+                        if ( this.hasContentUpdates ) {
+                            // Exists on the server, use MN.update()
+    		                return MetacatUI.appModel.get("objectServiceUrl") + 
+                            (encodeURIComponent(this.get("id")));
+                            
+                        } else {
+                            // Exists on the server, use MN.updateSystemMetadata()
+    		                return MetacatUI.appModel.get("metaServiceUrl") + 
+                                (encodeURIComponent(this.get("id")));
+                            
+                        }
+                        
+                    } else {
+                        // Use MN.getSystemMetadata() 
+        		        return MetacatUI.appModel.get("metaServiceUrl") + 
+                            (encodeURIComponent(this.get("id")) || 
+                             encodeURIComponent(this.get("seriesid")));        		
+                    }
+                    
+                }
+        	},
             
             /* Validates the objects attributes on set() */
             validate: function() {
@@ -171,8 +208,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             /* 
              * This function is called by Backbone.Model.fetch.
              * It deserializes the incoming XML from the /meta REST endpoint and converts it into JSON.
-           */
-
+             */
             parse: function(response){
             	console.log("Parsing " + this.get("id"));
             	
@@ -365,10 +401,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
   			//Send the system metadata as a Blob 
 			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
   			//Add the system metadata XML to the XHR data
-  			formData.append("sysmeta", xmlBlob, "sysmeta");
+  			formData.append("sysmeta", xmlBlob, "sysmeta.xml");
   			
   			//Add the identifier to the XHR data
 			formData.append("pid", this.get("id"));
+            
+            if ( this.isNew() ) {
+                // Create the new object (MN.create())
+                formData.append("object", this.get("uploadFile"), this.get("fileName"));
+                
+            } else {
+                if ( this.hasContentUpdates ) {
+                    // Update the object (MN.update())
+                    
+                } else {
+                    // Don't add the object (MN.updateSystemMetadata())
+                    
+                }
+            }
 
 			//Put together the AJAX and Backbone.save() options
 			var requestSettings = {
@@ -397,14 +447,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 			
 			//Send the Save request
 			Backbone.Model.prototype.save.call(this, null, requestSettings);
+            
+            // Reset the content changes status
+            this.hasContentChanges = false;
 		  },
 		  
 		  serializeSysMeta: function(options){
 	        	//Get the system metadata XML that currently exists in the system
                 var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
-                    xml; // sysmeta as DOM object
-	        	
-                if ( typeof sysMetaXML === "undefined" || !sysMetaXML) {
+                    xml, // sysmeta as DOM object
+                    accessPolicyXML, // The generated access policy XML
+                    previousSiblingNode, // A DOM node indicating any previous sibling
+                    rightsHolderNode, // A DOM node for the rights holder field
+                    accessPolicyNode, // A DOM node for the access policy
+                    replicationPolicyNode, // A DOM node for the replication policy
+                    obsoletesNode, // A DOM node for the obsoletes field
+                    obsoletedByNode, // A DOM node for the obsoletedBy field
+                    fileNameNode, // A DOM node for the file name
+                    xmlString, // The system metadata document as a string
+                    nodeNameMap; // The map of camelCase to lowercase attributes
+              
+                if ( typeof sysMetaXML === "undefined" || sysMetaXML === null ) {
                     xml = this.createSysMeta();
                     
                 } else {
@@ -419,8 +482,71 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	xml.find("size").text(this.get("size"));
 	        	xml.find("checksum").text(this.get("checksum"));
                 xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
-	        	xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
+	        	xml.find("submitter").text(MetacatUI.appUserModel.get("username"));
 	        	xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
+
+	        	//Write the access policy
+	        	accessPolicyXML = this.serializeAccessPolicy();
+	        	
+                // Get the access policy node, if it exists
+                accessPolicyNode = xml.find("accesspolicy");
+                
+                // Create an access policy node if needed
+                if ( ! accessPolicyNode ) {
+                    accessPolicyNode = $(document.createElement("accesspolicy"));
+                    xml.find("rightsholder").after(accessPolicyNode);
+                    
+                }
+	        	//Replace the old access policy with the new one
+	        	xml.find("accesspolicy").replaceWith(accessPolicyXML); 
+	        	
+                // Set the obsoletes node after replPolicy or accessPolicy, or rightsHolder
+                replicationPolicyNode = xml.find("replicationpolicy");
+                accessPolicyNode = xml.find("accesspolicy");
+                rightsHolderNode = xml.find("rightsholder");
+                
+                if ( replicationPolicyNode ) {
+                    previousSiblingNode = replicationPolicyNode;
+                    
+                } else if ( accessPolicyNode ) {
+                    previousSiblingNode = accessPolicyNode;
+                    
+                } else {
+                    previousSiblingNode = rightsHolderNode;
+                    
+                }
+                
+	        	if( this.get("obsoletes") ){
+	        		
+	        		if( xml.find("obsoletes").length ) {
+	        			xml.find("obsoletes").text(this.get("obsoletes"));
+	        		    
+	        		} else {
+                        obsoletesNode = $(document.createElement("obsoletes"));
+	        			previousSiblingNode.after(obsoletesNode.text(this.get("obsoletes")));
+	        		    
+	        		}
+	        	} else {
+	        		xml.find("obsoletes").remove();
+	        	    
+	        	}
+	        	
+	        	//If this object is obsoleted by another object
+	        	if(this.get("obsoletedBy")){
+	        		//Create a new obsoletedBy node if needed
+	        		if( ! xml.find("obsoletedby").length ){
+	        			xml.append($(document.createElement("obsoletedby")).text(this.get("obsoletedBy")));
+	        		} else {
+	        		    //Or update the existing obsoletedBy node
+	        			xml.find("obsoletedby").text(thisget("obsoletedBy"));
+	        		    
+	        		}
+	        	} else {
+	        	    //If it's not obsoleted by another object, remove the node
+	        		xml.find("obsoletedby").remove();
+	        	    
+	        	}
+
 	        	xml.find("archived").text(this.get("archived") || "false");
 	        	xml.find("dateuploaded").text(this.get("dateUploaded") || new Date().toISOString());
 	        	//	xml.find("datesysmetadatamodified").text(new Date().toISOString());
@@ -428,12 +554,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 
 	        	//Set the object file name
-	        	if(this.get("fileName")){
+	        	if( this.get("fileName") ){
 	        		//Get the filename node
-		        	var fileNameNode = xml.find("filename");
+		        	fileNameNode = xml.find("filename");
 		        	
 		        	//If the filename node doesn't exist, then create one
-		        	if(!fileNameNode.length){
+		        	if( !fileNameNode.length ){
 		        		fileNameNode = $(document.createElement("filename"));
 		        		xml.find("authoritativemembernode").after(fileNameNode);
 		        	}
@@ -442,40 +568,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 		        	$(fileNameNode).text(this.get("fileName"));
 	        	}
 	        	
-	        	if(this.get("obsoletes")){
-	        		
-	        		if(xml.find("obsoletes").length)
-	        			xml.find("obsoletes").text(this.get("obsoletes"));
-	        		else
-	        			xml.append($(document.createElement("obsoletes")).text(this.get("obsoletes")));
-	        	}
-	        	else
-	        		xml.find("obsoletes").remove();
-	        	
-	        	//If this object is obsoleted by another object
-	        	if(this.get("obsoletedBy")){
-	        		//Create a new obsoletedBy node if needed
-	        		if(!xml.find("obsoletedby").length){
-	        			xml.append($(document.createElement("obsoletedby")).text(this.get("obsoletedBy")));
-	        		}
-	        		//Or update the existing obsoletedBy node
-	        		else
-	        			xml.find("obsoletedby").text(thisget("obsoletedBy"));
-	        	}
-	        	//If it's not obsoleted by another object, remove the node
-	        	else
-	        		xml.find("obsoletedby").remove();
-
-	        	//Write the access policy
-	        	var accessPolicyXML = this.serializeAccessPolicy();
-	        	
-	        	//Replace the old access policy with the new one
-	        	xml.find("accesspolicy").replaceWith(accessPolicyXML); 
-	        	        	
-	        	var xmlString = $(document.createElement("div")).append(xml.clone()).html();
+	        	xmlString = $(document.createElement("div")).append(xml.clone()).html();
 	        	
 	        	//Now camel case the nodes 
-	        	var nodeNameMap = this.nodeNameMap();
+	        	nodeNameMap = this.nodeNameMap();
 	        	_.each(Object.keys(nodeNameMap), function(name, i){
 	        		var originalXMLString = xmlString;
 	        		
@@ -503,7 +599,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
              * Get the object format identifier for this object
              */
             getFormatId: function() {
-                console.log("DataONEObject.setFormatId() called.");
+                console.log("DataONEObject.getFormatId() called.");
                 
                 var formatId = "application/octet-stream", // default to untyped data
                 objectFormats = [],  // The list of potential format matches
@@ -533,7 +629,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     
                     // Does the extension match the extension?
                     // TODO: multiple formats have the same extension - need to discern them, but how?
-                    if ( typeof this.get("fileName") !== "undefined" && this.get("fileName").length > 1 ) {
+                    if ( typeof this.get("fileName") !== "undefined" && 
+                         this.get("fileName") !== null && this.get("fileName").length > 1 ) {
                         
                         ext = this.get("fileName").substring(
                                     this.get("fileName").lastIndexOf(".") + 1, 
@@ -658,8 +755,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	var newSysMeta = this.serializeSysMeta(),
 	        		oldSysMeta = $(document.createElement("div")).append($(this.get("sysMetaXML"))).html();
 	        	
+                if ( oldSysMeta === "" ) return false;
+                    
 	        	return !(newSysMeta == oldSysMeta);
 	        },
+            
+            /* Set the hasContentUpdates flag on attribute changes 
+             * that are not listed in the originalAttrs array
+             */
+            handleChange: function(model, options) {
+                var changed = Object.keys(model.changedAttributes());
+                
+                // If an attribute change isn't in the originalAttrs list,
+                // we know it is outside of the DataONEObject scope,
+                // and should be an attribute from ScienceMetadata, EML211, etc.
+                _.each(changed, function(attr) {
+                    if ( ! _.contains(this.get("originalAttrs"), attr) ) {
+                        this.hasContentChanges = true;
+                        
+                    } 
+                }, this);
+            },
 	        
 	        isNew: function(){
 	        	//Check if there is an original XML document that was retrieved from the server

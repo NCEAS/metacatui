@@ -556,6 +556,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 				//Get the new checksum of the resource map
 				var checksum = md5(mapXML);
 				this.packageModel.set("checksum", checksum);
+				this.packageModel.set("checksumAlgorithm", "MD5");
 				
     			//Create the system metadata
     			var sysMetaXML = this.packageModel.serializeSysMeta();
