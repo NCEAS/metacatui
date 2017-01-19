@@ -113,9 +113,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	        nodeNameMap: function(){ return this.constructor.__super__.nodeNameMap(); },
             
             /* Initialize a ScienceMetadata object */
-            initialize: function(options) {
+            initialize: function(attributes) {
                 // Call initialize for the super class
-                //this.constructor.__super__.initialize.apply(this, options);
+            	 DataONEObject.prototype.initialize.call(this, attributes);
             	
                 
                 // ScienceMetadata-specific init goes here
