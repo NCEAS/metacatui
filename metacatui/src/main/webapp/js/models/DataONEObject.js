@@ -491,59 +491,76 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 // Get the access policy node, if it exists
                 accessPolicyNode = xml.find("accesspolicy");
                 
+                previousSiblingNode = xml.find("rightsholder");
                 // Create an access policy node if needed
-                if ( ! accessPolicyNode ) {
+                if ( (! accessPolicyNode.length) && accessPolicyXML ) {
                     accessPolicyNode = $(document.createElement("accesspolicy"));
-                    xml.find("rightsholder").after(accessPolicyNode);
+                    previousSiblingNode.after(accessPolicyNode);
                     
                 }
-	        	//Replace the old access policy with the new one
-	        	xml.find("accesspolicy").replaceWith(accessPolicyXML); 
+	        	//Replace the old access policy with the new one if it exists
+                if ( accessPolicyXML ) {
+    	        	accessPolicyNode.replaceWith(accessPolicyXML); 
+                    
+                }
 	        	
                 // Set the obsoletes node after replPolicy or accessPolicy, or rightsHolder
                 replicationPolicyNode = xml.find("replicationpolicy");
                 accessPolicyNode = xml.find("accesspolicy");
                 rightsHolderNode = xml.find("rightsholder");
                 
-                if ( replicationPolicyNode ) {
+                if ( replicationPolicyNode.length ) {
                     previousSiblingNode = replicationPolicyNode;
                     
-                } else if ( accessPolicyNode ) {
+                } else if ( accessPolicyNode.length ) {
                     previousSiblingNode = accessPolicyNode;
                     
                 } else {
                     previousSiblingNode = rightsHolderNode;
                     
                 }
-                
+
+                obsoletesNode = xml.find("obsoletes");                
 	        	if( this.get("obsoletes") ){
-	        		
-	        		if( xml.find("obsoletes").length ) {
-	        			xml.find("obsoletes").text(this.get("obsoletes"));
+	        		if( obsoletesNode.length ) {
+	        			obsoletesNode.text(this.get("obsoletes"));
 	        		    
 	        		} else {
-                        obsoletesNode = $(document.createElement("obsoletes"));
-	        			previousSiblingNode.after(obsoletesNode.text(this.get("obsoletes")));
+                        obsoletesNode = $(document.createElement("obsoletes")).text(this.get("obsoletes"));
+	        			previousSiblingNode.after(obsoletesNode);
 	        		    
 	        		}
+                    
 	        	} else {
-	        		xml.find("obsoletes").remove();
-	        	    
+                    if ( obsoletesNode ) {
+    	        		obsoletesNode.remove();
+                        
+                    } 
 	        	}
-	        	
+	        	                
+                if ( obsoletesNode ) {
+                    previousSiblingNode = obsoletesNode;
+                    
+                }
+                
 	        	//If this object is obsoleted by another object
 	        	if(this.get("obsoletedBy")){
 	        		//Create a new obsoletedBy node if needed
-	        		if( ! xml.find("obsoletedby").length ){
-	        			xml.append($(document.createElement("obsoletedby")).text(this.get("obsoletedBy")));
+                    obsoletedByNode = xml.find("obsoletedby");
+	        		if( ! obsoletedByNode.length ){
+                        obsoletedByNode = $(document.createElement("obsoletedby").text(this.get("obsoletedBy")));
+	        			previousSiblingNode.after(obsoletedByNode);
+                        
 	        		} else {
 	        		    //Or update the existing obsoletedBy node
-	        			xml.find("obsoletedby").text(thisget("obsoletedBy"));
+	        			obsoletedByNode.text(this.get("obsoletedBy"));
 	        		    
 	        		}
 	        	} else {
 	        	    //If it's not obsoleted by another object, remove the node
-	        		xml.find("obsoletedby").remove();
+	        		if ( obsoletedByNode ) {
+                        obsoletedByNode.remove();
+                    }
 	        	    
 	        	}
 
@@ -559,7 +576,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 		        	fileNameNode = xml.find("filename");
 		        	
 		        	//If the filename node doesn't exist, then create one
-		        	if( !fileNameNode.length ){
+		        	if( ! fileNameNode.length ){
 		        		fileNameNode = $(document.createElement("filename"));
 		        		xml.find("authoritativemembernode").after(fileNameNode);
 		        	}
@@ -681,8 +698,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             },
             
 	        serializeAccessPolicy: function(){
-	        	//Write the access policy
-	        	var accessPolicyXML = '<accessPolicy>\n';        		
+	        	//Write the access policy if it exists
+                var accessPolicyXML;
+                if ( this.get("accessPolicy").length <= 0 ) {
+                    return accessPolicyXML;
+                    
+                }
+	        	accessPolicyXML = '<accessPolicy>\n';        		
 	        	_.each(this.get("accessPolicy"), function(policy, policyType, all){
 	    			var fullPolicy = all[policyType];
 	    			    			
