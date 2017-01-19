@@ -16,3 +16,4 @@ The following is a list of use cases to be addressed by the design and implement
 | Save partially complete submissions before submitting | MUST | [187](https://github.nceas.ucsb.edu/KNB/arctic-data/issues/187) |
 | Support paleo temporal coverage | MUST | [175](https://github.nceas.ucsb.edu/KNB/arctic-data/issues/175) |
 | Improve handling of keyword thesauri | MUST | [205](https://github.nceas.ucsb.edu/KNB/arctic-data/issues/205) |
+| Support minting DOIs | MUST | |
