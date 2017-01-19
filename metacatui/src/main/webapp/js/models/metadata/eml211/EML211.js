@@ -51,9 +51,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            //type: "Metadata"
         	}),
 
-            initialize: function(options) {
+            initialize: function(attributes) {
                 // Call initialize for the super class
-               // this.constructor.__super__.initialize.apply(this, options);
+                ScienceMetadata.prototype.initialize.call(this, attributes);
                 
                 // EML211-specific init goes here                
             },
@@ -257,7 +257,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             		}
             		else{
-            			var convertedName = this.nodeNameMap()[thisNode.localName];
+            			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
             			//Is this a multi-valued field in EML?
             			if(Array.isArray(this.get(convertedName))){
             				//If we already have a value for this field, then add this value to the array
@@ -286,9 +286,62 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           
 	           	//Get the EML document
 	           	var xmlString = this.get("objectXML"),
-	           		eml = $.parseHTML(xmlString);
+	           		eml = $.parseHTML(xmlString),
+	           		datasetNode = $(eml).filter("dataset");
+	           	
+	           	var nodeNameMap = this.nodeNameMap();
 	           	
 	           	//Update some basic text fields in the EML 
+	           	var textFields = ["abstract", "title", "alternateidentifier", "usage"];
+	           	_.each(textFields, function(field){
+	           		//Get the model attribute name
+	           		var attributeName = nodeNameMap[field] || field,
+	           			//Get the value(s) for this field
+	           			value = this.get(attributeName),
+	           			//Get all the nodes for this field
+	           			nodes = $(eml).find(field);
+	           		
+	           		// Format the value as an array if there is only one
+	           		if(!Array.isArray(value))
+	           			value = [value];
+	           			
+	           		//Update the XML doc for each value
+           			_.each(value, function(val, i){
+           				//Support text formatting elements in the text fields, such as <para> nodes
+           				if(typeof val == "object"){
+           					var newValue = "",
+           						formattingEls = Object.keys(val);
+           					
+           					//Create the new formatting nodes
+           					_.each(formattingEls, function(formattingEl, ii){
+           						var formattedTexts = val[formattingEl];
+           						
+           						//Make sure this is formatted as an array
+           						if(!Array.isArray(formattedTexts))
+           							formattedTexts = [formattedTexts];
+           						
+           						_.each(formattedTexts, function(formattedText){
+               						newValue += "<" + formattingEl + ">" + formattedText + "</" + formattingEl + ">";           							
+           						}, this);
+           						
+           					}, this);
+           					
+           					val = newValue;
+           				}
+           				          				
+           				//Get the nth node from the node list and update the value
+           				if(nodes.length >= i+1)
+           					nodes[i].textContent = val;
+           				//If this is a new node in the EML, then create a new node
+           				else{
+           					var newNode = document.createElement(field);
+           					newNode.textContent = val;
+           					$(datasetNode).append(newNode);
+           				}
+           				
+           			}, this);
+	           		
+	           	}, this);
 	           	
 	           	//Serialize the geographic coverage
 	           	_.each(this.get("geoCoverage"), function(geoCoverage){
@@ -331,10 +384,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});
 	              	           	
 	           	//Camel-case the XML
-		    	var emlString = 
-		    			_.map(eml, function(rootEMLNode){ 
-		    				return this.formatXML(rootEMLNode);
-		    				}, this);
+		    	var emlString = _.map(eml, function(rootEMLNode){ return this.formatXML(rootEMLNode); }, this);
 		    	           	           
 	           	return xmlString;
             },
