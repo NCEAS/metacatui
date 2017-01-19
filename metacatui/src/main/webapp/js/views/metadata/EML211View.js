@@ -14,7 +14,7 @@ define(['underscore', 'jquery', 'backbone',
         /* Templates */
         
         events: {
-        	"change textarea.text" : "updateText"
+        	"change .text" : "updateText"
         },
                 
         /* A list of the subviews */
@@ -197,6 +197,20 @@ define(['underscore', 'jquery', 'backbone',
 	    
 	    createUsage: function(){
 	    	return "";
+	    },
+	    
+	    /*
+	     * Updates a basic text field in the EML after the user changes the value
+	     */
+	    updateText: function(e){
+	    	if(!e) return false;
+	    	
+	    	var category = $(e.target).attr("data-category"),
+	    		value    = $(e.target).val();
+	    	
+	    	if(!category) return false;
+	    	
+	    	this.model.set(category, value);
 	    },
         
         /* Close the view and its sub views */
