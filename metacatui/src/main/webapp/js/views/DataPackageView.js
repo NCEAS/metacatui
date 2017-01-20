@@ -76,6 +76,9 @@ define([
                 this.listenTo(this.dataPackage, 'add', this.addOne); // render new items
                 //this.listenTo(this.dataPackage, 'complete', this.addAll); // render all items
                 
+                // Render the current set of models in the DataPackage
+                this.addAll();
+
                 return this;
             },
             
@@ -100,7 +103,7 @@ define([
                 var parentRow, delayed_models;
                 if((scimetaParent == item.get("id")) || (!scimetaParent && item.get("type") == "Metadata")) {
                 	// This is a metadata folder row, append it to the table
-                    $('#data-package-table-body').append(dataItemView.render().el);
+                    this.$el.append(dataItemView.render().el);
                     
                     // Render any delayed models if this is the parent
                     if ( _.contains(Object.keys(this.delayedModels), dataItemView.id) ) {
@@ -163,7 +166,7 @@ define([
              * Add all rows to the DataPackageView
              */
             addAll: function() {
-                $('#data-package-table-body').html(''); // clear the table first
+                this.$el.find('#data-package-table-body').html(''); // clear the table first
                 this.dataPackage.sort();
                 this.dataPackage.each(this.addOne, this);
                 
