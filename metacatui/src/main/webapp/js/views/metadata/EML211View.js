@@ -79,8 +79,15 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(overviewEl).html(this.overviewTemplate());
 	    	
 	    	//Abstract
-	    	var abstractEl = this.createAbstract(edit);
-	    	$(overviewEl).find(".abstract").append(abstractEl);
+	    	_.each(this.model.get("abstract"), function(abs){
+		    	var abstractEl = this.createEMLText(abs, edit);
+		    	//Attach the EMLText model and the category to the element
+		    	$(abstractEl).data({ model: abs });
+		    	$(abstractEl).attr("data-category", "abstract");
+		    	
+		    	//Add the abstract element to the view
+		    	$(overviewEl).find(".abstract").append(abstractEl);	    		
+	    	}, this);
 	    	
 	    	//Keywords
 	    	var keywords = this.createKeywords(edit);	    	
@@ -144,27 +151,6 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    },
 	    
-	    /*
-         * Creates the abstract elements
-         */
-	    createAbstract: function(edit){
-	    	//Get the raw abstract from the model
-	    	var abstractRaw = this.model.get("abstract");
-	    		    		
-	    	//Format the abstract text
-	    	var abstractText = this.formatParagraphs(abstractRaw, edit);
-	    	
-	    	if(edit)
-	    		var abstractEl = $(document.createElement("textarea"))
-	    						 .addClass("xlarge text")
-	    						 .attr("data-category", "abstract")
-	    						 .html(abstractText);
-	    	else
-	    		var abstractEl = $(document.createElement("div")).append(abstractText);
-	    	
-	    	return abstractEl;
-	    },
-	    
 	    createKeywords: function(){
 	    	//Keywords
 	    	var keywords = this.model.get("keywordset"),
@@ -199,18 +185,73 @@ define(['underscore', 'jquery', 'backbone',
 	    	return "";
 	    },
 	    
+		
+	    /*
+         * Creates the text elements
+         */
+	    createEMLText: function(textModel, edit){
+	    	
+	    	if(!textModel) return $(document.createElement("div"));
+
+	    	//Get the EMLText from the EML model
+	    	var finishedEl;
+	    	
+	    	//Get the text attribute from the EMLText model
+	    	var	paragraphs = textModel.get("text");
+	    	
+	    	//If there is no text, then just return an empty div
+	    	if(!paragraphs.length) return $(document.createElement("div"));
+	    	
+	    	//If the text should be editable,
+	    	if(edit){	    		
+		    	//Format the paragraphs with carriage returns between paragraphs
+		    	var paragraphsString = _.reduce(paragraphs, function(p){
+		    		return p + String.fromCharCode(13);
+		    	});
+		    		
+		    	//Create the textarea element
+		    	finishedEl = $(document.createElement("textarea"))
+	    						 .addClass("xlarge text")
+	    						 .html(paragraphsString);
+	    	}
+	    	else{
+	    		//Format the paragraphs with HTML
+		    	var paragraphsString = _.reduce(paragraphs, function(p){
+		    		return "<p>" + p + "</p>";
+		    	});
+		    	finishedEl = $(document.createElement("div")).append(paragraphsString);
+	    	}
+	    	
+	    	//Return the finished DOM element
+	    	return finishedEl;
+	    },
+	    
 	    /*
 	     * Updates a basic text field in the EML after the user changes the value
 	     */
 	    updateText: function(e){
 	    	if(!e) return false;
 	    	
-	    	var category = $(e.target).attr("data-category"),
-	    		value    = $(e.target).val();
-	    	
+	    	var category  = $(e.target).attr("data-category"),
+	    		textModel = $(e.target).data("model"),
+	    		value     = $(e.target).val().trim();
+
+	    	//We can't update anything without a category
 	    	if(!category) return false;
+
+	    	//Get the list of paragraphs - checking for carriage returns and line feeds
+	    	var paragraphsCR = value.split(String.fromCharCode(13));
+	    	var paragraphsLF = value.split(String.fromCharCode(10));
 	    	
-	    	this.model.set(category, value);
+	    	//Use the paragraph list that has the most
+	    	var paragraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
+	    	
+	    	//If this category isn't set yet, then create a new EMLText model
+	    	if(!textModel) 
+	    		this.model.set(category, new EMLText({ text: paragraphs }));
+	    	//Update the existing EMLText model
+	    	else
+	    		textModel.set("text", paragraphs);
 	    },
         
         /* Close the view and its sub views */
