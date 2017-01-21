@@ -147,6 +147,11 @@ define(['underscore',
                 //Render the data package
                 this.renderDataPackage();
                 
+                // Because there is no package (and we just started a new one
+                // to wrap this scimeta in), manually trigger the complete
+                // event so the DataPackageView table is filled in.
+                MetacatUI.rootDataPackage.trigger("complete");
+
                 //Render the metadata
                 this.renderMetadata();
 

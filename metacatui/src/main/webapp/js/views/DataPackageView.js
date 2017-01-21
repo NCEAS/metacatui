@@ -72,12 +72,8 @@ define([
                 	id: this.dataPackage.get("id")
                 }));
                 
-                // listen for  add events because models are being merged
-                this.listenTo(this.dataPackage, 'add', this.addOne); // render new items
-                //this.listenTo(this.dataPackage, 'complete', this.addAll); // render all items
-                
-                // Render the current set of models in the DataPackage
-                this.addAll();
+                // Fill the table in with items once the package is 'complete'
+                this.listenTo(this.dataPackage, 'complete', this.addAll);
 
                 return this;
             },
