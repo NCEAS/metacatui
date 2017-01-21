@@ -118,7 +118,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			person.surName = surName.text();
 			
 			salutations.each(function(i, name){
-				person.salutation.push(name.text());
+				person.salutation.push($(name).text());
 			});
 			
 			return person;
