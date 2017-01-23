@@ -61,7 +61,9 @@
 .tooltip{
 	font-size: 12px;
 }
-
+[contenteditable]{
+	cursor: pointer;
+}
 /****************************************** 
 ** General Structure ***
 ******************************************/
