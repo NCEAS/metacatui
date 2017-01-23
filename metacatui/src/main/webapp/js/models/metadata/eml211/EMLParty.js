@@ -172,6 +172,63 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		updateDOM: function(){
 			 var objectDOM = this.get("objectDOM").cloneNode(true);
 			 
+			 // salutation[s]
+			 $(objectDOM).find("individualName").find("salutation").remove();
+			 _.each(this.get("individualName").salutation, function(salutation) {
+				 $(objectDOM).find("individualName").append("<salutation>" + salutation + "</salutation>");
+			 });
+			 // given name[s]
+			 $(objectDOM).find("individualName").find("givenName").remove();
+			 _.each(this.get("individualName").givenName, function(givenName) {
+				 $(objectDOM).find("individualName").append("<givenName>" + givenName + "</givenName>");
+			 });
+			 // surname
+			 $(objectDOM).find("individualName").find("surName").text(this.get("individualName").surName);
+			 
+			 // positionName
+			 $(objectDOM).find("positionName").text(this.get("positionName"));
+			 
+			 // organizationName
+			 $(objectDOM).find("organizationName").text(this.get("organizationName"));
+			 
+			 // address
+			$(objectDOM).find("address").find("deliveryPoint").remove();
+			 _.each(this.get("address").deliveryPoint, function(deliveryPoint) {
+				 $(objectDOM).find("address").append("<deliveryPoint>" + deliveryPoint + "</deliveryPoint>");
+			 });
+			 $(objectDOM).find("address").find("city").text(this.get("address").city);
+			 $(objectDOM).find("address").find("administrativeArea").text(this.get("address").administrativeArea);
+			 $(objectDOM).find("address").find("postalCode").text(this.get("address").postalCode);
+			 $(objectDOM).find("address").find("country").text(this.get("address").country);			 
+			 
+			 // phone[s]
+			 $(objectDOM).find("phone").remove();
+			 _.each(this.get("phone"), function(phone) {
+				 $(objectDOM).append("<phone phonetype='voice'>" + phone + "</phone>");
+			 });
+			 // fax[es]
+			 _.each(this.get("fax"), function(phone) {
+				 $(objectDOM).append("<phone phonetype='facsimile'>" + phone + "</phone>");
+			 });
+			 
+			 // electronicMailAddress[es]
+			 $(objectDOM).find("electronicMailAddress").remove();
+			 _.each(this.get("electronicMailAddress"), function(electronicMailAddress) {
+				 $(objectDOM).append("<electronicMailAddress>" + electronicMailAddress + "</electronicMailAddress>");
+			 });
+			 
+			 // onlineUrl[s]
+			 $(objectDOM).find("onlineUrl").remove();
+			 _.each(this.get("onlineUrl"), function(onlineUrl) {
+				 $(objectDOM).append("<onlineUrl>" + onlineUrl + "</onlineUrl>");
+			 });
+			 
+			 // userId[s]
+			 $(objectDOM).find("userId").remove();
+			 _.each(this.get("userId"), function(userId) {
+				 $(objectDOM).append("<userId>" + userId + "</userId>");
+			 });
+			 
 			 return objectDOM;
 		},
 		
