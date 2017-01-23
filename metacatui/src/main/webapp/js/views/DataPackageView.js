@@ -88,18 +88,23 @@ define([
             	if(!item) return false;
             	
                 console.log("DataPackageView.addOne called for " + item.id);
-                                
-                var dataItemView = new DataItemView({model: item});
                 
-                    this.subviews[item.id] = dataItemView; // keep track of all views
+                var dataItemView, scimetaParent, parentRow, delayed_models;                
+                
+                if ( _.contains(Object.keys(this.subviews), item.id) ) {
+                    return false; // Don't double render
                     
-                    var scimetaParent = item.get("isDocumentedBy");
+                }
+                
+                dataItemView = new DataItemView({model: item});
+                this.subviews[item.id] = dataItemView; // keep track of all views
+                scimetaParent = item.get("isDocumentedBy");
+                
                 if ( typeof scimetaParent !== "undefined" ) {
                     scimetaParent = scimetaParent[0];
                     
                 }
                 
-                var parentRow, delayed_models;
                 if((scimetaParent == item.get("id")) || (!scimetaParent && item.get("type") == "Metadata")) {
                 	// This is a metadata folder row, append it to the table
                     this.$el.append(dataItemView.render().el);
