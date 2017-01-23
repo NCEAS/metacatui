@@ -82,10 +82,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             
             /* Update the folder name based on the scimeta title */
             updateName: function(e){
-            	if(this.model.get("type") == "Metadata")
-            		this.model.set("title", $(e.target).text().trim());
+            	var enteredText = $(e.target).text().trim();
+            	
+            	if(this.model.get("type") == "Metadata" && enteredText != "Untitled dataset: Add a descriptive title for your dataset")
+            		this.model.set("title", enteredText);
             	else
-            		this.model.set("fileName", $(e.target).text().trim());
+            		this.model.set("fileName", enteredText);
             },
                                     
             /* rename a file or folder TODO: decide if we need this */ 

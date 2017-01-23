@@ -71,9 +71,12 @@ define([
                 	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
                 	id: this.dataPackage.get("id")
                 }));
-                
-                // Fill the table in with items once the package is 'complete'
-                this.listenTo(this.dataPackage, 'complete', this.addAll);
+
+                // Listen for  add events because models are being merged
+                this.listenTo(this.dataPackage, 'add', this.addOne);
+
+                // Render the current set of models in the DataPackage
+                this.addAll();
 
                 return this;
             },

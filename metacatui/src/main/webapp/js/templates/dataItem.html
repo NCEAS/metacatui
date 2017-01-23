@@ -14,10 +14,12 @@
 <!-- Files column -->
 
 <td class="name" contenteditable="true">
-	<% if ( typeof title != "undefined" && title) { %>
+	<% if (typeof title != "undefined" && title && title.length) { %>
 	    <%= title %>    
 	<% } else if ( typeof fileName != "undefined" && fileName) { %>
 	    <%= fileName %>
+	<% } else if(type == "Metadata"){ %>
+		Untitled dataset: Add a descriptive title for your dataset
 	<% } else { %>
 	    <%= id %>
 	<% } %>
