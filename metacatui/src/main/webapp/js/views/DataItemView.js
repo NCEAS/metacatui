@@ -172,8 +172,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                             isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });
-                        dataONEObject.set("uploadStatus", "l"); // loading the file
-                        this.parentSciMeta.get("documents").push(dataONEObject.id);
+                        
+                        // Append to or create a new documents list
+                        if ( typeof this.parentSciMeta.get("documents") === "undefined" ) {
+                            this.parentSciMeta.set("documents", [dataONEObject.id]);
+                            
+                        } else {
+                            this.parentSciMeta.get("documents").push(dataONEObject.id);
+                            
+                        }
+                        this.parentSciMeta.set("uploadStatus", "q");
                         dataONEObject.bytesToSize();
                         this.collection.add(dataONEObject);
                         
