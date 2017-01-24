@@ -234,8 +234,7 @@ define(['underscore', 'jquery', 'backbone',
 		    	finishedEl = $(document.createElement("div")).append(paragraphsString);
 	    	}
 	    	
-	    	if(textModel)
-		    	$(finishedEl).data({ model: abs });
+		    $(finishedEl).data({ model: textModel });
 	    	
 	    	//Return the finished DOM element
 	    	return finishedEl;
