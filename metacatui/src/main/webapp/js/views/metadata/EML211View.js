@@ -80,14 +80,18 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Abstract
 	    	_.each(this.model.get("abstract"), function(abs){
-		    	var abstractEl = this.createEMLText(abs, edit);
-		    	//Attach the EMLText model and the category to the element
-		    	$(abstractEl).data({ model: abs });
-		    	$(abstractEl).attr("data-category", "abstract");
+		    	var abstractEl = this.createEMLText(abs, edit, "abstract");
 		    	
 		    	//Add the abstract element to the view
 		    	$(overviewEl).find(".abstract").append(abstractEl);	    		
 	    	}, this);
+	    	
+	    	if(!this.model.get("abstract").length){
+	    		var abstractEl = this.createEMLText(null, edit, "abstract");
+	    		
+	    		//Add the abstract element to the view
+		    	$(overviewEl).find(".abstract").append(abstractEl);	  
+	    	}
 	    	
 	    	//Keywords
 	    	var keywords = this.createKeywords(edit);	    	
@@ -189,9 +193,17 @@ define(['underscore', 'jquery', 'backbone',
 	    /*
          * Creates the text elements
          */
-	    createEMLText: function(textModel, edit){
+	    createEMLText: function(textModel, edit, category){
 	    	
-	    	if(!textModel) return $(document.createElement("div"));
+	    	if(!textModel && edit){
+	    		return $(document.createElement("textarea"))
+	    				.attr("data-category", category)
+	    				.addClass("xlarge text");
+	    	}
+	    	else if(!textModel && !edit){
+	    		return $(document.createElement("div"))
+						.attr("data-category", category);
+	    	}
 
 	    	//Get the EMLText from the EML model
 	    	var finishedEl;
@@ -221,6 +233,9 @@ define(['underscore', 'jquery', 'backbone',
 		    	});
 		    	finishedEl = $(document.createElement("div")).append(paragraphsString);
 	    	}
+	    	
+	    	if(textModel)
+		    	$(finishedEl).data({ model: abs });
 	    	
 	    	//Return the finished DOM element
 	    	return finishedEl;
