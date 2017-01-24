@@ -166,7 +166,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		modelJSON = {};
             	
             	for(var i=0; i<nodes.length; i++){
-            		console.log(nodes[i]);
+            		// console.log(nodes[i]);
             		var thisNode = nodes[i];
             		
             		//EML Party modules are stored in EMLParty models
