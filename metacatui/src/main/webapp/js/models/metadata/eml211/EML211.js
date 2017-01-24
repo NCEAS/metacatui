@@ -81,6 +81,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"allowfirst" : "allowFirst",
 			            	"alternateidentifier" : "alternateIdentifier",
 			            	"asneeded" : "asNeeded",
+			            	"associatedparty" : "associatedParty",
 			            	"changehistory" : "changeHistory",
 			            	"changedate" : "changeDate",
 			            	"changescope" : "changeScope",
@@ -99,10 +100,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"oldvalue" : "oldValue",
 			            	"otherentity" : "otherEntity",
 			            	"othermaintenanceperiod" : "otherMaintenancePeriod",
+			            	"packageid" : "packageId",
 			            	"pubdate" : "pubDate",
 			            	"pubplace" : "pubPlace",
 			            	"samplingdescription" : "samplingDescription",
-			            	"studyextent" : "studyExtent"
+			            	"studyextent" : "studyExtent",
+                            "xsi:schemalocation" : "xsi:schemaLocation"
             			}
             	);
             },
@@ -206,7 +209,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		modelJSON = {};
             	
             	for(var i=0; i<nodes.length; i++){
-            		console.log(nodes[i]);
+            		// console.log(nodes[i]);
             		var thisNode = nodes[i];
             		
             		//EML Party modules are stored in EMLParty models
