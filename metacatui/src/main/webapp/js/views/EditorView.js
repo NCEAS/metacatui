@@ -274,6 +274,7 @@ define(['underscore',
                 // Create a citation view and render it
                 var citationView = new CitationView({
                             model: model,
+                            title: "Untitled dataset",
                             createLink: false });
 
                 this.subviews.push(citationView);

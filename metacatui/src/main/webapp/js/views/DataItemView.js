@@ -47,7 +47,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             	this.stopListening();
             	
                 this.$el.attr("data-id", this.model.get("id"));
-                this.$el.html( this.template(this.model.toJSON()) );
+                
+                var attributes = this.model.toJSON();
+                
+                //Format the title
+                if(Array.isArray(attributes.title))
+                	attributes.title  = attributes.title[0];
+                
+                this.$el.html( this.template(attributes) );
                 this.$el.find(".dropdown-toggle").dropdown();
                 
                 //listen for changes to rerender the view
@@ -84,8 +91,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             updateName: function(e){
             	var enteredText = $(e.target).text().trim();
             	
-            	if(this.model.get("type") == "Metadata" && enteredText != "Untitled dataset: Add a descriptive title for your dataset")
-            		this.model.set("title", enteredText);
+            	if(this.model.get("type") == "Metadata" && enteredText != "Untitled dataset: Add a descriptive title for your dataset"){
+            		var title = this.model.get("title");
+            		if(Array.isArray(title) && title.length < 2)
+            			this.model.set("title", [enteredText]);
+            		else
+            			title[0] = enteredText;
+            	}
             	else
             		this.model.set("fileName", enteredText);
             },
