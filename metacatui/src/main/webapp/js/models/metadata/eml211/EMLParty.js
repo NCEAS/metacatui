@@ -180,7 +180,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 // given name[s]
 			 $(objectDOM).find("individualName").find("givenName").remove();
 			 _.each(this.get("individualName").givenName, function(givenName) {
-				 $(objectDOM).find("individualName").append("<givenName>" + givenName + "</givenName>");
+				 $(objectDOM).find("individualName").prepend("<givenName>" + givenName + "</givenName>");
 			 });
 			 // surname
 			 $(objectDOM).find("individualName").find("surName").text(this.get("individualName").surName);

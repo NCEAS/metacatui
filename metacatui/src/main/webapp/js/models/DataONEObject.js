@@ -924,12 +924,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		//Camel case node names
 	        		var regEx = new RegExp("<" + name, "g");
 	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name]);
-	        		var regEx = new RegExp(name + ">", "g");
+	        		
+	        		regEx = new RegExp(name + ">", "g");
 	        		xmlString = xmlString.replace(regEx, nodeNameMap[name] + ">");
 	        		
 	        		//If node names haven't been changed, then find an attribute
 	        		if(xmlString == originalXMLString){
-	        			var regEx = new RegExp(" " + name + "=", "g");
+	        			regEx = new RegExp(" " + name + "=", "g");
 	        			xmlString = xmlString.replace(regEx, " " + nodeNameMap[name] + "=");
 	        		}
 	        	}, this);

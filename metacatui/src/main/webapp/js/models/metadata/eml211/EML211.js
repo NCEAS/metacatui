@@ -81,6 +81,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"allowfirst" : "allowFirst",
 			            	"alternateidentifier" : "alternateIdentifier",
 			            	"asneeded" : "asNeeded",
+			            	"associatedparty" : "associatedParty",
 			            	"changehistory" : "changeHistory",
 			            	"changedate" : "changeDate",
 			            	"changescope" : "changeScope",
@@ -99,10 +100,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"oldvalue" : "oldValue",
 			            	"otherentity" : "otherEntity",
 			            	"othermaintenanceperiod" : "otherMaintenancePeriod",
+			            	"packageid" : "packageId",
 			            	"pubdate" : "pubDate",
 			            	"pubplace" : "pubPlace",
 			            	"samplingdescription" : "samplingDescription",
-			            	"studyextent" : "studyExtent"
+			            	"studyextent" : "studyExtent",
+                            "xsi:schemalocation" : "xsi:schemaLocation"
             			}
             	);
             },
@@ -132,49 +135,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 return Backbone.Model.prototype.fetch.call(this, options);
                 
             },
-            
-         /*   get: function(attr, options){
-            	if(options && options.raw) return Backbone.Model.prototype.get.call(this, attr);
-            	
-            	var parts = attr.split("."),
-            		getValue = Backbone.Model.prototype.get.call(this, parts[0]);
-            	
-            	var lastValue = this.parseJSONSnippet(getValue, parts);
-            	
-            	if(typeof lastValue == "object"){
-            		var keys = Object.keys(lastValue),
-            			newObject = {};
-            		
-            	    for(var i=0; i<keys.length; i++){
-            	    	newObject[keys[i]] = this.parseJSONSnippet(lastValue[keys[i]]);
-            	    }            	    
-            	}
-            	
-            	return lastValue;
-            },
-            
-            parseJSONSnippet: function(jsonSnippet, attr){
-            	var lastValue;
-            	
-            	for(var i=0; i<attr.length; i++){
-            		var attrPart = attr[i];
-            		
-            		if(i==0)
-            			lastValue = Backbone.Model.prototype.get.call(this, attrPart);
-            		else if(typeof lastValue[attrPart] !== "undefined")
-            			lastValue = lastValue[attrPart];
-            		
-            		
-            		if((typeof lastValue.content !== "undefined") && !Array.isArray(lastValue)){
-            			lastValue = lastValue.content;
-            		}
-            		else if(Array.isArray(lastValue)){
-            			lastValue = _.pluck(lastValue, "content");
-            		}
-            	}
-            	
-            	return lastValue;
-            },*/
                         
             /* 
              Deserialize an EML 2.1.1 XML document
@@ -387,7 +347,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	//Camel-case the XML
 		    	var emlString = ""; 
 		    	_.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
-		    	           	           
+		    	           	     
+		    	console.log(emlString);
+		    	
 	           	return emlString;
             },
             
