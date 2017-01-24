@@ -48,7 +48,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            purpose: [],
 	            pubplace: null,
 	            methods: [], // array of EMLMethods objects
-	            project: [], // array of EMLProject objects
+	            project: [] // array of EMLProject objects
 	            //type: "Metadata"
         	}),
 
@@ -237,7 +237,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				geo      = $(thisNode).children("geographiccoverage"),
             				taxon    = $(thisNode).children("taxonomiccoverage");
             			
-            			if(temporal.length){
+            			if(temporal .length){
             				modelJSON.temporalCoverage = [];
             				_.each(temporal, function(t){
             					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ objectDOM: t }));
@@ -264,8 +264,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		else if(_.contains(emlText, thisNode.localName)){
             			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
             			
-            			modelJSON[thisNode.localName].push(new EMLText({ objectDOM: thisNode }));
-            		}
+            			var emlText = new EMLText({ 
+            				objectDOM: thisNode, 
+            				parentModel: this, 
+            				parentAttribute: thisNode.localName });
+            			modelJSON[thisNode.localName].push(emlText);
+            			
+            			
+            		}	
             		else{
             			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
             			//Is this a multi-valued field in EML?

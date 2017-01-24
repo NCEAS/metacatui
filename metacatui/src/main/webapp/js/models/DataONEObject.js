@@ -25,18 +25,28 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     submitter: null,
                     rightsHolder : null,
                     accessPolicy: [],
+                    changePermission: null,
+                    writePermission: null,
+                    readPermission: null,
+                    isPublic: null,
+                    replicationAllowed: null,
                     replicationPolicy: [],
                     obsoletes: null,
                     obsoletedBy: null,
                     archived: null,
                     dateUploaded: null,
                     dateSysMetadataModified: null,
+                    dateModified: null,
                     originMemberNode: null,
+                    authoritativeMN: null,
                     authoritativeMemberNode: null,
+                    datasource: null,
                     replica: [],
                     seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
                     mediaType: null,
                     fileName: null,
+                    insert_count_i: null,
+                    read_count_i: null,
                     // Non-system metadata attributes:
                     id: "urn:uuid:" + uuid.v4(),
                     sizeStr: null,
@@ -44,6 +54,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     formatType: null,
                     latestVersion: null,
                     isDocumentedBy: null,
+                    documents: [],
+                    resourceMap: [],
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
@@ -62,14 +74,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 this.on("change:size", this.bytesToSize);
                 
                 // Cache an array of original attribute names to help in handleChange()
-                this.set("originalAttrs", Object.keys(this.attributes));
+                if(this.type == "DataONEObject")
+                	this.set("originalAttrs", Object.keys(this.attributes));
+                else
+                	this.set("originalAttrs", Object.keys(DataONEObject.prototype.defaults()) );
                 
                 // Register a listener for any attribute change
-                this.on("change", this.handleChange, this);
-                
-                // When the model has been retrieved the first time, listen for 
-                // changes to it so we can keep track of user changes
-                this.once("sync", this.updateUploadStatus);
+                this.once("sync", function(){
+                    this.on("change", this.handleChange, this);                	
+                }, this)
             },
             
             /*
@@ -786,17 +799,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
              * that are not listed in the originalAttrs array
              */
             handleChange: function(model, options) {
+            	if(!model) var model = this;
+            	
                 var changed = Object.keys(model.changedAttributes());
+                
+                if(!changed.length && options.changed) changed = options.changed;
                 
                 // If an attribute change isn't in the originalAttrs list,
                 // we know it is outside of the DataONEObject scope,
                 // and should be an attribute from ScienceMetadata, EML211, etc.
-                _.each(changed, function(attr) {
-                    if ( ! _.contains(this.get("originalAttrs"), attr) ) {
-                        this.hasContentChanges = true;
-                        
-                    } 
-                }, this);
+                if( _.difference(changed, this.get("originalAttrs")).length ){
+                	this.hasContentChanges = true;
+                    this.updateUploadStatus(model, options);
+                }
+                	
             },
 	        
 	        isNew: function(){
@@ -808,15 +824,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        /*
 	         * Listens to attributes on the model for changes that will require an update
 	         */
-	        updateUploadStatus: function(){
-	        	this.on("change", function(model){
+	        updateUploadStatus: function(model, options){
 	        		//If the object is already in the upload queue, then exit.
 	        		if(this.get("uploadStatus") == "q" || this.get("uploadStatus") == "p") return;
 	        		
 	        		//Some attributes should be ignored when determining a change worthy of putting this object in the upload queue
-	        		var ignoredAttributes = ["uploadStatus", "type", "sortOrder", "synced", "oldPid"],
+	        		var ignoredAttributes = ["uploadStatus"],
 	        		//Filter out the ignored attributes
-	        			changedAttributes = _.difference(Object.keys(this.changedAttributes()), ignoredAttributes);
+	        			changedAttributes = ((Array.isArray(this.changedAttributes()) && this.changedAttributes().length) || this.changedAttributes())? 
+	        								_.difference(Object.keys(this.changedAttributes()), ignoredAttributes) : (options.changed || []);
 	        		
 	        		//Exit if nothing has changed
 	        		if(!changedAttributes.length) return;
@@ -824,7 +840,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		//Add this item to the queue
 	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus"))
 	        			this.set("uploadStatus", "q");
-	        	});
 	        },
 	        
 	        /*

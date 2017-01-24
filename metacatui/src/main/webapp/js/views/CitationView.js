@@ -13,6 +13,7 @@
 			this.className += options.className  || "";
 			this.model 		= options.model 	 || null;
 			this.metadata   = options.metadata	 || null;
+			this.title      = options.title      || null;
 			this.createLink = (options.createLink == false) ? false : true;
 			
 			//If a metadata doc was passed but no data or package model, then save the metadata as our model, too
@@ -48,7 +49,7 @@
 				var authors = this.metadata.get("origin"),
 					pubDate = this.metadata.get("pubDate"),
 					dateUploaded = this.metadata.get("dateUploaded"),
-					title = this.metadata.get("title"),
+					title = Array.isArray(this.metadata.get("title"))? (this.metadata.get("title")[0] || this.title || "") : "",
 					id = this.metadata.get("id"),
 					seriesId = this.metadata.get("seriesId") || null,
 					datasource = this.metadata.get("datasource");
