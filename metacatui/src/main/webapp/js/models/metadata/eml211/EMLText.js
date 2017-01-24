@@ -72,6 +72,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 //Format the text
 			 var paragraphs = this.get("text");
 			 _.each(paragraphs, function(p){
+				 if(!p.length) p = " ";
+				 
 				$(objectDOM).append("<para>" + p + "</para>");
 			 });
 			 

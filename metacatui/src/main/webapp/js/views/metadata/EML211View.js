@@ -210,17 +210,15 @@ define(['underscore', 'jquery', 'backbone',
 	    	var finishedEl;
 	    	
 	    	//Get the text attribute from the EMLText model
-	    	var	paragraphs = textModel.get("text");
-	    	
-	    	//If there is no text, then just return an empty div
-	    	if(!paragraphs.length) return $(document.createElement("div"));
+	    	var	paragraphs = textModel.get("text"),
+	    		paragraphsString = "";
 	    	
 	    	//If the text should be editable,
 	    	if(edit){	    		
 		    	//Format the paragraphs with carriage returns between paragraphs
-		    	var paragraphsString = _.reduce(paragraphs, function(p){
-		    		return p + String.fromCharCode(13);
-		    	});
+		    	_.each(paragraphs, function(p){
+		    		paragraphsString += p + String.fromCharCode(13);
+		    	})
 		    		
 		    	//Create the textarea element
 		    	finishedEl = $(document.createElement("textarea"))
@@ -230,9 +228,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	else{
 	    		//Format the paragraphs with HTML
-		    	var paragraphsString = _.reduce(paragraphs, function(p){
-		    		return "<p>" + p + "</p>";
+		    	_.each(paragraphs, function(p){
+		    		paragraphsString += "<p>" + p + "</p>";
 		    	});
+		    	
+		    	//Create a div
 		    	finishedEl = $(document.createElement("div"))
 		    				.attr("data-category", category)
 		    				.append(paragraphsString);
