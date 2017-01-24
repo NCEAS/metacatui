@@ -149,6 +149,8 @@ define(['underscore',
 
                 //Render the metadata
                 this.renderMetadata();
+                
+                this.listenTo(this.model, "change:uploadStatus", this.showControls);
 
             } else {
                 
