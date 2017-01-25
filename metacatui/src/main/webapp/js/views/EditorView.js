@@ -317,14 +317,7 @@ define(['underscore',
         	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
         	        	
         	//Listen for when the package has been successfully saved
-        	this.listenToOnce(MetacatUI.rootDataPackage, "successSaving", function(){
-            	//When the package is saved, revert the button back to normal
-        		btn.html("Save").removeClass("btn-disabled");
-        		this.hideControls();
-        		
-        		//Show a success message
-        		this.saveSuccess();
-        	});
+        	this.listenToOnce(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
         	
         	//Save the package!
         	MetacatUI.rootDataPackage.save();
@@ -334,6 +327,10 @@ define(['underscore',
          * When the data package collection saves successfully, tell the user
          */
         saveSuccess: function(){
+        	//When the package is saved, revert the Save button back to normal
+        	this.$("#save-editor").html("Save").removeClass("btn-disabled");
+    		this.hideControls();
+    		
         	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
         	
         	//Change the URL to the new id

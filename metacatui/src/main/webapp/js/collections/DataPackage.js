@@ -424,26 +424,27 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         
                     	memberModel.fetch();
                     	memberModel.once("sync",
-                        	function(model){
+                        	function(oldModel){
                         		
-                        		memberModel = collection.getMember(model);
+                    			//Get the right model type based on the model values
+                        		var newModel = collection.getMember(oldModel);
                         		              
                                 //If the model type has changed, then mark the model as unsynced, since there may be custom fetch() options for the new model
-                                if(model.type != memberModel.type){
-                                	memberModel.set("synced", false);
+                                if(oldModel.type != newModel.type){
+                                	newModel.set("synced", false);
                                 	
-                                	memberModel.fetch();
-                                	memberModel.once("sync", function(fetchedModel){
+                                	newModel.fetch();
+                                	newModel.once("sync", function(fetchedModel){
                                 			fetchedModel.set("synced", true);
                                 			collection.add(fetchedModel, { merge: true });
                                 			
                                 			//Trigger a replace event so other parts of the app know when a model has been replaced with a different type
-                                			fetchedModel.trigger("replace");
+                                			oldModel.trigger("replace", newModel);
                                 		});
                                 }
                                 else{
-                                	memberModel.set("synced", true);
-                                	collection.add(memberModel, { replace: true });  
+                                	newModel.set("synced", true);
+                                	collection.add(newModel, { replace: true });  
                                 }
                         	});
                     	
