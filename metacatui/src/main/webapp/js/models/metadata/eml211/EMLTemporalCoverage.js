@@ -14,6 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		initialize: function(attributes){
 			if(attributes.objectDOM) this.parse(attributes.objectDOM);
 
+			this.on("change:beginDate change:endDate", this.trickleUpChange);
 		},
 		
 		/*
@@ -107,6 +108,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 
 			 return objectDOM;
+		},
+		
+		trickleUpChange: function(){
+			this.get("parentModel").trigger("change", null, {changed: [this.get("parentAttribute")] });
 		},
 		
 		formatXML: function(xmlString){

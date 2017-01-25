@@ -6,13 +6,17 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		defaults: {
 			objectXML: null,
-			objectDOM: null
+			objectDOM: null,
+			parentAttribute: null,
+			parentModel: null
 		
 		},
 		
 		initialize: function(attributes){
 			if(attributes.objectDOM) this.parse(attributes.objectDOM);
 
+			//TODO: Add specific attributes to listen to
+			//this.on("change", this.trickleUpChange);
 		},
 		
 		/*
@@ -52,6 +56,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 var objectDOM = this.get("objectDOM").cloneNode(true);
 			 
 			 return objectDOM;
+		},
+		
+		trickleUpChange: function(){
+			this.get("parentModel").trigger("change", null, {changed: [this.get("parentAttribute")] });
 		},
 		
 		formatXML: function(xmlString){

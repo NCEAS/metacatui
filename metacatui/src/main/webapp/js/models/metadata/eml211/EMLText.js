@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			objectXML: null,
 			objectDOM: null,
 			parentModel: null,
+			parentAttribute: null,
 			text: [] //The text content
 		},
 		

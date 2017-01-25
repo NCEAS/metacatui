@@ -173,19 +173,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		if(_.contains(emlParties, thisNode.localName)){
             			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
             			
-            			modelJSON[thisNode.localName].push(new EMLParty({ objectDOM: thisNode }));
+            			modelJSON[thisNode.localName].push(new EMLParty({ 
+            				objectDOM: thisNode,
+            				parentModel: this, 
+            				parentAttribute: thisNode.localName
+            			}));
             		}
             		//EML Distribution modules are stored in EMLDistribution models
             		else if(_.contains(emlDistribution, thisNode.localName)){
             			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
 
-            			modelJSON[thisNode.localName].push(new EMLDistribution({ objectDOM: thisNode }));
+            			modelJSON[thisNode.localName].push(new EMLDistribution({ 
+            				objectDOM: thisNode,
+            				parentModel: this, 
+            				parentAttribute: thisNode.localName
+            			}));
             		}
             		//EML Project modules are stored in EMLProject models
             	/*	else if(_.contains(emlProject, thisNode.localName))
             	 *      if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
 
-            			modelJSON[thisNode.localName].push(new EMLProject({ objectDOM: thisNode })); 
+            			modelJSON[thisNode.localName].push(new EMLProject({ 
+            				objectDOM: thisNode,
+            				parentModel: this, 
+            				parentAttribute: thisNode.localName
+            			 })); 
             	*/
             		//EML Temporal, Taxonomic, and Geographic Coverage modules are stored in their own models
             		else if(thisNode.localName == "coverage"){
@@ -197,14 +209,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			if(temporal .length){
             				modelJSON.temporalCoverage = [];
             				_.each(temporal, function(t){
-            					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ objectDOM: t }));
+            					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ 
+            						objectDOM: t,
+            						parentModel: this, 
+                    				parentAttribute: "temporalCoverage"
+                    			}));
             				});
             			}
             						
             			if(geo.length){
             				modelJSON.geoCoverage = [];
             				_.each(geo, function(g){
-                				modelJSON.geoCoverage.push(new EMLGeoCoverage({ objectDOM: g }));
+                				modelJSON.geoCoverage.push(new EMLGeoCoverage({ 
+                					objectDOM: g,
+                					parentModel: this, 
+                    				parentAttribute: "geoCoverage"
+                    			}));
             				});
             				
             			}
@@ -212,7 +232,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			if(taxon.length){
             				modelJSON.taxonCoverage = [];
             				_.each(taxon, function(t){
-                				modelJSON.taxonCoverage.push(new EMLTaxonCoverage({ objectDOM: t }));
+                				modelJSON.taxonCoverage.push(new EMLTaxonCoverage({ 
+                					objectDOM: t,
+                					parentModel: this, 
+                    				parentAttribute: "taxonCoverage"
+                    				}));
             				});
             				
             			}

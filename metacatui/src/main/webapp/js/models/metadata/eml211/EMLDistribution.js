@@ -11,12 +11,16 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			mediumVolume: null,
 			mediumFormat: null,
 			mediumNote: null,
-			onlineDescription: null
+			onlineDescription: null,
+			parentModel: null,
+			parentAttribute: null
 		},
 		
 		initialize: function(attributes){
 			if(attributes.objectDOM) this.parse(attributes.objectDOM);
 
+			this.on("change:mediumName change:mediumVolume change:mediumFormat " +
+					"change:mediumNote change:onlineDescription", this.trickleUpChange);
 		},
 
 		/*
@@ -77,6 +81,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 var objectDOM = this.get("objectDOM").cloneNode(true);
 			 
 			 return objectDOM;
+		},
+		
+		trickleUpChange: function(){
+			this.get("parentModel").trigger("change", null, {changed: [this.get("parentAttribute")] });
 		},
 		
 		formatXML: function(xmlString){

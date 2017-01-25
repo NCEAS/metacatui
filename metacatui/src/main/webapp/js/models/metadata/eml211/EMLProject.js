@@ -5,31 +5,33 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 	var EMLProject = Backbone.Model.extend({
 		
 		defaults: {
-			originalXML: null,
+			objectDOM: null,
 			title: null,
 			funding: null,
-			personnel: null
+			personnel: null,
+			parentModel: null,
+			parentAttribute: null
 		},
 		
 		initialize: function(options){
-			if(options && options.xml){
-				this.set("originalXML", options.xml);
-				this.parse(options.xml);
-			}
+			if(attributes.objectDOM) this.parse(attributes.objectDOM);
+
+			this.on("change:personnel change:funding change:title", this.trickleUpChange);
 		},
 		
-		parse: function(xml){
-			if(!xml)
-				var xml = this.get("originalXML");
+		parse: function(objectDOM){
+			if(!objectDOM)
+				var objectDOM = this.get("objectDOM");
 			
-			this.parseNode($(xml).children("title"));
-			this.parseNode($(xml).children("funding"));
+			this.parseNode($(objectDOM).children("title"));
+			this.parseNode($(objectDOM).children("funding"));
 			
-			var personnel = $(xml).children("personnel"),
+			var personnel = $(objectDOM).children("personnel"),
 				personnelList = [];
 			for(var i=0; i<personnel.length; i++){
-				personnelList.push( new EMLParty({ xml: personnel[i] }) );
+				personnelList.push( new EMLParty({ objectDOM: personnel[i], parentModel: this, parentAttribute: "personnel" }) );
 			}
+			
 			this.set("personnel", personnelList);
 		},
 		
@@ -40,8 +42,18 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 			this.set($(node)[0].localName, $(node).text());
 		},
 		
-		toXML: function(){
+		serialize: function(){
 			
+		},
+		
+		updateDOM: function(){
+			var objectDOM = this.get("objectDOM").cloneNode(true);
+			 
+			 return objectDOM;
+		},
+		
+		trickleUpChange: function(){
+			this.get("parentModel").trigger("change", null, {changed: [this.get("parentAttribute")] });
 		}
 	});
 	

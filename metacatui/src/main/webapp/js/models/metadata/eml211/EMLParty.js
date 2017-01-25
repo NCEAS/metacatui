@@ -17,11 +17,17 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			onlineUrl: [],
 			references: null,
 			userId: [],
-			id: null		
+			id: null,
+			parentModel: null,
+			parentAttribute: null
 		},
 		
 		initialize: function(attributes){
 			if(attributes.objectDOM) this.parse(attributes.objectDOM);
+
+			this.on("change:individualName change:organizationName change:positionName " +
+					"change:address change:phone change:fax change:email " +
+					"change:onlineUrl change:references change:userId", this.trickleUpChange);
 		},
 
 		/*
@@ -230,6 +236,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 });
 			 
 			 return objectDOM;
+		},
+		
+		trickleUpChange: function(){
+			this.get("parentModel").trigger("change", null, {changed: [this.get("parentAttribute")] });
 		},
 		
 		formatXML: function(xmlString){
