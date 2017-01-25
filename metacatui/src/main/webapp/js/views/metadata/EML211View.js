@@ -126,6 +126,7 @@ define(['underscore', 'jquery', 'backbone',
                 return finishedEl;
             },
 
+                    // Save the new model onto the underlying DOM node
                 
         /* A list of the subviews */
         subviews: [],
