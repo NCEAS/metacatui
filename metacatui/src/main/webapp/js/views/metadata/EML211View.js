@@ -2,9 +2,8 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLText',
+        'models/metadata/eml211/EMLTemporalCoverage',
         'text!templates/eml.html',
-        'text!templates/metadataOverview.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, Template, OverviewTemplate){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -14,9 +13,119 @@ define(['underscore', 'jquery', 'backbone',
         
         /* Templates */
         
-        events: {
-        	"change .text" : "updateText"
-        },
+        'text!templates/metadataOverview.html'
+    ],
+    function (_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTemporalCoverage, Template, OverviewTemplate) {
+            events: {
+                "change .text": "updateText",
+                "change .temporal": "updateTemporalCoverage"
+            },
+            /*
+             * Renders the Dates section of the page
+             */
+            renderDates: function () {
+                //Get the overall view mode
+                var edit = this.edit;
+
+                // Put the Datetime inputs in place. I didn't use a template here
+                // because the HTML is so simple
+                var datesEl = this.$container.find(".dates");
+                $(datesEl).html(this.createDates());
+            },
+            // Create the HTML for the dataset temporal coverage information
+            createDates: function () {
+                var edit = this.edit;
+
+                // TODO: Temporary hack. Replace this with better JS or a template maybe
+                var ele = $('<div><h2>Dates</h2></div>');
+
+                // TODO: Another hack... this just gets the first ele
+                var temporal = this.model.get('temporalCoverage')[0];
+
+                // if (typeof temporal == "undefined") {
+                //     temporal = new EMLTemporalCoverage();
+                // }
+
+                var beginDate = temporal ? temporal.get('beginDate') : null;
+                var beginEl = this.createEMLSingleDateTime(beginDate, edit);
+
+                $(beginEl).data({
+                        model: temporal
+                    })
+                    .attr('data-category', 'beginDate');
+
+                var endDate = temporal ? temporal.get("endDate") : null;
+                var endEl = this.createEMLSingleDateTime(endDate, edit);
+
+                $(endEl).data({
+                        model: temporal
+                    })
+                    .attr('data-category', 'endDate');
+
+                ele.append("<h5>Begin</h5>");
+                ele.append(beginEl);
+                ele.append("<h5>End</h5>");
+                ele.append(endEl);
+
+                return ele;
+            },
+            // Create the date(time) elements
+            // Currently only supports dates, not datetimes. This is because HTML5 
+            // separates out the date input type from time and there is no longer a 
+            // datetime input type. We could consider bring in an external lib
+            createEMLSingleDateTime: function (datetimeModel, edit) {
+                // Set aside a variable to accumulate DOM nodes
+                var finishedEl;
+
+                // If the text should be editable, use form inputs
+                if (edit) {
+                    finishedEl = $(document.createElement("div")).addClass('form-inline');
+
+                    var dateEl = $(document.createElement("input"))
+                        .attr("type", "date")
+                        .addClass("temporal");
+                    
+                    // Set a value if the model has one
+                    if (datetimeModel && datetimeModel.calendarDate) {
+                        dateEl.attr('value', datetimeModel.calendarDate);
+                    }
+                        
+                    finishedEl.append("<label>Date</label>");
+                    finishedEl.append(dateEl);
+
+                    var timeEl = $(document.createElement("input"))
+                        .attr("type", "time")
+                        .addClass("temporal");
+
+                    // Set a value if the model has one
+                    if (datetimeModel && datetimeModel.time) {
+                        timeEl.attr('value', datetimeModel.time);
+                    }
+
+                    finishedEl.append("<label>Time</label>");
+                    finishedEl.append(timeEl);
+                } else {
+                    // Just show a string representing the datetime, with an 
+                    // optional time
+                    var tokens = [];
+
+                    if (datetimeModel) {
+                        if (datetimeModel.calendarDate) {
+                            tokens.push(datetimeModel.calendarDate);
+                        }
+
+                        if (datetimeModel.time) {
+                            tokens.push(datetimeModel.time);
+                        }
+                    }
+
+                    finishedEl = $(document.createElement("div")).append(tokens.join(' '));
+                }
+
+                // Return the finished DOM element
+                return finishedEl;
+            },
+
                 
         /* A list of the subviews */
         subviews: [],
