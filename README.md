@@ -1,7 +1,7 @@
 MetacatUI
 =========
 
-MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.  Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org).
+MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.  Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org), the [NSF Arctic Data Center](https://arcticdata.io/catalog/), the [DataONE federation](https://search.dataone.org), and other repositories.
 
 * Contributors: Matthew Jones, Chris Jones, Ben Leinfelder, Lauren Walker
 * Developed at: [National Center for Ecological Analysis and Synthesis](http://www.nceas.ucsb.edu/ecoinfo)
@@ -10,8 +10,7 @@ MetacatUI is a client-side web interface for querying Metacat servers and other 
 
 MetacatUI is an open source, community project.  We welcome contributions in many forms, including code, graphics, documentation, bug reports, testing, etc.  Use the discussion list to discuss these contributions with project contributors.  
 
-License
--------
+## License
 ```
 Copyright [2013] [Regents of the University of California]
 
@@ -28,3 +27,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
+## Screenshots
+
+The main search screen, as configured for the KNB Repository:
+![KNB Search](https://raw.githubusercontent.com/NCEAS/metacatui/master/screenshots/metacatui-knb-1200w.png)
+
+A metadata view, as configured for the Arctic Data Center:
+![Arctic Data Center Metadata View](https://raw.githubusercontent.com/NCEAS/metacatui/master/screenshots/metacatui-arctic-1200w.png)
