@@ -93,10 +93,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             	
             	if(this.model.get("type") == "Metadata" && enteredText != "Untitled dataset: Add a descriptive title for your dataset"){
             		var title = this.model.get("title");
-            		if(Array.isArray(title) && title.length < 2)
+            		
+            		if((Array.isArray(title) && title.length < 2) || typeof title == "string")
             			this.model.set("title", [enteredText]);
             		else
             			title[0] = enteredText;
+            		
             	}
             	else
             		this.model.set("fileName", enteredText);

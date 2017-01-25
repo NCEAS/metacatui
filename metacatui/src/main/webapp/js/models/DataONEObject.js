@@ -826,16 +826,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	         */
 	        updateUploadStatus: function(model, options){
 	        		//If the object is already in the upload queue, then exit.
-	        		if(this.get("uploadStatus") == "q" || this.get("uploadStatus") == "p") return;
+	        	//	if(this.get("uploadStatus") == "q" || this.get("uploadStatus") == "p") return;
 	        		
 	        		//Some attributes should be ignored when determining a change worthy of putting this object in the upload queue
-	        		var ignoredAttributes = ["uploadStatus"],
+	        	//	var ignoredAttributes = ["uploadStatus"],
 	        		//Filter out the ignored attributes
-	        			changedAttributes = ((Array.isArray(this.changedAttributes()) && this.changedAttributes().length) || this.changedAttributes())? 
-	        								_.difference(Object.keys(this.changedAttributes()), ignoredAttributes) : (options.changed || []);
+	        	//		changedAttributes = ((Array.isArray(this.changedAttributes()) && this.changedAttributes().length) || this.changedAttributes())? 
+	        	//							_.difference(Object.keys(this.changedAttributes()), ignoredAttributes) : (options.changed || []);
 	        		
 	        		//Exit if nothing has changed
-	        		if(!changedAttributes.length) return;
+	        //		if(!changedAttributes.length) return;
 	        			
 	        		//Add this item to the queue
 	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus"))

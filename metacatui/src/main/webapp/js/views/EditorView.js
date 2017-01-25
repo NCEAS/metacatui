@@ -63,9 +63,13 @@ define(['underscore',
             //Listen for the replace event on this model 
             var view = this;
             this.listenTo(this.model, "replace", function(newModel){
-            	if(view.model.get("id") == newModel.get("id"))
+            	if(view.model.get("id") == newModel.get("id")){
             		view.model = newModel;
+            		view.setListeners();
+            	}
             });
+            
+            this.setListeners();
         },
         
         /* Render the view */
@@ -150,8 +154,6 @@ define(['underscore',
                 //Render the metadata
                 this.renderMetadata();
                 
-                this.listenTo(this.model, "change:uploadStatus", this.showControls);
-
             } else {
                 
                 // Create a new data package with this id
@@ -164,8 +166,6 @@ define(['underscore',
                 this.renderDataPackage();              
             }
             
-            //If the Data Package failed saving, display an error message
-            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
         },
         
         renderChildren: function(model, options) {
@@ -305,6 +305,20 @@ define(['underscore',
         },
         
         /*
+         * Set listeners on the view's model for various reasons. 
+         * This function centralizes all the listeners so that when/if the view's model is replaced, the listeners would be reset.
+         */
+        setListeners: function(){
+            this.listenTo(this.model, "change:uploadStatus", this.showControls);
+            
+            //If the Data Package failed saving, display an error message
+            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
+        	
+        	//Listen for when the package has been successfully saved
+        	this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
+        },
+        
+        /*
          * Saves all edits in the collection
          */
         save: function(e){
@@ -315,9 +329,6 @@ define(['underscore',
         	
         	//Change the style of the save button
         	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
-        	        	
-        	//Listen for when the package has been successfully saved
-        	this.listenToOnce(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
         	
         	//Save the package!
         	MetacatUI.rootDataPackage.save();
