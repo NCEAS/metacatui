@@ -6,7 +6,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		defaults: {
 			objectXML: null,
-			objectDOM: null
+			objectDOM: null,
+			beginDate: null,
+			endDate: null,
 		},
 		
 		initialize: function(attributes){
@@ -31,11 +33,36 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             }
         },
 		
+		// TODO: This method only supports the rangeOfDates part of EML and
+		// only supports the VERY simple case of having a begin and end date
 		parse: function(objectDOM){
 			if(!objectDOM) var objectDOM = this.get("objectDOM");
-			
+
+			var rangeOfDates = $(objectDOM).children('rangeofdates');
+
+			var begin = $(rangeOfDates).children("begindate"),
+				  end 	= $(rangeOfDates).children("enddate");
+
+			this.set('beginDate', this.parseSingleDateTime(begin));
+			this.set('endDate', this.parseSingleDateTime(end));
 		},
 		
+		// Parse a singleDateTimeType into an POJO
+		parseSingleDateTime: function(objectDOM) {
+			var datetime = {
+				calendarDate : null,
+				time: null
+			};
+
+			datetime.calendarDate = $(objectDOM).children('calendarDate').text();
+
+			if ($(objectDOM).children('time').length == 1) {
+				datetime.time = $(objectDOM).children('time').text();
+			}
+			
+			return datetime;
+		},
+
 		serialize: function(){
 			var objectDOM = this.updateDOM(),
 				xmlString = objectDOM.outerHTML;
@@ -50,8 +77,35 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			 var objectDOM = this.get("objectDOM").cloneNode(true);
+			var objectDOM = this.get("objectDOM").cloneNode(true);
 			 
+			//Empty the DOM
+			$(objectDOM).empty();
+			 
+			// Fill in the DOM
+
+			// beginDate
+			if (this.get('beginDate')) {
+				var beginEl = $(objectDOM).append("<begindate></begindate>").children("begindate")[0];
+
+				$(beginEl).append("<calendardate>" + this.get('beginDate').calendarDate + "</calendardate>");
+
+				if (this.get('beginDate').time) {
+					$(beginEl).append("<time>" + this.get('beginDate').time + "</time>");
+				}
+			}
+
+			// endDate
+			if (this.get('endDate')) {
+				var endEl = $(objectDOM).append("<enddate></enddate>").children("enddate")[0];
+
+				$(endEl).append("<calendardate>" + this.get('endDate').calendarDate + "</calendardate>");
+
+				if (this.get('endDate').time) {
+					$(endEl).append("<time>" + this.get('endDate').time + "</time>");
+				}
+			}
+
 			 return objectDOM;
 		},
 		
