@@ -481,9 +481,9 @@ define(['jquery',
 					});
 				}
 				else{
-					var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
-					title = "Files in this dataset " + title;
-					viewRef.insertPackageTable(packageModel, {title: title});
+				//	var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
+					//title = "Files in this dataset " + title;
+					viewRef.insertPackageTable(packageModel);
 				}
 
 				//Remove the extra download button returned from the XSLT since the package table will have all the download links
@@ -638,7 +638,7 @@ define(['jquery',
 						//Parse text for older versions of Metacat (v2.4.3 and earlier)
 						if(parseText){
 							var labelEl = $(georegion).find('label:contains("' + direction + '")');
-							if(labelEl){
+							if(labelEl.length){
 								var coordinate = $(labelEl).next().html();
 								if(coordinate.indexOf("&nbsp;") > -1) coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
 							}
@@ -648,14 +648,19 @@ define(['jquery',
 						}
 
 						//Save our coordinate value
-						coordinates.push(coordinate);
+						if(typeof coordinate != "undefined")
+							coordinates.push(coordinate);
 					});
 
+					//If there are no coordinates, we have no map to render, so exit.
+					if(!coordinates.length) return;
+					
 					//Extract the coordinates
 					var n = coordinates[0];
 					var s = coordinates[1];
 					var e = coordinates[2];
 					var w = coordinates[3];
+					
 				}
 
 				//Create Google Map LatLng objects out of our coordinates

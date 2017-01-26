@@ -466,6 +466,9 @@ tr.table-header{
 tr.table-header th{
 	text-align: center;
 }
+.table-header a {
+    color: #FFF;
+}
 .table-header .subtle {
     color: #D9E4EC;
     font-weight: lighter;
