@@ -178,18 +178,26 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		updateDOM: function(){
 			 var objectDOM = this.get("objectDOM").cloneNode(true);
 			 
-			 // salutation[s]
+			 //Clear the salutations and given names
 			 $(objectDOM).find("individualName").find("salutation").remove();
-			 _.each(this.get("individualName").salutation, function(salutation) {
-				 $(objectDOM).find("individualName").append("<salutation>" + salutation + "</salutation>");
-			 });
-			 // given name[s]
 			 $(objectDOM).find("individualName").find("givenName").remove();
-			 _.each(this.get("individualName").givenName, function(givenName) {
-				 $(objectDOM).find("individualName").prepend("<givenName>" + givenName + "</givenName>");
-			 });
-			 // surname
-			 $(objectDOM).find("individualName").find("surName").text(this.get("individualName").surName);
+			 		 
+			 _.each(this.get("individualName"), function(name){
+				 
+				 // salutation[s]
+				 _.each(name.salutation, function(salutation) {
+					 $(objectDOM).find("individualName").append("<salutation>" + salutation + "</salutation>");
+				 });
+				 
+				 //Given name
+				 _.each(name.givenName, function(givenName) {
+					 $(objectDOM).find("individualName").prepend("<givenName>" + givenName + "</givenName>");
+				 });
+				 
+				 // surname
+				 $(objectDOM).find("individualName").find("surName").text(name.surName);
+				 
+			 }, this);
 			 
 			 // positionName
 			 $(objectDOM).find("positionName").text(this.get("positionName"));
