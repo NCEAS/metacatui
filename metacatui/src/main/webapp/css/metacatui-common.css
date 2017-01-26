@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 /****************************************** 
 ** General Styling ***
 ******************************************/
@@ -2866,6 +2866,9 @@ input.subtle:focus,
 }
 #RegistryGuide > div{
 	font-size: 1.8em;
+}
+.text-container input {
+    width: 100%;
 }
 /*******************************************
 Editor View

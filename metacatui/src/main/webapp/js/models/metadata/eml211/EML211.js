@@ -371,6 +371,37 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	_.each(this.get("publisher"), function(publisher){
 	           		$(eml).find("publisher#" + publisher.get("id")).replaceWith(publisher.updateDOM());
 	           	});
+	           	
+	           	//Serialize the basic text fields
+	           	var basicText = ["alternateIdentifier"];
+	           	_.each(basicText, function(fieldName){
+	           		var basicTextValues = this.get(fieldName);
+	           		
+	           		if(!Array.isArray(basicTextValues)) basicTextValues = [basicTextValues];
+	           		
+	           		var nodes = $(eml).find(fieldName.toLowerCase());
+	           		
+	           		_.each(basicTextValues, function(text, i){
+	           			var node = nodes[i];
+	           			
+	           			//Change the value of the existing node
+	           			if(node)
+	           				$(node).text(text);
+           				//Or create a new node	           			
+	           			else{
+	           				var newNode = $(document.createElement(fieldName.toLowerCase())).text(text);
+	           				
+	           				//Insert the new node at the end
+	           				if(nodes.length)
+	           					nodes.last().after(newNode);
+	           				//If this is the first node of its kind, insert it at the end of the dataset node
+	           				else
+	           					$(eml).find("dataset").append(newNode);
+	           			}
+	           				
+	           		}, this);
+	           		
+	           	}, this);
 	              	           	
 	           	//Camel-case the XML
 		    	var emlString = ""; 

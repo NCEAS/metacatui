@@ -2,10 +2,9 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLText',
-        'models/metadata/eml211/EMLTemporalCoverage',
-        'text!templates/eml.html',
-        'text!templates/metadataOverview.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTemporalCoverage, Template, OverviewTemplate){
+        'text!templates/metadata/eml.html',
+        'text!templates/metadata/metadataOverview.html'], 
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, Template, OverviewTemplate){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -16,8 +15,9 @@ define(['underscore', 'jquery', 'backbone',
         /* Templates */
         
         events: {
-        	"change .text" : "updateText",
-            "change .temporal-coverage" : "updateTemporalCoverage"
+        	"change .text"       : "updateText",
+        	"change .basic-text" : "updateBasicText",
+        	"change .temporal-coverage" : "updateTemporalCoverage"
         },
                 
         /* A list of the subviews */
@@ -101,8 +101,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(overviewEl).find(".keywords").append(keywords);
 	    	
 	    	//Alternate Ids
-	    	var altIds = this.createAltIds(edit);
-	    	$(overviewEl).find(".altids").append(altIds);
+		    var altIdsEls = this.createBasicTextFields("alternateIdentifier");
+		    $(overviewEl).find(".altids").append(altIdsEls);
 	    	
 	    	//Usage
 	    	var usage = this.createUsage(edit);
@@ -188,10 +188,6 @@ define(['underscore', 'jquery', 'backbone',
 	    	return keywordsForm;
 	    },
 	    
-	    createAltIds: function(){
-	    	return "";
-	    },
-	    
 	    createUsage: function(){
 	    	return "";
 	    },
@@ -230,6 +226,42 @@ define(['underscore', 'jquery', 'backbone',
 
             return ele;
         },
+	    
+	    /*
+	     * Creates and returns an array of basic text input field for editing
+	     */
+	    createBasicTextFields: function(category){
+	    	
+	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
+	    		modelValues = this.model.get(category);
+	    	
+	    	//Format as an array
+	    	if(!Array.isArray(modelValues)) modelValues = [modelValues];
+	    	
+	    	//For each value in this category, create an HTML element with the value inserted
+	    	_.each(modelValues, function(value, i, allModelValues){
+		    	if(this.edit){
+		    		var input = $(document.createElement("input"))
+				    			.attr("type", "text")
+				    			.attr("data-category", category)
+				    			.addClass("basic-text");
+			    	
+		    		textContainer.append(input.clone().val(value));
+		    		
+		    		//At the end, append an empty input for the user to add a new one
+		    		if(i+1 == allModelValues.length)
+		    			textContainer.append(input.clone().addClass("new"));
+		    		
+		    	}
+		    	else{
+		    		textContainer.append($(document.createElement("div"))
+			    			.attr("data-category", category)
+			    			.text(value));
+		    	}
+	    	}, this);
+	    	
+	    	return textContainer;
+	    },
 		
 	    /*
          * Creates the text elements
@@ -372,6 +404,49 @@ define(['underscore', 'jquery', 'backbone',
 	    		textModel.trigger("change:text");
 	    	}
 	    },
+	    
+	    
+	    updateBasicText: function(e){
+	    	if(!e) return false;
+	    	
+	    	//Get the category, new value, and model
+	    	var category = $(e.target).attr("data-category"),
+	    		value    = $(e.target).val().trim(),
+	    		model    = $(e.target).data("model") || this.model;
+	    	
+	    	//We can't update anything without a category
+	    	if(!category) return false;
+	    	
+	    	//Get the current value
+	    	var currentValue = model.get(category);
+	    	
+	    	//Insert the new value into the array
+	    	if(Array.isArray(currentValue)){
+	    		//Find the position this text input is in
+	    		var position = $(e.target).parent().children(".basic-text").index(e.target);
+	    		currentValue[position] = value;
+	    		model.trigger("change:" + category);
+	    	}
+	    	//Update the model if the current value is a string
+	    	else if(typeof currentValue == "string"){
+	    		model.set(category, [currentValue, value]);
+	    		model.trigger("change:" + category);
+	    	}
+	    	else if(!currentValue)
+	    		model.set(category, [value]);
+	    	
+	    	if($(e.target).is(".new")){
+	    		//Add another blank text input
+		    	$(e.target).after($(document.createElement("input"))
+									.attr("type", "text")
+									.attr("data-category", category)
+									.addClass("new basic-text"));
+		    	
+		    	//Remove the new class
+		    	$(e.target).removeClass("new");
+	    	}
+	    	
+	    },
 
         // Update an EMLTemporalCoverage instance
         updateTemporalCoverage: function (e) {
@@ -436,7 +511,7 @@ define(['underscore', 'jquery', 'backbone',
             // temporal coverage is set by category
             model.trigger("change:" + category);
         },
-
+        
         /* Close the view and its sub views */
         onClose: function() {
             this.remove(); // remove for the DOM, stop listening           
