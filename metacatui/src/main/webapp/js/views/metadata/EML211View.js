@@ -15,9 +15,10 @@ define(['underscore', 'jquery', 'backbone',
         /* Templates */
         
         events: {
-        	"change .text"       : "updateText",
-        	"change .basic-text" : "updateBasicText",
-        	"change .temporal-coverage" : "updateTemporalCoverage"
+        	"change .text"              : "updateText",
+        	"change .basic-text"        : "updateBasicText",
+        	"change .temporal-coverage" : "updateTemporalCoverage",
+        	"click .side-nav-items"     : "scrollToSection"
         },
                 
         /* A list of the subviews */
@@ -518,6 +519,23 @@ define(['underscore', 'jquery', 'backbone',
             // Trigger the tricking up of this change for which part of the 
             // temporal coverage is set by category
             model.trigger("change:" + category);
+        },
+        
+        /*
+         * When a user clicks on the section names in the side tabs, jump to the section
+         */
+        scrollToSection: function(e){
+        	if(!e) return false;
+        	
+        	//Stop navigation
+        	e.preventDefault();
+        	
+        	var section = $(e.target).attr("data-section"),
+        		sectionEl = this.$(".section." + section);
+        	
+        	if(!sectionEl) return false;
+        	
+        	MetacatUI.appView.scrollTo(sectionEl);
         },
         
         /* Close the view and its sub views */
