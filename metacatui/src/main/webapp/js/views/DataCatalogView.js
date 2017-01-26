@@ -1196,7 +1196,7 @@ define(['jquery',
 			if(nodeModel.get("members").length < 1) return;
 			
 			//Get the member nodes
-			var members = _.sortBy(nodeModel.get("members"), function(m){ return m.name });
+			var members = _.sortBy(nodeModel.get("members"), function(m){ return m.name.toLowerCase(); });
 			var filteredMembers = _.reject(members, function(m){ return(_.contains(nodeModel.get("hiddenMembers"), m.identifier)); });
 			
 			//Get the current search filters for data source
@@ -2731,7 +2731,7 @@ define(['jquery',
 				$(container).attr("data-height", $(container).css("height"));
 				
 				//Increase the height of the container to expand it
-				$(container).css("max-height", "900px");
+				$(container).css("max-height", "3000px");
 			}
 			//Collapse
 			else{

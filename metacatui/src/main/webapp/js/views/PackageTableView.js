@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.currentlyViewing = options.currentlyViewing || null;
 			this.numVisible = options.numVisible || 4;
 			this.parentView = options.parentView || null;			
-			this.title = options.title || "Files in this dataset";
+			this.title = options.title || "";
 			this.nested = (typeof options.nested === "undefined")? false : options.nested;
 			
 			//Set up the Package model
@@ -132,6 +132,16 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 						tooLarge: true
 					});
 				}
+			}
+			
+			if(!this.title){
+				this.title = '<a href="#view/' + metadata.get("id") + 
+					'">Files in this dataset';
+				
+				if(this.model.get("id"))
+					this.title += '<span class="subtle"> Package: ' + this.model.get("id") + '</span>';
+					
+				this.title += '</a>';
 			}
 			
 			this.$el.html(this.template({
