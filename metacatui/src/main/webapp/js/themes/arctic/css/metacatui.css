@@ -1434,12 +1434,21 @@ svg .no-activity,
 	.side-nav-item a{
 		color: #1E254F;
 	}
-	.side-nav-item a.active,
-	.side-nav-item a:hover,
-	.side-nav-item a:focus{
+
+	.side-nav-item a.active{
 		background-color: #1E254F;
-		color: white;
 		transition: none;
+		color: #FFFFFF;
+	}
+	
+	.side-nav-item a:focus{
+		text-decoration: none;
+	}
+	
+	.side-nav-item a:hover{
+		background-color: #313d81;
+		transition: none;
+		color: #FFFFFF;
 	}
 
   /* SIDEBAR CSS

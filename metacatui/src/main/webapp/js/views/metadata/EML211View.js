@@ -18,7 +18,7 @@ define(['underscore', 'jquery', 'backbone',
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
-        	"click .side-nav-items"     : "scrollToSection"
+        	"click .side-nav-item a"     : "scrollToSection"
         },
                 
         /* A list of the subviews */
@@ -69,6 +69,9 @@ define(['underscore', 'jquery', 'backbone',
 	    	this.renderMethods();
 	    	this.renderProject();
 	    	this.renderSharing();
+	    	
+			//When scrolling through the metadata, highlight the side navigation
+	    	$(document).scroll(this.highlightTOC);
         },
 	    
         /*
@@ -535,7 +538,62 @@ define(['underscore', 'jquery', 'backbone',
         	
         	if(!sectionEl) return false;
         	
+        	//Set the "clicked" flag to true so we know the user clicked the TOC link
+        	$(".metadata-toc").data({ clickedTOC : true });
+        	
         	MetacatUI.appView.scrollTo(sectionEl);
+        	
+        	//Remove the active class from all the menu items
+        	$(".side-nav-item a.active").removeClass("active");
+        	//Set the clicked item to active
+        	$(".side-nav [data-section='" + section + "']").addClass("active");
+        },
+        
+        /*
+         * Highlight the given menu item.
+         * The first argument is either an event object or the section name
+         */
+        highlightTOC: function(section){
+        	
+        	if($(".metadata-toc").data("clickedTOC")){
+        		$(".metadata-toc").data({ clickedTOC : false });
+        		return;
+        	}
+        	
+        	//Remove the active class from all the menu items
+        	$(".side-nav-item a.active").removeClass("active");
+        	
+        	if(typeof section == "string"){
+            	$(".side-nav [data-section='" + section + "']").addClass("active");
+            	return;
+        	}
+        	else{
+        		//Get the section
+        		var top = $(window).scrollTop(),
+        			sections = $(".metadata-container .section");
+        		
+        		//If we are at the bottom, highlight the last section
+        		if($(window).scrollTop() + $(window).height() == $(document).height()){
+        			$(".side-nav-item a").last().addClass("active");
+        			return;
+        		}
+        		//If we're at the top, highlight the top section
+        		else if( top < $(sections[0]).offset().top ){
+        			$(".side-nav-item a").first().addClass("active");
+        			return;
+        		}
+        		//If we're somewhere in the middle, find the right section
+        		else{
+        			
+        			for(var i=1; i < sections.length-2; i++){
+        				if( top > $(sections[i-1]).offset().top && top < $(sections[i+1]).offset().top ){
+        					$($(".side-nav-item a")[i]).addClass("active");
+        					break;
+        				}
+        			}
+
+        		}
+        	}        	        	
         },
         
         /* Close the view and its sub views */
