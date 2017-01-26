@@ -77,44 +77,43 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		/*
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
-		updateDOM: function() {
-			console.log('updateDOM')
+		updateDOM: function(){
 			var objectDOM;
 
-			if (this.get('objectDOM')) {
+			if (this.get("objectDOM")) {
 				objectDOM = this.get("objectDOM").cloneNode(true);
 				//Empty the DOM
 				$(objectDOM).empty();
 			} else {
-				objectDOM = $("temporalcoverage");
+				objectDOM = $("<temporalcoverage></temporalcoverage>");
 			}
 
 			// Fill in the DOM
-			var rangeOfDates = $(objectDOM).append('<rangeofdates></rangeofdates>').children("rangeofdates")[0];
+			var rangeOfDates = $(objectDOM).append("<rangeofdates></rangeofdates>").children("rangeofdates")[0];
 
 			// beginDate
-			if (this.get('beginDate')) {
+			if (this.get("beginDate")) {
 				var beginEl = $(rangeOfDates).append("<begindate></begindate>").children("begindate")[0];
 
-				$(beginEl).append("<calendardate>" + this.get('beginDate').calendarDate + "</calendardate>");
+				$(beginEl).append("<calendardate>" + this.get("beginDate").calendarDate + "</calendardate>");
 
-				if (this.get('beginDate').time) {
-					$(beginEl).append("<time>" + this.get('beginDate').time + "</time>");
+				if (this.get("beginDate").time) {
+					$(beginEl).append("<time>" + this.get("beginDate").time + "</time>");
 				}
 			}
 
 			// endDate
-			if (this.get('endDate')) {
+			if (this.get("endDate")) {
 				var endEl = $(rangeOfDates).append("<enddate></enddate>").children("enddate")[0];
 
-				$(endEl).append("<calendardate>" + this.get('endDate').calendarDate + "</calendardate>");
+				$(endEl).append("<calendardate>" + this.get("endDate").calendarDate + "</calendardate>");
 
-				if (this.get('endDate').time) {
-					$(endEl).append("<time>" + this.get('endDate').time + "</time>");
+				if (this.get("endDate").time) {
+					$(endEl).append("<time>" + this.get("endDate").time + "</time>");
 				}
 			}
 
-			 return objectDOM;
+			return objectDOM;
 		},
 		
 		trickleUpChange: function(){
