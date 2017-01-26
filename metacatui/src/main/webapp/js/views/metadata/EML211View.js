@@ -2,9 +2,10 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLText',
+        'models/metadata/eml211/EMLTemporalCoverage',
         'text!templates/eml.html',
         'text!templates/metadataOverview.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, Template, OverviewTemplate){
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTemporalCoverage, Template, OverviewTemplate){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -15,7 +16,8 @@ define(['underscore', 'jquery', 'backbone',
         /* Templates */
         
         events: {
-        	"change .text" : "updateText"
+        	"change .text" : "updateText",
+            "change .temporal-coverage" : "updateTemporalCoverage"
         },
                 
         /* A list of the subviews */
@@ -118,7 +120,11 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Dates section of the page
          */
 	    renderDates: function(){
-	    	
+            //Get the overall view mode
+            var edit = this.edit;
+
+            var datesEl = this.$container.find(".dates");
+            $(datesEl).html(this.createDates());
 	    },
 	    
 	    /*
@@ -189,7 +195,41 @@ define(['underscore', 'jquery', 'backbone',
 	    createUsage: function(){
 	    	return "";
 	    },
-	    
+
+        // Create the DOM for the Dates section
+        createDates: function () {
+            var edit = this.edit;
+
+            // TODO: Temporary hack. Replace this with better JS or a template maybe
+            var ele = $('<div><h2>Dates</h2></div>');
+
+            // TODO: Another hack... this just gets the first ele
+            var temporal = this.model.get('temporalCoverage')[0];
+
+
+            var beginDate = temporal ? temporal.get('beginDate') : null;
+            var beginEl = this.createEMLSingleDateTime(beginDate, edit);
+
+            $(beginEl).data({
+                model: temporal
+            })
+                .attr('data-category', 'beginDate');
+
+            var endDate = temporal ? temporal.get("endDate") : null;
+            var endEl = this.createEMLSingleDateTime(endDate, edit);
+
+            $(endEl).data({
+                model: temporal
+            })
+                .attr('data-category', 'endDate');
+
+            ele.append("<h5>Begin</h5>");
+            ele.append(beginEl);
+            ele.append("<h5>End</h5>");
+            ele.append(endEl);
+
+            return ele;
+        },
 		
 	    /*
          * Creates the text elements
@@ -244,6 +284,60 @@ define(['underscore', 'jquery', 'backbone',
 	    	return finishedEl;
 	    },
 	    
+        // Create the DOM to represent an EML SingleDateTime
+        createEMLSingleDateTime: function (datetimeModel, edit) {
+            // Set aside a variable to accumulate DOM nodes
+            var finishedEl;
+
+            // If the text should be editable, use form inputs
+            if (edit) {
+                finishedEl = $(document.createElement("div")).addClass('form-inline');
+
+                var dateEl = $(document.createElement("input"))
+                    .attr("type", "date")
+                    .addClass("temporal-coverage");
+
+                // Set a value if the model has one
+                if (datetimeModel && datetimeModel.calendarDate) {
+                    dateEl.attr('value', datetimeModel.calendarDate);
+                }
+
+                finishedEl.append("<label>Date</label>");
+                finishedEl.append(dateEl);
+
+                var timeEl = $(document.createElement("input"))
+                    .attr("type", "time")
+                    .addClass("temporal-coverage");
+
+                // Set a value if the model has one
+                if (datetimeModel && datetimeModel.time) {
+                    timeEl.attr('value', datetimeModel.time);
+                }
+
+                finishedEl.append("<label>Time</label>");
+                finishedEl.append(timeEl);
+            } else {
+                // Just show a string representing the datetime, with an 
+                // optional time
+                var tokens = [];
+
+                if (datetimeModel) {
+                    if (datetimeModel.calendarDate) {
+                        tokens.push(datetimeModel.calendarDate);
+                    }
+
+                    if (datetimeModel.time) {
+                        tokens.push(datetimeModel.time);
+                    }
+                }
+
+                finishedEl = $(document.createElement("div")).append(tokens.join(' '));
+            }
+
+            // Return the finished DOM element
+            return finishedEl;
+        },
+
 	    /*
 	     * Updates a basic text field in the EML after the user changes the value
 	     */
@@ -278,7 +372,71 @@ define(['underscore', 'jquery', 'backbone',
 	    		textModel.trigger("change:text");
 	    	}
 	    },
-        
+
+        // Update an EMLTemporalCoverage instance
+        updateTemporalCoverage: function (e) {
+            if (!e) return false;
+
+            // Grab the values we need to update the underlying EMLTemporalCoverage
+            // model. Notice that we use the 'data-category' attribute on the parent
+            // div to figure out if this is the begin or end date and that use the
+            // 'type' attribute on the input element to determine whether this is a
+            // calendarDate or a time that's being updated
+            var parent = $(e.target).parent(),
+                category = parent.attr("data-category"),
+                model = parent.data("model"),
+                attrib = $(e.target).attr('type'),
+                value = $(e.target).val().trim();
+
+            // We can't update anything without a category
+            if (!category) return false;
+
+            // Map natural values of 'attrib' to the corresponding attribute on the
+            // EMLTemporalCoverage element. Natural values of 'attrib' are from the
+            // HTML5 input 'type' attribute: Either 'date' or 'time'. Corresponding
+            // attributes on the EMLTemporalCoverage model are from the EML schema
+            // and are either 'calendarDate' or 'time'.
+            if (attrib == 'date') attrib = 'calendarDate';
+
+            // If this datetime isn't paired with an existing
+            // EMLTemporalCoverage instance, create one. Otherwise, mutate
+            // the existing one
+            if (!model) {
+                // Create a new Object for the the attribute on the
+                // EMLTemporalCoverage instance in 'attrib' (either
+                // beginDate or endDate). Then merge it into the model and
+                // merge the EMLTemporalCoverage model into the EML model.
+                newval = {};
+                newval[attrib] = value;
+
+                model = new EMLTemporalCoverage({
+                    parentModel: this.model, 
+                    parentAttribute: 'temporalCoverage'
+                });
+
+                model.set(category, newval);
+
+                // Add the newly-created model to the array with concat
+                this.model.set('temporalCoverage', this.model.get('temporalCoverage').concat(model));
+
+                // Save the new model onto the underlying DOM node
+                parent.data({ 'model': model });
+            } else {
+                // Grab the current value from the model,
+                // x = { calendarDate : ..., time: ... }
+                // and merge in the new value
+                var currentValue = model.get(category);
+                currentValue[attrib] = value;
+
+                // Set the merged value
+                model.set(category, currentValue);
+            }
+
+            // Trigger the tricking up of this change for which part of the 
+            // temporal coverage is set by category
+            model.trigger("change:" + category);
+        },
+
         /* Close the view and its sub views */
         onClose: function() {
             this.remove(); // remove for the DOM, stop listening           
