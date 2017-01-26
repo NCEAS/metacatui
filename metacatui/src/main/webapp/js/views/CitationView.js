@@ -49,7 +49,7 @@
 				var authors = this.metadata.get("origin"),
 					pubDate = this.metadata.get("pubDate"),
 					dateUploaded = this.metadata.get("dateUploaded"),
-					title = Array.isArray(this.metadata.get("title"))? (this.metadata.get("title")[0] || this.title || "") : "",
+					title = Array.isArray(this.metadata.get("title")) ? (this.metadata.get("title")[0] || this.title || "") : this.metadata.get("title") || this.title || "",
 					id = this.metadata.get("id"),
 					seriesId = this.metadata.get("seriesId") || null,
 					datasource = this.metadata.get("datasource");
