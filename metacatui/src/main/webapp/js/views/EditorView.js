@@ -481,7 +481,8 @@ define(['underscore',
 	    
         /* Close the view and its sub views */
         onClose: function() {
-            this.off();    // remove callbacks, prevent zombies         
+            this.off();    // remove callbacks, prevent zombies 
+            this.model.stopListening();
 			
             $(".Editor").removeClass("Editor");
             

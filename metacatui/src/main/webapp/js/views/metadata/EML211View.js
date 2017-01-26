@@ -260,6 +260,14 @@ define(['underscore', 'jquery', 'backbone',
 		    	}
 	    	}, this);
 	    	
+	    	if(!modelValues.length && this.edit){
+	    		var input = $(document.createElement("input"))
+			    			.attr("type", "text")
+			    			.attr("data-category", category)
+			    			.addClass("basic-text new");
+	    		textContainer.append(input);
+	    	}
+	    	
 	    	return textContainer;
 	    },
 		
