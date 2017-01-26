@@ -140,6 +140,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              Deserialize an EML 2.1.1 XML document
             */
             parse: function(response) {
+							// Save a reference to this model for use in setting the 
+							// parentModel inside anonymous functions
+							var model = this;
+
             	//If the response is XML
             	if((typeof response == "string") && response.indexOf("<") == 0){
             		//Look for a system metadata tag and call DataONEObject parse instead
@@ -175,7 +179,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			
             			modelJSON[thisNode.localName].push(new EMLParty({ 
             				objectDOM: thisNode,
-            				parentModel: this, 
+            				parentModel: model, 
             				parentAttribute: thisNode.localName
             			}));
             		}
@@ -185,7 +189,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             			modelJSON[thisNode.localName].push(new EMLDistribution({ 
             				objectDOM: thisNode,
-            				parentModel: this, 
+            				parentModel: model, 
             				parentAttribute: thisNode.localName
             			}));
             		}
@@ -195,7 +199,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             			modelJSON[thisNode.localName].push(new EMLProject({ 
             				objectDOM: thisNode,
-            				parentModel: this, 
+            				parentModel: model, 
             				parentAttribute: thisNode.localName
             			 })); 
             	*/
@@ -211,7 +215,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				_.each(temporal, function(t){
             					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ 
             						objectDOM: t,
-            						parentModel: this, 
+            						parentModel: model, 
                     				parentAttribute: "temporalCoverage"
                     			}));
             				});
@@ -222,7 +226,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				_.each(geo, function(g){
                 				modelJSON.geoCoverage.push(new EMLGeoCoverage({ 
                 					objectDOM: g,
-                					parentModel: this, 
+                					parentModel: model, 
                     				parentAttribute: "geoCoverage"
                     			}));
             				});
@@ -234,7 +238,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				_.each(taxon, function(t){
                 				modelJSON.taxonCoverage.push(new EMLTaxonCoverage({ 
                 					objectDOM: t,
-                					parentModel: this, 
+                					parentModel: model, 
                     				parentAttribute: "taxonCoverage"
                     				}));
             				});
@@ -247,7 +251,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			
             			var emlText = new EMLText({ 
             				objectDOM: thisNode, 
-            				parentModel: this, 
+            				parentModel: model, 
             				parentAttribute: thisNode.localName });
             			modelJSON[thisNode.localName].push(emlText);
             			
