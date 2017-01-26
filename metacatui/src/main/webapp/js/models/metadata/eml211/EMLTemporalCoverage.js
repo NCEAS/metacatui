@@ -77,17 +77,24 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		/*
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
-		updateDOM: function(){
-			var objectDOM = this.get("objectDOM").cloneNode(true);
-			 
-			//Empty the DOM
-			$(objectDOM).empty();
-			 
+		updateDOM: function() {
+			console.log('updateDOM')
+			var objectDOM;
+
+			if (this.get('objectDOM')) {
+				objectDOM = this.get("objectDOM").cloneNode(true);
+				//Empty the DOM
+				$(objectDOM).empty();
+			} else {
+				objectDOM = $("temporalcoverage");
+			}
+
 			// Fill in the DOM
+			var rangeOfDates = $(objectDOM).append('<rangeofdates></rangeofdates>').children("rangeofdates")[0];
 
 			// beginDate
 			if (this.get('beginDate')) {
-				var beginEl = $(objectDOM).append("<begindate></begindate>").children("begindate")[0];
+				var beginEl = $(rangeOfDates).append("<begindate></begindate>").children("begindate")[0];
 
 				$(beginEl).append("<calendardate>" + this.get('beginDate').calendarDate + "</calendardate>");
 
@@ -98,7 +105,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			// endDate
 			if (this.get('endDate')) {
-				var endEl = $(objectDOM).append("<enddate></enddate>").children("enddate")[0];
+				var endEl = $(rangeOfDates).append("<enddate></enddate>").children("enddate")[0];
 
 				$(endEl).append("<calendardate>" + this.get('endDate').calendarDate + "</calendardate>");
 
