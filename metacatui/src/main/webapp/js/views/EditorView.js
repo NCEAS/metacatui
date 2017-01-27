@@ -282,6 +282,12 @@ define(['underscore',
                 this.subviews.push(citationView);
                 $("#citation-container").html(citationView.render().$el);  	
             }
+
+            // Focus the folder name field once loaded but only if this is a new
+            // document
+            if (!this.pid) {
+                $("#data-package-table-body .name-input").focus();
+            }
         },
         
         /* Renders the data package section of the EditorView */
