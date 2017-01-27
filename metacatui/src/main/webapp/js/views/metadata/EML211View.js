@@ -111,45 +111,71 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Usage
 	    	var usage = this.createUsage(edit);
 	    	$(overviewEl).find(".usage").append(usage);
+	    	
+	    	//Awards
+		    var fundingEl = this.createBasicTextFields("funding");
+		    $(overviewEl).find(".funding").append(fundingEl);
+
 	    },
 	    
 	    /*
          * Renders the People section of the page
          */
 	    renderPeople: function(){
-	    	
+	    	this.$(".section.people").empty().append("<h2>People</h2>");
 	    },
 	    
 	    /*
          * Renders the Dates section of the page
          */
 	    renderDates: function(){
-            //Get the overall view mode
-            var edit = this.edit;
+	    	this.$(".section.dates").empty().append("<h2>Dates</h2>");
+	    	
+	    	// TODO: Another hack... this just gets the first ele
+            var temporal = this.model.get('temporalCoverage')[0];
 
-            var datesEl = this.$container.find(".dates");
-            $(datesEl).html(this.createDates());
+            var beginDate = temporal ? temporal.get('beginDate') : null;
+            var beginEl = this.createEMLSingleDateTime(beginDate);
+
+            $(beginEl).data({
+                model: temporal
+            })
+                .attr('data-category', 'beginDate');
+
+            var endDate = temporal ? temporal.get("endDate") : null;
+            var endEl = this.createEMLSingleDateTime(endDate);
+
+            $(endEl).data({
+                model: temporal
+            })
+                .attr('data-category', 'endDate');
+
+            var beginContainerEl = $('<div class="span6"></div>').append("<h5>Begin</h5>", beginEl),
+            	endContainerEl   = $('<div class="span6"></div>').append("<h5>End</h5>", endEl),
+            	rowEl            = $('<div class="row-fluid"></div>').append(beginContainerEl, endContainerEl);
+
+            this.$(".section.dates").append(rowEl);
 	    },
 	    
 	    /*
          * Renders the Locations section of the page
          */
 	    renderLocations: function(){
-	    	
+	    	this.$(".section.locations").empty().append("<h2>Locations</h2>");
 	    },
 	    
 	    /*
          * Renders the Taxa section of the page
          */
 	    renderTaxa: function(){
-	    	
+	    	this.$(".section.taxa").empty().append("<h2>Taxa</h2>");
 	    },
 	    
 	    /*
          * Renders the Methods section of the page
          */
 	    renderMethods: function(){
-	    	
+	    	this.$(".section.methods").empty().append("<h2>Methods</h2>");
 	    },
 	    
 	    /*
@@ -195,41 +221,6 @@ define(['underscore', 'jquery', 'backbone',
 	    createUsage: function(){
 	    	return "";
 	    },
-
-        // Create the DOM for the Dates section
-        createDates: function () {
-            var edit = this.edit;
-
-            // TODO: Temporary hack. Replace this with better JS or a template maybe
-            var ele = $('<div><h2>Dates</h2></div>');
-
-            // TODO: Another hack... this just gets the first ele
-            var temporal = this.model.get('temporalCoverage')[0];
-
-
-            var beginDate = temporal ? temporal.get('beginDate') : null;
-            var beginEl = this.createEMLSingleDateTime(beginDate, edit);
-
-            $(beginEl).data({
-                model: temporal
-            })
-                .attr('data-category', 'beginDate');
-
-            var endDate = temporal ? temporal.get("endDate") : null;
-            var endEl = this.createEMLSingleDateTime(endDate, edit);
-
-            $(endEl).data({
-                model: temporal
-            })
-                .attr('data-category', 'endDate');
-
-            ele.append("<h5>Begin</h5>");
-            ele.append(beginEl);
-            ele.append("<h5>End</h5>");
-            ele.append(endEl);
-
-            return ele;
-        },
 	    
 	    /*
 	     * Creates and returns an array of basic text input field for editing
@@ -329,12 +320,12 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 	    
         // Create the DOM to represent an EML SingleDateTime
-        createEMLSingleDateTime: function (datetimeModel, edit) {
+        createEMLSingleDateTime: function (datetimeModel) {
             // Set aside a variable to accumulate DOM nodes
             var finishedEl;
 
             // If the text should be editable, use form inputs
-            if (edit) {
+            if (this.edit) {
                 finishedEl = $(document.createElement("div")).addClass('form-inline');
 
                 var dateEl = $(document.createElement("input"))

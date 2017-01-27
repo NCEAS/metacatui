@@ -3037,7 +3037,12 @@ textarea.xlarge{
 
 .Editor .dropdown-menu li a i {
     vertical-align: middle;
-}      
+}
+
+.metadata-container .section {
+    width: 100%;
+    clear: both;
+}   
 
 
 /* Highlight drop zones with a dashed border */
