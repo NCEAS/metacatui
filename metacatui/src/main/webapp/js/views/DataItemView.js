@@ -20,7 +20,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             
             /* Events this view listens to */
             events: {
-                "focusout .name"       : "updateName",
+                "focusout .name-input"       : "updateName",
                 /* "click .rename"     : "rename", */
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
@@ -88,20 +88,32 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             },
             
             /* Update the folder name based on the scimeta title */
-            updateName: function(e){
-            	var enteredText = $(e.target).text().trim();
+            updateName: function(e) {
+                var enteredText = $(e.target).val().trim();
             	
-            	if(this.model.get("type") == "Metadata" && enteredText != "Untitled dataset: Add a descriptive title for your dataset"){
+                // Set the title if this item is metadata or set the file name
+                // if its not
+            	if(this.model.get("type") == "Metadata") {
             		var title = this.model.get("title");
             		
-            		if((Array.isArray(title) && title.length < 2) || typeof title == "string")
-            			this.model.set("title", [enteredText]);
-            		else
-            			title[0] = enteredText;
-            		
-            	}
-            	else
-            		this.model.set("fileName", enteredText);
+                    // Get the current title which is either an array of titles
+                    // or a single string. When it's an array of strings, we
+                    // use the first as the canonical title
+                    var currentTitle = Array.isArray(title) ? title[0] : title;
+
+                    // Don't set the title if it hasn't changed or is empty
+                    if (enteredText !== "" && currentTitle !== enteredText) {
+                        // Set the new title, upgrading any title attributes
+                        // that aren't Arrays into Arrays
+                        if ((Array.isArray(title) && title.length < 2) || typeof title == "string") {
+                            this.model.set("title", [ enteredText ]);
+                        } else {
+                            title[0] = enteredText;
+                        }
+                    }
+                } else {
+                    this.model.set("fileName", enteredText);
+                }
             },
                                     
             /* rename a file or folder TODO: decide if we need this */ 
