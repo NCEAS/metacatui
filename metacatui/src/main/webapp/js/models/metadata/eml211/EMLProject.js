@@ -14,7 +14,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 		},
 		
 		initialize: function(options){
-			if(attributes.objectDOM) this.parse(attributes.objectDOM);
+			if(attributes.objectDOM) 
+				this.set(this.parse(attributes.objectDOM));
 
 			this.on("change:personnel change:funding change:title", this.trickleUpChange);
 		},
@@ -23,16 +24,21 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 			if(!objectDOM)
 				var objectDOM = this.get("objectDOM");
 			
-			this.parseNode($(objectDOM).children("title"));
-			this.parseNode($(objectDOM).children("funding"));
+			var modelJSON = {};
 			
-			var personnel = $(objectDOM).children("personnel"),
-				personnelList = [];
-			for(var i=0; i<personnel.length; i++){
-				personnelList.push( new EMLParty({ objectDOM: personnel[i], parentModel: this, parentAttribute: "personnel" }) );
+			//Parse the funding info
+			modelJSON.funding = [];
+			_.each($(objectDOM).find("funding"), function(fundingNode){
+				modelJSON.funding.push(new EMLText({ objectDOM: fundingNode, parentModel: this, parentAttribute: "funding" }));
+			}, this);
+			
+			var personnelNode = $(objectDOM).find("personnel");
+			modelJSON.personnel = [];
+			for(var i=0; i<personnelNode.length; i++){
+				modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode[i], parentModel: this, parentAttribute: "personnel" }) );
 			}
 			
-			this.set("personnel", personnelList);
+			return modelJSON;
 		},
 		
 		parseNode: function(node){

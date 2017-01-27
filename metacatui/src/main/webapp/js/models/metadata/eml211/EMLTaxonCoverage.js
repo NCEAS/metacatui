@@ -13,7 +13,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		initialize: function(attributes){
-			if(attributes.objectDOM) this.parse(attributes.objectDOM);
+			if(attributes.objectDOM) 
+				this.set(this.parse(attributes.objectDOM));
 
 			//TODO: Add specific attributes to listen to
 			//this.on("change", this.trickleUpChange);
@@ -37,6 +38,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if(!objectDOM)
 				var xml = this.get("objectDOM");
 			
+			var modelJSON = {};
+			
+			return modelJSON;
 		},
 		
 		serialize: function(){

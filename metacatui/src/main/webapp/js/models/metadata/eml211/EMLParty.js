@@ -23,7 +23,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		initialize: function(attributes){
-			if(attributes.objectDOM) this.parse(attributes.objectDOM);
+			if(attributes.objectDOM) 
+				this.set(this.parse(attributes.objectDOM));
 
 			this.on("change:individualName change:organizationName change:positionName " +
 					"change:address change:phone change:fax change:email " +
@@ -55,13 +56,14 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if(!objectDOM)
 				var objectDOM = this.get("objectDOM");				
 			
-			var model = this;
+			var model = this,
+				modelJSON = {};
 			
 			//Set the name
 			var person = $(objectDOM).children("individualName");
 			
 			if(person.length)
-				this.set("individualName", this.parsePerson(person));
+				modelJSON.individualName = this.parsePerson(person);
 			
 			//Set the phone and fax numbers
 			var phones = $(objectDOM).children("phone"),
@@ -75,8 +77,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					faxNums.push($(phone).text());
 			});
 			
-			this.set("phone", phoneNums);
-			this.set("fax", faxNums);
+			modelJSON.phone = phoneNums;
+			modelJSON.fax   = faxNums;
 			
 			//Set the address
 			var addresses = $(objectDOM).children("address"),
@@ -86,18 +88,19 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				addressesJSON.push(model.parseAddress(address));
 			});
 				
-			this.set("address", addressesJSON);
+			modelJSON.address = addressesJSON;
 			
 			//Set the other misc. text fields
-			this.set("organizationName", $(objectDOM).children("organizationname").text());
-			this.set("positionName", $(objectDOM).children("positionname").text());
-			this.set("email", _.map($(objectDOM).children("electronicmailaddress"), function(email){
+			modelJSON.organizationName = $(objectDOM).children("organizationname").text();
+			modelJSON.positionName = $(objectDOM).children("positionname").text();
+			modelJSON.email = _.map($(objectDOM).children("electronicmailaddress"), function(email){
 				return  $(email).text();
-			}));
+			});
 			
 			//Set the id attribute
-			this.set("id", $(objectDOM).attr("id"));
+			modelJSON.id = $(objectDOM).attr("id");
 			
+			return modelJSON;
 		},
 		
 		parseNode: function(node){
