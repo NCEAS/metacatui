@@ -81,6 +81,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Get the overall view mode
 	    	var edit = this.edit;
 	    	
+	    	var view = this;
+	    	
 	    	//Append the empty layout
 	    	var overviewEl = this.$container.find(".overview");
 	    	$(overviewEl).html(this.overviewTemplate());
@@ -112,9 +114,45 @@ define(['underscore', 'jquery', 'backbone',
 	    	var usage = this.createUsage(edit);
 	    	$(overviewEl).find(".usage").append(usage);
 	    	
-	    	//Awards
-		    var fundingEl = this.createBasicTextFields("funding");
-		    $(overviewEl).find(".funding").append(fundingEl);
+	    	//Funding
+		    var fundingEl = $(this.createBasicTextFields("funding")).addClass("ui-autocomplete-container"),
+		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible"),
+		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").attr("id", "funding"),
+		    	loadingSpinner = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden");
+		    
+		    $(overviewEl).find(".funding").empty().append(fundingEl, loadingSpinner, hiddenFundingInput);
+		    
+		    //Setup the autocomplete widget for the funding input
+			$(fundingInput).hoverAutocomplete({
+				source: function(request, response){
+					var beforeRequest = loadingSpinner.show;
+					
+					var afterRequest = function(){
+						loadingSpinner.hide().css("top", "30px");
+					}
+					
+					return MetacatUI.appLookupModel.getGrantAutocomplete(request, response, beforeRequest, afterRequest)
+				},
+				select: function(e, ui) {
+					e.preventDefault();
+										
+					//view.addAward({ title: ui.item.label, id: ui.item.value });
+					hiddenFundingInput.val(ui.item.value);
+					fundingInput.val(ui.item.label);
+					
+					$(".funding .ui-helper-hidden-accessible").hide();
+					loadingSpinner.css("top", "5px");
+					
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					of: "#funding-visible",
+					collision: "fit"
+				},
+				appendTo: this.$(".funding"),
+				minLength: 3
+			});
 
 	    },
 	    
@@ -428,12 +466,12 @@ define(['underscore', 'jquery', 'backbone',
 	    		//Find the position this text input is in
 	    		var position = $(e.target).parent().children(".basic-text").index(e.target);
 	    		currentValue[position] = value;
-	    		model.trigger("change:" + category);
+	    		model.trigger("change");
 	    	}
 	    	//Update the model if the current value is a string
 	    	else if(typeof currentValue == "string"){
 	    		model.set(category, [currentValue, value]);
-	    		model.trigger("change:" + category);
+	    		model.trigger("change");
 	    	}
 	    	else if(!currentValue)
 	    		model.set(category, [value]);

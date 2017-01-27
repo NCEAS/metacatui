@@ -3043,7 +3043,20 @@ textarea.xlarge{
     width: 100%;
     clear: both;
 }   
-
+.metadata-container .ui-autocomplete .ui-menu-item {
+    font-size: .7em;
+}
+.metadata-container .funding{
+	position: relative;
+}
+.metadata-container .funding .icon-spinner{
+	top: 5px;
+    position: absolute;
+    left: 9px;
+}
+.metadata-container #funding-visible{
+	padding-left: 30px;
+}
 
 /* Highlight drop zones with a dashed border */
 .droppable {

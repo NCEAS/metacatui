@@ -300,7 +300,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			});
 		},
 		
-		getGrantAutocomplete: function(request, response){
+		getGrantAutocomplete: function(request, response, beforeRequest, afterRequest){
             var term = $.ui.autocomplete.escapeRegex(request.term),
             	filterBy = "";
             
@@ -308,6 +308,8 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
             if(term.length < 3) return;
             else if(term.match(/\d/)) return; //Don't search for digit only since it's most likely a user just entering the grant number directy
             else filterBy = "keyword";
+            
+            if(beforeRequest) beforeRequest();
      
             var url = MetacatUI.appModel.get("grantsUrl") + "?" + filterBy + "=" + term + "&printFields=title,id";					
 			var requestSettings = {
@@ -337,7 +339,8 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 	                });
 	            
 	            	response(startsWith.concat(contains));			        					
-				}
+				},
+				complete: afterRequest || null
 			}
 			
 			//Send the query
