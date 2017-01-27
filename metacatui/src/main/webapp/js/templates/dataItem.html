@@ -13,15 +13,15 @@
 
 <!-- Files column -->
 
-<td class="name" contenteditable="true">
+<td class="name">
 	<% if (typeof title != "undefined" && title && title.length) { %>
-	    <%= title %>    
+        <input type="text" class="name-input" placeholder="Untitled dataset: Add a descriptive title for your dataset." value="<%= title %>" />
 	<% } else if ( typeof fileName != "undefined" && fileName) { %>
-	    <%= fileName %>
+        <input type="text" class="name-input" placeholder="Enter a file name here." value="<%= fileName %>" />
 	<% } else if(type == "Metadata"){ %>
-		Untitled dataset: Add a descriptive title for your dataset
+        <input type="text" class="name-input" placeholder="Untitled dataset: Add a descriptive title for your dataset." value="" />
 	<% } else { %>
-	    <%= id %>
+        <input type="text" class="name-input" value="<%= id %>" />
 	<% } %>
 </td>
 
