@@ -3022,6 +3022,12 @@ textarea.xlarge{
 }
 
 
+/* Editor package table input (filename, dataset title, etc) */
+.Editor #data-package-table td input {
+    width: 95%;
+    margin: 0;
+}
+
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
     margin-right: 20px;
