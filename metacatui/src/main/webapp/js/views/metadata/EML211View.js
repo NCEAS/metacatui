@@ -3,8 +3,9 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLText',
         'text!templates/metadata/eml.html',
-        'text!templates/metadata/metadataOverview.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, Template, OverviewTemplate){
+        'text!templates/metadata/metadataOverview.html',
+		'text!templates/metadata/taxonomicClassification.html'], 
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, Template, OverviewTemplate, TaxonomicClassificationTemplate){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -26,6 +27,7 @@ define(['underscore', 'jquery', 'backbone',
         
         template: _.template(Template),
         overviewTemplate: _.template(OverviewTemplate),
+        taxonomicClassificationTemplate: _.template(TaxonomicClassificationTemplate),
         
         initialize: function(options) {
             
@@ -207,7 +209,51 @@ define(['underscore', 'jquery', 'backbone',
          */
 	    renderTaxa: function(){
 	    	this.$(".section.taxa").empty().append("<h2>Taxa</h2>");
+
+			var taxonomy = this.model.get('taxonCoverage');
+			
+			// Render forms for existing classifications
+			if (typeof taxonomy !== "undefined") {
+				var classifications = taxonomy[0].get('taxonomicClassification');
+
+				for (var i = 0; i < classifications.length; i++) {
+					console.log(classifications[i]);
+					this.$(".section.taxa").append(this.createTaxaonomicClassification(classifications[i]));
+				}
+			}
+
+			this.$(".section.taxa").append(this.createAddTaxaButton());
+
 	    },
+
+		//  1 taxonRankName
+		//  1 taxonRankValue
+		//  0-inf commonName
+		//  0-inf taxonomClassifcation
+		createTaxaonomicClassification: function(classification) {
+			var classificationEl = this.taxonomicClassificationTemplate(classification);
+
+			$(classificationEl).data({ model: classification });
+
+			return classificationEl;
+		},
+
+		createAddTaxaButton: function() {
+			var btn = $("<button>Add Taxonomic Classifcation</button>");
+			var view = this;
+
+			$(btn).click(function() {
+				var newTaxonEl = view.taxonomicClassificationTemplate({ 
+					taxonRankName: '',
+					taxonRankValue: '',
+					commonName: ''
+				});
+
+				$(".taxonomic-classification:last").after(newTaxonEl);
+			});
+
+			return btn;
+		},
 	    
 	    /*
          * Renders the Methods section of the page

@@ -1,0 +1,21 @@
+<div class="row-fluid">
+    <div class="taxonomic-classification row-fluid form-inline">
+        <label>Rank Name</label>
+        <select>
+            <option value="Domain" <%= taxonRankName == 'Domain' ? 'selected' : '' %>>Domain</option>
+            <option value="Kingdom" <%= taxonRankName == 'Kingdom' ? 'selected' : '' %>>Kingdom</option>
+            <option value="Phylum" <%= taxonRankName == 'Phylum' ? 'selected' : '' %>>Phylum</option>
+            <option value="Class" <%= taxonRankName == 'Class' ? 'selected' : '' %>>Class</option>
+            <option value="Order" <%= taxonRankName == 'Order' ? 'selected' : '' %>>Order</option>
+            <option value="Family" <%= taxonRankName == 'Family' ? 'selected' : '' %>>Family</option>
+            <option value="Genus" <%= taxonRankName == 'Genus' ? 'selected' : '' %>>Genus</option>
+            <option value="Species" <%= taxonRankName == 'Species' ? 'selected' : '' %>>Species</option>
+        </select>
+        
+        <label>Rank Value</label>
+        <input type="text" value="<%= taxonRankValue %>" />
+
+        <label>Common Name(s)</label>
+        <input type="text" value="<%= commonName %>" />
+    </div>
+</div>

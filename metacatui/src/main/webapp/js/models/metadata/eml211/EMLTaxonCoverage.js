@@ -16,8 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if(attributes.objectDOM) 
 				this.set(this.parse(attributes.objectDOM));
 
-			//TODO: Add specific attributes to listen to
-			//this.on("change", this.trickleUpChange);
+			this.on("change:taxonomicclassification", this.trickleUpChange);
 		},
 		
 		/*
@@ -37,12 +36,32 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		parse: function(objectDOM){
 			if(!objectDOM)
 				var xml = this.get("objectDOM");
+
+			var model = this,
+			    taxonomicClassifications = $(objectDOM).children('taxonomicclassification'),
+			    modelJSON = {
+					taxonomicClassification: _.map(taxonomicClassifications, function(tc) { return model.parseTaxonomicClassification(tc); })
+				};
 			
-			var modelJSON = {};
-			
+			console.log(modelJSON);
 			return modelJSON;
 		},
 		
+		parseTaxonomicClassification: function(classification) {
+
+			var rankName = $(classification).children("taxonrankname");
+			var rankValue = $(classification).children("taxonrankvalue");
+			var commonName = $(classification).children("commonname");
+			
+			var modelJSON = {
+				taxonRankName: $(rankName).text().trim(),
+				taxonRankValue: $(rankValue).text().trim(),
+				commonName: _.map($(commonName), function(cn) { return $(cn).text().trim(); })
+			};
+
+			return modelJSON;
+		},
+
 		serialize: function(){
 			var objectDOM = this.updateDOM(),
 				xmlString = objectDOM.outerHTML;
