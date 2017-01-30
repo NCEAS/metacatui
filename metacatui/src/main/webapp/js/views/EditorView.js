@@ -286,7 +286,7 @@ define(['underscore',
             // Focus the folder name field once loaded but only if this is a new
             // document
             if (!this.pid) {
-                $("#data-package-table-body .name-input").focus();
+                $("#data-package-table-body td.name").focus();
             }
         },
         

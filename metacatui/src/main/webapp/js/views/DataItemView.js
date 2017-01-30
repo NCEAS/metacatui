@@ -20,7 +20,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             
             /* Events this view listens to */
             events: {
-                "focusout .name-input"       : "updateName",
+                "focusout .name"       : "updateName",
                 /* "click .rename"     : "rename", */
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
@@ -89,7 +89,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             
             /* Update the folder name based on the scimeta title */
             updateName: function(e) {
-                var enteredText = $(e.target).val().trim();
+                var enteredText = $(e.target).text().trim();
             	
                 // Set the title if this item is metadata or set the file name
                 // if its not
