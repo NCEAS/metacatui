@@ -102,7 +102,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     var currentTitle = Array.isArray(title) ? title[0] : title;
 
                     // Don't set the title if it hasn't changed or is empty
-                    if (enteredText !== "" && currentTitle !== enteredText) {
+                    if (enteredText !== "" && 
+                        currentTitle !== enteredText &&
+                        enteredText !== "Untitled dataset: Add a descriptive title for your dataset") {
                         // Set the new title, upgrading any title attributes
                         // that aren't Arrays into Arrays
                         if ((Array.isArray(title) && title.length < 2) || typeof title == "string") {
