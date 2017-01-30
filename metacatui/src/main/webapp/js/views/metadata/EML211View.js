@@ -19,7 +19,7 @@ define(['underscore', 'jquery', 'backbone',
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
-        	"click .side-nav-item a"     : "scrollToSection"
+        	"click .side-nav-item a"    : "scrollToSection"
         },
                 
         /* A list of the subviews */
@@ -613,10 +613,19 @@ define(['underscore', 'jquery', 'backbone',
         	
         	if(!sectionEl) return false;
         	
-        	//Set the "clicked" flag to true so we know the user clicked the TOC link
-        	$(".metadata-toc").data({ clickedTOC : true });
+        	//Temporarily unbind the scroll listener while we scroll to the clicked section
+        	$(document).unbind("scroll");
         	
-        	MetacatUI.appView.scrollTo(sectionEl);
+        	var highlightTOC = this.highlightTOC;
+        	setTimeout(function(){ 
+        		$(document).scroll(highlightTOC);
+        	}, 1500);
+        	
+        	//Scroll to the section
+        	if(sectionEl == section[0])
+        		MetacatUI.appView.scrollToTop();
+        	else
+        		MetacatUI.appView.scrollTo(sectionEl, $("#Navbar").outerHeight());
         	
         	//Remove the active class from all the menu items
         	$(".side-nav-item a.active").removeClass("active");
@@ -630,10 +639,11 @@ define(['underscore', 'jquery', 'backbone',
          */
         highlightTOC: function(section){
         	
-        	if($(".metadata-toc").data("clickedTOC")){
-        		$(".metadata-toc").data({ clickedTOC : false });
-        		return;
-        	}
+        	//Check if we have scrolled past the data package table, so the table of contents is heightened
+        	if($("#data-package-container").offset().top + $("#data-package-container").height() <= $(document).scrollTop() + $("#Navbar").outerHeight())
+        		$(".metadata-toc").css("top", $("#Navbar").outerHeight());
+        	else
+        		$(".metadata-toc").css("top", "auto");
         	
         	//Remove the active class from all the menu items
         	$(".side-nav-item a.active").removeClass("active");
@@ -644,24 +654,24 @@ define(['underscore', 'jquery', 'backbone',
         	}
         	else{
         		//Get the section
-        		var top = $(window).scrollTop(),
+        		var top = $(window).scrollTop() + $("#Navbar").outerHeight(),
         			sections = $(".metadata-container .section");
         		
         		//If we are at the bottom, highlight the last section
-        		if($(window).scrollTop() + $(window).height() == $(document).height()){
+        		if(sections.last().offset().top < top){
         			$(".side-nav-item a").last().addClass("active");
         			return;
         		}
         		//If we're at the top, highlight the top section
-        		else if( top < $(sections[0]).offset().top ){
+        		else if( top < sections.first().offset().top + sections.first().outerHeight()){
         			$(".side-nav-item a").first().addClass("active");
         			return;
         		}
         		//If we're somewhere in the middle, find the right section
         		else{
         			
-        			for(var i=1; i < sections.length-2; i++){
-        				if( top > $(sections[i-1]).offset().top && top < $(sections[i+1]).offset().top ){
+        			for(var i=1; i < sections.length-1; i++){
+        				if( top > $(sections[i]).offset().top && top < $(sections[i+1]).offset().top ){
         					$($(".side-nav-item a")[i]).addClass("active");
         					break;
         				}
@@ -675,6 +685,9 @@ define(['underscore', 'jquery', 'backbone',
         onClose: function() {
             this.remove(); // remove for the DOM, stop listening           
             this.off();    // remove callbacks, prevent zombies
+            
+            //Remove the scroll event listeners
+            $(document).unbind("scroll");
             
             this.model = null;
             

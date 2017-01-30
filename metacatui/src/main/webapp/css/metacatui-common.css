@@ -2879,6 +2879,9 @@ Editor View
     font-size: 1.1em;
     line-height: 1.6em;
 }
+.metadata-toc{
+	transition: top 500ms;
+}
 .side-nav-item a {
     width: 100%;
     display: block;
