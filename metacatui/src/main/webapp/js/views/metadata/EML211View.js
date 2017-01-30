@@ -117,7 +117,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(overviewEl).find(".usage").append(usage);
 	    	
 	    	//Funding
-		    var fundingEl = $(this.createBasicTextFields("funding")).addClass("ui-autocomplete-container"),
+		    var fundingEl = $(this.createBasicTextFields("funding", false)).addClass("ui-autocomplete-container"),
 		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible"),
 		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").attr("id", "funding"),
 		    	loadingSpinner = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden");
@@ -127,7 +127,9 @@ define(['underscore', 'jquery', 'backbone',
 		    //Setup the autocomplete widget for the funding input
 			$(fundingInput).hoverAutocomplete({
 				source: function(request, response){
-					var beforeRequest = loadingSpinner.show;
+					var beforeRequest = function(){
+						loadingSpinner.show();
+					}
 					
 					var afterRequest = function(){
 						loadingSpinner.hide().css("top", "30px");
@@ -309,10 +311,13 @@ define(['underscore', 'jquery', 'backbone',
 	    /*
 	     * Creates and returns an array of basic text input field for editing
 	     */
-	    createBasicTextFields: function(category){
+	    createBasicTextFields: function(category, appendNew){
 	    	
 	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
 	    		modelValues = this.model.get(category);
+	    	
+	    	if(typeof appendNew == "undefined")
+	    		var appendNew = true;
 	    	
 	    	//Format as an array
 	    	if(!Array.isArray(modelValues)) modelValues = [modelValues];
@@ -328,7 +333,7 @@ define(['underscore', 'jquery', 'backbone',
 		    		textContainer.append(input.clone().val(value));
 		    		
 		    		//At the end, append an empty input for the user to add a new one
-		    		if(i+1 == allModelValues.length)
+		    		if(i+1 == allModelValues.length && appendNew)
 		    			textContainer.append(input.clone().addClass("new"));
 		    		
 		    	}
