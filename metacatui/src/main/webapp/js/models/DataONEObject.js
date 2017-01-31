@@ -223,7 +223,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
              * It deserializes the incoming XML from the /meta REST endpoint and converts it into JSON.
              */
             parse: function(response){
-            	console.log("Parsing " + this.get("id"));
+                // console.log("Parsing " + this.get("id"));
             	
             	// If the response is XML
             	if( (typeof response == "string") && response.indexOf("<") == 0 ) {
@@ -620,8 +620,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	
 	        	xmlString = xmlString.replace(/systemmetadata/g, "systemMetadata");
 	        	
-	        	console.log(xmlString);
-	        	
 	        	return xmlString;
 	        },
 	        
@@ -712,30 +710,50 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             
 	        serializeAccessPolicy: function(){
 	        	//Write the access policy if it exists
-                var accessPolicyXML;
-                if ( this.get("accessPolicy").length <= 0 ) {
+                var accessPolicyXML,
+                    subjects = [],
+                    permissions = [],
+                    rulesBySubject = {}; // a lookup table of existing rules by subject ( to prevent repeats)
+                if ( typeof this.get("accessPolicy").allow === "undefined" ) {
                     return accessPolicyXML;
                     
                 }
-	        	accessPolicyXML = '<accessPolicy>\n';        		
-	        	_.each(this.get("accessPolicy"), function(policy, policyType, all){
-	    			var fullPolicy = all[policyType];
-	    			    			
-	    			_.each(fullPolicy, function(policyPart){
-	    				accessPolicyXML += '\t<' + policyType + '>\n';
-	        			
-	        			accessPolicyXML += '\t\t<subject>' + policyPart.subject + '</subject>\n';
-	            		
-	        			var permissions = Array.isArray(policyPart.permission)? policyPart.permission : [policyPart.permission];
-	        			_.each(permissions, function(perm){
-	        				accessPolicyXML += '\t\t<permission>' + perm + '</permission>\n';
-	            		});
-	        			
-	        			accessPolicyXML += '\t</' + policyType + '>\n';
-	    			});    			
-	        	});       	
+	        	accessPolicyXML = '<accessPolicy>\n';
+                
+                // Parse the AccessPolicy object
+                _.each(this.get("accessPolicy"), function(accessRules, accessRuleName) {
+                    
+                    // Iterate through the policy allow rules (deny rules don't apply in DataONE)
+                    _.each(accessRules, function(accessRule) {
+                         
+                        // Process each subject in the subject list
+                        subjects = Array.isArray(accessRule.subject) ? accessRule.subject : [accessRule.subject];
+                        permissions = Array.isArray(accessRule.permission) ? accessRule.permission : [accessRule.permission];
+                        _.each(permissions, function(perm) {
+                            
+                            _.each(subjects, function(subject) {
+                                // Add each permission in the permissions list if the rule doesn't already exist
+                                if ( ! _.contains(rulesBySubject[subject], perm) ) {
+                                    accessPolicyXML += '\t<' + accessRuleName + '>\n';
+                                    accessPolicyXML += '\t\t<subject>' + subject + '</subject>\n';
+                                    accessPolicyXML += '\t\t<permission>' + perm + '</permission>\n';
+                                    accessPolicyXML += '\t</' + accessRuleName + '>\n';
+                                    if ( Array.isArray(rulesBySubject[subject]) ) {
+                                        rulesBySubject[subject].push(perm);
+                                    
+                                    } else {
+                                        rulesBySubject[subject] = [perm]; 
+                                    
+                                    }
+                                    
+                                }
+                            });
+                        });
+                    });
+	        	});
 	        	accessPolicyXML += '</accessPolicy>';
-	        	
+	        	rulesBySubject = {};
+                
 	        	return accessPolicyXML;
 	        },
 	        
