@@ -8,15 +8,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			objectXML: null,
 			objectDOM: null,
 			parentAttribute: null,
-			parentModel: null
-		
+			parentModel: null,
+			taxonomicClassification: null
 		},
 		
 		initialize: function(attributes){
 			if(attributes.objectDOM) 
 				this.set(this.parse(attributes.objectDOM));
 
-			this.on("change:taxonomicclassification", this.trickleUpChange);
+			this.on("change:taxonomicClassification", this.trickleUpChange);
 		},
 		
 		/*
@@ -43,7 +43,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					taxonomicClassification: _.map(taxonomicClassifications, function(tc) { return model.parseTaxonomicClassification(tc); })
 				};
 			
-			console.log(modelJSON);
 			return modelJSON;
 		},
 		
