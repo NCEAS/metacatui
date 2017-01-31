@@ -9,8 +9,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 			title: null,
 			funding: null,
 			personnel: null,
-			parentModel: null,
-			parentAttribute: null
+			parentModel: null
 		},
 		
 		initialize: function(options){
@@ -59,7 +58,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 		},
 		
 		trickleUpChange: function(){
-			this.get("parentModel").trigger("change", null, {changed: [this.get("parentAttribute")] });
+			this.get("parentModel").trigger("change");
 		}
 	});
 	

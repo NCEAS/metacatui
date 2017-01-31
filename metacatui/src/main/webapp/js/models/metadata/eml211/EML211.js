@@ -562,7 +562,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         			keywordthesaurus: thesaurus || "None"
         		}
         		
-        		this.trigger("change:keywordset");
+        		this.trigger("change");
             },
             
             /*

@@ -77,7 +77,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 if(this.type == "DataONEObject")
                 	this.set("originalAttrs", Object.keys(this.attributes));
                 else
-                	this.set("originalAttrs", Object.keys(DataONEObject.prototype.defaults()) );
+                	this.set("originalAttrs", Object.keys(DataONEObject.prototype.defaults()));
                 
                 // Register a listener for any attribute change
                 this.once("sync", function(){
@@ -802,13 +802,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             	if(!model) var model = this;
             	
                 var changed = Object.keys(model.changedAttributes());
-                
-                if(!changed.length && options.changed) changed = options.changed;
-                
+                //Remove the originalAttrs attribute from the list of attributes considered
+                changed = _.without(changed, "originalAttrs");
+                                
                 // If an attribute change isn't in the originalAttrs list,
                 // we know it is outside of the DataONEObject scope,
                 // and should be an attribute from ScienceMetadata, EML211, etc.
-                if( _.difference(changed, this.get("originalAttrs")).length ){
+                //If no changed attribute is given, assume there are content changes
+                if( _.difference(changed, this.get("originalAttrs")).length  || !changed.length){
                 	this.hasContentChanges = true;
                     this.updateUploadStatus(model, options);
                 }
@@ -825,17 +826,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	         * Listens to attributes on the model for changes that will require an update
 	         */
 	        updateUploadStatus: function(model, options){
-	        		//If the object is already in the upload queue, then exit.
-	        	//	if(this.get("uploadStatus") == "q" || this.get("uploadStatus") == "p") return;
-	        		
-	        		//Some attributes should be ignored when determining a change worthy of putting this object in the upload queue
-	        	//	var ignoredAttributes = ["uploadStatus"],
-	        		//Filter out the ignored attributes
-	        	//		changedAttributes = ((Array.isArray(this.changedAttributes()) && this.changedAttributes().length) || this.changedAttributes())? 
-	        	//							_.difference(Object.keys(this.changedAttributes()), ignoredAttributes) : (options.changed || []);
-	        		
-	        		//Exit if nothing has changed
-	        //		if(!changedAttributes.length) return;
 	        			
 	        		//Add this item to the queue
 	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus"))

@@ -3,10 +3,12 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLTaxonCoverage',
+        'models/metadata/eml211/EMLTemporalCoverage',
         'text!templates/metadata/eml.html',
         'text!templates/metadata/metadataOverview.html',
 		'text!templates/metadata/taxonomicClassification.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTaxonCoverage, Template, OverviewTemplate, TaxonomicClassificationTemplate){
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
+			Template, OverviewTemplate, TaxonomicClassificationTemplate){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -22,7 +24,7 @@ define(['underscore', 'jquery', 'backbone',
         	"change .temporal-coverage" : "updateTemporalCoverage",
         	"change .keywords"          : "updateKeywords",
         	"change .usage"             : "updateRadioButtons",
-        	"click .side-nav-item a"    : "scrollToSection"
+        	"click  .side-nav-item a"   : "scrollToSection"
         },
                 
         /* A list of the subviews */
@@ -125,7 +127,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Funding
 		    var fundingEl = $(this.createBasicTextFields("funding", "Add a funding number", false)).addClass("ui-autocomplete-container"),
-		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible"),
+		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible").removeClass("new"),
 		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").attr("id", "funding"),
 		    	loadingSpinner = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden");
 		    
@@ -335,6 +337,8 @@ define(['underscore', 'jquery', 'backbone',
 	    		thesaurus  = row.find("select").val(),
 	    		rowNum     = this.$(".keywords .keyword-row").index(row);
 	    	
+	    	if(!keyword) return;
+	    		
 	    	this.model.updateKeywords(keyword, thesaurus, rowNum);
 	    	
 	    	//Add a new row when the user has added a new keyword just now
@@ -569,6 +573,7 @@ define(['underscore', 'jquery', 'backbone',
 		    	$(e.target).after($(document.createElement("input"))
 									.attr("type", "text")
 									.attr("data-category", category)
+									.attr("placeholder", $(e.target).attr("placeholder"))
 									.addClass("new basic-text"));
 		    	
 		    	//Remove the new class
@@ -638,7 +643,7 @@ define(['underscore', 'jquery', 'backbone',
 
             // Trigger the tricking up of this change for which part of the 
             // temporal coverage is set by category
-            model.trigger("change:" + category);
+            this.model.trigger("change");
         },
 
 		// TODO: Finish this function

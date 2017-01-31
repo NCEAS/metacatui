@@ -10,7 +10,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			objectXML: null,
 			objectDOM: null,
 			parentModel: null,
-			parentAttribute: null,
 			text: [] //The text content
 		},
 		
@@ -82,7 +81,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		trickleUpChange: function(){
-			this.get("parentModel").trigger("change", null, {changed: [this.get("parentAttribute")] });
+			this.get("parentModel").trigger("change");
 		},
 		
 		formatXML: function(xmlString){
