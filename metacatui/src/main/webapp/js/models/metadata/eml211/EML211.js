@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            language: null,
 	            series: null,
 	            abstract: [], //array of EMLText objects
-	            keywordSet: [], // array of EMLKeyword objects
+	            keywordset: [],
 	            additionalInfo: [],
 	            intellectualRights: [],
 	            onlineDist: [], // array of EMLOnlineDist objects
@@ -546,6 +546,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
            	   _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings(), {dataType: "text"});
             	
             	$.ajax(fetchOptions);
+            },
+            
+            updateKeywords: function(keyword, thesaurus, num){
+            	
+            	if(!keyword) return;
+
+            	var keywordSet = this.get("keywordset");
+
+            	if(typeof num == "undefined")
+            		var num = keywordSet.length;
+            	
+        		keywordSet[num] = {
+        			keyword: keyword,
+        			keywordthesaurus: thesaurus || "None"
+        		}
+        		
+        		this.trigger("change:keywordset");
             },
             
             /*

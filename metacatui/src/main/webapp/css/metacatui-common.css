@@ -3075,7 +3075,22 @@ textarea.xlarge{
 .metadata-container #funding-visible{
 	padding-left: 30px;
 }
-
+.metadata-container .keywords .span2{
+	margin-left: 0px;
+	width: 16.893617%;
+}
+.metadata-container .usage input{
+	float: left;
+}
+.metadata-container .usage{
+	max-width: 500px;
+}
+.metadata-container .usage .text{
+	min-width: 225px;
+}
+.metdata-container .checkbox{
+	clear: both;
+}
 /* Highlight drop zones with a dashed border */
 .droppable {
     border: 2px dashed #1F254F;

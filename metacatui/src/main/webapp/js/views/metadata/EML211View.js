@@ -19,6 +19,7 @@ define(['underscore', 'jquery', 'backbone',
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
+        	"change .keywords"          : "updateKeywords",
         	"click .side-nav-item a"    : "scrollToSection"
         },
                 
@@ -105,19 +106,24 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	
 	    	//Keywords
-	    	var keywords = this.createKeywords(edit);	    	
-	    	$(overviewEl).find(".keywords").append(keywords);
+	    	var keywordset   = this.model.get("keywordset"),
+	    		keywordsContainer = $(document.createElement("div")).addClass("row-fluid");
 	    	
+	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
+	    	_.each(keywordset, function(keyword){
+	    		$(overviewEl).find(".keywords")(this.createKeyword(keyword.keyword, keyword.keywordthesaurus));
+	    	}, this);
+	    	
+	    	//Add an empty row for adding a new keyword
+	    	$(overviewEl).find(".keywords").append(this.createKeyword());	  
+	    		    	
 	    	//Alternate Ids
-		    var altIdsEls = this.createBasicTextFields("alternateIdentifier");
+		    var altIdsEls = this.createBasicTextFields("alternateIdentifier", "Add a new alternate identifier");
 		    $(overviewEl).find(".altids").append(altIdsEls);
 	    	
-	    	//Usage
-	    	var usage = this.createUsage(edit);
-	    	$(overviewEl).find(".usage").append(usage);
 	    	
 	    	//Funding
-		    var fundingEl = $(this.createBasicTextFields("funding", false)).addClass("ui-autocomplete-container"),
+		    var fundingEl = $(this.createBasicTextFields("funding", "Add a funding number", false)).addClass("ui-autocomplete-container"),
 		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible"),
 		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").attr("id", "funding"),
 		    	loadingSpinner = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden");
@@ -156,6 +162,14 @@ define(['underscore', 'jquery', 'backbone',
 				},
 				appendTo: this.$(".funding"),
 				minLength: 3
+			});
+			
+			//Initialize all the tooltips
+			this.$(".tooltip-this").tooltip({
+				position:{
+					my: "center bottom",
+					at: "left top"
+				}
 			});
 
 	    },
@@ -215,7 +229,7 @@ define(['underscore', 'jquery', 'backbone',
 			var taxonomy = this.model.get('taxonCoverage');
 			
 			// Render forms for existing classifications
-			if (typeof taxonomy !== "undefined") {
+			if (typeof taxonomy !== "undefined" && (Array.isArray(taxonomy) && taxonomy.length)) {
 				var classifications = taxonomy[0].get('taxonomicClassification');
 
 				for (var i = 0; i < classifications.length; i++) {
@@ -278,40 +292,45 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    },
 	    
-	    createKeywords: function(){
-	    	//Keywords
-	    	var keywords = this.model.get("keywordset"),
-	    		keywordInputTemp = $(document.createElement("input")).attr("type", "text").addClass("keyword span10"),
-	    		thesInputTemp = $(document.createElement("select")).addClass("thesaurus span2").append(
-	    				$(document.createElement("option")).val("none").text("None")).append(
-	    				$(document.createElement("option")).val("GCMD").text("GCMD")),
-	    		keywordsForm = $(document.createElement("div")).addClass("row-fluid");
+	    createKeyword: function(keyword, thesaurus){
+	    	if(!keyword) var keyword = "", thesaurus = "None";
 	    	
-	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
-	    	_.each(keywords, function(keyword){
-	    		var keywordInput = $(keywordInputTemp).clone().val(keyword.keyword);
-	    		var thesInput = $(thesInputTemp).clone();
-	    		
-	    		//Get the thesaurus value
-	    		if(keyword.keywordthesaurus && keyword.keywordthesaurus.indexOf("GCMD") > -1)
-	    			thesInput.val("GCMD");
-	    		
-	    		keywordsForm.append(keywordInput, thesInput);
-	    	});
+	    	var row          = $(document.createElement("div")).addClass("row-fluid keyword-row"),
+	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").val(keyword),
+    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
+			    				$(document.createElement("option")).val("none").text("None")).append(
+			    				$(document.createElement("option")).val("GCMD").text("GCMD"));
 	    	
-	    	keywordsForm.append($(keywordInputTemp).clone().attr("placeholder", "Add a new keyword"), $(thesInputTemp).clone());
+	    	if(thesaurus && thesaurus.indexOf("GCMD") > -1)
+    			thesInput.val("GCMD");
 	    	
-	    	return keywordsForm;
+	    	if(!keyword) 
+	    		keywordInput.addClass("new").attr("placeholder", "Add a new keyword");
+	    	
+	    	return row.append(keywordInput, thesInput);
 	    },
 	    
-	    createUsage: function(){
-	    	return "";
+	    updateKeywords: function(e){
+	    	if(!e) return;
+	    	
+	    	var row        = $(e.target).parent(".keyword-row"),
+	    		keyword    = row.find("input").val(),
+	    		thesaurus  = row.find("select").val(),
+	    		rowNum     = this.$(".keywords .keyword-row").index(row);
+	    	
+	    	this.model.updateKeywords(keyword, thesaurus, rowNum);
+	    	
+	    	//Add a new row when the user has added a new keyword just now
+	    	if(row.find(".new").length){
+	    		row.find(".new").removeClass("new");
+	    		this.$(".keywords").append(this.createKeyword());
+	    	}
 	    },
 	    
 	    /*
 	     * Creates and returns an array of basic text input field for editing
 	     */
-	    createBasicTextFields: function(category, appendNew){
+	    createBasicTextFields: function(category, placeholder, appendNew){
 	    	
 	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
 	    		modelValues = this.model.get(category);
@@ -320,7 +339,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		var appendNew = true;
 	    	
 	    	//Format as an array
-	    	if(!Array.isArray(modelValues)) modelValues = [modelValues];
+	    	if(!Array.isArray(modelValues) && modelValues) modelValues = [modelValues];
 	    	
 	    	//For each value in this category, create an HTML element with the value inserted
 	    	_.each(modelValues, function(value, i, allModelValues){
@@ -334,7 +353,7 @@ define(['underscore', 'jquery', 'backbone',
 		    		
 		    		//At the end, append an empty input for the user to add a new one
 		    		if(i+1 == allModelValues.length && appendNew)
-		    			textContainer.append(input.clone().addClass("new"));
+		    			textContainer.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
 		    		
 		    	}
 		    	else{
@@ -344,11 +363,12 @@ define(['underscore', 'jquery', 'backbone',
 		    	}
 	    	}, this);
 	    	
-	    	if(!modelValues.length && this.edit){
+	    	if((!modelValues || !modelValues.length) && this.edit){
 	    		var input = $(document.createElement("input"))
 			    			.attr("type", "text")
 			    			.attr("data-category", category)
-			    			.addClass("basic-text new");
+			    			.addClass("basic-text new")
+			    			.attr("placeholder", placeholder || "Add a new " + category);
 	    		textContainer.append(input);
 	    	}
 	    	
