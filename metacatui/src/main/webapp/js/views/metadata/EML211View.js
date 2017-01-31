@@ -2,10 +2,11 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLText',
+        'models/metadata/eml211/EMLTaxonCoverage',
         'text!templates/metadata/eml.html',
         'text!templates/metadata/metadataOverview.html',
 		'text!templates/metadata/taxonomicClassification.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, Template, OverviewTemplate, TaxonomicClassificationTemplate){
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTaxonCoverage, Template, OverviewTemplate, TaxonomicClassificationTemplate){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -19,7 +20,9 @@ define(['underscore', 'jquery', 'backbone',
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
-        	"click .side-nav-item a"     : "scrollToSection"
+        	"change .keywords"          : "updateKeywords",
+        	"change .usage"             : "updateRadioButtons",
+        	"click .side-nav-item a"    : "scrollToSection"
         },
                 
         /* A list of the subviews */
@@ -105,19 +108,23 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	
 	    	//Keywords
-	    	var keywords = this.createKeywords(edit);	    	
-	    	$(overviewEl).find(".keywords").append(keywords);
+	    	var keywordset   = this.model.get("keywordset"),
+	    		keywordsContainer = $(document.createElement("div")).addClass("row-fluid");
 	    	
+	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
+	    	_.each(keywordset, function(keyword){
+	    		$(overviewEl).find(".keywords")(this.createKeyword(keyword.keyword, keyword.keywordthesaurus));
+	    	}, this);
+	    	
+	    	//Add an empty row for adding a new keyword
+	    	$(overviewEl).find(".keywords").append(this.createKeyword());	  
+	    		    	
 	    	//Alternate Ids
-		    var altIdsEls = this.createBasicTextFields("alternateIdentifier");
+		    var altIdsEls = this.createBasicTextFields("alternateIdentifier", "Add a new alternate identifier");
 		    $(overviewEl).find(".altids").append(altIdsEls);
 	    	
-	    	//Usage
-	    	var usage = this.createUsage(edit);
-	    	$(overviewEl).find(".usage").append(usage);
-	    	
 	    	//Funding
-		    var fundingEl = $(this.createBasicTextFields("funding")).addClass("ui-autocomplete-container"),
+		    var fundingEl = $(this.createBasicTextFields("funding", "Add a funding number", false)).addClass("ui-autocomplete-container"),
 		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible"),
 		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").attr("id", "funding"),
 		    	loadingSpinner = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden");
@@ -127,7 +134,9 @@ define(['underscore', 'jquery', 'backbone',
 		    //Setup the autocomplete widget for the funding input
 			$(fundingInput).hoverAutocomplete({
 				source: function(request, response){
-					var beforeRequest = loadingSpinner.show;
+					var beforeRequest = function(){
+						loadingSpinner.show();
+					}
 					
 					var afterRequest = function(){
 						loadingSpinner.hide().css("top", "30px");
@@ -154,6 +163,14 @@ define(['underscore', 'jquery', 'backbone',
 				},
 				appendTo: this.$(".funding"),
 				minLength: 3
+			});
+			
+			//Initialize all the tooltips
+			this.$(".tooltip-this").tooltip({
+				position:{
+					my: "center bottom",
+					at: "left top"
+				}
 			});
 
 	    },
@@ -213,7 +230,7 @@ define(['underscore', 'jquery', 'backbone',
 			var taxonomy = this.model.get('taxonCoverage');
 			
 			// Render forms for existing classifications
-			if (typeof taxonomy !== "undefined") {
+			if (typeof taxonomy !== "undefined" && (Array.isArray(taxonomy) && taxonomy.length)) {
 				var classifications = taxonomy[0].get('taxonomicClassification');
 
 				for (var i = 0; i < classifications.length; i++) {
@@ -222,37 +239,53 @@ define(['underscore', 'jquery', 'backbone',
 				}
 			}
 
-			this.$(".section.taxa").append(this.createAddTaxaButton());
-
+			this.$(".section.taxa").append(this.createTaxaonomicClassification());
 	    },
 
-		//  1 taxonRankName
-		//  1 taxonRankValue
-		//  0-inf commonName
-		//  0-inf taxonomClassifcation
 		createTaxaonomicClassification: function(classification) {
-			var classificationEl = this.taxonomicClassificationTemplate(classification);
+			// Set aside a variable to accumulate DOM nodes
+            var finishedEl = $('<div class="row-fluid"></div>');
 
-			$(classificationEl).data({ model: classification });
+			// If the text should be editable, use form inputs
+            if (this.edit) {
+				// Fill in fields if they are empty
+				if (typeof classification === "undefined") {
+					classification = {};
+				}
 
-			return classificationEl;
-		},
+				if (!classification.taxonRankName) {
+					classification.taxonRankName = '';
+				}
+				
+				if (!classification.taxonRankValue) {
+					classification.taxonRankValue = '';
+				}
 
-		createAddTaxaButton: function() {
-			var btn = $("<button>Add Taxonomic Classifcation</button>");
-			var view = this;
+				if (!classification.commonName) {
+					classification.commonName = '';
+				}
+				
+				taxonEl = this.taxonomicClassificationTemplate(classification);
+				
+				$(taxonEl)
+					.data({ model: classification })
+					.attr('data-category', 'taxonomicClassification');
 
-			$(btn).click(function() {
-				var newTaxonEl = view.taxonomicClassificationTemplate({ 
-					taxonRankName: '',
-					taxonRankValue: '',
-					commonName: ''
-				});
+				$(finishedEl).append(taxonEl);
+			} else {
+				// TODO: This needs a ton of work but it does render the basics (badly)
+				if (classification) {
+					if (classification.taxonRankName) {
+						$(finishedEl).append($("<div><label>Rank Name</label> " + classification.taxonRankName + "</div>"));
+					}
 
-				$(".taxonomic-classification:last").after(newTaxonEl);
-			});
+					if (classification.taxonRankValue) {
+						$(finishedEl).append($("<div><label>Rank Value</label> " + classification.taxonRankValue + "</div>"));
+					}
+				}
+			}
 
-			return btn;
+			return finishedEl;
 		},
 	    
 	    /*
@@ -276,46 +309,54 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    },
 	    
-	    createKeywords: function(){
-	    	//Keywords
-	    	var keywords = this.model.get("keywordset"),
-	    		keywordInputTemp = $(document.createElement("input")).attr("type", "text").addClass("keyword span10"),
-	    		thesInputTemp = $(document.createElement("select")).addClass("thesaurus span2").append(
-	    				$(document.createElement("option")).val("none").text("None")).append(
-	    				$(document.createElement("option")).val("GCMD").text("GCMD")),
-	    		keywordsForm = $(document.createElement("div")).addClass("row-fluid");
+	    createKeyword: function(keyword, thesaurus){
+	    	if(!keyword) var keyword = "", thesaurus = "None";
 	    	
-	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
-	    	_.each(keywords, function(keyword){
-	    		var keywordInput = $(keywordInputTemp).clone().val(keyword.keyword);
-	    		var thesInput = $(thesInputTemp).clone();
-	    		
-	    		//Get the thesaurus value
-	    		if(keyword.keywordthesaurus && keyword.keywordthesaurus.indexOf("GCMD") > -1)
-	    			thesInput.val("GCMD");
-	    		
-	    		keywordsForm.append(keywordInput, thesInput);
-	    	});
+	    	var row          = $(document.createElement("div")).addClass("row-fluid keyword-row"),
+	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").val(keyword),
+    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
+			    				$(document.createElement("option")).val("none").text("None")).append(
+			    				$(document.createElement("option")).val("GCMD").text("GCMD"));
 	    	
-	    	keywordsForm.append($(keywordInputTemp).clone().attr("placeholder", "Add a new keyword"), $(thesInputTemp).clone());
+	    	if(thesaurus && thesaurus.indexOf("GCMD") > -1)
+    			thesInput.val("GCMD");
 	    	
-	    	return keywordsForm;
+	    	if(!keyword) 
+	    		keywordInput.addClass("new").attr("placeholder", "Add a new keyword");
+	    	
+	    	return row.append(keywordInput, thesInput);
 	    },
 	    
-	    createUsage: function(){
-	    	return "";
+	    updateKeywords: function(e){
+	    	if(!e) return;
+	    	
+	    	var row        = $(e.target).parent(".keyword-row"),
+	    		keyword    = row.find("input").val(),
+	    		thesaurus  = row.find("select").val(),
+	    		rowNum     = this.$(".keywords .keyword-row").index(row);
+	    	
+	    	this.model.updateKeywords(keyword, thesaurus, rowNum);
+	    	
+	    	//Add a new row when the user has added a new keyword just now
+	    	if(row.find(".new").length){
+	    		row.find(".new").removeClass("new");
+	    		this.$(".keywords").append(this.createKeyword());
+	    	}
 	    },
 	    
 	    /*
 	     * Creates and returns an array of basic text input field for editing
 	     */
-	    createBasicTextFields: function(category){
+	    createBasicTextFields: function(category, placeholder, appendNew){
 	    	
 	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
 	    		modelValues = this.model.get(category);
 	    	
+	    	if(typeof appendNew == "undefined")
+	    		var appendNew = true;
+	    	
 	    	//Format as an array
-	    	if(!Array.isArray(modelValues)) modelValues = [modelValues];
+	    	if(!Array.isArray(modelValues) && modelValues) modelValues = [modelValues];
 	    	
 	    	//For each value in this category, create an HTML element with the value inserted
 	    	_.each(modelValues, function(value, i, allModelValues){
@@ -328,8 +369,8 @@ define(['underscore', 'jquery', 'backbone',
 		    		textContainer.append(input.clone().val(value));
 		    		
 		    		//At the end, append an empty input for the user to add a new one
-		    		if(i+1 == allModelValues.length)
-		    			textContainer.append(input.clone().addClass("new"));
+		    		if(i+1 == allModelValues.length && appendNew)
+		    			textContainer.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
 		    		
 		    	}
 		    	else{
@@ -339,11 +380,12 @@ define(['underscore', 'jquery', 'backbone',
 		    	}
 	    	}, this);
 	    	
-	    	if(!modelValues.length && this.edit){
+	    	if((!modelValues || !modelValues.length) && this.edit){
 	    		var input = $(document.createElement("input"))
 			    			.attr("type", "text")
 			    			.attr("data-category", category)
-			    			.addClass("basic-text new");
+			    			.addClass("basic-text new")
+			    			.attr("placeholder", placeholder || "Add a new " + category);
 	    		textContainer.append(input);
 	    	}
 	    	
@@ -598,6 +640,23 @@ define(['underscore', 'jquery', 'backbone',
             // temporal coverage is set by category
             model.trigger("change:" + category);
         },
+
+		// TODO: Finish this function
+		// TODO: Link this function into the DOM
+		updateTaxonCoverage: function(e) {
+			if (!e) return false;
+			
+		},
+        
+        updateRadioButtons: function(e){
+        	//Get the element of this radio button set that is checked
+        	var choice = this.$("[name='" + $(e.target).attr("name") + "']:checked").val();
+        	
+        	if(typeof choice == "undefined" || !choice)
+        		this.model.set($(e.target).attr("data-category"), "");
+        	else
+        		this.model.set($(e.target).attr("data-category"), choice);
+        },
         
         /*
          * When a user clicks on the section names in the side tabs, jump to the section
@@ -613,10 +672,19 @@ define(['underscore', 'jquery', 'backbone',
         	
         	if(!sectionEl) return false;
         	
-        	//Set the "clicked" flag to true so we know the user clicked the TOC link
-        	$(".metadata-toc").data({ clickedTOC : true });
+        	//Temporarily unbind the scroll listener while we scroll to the clicked section
+        	$(document).unbind("scroll");
         	
-        	MetacatUI.appView.scrollTo(sectionEl);
+        	var highlightTOC = this.highlightTOC;
+        	setTimeout(function(){ 
+        		$(document).scroll(highlightTOC);
+        	}, 1500);
+        	
+        	//Scroll to the section
+        	if(sectionEl == section[0])
+        		MetacatUI.appView.scrollToTop();
+        	else
+        		MetacatUI.appView.scrollTo(sectionEl, $("#Navbar").outerHeight());
         	
         	//Remove the active class from all the menu items
         	$(".side-nav-item a.active").removeClass("active");
@@ -630,10 +698,11 @@ define(['underscore', 'jquery', 'backbone',
          */
         highlightTOC: function(section){
         	
-        	if($(".metadata-toc").data("clickedTOC")){
-        		$(".metadata-toc").data({ clickedTOC : false });
-        		return;
-        	}
+        	//Check if we have scrolled past the data package table, so the table of contents is heightened
+        	if($("#data-package-container").offset().top + $("#data-package-container").height() <= $(document).scrollTop() + $("#Navbar").outerHeight())
+        		$(".metadata-toc").css("top", $("#Navbar").outerHeight());
+        	else
+        		$(".metadata-toc").css("top", "auto");
         	
         	//Remove the active class from all the menu items
         	$(".side-nav-item a.active").removeClass("active");
@@ -644,24 +713,24 @@ define(['underscore', 'jquery', 'backbone',
         	}
         	else{
         		//Get the section
-        		var top = $(window).scrollTop(),
+        		var top = $(window).scrollTop() + $("#Navbar").outerHeight(),
         			sections = $(".metadata-container .section");
         		
         		//If we are at the bottom, highlight the last section
-        		if($(window).scrollTop() + $(window).height() == $(document).height()){
+        		if(sections.last().offset().top < top){
         			$(".side-nav-item a").last().addClass("active");
         			return;
         		}
         		//If we're at the top, highlight the top section
-        		else if( top < $(sections[0]).offset().top ){
+        		else if( top < sections.first().offset().top + sections.first().outerHeight()){
         			$(".side-nav-item a").first().addClass("active");
         			return;
         		}
         		//If we're somewhere in the middle, find the right section
         		else{
         			
-        			for(var i=1; i < sections.length-2; i++){
-        				if( top > $(sections[i-1]).offset().top && top < $(sections[i+1]).offset().top ){
+        			for(var i=1; i < sections.length-1; i++){
+        				if( top > $(sections[i]).offset().top && top < $(sections[i+1]).offset().top ){
         					$($(".side-nav-item a")[i]).addClass("active");
         					break;
         				}
@@ -675,6 +744,9 @@ define(['underscore', 'jquery', 'backbone',
         onClose: function() {
             this.remove(); // remove for the DOM, stop listening           
             this.off();    // remove callbacks, prevent zombies
+            
+            //Remove the scroll event listeners
+            $(document).unbind("scroll");
             
             this.model = null;
             

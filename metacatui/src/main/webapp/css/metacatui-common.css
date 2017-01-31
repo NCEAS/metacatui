@@ -2873,11 +2873,15 @@ input.subtle:focus,
 /*******************************************
 Editor View
 ******************************************/
+
 #editor-header .citation{
 	padding: 1em;
     margin-bottom: 0px;
     font-size: 1.1em;
     line-height: 1.6em;
+}
+.metadata-toc{
+	transition: top 500ms;
 }
 .side-nav-item a {
     width: 100%;
@@ -3021,13 +3025,6 @@ textarea.xlarge{
     margin-right: .3em;
 }
 
-
-/* Editor package table input (filename, dataset title, etc) */
-.Editor #data-package-table td input {
-    width: 95%;
-    margin: 0;
-}
-
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
     margin-right: 20px;
@@ -3044,13 +3041,21 @@ textarea.xlarge{
 .Editor .dropdown-menu li a i {
     vertical-align: middle;
 }
-
+.metadata-container *{
+	box-sizing: border-box;
+}
+.metadata-container input{
+	padding: 14px;
+}
 .metadata-container .section {
     width: 100%;
     clear: both;
 }   
 .metadata-container .ui-autocomplete .ui-menu-item {
     font-size: .7em;
+}
+.metadata-container .ui-autocomplete-container .ui-helper-hidden-accessible{
+	display: none;
 }
 .metadata-container .funding{
 	position: relative;
@@ -3063,7 +3068,22 @@ textarea.xlarge{
 .metadata-container #funding-visible{
 	padding-left: 30px;
 }
-
+.metadata-container .keywords .span2{
+	margin-left: 0px;
+	width: 16.893617%;
+}
+.metadata-container .usage input{
+	float: left;
+}
+.metadata-container .usage{
+	max-width: 500px;
+}
+.metadata-container .usage .text{
+	min-width: 225px;
+}
+.metdata-container .checkbox{
+	clear: both;
+}
 /* Highlight drop zones with a dashed border */
 .droppable {
     border: 2px dashed #1F254F;

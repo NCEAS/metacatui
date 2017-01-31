@@ -37,9 +37,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            language: null,
 	            series: null,
 	            abstract: [], //array of EMLText objects
-	            keywordSet: [], // array of EMLKeyword objects
+	            keywordset: [],
 	            additionalInfo: [],
-	            intellectualRights: [],
+	            intellectualRights: "",
 	            onlineDist: [], // array of EMLOnlineDist objects
 	            offlineDist: [], // array of EMLOfflineDist objects
 	            geoCoverage : [], //an array for EMLGeoCoverages
@@ -377,7 +377,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});
 	           	
 	           	//Serialize the basic text fields
-	           	var basicText = ["alternateIdentifier"];
+	           	var basicText = ["alternateIdentifier", "intellectualRights"];
 	           	_.each(basicText, function(fieldName){
 	           		var basicTextValues = this.get(fieldName);
 	           		
@@ -550,6 +550,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
            	   _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings(), {dataType: "text"});
             	
             	$.ajax(fetchOptions);
+            },
+            
+            updateKeywords: function(keyword, thesaurus, num){
+            	
+            	if(!keyword) return;
+
+            	var keywordSet = this.get("keywordset");
+
+            	if(typeof num == "undefined")
+            		var num = keywordSet.length;
+            	
+        		keywordSet[num] = {
+        			keyword: keyword,
+        			keywordthesaurus: thesaurus || "None"
+        		}
+        		
+        		this.trigger("change:keywordset");
             },
             
             /*
