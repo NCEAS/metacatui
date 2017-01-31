@@ -78,7 +78,7 @@ define(['underscore',
             MetacatUI.appModel.set('headerType', 'default');
             
             //Reset the listeners
-            this.stopListening();
+            //this.stopListening();
             
         	//Inert the basic template on the page
         	this.$el.html(this.template({
