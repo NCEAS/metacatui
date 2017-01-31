@@ -20,6 +20,7 @@ define(['underscore', 'jquery', 'backbone',
         	"change .basic-text"        : "updateBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
         	"change .keywords"          : "updateKeywords",
+        	"change .usage"             : "updateRadioButtons",
         	"click .side-nav-item a"    : "scrollToSection"
         },
                 
@@ -120,7 +121,6 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Alternate Ids
 		    var altIdsEls = this.createBasicTextFields("alternateIdentifier", "Add a new alternate identifier");
 		    $(overviewEl).find(".altids").append(altIdsEls);
-	    	
 	    	
 	    	//Funding
 		    var fundingEl = $(this.createBasicTextFields("funding", "Add a funding number", false)).addClass("ui-autocomplete-container"),
@@ -639,6 +639,16 @@ define(['underscore', 'jquery', 'backbone',
             // Trigger the tricking up of this change for which part of the 
             // temporal coverage is set by category
             model.trigger("change:" + category);
+        },
+        
+        updateRadioButtons: function(e){
+        	//Get the element of this radio button set that is checked
+        	var choice = this.$("[name='" + $(e.target).attr("name") + "']:checked").val();
+        	
+        	if(typeof choice == "undefined" || !choice)
+        		this.model.set($(e.target).attr("data-category"), "");
+        	else
+        		this.model.set($(e.target).attr("data-category"), choice);
         },
         
         /*

@@ -39,7 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            abstract: [], //array of EMLText objects
 	            keywordset: [],
 	            additionalInfo: [],
-	            intellectualRights: [],
+	            intellectualRights: "",
 	            onlineDist: [], // array of EMLOnlineDist objects
 	            offlineDist: [], // array of EMLOfflineDist objects
 	            geoCoverage : [], //an array for EMLGeoCoverages
@@ -373,7 +373,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});
 	           	
 	           	//Serialize the basic text fields
-	           	var basicText = ["alternateIdentifier"];
+	           	var basicText = ["alternateIdentifier", "intellectualRights"];
 	           	_.each(basicText, function(fieldName){
 	           		var basicTextValues = this.get(fieldName);
 	           		
