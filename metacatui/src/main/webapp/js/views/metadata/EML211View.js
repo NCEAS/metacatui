@@ -242,16 +242,33 @@ define(['underscore', 'jquery', 'backbone',
 
 	    },
 
-		//  1 taxonRankName
-		//  1 taxonRankValue
-		//  0-inf commonName
-		//  0-inf taxonomClassifcation
 		createTaxaonomicClassification: function(classification) {
-			var classificationEl = this.taxonomicClassificationTemplate(classification);
+			// Set aside a variable to accumulate DOM nodes
+            var finishedEl = $('<div class="row-fluid"></div>');
 
-			$(classificationEl).data({ model: classification });
+			// If the text should be editable, use form inputs
+            if (this.edit) {
+				taxonEl = this.taxonomicClassificationTemplate(classification);
+				
+				$(taxonEl)
+					.data({ model: classification })
+					.attr('data-category', 'taxonomicClassification');
 
-			return classificationEl;
+				$(finishedEl).append(taxonEl);
+			} else {
+				// TODO: This needs a ton of work but it does render the basics (badly)
+				if (classification) {
+					if (classification.taxonRankName) {
+						$(finishedEl).append($("<div><label>Rank Name</label> " + classification.taxonRankName + "</div>"));
+					}
+
+					if (classification.taxonRankValue) {
+						$(finishedEl).append($("<div><label>Rank Value</label> " + classification.taxonRankValue + "</div>"));
+					}
+				}
+			}
+
+			return finishedEl;
 		},
 
 		createAddTaxaButton: function() {
