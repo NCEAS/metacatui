@@ -2,10 +2,11 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLText',
+        'models/metadata/eml211/EMLTaxonCoverage',
         'text!templates/metadata/eml.html',
         'text!templates/metadata/metadataOverview.html',
 		'text!templates/metadata/taxonomicClassification.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, Template, OverviewTemplate, TaxonomicClassificationTemplate){
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTaxonCoverage, Template, OverviewTemplate, TaxonomicClassificationTemplate){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -238,8 +239,7 @@ define(['underscore', 'jquery', 'backbone',
 				}
 			}
 
-			this.$(".section.taxa").append(this.createAddTaxaButton());
-
+			this.$(".section.taxa").append(this.createTaxaonomicClassification());
 	    },
 
 		createTaxaonomicClassification: function(classification) {
@@ -248,6 +248,23 @@ define(['underscore', 'jquery', 'backbone',
 
 			// If the text should be editable, use form inputs
             if (this.edit) {
+				// Fill in fields if they are empty
+				if (typeof classification === "undefined") {
+					classification = {};
+				}
+
+				if (!classification.taxonRankName) {
+					classification.taxonRankName = '';
+				}
+				
+				if (!classification.taxonRankValue) {
+					classification.taxonRankValue = '';
+				}
+
+				if (!classification.commonName) {
+					classification.commonName = '';
+				}
+				
 				taxonEl = this.taxonomicClassificationTemplate(classification);
 				
 				$(taxonEl)
@@ -269,23 +286,6 @@ define(['underscore', 'jquery', 'backbone',
 			}
 
 			return finishedEl;
-		},
-
-		createAddTaxaButton: function() {
-			var btn = $("<button>Add Taxonomic Classifcation</button>");
-			var view = this;
-
-			$(btn).click(function() {
-				var newTaxonEl = view.taxonomicClassificationTemplate({ 
-					taxonRankName: '',
-					taxonRankValue: '',
-					commonName: ''
-				});
-
-				$(".taxonomic-classification:last").after(newTaxonEl);
-			});
-
-			return btn;
 		},
 	    
 	    /*
@@ -640,6 +640,13 @@ define(['underscore', 'jquery', 'backbone',
             // temporal coverage is set by category
             model.trigger("change:" + category);
         },
+
+		// TODO: Finish this function
+		// TODO: Link this function into the DOM
+		updateTaxonCoverage: function(e) {
+			if (!e) return false;
+			
+		},
         
         updateRadioButtons: function(e){
         	//Get the element of this radio button set that is checked
