@@ -142,7 +142,7 @@ define(['underscore',
             
             var resourceMapIds = scimetaModel.get("resourceMap");
             
-            if ( resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
+            if ( typeof resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
                 console.log("Resource map ids could not be found for " + scimetaModel.id);
                 
                 // Create a new Data packages
@@ -155,12 +155,23 @@ define(['underscore',
                 this.renderMetadata();
                 
             } else {
-                
                 // Create a new data package with this id
-                MetacatUI.rootDataPackage = new DataPackage([this.model], { id: resourceMapIds[0] });
+                MetacatUI.rootDataPackage = new DataPackage([this.model], {id: resourceMapIds[0]});
                 
-                //Fetch the data package
-                MetacatUI.rootDataPackage.fetch(); 
+                // Do we have the latest resource map version?
+                if ( resourceMapIds.length > 1 ) {
+                    this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:latestVersion", function(model) {
+                        MetacatUI.rootDataPackage = new DataPackage(null, {id: model.get("latestVersion")});
+                        //Fetch the data package
+                        MetacatUI.rootDataPackage.fetch(); 
+                    })
+                    MetacatUI.rootDataPackage.packageModel.findLatestVersion();
+                    
+                } else {
+                    //Fetch the data package
+                    MetacatUI.rootDataPackage.fetch(); 
+                    
+                }
                 
                 //Render the Data Package table
                 this.renderDataPackage();              
