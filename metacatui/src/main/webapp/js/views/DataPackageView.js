@@ -182,7 +182,7 @@ define([
             onClose: function() {
                 // Close each subview
                 _.each(Object.keys(this.subviews), function(id) {
-    				var subview = this.subviews(id);
+    				var subview = this.subviews[id];
                     subview.onClose();
                 
                 }, this);
