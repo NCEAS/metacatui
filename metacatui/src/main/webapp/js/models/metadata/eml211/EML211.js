@@ -3,6 +3,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/ScienceMetadata',
         'models/DataONEObject',
         'models/metadata/eml211/EMLGeoCoverage', 
+        'models/metadata/eml211/EMLKeywordSet', 
         'models/metadata/eml211/EMLTaxonCoverage', 
         'models/metadata/eml211/EMLTemporalCoverage', 
         'models/metadata/eml211/EMLDistribution', 
@@ -10,7 +11,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText'], 
     function($, _, Backbone, uuid, ScienceMetadata, DataONEObject, 
-    		EMLGeoCoverage, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLParty, EMLProject, EMLText) {
+    		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLParty, EMLProject, EMLText) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -37,7 +38,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            language: null,
 	            series: null,
 	            abstract: [], //array of EMLText objects
-	            keywordset: [],
+	            keywordSets: [], //array of EMLKeyword objects
 	            additionalInfo: [],
 	            intellectualRights: "",
 	            onlineDist: [], // array of EMLOnlineDist objects
@@ -237,6 +238,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			}
 
             		}
+            		//Parse EMLText modules
             		else if(_.contains(emlText, thisNode.localName)){
             			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
             			
@@ -247,7 +249,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			modelJSON[thisNode.localName].push(emlText);
             			
             			
-            		}	
+            		}
+            		//Parse keywords
+            		else if(thisNode.localName == "keywordset"){
+            			//Start an array of keyword sets
+            			if(typeof modelJSON["keywordSets"] == "undefined") modelJSON["keywordSets"] = [];
+            			
+            			modelJSON["keywordSets"].push(new EMLKeywordSet({
+            				objectDOM: thisNode,
+            				parentModel: model
+            			}));
+            		}
             		else{
             			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
             			//Is this a multi-valued field in EML?
@@ -359,6 +371,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	//Serialize the publishers
 	           	_.each(this.get("publisher"), function(publisher){
 	           		$(eml).find("publisher#" + publisher.get("id")).replaceWith(publisher.updateDOM());
+	           	});
+	           	
+	           	//Serialize the keywords
+	           	var keywordNodes = $(eml).find("keywordset");
+	        	_.each(this.get("keywordSets"), function(keywordSet, i){
+
+	           		if(i < keywordNodes.length)
+	           			$(keywordNodes[i]).replaceWith(keywordSet.updateDOM());
+	           		else
+	           			$(eml).find("keywordset").last().after(keywordSet.updateDOM());
+	           		
 	           	});
 	           	
 	           	//Serialize the basic text fields
@@ -550,6 +573,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         			keyword: keyword,
         			keywordthesaurus: thesaurus || "None"
         		}
+        		
+        		this.model
         		
         		this.trigger("change");
             },

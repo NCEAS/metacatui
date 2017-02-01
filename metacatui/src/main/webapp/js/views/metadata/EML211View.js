@@ -1,6 +1,7 @@
 define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'models/metadata/eml211/EML211',
+        'models/metadata/eml211/EMLKeywordSet',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLTaxonCoverage',
         'models/metadata/eml211/EMLTemporalCoverage',
@@ -8,7 +9,7 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
 		'text!templates/metadata/taxonomicClassification.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLKeywordSet, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
 			Template, OverviewTemplate, DatesTemplate, TaxonomicClassificationTemplate){
     
     var EMLView = ScienceMetadataView.extend({
@@ -112,12 +113,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	
 	    	//Keywords
-	    	var keywordset   = this.model.get("keywordset"),
-	    		keywordsContainer = $(document.createElement("div")).addClass("row-fluid");
-	    	
 	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
-	    	_.each(keywordset, function(keyword){
-	    		$(overviewEl).find(".keywords")(this.createKeyword(keyword.keyword, keyword.keywordthesaurus));
+	    	_.each(this.model.get("keywordSets"), function(keywordSetModel){
+	    		_.each(keywordSetModel.get("keywords"), function(keyword){
+		    		$(overviewEl).find(".keywords").append(this.createKeyword(keyword, keywordSetModel));	    			
+	    		}, this);
 	    	}, this);
 	    	
 	    	//Add an empty row for adding a new keyword
@@ -303,13 +303,16 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    },
 	    
-	    createKeyword: function(keyword, thesaurus){
-	    	if(!keyword) var keyword = "", thesaurus = "None";
+	    createKeyword: function(keyword, model){
+	    	if(!keyword) var keyword = "";
 	    	
-	    	var row          = $(document.createElement("div")).addClass("row-fluid keyword-row"),
+	    	if(!model) var model = new EMLKeywordSet({ parentModel: this.model });
+	    	
+	    	var thesaurus    = model.get("thesaurus"),
+	    		row          = $(document.createElement("div")).addClass("row-fluid keyword-row").data({ model: model }),
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").val(keyword),
     			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
-			    				$(document.createElement("option")).val("none").text("None")).append(
+			    				$(document.createElement("option")).val("None").text("None")).append(
 			    				$(document.createElement("option")).val("GCMD").text("GCMD"));
 	    	
 	    	if(thesaurus && thesaurus.indexOf("GCMD") > -1)
@@ -321,17 +324,55 @@ define(['underscore', 'jquery', 'backbone',
 	    	return row.append(keywordInput, thesInput);
 	    },
 	    
+	    //TODO: Comma-seperate keywords
 	    updateKeywords: function(e){
 	    	if(!e) return;
 	    	
 	    	var row        = $(e.target).parent(".keyword-row"),
 	    		keyword    = row.find("input").val(),
 	    		thesaurus  = row.find("select").val(),
-	    		rowNum     = this.$(".keywords .keyword-row").index(row);
+	    		model      = row.data("model"),
+	    		allKeywords = [];
 	    	
 	    	if(!keyword) return;
+
+	    	//If the thesaurus has changed or if there is no model
+	    	if(!model || (thesaurus != model.get("thesaurus") && model.get("keywords").length > 2)){
 	    		
-	    	this.model.updateKeywords(keyword, thesaurus, rowNum);
+	    		//Remove the keyword from the model that has a changed thesaurus
+	    		if(model)
+	    			model.set("keywords", _.without(model.get("keywords"), keyword));	    		
+	    		
+	    		//Create a new EMLKeywordSet model
+	    		model = new EMLKeywordSet({ parentModel: this.model });
+	    		
+	    		//This is the only keyword in the new model
+	    		allKeywords = [keyword];
+	    		
+	    		//Update the keywordSets array in the EML211 model
+    			this.model.get("keywordSets").push(model);
+    			
+    			//Update the model attached to the DOM
+    			row.data({ model: model });
+    			
+	    	}	    	
+	    	//If the thesaurus hasn't changed, then find all the keywords that belong in this model
+	    	else{
+		    	//Get all the keywords in the model
+		    	_.each(this.$(".keyword-row"), function(thisRow){
+		    		if($(thisRow).data("model") == model){
+			    		allKeywords.push($(thisRow).find("input").val());	    			
+		    		}
+		    	}, this);
+		    	
+		    	//Make sure this model is set on the EML211 model
+		    	if(!_.contains(this.model.get("keywordSets"), model))
+		    		this.model.get("keywordSets").push(model);
+	    	}
+	    	
+	    	//Update the model with the new keywords and thesaurus
+	    	model.set("keywords",  allKeywords);
+	    	model.set("thesaurus", thesaurus);
 	    	
 	    	//Add a new row when the user has added a new keyword just now
 	    	if(row.find(".new").length){
