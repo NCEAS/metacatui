@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            onlineDist: [], // array of EMLOnlineDist objects
 	            offlineDist: [], // array of EMLOfflineDist objects
 	            geoCoverage : [], //an array for EMLGeoCoverages
-	            temporalCoverage : [], //an array of EMLTempCoverages
+	            temporalCoverage : null, //One EMLTempCoverage model
 	            taxonCoverage : [], //an array of EMLTaxonCoverages
 	            purpose: [],
 	            pubplace: null,
@@ -183,8 +183,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			
             			modelJSON[thisNode.localName].push(new EMLParty({ 
             				objectDOM: thisNode,
-            				parentModel: model, 
-            				parentAttribute: thisNode.localName
+            				parentModel: model 
             			}));
             		}
             		//EML Distribution modules are stored in EMLDistribution models
@@ -193,8 +192,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             			modelJSON[thisNode.localName].push(new EMLDistribution({ 
             				objectDOM: thisNode,
-            				parentModel: model, 
-            				parentAttribute: thisNode.localName
+            				parentModel: model
             			}));
             		}
             		//EML Project modules are stored in EMLProject models
@@ -203,8 +201,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             			modelJSON[thisNode.localName].push(new EMLProject({ 
             				objectDOM: thisNode,
-            				parentModel: model, 
-            				parentAttribute: thisNode.localName
+            				parentModel: model
             			 })); 
             	*/
             		//EML Temporal, Taxonomic, and Geographic Coverage modules are stored in their own models
@@ -214,15 +211,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				geo      = $(thisNode).children("geographiccoverage"),
             				taxon    = $(thisNode).children("taxonomiccoverage");
             			
-            			if(temporal .length){
-            				modelJSON.temporalCoverage = [];
-            				_.each(temporal, function(t){
-            					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ 
-            						objectDOM: t,
-            						parentModel: model, 
-                    				parentAttribute: "temporalCoverage"
-                    			}));
-            				});
+            			if(temporal.length){
+            				modelJSON.temporalCoverage = new EMLTemporalCoverage({ 
+        						objectDOM: temporal[0],
+        						parentModel: model
+                			});
             			}
             						
             			if(geo.length){
@@ -230,8 +223,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				_.each(geo, function(g){
                 				modelJSON.geoCoverage.push(new EMLGeoCoverage({ 
                 					objectDOM: g,
-                					parentModel: model, 
-                    				parentAttribute: "geoCoverage"
+                					parentModel: model 
                     			}));
             				});
             				
@@ -242,8 +234,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				_.each(taxon, function(t){
                 				modelJSON.taxonCoverage.push(new EMLTaxonCoverage({ 
                 					objectDOM: t,
-                					parentModel: model, 
-                    				parentAttribute: "taxonCoverage"
+                					parentModel: model 
                     				}));
             				});
             				
@@ -254,9 +245,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
             			
             			var emlText = new EMLText({ 
-            				objectDOM: thisNode, 
-            				parentModel: model, 
-            				parentAttribute: thisNode.localName });
+	            				objectDOM: thisNode, 
+	            				parentModel: model
+            				});
             			modelJSON[thisNode.localName].push(emlText);
             			
             			
@@ -347,9 +338,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});	 
 	           	
 	        	//Serialize the temporal coverage
-	           	_.each(this.get("temporalCoverage"), function(temporalCoverage){
-		           	$(eml).find("temporalcoverage").replaceWith(temporalCoverage.updateDOM());
-	           	});
+		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
 	           	
 	           	//Serialize the metadata providers
 	           	_.each(this.get("metadataProvider"), function(metadataProvider){
@@ -566,7 +555,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         			keywordthesaurus: thesaurus || "None"
         		}
         		
-        		this.trigger("change:keywordset");
+        		this.trigger("change");
             },
             
             /*

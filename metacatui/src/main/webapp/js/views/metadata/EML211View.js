@@ -3,10 +3,13 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLTaxonCoverage',
+        'models/metadata/eml211/EMLTemporalCoverage',
         'text!templates/metadata/eml.html',
         'text!templates/metadata/metadataOverview.html',
+        'text!templates/metadata/dates.html',
 		'text!templates/metadata/taxonomicClassification.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTaxonCoverage, Template, OverviewTemplate, TaxonomicClassificationTemplate){
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
+			Template, OverviewTemplate, DatesTemplate, TaxonomicClassificationTemplate){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -19,10 +22,10 @@ define(['underscore', 'jquery', 'backbone',
         events: {
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
-        	"change .temporal-coverage" : "updateTemporalCoverage",
+        	"blur .temporal-coverage"   : "updateTemporalCoverage",
         	"change .keywords"          : "updateKeywords",
         	"change .usage"             : "updateRadioButtons",
-        	"click .side-nav-item a"    : "scrollToSection"
+        	"click  .side-nav-item a"   : "scrollToSection"
         },
                 
         /* A list of the subviews */
@@ -30,6 +33,7 @@ define(['underscore', 'jquery', 'backbone',
         
         template: _.template(Template),
         overviewTemplate: _.template(OverviewTemplate),
+        datesTemplate: _.template(DatesTemplate),
         taxonomicClassificationTemplate: _.template(TaxonomicClassificationTemplate),
         
         initialize: function(options) {
@@ -125,7 +129,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Funding
 		    var fundingEl = $(this.createBasicTextFields("funding", "Add a funding number", false)).addClass("ui-autocomplete-container"),
-		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible"),
+		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible").removeClass("new"),
 		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").attr("id", "funding"),
 		    	loadingSpinner = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden");
 		    
@@ -186,32 +190,22 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Dates section of the page
          */
 	    renderDates: function(){
-	    	this.$(".section.dates").empty().append("<h2>Dates</h2>");
 	    	
-	    	// TODO: Another hack... this just gets the first ele
-            var temporal = this.model.get('temporalCoverage')[0];
+            var temporal = this.model.get('temporalCoverage') || new EMLTemporalCoverage();
 
-            var beginDate = temporal ? temporal.get('beginDate') : null;
-            var beginEl = this.createEMLSingleDateTime(beginDate);
-
-            $(beginEl).data({
-                model: temporal
-            })
-                .attr('data-category', 'beginDate');
-
-            var endDate = temporal ? temporal.get("endDate") : null;
-            var endEl = this.createEMLSingleDateTime(endDate);
-
-            $(endEl).data({
-                model: temporal
-            })
-                .attr('data-category', 'endDate');
-
-            var beginContainerEl = $('<div class="span6"></div>').append("<h5>Begin</h5>", beginEl),
-            	endContainerEl   = $('<div class="span6"></div>').append("<h5>End</h5>", endEl),
-            	rowEl            = $('<div class="row-fluid"></div>').append(beginContainerEl, endContainerEl);
-
-            this.$(".section.dates").append(rowEl);
+            //Update the begin date
+            var beginDate = temporal.get('beginDate'),
+            	beginTime = temporal.get("beginTime"),
+            	endDate   = temporal.get("endDate"),
+            	endTime   = temporal.get("endTime"),
+            	html      = this.datesTemplate({
+			    				beginDate: beginDate,
+			    				beginTime: beginTime,
+			    				endDate: endDate,
+			    				endTime: endTime
+    						});
+            	
+	    	this.$(".section.dates").html(html);
 	    },
 	    
 	    /*
@@ -335,6 +329,8 @@ define(['underscore', 'jquery', 'backbone',
 	    		thesaurus  = row.find("select").val(),
 	    		rowNum     = this.$(".keywords .keyword-row").index(row);
 	    	
+	    	if(!keyword) return;
+	    		
 	    	this.model.updateKeywords(keyword, thesaurus, rowNum);
 	    	
 	    	//Add a new row when the user has added a new keyword just now
@@ -445,60 +441,6 @@ define(['underscore', 'jquery', 'backbone',
 	    	return finishedEl;
 	    },
 	    
-        // Create the DOM to represent an EML SingleDateTime
-        createEMLSingleDateTime: function (datetimeModel) {
-            // Set aside a variable to accumulate DOM nodes
-            var finishedEl;
-
-            // If the text should be editable, use form inputs
-            if (this.edit) {
-                finishedEl = $(document.createElement("div")).addClass('form-inline');
-
-                var dateEl = $(document.createElement("input"))
-                    .attr("type", "date")
-                    .addClass("temporal-coverage");
-
-                // Set a value if the model has one
-                if (datetimeModel && datetimeModel.calendarDate) {
-                    dateEl.attr('value', datetimeModel.calendarDate);
-                }
-
-                finishedEl.append("<label>Date</label>");
-                finishedEl.append(dateEl);
-
-                var timeEl = $(document.createElement("input"))
-                    .attr("type", "time")
-                    .addClass("temporal-coverage");
-
-                // Set a value if the model has one
-                if (datetimeModel && datetimeModel.time) {
-                    timeEl.attr('value', datetimeModel.time);
-                }
-
-                finishedEl.append("<label>Time</label>");
-                finishedEl.append(timeEl);
-            } else {
-                // Just show a string representing the datetime, with an 
-                // optional time
-                var tokens = [];
-
-                if (datetimeModel) {
-                    if (datetimeModel.calendarDate) {
-                        tokens.push(datetimeModel.calendarDate);
-                    }
-
-                    if (datetimeModel.time) {
-                        tokens.push(datetimeModel.time);
-                    }
-                }
-
-                finishedEl = $(document.createElement("div")).append(tokens.join(' '));
-            }
-
-            // Return the finished DOM element
-            return finishedEl;
-        },
-
 	    /*
 	     * Updates a basic text field in the EML after the user changes the value
 	     */
@@ -569,6 +511,7 @@ define(['underscore', 'jquery', 'backbone',
 		    	$(e.target).after($(document.createElement("input"))
 									.attr("type", "text")
 									.attr("data-category", category)
+									.attr("placeholder", $(e.target).attr("placeholder"))
 									.addClass("new basic-text"));
 		    	
 		    	//Remove the new class
@@ -579,66 +522,46 @@ define(['underscore', 'jquery', 'backbone',
 
         // Update an EMLTemporalCoverage instance
         updateTemporalCoverage: function (e) {
-            if (!e) return false;
+        	if (!e) return false;
 
-            // Grab the values we need to update the underlying EMLTemporalCoverage
-            // model. Notice that we use the 'data-category' attribute on the parent
-            // div to figure out if this is the begin or end date and that use the
-            // 'type' attribute on the input element to determine whether this is a
-            // calendarDate or a time that's being updated
-            var parent = $(e.target).parent(),
-                category = parent.attr("data-category"),
-                model = parent.data("model"),
-                attrib = $(e.target).attr('type'),
-                value = $(e.target).val().trim();
+        	// Grab the values we need to update the underlying EMLTemporalCoverage
+        	// model. Notice that we use the 'data-category' attribute on the parent
+        	// div to figure out if this is the begin or end date and that use the
+        	// 'type' attribute on the input element to determine whether this is a
+        	// calendarDate or a time that's being updated
+        	var category     = $(e.target).attr("data-category"),
+	        	tempCovModel = this.model.get("temporalCoverage"),
+	        	value        = $(e.target).val().trim();
 
-            // We can't update anything without a category
-            if (!category) return false;
+        	// We can't update anything without a category
+        	if (!category) return false;
 
-            // Map natural values of 'attrib' to the corresponding attribute on the
-            // EMLTemporalCoverage element. Natural values of 'attrib' are from the
-            // HTML5 input 'type' attribute: Either 'date' or 'time'. Corresponding
-            // attributes on the EMLTemporalCoverage model are from the EML schema
-            // and are either 'calendarDate' or 'time'.
-            if (attrib == 'date') attrib = 'calendarDate';
+        	// If this datetime isn't paired with an existing
+        	// EMLTemporalCoverage instance, create one. Otherwise, mutate
+        	// the existing one
+        	if (!tempCovModel) {
 
-            // If this datetime isn't paired with an existing
-            // EMLTemporalCoverage instance, create one. Otherwise, mutate
-            // the existing one
-            if (!model) {
-                // Create a new Object for the the attribute on the
-                // EMLTemporalCoverage instance in 'attrib' (either
-                // beginDate or endDate). Then merge it into the model and
-                // merge the EMLTemporalCoverage model into the EML model.
-                newval = {};
-                newval[attrib] = value;
+        		tempCovModel = new EMLTemporalCoverage({
+	        		parentModel: this.model
+	        	});
+	
+        		tempCovModel.set(category, value);
+	
+	        	// Add the newly-created model to the array
+	        	this.model.set("temporalCoverage", tempCovModel);
 
-                model = new EMLTemporalCoverage({
-                    parentModel: this.model, 
-                    parentAttribute: 'temporalCoverage'
-                });
+        	} else {
+        		//If the value hasn't changed, exit
+        		if(value == tempCovModel.get(category))
+        			return;
+        		
+	        	// Set the new value
+        		tempCovModel.set(category, value);
+        	}
 
-                model.set(category, newval);
-
-                // Add the newly-created model to the array with concat
-                this.model.set('temporalCoverage', this.model.get('temporalCoverage').concat(model));
-
-                // Save the new model onto the underlying DOM node
-                parent.data({ 'model': model });
-            } else {
-                // Grab the current value from the model,
-                // x = { calendarDate : ..., time: ... }
-                // and merge in the new value
-                var currentValue = model.get(category);
-                currentValue[attrib] = value;
-
-                // Set the merged value
-                model.set(category, currentValue);
-            }
-
-            // Trigger the tricking up of this change for which part of the 
-            // temporal coverage is set by category
-            model.trigger("change:" + category);
+        	// Trigger the tricking up of this change for which part of the
+        	// temporal coverage is set by category
+        	this.model.trigger("change");
         },
 
 		// TODO: Finish this function
