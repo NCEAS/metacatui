@@ -411,6 +411,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
   			
 			//Create the system metadata XML
   			var sysMetaXML = this.serializeSysMeta();
+
   			//Send the system metadata as a Blob 
 			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
   			//Add the system metadata XML to the XHR data
@@ -721,10 +722,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	accessPolicyXML = '<accessPolicy>\n';
                 
                 // Parse the AccessPolicy object
-                _.each(this.get("accessPolicy"), function(accessRules, accessRuleName) {
+                _.each(this.get("accessPolicy"), function(accessRules, accessRuleName, accessPolicy) {
+                    
+                    // _.each() arguments are different for arrays vs objects. Make sure we have an array
+                    accessRules = Array.isArray(accessRules) ? accessRules : [accessRules];
                     
                     // Iterate through the policy allow rules (deny rules don't apply in DataONE)
-                    _.each(accessRules, function(accessRule) {
+                    _.each(accessRules, function(accessRule, indexOrKey, accessRules) {
                          
                         // Process each subject in the subject list
                         subjects = Array.isArray(accessRule.subject) ? accessRule.subject : [accessRule.subject];
@@ -734,10 +738,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                             _.each(subjects, function(subject) {
                                 // Add each permission in the permissions list if the rule doesn't already exist
                                 if ( ! _.contains(rulesBySubject[subject], perm) ) {
-                                    accessPolicyXML += '\t<' + accessRuleName + '>\n';
-                                    accessPolicyXML += '\t\t<subject>' + subject + '</subject>\n';
-                                    accessPolicyXML += '\t\t<permission>' + perm + '</permission>\n';
-                                    accessPolicyXML += '\t</' + accessRuleName + '>\n';
+                                    accessPolicyXML += '\t\t<' + accessRuleName + '>\n';
+                                    accessPolicyXML += '\t\t\t<subject>' + subject + '</subject>\n';
+                                    accessPolicyXML += '\t\t\t<permission>' + perm + '</permission>\n';
+                                    accessPolicyXML += '\t\t</' + accessRuleName + '>\n';
                                     if ( Array.isArray(rulesBySubject[subject]) ) {
                                         rulesBySubject[subject].push(perm);
                                     
@@ -751,7 +755,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                         });
                     });
 	        	});
-	        	accessPolicyXML += '</accessPolicy>';
+	        	accessPolicyXML += '\t</accessPolicy>';
 	        	rulesBySubject = {};
                 
 	        	return accessPolicyXML;
