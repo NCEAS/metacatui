@@ -496,7 +496,7 @@ define(['underscore',
             this.pid = null;
             
             // Close each subview
-            _.each(this.subviews, function(i, subview) {
+            _.each(this.subviews, function(subview) {
 				if(subview.onClose)
 					subview.onClose();
             });

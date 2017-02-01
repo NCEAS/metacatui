@@ -8,14 +8,16 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			objectXML: null,
 			objectDOM: null,
 			beginDate: null,
+			beginTime: null,
 			endDate: null,
+			endTime: null
 		},
 		
 		initialize: function(attributes){
-			if(attributes.objectDOM) 
+			if(attributes && attributes.objectDOM) 
 				this.set(this.parse(attributes.objectDOM));
 
-			this.on("change:beginDate change:endDate", this.trickleUpChange);
+			this.on("change:beginDate change:beginTime change:endDate change:endTime", this.trickleUpChange);
 		},
 		
 		/*
@@ -28,6 +30,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         		"calendardate" : "calendarDate",
         		"enddate" : "endDate",
             	"rangeofdates" : "rangeOfDates",
+            	"singledatetime" : "singleDateTime",
             	"spatialraster" : "spatialRaster",
             	"spatialvector" : "spatialVector",
             	"storedprocedure" : "storedProcedure",
@@ -40,32 +43,32 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		parse: function(objectDOM){
 			if(!objectDOM) var objectDOM = this.get("objectDOM");
 
-			var rangeOfDates = $(objectDOM).children('rangeofdates');
-
-			var begin = $(rangeOfDates).children("begindate"),
-				  end 	= $(rangeOfDates).children("enddate");
+			var rangeOfDates   = $(objectDOM).children('rangeofdates'),
+				singleDateTime = $(objectDOM).children('singledatetime');
 			
-			return {
-				beginDate: this.parseSingleDateTime(begin),
-				endDate:   this.parseSingleDateTime(end)
+			if(rangeOfDates.length){
+				var beginDate = $(rangeOfDates).find("begindate calendardate"),
+					endDate   = $(rangeOfDates).find("enddate calendardate"),
+					beginTime = $(rangeOfDates).find("begindate time"),
+					endTime   = $(rangeOfDates).find("enddate time");
+			
+				return {
+					beginDate : beginDate.length ? beginDate.text() : null,
+					endDate   : endDate.length ? endDate.text() : null,
+					beginTime : beginTime.length ? beginTime.text() : null,
+					endTime   : endTime.length ? endTime.text() : null
+				}
+	
 			}
-
-		},
-		
-		// Parse a singleDateTimeType into an POJO
-		parseSingleDateTime: function(objectDOM) {
-			var datetime = {
-				calendarDate : null,
-				time: null
-			};
-
-			datetime.calendarDate = $(objectDOM).children('calendarDate').text();
-
-			if ($(objectDOM).children('time').length == 1) {
-				datetime.time = $(objectDOM).children('time').text();
+			else if(singleDateTime.length){
+				var parsedDate = this.parseSingleDateTime(singleDateTime);
+				
+				return{
+					beginDate: parsedDate.date,
+					beginTime: parsedDate.time
+				}
 			}
 			
-			return datetime;
 		},
 
 		serialize: function(){
@@ -92,32 +95,53 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				objectDOM = $("<temporalcoverage></temporalcoverage>");
 			}
 
-			// Fill in the DOM
-			var rangeOfDates = $(objectDOM).append("<rangeofdates></rangeofdates>").children("rangeofdates")[0];
-
-			// beginDate
-			if (this.get("beginDate")) {
-				var beginEl = $(rangeOfDates).append("<begindate></begindate>").children("begindate")[0];
-
-				$(beginEl).append("<calendardate>" + this.get("beginDate").calendarDate + "</calendardate>");
-
-				if (this.get("beginDate").time) {
-					$(beginEl).append("<time>" + this.get("beginDate").time + "</time>");
+			// Fill in the range of dates DOM
+			if(this.get("beginDate") && this.get("endDate")){
+				
+				//Get or create the rangeOfDates element
+				var rangeOfDates = $(objectDOM).find("rangeofdates");
+				if(!rangeOfDates.length){
+					rangeOfDates = document.createElement("rangeofdates");
+					rangeOfDates.append(document.createElement("begindate"), document.createElement("enddate"));
+					$(objectDOM).append(rangeOfDates);
 				}
+				
+				//Serialize the SingleDateTime types
+				$(rangeOfDates).find("begindate").html(this.serializeSingleDateTime(this.get("beginDate"), this.get("beginTime")));
+				$(rangeOfDates).find("enddate").html(this.serializeSingleDateTime(this.get("endDate"), this.get("endTime")));
+			
 			}
-
-			// endDate
-			if (this.get("endDate")) {
-				var endEl = $(rangeOfDates).append("<enddate></enddate>").children("enddate")[0];
-
-				$(endEl).append("<calendardate>" + this.get("endDate").calendarDate + "</calendardate>");
-
-				if (this.get("endDate").time) {
-					$(endEl).append("<time>" + this.get("endDate").time + "</time>");
+			// Fill in the single date DOM
+			else if(this.get("beginDate")){
+				//Get or create the rangeOfDates element
+				var singleDateTime = $(objectDOM).find("singleDateTime");
+				if(!singleDateTime.length){
+					singleDateTime = document.createElement("singleDateTime");
+					$(objectDOM).append(singleDateTime);
 				}
+				
+				$(singleDateTime).html(this.serializeSingleDateTime(this.get("beginDate"), this.get("beginTime")));
+
 			}
 
 			return objectDOM;
+		},
+		
+		//Parse a SingleDateTime
+		parseSingleDateTime: function(xml){
+			var date = $(xml).find("calendarDate").text(),
+				time = $(xml).find("time").text();
+			
+			return { date: date, time: time };
+		},
+		
+		serializeSingleDateTime: function(date, time){
+			var xml = "<calendarDate>" + date + "</calendarDate>";
+			
+			if(time)
+				xml += "<time>" + time + "</time>";
+			
+			return xml;
 		},
 		
 		trickleUpChange: function(){
