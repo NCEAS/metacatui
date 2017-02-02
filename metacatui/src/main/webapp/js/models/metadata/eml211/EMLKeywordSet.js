@@ -26,7 +26,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
          */
 		nodeNameMap: function(){
 			return{
-
+				"keywordset" : "keywordSet",
+				"keywordthesaurus" : "keywordThesaurus"
 			}
 		},
 		
