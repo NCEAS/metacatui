@@ -7,18 +7,29 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 		defaults: {
 			objectDOM: null,
 			title: null,
-			funding: null,
+			funding: [],
 			personnel: null,
 			parentModel: null
 		},
 		
 		initialize: function(options){
-			if(attributes.objectDOM) 
-				this.set(this.parse(attributes.objectDOM));
+			if(options && options.objectDOM) 
+				this.set(this.parse(options.objectDOM));
 
 			this.on("change:personnel change:funding change:title", this.trickleUpChange);
 		},
 		
+		nodeNameMap: function(){
+			return {
+				"descriptorvalue" : "descriptorValue",
+				"designdescription" : "designDescription",
+				"studyareadescription" : "studyAreaDescription",
+				"relatedproject" : "relatedProject",
+				"researchproject" : "researchProject"
+			}
+		},
+		
+		//TODO: This only supports the funding element right now
 		parse: function(objectDOM){
 			if(!objectDOM)
 				var objectDOM = this.get("objectDOM");
@@ -27,38 +38,64 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 			
 			//Parse the funding info
 			modelJSON.funding = [];
-			_.each($(objectDOM).find("funding"), function(fundingNode){
-				modelJSON.funding.push(new EMLText({ objectDOM: fundingNode, parentModel: this, parentAttribute: "funding" }));
+			var fundingEl    = $(objectDOM).find("funding"),
+				fundingNodes = fundingEl.children("para").length ? fundingEl.children("para") : fundingEl;
+			
+			_.each(fundingNodes, function(fundingNode){
+				modelJSON.funding.push( $(fundingNode).text() );
 			}, this);
 			
+			/*
 			var personnelNode = $(objectDOM).find("personnel");
 			modelJSON.personnel = [];
 			for(var i=0; i<personnelNode.length; i++){
-				modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode[i], parentModel: this, parentAttribute: "personnel" }) );
+				modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode[i], parentModel: this }));
 			}
+			*/
 			
 			return modelJSON;
 		},
 		
-		parseNode: function(node){
-			if(!node || (Array.isArray(node) && !node.length))
-				return;
-			
-			this.set($(node)[0].localName, $(node).text());
-		},
-		
 		serialize: function(){
-			
+			var objectDOM = this.updateDOM(),
+				xmlString = objectDOM.outerHTML;
+	
+			//Camel-case the XML
+	    	xmlString = this.formatXML(xmlString);
+		
+	    	return xmlString;
 		},
 		
+		//TODO: This only supports the funding element right now
 		updateDOM: function(){
-			var objectDOM = this.get("objectDOM").cloneNode(true);
+			var objectDOM = this.get("objectDOM") ? this.get("objectDOM").cloneNode(true) : document.createElement("project");
 			 
+			//Get or create the funding element
+			var fundingNode = $(objectDOM).find("funding");
+			if(!fundingNode.length){
+				fundingNode = document.createElement("funding");
+				$(objectDOM).append(fundingNode);				
+			}
+			
+			//Get the current paragraph elements
+			var fundingParas = $(fundingNode).children("para");
+			
+			_.each(this.get("funding"), function(funding, i){
+				if(fundingParas[i])
+					$(fundingParas[i]).text(funding);
+				else
+					$(fundingNode).append( $(document.createElement("para")).text(funding) );
+			});
+			
 			 return objectDOM;
 		},
 		
 		trickleUpChange: function(){
 			this.get("parentModel").trigger("change");
+		},
+		
+		formatXML: function(xmlString){
+			return DataONEObject.prototype.formatXML.call(this, xmlString);
 		}
 	});
 	

@@ -38,7 +38,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            language: null,
 	            series: null,
 	            abstract: [], //array of EMLText objects
-	            keywordSets: [], //array of EMLKeyword objects
+	            keywordSets: [], //array of EMLKeywordSet objects
 	            additionalInfo: [],
 	            intellectualRights: "",
 	            onlineDist: [], // array of EMLOnlineDist objects
@@ -49,7 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            purpose: [],
 	            pubplace: null,
 	            methods: [], // array of EMLMethods objects
-	            project: [] // array of EMLProject objects
+	            project: null // An EMLProject object
 	            //type: "Metadata"
         	}),
 
@@ -71,12 +71,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             nodeNameMap: function(){
             	return _.extend(
             			this.constructor.__super__.nodeNameMap(),
+            			EMLDistribution.prototype.nodeNameMap(),
             			EMLGeoCoverage.prototype.nodeNameMap(),
+            			EMLKeywordSet.prototype.nodeNameMap(),
+            			EMLParty.prototype.nodeNameMap(),
+            			EMLProject.prototype.nodeNameMap(),
             			EMLTaxonCoverage.prototype.nodeNameMap(),
             			EMLTemporalCoverage.prototype.nodeNameMap(),
-            			EMLDistribution.prototype.nodeNameMap(),
-            			EMLParty.prototype.nodeNameMap(),
-            		//	EMLProject.prototype.nodeNameMap(),
             			{
 			            	"additionalinfo" : "additionalInfo",
 			            	"allowfirst" : "allowFirst",
@@ -92,8 +93,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"externallydefinedformat" : "externallyDefinedFormat",
 			            	"formatname" : "formatName",
 			            	"intellectualrights" : "intellectualRights",
-			            	"keywordset" : "keywordSet",
-			            	"keywordthesaurus" : "keywordThesaurus",
 			            	"maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
 			            	"methodstep" : "methodStep",
 			            	"notplanned" : "notPlanned",
@@ -145,9 +144,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              Deserialize an EML 2.1.1 XML document
             */
             parse: function(response) {
-							// Save a reference to this model for use in setting the 
-							// parentModel inside anonymous functions
-							var model = this;
+				// Save a reference to this model for use in setting the 
+				// parentModel inside anonymous functions
+				var model = this;
 
             	//If the response is XML
             	if((typeof response == "string") && response.indexOf("<") == 0){
@@ -169,7 +168,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
             		emlDistribution = ["distribution"],
             		emlText = ["abstract", "intellectualrights", "additionalinfo"];
-           // 		emlProject = ["project"];
             		
             	var nodes = datasetEl.children(),
             		modelJSON = {};
@@ -196,15 +194,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				parentModel: model
             			}));
             		}
-            		//EML Project modules are stored in EMLProject models
-            	/*	else if(_.contains(emlProject, thisNode.localName))
-            	 *      if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
+            		//The EML Project is stored in the EMLProject model
+            		else if(thisNode.localName == "project"){
 
-            			modelJSON[thisNode.localName].push(new EMLProject({ 
+            			modelJSON.project = new EMLProject({ 
             				objectDOM: thisNode,
             				parentModel: model
-            			 })); 
-            	*/
+            			 }); 
+            			
+            		}
             		//EML Temporal, Taxonomic, and Geographic Coverage modules are stored in their own models
             		else if(thisNode.localName == "coverage"){
             			
@@ -387,6 +385,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           			$(eml).find("keywordset").last().after(keywordSet.updateDOM());
 	           		
 	           	});
+	        	
+	        	//Serialize the project model
+	        	if($(eml).find("project").length)
+	        		$(eml).find("project").replaceWith(this.get("project").updateDOM());
+	        	else if(this.get("project")){
+	        		var appendAfter = $(eml).find("methods").length   ? $(eml).find("methods") : 
+	        						  $(eml).find("pubplace").length  ? $(eml).find("pubplace") :
+	        						  $(eml).find("publisher").length ? $(eml).find("publisher") :
+	        						  $(eml).find("contact");
+	        		appendAfter.first().after(this.get("project").updateDOM());
+	        	}
 	           	
 	           	//Serialize the basic text fields
 	           	var basicText = ["alternateIdentifier", "intellectualRights"];
