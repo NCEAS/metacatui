@@ -533,6 +533,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						console.log('yay, EML has been saved');
 						
 						model.set("uploadStatus", "c");
+						model.trigger("successSaving");
 					},
 					error: function(model, response, xhr){
 						console.log("error updating EML: ", response.responseText);
@@ -572,26 +573,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	
             	$.ajax(fetchOptions);
             },
-            
-            updateKeywords: function(keyword, thesaurus, num){
-            	
-            	if(!keyword) return;
-
-            	var keywordSet = this.get("keywordset");
-
-            	if(typeof num == "undefined")
-            		var num = keywordSet.length;
-            	
-        		keywordSet[num] = {
-        			keyword: keyword,
-        			keywordthesaurus: thesaurus || "None"
-        		}
-        		
-        		this.model
-        		
-        		this.trigger("change");
-            },
-            
+                        
             /*
 	         * Checks if this model has updates that need to be synced with the server.
 	         */

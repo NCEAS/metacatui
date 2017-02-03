@@ -169,7 +169,34 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             	//Call Backbone.Model.fetch to retrieve the info
                 return Backbone.Model.prototype.fetch.call(this, options);
                 
-            }
+            },
+            
+            
+	        /*
+	         * Updates the relationships with other models when this model has been updated
+	         */
+	        updateRelationships: function(){
+	        	_.each(this.get("collections"), function(collection){
+	        		//Get the old id for this model
+	        		var oldId = this.get("oldPid");
+	        		
+	        		if(!oldId) return;
+	        		
+	        		//Find references to the old id in the documents relationship
+	        		var	outdatedModels = collection.filter(function(m){
+	        				return _.contains(m.get("isDocumentedBy"), oldId);
+	        			});
+	        		
+	        		//Update the documents array in each model
+	        		_.each(outdatedModels, function(model){
+		        		var updatedDocumentedBy = _.without(model.get("isDocumentedBy"), oldId);
+		        		updatedDocumentedBy.push(this.get("id"));
+		        		
+		        		model.set("isDocumentedBy", updatedDocumentedBy);
+	        		}, this);
+	        		
+	        	}, this);
+	        }
         });
         return ScienceMetadata;
     }

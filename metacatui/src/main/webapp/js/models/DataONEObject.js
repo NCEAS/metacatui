@@ -82,7 +82,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 // Register a listener for any attribute change
                 this.once("sync", function(){
                     this.on("change", this.handleChange, this);                	
-                }, this)
+                }, this);
+                
+                this.on("successSaving", this.updateRelationships);
+                
             },
             
             /*
@@ -628,7 +631,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
              * Get the object format identifier for this object
              */
             getFormatId: function() {
-                console.log("DataONEObject.getFormatId() called.");
                 
                 var formatId = "application/octet-stream", // default to untyped data
                 objectFormats = [],  // The list of potential format matches
@@ -775,6 +777,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				else
 					this.set("id", "urn:uuid:" + uuid.v4());
 				
+				this.trigger("change:id")
+				
 				//Update the obsoletes and obsoletedBy
 				this.set("obsoletes", oldPid);
 				this.set("obsoletedBy", null);
@@ -852,6 +856,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		//Add this item to the queue
 	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus"))
 	        			this.set("uploadStatus", "q");
+	        },
+	        
+	        /*
+	         * Updates the relationships with other models when this model has been updated
+	         */
+	        updateRelationships: function(){
+	        	_.each(this.get("collections"), function(collection){
+	        		//Get the old id for this model
+	        		var oldId = this.get("oldPid");
+	        		
+	        		if(!oldId) return;
+	        		
+	        		//Find references to the old id in the documents relationship
+	        		var	outdatedModels = collection.filter(function(m){
+	        				return _.contains(m.get("documents"), oldId);
+	        			});
+	        		
+	        		//Update the documents array in each model
+	        		_.each(outdatedModels, function(model){
+		        		var updatedDocuments = _.without(model.get("documents"), oldId);
+		        		updatedDocuments.push(this.get("id"));
+		        		
+		        		model.set("documents", updatedDocuments);
+	        		}, this);
+	        		
+	        	}, this);
 	        },
 	        
 	        /*

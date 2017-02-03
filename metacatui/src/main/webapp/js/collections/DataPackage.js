@@ -96,6 +96,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 
                 this.on("add", this.saveReference);
                 this.on("add", this.triggerComplete);
+                this.on("successSaving", this.updateRelationships);
                 
                 return this;  
             },
@@ -1179,11 +1180,33 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	return this.filter(function(m){ return m.get("uploadStatus") == "q" || m.get("uploadStatus") == "p" });
             },
             
+            /*
+             * Update the relationships in this resource map when its been udpated
+             */
+            updateRelationships: function(){
+            	//Get the old id
+            	var oldId = this.packageModel.get("oldPid");
+            	
+            	if(!oldId) return;
+            	
+            	//Update the resource map list
+            	this.each(function(m){
+            		var updateRMaps = _.without(m.get("resourceMap"), oldId);
+            		updateRMaps.push(this.packageModel.get("id"));
+            		
+            		m.set("resourceMap", updateRMaps);
+            	}, this);
+            },
+            
             saveReference: function(model){
             	//Save a reference to this collection in the model
             	var currentCollections = model.get("collections");
-            	if(currentCollections.length > 0) currentCollections.push(this);
-            	model.set("collections", _.uniq(currentCollections));
+            	if(currentCollections.length > 0){
+            		currentCollections.push(this);
+                	model.set("collections", _.uniq(currentCollections));
+            	}
+            	else
+            		model.set("collections", [this]);
             }
             
         });

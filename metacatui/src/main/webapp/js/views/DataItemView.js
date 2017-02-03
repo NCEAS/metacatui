@@ -58,8 +58,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 this.$el.find(".dropdown-toggle").dropdown();
                 
                 //listen for changes to rerender the view
-                this.listenTo(this.model, 'change', this.render); // render changes to the item
+                this.listenTo(this.model, "change:fileName change:title change:id change:formatType " + 
+                		"change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
+                		"change:size change:nodeLevel", this.render); // render changes to the item
 
+                var view = this;
+                this.listenTo(this.model, "replace", function(newModel){
+                	view.model = newModel;
+                	view.render();
+                });
+                
                 return this;
             },
             
@@ -400,6 +408,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                             return parentSciMeta;
                             
                         } else {
+                        	//If there is only one metadata model in the root data package, then use that metadata model
+                        	var metadataModels = MetacatUI.rootDataPackage.where({
+                                type: "Metadata"
+                            });
+                        	
+                        	if(metadataModels.length == 1)
+                        		return metadataModels[0];
+                        	
                             console.log("The model of the event has no isDocumentedBy value.");
                             console.log("TODO: When parsing packages, ensure documents/isDocumentedBy values are present.");
                             
