@@ -24,7 +24,7 @@ define(['underscore', 'jquery', 'backbone',
         events: {
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
-        	"blur .temporal-coverage"   : "updateTemporalCoverage",
+        	"blur   .temporal-coverage" : "updateTemporalCoverage",
         	"change .keywords"          : "updateKeywords",
         	"change .usage"             : "updateRadioButtons",
         	"change .funding"           : "updateFunding",
@@ -199,7 +199,6 @@ define(['underscore', 'jquery', 'backbone',
 				var classifications = taxonomy[0].get('taxonomicClassification');
 
 				for (var i = 0; i < classifications.length; i++) {
-					console.log(classifications[i]);
 					this.$(".section.taxa").append(this.createTaxaonomicClassification(classifications[i]));
 				}
 			}
@@ -208,7 +207,7 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 	    
 	    createFunding: function(value){
-	    	var ffundingInput       = $(document.createElement("input"))
+	    	var fundingInput       = $(document.createElement("input"))
 	    								.attr("type", "text")
 	    								.attr("data-category", "funding")
 	    								.addClass("span12")

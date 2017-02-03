@@ -146,7 +146,7 @@
 			this.$el.append(linkEl);
 		
 			//If anything in the model changes, rerender this citation
-			this.listenTo(this.metadata, "cahnge:origin change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource", this.render);
+			this.listenTo(this.metadata, "change:origin change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource", this.render);
 
 			return this;
 		},
