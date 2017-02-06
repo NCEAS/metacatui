@@ -1,6 +1,8 @@
 define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'models/metadata/eml211/EML211',
+        'models/metadata/eml211/EMLKeywordSet',
+        'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLTaxonCoverage',
         'models/metadata/eml211/EMLTemporalCoverage',
@@ -8,7 +10,7 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
 		'text!templates/metadata/taxonomicClassification.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
+	function(_, $, Backbone, ScienceMetadataView, EML, EMLKeywordSet, EMLProject, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
 			Template, OverviewTemplate, DatesTemplate, TaxonomicClassificationTemplate){
     
     var EMLView = ScienceMetadataView.extend({
@@ -22,9 +24,10 @@ define(['underscore', 'jquery', 'backbone',
         events: {
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
-        	"blur .temporal-coverage"   : "updateTemporalCoverage",
+        	"blur   .temporal-coverage" : "updateTemporalCoverage",
         	"change .keywords"          : "updateKeywords",
         	"change .usage"             : "updateRadioButtons",
+        	"change .funding"           : "updateFunding",
         	"click  .side-nav-item a"   : "scrollToSection"
         },
                 
@@ -112,12 +115,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	
 	    	//Keywords
-	    	var keywordset   = this.model.get("keywordset"),
-	    		keywordsContainer = $(document.createElement("div")).addClass("row-fluid");
-	    	
 	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
-	    	_.each(keywordset, function(keyword){
-	    		$(overviewEl).find(".keywords")(this.createKeyword(keyword.keyword, keyword.keywordthesaurus));
+	    	_.each(this.model.get("keywordSets"), function(keywordSetModel){
+	    		_.each(keywordSetModel.get("keywords"), function(keyword){
+		    		$(overviewEl).find(".keywords").append(this.createKeyword(keyword, keywordSetModel));	    			
+	    		}, this);
 	    	}, this);
 	    	
 	    	//Add an empty row for adding a new keyword
@@ -128,55 +130,24 @@ define(['underscore', 'jquery', 'backbone',
 		    $(overviewEl).find(".altids").append(altIdsEls);
 	    	
 	    	//Funding
-		    var fundingEl = $(this.createBasicTextFields("funding", "Add a funding number", false)).addClass("ui-autocomplete-container"),
-		    	fundingInput = $(fundingEl).find("input").attr("id", "funding-visible").removeClass("new"),
-		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").attr("id", "funding"),
-		    	loadingSpinner = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden");
+		    var funding = this.model.get("project") ? this.model.get("project").get("funding") : [];
+			   
+		    //Clear the funding section
+		    $(".section.overview .funding").empty();
 		    
-		    $(overviewEl).find(".funding").empty().append(fundingEl, loadingSpinner, hiddenFundingInput);
+		    //Create the funding input elements
+		    _.each(funding, function(fundingItem, i){
+		    	
+		    	$(".section.overview .funding").append(this.createFunding(fundingItem));
+		    	 
+		    }, this);
 		    
-		    //Setup the autocomplete widget for the funding input
-			$(fundingInput).hoverAutocomplete({
-				source: function(request, response){
-					var beforeRequest = function(){
-						loadingSpinner.show();
-					}
-					
-					var afterRequest = function(){
-						loadingSpinner.hide().css("top", "30px");
-					}
-					
-					return MetacatUI.appLookupModel.getGrantAutocomplete(request, response, beforeRequest, afterRequest)
-				},
-				select: function(e, ui) {
-					e.preventDefault();
-										
-					//view.addAward({ title: ui.item.label, id: ui.item.value });
-					hiddenFundingInput.val(ui.item.value);
-					fundingInput.val(ui.item.label);
-					
-					$(".funding .ui-helper-hidden-accessible").hide();
-					loadingSpinner.css("top", "5px");
-					
-				},
-				position: {
-					my: "left top",
-					at: "left bottom",
-					of: "#funding-visible",
-					collision: "fit"
-				},
-				appendTo: this.$(".funding"),
-				minLength: 3
-			});
+		    //Add a blank funding input
+		    $(".section.overview .funding").append(this.createFunding());	    
 			
 			//Initialize all the tooltips
-			this.$(".tooltip-this").tooltip({
-				position:{
-					my: "center bottom",
-					at: "left top"
-				}
-			});
-
+			this.$(".tooltip-this").tooltip();
+		    
 	    },
 	    
 	    /*
@@ -228,14 +199,73 @@ define(['underscore', 'jquery', 'backbone',
 				var classifications = taxonomy[0].get('taxonomicClassification');
 
 				for (var i = 0; i < classifications.length; i++) {
-					console.log(classifications[i]);
 					this.$(".section.taxa").append(this.createTaxaonomicClassification(classifications[i]));
 				}
 			}
 
 			this.$(".section.taxa").append(this.createTaxaonomicClassification());
 	    },
-
+	    
+	    createFunding: function(value){
+	    	var fundingInput       = $(document.createElement("input"))
+	    								.attr("type", "text")
+	    								.attr("data-category", "funding")
+	    								.addClass("span12")
+	    								.attr("placeholder", "Search for NSF awards by keyword or enter custom funding information")
+	    								.val(value),
+		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").val(value).attr("id", "").addClass("hidden"),
+		    	loadingSpinner     = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden"); 
+	    	
+	    	if(!value){
+	    		fundingInput.addClass("new");
+	    		hiddenFundingInput.addClass("new");
+	    	}
+	    	
+	    	//Append all the elements to a container
+	    	var containerEl = $(document.createElement("div"))
+	    						.addClass("ui-autocomplete-container funding-row")
+	    						.append(fundingInput, loadingSpinner, hiddenFundingInput);
+	    	
+	    	var view = this;
+	    	
+		    //Setup the autocomplete widget for the funding input
+		    fundingInput.hoverAutocomplete({
+				source: function(request, response){
+					var beforeRequest = function(){
+						loadingSpinner.show();
+					}
+					
+					var afterRequest = function(){
+						loadingSpinner.hide().css("top", "30px");
+					}
+					
+					return MetacatUI.appLookupModel.getGrantAutocomplete(request, response, beforeRequest, afterRequest)
+				},
+				select: function(e, ui) {
+					e.preventDefault();
+										
+					hiddenFundingInput.val(ui.item.value);
+					fundingInput.val(ui.item.label);
+					
+					$(".funding .ui-helper-hidden-accessible").hide();
+					loadingSpinner.css("top", "5px");
+					
+					view.updateFunding(e);
+					
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					of: fundingInput,
+					collision: "fit"
+				},
+				appendTo: containerEl,
+				minLength: 3
+			});
+		    
+		    return containerEl;
+	    },
+	    
 		createTaxaonomicClassification: function(classification) {
 			// Set aside a variable to accumulate DOM nodes
             var finishedEl = $('<div class="row-fluid"></div>');
@@ -303,13 +333,16 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    },
 	    
-	    createKeyword: function(keyword, thesaurus){
-	    	if(!keyword) var keyword = "", thesaurus = "None";
+	    createKeyword: function(keyword, model){
+	    	if(!keyword) var keyword = "";
 	    	
-	    	var row          = $(document.createElement("div")).addClass("row-fluid keyword-row"),
+	    	if(!model) var model = new EMLKeywordSet({ parentModel: this.model });
+	    	
+	    	var thesaurus    = model.get("thesaurus"),
+	    		row          = $(document.createElement("div")).addClass("row-fluid keyword-row").data({ model: model }),
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").val(keyword),
     			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
-			    				$(document.createElement("option")).val("none").text("None")).append(
+			    				$(document.createElement("option")).val("None").text("None")).append(
 			    				$(document.createElement("option")).val("GCMD").text("GCMD"));
 	    	
 	    	if(thesaurus && thesaurus.indexOf("GCMD") > -1)
@@ -321,17 +354,83 @@ define(['underscore', 'jquery', 'backbone',
 	    	return row.append(keywordInput, thesInput);
 	    },
 	    
+	    /*
+	     * Update the funding info when the form is changed
+	     */
+	    updateFunding: function(e){
+	    	if(!e) return;
+	    	
+	    	var newValue = $(e.target).siblings("input.hidden").val() || $(e.target).val(),
+	    		row      = $(e.target).parent(".funding-row").first(),
+	    		rowNum   = this.$(".funding-row").index(row);
+	    	
+	    	//If there is no project model
+	    	if(!this.model.get("project")){
+	    		var model = new EMLProject({ parentModel: this.model });
+	    		this.model.set("project", model);
+	    	}
+	    	else
+	    		var model = this.model.get("project");
+	    	
+	    	var currentFundingValues = model.get("funding")
+	    	currentFundingValues[rowNum] = newValue;
+	    	
+	    	if($(e.target).is(".new")){
+	    		$(e.target).removeClass("new");
+	    		row.after(this.createFunding());
+	    	}
+	    	
+	    },
+	    
+	    //TODO: Comma-seperate keywords
 	    updateKeywords: function(e){
 	    	if(!e) return;
 	    	
 	    	var row        = $(e.target).parent(".keyword-row"),
 	    		keyword    = row.find("input").val(),
 	    		thesaurus  = row.find("select").val(),
-	    		rowNum     = this.$(".keywords .keyword-row").index(row);
+	    		model      = row.data("model"),
+	    		allKeywords = [];
 	    	
 	    	if(!keyword) return;
+
+	    	//If the thesaurus has changed or if there is no model
+	    	if(!model || (thesaurus != model.get("thesaurus") && model.get("keywords").length > 2)){
 	    		
-	    	this.model.updateKeywords(keyword, thesaurus, rowNum);
+	    		//Remove the keyword from the model that has a changed thesaurus
+	    		if(model)
+	    			model.set("keywords", _.without(model.get("keywords"), keyword));	    		
+	    		
+	    		//Create a new EMLKeywordSet model
+	    		model = new EMLKeywordSet({ parentModel: this.model });
+	    		
+	    		//This is the only keyword in the new model
+	    		allKeywords = [keyword];
+	    		
+	    		//Update the keywordSets array in the EML211 model
+    			this.model.get("keywordSets").push(model);
+    			
+    			//Update the model attached to the DOM
+    			row.data({ model: model });
+    			
+	    	}	    	
+	    	//If the thesaurus hasn't changed, then find all the keywords that belong in this model
+	    	else{
+		    	//Get all the keywords in the model
+		    	_.each(this.$(".keyword-row"), function(thisRow){
+		    		if($(thisRow).data("model") == model){
+			    		allKeywords.push($(thisRow).find("input").val());	    			
+		    		}
+		    	}, this);
+		    	
+		    	//Make sure this model is set on the EML211 model
+		    	if(!_.contains(this.model.get("keywordSets"), model))
+		    		this.model.get("keywordSets").push(model);
+	    	}
+	    	
+	    	//Update the model with the new keywords and thesaurus
+	    	model.set("keywords",  allKeywords);
+	    	model.set("thesaurus", thesaurus);
 	    	
 	    	//Add a new row when the user has added a new keyword just now
 	    	if(row.find(".new").length){

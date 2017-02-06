@@ -3041,6 +3041,9 @@ textarea.xlarge{
 .Editor .dropdown-menu li a i {
     vertical-align: middle;
 }
+.Editor input[type="text"]{
+	padding: 14px;
+}
 .metadata-container *{
 	box-sizing: border-box;
 }
@@ -3050,23 +3053,23 @@ textarea.xlarge{
     margin-top: 40px;
     margin-bottom: 30px;
 }
-.metadata-container input{
-	padding: 14px;
-}
 .metadata-container .section {
     width: 100%;
     clear: both;
-}   
-.metadata-container .ui-autocomplete .ui-menu-item {
+} 
+.Editor .funding input{
+	padding-left: 35px;
+}  
+.Editor .ui-autocomplete .ui-menu-item {
     font-size: .7em;
 }
-.metadata-container .ui-autocomplete-container .ui-helper-hidden-accessible{
+.Editor .funding .ui-helper-hidden-accessible{
 	display: none;
 }
-.metadata-container .funding{
+.metadata-container .funding .autocomplete-container{
 	position: relative;
 }
-.metadata-container .funding .icon-spinner{
+.Editor .funding .icon-spinner{
 	top: 5px;
     position: absolute;
     left: 9px;
