@@ -97,7 +97,10 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Append the empty layout
 	    	var overviewEl = this.$container.find(".overview");
-	    	$(overviewEl).html(this.overviewTemplate());
+	    	$(overviewEl).html(this.overviewTemplate({
+	    		intellRightsOptions : this.model.get("intellRightsOptions"),
+	    		intellectualRights  : this.model.get("intellectualRights")
+	    	}));
 	    	
 	    	//Abstract
 	    	_.each(this.model.get("abstract"), function(abs){
