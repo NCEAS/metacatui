@@ -442,6 +442,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                             parentResourceMapId = parentResourceMaps[0];
                         }
                         
+                    } else {
+                        console.log("There is no resource map associated with the science metadata.");
+                        
                     }
                     
                     // Is this the root package or a nested package?
