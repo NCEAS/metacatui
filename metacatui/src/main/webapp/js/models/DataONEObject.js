@@ -560,26 +560,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     
                 }
                 
-	        	//If this object is obsoleted by another object
-	        	if(this.get("obsoletedBy")){
-	        		//Create a new obsoletedBy node if needed
-                    obsoletedByNode = xml.find("obsoletedby");
-	        		if( ! obsoletedByNode.length ){
-                        obsoletedByNode = $(document.createElement("obsoletedby").text(this.get("obsoletedBy")));
-	        			previousSiblingNode.after(obsoletedByNode);
-                        
-	        		} else {
-	        		    //Or update the existing obsoletedBy node
-	        			obsoletedByNode.text(this.get("obsoletedBy"));
-	        		    
-	        		}
-	        	} else {
-	        	    //If it's not obsoleted by another object, remove the node
-	        		if ( obsoletedByNode ) {
-                        obsoletedByNode.remove();
-                    }
-	        	    
-	        	}
+                obsoletedByNode = xml.find("obsoletedby");
+	        	//remove the obsoletedBy node if it exists
+                // TODO: Verify this is what we want to do
+	        	if ( obsoletedByNode ) {
+                    obsoletedByNode.remove();
+                }
 
 	        	xml.find("archived").text(this.get("archived") || "false");
 	        	xml.find("dateuploaded").text(this.get("dateUploaded") || new Date().toISOString());
@@ -721,7 +707,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     return accessPolicyXML;
                     
                 }
-	        	accessPolicyXML = '<accessPolicy>\n';
+	        	accessPolicyXML = '\t<accessPolicy>\n';
                 
                 // Parse the AccessPolicy object
                 _.each(this.get("accessPolicy"), function(accessRules, accessRuleName, accessPolicy) {

@@ -42,10 +42,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             },
             
             /* Render the template into the DOM */
-            render: function() {
-            	//Reset all the listeners
-            	this.stopListening();
-            	
+            render: function(model) {
+                // Set the data-id for identifying events to model ids
                 this.$el.attr("data-id", this.model.get("id"));
                 
                 var attributes = this.model.toJSON();
@@ -394,7 +392,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     }
                     
                     // Is this a Data or Metadata model?
-                    if ( eventModel.get("type") === "Metadata" ) {
+                    if ( eventModel.get && eventModel.get("type") === "Metadata" ) {
                         return eventModel;
                         
                     } else {
@@ -443,6 +441,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                         if ( parentResourceMaps.length > 0 ) {
                             parentResourceMapId = parentResourceMaps[0];
                         }
+                        
+                    } else {
+                        console.log("There is no resource map associated with the science metadata.");
                         
                     }
                     

@@ -148,6 +148,15 @@ define(['underscore',
                 // Create a new Data packages
                 MetacatUI.rootDataPackage = new DataPackage([this.model]);
                 
+                // Associate the science metadata with the resource map
+                if ( this.model.get && Array.isArray(this.model.get("resourceMap")) ) {
+                    this.model.get("resourceMap").push(MetacatUI.rootDataPackage.packageModel.id);
+                    
+                } else {
+                    this.model.set("resourceMap", MetacatUI.rootDataPackage.packageModel.id);
+                    
+                }
+                
                 //Render the data package
                 this.renderDataPackage();
 
