@@ -55,15 +55,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			if (!objectDOM) var objectDOM = this.get("objectDOM");
 			
-			var geographicDescription = $(objectDOM).children('geographicDescription');
+			var geographicDescription = $(objectDOM).children('geographicdescription');
 			modelJSON.geographicDescription = geographicDescription;
 			
-			var boundingCoordinates = $(objectDOM).children('boundingCoordinates');
+			var boundingCoordinates = $(objectDOM).children('boundingcoordinates');
 			if (boundingCoordinates) {
-				modelJSON.eastBoundingCoordinate = $(objectDOM).children('eastBoundingCoordinate').text();
-				modelJSON.northBoundingCoordinate = $(objectDOM).children('northBoundingCoordinate').text();
-				modelJSON.southBoundingCoordinate = $(objectDOM).children('southBoundingCoordinate').text();
-				modelJSON.westBoundingCoordinate = $(objectDOM).children('westBoundingCoordinate').text();
+				modelJSON.eastBoundingCoordinate = $(objectDOM).children('eastboundingcoordinate').text();
+				modelJSON.northBoundingCoordinate = $(objectDOM).children('northboundingcoordinate').text();
+				modelJSON.southBoundingCoordinate = $(objectDOM).children('southboundingcoordinate').text();
+				modelJSON.westBoundingCoordinate = $(objectDOM).children('westboundingcoordinate').text();
 			}
 			
 			return modelJSON;
@@ -88,26 +88,26 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if (this.get("objectDOM")) {
 				objectDOM = this.get("objectDOM").cloneNode(true);
 			} else {
-				objectDOM = $("<geographicCoverage></geographicCoverage>");
+				objectDOM = $("<geographiccoverage></geographiccoverage>");
 			}
 			
 			// description
-			$(objectDOM).find("geographicDescription").text(this.get("geographicDescription"));
+			$(objectDOM).find("geographicdescription").text(this.get("geographicDescription"));
 			
 			// bounds
-			if (!$(objectDOM).find("boundingCoordinates")) {
-				$(objectDOM).append("<boundingCoordinates/>");
+			if (!$(objectDOM).find("boundingcoordinates")) {
+				$(objectDOM).append("<boundingcoordinates/>");
 			}
-			var boundingCoordinates = $(objectDOM).find("boundingCoordinates");
-			$(boundingCoordinates).append("<westBoundingCoordinate/>");
-			$(boundingCoordinates).append("<eastBoundingCoordinate/>");
-			$(boundingCoordinates).append("<northBoundingCoordinate/>");
-			$(boundingCoordinates).append("<southBoundingCoordinate/>");
+			var boundingCoordinates = $(objectDOM).find("boundingcoordinates");
+			$(boundingCoordinates).append("<westboundingcoordinate/>");
+			$(boundingCoordinates).append("<eastboundingcoordinate/>");
+			$(boundingCoordinates).append("<northboundingcoordinate/>");
+			$(boundingCoordinates).append("<southboundingcoordinate/>");
 
-			$(objectDOM).find("westBoundingCoordinate").text(this.get("westBoundingCoordinate"));
-			$(objectDOM).find("eastBoundingCoordinate").text(this.get("eastBoundingCoordinate"));
-			$(objectDOM).find("northBoundingCoordinate").text(this.get("northBoundingCoordinate"));
-			$(objectDOM).find("southBoundingCoordinate").text(this.get("southBoundingCoordinate"));
+			$(objectDOM).find("westboundingcoordinate").text(this.get("westBoundingCoordinate"));
+			$(objectDOM).find("eastboundingcoordinate").text(this.get("eastBoundingCoordinate"));
+			$(objectDOM).find("northboundingcoordinate").text(this.get("northBoundingCoordinate"));
+			$(objectDOM).find("southboundingcoordinate").text(this.get("southBoundingCoordinate"));
 			 
 			 return objectDOM;
 		},

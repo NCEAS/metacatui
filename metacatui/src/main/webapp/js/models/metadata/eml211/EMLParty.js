@@ -59,7 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				modelJSON = {};
 			
 			//Set the name
-			var person = $(objectDOM).children("individualName");
+			var person = $(objectDOM).children("individualname");
 			
 			if(person.length)
 				modelJSON.individualName = this.parsePerson(person);
@@ -115,8 +115,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					surName: "",
 					salutation: []
 				},
-				givenNames  = $(personXML).find("givenName"),
-				surName     = $(personXML).find("surName"),
+				givenNames  = $(personXML).find("givenname"),
+				surName     = $(personXML).find("surname"),
 				salutations = $(personXML).find("salutation");
 			
 			givenNames.each(function(i, name){
@@ -181,40 +181,40 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 var objectDOM = this.get("objectDOM").cloneNode(true);
 			 
 			 //Clear the salutations and given names
-			 $(objectDOM).find("individualName").find("salutation").remove();
-			 $(objectDOM).find("individualName").find("givenName").remove();
+			 $(objectDOM).find("individualname").find("salutation").remove();
+			 $(objectDOM).find("individualname").find("givenname").remove();
 			 		 
 			 _.each(this.get("individualName"), function(name){
 				 
 				 // salutation[s]
 				 _.each(name.salutation, function(salutation) {
-					 $(objectDOM).find("individualName").append("<salutation>" + salutation + "</salutation>");
+					 $(objectDOM).find("individualname").append("<salutation>" + salutation + "</salutation>");
 				 });
 				 
 				 //Given name
 				 _.each(name.givenName, function(givenName) {
-					 $(objectDOM).find("individualName").prepend("<givenName>" + givenName + "</givenName>");
+					 $(objectDOM).find("individualname").prepend("<givenname>" + givenName + "</givenname>");
 				 });
 				 
 				 // surname
-				 $(objectDOM).find("individualName").find("surName").text(name.surName);
+				 $(objectDOM).find("individualname").find("surname").text(name.surName);
 				 
 			 }, this);
 			 
 			 // positionName
-			 $(objectDOM).find("positionName").text(this.get("positionName"));
+			 $(objectDOM).find("positionname").text(this.get("positionname"));
 			 
 			 // organizationName
-			 $(objectDOM).find("organizationName").text(this.get("organizationName"));
+			 $(objectDOM).find("organizationname").text(this.get("organizationname"));
 			 
 			 // address
-			$(objectDOM).find("address").find("deliveryPoint").remove();
+			$(objectDOM).find("address").find("deliverypoint").remove();
 			 _.each(this.get("address").deliveryPoint, function(deliveryPoint) {
-				 $(objectDOM).find("address").append("<deliveryPoint>" + deliveryPoint + "</deliveryPoint>");
+				 $(objectDOM).find("address").append("<deliverypoint>" + deliveryPoint + "</deliverypoint>");
 			 });
 			 $(objectDOM).find("address").find("city").text(this.get("address").city);
-			 $(objectDOM).find("address").find("administrativeArea").text(this.get("address").administrativeArea);
-			 $(objectDOM).find("address").find("postalCode").text(this.get("address").postalCode);
+			 $(objectDOM).find("address").find("administrativearea").text(this.get("address").administrativeArea);
+			 $(objectDOM).find("address").find("postalcode").text(this.get("address").postalCode);
 			 $(objectDOM).find("address").find("country").text(this.get("address").country);			 
 			 
 			 // phone[s]
@@ -228,21 +228,21 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 });
 			 
 			 // electronicMailAddress[es]
-			 $(objectDOM).find("electronicMailAddress").remove();
+			 $(objectDOM).find("electronicmailaddress").remove();
 			 _.each(this.get("electronicMailAddress"), function(electronicMailAddress) {
-				 $(objectDOM).append("<electronicMailAddress>" + electronicMailAddress + "</electronicMailAddress>");
+				 $(objectDOM).append("<electronicmailaddress>" + electronicMailAddress + "</electronicmailaddress>");
 			 });
 			 
 			 // onlineUrl[s]
-			 $(objectDOM).find("onlineUrl").remove();
+			 $(objectDOM).find("onlineurl").remove();
 			 _.each(this.get("onlineUrl"), function(onlineUrl) {
-				 $(objectDOM).append("<onlineUrl>" + onlineUrl + "</onlineUrl>");
+				 $(objectDOM).append("<onlineurl>" + onlineUrl + "</onlineurl>");
 			 });
 			 
 			 // userId[s]
-			 $(objectDOM).find("userId").remove();
+			 $(objectDOM).find("userid").remove();
 			 _.each(this.get("userId"), function(userId) {
-				 $(objectDOM).append("<userId>" + userId + "</userId>");
+				 $(objectDOM).append("<userid>" + userId + "</userid>");
 			 });
 			 
 			 return objectDOM;
