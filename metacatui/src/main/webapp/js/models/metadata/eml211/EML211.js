@@ -397,12 +397,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	var keywordNodes = $(eml).find("keywordset");
 	        	_.each(this.get("keywordSets"), function(keywordSet, i){
 
+	        		//Replace the existing keywordSet nodes with the new values
 	           		if(i < keywordNodes.length)
 	           			$(keywordNodes[i]).replaceWith(keywordSet.updateDOM());
-	           		else
-	           			this.getEMLPosition(eml, "keywordset").after(keywordSet.updateDOM());
-	           		
-	           	});
+	           		//Or add new keywordSet nodes for new keywords
+	           		else{
+	           			//Append to the list of keywordSet nodes
+	           			if($(eml).find("keywordset").length)
+	           				$(eml).find("keywordset").last().after(keywordSet.updateDOM());
+	           			//Or if there are no keywordSet nodes, then find where this gets inserted into the EML doc
+	           			else
+	           				this.getEMLPosition(eml, "keywordset").after(keywordSet.updateDOM());
+	           		}
+	           	}, this);
 	        	
 	        	//Serialize the intellectual rights
 	        	if(this.get("intellectualRights")){
