@@ -18,8 +18,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		initialize: function(attributes){
 			if(attributes.objectDOM) this.parse(attributes.objectDOM);
 
-			//TODO: Add the specific attributes to listen to
-			//this.on("change", this.trickleUpChange);
+			//specific attributes to listen to
+			this.on("change:geographicDescription " +
+					"change:eastBoundingCoordinate " +
+					"change:northBoundingCoordinate " +
+					"change:southBoundingCoordinate" +
+					"change:westBoundingCoordinate", 
+					this.trickleUpChange);
 		},
 		
 		/*
