@@ -41,6 +41,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            keywordSets: [], //array of EMLKeywordSet objects
 	            additionalInfo: [],
 	            intellectualRights: "",
+	            intellRightsOptions: ["This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication." +
+	                                  "To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
+	                                  "This work is licensed under the Creative Commons Attribution 4.0 International " + 
+	                                  "License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/."],
 	            onlineDist: [], // array of EMLOnlineDist objects
 	            offlineDist: [], // array of EMLOfflineDist objects
 	            geoCoverage : [], //an array for EMLGeoCoverages
@@ -167,13 +171,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
             		emlDistribution = ["distribution"],
-            		emlText = ["abstract", "intellectualrights", "additionalinfo"];
+            		emlText = ["abstract", "additionalinfo"];
             		
             	var nodes = datasetEl.children(),
             		modelJSON = {};
             	
             	for(var i=0; i<nodes.length; i++){
-            		// console.log(nodes[i]);
+
             		var thisNode = nodes[i];
             		
             		//EML Party modules are stored in EMLParty models
@@ -261,6 +265,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				objectDOM: thisNode,
             				parentModel: model
             			}));
+            		}
+            		//Parse intellectual rights
+            		else if(thisNode.localName == "intellectualrights"){
+            			var value = "";
+            			
+            			if($(thisNode).children("para").length == 1)
+            				value = $(thisNode).children("para").first().text().trim();
+            			else
+            				$(thisNode).text().trim();
+            			
+            			//If the value is one of our pre-defined options, then add it to the model
+            			if(_.contains(this.get("intellRightsOptions"), value))
+            				modelJSON["intellectualRights"] = value;
+            			
             		}
             		else{
             			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
@@ -382,23 +400,30 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		if(i < keywordNodes.length)
 	           			$(keywordNodes[i]).replaceWith(keywordSet.updateDOM());
 	           		else
-	           			$(eml).find("keywordset").last().after(keywordSet.updateDOM());
+	           			this.getEMLPosition(eml, "keywordset").after(keywordSet.updateDOM());
 	           		
 	           	});
+	        	
+	        	//Serialize the intellectual rights
+	        	if(this.get("intellectualRights")){
+	        		if($(eml).find("intellectualRights").length)
+	        			$(eml).find("intellectualRights").html("<para>" + this.get("intellectualRights") + "</para>")
+	        		else{
+	        			
+	        			this.getEMLPosition(eml, "intellectualrights").after(
+	        					$(document.createElement("intellectualRights"))
+	        						.html("<para>" + this.get("intellectualRights") + "</para>"));
+	        		}
+	        	}
 	        	
 	        	//Serialize the project model
 	        	if($(eml).find("project").length)
 	        		$(eml).find("project").replaceWith(this.get("project").updateDOM());
-	        	else if(this.get("project")){
-	        		var appendAfter = $(eml).find("methods").length   ? $(eml).find("methods") : 
-	        						  $(eml).find("pubplace").length  ? $(eml).find("pubplace") :
-	        						  $(eml).find("publisher").length ? $(eml).find("publisher") :
-	        						  $(eml).find("contact");
-	        		appendAfter.first().after(this.get("project").updateDOM());
-	        	}
+	        	else if(this.get("project"))
+	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
 	           	
 	           	//Serialize the basic text fields
-	           	var basicText = ["alternateIdentifier", "intellectualRights"];
+	           	var basicText = ["alternateIdentifier"];
 	           	_.each(basicText, function(fieldName){
 	           		var basicTextValues = this.get(fieldName);
 	           		
@@ -572,6 +597,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
            	   _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings(), {dataType: "text"});
             	
             	$.ajax(fetchOptions);
+            },
+            
+            /*
+             * Returns the node in the given EML document that the given node type should be inserted after
+             */
+            getEMLPosition: function(eml, nodeName){
+            	var nodeOrder = ["alternateidentifier", "shortname", "title", "creator", "metadataprovider", "associatedparty",
+	           		             "pubdate", "language", "series", "abstract", "keywordset", "additionalinfo", "intellectualrights", 
+	           		             "distribution", "coverage", "contact", "methods", "project", "datatable", "otherentity"];
+            	
+            	var position = _.indexOf(nodeOrder, nodeName);
+            	if(position == -1)
+            		return $(eml).find("dataset").children().last();
+            	
+            	//Go through each node in the node list and find the position where this node will be inserted after
+            	for(var i=position-1; i>=0; i--){
+            		if($(eml).find(nodeOrder[i]).length)
+            			return $(eml).find(nodeOrder[i]).last();
+            	}
+            	
+            	return $(eml).find("dataset").children().last();
             },
                         
             /*
