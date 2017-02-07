@@ -368,15 +368,33 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        	//Serialize the temporal coverage
 		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
 	           	
+		        //Serialize the creators
+	           	_.each(this.get("creator"), function(creator){
+	           		$(eml).find("creator#" + creator.get("id")).replaceWith(creator.updateDOM());
+	           	});
+	           	
+	           	//Create a creator from the current app user if no creator is given
+	           	if(!this.get("creator").length){
+	           		var creator = new EMLParty();
+	           		creator.createFromUser();
+	           		this.set("creator", [creator]);
+	           		
+	           		this.getEMLPosition(eml, "creator").after(creator.updateDOM());
+	           	}
+	           	
 	           	//Serialize the metadata providers
 	           	_.each(this.get("metadataProvider"), function(metadataProvider){
 	           		$(eml).find("metadataprovider#" + metadataProvider.get("id")).replaceWith(metadataProvider.updateDOM());
 	           	});
 	           	
-	           	//Serialize the creators
-	           	_.each(this.get("creator"), function(creator){
-	           		$(eml).find("creator#" + creator.get("id")).replaceWith(creator.updateDOM());
-	           	});
+	            //Create a metadataProvider from the current app user if no metadataProvider is given
+	           	if(!this.get("metadataProvider").length){
+	           		var metadataProvider = new EMLParty();
+	           		metadataProvider.createFromUser();
+	           		this.set("metadataProvider", [metadataProvider]);
+	           		
+	           		this.getEMLPosition(eml, "metadataprovider").after(metadataProvider.updateDOM());
+	           	}
 	           	
 	        	//Serialize the associated parties
 	           	_.each(this.get("associatedParty"), function(associatedParty){
@@ -387,6 +405,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	_.each(this.get("contact"), function(contact){
 	           		$(eml).find("contact#" + contact.get("id")).replaceWith(contact.updateDOM());
 	           	});
+	           	
+	            //Create a contact from the current app user if no contact is given
+	           	if(!this.get("contact").length){
+	           		var contact = new EMLParty();
+	           		contact.createFromUser();
+	           		this.set("contact", [contact]);
+	           		
+	           		this.getEMLPosition(eml, "contact").after(contact.updateDOM());
+	           	}
 	           	
 	           	//Serialize the publishers
 	           	_.each(this.get("publisher"), function(publisher){
