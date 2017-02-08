@@ -61,7 +61,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 // Call initialize for the super class
                 ScienceMetadata.prototype.initialize.call(this, attributes);
                 
-                // EML211-specific init goes here                
+                // EML211-specific init goes here
+                this.set("objectXML", this.createXML());                
             },
             
             url: function(){
@@ -637,12 +638,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        	return false;
 	        },
 	        
-	        isNew: function(){
-	        	//Check if there is an original XML document that was retrieved from the server
-	        	if(!this.get("objectXML") && this.get("synced")) return true;
-	        	else return false;
-	        },
-               
             /*
              Add an entity into the EML 2.1.1 object
             */
@@ -655,6 +650,51 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             */
             removeEntity: function(emlEntityId) {
                 
+            },
+            
+            /* Initialize the object XML for brand spankin' new EML objects */
+            createXML: function() {
+                var xml = "<eml:eml xmlns:eml=\"eml://ecoinformatics.org/eml-2.1.1\"></eml:eml>",
+                    eml = $($.parseHTML(xml));
+                    
+                    // Set base attributes
+                    eml.attr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                    eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
+                    eml.attr("xsi:schemaLocation", "eml://ecoinformatics.org/eml-2.1.1 eml.xsd");
+                    eml.attr("packageId", this.get("id"));
+                    
+                    // Add the dataset
+                    eml.append(document.createElement("dataset"));
+                    eml.find("dataset").append(document.createElement("title"));
+                    
+                    // Add the title
+                    // eml.find("title").text(this.get("title")[0]);
+                    
+                    // Add the creator
+                    eml.find("dataset").append(document.createElement("creator"));
+                    eml.find("creator").append(document.createElement("individualname"))
+                    // Given name
+                    eml.find("creator > individualname").append(document.createElement("givenname"));
+                    // eml.find("creator > individualname > givenname").text(MetacatUI.appUserModel.get("firstName"));
+                    
+                    // Sur name
+                    eml.find("creator > individualname").append(document.createElement("surname"));
+                    // eml.find("creator > individualname > surname").text(MetacatUI.appUserModel.get("lastName"));
+                    
+                    // Add the contact
+                    eml.find("dataset").append(document.createElement("contact"));
+                    eml.find("contact").append(document.createElement("individualname"))
+                    // Given name
+                    eml.find("contact > individualname").append(document.createElement("givenname"));
+                    // eml.find("contact > individualname > givenname").text(MetacatUI.appUserModel.get("firstName"));
+                    
+                    // Sur name
+                    eml.find("contact > individualname").append(document.createElement("surname"));
+                    // eml.find("contact > individualname > surname").text(MetacatUI.appUserModel.get("lastName"));
+                        
+                    emlString = $(document.createElement("div")).append(eml.clone()).html();
+                    
+                    return emlString;
             }
             
         });
