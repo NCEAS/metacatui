@@ -311,7 +311,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	//Get the EML document
 	           	var xmlString = this.get("objectXML"),
 	           		eml = $.parseHTML(xmlString),
-	           		datasetNode = $(eml).filter("dataset");
+	           		datasetNode = $(eml).filter("eml\\:eml").find("dataset");
 	           	
 	           	var nodeNameMap = this.nodeNameMap();
 	           	
@@ -356,10 +356,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	}, this);
 	           	
 	           	//Serialize the geographic coverage
-	           	_.each(this.get("geoCoverage"), function(geoCoverage){
+	           /*	_.each(this.get("geoCoverage"), function(geoCoverage){
 		           	$(eml).find("geographiccoverage").replaceWith(geoCoverage.updateDOM());
 	           	});
-	           	
+	          */ 	
 	           	//Serialize the taxonomic coverage
 	           	_.each(this.get("taxonCoverage"), function(taxonCoverage){
 	           		$(eml).find("taxonomiccoverage").replaceWith(taxonCoverage.updateDOM());
@@ -457,13 +457,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
 	           	
 	           	//Serialize the basic text fields
-	           	var basicText = ["alternateIdentifier"];
+	           	var basicText = ["alternateIdentifier", "title"];
 	           	_.each(basicText, function(fieldName){
 	           		var basicTextValues = this.get(fieldName);
 	           		
 	           		if(!Array.isArray(basicTextValues)) basicTextValues = [basicTextValues];
 	           		
-	           		var nodes = $(eml).find(fieldName.toLowerCase());
+	           		var nodes = $(datasetNode).children(fieldName.toLowerCase());
 	           		
 	           		_.each(basicTextValues, function(text, i){
 	           			var node = nodes[i];
