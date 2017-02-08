@@ -157,6 +157,10 @@ define(['underscore',
                     
                 }
                 
+                // And set the sysMetaXML for the packageModel
+                MetacatUI.rootDataPackage.packageModel.set("sysMetaXML",
+                    MetacatUI.rootDataPackage.packageModel.serializeSysMeta());
+                
                 //Render the data package
                 this.renderDataPackage();
 
