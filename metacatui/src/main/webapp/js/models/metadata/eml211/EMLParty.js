@@ -15,6 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			fax: [],
 			email: [],
 			onlineUrl: [],
+			role: null,
 			references: null,
 			userId: [],
 			id: null,
@@ -172,6 +173,16 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	    	xmlString = this.formatXML(xmlString);
 	    	
 	    	return xmlString;
+		},
+		
+		/*
+		 * Updates the attributes on this model based on the application user (the app UserModel)
+		 */
+		createFromUser: function(){
+			this.get("individualName").givenNames = [MetacatUI.appUserModel.get("firstName")];
+			this.get("individualName").surName    = MetacatUI.appUserModel.get("lastName");
+			this.set("email", MetacatUI.appUserModel.get("email"));			
+			this.set("userId", MetacatUI.appUserModel.get("username"));
 		},
 		
 		/*
