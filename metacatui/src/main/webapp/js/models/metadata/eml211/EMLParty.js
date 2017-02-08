@@ -23,7 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		initialize: function(attributes){
-			if(attributes.objectDOM) 
+			if( attributes && attributes.objectDOM ) 
 				this.set(this.parse(attributes.objectDOM));
 
 			this.on("change:individualName change:organizationName change:positionName " +
