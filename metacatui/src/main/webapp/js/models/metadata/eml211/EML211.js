@@ -375,7 +375,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	
 	           	//Create a creator from the current app user if no creator is given
 	           	if(!this.get("creator").length){
-	           		var creator = new EMLParty();
+	           		var creator = new EMLParty({ parentModel: this, type: "creator" });
 	           		creator.createFromUser();
 	           		this.set("creator", [creator]);
 	           		
@@ -388,8 +388,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});
 	           	
 	            //Create a metadataProvider from the current app user if no metadataProvider is given
-	           	if(!this.get("metadataProvider").length){
-	           		var metadataProvider = new EMLParty();
+	           	if(!this.get("metadataProvider").length && !this.get("creator").length && !this.get("contact").length){
+	           		var metadataProvider = new EMLParty({ parentModel: this, type: "metadataprovider" });
 	           		metadataProvider.createFromUser();
 	           		this.set("metadataProvider", [metadataProvider]);
 	           		
@@ -408,7 +408,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	
 	            //Create a contact from the current app user if no contact is given
 	           	if(!this.get("contact").length){
-	           		var contact = new EMLParty();
+	           		var contact = new EMLParty({ parentModel: this, type: "contact" });
 	           		contact.createFromUser();
 	           		this.set("contact", [contact]);
 	           		

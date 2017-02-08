@@ -1,6 +1,6 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"], 
-    function($, _, Backbone, EMLParty) {
+define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/metadata/eml211/EMLParty"], 
+    function($, _, Backbone, DataONEObject, EMLParty) {
 
 	var EMLProject = Backbone.Model.extend({
 		
@@ -66,9 +66,41 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 	    	return xmlString;
 		},
 		
-		//TODO: This only supports the funding element right now
 		updateDOM: function(){
 			var objectDOM = this.get("objectDOM") ? this.get("objectDOM").cloneNode(true) : document.createElement("project");
+			
+			//Create a project title
+			//If there is no title node, create one
+			if( !$(objectDOM).find("title").length ){
+				var title = this.get("title") || this.get("parentModel").get("title") || "";
+				$(objectDOM).prepend( $(document.createElement("title")).text(title) );
+			}
+			
+			//Create project personnel
+			if( !$(objectDOM).find("personnel").length ){
+				var personnel = this.get("personnel");
+				
+				if(!personnel){
+					_.each(this.get("parentModel").get("creator"), function(party){
+						
+						var personnel = new EMLParty({
+							role: "principalInvestigator",
+							parentModel: this,
+							type: "personnel",
+							individualName: party.get("individualName")							
+						});
+						
+						this.set("personnel", [personnel]);
+						
+						$(objectDOM).append(personnel.updateDOM());
+					}, this);
+				}
+				else{
+					_.each(this.get("personnel"), function(party){						
+						$(objectDOM).append(party.updateDOM());
+					}, this);
+				}					
+			}
 			 
 			//Get or create the funding element
 			var fundingNode = $(objectDOM).find("funding");
@@ -87,7 +119,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty"],
 					$(fundingNode).append( $(document.createElement("para")).text(funding) );
 			});
 			
-			 return objectDOM;
+			return objectDOM;
 		},
 		
 		trickleUpChange: function(){

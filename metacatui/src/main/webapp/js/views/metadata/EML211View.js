@@ -247,7 +247,7 @@ define(['underscore', 'jquery', 'backbone',
 				select: function(e, ui) {
 					e.preventDefault();
 										
-					hiddenFundingInput.val(ui.item.value);
+					hiddenFundingInput.val("NSF Award " + ui.item.value);
 					fundingInput.val(ui.item.label);
 					
 					$(".funding .ui-helper-hidden-accessible").hide();
@@ -598,6 +598,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		//Find the position this text input is in
 	    		var position = $(e.target).parent().children(".basic-text").index(e.target);
 	    		currentValue[position] = value;
+	    		model.set(category, currentValue);
 	    		model.trigger("change");
 	    	}
 	    	//Update the model if the current value is a string
