@@ -7,7 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		defaults: {
 			objectXML: null,
 			objectDOM: null,
-			individualName: null,
+			individualName: {},
 			organizationName: null,
 			positionName: null,
 			address: [],
@@ -20,6 +20,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			userId: [],
 			id: null,
 			type: null,
+			typeOptions: ["associatedParty", "contact", "creator", "metadataProvider", "publisher"],
+			roleOptions: ["custodianSteward", "principalInvestigator", "collaboratingPrincipalInvestigator",
+			              "coPrincipalInvestigator", "user"],
 			parentModel: null
 		},
 		
@@ -93,13 +96,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			
 			//Set the other misc. text fields
 			modelJSON.organizationName = $(objectDOM).children("organizationname").text();
-			modelJSON.positionName = $(objectDOM).children("positionname").text();
-			modelJSON.email = _.map($(objectDOM).children("electronicmailaddress"), function(email){
-				return  $(email).text();
-			});
+			modelJSON.positionName     = $(objectDOM).children("positionname").text();
+			modelJSON.email            = _.map($(objectDOM).children("electronicmailaddress"), function(email){
+											return  $(email).text();
+										 });
+			modelJSON.role 			   = $(objectDOM).find("role").text();
+			modelJSON.onlineUrl 	   = [$(objectDOM).find("onlineUrl").first().text()];
 			
 			//Set the id attribute
-			modelJSON.id = $(objectDOM).attr("id");
+			modelJSON.id = $(objectDOM).attr("id");			
 			
 			return modelJSON;
 		},
@@ -113,16 +118,16 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		parsePerson: function(personXML){
 			var person = {
-					givenNames: [],
+					givenName: [],
 					surName: "",
 					salutation: []
 				},
-				givenNames  = $(personXML).find("givenname"),
+				givenName  = $(personXML).find("givenname"),
 				surName     = $(personXML).find("surname"),
 				salutations = $(personXML).find("salutation");
 			
-			givenNames.each(function(i, name){
-				person.givenNames.push($(name).text());
+			givenName.each(function(i, name){
+				person.givenName.push($(name).text());
 			});
 			
 			person.surName = surName.text();
@@ -149,7 +154,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			
 			//Get an array of all the address line (or delivery point) values
 			var addressLines = [];
-			_.each(delPoint, function(i, addressLine){
+			_.each(delPoint, function(addressLine, i){
 				addressLines.push($(addressLine).text());
 			}, this);
 			
@@ -174,7 +179,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		createFromUser: function(){
 			//Create the name from the user
 			var name = this.get("individualName") || {};
-			name.givenNames = [MetacatUI.appUserModel.get("firstName")];
+			name.givenName = [MetacatUI.appUserModel.get("firstName")];
 			name.surName    = MetacatUI.appUserModel.get("lastName");
 			this.set("individualName", name);
 			
@@ -187,7 +192,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			 var objectDOM = this.get("objectDOM")? this.get("objectDOM").cloneNode(true) : document.createElement(this.get("type"));
+			 var type = this.get("type") || "associatedParty", 
+			 	 objectDOM = this.get("objectDOM")? this.get("objectDOM").cloneNode(true) : document.createElement(type);
 			 				
 			 //There needs to be at least one individual name, organization name, or position name
 			 if(!this.get("individualName") && !this.get("organizationName") && !this.get("positionName"))
@@ -211,7 +217,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				 });
 				 
 				 //Given name
-				 _.each(name.givenNames, function(givenName) {
+				 _.each(name.givenName, function(givenName) {
 					 $(nameNode).prepend("<givenname>" + givenName + "</givenname>");
 				 });
 				 

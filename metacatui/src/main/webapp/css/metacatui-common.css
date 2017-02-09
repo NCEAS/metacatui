@@ -64,6 +64,17 @@
 [contenteditable]{
 	cursor: pointer;
 }
+.row-striped{
+	border: 1px solid #e5e5e5;
+    margin-bottom: 40px;
+    border-radius: 4px;
+}
+.row-striped > .row-fluid{
+	padding: 20px;
+}
+.row-striped > .row-fluid:nth-child(even){
+	background-color: #EFEFEF;
+}
 /****************************************** 
 ** General Structure ***
 ******************************************/
@@ -2886,9 +2897,9 @@ Editor View
 .side-nav-item a {
     width: 100%;
     display: block;
-    height: 2em;
+    height: 3em;
     font-size: 1.3em;
-    line-height: 2em;
+    line-height: 3em;
     padding-left: 20px;
     box-sizing: border-box;
 }
@@ -3041,7 +3052,9 @@ textarea.xlarge{
 .Editor .dropdown-menu li a i {
     vertical-align: middle;
 }
-.Editor input[type="text"]{
+.Editor input[type="text"],
+.Editor input[type="date"],
+.Editor input[type="time"]{
 	padding: 14px;
 }
 .metadata-container *{
@@ -3057,6 +3070,9 @@ textarea.xlarge{
     width: 100%;
     clear: both;
 } 
+.metadata-container .section.overview > div{
+	margin-bottom: 20px;
+}
 .Editor .funding input{
 	padding-left: 35px;
 }  

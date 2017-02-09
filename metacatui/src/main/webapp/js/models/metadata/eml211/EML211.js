@@ -182,11 +182,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             		//EML Party modules are stored in EMLParty models
             		if(_.contains(emlParties, thisNode.localName)){
-            			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
+            			if(thisNode.localName == "metadataprovider")
+            				var attributeName = "metadataProvider";
+            			else if(thisNode.localName == "associatedparty")
+            				var attributeName = "associatedParty";
+            			else
+            				var attributeName = thisNode.localName;
             			
-            			modelJSON[thisNode.localName].push(new EMLParty({ 
+            			if(typeof modelJSON[attributeName] == "undefined") modelJSON[attributeName] = [];
+            			
+            			modelJSON[attributeName].push(new EMLParty({ 
             				objectDOM: thisNode,
-            				parentModel: model 
+            				parentModel: model,
+            				type: attributeName
             			}));
             		}
             		//EML Distribution modules are stored in EMLDistribution models
