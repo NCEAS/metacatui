@@ -28,8 +28,16 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             	"taxonomicclassification" : "taxonomicClassification",
             	"taxonrankname" : "taxonRankName",
             	"taxonrankvalue" : "taxonRankValue",
-            	"taxonomiccoverage" : "taxonomicCoverage"
-            }
+            	"taxonomiccoverage" : "taxonomicCoverage",
+				"taxonomicsystem" : "taxonomicSystem",
+				"classificationsystem" : "classificationSystem",
+				"classificationsystemcitation" : "classificationSystemCitation",
+				"classificationsystemmodifications" : "classificationSystemModifications",
+				"identificationreference": "identificationReference",
+				"identifiername": "identifierName",
+				"taxonomicprocedures": "taxonomicProcedures",
+				"taxonomiccompleteness":"taxonomicCompleteness"
+            };
         },
 		
 		parse: function(objectDOM){
