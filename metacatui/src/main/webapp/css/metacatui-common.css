@@ -3057,6 +3057,15 @@ textarea.xlarge{
 .Editor input[type="time"]{
 	padding: 14px;
 }
+.Editor .input-logo{
+	height: 28px;
+    width: 28px;
+    margin-right: 5px;
+    vertical-align: top;
+}
+.Editor .input-logo + input{
+	width: calc(100% - 42px);
+}
 .metadata-container *{
 	box-sizing: border-box;
 }
