@@ -7,7 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		defaults: {
 			objectXML: null,
 			objectDOM: null,
-			individualName: null,
+			individualName: {},
 			organizationName: null,
 			positionName: null,
 			address: [],
@@ -260,12 +260,26 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		trickleUpChange: function(){
-			this.get("parentModel").trigger("change");
+            if ( this.get("parentModel") ) {
+    			this.get("parentModel").trigger("change");
+                
+            }
 		},
 		
 		formatXML: function(xmlString){
 			return DataONEObject.prototype.formatXML.call(this, xmlString);
-		}
+		},
+        
+        /* For new documents, create a new node*/
+        createXML: function(nodeName) {
+            var xml, eml;
+            
+            if ( nodeName ) {
+                xml = "<" + nodeName + "></" + nodeName + ">";
+                eml = $($.parseHTML(xml));
+            }
+                
+        }
 	});
 	
 	return EMLParty;
