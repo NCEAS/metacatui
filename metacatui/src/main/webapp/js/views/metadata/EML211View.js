@@ -193,7 +193,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	this.renderPerson(null, "collaboratingPrincipalInvestigator");
 	    	
 	    	//Contact
-	    	this.$(".section.people").append("<h4>Contact</h4>",
+	    	this.$(".section.people").append("<h4>Contacts</h4>",
 	    			'<div class="row-striped" data-attribute="contact"></div>');
 	    	_.each(this.model.get("contact"), this.renderPerson, this);
 	    	this.renderPerson(null, "contact");
@@ -254,7 +254,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		var isNew = false;
 	    	
 	    	//Get the party type, if it was not sent as a parameter
-	    	if(!partyType)
+	    	if(!partyType || typeof partyType != "string")
 	    		var partyType = emlParty.get("role") || emlParty.get("type");
 	    	
 	    	var view = new EMLPartyView({

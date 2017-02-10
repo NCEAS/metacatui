@@ -7,7 +7,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		defaults: {
 			objectXML: null,
 			objectDOM: null,
-			individualName: {},
+			individualName: {
+				givenName: [],
+				surName: "",
+				salutation: []
+			},
 			organizationName: null,
 			positionName: null,
 			address: [],
@@ -18,7 +22,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			role: null,
 			references: null,
 			userId: [],
-			id: null,
+			xmlID: null,
 			type: null,
 			typeOptions: ["associatedParty", "contact", "creator", "metadataProvider", "publisher"],
 			roleOptions: ["custodianSteward", "principalInvestigator", "collaboratingPrincipalInvestigator",
@@ -29,6 +33,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		initialize: function(options){
 			if(options && options.objectDOM) 
 				this.set(this.parse(options.objectDOM));
+			
+			if(!this.get("xmlID"))
+				this.createID();
 
 			this.on("change:individualName change:organizationName change:positionName " +
 					"change:address change:phone change:fax change:email " +
@@ -104,7 +111,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			modelJSON.onlineUrl 	   = [$(objectDOM).find("onlineUrl").first().text()];
 			
 			//Set the id attribute
-			modelJSON.id = $(objectDOM).attr("id");			
+			modelJSON.xmlID = $(objectDOM).attr("id");			
 			
 			return modelJSON;
 		},
@@ -126,10 +133,18 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				surName     = $(personXML).find("surname"),
 				salutations = $(personXML).find("salutation");
 			
+			//Concatenate all the given names into one, for now
+			//TODO: Support multiple given names
 			givenName.each(function(i, name){
-				person.givenName.push($(name).text());
+				if(i==0)
+					person.givenName[0] = "";
+				
+				person.givenName[0] += $(name).text() + " ";
+				
+				if(i==givenName.length-1)
+					person.givenName[0] = person.givenName[0].trim();
 			});
-			
+						
 			person.surName = surName.text();
 			
 			salutations.each(function(i, name){
@@ -380,8 +395,18 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				else
 					$(objectDOM).append( $(document.createElement("role")).text(this.get("role")) );
 			} 
+			
+			//XML id attribute
+			if(this.get("xmlID"))
+				$(objectDOM).attr("id", this.get("xmlID"));
+			else
+				$(objectDOM).removeAttr("id");
 			 
 			 return objectDOM;
+		},
+		
+		createID: function(){
+			this.set("xmlID", Math.random() * (9999999999999999 - 1000000000000000) + 1000000000000000);
 		},
 		
 		trickleUpChange: function(){

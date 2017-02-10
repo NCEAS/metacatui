@@ -377,56 +377,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
 	           	
 		        //Serialize the creators
-	           	_.each(this.get("creator"), function(creator){
-	           		$(eml).find("creator#" + creator.get("id")).replaceWith(creator.updateDOM());
-	           	});
-	           	
-	           	//Create a creator from the current app user if no creator is given
-	           	if(!this.get("creator").length){
-	           		var creator = new EMLParty({ parentModel: this, type: "creator" });
-	           		creator.createFromUser();
-	           		this.set("creator", [creator]);
-	           		
-	           		this.getEMLPosition(eml, "creator").after(creator.updateDOM());
-	           	}
-	           	
+		        this.serializeParties(eml, "creator");
+
 	           	//Serialize the metadata providers
-	           	_.each(this.get("metadataProvider"), function(metadataProvider){
-	           		$(eml).find("metadataprovider#" + metadataProvider.get("id")).replaceWith(metadataProvider.updateDOM());
-	           	});
-	           	
-	            //Create a metadataProvider from the current app user if no metadataProvider is given
-	           	if(!this.get("metadataProvider").length && !this.get("creator").length && !this.get("contact").length){
-	           		var metadataProvider = new EMLParty({ parentModel: this, type: "metadataprovider" });
-	           		metadataProvider.createFromUser();
-	           		this.set("metadataProvider", [metadataProvider]);
-	           		
-	           		this.getEMLPosition(eml, "metadataprovider").after(metadataProvider.updateDOM());
-	           	}
+	           	this.serializeParties(eml, "metadataProvider");
 	           	
 	        	//Serialize the associated parties
-	           	_.each(this.get("associatedParty"), function(associatedParty){
-	           		$(eml).find("associatedparty#" + associatedParty.get("id")).replaceWith(associatedParty.updateDOM());
-	           	});
+	           	this.serializeParties(eml, "associatedParty");
 	           	
 	           	//Serialize the contacts
-	           	_.each(this.get("contact"), function(contact){
-	           		$(eml).find("contact#" + contact.get("id")).replaceWith(contact.updateDOM());
-	           	});
-	           	
-	            //Create a contact from the current app user if no contact is given
-	           	if(!this.get("contact").length){
-	           		var contact = new EMLParty({ parentModel: this, type: "contact" });
-	           		contact.createFromUser();
-	           		this.set("contact", [contact]);
-	           		
-	           		this.getEMLPosition(eml, "contact").after(contact.updateDOM());
-	           	}
+	           	this.serializeParties(eml, "contact");
 	           	
 	           	//Serialize the publishers
-	           	_.each(this.get("publisher"), function(publisher){
-	           		$(eml).find("publisher#" + publisher.get("id")).replaceWith(publisher.updateDOM());
-	           	});
+	           	this.serializeParties(eml, "publisher");
 	           	
 	           	//Serialize the keywords
 	           	var keywordNodes = $(eml).find("keywordset");
@@ -458,7 +421,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        		}
 	        	}
 	        	
-	        	//Serialize the project model
+	        	//Serialize the project
 	        	if($(eml).find("project").length)
 	        		$(eml).find("project").replaceWith(this.get("project").updateDOM());
 	        	else if(this.get("project"))
@@ -502,6 +465,41 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		    	console.log(emlString);
 		    	
 	           	return emlString;
+            },
+            
+            /*
+             * Given an EML DOM and party type, this function updated and/or adds the EMLParties to the EML
+             */
+            serializeParties: function(eml, type){
+            	
+	           	_.each(this.get(type), function(party){
+	           		//Get the existing nodes in the EML
+	           		var existingNode = $(eml).find(type.toLowerCase() + "#" + party.get("xmlID"));
+	           		
+	           		//Update the EMLParty DOM and insert into the EML
+	           		if(existingNode.length)
+	           			existingNode.replaceWith(party.updateDOM());
+	           		else{
+	           			var insertAfter = $(eml).find(type.toLowerCase()).last();
+	           			if(!insertAfter || !insertAfter.length)
+	           				insertAfter = this.getEMLPosition(eml, type.toLowerCase());
+	           			
+	           			insertAfter.after(party.updateDOM());
+	           		}
+	           	}, this);
+	           	
+	        	//Create a certain parties from the current app user if none is given
+	           	if(type == "creator" || type == "contact" || type == "metadataProvider"){
+		           	if(!this.get(type).length){
+		           		var party = new EMLParty({ parentModel: this, type: type });
+		           		
+		           		party.createFromUser();
+		           		
+		           		this.set(type, [party]);
+		           		
+		           		this.getEMLPosition(eml, type).after(party.updateDOM());
+		           	}
+	           	}
             },
             
             /*

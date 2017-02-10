@@ -28,10 +28,14 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
         	},
         	
+        	events: {
+        		"change" : "updateModel"
+        	},
+        	
         	render: function(){
         		
         		//When the model changes, render again
-        		this.listenTo(this.model, "change", this.render);
+        		//this.listenTo(this.model, "change", this.render);
 
         		//Format the given names
         		var name = this.model.get("individualName"),
@@ -40,6 +44,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		_.each(name.givenName, function(givenName){
         			fullGivenName += givenName + " ";
         		});
+        		
+        		fullGivenName = fullGivenName.trim();
         		
         		//Get the address object
         		var address = Array.isArray(this.model.get("address"))? 
@@ -74,9 +80,124 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         			this.$el.addClass("new");
 
         		return this;
+        	},
+        	
+        	updateModel: function(e){
+        		if(!e) return false;
+        		
+        		//Get the attribute that was changed
+        		var changedAttr = $(e.target).attr("data-attribute");
+        		if(!changedAttr) return false;
+        		
+        		//Get the current value
+        		var currentValue = this.model.get(changedAttr);
+        		
+        		//Is this a new EML Party?
+        		if(this.isNew){
+
+        			//Get the type of EML Party, in relation to the parent model
+        			if(this.model.get("type") && this.model.get("type") != "associatedParty")
+        				var type = this.model.get("type");
+        			else
+        				var type = "associatedParty";
+        			
+        			//Update the list of EMLParty models in the parent model
+    				var currentModels = this.model.get("parentModel").get(type);
+    				currentModels.push(this.model);
+    				this.model.get("parentModel").set(type, currentModels);
+
+        		}
+        		
+        		//Addresses and Names have special rules for updating
+        		switch(changedAttr){
+        			case "deliveryPoint":
+        				this.updateAddress(e);
+        				return;
+        			case "city":
+        				this.updateAddress(e);
+        				return;
+        			case "administrativeArea":
+        				this.updateAddress(e);
+        				return;
+        			case "country":
+        				this.updateAddress(e);
+        				return;
+        			case "postalCode":
+        				this.updateAddress(e);
+        				return;
+        			case "surName":
+        				this.updateName(e);
+        				return;
+        			case "givenName":
+        				this.updateName(e);
+        				return;
+        			case "salutation":
+        				this.updateName(e);
+        				return;
+        		}
+        		
+        		//Update the EMLParty model with the new value
+        		if(Array.isArray(currentValue)){
+        			//Get the position that this new value should go in
+        			var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
+        			
+        			//Put the new value in the array at the correct position
+        			currentValue[position] = $(e.target).val();
+        			this.model.set(changedAttr, currentValue);       			
+        		}
+        		else
+        			this.model.set(changedAttr, $(e.target).val());
+        			
+        	},
+        	
+        	updateAddress: function(e){
+        		if(!e) return false;
+        		
+        		//Get the address part that was changed
+        		var changedAttr = $(e.target).attr("data-attribute");
+        		if(!changedAttr) return false;
+        		
+        		//TODO: Allow multiple addresses - right now we only support editing the first address
+        		var address = this.model.get("address")[0],
+        			currentValue = address[changedAttr];
+        		
+        		//Update the address
+        		if(Array.isArray(currentValue)){
+	        		//Get the position that this new value should go in
+	    			var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
+	    			
+	    			//Put the new value in the array at the correct position
+	    			currentValue[position] = $(e.target).val();
+	    			//address[changedAttr] = currentValue;
+	    			this.model.set("address", address);
+        		}
+        		else
+        			address[changedAttr] = $(e.target).val();
+        	},
+        	
+        	updateName: function(e){
+        		if(!e) return false;
+
+        		//Get the address part that was changed
+        		var changedAttr = $(e.target).attr("data-attribute");
+        		if(!changedAttr) return false;
+        		
+        		//TODO: Allow multiple given names - right now we only support editing the first given name
+        		var name = this.model.get("individualName"),
+        			currentValue = name[changedAttr];
+        		
+        		//Update the name
+        		if(Array.isArray(currentValue)){
+	        		//Get the position that this new value should go in
+	    			var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
+	    			
+	    			//Put the new value in the array at the correct position
+	    			currentValue[position] = $(e.target).val();
+	    			this.model.set("individualName", name);
+        		}
+        		else
+        			name[changedAttr] = $(e.target).val();
         	}
-        	
-        	
         });
         
         return EMLPartyView;
