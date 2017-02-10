@@ -62,7 +62,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 ScienceMetadata.prototype.initialize.call(this, attributes);
                 
                 // EML211-specific init goes here
-                this.set("objectXML", this.createXML());                
+                // this.set("objectXML", this.createXML());
+                this.parse(this.createXML());
             },
             
             url: function(){
@@ -367,7 +368,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});	 
 	           	
 	        	//Serialize the temporal coverage
-		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
+                if ( typeof this.get("temporalCoverage") !== "undefined" && this.get("temporalCoverage") !== null ) {
+    		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
+                    
+                }
 	           	
 		        //Serialize the creators
 	           	_.each(this.get("creator"), function(creator){
@@ -695,29 +699,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     eml.find("dataset").append(document.createElement("title"));
                     
                     // Add the title
-                    // eml.find("title").text(this.get("title")[0]);
+                    //eml.find("title").text(this.get("title")[0]);
                     
                     // Add the creator
-                    eml.find("dataset").append(document.createElement("creator"));
-                    eml.find("creator").append(document.createElement("individualname"))
+                    //eml.find("dataset").append(document.createElement("creator"));
+                    //eml.find("creator").append(document.createElement("individualname"))
                     // Given name
-                    eml.find("creator > individualname").append(document.createElement("givenname"));
-                    // eml.find("creator > individualname > givenname").text(MetacatUI.appUserModel.get("firstName"));
+                    //eml.find("creator > individualname").append(document.createElement("givenname"));
+                    //eml.find("creator > individualname > givenname").text(MetacatUI.appUserModel.get("firstName"));
                     
                     // Sur name
-                    eml.find("creator > individualname").append(document.createElement("surname"));
-                    // eml.find("creator > individualname > surname").text(MetacatUI.appUserModel.get("lastName"));
+                    //eml.find("creator > individualname").append(document.createElement("surname"));
+                    //eml.find("creator > individualname > surname").text(MetacatUI.appUserModel.get("lastName"));
                     
                     // Add the contact
-                    eml.find("dataset").append(document.createElement("contact"));
-                    eml.find("contact").append(document.createElement("individualname"))
+                    //eml.find("dataset").append(document.createElement("contact"));
+                    //eml.find("contact").append(document.createElement("individualname"))
                     // Given name
-                    eml.find("contact > individualname").append(document.createElement("givenname"));
-                    // eml.find("contact > individualname > givenname").text(MetacatUI.appUserModel.get("firstName"));
+                    //eml.find("contact > individualname").append(document.createElement("givenname"));
+                    //eml.find("contact > individualname > givenname").text(MetacatUI.appUserModel.get("firstName"));
                     
                     // Sur name
-                    eml.find("contact > individualname").append(document.createElement("surname"));
-                    // eml.find("contact > individualname > surname").text(MetacatUI.appUserModel.get("lastName"));
+                    //eml.find("contact > individualname").append(document.createElement("surname"));
+                    //eml.find("contact > individualname > surname").text(MetacatUI.appUserModel.get("lastName"));
                         
                     emlString = $(document.createElement("div")).append(eml.clone()).html();
                     
