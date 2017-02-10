@@ -1,7 +1,9 @@
 define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
+        'views/metadata/EMLPartyView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLKeywordSet',
+        'models/metadata/eml211/EMLParty',
         'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLTaxonCoverage',
@@ -10,7 +12,8 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
 		'text!templates/metadata/taxonomicClassification.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EML, EMLKeywordSet, EMLProject, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
+	function(_, $, Backbone, ScienceMetadataView, EMLPartyView, 
+			EML, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
 			Template, OverviewTemplate, DatesTemplate, TaxonomicClassificationTemplate){
     
     var EMLView = ScienceMetadataView.extend({
@@ -158,6 +161,110 @@ define(['underscore', 'jquery', 'backbone',
          */
 	    renderPeople: function(){
 	    	this.$(".section.people").empty().append("<h2>People</h2>");
+	
+	    	var PIs        = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "principalInvestigator" }),
+	    		coPIs      = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "coPrincipalInvestigator" }),
+	    		collbalPIs = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "collaboratingPrincipalInvestigator" }),
+	    		custodian  = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "custodianSteward" }),
+	    		user       = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "user" });
+	    	
+	    	//Creators
+	    	this.$(".section.people").append("<h4>Dataset Creators (Authors/Owners/Originators)</h4>",
+	    			'<div class="row-striped" data-attribute="creator"></div>');	    	
+	    	_.each(this.model.get("creator"), this.renderPerson, this);
+	    	this.renderPerson(null, "creator");
+	    	
+	    	//Principal Investigators
+	    	this.$(".section.people").append("<h4>Principal Investigators</h4>",
+	    			'<div class="row-striped" data-attribute="principalInvestigator"></div>');	    	
+	    	_.each(PIs, this.renderPerson, this);
+	    	this.renderPerson(null, "principalInvestigator");
+	    	
+	    	//Co-PIs
+	    	this.$(".section.people").append("<h4>Co-Principal Investigators</h4>",
+	    			'<div class="row-striped" data-attribute="coPrincipalInvestigator"></div>');
+	    	_.each(coPIs, this.renderPerson, this);
+	    	this.renderPerson(null, "coPrincipalInvestigator");
+	    	
+	    	//Collab PIs
+	    	this.$(".section.people").append("<h4>Collborating-Principal Investigators</h4>",
+	    			'<div class="row-striped" data-attribute="collaboratingPrincipalInvestigator"></div>');
+	    	_.each(collbalPIs, this.renderPerson, this);
+	    	this.renderPerson(null, "collaboratingPrincipalInvestigator");
+	    	
+	    	//Contact
+	    	this.$(".section.people").append("<h4>Contacts</h4>",
+	    			'<div class="row-striped" data-attribute="contact"></div>');
+	    	_.each(this.model.get("contact"), this.renderPerson, this);
+	    	this.renderPerson(null, "contact");
+
+	    	//Metadata Provider
+	    	this.$(".section.people").append("<h4>Metadata Provider</h4>",
+	    			'<div class="row-striped" data-attribute="metadataProvider"></div>');
+	    	_.each(this.model.get("metadataProvider"), this.renderPerson, this);
+	    	this.renderPerson(null, "metadataProvider");
+	    	
+	    	//Custodian/Steward
+	    	this.$(".section.people").append("<h4>Custodian/Steward</h4>",
+	    			'<div class="row-striped" data-attribute="custodianSteward"></div>');
+	    	_.each(custodian, this.renderPerson, this);
+	    	this.renderPerson(null, "custodianSteward");
+	    	
+	    	//Publisher
+	    	this.$(".section.people").append("<h4>Publisher</h4>",
+	    			'<div class="row-striped" data-attribute="publisher"></div>');
+	    	_.each(this.model.get("publisher"), this.renderPerson, this);
+	    	this.renderPerson(null, "publisher");
+
+	    	//User
+	    	this.$(".section.people").append("<h4>User</h4>",
+	    			'<div class="row-striped" data-attribute="user"></div>');
+	    	_.each(user, this.renderPerson, this);
+	    	this.renderPerson(null, "user");
+
+    		//Initialize the tooltips
+    		this.$("input.tooltip-this").tooltip({
+    			placement: "top",
+    			title: function(){
+    				return $(this).attr("placeholder")
+    			},
+    			delay: 1000
+    		});
+
+	    },
+	    
+	    renderPerson: function(emlParty, partyType){
+	    	//If no model is given, create a new model
+	    	if(!emlParty){
+	    		var emlParty = new EMLParty({
+	    			parentModel: this.model
+	    		});
+	    		
+	    		//Mark this model as new
+	    		var isNew = true;
+	    		
+	    		//Find the party type or role based on the type given
+	    		if(_.contains(emlParty.get("roleOptions"), partyType))
+	    			emlParty.set("role", partyType);
+	    		else if(_.contains(emlParty.get("typeOptions"), partyType))
+	    			emlParty.set("type", partyType);
+	    		
+	    	}
+	    	else
+	    		var isNew = false;
+	    	
+	    	//Get the party type, if it was not sent as a parameter
+	    	if(!partyType || typeof partyType != "string")
+	    		var partyType = emlParty.get("role") || emlParty.get("type");
+	    	
+	    	var view = new EMLPartyView({
+    			model: emlParty,
+    			edit: this.edit,
+    			isNew: isNew
+    		});
+    		
+	    	//Find the container section for this party type	    	
+    		this.$(".section.people").find('[data-attribute="' + partyType + '"]').append(view.render().el);
 	    },
 	    
 	    /*
@@ -209,6 +316,27 @@ define(['underscore', 'jquery', 'backbone',
 			this.$(".section.taxa").append(this.createTaxaonomicClassification());
 	    },
 	    
+	    /*
+         * Renders the Methods section of the page
+         */
+	    renderMethods: function(){
+	    	this.$(".section.methods").empty().append("<h2>Methods</h2>");
+	    },
+	    
+	    /*
+         * Renders the Projcet section of the page
+         */
+	    renderProject: function(){
+	    	
+	    },
+	    
+	    /*
+         * Renders the Sharing section of the page
+         */
+	    renderSharing: function(){
+	    	
+	    },
+	    
 	    createFunding: function(value){
 	    	var fundingInput       = $(document.createElement("input"))
 	    								.attr("type", "text")
@@ -247,7 +375,7 @@ define(['underscore', 'jquery', 'backbone',
 				select: function(e, ui) {
 					e.preventDefault();
 										
-					hiddenFundingInput.val(ui.item.value);
+					hiddenFundingInput.val("NSF Award " + ui.item.value);
 					fundingInput.val(ui.item.label);
 					
 					$(".funding .ui-helper-hidden-accessible").hide();
@@ -314,27 +442,6 @@ define(['underscore', 'jquery', 'backbone',
 
 			return finishedEl;
 		},
-	    
-	    /*
-         * Renders the Methods section of the page
-         */
-	    renderMethods: function(){
-	    	this.$(".section.methods").empty().append("<h2>Methods</h2>");
-	    },
-	    
-	    /*
-         * Renders the Projcet section of the page
-         */
-	    renderProject: function(){
-	    	
-	    },
-	    
-	    /*
-         * Renders the Sharing section of the page
-         */
-	    renderSharing: function(){
-	    	
-	    },
 	    
 	    createKeyword: function(keyword, model){
 	    	if(!keyword) var keyword = "";
@@ -598,6 +705,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		//Find the position this text input is in
 	    		var position = $(e.target).parent().children(".basic-text").index(e.target);
 	    		currentValue[position] = value;
+	    		model.set(category, currentValue);
 	    		model.trigger("change");
 	    	}
 	    	//Update the model if the current value is a string
