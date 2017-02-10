@@ -417,18 +417,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		formatXML: function(xmlString){
 			return DataONEObject.prototype.formatXML.call(this, xmlString);
-		},
-        
-        /* For new documents, create a new node*/
-        createXML: function(nodeName) {
-            var xml, eml;
-            
-            if ( nodeName ) {
-                xml = "<" + nodeName + "></" + nodeName + ">";
-                eml = $($.parseHTML(xml));
-            }
-                
-        }
+		}
 	});
 	
 	return EMLParty;
