@@ -8,7 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			objectXML: null,
 			objectDOM: null,
 			parentModel: null,
-			taxonomicClassification: null
+			taxonomicClassification: []
 		},
 		
 		initialize: function(attributes){
@@ -49,20 +49,26 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			    modelJSON = {
 					taxonomicClassification: _.map(taxonomicClassifications, function(tc) { return model.parseTaxonomicClassification(tc); })
 				};
-			
+
 			return modelJSON;
 		},
 		
 		parseTaxonomicClassification: function(classification) {
-
 			var rankName = $(classification).children("taxonrankname");
 			var rankValue = $(classification).children("taxonrankvalue");
 			var commonName = $(classification).children("commonname");
-			
-			var modelJSON = {
+			var taxonomicClassification = $(classification).children("taxonomicclassification");
+
+			var model = this,
+			    modelJSON = {
 				taxonRankName: $(rankName).text().trim(),
 				taxonRankValue: $(rankValue).text().trim(),
-				commonName: _.map($(commonName), function(cn) { return $(cn).text().trim(); })
+				commonName: _.map(commonName, function(cn) { 
+					return $(cn).text().trim(); 
+				}),
+				taxonomicClassification: _.map(taxonomicClassification, function(tc) {
+					return model.parseTaxonomicClassification(tc); 
+				})
 			};
 
 			return modelJSON;
