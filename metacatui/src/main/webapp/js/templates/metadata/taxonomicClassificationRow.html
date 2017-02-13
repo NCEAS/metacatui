@@ -1,6 +1,6 @@
 <tr class="taxonomic-classification form-inline">
-    <td>
-        <select data-category="rankName" class="tooltip-this" >
+    <td class="span4">
+        <select data-category="rankName" class="tooltip-this span12" >
             <option value="">Rank Name</option>
             <option value="Domain" <%= taxonRankName === "Domain" ? "selected" : void 0 %>>Domain</option>
             <option value="Kingdom" <%= taxonRankName === "Kingdom" ? "selected" : void 0 %>>Kingdom</option>
@@ -12,7 +12,7 @@
             <option value="Species" <%= taxonRankName === "Species" ? "selected" : void 0 %>>Species</option>
         </select>
     </td>
-    <td>
-        <input type="text" data-category="rankValue" value="<%= taxonRankValue %>" class="tooltip-this" placeholder="Rank value"/>
+    <td class="span8">
+        <input type="text" data-category="rankValue" value="<%= taxonRankValue %>" class="tooltip-this span12" placeholder="Rank value"/>
     </td>
 </tr>
