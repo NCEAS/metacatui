@@ -414,7 +414,6 @@ define(['underscore', 'jquery', 'backbone',
 			// Create a new, blank table for another taxonomicClassification
 			var newTableEl = this.createTaxonomicClassifcationTable();
 
-			$(newTableEl).addClass("new");
 			$(finishedEl).append(newTableEl);
 
 			return finishedEl;
@@ -454,15 +453,20 @@ define(['underscore', 'jquery', 'backbone',
 				tableBodyEl.append(this.taxonomicClassificationRowTemplate(rows[j]));
 			}
 
-			var newRowEl = this.taxonomicClassificationRowTemplate({
+			var newRowEl = $(this.taxonomicClassificationRowTemplate({
 				taxonRankName: '',
 				taxonRankValue: ''
-			});
+			}));
 
 			$(newRowEl).addClass("new");
 			$(tableBodyEl).append(newRowEl);
-
 			$(tableEl).append(tableBodyEl);
+
+			// Add the new class to the entire table if it's a new one
+			if (typeof classification === "undefined") {
+				$(tableEl).addClass("new");
+			}
+
 			$(finishedEl).append(tableEl);
 
 			return finishedEl;
