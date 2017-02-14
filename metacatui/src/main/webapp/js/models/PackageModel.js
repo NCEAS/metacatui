@@ -109,7 +109,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = MetacatUI.appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
+			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,' +
+							'rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic,isService,'+
+							'serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
 						'&rows=1000' +
 						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
 						'&wt=json';
@@ -357,7 +359,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 		},
 				
 		/*
-		 * Will get the sources and derivations of each member of this dataset and group them into packages  
+		 * Will query for the derivations of this package, and sort all entities in the prov trace 
+		 * into sources and derivations.
 		 */
 		getProvTrace: function(){
 			var model = this;
@@ -365,30 +368,55 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 			//See if there are any prov fields in our index before continuing
 			if(!MetacatUI.appSearchModel.getProvFields()) return this;
 			
+			//Start keeping track of the sources and derivations
 			var sources 		   = new Array(),
 				derivations 	   = new Array();
 			
-			//Make arrays of unique IDs of objects that are sources or derivations of this package.			
-			_.each(this.get("members"), function(member, i){
-				if(member.type == "Package") return;
-				
-				if(member.hasProvTrace()){
-					sources 	= _.union(sources, member.getSources());					
-					derivations = _.union(derivations, member.getDerivations());
-				}
-			});
-				
-			this.set("sources", sources);
-			this.set("derivations", derivations);
-
+			//Search for derivations of this package
+			var derivationsQuery = MetacatUI.appSearchModel.getGroupedQuery("prov_wasDerivedFrom", 
+					_.map(this.get("members"), function(m){ return encodeURIComponent(m.get("id")); }), "OR") +
+					"%20-obsoletedBy:*";
+			
+			var requestSettings = {
+					url: MetacatUI.appModel.get("queryServiceUrl") + "&q=" + derivationsQuery + "&wt=json&rows=1000" +
+						 "&fl=id,resourceMap,documents,isDocumentedBy,prov_wasDerivedFrom",
+					success: function(data){
+						_.each(data.response.docs, function(result){
+							derivations.push(result.id);
+						});
+						
+						//Make arrays of unique IDs of objects that are sources or derivations of this package.			
+						_.each(model.get("members"), function(member, i){
+							if(member.type == "Package") return;
+							
+							if(member.hasProvTrace()){
+								sources 	= _.union(sources, member.getSources());					
+								derivations = _.union(derivations, member.getDerivations());
+							}
+						});
+							
+						//Save the arrays of sources and derivations
+						model.set("sources", sources);
+						model.set("derivations", derivations);
+						
+						//Now get metadata about all the entities in the prov trace not in this package
+						model.getExternalProvTrace();
+					}
+			}
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+		},
+		
+		getExternalProvTrace: function(){
+			var model = this;
+			
 			//Compact our list of ids that are in the prov trace by combining the sources and derivations and removing ids of members of this package
-			var externalProvEntities = _.difference(_.union(sources, derivations), this.get("memberIds"));
+			var externalProvEntities = _.difference(_.union(this.get("sources"), this.get("derivations")), this.get("memberIds"));
 			
 			//If there are no sources or derivations, then we do not need to find resource map ids for anything
 			if(!externalProvEntities.length){
 				
 				//Save this prov trace on a package-member/document/object level.
-				if(sources.length || derivations.length)
+				if(this.get("sources").length || this.get("derivations").length)
 					this.setMemberProvTrace();
 				
 				//Flag that the provenance trace is complete
@@ -400,8 +428,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/LogsSea
 				//Create a query where we retrieve the ID of the resource map of each source and derivation
 				var idQuery = MetacatUI.appSearchModel.getGroupedQuery("id", externalProvEntities, "OR");
 				
-				//TODO: Also create a query where we retrieve the metadata for this object (so we can know its title, authors, etc.)
-				//TODO: Will look like "OR (documents:id OR id OR id)"
+				//Create a query where we retrieve the metadata for each source and derivation
 				var metadataQuery = MetacatUI.appSearchModel.getGroupedQuery("documents", externalProvEntities, "OR");
 			}
 			
