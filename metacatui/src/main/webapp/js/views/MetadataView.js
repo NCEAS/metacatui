@@ -1604,7 +1604,7 @@ define(['jquery',
 					//Clean up the link text
 					var withoutPrefix = linkText.substring(linkText.indexOf("ecogrid://") + 10),
 						pid = withoutPrefix.substring(withoutPrefix.indexOf("/")+1),
-						baseUrl = appModel.get('objectServiceUrl') || appModel.get('resolveServiceUrl');
+						baseUrl = appModel.get('resolveServiceUrl') || appModel.get('objectServiceUrl');
 
 					$(thisLink).attr('href', baseUrl + encodeURIComponent(pid)).text(pid);
 			});
