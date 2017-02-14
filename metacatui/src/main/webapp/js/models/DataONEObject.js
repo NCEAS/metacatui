@@ -830,8 +830,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        
 	        isNew: function(){
 	        	//Check if there is an original XML document that was retrieved from the server
-	        	if(!this.get("sysMetaXML") && this.get("synced")) return true;
-	        	else return false;
+	        	return ( this.get("dateUploaded") === null && this.get("synced") );
 	        },
 	        
 	        /*

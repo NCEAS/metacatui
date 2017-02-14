@@ -36,7 +36,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			
 			if(!this.get("xmlID"))
 				this.createID();
-
 			this.on("change:individualName change:organizationName change:positionName " +
 					"change:address change:phone change:fax change:email " +
 					"change:onlineUrl change:references change:userId change:role", this.trickleUpChange);
@@ -410,7 +409,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		trickleUpChange: function(){
-			this.get("parentModel").trigger("change");
+            if ( this.get("parentModel") ) {
+    			this.get("parentModel").trigger("change");
+                
+            }
 		},
 		
 		formatXML: function(xmlString){

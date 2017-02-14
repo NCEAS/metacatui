@@ -61,7 +61,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 // Call initialize for the super class
                 ScienceMetadata.prototype.initialize.call(this, attributes);
                 
-                // EML211-specific init goes here                
+                // EML211-specific init goes here
+                // this.set("objectXML", this.createXML());
+                this.parse(this.createXML());
             },
             
             url: function(){
@@ -374,7 +376,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});	 
 	           	
 	        	//Serialize the temporal coverage
-		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
+                if ( typeof this.get("temporalCoverage") !== "undefined" && this.get("temporalCoverage") !== null ) {
+    		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
+                    
+                }
 	           	
 		        //Serialize the creators
 		        this.serializeParties(eml, "creator");
@@ -670,12 +675,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        	return false;
 	        },
 	        
-	        isNew: function(){
-	        	//Check if there is an original XML document that was retrieved from the server
-	        	if(!this.get("objectXML") && this.get("synced")) return true;
-	        	else return false;
-	        },
-               
             /*
              Add an entity into the EML 2.1.1 object
             */
@@ -688,6 +687,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             */
             removeEntity: function(emlEntityId) {
                 
+            },
+            
+            /* Initialize the object XML for brand spankin' new EML objects */
+            createXML: function() {
+                var xml = "<eml:eml xmlns:eml=\"eml://ecoinformatics.org/eml-2.1.1\"></eml:eml>",
+                    eml = $($.parseHTML(xml));
+                    
+                    // Set base attributes
+                    eml.attr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                    eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
+                    eml.attr("xsi:schemaLocation", "eml://ecoinformatics.org/eml-2.1.1 eml.xsd");
+                    eml.attr("packageId", this.get("id"));
+                    eml.attr("system", "knb"); // We could make this configurable at some point
+                    
+                    // Add the dataset
+                    eml.append(document.createElement("dataset"));
+                    eml.find("dataset").append(document.createElement("title"));
+                                            
+                    emlString = $(document.createElement("div")).append(eml.clone()).html();
+                    
+                    return emlString;
             }
             
         });
