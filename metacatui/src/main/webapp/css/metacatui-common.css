@@ -1826,7 +1826,6 @@ img.icon{
     overflow-x: visible;
 }
 
-
 /****************************************** 
 * Images, Maps, and Media
 ********************************************/
@@ -2741,6 +2740,9 @@ body.mapMode{
 	font-size: 15px;
 	font-weight: bold;
 }
+#sidebar > .input-append .btn {
+    margin-left: -6px;
+}
 #sidebar .tooltip-inner{
 	font-size: 1.2em;
 	font-weight: normal;
@@ -2779,6 +2781,9 @@ body.mapMode{
 .filter-autocomplete .ui-menu-item a:hover,
 .filter-autocomplete .ui-menu-item a:focus{
 	border: 0px;
+}
+#filter-year .filter-input-contain{
+	margin-top: 10px;
 }
 /*-- Pagination and sort --*/
 .sort-by{

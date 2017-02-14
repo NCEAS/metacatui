@@ -21,7 +21,6 @@ var themeMap =
 		'templates/metadata.html' : 'themes/' + theme + '/templates/metadata.html',
 		'templates/insertProgress.html' : 'themes/' + theme + '/templates/insertProgress.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
-		'models/NodeModel' : 'js/themes/' + theme + '/models/NodeModel.js',
 		'models/Map' : 'js/themes/' + theme + '/models/Map.js',
 		'models/Search' : 'js/themes/' + theme + '/models/Search.js',
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
