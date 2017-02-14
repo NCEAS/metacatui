@@ -88,11 +88,57 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			 var objectDOM = this.get("objectDOM").cloneNode(true);
+			 var objectDOM = this.get("objectDOM").cloneNode(true),
+			     taxonCoverageEl;
+
+			 $(objectDOM).empty();
 			 
+			 var classifications = this.get('taxonomicClassification');
+
+			 if (typeof classifications === "undefined" ||
+			     classifications.length === 0) {
+					 return objectDOM;
+			}
+
+			 for (var i = 0; i < classifications.length; i++) {
+				$(objectDOM).append(this.updateTaxonomicClassification(classifications[i]));
+			 } 
+
 			 return objectDOM;
 		},
 		
+		updateTaxonomicClassification: function(classification) {
+			var taxonRankName = classification.taxonRankName || "",
+			    taxonRankValue = classification.taxonRankValue || "",
+			    commonName = classification.commonName || "",
+				taxonomicClassification = classification.taxonomicClassification || [],
+				finishedEl,
+				model = this;
+
+
+			finishedEl = $(document.createElement("taxonomicClassification"));
+
+			if (taxonRankName && taxonRankName.length > 0) {
+				$(finishedEl).append($("<taxonRankName>" + taxonRankName + "</taxonRankName>"));
+			}
+
+			if (taxonRankValue && taxonRankValue.length > 0) {
+				$(finishedEl).append($("<taxonRankValue>" + taxonRankValue + "</taxonRankValue>"));
+			}
+
+			if (commonName && commonName.length > 0) {
+				$(finishedEl).append($("<commonName>" + commonName + "</commonName>"));
+			}
+
+			if (taxonomicClassification) {
+				_.each(taxonomicClassification, function(tc) {
+					$(finishedEl).append(model.updateTaxonomicClassification(tc));
+				});
+			}
+			
+			return finishedEl;
+		},
+
 		trickleUpChange: function(){
 			this.get("parentModel").trigger("change");
 		},
