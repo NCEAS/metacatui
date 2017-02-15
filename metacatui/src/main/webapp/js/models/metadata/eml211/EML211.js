@@ -603,6 +603,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						console.log('yay, EML has been saved');
 						
 						model.set("uploadStatus", "c");
+                        model.set("sysMetaXML", model.serializeSysMeta());
 						model.trigger("successSaving");
 					},
 					error: function(model, response, xhr){
