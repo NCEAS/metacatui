@@ -8,7 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			objectXML: null,
 			objectDOM: null,
 			parentModel: null,
-			taxonomicClassification: null
+			taxonomicClassification: []
 		},
 		
 		initialize: function(attributes){
@@ -28,8 +28,16 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             	"taxonomicclassification" : "taxonomicClassification",
             	"taxonrankname" : "taxonRankName",
             	"taxonrankvalue" : "taxonRankValue",
-            	"taxonomiccoverage" : "taxonomicCoverage"
-            }
+            	"taxonomiccoverage" : "taxonomicCoverage",
+				"taxonomicsystem" : "taxonomicSystem",
+				"classificationsystem" : "classificationSystem",
+				"classificationsystemcitation" : "classificationSystemCitation",
+				"classificationsystemmodifications" : "classificationSystemModifications",
+				"identificationreference": "identificationReference",
+				"identifiername": "identifierName",
+				"taxonomicprocedures": "taxonomicProcedures",
+				"taxonomiccompleteness":"taxonomicCompleteness"
+            };
         },
 		
 		parse: function(objectDOM){
@@ -41,20 +49,26 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			    modelJSON = {
 					taxonomicClassification: _.map(taxonomicClassifications, function(tc) { return model.parseTaxonomicClassification(tc); })
 				};
-			
+
 			return modelJSON;
 		},
 		
 		parseTaxonomicClassification: function(classification) {
-
 			var rankName = $(classification).children("taxonrankname");
 			var rankValue = $(classification).children("taxonrankvalue");
 			var commonName = $(classification).children("commonname");
-			
-			var modelJSON = {
+			var taxonomicClassification = $(classification).children("taxonomicclassification");
+
+			var model = this,
+			    modelJSON = {
 				taxonRankName: $(rankName).text().trim(),
 				taxonRankValue: $(rankValue).text().trim(),
-				commonName: _.map($(commonName), function(cn) { return $(cn).text().trim(); })
+				commonName: _.map(commonName, function(cn) { 
+					return $(cn).text().trim(); 
+				}),
+				taxonomicClassification: _.map(taxonomicClassification, function(tc) {
+					return model.parseTaxonomicClassification(tc); 
+				})
 			};
 
 			return modelJSON;
@@ -74,11 +88,57 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			 var objectDOM = this.get("objectDOM").cloneNode(true);
+			 var objectDOM = this.get("objectDOM").cloneNode(true),
+			     taxonCoverageEl;
+
+			 $(objectDOM).empty();
 			 
+			 var classifications = this.get('taxonomicClassification');
+
+			 if (typeof classifications === "undefined" ||
+			     classifications.length === 0) {
+					 return objectDOM;
+			}
+
+			 for (var i = 0; i < classifications.length; i++) {
+				$(objectDOM).append(this.updateTaxonomicClassification(classifications[i]));
+			 } 
+
 			 return objectDOM;
 		},
 		
+		updateTaxonomicClassification: function(classification) {
+			var taxonRankName = classification.taxonRankName || "",
+			    taxonRankValue = classification.taxonRankValue || "",
+			    commonName = classification.commonName || "",
+				taxonomicClassification = classification.taxonomicClassification || [],
+				finishedEl,
+				model = this;
+
+
+			finishedEl = $(document.createElement("taxonomicClassification"));
+
+			if (taxonRankName && taxonRankName.length > 0) {
+				$(finishedEl).append($("<taxonRankName>" + taxonRankName + "</taxonRankName>"));
+			}
+
+			if (taxonRankValue && taxonRankValue.length > 0) {
+				$(finishedEl).append($("<taxonRankValue>" + taxonRankValue + "</taxonRankValue>"));
+			}
+
+			if (commonName && commonName.length > 0) {
+				$(finishedEl).append($("<commonName>" + commonName + "</commonName>"));
+			}
+
+			if (taxonomicClassification) {
+				_.each(taxonomicClassification, function(tc) {
+					$(finishedEl).append(model.updateTaxonomicClassification(tc));
+				});
+			}
+			
+			return finishedEl;
+		},
+
 		trickleUpChange: function(){
 			this.get("parentModel").trigger("change");
 		},

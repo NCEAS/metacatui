@@ -1089,7 +1089,7 @@ define(['jquery',
 			
 			//Get the member nodes
 			var members = _.sortBy(MetacatUI.nodeModel.get("members"), function(m){ return m.name });
-			var filteredMembers = _.reject(members, function(m){ return(_.contains(MetacatUI.nodeModel.get("replicaMembers"), m.identifier)); });
+			var filteredMembers = _.reject(members, function(m){ return(_.contains(MetacatUI.nodeModel.get("hiddenMembers"), m.identifier)); });
 			
 			//Get the current search filters for data source
 			var currentFilters = this.searchModel.get("dataSource");

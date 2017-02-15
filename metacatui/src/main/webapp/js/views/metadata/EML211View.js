@@ -11,10 +11,12 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/eml.html',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
-		'text!templates/metadata/taxonomicClassification.html'], 
+		'text!templates/metadata/taxonomicClassificationTable.html', 
+		'text!templates/metadata/taxonomicClassificationRow.html'], 
 	function(_, $, Backbone, ScienceMetadataView, EMLPartyView, 
-			EML, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage, EMLTemporalCoverage,
-			Template, OverviewTemplate, DatesTemplate, TaxonomicClassificationTemplate){
+			EML, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
+			EMLTemporalCoverage, Template, OverviewTemplate, DatesTemplate,
+			TaxonomicClassificationTable, TaxonomicClassificationRow){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -28,6 +30,7 @@ define(['underscore', 'jquery', 'backbone',
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
         	"blur   .temporal-coverage" : "updateTemporalCoverage",
+			"blur   .taxonomic-classification": "updateTaxonCoverage",
         	"change .keywords"          : "updateKeywords",
         	"change .usage"             : "updateRadioButtons",
         	"change .funding"           : "updateFunding",
@@ -40,7 +43,8 @@ define(['underscore', 'jquery', 'backbone',
         template: _.template(Template),
         overviewTemplate: _.template(OverviewTemplate),
         datesTemplate: _.template(DatesTemplate),
-        taxonomicClassificationTemplate: _.template(TaxonomicClassificationTemplate),
+		taxonomicClassificationTableTemplate: _.template(TaxonomicClassificationTable),
+        taxonomicClassificationRowTemplate: _.template(TaxonomicClassificationRow),
         
         initialize: function(options) {
             
@@ -303,17 +307,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	this.$(".section.taxa").empty().append("<h2>Taxa</h2>");
 
 			var taxonomy = this.model.get('taxonCoverage');
-			
-			// Render forms for existing classifications
-			if (typeof taxonomy !== "undefined" && (Array.isArray(taxonomy) && taxonomy.length)) {
-				var classifications = taxonomy[0].get('taxonomicClassification');
 
-				for (var i = 0; i < classifications.length; i++) {
-					this.$(".section.taxa").append(this.createTaxaonomicClassification(classifications[i]));
+			// Render a set of tables for each taxonomicCoverage
+			if (typeof taxonomy !== "undefined" && (Array.isArray(taxonomy) && taxonomy.length)) {
+				for (var i = 0; i < taxonomy.length; i++) {
+					this.$(".section.taxa").append(this.createTaxanomicCoverage(taxonomy[i]));
 				}
 			}
-
-			this.$(".section.taxa").append(this.createTaxaonomicClassification());
 	    },
 	    
 	    /*
@@ -397,48 +397,77 @@ define(['underscore', 'jquery', 'backbone',
 		    return containerEl;
 	    },
 	    
-		createTaxaonomicClassification: function(classification) {
-			// Set aside a variable to accumulate DOM nodes
+		// Creates a table to hold a single EMLTaxonCoverage element (table) for
+		// each root-level taxonomicClassification
+		createTaxanomicCoverage: function(coverage) {
             var finishedEl = $('<div class="row-fluid"></div>');
+			$(finishedEl).data({ model: coverage });
+			$(finishedEl).attr("data-category", "taxonomic-coverage");
 
-			// If the text should be editable, use form inputs
-            if (this.edit) {
-				// Fill in fields if they are empty
-				if (typeof classification === "undefined") {
-					classification = {};
+			var classifications = coverage.get("taxonomicClassification");
+
+			// Makes a table... for the root level
+			for (var i = 0; i < classifications.length; i++) {
+				$(finishedEl).append(this.createTaxonomicClassifcationTable(classifications[i]));
+			}
+
+			// Create a new, blank table for another taxonomicClassification
+			var newTableEl = this.createTaxonomicClassifcationTable();
+
+			$(finishedEl).append(newTableEl);
+
+			return finishedEl;
+		},
+		
+		createTaxonomicClassifcationTable: function(classification) {
+			var finishedEl = $('<div class="row-striped"></div>');
+			var tableEl = $(this.taxonomicClassificationTableTemplate());
+			var tableBodyEl = $("<tbody></tbody>");
+
+			var queue = [classification],
+			 	rows = [],
+			 	cur;
+
+			while (queue.length > 0) {				
+				cur = queue.pop();
+
+				// I threw this in here so I can this function without an 
+				// argument to generate a new table from scratch
+				if (typeof cur === "undefined") {
+					continue;
 				}
 
-				if (!classification.taxonRankName) {
-					classification.taxonRankName = '';
-				}
-				
-				if (!classification.taxonRankValue) {
-					classification.taxonRankValue = '';
-				}
+				rows.push({
+					'taxonRankName' : cur.taxonRankName,
+					'taxonRankValue' : cur.taxonRankValue
+				});
 
-				if (!classification.commonName) {
-					classification.commonName = '';
-				}
-				
-				taxonEl = this.taxonomicClassificationTemplate(classification);
-				
-				$(taxonEl)
-					.data({ model: classification })
-					.attr('data-category', 'taxonomicClassification');
-
-				$(finishedEl).append(taxonEl);
-			} else {
-				// TODO: This needs a ton of work but it does render the basics (badly)
-				if (classification) {
-					if (classification.taxonRankName) {
-						$(finishedEl).append($("<div><label>Rank Name</label> " + classification.taxonRankName + "</div>"));
-					}
-
-					if (classification.taxonRankValue) {
-						$(finishedEl).append($("<div><label>Rank Value</label> " + classification.taxonRankValue + "</div>"));
+				if (cur.taxonomicClassification) {
+					for (var i = 0; i < cur.taxonomicClassification.length; i++) {
+						queue.push(cur.taxonomicClassification[i]);
 					}
 				}
 			}
+
+			for (var j = 0; j < rows.length; j++) {
+				tableBodyEl.append(this.taxonomicClassificationRowTemplate(rows[j]));
+			}
+
+			var newRowEl = $(this.taxonomicClassificationRowTemplate({
+				taxonRankName: '',
+				taxonRankValue: ''
+			}));
+
+			$(newRowEl).addClass("new");
+			$(tableBodyEl).append(newRowEl);
+			$(tableEl).append(tableBodyEl);
+
+			// Add the new class to the entire table if it's a new one
+			if (typeof classification === "undefined") {
+				$(tableEl).addClass("new");
+			}
+
+			$(finishedEl).append(tableEl);
 
 			return finishedEl;
 		},
@@ -774,11 +803,51 @@ define(['underscore', 'jquery', 'backbone',
         	this.model.trigger("change");
         },
 
-		// TODO: Finish this function
-		// TODO: Link this function into the DOM
+		
+		/* Update the Taxonomic Coverage section when an individual 
+		taxonomic classification element is blur'd. We create a new set of
+		input fields to hold a new classification if any of the inputs have
+		text entered in them.
+
+		TODO: Finish this function
+		TODO: Link this function into the DOM
+		*/
 		updateTaxonCoverage: function(e) {
 			if (!e) return false;
 			
+			//Get the category, new value, and model
+	    	var category = $(e.target).attr("data-category"),
+	    		model    = $(e.target).data("model") || this.model,
+				value    = $(e.target).val().trim();
+	    	
+	    	//We can't update anything without a category
+	    	if(!category) return false;
+	    	
+	    	//Get the current value
+	    	var currentValue = model.get(category);
+
+			// Do nothing if the currentValue is undefined and the value is ''
+			if (typeof currentValue === "undefined" && value === "") {
+				return;
+			}
+			
+			// Do nothing if the value wasn't changed
+			if (currentValue === value) {
+				return;
+			}
+
+			model.set(category, value);
+			model.trigger("change");
+	    	
+			// Skip creating a new taxonomicClassification if the field
+			// is empty
+	    	if($(e.target).parent().is(".new") && value !== ""){
+	    		//Add another taxonomic classification
+		    	$(e.target).parent().after(this.createTaxaonomicClassification());
+		    	
+		    	//Remove the new class
+		    	$(e.target).parent().removeClass("new");
+	    	}
 		},
         
         updateRadioButtons: function(e){

@@ -2577,6 +2577,9 @@ body.mapMode{
 	font-size: 15px;
 	font-weight: bold;
 }
+#sidebar > .input-append .btn {
+    margin-left: -6px;
+}
 #sidebar .tooltip-inner{
 	font-size: 1.2em;
 	font-weight: normal;
@@ -2596,6 +2599,9 @@ body.mapMode{
 }
 #filter-year input[type='text']{
 	max-width: 50px;
+}
+#filter-year .filter-input-contain{
+	margin-top: 10px;
 }
 /*-- Pagination and sort --*/
 .sort-by{

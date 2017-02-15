@@ -45,14 +45,18 @@ define(['jquery', 'underscore', 'backbone'],
 				"urn:node:BCODMO"      : "img/node-logos/BCODMO.jpg",
 				"urn:node:R2R"         : "img/node-logos/R2R.png",				
 				"urn:node:NEON"        : "img/node-logos/NEON.png",				
-				"urn:node:TDAR"        : "img/node-logos/TDAR.png"				
+				"urn:node:TDAR"        : "img/node-logos/TDAR.png",				
+				"urn:node:GRIIDC"      : "img/node-logos/GRIIDC.png",
+				"urn:node:GINA"        : "img/node-logos/GINA.png",
+				"urn:node:RW"          : "img/node-logos/RW.png",
+				"urn:node:EDI"         : "img/node-logos/EDI.png"
 		},
 		
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API
 		defaults: {
 			members: [],
 			coordinators: [],
-			replicaMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
+			hiddenMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
 			currentMemberNode: MetacatUI.appModel.get("nodeId") || null,
 			checked: false
 		},
