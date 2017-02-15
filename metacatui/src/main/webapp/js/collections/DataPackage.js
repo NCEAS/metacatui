@@ -65,7 +65,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			ORE:     "http://www.openarchives.org/ore/terms/",
     			DCTERMS: "http://purl.org/dc/terms/",
     			CITO:    "http://purl.org/spar/cito/",
-    			XML:     "http://www.w3.org/2001/XMLSchema#"
+    			XSD:     "http://www.w3.org/2001/XMLSchema#"
     		},
             
             // Constructor: Initialize a new DataPackage
@@ -81,8 +81,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 
                 // Create a DataONEObject to represent this resource map
                 this.packageModel = new DataONEObject({
-                	formatType: "RESOURCE",
+                    formatType: "RESOURCE",
                     type: "DataPackage",
+                    formatId: "http://www.openarchives.org/ore/terms",
                     childPackages: {},
                     id: this.id
                 });
@@ -326,7 +327,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     DC =      rdf.Namespace(this.namespaces.DC),
                     ORE =     rdf.Namespace(this.namespaces.ORE),
                     DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
-                    CITO =    rdf.Namespace(this.namespaces.CITO);
+                    CITO =    rdf.Namespace(this.namespaces.CITO),
+                    XSD =     rdf.Namespace(this.namespaces.XSD);
                     
                 var memberStatements = [],
                     memberURIParts,
@@ -925,37 +927,52 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              */
             serialize: function() {
             	//Create an RDF serializer
-            	var serializer = rdf.Serializer();
-            	serializer.store = this.dataPackageGraph;
+            	var serializer = rdf.Serializer(),
+                    cnResolveUrl,
+                    idNode,
+                    idStatement,
+                    oldPidVariations,
+                    aggregationNode,
+                    aggByStatements,
+                    modifiedDate,
+                    idsFromModel;
+                
+                    serializer.store = this.dataPackageGraph;
+                
             	
             	//Define the namespaces
                 var ORE  = rdf.Namespace(this.namespaces.ORE),
-                	CITO = rdf.Namespace(this.namespaces.CITO);
+                	CITO = rdf.Namespace(this.namespaces.CITO),
+                    DC = rdf.Namespace(this.namespaces.DC),
+                    DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                    FOAF = rdf.Namespace(this.namespaces.FOAF),
+                    RDF = rdf.Namespace(this.namespaces.RDF),
+                    XSD = rdf.Namespace(this.namespaces.XSD);
             	            
             	//Get the pid of this package - depends on whether we are updating or creating a resource map
                 var pid = this.packageModel.get("id"),
                 	oldPid = this.packageModel.get("oldPid"),
-                	updating = oldPid? true : false;
+                	updating = oldPid ? true : false;
                 
                 //Update the pids in the RDF graph only if we are updating the resource map with a new pid
-                if(updating){
+                if( updating ) {
                 	
                 	//Find the identifier statement in the resource map
-    				var idNode =  rdf.lit(oldPid),
-    					idStatement = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
+    				idNode =  rdf.lit(oldPid);
+    				idStatement = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
     				
     				//Get the CN Resolve Service base URL from the resource map (mostly important in dev environments where it will not always be cn.dataone.org)
-    				var	cnResolveUrl = this.dataPackageGraph.cnResolveUrl || 
+    				cnResolveUrl = this.dataPackageGraph.cnResolveUrl || 
     					idStatement[0].subject.value.substring(0, idStatement[0].subject.value.indexOf(oldPid)) ||
     					idStatement[0].subject.value.substring(0, idStatement[0].subject.value.indexOf(encodeURIComponent(oldPid)));
     				this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
     				
     				//Create variations of the resource map ID using the resolve URL so we can always find it in the RDF graph
-    	            var	oldPidVariations = [oldPid, encodeURIComponent(oldPid), cnResolveUrl+ encodeURIComponent(oldPid)];
+    	            oldPidVariations = [oldPid, encodeURIComponent(oldPid), cnResolveUrl+ encodeURIComponent(oldPid)];
     				
                 	//Get all the isAggregatedBy statements
-    	            var aggregationNode =  rdf.sym(cnResolveUrl + encodeURIComponent(oldPid) + "#aggregation"),
-    	            	aggByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE("isAggregatedBy"));
+    	            aggregationNode =  rdf.sym(cnResolveUrl + encodeURIComponent(oldPid) + "#aggregation");
+    	            aggByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE("isAggregatedBy"));
     	            
     	            //Using the isAggregatedBy statements, find all the DataONE object ids in the RDF graph
     	            var idsFromXML = [];
@@ -976,7 +993,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     	            }, this);	
     	            
     	            //Get all the ids from this model
-                	var idsFromModel = _.invoke(this.models, "get", "id");
+                	idsFromModel = _.invoke(this.models, "get", "id");
     	            
     		        //Find the difference between the model IDs and the XML IDs to get a list of added members
     	            var addedIds  = _.without(_.difference(idsFromModel, idsFromXML), oldPidVariations);	            	            
@@ -1028,11 +1045,44 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			    //Change all the resource map identifier literal node in the RDF graph
     				if(idStatement[0]) idStatement[0].object.value = pid;
     				
+                } else {
+                    // Create the OAI-ORE graph from scratch
+                    cnResolveUrl = MetacatUI.appModel.get("resolveServiceUrl") || "https://cn.dataone.org/cn/v2/resolve/";
+                    this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
+                    rMapNode = rdf.sym(cnResolveUrl + encodeURIComponent(this.packageModel.id));
+                    aggregationNode = rdf.sym(cnResolveUrl + encodeURIComponent(this.packageModel.id) + "#aggregation");
+                    modifiedDate = rdf.lit(new Date().toISOString(), "", XSD("dateTime"));
+                    
+                    // Describe the resource map
+                    // With a Creator
+                    var creatorNode = rdf.blankNode();
+                    var creatorName = rdf.lit(MetacatUI.appUserModel.get("firstName") + 
+                        " " + 
+                        MetacatUI.appUserModel.get("lastName"),
+                        "", 
+                        XSD("string"));
+                    this.dataPackageGraph.add(creatorNode, FOAF("name"), creatorName);
+                    this.dataPackageGraph.add(creatorNode, RDF("type"), DCTERMS("Agent"));
+                    this.dataPackageGraph.add(rMapNode, DC("creator"), creatorNode);
+
+                    // Set the modified date
+                    this.dataPackageGraph.add(rMapNode, DCTERMS("modified"), modifiedDate);
+                    
+                    this.dataPackageGraph.add(rMapNode, RDF("type"), ORE("ResourceMap"));
+                    this.dataPackageGraph.add(rMapNode, ORE("describes"), aggregationNode);
+                    var idLiteral = rdf.lit(this.packageModel.id, "", XSD("string"));
+                    this.dataPackageGraph.add(rMapNode, DCTERMS("identifier"), idLiteral);
+                    
+                    // Describe the aggregation
+                    this.dataPackageGraph.add(aggregationNode, ORE("isDescribedBy"), rMapNode);
+                    
+                    // Aggregate each package member
+                    idsFromModel = this.pluck("id");
+                    _.each(idsFromModel, function(id) {
+                        this.addToAggregation(id);
+                        
+                    }, this);
                 }
-                
-                //Now serialize the RDF XML
-                var serializer = rdf.Serializer();
-                serializer.store = this.dataPackageGraph;
                 
                 var xmlString = serializer.statementsToXML(this.dataPackageGraph.statements);
                         	
@@ -1051,27 +1101,33 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	//Initialize the namespaces
             	var ORE     = rdf.Namespace(this.namespaces.ORE),
             		DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
-            		XML     = rdf.Namespace(this.namespaces.XML),
+            		XSD     = rdf.Namespace(this.namespaces.XSD),
             		CITO    = rdf.Namespace(this.namespaces.CITO);
             	
             	//Create a node for this object, the identifier, the resource map, and the aggregation
             	var objectNode = rdf.sym(fullID),
             		mapNode    = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id"))),
             		aggNode    = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id")) + "#aggregation"),
-            		idNode     = rdf.literal(id, undefined, XML("string"));
+            		idNode     = rdf.literal(id, undefined, XSD("string"));
             	
             	//Add the statement: this object isAggregatedBy the resource map aggregation
-    			this.dataPackageGraph.addStatement(rdf.st(objectNode, ORE("isAggregatedBy"), aggNode));
+    			this.dataPackageGraph.add(objectNode, ORE("isAggregatedBy"), aggNode);
     			//Add the statement: The resource map aggregation aggregates this object
-    			this.dataPackageGraph.addStatement(rdf.st(aggNode, ORE("aggregates"), objectNode));
+    			this.dataPackageGraph.add(aggNode, ORE("aggregates"), objectNode);
     			//Add the statement: This object has the identifier {id}
-    			this.dataPackageGraph.addStatement(rdf.st(objectNode, DCTERMS("identifier"), idNode));
+    			this.dataPackageGraph.add(objectNode, DCTERMS("identifier"), idNode);
     			
     			//Find the metadata doc that describes this object
     			var model   = _.find(this.models, function(m){ return m.get("id") == id }),
     				isDocBy = model.get("isDocumentedBy"),
     				documents = model.get("documents");
     			
+                // Deal with Solr indexing bug where metadata-only packages must "document" themselves
+                if ( isDocBy.length === 0 && documents.length === 0 ) {
+                    documents.push(model.get("id"));
+                    
+                }
+                
     			//If this object is documented by any metadata...
     			if(isDocBy && isDocBy.length){
     				//Get the ids of all the metadata objects in this package
