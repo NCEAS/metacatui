@@ -830,7 +830,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        
 	        isNew: function(){
 	        	//Check if there is an original XML document that was retrieved from the server
-	        	return ( this.get("dateUploaded") === null && this.get("synced") );
+	        	return ( this.get("dateUploaded") === null );
 	        },
 	        
 	        /*
