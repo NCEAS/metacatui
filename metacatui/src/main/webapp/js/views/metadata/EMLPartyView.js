@@ -143,7 +143,9 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         			
         			//Put the new value in the array at the correct position
         			currentValue[position] = $(e.target).val();
-        			this.model.set(changedAttr, currentValue);       			
+        			this.model.set(changedAttr, currentValue);     
+        			
+        			this.trigger("change:" + changedAttr);
         		}
         		else
         			this.model.set(changedAttr, $(e.target).val());
@@ -158,7 +160,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		if(!changedAttr) return false;
         		
         		//TODO: Allow multiple addresses - right now we only support editing the first address
-        		var address = this.model.get("address")[0],
+        		var address = this.model.get("address")[0] || {},
         			currentValue = address[changedAttr];
         		
         		//Update the address
@@ -168,11 +170,21 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 	    			
 	    			//Put the new value in the array at the correct position
 	    			currentValue[position] = $(e.target).val();
-	    			//address[changedAttr] = currentValue;
-	    			this.model.set("address", address);
         		}
+        		//Make sure delivery points are saved as arrays
+        		else if(changedAttr == "deliveryPoint"){
+        			address[changedAttr] = [$(e.target).val()];
+        		} 
         		else
         			address[changedAttr] = $(e.target).val();
+
+        		//Update the model
+    			var allAddresses = this.model.get("address");
+    			allAddresses[0] = address;
+    			this.model.set("address", allAddresses);
+
+    			//Manually trigger the change event since it's an object
+        		this.model.trigger("change:address");
         	},
         	
         	updateName: function(e){
@@ -197,6 +209,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		}
         		else
         			name[changedAttr] = $(e.target).val();
+        		
+        		this.model.trigger("change:individualName");
         	}
         });
         
