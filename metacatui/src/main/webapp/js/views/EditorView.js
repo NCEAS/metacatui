@@ -214,7 +214,7 @@ define(['underscore',
             		view.renderMember(model);
             	
             	//Listen for changes on this member
-            	this.listenTo(model, "change:uploadStatus", view.showControls);
+            	//this.listenTo(model, "change:uploadStatus", view.showControls);
 
             });
                        
@@ -315,6 +315,9 @@ define(['underscore',
             if (!this.pid) {
                 $("#data-package-table-body td.name").focus();
             }
+            
+        	//Show the editor controls
+        	this.showControls();
         },
         
         /* Renders the data package section of the EditorView */
@@ -475,9 +478,8 @@ define(['underscore',
         	this.render();
         },
         
-	    showControls: function(model){
-	    	if(model.get("uploadStatus") == "q")
-	    		this.$(".editor-controls").slideDown();
+	    showControls: function(){
+	    	this.$(".editor-controls").slideDown();
 	    },
 	    
 	    hideControls: function(){
