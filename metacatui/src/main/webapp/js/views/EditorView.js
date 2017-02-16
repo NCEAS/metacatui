@@ -370,7 +370,7 @@ define(['underscore',
         saveSuccess: function(){
         	//When the package is saved, revert the Save button back to normal
         	this.$("#save-editor").html("Save").removeClass("btn-disabled");
-    		this.hideControls();
+    		//this.hideControls();
     		
         	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
         	

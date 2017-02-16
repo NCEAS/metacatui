@@ -36,6 +36,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			
 			if(!this.get("xmlID"))
 				this.createID();
+			
 			this.on("change:individualName change:organizationName change:positionName " +
 					"change:address change:phone change:fax change:email " +
 					"change:onlineUrl change:references change:userId change:role", this.trickleUpChange);
@@ -91,7 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			modelJSON.fax   = faxNums;
 			
 			//Set the address
-			var addresses = $(objectDOM).children("address"),
+			var addresses = $(objectDOM).children("address") || [],
 				addressesJSON = [];
 			
 			addresses.each(function(i, address){
@@ -206,12 +207,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			 var type = this.get("type") || "associatedParty", 
-			 	 objectDOM = this.get("objectDOM")? this.get("objectDOM").cloneNode(true) : document.createElement(type);
-			 				
-			 //There needs to be at least one individual name, organization name, or position name
-			 if(!this.get("individualName") && !this.get("organizationName") && !this.get("positionName"))
-				 return "";
+			var type = this.get("type") || "associatedParty", 
+				objectDOM = this.get("objectDOM")? this.get("objectDOM").cloneNode(true) : document.createElement(type);
+ 				
+			//There needs to be at least one individual name, organization name, or position name
+			if(!this.get("individualName") && !this.get("organizationName") && !this.get("positionName"))
+				return "";
 			 
 			var name = this.get("individualName");
 			if(name){
@@ -237,22 +238,34 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				 
 				 // surname
 				 $(nameNode).append("<surname>" +  name.surName + "</surname>");
-			} 
-			 
-			 // positionName
-			if(this.get("positionName")){
-				if($(objectDOM).find("positionname").length)
-					$(objectDOM).find("positionname").text(this.get("positionname"));
-				else
-					$(objectDOM).find("individualName").after( $(document.createElement("positionname")).text(this.get("positionName")) );
-			} 
+			}
 			
 			 // organizationName
 			if(this.get("organizationName")){
+				//Get the organization name node
 				if($(objectDOM).find("organizationname").length)
-					$(objectDOM).find("organizationname").text(this.get("organizationName"));
+					var orgNameNode = $(objectDOM).find("organizationname").detach();
 				else
-					$(objectDOM).find("organizationname").after( $(document.createElement("organizationname")).text(this.get("organizationName")) );
+					var orgNameNode = document.createElement("organizationname");
+					
+				//Insert the text
+				$(orgNameNode).text(this.get("organizationName"));
+					
+				this.getEMLPosition(objectDOM, "organizationname").after(orgNameNode);
+			}
+			 
+			 // positionName
+			if(this.get("positionName")){
+				//Get the name node
+				if($(objectDOM).find("positionname").length)
+					var posNameNode = $(objectDOM).find("positionname").detach();
+				else
+					var posNameNode = document.createElement("positionname");
+					
+				//Insert the text
+				$(posNameNode).text(this.get("positionName"));
+				
+				this.getEMLPosition(objectDOM, "positionname").after(posNameNode);
 			} 
 			 
 			 // address
@@ -262,7 +275,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				 
 				 if(!addressNode){
 					 addressNode = document.createElement("address");
-					 $(objectDOM).append(addressNode);
+					 this.getEMLPosition(objectDOM, "address").after(addressNode);
 				 }
 				 
 				 _.each(address.deliveryPoint, function(deliveryPoint, ii){
@@ -272,7 +285,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					 
 					 if(!delPointNode){
 						 delPointNode = document.createElement("deliverypoint");
-						 $(addressNode).append(delPointNode);
+						 
+						 //Add the deliveryPoint node to the address node
+						 //Insert after the last deliveryPoint node
+						 var appendAfter = $(addressNode).find("deliverypoint")[ii-1];
+						 if(appendAfter)
+							 $(appendAfter).after(delPointNode);
+						 //Or just prepend to the beginning
+						 else
+							 $(addressNode).prepend(delPointNode);
 					 }
 					 
 					 $(delPointNode).text(deliveryPoint);					 
@@ -328,73 +349,73 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 _.each(this.get("phone"), function(phone) {
 				 var phoneNode = $(objectDOM).find("phone[phonetype='voice']");
 				 
-				 if(!phoneNode){
+				 if(!phoneNode.length){
 					 phoneNode = $(document.createElement("phone")).attr("phonetype", "voice");
-					 $(objectDOM).append(phoneNode);
+					 this.getEMLPosition(objectDOM, "phone").after(phoneNode);
 				 }
 				 
 				 $(phoneNode).text(phone);				 
-			 });
+			 }, this);
 			 
 			 // fax[es]
 			 _.each(this.get("fax"), function(fax) {
 				 var faxNode = $(objectDOM).find("phone[phonetype='facsimile']");
 				 
-				 if(!faxNode){
+				 if(!faxNode.length){
 					 faxNode = $(document.createElement("phone")).attr("phonetype", "facsimile");
-					 $(objectDOM).append(faxNode);
+					 this.getEMLPosition(objectDOM, "phone").after(faxNode);
 				 }
 				 
 				 $(faxNode).text(fax);	
-			 });
+			 }, this);
 			 
 			 // electronicMailAddress[es]
 			 _.each(this.get("email"), function(email) {
 				 var emailNode = $(objectDOM).find("electronicmailaddress");
 				 
-				 if(!emailNode){
+				 if(!emailNode.length){
 					 emailNode = document.createElement("electronicmailaddress");
-					 $(objectDOM).append(emailNode);
+					 this.getEMLPosition(objectDOM, "electronicmailaddress").after(emailNode);
 				 }
 				 
 				 $(emailNode).text(email);
 				 
-			 });
+			 }, this);
 			 
 			// online URL[es]
 			 _.each(this.get("onlineUrl"), function(onlineUrl) {
 				 var urlNode = $(objectDOM).find("onlineurl");
 				 
-				 if(!urlNode){
+				 if(!urlNode.length){
 					 urlNode = document.createElement("onlineurl");
-					 $(objectDOM).append(urlNode);
+					 this.getEMLPosition(objectDOM, "onlineurl").after(urlNode);
 				 }
 				 
 				 $(urlNode).text(onlineUrl);
 				 
-			 });
+			 }, this);
 			 
 			 //user ID
 			 _.each(this.get("userId"), function(userId) {
 				 var idNode = $(objectDOM).find("userid");
 				 
-				 if(!idNode){
-					 idNode = document.createElement("userid");
-					 $(objectDOM).append(idNode);
+				 if(!idNode.length){
+					 idNode = $(document.createElement("userid")).attr("directory", "https://orcid.org/");
+					 this.getEMLPosition(objectDOM, "userid").after(idNode);
 				 }
 				 
 				 $(idNode).text(userId);
 				 
-			 });
+			 }, this);
 			 
 			// role
 			if(this.get("role")){
 				if($(objectDOM).find("role").length)
 					$(objectDOM).find("role").text(this.get("role"));
 				else
-					$(objectDOM).append( $(document.createElement("role")).text(this.get("role")) );
+					this.getEMLPosition(objectDOM, "role").after( $(document.createElement("role")).text(this.get("role")) );
 			} 
-			
+						
 			//XML id attribute
 			if(this.get("xmlID"))
 				$(objectDOM).attr("id", this.get("xmlID"));
@@ -404,14 +425,33 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 return objectDOM;
 		},
 		
+		/*
+         * Returns the node in the given EML snippet that the given node type should be inserted after
+         */
+        getEMLPosition: function(objectDOM, nodeName){
+        	var nodeOrder = [ "individualname", "organizationname", "positionname", "address", "phone",
+        	                  "electronicmailaddress", "onlineurl", "userid", "role"];
+        	
+        	var position = _.indexOf(nodeOrder, nodeName);
+        	if(position == -1)
+        		return $(objectDOM).children().last();
+        	
+        	//Go through each node in the node list and find the position where this node will be inserted after
+        	for(var i=position-1; i>=0; i--){
+        		if($(objectDOM).find(nodeOrder[i]).length)
+        			return $(objectDOM).find(nodeOrder[i]).last();
+        	}
+        	
+        	return $(objectDOM).children().last();
+        },
+		
 		createID: function(){
 			this.set("xmlID", Math.random() * (9999999999999999 - 1000000000000000) + 1000000000000000);
 		},
 		
 		trickleUpChange: function(){
             if ( this.get("parentModel") ) {
-    			this.get("parentModel").trigger("change");
-                
+    			this.get("parentModel").trigger("change");                
             }
 		},
 		
