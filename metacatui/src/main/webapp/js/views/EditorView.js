@@ -76,10 +76,6 @@ define(['underscore',
         render: function() {
 
             MetacatUI.appModel.set('headerType', 'default');
-            
-            //Reset the listeners
-            //this.stopListening();
-            
         	//Inert the basic template on the page
         	this.$el.html(this.template({
         		loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."})
@@ -147,6 +143,7 @@ define(['underscore',
                 
                 // Create a new Data packages
                 MetacatUI.rootDataPackage = new DataPackage([this.model]);
+                MetacatUI.rootDataPackage.packageModel.set("synced", true);
                 
                 // Associate the science metadata with the resource map
                 if ( this.model.get && Array.isArray(this.model.get("resourceMap")) ) {

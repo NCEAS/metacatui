@@ -63,10 +63,6 @@ define([
              *  Render the DataPackage HTML
              */
             render: function() {
-            	
-            	//Reset the listeners
-            	this.stopListening();
-
                 this.$el.append(this.template({
                 	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
                 	id: this.dataPackage.get("id")
