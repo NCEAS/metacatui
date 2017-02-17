@@ -128,11 +128,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             
             /* Fetch the EML from the MN object service */
             fetch: function(options) {
-            	if(!options)
-            		var options = {};
+            	if( ! options ) var options = {};
             	
-            	if(options.sysMeta)
-            		options.url = MetacatUI.appModel.get("metaServiceUrl");
+            	if( options.sysMeta ) {
+                    options.url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id"));
+                    
+            	}
             	
             	//Add the authorization header and other AJAX settings
             	 _.extend(options, MetacatUI.appUserModel.createAjaxSettings(), {dataType: "text"});
@@ -511,13 +512,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Saves the EML document to the server using the DataONE API
              */
             save: function(attributes, options){
-            	
-            /*	 if(!this.hasUpdates()){
-    				 this.set("uploadStatus", null);
-    				 return;
-    			 }
-            	*/ 
-            	 //Set the upload transfer as in progress
+                
+                // Set missing file names before saving
+                if ( ! this.get("fileName") ) {
+                    this.setMissingFileName();
+                  
+                }
+
+            	//Set the upload transfer as in progress
    			 	this.set("uploadStatus", "p"); 
    			 	
    			 	//If this is an existing object and there is no system metadata, retrieve it
@@ -605,6 +607,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
 						model.trigger("successSaving");
+                        model.fetch({merge: true, sysMeta: true});
+                        
 					},
 					error: function(model, response, xhr){
 						console.log("error updating EML: ", response.responseText);

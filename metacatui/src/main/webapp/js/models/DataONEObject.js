@@ -80,10 +80,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 	this.set("originalAttrs", Object.keys(DataONEObject.prototype.defaults()));
                 
                 // Register a listener for any attribute change
-              /*  this.once("sync", function(){
+                this.once("sync", function(){
                     this.on("change", this.handleChange, this);                	
                 }, this);
-               */ 
                 this.on("successSaving", this.updateRelationships);
                 
             },
@@ -168,7 +167,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
              */
             fetch: function(options){
             	console.log("Fetching " + this.get("id"));
-            	
+                
+                if ( ! options ) var options = {};
+                
+                // Default to GET /meta
+                options.url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id"));
+                
             	//If we are using the Solr service to retrieve info about this object, then construct a query
             	if((typeof options != "undefined") && options.solrService){
             		
@@ -400,8 +404,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 		   * Saves the DataONEObject System Metadata to the server
 		   */
 		  save: function(attributes, options){
-			  
-			 if(!this.hasUpdates()){
+
+              // Set missing file names before saving
+              if ( ! this.get("fileName") ) {
+                  this.setMissingFileName();
+                  
+              }
+
+			 if ( !this.hasUpdates() ) {
 				 this.set("uploadStatus", null);
 				 return;
 			 }
@@ -451,6 +461,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 						
 						model.set("uploadStatus", "c");
 						model.trigger("successSaving");
+                        model.fetch({merge: true}); // Get the newest sysmeta set by the MN
 					},
 					error: function(model, response, xhr){
 						console.log("error updating system metadata");
@@ -482,7 +493,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     obsoletedByNode, // A DOM node for the obsoletedBy field
                     fileNameNode, // A DOM node for the file name
                     xmlString, // The system metadata document as a string
-                    nodeNameMap; // The map of camelCase to lowercase attributes
+                    nodeNameMap, // The map of camelCase to lowercase attributes
+                    extension; // the file name extension for this object
               
                 if ( typeof sysMetaXML === "undefined" || sysMetaXML === null ) {
                     xml = this.createSysMeta();
@@ -573,20 +585,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	xml.find("originmembernode").text(this.get("originMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 	        	xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 
-	        	//Set the object file name
-	        	if( this.get("fileName") ){
-	        		//Get the filename node
-		        	fileNameNode = xml.find("filename");
-		        	
-		        	//If the filename node doesn't exist, then create one
-		        	if( ! fileNameNode.length ){
-		        		fileNameNode = $(document.createElement("filename"));
-		        		xml.find("authoritativemembernode").after(fileNameNode);
-		        	}
-		        	
-		        	//Add the file name to the node
-		        	$(fileNameNode).text(this.get("fileName"));
+        		//Get the filename node
+	        	fileNameNode = xml.find("filename");
+	        	
+	        	//If the filename node doesn't exist, then create one
+	        	if( ! fileNameNode.length ){
+	        		fileNameNode = $(document.createElement("filename"));
+	        		xml.find("authoritativemembernode").after(fileNameNode);
 	        	}
+                
+	        	//Set the object file name
+                $(fileNameNode).text(this.get("fileName"));
 	        	
 	        	xmlString = $(document.createElement("div")).append(xml.clone()).html();
 	        	
@@ -1001,6 +1010,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                   this.set("sizeStr", bytes + ' B');
                   
               }
+          },
+          
+          /* Ensure we have a file name */
+          setMissingFileName: function() {
+              var objectFormats, filename, extension;
+              
+              objectFormats = MetacatUI.objectFormats.where({formatId: this.get("formatId")});
+              if ( objectFormats.length > 0 ) {
+                  extension = objectFormats[0].get("extension");
+              }
+              
+              filename = this.get("id").replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
+              if ( typeof extension !== "undefined" ) {
+                  filename = filename + "." + extension;
+              }
+              this.set("fileName", filename);
+              
           }
         }); 
         
