@@ -588,6 +588,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 							collection.packageModel.set("sysMetaXML", collection.packageModel.serializeSysMeta());
 							collection.trigger("successSaving");
                             collection.packageModel.fetch({merge: true});
+                            // Reset the content changes status
+                            collection.packageModel.set("hasContentChanges", false);
 						},
 						error: function(data){
 							console.log("error udpating object");

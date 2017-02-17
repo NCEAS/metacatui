@@ -64,7 +64,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
                     originalAttrs: [], // An array of original attributes in a DataONEObject
-                    hasContentUpdates: false, // If attributes outside of originalAttrs have been changed
+                    hasContentChanges: false, // If attributes outside of originalAttrs have been changed
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
                     collections: [] //References to collections that this model is in
 	        	}
@@ -132,7 +132,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                                 		
                 } else {
                     if ( this.hasUpdates() ) {
-                        if ( this.hasContentUpdates ) {
+                        if ( this.hasContentChanges ) {
                             // Exists on the server, use MN.update()
     		                return MetacatUI.appModel.get("objectServiceUrl") + 
                             (encodeURIComponent(this.get("id")));
@@ -438,11 +438,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 formData.append("object", this.get("uploadFile"), this.get("fileName"));
                 
             } else {
-                if ( this.hasContentUpdates ) {
+                if ( this.hasContentChanges ) {
                     // Update the object (MN.update())
-                    
+                    console.log("TODO: enable replacement of DATA objects");
                 } else {
                     // Don't add the object (MN.updateSystemMetadata())
+                    console.log("TODO: enable update of DATA object sysmeta");
                     
                 }
             }
@@ -462,6 +463,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 						model.set("uploadStatus", "c");
 						model.trigger("successSaving");
                         model.fetch({merge: true}); // Get the newest sysmeta set by the MN
+                        // Reset the content changes status
+                        model.set("hasContentChanges", false);
+                        
 					},
 					error: function(model, response, xhr){
 						console.log("error updating system metadata");
@@ -476,8 +480,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 			//Send the Save request
 			Backbone.Model.prototype.save.call(this, null, requestSettings);
             
-            // Reset the content changes status
-            this.hasContentChanges = false;
 		  },
 		  
 		  serializeSysMeta: function(options){
@@ -816,7 +818,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	return !(newSysMeta == oldSysMeta);
 	        },
             
-            /* Set the hasContentUpdates flag on attribute changes 
+            /* Set the hasContentChanges flag on attribute changes 
              * that are not listed in the originalAttrs array
              */
             handleChange: function(model, options) {
@@ -831,7 +833,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 // and should be an attribute from ScienceMetadata, EML211, etc.
                 //If no changed attribute is given, assume there are content changes
                 if( _.difference(changed, this.get("originalAttrs")).length  || !changed.length){
-                	this.hasContentChanges = true;
+                	this.set("hasContentChanges", true);
                     this.updateUploadStatus(model, options);
                 }
                 	
