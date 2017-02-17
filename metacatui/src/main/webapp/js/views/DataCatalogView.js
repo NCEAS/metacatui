@@ -87,6 +87,7 @@ define(['jquery',
 				   			 'click .collapse-me' : 'collapse',
  'click .filter-contain .expand-collapse-control' : 'toggleFilterCollapse',
 	  						  'click #jumpUp' : 'jumpUp',
+	  						  'click #resetTree' : 'resetTree',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			  'click .toggle-map' : 'toggleMapMode',
 				   			 'click .toggle-list' : 'toggleList',
@@ -380,6 +381,26 @@ define(['jquery',
 			
 			// re-root
 			$.extend(options, {startingRoot: parentId});
+
+			// force a re-render
+			tree.init();
+			
+			// ensure the tooltips are activated
+			$(".tooltip-this").tooltip();
+			
+			return false;
+			
+		},
+		
+		resetTree : function() {
+									
+			// re-root the tree at the original concept
+			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.data("NCBOTree");
+			var options = tree.options();
+			var startingRoot = "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType";
+			
+			// re-root
+			$.extend(options, {startingRoot: startingRoot});
 
 			// force a re-render
 			tree.init();
