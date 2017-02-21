@@ -130,16 +130,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             fetch: function(options) {
             	if( ! options ) var options = {};
             	
-            	if( options.sysMeta ) {
-                    options.url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id"));
-                    
-            	}
-            	
             	//Add the authorization header and other AJAX settings
             	 _.extend(options, MetacatUI.appUserModel.createAjaxSettings(), {dataType: "text"});
 
                 // Merge the system metadata into the object first
                 _.extend(options, {merge: true});
+                DataONEObject.prototype.fetch.call(this, options);
+                
+                //If we are retrieving system metadata only, then exit now
+                if(options.sysMeta)
+                	return;
                 
             	//Call Backbone.Model.fetch to retrieve the info
                 return Backbone.Model.prototype.fetch.call(this, options);

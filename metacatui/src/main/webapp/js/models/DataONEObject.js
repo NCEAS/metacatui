@@ -169,6 +169,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             	console.log("Fetching " + this.get("id"));
                 
                 if ( ! options ) var options = {};
+                else var options = _.clone(options);
+                
                 
                 // Default to GET /meta
                 options.url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id"));
