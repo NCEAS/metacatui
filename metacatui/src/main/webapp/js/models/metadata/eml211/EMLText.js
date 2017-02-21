@@ -64,18 +64,19 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			 var objectDOM = this.get("objectDOM").cloneNode(true);
+            var type = this.get("type") || this.get("parentAttribute"), 
+                objectDOM = this.get("objectDOM") ? this.get("objectDOM").cloneNode(true) : document.createElement(type);
 			 
-			 //Empty the DOM
-			 $(objectDOM).empty();
+			//Empty the DOM
+			$(objectDOM).empty();
 			 
-			 //Format the text
-			 var paragraphs = this.get("text");
-			 _.each(paragraphs, function(p){
+			//Format the text
+			var paragraphs = this.get("text");
+			_.each(paragraphs, function(p){
 				 if(!p.length) p = " ";
 				 
 				$(objectDOM).append("<para>" + p + "</para>");
-			 });
+			});
 			 
 			 return objectDOM;
 		},
