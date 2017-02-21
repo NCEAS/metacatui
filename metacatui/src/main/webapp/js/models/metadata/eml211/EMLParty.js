@@ -4,30 +4,28 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 	var EMLParty = Backbone.Model.extend({
 		
-		defaults: {
-			objectXML: null,
-			objectDOM: null,
-			individualName: {
-				givenName: [],
-				surName: "",
-				salutation: []
-			},
-			organizationName: null,
-			positionName: null,
-			address: [],
-			phone: [],
-			fax: [],
-			email: [],
-			onlineUrl: [],
-			role: null,
-			references: null,
-			userId: [],
-			xmlID: null,
-			type: null,
-			typeOptions: ["associatedParty", "contact", "creator", "metadataProvider", "publisher"],
-			roleOptions: ["custodianSteward", "principalInvestigator", "collaboratingPrincipalInvestigator",
-			              "coPrincipalInvestigator", "user"],
-			parentModel: null
+		defaults: function(){
+			return {
+				objectXML: null,
+				objectDOM: null,
+				individualName: null,
+				organizationName: null,
+				positionName: null,
+				address: [],
+				phone: [],
+				fax: [],
+				email: [],
+				onlineUrl: [],
+				role: null,
+				references: null,
+				userId: [],
+				xmlID: null,
+				type: null,
+				typeOptions: ["associatedParty", "contact", "creator", "metadataProvider", "publisher"],
+				roleOptions: ["custodianSteward", "principalInvestigator", "collaboratingPrincipalInvestigator",
+				              "coPrincipalInvestigator", "user"],
+				parentModel: null
+			}
 		},
 		
 		initialize: function(options){
@@ -108,8 +106,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 											return  $(email).text();
 										 });
 			modelJSON.role 			   = $(objectDOM).find("role").text();
-			modelJSON.onlineUrl 	   = [$(objectDOM).find("onlineUrl").first().text()];
-			
+			modelJSON.onlineUrl 	   = [$(objectDOM).find("onlineurl").first().text()];
+			modelJSON.userId 	       = [$(objectDOM).find("userid").first().text()];
+						
 			//Set the id attribute
 			modelJSON.xmlID = $(objectDOM).attr("id");			
 			
@@ -396,15 +395,27 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 }, this);
 			 
 			 //user ID
-			 _.each(this.get("userId"), function(userId) {
+			 var userId = Array.isArray(this.get("userId")) ? this.get("userId") : [this.get("userId")];
+			 _.each(userId, function(id) {
 				 var idNode = $(objectDOM).find("userid");
 				 
+				 //Create the userid node
 				 if(!idNode.length){
-					 idNode = $(document.createElement("userid")).attr("directory", "https://orcid.org/");
+					 
+					 idNode = $(document.createElement("userid"));
+					 
 					 this.getEMLPosition(objectDOM, "userid").after(idNode);
 				 }
 				 
-				 $(idNode).text(userId);
+				 //If this is an orcid identifier, ormat it with the orvid.org prefix and add the directory attribute
+				 if(this.isOrcid(id)){
+					 if(id.length == 19)
+						 id = "http://orcid.org/" + id;
+					 
+					 idNode.attr("directory", "https://orcid.org");
+				 }
+				 
+				 $(idNode).text(id);
 				 
 			 }, this);
 			 
@@ -417,10 +428,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			} 
 						
 			//XML id attribute
-			if(this.get("xmlID"))
+			this.createID();
+			//if(this.get("xmlID"))
 				$(objectDOM).attr("id", this.get("xmlID"));
-			else
-				$(objectDOM).removeAttr("id");
+			//else
+			//	$(objectDOM).removeAttr("id");
 			 
 			 return objectDOM;
 		},
@@ -446,13 +458,40 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         },
 		
 		createID: function(){
-			this.set("xmlID", Math.random() * (9999999999999999 - 1000000000000000) + 1000000000000000);
+			this.set("xmlID", Math.ceil(Math.random() * (9999999999999999 - 1000000000000000) + 1000000000000000));
 		},
 		
 		trickleUpChange: function(){
             if ( this.get("parentModel") ) {
     			this.get("parentModel").trigger("change");                
             }
+		},
+		
+		isOrcid: function(username){
+			if(!username) return false;
+			
+			//Checks for ORCIDs using the orcid base URL as a prefix
+			if((username.indexOf("http://orcid.org") == 0) && username.length == 36){
+				return true;
+			}
+								
+			/* The ORCID checksum algorithm to determine is a character string is an ORCiD 
+			 * http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier
+			 */	
+			var total = 0,
+				baseDigits = username.replace(/-/g, "").substr(0, 15);
+			
+			for(var i=0; i<baseDigits.length; i++){
+				var digit = parseInt(baseDigits.charAt(i));
+				total = (total + digit) * 2;
+			}
+			
+			var remainder = total % 11,
+				result = (12 - remainder) % 11,
+				checkDigit = (result == 10) ? "X" : result.toString(),
+				isOrcid = (checkDigit == username.charAt(username.length-1));
+			
+			return isOrcid;
 		},
 		
 		formatXML: function(xmlString){
