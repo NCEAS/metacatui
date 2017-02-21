@@ -633,8 +633,8 @@ define(['jquery',
 				});
 			
 			// bind after rendering
-			//target = $(annotationTag).find(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
-			//$(target).bind("click", this.flagAnnotation);
+			target = $(annotationTag).find(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
+			$(target).bind("click", this.flagAnnotation);
 			
 			var deleteBtn = $(annotationTag).find(".annotation-delete");
 			$(deleteBtn).tooltip({
@@ -644,8 +644,8 @@ define(['jquery',
 			
 			$(annotationTag).find(".tooltip-this").tooltip();
 			
-			//target = $(annotationTag).find(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
-			//$(target).bind("click", this.deleteAnnotation);
+			target = $(annotationTag).find(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
+			$(target).bind("click", this.deleteAnnotation);
 
 		},
 		
@@ -679,32 +679,23 @@ define(['jquery',
 		
 		flagAnnotation : function(e) {
 			
-			//Get the flag button
-			var flagButton = e.target;
-			if(!$(flagButton).is(".annotation-flag")){
-				flagButton = $(flagButton).parents(".annotation-flag");
-			}
-
-			//Get the annotation
-			var annotation = $(flagButton).data("annotation");
-
-			//If there is no annotation, exit.
-			if(!annotation) return;
-									
-			//Get the annotation object
-			var anns = this.$el.data("annotator").plugins.Store.annotations;
-			var annObj = _.findWhere(anns, {id: annotation.get("id")});
+			var annotationId = $(e.target).attr("data-id");
+			console.log("deleting annotation id: " +  annotationId);
+			var view = $('#metadata-container').data("annotator-view");
+			var annotations = view.$el.data('annotator').plugins.Store.annotations;
+			var annotation = _.findWhere(annotations, {id: annotationId});
 			
 			//Reject it!
-			annObj.reject = !annObj.reject;
+			annotation.reject = !annotation.reject;
 	
 			//Update it
-			this.$el.data('annotator').updateAnnotation(annObj);					
+			view.$el.data('annotator').updateAnnotation(annotation);					
 		},
 		
 		deleteAnnotation : function(e) {
 			var annotationId = $(e.target).attr("data-id");
 			console.log("deleting annotation id: " +  annotationId);
+			var view = $('#metadata-container').data("annotator-view");
 			var annotations = view.$el.data('annotator').plugins.Store.annotations;
 			var annotation = _.findWhere(annotations, {id: annotationId});
 			view.$el.data('annotator').deleteAnnotation(annotation);					
