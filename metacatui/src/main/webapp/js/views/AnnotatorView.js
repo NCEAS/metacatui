@@ -475,9 +475,13 @@ define(['jquery',
 			var rejectedAnnotations = _.filter(annotations, function(ann){
 				return ann.reject;
 			});
+			annotations = _.filter(annotations, function(ann){
+				return !ann.reject;
+			});
 			
-			//Add the rejected annotations to the end of the list (we want to display them last)
+			// we want to display rejected last
 			annotations = annotations.concat(rejectedAnnotations);
+			annotations.reverse();
 			
 			var view = this;
 			
