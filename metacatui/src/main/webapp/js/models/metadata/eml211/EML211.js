@@ -140,7 +140,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
                 // Merge the system metadata into the object first
                 _.extend(options, {merge: true});
-                DataONEObject.prototype.fetch.call(this, options);
                 
             	//Call Backbone.Model.fetch to retrieve the info
                 return Backbone.Model.prototype.fetch.call(this, options);
