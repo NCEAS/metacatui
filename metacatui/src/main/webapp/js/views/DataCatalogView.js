@@ -268,14 +268,21 @@ define(['jquery',
 			var tree = $("#bioportal-tree").NCBOTree({
 				  apikey: appModel.get("bioportalAPIKey"),
 				  ontology: "ECSO",
+				  width: "400",
 				  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
 				});
 			
+			// make a container for the tree and nav buttons
+			var contentPlus = $("<div></div>");
+			$(contentPlus).append('<button class="icon icon-level-up tooltip-this" id="jumpUp" data-trigger="hover" data-title="Go up to parent" data-placement="top"></button>');
+			$(contentPlus).append('<button class="icon icon-undo tooltip-this" id="resetTree" data-trigger="hover" data-title="Reset tree" data-placement="top"></button>');
+			$(contentPlus).append(tree);
+
 			$("[data-category='annotation'] .expand-collapse-control").popover({
 				html: true,
 				placement: "bottom",
 				trigger:"manual",
-				content: tree,
+				content: contentPlus,
 				container: "#bioportal-popover"
 			}).on("click", function(){
 				if($($(this).data().popover.options.content).is(":visible")){
@@ -293,6 +300,10 @@ define(['jquery',
 					$(this).popover("show");
 					//Insert the tree into the popover content
 					$(this).data().popover.options.content = content;
+					
+					// ensure tooltips are activated
+			    	$(".tooltip-this").tooltip();
+					
 				}
 			});
 			
@@ -331,7 +342,7 @@ define(['jquery',
 			annotationFilterEl.trigger("click");
 			
 			// reset the tree for next search
-			var tree = annotationFilterEl.data().popoverContent.data("NCBOTree");
+			var tree = annotationFilterEl.data().popoverContent.find("#bioportal-tree").data("NCBOTree");
 			var options = tree.options();
 			$.extend(options, {startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"});
 			tree.changeOntology("ECSO");
@@ -349,7 +360,7 @@ define(['jquery',
 		afterJumpToClass : function(event, classId) {
 			
 			// re-root the tree at this concept
-			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.data("NCBOTree");
+			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
 			var options = tree.options();
 			$.extend(options, {startingRoot: classId});
 
@@ -366,7 +377,7 @@ define(['jquery',
 			//console.log("Jumping UP!");
 						
 			// re-root the tree at the parent concept of the root
-			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.data("NCBOTree");
+			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
 			var options = tree.options();
 			var startingRoot = options.startingRoot;
 			//console.log("startingRoot: " + startingRoot);
@@ -395,7 +406,7 @@ define(['jquery',
 		resetTree : function() {
 									
 			// re-root the tree at the original concept
-			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.data("NCBOTree");
+			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
 			var options = tree.options();
 			var startingRoot = "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType";
 			
