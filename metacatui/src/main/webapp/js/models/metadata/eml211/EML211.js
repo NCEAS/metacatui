@@ -333,7 +333,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		var fieldName = this.nodeNameMap()[field] || field;
 	           		
 	           		//Get the EMLText model
-	           		var emlTextModels = this.get(field);
+	           		var emlTextModels = Array.isArray(this.get(field)) ? this.get(field) : [this.get(field)];
 	           		if(!emlTextModels.length) return;
 	           		
 	           		//Get the node from the EML doc
