@@ -2917,6 +2917,10 @@ label.ui-state-active i.icon-check{
 	min-width: 105px;
 }
 
+a.disabled {
+	pointer-events: none;
+}
+
 /*******************************************
    Registry and Forms
 ******************************************/

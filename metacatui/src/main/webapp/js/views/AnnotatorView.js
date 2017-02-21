@@ -497,12 +497,17 @@ define(['jquery',
 			// make a spot for them
 			$(".annotation-target").after("<div class='annotation-container'></div>");
 			
-			// add a button to select text and launch the new editor				
+			// add a button to select text and launch the new editor, only when logged in
 			var addBtn = $(document.createElement("a"))
 							.text("Add annotation")
 							.addClass("btn btn-info add-tag")
 							.prepend($(document.createElement("i"))
 										.addClass("icon-on-left icon-plus"));
+			
+			if (!appUserModel.get("loggedIn")) {
+				addBtn.addClass("disabled");
+			}
+			
 			$('.annotation-container').append(addBtn);//.on("click", ".add-tag", launchEditor);
 			
 			// summarize annotation count in citation block
