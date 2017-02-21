@@ -343,6 +343,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           			
 	           		//Update the DOMs for each model
 	           		_.each(emlTextModels, function(thisTextModel, i){
+	           			//Don't serialize falsey values
+	           			if(!thisTextModel) return;
+	           			
 	           			var node; 
 	           			
 	           			//Get the existing node or create a new one
