@@ -2281,7 +2281,9 @@
       } else {
         $.extend(annotation, data);
       }
-      return $(annotation.highlights).data('annotation', annotation);
+      var retAnn = $(annotation.highlights).data('annotation', annotation);
+      this.annotator.publish('annotationStored', annotation);
+      return retAnn;
     };
 
     Store.prototype.loadAnnotations = function() {

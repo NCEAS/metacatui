@@ -385,8 +385,8 @@ define(['jquery',
 				
 			});
 						
-			this.$el.annotator('subscribe', 'annotationCreated', this.reindexPid);
-			this.$el.annotator('subscribe', 'annotationUpdated', this.reindexPid);
+			this.$el.annotator('subscribe', 'annotationStored', this.annotationStored);
+			this.$el.annotator('subscribe', 'annotationUpdated', this.annotationUpdated);
 			this.$el.annotator('subscribe', 'annotationDeleted', this.handleDelete);
 			this.$el.annotator('subscribe', 'annotationsLoaded', this.preRenderAnnotations);
 
@@ -430,6 +430,8 @@ define(['jquery',
 		
 		preRenderAnnotations : function(annotations) {
 			
+			console.log("preRenderAnnotations");
+			
 			var uris = [];
 			
 			//look up the concept details in a batch
@@ -451,6 +453,8 @@ define(['jquery',
 		},
 		
 		renderAnnotations : function(annotations) {
+			
+			console.log("renderAnnotations");
 			
 			// keep from duplicating 
 			if (this.rendered) {
@@ -567,7 +571,7 @@ define(['jquery',
 					// for comments, just render it in the document
 					var highlight = $("[data-annotation-id='" + annotation.id + "']");
 					var section = $(highlight).closest(".tab-pane").children(".annotation-container");
-					section.append(viewRef.annotationTemplate({
+					section.append(view.annotationTemplate({
 						annotation: annotation,
 						concept: null,
 						appUserModel: appUserModel
@@ -579,6 +583,8 @@ define(['jquery',
 		},
 		
 		renderAnnotation: function(annotationModel) {	
+			
+			console.log("renderAnnotation");
 			
 			var canEdit = 
 				_.contains(annotationModel.get("permissions").admin, appUserModel.get("username"))
@@ -778,8 +784,31 @@ define(['jquery',
 			
 		},
 		
+		annotationStored : function(annotation) {
+			
+			console.log("annotationStored");
+			var view = $('#metadata-container').data("annotator-view");
+			
+			// add the data id to this
+		    $(annotation.highlights).attr('data-annotation-id', annotation.id);
+			
+			// refresh annotation
+			view.reindexPid(annotation, false);
+			
+		},
+		
+		annotationUpdated : function(annotation) {
+			
+			console.log("annotationUpdated");
+			var view = $('#metadata-container').data("annotator-view");
+			view.reindexPid(annotation, false);
+			
+		},
+		
 		// reindex when an annotation is updated
 		reindexPid : function(annotation, isDelete) {
+			
+			console.log("reindexPid");
 			
 			var view = $('#metadata-container').data("annotator-view");
 			
