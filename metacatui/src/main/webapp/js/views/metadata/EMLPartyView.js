@@ -38,14 +38,12 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		//this.listenTo(this.model, "change", this.render);
 
         		//Format the given names
-        		var name = this.model.get("individualName"),
-        			fullGivenName = "";
+        		var name = this.model.get("individualName") || {},
+				    fullGivenName = '';
         		
-        		_.each(name.givenName, function(givenName){
-        			fullGivenName += givenName + " ";
-        		});
-        		
-        		fullGivenName = fullGivenName.trim();
+				if (name.givenName) {
+					fullGivenName = _map(name.givenName, function(name) { return name.trim(); }).join(' ');
+				}
         		
         		//Get the address object
         		var address = Array.isArray(this.model.get("address"))? 
@@ -56,7 +54,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
 	        		//Send all the EMLParty info to the template
 	        		this.$el.html(this.editTemplate({
-	        			givenName  : fullGivenName,
+	        			givenName  : fullGivenName || "",
 	        			surName    : name.surName || "",
 	        			salutation : name.salutation || "",
 	        			orgName    : this.model.get("organizationName") || "",
