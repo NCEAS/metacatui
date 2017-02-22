@@ -42,7 +42,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 				    fullGivenName = '';
         		
 				if (name.givenName) {
-					fullGivenName = _map(name.givenName, function(name) { return name.trim(); }).join(' ');
+					fullGivenName = _.map(name.givenName, function(name) { return name.trim(); }).join(' ');
 				}
         		
         		//Get the address object
