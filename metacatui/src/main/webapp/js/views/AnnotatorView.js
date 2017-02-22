@@ -772,7 +772,8 @@ define(['jquery',
 		handleDelete: function(annotation) {
 			// only handle this if it is a saved annotation
 			if (annotation.id) {
-				this.reindexPid(annotation, true);
+				var view = $('#metadata-container').data("annotator-view");
+				view.reindexPid(annotation, true);
 			}
 			
 		},
@@ -780,16 +781,15 @@ define(['jquery',
 		// reindex when an annotation is updated
 		reindexPid : function(annotation, isDelete) {
 			
-			// reset view
-			this.rendered = false;
+			var view = $('#metadata-container').data("annotator-view");
 			
 			// re load the annotations
-			var annotations = $(this).data('annotator').plugins.Store.annotations;
+			var annotations = view.$el.data('annotator').plugins.Store.annotations;
 			if (isDelete) {
 				annotations.splice(annotations.indexOf(annotation), 1);
 			}
 			
-			var view = $(this).data("annotator-view");
+			view.rendered = false;
 			view.renderAnnotations(annotations);
 
 		},
