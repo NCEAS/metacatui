@@ -193,7 +193,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		createFromUser: function(){
 			//Create the name from the user
 			var name = this.get("individualName") || {};
-			name.givenName = [MetacatUI.appUserModel.get("firstName")];
+			name.givenName  = [MetacatUI.appUserModel.get("firstName")];
 			name.surName    = MetacatUI.appUserModel.get("lastName");
 			this.set("individualName", name);
 			
@@ -226,17 +226,20 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				$(nameNode).empty();
 				
 				 // salutation[s]
+				 if(!Array.isArray(name.salutation) && name.salutation) name.salutation = [name.salutation];
 				 _.each(name.salutation, function(salutation) {
 					 $(nameNode).append("<salutation>" + salutation + "</salutation>");
 				 });
 				 
 				 //Given name
+				 if(!Array.isArray(name.givenName) && name.givenName) name.givenName = [name.givenName];				 
 				 _.each(name.givenName, function(givenName) {
 					 $(nameNode).prepend("<givenname>" + givenName + "</givenname>");
 				 });
 				 
 				 // surname
-				 $(nameNode).append("<surname>" +  name.surName + "</surname>");
+				 if(name.surName)
+					 $(nameNode).append("<surname>" +  name.surName + "</surname>");
 			}
 			
 			 // organizationName
@@ -250,7 +253,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				//Insert the text
 				$(orgNameNode).text(this.get("organizationName"));
 					
-				this.getEMLPosition(objectDOM, "organizationname").after(orgNameNode);
+				//If the DOM is empty, append it
+				if( !$(objectDOM).children().length )
+					$(objectDOM).append(orgNameNode);
+				else
+					this.getEMLPosition(objectDOM, "organizationname").after(orgNameNode);
 			}
 			 
 			 // positionName
@@ -264,7 +271,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				//Insert the text
 				$(posNameNode).text(this.get("positionName"));
 				
-				this.getEMLPosition(objectDOM, "positionname").after(posNameNode);
+				//If the DOM is empty, append it
+				if( !$(objectDOM).children().length )
+					$(objectDOM).append(posNameNode);
+				else
+					this.getEMLPosition(objectDOM, "positionname").after(posNameNode);
 			} 
 			 
 			 // address
@@ -382,10 +393,18 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 }, this);
 			 
 			// online URL[es]
-			 _.each(this.get("onlineUrl"), function(onlineUrl) {
-				 var urlNode = $(objectDOM).find("onlineurl");
+			 _.each(this.get("onlineUrl"), function(onlineUrl, i) {
+				 var urlNode = $(objectDOM).find("onlineurl")[i];
 				 
-				 if(!urlNode.length){
+				 //If there is a XML node but no value, remove the node
+				 if(urlNode && !onlineUrl){
+					 urlNode.remove();
+					 return;
+				 }
+				 else if(!onlineUrl)
+					 return;
+				 
+				 if(!urlNode){
 					 urlNode = document.createElement("onlineurl");
 					 this.getEMLPosition(objectDOM, "onlineurl").after(urlNode);
 				 }
@@ -397,6 +416,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 //user ID
 			 var userId = Array.isArray(this.get("userId")) ? this.get("userId") : [this.get("userId")];
 			 _.each(userId, function(id) {
+				 if(!id) return; 
+				 
 				 var idNode = $(objectDOM).find("userid");
 				 
 				 //Create the userid node
@@ -465,6 +486,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             if ( this.get("parentModel") ) {
     			this.get("parentModel").trigger("change");                
             }
+		},
+		
+		/*
+		 * Checks the values of the model to determine if it is EML-valid
+		 */
+		isValid: function(){
+			return (this.get("organizationName") || this.get("positionName") || (this.get("individualName") && this.get("individualName").surName));
 		},
 		
 		isOrcid: function(username){

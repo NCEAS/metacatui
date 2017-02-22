@@ -261,14 +261,26 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(!partyType || typeof partyType != "string")
 	    		var partyType = emlParty.get("role") || emlParty.get("type");
 	    	
-	    	var view = new EMLPartyView({
+	    	var partyView = new EMLPartyView({
     			model: emlParty,
     			edit: this.edit,
     			isNew: isNew
-    		});
+    		});	    	
     		
 	    	//Find the container section for this party type	    	
-    		this.$(".section.people").find('[data-attribute="' + partyType + '"]').append(view.render().el);
+    		this.$(".section.people").find('[data-attribute="' + partyType + '"]').append(partyView.render().el);
+    		
+	    	//Listen for changes to the required fields to know when to add a new party row
+    		if(isNew){
+	    		var view = this;
+	    		emlParty.on("valid", function(){
+	    			if(emlParty.isValid()){
+	    				
+	    				//Render the new blank person row
+	    				view.renderPerson(undefined, partyType);
+	    			}
+	    		});
+    		}
 	    },
 	    
 	    /*
