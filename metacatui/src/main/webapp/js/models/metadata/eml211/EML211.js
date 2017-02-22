@@ -135,7 +135,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
                 // Merge the system metadata into the object first
                 _.extend(options, {merge: true});
-                DataONEObject.prototype.fetch.call(this, options);
+                this.fetchSystemMetadata(options);
                 
                 //If we are retrieving system metadata only, then exit now
                 if(options.sysMeta)
@@ -631,6 +631,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	if(this.isNew()) return;
             	
             	if(!options) var options = {};
+            	else options = _.clone(options);
             	
             	var model = this,
             		fetchOptions = _.extend({
