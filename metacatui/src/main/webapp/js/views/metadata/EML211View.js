@@ -935,7 +935,7 @@ define(['underscore', 'jquery', 'backbone',
 
 				// Add the ranks we collected (if we collected any)
 				if (hierarchy) {
-					collectedClassifications.push(hierarchy);
+					collectedClassifications = hierarchy;
 				}
 			}
 
