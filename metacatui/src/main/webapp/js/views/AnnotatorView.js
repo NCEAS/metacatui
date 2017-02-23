@@ -708,6 +708,11 @@ define(['jquery',
 			var view = $('#metadata-container').data("annotator-view");
 			var annotations = view.$el.data('annotator').plugins.Store.annotations;
 			var annotation = _.findWhere(annotations, {id: annotationId});
+			
+			// make sure to stash the tree since the popover will never be shown again
+			var treeDiv = $("#bioportal-tree").detach();
+			view.$el.append(treeDiv);
+			
 			view.$el.data('annotator').deleteAnnotation(annotation);					
 
 		},
@@ -814,8 +819,11 @@ define(['jquery',
 			
 			// re load the annotations
 			var annotations = view.$el.data('annotator').plugins.Store.annotations;
+			console.log("annotations length: " + annotations.length);
 			if (isDelete) {
-				annotations.splice(annotations.indexOf(annotation), 1);
+				annotations = _.reject(annotations, function(a) {
+					return annotation.id == a.id;
+				});
 			}
 			
 			view.rendered = false;
