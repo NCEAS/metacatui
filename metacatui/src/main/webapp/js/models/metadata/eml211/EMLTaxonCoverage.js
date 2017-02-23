@@ -88,7 +88,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			 var objectDOM = this.get("objectDOM") ? this.get('objectDOM').cloneNode(true) : document.createElement('taxonomicoverage');
+			 var objectDOM = this.get("objectDOM") ? this.get('objectDOM').cloneNode(true) : document.createElement('taxonomiccoverage');
 
 			 $(objectDOM).empty();
 			 
