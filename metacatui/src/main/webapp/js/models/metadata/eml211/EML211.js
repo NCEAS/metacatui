@@ -325,37 +325,38 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	
 	           	var nodeNameMap = this.nodeNameMap();
 	           	
-	           	//Serialize the parts of EML that are eml-text modules
+	           	// Serialize the parts of EML that are eml-text modules
 	           	var textFields = ["abstract"];
 	           	_.each(textFields, function(field){
 	           		
 	           		var fieldName = this.nodeNameMap()[field] || field;
 	           		
-	           		//Get the EMLText model
+	           		// Get the EMLText model
 	           		var emlTextModels = Array.isArray(this.get(field)) ? this.get(field) : [this.get(field)];
-	           		if(!emlTextModels.length) return;
+                    if( ! emlTextModels.length ) return;
 	           		
-	           		//Get the node from the EML doc
+	           		// Get the node from the EML doc
 	           		var nodes = $(eml).find(fieldName);
 	           		
-	           		//Clear the node
-	           	//	$(parentNode).empty();
-	           			
-	           		//Update the DOMs for each model
+	           		// Update the DOMs for each model
 	           		_.each(emlTextModels, function(thisTextModel, i){
 	           			var node; 
 	           			
-	           			//Get the existing node or create a new one
-	           			if(nodes.length < i+1)
+	           			// Get the existing node or create a new one
+	           			if( nodes.length < i + 1 ) {
 	           				node = document.createElement(fieldName);
-	           			else
+                            this.getEMLPosition(eml, fieldName).after(node);
+	           			    
+	           			} else {
 	           				node = nodes[i];
+	           			    
+	           			}
 	           				
-	           			node.replaceWith(thisTextModel.updateDOM());
+	           			$(node).html($(thisTextModel.updateDOM()).html());
 	           			
 	           		}, this);
 	           		
-	           		//Remove the extra nodes
+	           		// Remove the extra nodes
 	           		var extraNodes =  nodes.length - emlTextModels.length;
 	           		if(extraNodes > 0){
 	           			for(var i = emlTextModels.length; i < nodes.length; i++){
