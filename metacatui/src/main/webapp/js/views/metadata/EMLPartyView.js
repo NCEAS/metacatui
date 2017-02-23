@@ -38,14 +38,14 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		//this.listenTo(this.model, "change", this.render);
 
         		//Format the given names
-        		var name = this.model.get("individualName"),
+        		var name = this.model.get("individualName") || {},
         			fullGivenName = "";
         		
-        		_.each(name.givenName, function(givenName){
-        			fullGivenName += givenName + " ";
-        		});
-        		
-        		fullGivenName = fullGivenName.trim();
+        		//Take multiple given names and combine into one given name.
+        		//TODO: Support multiple given names as an array
+        		if (Array.isArray(name.givenName)) {
+					fullGivenName = _.map(name.givenName, function(name) { return name.trim(); }).join(' ');
+				}
         		
         		//Get the address object
         		var address = Array.isArray(this.model.get("address"))? 
@@ -56,7 +56,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
 	        		//Send all the EMLParty info to the template
 	        		this.$el.html(this.editTemplate({
-	        			givenName  : fullGivenName,
+	        			givenName  : fullGivenName || "",
 	        			surName    : name.surName || "",
 	        			salutation : name.salutation || "",
 	        			orgName    : this.model.get("organizationName") || "",
@@ -71,7 +71,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 	        			fax        : this.model.get("fax").length? this.model.get("fax")[0] : "",
 	        			email      : this.model.get("email").length? this.model.get("email")[0] : "",
 	        			website    : this.model.get("onlineUrl").length? this.model.get("onlineUrl")[0] : "",
-	        			userId     : this.model.get("userId").length? this.model.get("userId")[0] : ""
+	        			userId     : Array.isArray(this.model.get("userId"))? this.model.get("userId")[0] : this.model.get("userId") || ""
 	        		}));
         		}
         		
@@ -91,22 +91,6 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
         		//Get the current value
         		var currentValue = this.model.get(changedAttr);
-        		
-        		//Is this a new EML Party?
-        		if(this.isNew){
-
-        			//Get the type of EML Party, in relation to the parent model
-        			if(this.model.get("type") && this.model.get("type") != "associatedParty")
-        				var type = this.model.get("type");
-        			else
-        				var type = "associatedParty";
-        			
-        			//Update the list of EMLParty models in the parent model
-    				var currentModels = this.model.get("parentModel").get(type);
-    				currentModels.push(this.model);
-    				this.model.get("parentModel").set(type, currentModels);
-
-        		}
         		
         		//Addresses and Names have special rules for updating
         		switch(changedAttr){
@@ -149,7 +133,11 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		}
         		else
         			this.model.set(changedAttr, $(e.target).val());
-        			
+        		
+        		//Is this a new EML Party?
+        		if(this.isNew && this.model.isValid())
+        			this.mergeIntoParent();
+        		        			
         	},
         	
         	updateAddress: function(e){
@@ -195,7 +183,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		if(!changedAttr) return false;
         		
         		//TODO: Allow multiple given names - right now we only support editing the first given name
-        		var name = this.model.get("individualName"),
+        		var name = this.model.get("individualName") || {},
         			currentValue = name[changedAttr];
         		
         		//Update the name
@@ -205,12 +193,52 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 	    			
 	    			//Put the new value in the array at the correct position
 	    			currentValue[position] = $(e.target).val();
-	    			this.model.set("individualName", name);
+	    			
         		}
         		else
         			name[changedAttr] = $(e.target).val();
         		
+        		//Update the value on the model
+        		this.model.set("individualName", name);
+        		
+        		//Is this a new EML Party?
+        		if(this.isNew && this.model.isValid())
+        			this.mergeIntoParent();
+        		
+        		//Manually trigger a change on the name attribute
         		this.model.trigger("change:individualName");
+        	},
+        	
+        	mergeIntoParent: function(){
+        		//Get the type of EML Party, in relation to the parent model
+    			if(this.model.get("type") && this.model.get("type") != "associatedParty")
+    				var type = this.model.get("type");
+    			else
+    				var type = "associatedParty";
+    			
+    			//Update the list of EMLParty models in the parent model
+				var currentModels = this.model.get("parentModel").get(type);
+				currentModels.push(this.model);
+				this.model.get("parentModel").set(type, currentModels);
+				
+				//This is no longer a new model
+				this.notNew();
+				
+				//Trigger a custom event that marks the model as valid
+				this.model.trigger("valid");
+        	},
+        	
+        	/*
+        	 * Changes this view and its model from -new- to -not new-
+        	 * "New" means this EMLParty model is not referenced or stored on a 
+        	 * parent model, and this view is being displayed to the user so they can
+        	 * add a new party to their EML (versus edit an existing one). 
+        	 */
+        	notNew: function(){
+        		this.isNew = false;
+        		
+        		this.$el.removeClass("new");
+        		this.$el.find(".new").removeClass("new");
         	}
         });
         

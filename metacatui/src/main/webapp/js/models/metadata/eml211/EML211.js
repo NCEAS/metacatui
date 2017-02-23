@@ -135,7 +135,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
                 // Merge the system metadata into the object first
                 _.extend(options, {merge: true});
-                DataONEObject.prototype.fetch.call(this, options);
+                this.fetchSystemMetadata(options);
                 
                 //If we are retrieving system metadata only, then exit now
                 if(options.sysMeta)
@@ -340,6 +340,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		
 	           		// Update the DOMs for each model
 	           		_.each(emlTextModels, function(thisTextModel, i){
+	           			//Don't serialize falsey values
+	           			if(!thisTextModel) return;
+	           			
 	           			var node; 
 	           			
 	           			// Get the existing node or create a new one
@@ -372,10 +375,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});
 	          */ 	
 	           	//Serialize the taxonomic coverage
-	           	_.each(this.get("taxonCoverage"), function(taxonCoverage){
-	           		$(eml).find("taxonomiccoverage").replaceWith(taxonCoverage.updateDOM());
-	           	});	 
-	           	
+
+				if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length != null) {
+					if ($(eml).find('coverage').length === 0) {
+						$(eml).find('dataset').append(document.createElement('coverage'));
+					}
+
+					$(eml).find("taxonomiccoverage").remove()
+
+					_.each(this.get("taxonCoverage"), function(taxonCoverage){
+						$(eml).find('coverage').append(taxonCoverage.updateDOM());
+					});	 
+				}
+				
 	        	//Serialize the temporal coverage
                 if ( typeof this.get("temporalCoverage") !== "undefined" && this.get("temporalCoverage") !== null ) {
     		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
@@ -629,6 +641,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	if(this.isNew()) return;
             	
             	if(!options) var options = {};
+            	else options = _.clone(options);
             	
             	var model = this,
             		fetchOptions = _.extend({

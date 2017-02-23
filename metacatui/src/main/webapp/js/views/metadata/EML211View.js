@@ -30,7 +30,7 @@ define(['underscore', 'jquery', 'backbone',
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
         	"blur   .temporal-coverage" : "updateTemporalCoverage",
-			"blur   .taxonomic-classification": "updateTaxonCoverage",
+			"blur   .taxonomic-coverage": "updateTaxonCoverage",
         	"change .keywords"          : "updateKeywords",
         	"change .usage"             : "updateRadioButtons",
         	"change .funding"           : "updateFunding",
@@ -261,14 +261,26 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(!partyType || typeof partyType != "string")
 	    		var partyType = emlParty.get("role") || emlParty.get("type");
 	    	
-	    	var view = new EMLPartyView({
+	    	var partyView = new EMLPartyView({
     			model: emlParty,
     			edit: this.edit,
     			isNew: isNew
-    		});
+    		});	    	
     		
 	    	//Find the container section for this party type	    	
-    		this.$(".section.people").find('[data-attribute="' + partyType + '"]').append(view.render().el);
+    		this.$(".section.people").find('[data-attribute="' + partyType + '"]').append(partyView.render().el);
+    		
+	    	//Listen for changes to the required fields to know when to add a new party row
+    		if(isNew){
+	    		var view = this;
+	    		emlParty.on("valid", function(){
+	    			if(emlParty.isValid()){
+	    				
+	    				//Render the new blank person row
+	    				view.renderPerson(undefined, partyType);
+	    			}
+	    		});
+    		}
 	    },
 	    
 	    /*
@@ -313,6 +325,15 @@ define(['underscore', 'jquery', 'backbone',
 				for (var i = 0; i < taxonomy.length; i++) {
 					this.$(".section.taxa").append(this.createTaxanomicCoverage(taxonomy[i]));
 				}
+			} else {
+				// Create a new one
+				var taxonCov = new EMLTaxonCoverage({
+					parentModel: this.model
+				});
+
+				this.model.set('taxonCoverage', [taxonCov]);
+
+				this.$(".section.taxa").append(this.createTaxanomicCoverage(taxonCov));
 			}
 	    },
 	    
@@ -400,7 +421,7 @@ define(['underscore', 'jquery', 'backbone',
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
 		// each root-level taxonomicClassification
 		createTaxanomicCoverage: function(coverage) {
-            var finishedEl = $('<div class="row-fluid"></div>');
+            var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
 			$(finishedEl).data({ model: coverage });
 			$(finishedEl).attr("data-category", "taxonomic-coverage");
 
@@ -804,10 +825,14 @@ define(['underscore', 'jquery', 'backbone',
         },
 
 		
-		/* Update the Taxonomic Coverage section when an individual 
-		taxonomic classification element is blur'd. We create a new set of
-		input fields to hold a new classification if any of the inputs have
-		text entered in them.
+		/* Update the underlying model and DOM for an EML TaxonomicCoverage
+		section. This method handles updating the underlying TaxonomicCoverage
+		models when the user changes form fields as well as inserting new
+		form fields automatically when the user needs them.
+
+		Since a dataset has multiple TaxonomicCoverage elements at the dataset
+		level, each Taxonomic Coverage is represented by a table element and
+		all taxonomicClassifications within are rows in that table.
 
 		TODO: Finish this function
 		TODO: Link this function into the DOM
@@ -815,39 +840,128 @@ define(['underscore', 'jquery', 'backbone',
 		updateTaxonCoverage: function(e) {
 			if (!e) return false;
 			
-			//Get the category, new value, and model
-	    	var category = $(e.target).attr("data-category"),
-	    		model    = $(e.target).data("model") || this.model,
-				value    = $(e.target).val().trim();
+			/*	Getting `model` here is different than in other places because
+				the thing being updated is an `input` or `select` element which
+				is part of a `taxonomicClassification`. The model is
+				`TaxonCoverage` which has one or more
+				`taxonomicClassifications`. So we have to walk up to the
+				hierarchy from input < td < tr < tbody < table < div to get at
+				the underlying TaxonCoverage model.
+			*/
+	    	var coverage = $(e.target).parents("div.taxonomic-coverage"),
+				classification = $(e.target).parents("table.root-taxonomic-classification"),
+	    		model =  $(coverage).data("model") || this.model,
+				category = $(e.target).attr("data-category"),
+				value = $(e.target).val().trim();
 	    	
-	    	//We can't update anything without a category
-	    	if(!category) return false;
-	    	
-	    	//Get the current value
-	    	var currentValue = model.get(category);
+	    	//We can't update anything without a coverage, or
+	    	//classification
+			if (!coverage) return false;
+			if (!classification) return false;
 
-			// Do nothing if the currentValue is undefined and the value is ''
-			if (typeof currentValue === "undefined" && value === "") {
-				return;
+			// Find all of the root-level taxonomicClassifications
+			var classifications = $(coverage).find("table.root-taxonomic-classification");
+
+			if (!classifications) return false;
+
+			/* Here begins a funky attempt at updating the taxonCoverage model
+			every time the user changes a field. It traverses the entire DOM
+			tree to generate a new TaxonCoverage based upon what's in the DOM.
+
+			TODO :This should probably (at least) be in its own View and
+			definitely refactored into tidy functions.*/
+
+			var rows,
+				currentRank,
+				currentValue,
+				collectedClassifications = [],
+				collectedRanks = [],
+				rankOrder = ["Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"], // TODO: Move this and everything else in a separate View
+				hierarchy;
+
+			for (var i = 0; i < classifications.length; i++) {
+				hierarchy = null;
+				collectedRanks = [];
+
+				rows = $(classifications[i]).find("tbody tr");
+
+				if (!rows) continue;
+
+				for (var j = 0; j < rows.length; j++) {
+					currentRank = $(rows[j]).find("select").val() || "";
+					currentValue = $(rows[j]).find("input").val() || "";
+
+					// Skip over rows with empty Rank and Value
+					if (currentRank.length === 0 && currentValue.length === 0) {
+						continue;
+					}
+
+					// Add in sorted order using either unshift or push
+					if (collectedRanks.length === 0 || 
+					    (rankOrder.indexOf(currentRank) < rankOrder.indexOf(collectedRanks[collectedRanks.length -1].taxonRankName))) {
+						collectedRanks.unshift({
+							taxonRankName: currentRank,
+							taxonRankValue: currentValue
+						});
+					} else {
+						collectedRanks.push({
+							taxonRankName: currentRank,
+							taxonRankValue: currentValue
+						});
+					}
+				}
+
+				// Make the sorted list of ranks hierarchical
+				// If there are two classifications as the same rank, add
+				// them as siblings.
+				var currentClassification = null,  // Track as we go down the tree
+					filtered = null;
+
+				for (var k = 0; k < rankOrder.length; k++) {
+					filtered = _.filter(collectedRanks, function(rank) { return rank.taxonRankName === rankOrder[k] });
+
+					if (filtered.length == 0 ){
+						continue;
+					}
+
+					if (!currentClassification) {
+						hierarchy = filtered;
+						currentClassification = hierarchy[0];
+					} else {
+						currentClassification.taxonomicClassification = filtered;
+						currentClassification = currentClassification.taxonomicClassification[0];
+					}
+				}
+
+				// Add the ranks we collected (if we collected any)
+				if (hierarchy) {
+					collectedClassifications = hierarchy;
+				}
+			}
+
+			if (!(_.isEqual(collectedClassifications, model.get('taxonomicClassification')))) {
+				model.set('taxonomicClassification', collectedClassifications);
+				this.model.trigger("change");
 			}
 			
-			// Do nothing if the value wasn't changed
-			if (currentValue === value) {
-				return;
-			}
+			// Handle adding new tables and rows
+			// Do nothing if the value isn't set
+			if (value !== "") {
+				// If the table is new and we have some content, make a new table
+				if ($(classification).is(".new")) {
+					$(coverage).append(this.createTaxonomicClassifcationTable());
+					$(classification).removeClass("new");
+				}
 
-			model.set(category, value);
-			model.trigger("change");
-	    	
-			// Skip creating a new taxonomicClassification if the field
-			// is empty
-	    	if($(e.target).parent().is(".new") && value !== ""){
-	    		//Add another taxonomic classification
-		    	$(e.target).parent().after(this.createTaxaonomicClassification());
-		    	
-		    	//Remove the new class
-		    	$(e.target).parent().removeClass("new");
-	    	}
+				// If the row is new, add a new row to the table
+				if ($(e.target).parents("tr").is(".new")) {
+
+					var newRow = $(this.taxonomicClassificationRowTemplate({ taxonRankName: '', taxonRankValue: ''}));
+					$(newRow).addClass("new");
+					$(e.target).parents("tr").after(newRow);
+					$(e.target).parents("tr").removeClass("new");
+				}
+			}
 		},
         
         updateRadioButtons: function(e){
