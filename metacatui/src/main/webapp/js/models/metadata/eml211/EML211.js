@@ -374,10 +374,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	});
 	          */ 	
 	           	//Serialize the taxonomic coverage
-	           	_.each(this.get("taxonCoverage"), function(taxonCoverage){
-	           		$(eml).find("taxonomiccoverage").replaceWith(taxonCoverage.updateDOM());
-	           	});	 
-	           	
+
+				if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length != null) {
+					if ($(eml).find('coverage').length === 0) {
+						$(eml).find('dataset').append(document.createElement('coverage'));
+					}
+
+					$(eml).find("taxonomiccoverage").remove()
+
+					_.each(this.get("taxonCoverage"), function(taxonCoverage){
+						$(eml).find('coverage').append(taxonCoverage.updateDOM());
+					});	 
+				}
+				
 	        	//Serialize the temporal coverage
                 if ( typeof this.get("temporalCoverage") !== "undefined" && this.get("temporalCoverage") !== null ) {
     		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
