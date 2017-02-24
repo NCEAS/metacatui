@@ -3061,7 +3061,13 @@ textarea.xlarge{
     margin-right: 20px;
     background-color: #1F254F;
 }  
-
+.Editor .disable-layer{
+	background-color: rgba(0,0,0,.6);
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    z-index: 2;
+}
 .Editor .dropdown-menu li a i {
     vertical-align: middle;
 }

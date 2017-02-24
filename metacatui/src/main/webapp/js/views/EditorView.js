@@ -363,6 +363,9 @@ define(['underscore',
         	//Change the style of the save button
         	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
         	
+        	//Disable the form
+        	$("body").prepend($(document.createElement("div")).addClass("disable-layer"));
+        	
         	//Save the package!
         	MetacatUI.rootDataPackage.save();
         },
@@ -378,6 +381,9 @@ define(['underscore',
         	//Change the URL to the new id
         	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });
         	
+        	//Remove the disabler layer
+        	$(".disable-layer").remove();
+        	
         	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
         	
         	//When the package is saved, revert the Save button back to normal
@@ -390,6 +396,9 @@ define(['underscore',
         saveError: function(errorMsg){
         	var errorId = "error" + Math.round(Math.random()*100),
         		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
+        	
+        	//Remove the disabler layer
+        	$(".disable-layer").remove();
         	
         	message.append($(document.createElement("a"))
         						.text("See details")
