@@ -401,7 +401,10 @@ define(['underscore',
         						.attr("id", errorId)
         						.append($(document.createElement("pre")).text(errorMsg)));
 
-        	MetacatUI.appView.showAlert(message, "alert-error", this.$el, null, { emailBody: "Error message: Data Package save error: " + errorMsg });
+        	MetacatUI.appView.showAlert(message, "alert-error", this.$el, null, { 
+        		emailBody: "Error message: Data Package save error: " + errorMsg,
+        		remove: true
+        		});
         },
         
         /*

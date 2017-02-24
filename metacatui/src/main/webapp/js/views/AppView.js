@@ -271,14 +271,19 @@ define(['jquery',
 				msg = $(document.createElement("div")).append($(msg)).html();
 			
 			var emailOptions = "";
+			
 			//Check for more options
 			if(typeof options != "undefined" && options.emailBody)
 				emailOptions += "?body=" + options.emailBody;
 			
+			//Allow error messages to be removed
+			var remove = options? options.remove : false;
+			
 			var alert = $.parseHTML(this.alertTemplate({
 				msg: msg,
 				classes: classes,
-				emailOptions: emailOptions
+				emailOptions: emailOptions,
+				remove: remove
 			}).trim());
 			
 			if(delay){

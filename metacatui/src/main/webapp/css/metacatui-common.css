@@ -280,6 +280,15 @@ header .citation {
 	border-color: #DDD;
 	color: #333;
 }
+.alert .close{
+	font-size: 3em;
+    position: absolute;
+    left: 97%;
+    top: 20px;
+}
+.alert-error .close{
+	color: #FF0000;
+}
 .notification.success, 
 .icon.success{
 	color: #008000;
