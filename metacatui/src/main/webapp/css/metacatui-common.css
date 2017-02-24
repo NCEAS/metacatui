@@ -2987,9 +2987,7 @@ textarea.xlarge{
 
 /* Editor package table column 2 */
 .Editor #data-package-table td:nth-of-type(2) {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
 }
 
 /* Editor package table column 3 */
