@@ -469,7 +469,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           					nodes.last().after(newNode);
 	           				//If this is the first node of its kind, insert it at the end of the dataset node
 	           				else
-	           					$(eml).find("dataset").append(newNode);
+	           					this.getEMLPosition(eml, fieldName).after(newNode);
 	           			}
 	           				
 	           		}, this);
