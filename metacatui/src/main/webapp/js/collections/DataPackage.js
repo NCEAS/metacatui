@@ -501,7 +501,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				else if(model.get("uploadStatus") == "q"){
     					model.save();  				
     					modelsInProgress.push(model);
-    					this.listenToOnce(model, "sync", this.save);
+    					this.listenToOnce(model, "successSaving", this.save);
     				}
     			}, this);
 

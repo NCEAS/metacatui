@@ -29,12 +29,12 @@ define(['underscore', 'jquery', 'backbone',
         events: {
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
-        	"blur   .temporal-coverage" : "updateTemporalCoverage",
-			"blur   .taxonomic-coverage": "updateTaxonCoverage",
+        	"change .temporal-coverage" : "updateTemporalCoverage",
+			"change .taxonomic-coverage": "updateTaxonCoverage",
         	"change .keywords"          : "updateKeywords",
         	"change .usage"             : "updateRadioButtons",
         	"change .funding"           : "updateFunding",
-        	"click  .side-nav-item a"   : "scrollToSection",
+        	"click .side-nav-item a"    : "scrollToSection",
         	"change #new-party-menu"    : "addNewPersonType"
         },
                 
@@ -75,8 +75,17 @@ define(['underscore', 'jquery', 'backbone',
 			
 			//Render all the EML sections when the model is synced
 			this.renderAllSections();
-			this.listenTo(this.model, "sync", this.renderAllSections);
-	    	
+			if(!this.model.get("synced"))
+				this.listenToOnce(this.model, "sync", this.renderAllSections);
+			
+			//Listen to updates on the data package collections
+			_.each(this.model.get("collections"), function(dataPackage){
+				if(dataPackage.type != "DataPackage") return;
+				
+				//When the data package has been saved, render the EML again
+				this.listenTo(dataPackage, "successSaving", this.renderAllSections);
+			}, this);
+
             return this;
         },
         
@@ -371,6 +380,8 @@ define(['underscore', 'jquery', 'backbone',
 	     */
 	    addNewPersonType: function(e){
 	    	var partyType = $(e.target).val();
+	    	
+	    	if(!partyType) return;
 	    	
 	    	//Get the form and model
 	    	var partyForm  = this.$(".section.people").find('[data-attribute="new"]'),
@@ -1095,6 +1106,10 @@ define(['underscore', 'jquery', 'backbone',
         		this.model.set($(e.target).attr("data-category"), choice);
         },
         
+        save: function(){
+        	
+        },
+        
         /*
          * When a user clicks on the section names in the side tabs, jump to the section
          */
@@ -1175,6 +1190,20 @@ define(['underscore', 'jquery', 'backbone',
 
         		}
         	}        	        	
+        },
+        
+        /*
+         *  -- This function is for development/testing purposes only --
+         *  Trigger a change on all the form elements
+		 *	so that when values are changed by Javascript, we make sure the change event
+		 *  is fired. This is good for capturing changes by Javascript, or
+		 *  browser plugins that fill-in forms, etc.
+         */
+        triggerChanges: function(){
+			$("#metadata-container input").change();
+			$("#metadata-container textarea").change();
+			$("#metadata-container select").change();
+			console.log("changes fired");
         },
         
         /* Close the view and its sub views */

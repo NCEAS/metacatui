@@ -325,6 +325,44 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	
 	           	var nodeNameMap = this.nodeNameMap();
 	           	
+	           	//Serialize the basic text fields
+	           	var basicText = ["alternateIdentifier", "title"];
+	           	_.each(basicText, function(fieldName){
+	           		var basicTextValues = this.get(fieldName);
+	           		
+	           		if(!Array.isArray(basicTextValues)) basicTextValues = [basicTextValues];
+	           		
+	           		var nodes = $(datasetNode).children(fieldName.toLowerCase());
+	           		
+	           		_.each(basicTextValues, function(text, i){
+	           			var node = nodes[i];
+	           			
+	           			//Change the value of the existing node
+	           			if(node)
+	           				$(node).text(text);
+           				//Or create a new node	           			
+	           			else{
+	           				var newNode = $(document.createElement(fieldName.toLowerCase())).text(text);
+	           				
+	           				//Insert the new node at the end
+	           				if(nodes.length)
+	           					nodes.last().after(newNode);
+	           				//Find the position in the EML where this node type belongs
+	           				else{
+	           					var insertAfter = this.getEMLPosition(eml, fieldName.toLowerCase());
+	           					
+	           					//We know that alternateIdentifier is the first node in EML
+	           					if(!insertAfter && fieldName == "alternateIdentifier")
+	           						$(eml).find("dataset").prepend(newNode);
+	           					else
+	           						insertAfter.after(newNode);	           					
+	           				}
+	           			}
+	           			
+	           		}, this);
+	           		
+	           	}, this);
+	           	
 	           	// Serialize the parts of EML that are eml-text modules
 	           	var textFields = ["abstract"];
 	           	_.each(textFields, function(field){
@@ -453,37 +491,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        		$(eml).find("project").replaceWith(this.get("project").updateDOM());
 	        	else if(this.get("project"))
 	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
-	           	
-	           	//Serialize the basic text fields
-	           	var basicText = ["alternateIdentifier", "title"];
-	           	_.each(basicText, function(fieldName){
-	           		var basicTextValues = this.get(fieldName);
-	           		
-	           		if(!Array.isArray(basicTextValues)) basicTextValues = [basicTextValues];
-	           		
-	           		var nodes = $(datasetNode).children(fieldName.toLowerCase());
-	           		
-	           		_.each(basicTextValues, function(text, i){
-	           			var node = nodes[i];
-	           			
-	           			//Change the value of the existing node
-	           			if(node)
-	           				$(node).text(text);
-           				//Or create a new node	           			
-	           			else{
-	           				var newNode = $(document.createElement(fieldName.toLowerCase())).text(text);
-	           				
-	           				//Insert the new node at the end
-	           				if(nodes.length)
-	           					nodes.last().after(newNode);
-	           				//If this is the first node of its kind, insert it at the end of the dataset node
-	           				else
-	           					this.getEMLPosition(eml, fieldName).after(newNode);
-	           			}
-	           				
-	           		}, this);
-	           		
-	           	}, this);
 	              	           	
 	           	//Camel-case the XML
 		    	var emlString = ""; 
@@ -685,11 +692,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             getEMLPosition: function(eml, nodeName){
             	var nodeOrder = ["alternateidentifier", "shortname", "title", "creator", "metadataprovider", "associatedparty",
 	           		             "pubdate", "language", "series", "abstract", "keywordset", "additionalinfo", "intellectualrights", 
-	           		             "distribution", "coverage", "contact", "methods", "project", "datatable", "otherentity"];
+	           		             "distribution", "coverage", "purpose", "maintenance", "contact", "publisher", "pubplace", 
+	           		             "methods", "project", "datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
             	
             	var position = _.indexOf(nodeOrder, nodeName);
             	if(position == -1)
-            		return $(eml).find("dataset").children().last();
+            		return false;
             	
             	//Go through each node in the node list and find the position where this node will be inserted after
             	for(var i=position-1; i>=0; i--){
@@ -697,7 +705,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			return $(eml).find(nodeOrder[i]).last();
             	}
             	
-            	return $(eml).find("dataset").children().last();
+            	return false;
             },
                         
             /*

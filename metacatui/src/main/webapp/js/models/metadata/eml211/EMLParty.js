@@ -430,12 +430,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					 this.getEMLPosition(objectDOM, "userid").after(idNode);
 				 }
 				 
-				 //If this is an orcid identifier, ormat it with the orvid.org prefix and add the directory attribute
+				 //If this is an orcid identifier, format it with the orcid.org prefix and add the directory attribute
 				 if(this.isOrcid(id)){
 					 if(id.length == 19)
 						 id = "http://orcid.org/" + id;
 					 
 					 idNode.attr("directory", "https://orcid.org");
+				 }
+				 else{
+					 idNode.attr("directory", "unknown"); 
 				 }
 				 
 				 $(idNode).text(id);

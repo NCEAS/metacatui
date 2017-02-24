@@ -371,14 +371,14 @@ define(['underscore',
          * When the data package collection saves successfully, tell the user
          */
         saveSuccess: function(){
-        	//When the package is saved, revert the Save button back to normal
-        	this.$("#save-editor").html("Save").removeClass("btn-disabled");
-    		//this.hideControls();
-    		
-        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
-        	
+    		        	
         	//Change the URL to the new id
         	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });
+        	
+        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
+        	
+        	//When the package is saved, revert the Save button back to normal
+        	this.$("#save-editor").html("Save").removeClass("btn-disabled");
         },
         
         /*
