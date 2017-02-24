@@ -586,7 +586,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 							//Update the object XML
 							collection.objectXML = mapXML;
 							collection.packageModel.set("sysMetaXML", collection.packageModel.serializeSysMeta());
-							collection.trigger("successSaving");
+							collection.trigger("successSaving", collection);
                             collection.packageModel.fetch({merge: true});
                             // Reset the content changes status
                             collection.packageModel.set("hasContentChanges", false);

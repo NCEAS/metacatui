@@ -462,7 +462,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 						console.log('yay, DataONEObject has been saved');
 						
 						model.set("uploadStatus", "c");
-						model.trigger("successSaving");
+						model.trigger("successSaving", model);
                         model.fetch({merge: true}); // Get the newest sysmeta set by the MN
                         // Reset the content changes status
                         model.set("hasContentChanges", false);

@@ -1106,10 +1106,6 @@ define(['underscore', 'jquery', 'backbone',
         		this.model.set($(e.target).attr("data-category"), choice);
         },
         
-        save: function(){
-        	
-        },
-        
         /*
          * When a user clicks on the section names in the side tabs, jump to the section
          */

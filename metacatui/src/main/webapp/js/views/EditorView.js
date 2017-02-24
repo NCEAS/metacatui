@@ -370,7 +370,10 @@ define(['underscore',
         /*
          * When the data package collection saves successfully, tell the user
          */
-        saveSuccess: function(){
+        saveSuccess: function(savedObject){
+        	
+        	//We only want to perform these actions after the package saves
+        	if(savedObject.type != "DataPackage") return;
     		        	
         	//Change the URL to the new id
         	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });

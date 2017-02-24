@@ -642,7 +642,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						
 						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
-						model.trigger("successSaving");
+						model.trigger("successSaving", model);
                         model.fetch({merge: true, sysMeta: true});
                         
 					},
