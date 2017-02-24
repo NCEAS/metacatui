@@ -77,10 +77,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		serialize: function(){
 			var objectDOM = this.updateDOM(),
 				xmlString = objectDOM.outerHTML;
-		
+			
 			//Camel-case the XML
 	    	xmlString = this.formatXML(xmlString);
-	    	
+
 	    	return xmlString;
 		},
 		
@@ -88,8 +88,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			 var objectDOM = this.get("objectDOM").cloneNode(true),
-			     taxonCoverageEl;
+			 var objectDOM = this.get("objectDOM") ? this.get('objectDOM').cloneNode(true) : document.createElement('taxonomiccoverage');
 
 			 $(objectDOM).empty();
 			 
@@ -101,13 +100,17 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 
 			 for (var i = 0; i < classifications.length; i++) {
-				$(objectDOM).append(this.updateTaxonomicClassification(classifications[i]));
+				$(objectDOM).append(this.createTaxonomicClassificationDOM(classifications[i]));
 			 } 
 
 			 return objectDOM;
 		},
 		
-		updateTaxonomicClassification: function(classification) {
+		/* Create the DOM for a single EML taxonomicClassification.
+		
+		This function is currently recursive!
+		*/
+		createTaxonomicClassificationDOM: function(classification) {
 			var taxonRankName = classification.taxonRankName || "",
 			    taxonRankValue = classification.taxonRankValue || "",
 			    commonName = classification.commonName || "",
@@ -115,24 +118,23 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				finishedEl,
 				model = this;
 
-
-			finishedEl = $(document.createElement("taxonomicClassification"));
+			finishedEl = $(document.createElement("taxonomicclassification"));
 
 			if (taxonRankName && taxonRankName.length > 0) {
-				$(finishedEl).append($("<taxonRankName>" + taxonRankName + "</taxonRankName>"));
+				$(finishedEl).append($("<taxonrankname>" + taxonRankName + "</taxonrankname>"));
 			}
 
 			if (taxonRankValue && taxonRankValue.length > 0) {
-				$(finishedEl).append($("<taxonRankValue>" + taxonRankValue + "</taxonRankValue>"));
+				$(finishedEl).append($("<taxonrankvalue>" + taxonRankValue + "</taxonrankvalue>"));
 			}
 
 			if (commonName && commonName.length > 0) {
-				$(finishedEl).append($("<commonName>" + commonName + "</commonName>"));
+				$(finishedEl).append($("<commonname>" + commonName + "</commonname>"));
 			}
 
 			if (taxonomicClassification) {
 				_.each(taxonomicClassification, function(tc) {
-					$(finishedEl).append(model.updateTaxonomicClassification(tc));
+					$(finishedEl).append(model.createTaxonomicClassificationDOM(tc));
 				});
 			}
 			
