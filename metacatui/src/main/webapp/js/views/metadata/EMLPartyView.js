@@ -136,7 +136,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
         		//Is this a new EML Party?
         		if(this.isNew && this.model.isValid())
-        			this.mergeIntoParent();
+        			this.model.mergeIntoParent();
         		        			
         	},
         	
@@ -203,31 +203,12 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
         		//Is this a new EML Party?
         		if(this.isNew && this.model.isValid())
-        			this.mergeIntoParent();
+        			this.model.mergeIntoParent();
         		
         		//Manually trigger a change on the name attribute
         		this.model.trigger("change:individualName");
         	},
-        	
-        	mergeIntoParent: function(){
-        		//Get the type of EML Party, in relation to the parent model
-    			if(this.model.get("type") && this.model.get("type") != "associatedParty")
-    				var type = this.model.get("type");
-    			else
-    				var type = "associatedParty";
-    			
-    			//Update the list of EMLParty models in the parent model
-				var currentModels = this.model.get("parentModel").get(type);
-				currentModels.push(this.model);
-				this.model.get("parentModel").set(type, currentModels);
-				
-				//This is no longer a new model
-				this.notNew();
-				
-				//Trigger a custom event that marks the model as valid
-				this.model.trigger("valid");
-        	},
-        	
+
         	/*
         	 * Changes this view and its model from -new- to -not new-
         	 * "New" means this EMLParty model is not referenced or stored on a 

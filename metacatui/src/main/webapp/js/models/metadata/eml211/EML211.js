@@ -383,6 +383,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
     		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
                     
                 }
+                
+                //Create the creator from the current user if none is provided
+                if(!this.get("creator").length){
+	           		var party = new EMLParty({ parentModel: this, type: "creator" });
+	           		
+	           		party.createFromUser();
+	           		
+	           		this.set("creator", [party]);
+                }
 	           	
 		        //Serialize the creators
 		        this.serializeParties(eml, "creator");
@@ -497,16 +506,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	}, this);
 	           	
 	        	//Create a certain parties from the current app user if none is given
-	           	if(type == "creator" || type == "contact" || type == "metadataProvider"){
-		           	if(!this.get(type).length){
-		           		var party = new EMLParty({ parentModel: this, type: type });
-		           		
-		           		party.createFromUser();
-		           		
-		           		this.set(type, [party]);
-		           		
-		           		this.getEMLPosition(eml, type).after(party.updateDOM());
-		           	}
+	          	if(type == "contact" && !this.get("contact").length){
+	          		//Get the creators
+	          		var creators = this.get("creator"),
+	          			contacts = [];
+	          		
+	          		_.each(creators, function(creator){
+	          			//Clone the creator model and add it to the contacts array
+	          			var newModel = new EMLParty({ parentModel: this });
+	          			newModel.set(creator.toJSON());
+	          			newModel.set("type", type);
+	          			
+	          			contacts.push(newModel);
+	          		}, this);
+	          			           		           		
+	           		this.set(type, contacts);
+	           		
+	           		//Call this function again to serialize the new models
+	           		this.serializeParties(eml, type);	           		
 	           	}
             },
             

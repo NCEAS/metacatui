@@ -34,7 +34,8 @@ define(['underscore', 'jquery', 'backbone',
         	"change .keywords"          : "updateKeywords",
         	"change .usage"             : "updateRadioButtons",
         	"change .funding"           : "updateFunding",
-        	"click  .side-nav-item a"   : "scrollToSection"
+        	"click  .side-nav-item a"   : "scrollToSection",
+        	"change #new-party-menu"    : "addNewPersonType"
         },
                 
         /* A list of the subviews */
@@ -172,60 +173,138 @@ define(['underscore', 'jquery', 'backbone',
 	    		custodian  = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "custodianSteward" }),
 	    		user       = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "user" });
 	    	
+	    	var emptyTypes = [];
+	    	
+	    	this.partyTypeMap = {
+	    			"collaboratingPrincipalInvestigator" : "Collborating-Principal Investigators",
+	    			"coPrincipalInvestigator" : "Co-Principal Investigators",
+	    			"principalInvestigator" : "Principal Investigators",
+	    			"creator" : "Dataset Creators (Authors/Owners/Originators)",
+	    			"contact" : "Contacts",
+	    			"metadataProvider" : "Metadata Provider",
+	    			"custodianSteward" : "Custodian/Steward",
+	    			"publisher" : "Publishers",
+	    			"user" : "Users"
+	    	}
+	    	
 	    	//Creators
-	    	this.$(".section.people").append("<h4>Dataset Creators (Authors/Owners/Originators)</h4>",
+	    	this.$(".section.people").append("<h4>" + this.partyTypeMap["creator"] + "</h4>",
 	    			'<div class="row-striped" data-attribute="creator"></div>');	    	
 	    	_.each(this.model.get("creator"), this.renderPerson, this);
 	    	this.renderPerson(null, "creator");
-	    	
+	    		    	
 	    	//Principal Investigators
-	    	this.$(".section.people").append("<h4>Principal Investigators</h4>",
-	    			'<div class="row-striped" data-attribute="principalInvestigator"></div>');	    	
-	    	_.each(PIs, this.renderPerson, this);
-	    	this.renderPerson(null, "principalInvestigator");
+	    	if(PIs.length){
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["principalInvestigator"] + "</h4>",
+		    			'<div class="row-striped" data-attribute="principalInvestigator"></div>');	    	
+		    	_.each(PIs, this.renderPerson, this);
+	    	
+	    		this.renderPerson(null, "principalInvestigator");
+	    	}
+	    	else{
+	    		emptyTypes.push("principalInvestigator");
+	    	}
 	    	
 	    	//Co-PIs
-	    	this.$(".section.people").append("<h4>Co-Principal Investigators</h4>",
-	    			'<div class="row-striped" data-attribute="coPrincipalInvestigator"></div>');
-	    	_.each(coPIs, this.renderPerson, this);
-	    	this.renderPerson(null, "coPrincipalInvestigator");
+	    	if(coPIs.length){
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["coPrincipalInvestigator"] + "</h4>",
+		    			'<div class="row-striped" data-attribute="coPrincipalInvestigator"></div>');
+		    	_.each(coPIs, this.renderPerson, this);
+	    	
+	    		this.renderPerson(null, "coPrincipalInvestigator");
+	    	}
+	    	else
+	    		emptyTypes.push("coPrincipalInvestigator");
 	    	
 	    	//Collab PIs
-	    	this.$(".section.people").append("<h4>Collborating-Principal Investigators</h4>",
-	    			'<div class="row-striped" data-attribute="collaboratingPrincipalInvestigator"></div>');
-	    	_.each(collbalPIs, this.renderPerson, this);
-	    	this.renderPerson(null, "collaboratingPrincipalInvestigator");
+	    	if(collbalPIs.length){
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["collaboratingPrincipalInvestigator"] + "</h4>",
+		    			'<div class="row-striped" data-attribute="collaboratingPrincipalInvestigator"></div>');
+		    	_.each(collbalPIs, this.renderPerson, this);
+	    	
+	    		this.renderPerson(null, "collaboratingPrincipalInvestigator");
+	    	}
+	    	else
+	    		emptyTypes.push("collaboratingPrincipalInvestigator");
 	    	
 	    	//Contact
-	    	this.$(".section.people").append("<h4>Contacts</h4>",
+	    	if(this.model.get("contact").length){
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["contact"] + "</h4>",
 	    			'<div class="row-striped" data-attribute="contact"></div>');
-	    	_.each(this.model.get("contact"), this.renderPerson, this);
-	    	this.renderPerson(null, "contact");
+	    		_.each(this.model.get("contact"), this.renderPerson, this);
+	    	
+	    		this.renderPerson(null, "contact");
+	    	}
+	    	else
+	    		emptyTypes.push("contact");
 
 	    	//Metadata Provider
-	    	this.$(".section.people").append("<h4>Metadata Provider</h4>",
-	    			'<div class="row-striped" data-attribute="metadataProvider"></div>');
-	    	_.each(this.model.get("metadataProvider"), this.renderPerson, this);
-	    	this.renderPerson(null, "metadataProvider");
+	    	if(this.model.get("metadataProvider").length){
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["metadataProvider"] + "</h4>",
+		    			'<div class="row-striped" data-attribute="metadataProvider"></div>');
+		    	_.each(this.model.get("metadataProvider"), this.renderPerson, this);
+		    	
+		    	this.renderPerson(null, "metadataProvider");
+	    	}
+	    	else
+	    		emptyTypes.push("metadataProvider");
 	    	
 	    	//Custodian/Steward
-	    	this.$(".section.people").append("<h4>Custodian/Steward</h4>",
+	    	if(custodian.length){
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["custodianSteward"] + "</h4>",
 	    			'<div class="row-striped" data-attribute="custodianSteward"></div>');
-	    	_.each(custodian, this.renderPerson, this);
-	    	this.renderPerson(null, "custodianSteward");
+	    		
+	    		_.each(custodian, this.renderPerson, this);
+	    	
+	    		this.renderPerson(null, "custodianSteward");
+	    	}
+	    	else
+	    		emptyTypes.push("custodianSteward");
 	    	
 	    	//Publisher
-	    	this.$(".section.people").append("<h4>Publisher</h4>",
+	    	if(this.model.get("publisher").length){
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["publisher"] + "</h4>",
 	    			'<div class="row-striped" data-attribute="publisher"></div>');
-	    	_.each(this.model.get("publisher"), this.renderPerson, this);
-	    	this.renderPerson(null, "publisher");
+	    		
+	    		_.each(this.model.get("publisher"), this.renderPerson, this);
+	    	
+	    		this.renderPerson(null, "publisher");
+	    	}
+	    	else
+	    		emptyTypes.push("publisher");
 
 	    	//User
-	    	this.$(".section.people").append("<h4>User</h4>",
-	    			'<div class="row-striped" data-attribute="user"></div>');
-	    	_.each(user, this.renderPerson, this);
-	    	this.renderPerson(null, "user");
-
+	    	if(user.length){
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["user"] + "</h4>",
+		    			'<div class="row-striped" data-attribute="user"></div>');
+		    	
+		    	_.each(user, this.renderPerson, this);
+		    	
+		    	this.renderPerson(null, "user");
+	    	}
+	    	else
+	    		emptyTypes.push("user");
+	    	
+	    	//Display a drop-down menu for all the empty party types
+	    	if(emptyTypes.length){
+		    	var menu = $(document.createElement("select")).attr("id", "new-party-menu").addClass("header-dropdown");
+		    	$(menu).append( $(document.createElement("option")).text("Choose new party type ...") );
+		    	
+		    	var newPartyContainer = $(document.createElement("div"))
+		    							.attr("data-attribute", "new")
+		    							.addClass("row-striped");
+		    	
+		    	_.each(emptyTypes, function(type){
+		    		
+		    		$(menu).append( $(document.createElement("option")).val(type).text(this.partyTypeMap[type]) );
+		    		
+		    	}, this);
+		    	
+		    	this.$(".section.people").append(menu, newPartyContainer);
+		    	
+		    	this.renderPerson(null, "new");
+	    	}
+	    	
     		//Initialize the tooltips
     		this.$("input.tooltip-this").tooltip({
     			placement: "top",
@@ -245,7 +324,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		});
 	    		
 	    		//Mark this model as new
-	    		var isNew = true;
+	    		var isNew = true;	    		
 	    		
 	    		//Find the party type or role based on the type given
 	    		if(_.contains(emlParty.get("roleOptions"), partyType))
@@ -254,12 +333,13 @@ define(['underscore', 'jquery', 'backbone',
 	    			emlParty.set("type", partyType);
 	    		
 	    	}
-	    	else
+	    	else{
 	    		var isNew = false;
 	    	
-	    	//Get the party type, if it was not sent as a parameter
-	    	if(!partyType || typeof partyType != "string")
-	    		var partyType = emlParty.get("role") || emlParty.get("type");
+		    	//Get the party type, if it was not sent as a parameter
+		    	if(!partyType || typeof partyType != "string")
+		    		var partyType = emlParty.get("role") || emlParty.get("type");
+	    	}
 	    	
 	    	var partyView = new EMLPartyView({
     			model: emlParty,
@@ -267,20 +347,61 @@ define(['underscore', 'jquery', 'backbone',
     			isNew: isNew
     		});	    	
     		
-	    	//Find the container section for this party type	    	
-    		this.$(".section.people").find('[data-attribute="' + partyType + '"]').append(partyView.render().el);
-    		
+	    	//Find the container section for this party type
+	    	this.$(".section.people").find('[data-attribute="' + partyType + '"]').append(partyView.render().el);	    		
+	    		
 	    	//Listen for changes to the required fields to know when to add a new party row
     		if(isNew){
 	    		var view = this;
 	    		emlParty.on("valid", function(){
 	    			if(emlParty.isValid()){
 	    				
+	    				if(partyView.isNew)
+	    					partyView.notNew();
+	    				
 	    				//Render the new blank person row
-	    				view.renderPerson(undefined, partyType);
+	    				view.renderPerson(undefined, (emlParty.get("role") || emlParty.get("type")));
 	    			}
 	    		});
     		}
+	    },
+	    
+	    /*
+	     * Gets the party type chosen by the user and adds that section to the view
+	     */
+	    addNewPersonType: function(e){
+	    	var partyType = $(e.target).val();
+	    	
+	    	//Get the form and model
+	    	var partyForm  = this.$(".section.people").find('[data-attribute="new"]'),
+	    		partyModel = partyForm.find(".eml-party").data("model");
+	    	
+	    	//Set the type on this person form
+	    	partyForm.attr("data-attribute", partyType);
+	    	
+	    	//Add a new header
+	    	this.$("#new-party-menu").before("<h4>" + this.partyTypeMap[partyType] + "</h4>");
+	    			
+	    	//Remove this type from the dropdown menu
+	    	this.$("#new-party-menu").find("[value='" + partyType + "']").remove();
+	    	
+	    	//Remove the menu from the page temporarily
+	    	var menu = this.$("#new-party-menu").detach();
+	    	
+	    	//Add the new party type form
+	    	var newPartyContainer = $(document.createElement("div"))
+									.attr("data-attribute", "new")
+									.addClass("row-striped");
+	    	this.$(".section.people").append(newPartyContainer);
+	    	this.renderPerson(null, "new");
+	    	$(newPartyContainer).before(menu);
+	    	
+	    	//Update the model
+	    	var attrToUpdate = _.contains(partyModel.get("roleOptions"), partyType)? "role" : "type";
+	    	partyModel.set(attrToUpdate, partyType);
+	    	
+	    	if(partyModel.isValid())
+	    		partyModel.mergeIntoParent();
 	    },
 	    
 	    /*

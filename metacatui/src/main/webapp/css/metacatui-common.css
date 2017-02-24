@@ -3120,6 +3120,11 @@ textarea.xlarge{
     position: absolute;
     left: 9px;
 }
+.Editor .header-dropdown{
+	font-size: 1.3em;
+    width: 100%;
+    height: 2em;
+}
 .metadata-container #funding-visible{
 	padding-left: 30px;
 }

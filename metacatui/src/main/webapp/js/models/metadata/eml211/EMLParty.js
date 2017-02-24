@@ -38,6 +38,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			this.on("change:individualName change:organizationName change:positionName " +
 					"change:address change:phone change:fax change:email " +
 					"change:onlineUrl change:references change:userId change:role", this.trickleUpChange);
+			
+			this.on("change:role", this.setType);
 		},
 
 		/*
@@ -458,6 +460,22 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 return objectDOM;
 		},
 		
+    	mergeIntoParent: function(){
+    		//Get the type of EML Party, in relation to the parent model
+			if(this.get("type") && this.get("type") != "associatedParty")
+				var type = this.get("type");
+			else
+				var type = "associatedParty";
+			
+			//Update the list of EMLParty models in the parent model
+			var currentModels = this.get("parentModel").get(type);
+			currentModels.push(this);
+			this.get("parentModel").set(type, currentModels);
+			
+			//Trigger a custom event that marks the model as valid
+			this.trigger("valid");
+    	},
+		
 		/*
          * Returns the node in the given EML snippet that the given node type should be inserted after
          */
@@ -482,6 +500,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			this.set("xmlID", Math.ceil(Math.random() * (9999999999999999 - 1000000000000000) + 1000000000000000));
 		},
 		
+		setType: function(){
+			if(this.get("role") && !this.get("type"))
+				this.set("type", "associatedParty");
+		},
+		
 		trickleUpChange: function(){
             if ( this.get("parentModel") ) {
     			this.get("parentModel").trigger("change");                
@@ -492,7 +515,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Checks the values of the model to determine if it is EML-valid
 		 */
 		isValid: function(){
-			return (this.get("organizationName") || this.get("positionName") || (this.get("individualName") && this.get("individualName").surName));
+			//The EMLParty must have either an organization name, position name, or surname. It must ALSO have a type or role.
+			return ((this.get("organizationName") || 
+					this.get("positionName") || 
+					(this.get("individualName") && this.get("individualName").surName)) &&
+					((this.get("type") == "associatedParty" && this.get("role")) || this.get("type")) );
 		},
 		
 		isOrcid: function(username){
