@@ -515,7 +515,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		           		
 		           		this.set(type, [party]);
 		           		
-		           		this.getEMLPosition(eml, type).after(party.updateDOM());
+		           		this.getEMLPosition(eml, type.toLowerCase()).after(party.updateDOM());
 		           	}
 	           	}
             },
