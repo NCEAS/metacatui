@@ -346,7 +346,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           			var node; 
 	           			
 	           			//Get the existing node or create a new one
-	           			if(nodes.length < i+1)
+	           			if(nodes.length < i+1){
 	           				node = document.createElement(fieldName);
                             this.getEMLPosition(eml, fieldName).after(node);
 	           			    
