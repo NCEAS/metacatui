@@ -414,6 +414,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	          */ 	
 	           	//Serialize the taxonomic coverage
 				if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length > 0) {
+					// TODO: This nonEmptyCoverages business could be wrapped up in a empty()
+					// method on the model itself			
 					var nonEmptyCoverages;
 
 					// Don't serialize if taxonCoverage is empty
