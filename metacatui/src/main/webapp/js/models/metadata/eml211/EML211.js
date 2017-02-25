@@ -349,7 +349,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           					nodes.last().after(newNode);
 	           				//Find the position in the EML where this node type belongs
 	           				else{
-	           					var insertAfter = this.getEMLPosition(eml, fieldName.toLowerCase());
+	           					var insertAfter = this.getEMLPosition(eml, fieldName);
 	           					
 	           					//We know that alternateIdentifier is the first node in EML
 	           					if(!insertAfter && fieldName == "alternateIdentifier")
@@ -524,7 +524,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		else{
 	           			var insertAfter = $(eml).find(type.toLowerCase()).last();
 	           			if(!insertAfter || !insertAfter.length)
-	           				insertAfter = this.getEMLPosition(eml, type.toLowerCase());
+	           				insertAfter = this.getEMLPosition(eml, type);
 	           			
 	           			insertAfter.after(party.updateDOM());
 	           		}
@@ -703,7 +703,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		             "distribution", "coverage", "purpose", "maintenance", "contact", "publisher", "pubplace", 
 	           		             "methods", "project", "datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
             	
-            	var position = _.indexOf(nodeOrder, nodeName);
+            	var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
             	if(position == -1)
             		return false;
             	
