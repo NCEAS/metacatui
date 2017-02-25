@@ -35,7 +35,8 @@ define(['underscore', 'jquery', 'backbone',
         	"change .usage"             : "updateRadioButtons",
         	"change .funding"           : "updateFunding",
         	"click .side-nav-item a"    : "scrollToSection",
-        	"change #new-party-menu"    : "addNewPersonType"
+        	"change #new-party-menu"    : "addNewPersonType",
+			"click  .remove"			: "handleRemove"
         },
                 
         /* A list of the subviews */
@@ -635,15 +636,24 @@ define(['underscore', 'jquery', 'backbone',
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").val(keyword),
     			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
 			    				$(document.createElement("option")).val("None").text("None")).append(
-			    				$(document.createElement("option")).val("GCMD").text("GCMD"));
+			    				$(document.createElement("option")).val("GCMD").text("GCMD")),
+				removeButton;
 	    	
 	    	if(thesaurus && thesaurus.indexOf("GCMD") > -1)
     			thesInput.val("GCMD");
 	    	
 	    	if(!keyword) 
 	    		keywordInput.addClass("new").attr("placeholder", "Add a new keyword");
-	    	
-	    	return row.append(keywordInput, thesInput);
+			
+			// Start adding children to the row
+			row.append(keywordInput, thesInput);
+
+			// Add a remove button unless this is the .new keyword
+			if(keyword) {
+				row.append(this.createRemoveButton('keywordSets', 'div.keyword-row'));
+			}
+
+	    	return row;
 	    },
 	    
 	    /*
@@ -727,6 +737,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Add a new row when the user has added a new keyword just now
 	    	if(row.find(".new").length){
 	    		row.find(".new").removeClass("new");
+				row.append(this.createRemoveButton("keywordSets", "div.keyword-row"));
 	    		this.$(".keywords").append(this.createKeyword());
 	    	}
 	    },
@@ -1202,6 +1213,41 @@ define(['underscore', 'jquery', 'backbone',
 			console.log("changes fired");
         },
         
+		/* Creates "Remove" buttons for removing non-required sections
+		of the EML from the DOM */
+		createRemoveButton: function(attribute, selector) {
+			return $(document.createElement("button"))
+				.addClass("remove")
+				.text("🤷 Ugly temporary remove button 🤷")
+				.data({
+					'attribute': attribute,
+					'selector': selector 
+				})
+		},
+
+		/* Generic event handler for removing sections of the EML (both
+		the DOM and inside the EML211Model) */
+		handleRemove: function(e) {
+			var selector = $(e.target).data('selector'), // Select to find the parent DOM elemente we'll remove
+				attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
+				parentEl, // Element we'll remove
+				model; // Specific sub-model we're removing
+
+			if (!selector || !attribute) return;
+
+			parentEl = $(e.target).parents(selector).first();
+
+			if (parentEl.length == 0) return;
+
+			model = $(parentEl).data('model');
+
+			// Remove the DOM
+			$(e.target).parents(selector).first().remove();
+
+			// Remove the model from the parent model
+			this.model.set(attribute, _.without(this.model.get(attribute), model));
+		},
+
         /* Close the view and its sub views */
         onClose: function() {
             this.remove(); // remove for the DOM, stop listening           
