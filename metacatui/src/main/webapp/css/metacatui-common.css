@@ -3100,6 +3100,24 @@ textarea.xlarge{
 .Editor .input-logo + input{
 	width: calc(100% - 42px);
 }
+.metadata-container.edit .section > * > *,
+.metadata-container.edit .abstract {
+    padding-left: 40px;
+}
+.metadata-container.edit .abstract h5,
+.metadata-container.edit .taxa .row-striped{
+	padding-left: 0px;
+}
+.metadata-container.edit .abstract textarea{
+	padding-left: 10px;
+}
+.metadata-container.edit .section > h2,
+.metadata-container.edit .section.people h4,
+.metadata-container.edit .section.people .row-striped,
+.metadata-container.edit #new-party-menu,
+.metadata-container.edit .taxonomic-coverage {
+    margin-left: 40px;
+}
 .metadata-container *{
 	box-sizing: border-box;
 }
@@ -3162,6 +3180,22 @@ textarea.xlarge{
     border: 2px dashed #1F254F;
     
 }    
+/* Remove icons in the Editor */
+.Editor .remove{
+	color: rgba(255,0,0,0.6);
+    font-size: 1.7em;
+    position: absolute;
+    left: 14.893617021276595%;
+    margin-left: 21px;
+}
+.Editor .keyword-row:hover .remove{
+	display: block;
+}
+.Editor .keyword-row .remove:hover ~ .keyword,
+.Editor .keyword-row .remove:hover ~ .thesaurus{
+	border-color: #FF0000;
+	border-style: dashed;
+}
 /*******************************************
 Pager View
 ******************************************/

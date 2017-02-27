@@ -650,7 +650,7 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Add a remove button unless this is the .new keyword
 			if(keyword) {
-				row.append(this.createRemoveButton('keywordSets', 'div.keyword-row'));
+				row.prepend(this.createRemoveButton('keywordSets', 'div.keyword-row'));
 			}
 
 	    	return row;
@@ -1216,9 +1216,9 @@ define(['underscore', 'jquery', 'backbone',
 		/* Creates "Remove" buttons for removing non-required sections
 		of the EML from the DOM */
 		createRemoveButton: function(attribute, selector) {
-			return $(document.createElement("button"))
-				.addClass("remove")
-				.text("🤷 Ugly temporary remove button 🤷")
+			return $(document.createElement("span"))
+				.addClass("icon icon-remove remove pointer hidden")
+				.attr("title", "Remove")
 				.data({
 					'attribute': attribute,
 					'selector': selector 
