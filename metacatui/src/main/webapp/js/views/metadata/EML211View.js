@@ -1217,7 +1217,7 @@ define(['underscore', 'jquery', 'backbone',
 		of the EML from the DOM */
 		createRemoveButton: function(attribute, selector) {
 			return $(document.createElement("span"))
-				.addClass("icon icon-remove remove pointer hidden")
+				.addClass("icon icon-remove remove pointer")
 				.attr("title", "Remove")
 				.data({
 					'attribute': attribute,

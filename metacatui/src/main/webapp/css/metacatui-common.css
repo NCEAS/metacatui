@@ -3188,6 +3188,9 @@ textarea.xlarge{
     left: 14.893617021276595%;
     margin-left: 21px;
 }
+.Editor .keyword-row .remove{
+	display: none;
+}
 .Editor .keyword-row:hover .remove{
 	display: block;
 }
