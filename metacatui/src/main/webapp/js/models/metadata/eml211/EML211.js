@@ -650,9 +650,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						
 						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
-						model.trigger("successSaving", model);
                         model.fetch({merge: true, sysMeta: true});
-                        
+						model.trigger("successSaving", model);                        
 					},
 					error: function(model, response, xhr){
 						console.log("error updating EML: ", response.responseText);
@@ -670,8 +669,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Will not trigger a sync event since it does not use Backbone.Model.fetch 
              */
             fetchSystemMetadata: function(options){
-            	if(this.isNew()) return;
-            	
+
             	if(!options) var options = {};
             	else options = _.clone(options);
             	
