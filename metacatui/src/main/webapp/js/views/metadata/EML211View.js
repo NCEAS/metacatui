@@ -748,7 +748,8 @@ define(['underscore', 'jquery', 'backbone',
 	    createBasicTextFields: function(category, placeholder, appendNew){
 	    	
 	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
-	    		modelValues = this.model.get(category);
+	    		modelValues = this.model.get(category),
+				textRow; // Holds the DOM for each field
 	    	
 	    	if(typeof appendNew == "undefined")
 	    		var appendNew = true;
@@ -759,16 +760,21 @@ define(['underscore', 'jquery', 'backbone',
 	    	//For each value in this category, create an HTML element with the value inserted
 	    	_.each(modelValues, function(value, i, allModelValues){
 		    	if(this.edit){
-		    		var input = $(document.createElement("input"))
+		    		var textRow = $(document.createElement("div")),
+					    input   = $(document.createElement("input"))
 				    			.attr("type", "text")
 				    			.attr("data-category", category)
 				    			.addClass("basic-text");
-			    	
-		    		textContainer.append(input.clone().val(value));
+			    	textRow.append(input.clone().val(value));
+					textContainer.append(this.createRemoveButton(category, null));
+		    		textContainer.append(textRow);
 		    		
 		    		//At the end, append an empty input for the user to add a new one
-		    		if(i+1 == allModelValues.length && appendNew)
-		    			textContainer.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
+		    		if(i+1 == allModelValues.length && appendNew) {
+						var newRow = $(document.createElement("div"));
+						newRow.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
+						textContainer.append(newRow);
+					}	
 		    		
 		    	}
 		    	else{
@@ -784,7 +790,7 @@ define(['underscore', 'jquery', 'backbone',
 			    			.attr("data-category", category)
 			    			.addClass("basic-text new")
 			    			.attr("placeholder", placeholder || "Add a new " + category);
-	    		textContainer.append(input);
+	    		textContainer.append($(document.createElement("div")).append(input));
 	    	}
 	    	
 	    	return textContainer;
@@ -911,14 +917,17 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	if($(e.target).is(".new")){
 	    		//Add another blank text input
-		    	$(e.target).after($(document.createElement("input"))
-									.attr("type", "text")
-									.attr("data-category", category)
-									.attr("placeholder", $(e.target).attr("placeholder"))
-									.addClass("new basic-text"));
+				var newRow = $(document.createElement("div"));
+				newRow.append($(document.createElement("input"))
+					.attr("type", "text")
+					.attr("data-category", category)
+					.attr("placeholder", $(e.target).attr("placeholder"))
+					.addClass("new basic-text"));
+		    	$(e.target).parents().first().after(newRow);
 		    	
 		    	//Remove the new class
 		    	$(e.target).removeClass("new");
+				$(e.target).before(this.createRemoveButton('alternateIdentifier', null));
 	    	}
 	    	
 	    },
@@ -1233,19 +1242,38 @@ define(['underscore', 'jquery', 'backbone',
 				parentEl, // Element we'll remove
 				model; // Specific sub-model we're removing
 
-			if (!selector || !attribute) return;
+			if (!attribute) return;
 
-			parentEl = $(e.target).parents(selector).first();
+			// Handle remove on a model
+			if (selector) {
+				parentEl = $(e.target).parents(selector).first();
 
-			if (parentEl.length == 0) return;
+				if (parentEl.length == 0) return;
 
-			model = $(parentEl).data('model');
+				model = $(parentEl).data('model');
 
-			// Remove the DOM
-			$(e.target).parents(selector).first().remove();
+				// Remove the DOM
+				$(e.target).parents(selector).first().remove();
 
-			// Remove the model from the parent model
-			this.model.set(attribute, _.without(this.model.get(attribute), model));
+				// Remove the model from the parent model
+				this.model.set(attribute, _.without(this.model.get(attribute), model));
+			} else { // Handle remove on a basic text field
+				parentEl = $(e.target).parents().first();
+
+				if (parentEl.length == 0) return;
+
+				model = $(e.target).siblings("input").first().val(); // TODO Rename me?
+
+				$(parentEl).remove();
+
+				// TODO: This removes by value which doesn't work well when the user 
+				// has entered duplicate values. Fix this! This needs to be a basicText
+				// specific method. We should probably store an index on the DOM and delete
+				// using that.
+				this.model.set(attribute, _.without(this.model.get(attribute), model));
+			}
+
+			
 		},
 
         /* Close the view and its sub views */
