@@ -64,6 +64,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 // EML211-specific init goes here
                 // this.set("objectXML", this.createXML());
                 this.parse(this.createXML());
+                
+                this.on("sync", function(){
+                	this.set("synced", true);
+                });
             },
             
             url: function(){

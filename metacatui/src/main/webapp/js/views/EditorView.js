@@ -86,35 +86,17 @@ define(['underscore',
         		
 	        //When the basic Solr metadata are retrieved, get the associated package
 	        this.listenToOnce(this.model, "sync", this.getDataPackage);
+	        
 	        //If no object is found with this ID, then tell the user
 	        this.listenToOnce(this.model, "change:notFound", this.showNotFound);
 	        	
-            //If the user is logged in, fetch the Metadata
-        	if(MetacatUI.appUserModel.get("loggedIn")) {
-        		if(!this.pid) 
-        			this.model.trigger("sync");
-        		else 
-        			this.model.fetch();
-    		}
-        	//If we checked for authentication and the user is not logged in
-        	else if(MetacatUI.appUserModel.get("checked")){
-        		this.showSignIn();
-        	}
-        	//If we haven't checked for authentication yet
-        	else {   
-        		//Wait until the user info is loaded before we request the Metadata
-	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
-	            	if(!MetacatUI.appUserModel.get("loggedIn")){
-	            		this.showSignIn();
-	            		return;
-	            	}
-	            		
-	            	if(!this.pid) 
-	        			this.model.trigger("sync");
-	        		else 
-	        			this.model.fetch();
-	            });
-    		}
+        	//If we checked for authentication already
+        	if(MetacatUI.appUserModel.get("checked"))
+        		this.fetchModel();
+        	//If we haven't checked for authentication yet,
+        	//wait until the user info is loaded before we request the Metadata
+        	else  
+	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
         	
         	//When the user tries to navigate away, confirm with the user
         	var view = this;
@@ -123,10 +105,38 @@ define(['underscore',
             return this;
         },
         
+        fetchModel: function(){
+        	//If we checked for authentication and the user is not logged in
+        	if(!MetacatUI.appUserModel.get("loggedIn"))
+        		this.showSignIn();
+            //If the user is logged in, fetch the Metadata
+        	else{       
+        		//If the user hasn't provided an id, then don't check the authority and mark as synced already
+	        	if(!this.pid){
+	        		this.model.set("isAuthorized", true);
+	    			this.model.trigger("sync");
+	        	}
+	    		else {
+	    			//Get the data package when we find out the user is authorized to edit it
+	    	        this.listenToOnce(this.model, "change:isAuthorized", this.getDataPackage);
+	    	        //Let a user know when they are not authorized to edit this data set
+	    	        this.listenToOnce(this.model, "change:isAuthorized", this.notAuthorized);
+	    	        
+	    	        //Fetch the model
+	    			this.model.fetch();
+	    			
+	    			//Check the authority of this user
+	    			this.model.checkAuthority();
+	    		}
+        	}
+        },
+        
         /* Get the data package associated with the EML */
         getDataPackage: function(scimetaModel) {
             console.log("EditorView.getDataPackage() called.");
             
+            if(!this.model.get("synced") || !this.model.get("isAuthorized")) return;
+                        
             if(!scimetaModel)
             	var scimetaModel = this.model;
             
@@ -481,6 +491,21 @@ define(['underscore',
     		this.$el.html(container);
     		var signInButtons = new SignInView().render().el;
     		$(container).append('<h1>Sign in to submit data</h1>', signInButtons);
+		},
+		
+		/*
+		 * Shows a message if the user is not authorized to edit this package
+		 */
+		notAuthorized: function(){
+			if(this.model.get("isAuthorized")) return;
+			
+			this.$("#editor-body").empty();
+			MetacatUI.appView.showAlert("You are not authorized to edit this data set.",
+					"alert-error", "#editor-body");
+			
+			//Stop listening to any further events
+			this.stopListening();
+			this.model.off();
 		},
         
         /*
