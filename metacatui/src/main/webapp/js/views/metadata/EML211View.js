@@ -737,7 +737,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Add a new row when the user has added a new keyword just now
 	    	if(row.find(".new").length){
 	    		row.find(".new").removeClass("new");
-				row.append(this.createRemoveButton("keywordSets", "div.keyword-row"));
+				row.prepend(this.createRemoveButton("keywordSets", "div.keyword-row"));
 	    		this.$(".keywords").append(this.createKeyword());
 	    	}
 	    },
