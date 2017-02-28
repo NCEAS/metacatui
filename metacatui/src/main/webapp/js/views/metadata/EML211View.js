@@ -765,8 +765,8 @@ define(['underscore', 'jquery', 'backbone',
 				    			.attr("type", "text")
 				    			.attr("data-category", category)
 				    			.addClass("basic-text");
-			    	textRow.append(input.clone().val(value));
-					textContainer.append(this.createRemoveButton(category, null));
+					textRow.append(this.createRemoveButton(category, null));
+					textRow.append(input.clone().val(value));
 		    		textContainer.append(textRow);
 		    		
 		    		//At the end, append an empty input for the user to add a new one
