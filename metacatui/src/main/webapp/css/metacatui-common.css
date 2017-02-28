@@ -3195,7 +3195,7 @@ textarea.xlarge{
 	display: none;
 }
 .Editor .keyword-row:hover .remove{
-	display: block;
+	display: inline-block;
 }
 .Editor .keyword-row .remove:hover ~ .keyword,
 .Editor .keyword-row .remove:hover ~ .thesaurus{
