@@ -1264,16 +1264,19 @@ define(['underscore', 'jquery', 'backbone',
 
 				model = $(e.target).siblings("input").first().val(); // TODO Rename me?
 
+				// The DOM order matches the EML model attribute order so we can remove
+				// by that
+				var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
+				var currentValue = this.model.get(attribute);
+				
+				// Remove from the EML Model
+				if (position >= 0) {
+					this.model.set(attribute, currentValue.splice(position, 1));
+				}
+
+				// Remove from the DOM
 				$(parentEl).remove();
-
-				// TODO: This removes by value which doesn't work well when the user 
-				// has entered duplicate values. Fix this! This needs to be a basicText
-				// specific method. We should probably store an index on the DOM and delete
-				// using that.
-				this.model.set(attribute, _.without(this.model.get(attribute), model));
 			}
-
-			
 		},
 
         /* Close the view and its sub views */
