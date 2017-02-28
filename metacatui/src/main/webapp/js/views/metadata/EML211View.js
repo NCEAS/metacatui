@@ -1228,8 +1228,8 @@ define(['underscore', 'jquery', 'backbone',
 		/* Generic event handler for removing sections of the EML (both
 		the DOM and inside the EML211Model) */
 		handleRemove: function(e) {
-			var selector = $(e.target).data('selector'), // Select to find the parent DOM elemente we'll remove
-				attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
+			var attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
+			    selector = $(e.target).data('selector'), // Select to find the parent DOM elemente we'll remove
 				parentEl, // Element we'll remove
 				model; // Specific sub-model we're removing
 
