@@ -902,7 +902,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Insert the new value into the array
 	    	if(Array.isArray(currentValue)){
 	    		//Find the position this text input is in
-	    		var position = $(e.target).parent().children(".basic-text").index(e.target);
+	    		var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
 	    		currentValue[position] = value;
 	    		model.set(category, currentValue);
 	    		model.trigger("change");
