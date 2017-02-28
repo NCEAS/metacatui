@@ -923,7 +923,7 @@ define(['underscore', 'jquery', 'backbone',
 					.attr("data-category", category)
 					.attr("placeholder", $(e.target).attr("placeholder"))
 					.addClass("new basic-text"));
-		    	$(e.target).parents().first().after(newRow);
+		    	$(e.target).parent().after(newRow);
 		    	
 		    	//Remove the new class
 		    	$(e.target).removeClass("new");
@@ -1246,19 +1246,19 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Handle remove on a model
 			if (selector) {
-				parentEl = $(e.target).parents(selector).first();
+				parentEl = $(e.target).parent(selector);
 
 				if (parentEl.length == 0) return;
 
 				model = $(parentEl).data('model');
 
 				// Remove the DOM
-				$(e.target).parents(selector).first().remove();
+				$(e.target).parent(selector).remove();
 
 				// Remove the model from the parent model
 				this.model.set(attribute, _.without(this.model.get(attribute), model));
 			} else { // Handle remove on a basic text field
-				parentEl = $(e.target).parents().first();
+				parentEl = $(e.target).parent();
 
 				if (parentEl.length == 0) return;
 
