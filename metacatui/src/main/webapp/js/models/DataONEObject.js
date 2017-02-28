@@ -85,6 +85,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 }, this);
                 this.on("successSaving", this.updateRelationships);
                 
+                this.on("sync", function(){
+                	this.set("synced", true);
+                });
+                
             },
             
             /*
@@ -268,7 +272,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             		if(!response.response.docs.length){
             			this.set("notFound", true);
             		}
-            		
+            		            		
             	    return response.response.docs[0];                   
                 }
             	else
@@ -481,6 +485,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 			//Send the Save request
 			Backbone.Model.prototype.save.call(this, null, requestSettings);
             
+		  },
+		  
+		  /*
+		   * Check if the current user is authorized to perform an action on this object
+		   */
+		  checkAuthority: function(action){
+			  if(!action) var action = "changePermission";
+			  
+				var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
+				if(!authServiceUrl) return false;
+
+				var model = this;
+
+				var requestSettings = {
+					url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=" + action,
+					type: "GET",
+					success: function(data, textStatus, xhr) {
+						model.set("isAuthorized", true);
+						model.trigger("change:isAuthorized");
+					},
+					error: function(xhr, textStatus, errorThrown) {
+						model.set("isAuthorized", false);
+					}
+				}
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+
 		  },
 		  
 		  serializeSysMeta: function(options){

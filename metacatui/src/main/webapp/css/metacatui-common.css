@@ -1331,6 +1331,9 @@ img.icon{
 	margin-bottom: 0px;
 	
 }
+#metadata-container{
+	width: 99%;
+}
 #metadata-container > .alert-container{
 	margin-top: 40px;
 }
