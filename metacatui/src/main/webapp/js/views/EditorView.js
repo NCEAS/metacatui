@@ -558,6 +558,7 @@ define(['underscore',
             this.model.off();
 			
             $(".Editor").removeClass("Editor");
+            this.$el.empty();
             
             this.model = null;
             

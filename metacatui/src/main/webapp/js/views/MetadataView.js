@@ -342,8 +342,7 @@ define(['jquery',
 		    				  .append($(document.createElement("li"))
 		    						  .addClass("search")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#data/page/" + MetacatUI.appModel.get("page"))
-						    				  .addClass("search")
+						    				  .attr("href", "#data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))						    				  .addClass("search")
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
 						    		  .append($(document.createElement("a"))
@@ -353,7 +352,7 @@ define(['jquery',
 
 			if(MetacatUI.uiRouter.lastRoute() == "data"){
 				$(breadcrumbs).prepend($(document.createElement("a"))
-						         .attr("href", "#data/page/" + MetacatUI.appModel.get("page"))
+								 .attr("href", "#data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
 						         .attr("title", "Back")
 						         .addClass("back")
 						         .text(" Back to search")
@@ -1719,6 +1718,7 @@ define(['jquery',
 			var viewRef = this;
 
 			this.stopListening();
+			this.model.off();
 
 			_.each(this.subviews, function(subview) {
 				if(subview.el != viewRef.el)
