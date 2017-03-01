@@ -69,6 +69,8 @@ define(['underscore', 'jquery', 'backbone',
         /* Render the view */
         render: function() {        
 			MetacatUI.appModel.set('headerType', 'default');
+			
+			console.log("rendering EML");
 
 			//Render the basic structure of the page and table of contents
 			this.$el.html(this.template());
@@ -1283,6 +1285,7 @@ define(['underscore', 'jquery', 'backbone',
         onClose: function() {
             this.remove(); // remove for the DOM, stop listening           
             this.off();    // remove callbacks, prevent zombies
+            this.model.off();
             
             //Remove the scroll event listeners
             $(document).unbind("scroll");

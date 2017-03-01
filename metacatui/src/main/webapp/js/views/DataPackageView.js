@@ -183,8 +183,8 @@ define([
                 
                 }, this);
             
-                this.subviews = {};
-                
+                //Reset the subviews from the view completely (by removing it from the prototype)
+                this.__proto__.subviews = {};
             },
             
             /* Show or hide the data rows associated with the event row science metadata */

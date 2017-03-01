@@ -21,41 +21,43 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         	type: "EML",            
 
-        	defaults: _.extend(ScienceMetadata.prototype.defaults(), {
-        		id: "urn:uuid:" + uuid.v4(),
-        		formatId: "eml://ecoinformatics.org/eml-2.1.1",
-        		objectXML: null,
-	            isEditable: false,
-	            alternateIdentifier: [],
-	            shortName: null,
-	            title: [],
-	            creator: [], // array of EMLParty objects
-	            metadataProvider: [], // array of EMLParty objects
-	            associatedParty : [], // array of EMLParty objects
-	            contact: [], // array of EMLParty objects
-	            publisher: [], // array of EMLParty objects
-	            pubDate: null,
-	            language: null,
-	            series: null,
-	            abstract: [], //array of EMLText objects
-	            keywordSets: [], //array of EMLKeywordSet objects
-	            additionalInfo: [],
-	            intellectualRights: "",
-	            intellRightsOptions: ["This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication." +
-	                                  "To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
-	                                  "This work is licensed under the Creative Commons Attribution 4.0 International " + 
-	                                  "License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/."],
-	            onlineDist: [], // array of EMLOnlineDist objects
-	            offlineDist: [], // array of EMLOfflineDist objects
-	            geoCoverage : [], //an array for EMLGeoCoverages
-	            temporalCoverage : null, //One EMLTempCoverage model
-	            taxonCoverage : [], //an array of EMLTaxonCoverages
-	            purpose: [],
-	            pubplace: null,
-	            methods: [], // array of EMLMethods objects
-	            project: null // An EMLProject object
-	            //type: "Metadata"
-        	}),
+        	defaults: function(){
+        		return _.extend(ScienceMetadata.prototype.defaults(), {
+	        		id: "urn:uuid:" + uuid.v4(),
+	        		formatId: "eml://ecoinformatics.org/eml-2.1.1",
+	        		objectXML: null,
+		            isEditable: false,
+		            alternateIdentifier: [],
+		            shortName: null,
+		            title: [],
+		            creator: [], // array of EMLParty objects
+		            metadataProvider: [], // array of EMLParty objects
+		            associatedParty : [], // array of EMLParty objects
+		            contact: [], // array of EMLParty objects
+		            publisher: [], // array of EMLParty objects
+		            pubDate: null,
+		            language: null,
+		            series: null,
+		            abstract: [], //array of EMLText objects
+		            keywordSets: [], //array of EMLKeywordSet objects
+		            additionalInfo: [],
+		            intellectualRights: "",
+		            intellRightsOptions: ["This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication." +
+		                                  "To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
+		                                  "This work is licensed under the Creative Commons Attribution 4.0 International " + 
+		                                  "License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/."],
+		            onlineDist: [], // array of EMLOnlineDist objects
+		            offlineDist: [], // array of EMLOfflineDist objects
+		            geoCoverage : [], //an array for EMLGeoCoverages
+		            temporalCoverage : null, //One EMLTempCoverage model
+		            taxonCoverage : [], //an array of EMLTaxonCoverages
+		            purpose: [],
+		            pubplace: null,
+		            methods: [], // array of EMLMethods objects
+		            project: null // An EMLProject object
+		            //type: "Metadata"
+        		});
+        	},
 
             initialize: function(attributes) {
                 // Call initialize for the super class

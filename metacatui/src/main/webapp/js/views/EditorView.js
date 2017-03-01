@@ -76,6 +76,7 @@ define(['underscore',
         render: function() {
 
             MetacatUI.appModel.set('headerType', 'default');
+			
         	//Inert the basic template on the page
         	this.$el.html(this.template({
         		loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."})
@@ -497,7 +498,7 @@ define(['underscore',
 		 * Shows a message if the user is not authorized to edit this package
 		 */
 		notAuthorized: function(){
-			if(this.model.get("isAuthorized")) return;
+			if(this.model.get("isAuthorized") || this.model.get("notFound")) return;
 			
 			this.$("#editor-body").empty();
 			MetacatUI.appView.showAlert("You are not authorized to edit this data set.",
@@ -554,12 +555,11 @@ define(['underscore',
         /* Close the view and its sub views */
         onClose: function() {
             this.off();    // remove callbacks, prevent zombies 
-            this.model.stopListening();
+            this.model.off();
 			
             $(".Editor").removeClass("Editor");
             
             this.model = null;
-            this.pid = null;
             
             // Close each subview
             _.each(this.subviews, function(subview) {
