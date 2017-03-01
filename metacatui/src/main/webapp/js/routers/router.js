@@ -162,7 +162,7 @@ function ($, _, Backbone) {
 			
 			this.routeHistory.push("data");
 			
-			///Check for a page URL parameter
+			//Check for a page URL parameter
 			if(typeof page === "undefined")
 				MetacatUI.appModel.set("page", 0);
 			else
@@ -184,7 +184,7 @@ function ($, _, Backbone) {
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
 			
-			///Check for a page URL parameter
+			//Check for a page URL parameter
 			if(typeof page === "undefined")
 				MetacatUI.appModel.set("page", 0);
 			else

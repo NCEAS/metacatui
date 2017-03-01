@@ -1750,13 +1750,18 @@ define(['jquery',
 			MetacatUI.appModel.set("page", page);
 
 			if(!this.isSubView){
-				var route = Backbone.history.fragment;
-				if (route.indexOf("/page/") >= 0) {
-					//replace the last number with the new one
-					route = route.replace(/\d+$/, page);
-				} else {
-					route += "/page/" + page;
-				}
+				var route = Backbone.history.fragment,
+					subroutePos = route.indexOf("/page/"),
+					newPage = parseInt(page) + 1;
+				
+				//replace the last number with the new one
+				if((page > 0) && (subroutePos > -1))					
+					route = route.replace(/\d+$/, newPage);
+				else if(page > 0)
+					route += "/page/" + newPage;				
+				else if(subroutePos >= 0)
+					route = route.substring(0, subroutePos);
+				
 				MetacatUI.uiRouter.navigate(route);	
 			}
 		},
