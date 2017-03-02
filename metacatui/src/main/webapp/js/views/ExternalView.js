@@ -21,30 +21,48 @@ define(['jquery', 'underscore', 'backbone'],
 		events: null,
 		
 		powerfulEvents: {
-			"click a"						:	"handleAnchor",
 			"click input[type='submit']"	:	"submitForm"
 		},
 		
-		handleAnchor: function(event) {
-			var href = $(event.target).attr("href");
-			if(href.lastIndexOf("http", 0) >= 0) {
-				// just follow the link
-				return true;
-			} 
-			else if((href.lastIndexOf(".pdf") > 0) || (href.lastIndexOf(".bin") > 0) || (href.lastIndexOf(".exe") > 0) || (href.lastIndexOf(".tar.gz") > 0) || (href.lastIndexOf(".zip") > 0) || (href.lastIndexOf(".tar") > 0)){
-				if(href.indexOf(this.url) > 0)
-					window.location = appModel.get("baseUrl") + href;
-				else
-					window.location = appModel.get("baseUrl") + this.url + "/" + href;
-				
-				return false;
-			}
-			else {
-				this.url = href;
-				this.render();
-			}
+		changeLinks: function() {
+			var links = this.$("a[href]");
 			
-			return false;
+			_.each(links, function(link){
+				var href        = $(link).attr("href"),
+					isExternal  = (href.indexOf("http") == 0 && ((href.indexOf(appModel.get("baseUrl")) == -1) || href.indexOf(appModel.get("baseUrl").replace("https", "http")) == -1)),
+					baseUrl     = window.location.hash.substring(0, window.location.hash.lastIndexOf("/"));
+				
+				if(isExternal){
+					//Keep the same
+				}
+				else if((href.lastIndexOf(".pdf") > 0) || 
+					(href.lastIndexOf(".bin") > 0) || 
+					(href.lastIndexOf(".exe") > 0) || 
+					(href.lastIndexOf(".tar.gz") > 0) || 
+					(href.lastIndexOf(".zip") > 0) || 
+					(href.lastIndexOf(".tar") > 0)){
+					
+						if(href.indexOf(this.url) > 0)
+							$(link).attr("href", appModel.get("baseUrl") + href);
+						else
+							$(link).attr("href", appModel.get("baseUrl") + this.url + "/" + href);
+						
+				}
+				else if( ((href.indexOf(appModel.get("baseUrl")) == 0) || (href.indexOf(appModel.get("baseUrl").replace("https", "http"))) == 0)
+						&& (window.location.hash.substring("#external/".length).indexOf(href.substring(href.lastIndexOf("/"))) == 0) ){
+					$(link).attr("href", "#external/" + href.substring(href.lastIndexOf("/")));
+				}
+				else if(href.charAt(0) == "#"){
+					$(link).attr("href", window.location.hash + href);
+				}
+				else if(href.indexOf("./") == 0){
+					$(link).attr("href", baseUrl + href.substring(1));
+				}
+				else if(href.indexOf(".html") && href.charAt("0") != "/"){
+					$(link).attr("href", baseUrl + "/" + href);
+				}
+				
+			}, this);
 			
 		},
 		
@@ -188,6 +206,7 @@ define(['jquery', 'underscore', 'backbone'],
 						viewRef.delegateEvents(viewRef.powerfulEvents);
 						//load images in
 						viewRef.loadImages(computedUrl);
+						viewRef.changeLinks();
 						// make sure we scroll
 						viewRef.postRender();
 						// make sure our browser history has it
