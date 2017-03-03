@@ -530,9 +530,10 @@ define(['underscore', 'jquery', 'backbone',
 				},
 				select: function(e, ui) {
 					e.preventDefault();
-										
-					hiddenFundingInput.val("NSF Award " + ui.item.value);
-					fundingInput.val(ui.item.label);
+									
+					var value = "NSF Award " + ui.item.value + " (" + ui.item.label + ")";
+					hiddenFundingInput.val(value);
+					fundingInput.val(value);
 					
 					$(".funding .ui-helper-hidden-accessible").hide();
 					loadingSpinner.css("top", "5px");
