@@ -796,15 +796,47 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	this.attributeCache = this.toJSON();
 	        	
 	        	//Set the old identifier
-	        	var oldPid = this.get("id");
+	        	var oldPid = this.get("id"),
+                    selfDocuments,
+                    selfDocumentedBy,
+                    index;
 				this.set("oldPid", oldPid);
-				
+                
+                // Check to see if the old pid documents or is documented by itself
+                selfDocuments = _.contains(this.get("documents"), oldPid);
+                selfDocumentedBy = _.contains(this.get("isDocumentedBy"), oldPid);
 				//Set the new identifier
-				if(id)
+				if( id ) {
 					this.set("id", id);
-				else
+				    
+				} else {
 					this.set("id", "urn:uuid:" + uuid.v4());
-				
+                }
+                
+                // Remove the old pid from the documents list if present
+                if ( selfDocuments ) {
+                    index = this.get("documents").indexOf(oldPid);
+                    if ( index > -1 ) {
+                        this.get("documents").splice(index, 1);
+                        
+                    }
+                    // And add the new pid in
+                    this.get("documents").push(this.get("id"));
+                    
+                }
+                
+                // Remove the old pid from the isDocumentedBy list if present
+                if ( selfDocumentedBy ) {
+                    index = this.get("isDocumented").indexOf(oldPid);
+                    if ( index > -1 ) {
+                        this.get("isDocumentedBy").splice(index, 1);
+                        
+                    }
+                    // And add the new pid in
+                    this.get("isDocumentedBy").push(this.get("id"));
+                    
+                }
+                
 				this.trigger("change:id")
 				
 				//Update the obsoletes and obsoletedBy
