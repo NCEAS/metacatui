@@ -24,7 +24,8 @@
 	text-shadow: none;
     font-weight: normal;
 }
-.danger{
+.danger, 
+.error{
 	color: #960303;
 }
 .strong{
@@ -1377,10 +1378,7 @@ img.icon{
 	white-space: nowrap;
 	max-width: 100%;
 }
-.controls-well > .party{
-	margin-bottom: 30px;
-	border-bottom: 1px solid #DDD;
-}
+
 /* ---- Taxonomic range ---- */
 .taxonomicCoverage .control-group{
    	margin-bottom: 20px;
@@ -2902,15 +2900,11 @@ input.subtle:focus,
 /*******************************************
 Editor View
 ******************************************/
-
 #editor-header .citation{
 	padding: 1em;
     margin-bottom: 0px;
     font-size: 1.1em;
     line-height: 1.6em;
-}
-.metadata-toc{
-	transition: top 500ms;
 }
 .side-nav-item a {
     width: 100%;
@@ -2953,18 +2947,6 @@ ul.side-nav-items {
     bottom: 0px;
     padding: 20px;
     z-index:3;
-}
-.editor-controls .btn{
-	float: right;
-	margin-left: 10px;
-	color: #FFF;
-	border-color: #FFF;
-}
-.metadata-container.edit textarea{
-	width: 100%;
-}
-textarea.xlarge{
-	height: 200px;
 }
 
 /* Editor package table container */
@@ -3064,6 +3046,24 @@ textarea.xlarge{
     margin-right: 20px;
     background-color: #1F254F;
 }  
+.editor-controls .btn{
+	float: right;
+	margin-left: 10px;
+	color: #FFF;
+	border-color: #FFF;
+}
+.metadata-container.edit textarea{
+	width: 100%;
+}
+textarea.xlarge{
+	height: 200px;
+}
+
+/* Highlight drop zones with a dashed border */
+.droppable {
+    border: 2px dashed #1F254F;
+    
+} 
 .Editor .disable-layer{
 	background-color: rgba(0,0,0,.6);
     height: 100%;
@@ -3094,6 +3094,9 @@ textarea.xlarge{
 .Editor input[type="time"]{
 	padding: 14px;
 }
+.Editor input.error{
+	border: 1px solid red;
+}
 .Editor .input-logo{
 	height: 28px;
     width: 28px;
@@ -3103,22 +3106,22 @@ textarea.xlarge{
 .Editor .input-logo + input{
 	width: calc(100% - 42px);
 }
-.metadata-container.edit .section > * > *,
-.metadata-container.edit .abstract {
+.metadata-container .section > * > *,
+.metadata-container .abstract {
     padding-left: 40px;
 }
-.metadata-container.edit .abstract h5,
-.metadata-container.edit .taxa .row-striped{
+.metadata-container .abstract h5,
+.metadata-container .taxa .row-striped{
 	padding-left: 0px;
 }
-.metadata-container.edit .abstract textarea{
+.metadata-container .abstract textarea{
 	padding-left: 10px;
 }
-.metadata-container.edit .section > h2,
-.metadata-container.edit .section.people h4,
-.metadata-container.edit .section.people .row-striped,
-.metadata-container.edit #new-party-menu,
-.metadata-container.edit .taxonomic-coverage {
+.metadata-container .section > h2,
+.metadata-container .section.people h4,
+.metadata-container .section.people .row-striped,
+.metadata-container #new-party-menu,
+.metadata-container .taxonomic-coverage {
     margin-left: 40px;
 }
 .metadata-container *{
@@ -3127,16 +3130,36 @@ textarea.xlarge{
 .metadata-container h2{
 	border-bottom: 1px solid #DDD;
     padding-bottom: 10px;
-    margin-top: 40px;
+    padding-top: 40px;
     margin-bottom: 30px;
+}
+.metadata-container h5 > .subtle{
+	margin-left: 20px;
+	font-weight: normal;
 }
 .metadata-container .section {
     width: 100%;
     clear: both;
 } 
+.metadata-container .section > .row-striped:last-child {
+    margin-bottom: 0px;
+}
+.Editor .header-dropdown{
+	font-size: 1.3em;
+    width: 100%;
+    height: 2em;
+    width: calc(100% - 40px);
+}
+.metdata-container .checkbox{
+	clear: both;
+}
+
+/* ---- Overview ---- */
 .metadata-container .section.overview > div{
 	margin-bottom: 20px;
 }
+
+/* ---- Funding ---- */
 .Editor .funding input{
 	padding-left: 35px;
 }  
@@ -3154,18 +3177,29 @@ textarea.xlarge{
     position: absolute;
     left: 9px;
 }
-.Editor .header-dropdown{
-	font-size: 1.3em;
-    width: 100%;
-    height: 2em;
-}
 .metadata-container #funding-visible{
 	padding-left: 30px;
 }
+
+/* ---- People / Parties ---- */
+.controls-well > .party{
+	margin-bottom: 30px;
+	border-bottom: 1px solid #DDD;
+}
+.row-striped > .eml-party {
+    padding-top: 10px;
+}
+.eml-party .notification{
+	height: 40px;
+}
+
+/* ---- Keywords ---- */
 .metadata-container .keywords .span2{
 	margin-left: 0px;
 	width: 16.893617%;
 }
+
+/* ---- Usage ---- */
 .metadata-container .usage input{
 	float: left;
 }
@@ -3175,30 +3209,35 @@ textarea.xlarge{
 .metadata-container .usage .text{
 	min-width: 225px;
 }
-.metdata-container .checkbox{
-	clear: both;
+
+/* ---- Basic text ---- */
+.metadata-container .section .text-container {
+    padding-left: 0px;
 }
-/* Highlight drop zones with a dashed border */
-.droppable {
-    border: 2px dashed #1F254F;
-    
-}    
-/* Remove icons in the Editor */
-.Editor .remove{
+.basic-text-row{
+	padding-left: 40px;
+}
+   
+/* ---- Remove icons in the Editor ---- */
+.metadata-container .remove{
 	color: rgba(255,0,0,0.6);
     font-size: 1.7em;
     position: absolute;
     left: 14.893617021276595%;
     margin-left: 21px;
 }
-.Editor .keyword-row .remove{
+.metadata-container .remove{
 	display: none;
 }
-.Editor .keyword-row:hover .remove{
+.metadata-container .keyword-row:hover .remove,
+.metadata-container .basic-text-row:hover .remove{
 	display: inline-block;
 }
-.Editor .keyword-row .remove:hover ~ .keyword,
-.Editor .keyword-row .remove:hover ~ .thesaurus{
+.metadata-container .remove:hover{
+	cursor: pointer;
+	color: rgba(255,0,0,1);
+}
+.metadata-container .remove:hover ~ input{
 	border-color: #FF0000;
 	border-style: dashed;
 }

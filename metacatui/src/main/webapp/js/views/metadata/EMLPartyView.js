@@ -30,7 +30,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	
         	events: {
         		"change" 		: "updateModel",
-        		"keyup .phone"  : "formatPhone"
+        		"keyup .phone"  : "formatPhone",
+        		"focusout .row-fluid"      : "showRequired"
         	},
         	
         	render: function(){
@@ -208,6 +209,22 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
         		//Manually trigger a change on the name attribute
         		this.model.trigger("change:individualName");
+        	},
+        	
+        	showRequired: function(){
+        		if(this.model.isValid()){
+        			this.$(".notification").empty();
+        			this.$(".error").removeClass("error");
+        			return;
+        		}
+        		
+        		if(this.$(".error").length) return;
+        		
+        		if(!this.model.get("positionName")) this.$("[data-attribute='positionName']").addClass("error");
+        		if(!this.model.get("organizationName")) this.$("[data-attribute='organizationName']").addClass("error");
+        		if(!this.model.get("individualName") || !this.model.get("individualName").surName) this.$("[data-attribute='surName']").addClass("error");
+        		
+        		this.$(".notification").html('<span class="error">Either a last name, position name, or organization name is required.</span>');
         	},
         	
         	// A function to format text to look like a phone number
