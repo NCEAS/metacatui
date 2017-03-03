@@ -996,7 +996,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     	            }, this);	
     	            
     	            //Get all the ids from this model
-                	idsFromModel = _.invoke(this.models, "get", "id");
+                	idsFromModel = this.pluck("id");
     	            
     		        //Find the difference between the model IDs and the XML IDs to get a list of added members
     	            var addedIds  = _.without(_.difference(idsFromModel, idsFromXML), oldPidVariations);	            	            
@@ -1035,7 +1035,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			    	statement.subject.value = cnResolveUrl + encodeURIComponent(pid);
     			    });
     			    
-    			    //Change the idDescribedBy statement
+    			    //Change the isDescribedBy statement
     			    var isDescribedByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE("isDescribedBy"), rdf.sym(cnResolveUrl + encodeURIComponent(oldPid)));
     			    if(isDescribedByStatements[0])
     			    	isDescribedByStatements[0].object.value = cnResolveUrl + encodeURIComponent(pid);;
@@ -1050,6 +1050,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				
                 } else {
                     // Create the OAI-ORE graph from scratch
+                    this.dataPackageGraph = rdf.graph();
                     cnResolveUrl = MetacatUI.appModel.get("resolveServiceUrl") || "https://cn.dataone.org/cn/v2/resolve/";
                     this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
                     rMapNode = rdf.sym(cnResolveUrl + encodeURIComponent(this.packageModel.id));
