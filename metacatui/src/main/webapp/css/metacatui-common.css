@@ -24,7 +24,8 @@
 	text-shadow: none;
     font-weight: normal;
 }
-.danger{
+.danger, 
+.error{
 	color: #960303;
 }
 .strong{
@@ -1377,10 +1378,19 @@ img.icon{
 	white-space: nowrap;
 	max-width: 100%;
 }
+
+/* ---- People / Parties ---- */
 .controls-well > .party{
 	margin-bottom: 30px;
 	border-bottom: 1px solid #DDD;
 }
+.row-striped > .eml-party {
+    padding-top: 10px;
+}
+.eml-party .notification{
+	height: 40px;
+}
+
 /* ---- Taxonomic range ---- */
 .taxonomicCoverage .control-group{
    	margin-bottom: 20px;
@@ -2902,6 +2912,9 @@ input.subtle:focus,
 /*******************************************
 Editor View
 ******************************************/
+.Editor input.error{
+	border: 1px solid red;
+}
 
 #editor-header .citation{
 	padding: 1em;
@@ -3158,6 +3171,7 @@ textarea.xlarge{
 	font-size: 1.3em;
     width: 100%;
     height: 2em;
+    width: calc(100% - 40px);
 }
 .metadata-container #funding-visible{
 	padding-left: 30px;

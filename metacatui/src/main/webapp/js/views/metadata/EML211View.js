@@ -300,7 +300,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Display a drop-down menu for all the empty party types
 	    	if(emptyTypes.length){
 		    	var menu = $(document.createElement("select")).attr("id", "new-party-menu").addClass("header-dropdown");
-		    	$(menu).append( $(document.createElement("option")).text("Choose new party type ...") );
+		    	$(menu).append( $(document.createElement("option")).text("Choose new person or organization role ...") );
 		    	
 		    	var newPartyContainer = $(document.createElement("div"))
 		    							.attr("data-attribute", "new")
