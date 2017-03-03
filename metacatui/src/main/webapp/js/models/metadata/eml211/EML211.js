@@ -42,10 +42,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            keywordSets: [], //array of EMLKeywordSet objects
 		            additionalInfo: [],
 		            intellectualRights: "",
-		            intellRightsOptions: ["This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication." +
-		                                  "To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
-		                                  "This work is licensed under the Creative Commons Attribution 4.0 International " + 
-		                                  "License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/."],
 		            onlineDist: [], // array of EMLOnlineDist objects
 		            offlineDist: [], // array of EMLOfflineDist objects
 		            geoCoverage : [], //an array for EMLGeoCoverages
@@ -292,8 +288,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				$(thisNode).text().trim();
             			
             			//If the value is one of our pre-defined options, then add it to the model
-            			if(_.contains(this.get("intellRightsOptions"), value))
-            				modelJSON["intellectualRights"] = value;
+            			//if(_.contains(this.get("intellRightsOptions"), value))
+            			modelJSON["intellectualRights"] = value;
             			
             		}
             		else{

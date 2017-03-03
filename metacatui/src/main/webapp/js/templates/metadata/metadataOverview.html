@@ -20,16 +20,18 @@
 		<label class="checkbox tooltip-this"
 			data-placement="top" data-trigger="hover" data-delay="600"
 			data-title="By dedicating this work to the public domain, you waive your interest in your work and place the work as completely as possible in the public domain so others may freely use the work without restriction under copyright or database law. Attribution for your work is still expected according to norms in your research field.">
-			<input type="radio"  name="usage" data-category="intellectualRights"
-				value="<%=intellRightsOptions[0]%>" <% if(intellectualRights == intellRightsOptions[0]){ %> checked="checked" <% } %> />
+			<input type="radio"  name="usage" data-category="intellectualRights" class="usage"
+				value="This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/." 
+				 />
 			<span class="span6 text">Creative Commons Public Domain</span>
 			<a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank"><img src="img/cc-zero.png" /></a>
 		</label>
 		<label class="checkbox tooltip-this"
 			data-placement="top" data-trigger="hover" data-delay="600"
 			data-title="By licensing this work, you let others copy, distribute, display, and perform your copyrighted work, and derivative works based upon it, but only if they give you appropriate credit.">
-			<input type="radio" name="usage" data-category="intellectualRights"
-				value="<%=intellRightsOptions[1]%>" <% if(intellectualRights == intellRightsOptions[1]){ %> checked="checked" <% } %> />
+			<input type="radio" name="usage" data-category="intellectualRights" class="usage"
+				value="This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/." 
+				 />
 			<span class="span6 text">Creative Commons Attribution</span>
 			<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"><img src="img/cc-by.png" /></a>
 		</label>

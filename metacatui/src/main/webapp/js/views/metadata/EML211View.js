@@ -119,10 +119,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Append the empty layout
 	    	var overviewEl = this.$container.find(".overview");
-	    	$(overviewEl).html(this.overviewTemplate({
-	    		intellRightsOptions : this.model.get("intellRightsOptions"),
-	    		intellectualRights  : this.model.get("intellectualRights")
-	    	}));
+	    	$(overviewEl).html(this.overviewTemplate());
 	    	
 	    	//Abstract
 	    	_.each(this.model.get("abstract"), function(abs){
@@ -153,6 +150,10 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Alternate Ids
 		    var altIdsEls = this.createBasicTextFields("alternateIdentifier", "Add a new alternate identifier");
 		    $(overviewEl).find(".altids").append(altIdsEls);
+		    
+		    //Usage
+		    //Find the model value that matches a radio button and check it
+		    $(".checkbox .usage[value='" + this.model.get("intellectualRights") + "']").attr("checked", "checked");
 	    	
 	    	//Funding
 		    var funding = this.model.get("project") ? this.model.get("project").get("funding") : [];
