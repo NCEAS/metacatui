@@ -1183,7 +1183,7 @@ define(['underscore', 'jquery', 'backbone',
         	}
         	else{
         		//Get the section
-        		var top = $(window).scrollTop() + $("#Navbar").outerHeight(),
+        		var top = $(window).scrollTop() + $("#Navbar").outerHeight() + 70,
         			sections = $(".metadata-container .section");
         		
         		//If we are at the bottom, highlight the last section

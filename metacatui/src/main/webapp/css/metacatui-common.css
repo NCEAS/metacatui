@@ -1379,18 +1379,6 @@ img.icon{
 	max-width: 100%;
 }
 
-/* ---- People / Parties ---- */
-.controls-well > .party{
-	margin-bottom: 30px;
-	border-bottom: 1px solid #DDD;
-}
-.row-striped > .eml-party {
-    padding-top: 10px;
-}
-.eml-party .notification{
-	height: 40px;
-}
-
 /* ---- Taxonomic range ---- */
 .taxonomicCoverage .control-group{
    	margin-bottom: 20px;
@@ -2922,9 +2910,6 @@ Editor View
     font-size: 1.1em;
     line-height: 1.6em;
 }
-.metadata-toc{
-	transition: top 500ms;
-}
 .side-nav-item a {
     width: 100%;
     display: block;
@@ -3077,6 +3062,12 @@ textarea.xlarge{
     margin-right: 20px;
     background-color: #1F254F;
 }  
+
+/* Highlight drop zones with a dashed border */
+.droppable {
+    border: 2px dashed #1F254F;
+    
+} 
 .Editor .disable-layer{
 	background-color: rgba(0,0,0,.6);
     height: 100%;
@@ -3140,16 +3131,32 @@ textarea.xlarge{
 .metadata-container h2{
 	border-bottom: 1px solid #DDD;
     padding-bottom: 10px;
-    margin-top: 40px;
+    padding-top: 40px;
     margin-bottom: 30px;
 }
 .metadata-container .section {
     width: 100%;
     clear: both;
 } 
+.metadata-container .section > .row-striped:last-child {
+    margin-bottom: 0px;
+}
+.Editor .header-dropdown{
+	font-size: 1.3em;
+    width: 100%;
+    height: 2em;
+    width: calc(100% - 40px);
+}
+.metdata-container .checkbox{
+	clear: both;
+}
+
+/* ---- Overview ---- */
 .metadata-container .section.overview > div{
 	margin-bottom: 20px;
 }
+
+/* ---- Funding ---- */
 .Editor .funding input{
 	padding-left: 35px;
 }  
@@ -3167,19 +3174,29 @@ textarea.xlarge{
     position: absolute;
     left: 9px;
 }
-.Editor .header-dropdown{
-	font-size: 1.3em;
-    width: 100%;
-    height: 2em;
-    width: calc(100% - 40px);
-}
 .metadata-container #funding-visible{
 	padding-left: 30px;
 }
+
+/* ---- People / Parties ---- */
+.controls-well > .party{
+	margin-bottom: 30px;
+	border-bottom: 1px solid #DDD;
+}
+.row-striped > .eml-party {
+    padding-top: 10px;
+}
+.eml-party .notification{
+	height: 40px;
+}
+
+/* ---- Keywords ---- */
 .metadata-container .keywords .span2{
 	margin-left: 0px;
 	width: 16.893617%;
 }
+
+/* ---- Usage ---- */
 .metadata-container .usage input{
 	float: left;
 }
@@ -3189,15 +3206,9 @@ textarea.xlarge{
 .metadata-container .usage .text{
 	min-width: 225px;
 }
-.metdata-container .checkbox{
-	clear: both;
-}
-/* Highlight drop zones with a dashed border */
-.droppable {
-    border: 2px dashed #1F254F;
-    
-}    
-/* Remove icons in the Editor */
+
+   
+/* ---- Remove icons in the Editor ---- */
 .Editor .remove{
 	color: rgba(255,0,0,0.6);
     font-size: 1.7em;
