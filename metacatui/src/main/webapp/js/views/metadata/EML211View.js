@@ -29,9 +29,11 @@ define(['underscore', 'jquery', 'backbone',
         events: {
         	"change .text"              : "updateText",
         	"change .basic-text"        : "updateBasicText",
+        	"keypress .basic-text.new"  : "addBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
 			"change .taxonomic-coverage": "updateTaxonCoverage",
         	"change .keywords"          : "updateKeywords",
+        	"keypress .keyword.new"		: "addKeyword",
         	"change .usage"             : "updateRadioButtons",
         	"change .funding"           : "updateFunding",
         	"click .side-nav-item a"    : "scrollToSection",
@@ -141,12 +143,12 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
 	    	_.each(this.model.get("keywordSets"), function(keywordSetModel){
 	    		_.each(keywordSetModel.get("keywords"), function(keyword){
-		    		$(overviewEl).find(".keywords").append(this.createKeyword(keyword, keywordSetModel));	    			
+		    		this.addKeyword(keyword, keywordSetModel);	    			
 	    		}, this);
 	    	}, this);
 	    	
 	    	//Add an empty row for adding a new keyword
-	    	$(overviewEl).find(".keywords").append(this.createKeyword());	  
+	    	this.addKeyword();	  
 	    		    	
 	    	//Alternate Ids
 		    var altIdsEls = this.createBasicTextFields("alternateIdentifier", "Add a new alternate identifier");
@@ -629,8 +631,16 @@ define(['underscore', 'jquery', 'backbone',
 			return finishedEl;
 		},
 	    
-	    createKeyword: function(keyword, model){
-	    	if(!keyword) var keyword = "";
+	    addKeyword: function(keyword, model){
+	    	if(typeof keyword != "string" || !keyword){
+	    		var keyword = "";
+	    		
+	    		//Only show one new keyword row at a time
+	    		if((this.$(".keyword.new").length == 1) && !this.$(".keyword.new").val())
+	    			return;
+	    		else if(this.$(".keyword.new").length > 1)
+	    			return;
+	    	}
 	    	
 	    	if(!model) var model = new EMLKeywordSet({ parentModel: this.model });
 	    	
@@ -646,7 +656,7 @@ define(['underscore', 'jquery', 'backbone',
     			thesInput.val("GCMD");
 	    	
 	    	if(!keyword) 
-	    		keywordInput.addClass("new").attr("placeholder", "Add a new keyword");
+	    		keywordInput.addClass("new").attr("placeholder", "Add one new keyword");
 			
 			// Start adding children to the row
 			row.append(keywordInput, thesInput);
@@ -656,7 +666,7 @@ define(['underscore', 'jquery', 'backbone',
 				row.prepend(this.createRemoveButton('keywordSets', 'div.keyword-row'));
 			}
 
-	    	return row;
+	    	this.$(".keywords").append(row);
 	    },
 	    
 	    /*
@@ -687,7 +697,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    },
 	    
-	    //TODO: Comma-seperate keywords
+	    //TODO: Comma and semi-colon seperate keywords
 	    updateKeywords: function(e){
 	    	if(!e) return;
 	    	
@@ -741,62 +751,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(row.find(".new").length){
 	    		row.find(".new").removeClass("new");
 				row.prepend(this.createRemoveButton("keywordSets", "div.keyword-row"));
-	    		this.$(".keywords").append(this.createKeyword());
+	    		this.addKeyword();
 	    	}
-	    },
-	    
-	    /*
-	     * Creates and returns an array of basic text input field for editing
-	     */
-	    createBasicTextFields: function(category, placeholder, appendNew){
-	    	
-	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
-	    		modelValues = this.model.get(category),
-				textRow; // Holds the DOM for each field
-	    	
-	    	if(typeof appendNew == "undefined")
-	    		var appendNew = true;
-	    	
-	    	//Format as an array
-	    	if(!Array.isArray(modelValues) && modelValues) modelValues = [modelValues];
-	    	
-	    	//For each value in this category, create an HTML element with the value inserted
-	    	_.each(modelValues, function(value, i, allModelValues){
-		    	if(this.edit){
-		    		var textRow = $(document.createElement("div")),
-					    input   = $(document.createElement("input"))
-				    			.attr("type", "text")
-				    			.attr("data-category", category)
-				    			.addClass("basic-text");
-					textRow.append(this.createRemoveButton(category, null));
-					textRow.append(input.clone().val(value));
-		    		textContainer.append(textRow);
-		    		
-		    		//At the end, append an empty input for the user to add a new one
-		    		if(i+1 == allModelValues.length && appendNew) {
-						var newRow = $(document.createElement("div"));
-						newRow.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
-						textContainer.append(newRow);
-					}	
-		    		
-		    	}
-		    	else{
-		    		textContainer.append($(document.createElement("div"))
-			    			.attr("data-category", category)
-			    			.text(value));
-		    	}
-	    	}, this);
-	    	
-	    	if((!modelValues || !modelValues.length) && this.edit){
-	    		var input = $(document.createElement("input"))
-			    			.attr("type", "text")
-			    			.attr("data-category", category)
-			    			.addClass("basic-text new")
-			    			.attr("placeholder", placeholder || "Add a new " + category);
-	    		textContainer.append($(document.createElement("div")).append(input));
-	    	}
-	    	
-	    	return textContainer;
 	    },
 		
 	    /*
@@ -887,6 +843,61 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    },
 	    
+	    /*
+	     * Creates and returns an array of basic text input field for editing
+	     */
+	    createBasicTextFields: function(category, placeholder, appendNew){
+	    	
+	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
+	    		modelValues = this.model.get(category),
+				textRow; // Holds the DOM for each field
+	    	
+	    	if(typeof appendNew == "undefined")
+	    		var appendNew = true;
+	    	
+	    	//Format as an array
+	    	if(!Array.isArray(modelValues) && modelValues) modelValues = [modelValues];
+	    	
+	    	//For each value in this category, create an HTML element with the value inserted
+	    	_.each(modelValues, function(value, i, allModelValues){
+		    	if(this.edit){
+		    		var textRow = $(document.createElement("div")).addClass("basic-text-row"),
+					    input   = $(document.createElement("input"))
+				    			.attr("type", "text")
+				    			.attr("data-category", category)
+				    			.addClass("basic-text");
+					textRow.append(this.createRemoveButton(category, null));
+					textRow.append(input.clone().val(value));
+		    		textContainer.append(textRow);
+		    		
+		    		//At the end, append an empty input for the user to add a new one
+		    		if(i+1 == allModelValues.length && appendNew) {
+						var newRow = $(document.createElement("div"));
+						newRow.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
+						textContainer.append(newRow);
+					}	
+		    		
+		    	}
+		    	else{
+		    		textContainer.append($(document.createElement("div"))
+		    				.addClass("basic-text-row")
+			    			.attr("data-category", category)
+			    			.text(value));
+		    	}
+	    	}, this);
+	    	
+	    	if((!modelValues || !modelValues.length) && this.edit){
+	    		var input = $(document.createElement("input"))
+			    			.attr("type", "text")
+			    			.attr("data-category", category)
+			    			.addClass("basic-text new")
+			    			.attr("placeholder", placeholder || "Add a new " + category);
+	    		
+	    		textContainer.append($(document.createElement("div")).addClass("basic-text-row").append(input));
+	    	}
+	    	
+	    	return textContainer;
+	    },
 	    
 	    updateBasicText: function(e){
 	    	if(!e) return false;
@@ -898,7 +909,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//We can't update anything without a category
 	    	if(!category) return false;
-	    	
+
 	    	//Get the current value
 	    	var currentValue = model.get(category);
 	    	
@@ -918,21 +929,40 @@ define(['underscore', 'jquery', 'backbone',
 	    	else if(!currentValue)
 	    		model.set(category, [value]);
 	    	
+    		//Add another blank text input
 	    	if($(e.target).is(".new")){
-	    		//Add another blank text input
-				var newRow = $(document.createElement("div"));
-				newRow.append($(document.createElement("input"))
-					.attr("type", "text")
-					.attr("data-category", category)
-					.attr("placeholder", $(e.target).attr("placeholder"))
-					.addClass("new basic-text"));
-		    	$(e.target).parent().after(newRow);
-		    	
-		    	//Remove the new class
-		    	$(e.target).removeClass("new");
-				$(e.target).before(this.createRemoveButton('alternateIdentifier', null));
+				this.addBasicText(e);
+				$(e.target).removeClass("new");
 	    	}
 	    	
+	    },
+	    
+	    /*
+	     * Adds a basic text input
+	     */
+	    addBasicText: function(e){
+	    	var category = $(e.target).attr("data-category"),
+	    		allBasicTexts = $(".basic-text.new[data-category='" + category + "']");
+    
+	    	//Only show one new keyword row at a time
+    		if((allBasicTexts.length == 1) && !allBasicTexts.val())
+    			return;
+    		else if(allBasicTexts.length > 1)
+    			return;
+    		
+	    	//Add another blank text input
+			var newRow = $(document.createElement("div")).addClass("basic-text-row");
+			
+			newRow.append($(document.createElement("input"))
+				.attr("type", "text")
+				.attr("data-category", category)
+				.attr("placeholder", $(e.target).attr("placeholder"))
+				.addClass("new basic-text"));
+			
+	    	$(e.target).parent().after(newRow);
+	    	
+	    	//Remove the new class	    	
+			$(e.target).before(this.createRemoveButton('alternateIdentifier', null));
 	    },
 
         // Update an EMLTemporalCoverage instance

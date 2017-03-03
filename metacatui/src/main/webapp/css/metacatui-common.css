@@ -2900,10 +2900,6 @@ input.subtle:focus,
 /*******************************************
 Editor View
 ******************************************/
-.Editor input.error{
-	border: 1px solid red;
-}
-
 #editor-header .citation{
 	padding: 1em;
     margin-bottom: 0px;
@@ -2951,18 +2947,6 @@ ul.side-nav-items {
     bottom: 0px;
     padding: 20px;
     z-index:3;
-}
-.editor-controls .btn{
-	float: right;
-	margin-left: 10px;
-	color: #FFF;
-	border-color: #FFF;
-}
-.metadata-container.edit textarea{
-	width: 100%;
-}
-textarea.xlarge{
-	height: 200px;
 }
 
 /* Editor package table container */
@@ -3062,6 +3046,18 @@ textarea.xlarge{
     margin-right: 20px;
     background-color: #1F254F;
 }  
+.editor-controls .btn{
+	float: right;
+	margin-left: 10px;
+	color: #FFF;
+	border-color: #FFF;
+}
+.metadata-container.edit textarea{
+	width: 100%;
+}
+textarea.xlarge{
+	height: 200px;
+}
 
 /* Highlight drop zones with a dashed border */
 .droppable {
@@ -3098,6 +3094,9 @@ textarea.xlarge{
 .Editor input[type="time"]{
 	padding: 14px;
 }
+.Editor input.error{
+	border: 1px solid red;
+}
 .Editor .input-logo{
 	height: 28px;
     width: 28px;
@@ -3107,22 +3106,22 @@ textarea.xlarge{
 .Editor .input-logo + input{
 	width: calc(100% - 42px);
 }
-.metadata-container.edit .section > * > *,
-.metadata-container.edit .abstract {
+.metadata-container .section > * > *,
+.metadata-container .abstract {
     padding-left: 40px;
 }
-.metadata-container.edit .abstract h5,
-.metadata-container.edit .taxa .row-striped{
+.metadata-container .abstract h5,
+.metadata-container .taxa .row-striped{
 	padding-left: 0px;
 }
-.metadata-container.edit .abstract textarea{
+.metadata-container .abstract textarea{
 	padding-left: 10px;
 }
-.metadata-container.edit .section > h2,
-.metadata-container.edit .section.people h4,
-.metadata-container.edit .section.people .row-striped,
-.metadata-container.edit #new-party-menu,
-.metadata-container.edit .taxonomic-coverage {
+.metadata-container .section > h2,
+.metadata-container .section.people h4,
+.metadata-container .section.people .row-striped,
+.metadata-container #new-party-menu,
+.metadata-container .taxonomic-coverage {
     margin-left: 40px;
 }
 .metadata-container *{
@@ -3133,6 +3132,10 @@ textarea.xlarge{
     padding-bottom: 10px;
     padding-top: 40px;
     margin-bottom: 30px;
+}
+.metadata-container h5 > .subtle{
+	margin-left: 20px;
+	font-weight: normal;
 }
 .metadata-container .section {
     width: 100%;
@@ -3207,23 +3210,34 @@ textarea.xlarge{
 	min-width: 225px;
 }
 
+/* ---- Basic text ---- */
+.metadata-container .section .text-container {
+    padding-left: 0px;
+}
+.basic-text-row{
+	padding-left: 40px;
+}
    
 /* ---- Remove icons in the Editor ---- */
-.Editor .remove{
+.metadata-container .remove{
 	color: rgba(255,0,0,0.6);
     font-size: 1.7em;
     position: absolute;
     left: 14.893617021276595%;
     margin-left: 21px;
 }
-.Editor .keyword-row .remove{
+.metadata-container .remove{
 	display: none;
 }
-.Editor .keyword-row:hover .remove{
+.metadata-container .keyword-row:hover .remove,
+.metadata-container .basic-text-row:hover .remove{
 	display: inline-block;
 }
-.Editor .keyword-row .remove:hover ~ .keyword,
-.Editor .keyword-row .remove:hover ~ .thesaurus{
+.metadata-container .remove:hover{
+	cursor: pointer;
+	color: rgba(255,0,0,1);
+}
+.metadata-container .remove:hover ~ input{
 	border-color: #FF0000;
 	border-style: dashed;
 }
