@@ -43,6 +43,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             
             /* Render the template into the DOM */
             render: function(model) {
+            	//Prevent duplicate listeners
+            	this.stopListening();
+            	
                 // Set the data-id for identifying events to model ids
                 this.$el.attr("data-id", this.model.get("id"));
                 
