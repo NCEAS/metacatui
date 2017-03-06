@@ -963,7 +963,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 	//Find the identifier statement in the resource map
     				idNode =  rdf.lit(oldPid);
     				idStatement = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
-    				
+                    
+                    // Remove all documents and isDocumentedBy statements (they're rebuilt from the collection)
+                    this.dataPackageGraph.removeMany(undefined, CITO("documents"), undefined, undefined, undefined);
+                    this.dataPackageGraph.removeMany(undefined, CITO("isDocumentedBy"), undefined, undefined, undefined);
+
     				//Get the CN Resolve Service base URL from the resource map (mostly important in dev environments where it will not always be cn.dataone.org)
     				cnResolveUrl = this.dataPackageGraph.cnResolveUrl || 
     					idStatement[0].subject.value.substring(0, idStatement[0].subject.value.indexOf(oldPid)) ||
@@ -1147,8 +1151,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     						isDocByStatement = rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode),
     						documentsStatement = rdf.st(metadataNode, CITO("documents"), dataNode);
     					//Add the statements
-    					this.dataPackageGraph.addStatement(isDocByStatement);
-    					this.dataPackageGraph.addStatement(documentsStatement);
+    					this.dataPackageGraph.add(isDocByStatement);
+    					this.dataPackageGraph.add(documentsStatement);
     				}, this);
     			}
     			
@@ -1166,8 +1170,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     						isDocByStatement = rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode);
     					
     					//Add the statements
-    					this.dataPackageGraph.addStatement(isDocByStatement);
-    					this.dataPackageGraph.addStatement(documentsStatement);
+    					this.dataPackageGraph.add(isDocByStatement);
+    					this.dataPackageGraph.add(documentsStatement);
     				}, this);
     			}
             },
