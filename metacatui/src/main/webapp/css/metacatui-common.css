@@ -3160,19 +3160,25 @@ textarea.xlarge{
 }
 
 /* ---- Funding ---- */
-.Editor .funding input{
+.Editor input.funding{
 	padding-left: 35px;
 }  
+.Editor .funding-row{
+	position: relative;
+}
+.Editor .funding-row .ui-autocomplete{
+	position: absolute !important;
+}
 .Editor .ui-autocomplete .ui-menu-item {
     font-size: .7em;
 }
-.Editor .funding .ui-helper-hidden-accessible{
+.Editor .funding-container .ui-helper-hidden-accessible{
 	display: none;
 }
-.metadata-container .funding .autocomplete-container{
+.metadata-container .funding-container .autocomplete-container{
 	position: relative;
 }
-.Editor .funding .icon-spinner{
+.Editor .funding-container .icon-spinner{
 	top: 5px;
     position: absolute;
     left: 9px;

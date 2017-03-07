@@ -36,6 +36,7 @@ define(['underscore', 'jquery', 'backbone',
         	"keypress .keyword.new"		: "addKeyword",
         	"change .usage"             : "updateRadioButtons",
         	"change .funding"           : "updateFunding",
+        	"keypress .funding.new"     : "addFunding",
         	"click .side-nav-item a"    : "scrollToSection",
         	"change #new-party-menu"    : "addNewPersonType",
 			"click  .remove"			: "handleRemove"
@@ -155,21 +156,8 @@ define(['underscore', 'jquery', 'backbone',
 		    //Find the model value that matches a radio button and check it
 		    $(".checkbox .usage[value='" + this.model.get("intellectualRights") + "']").attr("checked", "checked");
 	    	
-	    	//Funding
-		    var funding = this.model.get("project") ? this.model.get("project").get("funding") : [];
-			   
-		    //Clear the funding section
-		    $(".section.overview .funding").empty();
-		    
-		    //Create the funding input elements
-		    _.each(funding, function(fundingItem, i){
-		    	
-		    	$(".section.overview .funding").append(this.createFunding(fundingItem));
-		    	 
-		    }, this);
-		    
-		    //Add a blank funding input
-		    $(".section.overview .funding").append(this.createFunding());	    
+		    //Funding
+		    this.renderFunding();
 			
 			//Initialize all the tooltips
 			this.$(".tooltip-this").tooltip();
@@ -496,65 +484,103 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    },
 	    
-	    createFunding: function(value){
-	    	var fundingInput       = $(document.createElement("input"))
-	    								.attr("type", "text")
-	    								.attr("data-category", "funding")
-	    								.addClass("span12")
-	    								.attr("placeholder", "Search for NSF awards by keyword or enter custom funding information")
-	    								.val(value),
-		    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").val(value).attr("id", "").addClass("hidden"),
-		    	loadingSpinner     = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden"); 
-	    	
-	    	if(!value){
-	    		fundingInput.addClass("new");
-	    		hiddenFundingInput.addClass("new");
-	    	}
-	    	
-	    	//Append all the elements to a container
-	    	var containerEl = $(document.createElement("div"))
-	    						.addClass("ui-autocomplete-container funding-row")
-	    						.append(fundingInput, loadingSpinner, hiddenFundingInput);
-	    	
-	    	var view = this;
-	    	
-		    //Setup the autocomplete widget for the funding input
-		    fundingInput.hoverAutocomplete({
-				source: function(request, response){
-					var beforeRequest = function(){
-						loadingSpinner.show();
-					}
-					
-					var afterRequest = function(){
-						loadingSpinner.hide().css("top", "30px");
-					}
-					
-					return MetacatUI.appLookupModel.getGrantAutocomplete(request, response, beforeRequest, afterRequest)
-				},
-				select: function(e, ui) {
-					e.preventDefault();
-									
-					var value = "NSF Award " + ui.item.value + " (" + ui.item.label + ")";
-					hiddenFundingInput.val(value);
-					fundingInput.val(value);
-					
-					$(".funding .ui-helper-hidden-accessible").hide();
-					loadingSpinner.css("top", "5px");
-					
-					view.updateFunding(e);
-					
-				},
-				position: {
-					my: "left top",
-					at: "left bottom",
-					of: fundingInput,
-					collision: "fit"
-				},
-				appendTo: containerEl,
-				minLength: 3
-			});
+	    /*
+	     * Renders the funding field of the EML
+	     */
+	    renderFunding: function(){
+	    	//Funding
+		    var funding = this.model.get("project") ? this.model.get("project").get("funding") : [];
+			   
+		    //Clear the funding section
+		    $(".section.overview .funding").empty();
 		    
-		    return containerEl;
+		    //Create the funding input elements
+		    _.each(funding, function(fundingItem, i){
+		    	
+		    	this.addFunding(fundingItem);
+		    	 
+		    }, this);
+		    
+		    //Add a blank funding input
+		    this.addFunding();	
+	    },
+	    
+	    /*
+	     * Adds a single funding input row. Can either be called directly or used as an event callback
+	     */
+	    addFunding: function(argument){
+	    	if(this.edit){
+	    		
+	    		if(typeof argument == "string")
+	    			var value = argument;
+	    		
+	    		//Don't add another new funding input if there already is one
+	    		if( !value && (typeof argument == "object") && !$(argument.target).is(".new") )
+	    			return;
+	    		
+		    	var fundingInput       = $(document.createElement("input"))
+		    								.attr("type", "text")
+		    								.attr("data-category", "funding")
+		    								.addClass("span12 funding hover-autocomplete-target")
+		    								.attr("placeholder", "Search for NSF awards by keyword or enter custom funding information")
+		    								.val(value),
+			    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").val(value).attr("id", "").addClass("hidden"),
+			    	loadingSpinner     = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden"); 
+		    	
+		    	if(!value){
+		    		fundingInput.addClass("new");
+		    		hiddenFundingInput.addClass("new");
+		    		
+		    		//Remove the new class from the current input, if there is one
+		    		if(typeof argument == "object")
+		    			$(argument.target).removeClass("new");
+		    	}
+		    	
+		    	//Append all the elements to a container
+		    	var containerEl = $(document.createElement("div"))
+		    						.addClass("ui-autocomplete-container funding-row")
+		    						.append(fundingInput, loadingSpinner, hiddenFundingInput);
+		    	
+		    	var view = this;
+		    	
+			    //Setup the autocomplete widget for the funding input
+			    fundingInput.autocomplete({
+					source: function(request, response){
+						var beforeRequest = function(){
+							loadingSpinner.show();
+						}
+						
+						var afterRequest = function(){
+							loadingSpinner.hide().css("top", "30px");
+						}
+						
+						return MetacatUI.appLookupModel.getGrantAutocomplete(request, response, beforeRequest, afterRequest)
+					},
+					select: function(e, ui) {
+						e.preventDefault();
+										
+						var value = "NSF Award " + ui.item.value + " (" + ui.item.label + ")";
+						hiddenFundingInput.val(value);
+						fundingInput.val(value);
+						
+						$(".funding .ui-helper-hidden-accessible").hide();
+						loadingSpinner.css("top", "5px");
+						
+						view.updateFunding(e);
+						
+					},
+					position: {
+						my: "left top",
+						at: "left bottom",
+						of: fundingInput,
+						collision: "fit"
+					},
+					appendTo: containerEl,
+					minLength: 3
+				});
+			    
+			    this.$(".funding-container").append(containerEl);
+	    	}
 	    },
 	    
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
@@ -693,7 +719,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	if($(e.target).is(".new")){
 	    		$(e.target).removeClass("new");
-	    		row.after(this.createFunding());
+	    		this.addFunding();
 	    	}
 	    	
 	    },

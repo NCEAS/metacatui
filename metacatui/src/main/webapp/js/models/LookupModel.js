@@ -323,7 +323,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					_.each(data.response.award, function(award, i){
 						list.push({ 
 							value: award.id,
-							label: award.title
+							label: award.title + " (NSF #" + award.id + ")"
 						});
 					});
 					
