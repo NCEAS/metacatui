@@ -826,7 +826,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
                 // Remove the old pid from the isDocumentedBy list if present
                 if ( selfDocumentedBy ) {
-                    index = this.get("isDocumented").indexOf(oldPid);
+                    index = this.get("isDocumentedBy").indexOf(oldPid);
                     if ( index > -1 ) {
                         this.get("isDocumentedBy").splice(index, 1);
                         
