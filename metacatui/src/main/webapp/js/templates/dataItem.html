@@ -13,7 +13,7 @@
 
 <!-- Files column -->
 
-<td id="foobarbaz" class="name" contenteditable="true">
+<td class="name" contenteditable="true">
 	<% if (typeof title != "undefined" && title && title.length) { %>
 	    <%= title %>    
 	<% } else if ( typeof fileName != "undefined" && fileName) { %>
@@ -43,40 +43,20 @@
 <!-- Guide or Status column -->
 <!--td></td-->
 <!-- Button column -->
-<td class="dropdown">
+<td>
     <input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
-    <button type="button" class="edit-btn btn-small btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <i class="icon-large icon-pencil"></i>
-        <span>Edit</span>
-        <i class="caret"></i>
-    </button>
-    <ul class="dropdown-menu pull-right">
-      <% if ( type === "Metadata" ) { %>
-      <!--li class="duplicate disabled"><a href="#"><i class="icon-large icon-pencil pull-left"></i><span>Duplicate</span></a></li -->
-      <!-- li class="addFolder disabled"><a href="#"><i class="icon-large icon-pencil pull-left"></i><span>Add Folder ...</span></a></li -->
-      <li class="addFiles enabled">
-          <a data-target="#" href="#">
-              <i class="icon-large icon-cloud-upload pull-left"></i>
-              <span>Add Files ...</span>
-          </a>
-      </li>
-          <% if ( nodeLevel > 0 ) {%>
-          <li role="separator" class="divider"></li>
-          <li class="remove enabled">
-              <a data-target="#">
-                  <i class="icon-large icon-remove pull-left"></i>
-                  <span>Remove ...</span>
-              </a>
-          </li>
-          <% } %>
-      <% } else { %>
-      <li class="removeFiles enabled">
-          <a data-target="#">
-              <i class="icon-large icon-remove pull-left"></i>
-              <span>Remove ...</span>
-          </a></li>
-          
-      <% } %>
-    </ul>    
-    
+        <% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
+            <button type="button" class="addFiles btn btn-primary">
+                <span class="pull-left"><i class="icon-large icon-plus"></i></span>
+                <span>Add Files ...</span>
+                <!-- i class="caret"></i -->
+            </button>
+            
+        <% } else { %>
+            <button type="button" class="removeFiles btn btn-primary">
+                <span class="pull-left"><i class="icon-large icon-remove"></i></span>
+                <span>Remove</span>
+                <!-- i class="caret"></i -->
+            </button>
+        <% } %>
 </td>

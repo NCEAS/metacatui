@@ -1333,7 +1333,8 @@ img.icon{
 	
 }
 #metadata-container{
-	width: 99%;
+	width: 100%;
+	border-top: 1px solid #DDDDDD;
 }
 #metadata-container > .alert-container{
 	margin-top: 40px;
@@ -2958,7 +2959,6 @@ ul.side-nav-items {
 /* Editor package table */
 .Editor #data-package-table {
 	margin-bottom: 0px;
-	border-bottom: 1px solid #DDDDDD;
 }
 
 /* Editor package table row */
@@ -3013,8 +3013,9 @@ ul.side-nav-items {
 .Editor #data-package-table td:last-of-type > button {
     text-align: center;
     vertical-align: middle;
-    height: 2.0em;
-    padding-top: .2em;
+    /* height: 2.0em; */
+    width: 9em;
+    padding-top: .5em;
 }
 
 /* Give icons breathing */
