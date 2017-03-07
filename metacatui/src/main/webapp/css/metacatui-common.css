@@ -3094,7 +3094,8 @@ textarea.xlarge{
 .Editor input[type="time"]{
 	padding: 14px;
 }
-.Editor input.error{
+.Editor input.error,
+.Editor select.error{
 	border: 1px solid red;
 }
 .Editor .input-logo{
@@ -3222,6 +3223,23 @@ textarea.xlarge{
 }
 .basic-text-row{
 	padding-left: 40px;
+}
+
+/* ---- Taxon Coverage ---- */
+.taxonomic-coverage .notification{
+	padding-left: 0px;
+	position: absolute;
+	margin-top: -25px;
+}
+.taxonomic-coverage > .row-striped{
+	margin-top: 20px; 
+}
+.taxonomic-coverage > .row-striped:first-child,
+.taxonomic-coverage > .notification + .row-striped:nth-child(2){
+	margin-top: 0px;
+}
+.root-taxonomic-classification{
+	margin-bottom: 0px;
 }
    
 /* ---- Remove icons in the Editor ---- */
