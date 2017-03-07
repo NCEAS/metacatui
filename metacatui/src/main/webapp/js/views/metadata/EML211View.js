@@ -32,6 +32,7 @@ define(['underscore', 'jquery', 'backbone',
         	"keypress .basic-text.new"  : "addBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
 			"change .taxonomic-coverage": "updateTaxonCoverage",
+			"keypress .taxonomic-coverage .new input" : "addNewTaxonCoverageRow",
         	"change .keywords"          : "updateKeywords",
         	"keypress .keyword.new"		: "addKeyword",
         	"change .usage"             : "updateRadioButtons",
@@ -583,81 +584,6 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    },
 	    
-		// Creates a table to hold a single EMLTaxonCoverage element (table) for
-		// each root-level taxonomicClassification
-		createTaxanomicCoverage: function(coverage) {
-            var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
-			$(finishedEl).data({ model: coverage });
-			$(finishedEl).attr("data-category", "taxonomic-coverage");
-
-			var classifications = coverage.get("taxonomicClassification");
-
-			// Makes a table... for the root level
-			for (var i = 0; i < classifications.length; i++) {
-				$(finishedEl).append(this.createTaxonomicClassifcationTable(classifications[i]));
-			}
-
-			// Create a new, blank table for another taxonomicClassification
-			var newTableEl = this.createTaxonomicClassifcationTable();
-
-			$(finishedEl).append(newTableEl);
-
-			return finishedEl;
-		},
-		
-		createTaxonomicClassifcationTable: function(classification) {
-			var finishedEl = $('<div class="row-striped"></div>');
-			var tableEl = $(this.taxonomicClassificationTableTemplate());
-			var tableBodyEl = $("<tbody></tbody>");
-
-			var queue = [classification],
-			 	rows = [],
-			 	cur;
-
-			while (queue.length > 0) {				
-				cur = queue.pop();
-
-				// I threw this in here so I can this function without an 
-				// argument to generate a new table from scratch
-				if (typeof cur === "undefined") {
-					continue;
-				}
-
-				rows.push({
-					'taxonRankName' : cur.taxonRankName,
-					'taxonRankValue' : cur.taxonRankValue
-				});
-
-				if (cur.taxonomicClassification) {
-					for (var i = 0; i < cur.taxonomicClassification.length; i++) {
-						queue.push(cur.taxonomicClassification[i]);
-					}
-				}
-			}
-
-			for (var j = 0; j < rows.length; j++) {
-				tableBodyEl.append(this.taxonomicClassificationRowTemplate(rows[j]));
-			}
-
-			var newRowEl = $(this.taxonomicClassificationRowTemplate({
-				taxonRankName: '',
-				taxonRankValue: ''
-			}));
-
-			$(newRowEl).addClass("new");
-			$(tableBodyEl).append(newRowEl);
-			$(tableEl).append(tableBodyEl);
-
-			// Add the new class to the entire table if it's a new one
-			if (typeof classification === "undefined") {
-				$(tableEl).addClass("new");
-			}
-
-			$(finishedEl).append(tableEl);
-
-			return finishedEl;
-		},
-	    
 	    addKeyword: function(keyword, model){
 	    	if(typeof keyword != "string" || !keyword){
 	    		var keyword = "";
@@ -991,6 +917,82 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Remove the new class	    	
 			$(e.target).before(this.createRemoveButton('alternateIdentifier', null));
 	    },
+	    
+	    
+		// Creates a table to hold a single EMLTaxonCoverage element (table) for
+		// each root-level taxonomicClassification
+		createTaxanomicCoverage: function(coverage) {
+            var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
+			$(finishedEl).data({ model: coverage });
+			$(finishedEl).attr("data-category", "taxonomic-coverage");
+
+			var classifications = coverage.get("taxonomicClassification");
+
+			// Makes a table... for the root level
+			for (var i = 0; i < classifications.length; i++) {
+				$(finishedEl).append(this.createTaxonomicClassifcationTable(classifications[i]));
+			}
+
+			// Create a new, blank table for another taxonomicClassification
+			var newTableEl = this.createTaxonomicClassifcationTable();
+
+			$(finishedEl).append(newTableEl);
+
+			return finishedEl;
+		},
+		
+		createTaxonomicClassifcationTable: function(classification) {
+			var finishedEl = $('<div class="row-striped"></div>');
+			var tableEl = $(this.taxonomicClassificationTableTemplate());
+			var tableBodyEl = $("<tbody></tbody>");
+
+			var queue = [classification],
+			 	rows = [],
+			 	cur;
+
+			while (queue.length > 0) {				
+				cur = queue.pop();
+
+				// I threw this in here so I can this function without an 
+				// argument to generate a new table from scratch
+				if (typeof cur === "undefined") {
+					continue;
+				}
+
+				rows.push({
+					'taxonRankName' : cur.taxonRankName,
+					'taxonRankValue' : cur.taxonRankValue
+				});
+
+				if (cur.taxonomicClassification) {
+					for (var i = 0; i < cur.taxonomicClassification.length; i++) {
+						queue.push(cur.taxonomicClassification[i]);
+					}
+				}
+			}
+
+			for (var j = 0; j < rows.length; j++) {
+				tableBodyEl.append(this.taxonomicClassificationRowTemplate(rows[j]));
+			}
+
+			var newRowEl = $(this.taxonomicClassificationRowTemplate({
+				taxonRankName: '',
+				taxonRankValue: ''
+			}));
+
+			$(newRowEl).addClass("new");
+			$(tableBodyEl).append(newRowEl);
+			$(tableEl).append(tableBodyEl);
+
+			// Add the new class to the entire table if it's a new one
+			if (typeof classification === "undefined") {
+				$(tableEl).addClass("new");
+			}
+
+			$(finishedEl).append(tableEl);
+
+			return finishedEl;
+		},
 
         // Update an EMLTemporalCoverage instance
         updateTemporalCoverage: function (e) {
@@ -1164,15 +1166,23 @@ define(['underscore', 'jquery', 'backbone',
 					$(coverage).append(this.createTaxonomicClassifcationTable());
 					$(classification).removeClass("new");
 				}
+			}
+		},
+		
+		/*
+		 * Adds a new row to the taxon coverage table
+		 */
+		addNewTaxonCoverageRow: function(e){
+			// If the row is new, add a new row to the table
+			if ($(e.target).parents("tr").is(".new")) {
+				var newRow = $(this.taxonomicClassificationRowTemplate({ 
+								taxonRankName: '', 
+								taxonRankValue: ''
+							 }))
+							 .addClass("new");
 
-				// If the row is new, add a new row to the table
-				if ($(e.target).parents("tr").is(".new")) {
-
-					var newRow = $(this.taxonomicClassificationRowTemplate({ taxonRankName: '', taxonRankValue: ''}));
-					$(newRow).addClass("new");
-					$(e.target).parents("tr").after(newRow);
-					$(e.target).parents("tr").removeClass("new");
-				}
+				//Append the new row and remove the new class from the old row
+				$(e.target).parents("tr").removeClass("new").after(newRow);
 			}
 		},
         
