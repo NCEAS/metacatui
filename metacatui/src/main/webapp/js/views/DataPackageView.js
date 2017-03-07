@@ -21,7 +21,7 @@ define([
                         
             tagName: "table",
             
-            className: "table table-striped table-hover table-condensed",
+            className: "table table-striped table-hover",
             
             id: "data-package-table",
             
