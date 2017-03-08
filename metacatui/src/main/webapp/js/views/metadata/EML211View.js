@@ -32,8 +32,8 @@ define(['underscore', 'jquery', 'backbone',
         	"keypress .basic-text.new"  : "addBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
 			"change .taxonomic-coverage": "updateTaxonCoverage",
-			"keypress .taxonomic-coverage .new input" : "addNewTaxonRow",
-			"change .taxonomic-coverage .new select"  : "addNewTaxonRow",
+			"keypress .taxonomic-coverage .new input"   : "addNewTaxon",
+			"change   .taxonomic-coverage .new select"  : "addNewTaxon",
 			"focusout .taxonomic-coverage tr" : "showTaxonValidation",
         	"change .keywords"          : "updateKeywords",
         	"keypress .keyword.new"		: "addKeyword",
@@ -1076,83 +1076,53 @@ define(['underscore', 'jquery', 'backbone',
 			if (!classification) return false;
 
 			// Find all of the root-level taxonomicClassifications
-			var classifications = $(coverage).find("table.root-taxonomic-classification");
+			var classificationTables = $(coverage).find("table.root-taxonomic-classification");
 
-			if (!classifications) return false;
+			if (!classificationTables) return false;
 
-			/* Here begins a funky attempt at updating the taxonCoverage model
-			every time the user changes a field. It traverses the entire DOM
-			tree to generate a new TaxonCoverage based upon what's in the DOM.
-
-			TODO :This should probably (at least) be in its own View and
-			definitely refactored into tidy functions.*/
+			//TODO :This should probably (at least) be in its own View and
+			//definitely refactored into tidy functions.*/
 
 			var rows,
-				currentRank,
-				currentValue,
-				collectedClassifications = [],
-				collectedRanks = [],
-				rankOrder = ["Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"], // TODO: Move this and everything else in a separate View
-				hierarchy;
+				collectedClassifications = [];
 
-			for (var i = 0; i < classifications.length; i++) {
-				hierarchy = null;
-				collectedRanks = [];
+			for (var i = 0; i < classificationTables.length; i++) {
 
-				rows = $(classifications[i]).find("tbody tr");
+				rows = $(classificationTables[i]).find("tbody tr");
 
 				if (!rows) continue;
-
+				
+				var topLevelClassification = {},
+					classification = topLevelClassification,
+					currentRank,
+					currentValue;
+				
 				for (var j = 0; j < rows.length; j++) {
+
 					currentRank = $(rows[j]).find("select").val() || "";
 					currentValue = $(rows[j]).find("input").val() || "";
 
-					// Skip over rows with empty Rank and Value
+					// Skip over rows with empty Rank or Value
 					if (!currentRank.length || !currentValue.length) {
 						continue;
 					}
-
-					// Add in sorted order using either unshift or push
-					if (collectedRanks.length === 0 || 
-					    (rankOrder.indexOf(currentRank) < rankOrder.indexOf(collectedRanks[collectedRanks.length -1].taxonRankName))) {
-						collectedRanks.unshift({
-							taxonRankName: currentRank,
-							taxonRankValue: currentValue
-						});
-					} else {
-						collectedRanks.push({
-							taxonRankName: currentRank,
-							taxonRankValue: currentValue
-						});
+					
+					//After the first row, start nesting taxonomicClassification objectss
+					if(j > 0){
+						classification.taxonomicClassification = {};
+						classification = classification.taxonomicClassification;
 					}
+					
+					// Add it to the classification object
+					classification.taxonRankName = currentRank;
+					classification.taxonRankValue = currentValue;
+					
 				}
-
-				// Make the sorted list of ranks hierarchical
-				// If there are two classifications as the same rank, add
-				// them as siblings.
-				var currentClassification = null,  // Track as we go down the tree
-					filtered = null;
-
-				for (var k = 0; k < rankOrder.length; k++) {
-					filtered = _.filter(collectedRanks, function(rank) { return rank.taxonRankName === rankOrder[k] });
-
-					if (filtered.length == 0 ){
-						continue;
-					}
-
-					if (!currentClassification) {
-						hierarchy = filtered;
-						currentClassification = hierarchy[0];
-					} else {
-						currentClassification.taxonomicClassification = filtered;
-						currentClassification = currentClassification.taxonomicClassification[0];
-					}
-				}
-
-				// Add the ranks we collected (if we collected any)
-				if (hierarchy) {
-					collectedClassifications = hierarchy;
-				}
+				
+				
+				//Add the top level classification to the array
+				if(Object.keys(topLevelClassification).length)
+					collectedClassifications.push(topLevelClassification);
 			}
 
 			if (!(_.isEqual(collectedClassifications, model.get('taxonomicClassification')))) {
@@ -1172,9 +1142,9 @@ define(['underscore', 'jquery', 'backbone',
 		},
 		
 		/*
-		 * Adds a new row to the taxon coverage table
+		 * Adds a new row and/or table to the taxonomic coverage section
 		 */
-		addNewTaxonRow: function(e){
+		addNewTaxon: function(e){
 			// If the row is new, add a new row to the table
 			if ($(e.target).parents("tr").is(".new")) {
 				var newRow = $(this.taxonomicClassificationRowTemplate({ 
@@ -1185,6 +1155,12 @@ define(['underscore', 'jquery', 'backbone',
 
 				//Append the new row and remove the new class from the old row
 				$(e.target).parents("tr").removeClass("new").after(newRow);
+			}
+			
+			//If the table is new, add a new table to the page
+			if($(e.target).parents(".root-taxonomic-classification").is(".new")){
+				this.$(".taxonomic-coverage").append(this.createTaxonomicClassifcationTable());
+				$(e.target).parents(".root-taxonomic-classification").removeClass("new");
 			}
 		},
 		

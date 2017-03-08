@@ -114,28 +114,26 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			var taxonRankName = classification.taxonRankName || "",
 			    taxonRankValue = classification.taxonRankValue || "",
 			    commonName = classification.commonName || "",
-				taxonomicClassification = classification.taxonomicClassification || [],
-				finishedEl,
-				model = this;
+				finishedEl;
+			
+			if(!taxonRankName || !taxonRankValue) return "";
 
 			finishedEl = $(document.createElement("taxonomicclassification"));
 
 			if (taxonRankName && taxonRankName.length > 0) {
-				$(finishedEl).append($("<taxonrankname>" + taxonRankName + "</taxonrankname>"));
+				$(finishedEl).append($(document.createElement("taxonrankname")).text(taxonRankName));
 			}
 
 			if (taxonRankValue && taxonRankValue.length > 0) {
-				$(finishedEl).append($("<taxonrankvalue>" + taxonRankValue + "</taxonrankvalue>"));
+				$(finishedEl).append($(document.createElement("taxonrankvalue")).text(taxonRankValue));
 			}
 
 			if (commonName && commonName.length > 0) {
-				$(finishedEl).append($("<commonname>" + commonName + "</commonname>"));
+				$(finishedEl).append($(document.createElement("commonname")).text(commonName));
 			}
 
-			if (taxonomicClassification) {
-				_.each(taxonomicClassification, function(tc) {
-					$(finishedEl).append(model.createTaxonomicClassificationDOM(tc));
-				});
+			if (classification.taxonomicClassification) {
+				$(finishedEl).append(this.createTaxonomicClassificationDOM(classification.taxonomicClassification));
 			}
 			
 			return finishedEl;
