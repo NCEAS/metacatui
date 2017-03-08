@@ -96,7 +96,7 @@ define([
                 this.subviews[item.id] = dataItemView; // keep track of all views
                 scimetaParent = item.get("isDocumentedBy");
                 
-                if ( typeof scimetaParent !== "undefined" ) {
+                if ( typeof scimetaParent !== "undefined" && scimetaParent !== null ) {
                     scimetaParent = scimetaParent[0];
                     
                 }
