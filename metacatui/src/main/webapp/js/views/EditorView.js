@@ -76,6 +76,9 @@ define(['underscore',
         render: function() {
 
             MetacatUI.appModel.set('headerType', 'default');
+            
+        	//Style the body as an Editor
+            $("body").addClass("Editor rendering");
 			
         	//Inert the basic template on the page
         	this.$el.html(this.template({
@@ -288,15 +291,12 @@ define(['underscore',
                 return;
                 
             } else {
-            	console.log("Rendering EML Model ", model.get("id"));
-            	               
-            	//Style the body as an Editor
-                $("body").addClass("Editor");
+            	console.log("Rendering EML Model ", model.get("id"));            	          
             	
             	//Create an EML model
                 if(model.type != "EML")
                 	model = new EML(model.toJSON());
-        	
+                
             	//Create an EML211 View and render it
             	emlView = new EMLView({ 
             		model: model,
@@ -316,6 +316,9 @@ define(['underscore',
 
                 this.subviews.push(citationView);
                 $("#citation-container").html(citationView.render().$el);  	
+                
+                //Remove the rendering class from the body element
+                $("body").removeClass("rendering");
             }
 
             // Focus the folder name field once loaded but only if this is a new

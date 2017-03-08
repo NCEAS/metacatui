@@ -2944,6 +2944,10 @@ ul.side-nav-items {
     margin-left: 14.9%;
     width: 85.1%;
 }
+.Editor.rendering #Footer{
+	margin-left: 0%;
+	width: 100%;
+}
 #editor-footer{
 	background-color: #333;
     position: fixed;
