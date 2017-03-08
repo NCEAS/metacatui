@@ -400,12 +400,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		}, this);
 	           		
 	           		// Remove the extra nodes
-	           		var extraNodes =  nodes.length - emlTextModels.length;
-	           		if(extraNodes > 0){
-	           			for(var i = emlTextModels.length; i < nodes.length; i++){
-	           				$(nodes[i]).remove();
-	           			}
-	           		}
+	           		this.removeExtraNodes(nodes, emlTextModels);
 	           			
 	           	}, this);
 	           	
@@ -429,10 +424,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						if ($(eml).find('coverage').length === 0) {
 							this.getEMLPosition(eml, 'coverage').after(document.createElement('coverage'));
 						}
+						
+						//Get the existing taxon coverage nodes from the EML
+						var existingTaxonCov = $(eml).find("taxonomiccoverage");
 
-						_.each(this.get("taxonCoverage"), function(taxonCoverage){
-							$(eml).find('coverage').append(taxonCoverage.updateDOM());
-						});	 	
+						//Update the DOM of each model
+						_.each(this.get("taxonCoverage"), function(taxonCoverage, position){
+							
+							//Update the existing taxonCoverage node if it exists
+							if(existingTaxonCov.length-1 >= position){
+								$(existingTaxonCov[position]).replaceWith(taxonCoverage.updateDOM());
+							}
+							//Or, append new nodes
+							else{
+								$(eml).find('coverage').append(taxonCoverage.updateDOM());	
+							}
+						});	 
+						
+						//Remove existing taxon coverage nodes that don't have an accompanying model
+						this.removeExtraNodes(existingTaxonCov, this.get("taxonCoverage"));
+							
 					}
 				}
 				
@@ -552,6 +563,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		//Call this function again to serialize the new models
 	           		this.serializeParties(eml, type);	           		
 	           	}
+            },
+            
+            /*
+             * Remoes nodes from the EML that do not have an accompanying model 
+             * (Were probably removed from the EML by the user during editing)
+             */
+            removeExtraNodes: function(nodes, models){
+            	// Remove the extra nodes
+           		var extraNodes =  nodes.length - models.length;
+           		if(extraNodes > 0){
+           			for(var i = models.length; i < nodes.length; i++){
+           				$(nodes[i]).remove();
+           			}
+           		}
             },
             
             /*
