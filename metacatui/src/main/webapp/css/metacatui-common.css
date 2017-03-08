@@ -2901,6 +2901,10 @@ input.subtle:focus,
 /*******************************************
 Editor View
 ******************************************/
+#editor-header {
+    border-bottom: 1px solid #DDDDDD;
+}
+
 #editor-header .citation{
 	padding: 1em;
     margin-bottom: 0px;

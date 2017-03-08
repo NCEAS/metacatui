@@ -324,7 +324,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     documents;       // The list of ids documented by this row (if meta)
                 
                 event.stopPropagation();
-                this.$el.find(".dropdown-menu").dropdown("toggle"); // close the menu
+                event.preventDefault();
                 
                 // Get the row id, add it to the remove list
                 if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
@@ -367,7 +367,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 
                 // Remove the row
                 this.remove();
-                event.preventDefault();
                 
             },
             
