@@ -32,7 +32,9 @@ define(['underscore', 'jquery', 'backbone',
         	"keypress .basic-text.new"  : "addBasicText",
         	"change .temporal-coverage" : "updateTemporalCoverage",
 			"change .taxonomic-coverage": "updateTaxonCoverage",
-			"keypress .taxonomic-coverage .new input" : "addNewTaxonCoverageRow",
+			"keypress .taxonomic-coverage .new input" : "addNewTaxonRow",
+			"change .taxonomic-coverage .new select"  : "addNewTaxonRow",
+			"focusout .taxonomic-coverage tr" : "showTaxonValidation",
         	"change .keywords"          : "updateKeywords",
         	"keypress .keyword.new"		: "addKeyword",
         	"change .usage"             : "updateRadioButtons",
@@ -1106,7 +1108,7 @@ define(['underscore', 'jquery', 'backbone',
 					currentValue = $(rows[j]).find("input").val() || "";
 
 					// Skip over rows with empty Rank and Value
-					if (currentRank.length === 0 && currentValue.length === 0) {
+					if (!currentRank.length || !currentValue.length) {
 						continue;
 					}
 
@@ -1172,7 +1174,7 @@ define(['underscore', 'jquery', 'backbone',
 		/*
 		 * Adds a new row to the taxon coverage table
 		 */
-		addNewTaxonCoverageRow: function(e){
+		addNewTaxonRow: function(e){
 			// If the row is new, add a new row to the table
 			if ($(e.target).parents("tr").is(".new")) {
 				var newRow = $(this.taxonomicClassificationRowTemplate({ 
@@ -1184,6 +1186,58 @@ define(['underscore', 'jquery', 'backbone',
 				//Append the new row and remove the new class from the old row
 				$(e.target).parents("tr").removeClass("new").after(newRow);
 			}
+		},
+		
+		/*
+		 * After the user focuses out, show validation help, if needed
+		 */
+		showTaxonValidation: function(e){
+			
+			//Get the text inputs and select menus
+			var row = $(e.target).parents("tr"),
+				allInputs = row.find("input, select"),
+				tableContainer = $(e.target).parents(".row-striped"),
+				errorInputs = [];
+						
+			//If none of the inputs have a value and this is a new row, then do nothing
+			if(_.every(allInputs, function(i){ return !i.value }) && row.is(".new"))				
+				return;
+				
+			//Add the error styling to any input with no value
+			_.each(allInputs, function(input){
+				// Keep track of the number of clicks of each input element so we only show the 
+				// error message after the user has focused on both input elements
+				if(!input.value)
+					errorInputs.push(input);				
+			});
+						
+			if(errorInputs.length){
+				
+				//Show the error message after a brief delay
+				setTimeout(function(){
+					//If the user focused on another element in the same row, don't do anything
+					if(_.contains(allInputs, document.activeElement))
+						return;
+						
+					//Add the error styling
+					$(errorInputs).addClass("error");
+					
+					//Add the error message
+					if( !tableContainer.prev(".notification").length ){
+						tableContainer.before($(document.createElement("p"))
+														.addClass("error notification")
+														.text("Enter a rank name AND value in each row."));
+					}
+					
+				}, 200);
+			}
+			else{
+				allInputs.removeClass("error");
+				
+				if(!tableContainer.find(".error").length)
+					tableContainer.prev(".notification").remove();
+			}
+
 		},
         
         updateRadioButtons: function(e){
