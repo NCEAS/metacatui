@@ -930,6 +930,18 @@ define(['underscore', 'jquery', 'backbone',
 
 			var classifications = coverage.get("taxonomicClassification");
 
+			// Make a textarea for the generalTaxonomicCoverage
+			var generalCoverageEl = $(document.createElement('textarea'))
+				.addClass("medium text")
+				.attr("data-category", "generalTaxonomicCoverage")
+				.text(coverage.get('generalTaxonomicCoverage') || ""	);
+
+			$(finishedEl).append($(document.createElement('h5')).text('General Taxononic Coverage'));
+			$(finishedEl).append(generalCoverageEl);
+
+			// taxonomicClassifications
+			$(finishedEl).append($(document.createElement('h5')).text('Taxononic Classification(s)'));
+
 			// Makes a table... for the root level
 			for (var i = 0; i < classifications.length; i++) {
 				$(finishedEl).append(this.createTaxonomicClassifcationTable(classifications[i]));
@@ -1075,6 +1087,14 @@ define(['underscore', 'jquery', 'backbone',
 			if (!coverage) return false;
 			if (!classification) return false;
 
+			// Use `category` to determine if we're updating the generalTaxonomicCoverage or
+			// the taxonomicClassification
+			if (category && category === "generalTaxonomicCoverage") {
+				model.set('generalTaxonomicCoverage', value);
+				
+				return;
+			}
+			
 			// Find all of the root-level taxonomicClassifications
 			var classificationTables = $(coverage).find("table.root-taxonomic-classification");
 

@@ -8,7 +8,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			objectXML: null,
 			objectDOM: null,
 			parentModel: null,
-			taxonomicClassification: []
+			taxonomicClassification: [],
+			generalTaxonomicCoverage: null
 		},
 		
 		initialize: function(attributes){
@@ -47,7 +48,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			var model = this,
 			    taxonomicClassifications = $(objectDOM).children('taxonomicclassification'),
 			    modelJSON = {
-					taxonomicClassification: _.map(taxonomicClassifications, function(tc) { return model.parseTaxonomicClassification(tc); })
+					taxonomicClassification: _.map(taxonomicClassifications, function(tc) { return model.parseTaxonomicClassification(tc); }),
+					generalTaxonomicCoverage: $(objectDOM).children('generaltaxonomiccoverage').first().text()
 				};
 
 			return modelJSON;
@@ -92,6 +94,14 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			 $(objectDOM).empty();
 			 
+			 // generalTaxonomicCoverage
+			 var generalCoverage = this.get('generalTaxonomicCoverage');
+			 if (_.isString(generalCoverage) && generalCoverage.length > 0) {
+				 $(objectDOM).append($(document.createElement('generaltaxonomiccoverage')).text(this.get('generalTaxonomicCoverage')));
+			 }
+
+			 // taxonomicClassification(s)
+			 $(objectDOM).append()
 			 var classifications = this.get('taxonomicClassification');
 
 			 if (typeof classifications === "undefined" ||
