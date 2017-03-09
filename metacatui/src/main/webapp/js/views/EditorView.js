@@ -23,7 +23,6 @@ define(['underscore',
         
         /* Events that apply to the entire editor */
         events: {
-        	"click .cancel"      : "cancel",
         	"click #save-editor" : "save"
         },
         
@@ -105,7 +104,10 @@ define(['underscore',
         	//When the user tries to navigate away, confirm with the user
         	var view = this;
         	window.onbeforeunload = function(){ view.confirmClose() };
-                        
+
+            // Register a listener for any attribute change
+            this.model.on("change", this.model.handleChange, this.model);                	
+            
             return this;
         },
         
@@ -327,8 +329,6 @@ define(['underscore',
                 $("#data-package-table-body td.name").focus();
             }
             
-        	//Show the editor controls
-        	this.showControls();
         },
         
         /* Renders the data package section of the EditorView */
@@ -358,10 +358,13 @@ define(['underscore',
         setListeners: function(){
             this.listenTo(this.model, "change:uploadStatus", this.showControls);
             
-            //If the Data Package failed saving, display an error message
+            // If any attributes have changed (including nested objects), show the controls
+            this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
+            
+            // If the Data Package failed saving, display an error message
             this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
         	
-        	//Listen for when the package has been successfully saved
+        	// Listen for when the package has been successfully saved
         	this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
         },
         
@@ -375,7 +378,7 @@ define(['underscore',
         	if(btn.is(".btn-disabled")) return;
         	
         	//Change the style of the save button
-        	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
+        	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving ...').addClass("btn-disabled");
         	
         	//Disable the form
         	$("body").prepend($(document.createElement("div")).addClass("disable-layer"));
@@ -402,6 +405,13 @@ define(['underscore',
         	
         	//When the package is saved, revert the Save button back to normal
         	this.$("#save-editor").html("Save").removeClass("btn-disabled");
+            
+            // Reset the state to clean
+            MetacatUI.rootDataPackage.packageModel.set("changed", false);
+            this.model.set("hasContentChanges", false);
+            
+            this.setListeners();
+            this.toggleControls();
         },
         
         /*
@@ -519,14 +529,29 @@ define(['underscore',
         	this.render();
         },
         
+        /* Show the editor footer controls (Save bar) */
 	    showControls: function(){
-	    	this.$(".editor-controls").slideDown();
+	    	this.$(".editor-controls").removeClass("hidden").slideDown();
 	    },
-	    
+
+        /* Hide the editor footer controls (Save bar) */
 	    hideControls: function(){
 	    	this.$(".editor-controls").slideUp();
 	    },
-	    
+
+        /* Toggle the editor footer controls (Save bar) */
+        toggleControls: function() {
+            if ( MetacatUI.rootDataPackage &&
+                 MetacatUI.rootDataPackage.packageModel &&
+                 MetacatUI.rootDataPackage.packageModel.get("changed") ) {
+                this.showControls();
+                
+            } else {
+                this.hideControls();
+                
+            }
+        },
+        
 	    showLoading: function(container, message){
 	    	if(typeof container == "undefined" || !container)
 	    		var container = this.$el;
