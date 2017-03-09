@@ -1192,7 +1192,7 @@ define(['underscore', 'jquery', 'backbone',
 			//Get the text inputs and select menus
 			var row = $(e.target).parents("tr"),
 				allInputs = row.find("input, select"),
-				tableContainer = $(e.target).parents(".row-striped"),
+				tableContainer = $(e.target).parents("table"),
 				errorInputs = [];
 						
 			//If none of the inputs have a value and this is a new row, then do nothing
