@@ -2960,40 +2960,35 @@ ul.side-nav-items {
 
 /* Editor package table container */
 .Editor #data-package-container {
-    max-height: 200px;
+    max-height: 201px;
     overflow: auto;   
 }
 
 /* Editor package table */
 .Editor #data-package-table {
 	margin-bottom: 0px;
+	width: calc(100% - 2px);
 }
 
 /* Editor package table row */
-.Editor #data-package-table td {
+.data-package-item td {
     vertical-align: middle;
     white-space: nowrap;
 }
 
 /* Editor package table column 1 */
-.Editor #data-package-table  td:first-of-type {
+.data-package-item td:first-of-type {
 	padding-left: 20px;
     width: 100px;
 }
 
-/* Editor package table column icons */
-.Editor #data-package-table td > i:first-of-type {
-    margin-right: 10px;
-    cursor: pointer;
-}
-
 /* Editor package table column 2 */
-.Editor #data-package-table td:nth-of-type(2) {
+.data-package-item td:nth-of-type(2) {
     white-space: normal;
 }
 
 /* Editor package table column 3 */
-.Editor #data-package-table td:nth-of-type(3) {
+.data-package-item td:nth-of-type(3) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3001,7 +2996,7 @@ ul.side-nav-items {
 }
 
 /* Editor package table column 4 */
-.Editor #data-package-table td:nth-of-type(4) {
+.data-package-item td:nth-of-type(4) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3009,7 +3004,7 @@ ul.side-nav-items {
 }
 
 /* Editor package table column 5 */
-.Editor #data-package-table td:last-of-type {
+.data-package-item td:last-of-type {
     text-align: right;
     padding-right: 20px;
     padding-left: 0px;
@@ -3018,18 +3013,29 @@ ul.side-nav-items {
 
 
 /* Editor package table last column buttons */
-.Editor #data-package-table td:last-of-type > button {
+.data-package-item td button {
     text-align: center;
     vertical-align: middle;
-    /* height: 2.0em; */
     width: 9em;
     padding-top: .5em;
 }
 
 /* Give icons breathing */
-.Editor #data-package-table button i {
+.data-package-item button i {
     margin-left: .3em;
     margin-right: .3em;
+}
+
+.data-package-item.remove-highlight td{
+	border-color: #FF0000;
+	border-style: dashed;
+	border-width: 2px 0px 2px 0px;
+}
+.data-package-item.remove-highlight td:first-of-type{
+	border-left-width: 1px;
+}
+.data-package-item.remove-highlight td:last-of-type{
+	border-right-width: 1px;
 }
 
 .Editor #data-package-table ul li a span {
@@ -3252,9 +3258,12 @@ textarea.xlarge{
 }
    
 /* ---- Remove icons in the Editor ---- */
+.data-package-item .remove,
 .metadata-container .remove{
 	color: rgba(255,0,0,0.6);
-    font-size: 1.7em;
+}
+.metadata-container .remove{
+	font-size: 1.7em;
     position: absolute;
     left: 14.893617021276595%;
     margin-left: 21px;
@@ -3266,6 +3275,7 @@ textarea.xlarge{
 .metadata-container .basic-text-row:hover .remove{
 	display: inline-block;
 }
+.data-package-item .remove:hover,
 .metadata-container .remove:hover{
 	cursor: pointer;
 	color: rgba(255,0,0,1);
@@ -3273,6 +3283,13 @@ textarea.xlarge{
 .metadata-container .remove:hover ~ input{
 	border-color: #FF0000;
 	border-style: dashed;
+}
+.data-package-item .remove{
+	font-size: 1.4em;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 1.4em;
 }
 /*******************************************
 Pager View

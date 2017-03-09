@@ -13,7 +13,7 @@
 
 <!-- Files column -->
 
-<td class="name" contenteditable="true">
+<td class="name" contenteditable="true" title="Click to rename">
 	<% if (typeof title != "undefined" && title && title.length) { %>
 	    <%= title %>    
 	<% } else if ( typeof fileName != "undefined" && fileName) { %>
@@ -46,17 +46,12 @@
 <td>
     <input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
         <% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
-            <button type="button" class="addFiles btn btn-primary">
-                <span class="pull-left"><i class="icon-large icon-plus"></i></span>
-                <span>Add Files ...</span>
-                <!-- i class="caret"></i -->
+            <button type="button" class="addFiles btn btn-primary" title="Add files">
+                <i class="icon-large icon-plus icon-on-left"></i>
+                <span>Add files</span>
             </button>
             
         <% } else { %>
-            <button type="button" class="removeFiles btn btn-primary">
-                <span class="pull-left"><i class="icon-large icon-remove"></i></span>
-                <span>Remove</span>
-                <!-- i class="caret"></i -->
-            </button>
+            <i class="icon-large icon-remove remove removeFiles" title="Remove file"></i>
         <% } %>
 </td>
