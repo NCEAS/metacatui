@@ -3127,10 +3127,12 @@ textarea.xlarge{
     padding-left: 40px;
 }
 .metadata-container .abstract h5,
+.metadata-container .taxa h5,
 .metadata-container .taxa .row-striped{
 	padding-left: 0px;
 }
-.metadata-container .abstract textarea{
+.metadata-container .abstract textarea,
+.metadata-container .taxa textarea{
 	padding-left: 10px;
 }
 .metadata-container .section > h2,
