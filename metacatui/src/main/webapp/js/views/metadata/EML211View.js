@@ -452,7 +452,7 @@ define(['underscore', 'jquery', 'backbone',
 			// Render a set of tables for each taxonomicCoverage
 			if (typeof taxonomy !== "undefined" && (Array.isArray(taxonomy) && taxonomy.length)) {
 				for (var i = 0; i < taxonomy.length; i++) {
-					this.$(".section.taxa").append(this.createTaxanomicCoverage(taxonomy[i]));
+					this.$(".section.taxa").append(this.createTaxonomicCoverage(taxonomy[i]));
 				}
 			} else {
 				// Create a new one
@@ -462,7 +462,7 @@ define(['underscore', 'jquery', 'backbone',
 
 				this.model.set('taxonCoverage', [taxonCov]);
 
-				this.$(".section.taxa").append(this.createTaxanomicCoverage(taxonCov));
+				this.$(".section.taxa").append(this.createTaxonomicCoverage(taxonCov));
 			}
 	    },
 	    
@@ -923,7 +923,7 @@ define(['underscore', 'jquery', 'backbone',
 	    
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
 		// each root-level taxonomicClassification
-		createTaxanomicCoverage: function(coverage) {
+		createTaxonomicCoverage: function(coverage) {
             var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
 			$(finishedEl).data({ model: coverage });
 			$(finishedEl).attr("data-category", "taxonomic-coverage");
