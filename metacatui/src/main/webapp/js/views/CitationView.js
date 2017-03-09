@@ -46,8 +46,7 @@
 				//Clear the element
 				this.$el.html("");
 				
-				var authors = this.metadata.get("origin"),
-					pubDate = this.metadata.get("pubDate"),
+				var pubDate = this.metadata.get("pubDate"),
 					dateUploaded = this.metadata.get("dateUploaded"),
 					title = Array.isArray(this.metadata.get("title")) ? (this.metadata.get("title")[0] || this.title || "") : this.metadata.get("title") || this.title || "",
 					id = this.metadata.get("id"),
@@ -55,21 +54,48 @@
 					datasource = this.metadata.get("datasource");
 
 				//Format the author text
-				var count = 0,
-					authorText = "";
+				if(this.metadata.type == "EML"){
+					var authors = this.metadata.get("creator"),
+						count = 0,
+						authorText = "";
+					
+					_.each(authors, function (author) {
+						count++;
+						
+						//Get the individual's name, or position name, or organization name, in that order
+						var name = author.get("individualName") ? 
+								author.get("individualName").givenName[0] + " " + author.get("individualName").surName :
+									author.get("positionName") || author.get("organizationName");
+						
+						if (count > 1 && authors.length > 2) authorText += ",";
 
-				_.each(authors, function (author) {
-					count++;
-					if (count > 1 && authors.length > 2) authorText += ",";
+						if (count > 1 && count == authors.length) authorText += " and";
 
-					if (count > 1 && count == authors.length) authorText += " and";
+						if (authors.length > 1) authorText += " ";
 
-					if (authors.length > 1) authorText += " ";
+						authorText += name;
 
-					authorText += author
+						if (count == authors.length) authorText += ". ";
+					});
+				}
+				else{
+					var authors = this.metadata.get("origin"),
+						count = 0,
+						authorText = "";
 
-					if (count == authors.length) authorText += ". ";
-				});
+					_.each(authors, function (author) {
+						count++;
+						if (count > 1 && authors.length > 2) authorText += ",";
+	
+						if (count > 1 && count == authors.length) authorText += " and";
+	
+						if (authors.length > 1) authorText += " ";
+	
+						authorText += author;
+	
+						if (count == authors.length) authorText += ". ";
+					});
+				}
 			}
 			//If there is no metadata doc, then this is probably a data doc without science metadata. 
 			//So create the citation from the index values
@@ -145,10 +171,27 @@
 			$(linkEl).append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
 			this.$el.append(linkEl);
 		
-			//If anything in the model changes, rerender this citation
-			this.listenTo(this.metadata, "change:origin change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource", this.render);
-
+			this.setUpListeners();
+			
 			return this;
+		},
+		
+		setUpListeners: function(){
+			this.stopListening();
+			
+			//If anything in the model changes, rerender this citation
+			this.listenTo(this.metadata, "change:origin change:creator change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource", this.render);
+
+			//If this model is an EML211 model, then listen differently
+			if(this.metadata.type == "EML"){
+				var creators = this.metadata.get("creator");
+				
+				//Listen to the names
+				for(var i=0; i<creators.length; i++){
+					this.listenTo(creators[i], "change:individualName change:organizationName change:positionName", this.render);
+				}
+				
+			}
 		},
 		
 		routeToMetadata: function(e){

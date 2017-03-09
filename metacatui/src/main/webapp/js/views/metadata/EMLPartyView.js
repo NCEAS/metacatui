@@ -197,6 +197,9 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 	    			currentValue[position] = $(e.target).val();
 	    			
         		}
+        		else if(changedAttr == "givenName"){
+        			name.givenName = [$(e.target).val()];
+        		}
         		else
         			name[changedAttr] = $(e.target).val();
         		

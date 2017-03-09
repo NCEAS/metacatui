@@ -474,6 +474,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			var currentModels = this.get("parentModel").get(type);
 			currentModels.push(this);
 			this.get("parentModel").set(type, currentModels);
+			this.get("parentModel").trigger("change:" + type);
 			
 			//Trigger a custom event that marks the model as valid
 			this.trigger("valid");
@@ -513,7 +514,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     			this.get("parentModel").trigger("change");                
             }
 		},
-		
+				
 		/*
 		 * Checks the values of the model to determine if it is EML-valid
 		 */
