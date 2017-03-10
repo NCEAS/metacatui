@@ -105,9 +105,6 @@ define(['underscore',
         	var view = this;
         	window.onbeforeunload = function(){ view.confirmClose() };
 
-            // Register a listener for any attribute change
-            this.model.on("change", this.model.handleChange, this.model);                	
-            
             return this;
         },
         
@@ -357,8 +354,10 @@ define(['underscore',
          */
         setListeners: function() {
             
-            this.stopListening(this.model, "change:uploadStatus");
             this.listenTo(this.model, "change:uploadStatus", this.showControls);
+
+            // Register a listener for any attribute change
+            this.model.on("change", this.model.handleChange, this.model);                	
             
             // If any attributes have changed (including nested objects), show the controls
             if ( typeof MetacatUI.rootDataPackage.packageModel !== "undefined" ) {
@@ -368,11 +367,9 @@ define(['underscore',
             }
             
             // If the Data Package failed saving, display an error message
-            this.stopListening(MetacatUI.rootDataPackage, "errorSaving");
             this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
         	
         	// Listen for when the package has been successfully saved
-            // this.stopListening(MetacatUI.rootDataPackage, "successSaving");
         	this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
         },
         
