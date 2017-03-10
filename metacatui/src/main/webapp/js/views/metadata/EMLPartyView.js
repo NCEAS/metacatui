@@ -35,9 +35,6 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	},
         	
         	render: function(){
-        		
-        		//When the model changes, render again
-        		//this.listenTo(this.model, "change", this.render);
 
         		//Format the given names
         		var name = this.model.get("individualName") || {},

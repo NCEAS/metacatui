@@ -452,15 +452,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
     		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
                     
                 }
-                
-                //Create the creator from the current user if none is provided
-                if(!this.get("creator").length){
-	           		var party = new EMLParty({ parentModel: this, type: "creator" });
-	           		
-	           		party.createFromUser();
-	           		
-	           		this.set("creator", [party]);
-                }
 	           	
 		        //Serialize the creators
 		        this.serializeParties(eml, "creator");
@@ -592,6 +583,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             	//Set the upload transfer as in progress
    			 	this.set("uploadStatus", "p"); 
+                
+                //Create the creator from the current user if none is provided
+                if(!this.get("creator").length){
+	           		var party = new EMLParty({ parentModel: this, type: "creator" });
+	           		
+	           		party.createFromUser();
+	           		
+	           		this.set("creator", [party]);
+                }
+                
+                //Create the contact from the current user if none is provided
+                if(!this.get("contact").length){
+	           		var party = new EMLParty({ parentModel: this, type: "contact" });
+	           		
+	           		party.createFromUser();
+	           		
+	           		this.set("contact", [party]);
+                }
    			 	
    			 	//If this is an existing object and there is no system metadata, retrieve it
    			 	if(!this.isNew() && !this.get("sysMetaXML")){

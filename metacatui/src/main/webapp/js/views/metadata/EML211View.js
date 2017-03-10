@@ -41,7 +41,7 @@ define(['underscore', 'jquery', 'backbone',
         	"change .funding"           : "updateFunding",
         	"keypress .funding.new"     : "addFunding",
         	"click .side-nav-item a"    : "scrollToSection",
-        	"change #new-party-menu"    : "addNewPersonType",
+        	"change #new-party-menu"    : "chooseNewPersonType",
 			"click  .remove"			: "handleRemove"
         },
                 
@@ -311,6 +311,14 @@ define(['underscore', 'jquery', 'backbone',
 		    	this.renderPerson(null, "new");
 	    	}
 	    	
+	    	//Listen to the EML model for new EMLParty models that are added behind the scenes 
+	    	// (mainly from EMLParty.createFromUser()
+	    	var view = this;
+	    	this.listenTo(this.model, "change:creator change:contact", function(emlModel, changedModels){
+	    		
+	    		this.renderPerson(changedModels[0], changedModels[0].get("type"));
+	    	});
+	    	
     		//Initialize the tooltips
     		this.$("input.tooltip-this").tooltip({
     			placement: "top",
@@ -354,7 +362,18 @@ define(['underscore', 'jquery', 'backbone',
     		});	    	
     		
 	    	//Find the container section for this party type
-	    	this.$(".section.people").find('[data-attribute="' + partyType + '"]').append(partyView.render().el);	    		
+	    	var container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
+	    	
+	    	//If this person type is not on the page yet, add it
+	    	if(!container.length){
+	    		this.addNewPersonType(emlParty.get("type") || emlParty.get("role"));
+	    		container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
+	    	}
+	    	
+	    	if(isNew)
+	    		container.append(partyView.render().el);	 
+	    	else
+	    		container.find(".new").before(partyView.render().el);
 	    		
 	    	//Listen for changes to the required fields to know when to add a new party row
     		if(isNew){
@@ -372,10 +391,7 @@ define(['underscore', 'jquery', 'backbone',
     		}
 	    },
 	    
-	    /*
-	     * Gets the party type chosen by the user and adds that section to the view
-	     */
-	    addNewPersonType: function(e){
+	    chooseNewPersonType: function(e){
 	    	var partyType = $(e.target).val();
 	    	
 	    	if(!partyType) return;
@@ -410,6 +426,29 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	if(partyModel.isValid())
 	    		partyModel.mergeIntoParent();
+	    },
+	    
+	    /*
+	     * Gets the party type chosen by the user and adds that section to the view
+	     */
+	    addNewPersonType: function(partyType){	    	
+	    	if(!partyType) return;
+	    	
+	    	//Add a new header
+	    	var header = $(document.createElement("h4")).text(this.partyTypeMap[partyType]);
+	    	this.$("#new-party-menu").before(header);
+	    	
+	    	//Remove this type from the dropdown menu
+	    	this.$("#new-party-menu").find("[value='" + partyType + "']").remove();
+
+	    	//Add the new party type container
+	    	var container = $(document.createElement("div"))
+									.attr("data-attribute", partyType)
+									.addClass("row-striped");
+	    	header.after(container);
+	    	
+	    	//Add a blank form to the new person type section
+	    	this.renderPerson(null, partyType);
 	    },
 	    
 	    /*
