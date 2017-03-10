@@ -866,7 +866,7 @@ define(['underscore', 'jquery', 'backbone',
 		    		
 		    		//At the end, append an empty input for the user to add a new one
 		    		if(i+1 == allModelValues.length && appendNew) {
-						var newRow = $(document.createElement("div"));
+						var newRow = $($(document.createElement("div")).addClass("basic-text-row"));
 						newRow.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
 						textContainer.append(newRow);
 					}	
