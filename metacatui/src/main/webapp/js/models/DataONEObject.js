@@ -67,6 +67,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     hasContentChanges: false, // If attributes outside of originalAttrs have been changed
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
                     objectXML: null, // A cached version of the object fetched from the server
+                    isAuthorized: null, // If the stated permission is authorized by the user
                     collections: [] //References to collections that this model is in
 	        	}
         	},
@@ -899,7 +900,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     // For any sysmeta or content change, set the package dirty flag
                     if ( MetacatUI.rootDataPackage && 
                          MetacatUI.rootDataPackage.packageModel &&
-                         ! MetacatUI.rootDataPackage.packageModel.get("changed") ) {
+                         ! MetacatUI.rootDataPackage.packageModel.get("changed") &&
+                         model.get("synced") ) {
                         
                         MetacatUI.rootDataPackage.packageModel.set("changed", true);
                     }
@@ -907,7 +909,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 // And get a list of all changed content attributes
                 changedContentAttrs = _.difference(changedSysMetaOrContentAttrs, sysMetaAttrs);
                 
-                if ( changedContentAttrs.length > 0 && !this.get("hasContentChanges") ) {
+                if ( changedContentAttrs.length > 0 && !this.get("hasContentChanges") && model.get("synced") ) {
                 	this.set("hasContentChanges", true);
                     this.updateUploadStatus(model, options);
                 }

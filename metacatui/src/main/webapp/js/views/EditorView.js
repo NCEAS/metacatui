@@ -355,16 +355,24 @@ define(['underscore',
          * Set listeners on the view's model for various reasons. 
          * This function centralizes all the listeners so that when/if the view's model is replaced, the listeners would be reset.
          */
-        setListeners: function(){
+        setListeners: function() {
+            
+            this.stopListening(this.model, "change:uploadStatus");
             this.listenTo(this.model, "change:uploadStatus", this.showControls);
             
             // If any attributes have changed (including nested objects), show the controls
-            this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
+            if ( typeof MetacatUI.rootDataPackage.packageModel !== "undefined" ) {
+                this.stopListening(MetacatUI.rootDataPackage.packageModel, "change:changed");
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
+                
+            }
             
             // If the Data Package failed saving, display an error message
+            this.stopListening(MetacatUI.rootDataPackage, "errorSaving");
             this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
         	
         	// Listen for when the package has been successfully saved
+            // this.stopListening(MetacatUI.rootDataPackage, "successSaving");
         	this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
         },
         
