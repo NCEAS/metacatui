@@ -460,7 +460,7 @@ define(['underscore', 'jquery', 'backbone',
 					parentModel: this.model
 				});
 
-				this.model.set('taxonCoverage', [taxonCov]);
+				this.model.set('taxonCoverage', [taxonCov], {silent: true});
 
 				this.$(".section.taxa").append(this.createTaxonomicCoverage(taxonCov));
 			}
