@@ -1464,6 +1464,9 @@ define(['underscore', 'jquery', 'backbone',
 				}
 			}
 
+			// Trigger a change on the entire package
+			MetacatUI.rootDataPackage.packageModel.set("changed", true);
+
 			// Remove the DOM
 			$(parentEl).remove();
 		},
