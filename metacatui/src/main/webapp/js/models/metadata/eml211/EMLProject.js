@@ -102,22 +102,31 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 				}					
 			}
 			 
-			//Get or create the funding element
-			var fundingNode = $(objectDOM).find("funding");
-			if(!fundingNode.length){
-				fundingNode = document.createElement("funding");
-				$(objectDOM).append(fundingNode);				
+			// Serialize funding (if needed)
+			var fundingNode = $(objectDOM).find("funding").first();
+
+			if (this.get('funding') && this.get('funding').length > 0) {
+				// Create the funding element if needed
+				if (fundingNode.length == 0) {
+					fundingNode = document.createElement("funding");
+					$(objectDOM).append(fundingNode);				
+				} else {
+					// Clear the funding node out of all <para> child elements
+					// We only replace <paras> because <funding> is an EMLText module
+					// instance and can contain other content we don't want to remove
+					// when serializing
+					$(fundingNode).children("para").remove(); console.log("Clearing out funding paras before adding the latest ones!");
+				}
+
+				_.each(this.get('funding'), function(f) {
+					$(fundingNode).append($(document.createElement("para")).text(f));
+				})
+			} else {
+				if (fundingNode.length !== 0) {
+					// Remove all funding <para>s
+					$(fundingNode).children("para").remove(); console.log("Clearing out funding paras cause none were set.")
+				}
 			}
-			
-			//Get the current paragraph elements
-			var fundingParas = $(fundingNode).children("para");
-			
-			_.each(this.get("funding"), function(funding, i){
-				if(fundingParas[i])
-					$(fundingParas[i]).text(funding);
-				else
-					$(fundingNode).append( $(document.createElement("para")).text(funding) );
-			});
 			
 			return objectDOM;
 		},
