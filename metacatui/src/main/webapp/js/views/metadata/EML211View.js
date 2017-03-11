@@ -569,19 +569,22 @@ define(['underscore', 'jquery', 'backbone',
 			    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").val(value).attr("id", "").addClass("hidden"),
 			    	loadingSpinner     = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden"); 
 		    	
-		    	if(!value){
-		    		fundingInput.addClass("new");
-		    		hiddenFundingInput.addClass("new");
-		    		
-		    		//Remove the new class from the current input, if there is one
-		    		if(typeof argument == "object")
-		    			$(argument.target).removeClass("new");
-		    	}
-		    	
 		    	//Append all the elements to a container
 		    	var containerEl = $(document.createElement("div"))
 		    						.addClass("ui-autocomplete-container funding-row")
-		    						.append(fundingInput, loadingSpinner, hiddenFundingInput);
+
+				if (!value) {
+					$(containerEl).addClass("new");
+				}
+
+				// Add a remove button if this is a non-new funding element
+				if (value) {
+					$(containerEl).append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+				}
+
+		    	$(containerEl).append(fundingInput, 
+									  loadingSpinner, 
+									  hiddenFundingInput);
 		    	
 		    	var view = this;
 		    	
@@ -684,8 +687,12 @@ define(['underscore', 'jquery', 'backbone',
 	    	var currentFundingValues = model.get("funding")
 	    	currentFundingValues[rowNum] = newValue;
 	    	
-	    	if($(e.target).is(".new")){
-	    		$(e.target).removeClass("new");
+	    	if($(row).is(".new")){
+	    		$(row).removeClass("new");
+				
+				// Add in a remove button
+				$(e.target).parent().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+
 	    		this.addFunding();
 	    	}
 	    	
