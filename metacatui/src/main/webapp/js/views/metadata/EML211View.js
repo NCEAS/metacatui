@@ -657,7 +657,7 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Add a remove button unless this is the .new keyword
 			if(keyword) {
-				row.prepend(this.createRemoveButton('keywordSets', 'div.keyword-row'));
+				row.prepend(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.text-container'));
 			}
 
 	    	this.$(".keywords").append(row);
@@ -744,7 +744,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Add a new row when the user has added a new keyword just now
 	    	if(row.find(".new").length){
 	    		row.find(".new").removeClass("new");
-				row.prepend(this.createRemoveButton("keywordSets", "div.keyword-row"));
+				row.prepend(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.text-container"));
 	    		this.addKeyword();
 	    	}
 	    },
@@ -860,7 +860,7 @@ define(['underscore', 'jquery', 'backbone',
 				    			.attr("type", "text")
 				    			.attr("data-category", category)
 				    			.addClass("basic-text");
-					textRow.append(this.createRemoveButton(category, null));
+					textRow.append(this.createRemoveButton(null, category, null, 'div.text-container'));
 					textRow.append(input.clone().val(value));
 		    		textContainer.append(textRow);
 		    		
@@ -956,7 +956,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(e.target).parent().after(newRow);
 	    	
 	    	//Remove the new class	    	
-			$(e.target).before(this.createRemoveButton('alternateIdentifier', null));
+			$(e.target).before(this.createRemoveButton(null, 'alternateIdentifier', null, "div.text-container"));
 	    },
 	    
 	    
@@ -1383,59 +1383,82 @@ define(['underscore', 'jquery', 'backbone',
         
 		/* Creates "Remove" buttons for removing non-required sections
 		of the EML from the DOM */
-		createRemoveButton: function(attribute, selector) {
+		createRemoveButton: function(submodel, attribute, selector, container) {
 			return $(document.createElement("span"))
 				.addClass("icon icon-remove remove pointer")
 				.attr("title", "Remove")
 				.data({
+					'submodel' : submodel,
 					'attribute': attribute,
-					'selector': selector 
+					'selector': selector,
+					'container': container
 				})
 		},
 
 		/* Generic event handler for removing sections of the EML (both
 		the DOM and inside the EML211Model) */
 		handleRemove: function(e) {
-			var attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
-			    selector = $(e.target).data('selector'), // Select to find the parent DOM elemente we'll remove
+			var submodel = $(e.target).data('submodel'), // Optional sub-model to remove attribute from
+			    attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
+			    selector = $(e.target).data('selector'), // Selector to find the parent DOM elemente we'll remove
+				container = $(e.target).data('container'), // Selector to find the parent container so we can remove by index
 				parentEl, // Element we'll remove
 				model; // Specific sub-model we're removing
 
 			if (!attribute) return;
+			if (!container) return;
 
-			// Handle remove on a model
+			// Find the element we'll remove from the DOM
 			if (selector) {
 				parentEl = $(e.target).parent(selector);
+			} else {
+				parentEl = $(e.target).parent();
+			}
 
-				if (parentEl.length == 0) return;
+			if (parentEl.length == 0) return;
 
+
+			// Handle remove on a EML model / sub-model
+			if (submodel) {
+				if (!attribute) return;
+
+				model = this.model.get(submodel);
+
+				if (!model) return;
+
+				var position = $(e.target).parents(container).first().children("div").index($(e.target).parent());
+				var currentValue = this.model.get(submodel).get(attribute);
+				
+				// Remove from the EML Model
+				if (position >= 0) {
+					currentValue.splice(position, 1); // Splice returns the removed members
+					this.model.get(submodel).set(attribute, currentValue);
+				}
+			} else if (selector) {
 				model = $(parentEl).data('model');
 
-				// Remove the DOM
-				$(e.target).parent(selector).remove();
+				if (!model) return;
 
 				// Remove the model from the parent model
 				this.model.set(attribute, _.without(this.model.get(attribute), model));
 			} else { // Handle remove on a basic text field
-				parentEl = $(e.target).parent();
-
-				if (parentEl.length == 0) return;
-
 				model = $(e.target).siblings("input").first().val(); // TODO Rename me?
+				
+				if (!model) { return; }
 
 				// The DOM order matches the EML model attribute order so we can remove
 				// by that
-				var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
+				var position = $(e.target).parents(container).first().children("div").index($(e.target).parent());
 				var currentValue = this.model.get(attribute);
 				
 				// Remove from the EML Model
 				if (position >= 0) {
 					this.model.set(attribute, currentValue.splice(position, 1));
 				}
-
-				// Remove from the DOM
-				$(parentEl).remove();
 			}
+
+			// Remove the DOM
+			$(parentEl).remove();
 		},
 
         /* Close the view and its sub views */
