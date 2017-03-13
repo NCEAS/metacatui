@@ -3275,9 +3275,16 @@ textarea.xlarge{
 }
 .metadata-container .keyword-row:hover .remove,
 .metadata-container .basic-text-row:hover .remove,
-.metadata-container .funding-row:hover .remove{
+.metadata-container .funding-row:hover .remove,
+.metadata-container .root-taxonomic-classification:hover .remove{
 	display: inline-block;
 }
+
+/* temp hack to test removing eml taxon*/
+.root-taxonomic-classification .remove {
+	display: inline-block;
+}
+
 .data-package-item .remove:hover,
 .metadata-container .remove:hover{
 	cursor: pointer;
