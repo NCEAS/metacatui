@@ -1435,9 +1435,6 @@ define(['underscore', 'jquery', 'backbone',
 
 				if (!model) return;
 
-				var position = $(e.target).parents(container).first().children("div").index($(e.target).parent());
-				var currentValue = this.model.get(submodel).get(attribute);
-				
 				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
 
 				// Get the current value of the attribute so we can remove from it
