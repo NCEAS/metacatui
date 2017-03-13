@@ -1477,10 +1477,6 @@ define(['underscore', 'jquery', 'backbone',
 
 				this.model.set(attribute, currentValue);
 			} else { // Handle remove on a basic text field
-				model = $(e.target).siblings("input").first().val(); // TODO Rename me?
-				
-				if (!model) { return; }
-
 				// The DOM order matches the EML model attribute order so we can remove
 				// by that
 				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
@@ -1488,7 +1484,8 @@ define(['underscore', 'jquery', 'backbone',
 				
 				// Remove from the EML Model
 				if (position >= 0) {
-					this.model.set(attribute, currentValue.splice(position, 1));
+					currentValue.splice(position, 1);
+					this.model.set(attribute, currentValue);
 				}
 			}
 
