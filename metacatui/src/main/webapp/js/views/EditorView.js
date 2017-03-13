@@ -553,7 +553,7 @@ define(['underscore',
         
         /* Show the editor footer controls (Save bar) */
 	    showControls: function(){
-	    	this.$(".editor-controls").slideDown();
+	    	this.$(".editor-controls").removeClass("hidden").slideDown();
 	    },
 
         /* Hide the editor footer controls (Save bar) */

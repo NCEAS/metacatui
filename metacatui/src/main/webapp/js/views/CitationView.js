@@ -177,6 +177,8 @@
 		},
 		
 		setUpListeners: function(){
+			if (!this.metadata) return;
+			
 			this.stopListening();
 			
 			//If anything in the model changes, rerender this citation

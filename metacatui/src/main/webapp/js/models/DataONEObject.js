@@ -25,10 +25,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     submitter: null,
                     rightsHolder : null,
                     accessPolicy: [],
-                    changePermission: null,
-                    writePermission: null,
-                    readPermission: null,
-                    isPublic: null,
                     replicationAllowed: null,
                     replicationPolicy: [],
                     obsoletes: null,
@@ -36,18 +32,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     archived: null,
                     dateUploaded: null,
                     dateSysMetadataModified: null,
-                    dateModified: null,
                     originMemberNode: null,
-                    authoritativeMN: null,
                     authoritativeMemberNode: null,
-                    datasource: null,
                     replica: [],
                     seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
                     mediaType: null,
                     fileName: null,
+                    // Non-system metadata attributes:
+                    datasource: null,
                     insert_count_i: null,
                     read_count_i: null,
-                    // Non-system metadata attributes:
+                    changePermission: null,
+                    writePermission: null,
+                    readPermission: null,
+                    isPublic: null,
+                    dateModified: null,
                     id: "urn:uuid:" + uuid.v4(),
                     sizeStr: null,
                     type: null, // Data, Metadata, or DataPackage
@@ -64,8 +63,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
                     originalAttrs: [], // An array of original attributes in a DataONEObject
+                    changed: false, // If any attributes have been changed, including attrs in nested objects
                     hasContentChanges: false, // If attributes outside of originalAttrs have been changed
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
+                    objectXML: null, // A cached version of the object fetched from the server
+                    isAuthorized: null, // If the stated permission is authorized by the user
                     collections: [] //References to collections that this model is in
 	        	}
         	},
@@ -79,10 +81,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 else
                 	this.set("originalAttrs", Object.keys(DataONEObject.prototype.defaults()));
                 
-                // Register a listener for any attribute change
-                this.once("sync", function(){
-                    this.on("change", this.handleChange, this);                	
-                }, this);
                 this.on("successSaving", this.updateRelationships);
                 
                 this.on("sync", function(){
@@ -880,27 +878,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	return !(newSysMeta == oldSysMeta);
 	        },
             
-            /* Set the hasContentChanges flag on attribute changes 
-             * that are not listed in the originalAttrs array
+            /* 
+               Set the changed flag on any system metadata or content attribute changes, 
+               and set the hasContentChanges flag on content changes only
              */
             handleChange: function(model, options) {
             	if(!model) var model = this;
-            	
-                var changed = Object.keys(model.changedAttributes());
-                //Remove the originalAttrs attribute from the list of attributes considered
-                changed = _.without(changed, "originalAttrs");
-                                
-                // If an attribute change isn't in the originalAttrs list,
-                // we know it is outside of the DataONEObject scope,
-                // and should be an attribute from ScienceMetadata, EML211, etc.
-                //If no changed attribute is given, assume there are content changes
-                if( _.difference(changed, this.get("originalAttrs")).length  || !changed.length){
+
+                var sysMetaAttrs = ["serialVersion", "identifier", "formatId", "size", "checksum", 
+                    "checksumAlgorithm", "submitter", "rightsHolder", "accessPolicy", "replicationAllowed", 
+                    "replicationPolicy", "obsoletes", "obsoletedBy", "archived", "dateUploaded", "dateSysMetadataModified", 
+                    "originMemberNode", "authoritativeMemberNode", "replica", "seriesId", "mediaType", "fileName"],
+                    nonSysMetaNonContentAttrs = _.difference(model.get("originalAttrs"), sysMetaAttrs),
+                    allChangedAttrs = Object.keys(model.changedAttributes()),
+                    changedSysMetaOrContentAttrs = [], //sysmeta or content attributes that have changed
+                    changedContentAttrs = []; // attributes from sub classes like ScienceMetadata or EML211 ...
+                    
+                // Get a list of all changed sysmeta and content attributes 
+                changedSysMetaOrContentAttrs = _.difference(allChangedAttrs, nonSysMetaNonContentAttrs);
+                if ( changedSysMetaOrContentAttrs.length > 0 ) {
+                    // For any sysmeta or content change, set the package dirty flag
+                    if ( MetacatUI.rootDataPackage && 
+                         MetacatUI.rootDataPackage.packageModel &&
+                         ! MetacatUI.rootDataPackage.packageModel.get("changed") &&
+                         model.get("synced") ) {
+                        
+                        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+                    }
+                }
+                // And get a list of all changed content attributes
+                changedContentAttrs = _.difference(changedSysMetaOrContentAttrs, sysMetaAttrs);
+                
+                if ( changedContentAttrs.length > 0 && !this.get("hasContentChanges") && model.get("synced") ) {
                 	this.set("hasContentChanges", true);
                     this.updateUploadStatus(model, options);
                 }
                 	
             },
 	        
+            /* A DataONE object is new if dateUploaded is not null and synced is true */
 	        isNew: function(){
 	        	//Check if there is an upload date that was retrieved from the server
 	        	return ( this.get("dateUploaded") === null  && this.get("synced") );

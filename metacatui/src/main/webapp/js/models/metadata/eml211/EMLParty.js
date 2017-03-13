@@ -511,7 +511,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		trickleUpChange: function(){
             if ( this.get("parentModel") ) {
-    			this.get("parentModel").trigger("change");                
+    			MetacatUI.rootDataPackage.packageModel.set("changed", true);                
             }
 		},
 				

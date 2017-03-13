@@ -250,6 +250,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                         reader.readAsArrayBuffer(file);
                         
                     }, this);
+                    
+                    MetacatUI.rootDataPackage.packageModel.set("changed", true);
                 }
                 
             },
@@ -371,6 +373,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 
                 // Remove the row
                 this.remove();
+                
+                MetacatUI.rootDataPackage.packageModel.set("changed", true);
                 
             },
             
