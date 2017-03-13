@@ -3308,14 +3308,11 @@ textarea.xlarge{
 .metadata-container .basic-text-row:hover .remove,
 .metadata-container .funding-row:hover .remove,
 .metadata-container .root-taxonomic-classification:hover .remove{
-<<<<<<< HEAD
 	display: inline-block;
 }
 
 /* temp hack to test removing eml taxon*/
 .root-taxonomic-classification .remove {
-=======
->>>>>>> branch 'METACATUI_2_0_BRANCH' of https://github.com/NCEAS/metacatui.git
 	display: inline-block;
 }
 
