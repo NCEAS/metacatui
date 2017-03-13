@@ -28,17 +28,17 @@ define(['underscore', 'jquery', 'backbone',
         
         events: {
         	"change .text"              : "updateText",
-        	"change .basic-text"        : "updateBasicText",
+        	"keypress .basic-text"        : "updateBasicText",
         	"keypress .basic-text.new"  : "addBasicText",
-        	"change .temporal-coverage" : "updateTemporalCoverage",
-			"change .taxonomic-coverage": "updateTaxonCoverage",
+        	"keypress .temporal-coverage" : "updateTemporalCoverage",
+			"keypress .taxonomic-coverage": "updateTaxonCoverage",
 			"keypress .taxonomic-coverage .new input"   : "addNewTaxon",
 			"change   .taxonomic-coverage .new select"  : "addNewTaxon",
 			"focusout .taxonomic-coverage tr" : "showTaxonValidation",
-        	"change .keywords"          : "updateKeywords",
+        	"keypress .keywords"          : "updateKeywords",
         	"keypress .keyword.new"		: "addKeyword",
         	"change .usage"             : "updateRadioButtons",
-        	"change .funding"           : "updateFunding",
+        	"keypress .funding"           : "updateFunding",
         	"keypress .funding.new"     : "addFunding",
         	"click .side-nav-item a"    : "scrollToSection",
         	"change #new-party-menu"    : "chooseNewPersonType",
@@ -576,6 +576,7 @@ define(['underscore', 'jquery', 'backbone',
 		    	var containerEl = $(document.createElement("div"))
 		    						.addClass("ui-autocomplete-container funding-row")
 
+<<<<<<< HEAD
 				if (!value){
 					$(fundingInput).addClass("new");
 					
@@ -585,6 +586,16 @@ define(['underscore', 'jquery', 'backbone',
 				// Add a remove button if this is a non-new funding element
 				else
 					$(containerEl).append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+=======
+				if (!value) {
+					$(containerEl).addClass("new");
+				}
+
+				// Add a remove button if this is a non-new funding element
+				if (value) {
+					$(containerEl).append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+				}
+>>>>>>> branch 'METACATUI_2_0_BRANCH' of https://github.com/NCEAS/metacatui.git
 
 		    	$(containerEl).append(fundingInput, 
 									  loadingSpinner, 
@@ -692,8 +703,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	var currentFundingValues = model.get("funding")
 	    	currentFundingValues[rowNum] = newValue;
 	    	
+<<<<<<< HEAD
 	    	if(input.is(".new")){
 	    		input.removeClass("new");
+=======
+	    	if($(row).is(".new")){
+	    		$(row).removeClass("new");
+>>>>>>> branch 'METACATUI_2_0_BRANCH' of https://github.com/NCEAS/metacatui.git
 				
 				// Add in a remove button
 				$(e.target).parent().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
