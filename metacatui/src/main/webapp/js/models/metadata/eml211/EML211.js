@@ -319,7 +319,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Returns the EML XML as a string.
              */
             serialize: function(){
-	           
 	           	//Get the EML document
 	           	var xmlString = this.get("objectXML"),
 	           		eml = $.parseHTML(xmlString),
@@ -334,35 +333,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		
 	           		if(!Array.isArray(basicTextValues)) basicTextValues = [basicTextValues];
 	           		
-	           		var nodes = $(datasetNode).children(fieldName.toLowerCase());
-	           		
-	           		_.each(basicTextValues, function(text, i){
-	           			var node = nodes[i];
-	           			
-	           			//Change the value of the existing node
-	           			if(node)
-	           				$(node).text(text);
-           				//Or create a new node	           			
-	           			else{
-	           				var newNode = $(document.createElement(fieldName.toLowerCase())).text(text);
-	           				
-	           				//Insert the new node at the end
-	           				if(nodes.length)
-	           					nodes.last().after(newNode);
-	           				//Find the position in the EML where this node type belongs
-	           				else{
-	           					var insertAfter = this.getEMLPosition(eml, fieldName);
-	           					
-	           					//We know that alternateIdentifier is the first node in EML
-	           					if(!insertAfter && fieldName == "alternateIdentifier")
-	           						$(eml).find("dataset").prepend(newNode);
-	           					else
-	           						insertAfter.after(newNode);	           					
-	           				}
-	           			}
-	           			
-	           		}, this);
-	           		
+					// Remove existing nodes
+					$(eml).find('dataset').first().find(fieldName.toLowerCase()).remove();
+					
+					// Create new nodes
+					var nodes = _.map(basicTextValues, function(value) {
+						var node = document.createElement(fieldName.toLowerCase());
+						$(node).text(value);
+						return node;
+					});
+
+					// Insert new nodes
+					if (fieldName.toLowerCase() === "alternateidentifier") {
+						$(eml).find('dataset').prepend(nodes);
+					} else if (fieldName.toLowerCase() === "title") {
+						if ($(datasetNode).find("alternateidentifier").length > 0) {
+							$(eml).find('dataset').last().find("alternateidentifier").last().after(nodes);
+						} else {
+							$(eml).find('dataset').prepend(nodes);
+						}
+					}
 	           	}, this);
 	           	
 	           	// Serialize the parts of EML that are eml-text modules
@@ -469,22 +459,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	this.serializeParties(eml, "publisher");
 	           	
 	           	//Serialize the keywords
-	           	var keywordNodes = $(eml).find("keywordset");
-	        	_.each(this.get("keywordSets"), function(keywordSet, i){
-
-	        		//Replace the existing keywordSet nodes with the new values
-	           		if(i < keywordNodes.length)
-	           			$(keywordNodes[i]).replaceWith(keywordSet.updateDOM());
-	           		//Or add new keywordSet nodes for new keywords
-	           		else{
-	           			//Append to the list of keywordSet nodes
-	           			if($(eml).find("keywordset").length)
-	           				$(eml).find("keywordset").last().after(keywordSet.updateDOM());
-	           			//Or if there are no keywordSet nodes, then find where this gets inserted into the EML doc
-	           			else
-	           				this.getEMLPosition(eml, "keywordset").after(keywordSet.updateDOM());
-	           		}
-	           	}, this);
+				this.serializeKeywords(eml, "keywordSets");
 	        	
 	        	//Serialize the intellectual rights
 	        	if(this.get("intellectualRights")){
@@ -556,6 +531,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	}
             },
             
+
+			serializeKeywords: function(eml) {
+				// Remove all existing keywordSets before appending
+				$(eml).find('dataset').find('keywordset').remove();
+
+				if (this.get('keywordSets').length == 0) return;
+
+				// Create the new keywordSets nodes
+				var nodes = _.map(this.get('keywordSets'), function(kwd) {
+					return kwd.updateDOM();
+				});
+
+	        	this.getEMLPosition(eml, "keywordset").after(nodes);
+			},
+
             /*
              * Remoes nodes from the EML that do not have an accompanying model 
              * (Were probably removed from the EML by the user during editing)
