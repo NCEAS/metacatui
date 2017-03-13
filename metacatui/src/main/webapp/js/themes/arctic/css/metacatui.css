@@ -1761,12 +1761,12 @@ svg .no-activity,
     	background-color:#FFFFFF;
     }
     
-    li.ui-menu-item > a{
+    li.ui-menu-item{
     	color: #555555;
     	width: 100%;
     }
     
-    li.ui-menu-item > a:hover,
+    li.ui-menu-item:hover,
     .ui-state-focus
      {
         color: #1f254f;
@@ -1866,6 +1866,7 @@ svg .no-activity,
     /*-- Popovers --*/
     .popover{
     	font-size: 13px;
+    	z-index: 9999;
     }
     
     .popover-title {

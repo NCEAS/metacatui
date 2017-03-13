@@ -37,7 +37,7 @@ require.config({
     urlArgs: "v=" + MetacatUI.metacatUIVersion,
     paths: {
         jquery: '../components/jquery',
-        jqueryui: '../components/jquery-ui-1.10.3.custom.min',
+        jqueryui: '../components/jquery-ui.min',
         jqueryform: '../components/jquery.form',
         underscore: '../components/underscore-min',
         backbone: '../components/backbone-min',

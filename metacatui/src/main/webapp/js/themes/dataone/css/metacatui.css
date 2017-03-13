@@ -1361,14 +1361,11 @@ label.control-label{
     	overflow: hidden;
     	white-space: nowrap;
     	text-overflow: ellipsis;
-    }
-    
-    li.ui-menu-item > a {
     	color: #555555;
     	width: 245px;
     }
 	
-    li.ui-menu-item > a:hover,
+    li.ui-menu-item div:hover,
     .ui-state-focus {
     	cursor: pointer;
     	text-decoration: none;
@@ -1506,6 +1503,7 @@ label.control-label{
     
     .popover{
     	font-size: 13px;
+    	z-index: 9999;
     }
     
     .popover-title {

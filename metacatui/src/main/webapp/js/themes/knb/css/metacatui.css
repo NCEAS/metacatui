@@ -1899,14 +1899,11 @@ svg .no-activity,
     	white-space: nowrap;
     	text-overflow: ellipsis;
     	background-color:#FFFFFF;
-    }
-    
-    li.ui-menu-item > a{
     	color: #555555;
     	width: 100%;
     }
     
-    li.ui-menu-item > a:hover,
+    li.ui-menu-item div:hover,
     .ui-state-focus
      {
         color: #006699;
@@ -2006,6 +2003,7 @@ svg .no-activity,
     /*-- Popovers --*/
     .popover{
     	font-size: 13px;
+    	z-index: 9999;
     }
     
     .popover-title {

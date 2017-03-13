@@ -1334,7 +1334,6 @@ img.icon{
 }
 #metadata-container{
 	width: 100%;
-	border-top: 1px solid #DDDDDD;
 }
 #metadata-container > .alert-container{
 	margin-top: 40px;
@@ -2959,13 +2958,13 @@ ul.side-nav-items {
 }
 
 /* Editor package table container */
-.Editor #data-package-container {
-    max-height: 201px;
+#data-package-container {
     overflow: auto;   
+    position: relative;
 }
 
 /* Editor package table */
-.Editor #data-package-table {
+#data-package-table {
 	margin-bottom: 0px;
 	width: calc(100% - 2px);
 }
@@ -3061,6 +3060,28 @@ ul.side-nav-items {
     margin-right: 20px;
     background-color: #1F254F;
 }  
+
+#data-package-container + .ui-resizable-handle{
+	border: 1px solid rgba(103, 118, 197, .6);
+	border-right-width: 0px;
+    border-left-width: 0px;
+    background-color: #FFF;
+	height: 10px;
+	width: 100%;
+	bottom: 1px;
+}
+#data-package-container + .ui-resizable-handle .icon{
+    font-size: 15px;
+    color: rgba(103, 118, 197, 1);
+    z-index: 91;
+    margin: -3px auto 0px auto;
+    display: block;
+    width: 15px;
+}
+#data-package-container + .ui-resizable-handle:hover{
+	cursor:ns-resize;	
+}
+
 .editor-controls .btn{
 	float: right;
 	margin-left: 10px;
@@ -3274,7 +3295,14 @@ textarea.xlarge{
 	display: none;
 }
 .metadata-container .keyword-row:hover .remove,
-.metadata-container .basic-text-row:hover .remove{
+.metadata-container .basic-text-row:hover .remove,
+.metadata-container .funding-row:hover .remove,
+.metadata-container .root-taxonomic-classification:hover .remove{
+	display: inline-block;
+}
+
+/* temp hack to test removing eml taxon*/
+.root-taxonomic-classification .remove {
 	display: inline-block;
 }
 .data-package-item .remove:hover,

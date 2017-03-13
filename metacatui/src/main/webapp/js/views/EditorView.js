@@ -23,7 +23,6 @@ define(['underscore',
         
         /* Events that apply to the entire editor */
         events: {
-        	"click .cancel"      : "cancel",
         	"click #save-editor" : "save"
         },
         
@@ -105,7 +104,7 @@ define(['underscore',
         	//When the user tries to navigate away, confirm with the user
         	var view = this;
         	window.onbeforeunload = function(){ view.confirmClose() };
-                        
+
             return this;
         },
         
@@ -239,6 +238,23 @@ define(['underscore',
             var $packageTableContainer = this.$("#data-package-container");
             $packageTableContainer.html(this.dataPackageView.render().el);
             
+            //Make the view resizable on the bottom
+            var handle = $(document.createElement("div"))
+            				.addClass("ui-resizable-handle ui-resizable-s")
+							.attr("title", "Drag to resize")
+							.append($(document.createElement("i")).addClass("icon icon-caret-down"));
+            $packageTableContainer.after(handle);
+            $packageTableContainer.resizable({ handles: { "s" : handle }, minHeight: 100, maxHeight: 900 });
+            $packageTableContainer.css("height", "200px");
+
+            
+            var table = this.dataPackageView.$el;
+            this.listenTo(this.dataPackageView, "addOne", function(){
+            	if(table.outerHeight() > $packageTableContainer.outerHeight() && table.outerHeight() < 220){
+                    $packageTableContainer.css("height", table.outerHeight() + handle.outerHeight());            		
+            	}
+            });
+            
             //Save the view as a subview
             this.subviews.push(this.dataPackageView);
             
@@ -327,8 +343,6 @@ define(['underscore',
                 $("#data-package-table-body td.name").focus();
             }
             
-        	//Show the editor controls
-        	this.showControls();
         },
         
         /* Renders the data package section of the EditorView */
@@ -355,13 +369,24 @@ define(['underscore',
          * Set listeners on the view's model for various reasons. 
          * This function centralizes all the listeners so that when/if the view's model is replaced, the listeners would be reset.
          */
-        setListeners: function(){
-            this.listenTo(this.model, "change:uploadStatus", this.showControls);
+        setListeners: function() {
             
-            //If the Data Package failed saving, display an error message
+            this.listenTo(this.model, "change:uploadStatus", this.showControls);
+
+            // Register a listener for any attribute change
+            this.model.on("change", this.model.handleChange, this.model);                	
+            
+            // If any attributes have changed (including nested objects), show the controls
+            if ( typeof MetacatUI.rootDataPackage.packageModel !== "undefined" ) {
+                this.stopListening(MetacatUI.rootDataPackage.packageModel, "change:changed");
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
+                
+            }
+            
+            // If the Data Package failed saving, display an error message
             this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
         	
-        	//Listen for when the package has been successfully saved
+        	// Listen for when the package has been successfully saved
         	this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
         },
         
@@ -375,7 +400,7 @@ define(['underscore',
         	if(btn.is(".btn-disabled")) return;
         	
         	//Change the style of the save button
-        	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving...').addClass("btn-disabled");
+        	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving ...').addClass("btn-disabled");
         	
         	//Disable the form
         	$("body").prepend($(document.createElement("div")).addClass("disable-layer"));
@@ -402,6 +427,13 @@ define(['underscore',
         	
         	//When the package is saved, revert the Save button back to normal
         	this.$("#save-editor").html("Save").removeClass("btn-disabled");
+            
+            // Reset the state to clean
+            MetacatUI.rootDataPackage.packageModel.set("changed", false);
+            this.model.set("hasContentChanges", false);
+            
+            this.setListeners();
+            this.toggleControls();
         },
         
         /*
@@ -519,14 +551,29 @@ define(['underscore',
         	this.render();
         },
         
+        /* Show the editor footer controls (Save bar) */
 	    showControls: function(){
 	    	this.$(".editor-controls").slideDown();
 	    },
-	    
+
+        /* Hide the editor footer controls (Save bar) */
 	    hideControls: function(){
 	    	this.$(".editor-controls").slideUp();
 	    },
-	    
+
+        /* Toggle the editor footer controls (Save bar) */
+        toggleControls: function() {
+            if ( MetacatUI.rootDataPackage &&
+                 MetacatUI.rootDataPackage.packageModel &&
+                 MetacatUI.rootDataPackage.packageModel.get("changed") ) {
+                this.showControls();
+                
+            } else {
+                this.hideControls();
+                
+            }
+        },
+        
 	    showLoading: function(container, message){
 	    	if(typeof container == "undefined" || !container)
 	    		var container = this.$el;

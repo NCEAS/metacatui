@@ -499,7 +499,7 @@ define(['underscore', 'jquery', 'backbone',
 					parentModel: this.model
 				});
 
-				this.model.set('taxonCoverage', [taxonCov]);
+				this.model.set('taxonCoverage', [taxonCov], {silent: true});
 
 				this.$(".section.taxa").append(this.createTaxonomicCoverage(taxonCov));
 			}
@@ -555,10 +555,13 @@ define(['underscore', 'jquery', 'backbone',
 	    		
 	    		if(typeof argument == "string")
 	    			var value = argument;
-	    		
+	    		else if(!argument)
+	    			var value = "";
 	    		//Don't add another new funding input if there already is one
-	    		if( !value && (typeof argument == "object") && !$(argument.target).is(".new") )
+	    		else if( !value && (typeof argument == "object") && !$(argument.target).is(".new") )
 	    			return;
+	    		else if((typeof argument == "object") && argument.target)
+	    			var event = argument;
 	    		
 		    	var fundingInput       = $(document.createElement("input"))
 		    								.attr("type", "text")
@@ -569,19 +572,23 @@ define(['underscore', 'jquery', 'backbone',
 			    	hiddenFundingInput = fundingInput.clone().attr("type", "hidden").val(value).attr("id", "").addClass("hidden"),
 			    	loadingSpinner     = $(document.createElement("i")).addClass("icon icon-spinner input-icon icon-spin subtle hidden"); 
 		    	
-		    	if(!value){
-		    		fundingInput.addClass("new");
-		    		hiddenFundingInput.addClass("new");
-		    		
-		    		//Remove the new class from the current input, if there is one
-		    		if(typeof argument == "object")
-		    			$(argument.target).removeClass("new");
-		    	}
-		    	
 		    	//Append all the elements to a container
 		    	var containerEl = $(document.createElement("div"))
 		    						.addClass("ui-autocomplete-container funding-row")
-		    						.append(fundingInput, loadingSpinner, hiddenFundingInput);
+
+				if (!value){
+					$(fundingInput).addClass("new");
+					
+					if(event) 
+						$(event.target).removeClass("new");
+				}
+				// Add a remove button if this is a non-new funding element
+				else
+					$(containerEl).append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+
+		    	$(containerEl).append(fundingInput, 
+									  loadingSpinner, 
+									  hiddenFundingInput);
 		    	
 		    	var view = this;
 		    	
@@ -657,7 +664,7 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Add a remove button unless this is the .new keyword
 			if(keyword) {
-				row.prepend(this.createRemoveButton('keywordSets', 'div.keyword-row'));
+				row.prepend(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
 			}
 
 	    	this.$(".keywords").append(row);
@@ -671,7 +678,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	var newValue = $(e.target).siblings("input.hidden").val() || $(e.target).val(),
 	    		row      = $(e.target).parent(".funding-row").first(),
-	    		rowNum   = this.$(".funding-row").index(row);
+	    		rowNum   = this.$(".funding-row").index(row),
+	    		input    = $(row).find("input");
 	    	
 	    	//If there is no project model
 	    	if(!this.model.get("project")){
@@ -684,8 +692,12 @@ define(['underscore', 'jquery', 'backbone',
 	    	var currentFundingValues = model.get("funding")
 	    	currentFundingValues[rowNum] = newValue;
 	    	
-	    	if($(e.target).is(".new")){
-	    		$(e.target).removeClass("new");
+	    	if(input.is(".new")){
+	    		input.removeClass("new");
+				
+				// Add in a remove button
+				$(e.target).parent().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+
 	    		this.addFunding();
 	    	}
 	    	
@@ -744,7 +756,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Add a new row when the user has added a new keyword just now
 	    	if(row.find(".new").length){
 	    		row.find(".new").removeClass("new");
-				row.prepend(this.createRemoveButton("keywordSets", "div.keyword-row"));
+				row.prepend(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
 	    		this.addKeyword();
 	    	}
 	    },
@@ -860,13 +872,13 @@ define(['underscore', 'jquery', 'backbone',
 				    			.attr("type", "text")
 				    			.attr("data-category", category)
 				    			.addClass("basic-text");
-					textRow.append(this.createRemoveButton(category, null));
+					textRow.append(this.createRemoveButton(null, category, 'div.basic-text-row', 'div.text-container'));
 					textRow.append(input.clone().val(value));
 		    		textContainer.append(textRow);
 		    		
 		    		//At the end, append an empty input for the user to add a new one
 		    		if(i+1 == allModelValues.length && appendNew) {
-						var newRow = $(document.createElement("div"));
+						var newRow = $($(document.createElement("div")).addClass("basic-text-row"));
 						newRow.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
 						textContainer.append(newRow);
 					}	
@@ -928,7 +940,9 @@ define(['underscore', 'jquery', 'backbone',
 				this.addBasicText(e);
 				$(e.target).removeClass("new");
 	    	}
-	    	
+
+			// Trigger a change on the entire package
+			MetacatUI.rootDataPackage.packageModel.set("changed", true);	    	
 	    },
 	    
 	    /*
@@ -956,7 +970,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(e.target).parent().after(newRow);
 	    	
 	    	//Remove the new class	    	
-			$(e.target).before(this.createRemoveButton('alternateIdentifier', null));
+			$(e.target).before(this.createRemoveButton(null, 'alternateIdentifier', '.basic-text-row', "div.text-container"));
 	    },
 	    
 	    
@@ -995,7 +1009,9 @@ define(['underscore', 'jquery', 'backbone',
 		},
 		
 		createTaxonomicClassifcationTable: function(classification) {
-			var finishedEl = $('<div class="row-striped"></div>');
+			var finishedEl = $('<div class="row-striped root-taxonomic-classification"></div>');
+			$(finishedEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
+			
 			var tableEl = $(this.taxonomicClassificationTableTemplate());
 			var tableBodyEl = $("<tbody></tbody>");
 
@@ -1383,59 +1399,106 @@ define(['underscore', 'jquery', 'backbone',
         
 		/* Creates "Remove" buttons for removing non-required sections
 		of the EML from the DOM */
-		createRemoveButton: function(attribute, selector) {
+		createRemoveButton: function(submodel, attribute, selector, container) {
 			return $(document.createElement("span"))
 				.addClass("icon icon-remove remove pointer")
 				.attr("title", "Remove")
 				.data({
+					'submodel' : submodel,
 					'attribute': attribute,
-					'selector': selector 
+					'selector': selector,
+					'container': container
 				})
 		},
 
 		/* Generic event handler for removing sections of the EML (both
 		the DOM and inside the EML211Model) */
 		handleRemove: function(e) {
-			var attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
-			    selector = $(e.target).data('selector'), // Select to find the parent DOM elemente we'll remove
+			var submodel = $(e.target).data('submodel'), // Optional sub-model to remove attribute from
+			    attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
+			    selector = $(e.target).data('selector'), // Selector to find the parent DOM elemente we'll remove
+				container = $(e.target).data('container'), // Selector to find the parent container so we can remove by index
 				parentEl, // Element we'll remove
 				model; // Specific sub-model we're removing
 
 			if (!attribute) return;
+			if (!container) return;
 
-			// Handle remove on a model
+			// Find the element we'll remove from the DOM
 			if (selector) {
 				parentEl = $(e.target).parent(selector);
-
-				if (parentEl.length == 0) return;
-
-				model = $(parentEl).data('model');
-
-				// Remove the DOM
-				$(e.target).parent(selector).remove();
-
-				// Remove the model from the parent model
-				this.model.set(attribute, _.without(this.model.get(attribute), model));
-			} else { // Handle remove on a basic text field
+			} else {
 				parentEl = $(e.target).parent();
+			}
 
-				if (parentEl.length == 0) return;
+			if (parentEl.length == 0) return;
 
-				model = $(e.target).siblings("input").first().val(); // TODO Rename me?
 
+			// Handle remove on a EML model / sub-model
+			if (submodel) {
+				if (!attribute) return;
+
+				model = this.model.get(submodel);
+
+				if (!model) return;
+
+				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
+
+				// Get the current value of the attribute so we can remove from it
+				var currentValue,
+					submodelIndex;
+
+				if (_.isArray(this.model.get(submodel))) {
+					// Stop now if there's nothing to remove in the first place
+					if (this.model.get(submodel).length == 0) return;
+
+					// For multi-valued submodels, find *which* submodel we are removing or
+					// removingn from
+					submodelIndex = $(container).index($(e.target).parents(container).first());
+					if (submodelIndex === -1) return;
+
+					currentValue = this.model.get(submodel)[submodelIndex].get(attribute);
+				} else {
+					currentValue = this.model.get(submodel).get(attribute);
+				}
+
+				// Remove from the EML Model
+				if (position >= 0) {
+					if (_.isArray(this.model.get(submodel))) {
+						currentValue.splice(position, 1); // Splice returns the removed members
+						this.model.get(submodel)[submodelIndex].set(attribute, currentValue);
+					} else {
+						currentValue.splice(position, 1); // Splice returns the removed members
+						this.model.get(submodel).set(attribute, currentValue);
+					}
+					
+				}
+			} else if (selector) {
+				// Find the index this attribute is 
+				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
+				
+				var currentValue = this.model.get(attribute);
+				currentValue.splice(position, 1);
+
+				this.model.set(attribute, currentValue);
+			} else { // Handle remove on a basic text field
 				// The DOM order matches the EML model attribute order so we can remove
 				// by that
-				var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
+				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
 				var currentValue = this.model.get(attribute);
 				
 				// Remove from the EML Model
 				if (position >= 0) {
-					this.model.set(attribute, currentValue.splice(position, 1));
+					currentValue.splice(position, 1);
+					this.model.set(attribute, currentValue);
 				}
-
-				// Remove from the DOM
-				$(parentEl).remove();
 			}
+
+			// Trigger a change on the entire package
+			MetacatUI.rootDataPackage.packageModel.set("changed", true);
+
+			// Remove the DOM
+			$(parentEl).remove();
 		},
 
         /* Close the view and its sub views */
