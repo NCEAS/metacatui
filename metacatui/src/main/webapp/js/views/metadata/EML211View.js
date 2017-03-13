@@ -935,7 +935,9 @@ define(['underscore', 'jquery', 'backbone',
 				this.addBasicText(e);
 				$(e.target).removeClass("new");
 	    	}
-	    	
+
+			// Trigger a change on the entire package
+			MetacatUI.rootDataPackage.packageModel.set("changed", true);	    	
 	    },
 	    
 	    /*
