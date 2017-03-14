@@ -184,20 +184,29 @@ define(['underscore',
                 // Create a new data package with this id
                 MetacatUI.rootDataPackage = new DataPackage([this.model], {id: resourceMapIds[0]});
                 
-                // Do we have the latest resource map version?
+                // If there is more than one resource map, we need to make sure we fetch the most recent one
                 if ( resourceMapIds.length > 1 ) {
-                    this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:latestVersion", function(model) {
-                        MetacatUI.rootDataPackage = new DataPackage(null, {id: model.get("latestVersion")});
-                        //Fetch the data package
-                        MetacatUI.rootDataPackage.fetch(); 
-                    })
-                    MetacatUI.rootDataPackage.packageModel.findLatestVersion();
-                    
-                } else {
-                    //Fetch the data package
-                    MetacatUI.rootDataPackage.fetch(); 
+                		
+            		//Now, find the latest version
+            		this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "change:latestVersion", function(model) {
+                        //Create a new data package for the latest version package 
+            			MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+                         
+                         //Fetch the data package
+                         MetacatUI.rootDataPackage.fetch();
+                         
+                         //Render the Data Package table
+                         this.renderDataPackage();                         
+                     });
+                     
+                     MetacatUI.rootDataPackage.packageModel.findLatestVersion();
+
+                    return;
                     
                 }
+                
+                //Fetch the data package
+                MetacatUI.rootDataPackage.fetch(); 
                 
                 //Render the Data Package table
                 this.renderDataPackage();              

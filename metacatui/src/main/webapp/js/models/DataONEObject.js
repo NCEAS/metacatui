@@ -965,14 +965,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	// Make sure we have the /meta service configured
 				if(! MetacatUI.appModel.get('metaServiceUrl')) return;	
 				
+				//If there is no system metadata, then retrieve it first
+				if(!this.get("sysMetaXML")){
+					this.on("sync", this.findLatestVersion);
+					this.fetch();
+					return;
+				}
+				
 				//If no pid was supplied, use this model's id
-				if(!latestVersion){
+				if(!latestVersion || typeof latestVersion != "string"){
 					var latestVersion = this.get("id");
 					var possiblyNewer = this.get("obsoletedBy");
 				}
 
 				//If this isn't obsoleted by anything, then there is no newer version
-				if(!possiblyNewer){
+				if(!possiblyNewer || typeof latestVersion != "string"){
 					this.set("latestVersion", latestVersion);
 					return;
 				}
