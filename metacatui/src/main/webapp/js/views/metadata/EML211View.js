@@ -28,19 +28,27 @@ define(['underscore', 'jquery', 'backbone',
         
         events: {
         	"change .text"              : "updateText",
-        	"keypress .basic-text"        : "updateBasicText",
-        	"keypress .basic-text.new"  : "addBasicText",
-        	"keypress .temporal-coverage" : "updateTemporalCoverage",
-			"keypress .taxonomic-coverage": "updateTaxonCoverage",
-			"keypress .taxonomic-coverage .new input"   : "addNewTaxon",
-			"change   .taxonomic-coverage .new select"  : "addNewTaxon",
+
+        	"change .basic-text"        : "updateBasicText",
+        	"keyup .basic-text.new"       : "addBasicText",
+			
+			"change .temporal-coverage" : "updateTemporalCoverage",
+			"keyup .temporal-coverage.new" : "updateTemporalCoverage",
+			
+			"change .taxonomic-coverage": "updateTaxonCoverage",
+			"keyup .taxonomic-coverage .new input"   : "addNewTaxon",
+			"keyup .taxonomic-coverage .new select"  : "addNewTaxon",
 			"focusout .taxonomic-coverage tr" : "showTaxonValidation",
-        	"keypress .keywords"          : "updateKeywords",
-        	"keypress .keyword.new"		: "addKeyword",
-        	"change .usage"             : "updateRadioButtons",
-        	"keypress .funding"           : "updateFunding",
-        	"keypress .funding.new"     : "addFunding",
-        	"click .side-nav-item a"    : "scrollToSection",
+        	
+        	"change .keywords"          : "updateKeywords",
+        	"keyup .keyword-row.new input"		: "addNewKeyword",
+        	
+			"change .usage"             : "updateRadioButtons",
+        	
+			"change .funding"           : "updateFunding",
+        	"keyup .funding.new"     : "addFunding",
+        	
+			"click .side-nav-item a"    : "scrollToSection",
         	"change #new-party-menu"    : "chooseNewPersonType",
 			"click  .remove"			: "handleRemove"
         },
@@ -560,9 +568,13 @@ define(['underscore', 'jquery', 'backbone',
 	    		//Don't add another new funding input if there already is one
 	    		else if( !value && (typeof argument == "object") && !$(argument.target).is(".new") )
 	    			return;
-	    		else if((typeof argument == "object") && argument.target)
-	    			var event = argument;
-	    		
+	    		else if((typeof argument == "object") && argument.target) {
+					var event = argument;
+
+					// Don't add a new funding row if the current one is empty
+					if ($(event.target).val().trim() === "") return;
+				}
+	    			
 		    	var fundingInput       = $(document.createElement("input"))
 		    								.attr("type", "text")
 		    								.attr("data-category", "funding")
@@ -579,12 +591,13 @@ define(['underscore', 'jquery', 'backbone',
 				if (!value){
 					$(fundingInput).addClass("new");
 					
-					if(event) 
+					if(event) {
+						$(event.target).parents("div.funding-row").first().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 						$(event.target).removeClass("new");
-				}
-				// Add a remove button if this is a non-new funding element
-				else
+					}
+				} else { // Add a remove button if this is a non-new funding element
 					$(containerEl).append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+				}
 
 		    	$(containerEl).append(fundingInput, 
 									  loadingSpinner, 
@@ -656,9 +669,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(thesaurus && thesaurus.indexOf("GCMD") > -1)
     			thesInput.val("GCMD");
 	    	
-	    	if(!keyword) 
-	    		keywordInput.addClass("new").attr("placeholder", "Add one new keyword");
-			
+	    	if(!keyword) {
+				row.addClass("new");
+				keywordInput.attr("placeholder", "Add one new keyword");
+			}
+	    		
 			// Start adding children to the row
 			row.append(keywordInput, thesInput);
 
@@ -669,6 +684,25 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	this.$(".keywords").append(row);
 	    },
+
+		addNewKeyword: function(e) {
+			if ($(e.target).val().trim() === "") return;
+
+			$(e.target).parents(".keyword-row").first().removeClass("new");
+
+			// Add in a remove button
+			$(e.target).parents(".keyword-row").first().prepend(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
+			
+			var row          = $(document.createElement("div")).addClass("row-fluid keyword-row new").data({ model: new EMLKeywordSet() }),
+	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10"),
+    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
+			    				$(document.createElement("option")).val("None").text("None")).append(
+			    				$(document.createElement("option")).val("GCMD").text("GCMD"));
+
+			row.append(keywordInput, thesInput);
+
+			this.$(".keywords").append(row);
+		},
 	    
 	    /*
 	     * Update the funding info when the form is changed
@@ -692,8 +726,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	var currentFundingValues = model.get("funding")
 	    	currentFundingValues[rowNum] = newValue;
 	    	
-	    	if(input.is(".new")){
-	    		input.removeClass("new");
+	    	if($(row).is(".new") && newValue != ''){
+	    		$(row).removeClass("new");
 				
 				// Add in a remove button
 				$(e.target).parent().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
@@ -713,7 +747,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		model      = row.data("model"),
 	    		allKeywords = [];
 	    	
-	    	if(!keyword) return;
+	    	if(keyword.length == 0 && thesaurus === 'None') return;
 
 	    	//If the thesaurus has changed or if there is no model
 	    	if(!model || (thesaurus != model.get("thesaurus") && model.get("keywords").length > 2)){
@@ -754,11 +788,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	model.set("thesaurus", thesaurus);
 	    	
 	    	//Add a new row when the user has added a new keyword just now
-	    	if(row.find(".new").length){
-	    		row.find(".new").removeClass("new");
+	    	if(row.is(".new")){
+	    		row.removeClass("new");
 				row.prepend(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
 	    		this.addKeyword();
-	    	}
+	    	} else {
+				console.log('not new');
+			}
 	    },
 		
 	    /*
@@ -936,9 +972,9 @@ define(['underscore', 'jquery', 'backbone',
 	    		model.set(category, [value]);
 	    	
     		//Add another blank text input
-	    	if($(e.target).is(".new")){
-				this.addBasicText(e);
+	    	if($(e.target).is(".new") && value != ''){
 				$(e.target).removeClass("new");
+				this.addBasicText(e);
 	    	}
 
 			// Trigger a change on the entire package
@@ -969,7 +1005,6 @@ define(['underscore', 'jquery', 'backbone',
 			
 	    	$(e.target).parent().after(newRow);
 	    	
-	    	//Remove the new class	    	
 			$(e.target).before(this.createRemoveButton(null, 'alternateIdentifier', '.basic-text-row', "div.text-container"));
 	    },
 	    
@@ -1132,7 +1167,7 @@ define(['underscore', 'jquery', 'backbone',
 				the underlying TaxonCoverage model.
 			*/
 	    	var coverage = $(e.target).parents("div.taxonomic-coverage"),
-				classification = $(e.target).parents("table.root-taxonomic-classification"),
+				classificationEl = $(e.target).parents("table.root-taxonomic-classification"),
 	    		model =  $(coverage).data("model") || this.model,
 				category = $(e.target).attr("data-category"),
 				value = $(e.target).val().trim();
@@ -1140,7 +1175,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//We can't update anything without a coverage, or
 	    	//classification
 			if (!coverage) return false;
-			if (!classification) return false;
+			if (!classificationEl) return false;
 
 			// Use `category` to determine if we're updating the generalTaxonomicCoverage or
 			// the taxonomicClassification
@@ -1208,10 +1243,21 @@ define(['underscore', 'jquery', 'backbone',
 			// Handle adding new tables and rows
 			// Do nothing if the value isn't set
 			if (value !== "") {
-				// If the table is new and we have some content, make a new table
-				if ($(classification).is(".new")) {
+				// Add a new row if this is itself a new row
+				if ($(e.target).parents("tr").first().is(".new")) {
+					var newRowEl = $(this.taxonomicClassificationRowTemplate({
+						taxonRankName: '',
+						taxonRankValue: ''
+					})).addClass("new");
+
+					$(e.target).parents("tbody").first().append(newRowEl);
+					$(e.target).parents("tr").first().removeClass("new");
+				}
+
+				// Add a new classification table if this is itself a new table
+				if ($(classificationEl).is(".new")) {
+					$(classificationEl).removeClass("new");
 					$(coverage).append(this.createTaxonomicClassifcationTable());
-					$(classification).removeClass("new");
 				}
 			}
 		},
@@ -1220,6 +1266,9 @@ define(['underscore', 'jquery', 'backbone',
 		 * Adds a new row and/or table to the taxonomic coverage section
 		 */
 		addNewTaxon: function(e){
+			// Don't do anything if the current classification doesn't have new content
+			if ($(e.target).val().trim() === "") return;
+
 			// If the row is new, add a new row to the table
 			if ($(e.target).parents("tr").is(".new")) {
 				var newRow = $(this.taxonomicClassificationRowTemplate({ 
