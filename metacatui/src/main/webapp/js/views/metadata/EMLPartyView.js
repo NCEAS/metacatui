@@ -75,8 +75,18 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		}
         		
         		//If this EML Party is new/empty, then add the new class
-        		if(this.isNew)
+        		if(this.isNew){
         			this.$el.addClass("new");
+    				
+        			//When the model has all the required fields (valid), unmark this view as new
+        			this.listenTo(this.model, "valid", this.notNew);
+        		}
+        		
+        		//Save the view and model on the element
+        		this.$el.data({
+        			model: this.model,
+        			view: this
+        		});
 
         		return this;
         	},

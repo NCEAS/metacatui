@@ -3209,14 +3209,24 @@ textarea.xlarge{
 }
 
 /* ---- Funding ---- */
+.metadata-container .funding-container{
+	padding-left: 0px;
+}
 .Editor input.funding{
 	padding-left: 35px;
 }  
-.Editor .funding-row{
+.metadata-container .funding-row{
 	position: relative;
+	padding-left: 40px;
+}
+.metadata-container .funding-row .remove{
+	position: absolute;
+	top: 4px;
+	left: -20px;
 }
 .Editor .funding-row .ui-autocomplete{
 	position: absolute !important;
+    font-size: 1.2em;
 }
 .Editor .ui-autocomplete .ui-menu-item {
     font-size: .7em;
@@ -3229,8 +3239,10 @@ textarea.xlarge{
 }
 .Editor .funding-container .icon-spinner{
 	top: 5px;
+	left: 45px;
     position: absolute;
-    left: 9px;
+    font-size: 1.5em;
+    display: none;
 }
 .metadata-container #funding-visible{
 	padding-left: 30px;
@@ -3246,6 +3258,10 @@ textarea.xlarge{
 }
 .eml-party .notification{
 	height: 40px;
+}
+.metadata-container .section.people h4 {
+    margin-top: 2em;
+    margin-bottom: 1em;
 }
 
 /* ---- Keywords ---- */
@@ -3302,7 +3318,10 @@ textarea.xlarge{
     margin-left: 21px;
 }
 .metadata-container .remove{
-	display: none;
+	opacity: .5;
+}
+.metadata-container .remove:hover{
+	opacity: 1;
 }
 .metadata-container .keyword-row:hover .remove,
 .metadata-container .basic-text-row:hover .remove,
@@ -3326,9 +3345,11 @@ textarea.xlarge{
 	cursor: pointer;
 	color: rgba(255,0,0,1);
 }
-.metadata-container .remove:hover ~ input{
+.metadata-container .remove:hover ~ input,
+.metadata-container .remove:hover ~ select{
 	border-color: #FF0000;
 	border-style: dashed;
+	border-width: 2px;
 }
 .data-package-item .remove{
 	font-size: 1.4em;

@@ -474,7 +474,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			var currentModels = this.get("parentModel").get(type);
 			currentModels.push(this);
 			this.get("parentModel").set(type, currentModels);
-			this.get("parentModel").trigger("change:" + type);
+			this.get("parentModel").trigger("change");
 			
 			//Trigger a custom event that marks the model as valid
 			this.trigger("valid");
@@ -522,8 +522,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			//The EMLParty must have either an organization name, position name, or surname. It must ALSO have a type or role.
 			return ((this.get("organizationName") || 
 					this.get("positionName") || 
-					(this.get("individualName") && this.get("individualName").surName)) &&
-					((this.get("type") == "associatedParty" && this.get("role")) || this.get("type")) );
+					(this.get("individualName") && this.get("individualName").surName)))// &&
+					//((this.get("type") == "associatedParty" && this.get("role")) || this.get("type")) );
 		},
 		
 		isOrcid: function(username){

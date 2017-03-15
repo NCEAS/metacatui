@@ -27,30 +27,32 @@ define(['underscore', 'jquery', 'backbone',
         /* Templates */
         
         events: {
-        	"change .text"              : "updateText",
+        	"change .text"                 : "updateText",
 
-        	"change .basic-text"        : "updateBasicText",
-        	"keyup .basic-text.new"       : "addBasicText",
+        	"change .basic-text"           : "updateBasicText",
+        	"keyup  .basic-text.new"       : "addBasicText",
 			
-			"change .temporal-coverage" : "updateTemporalCoverage",
-			"keyup .temporal-coverage.new" : "updateTemporalCoverage",
+			"change .temporal-coverage"    : "updateTemporalCoverage",
+			"keyup  .temporal-coverage.new": "updateTemporalCoverage",
 			
-			"change .taxonomic-coverage": "updateTaxonCoverage",
+			"change .taxonomic-coverage"             : "updateTaxonCoverage",
 			"keyup .taxonomic-coverage .new input"   : "addNewTaxon",
 			"keyup .taxonomic-coverage .new select"  : "addNewTaxon",
-			"focusout .taxonomic-coverage tr" : "showTaxonValidation",
+			"focusout .taxonomic-coverage tr"        : "showTaxonValidation",
         	
-        	"change .keywords"          : "updateKeywords",
-        	"keyup .keyword-row.new input"		: "addNewKeyword",
+        	"change .keywords"               : "updateKeywords",
+        	"keyup .keyword-row.new input"   : "addNewKeyword",
         	
-			"change .usage"             : "updateRadioButtons",
+			"change .usage"                  : "updateRadioButtons",
         	
-			"change .funding"           : "updateFunding",
-        	"keyup .funding.new"     : "addFunding",
+			"change .funding"                : "updateFunding",
+        	"keyup .funding.new"             : "addFunding",
         	
-			"click .side-nav-item a"    : "scrollToSection",
-        	"change #new-party-menu"    : "chooseNewPersonType",
-			"click  .remove"			: "handleRemove"
+        	"keyup .eml-party.new .required" : "handlePersonTyping",
+        	
+			"click .side-nav-item a"         : "scrollToSection",
+        	"change #new-party-menu"         : "chooseNewPersonType",
+			"click  .remove"			     : "handleRemove"
         },
                 
         /* A list of the subviews */
@@ -339,6 +341,7 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 	    
 	    renderPerson: function(emlParty, partyType){
+	    		    	
 	    	//If no model is given, create a new model
 	    	if(!emlParty){
 	    		var emlParty = new EMLParty({
@@ -380,23 +383,26 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	if(isNew)
 	    		container.append(partyView.render().el);	 
-	    	else
-	    		container.find(".new").before(partyView.render().el);
-	    		
-	    	//Listen for changes to the required fields to know when to add a new party row
-    		if(isNew){
-	    		var view = this;
-	    		emlParty.on("valid", function(){
-	    			if(emlParty.isValid()){
-	    				
-	    				if(partyView.isNew)
-	    					partyView.notNew();
-	    				
-	    				//Render the new blank person row
-	    				view.renderPerson(undefined, (emlParty.get("role") || emlParty.get("type")));
-	    			}
-	    		});
-    		}
+	    	else{
+	    		if(container.find(".new").length)
+	    			container.find(".new").before(partyView.render().el);
+	    		else
+	    			container.append(partyView.render().el);
+	    	}
+
+	    },
+	    
+	    /*
+	     * This function reacts to the user typing a new person in the person section (an EMLPartyView)
+	     */
+	    handlePersonTyping: function(e){
+	    	var container = $(e.target).parents(".eml-party"),
+    			emlParty  = container.length? container.data("model") : null,
+    			partyType = container.length && emlParty? emlParty.get("role") || emlParty.get("type") : null;
+    			
+    		if(this.$("[data-attribute='" + partyType + "'] .eml-party.new").length > 1) return;
+    		
+    		this.renderPerson(null, partyType);
 	    },
 	    
 	    chooseNewPersonType: function(e){
@@ -432,8 +438,15 @@ define(['underscore', 'jquery', 'backbone',
 	    	var attrToUpdate = _.contains(partyModel.get("roleOptions"), partyType)? "role" : "type";
 	    	partyModel.set(attrToUpdate, partyType);
 	    	
-	    	if(partyModel.isValid())
+	    	if(partyModel.isValid()){
 	    		partyModel.mergeIntoParent();
+	    		
+	    		//Add a new person of that type
+	    		this.renderPerson(null, partyType);
+	    	}
+	    	else{
+	    		partyForm.find(".eml-party").data("view").showRequired();
+	    	}
 	    },
 	    
 	    /*
@@ -613,7 +626,7 @@ define(['underscore', 'jquery', 'backbone',
 						}
 						
 						var afterRequest = function(){
-							loadingSpinner.hide().css("top", "30px");
+							loadingSpinner.hide();
 						}
 						
 						return MetacatUI.appLookupModel.getGrantAutocomplete(request, response, beforeRequest, afterRequest)

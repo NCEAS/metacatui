@@ -78,6 +78,7 @@ define(['underscore',
             
         	//Style the body as an Editor
             $("body").addClass("Editor rendering");
+            this.$el.empty();
 			
         	//Inert the basic template on the page
         	this.$el.html(this.template({
