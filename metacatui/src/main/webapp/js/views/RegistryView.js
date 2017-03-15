@@ -65,7 +65,15 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				//If our app user's status hasn't been checked yet, then wait...
 				if(!appUserModel.get("checked")){
 					this.listenToOnce(appUserModel, "change:checked", function(){
-						appView.currentView.loadRegistry.call(appView.currentView);
+						var thisView = appView.currentView || appView.registryView;
+						
+						if(!thisView){
+							appView.showAlert("Sorry, there was an error loading this page. (RegistryView)",
+									"alert-error", "#Content");
+							return;
+						}
+						
+						thisView.loadRegistry.call(thisView);
 					});
 					return this;
 				}
@@ -77,10 +85,26 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				//If the user is logged in and we're using tokens, verify the token first
 				else if(appUserModel.get("loggedIn")){
 					appUserModel.checkToken(function(){	//If the token is valid, load the registry.
-												appView.currentView.loadRegistry.call(appView.currentView);
+												var thisView = appView.currentView || appView.registryView;
+												
+												if(!thisView){
+													appView.showAlert("Sorry, there was an error loading this page. (RegistryView)",
+															"alert-error", "#Content");
+													return;
+												}
+
+												thisView.loadRegistry.call(thisView);
 											},
 											function(){ //If the token if not valid, load the sign in form	
-												appView.currentView.showSignInForm.call(appView.currentView);
+												var thisView = appView.currentView || appView.registryView;
+												
+												if(!thisView){
+													appView.showAlert("Sorry, there was an error loading this page. (RegistryView)",
+															"alert-error", "#Content");
+													return;
+												}
+
+												thisView.showSignInForm.call(thisView);
 											});
 					return this;
 				}
@@ -144,6 +168,10 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 						
 						//Start showing progress updates
 						viewRef.listenForProgressUpdate();
+					},
+					error: function(xhr, textStatus, error){
+						appView.showAlert("There was an error loading this page. (Details: Error loading register-dataset.cgi: " + textStatus + error + ")",
+								"alert-error", "#Content");
 					}
 				}
 	
