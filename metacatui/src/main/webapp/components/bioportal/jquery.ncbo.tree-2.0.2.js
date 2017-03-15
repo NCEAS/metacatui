@@ -79,7 +79,7 @@
       ROOT.html($("<span>").html("Loading...").css("font-size", "smaller"));
       $.ajax({
         url: determineHTTPS(OPTIONS.ncboAPIURL) + "/ontologies/" + OPTIONS.ontology + "/classes/" + encodeURIComponent(cls) + "/tree",
-        data: {apikey: OPTIONS.apikey, pagesize: OPTIONS.pagesize, display: "prefLabel,definition,hasChildren", no_context: true},
+        data: {apikey: OPTIONS.apikey, pagesize: OPTIONS.pagesize, display: "prefLabel,definition,subClassOf,hasChildren", no_context: true},
         contentType: 'json',
         crossDomain: true,
         success: function(roots) {
@@ -151,6 +151,10 @@
             a.attr("data-trigger", "hover");
             a.attr("data-container", "body");
             a.addClass("tooltip-this");
+        }
+        if (node["subClassOf"]) {
+        	var subClassOf = node["subClassOf"][0];
+        	a.attr("data-subclassof", subClassOf);
         }
         
         ul.append(li.append(a));
@@ -226,7 +230,7 @@
         $.ajax({
           type: "GET",
           url: url,
-          data: {apikey: OPTIONS.apikey, pagesize: OPTIONS.pagesize, display: "prefLabel,definition,hasChildren", no_context: true},
+          data: {apikey: OPTIONS.apikey, pagesize: OPTIONS.pagesize, display: "prefLabel,definition,subClassOf,hasChildren", no_context: true},
           crossDomain: true,
           contentType: 'json',
           timeout: OPTIONS.timeout,
@@ -385,7 +389,7 @@
         ROOT.html($("<span>").html("Loading...").css("font-size", "smaller"));
         $.ajax({
           url: determineHTTPS(OPTIONS.ncboAPIURL) + "/ontologies/" + OPTIONS.ontology + "/classes/" + encodeURIComponent(OPTIONS.startingRoot),
-          data: {apikey: OPTIONS.apikey, pagesize: OPTIONS.pagesize, display: "prefLabel,definition,hasChildren", no_context: true},
+          data: {apikey: OPTIONS.apikey, pagesize: OPTIONS.pagesize, display: "prefLabel,definition,subClassOf,hasChildren", no_context: true},
           contentType: 'json',
           crossDomain: true,
           success: function(roots) {
