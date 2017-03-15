@@ -2975,6 +2975,10 @@ ul.side-nav-items {
     white-space: nowrap;
 }
 
+.data-package-item td.name div {
+	padding: 8px 0 8px 0;
+}
+
 /* Editor package table column 1 */
 .data-package-item td:first-of-type {
 	padding-left: 20px;
