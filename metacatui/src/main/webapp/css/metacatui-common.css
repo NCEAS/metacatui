@@ -63,7 +63,7 @@
 	font-size: 12px;
 }
 [contenteditable]{
-	cursor: pointer;
+	cursor: text;
 }
 .row-striped{
 	border: 1px solid #e5e5e5;
