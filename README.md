@@ -1,7 +1,6 @@
 ## MetacatUI: A client-side web interface for DataONE data repositories
 
 - **Author**: Matthew B. Jones, Chris Jones, Ben Leinfelder, Lauren Walker, Bryce Mecum ([NCEAS](http://www.nceas.ucsb.edu))
-- [doi:10.5063/F1QV3JGM](http://doi.org/10.5063/F1QV3JGM)
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on Github](https://github.com/NCEAS/metacatUI)
 - [**Submit Bugs and feature requests**](https://projects.ecoinformatics.org/ecoinfo/projects/metacatui/)
