@@ -28,6 +28,12 @@
 .error{
 	color: #960303;
 }
+.tooltip-error .tooltip-inner{
+	background-color: #960303;
+}
+.tooltip-error .tooltip .tooltip-arrow{
+	border-top-color: #960303;
+}
 .strong{
 	font-weight: bold;
 }
@@ -2939,9 +2945,10 @@ ul.side-nav-items {
 	padding-left: 20px;
 }
 .Editor #Footer {
-    position: relative;
-    margin-left: 14.9%;
+    left: 14.893617021276595%;
     width: 85.1%;
+    margin-left: 0px;
+    margin-bottom: 0px;
 }
 .Editor.rendering #Footer{
 	margin-left: 0%;
@@ -2978,7 +2985,9 @@ ul.side-nav-items {
 .data-package-item td.name div {
 	padding: 8px 0 8px 0;
 }
-
+.data-package-item td.error > [contenteditable]{
+	border: 2px solid red;
+}
 /* Editor package table column 1 */
 .data-package-item td:first-of-type {
 	padding-left: 20px;
@@ -3094,6 +3103,7 @@ ul.side-nav-items {
 }
 .metadata-container.edit textarea{
 	width: 100%;
+	margin-bottom: 20px;
 }
 textarea.xlarge{
 	height: 200px;
@@ -3294,6 +3304,10 @@ textarea.xlarge{
 }
 
 /* ---- Taxon Coverage ---- */
+.row-fluid.taxonomic-coverage {
+    padding-right: 40px;
+    width: calc(100% - 40px)
+}
 .taxonomic-coverage .notification{
 	padding-left: 0px;
 	position: absolute;

@@ -492,19 +492,39 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				return;
     			}
     			
-    			//First save all the models of the collection, if needed
+    			//Sort the models in the collection so the metadata is saved first
+    			var metadataModels = this.where({ type: "Metadata" });
+    			var dataModels     = _.difference(this.models, metadataModels);
+    			var sortedModels   = _.union(metadataModels, dataModels);
     			var modelsInProgress = [];
-    			this.forEach(function(model){
+    			
+    			var failedSave = false; 
+    			
+    			//First save all the models of the collection, if needed
+    			_.each(sortedModels, function(model){
+    				if(failedSave) return;
+    				
     				//If this model is in progress or in the queue
     				if(model.get("uploadStatus") == "p")
     					modelsInProgress.push(model);
-    				else if(model.get("uploadStatus") == "q"){
-    					model.save();  				
+    				else if(model.get("uploadStatus") == "q" || model.get("uploadStatus") == "e"){
+    					
+    					this.listenToOnce(model, "cancelSave", function(){
+    						failedSave = true;
+    						sortedModels = [];
+    					});
+    					
+    					//Save the model and watch for fails
+    					model.save();
+    					
     					modelsInProgress.push(model);
     					this.listenToOnce(model, "successSaving", this.save);
     				}
     			}, this);
 
+    			if(failedSave)
+    				return;
+    				
     			//If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
     			if(modelsInProgress.length) return;
     			

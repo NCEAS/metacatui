@@ -104,7 +104,7 @@ define(['underscore', 'jquery', 'backbone',
 				//When the data package has been saved, render the EML again
 				this.listenTo(dataPackage, "successSaving", this.renderAllSections);
 			}, this);
-
+			
             return this;
         },
         

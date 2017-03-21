@@ -708,9 +708,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     #Navbar{
     	position: fixed;
+    	top: 0px;
     	width: 100%;
     	z-index: 1;
     	background-color: #FFF;
+    	padding-bottom: 20px;
     }
     .center {
       float: none;
