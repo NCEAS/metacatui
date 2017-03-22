@@ -205,6 +205,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Creators
 	    	this.$(".section.people").append("<h4>" + this.partyTypeMap["creator"] + "</h4>",
+					'<p>One or more creators is required. If none are entered, you will be set as the creator of this document.</p>',
 	    			'<div class="row-striped" data-attribute="creator"></div>');	    	
 	    	_.each(this.model.get("creator"), this.renderPerson, this);
 	    	this.renderPerson(null, "creator");
@@ -246,6 +247,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Contact
 	    	if(this.model.get("contact").length){
 	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["contact"] + "</h4>",
+					'<p>One or more contacts is required. If none are entered, you will be set as the contact for this document.</p>',
 	    			'<div class="row-striped" data-attribute="contact"></div>');
 	    		_.each(this.model.get("contact"), this.renderPerson, this);
 	    	
