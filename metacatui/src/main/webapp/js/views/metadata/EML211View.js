@@ -388,6 +388,9 @@ define(['underscore', 'jquery', 'backbone',
 	    			container.find(".new").before(partyView.render().el);
 	    		else
 	    			container.append(partyView.render().el);
+				
+				// Add in a remove button
+				$(container).find("div.eml-party").first().prepend(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
 	    	}
 
 	    },
@@ -455,19 +458,25 @@ define(['underscore', 'jquery', 'backbone',
 	    addNewPersonType: function(partyType){	    	
 	    	if(!partyType) return;
 	    	
-	    	//Add a new header
+			// Container element to hold all parties of this type
+			var partyTypeContainer = $(document.createElement("div")).addClass("party-type-container");
+
+	    	// Add a new header for the party type
 	    	var header = $(document.createElement("h4")).text(this.partyTypeMap[partyType]);
-	    	this.$("#new-party-menu").before(header);
+			$(partyContainer).append(header);
 	    	
 	    	//Remove this type from the dropdown menu
 	    	this.$("#new-party-menu").find("[value='" + partyType + "']").remove();
 
-	    	//Add the new party type container
-	    	var container = $(document.createElement("div"))
+	    	//Add the new party container
+	    	var partyContainer = $(document.createElement("div"))
 									.attr("data-attribute", partyType)
 									.addClass("row-striped");
-	    	header.after(container);
+	    	partyTypeContainer.append(partyContainer);
 	    	
+			// Add in the new party type container just before the dropdown
+			this.$("#new-party-menu").before(partyTypeContainer);
+
 	    	//Add a blank form to the new person type section
 	    	this.renderPerson(null, partyType);
 	    },
@@ -1488,9 +1497,9 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Find the element we'll remove from the DOM
 			if (selector) {
-				parentEl = $(e.target).parent(selector);
+				parentEl = $(e.target).parents(selector).first();
 			} else {
-				parentEl = $(e.target).parent();
+				parentEl = $(e.target).parents().first();
 			}
 
 			if (parentEl.length == 0) return;
