@@ -129,6 +129,10 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				//The first (and only) child should be the d1NodeList
 				_.each(d1NodeListChildren, function(thisNode){
+					
+					//Ignore parts of the XML that is not MN info
+					if(!thisNode.attributes) return;
+					
 					//'node' will be a single node
 					var node = {},
 						thisNodeChildren = thisNode.children || thisNode.childNodes;
@@ -143,6 +147,7 @@ define(['jquery', 'underscore', 'backbone'],
 							node["readv2"] = v2;
 						}
 					});
+					
 					_.each(thisNode.attributes, function(attribute){
 						//Information about this node
 						node[attribute.nodeName] = attribute.nodeValue;
@@ -156,7 +161,6 @@ define(['jquery', 'underscore', 'backbone'],
 						logo = null;
 							
 					node.logo = logo;
-					
 					
 					node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
 					
