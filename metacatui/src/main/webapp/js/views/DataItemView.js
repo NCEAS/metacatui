@@ -448,8 +448,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     if ( parentSciMeta.get && parentSciMeta.get("resourceMap").length > 0 ) {
                         parentResourceMaps = parentSciMeta.get("resourceMap");
                         
-                        if ( parentResourceMaps.length > 0 ) {
-                            parentResourceMapId = parentResourceMaps[0];
+                        if ( ! MetacatUI.rootDataPackage.packageModel.get("latestVersion") ) {
+                            // Decide how to handle this by calling model.findLatestVersion()
+                            // and listen for the result, setting getParentDataPackage() as the callback?
+                            console.log("In dataItemView.getParentDataPackage(), latestVersion is not set.");
+                               
+                        } else {
+                            parentResourceMapId = MetacatUI.rootDataPackage.packageModel.get("latestVersion");
+                            
                         }
                         
                     } else {
