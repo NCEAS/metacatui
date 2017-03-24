@@ -840,8 +840,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				this.set("obsoletes", oldPid);
 				this.set("obsoletedBy", null);
 				
-				//Update the collection this object is in
-				
+                // Update the latest version of this object
+                this.set("latestVersion", this.get("id"));
 				
 				//Set the archived option to false
 				this.set("archived", false);
@@ -858,7 +858,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	this.set("obsoletes", this.attributeCache.obsoletes, {silent: true});
 	        	this.set("obsoletedBy", this.attributeCache.obsoletedBy, {silent: true});
 	        	this.set("archived", this.attributeCache.archived, {silent: true});
-	        	
+	        	this.set("latestVersion", this.attributeCache.latestVersion, {silent: true});
+                
 	        	//Reset the attribute cache
 	        	this.attributeCache = {};
 	        },
