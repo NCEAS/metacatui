@@ -498,14 +498,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		var existingNode = $(eml).find(type.toLowerCase() + "#" + party.get("xmlID"));
 	           		
 	           		//Update the EMLParty DOM and insert into the EML
-	           		if(existingNode.length)
+	           		if ( existingNode.length ) {
 	           			existingNode.replaceWith(party.updateDOM());
-	           		else{
+                        
+	           		} else {
 	           			var insertAfter = $(eml).find(type.toLowerCase()).last();
-	           			if(!insertAfter || !insertAfter.length)
+	           			if( !insertAfter.length ) {
 	           				insertAfter = this.getEMLPosition(eml, type);
+	           			    
+	           			}
 	           			
-	           			insertAfter.after(party.updateDOM());
+                        if ( insertAfter.length ) {
+    	           			insertAfter.after(party.updateDOM());
+                            
+                        } else {
+                            
+                        }
 	           		}
 	           	}, this);
 	           	
