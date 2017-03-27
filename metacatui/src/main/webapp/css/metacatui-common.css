@@ -3075,7 +3075,7 @@ ul.side-nav-items {
 }  
 
 #data-package-container + .ui-resizable-handle{
-	border: 1px solid rgba(103, 118, 197, .6);
+	border: 1px solid #D5D5D5;
 	border-right-width: 0px;
     border-left-width: 0px;
     background-color: #FFF;
@@ -3085,7 +3085,7 @@ ul.side-nav-items {
 }
 #data-package-container + .ui-resizable-handle .icon{
     font-size: 15px;
-    color: rgba(103, 118, 197, 1);
+    color: #D5D5D5;
     z-index: 91;
     margin: -3px auto 0px auto;
     display: block;
