@@ -85,7 +85,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     type: "DataPackage",
                     formatId: "http://www.openarchives.org/ore/terms",
                     childPackages: {},
-                    id: this.id
+                    id: this.id,
+                    latestVersion: this.id
                 });
                 
                 if ( typeof options.packageModel !== "undefined" ) {
@@ -1097,7 +1098,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	return xmlString;
             },
             
-            //Adds a new object to the resource map RDF graph
+            // Adds a new object to the resource map RDF graph
             addToAggregation: function(id){
             	if(id.indexOf(this.dataPackageGraph.cnResolveUrl) < 0) 
             		var fullID = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
@@ -1106,26 +1107,41 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             		id = id.substring(this.dataPackageGraph.cnResolveUrl.lastIndexOf("/") + 1);
             	}
             	
-            	//Initialize the namespaces
+            	// Initialize the namespaces
             	var ORE     = rdf.Namespace(this.namespaces.ORE),
             		DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
             		XSD     = rdf.Namespace(this.namespaces.XSD),
             		CITO    = rdf.Namespace(this.namespaces.CITO);
             	
-            	//Create a node for this object, the identifier, the resource map, and the aggregation
+            	// Create a node for this object, the identifier, the resource map, and the aggregation
             	var objectNode = rdf.sym(fullID),
             		mapNode    = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id"))),
             		aggNode    = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id")) + "#aggregation"),
-            		idNode     = rdf.literal(id, undefined, XSD("string"));
+            		idNode     = rdf.literal(id, undefined, XSD("string")),
+                    idStatements = [],
+                    aggStatements = [],
+                    aggByStatements = [];
             	
-            	//Add the statement: this object isAggregatedBy the resource map aggregation
-    			this.dataPackageGraph.add(objectNode, ORE("isAggregatedBy"), aggNode);
-    			//Add the statement: The resource map aggregation aggregates this object
-    			this.dataPackageGraph.add(aggNode, ORE("aggregates"), objectNode);
-    			//Add the statement: This object has the identifier {id}
-    			this.dataPackageGraph.add(objectNode, DCTERMS("identifier"), idNode);
+            	// Add the statement: this object isAggregatedBy the resource map aggregation
+                aggByStatements = this.dataPackageGraph.statementsMatching(objectNode, ORE("isAggregatedBy"), aggNode);
+                if ( aggByStatements.length < 1 ) {
+        			this.dataPackageGraph.add(objectNode, ORE("isAggregatedBy"), aggNode);
+                    
+                }
+    			// Add the statement: The resource map aggregation aggregates this object
+                aggStatements = this.dataPackageGraph.statementsMatching(aggNode, ORE("aggregates"), objectNode);
+                if ( aggStatements.length < 1 ) {
+        			this.dataPackageGraph.add(aggNode, ORE("aggregates"), objectNode);
+                    
+                }
+    			// Add the statement: This object has the identifier {id} if it isn't present
+                idStatements = this.dataPackageGraph.statementsMatching(objectNode, DCTERMS("identifier"), idNode);
+                if ( idStatements.length < 1 ) {
+        			this.dataPackageGraph.add(objectNode, DCTERMS("identifier"), idNode);
+                    
+                }
     			
-    			//Find the metadata doc that describes this object
+    			// Find the metadata doc that describes this object
     			var model   = _.find(this.models, function(m){ return m.get("id") == id }),
     				isDocBy = model.get("isDocumentedBy"),
     				documents = model.get("documents");
@@ -1136,40 +1152,40 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     
                 }
                 
-    			//If this object is documented by any metadata...
+    			// If this object is documented by any metadata...
     			if(isDocBy && isDocBy.length){
-    				//Get the ids of all the metadata objects in this package
-    				var	metadataInPackage = _.compact(_.map(this.get("members"), function(m){ if(m.get("formatType") == "METADATA") return m.get("id"); }));
-    				//Find the metadata IDs that are in this package that also documents this data object 
+    				// Get the ids of all the metadata objects in this package
+    				var	metadataInPackage = _.compact(_.map(this.models, function(m){ if(m.get("formatType") == "METADATA") return m.get("id"); }));
+    				// Find the metadata IDs that are in this package that also documents this data object 
     				var metadataIds = Array.isArray(isDocBy)? _.intersection(metadataInPackage, isDocBy) : _.intersection(metadataInPackage, [isDocBy]);
     				
-    				//For each metadata that documents this object, add a CITO:isDocumentedBy and CITO:documents statement
+    				// For each metadata that documents this object, add a CITO:isDocumentedBy and CITO:documents statement
     				_.each(metadataIds, function(metaId){
     					//Create the named nodes and statements
     					var dataNode         = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id)),
     						metadataNode     = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(metaId)),
     						isDocByStatement = rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode),
     						documentsStatement = rdf.st(metadataNode, CITO("documents"), dataNode);
-    					//Add the statements
+    					// Add the statements
     					this.dataPackageGraph.add(isDocByStatement);
     					this.dataPackageGraph.add(documentsStatement);
     				}, this);
     			}
     			
-    			//If this object documents a data object
+    			// If this object documents a data object
     			if(documents && documents.length){
-    				//Create a literal node for it
+    				// Create a literal node for it
     				var metadataNode = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id));
     				
     				_.each(documents, function(dataID){
-    					//Create a named node for the data object
+    					// Create a named node for the data object
     					var dataNode = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(dataID)),
-    					//Create a statement: This metadata documents this data
+    					// Create a statement: This metadata documents this data
     						documentsStatement = rdf.st(metadataNode, CITO("documents"), dataNode),
-    					//Create a statement: This data is documented by this metadata
+    					// Create a statement: This data is documented by this metadata
     						isDocByStatement = rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode);
     					
-    					//Add the statements
+    					// Add the statements
     					this.dataPackageGraph.add(isDocByStatement);
     					this.dataPackageGraph.add(documentsStatement);
     				}, this);
