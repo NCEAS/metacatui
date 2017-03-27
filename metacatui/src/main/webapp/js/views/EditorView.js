@@ -384,8 +384,8 @@ define(['underscore',
             this.listenTo(this.model, "change:uploadStatus", this.showControls);
 
             // Register a listener for any attribute change
-            this.model.on("change", this.model.handleChange, this.model);                	
-            
+            this.model.on("change", this.model.handleChange, this.model);      
+                        
             // If any attributes have changed (including nested objects), show the controls
             if ( typeof MetacatUI.rootDataPackage.packageModel !== "undefined" ) {
                 this.stopListening(MetacatUI.rootDataPackage.packageModel, "change:changed");
@@ -398,6 +398,13 @@ define(['underscore',
         	
         	// Listen for when the package has been successfully saved
         	this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
+
+        	//When the Data Package cancels saving, hide the saving styling
+        	this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.hideSaving);
+        	this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.handleSaveCancel);
+
+        	//When the model is invalid, show the required fields
+        	this.listenTo(this.model, "required", this.showRequired);
         },
         
         /*
@@ -409,10 +416,12 @@ define(['underscore',
         	//If the save button is disabled, then we don't want to save right now
         	if(btn.is(".btn-disabled")) return;
         	
+        	var btn = this.$("#save-editor");
+        	
         	//Change the style of the save button
         	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving ...').addClass("btn-disabled");
         	
-        	//Disable the form
+	       	//Disable the form
         	$("body").prepend($(document.createElement("div")).addClass("disable-layer"));
         	
         	//Save the package!
@@ -429,21 +438,16 @@ define(['underscore',
     		        	
         	//Change the URL to the new id
         	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });
-        	
-        	//Remove the disabler layer
-        	$(".disable-layer").remove();
-        	
+
+            this.toggleControls();
+
         	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
-        	
-        	//When the package is saved, revert the Save button back to normal
-        	this.$("#save-editor").html("Save").removeClass("btn-disabled");
             
             // Reset the state to clean
             MetacatUI.rootDataPackage.packageModel.set("changed", false);
             this.model.set("hasContentChanges", false);
             
             this.setListeners();
-            this.toggleControls();
         },
         
         /*
@@ -561,6 +565,12 @@ define(['underscore',
         	this.render();
         },
         
+        handleSaveCancel: function(){
+        	if(this.model.get("uploadStatus") == "e"){
+        		this.saveError("There was a caught exception during save, so the save was cancelled.");
+        	}
+        },
+        
         /* Show the editor footer controls (Save bar) */
 	    showControls: function(){
 	    	this.$(".editor-controls").removeClass("hidden").slideDown();
@@ -568,7 +578,17 @@ define(['underscore',
 
         /* Hide the editor footer controls (Save bar) */
 	    hideControls: function(){
+        	this.hideSaving();
+        	
 	    	this.$(".editor-controls").slideUp();
+	    },
+	    
+	    hideSaving: function(){
+	    	//Remove the disabler layer
+        	$(".disable-layer").remove();
+        	
+        	//When the package is saved, revert the Save button back to normal
+        	this.$("#save-editor").html("Save").removeClass("btn-disabled");
 	    },
 
         /* Toggle the editor footer controls (Save bar) */
@@ -597,6 +617,29 @@ define(['underscore',
 	    	
 	    	$(container).find(".loading").remove();
 	    },
+	    
+		showRequired: function(attr){
+			var reqEl = $("[data-attribute='" + attr + "']");
+			if(!reqEl) return;
+			
+			//Style the field as required
+			reqEl.addClass("error");
+			
+			//If this field is in a DataItemView, then delegate to that view
+			var dataItemRow = reqEl.parents(".data-package-item");
+			
+			if(dataItemRow.length && dataItemRow.data("view") && (typeof dataItemRow.data("view").showRequired == "function")){
+				dataItemRow.data("view").showRequired(attr);
+			}
+			else{
+				reqEl.parent().prepend( $(document.createElement("div"))
+												.addClass("error notification")
+												.text("A" + attr + " is required.") );
+			}
+			
+			//Scroll to the element
+			MetacatUI.appView.scrollTo(reqEl, $("#Navbar").outerHeight() + 100);
+		},
 	    
 	    /*
 	     * Alerts the user that changes will not be saved if s/he navigates away from this view.

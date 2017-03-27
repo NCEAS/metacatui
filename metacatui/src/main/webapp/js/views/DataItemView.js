@@ -61,6 +61,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 
                 this.$el.html( this.template(attributes) );
                 this.$el.find(".dropdown-toggle").dropdown();
+
+                //Add the title data-attribute attribute to the name cell
+                if(this.model.get("type") == "Metadata") 
+                	this.$el.find(".name").attr("data-attribute", "title");
                 
                 //listen for changes to rerender the view
                 this.listenTo(this.model, "change:fileName change:title change:id change:formatType " + 
@@ -72,6 +76,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 	view.model = newModel;
                 	view.render();
                 });
+                
+                this.$el.data({ view: this });
                 
                 return this;
             },
@@ -487,6 +493,31 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
              */
             hideRemove: function(){
             	this.$el.removeClass("remove-highlight");
+            },
+            
+            showRequired: function(attr){
+				
+				//Create a tooltip that tells the user this field is required
+				this.$el.tooltip({
+					placement: "top",
+					title: "A " + attr + " is required"
+				});
+				
+            	//Get the parent table and add a tooltip error class
+				this.$el.parents("table").addClass("tooltip-error");
+				
+				//Show the tooltip
+				this.$el.tooltip("show");
+				
+				this.listenToOnce(this.model, "change:" + attr, this.hideRequired);
+            },
+            
+            hideRequired: function(){
+            	//Get the parent table and remove a tooltip error class
+				this.$el.parents("table").removeClass("tooltip-error");
+				
+            	//Show the tooltip
+				this.$el.tooltip("destroy");
             }
         });
         

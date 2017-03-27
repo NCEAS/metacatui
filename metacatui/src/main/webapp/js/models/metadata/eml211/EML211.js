@@ -118,16 +118,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	);
             },
             
-            /* 
-             Validate this EML 211 document
-            */
-            validate: function() {
-                var valid = false;
-                
-                return valid;
-                
-            },
-            
             /* Fetch the EML from the MN object service */
             fetch: function(options) {
             	if( ! options ) var options = {};
@@ -319,6 +309,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Returns the EML XML as a string.
              */
             serialize: function(){
+            	
 	           	//Get the EML document
 	           	var xmlString = this.get("objectXML"),
 	           		eml = $.parseHTML(xmlString),
@@ -573,12 +564,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              */
             save: function(attributes, options){
                 
+                //Validate before we try anything else
+                if(!this.isValid()){
+                	this.trigger("cancelSave");
+                	return false;
+                }
+                
                 // Set missing file names before saving
                 if ( ! this.get("fileName") ) {
-                    this.setMissingFileName();
-                  
+                    this.setMissingFileName();                 
                 }
-
+                
             	//Set the upload transfer as in progress
    			 	this.set("uploadStatus", "p"); 
                 
@@ -665,6 +661,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	   				
 	   				this.set("uploadStatus", "e"); 
 	   				this.trigger("error");
+	   				this.trigger("cancelSave");
 	   				return false;
 	   			}
 	   			
@@ -696,6 +693,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	   			}, MetacatUI.appUserModel.createAjaxSettings());
 	   			
 	   			return Backbone.Model.prototype.save.call(this, attributes, saveOptions);		
+            },
+            
+            
+            /*
+             * Checks if this EML model has all the required values necessary to save to the server
+             */
+            validate: function() {
+            	if(!this.get("title").length){
+            		this.trigger("required", "title");
+            		return "Title is required";
+            	}
             },
             
             /*
