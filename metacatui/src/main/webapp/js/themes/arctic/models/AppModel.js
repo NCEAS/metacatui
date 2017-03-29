@@ -65,7 +65,8 @@ define(['jquery', 'underscore', 'backbone'],
 			signOutUrl: null,
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
-			tokenUrl: null
+			tokenUrl: null,
+            setPublicAccess: false // Set to true to force public read access on newly created objects
 		},
 				
 		defaultView: "data",
