@@ -742,6 +742,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     subjects = [],
                     permissions = [],
                     rulesBySubject = {}; // a lookup table of existing rules by subject ( to prevent repeats)
+                
+                // If the AppModel.setPublicAccess flag is true,
+                // allow developer override to force public read access to new objects 
+                if ( MetacatUI.appModel.get("setPublicAccess") ) {
+                    var policy = this.get("accessPolicy").allow;
+                    if ( typeof policy === "undefined" ) {
+                        policy = {allow: [{subject: "public", permission: "read"}]};
+                        this.set("accessPolicy", policy);
+                    
+                    }
+                }    
+                
                 if ( typeof this.get("accessPolicy").allow === "undefined" ) {
                     return accessPolicyXML;
                     
@@ -796,6 +808,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	var oldPid = this.get("id"),
                     selfDocuments,
                     selfDocumentedBy,
+                    documentedModels,
+                    documentedModel,
                     index;
 				this.set("oldPid", oldPid);
                 
@@ -833,6 +847,28 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     this.get("isDocumentedBy").push(this.get("id"));
                     
                 }
+                
+                // Update all models documented by this pid with the new id
+                _.each(this.get("documents"), function(id) {
+                    documentedModels = MetacatUI.rootDataPackage.where({id: id}),
+                    documentedModel;
+                    
+                    if ( documentedModels.length > 0 ) {
+                        documentedModel = documentedModels[0];
+                    }
+                    if ( typeof documentedModel !== "undefined" ) {
+                        // Find the oldPid in the array
+                        index = documentedModel.get("isDocumentedBy").indexOf("oldPid");
+                        if ( index > -1 ) {
+                            // Remove it
+                            documentedModel.get("isDocumentedBy").splice(index, 1);
+                        
+                        }
+                        // And add the new pid in
+                        documentedModel.get("isDocumentedBy").push(this.get("id"));
+                        
+                    }
+                }, this);
                 
 				this.trigger("change:id")
 				
