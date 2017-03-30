@@ -186,12 +186,40 @@
 							<p>Version 1.0 of the DataONE services only support XML serialization, and 
 							this format MUST be used when communicating with the KNB.
 							Request and response documents MUST also be encoded using UTF-8.</p>
+
 							<h3 id="auth">Authentication and Authorization</h3>
-							<p>Authentication is handled using SSL with client-side certificates 
-							(in X.509 format).  Users can 
+                            <p>Two mechanisms are supported for authentication:
+                            <ul>
+                                <li>Authentication Tokens passed in the HTTP "Authorization" header</li>
+                                <li>Client-side SSL certificates</li>
+                            </ul></p>
+                            <p><strong>Using Authentication Tokens</strong>.
+                            In this scenario, users log into the <a href="https://search.dataone.org">DataONE
+                                search portal</a>, and copy an <strong>authentication token</strong> from their
+                            DataONE Profile page (see the "Settings | Authentication Token" section) which can then be included 
+                            in HTTPS requests in the HTTP header "Authorization:".
+                            The Authentication Token is a long hexadecimal string that encodes the user's credentials
+                            in a signed and validatable <a href="https://jwt.io" target="_external">JWT token</a>. Each language or 
+                            tool will have is own mechanism for setting HTTP headers.  For example, for curl an authenticated request 
+                            can be made using the '-H' command line option, such as:<code class="code_example">
+$ export TOKEN='eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJodHRwOlwvXC9vcmNp...'
+$ curl -H "Authorization: Bearer $TOKEN" https://knb.ecoinformatics.org/knb/d1/mn/v2/object
+                            </code>
+                            The token expires in 18 hours, and so a new token can be retrieved beforehand.
+							<blockquote><i class="icon icon-warning-sign icon-warning"></i>
+                                <p class="text-warning">The authentication token should be carefully protected just as you would
+                                an account password, as it gives the holder full rights to the account.  Do not save
+                                tokens in code, and don't check them into version control systems, or otherwise make them available
+                                to other people.
+						    </p></blockquote>
+                            </p>
+
+                            <p><strong>Using client-side certificates over SSL</strong>.
+							Users can 
 							<a href="https://cilogon.org/?skin=DataONE" target="_external">log into CILogon</a> 
-							to download a certificate, 
-							which can then be included in requests.  The Subject of the provided certificate
+							to download a client certificate, 
+							which can then be included in requests as part of the SSL session with the host.  
+                            The Subject of the provided certificate
 							will be used by the KNB to determine all access control decisions for accessing,
 							creating, updating, archiving, and deleting objects.  If a client-side certificate
 							is not provided, the user will be considered an anonymous <code>public</code> user
@@ -212,6 +240,8 @@
 						    </p></blockquote>
 							</p>
 						</section>
+
+						<h3 id="auth">Method Details and Examples</h3>
 						<section name="examples">
 						
 							<section class="example">    
