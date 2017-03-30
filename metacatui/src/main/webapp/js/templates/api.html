@@ -198,7 +198,7 @@
                                 search portal</a>, and copy an <strong>authentication token</strong> from their
                             DataONE Profile page (see the "Settings | Authentication Token" section) which can then be included 
                             in HTTPS requests in the HTTP header "Authorization:".
-                            The Authentication Token is a long hexadecimal string that encodes the user's credentials
+                            The Authentication Token is a long base64-encoded string of characters that encodes the user's credentials
                             in a signed and validatable <a href="https://jwt.io" target="_external">JWT token</a>. Each language or 
                             tool will have is own mechanism for setting HTTP headers.  For example, for curl an authenticated request 
                             can be made using the '-H' command line option, such as:<code class="code_example">
