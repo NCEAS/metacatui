@@ -1140,7 +1140,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             		idNode     = rdf.literal(id, undefined, XSD("string")),
                     idStatements = [],
                     aggStatements = [],
-                    aggByStatements = [];
+                    aggByStatements = [],
+                    documentsStatements = [],
+                    isDocumentedByStatements = [];
             	
             	// Add the statement: this object isAggregatedBy the resource map aggregation
                 aggByStatements = this.dataPackageGraph.statementsMatching(objectNode, ORE("isAggregatedBy"), aggNode);
@@ -1186,9 +1188,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     						metadataNode     = rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(metaId)),
     						isDocByStatement = rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode),
     						documentsStatement = rdf.st(metadataNode, CITO("documents"), dataNode);
-    					// Add the statements
-    					this.dataPackageGraph.add(isDocByStatement);
-    					this.dataPackageGraph.add(documentsStatement);
+    					
+                        // Add the statements
+                        documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), dataNode);
+                        if ( documentsStatements.length < 1 ) {
+                            this.dataPackageGraph.add(documentsStatement);
+                            
+                        }
+                        isDocumentedByStatements = this.dataPackageGraph.statementsMatching(dataNode, CITO("isDocumentedBy"), metadataNode);
+                        if ( isDocumentedByStatements.length < 1 ) {
+                            this.dataPackageGraph.add(isDocByStatement);
+                            
+                        }
     				}, this);
     			}
     			
