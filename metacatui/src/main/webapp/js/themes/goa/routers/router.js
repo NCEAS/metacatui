@@ -291,8 +291,9 @@ function ($, _, Backbone) {
 				});
 			}
 			else{
-				if(appView.currentView.onClose)
+				if(appView.currentView && appView.currentView.onClose)
 					appView.currentView.onClose();
+				
 				appUserModel.logout();
 			}	
 		},

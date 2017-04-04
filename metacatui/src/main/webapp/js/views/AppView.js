@@ -295,8 +295,9 @@ define(['jquery',
 			if(!form || !form[0]) return true;
 			
 			var view = this,
-				username = form[0].username.value,
-				pass = form[0].password.value,
+				username = form[0].elements.usernameVisible.value,
+				pass = form[0].elements.password.value,
+				organization = form[0].elements.rdn.value,
 				formContainer = form.parent(),
 				loading = $(this.loadingTemplate({ msg: "Logging in..." }));
 			
@@ -327,7 +328,7 @@ define(['jquery',
 			
 			//Create the full username if the user didn't type it in				
 			if (username.indexOf('=') < 0)
-				form[0].username.value = 'uid=' + username + form[0].rdn.value;
+				form[0].elements.username.value = 'uid=' + username + "," + organization;
 			
 			//Get the serialized form data
 			var formData = form.serialize();
@@ -356,7 +357,8 @@ define(['jquery',
 			}
 			
 			//Send login request via the User Model
-			appUserModel.loginLdap(formData, loginSuccess, loginFail);			
+			appUserModel.loginLdap(formData, loginSuccess, loginFail);	
+			//form[0].submit();
 		},
 		
 		// Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else

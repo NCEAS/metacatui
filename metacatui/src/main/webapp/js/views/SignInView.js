@@ -113,42 +113,12 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 			this.$(".fancybox").fancybox({
 				transitionIn: "elastic",
 				afterShow: function(){
-					$("#signinPopup a.ldap").on("click", null, view, view.showLDAPLogin);
 					
 					//Update the sign-in URLs so we are redirected back to the previous page after authentication
 					$("a.update-sign-in-url").attr("href", appModel.get("signInUrl") + encodeURIComponent(window.location.href));
 					$("a.update-orcid-sign-in-url").attr("href", appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
 					$("a.update-ldap-sign-in-url").attr("href", appModel.get("signInUrlLdap") + encodeURIComponent(window.location.href));
 				}
-			});
-		},	
-		
-		showLDAPLogin: function(e, a){
-			e.preventDefault();
-			
-			if($(e.target).hasClass("ldap")){
-				var org = $(e.target).attr("data-value"),
-					accountType = $(e.target).attr("data-name"),
-					view = e.data;
-				
-				this.loginPopup = $("#signinPopup").children().detach();
-				
-				var ldapLogin = view.ldapLoginTemplate({
-					signInUrlLdap: appModel.get("signInUrlLdap"),
-					accountType: accountType,
-					org: org				
-				});
-			}
-			else
-				window.location = appModel.get("signInUrl") + window.location;
-			
-			$("#signinPopup").append(ldapLogin);
-			
-			var view = this;
-			$("#SignInLdap .back").on("click", function(e){
-				e.preventDefault();
-				
-				 $("#signinPopup").html(view.loginPopup);
 			});
 		},
 		

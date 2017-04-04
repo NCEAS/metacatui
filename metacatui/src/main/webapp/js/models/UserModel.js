@@ -431,13 +431,16 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					if(success)
 						success(this);
 					
-					$("#SignInLdap")
+					model.getToken();
+					
 					//Direct to the Ldap sign in
 					//window.location = appModel.get("signInUrlLdap") + window.location.href;
 				},
 				error: function(){
 					if(error)
 						error(this);
+					
+					model.getToken();
 				}
 			}
 			

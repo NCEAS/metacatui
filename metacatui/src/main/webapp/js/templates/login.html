@@ -5,45 +5,67 @@
 
 <div id="signinPopup" class="fancybox-inline sign-in">
 	<h2>Sign In</h2>
-	<div class="row-fluid">
-		<% if(signInUrlOrcid && !signInUrl) { %>
-			<div class="span12">
-		<% } else if (signInUrlOrcid){ %>
-			<div class="span5">
-		<% }	
-		   if(signInUrlOrcid) { %>
-				<div class="orcid-signin">
+	<div>
+	
+		 <%  if(signInUrlOrcid) { %>
+				<div class="orcid-signin center">
 					<a href="<%=signInUrlOrcid%>" class="signin CILogonSignin update-orcid-sign-in-url" <%=linkAttr%>>
 						<img src="./img/orcid_64x64.png" />
 						<span>Sign in with ORCID</span>
 					</a>
 				</div>
-			</div>
 		<% } 
-		   if(signInUrlOrcid && (signInUrl || signInUrlLdap)) { %> 
-			<span class="divider-text">OR</span>
-			<div class="span7">
-		<% } 
-		   else if(signInUrl || signInUrlLdap){ %>
-			<div class="span12">
-		<% } 
-		   if(signInUrl) { %>
-				<div class="well scroll-y">
-					<a class="btn update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign in with your University or Institution</a>
-					<!-- <img src="./img/google_signin.png" class="signin CILogonSignin" />  -->
-					<% if(loginOptions){ %>
-						<!-- <h3>Sign in with your University or Institution</h3> -->
-						<!-- <input type="text" name="search" placeholder="Search..." />-->
-							<h3>Some of the 100+ Universities and Institutions to choose from:</h3>
-							<div id="login-options"><%=loginOptions%></div>
-						<% } %>
+		   if(signInUrlLdap) { %> 
+		    
+			<div class="accordion" id="advanced-login">
+				<div class="accordion-heading center">
+					<a class="accordion-toggle" data-toggle="collapse" data-parent="#advanced-login" href="#ldap-login">
+	        			Have an existing account?
+	      			</a>
 				</div>
-		<% }
-		   if(signInUrlLdap) { %>
-				<a href="#" class="btn ldap" data-name="NCEAS - National Center for Ecological Analysis and Synthesis" data-value="o=NCEAS,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with an NCEAS Account</a>
-				<a href="#" class="btn ldap" data-name="KNB Data Repository" data-value="o=unaffiliated,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with a KNB Account</a>
-		<% }
-		   if(signInUrl || signInUrlLdap){ %>
+				<div id="ldap-login" class="accordion-body collapse">
+					 <div class="accordion-inner center">
+					 
+					 	<form action="<%=(appModel.get('signInUrlLdap') + window.location.href)%>"
+					 	id="SignInLdap" class="form-inline input-group" 
+					 	method="post" 
+					 	onsubmit="if (this.usernameVisible.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.usernameVisible.value + ',' + this.rdn.value;} return true;">
+						 
+						  	<h5>Sign in with an existing account</h5>
+							<div>
+								<input type="text" class="input" name="usernameVisible" placeholder="Username" />
+								<input type="hidden" class="input" name="username" />
+							</div>
+							<div>
+								<select name="rdn">
+									<option value="" selected="">— choose one —</option>
+									<option value="o=NCEAS,dc=ecoinformatics,dc=org">NCEAS</option>
+									<option value="o=LTER,dc=ecoinformatics,dc=org">LTER</option>
+									<option value="o=KU,dc=ecoinformatics,dc=org">KU</option>
+									<option value="o=OBFS,dc=ecoinformatics,dc=org">OBFS</option>
+									<option value="o=OSUSB,dc=ecoinformatics,dc=org">OSUSB</option>
+									<option value="o=PARC,dc=ecoinformatics,dc=org">PARC</option>
+									<option value="o=PISCO,dc=ecoinformatics,dc=org">PISCO</option>
+									<option value="o=SAEON,dc=ecoinformatics,dc=org">SAEON</option>
+									<option value="o=SANParks,dc=ecoinformatics,dc=org">SANParks</option>
+									<option value="o=SDSC,dc=ecoinformatics,dc=org">SDSC</option>
+									<option value="o=UCNRS,dc=ecoinformatics,dc=org">UCNRS</option>
+									<option value="o=unaffiliated,dc=ecoinformatics,dc=org">unaffiliated</option>
+									<opion value="ou=Account,dc=ecoinformatics,dc=org">Account</opion>
+								</select>
+							</div>
+							<div>
+								<input type="password" class="input" name="password" placeholder="Password"/>
+							</div>
+							<div>
+								<input type="submit" class="btn btn-primary submit ldap" value="Sign In" />
+							</div>
+						</form>
+						<!-- <div><a href="#" class="btn ldap" data-name="NCEAS - National Center for Ecological Analysis and Synthesis" data-value="o=NCEAS,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with an NCEAS Account</a></div>
+						<div><a href="#" class="btn ldap" data-name="KNB Data Repository" data-value="o=unaffiliated,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with a KNB Account</a></div>					
+						 -->
+					</div>
+				</div>
 			</div>
 		<% } %>
 	</div>					
@@ -59,30 +81,15 @@
 	<h2>Sign Up</h2>
 	<div class="row-fluid">
 		<div class="span12">
-			<h3 class="subtitle subtle">View your data and access your identification code to upload content.</h3>
 			<% if(signInUrlOrcid) { %>
 				<h4>There's no need to create a new account - just use your <a href="<%=signInUrlOrcid%>">existing <img src="./img/orcid_64x64.png" class="icon-on-left icon" /> ORCID account</a> now or <a href="<%=signInUrlOrcid%>">create a new one</a>.</h4>
-				<div class="orcid-signin btn-large center">
-					<a href="<%=signInUrlOrcid%>" class="signin CILogonSignin update-orcid-sign-in-url" <%=linkAttr%>>
+				<div class="orcid-signin center">
+					<a href="<%=signInUrlOrcid%>" class="signin update-orcid-sign-in-url" <%=linkAttr%>>
 						<img src="./img/orcid_64x64.png" />
 						<span>Sign up with ORCID</span>
 					</a>
 				</div>
-			<% } 
-			else if(signInUrl) { %>
-				<h4>There's no need to create a new account - just use one of your existing accounts from Google or from a list of 100+ Universities and Institutions:</h4>
-					<a class="btn btn-primary btn-large center update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign up now</a>
-					<div class="well scroll-y">
-						<!-- <img src="./img/google_signin.png" class="signin CILogonSignin" />  -->
-						<% if(loginOptions){ %>
-							<!-- <h3>Sign in with your University or Institution</h3> -->
-							<!-- <input type="text" name="search" placeholder="Search..." />-->
-								<h3>The 100+ Universities and Institutions supported by CILogon:</h3>
-								<div id="login-options"><%=loginOptions%></div>
-							<% } %>
-					</div>
-				</div>
-			<% } %>	
+			<% } %>
 		</div>
 	</div>
 </div>

@@ -1283,8 +1283,8 @@ img.icon{
     padding-left: 20px;
 }
 .fancybox-inline .btn.ldap{
-	width: 90%;
-	width: calc(100% - 25px);
+	width: 220px;
+    left: 0;
 }
 .orcid-signin a > span{
     padding: 11px;

@@ -883,6 +883,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       float: right;
     }
     
+    #signupPopup {
+    	max-width: 350px;
+	    min-width: 350px;
+	}
+    
     .dropdown-header {
 		display: block;
 		padding: 3px 20px;

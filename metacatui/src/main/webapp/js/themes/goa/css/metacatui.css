@@ -122,6 +122,9 @@
 	.control-label {
 		cursor: default;
 	}
+	.sign-in select{
+		width: 220px;
+	}
 
 /* EML CUSTOMIZATIONS
 -------------------------------------------------- */
