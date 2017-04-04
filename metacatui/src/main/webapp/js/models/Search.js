@@ -597,13 +597,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						value = value.value.trim();
 					
 					if(model.needsQuotes(value)) value = '%22' + encodeURIComponent(value) + '%22';
-					else if(subtext)             value = "*" + encodeURIComponent(value) + "*";
-					else                         value = encodeURIComponent(value);
+					else if(subtext)             value = "*" + this.escapeSpecialChar(encodeURIComponent(value)) + "*";
+					else                         value = this.escapeSpecialChar(encodeURIComponent(value));
 						
-					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + model.escapeSpecialChar(value);
-					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + model.escapeSpecialChar(value);
-					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + model.escapeSpecialChar(value) + ")";
-				});
+					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + value;
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
+				}, this);
 			}
 			
 			return query;
