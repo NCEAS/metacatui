@@ -134,7 +134,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				}
 			}
 			
-			if(!this.title){
+			if(!this.title && metadata){
 				this.title = '<a href="#view/' + metadata.get("id") + 
 					'">Files in this dataset';
 				
@@ -142,6 +142,9 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					this.title += '<span class="subtle"> Package: ' + this.model.get("id") + '</span>';
 					
 				this.title += '</a>';
+			}
+			else if(!this.title && !metadata){
+				this.title = "Files in this dataset";
 			}
 			
 			this.$el.html(this.template({
@@ -358,8 +361,16 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			this.readsEnabled = false;
 			$(tr).append(readsCell);
 			if((typeof reads !== "undefined") && reads){ 
-				if(formatType == "METADATA") reads += " views";
-				else 						 reads += " downloads";
+				
+				if(formatType == "METADATA" && reads == 1) 
+					reads += " view";
+				else if(formatType == "METADATA")
+					reads += " views";
+				else if(reads == 1)
+					reads += " download";
+				else
+					reads += " downloads";
+								
 				$(readsCell).text(reads);
 				this.readsEnabled = true;
 			}
