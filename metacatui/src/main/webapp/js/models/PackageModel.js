@@ -890,7 +890,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			
 			//Search for derivations of this package
 			var derivationsQuery = appSearchModel.getGroupedQuery("prov_wasDerivedFrom", 
-					_.map(this.get("members"), function(m){ return encodeURIComponent(m.get("id")); }), "OR") +
+					_.map(this.get("members"), function(m){ return m.get("id"); }), "OR") +
 					"%20-obsoletedBy:*";
 			
 			var requestSettings = {
