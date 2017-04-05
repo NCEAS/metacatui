@@ -573,7 +573,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(options && (typeof options == "object")){
 				var operator = options.operator,
 					subtext = options.subtext;
-			}
+			}  
 		
 			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) var operator = "OR";
 			

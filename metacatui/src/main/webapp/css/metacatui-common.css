@@ -2208,7 +2208,7 @@ tfoot .control i{
 .user-view-section .hgroup h5{
 	font-weight: normal;
 }
-.user-view-section .user-type{
+.user-view-section h5{
 	margin-bottom: 10px;
 	margin-top: 5px;
 	padding-bottom: 10px;
@@ -2297,7 +2297,7 @@ textarea.token{
 #first-upload-container{
 	font-size: .9em;
 	width: 50%;
-	width: calc(97% - 130px);
+	width: calc(97% - 125px);
 }
 address.email-container{
 	display: inline;
@@ -2306,7 +2306,7 @@ address.email-container:after{
 	content: attr(data-domain);
 }
 address.email-container:before{
-	content: attr(data-user);o
+	content: attr(data-user);
 }
 [data-username="ORNLDAAC"] #user-profile .user-info .logo,
 [data-username="CDL"] #user-profile .user-info .logo,
@@ -2319,6 +2319,9 @@ address.email-container:before{
 [data-username="NRDC"] #user-profile .user-info .logo{
 	max-width: 200px;
 	width: 200px;
+}
+#quality-score, #quality-chart{
+	display: none;
 }
 /****************************************** 
 ** Stats ***
@@ -2367,7 +2370,9 @@ address.email-container:before{
     padding-bottom: 20px;
     padding-top: 20px;
 }
-
+.temporal-coverage-chart{
+	width: calc(100% - 300px);
+}
 /**** Bar Charts ******/
 .bar-chart .bar-label.bg{
 	fill: rgba(0,0,0,0.8);

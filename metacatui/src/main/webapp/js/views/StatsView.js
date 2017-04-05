@@ -499,6 +499,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				{
 					  "margin-left": (mdqTotalStats.mean*100).toFixed(0) + "%"
 				});
+				
+				//Unhide the quality chart
+				$("#quality-chart").show();
 	
 			}
 			

@@ -1690,14 +1690,11 @@ label.control-label{
   .profile .chart-title{
 	width: 280px;
   }
-  .profile .chart{
-	width: 735px;
-  }
   .profile-title:empty{
   	display: none;
   }
   
-.profile .charts > svg{
+  .profile .charts > svg{
   	margin-left: auto;
   	margin-right: auto;
   	display: block;

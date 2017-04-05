@@ -1261,7 +1261,7 @@ define(['jquery',
 			
 			//Get the member nodes
 			var members = _.sortBy(nodeModel.get("members"), function(m){ return m.name.toLowerCase(); });
-			var filteredMembers = _.reject(members, function(m){ return(_.contains(nodeModel.get("hiddenMembers"), m.identifier)); });
+			var filteredMembers = _.reject(members, function(m){ return m.status != "operational"  });
 			
 			//Get the current search filters for data source
 			var currentFilters = this.searchModel.get("dataSource");
