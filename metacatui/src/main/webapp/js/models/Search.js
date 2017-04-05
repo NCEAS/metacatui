@@ -550,6 +550,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			term = term.replace(/%3A/g, "\\%3A");
 			term = term.replace(/\(/g, "\\(");
 			term = term.replace(/\)/g, "\\)");
+			term = term.replace(/\?/g, "\\?");
+			term = term.replace(/%3F/g, "\\%3F");
 			
 			return term;
 		},
