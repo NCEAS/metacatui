@@ -107,10 +107,18 @@ define(['jquery', 'underscore', 'backbone'],
 					});
 								
 					//Create some aliases for node info properties
-					node.logo = node.CN_logo_url;
-					node.name = node.CN_node_name;
-					node.status = node.CN_operational_status;
-					node.memberSince = node.CN_date_operational;					
+					if(node.CN_logo_url)
+						node.logo = node.CN_logo_url;
+					
+					if(node.CN_node_name)
+						node.name = node.CN_node_name;
+					
+					if(node.CN_operational_status)
+						node.status = node.CN_operational_status;
+					
+					if(node.CN_date_operational)
+						node.memberSince = node.CN_date_operational;
+					
 					node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
 					
 					if(node.type == "mn") memberList.push(node);

@@ -132,6 +132,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					fullName += firstName? firstName : "";
 					fullName += lastName? (" " + lastName) : "";
 					
+				if(!fullName)
+					fullName = this.getNameFromSubject(username);
+					
 				//Don't get this detailed info about basic users
 				if(!this.get("basicUser")){
 					//Get all the equivalent identities for this user
@@ -196,7 +199,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			
 			//If the accounts service is not on, flag this user as checked/completed
 			if(!appModel.get("accountsUrl")){
-				this.getNameFromSubject();
+				this.set("fullName", this.getNameFromSubject());
 				this.set("checked", true);
 				return;
 			}
@@ -229,7 +232,14 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				url: url, 
 				success: function(data, textStatus, xhr) {	
 					//Parse the XML response to get user info
-					model.set(model.parseXML(data));
+					var userProperties = model.parseXML(data);
+					//Filter out all the falsey values
+					_.each(userProperties, function(v, k) {
+				      if(!v) {
+				        delete userProperties[k];
+				      }
+				    });
+					model.set(userProperties);
 					
 					 //Trigger the change events
 					model.trigger("change:isMemberOf");
@@ -246,13 +256,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 						return;
 					
 					if((xhr.status == 404) && nodeModel.get("checked")){
-						model.getNameFromSubject();
+						model.set("fullName", model.getNameFromSubject());
 						model.set("checked", true);
 					}
 					else if((xhr.status == 404) && !nodeModel.get("checked")){
 						model.listenToOnce(nodeModel, "change:checked", function(){
 							if(!model.isNode()){
-								model.getNameFromSubject();
+								model.set("fullName", model.getNameFromSubject());
 								model.set("checked", true);
 							}
 						});
@@ -334,9 +344,11 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
 		},
 				
-		getNameFromSubject: function(){
-			var username  = this.get("username"),
+		getNameFromSubject: function(username){
+			var username  = username || this.get("username"),
 				fullName = "";
+			
+			if(!username) return;
 			
 			if((username.indexOf("uid=") > -1) && (username.indexOf(",") > -1))
 				fullName = username.substring(username.indexOf("uid=") + 4, username.indexOf(","));
@@ -352,8 +364,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			
 			//Default to the username
 			if(!fullName) fullName = this.get("fullname") || username;
-			
-			this.set("fullName", fullName);
+						
+			return fullName;
 		},
 		
 		isOrcid: function(orcid){
@@ -530,7 +542,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				// the response should have the token
 				var payload = model.parseToken(data),
 					username = payload ? payload.userId : null,
-					fullName = payload ? payload.fullName : null,
+					fullName = payload ? payload.fullName : model.getNameFromSubject(username) || null,
 					token    = payload ? data : null,
 					loggedIn = payload ? true : false;
 

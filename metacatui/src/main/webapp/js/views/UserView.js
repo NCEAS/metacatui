@@ -76,6 +76,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			
 			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
 				this.model = appUserModel;
+				this.model.set("type", "user");
 				
 				//If the user is logged in, display the settings options
 				if(this.model.get("loggedIn")){
@@ -387,7 +388,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				case "group":
 					description = "A summary of all datasets from the " + this.model.get("fullName") + " group";
 					break;
-				case "person":
+				case "user":
 					description = "A summary of all datasets from " + this.model.get("fullName");
 					break;
 				default:
@@ -894,6 +895,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			
 			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
 			this.$("#identity-list-container").empty();
+			
+			if(!identities) return;
 			
 			//Create the list element
 			if(identities.length < 1){

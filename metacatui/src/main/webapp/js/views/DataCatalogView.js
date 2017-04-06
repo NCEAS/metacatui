@@ -1260,7 +1260,12 @@ define(['jquery',
 			if(nodeModel.get("members").length < 1) return;
 			
 			//Get the member nodes
-			var members = _.sortBy(nodeModel.get("members"), function(m){ return m.name.toLowerCase(); });
+			var members = _.sortBy(nodeModel.get("members"), function(m){ 
+					if(m.name)
+						return m.name.toLowerCase();
+					else
+						return "";
+				});
 			var filteredMembers = _.reject(members, function(m){ return m.status != "operational"  });
 			
 			//Get the current search filters for data source
