@@ -405,6 +405,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			this.statsView.render();
 			if(this.model.noActivity)
 				this.statsView.$el.addClass("no-activity");
+			
+			if(this.model.isNode())
+				this.insertReplicas();
 		},
 		
 		/*
@@ -443,6 +446,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			}
 			else
 				this.$(".email-wrapper").hide();
+			
 		},
 		
 		// Creates an HTML element to display in front of the user identity/subject. 
@@ -532,6 +536,29 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		},
 		
 		/*
+		 * getReplicas gets the number of replicas in this member node
+		 */
+		insertReplicas: function(statsModel){
+			
+			var view = this;
+			
+			var requestSettings = {
+					url: appModel.get("queryServiceUrl") + 
+						"q=replicaMN:" + 
+						appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier)) + 
+						"&wt=json&rows=0",
+					type: "GET",
+					dataType: "json",
+					success: function(data, textStatus, xhr){
+						view.$("#total-replicas-container").html(appView.commaSeparateNumber(data.response.numFound));
+						view.$("#total-replicas-wrapper").show();
+					}
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+		},
+		
+		/*
 		 * Insert a list of this user's content
 		 */
 		insertContent: function(){	
@@ -542,7 +569,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				}));
 				return;
 			}
-			
+						
 			var view = new DataCatalogView({
 				el            : this.$("#data-list")[0],
 				searchModel   : this.model.get("searchModel"),

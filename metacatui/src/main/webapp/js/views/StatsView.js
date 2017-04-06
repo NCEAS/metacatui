@@ -462,10 +462,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			var mdqTotalStats = statsModel.get("mdqStatsTotal").mdq_composite_d;
 			
-			if (mdqTotalStats) {
+			if (mdqTotalStats && mdqTotalStats.mean && mdqCompositeStats && mdqCompositeStats.mean) {
 				var diff = mdqCompositeStats.mean - mdqTotalStats.mean;
 				var repoAvg = (mdqTotalStats.mean*100).toFixed(0) + "%";
-				console.log("mdq diff: " + diff);
+				
 				if (diff < 0) {
 					$("#mdq-percentile-container").text("Below repository average");
 					$("#mdq-percentile-icon").addClass("icon-thumbs-down");
@@ -499,9 +499,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				{
 					  "margin-left": (mdqTotalStats.mean*100).toFixed(0) + "%"
 				});
-				
-				//Unhide the quality chart
-				$("#quality-chart").show();
 	
 			}
 			
@@ -516,17 +513,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			if (mdqCompositeStats) {
 				// keys are the facet values, values are the stats (min, max, mean, etc...)
-				var datasourceFacets = mdqCompositeStats.facets.mdq_metadata_datasource_s;
-				var formatIdFacets = mdqCompositeStats.facets.mdq_metadata_formatId_s;
-				var rightsHolderFacets = mdqCompositeStats.facets.mdq_metadata_rightsHolder_s;
-				var suiteIdFacets = mdqCompositeStats.facets.mdq_suiteId_s;
-				var funderFacets = mdqCompositeStats.facets.mdq_metadata_funder_sm;
-				var groupFacets = mdqCompositeStats.facets.mdq_metadata_group_sm;
-				
+				var datasourceFacets = mdqCompositeStats.facets.mdq_metadata_datasource_s || {};
+				var formatIdFacets = mdqCompositeStats.facets.mdq_metadata_formatId_s || {};
+				var rightsHolderFacets = mdqCompositeStats.facets.mdq_metadata_rightsHolder_s || {};
+				var suiteIdFacets = mdqCompositeStats.facets.mdq_suiteId_s || {};
+				var funderFacets = mdqCompositeStats.facets.mdq_metadata_funder_sm || {};
+				var groupFacets = mdqCompositeStats.facets.mdq_metadata_group_sm || {};
+							
+				if(!Object.keys(datasourceFacets).length && 
+						!Object.keys(formatIdFacets).length &&
+						!Object.keys(rightsHolderFacets).length &&
+						!Object.keys(suiteIdFacets).length &&
+						!Object.keys(funderFacets).length &&
+						!Object.keys(groupFacets).length)
+					return;
+					
 				//this.drawMdqChart(datasourceFacets);
 				//this.drawMdqChart(rightsHolderFacets);
 				this.drawMdqChart(_.extend(formatIdFacets, datasourceFacets, suiteIdFacets, funderFacets, groupFacets));
 
+				//Unhide the quality chart
+				$("#quality-chart").show();
 			}
 		},
 		
