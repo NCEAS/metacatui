@@ -18,6 +18,7 @@ function ($, _, Backbone) {
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
 			'signin'					: "renderRegistry",
+			"signinldaperror"			: "renderLdapSignInError",
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
@@ -278,6 +279,22 @@ function ($, _, Backbone) {
 			}else{
 				appView.ldapView.stage = stage;
 				appView.showView(appView.ldapView);
+			}
+		},
+		
+		renderLdapSignInError: function(){
+			this.routeHistory.push("signinldaperror");
+			
+			if(!appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					appView.signInView = new SignInView({ el: "#Content"});
+					appView.signInView.ldapError = true;
+					appView.showView(appView.signInView);
+				});
+			}
+			else{
+				appView.signInView.ldapError = true;
+				appView.showView(appView.signInView);
 			}
 		},
 		

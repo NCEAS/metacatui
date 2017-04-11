@@ -24,6 +24,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				searchModel: null,
 				searchResults: null,
 				loggedIn: false,
+				ldapError: false, //Was there an error logging in to LDAP
 				registered: false,
 				isMemberOf: [],
 				isOwnerOf: [],
@@ -449,9 +450,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					//window.location = appModel.get("signInUrlLdap") + window.location.href;
 				},
 				error: function(){
-					if(error)
+					/*if(error)
 						error(this);
-					
+					*/
 					model.getToken();
 				}
 			}
@@ -822,6 +823,12 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				}
 			}
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+		},
+		
+		failedLdapLogin: function(){
+			this.set("loggedIn", false);
+			this.set("checked", true);
+			this.set("ldapError", true);
 		},
 		
 		pluckIdentityUsernames: function(){

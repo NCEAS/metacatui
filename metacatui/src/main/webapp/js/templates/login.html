@@ -23,20 +23,20 @@
 	        			Have an existing account?
 	      			</a>
 				</div>
-				<div id="ldap-login" class="accordion-body collapse">
+				<div id="ldap-login" class="accordion-body <% if(collapseLdap) { %> collapse <% } %>">
 					 <div class="accordion-inner center">
 					 
-					 	<form action="<%=(appModel.get('signInUrlLdap') + window.location.href)%>"
+					 	<form action="<%=(appModel.get('signInUrlLdap') + redirectUrl)%>"
 					 	id="SignInLdap" class="form-inline input-group" 
 					 	method="post" 
-					 	onsubmit="if (this.usernameVisible.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.usernameVisible.value + ',' + this.rdn.value;} return true;">
+					   	onsubmit="if (this.usernameVisible.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.usernameVisible.value + ',' + this.rdn.value;} return true;">
 						 
 						  	<h5>Sign in with an existing account</h5>
-							<div>
+							<div class="control-group">
 								<input type="text" class="input" name="usernameVisible" placeholder="Username" />
 								<input type="hidden" class="input" name="username" />
 							</div>
-							<div>
+							<div class="control-group">
 								<select name="rdn">
 									<option value="" selected="">— choose one —</option>
 									<option value="o=NCEAS,dc=ecoinformatics,dc=org">NCEAS</option>
@@ -51,14 +51,14 @@
 									<option value="o=SDSC,dc=ecoinformatics,dc=org">SDSC</option>
 									<option value="o=UCNRS,dc=ecoinformatics,dc=org">UCNRS</option>
 									<option value="o=unaffiliated,dc=ecoinformatics,dc=org">unaffiliated</option>
-									<opion value="ou=Account,dc=ecoinformatics,dc=org">Account</opion>
+									<option value="ou=Account,dc=ecoinformatics,dc=org">Account</opion>
 								</select>
 							</div>
-							<div>
+							<div class="control-group">
 								<input type="password" class="input" name="password" placeholder="Password"/>
 							</div>
-							<div>
-								<input type="submit" class="btn btn-primary submit ldap" value="Sign In" />
+							<div class="control-group">
+								<input type="submit" class="btn btn-primary submit ldap" value="Sign In" id="loginLdap" />
 							</div>
 						</form>
 						<!-- <div><a href="#" class="btn ldap" data-name="NCEAS - National Center for Ecological Analysis and Synthesis" data-value="o=NCEAS,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with an NCEAS Account</a></div>

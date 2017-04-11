@@ -229,6 +229,9 @@ header .citation {
 .panel-body .notification.loading .icon {
     margin-top: 10px;
 }
+.accordion-inner .notification.loading .icon {
+    margin-left: 0px;
+}
 .notification.loading p{
 	font-size: 1em;
 	text-align: center;

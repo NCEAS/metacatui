@@ -23,6 +23,7 @@ function ($, _, Backbone) {
 			'signout'                   : 'logout',    		// logout the user
 			'signin'                    : 'renderTokenSignIn',    		// logout the user
 			"signinsuccess"             : "renderSignInSuccess",
+			"signinldaperror"			: "renderLdapSignInError",
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
@@ -383,9 +384,24 @@ function ($, _, Backbone) {
 		},
 
 		renderSignInSuccess: function(){
-			console.log("renderSignInSuccess");
 			$("body").html("Sign-in successful.");
 			setTimeout(window.close, 1000);
+		},
+		
+		renderLdapSignInError: function(){
+			this.routeHistory.push("signinldaperror");
+			
+			if(!appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					appView.signInView = new SignInView({ el: "#Content"});
+					appView.signInView.ldapError = true;
+					appView.showView(appView.signInView);
+				});
+			}
+			else{
+				appView.signInView.ldapError = true;
+				appView.showView(appView.signInView);
+			}
 		},
 
 		renderExternal: function(url) {
