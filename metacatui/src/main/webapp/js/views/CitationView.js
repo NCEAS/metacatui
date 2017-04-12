@@ -127,10 +127,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//The publisher (source member node)
 			var publisherText = "";
 			if(typeof datasource !== "undefined"){ 
-				var memberNode = _.find(nodeModel.get("members"), function(member){
-					return (member.identifier == datasource);
-				});
-				if(typeof memberNode !== "undefined") 
+				var memberNode = nodeModel.getMember(datasource);
+				
+				if(memberNode) 
 					publisherText = memberNode.name + ". "; 
 				else
 					publisherText = datasource + ". "; 

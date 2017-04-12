@@ -44,6 +44,27 @@ define(['jquery', 'underscore', 'backbone'],
 			return member;
 		},
 		
+		getMembers: function(memberInfo){
+			if(!memberInfo) return false;
+			
+			if(!Array.isArray(memberInfo))
+				memberInfo = [memberInfo];
+			
+			var members = [];
+			
+			_.each(memberInfo, function(info){
+				
+				var foundMember = this.getMember(info);
+				
+				if(foundMember)
+					members.push(foundMember);
+				
+			}, this);
+			
+			if(members.length) return members;
+			else return false;
+		},
+		
 		getNodeInfo: function(){
 			var thisModel  = this,
 				memberList = this.get('members'),
