@@ -781,9 +781,9 @@ svg .point:hover ~ .line-chart-label{
 	    font-weight: normal;
 	    color: #08c;
 	}
-	.table.download-contents .btn-primary {
+	.table.download-contents .btn-container .btn {
     	font-size: .85em;
-    	width: 105px;
+    	width: 115px;
 	}
 
 	/** Data Display & Thumbnails **/

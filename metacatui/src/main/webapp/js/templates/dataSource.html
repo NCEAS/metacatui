@@ -2,8 +2,3 @@
 	<a href="https://search.dataone.org/#profile/<%=node.shortIdentifier%>" target="_blank" class="logo data-source">
 		<img src="<%=node.logo%>" class="<%=node.shortIdentifier%> logo popover-this data-source" data-trigger="hover" data-placement="bottom" data-container=".citation-container"/></a>
 <% } %>
-
-<p>Backed up by:</p>
-<% _.each(replicaNodes, function(replica){ %>
-	<a href="https://search.dataone.org/#profile/<%=replica.shortIdentifier%>"></a>
-<% }); %>

@@ -851,7 +851,8 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 		showSignInForm: function(container){
 			if(!appModel.get("tokenUrl")) return;
 			
-			var signInBtns = new SignInView().render().el;
+			var signInView = new SignInView(),
+				signInBtns = signInView.render().el;
 			
 			if(typeof container == "undefined")
 				var container = this.el;

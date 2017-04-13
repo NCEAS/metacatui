@@ -88,7 +88,7 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 			else{	
 				
 				//If it's a full-page sign-in view, then empty it first
-				if(this.el = appView.el){
+				if(this.el == appView.el){
 					this.$el.empty();
 					var container = document.createElement("div");
 					container.className = "container login";

@@ -2056,7 +2056,7 @@ table.download-contents .btn-container .btn{
     margin-top: 1em;
 }
 .download-contents th .btn-primary{
-	min-width: 108px;
+	min-width: 120px;
 }
 .download-contents.nested .table-header.title a{
 	color: #FFF;
