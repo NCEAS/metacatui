@@ -126,6 +126,9 @@ input[type="password"]{
 .share-feature{
 	/* display: none; */ 
 }
+#ldap-login .control-group select {
+    min-width: 220px;
+}
 
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    

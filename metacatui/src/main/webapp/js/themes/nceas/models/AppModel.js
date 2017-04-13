@@ -36,8 +36,13 @@ define(['jquery', 'underscore', 'backbone'],
 			objectServiceUrl: null,
 			bioportalSearchUrl: null,
 			orcidSearchUrl: null,
-			//tokenUrl: null,
-			annotatorUrl: null,
+			signInUrl: null,
+			signOutUrl: null,
+			signInUrlOrcid: null,
+			signInUrlLdap: null,
+			tokenUrl: null,
+			checkTokenUrl: null,
+			//annotatorUrl: null,
 			accountsUrl: null
 		},
 				
@@ -54,9 +59,33 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
-			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+			
+			//Token URLs
+			if(typeof this.get("tokenUrl") != "undefined"){
+				this.set("portalUrl", this.get("d1CNBaseUrl") + "portal/");
+				this.set("tokenUrl",  this.get("portalUrl") + "token");
+				
+				this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
+				
+				//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
+				if(typeof this.get("signInUrl") !== "undefined")
+					this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
+				if(typeof this.get("signInUrlOrcid") !== "undefined")
+					this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
+				if(typeof this.get("signInUrlLdap") !== "undefined")
+					this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+				if(this.get('orcidBaseUrl'))
+					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+				
+				if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
+					this.set("signOutUrl", this.get('portalUrl') + "logout");
+				
+				if(typeof this.get("d1LogServiceUrl") != "undefined")
+					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
+
+			}
 		
 			this.on("change:pid", this.changePid);
 		},
