@@ -968,7 +968,6 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				if(typeof view.onClose == "function") view.onClose();
 			});
 			
-			registryModel.reset();
 			window.onbeforeunload = null;
 		}
 				
