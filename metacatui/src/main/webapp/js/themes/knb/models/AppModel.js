@@ -72,7 +72,7 @@ define(['jquery', 'underscore', 'backbone'],
 			portalUrl: null,
 			prov: true,
 			useSeriesId: true,
-			mdqUrl: "https://mn-demo-8.test.dataone.org/quality/" //"https://quality.nceas.ucsb.edu/quality/"
+			mdqUrl: "https://nceas.ucsb.edu/quality/"
 		},
 
 		defaultView: "data",
@@ -133,7 +133,8 @@ define(['jquery', 'underscore', 'backbone'],
 					//Token URLs
 					if(typeof this.get("tokenUrl") != "undefined"){
 						this.set("portalUrl", this.get("d1CNBaseUrl") + "portal/");
-						this.set("tokenUrl", this.get("portalUrl") + "token");
+						this.set("tokenUrl",  this.get("portalUrl") + "token");
+						
 						this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 						
 						//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
@@ -145,10 +146,12 @@ define(['jquery', 'underscore', 'backbone'],
 							this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
 						if(this.get('orcidBaseUrl'))
 							this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+						
 						if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
 							this.set("signOutUrl", this.get('portalUrl') + "logout");
+						
 						if(typeof this.get("d1LogServiceUrl") != "undefined")
-							this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
+							this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
 
 					}
 

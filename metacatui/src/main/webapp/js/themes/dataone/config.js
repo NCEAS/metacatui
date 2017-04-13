@@ -10,9 +10,9 @@ var themeMap =
 		'templates/about.html' : 'themes/' + theme + '/templates/about.html',
 		'templates/alert.html' : 'themes/' + theme + '/templates/alert.html',
 		'templates/dataSource.html' : 'themes/' + theme + '/templates/dataSource.html',
+		'templates/login.html' : 'themes/' + theme + '/templates/login.html',
 		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html',
 		'templates/noResults.html' : 'themes/' + theme + '/templates/noResults.html',
-		'templates/userProfileMenu.html' : 'themes/' + theme + '/templates/userProfileMenu.html',
 		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
 		'models/Search' : 'js/themes/' + theme + '/models/Search.js',
 		'routers/router' : 'js/themes/' + theme + '/routers/router.js'

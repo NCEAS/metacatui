@@ -541,16 +541,18 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(value.indexOf(" ") > -1)
 				return true;
 			
-			//Check for the colon : character (and encoded colons)
-			if((value.indexOf(":") > -1) || value.indexOf("%3A") > -1)
-				return true;
-			
 			return false;
 		},
 		
 		escapeSpecialChar: function(term){
 			term = term.replace(/%7B/g, "\\%7B");
 			term = term.replace(/%7D/g, "\\%7D");
+			term = term.replace(/%3A/g, "\\%3A");
+			term = term.replace(/:/g, "\\:");
+			term = term.replace(/\(/g, "\\(");
+			term = term.replace(/\)/g, "\\)");
+			term = term.replace(/\?/g, "\\?");
+			term = term.replace(/%3F/g, "\\%3F");
 			
 			return term;
 		},
@@ -574,7 +576,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(options && (typeof options == "object")){
 				var operator = options.operator,
 					subtext = options.subtext;
-			}
+			}  
 		
 			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) var operator = "OR";
 			
@@ -584,7 +586,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				
 				if(!Array.isArray(value) && (typeof value === "object") && value.value)
 					value = value.value.trim();
-				
+								
 				if(this.needsQuotes(values[0])) queryAddition = '%22' + this.escapeSpecialChar(encodeURIComponent(value)) + '%22';
 				else if(subtext)                queryAddition = "*" + this.escapeSpecialChar(encodeURIComponent(value)) + "*";
 				else							queryAddition = this.escapeSpecialChar(encodeURIComponent(value));
@@ -598,13 +600,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						value = value.value.trim();
 					
 					if(model.needsQuotes(value)) value = '%22' + encodeURIComponent(value) + '%22';
-					else if(subtext)             value = "*" + encodeURIComponent(value) + "*";
-					else                         value = encodeURIComponent(value);
+					else if(subtext)             value = "*" + this.escapeSpecialChar(encodeURIComponent(value)) + "*";
+					else                         value = this.escapeSpecialChar(encodeURIComponent(value));
 						
-					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + model.escapeSpecialChar(value);
-					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + model.escapeSpecialChar(value);
-					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + model.escapeSpecialChar(value) + ")";
-				});
+					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + value;
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
+				}, this);
 			}
 			
 			return query;
@@ -659,16 +661,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					
 					if((value.length > 1) && (i == 0)) valueString += "("
 						
-					if(model.needsQuotes(v)) valueString += '"' + encodeURIComponent(v.trim()) + '"';
-					else if(subtext)         valueString += "*" + encodeURIComponent(v.trim()) + "*";
-					else                     valueString += encodeURIComponent(v.trim());
+					if(model.needsQuotes(v)) valueString += '"' + this.escapeSpecialChar(encodeURIComponent(v.trim())) + '"';
+					else if(subtext)         valueString += "*" + this.escapeSpecialChar(encodeURIComponent(v.trim())) + "*";
+					else                     valueString += this.escapeSpecialChar(encodeURIComponent(v.trim()));
 					
 					if(i < value.length-1)
 						valueString += " OR ";
 					else if((i == value.length-1) && (value.length > 1))
 						valueString += ")";
 					
-				});
+				}, this);
 			}
 			else valueString = value;
 			
@@ -683,7 +685,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			query += ")";
 			
-			return this.escapeSpecialChar(query);			
+			return query;			
 		},
 		
 		/**** Provenance-related functions ****/

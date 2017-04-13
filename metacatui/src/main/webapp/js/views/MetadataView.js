@@ -720,18 +720,65 @@ define(['jquery',
 		insertDataSource: function(){
 			if(!this.model || !nodeModel || !nodeModel.get("members").length || !this.$(this.dataSourceContainer).length) return;
 
-			var dataSource = nodeModel.getMember(this.model);
+			var dataSource  = nodeModel.getMember(this.model),
+				replicaMNs  = nodeModel.getMembers(this.model.get("replicaMN"));
+			
+			//Filter out the data source from the replica nodes
+			if(Array.isArray(replicaMNs) && replicaMNs.length){
+				replicaMNs = _.without(replicaMNs, dataSource);
+			}
 
 			if(dataSource && dataSource.logo){
 				this.$("img.data-source").remove();
-
+				
 				//Insert the data source template
 				this.$(this.dataSourceContainer).html(this.dataSourceTemplate({
 					node : dataSource
 				})).addClass("has-data-source");
+				
 				this.$(this.citationContainer).addClass("has-data-source");
-				this.$(".popover-this").popover();
 				this.$(".tooltip-this").tooltip();
+				
+				$(".popover-this.data-source.logo").popover({ 
+						trigger: "manual", 
+						html: true, 
+						title: "From the " + dataSource.name + " repository",
+						content: function(){
+							var content = "<p>" + dataSource.description + "</p>";
+							
+							if(replicaMNs.length){
+								content += '<h5>Exact copies hosted by ' + replicaMNs.length + ' member nodes: </h5><ul class="unstyled">';
+							
+								_.each(replicaMNs, function(node){
+									content += '<li><a href="https://search.dataone.org/#profile/' + 
+												node.shortIdentifier + 
+												'" class="pointer">' + 
+												node.name + 
+												'</a></li>';
+								});
+								
+								content += "</ul>";
+							}
+							
+							return content;
+						},
+						animation:false
+					})
+					.on("mouseenter", function () {
+					    var _this = this;
+					    $(this).popover("show");
+					    $(".popover").on("mouseleave", function () {
+					        $(_this).popover('hide');
+					    });
+					}).on("mouseleave", function () {
+					    var _this = this;
+					    setTimeout(function () {
+					        if (!$(".popover:hover").length) {
+					            $(_this).popover("hide");
+					        }
+					    }, 300);
+					});
+
 			}
 		},
 

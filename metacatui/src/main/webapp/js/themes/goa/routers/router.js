@@ -14,10 +14,12 @@ function ($, _, Backbone) {
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
 			'signin'					: "renderRegistry",
+			"signinldaperror"			: "renderLdapSignInError",
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
 		},
@@ -174,6 +176,9 @@ function ($, _, Backbone) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
 			
+			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
+			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
+			
 			var seriesId;
 						
 			//Check for a seriesId
@@ -245,6 +250,22 @@ function ($, _, Backbone) {
 			}
 		},
 		
+		renderMyProfile: function(section, subsection){
+			if(appUserModel.get("checked") && !appUserModel.get("loggedIn"))
+				this.renderTokenSignIn();
+			else if(!appUserModel.get("checked")){
+				this.listenToOnce(appUserModel, "change:checked", function(){
+					if(appUserModel.get("loggedIn"))
+						this.renderProfile(appUserModel.get("username"), section, subsection);
+					else
+						this.renderTokenSignIn();
+				});
+			}
+			else if(appUserModel.get("checked") && appUserModel.get("loggedIn")){
+				this.renderProfile(appUserModel.get("username"), section, subsection);
+			}
+		},
+		
 		renderRegistry: function (stage, pid) {
 			this.routeHistory.push("registry");
 			
@@ -278,6 +299,22 @@ function ($, _, Backbone) {
 			}
 		},
 		
+		renderLdapSignInError: function(){
+			this.routeHistory.push("signinldaperror");
+			
+			if(!appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					appView.signInView = new SignInView({ el: "#Content"});
+					appView.signInView.ldapError = true;
+					appView.showView(appView.signInView);
+				});
+			}
+			else{
+				appView.signInView.ldapError = true;
+				appView.showView(appView.signInView);
+			}
+		},
+		
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
@@ -291,8 +328,9 @@ function ($, _, Backbone) {
 				});
 			}
 			else{
-				if(appView.currentView.onClose)
+				if(appView.currentView && appView.currentView.onClose)
 					appView.currentView.onClose();
+				
 				appUserModel.logout();
 			}	
 		},

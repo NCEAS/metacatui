@@ -13,6 +13,7 @@ function ($, _, Backbone) {
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
+			"signinldaperror"			: "renderLdapSignInError",
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
@@ -70,6 +71,9 @@ function ($, _, Backbone) {
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
+			
+			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
+			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
 			
 			var seriesId;
 						
@@ -134,6 +138,22 @@ function ($, _, Backbone) {
 			}else{
 				appView.ldapView.stage = stage;
 				appView.showView(appView.ldapView);
+			}
+		},
+		
+		renderLdapSignInError: function(){
+			this.routeHistory.push("signinldaperror");
+			
+			if(!appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					appView.signInView = new SignInView({ el: "#Content"});
+					appView.signInView.ldapError = true;
+					appView.showView(appView.signInView);
+				});
+			}
+			else{
+				appView.signInView.ldapError = true;
+				appView.showView(appView.signInView);
 			}
 		},
 		

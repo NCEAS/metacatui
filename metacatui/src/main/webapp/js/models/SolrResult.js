@@ -216,7 +216,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Get info about this object
 			var filename = this.get("fileName") || this.get("title") || "",
-				url = this.get("url");
+				url = this.get("url"),
+				model = this;
 
 			//If we are accessing objects via the resolve service, we need to find the direct URL
 			if(url.indexOf("/resolve/") > -1){
@@ -240,6 +241,15 @@ define(['jquery', 'underscore', 'backbone'],
 			    document.body.appendChild(a);
 			    a.click();
 			    delete a;
+			    
+			    model.trigger("downloadComplete");
+			};
+			
+			xhr.onprogress = function(e){
+			    if (e.lengthComputable){
+			        var percent = (e.loaded / e.total) * 100;
+			        model.set("downloadPercent", percent);
+			    }
 			};
 
 			//Open and send the request with the user's auth token
@@ -252,22 +262,23 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 
 			if(!fields)
-				var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
+				var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
 
+			var escapeSpecialChar = appSearchModel.escapeSpecialChar;
 
 			var query = "q=";
 			//Do not search for seriesId when it is not configured in this model/app
 			if(typeof this.get("seriesId") === "undefined")
-				query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
+				query += 'id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '"';
 			//If there is no seriesId set, then search for pid or sid
 			else if(!this.get("seriesId"))
-				query += '(id:"' + encodeURIComponent(this.get("id")) + '" OR seriesId:"' + encodeURIComponent(this.get("id")) + '")';
+				query += '(id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" OR seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '")';
 			//If a seriesId is specified, then search for that
 			else if(this.get("seriesId") && (this.get("id").length > 0))
-				query += '(seriesId:"' + encodeURIComponent(this.get("seriesId")) + '" AND id:"' + encodeURIComponent(this.get("id")) + '")';
+				query += '(seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("seriesId"))) + '" AND id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '")';
 			//If only a seriesId is specified, then just search for the most recent version
 			else if(this.get("seriesId") && !this.get("id"))
-				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
+				query += 'seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" -obsoletedBy:*';
 
 			var requestSettings = {
 				url: appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json',

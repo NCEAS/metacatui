@@ -282,7 +282,9 @@ select{
 	margin-left: 23%;
 	display: block;
 }
-
+.sign-in select{
+		width: 220px;
+}
 	
 
 /* CUSTOMIZE THE ACCORDIAN 

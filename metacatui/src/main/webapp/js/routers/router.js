@@ -14,15 +14,17 @@ function ($, _, Backbone) {
 			'tools(/:anchorId)'         : 'renderTools',    // tools page
 			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'data/my-data' : 'renderMyData',
+			'data/my-data'              : 'renderMyData',
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			//'my-account'                   : 'renderUserSettings',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
 			'signin'                    : 'renderTokenSignIn',    		// logout the user
 			"signinsuccess"             : "renderSignInSuccess",
+			"signinldaperror"			: "renderLdapSignInError",
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
 			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
 			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
@@ -242,6 +244,9 @@ function ($, _, Backbone) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
 
+			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
+			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
+			
 			var seriesId;
 
 			//Check for a seriesId
@@ -312,6 +317,22 @@ function ($, _, Backbone) {
 					appView.showView(appView.userView, viewOptions);
 			}
 		},
+		
+		renderMyProfile: function(section, subsection){
+			if(appUserModel.get("checked") && !appUserModel.get("loggedIn"))
+				this.renderTokenSignIn();
+			else if(!appUserModel.get("checked")){
+				this.listenToOnce(appUserModel, "change:checked", function(){
+					if(appUserModel.get("loggedIn"))
+						this.renderProfile(appUserModel.get("username"), section, subsection);
+					else
+						this.renderTokenSignIn();
+				});
+			}
+			else if(appUserModel.get("checked") && appUserModel.get("loggedIn")){
+				this.renderProfile(appUserModel.get("username"), section, subsection);
+			}
+		},
 
 		renderRegistry: function (stage, pid) {
 			this.routeHistory.push("registry");
@@ -380,9 +401,24 @@ function ($, _, Backbone) {
 		},
 
 		renderSignInSuccess: function(){
-			console.log("renderSignInSuccess");
 			$("body").html("Sign-in successful.");
 			setTimeout(window.close, 1000);
+		},
+		
+		renderLdapSignInError: function(){
+			this.routeHistory.push("signinldaperror");
+			
+			if(!appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					appView.signInView = new SignInView({ el: "#Content"});
+					appView.signInView.ldapError = true;
+					appView.showView(appView.signInView);
+				});
+			}
+			else{
+				appView.signInView.ldapError = true;
+				appView.showView(appView.signInView);
+			}
 		},
 
 		renderExternal: function(url) {

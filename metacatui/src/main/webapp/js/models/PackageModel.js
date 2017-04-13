@@ -890,7 +890,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			
 			//Search for derivations of this package
 			var derivationsQuery = appSearchModel.getGroupedQuery("prov_wasDerivedFrom", 
-					_.map(this.get("members"), function(m){ return encodeURIComponent(m.get("id")); }), "OR") +
+					_.map(this.get("members"), function(m){ return m.get("id"); }), "OR") +
 					"%20-obsoletedBy:*";
 			
 			var requestSettings = {
@@ -1246,7 +1246,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 		downloadWithCredentials: function(){
 			//Get info about this object
 			var filename = this.get("fileName") || "",
-				url = this.get("url");
+				url = this.get("url"),
+				model = this;
 
 			if(filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4))) filename += ".zip";
 
@@ -1264,6 +1265,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			    document.body.appendChild(a);
 			    a.click();
 			    delete a;
+			    
+			    model.trigger("downloadComplete");
+			};
+			
+			xhr.onprogress = function(e){
+			    if (e.lengthComputable){
+			        var percent = (e.loaded / e.total) * 100;
+			        model.set("downloadPercent", percent);
+			    }
 			};
 			
 			//Open and send the request with the user's auth token

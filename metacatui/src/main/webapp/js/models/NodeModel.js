@@ -6,57 +6,12 @@ define(['jquery', 'underscore', 'backbone'],
 	// Node Model
 	// ------------------
 	var Node = Backbone.Model.extend({
-		memberLogos : {
-				//"defaultLogo"		   : "img/node-logos/KNB.png",
-				"urn:node:KNB"         : "img/node-logos/KNB.png",
-				"urn:node:ESA"         : "img/node-logos/ESA.png",
-				"urn:node:SANPARKS"    : "img/node-logos/SANPARKS.png",
-				"urn:node:USGSCSAS"    : "img/node-logos/USGSCSAS.png",
-				"urn:node:ORNLDAAC"    : "img/node-logos/ORNLDAAC.png",
-				"urn:node:LTER"        : "img/node-logos/LTER.png",
-				"urn:node:CDL"         : "img/node-logos/CDL.png",
-				"urn:node:PISCO"       : "img/node-logos/PISCO.png",
-				"urn:node:ONEShare"    : "img/node-logos/ONEShare.png",
-				"urn:node:TFRI"        : "img/node-logos/TFRI.png",
-				"urn:node:USANPN"      : "img/node-logos/USANPN.png",
-				"urn:node:SEAD"        : "img/node-logos/SEAD.png",
-				"urn:node:GOA"         : "img/node-logos/GOA.png",
-				"urn:node:KUBI"        : "img/node-logos/KUBI.jpg",
-				"urn:node:LTER_EUROPE" : "img/node-logos/LTER_EU.png",
-				"urn:node:DRYAD"       : "img/node-logos/DRYAD.png",
-				"urn:node:CLOEBIRD"    : "img/node-logos/CLOEBIRD.jpg",
-				"urn:node:EDACGSTORE"  : "img/node-logos/EDAC.png",
-				"urn:node:IOE"         : "img/node-logos/IOE.png",
-				"urn:node:US_MPC"      : "img/node-logos/US_MPC.png",
-				"urn:node:EDORA"       : "img/node-logos/EDORA.jpg",
-				"urn:node:RGD"         : "img/node-logos/RGD.png",
-				"urn:node:GLEON"       : "img/node-logos/GLEON.png",
-				"urn:node:IARC"        : "img/node-logos/IARC.png",
-				"urn:node:NMEPSCOR"    : "img/node-logos/NMEPSCOR.png",
-				"urn:node:TERN"        : "img/node-logos/TERN.png",
-				"urn:node:NKN"         : "img/node-logos/NKN.png",
-				"urn:node:PPBio"       : "img/node-logos/PPBio.png",
-				"urn:node:USGS_SDC"    : "img/node-logos/USGSCSAS.png",
-				"urn:node:NRDC"        : "img/node-logos/NRDC.jpg",
-				"urn:node:NCEI"        : "img/node-logos/NCEI.png",
-				"urn:node:ARCTIC"      : "img/node-logos/ARCTIC.png",
-				"urn:node:PPBIO"       : "img/node-logos/PPBIO.png",
-				"urn:node:DFC"         : "img/node-logos/DFC.png",
-				"urn:node:BCODMO"      : "img/node-logos/BCODMO.jpg",
-				"urn:node:R2R"         : "img/node-logos/R2R.png",				
-				"urn:node:NEON"        : "img/node-logos/NEON.png",				
-				"urn:node:TDAR"        : "img/node-logos/TDAR.png",				
-				"urn:node:GRIIDC"      : "img/node-logos/GRIIDC.png",
-				"urn:node:GINA"        : "img/node-logos/GINA.png",
-				"urn:node:RW"          : "img/node-logos/RW.png",
-				"urn:node:EDI"         : "img/node-logos/EDI.png"
-		},
 		
 		// This model contains all of the information retrieved from calling listNodes() using the DataONE API
 		defaults: {
 			members: [],
 			coordinators: [],
-			hiddenMembers: ["urn:node:mnUCSB1", "urn:node:mnORC1", "urn:node:mnUNM1"],
+			hiddenMembers: [],
 			currentMemberNode: appModel.get("nodeId") || null,
 			checked: false
 		},
@@ -89,6 +44,27 @@ define(['jquery', 'underscore', 'backbone'],
 			return member;
 		},
 		
+		getMembers: function(memberInfo){
+			if(!memberInfo) return false;
+			
+			if(!Array.isArray(memberInfo))
+				memberInfo = [memberInfo];
+			
+			var members = [];
+			
+			_.each(memberInfo, function(info){
+				
+				var foundMember = this.getMember(info);
+				
+				if(foundMember)
+					members.push(foundMember);
+				
+			}, this);
+			
+			if(members.length) return members;
+			else return false;
+		},
+		
 		getNodeInfo: function(){
 			var thisModel  = this,
 				memberList = this.get('members'),
@@ -97,12 +73,6 @@ define(['jquery', 'underscore', 'backbone'],
 			$.ajax({
 				url: appModel.get('nodeServiceUrl'),  
 				dataType: "text",
-				error: function(){
-					//Use backup node info
-					$.get("./resources/nodeInfo.xml", function(data, textStatus, xhr){
-						thisModel.saveNodeInfo(data);
-					});
-				},
 				success: function(data, textStatus, xhr) { 
 					
 					var xmlResponse = $.parseXML(data) || null;
@@ -135,32 +105,40 @@ define(['jquery', 'underscore', 'backbone'],
 					
 					//'node' will be a single node
 					var node = {},
-						thisNodeChildren = thisNode.children || thisNode.childNodes;
+						nodeProperties = thisNode.children || thisNode.childNodes;
 					
-					_.each(thisNodeChildren, function(child){
-						//Information about this node
-						node[child.nodeName] = child.textContent;
+					//Grab information about this node from XML nodes
+					_.each(nodeProperties, function(nodeProperty){
+						
+						if(nodeProperty.nodeName == "property")
+							node[$(nodeProperty).attr("key")] = nodeProperty.textContent;
+						else
+							node[nodeProperty.nodeName] = nodeProperty.textContent;
 						
 						//Check if this member node has v2 read capabilities - important for the Package service
-						if((child.nodeName == "services") && child.childNodes.length){
-							var v2 = $(child).find("service[name='MNRead'][version='v2'][available='true']").length;
+						if((nodeProperty.nodeName == "services") && nodeProperty.childNodes.length){
+							var v2 = $(nodeProperty).find("service[name='MNRead'][version='v2'][available='true']").length;
 							node["readv2"] = v2;
 						}
 					});
+					
+					//Grab information about this node from XLM attributes 
 					_.each(thisNode.attributes, function(attribute){
-						//Information about this node
 						node[attribute.nodeName] = attribute.nodeValue;
 					});
+								
+					//Create some aliases for node info properties
+					if(node.CN_logo_url)
+						node.logo = node.CN_logo_url;
 					
-					//Get the logo path name for this member
-					var logo = thisModel.memberLogos[node.identifier];
-					if(!logo && thisModel.memberLogos["defaultLogo"])
-						logo = thisModel.memberLogos["defaultLogo"];
-					else if(!logo)
-						logo = null;
-							
-					node.logo = logo;
+					if(node.CN_node_name)
+						node.name = node.CN_node_name;
 					
+					if(node.CN_operational_status)
+						node.status = node.CN_operational_status;
+					
+					if(node.CN_date_operational)
+						node.memberSince = node.CN_date_operational;
 					
 					node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
 					

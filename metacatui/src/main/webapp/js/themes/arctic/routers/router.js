@@ -13,6 +13,7 @@ function ($, _, Backbone) {
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'signout'					: 'logout',
 			'signin'					: 'renderTokenSignIn',
@@ -163,6 +164,9 @@ function ($, _, Backbone) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
 
+			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
+			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
+			
 			var seriesId;
 
 			//Check for a seriesId
@@ -231,6 +235,22 @@ function ($, _, Backbone) {
 				}
 				else
 					appView.showView(appView.userView, viewOptions);
+			}
+		},
+		
+		renderMyProfile: function(section, subsection){
+			if(appUserModel.get("checked") && !appUserModel.get("loggedIn"))
+				this.renderTokenSignIn();
+			else if(!appUserModel.get("checked")){
+				this.listenToOnce(appUserModel, "change:checked", function(){
+					if(appUserModel.get("loggedIn"))
+						this.renderProfile(appUserModel.get("username"), section, subsection);
+					else
+						this.renderTokenSignIn();
+				});
+			}
+			else if(appUserModel.get("checked") && appUserModel.get("loggedIn")){
+				this.renderProfile(appUserModel.get("username"), section, subsection);
 			}
 		},
 

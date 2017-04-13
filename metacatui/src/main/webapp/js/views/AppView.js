@@ -45,6 +45,10 @@ define(['jquery',
 				
 		initialize: function () {
 			
+			if(window.location.search.indexOf("error=Unable%20to%20authenticate%20LDAP%20user") > -1){
+				window.location = window.location.origin + window.location.pathname + "#signinldaperror";
+			}
+			
 			//Is there a logged-in user?
 			appUserModel.checkStatus();
 
@@ -184,6 +188,8 @@ define(['jquery',
 			// track the current view
 			this.currentView = view;
 			this.sendAnalytics();
+			
+			this.trigger("appRenderComplete");
 		},	
 		
 		sendAnalytics: function(){
@@ -285,78 +291,6 @@ define(['jquery',
 			}
 			else
 				$(container).prepend(alert);
-		},
-		
-		submitLogin: function(e){
-			e.preventDefault();
-			
-			//Get the form element
-			var form = $(e.target).parents("form");
-			if(!form || !form[0]) return true;
-			
-			var view = this,
-				username = form[0].username.value,
-				pass = form[0].password.value,
-				formContainer = form.parent(),
-				loading = $(this.loadingTemplate({ msg: "Logging in..." }));
-			
-			//Remove any error messages from previous submissions
-			formContainer.find(".alert-error").detach();
-			
-			//Show a loading screen
-			formContainer.children().hide();			
-			formContainer.prepend(loading);
-						
-			//Check that a username and password was entered
-			if(!username){
-				//Insert an error message
-				form.before(this.alertTemplate({
-					classes: "alert-error",
-					msg: "Please enter a username."
-				}));
-				return;
-			}
-			if(!pass){
-				//Insert an error message
-				form.before(this.alertTemplate({
-					classes: "alert-error",
-					msg: "Please enter a password."
-				}));
-				return;
-			}
-			
-			//Create the full username if the user didn't type it in				
-			if (username.indexOf('=') < 0)
-				form[0].username.value = 'uid=' + username + form[0].rdn.value;
-			
-			//Get the serialized form data
-			var formData = form.serialize();
-
-			/*
-			 * This function will execute if a success from the login request is received
-			 */
-			var loginSuccess = function(ajax){
-				//Take away the loading screen and show the form
-				loading.detach();
-			}
-			
-			/*
-			 * This function will execute if a failure from the login request is received
-			 */
-			var loginFail = function(ajax){
-				//Take away the loading screen and show the form
-				loading.detach();
-				formContainer.children().show();
-				
-				//Insert an error message
-				form.before(view.alertTemplate({
-					classes: "alert-error",
-					msg: "Bad username, and/or password. Please try again."
-				}));
-			}
-			
-			//Send login request via the User Model
-			appUserModel.loginLdap(formData, loginSuccess, loginFail);			
 		},
 		
 		// Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else

@@ -70,75 +70,58 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		
 		renderUser: function(){
 			this.model = appUserModel;
-			
-			if(!appModel.get("userProfiles")){
 
-				if(!this.model.get("loggedIn")){
-					this.showAlert('You must be logged in to view your account settings.',
-									"alert-warning",
-									this.$el);
-					
-					//Insert the sign-in button
-					var signInView = new SignInView().render();
-					this.$el.append(signInView.el);
-					signInView.setUpPopup();
-					
+			var username = appModel.get("profileUsername"),
+				currentUser = appUserModel.get("username") || "";
+			
+			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
+				this.model = appUserModel;
+				this.model.set("type", "user");
+				
+				//If the user is logged in, display the settings options
+				if(this.model.get("loggedIn")){
+					this.insertMenu();
+					this.renderProfile();
+					this.renderSettings();
+					this.resetSections();
+				}
+			}
+			
+			//If this isn't the currently-logged in user, then let's find out more info about this account
+			else{	
+				//Create a UserModel with the username given
+				this.model = new UserModel({
+					username: username
+				});
+
+				//Is this a member node?	
+				if(nodeModel.get("checked") && this.model.isNode()){
+					this.model.saveAsNode();
+					this.model.set("nodeInfo", _.findWhere(nodeModel.get("members"), { identifier: "urn:node:" + username }));
+					this.renderProfile();
+					this.resetSections();
 					return;
 				}
-					
-				this.renderSettings();
-				this.resetSections();
-			}
-			else{
-				var username = appModel.get("profileUsername"),
-					currentUser = appUserModel.get("username") || "";
-				
-				if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
-					this.model = appUserModel;
-					
-					//If the user is logged in, display the settings options
-					if(this.model.get("loggedIn")){
-						this.insertMenu();
-						this.renderProfile();
-						this.renderSettings();
-						this.resetSections();
-					}
-				}
-				
-				//If this isn't the currently-logged in user, then let's find out more info about this account
-				else{	
-					//Create a UserModel with the username given
-					this.model = new UserModel({
-						username: username
+				//If the node model hasn't been checked yet
+				else if(!nodeModel.get("checked")){
+					var user = this.model,
+						view = this;
+					this.listenTo(nodeModel, "change:checked", function(){
+						if(user.isNode())
+							view.render();
 					});
-
-					//Is this a member node?	
-					if(nodeModel.get("checked") && this.model.isNode()){
-						this.model.saveAsNode();
-						this.renderProfile();
-						this.resetSections();
-						return;
-					}
-					//If the node model hasn't been checked yet
-					else if(!nodeModel.get("checked")){
-						var user = this.model,
-							view = this;
-						this.listenTo(nodeModel, "change:checked", function(){
-							if(user.isNode())
-								view.render();
-						});
-					}
-					
-					//When we get the infomration about this account, then crender the profile
-					this.model.once("change:checked", this.renderProfile, this);
-					this.model.once("change:checked", this.resetSections, this);
-					//Get the info
-					this.model.getInfo();
 				}
 				
-				//When the model is reset, refresh the page
-				this.listenTo(this.model, "reset", this.render);
-			}			
+				//When we get the infomration about this account, then crender the profile
+				this.model.once("change:checked", this.renderProfile, this);
+				this.model.once("change:checked", this.resetSections, this);
+				//Get the info
+				this.model.getInfo();
+			}
+			
+			//When the model is reset, refresh the page
+			this.listenTo(this.model, "reset", this.render);
+						
 		},
 		
 		/* COMMENTED OUT for now because it was possibly over-engineering the problem... But keeping this code just in case its usable in the future...
@@ -395,15 +378,37 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			statsModel.set("query", statsSearchModel.getQuery());
 			statsModel.set("searchModel", statsSearchModel);
 			
+			//Create the description for this profile
+			var description;
+					
+			switch(this.model.get("type")){
+				case "node":
+					description = "A summary of all datasets from the " + this.model.get("fullName") + " repository";
+					break;
+				case "group":
+					description = "A summary of all datasets from the " + this.model.get("fullName") + " group";
+					break;
+				case "user":
+					description = "A summary of all datasets from " + this.model.get("fullName");
+					break;
+				default:
+					description = "";
+					break;
+			}
+			
 			//Render the Stats View for this person
 			this.statsView = new StatsView({
-				title: "",
+				title: "Statistics and Figures",
+				description: description,
 				el: this.$("#user-stats")
 			});
 			this.subviews.push(this.statsView);
 			this.statsView.render();
 			if(this.model.noActivity)
 				this.statsView.$el.addClass("no-activity");
+			
+			if(this.model.isNode())
+				this.insertReplicas();
 		},
 		
 		/*
@@ -442,6 +447,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			}
 			else
 				this.$(".email-wrapper").hide();
+			
 		},
 		
 		// Creates an HTML element to display in front of the user identity/subject. 
@@ -462,9 +468,17 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				return;
 			}
 			
+			// Get the first upload or first operational date
+			if(this.model.get("type") == "node"){
+				var node = _.findWhere(nodeModel.get("members"), {identifier: "urn:node:" + this.model.get("username") }),
+					firstUpload = node.memberSince? new Date(node.memberSince.substring(0, node.memberSince.indexOf("T"))) : new Date();				
+			}
+			else{
+				var	firstUpload = new Date(statsModel.get("firstUpload"));
+			}
+			
 			// Construct the first upload date sentence
-			var firstUpload = new Date(statsModel.get("firstUpload")),			
-				monthNames = [ "January", "February", "March", "April", "May", "June",
+			var	monthNames = [ "January", "February", "March", "April", "May", "June",
 				                 "July", "August", "September", "October", "November", "December" ],
 				m = monthNames[firstUpload.getUTCMonth()],
 				y = firstUpload.getUTCFullYear(),
@@ -472,10 +486,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			
 			//For Member Nodes, start all dates at July 2012, the beginning of DataONE
 			if(this.model.get("type") == "node"){
-				if(y < 2012){
-					y = 2012;
-					firstUpload = new Date("July 01 2012");
-				}
 				this.$("#first-upload-container").text("DataONE Member Node since " + y);
 			}
 			else
@@ -527,6 +537,29 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		},
 		
 		/*
+		 * getReplicas gets the number of replicas in this member node
+		 */
+		insertReplicas: function(statsModel){
+			
+			var view = this;
+			
+			var requestSettings = {
+					url: appModel.get("queryServiceUrl") + 
+						"q=replicaMN:" + 
+						appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier)) + 
+						"&wt=json&rows=0",
+					type: "GET",
+					dataType: "json",
+					success: function(data, textStatus, xhr){
+						view.$("#total-replicas-container").html(appView.commaSeparateNumber(data.response.numFound));
+						view.$("#total-replicas-wrapper").show();
+					}
+			}
+			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+		},
+		
+		/*
 		 * Insert a list of this user's content
 		 */
 		insertContent: function(){	
@@ -537,7 +570,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				}));
 				return;
 			}
-			
+						
 			var view = new DataCatalogView({
 				el            : this.$("#data-list")[0],
 				searchModel   : this.model.get("searchModel"),
@@ -862,6 +895,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			
 			//Remove the equivalentIdentities list if it was drawn already so we don't do it twice
 			this.$("#identity-list-container").empty();
+			
+			if(!identities) return;
 			
 			//Create the list element
 			if(identities.length < 1){

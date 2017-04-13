@@ -1,5 +1,5 @@
 var theme = theme || "knb";
-var themeTitle = "KNB | The Knowledge Network";
+var themeTitle = "KNB";
 var themeMap = 
 {
 	'*': {

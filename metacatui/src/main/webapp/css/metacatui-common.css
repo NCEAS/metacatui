@@ -2,6 +2,9 @@
 /****************************************** 
 ** General Styling ***
 ******************************************/
+a:hover{
+	cursor: pointer;
+}
 .center{
 	text-align: center;
 }
@@ -213,6 +216,34 @@ header .citation {
 	max-width: 45%;
 	margin-bottom: 0px;
 }
+#Content > .login{
+	max-width: 400px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 100px;
+}
+#Content > .login > * {
+    font-size: 2em;
+    margin-right: 10px;
+}
+
+
+/****************************************** 
+** Download Buttons ***
+******************************************/
+.btn.download{
+	-webkit-transition: color 500ms;
+	transition: color 500ms;
+}
+.btn.download.in-progress{
+	font-size: .9em;
+}
+.btn.download.complete{
+	color: rgb(17, 162, 17);
+}
+.btn.download.complete.btn-primary{
+	color: white;
+}
 
 /****************************************** 
 ** Notifications and Alerts ***
@@ -228,6 +259,9 @@ header .citation {
 }
 .panel-body .notification.loading .icon {
     margin-top: 10px;
+}
+.accordion-inner .notification.loading .icon {
+    margin-left: 0px;
 }
 .notification.loading p{
 	font-size: 1em;
@@ -1283,8 +1317,8 @@ img.icon{
     padding-left: 20px;
 }
 .fancybox-inline .btn.ldap{
-	width: 90%;
-	width: calc(100% - 25px);
+	width: 220px;
+    left: 0;
 }
 .orcid-signin a > span{
     padding: 11px;
@@ -1876,6 +1910,13 @@ img[src*="gstatic.com/"].georegion-map,
 img[src*="googleapis.com/"].georegion-map{
 	max-width: 100%;
 }
+.figure{
+	margin-top: 20px;
+	margin-bottom: 20px;
+	max-width: 100%;
+	margin-right: auto;
+	margin-left: auto;
+}
 .media {
   margin-top: 15px;
 }
@@ -2208,7 +2249,7 @@ tfoot .control i{
 .user-view-section .hgroup h5{
 	font-weight: normal;
 }
-.user-view-section .user-type{
+.user-view-section h5{
 	margin-bottom: 10px;
 	margin-top: 5px;
 	padding-bottom: 10px;
@@ -2297,7 +2338,10 @@ textarea.token{
 #first-upload-container{
 	font-size: .9em;
 	width: 50%;
-	width: calc(97% - 130px);
+	width: calc(97% - 125px);
+}
+#total-replicas-wrapper{
+	display: none;
 }
 address.email-container{
 	display: inline;
@@ -2306,7 +2350,7 @@ address.email-container:after{
 	content: attr(data-domain);
 }
 address.email-container:before{
-	content: attr(data-user);o
+	content: attr(data-user);
 }
 [data-username="ORNLDAAC"] #user-profile .user-info .logo,
 [data-username="CDL"] #user-profile .user-info .logo,
@@ -2319,6 +2363,9 @@ address.email-container:before{
 [data-username="NRDC"] #user-profile .user-info .logo{
 	max-width: 200px;
 	width: 200px;
+}
+#quality-score, #quality-chart{
+	display: none;
 }
 /****************************************** 
 ** Stats ***
@@ -2356,9 +2403,7 @@ address.email-container:before{
 }
 .profile .chart.download-chart,
 .profile .chart.upload-chart{
-	width: 100%;
-	min-width: 1000px;
-	max-width: 1200px;
+	width: 1000px;
 	float: none;
 	clear: both;
 }
@@ -2367,7 +2412,9 @@ address.email-container:before{
     padding-bottom: 20px;
     padding-top: 20px;
 }
-
+.temporal-coverage-chart{
+	width: calc(100% - 300px);
+}
 /**** Bar Charts ******/
 .bar-chart .bar-label.bg{
 	fill: rgba(0,0,0,0.8);

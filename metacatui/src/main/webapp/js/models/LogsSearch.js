@@ -113,7 +113,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 					else if(value && value.length){
 						// Does this need to be wrapped in quotes?
 						if(model.needsQuotes(value)) value = "%22" + encodeURIComponent(value) + "%22";
-						else value = encodeURIComponent(value);
+						else value = model.escapeSpecialChar(encodeURIComponent(value));
 						
 						query += "+" + model.fieldNameMap["nodeId"] + ":" + value;
 					}
@@ -139,7 +139,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 					else if(filterValues && filterValues.length){
 						// Does this need to be wrapped in quotes?
 						if(model.needsQuotes(filterValues)) filterValues = "%22" + encodeURIComponent(filterValues) + "%22";
-						else filterValues = encodeURIComponent(filterValues);
+						else filterValues = model.escapeSpecialChar(encodeURIComponent(filterValues));
 						
 						query += "+" + model.fieldNameMap[filterName] + ":" + filterValues;
 					}
