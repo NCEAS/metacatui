@@ -96,41 +96,6 @@
 				</div>
 				
 			</div>
-			<ul class="category-nav nav-list nav">
-				<li><h2 class="nav-header span12">Data Categories</h2><div class="clear"></div></li>
-			<% if(username){
-	    		print('<li class="nav-item my-packages" data-category="additionalCriteria" data-term="rightsHolder:'+ username +'"><i class="icon icon-remove span1 remove-addtl-criteria"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="+rightsHolder:'+ username +'">My packages</a><div class="clear"></div></li>');
-	    		}
-	    	%>
-			<%
-				var keywords = [{link: "+keywords:EVOSTC", display: "EVOSTC"}, 
-								{link: "+keywords:%22Exxon%20Valdez%20Oil%20Spill%20Trustee%20Council%22", display: "Exxon Valdez Oil Spill Trustee Council"},
-								{link: "+keywords:%22Exxon%20Valdez%22", display: "Exxon Valdez"},
-								{link: "+keywords:%22Oil%20Spill%22", display: "Oil spill"},
-								{link: "+keywords:%22EVOS%20Gulf%20Watch%20Projects%22", display: "EVOS Gulf Watch Projects"},
-								{link: "+keywords:Benthic", display: "Benthic"},
-								{link: "+keywords:Pelagic", display: "Pelagic"},
-								{link: "+keywords:%22Environmental%20Drivers%22", display: "Environmental Drivers"},
-								{link: "+keywords:Birds", display: "Birds"},
-								{link: "+keywords:Fish", display: "Fish"},
-								{link: "+keywords:Imagery", display: "Imagery"},
-								{link: "+keywords:%22Invertebrates%20and%20Algae%22", display: "Invertebrates & Algae"},
-								{link: "+keywords:Mammals", display: "Mammals"},
-								{link: "+keywords:Management", display: "Management"},
-								{link: "+keywords:Modeling", display: "Modeling"},
-								{link: "+keywords:%22Ocean%20and%20Atmosphere%22", display: "Ocean and Atmosphere"},
-								{link: "+keywords:%22Oil%20and%20Contaminants%22", display: "Oil/Contaminants"},
-								{link: "+keywords:%22Satellites%20and%20Sensors%22", display: "Satellites and Sensors"},
-								{link: "+keywords:%22Shorelines%20Habitat%20and%20Sensitivity%22", display: "Shorelines (Habitat and Sensitivity)"},
-								{link: "+keywords:%22Study%20Catalogs%22", display: "Study Catalogs"},
-								{link: "+keywords:Watershed", display: "Watershed"}
-				];
-				
-				_.each(keywords, function(element, index){
-					print('<li class="nav-item" data-category="additionalCriteria" data-term="' + keywords[index].link + '"><i class="icon icon-remove span1 remove-addtl-criteria" data-category="additionalCriteria" data-term="' + keywords[index].link + '"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="' + keywords[index].link + '">' + keywords[index].display + '</a><div class="clear"></div></li>');
-				});
-			%>
-			</ul>
 			
 		</aside>
 		
