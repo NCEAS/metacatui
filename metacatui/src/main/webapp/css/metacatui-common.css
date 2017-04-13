@@ -2,6 +2,9 @@
 /****************************************** 
 ** General Styling ***
 ******************************************/
+a:hover{
+	cursor: pointer;
+}
 .center{
 	text-align: center;
 }
@@ -213,6 +216,17 @@ header .citation {
 	max-width: 45%;
 	margin-bottom: 0px;
 }
+#Content > .login{
+	max-width: 400px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 100px;
+}
+#Content > .login > * {
+    font-size: 2em;
+    margin-right: 10px;
+}
+
 
 /****************************************** 
 ** Download Buttons ***
@@ -1896,6 +1910,13 @@ img[src*="gstatic.com/"].georegion-map,
 img[src*="googleapis.com/"].georegion-map{
 	max-width: 100%;
 }
+.figure{
+	margin-top: 20px;
+	margin-bottom: 20px;
+	max-width: 100%;
+	margin-right: auto;
+	margin-left: auto;
+}
 .media {
   margin-top: 15px;
 }
@@ -2382,9 +2403,7 @@ address.email-container:before{
 }
 .profile .chart.download-chart,
 .profile .chart.upload-chart{
-	width: 100%;
-	min-width: 1000px;
-	max-width: 1200px;
+	width: 1000px;
 	float: none;
 	clear: both;
 }

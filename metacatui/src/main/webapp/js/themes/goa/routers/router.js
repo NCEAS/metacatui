@@ -14,6 +14,7 @@ function ($, _, Backbone) {
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
@@ -246,6 +247,22 @@ function ($, _, Backbone) {
 				}
 				else
 					appView.showView(appView.userView, viewOptions);
+			}
+		},
+		
+		renderMyProfile: function(section, subsection){
+			if(appUserModel.get("checked") && !appUserModel.get("loggedIn"))
+				this.renderTokenSignIn();
+			else if(!appUserModel.get("checked")){
+				this.listenToOnce(appUserModel, "change:checked", function(){
+					if(appUserModel.get("loggedIn"))
+						this.renderProfile(appUserModel.get("username"), section, subsection);
+					else
+						this.renderTokenSignIn();
+				});
+			}
+			else if(appUserModel.get("checked") && appUserModel.get("loggedIn")){
+				this.renderProfile(appUserModel.get("username"), section, subsection);
 			}
 		},
 		

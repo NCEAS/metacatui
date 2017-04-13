@@ -85,7 +85,19 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 					view.$el.modal("hide");
 				});
 			}
-			else{			
+			else{	
+				
+				//If it's a full-page sign-in view, then empty it first
+				if(this.el = appView.el){
+					this.$el.empty();
+					var container = document.createElement("div");
+					container.className = "container login";
+					$(container).append(this.buttonsTemplate());
+					this.$el.append(container);					
+				}
+				else
+					this.$el.append(this.buttonsTemplate());
+				
 				//Insert the sign in popup screen once
 				if(!$("#signinPopup").length){
 					var target = encodeURIComponent(window.location.href);
@@ -105,9 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 					}));
 					
 				}
-				
-				this.$el.append(this.buttonsTemplate());
-				
+								
 				//If there is an error message in the URL, it means authentication has failed
 				if(this.ldapError){
 					appUserModel.failedLdapLogin();
