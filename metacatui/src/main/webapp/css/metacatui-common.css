@@ -215,6 +215,23 @@ header .citation {
 }
 
 /****************************************** 
+** Download Buttons ***
+******************************************/
+.btn.download{
+	-webkit-transition: color 500ms;
+	transition: color 500ms;
+}
+.btn.download.in-progress{
+	font-size: .9em;
+}
+.btn.download.complete{
+	color: rgb(17, 162, 17);
+}
+.btn.download.complete.btn-primary{
+	color: white;
+}
+
+/****************************************** 
 ** Notifications and Alerts ***
 ******************************************/
 .notification.loading .icon{

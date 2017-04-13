@@ -1246,7 +1246,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 		downloadWithCredentials: function(){
 			//Get info about this object
 			var filename = this.get("fileName") || "",
-				url = this.get("url");
+				url = this.get("url"),
+				model = this;
 
 			if(filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4))) filename += ".zip";
 
@@ -1264,6 +1265,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			    document.body.appendChild(a);
 			    a.click();
 			    delete a;
+			    
+			    model.trigger("downloadComplete");
+			};
+			
+			xhr.onprogress = function(e){
+			    if (e.lengthComputable){
+			        var percent = (e.loaded / e.total) * 100;
+			        model.set("downloadPercent", percent);
+			    }
 			};
 			
 			//Open and send the request with the user's auth token

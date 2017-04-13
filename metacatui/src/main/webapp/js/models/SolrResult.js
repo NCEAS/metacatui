@@ -216,7 +216,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Get info about this object
 			var filename = this.get("fileName") || this.get("title") || "",
-				url = this.get("url");
+				url = this.get("url"),
+				model = this;
 
 			//If we are accessing objects via the resolve service, we need to find the direct URL
 			if(url.indexOf("/resolve/") > -1){
@@ -240,6 +241,15 @@ define(['jquery', 'underscore', 'backbone'],
 			    document.body.appendChild(a);
 			    a.click();
 			    delete a;
+			    
+			    model.trigger("downloadComplete");
+			};
+			
+			xhr.onprogress = function(e){
+			    if (e.lengthComputable){
+			        var percent = (e.loaded / e.total) * 100;
+			        model.set("downloadPercent", percent);
+			    }
 			};
 
 			//Open and send the request with the user's auth token

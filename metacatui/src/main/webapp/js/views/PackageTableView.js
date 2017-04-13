@@ -16,7 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		
 		events: {
 			"click .expand-control"   : "expand",
-			"click .collapse-control" : "collapse"
+			"click .collapse-control" : "collapse",
+			"click .btn.download"     : "download"
 		},
 		
 		initialize: function(options){
@@ -117,14 +118,16 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Draw and insert the HTML table
 			var downloadButtonHTML = "";
 			if(this.model.getURL() && this.model.get("id")){
-				if(this.model.getTotalSize() < appModel.get("maxDownloadSize")){				
+								
+				if(this.model.getTotalSize() < appModel.get("maxDownloadSize")){	
+					
 					downloadButtonHTML = this.downloadButtonTemplate({ 
 						href: this.model.get("url"),
 						id: this.model.get("id"),
 						text: "Download all",
-						className: "btn btn-primary ",
-						isPublic: this.model.get("isPublic")
-					});	
+						className: "btn btn-primary "
+					});
+					
 				}
 				else{
 					downloadButtonHTML = this.downloadButtonTemplate({
@@ -387,7 +390,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var downloadButton = $.parseHTML(downloadButtonHTML.trim());
 			
 			//if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
-			$(downloadButton).on("click", null, this, this.download);
+			//$(downloadButton).on("click", null, this, this.download);
 			
 			$(downloadBtnCell).append(downloadButton);
 			$(tr).append(downloadBtnCell);
@@ -401,25 +404,47 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		},
 
 		download: function(e){				
-			if(e && $(e.target).attr("data-id") && appUserModel.get("loggedIn")){
-				e.preventDefault();
-				var id = $(e.target).attr("data-id");
+			e.preventDefault();
+			
+			var button = (e.target.tagName == "A")? $(e.target) : $(e.target).parents("a"),
+				id = button.attr("data-id"),
+				packageModel = this.model? this.model : (e.data && e.data.model)? e.data.model : null;
+			
+			if(!packageModel || button.is(".in-progress"))
+				return true;
+			
+			//Show that the download has started
+			button.addClass("in-progress");
+			var buttonHTML = button.html();
+			button.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
 				
-				var packageModel = this.model? this.model : (e.data && e.data.model)? e.data.model : null;
+			//Find the model with this ID
+			var modelToDownload = (packageModel.get("id") == id) ? packageModel : _.find(packageModel.get("members"), function(m){
+				return (m.get("id") == id);
+			});
+			
+			//If we found a model, fire the download event
+			if(modelToDownload){ 
+				modelToDownload.downloadWithCredentials();
 				
-				if(!packageModel) return true;
+				this.listenTo(modelToDownload, "downloadComplete", function(){
 					
-				//Find the model with this ID
-				var modelToDownload = (packageModel.get("id") == id) ? packageModel : _.find(packageModel.get("members"), function(m){
-					return (m.get("id") == id);
+					//Show that the download is complete
+					button.html("Complete <i class='icon icon-on-right icon-ok'></i>");
+					button.addClass("complete");
+					button.removeClass("in-progress");
+					
+					//Put the download button back to normal
+					setTimeout(function(){
+						
+						//After one second, change the background color with an animation
+						button.removeClass("complete");
+						button.html(buttonHTML);
+						
+					}, 2000);
 				});
 				
-				//If we found a model, fire the download event
-				if(modelToDownload) 
-					modelToDownload.downloadWithCredentials();
-			}
-			else
-				return true;			
+			}		
 		},
 		
 		expand: function(e){
@@ -461,6 +486,17 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				view.$(".expand-control").fadeIn();				
 			});			
 		}
+		
+		/*showDownloadProgress: function(e){
+			e.preventDefault();
+			
+			var button = $(e.target);
+			button.addClass("in-progress");
+			button.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
+			
+			return true;
+			
+		}*/
 	});
 	
 	return PackageTable;
