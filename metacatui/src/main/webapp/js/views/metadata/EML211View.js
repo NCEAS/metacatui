@@ -407,6 +407,9 @@ define(['underscore', 'jquery', 'backbone',
     			
     		if(this.$("[data-attribute='" + partyType + "'] .eml-party.new").length > 1) return;
     		
+			// Add in a remove button
+			$(container).prepend(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
+
     		this.renderPerson(null, partyType);
 	    },
 	    
