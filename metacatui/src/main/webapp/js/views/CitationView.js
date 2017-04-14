@@ -64,7 +64,7 @@
 						
 						//Get the individual's name, or position name, or organization name, in that order
 						var name = author.get("individualName") ? 
-								author.get("individualName").givenName[0] + " " + author.get("individualName").surName :
+									_.flatten([author.get("individualName").givenName, author.get("individualName").surName]).join(" ") :
 									author.get("positionName") || author.get("organizationName");
 						
 						if (count > 1 && authors.length > 2) authorText += ",";
