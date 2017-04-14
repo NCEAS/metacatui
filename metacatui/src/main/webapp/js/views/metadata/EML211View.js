@@ -1,6 +1,7 @@
 define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'views/metadata/EMLPartyView',
+		'views/metadata/EMLMethodsView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLKeywordSet',
         'models/metadata/eml211/EMLParty',
@@ -8,15 +9,16 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLTaxonCoverage',
         'models/metadata/eml211/EMLTemporalCoverage',
+		'models/metadata/eml211/EMLMethods',
         'text!templates/metadata/eml.html',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
 		'text!templates/metadata/taxonomicClassificationTable.html', 
 		'text!templates/metadata/taxonomicClassificationRow.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EMLPartyView, 
+	function(_, $, Backbone, ScienceMetadataView, EMLPartyView, EMLMethodsView,
 			EML, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
-			EMLTemporalCoverage, Template, OverviewTemplate, DatesTemplate,
-			TaxonomicClassificationTable, TaxonomicClassificationRow){
+			EMLTemporalCoverage, EMLMethods, Template, OverviewTemplate,
+			 DatesTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
     
     var EMLView = ScienceMetadataView.extend({
     	
