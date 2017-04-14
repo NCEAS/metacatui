@@ -114,6 +114,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			$(objectDOM).find("northboundingcoordinate").text(this.get("northBoundingCoordinate"));
 			$(objectDOM).find("southboundingcoordinate").text(this.get("southBoundingCoordinate"));
 			 
+			// Remove empty (zero-length or whitespace-only) nodes
+			$(objectDOM).find("*").filter(function() { return $.trim(this.innerHTML) === ""; } ).remove();
+			
 			 return objectDOM;
 		},
 		

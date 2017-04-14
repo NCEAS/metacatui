@@ -78,7 +78,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				$(objectDOM).append("<para>" + p + "</para>");
 			});
 			 
-			 return objectDOM;
+			// Remove empty (zero-length or whitespace-only) nodes
+			$(objectDOM).find("*").filter(function() { return $.trim(this.innerHTML) === ""; } ).remove();
+			
+			return objectDOM;
 		},
 		
 		trickleUpChange: function(){

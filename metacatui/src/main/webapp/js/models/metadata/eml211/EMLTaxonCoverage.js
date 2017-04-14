@@ -113,6 +113,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				$(objectDOM).append(this.createTaxonomicClassificationDOM(classifications[i]));
 			 } 
 
+			// Remove empty (zero-length or whitespace-only) nodes
+			$(objectDOM).find("*").filter(function() { return $.trim(this.innerHTML) === ""; } ).remove();
+			
 			 return objectDOM;
 		},
 		
