@@ -837,8 +837,8 @@ define(['jquery',
 				if(!packageModel.get("id")) return;
 				
 				//Listen for changes to the authorization flag
-				packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
-				packageModel.once("sync", viewRef.createProvEditor, viewRef); 
+				//packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
+				//packageModel.once("sync", viewRef.createProvEditor, viewRef); 
 						
 				//Now get the RDF XML and check for the user's authority on this resource map
 				packageModel.fetch();
