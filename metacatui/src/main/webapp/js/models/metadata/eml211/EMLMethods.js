@@ -1,15 +1,23 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'], 
-    function($, _, Backbone, DataONEObject) {
+define(['jquery', 
+		'underscore', 
+		'backbone', 
+		'models/DataONEObject', 
+		'models/metadata/eml211/EMLText'], 
+    function($, _, Backbone, DataONEObject, EMLText) {
 
 	var EMLMethods = Backbone.Model.extend({
 		
 		defaults: {
 			objectXML: null,
 			objectDOM: null,
+			methodSteps: [],
+			samplingDescriptions: []
 		},
 		
 		initialize: function(attributes){
+			attributes = attributes || {};
+
 			if(attributes.objectDOM) this.parse(attributes.objectDOM);
 
 			//specific attributes to listen to
@@ -38,6 +46,18 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			var modelJSON = {};
 
 			if (!objectDOM) var objectDOM = this.get("objectDOM");
+
+			var methodSteps = _.map($(objectDOM).find('methodstep description'), function(el) {
+				return new EMLText({objectDOM: el });
+			});
+
+			this.set('methodSteps', methodSteps);
+
+			var samplingDescriptions = _.map($(objectDOM).find('samplingDescription'), function(el) {
+				return new EMLText({objectDOM: el});
+			});
+
+			this.set('samplingDescriptions', samplingDescriptions);
 			
 			return modelJSON;
 		},

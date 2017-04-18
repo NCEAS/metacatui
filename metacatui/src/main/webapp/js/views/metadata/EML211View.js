@@ -583,7 +583,9 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Methods section of the page
          */
 	    renderMethods: function(){
-	    	this.$(".section.methods").empty().append("<h2>Methods</h2>");
+			_.each(this.model.get('methods'), function(m) { 
+				this.$(".section.methods").append(new EMLMethodsView({model: m, edit: this.edit}).render().el);
+			}, this);
 	    },
 	    
 	    /*

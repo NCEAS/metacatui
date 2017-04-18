@@ -37,14 +37,16 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			
 			//Get the direct children of this text element and save them as paragraphs - ignore any nested formatting elements for now
 			//TODO: Support more detailed text formattin
-			_.each(objectDOM.children, function(childEl){
+			paragraphs = _.map($(objectDOM).find('*'), function(el) {
+				if (el.children.length > 0) {
+					return "";
+				} else {
+					return el.textContent;
+				}
+			})
 
-				paragraphs.push(childEl.textContent);
-				
-			}, this);
-			
 			var modelJSON = {
-				text: paragraphs
+				text: _.filter(paragraphs, function(p) { return p.length > 0; })
 			}
 			
 			return modelJSON;
