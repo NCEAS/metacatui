@@ -17,8 +17,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         	editTemplate: _.template(EMLMethodsTemplate),
         	
         	initialize: function(options){
-        		if(!options)
-        			var options = {};
+				options = options || {};
         		
         		this.isNew = options.isNew || (options.model? false : true);
         		this.model = options.model || new EMLMethods();
@@ -31,15 +30,40 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         		"change" : "updateModel",
         	},
         	
-        	render: function(e) {
+        	render: function() {
         		//Save the view and model on the element
         		this.$el.data({
         			model: this.model,
         			view: this
         		});
 
+				if (this.edit) {
+					var methodSteps = _.map(this.model.get('methodSteps'), function(textModel) {
+						return this.renderMethodsStep(textModel);
+					}, this);
+
+					var samplingDescriptions = _.map(this.model.get('samplingDescriptions'), function(textModel) {
+						return this.renderSamplingDescrptions(textModel);
+					}, this);
+
+					this.$el.append("<h4>Methods</h4>");
+					this.$el.append(methodSteps);
+					this.$el.append("<h4>Sampling</h4>");
+					this.$el.append(samplingDescriptions);
+				}
+
         		return this;
         	},
+
+			renderMethodsStep: function(textModel) {
+				return $("<textarea rows='10'></textarea>").
+					text(textModel.get('text').join('\n'));
+
+			},
+
+			renderSamplingDescrptions: function(textModel) {
+				return $("<textarea rows='10'></textarea>").text(textModel.get('text').join('\n'));
+			},
         	
         	updateModel: function(e){
         		if(!e) return false;

@@ -9,9 +9,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLDistribution', 
         'models/metadata/eml211/EMLParty', 
         'models/metadata/eml211/EMLProject',
-        'models/metadata/eml211/EMLText'], 
+        'models/metadata/eml211/EMLText',
+		'models/metadata/eml211/EMLMethods'], 
     function($, _, Backbone, uuid, ScienceMetadata, DataONEObject, 
-    		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLParty, EMLProject, EMLText) {
+    		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLParty, EMLProject, EMLText, EMLMethods) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -165,7 +166,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
             		emlDistribution = ["distribution"],
-            		emlText = ["abstract", "additionalinfo"];
+            		emlText = ["abstract", "additionalinfo"],
+					emlMethods = ["methods"];
             		
             	var nodes = datasetEl.children(),
             		modelJSON = {};
@@ -258,6 +260,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			
             			
             		}
+					else if(_.contains(emlMethods, thisNode.localName)) {
+						if(typeof modelJSON[thisNode.localName] === "undefined") modelJSON[thisNode.localName] = [];
+						var emlMethods = new EMLMethods({
+							objectDOM: thisNode,
+							parentModel: model
+						})
+
+						modelJSON[thisNode.localName].push(emlMethods);
+	
+					}
             		//Parse keywords
             		else if(thisNode.localName == "keywordset"){
             			//Start an array of keyword sets
