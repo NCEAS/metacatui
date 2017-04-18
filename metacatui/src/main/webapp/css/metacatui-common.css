@@ -3377,6 +3377,23 @@ textarea.xlarge{
     display: block;
     width: 1.4em;
 }
+
+/** Locations section **/
+.locations .coord{
+	width: 4em;
+    padding: 5px;
+}
+.locations-table .header{
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+.locations-table .eml-geocoverage{
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+.locations-table .eml-geocoverage:nth-child(odd) {
+    background-color: #EEE;
+}
 /*******************************************
 Pager View
 ******************************************/

@@ -1,8 +1,10 @@
 define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
+        'views/metadata/EMLGeoCoverageView',
         'views/metadata/EMLPartyView',
 		'views/metadata/EMLMethodsView',
         'models/metadata/eml211/EML211',
+        'models/metadata/eml211/EMLGeoCoverage',
         'models/metadata/eml211/EMLKeywordSet',
         'models/metadata/eml211/EMLParty',
         'models/metadata/eml211/EMLProject',
@@ -13,12 +15,13 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/eml.html',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
+        'text!templates/metadata/locationsSection.html',
 		'text!templates/metadata/taxonomicClassificationTable.html', 
 		'text!templates/metadata/taxonomicClassificationRow.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EMLPartyView, EMLMethodsView,
-			EML, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
+	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView,
+			EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
 			EMLTemporalCoverage, EMLMethods, Template, OverviewTemplate,
-			 DatesTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
+			 DatesTemplate, LocationsTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -36,6 +39,9 @@ define(['underscore', 'jquery', 'backbone',
 			
 			"change .temporal-coverage"    : "updateTemporalCoverage",
 			"keyup  .temporal-coverage.new": "updateTemporalCoverage",
+			
+			"keyup .eml-geocoverage.new"        : "updateLocations",
+			"click .eml-geocoverage.new .coord" : "updateLocations",
 			
 			"change .taxonomic-coverage"             : "updateTaxonCoverage",
 			"keyup .taxonomic-coverage .new input"   : "addNewTaxon",
@@ -63,6 +69,7 @@ define(['underscore', 'jquery', 'backbone',
         template: _.template(Template),
         overviewTemplate: _.template(OverviewTemplate),
         datesTemplate: _.template(DatesTemplate),
+        locationsTemplate: _.template(LocationsTemplate),
 		taxonomicClassificationTableTemplate: _.template(TaxonomicClassificationTable),
         taxonomicClassificationRowTemplate: _.template(TaxonomicClassificationRow),
         
@@ -514,7 +521,37 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Locations section of the page
          */
 	    renderLocations: function(){
-	    	this.$(".section.locations").empty().append("<h2>Locations</h2>");
+	    	var locationsSection = this.$(".section.locations");
+	    	
+	    	//Add the Locations header
+	    	locationsSection.html(this.locationsTemplate());
+	    	var locationsTable = locationsSection.find(".locations-table");
+	    	
+	    	//Render an EMLGeoCoverage view for each EMLGeoCoverage model
+	    	_.each(this.model.get("geoCoverage"), function(geo, i){
+	    		//Create an EMLGeoCoverageView
+	    		var geoView = new EMLGeoCoverageView({ 
+	    			model: geo,
+	    			edit: this.edit
+	    			});
+	    		
+	    		//Render the view
+	    		geoView.render();
+	    		
+	    		//Add the locations section to the page
+	    		locationsTable.append(geoView.el);
+	    		
+	    		//Save it in our subviews array
+	    		this.subviews.push(geoView);
+	    	}, this);
+	    	
+	    	//Now add one empty row to enter a new geo coverage
+	    	if(this.edit){
+	    		var newGeo = new EMLGeoCoverageView({
+	    			edit: true
+	    		});
+	    		locationsTable.append(newGeo.render().el);
+	    	}
 	    },
 	    
 	    /*
@@ -824,6 +861,54 @@ define(['underscore', 'jquery', 'backbone',
 	    	} else {
 				console.log('not new');
 			}
+	    },
+	    
+	    /*
+	     * Update the EML Geo Coverage models and views when the user interacts with the locations section
+	     */
+	    updateLocations: function(e){
+	    	if(!e) return;
+	    	
+	    	e.preventDefault();
+	    	
+	    	//If we were brought here by a click but there is no value, exit.
+	    	//We only want to react to clicks on the up and down arrows of the number input
+	    	if(e.type == "click" && !$(e.target).val())
+	    		return;
+	    	
+	    	var viewEl = $(e.target).parents(".eml-geocoverage");
+	    	
+	    	if(viewEl.is(".new")){
+	    		
+	    		if(this.$(".eml-geocoverage.new").length > 1)
+	    			return;
+	    		
+	    		//Render the new geo coverage view
+	    		var newGeo = new EMLGeoCoverageView({
+	    			edit: this.edit
+	    		});
+	    		this.$(".locations-table").append(newGeo.render().el);
+	    		
+	    		//Unmark the view as new
+	    		viewEl.data("view").notNew();
+	    		
+	    		//Get the EMLGeoCoverage model attached to this EMlGeoCoverageView
+	    		var geoModel = viewEl.data("model"),
+	    		//Get the current EMLGeoCoverage models set on the parent EML model
+	    			currentCoverages = this.model.get("geoCoverage");
+	    		
+	    		//Add this new geo coverage model to the parent EML model
+	    		if(Array.isArray(currentCoverages)){
+	    			if( !_.contains(currentCoverages, geoModel) ){
+	    				currentCoverages.push(geoModel);
+	    				this.model.trigger("change:geoCoverage");
+	    			}
+	    		}
+	    		else{
+	    			currentCoverages = [currentCoverages, geoModel];
+	    			this.model.set("geoCoverage", currentCoverages);
+	    		}
+	    	}
 	    },
 		
 	    /*
