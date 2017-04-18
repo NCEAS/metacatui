@@ -3380,8 +3380,9 @@ textarea.xlarge{
 
 /** Locations section **/
 .locations .coord{
-	width: 4em;
+	width: 5em;
     padding: 5px;
+    font-size: .9em;
 }
 .locations-table .header{
 	font-weight: bold;

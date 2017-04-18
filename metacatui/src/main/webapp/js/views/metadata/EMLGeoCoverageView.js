@@ -56,13 +56,17 @@ define(['underscore', 'jquery', 'backbone',
         	updateModel: function(e){
         		if(!e) return false;
         		
+        		e.preventDefault();
+        		
+        		//Get the attribute and value
+        		var element = $(e.target),
+        			value = element.val(),
+        			attribute = element.attr("data-attribute");
+        		
         		//Get the attribute that was changed
-        		var changedAttr = $(e.target).attr("data-attribute");
-        		if(!changedAttr) return false;
+        		if(!attribute) return false;
         		
-        		//Get the current value
-        		var currentValue = this.model.get(changedAttr);
-        		
+        		this.model.set(attribute, value);
         	},
         	
         	/*

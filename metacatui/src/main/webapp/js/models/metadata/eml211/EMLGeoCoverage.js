@@ -74,10 +74,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			//Get the bounding coordinates
 			var boundingCoordinates = $objectDOM.children('boundingcoordinates');
 			if (boundingCoordinates) {
-				modelJSON.east  = boundingCoordinates.children('eastboundingcoordinate').text();
-				modelJSON.north = boundingCoordinates.children('northboundingcoordinate').text();
-				modelJSON.south = boundingCoordinates.children('southboundingcoordinate').text();
-				modelJSON.west  = boundingCoordinates.children('westboundingcoordinate').text();
+				modelJSON.east  = boundingCoordinates.children('eastboundingcoordinate').text().replace("+", "");
+				modelJSON.north = boundingCoordinates.children('northboundingcoordinate').text().replace("+", "");
+				modelJSON.south = boundingCoordinates.children('southboundingcoordinate').text().replace("+", "");
+				modelJSON.west  = boundingCoordinates.children('westboundingcoordinate').text().replace("+", "");
 			}
 			
 			return modelJSON;
@@ -119,7 +119,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 			
 			//Empty out the coordinates first
-			boundingCoordinates.empty();
+			$(boundingCoordinates).empty();
 			
 			//Add the four coordinate values
 			$(boundingCoordinates).append( $(document.createElement("westboundingcoordinate")).text(this.get("west")),
