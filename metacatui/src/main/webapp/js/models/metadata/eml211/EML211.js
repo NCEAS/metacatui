@@ -88,32 +88,83 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			EMLTaxonCoverage.prototype.nodeNameMap(),
             			EMLTemporalCoverage.prototype.nodeNameMap(),
             			{
+            				"additionalclassifications" : "additionalClassifications",
 			            	"additionalinfo" : "additionalInfo",
+			            	"additionallinks" : "additionalLinks",
+			            	"additionalmetadata" : "additionalMetadata",
 			            	"allowfirst" : "allowFirst",
 			            	"alternateidentifier" : "alternateIdentifier",
 			            	"asneeded" : "asNeeded",
 			            	"associatedparty" : "associatedParty",
+			            	"attributeaccuracyexplanation" : "attributeAccuracyExplanation",
+			            	"attributeaccuracyreport" : "attributeAccuracyReport",
+			            	"attributeaccuracyvalue" : "attributeAccuracyValue",
+			            	"attributedefinition" : "attributeDefinition",
+			            	"attributelabel" : "attributeLabel",
+			            	"attributelist" : "attributeList",
+			            	"attributename" : "attributeName",
+			            	"attributeorientation" : "attributeOrientation",
+			            	"casesensitive" : "caseSensitive",
 			            	"changehistory" : "changeHistory",
 			            	"changedate" : "changeDate",
 			            	"changescope" : "changeScope",
+			            	"codedefinition" : "codeDefinition",
+			            	"codeexplanation" : "codeExplanation",
+			            	"codesetname" : "codesetName",
+			            	"codeseturl" : "codesetURL",
+			            	"customunit" : "customUnit",
 			            	"dataformat" : "dataFormat",
+			            	"datatable" : "dataTable",
+			            	"datetime" : "dateTime",
+			            	"datetimedomain" : "dateTimeDomain",
+			            	"datetimeprecision" : "dateTimePrecision",
+			            	"definitionattributereference" : "definitionAttributeReference",
+			            	"entitycodelist" : "entityCodeList",
+			            	"entitydescription" : "entityDescription",
 			            	"entityname" : "entityName",
+			            	"entityreference" : "entityReference",
 			            	"entitytype" : "entityType",
+			            	"enumerateddomain" : "enumeratedDomain",
+			            	"externalcodeset" : "externalCodeSet",
 			            	"externallydefinedformat" : "externallyDefinedFormat",
+			            	"fielddelimiter" : "fieldDelimiter",
 			            	"formatname" : "formatName",
+			            	"formatstring" : "formatString",
 			            	"intellectualrights" : "intellectualRights",
 			            	"maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
+			            	"maxrecordlength" : "maxRecordLength",
+			            	"measurementscale" : "measurementScale",
 			            	"methodstep" : "methodStep",
+			            	"missingvaluecode" : "missingValueCode",
+			            	"nonnumericdomain" : "nonNumericDomain",
 			            	"notplanned" : "notPlanned",
+			            	"numbertype" : "numberType",
+			            	"numericdomain" : "numericDomain",
+			            	"numfooterlines" : "numFooterLines",
+			            	"numheaderlines" : "numHeaderLines",
+			            	"numberofrecords" : "numberOfRecords",
+			            	"numphysicallinesperrecord" : "numPhysicalLinesPerRecord",
 			            	"objectname" : "objectName",
 			            	"oldvalue" : "oldValue",
+			            	"orderattributereference" : "orderAttributeReference",
 			            	"otherentity" : "otherEntity",
 			            	"othermaintenanceperiod" : "otherMaintenancePeriod",
 			            	"packageid" : "packageId",
+			            	"physicallinedelimiter" : "physicalLineDelimiter",
 			            	"pubdate" : "pubDate",
 			            	"pubplace" : "pubPlace",
+			            	"quantitativeattributeaccuracyassessment" : "quantitativeAttributeAccuracyAssessment",
+			            	"researchtopic" : "researchTopic",
+			            	"recorddelimiter" : "recordDelimiter",
 			            	"samplingdescription" : "samplingDescription",
+			            	"simpledelimited" : "simpleDelimited",
+			            	"standardunit" : "standardUnit",
+			            	"storagetype" : "storageType",
 			            	"studyextent" : "studyExtent",
+			            	"studytype" : "studyType",
+			            	"textdomain" : "textDomain",
+			            	"textformat" : "textFormat",
+			            	"valueattributereference" : "valueAttributeReference",
                             "xsi:schemalocation" : "xsi:schemaLocation"
             			}
             	);
@@ -496,10 +547,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              */
             serializeParties: function(eml, type){
             	
-	           	_.each(this.get(type), function(party){
+	           	_.each(this.get(type), function(party, i){
 	           		//Get the existing nodes in the EML
 	           		var existingNode = $(eml).find(type.toLowerCase() + "#" + party.get("xmlID"));
 	           		
+	           		if(!existingNode.length){
+	           			existingNode = $(eml).find(type.toLowerCase());
+	           			if( existingNode.length )
+	           				existingNode = existingNode.eq(i);
+	           		}
+	           			
 	           		//Update the EMLParty DOM and insert into the EML
 	           		if ( existingNode.length ) {
 	           			existingNode.replaceWith(party.updateDOM());

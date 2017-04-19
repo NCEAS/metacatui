@@ -258,8 +258,20 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				//If the DOM is empty, append it
 				if( !$(objectDOM).children().length )
 					$(objectDOM).append(orgNameNode);
-				else
-					this.getEMLPosition(objectDOM, "organizationname").after(orgNameNode);
+				else{
+					var insertAfter = this.getEMLPosition(objectDOM, "organizationname");
+					
+					if(insertAfter && insertAfter.length)
+						insertAfter.after(orgNameNode);
+					else
+						$(objectDOM).prepend(orgNameNode);
+				}
+			}
+			//Remove the organization name node if there is no organization name
+			else{
+				var orgNameNode = $(objectDOM).find("organizationname");
+				if(orgNameNode.length)
+					orgNameNode.remove();
 			}
 			 
 			 // positionName
@@ -500,7 +512,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         			return $(objectDOM).find(nodeOrder[i]).last();
         	}
         	
-        	return $(objectDOM).children().last();
+        	
+        	return false;
         },
 		
 		createID: function(){
