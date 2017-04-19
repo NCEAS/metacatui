@@ -1010,7 +1010,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                 	//Get all the isAggregatedBy statements
     	            aggregationNode =  rdf.sym(cnResolveUrl + encodeURIComponent(oldPid) + "#aggregation");
-    	            aggByStatements = this.dataPackageGraph.statementsMatching(undefined, ORE("isAggregatedBy"));
+    	            aggByStatements =  $.extend(true, [],
+                        this.dataPackageGraph.statementsMatching(undefined, ORE("isAggregatedBy")));
 
     	            //Using the isAggregatedBy statements, find all the DataONE object ids in the RDF graph
     	            var idsFromXML = [];
