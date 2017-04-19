@@ -3395,6 +3395,14 @@ textarea.xlarge{
 .locations-table .eml-geocoverage:nth-child(odd) {
     background-color: #EEE;
 }
+.locations-table .notification{
+	min-height: .8em;
+    font-size: .8em;
+    margin-bottom: 0px;
+}
+.locations-table textarea.error{
+	border-color: red;
+}
 /*******************************************
 Pager View
 ******************************************/
