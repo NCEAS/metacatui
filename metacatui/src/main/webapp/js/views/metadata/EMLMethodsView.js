@@ -39,30 +39,44 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 
 				if (this.edit) {
 					var methodSteps = _.map(this.model.get('methodSteps'), function(textModel) {
-						return this.renderMethodsStep(textModel);
+						return this.renderTextArea(textModel);
 					}, this);
 
 					var samplingDescriptions = _.map(this.model.get('samplingDescriptions'), function(textModel) {
-						return this.renderSamplingDescrptions(textModel);
+						return this.renderTextArea(textModel);
 					}, this);
 
+					this.$el.append("<h2>Methods &amp; Sampling</h2>");
 					this.$el.append("<h4>Methods</h4>");
 					this.$el.append(methodSteps);
+					this.$el.append(this.renderTextArea());
 					this.$el.append("<h4>Sampling</h4>");
 					this.$el.append(samplingDescriptions);
+					this.$el.append(this.renderTextArea());
 				}
 
         		return this;
         	},
 
-			renderMethodsStep: function(textModel) {
-				return $("<textarea rows='10'></textarea>").
-					text(textModel.get('text').join('\n'));
+			renderTextArea: function(textModel) {
+				var text,
+				    isNew;
+				
+				if (typeof textModel === 'undefined') {
+					text = '';
+					isNew = true;
+				} else {
+					text = textModel.get('text').join('\n\n');
+					isNew = false;
+				}
 
-			},
+				var el = $("<textarea rows='10'></textarea>").text(text);
 
-			renderSamplingDescrptions: function(textModel) {
-				return $("<textarea rows='10'></textarea>").text(textModel.get('text').join('\n'));
+				if (isNew) {
+					$(el).addClass('new')
+				}
+
+				return el;
 			},
         	
         	updateModel: function(e){
