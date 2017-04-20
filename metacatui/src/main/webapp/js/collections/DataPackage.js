@@ -1292,17 +1292,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	//Create a literal node for the removed object
             	var removedObjNode = rdf.sym(id),
             	//Get the statements from the RDF where the removed object is the subject or object
-            		statements = _.union(this.dataPackageGraph.statementsMatching(undefined, undefined, removedObjNode),
-            						this.dataPackageGraph.statementsMatching(removedObjNode));
+            		statements = $.extend(true, [],
+                        _.union(this.dataPackageGraph.statementsMatching(undefined, undefined, removedObjNode),
+                        this.dataPackageGraph.statementsMatching(removedObjNode)));
 
             	//Remove all the statements mentioning this object
-                _.each(statements, function(statement) {
-                    try {
-                        this.dataPackageGraph.remove(statement);
-                    } catch (error) {
-                        console.log(error);
-                    }
-                });
+                try {
+                    this.dataPackageGraph.remove(statements);
+                    
+                } catch (error) {
+                    console.log(error);
+                }
             },
 
             /*
