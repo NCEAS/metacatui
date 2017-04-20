@@ -14,8 +14,18 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		initialize: function(attributes){
-			if(attributes.objectDOM) this.set(this.parse(attributes.objectDOM));
+			var attributes = attributes || {}
 			
+			if(attributes.objectDOM) this.set(this.parse(attributes.objectDOM));
+
+			if(attributes.text) {
+				if (_.isArray(attributes.text)) {
+					this.text = attributes.text
+				} else {
+					this.text = [attributes.text]
+				}
+			}
+
 			this.on("change:text", this.trickleUpChange);
 		},
 
