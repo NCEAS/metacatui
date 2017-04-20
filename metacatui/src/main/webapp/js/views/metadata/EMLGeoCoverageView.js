@@ -28,7 +28,10 @@ define(['underscore', 'jquery', 'backbone',
         	},
         	
         	events: {
-        		"change"   : "updateModel"
+        		"change"   : "updateModel",
+        		"focusout .input-container" : "showRequired",
+        		"keyup textarea.error" : "updateError",
+        		"click .coord.error"   : "updateError"
         	},
         	
         	render: function(e) {
@@ -67,6 +70,90 @@ define(['underscore', 'jquery', 'backbone',
         		if(!attribute) return false;
         		
         		this.model.set(attribute, value);
+        	},
+        	
+        	/*
+        	 * If the model isn't valid, show verification messages
+        	 */
+        	showRequired: function(e){
+        		
+        		var view = this;
+        		
+        		setTimeout(function(){
+        		
+        			var geoCoverage = $(document.activeElement).parents(".eml-geocoverage");
+        			
+	        		if( geoCoverage.length && geoCoverage[0] == view.el )
+	        			return;
+	        		
+	        		//Check if the model is valid
+	        		var north = view.$(".north").val(),
+	        			west  = view.$(".west").val(),
+	        			south = view.$(".south").val(),
+	        			east  = view.$(".east").val(),
+	        			description = view.$(".description").val(),
+	        			hasError = false;
+	        		
+	        		//Find any incomplete coordinates
+	        		if(view.isNew && !north && !south && !east && !west && !description)
+	        			hasError = false;
+	        		else{
+		        		if(north && !west){
+		        			view.$(".west").addClass("error");
+		        			hasError = true;
+		        		}
+		        		else if(west && !north){
+		        			view.$(".north").addClass("error");
+		        			hasError = true;
+		        		}
+		        		else if(south && !east){
+		        			view.$(".east").addClass("error");
+		        			hasError = true;
+		        		}
+		        		else if(east && !south){
+		        			view.$(".south").addClass("error");
+		        			hasError = true;
+		        		}
+		        		else if(north && west){
+		        			view.$(".north, .west").removeClass("error");
+		        		}
+		        		else if(south && east){
+		        			view.$(".south, .east").removeClass("error");
+		        		}
+		        		else if(!north && !west && !south && !east){
+		        			view.$(".north, .west").addClass("error");
+		        			hasError = true;
+		        		}
+		        		
+		        		//Check if there isn't a geographic description
+		        		if( !description ){
+		        			view.$(".description").addClass("error");
+		        			hasError = true;
+		        		}
+		        		else{
+		        			view.$(".description").removeClass("error");
+		        		}
+	        		}
+	        		
+	        		if(hasError)
+	        			view.$(".notification.error").text("Please enter a geographic description and at least one lat, long pair.");
+	        		else{
+	        			view.$("input.error, textarea.error").removeClass("error");
+	        			view.$(".notification.error").text("");
+	        		}
+        		}, 1);
+        	},
+        	
+        	/*
+        	 * When the user is typing in an input with an error, check if they've fixed the error
+        	 */
+        	updateError : function(e){
+        		var input = $(e.target);
+        		
+        		if(input.val()){
+        			input.removeClass("error");
+        			this.$(".notification.error").text("");
+        		}
         	},
         	
         	/*

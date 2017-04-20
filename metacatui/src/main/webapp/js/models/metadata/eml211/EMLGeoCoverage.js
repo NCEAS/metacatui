@@ -33,6 +33,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
          */
         nodeNameMap: function(){
         	return {
+        		"altitudemaximum"     : "altitudeMaximum",
+        		"altitudeminimum"     : "altitudeMinimum",
+        		"altitudeunits"       : "altitudeUnits",
+        		"boundingaltitudes"   : "boundingAltitudes",
         		"boundingcoordinates" : "boundingCoordinates",
         		"eastboundingcoordinate" : "eastBoundingCoordinate",
             	"geographiccoverage" : "geographicCoverage",
