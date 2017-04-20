@@ -87,6 +87,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			EMLProject.prototype.nodeNameMap(),
             			EMLTaxonCoverage.prototype.nodeNameMap(),
             			EMLTemporalCoverage.prototype.nodeNameMap(),
+						EMLMethods.prototype.nodeNameMap(),
             			{
             				"additionalclassifications" : "additionalClassifications",
 			            	"additionalinfo" : "additionalInfo",
