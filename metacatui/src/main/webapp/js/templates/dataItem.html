@@ -4,11 +4,11 @@
     <td>
         <i class="icon icon-chevron-down open toggle-rows" style="padding-left:<%=indentFolder %>px"></i>
         <i class="icon-large icon-folder-open"></i></td>
-    
+
 <% } else { %>
     <% var indentFile = (nodeLevel + 1) * 40; %>
     <td><i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i></td>
-    
+
 <% } %>
 
 <!-- Files column -->
@@ -16,7 +16,7 @@
 <td class="name" title="Click to rename">
     <div contenteditable="true">
         <% if (typeof title != "undefined" && title && title.length) { %>
-            <%= title %>    
+            <%= title %>
         <% } else if ( typeof fileName != "undefined" && fileName) { %>
             <%= fileName %>
         <% } else if(type == "Metadata"){ %>
@@ -30,17 +30,17 @@
 <!-- Size column -->
 <% if ( typeof sizeStr != "undefined" && sizeStr ) { %>
     <td><%= sizeStr %></td>
-    
+
 <% } else {%>
     <td><%= size %></td>
-    
+
 <% } %>
 <!-- Type column -->
 <% if (type ) { %>
     <td><%= type %></td>
 <% } else { %>
     <td></td>
-    
+
 <% } %>
 <!-- Guide or Status column -->
 <!--td></td-->
@@ -48,11 +48,11 @@
 <td>
     <input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
         <% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
-            <button type="button" class="addFiles btn btn-primary" title="Add files">
+            <button type="button" class="addFiles btn btn-primary" title="Add Files">
                 <i class="icon-large icon-plus icon-on-left"></i>
-                <span>Add files</span>
+                <span>Add Files</span>
             </button>
-            
+
         <% } else { %>
             <i class="icon-large icon-remove remove removeFiles" title="Remove file"></i>
         <% } %>
