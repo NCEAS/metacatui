@@ -1,7 +1,7 @@
 /* global define */
-define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods', 
+define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods', 'models/metadata/eml211/EMLText', 
         'text!templates/metadata/EMLMethods.html'], 
-    function(_, $, Backbone, EMLMethods, EMLMethodsTemplate){
+    function(_, $, Backbone, EMLMethods, EMLText, EMLMethodsTemplate){
         
         /* 
             The EMLMethods renders the content of an EMLMethods model
@@ -38,31 +38,41 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         		});
 
 				if (this.edit) {
-					var methodSteps = _.map(this.model.get('methodSteps'), function(textModel) {
-						return this.renderTextArea(textModel);
+					var methodSteps = _.map(this.model.get('methodStep'), function(textModel) {
+						return this.renderTextArea(textModel, 'methodStep');
 					}, this);
 
-					var samplingDescriptions = _.map(this.model.get('samplingDescriptions'), function(textModel) {
-						return this.renderTextArea(textModel);
+					var samplingDescriptions = _.map(this.model.get('samplingDescription'), function(textModel) {
+						return this.renderTextArea(textModel, 'sampling');
 					}, this);
 
-					this.$el.append("<h2>Methods &amp; Sampling</h2>");
-					this.$el.append("<h4>Methods</h4>");
-					this.$el.append(methodSteps);
-					this.$el.append(this.renderTextArea());
-					this.$el.append("<h4>Sampling</h4>");
-					this.$el.append(samplingDescriptions);
-					this.$el.append(this.renderTextArea());
+					this.$el.html(this.editTemplate());
+
+					var methodsDiv = this.$el.find("div.row-fluid.methodStep");
+
+					if (methodsDiv.length > 0) {
+						$(methodsDiv[0]).append(methodSteps);
+						$(methodsDiv[0]).append(this.renderTextArea(null, 'methodStep'));
+					}
+
+					var samplingDiv = this.$el.find("div.row-fluid.sampling");
+
+					if (samplingDiv.length > 0) {
+						$(samplingDiv[0]).append(samplingDescriptions);
+						$(samplingDiv[0]).append(this.renderTextArea(null, 'sampling'));
+					}
 				}
 
         		return this;
         	},
 
-			renderTextArea: function(textModel) {
+			renderTextArea: function(textModel, category) {
+				if (typeof category === 'undefined') return;
+
 				var text,
 				    isNew;
 				
-				if (typeof textModel === 'undefined') {
+				if (!textModel || typeof textModel === 'undefined') {
 					text = '';
 					isNew = true;
 				} else {
@@ -70,7 +80,11 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 					isNew = false;
 				}
 
-				var el = $("<textarea rows='10'></textarea>").text(text);
+				var el = $(document.createElement('textarea')).
+					attr('rows', 10).
+					attr('data-attribute', category).
+					addClass('methods').
+					text(text);
 
 				if (isNew) {
 					$(el).addClass('new')
@@ -88,6 +102,23 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         		
         		//Get the current value
         		var currentValue = this.model.get(changedAttr);
+
+				// Get the DOM position so we know which one to update
+				var position = $(e.target).parent().children('textarea.methods').index($(e.target));
+
+				// Stop if, for some odd reason, the target isn't found
+				if (position === -1) {
+					return;
+				}
+
+				currentValue[position] = new EMLText({text: $(e.target).val() });
+				this.model.set(changedAttr, currentValue);
+
+				// Add new textareas as needed
+				if ($(e.target).hasClass('new')) {
+					$(e.target).removeClass('new');
+					$(e.target).after($(this.renderTextArea(null, changedAttr)));
+				}
         	},
         });
         

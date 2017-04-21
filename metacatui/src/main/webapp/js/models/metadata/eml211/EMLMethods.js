@@ -11,8 +11,8 @@ define(['jquery',
 		defaults: {
 			objectXML: null,
 			objectDOM: null,
-			methodSteps: [],
-			samplingDescriptions: []
+			methodStep: [],
+			sampling: []
 		},
 		
 		initialize: function(attributes){
@@ -51,13 +51,13 @@ define(['jquery',
 				return new EMLText({objectDOM: el });
 			});
 
-			this.set('methodSteps', methodSteps);
+			this.set('methodStep', methodSteps);
 
-			var samplingDescriptions = _.map($(objectDOM).find('samplingDescription'), function(el) {
+			var samplingDescriptions = _.map($(objectDOM).find('sampling samplingdescription'), function(el) {
 				return new EMLText({objectDOM: el});
 			});
 
-			this.set('samplingDescriptions', samplingDescriptions);
+			this.set('sampling', samplingDescriptions);
 			
 			return modelJSON;
 		},
