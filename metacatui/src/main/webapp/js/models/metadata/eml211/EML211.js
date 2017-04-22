@@ -552,7 +552,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						$(eml).find('methods').remove();
 					}
 					
-					this.getEMLPosition(eml, "methods").after(this.get('methods').updateDOM());
+					var methodsEl = this.get('methods').updateDOM();
+
+					if ($(methodsEl).children().length > 0) {
+						this.getEMLPosition(eml, "methods").after(methodsEl);
+					}
+					
 				}
 	           	//Serialize the keywords
 				this.serializeKeywords(eml, "keywordSets");
