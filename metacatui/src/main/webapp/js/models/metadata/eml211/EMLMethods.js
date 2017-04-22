@@ -11,8 +11,9 @@ define(['jquery',
 		defaults: {
 			objectXML: null,
 			objectDOM: null,
-			methodStep: [],
-			sampling: []
+			methodStepDescription: [],
+			studyExtentDescription: null,
+			samplingDescription: null
 		},
 		
 		initialize: function(attributes){
@@ -21,7 +22,7 @@ define(['jquery',
 			if(attributes.objectDOM) this.parse(attributes.objectDOM);
 
 			//specific attributes to listen to
-			this.on("change:methodStep" +
+			this.on("change:methodStepDescription change:studyExtentDescription change:samplingDescription",
 					this.trickleUpChange);
 		},
 		
@@ -47,17 +48,26 @@ define(['jquery',
 
 			if (!objectDOM) var objectDOM = this.get("objectDOM");
 
-			var methodSteps = _.map($(objectDOM).find('methodstep description'), function(el) {
-				return new EMLText({objectDOM: el });
-			});
+			this.set('methodStepDescription', _.map($(objectDOM).find('methodstep description'), function(el) {
+				return new EMLText({
+					objectDOM: $(el).get(),
+					type: 'description'
+				 });
+			}));
 
-			this.set('methodStep', methodSteps);
-
-			var samplingDescriptions = _.map($(objectDOM).find('sampling samplingdescription'), function(el) {
-				return new EMLText({objectDOM: el});
-			});
-
-			this.set('sampling', samplingDescriptions);
+			if ($(objectDOM).find('sampling studyextent description').length > 0) {
+				this.set('studyExtentDescription', new EMLText({ 
+					objectDOM: $(objectDOM).find('sampling studyextent description').get(0),
+					type: 'description'
+				}));
+			}
+			
+			if ($(objectDOM).find('sampling samplingdescription').length > 0) {
+				this.set('samplingDescription', new EMLText({ 
+					objectDOM: $(objectDOM).find('sampling samplingdescription').get(0),
+					type: 'samplingDescription'
+			 	}));
+			}
 			
 			return modelJSON;
 		},
@@ -83,7 +93,32 @@ define(['jquery',
 			} else {
 				objectDOM = $("<methods></methods>");
 			}
-			 
+			
+			_.each(this.get('methodStepDescription'), function(step) {
+				$(objectDOM).append($(document.createElement('methodStep')).append(step.updateDOM()));
+			});
+			
+			if (this.get('samplingDescription') || this.get('studyExtentDescription')) {
+				var samplingEl = $(document.createElement('sampling')),
+				    studyExtentEl = $(document.createElement('studyExtent'))
+
+				if (this.get('studyExtentDescription') && !this.get('studyExtentDescription').isEmpty()) {
+					$(studyExtentEl).append(this.get('studyExtentDescription').updateDOM());
+				} else {
+					$(studyExtentEl).append($(document.createElement('description')).html("<para>No study extent description provided.</para>"));
+				}
+
+				$(samplingEl).append(studyExtentEl);
+
+				if (this.get('samplingDescription') && !this.get('samplingDescription').isEmpty()) {
+					$(samplingEl).append(this.get('samplingDescription').updateDOM());
+				} else {
+					$(samplingEl).append($(document.createElement('samplingDescription')).html("<para>No sampling description provided.</para>"));
+				}
+
+				$(objectDOM).append(samplingEl);
+			}
+
 			// Remove empty (zero-length or whitespace-only) nodes
 			$(objectDOM).find("*").filter(function() { return $.trim(this.innerHTML) === ""; } ).remove();
 			

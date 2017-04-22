@@ -76,7 +76,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-            var type = this.get("type") || this.get("parentAttribute"), 
+            var type = this.get("type") || this.get("parentAttribute") || 'text', 
                 objectDOM = this.get("objectDOM") ? this.get("objectDOM").cloneNode(true) : document.createElement(type);
 			 
 			//Empty the DOM
@@ -102,6 +102,24 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		formatXML: function(xmlString){
 			return DataONEObject.prototype.formatXML.call(this, xmlString);
+		},
+
+		isEmpty: function() {
+			for (var i = 0; i < this.get('text').length; i++) {
+				if (this.get('text')[i].length > 0) return false;
+			}
+			
+			return true;
+		},
+
+		toString: function() {
+			var value = [];
+
+			if (_.isArray(this.get('text'))) {
+				value = this.get('text');
+			}
+
+			return value.join('\n');
 		}
 	});
 	

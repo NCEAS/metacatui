@@ -1,7 +1,15 @@
 <h2>Methods &amp; Sampling</h2>
 <div class="row-fluid methodStep">
 	<h4>Methods</h4>
+	<% _(methodStepDescription).each(function(step) { %>
+		<textarea data-attribute="methodStepDescription" data-type="description" rows="10"><%= step %></textarea>
+	<% }) %>
+	<textarea class="new" data-attribute="methodStepDescription" data-type="description" rows="10"></textarea>
 </div>
 <div class="row-fluid sampling">
 	<h4>Sampling</h4>
+	<h5>Study Extent</h5>
+	<textarea class="studyextent" data-attribute="studyExtentDescription" data-type="description" rows="5"><%= studyExtentDescription %></textarea>
+	<h5>Description</h5>
+	<textarea class="description" data-attribute="samplingDescription" data-type="samplingDescription" rows="10"><%= samplingDescription %></textarea>
 </div>

@@ -50,7 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            taxonCoverage : [], //an array of EMLTaxonCoverages
 		            purpose: [],
 		            pubplace: null,
-		            methods: [], // array of EMLMethods objects
+		            methods: null, // An EMLMethods objects
 		            project: null // An EMLProject object
 		            //type: "Metadata"
         		});
@@ -314,12 +314,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
 					else if(_.contains(emlMethods, thisNode.localName)) {
 						if(typeof modelJSON[thisNode.localName] === "undefined") modelJSON[thisNode.localName] = [];
+						
 						var emlMethods = new EMLMethods({
 							objectDOM: thisNode,
 							parentModel: model
 						})
 
-						modelJSON[thisNode.localName].push(emlMethods);
+						modelJSON[thisNode.localName] = emlMethods;
 	
 					}
             		//Parse keywords
@@ -545,6 +546,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	//Serialize the publishers
 	           	this.serializeParties(eml, "publisher");
 	           	
+				// Serialize methods
+				if (this.get('methods')) {
+					if($(eml).find('methods').length > 0) {
+						$(eml).find('methods').remove();
+					}
+					
+					this.getEMLPosition(eml, "methods").after(this.get('methods').updateDOM());
+				}
 	           	//Serialize the keywords
 				this.serializeKeywords(eml, "keywordSets");
 	        	

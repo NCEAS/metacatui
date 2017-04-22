@@ -38,36 +38,18 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         		});
 
 				if (this.edit) {
-					var methodSteps = _.map(this.model.get('methodStep'), function(textModel) {
-						return this.renderTextArea(textModel, 'methodStep');
-					}, this);
-
-					var samplingDescriptions = _.map(this.model.get('samplingDescription'), function(textModel) {
-						return this.renderTextArea(textModel, 'sampling');
-					}, this);
-
-					this.$el.html(this.editTemplate());
-
-					var methodsDiv = this.$el.find("div.row-fluid.methodStep");
-
-					if (methodsDiv.length > 0) {
-						$(methodsDiv[0]).append(methodSteps);
-						$(methodsDiv[0]).append(this.renderTextArea(null, 'methodStep'));
-					}
-
-					var samplingDiv = this.$el.find("div.row-fluid.sampling");
-
-					if (samplingDiv.length > 0) {
-						$(samplingDiv[0]).append(samplingDescriptions);
-						$(samplingDiv[0]).append(this.renderTextArea(null, 'sampling'));
-					}
+					this.$el.html(this.editTemplate({
+						methodStepDescription: _(this.model.get('methodStepDescription')).map(function(step) { return step.toString()} ),
+						studyExtentDescription: this.model.get('studyExtentDescription'),
+						samplingDescription: this.model.get('samplingDescription')
+					}));
 				}
 
         		return this;
         	},
 
-			renderTextArea: function(textModel, category) {
-				if (typeof category === 'undefined') return;
+			renderTextArea: function(textModel, data) {
+				if (typeof data === 'undefined') return;
 
 				var text,
 				    isNew;
@@ -76,15 +58,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 					text = '';
 					isNew = true;
 				} else {
-					text = textModel.get('text').join('\n\n');
+					text = textModel.get('text').toString();
 					isNew = false;
 				}
 
-				var el = $(document.createElement('textarea')).
-					attr('rows', 10).
-					attr('data-attribute', category).
-					addClass('methods').
-					text(text);
+				var el = $(document.createElement('textarea'))
+					.attr('rows', data.rows)
+					.attr('data-attribute', data.category)
+					.attr('data-type', data.type)
+					.text(text);
 
 				if (isNew) {
 					$(el).addClass('new')
@@ -100,24 +82,47 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         		var changedAttr = $(e.target).attr("data-attribute");
         		if(!changedAttr) return false;
         		
+				// Get the EMLText type (parent element)
+				var textType = $(e.target).attr("data-type");
+				if (!textType) return false;
+
         		//Get the current value
         		var currentValue = this.model.get(changedAttr);
 
-				// Get the DOM position so we know which one to update
-				var position = $(e.target).parent().children('textarea.methods').index($(e.target));
+				// Update either the non-Array value or the Array value depending
+				// on the current class of the attribute
+				if (_.isArray(this.model.get(changedAttr))) {
+					// Get the DOM position so we know which one to update
+					var position = $(e.target).parent().children('textarea').index($(e.target));
 
-				// Stop if, for some odd reason, the target isn't found
-				if (position === -1) {
-					return;
+					// Stop if, for some odd reason, the target isn't found
+					if (position === -1) {
+						return;
+					}
+
+					currentValue[position] = new EMLText({
+						text: [$(e.target).val()],
+						type: textType
+					});
+
+					this.model.set(changedAttr, currentValue);
+
+					// Trigger the change event manually because, without this, the change event
+					// never fires. An alternative to this is to clone the Array before mutating
+					// so the reference changes but this seemed more performant
+					this.model.trigger('change:' + changedAttr); 
+				} else {
+					currentValue = $(e.target).val();
+					this.model.set(changedAttr, new EMLText({
+						text: [$(e.target).val()],
+						type: textType
+					}));
 				}
-
-				currentValue[position] = new EMLText({text: $(e.target).val() });
-				this.model.set(changedAttr, currentValue);
 
 				// Add new textareas as needed
 				if ($(e.target).hasClass('new')) {
 					$(e.target).removeClass('new');
-					$(e.target).after($(this.renderTextArea(null, changedAttr)));
+					$(e.target).after($(this.renderTextArea(null, { category: changedAttr, type: textType, rows: $(e.target).attr('rows') })));
 				}
         	},
         });
