@@ -73,6 +73,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 if(typeof options == "undefined")
                 	var options = {};
 
+                // Create an rdflib reference
+                this.rdf = rdf;
+
                 // Create an initial RDF graph
                 this.dataPackageGraph = rdf.graph();
 
@@ -960,7 +963,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     aggregationNode,
                     aggByStatements,
                     modifiedDate,
-                    idsFromModel;
+                    idsFromModel,
+                    subjectClone,
+                    predicateClone,
+                    objectClone;
 
                     serializer.store = this.dataPackageGraph;
 
@@ -1043,23 +1049,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     	           	});
 
                 	// Remove any other isAggregatedBy statements that are not listed as members of this model
-    	            for(var i=0; i<aggByStatements.length; i++){
-    	            	var statement = aggByStatements[i];
-
+                    _.each(aggByStatements, function(statement) {
                         if( !_.contains(allMemberIds, statement.subject.value) ) {
                             this.removeFromAggregation(statement.subject.value);
 
-    	            	} else if (_.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) }) ) {
+                        } else if ( _.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) }) ) {
                             try {
                                 this.dataPackageGraph.remove(statement);
                             } catch (error) {
                                 console.log(error);
                             }
-    	            		statement.object.value = cnResolveUrl+ encodeURIComponent(pid) + "#aggregation";
-                            this.dataPackageGraph.add(statement);
-
-    	            	}
-    	            }
+                        }
+                    }, this);
 
                 	// Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
                     var aggregationSubjStatements = // iterate over cloned statements, not the underlying statements
@@ -1070,8 +1071,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         } catch (error) {
                             console.log(error);
                         }
-                        statement.subject.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
-                        this.dataPackageGraph.add(statement);
+                        subjectClone = this.rdf.Node.fromValue(statement.subject);
+                        predicateClone = this.rdf.Node.fromValue(statement.predicate);
+                        objectClone = this.rdf.Node.fromValue(statement.object);
+
+                        subjectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
+                        this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
                     }, this);
 
                 	// Change all the statements in the RDF where the aggregation is the object, to reflect the new resource map ID
@@ -1083,21 +1088,37 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         } catch (error) {
                             console.log(error);
                         }
-    	            	statement.object.value = cnResolveUrl+ encodeURIComponent(pid) + "#aggregation";
-                        this.dataPackageGraph.add(statement);
+                        subjectClone = this.rdf.Node.fromValue(statement.subject);
+                        predicateClone = this.rdf.Node.fromValue(statement.predicate);
+                        objectClone = this.rdf.Node.fromValue(statement.object);
+
+                        objectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
+                        this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
     	            }, this);
 
     				// Change all the resource map subject nodes in the RDF graph
     				var rMapNode =  rdf.sym(cnResolveUrl + encodeURIComponent(oldPid));
     			    var rMapStatements = $.extend(true, [], this.dataPackageGraph.statementsMatching(rMapNode));
+
+                    // By first removing all statements by resource map subject
+                    try {
+                        this.dataPackageGraph.removeMany(rMapNode, undefined, undefined, undefined);
+                    } catch (error) {
+                        console.log(error);
+                    }
+
+                    // then repopulate them with correct values
                     _.each(rMapStatements, function(statement) {
-                        try {
-                            this.dataPackageGraph.remove(statement);
-                        } catch (error) {
-                            console.log(error);
+                        subjectClone = this.rdf.Node.fromValue(statement.subject);
+                        predicateClone = this.rdf.Node.fromValue(statement.predicate);
+                        objectClone = this.rdf.Node.fromValue(statement.object);
+
+                        // In the case of modified date, reset it to now()
+                        if ( predicateClone.value === DC("modified") ) {
+                            objectClone.value = new Date().toISOString();
                         }
-                        statement.subject.value = cnResolveUrl + encodeURIComponent(pid);
-                        this.dataPackageGraph.add(statement);
+                        subjectClone.value = cnResolveUrl + encodeURIComponent(pid);
+                        this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
                     }, this);
 
     			    //Change the isDescribedBy statement
@@ -1111,8 +1132,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         } catch (error) {
                             console.log(error);
                         }
-                        isDescribedByStatement.object.value = cnResolveUrl + encodeURIComponent(pid);;
-                        this.dataPackageGraph.add(isDescribedByStatement);
+                        subjectClone = this.rdf.Node.fromValue(isDescribedByStatement.subject);
+                        predicateClone = this.rdf.Node.fromValue(isDescribedByStatement.predicate);
+                        objectClone = this.rdf.Node.fromValue(isDescribedByStatement.object);
+
+                        objectClone.value = cnResolveUrl + encodeURIComponent(pid);;
+                        this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
 
     			    }
 
@@ -1253,12 +1278,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), dataNode);
                         if ( documentsStatements.length < 1 ) {
                             this.dataPackageGraph.add(documentsStatement);
-
                         }
                         isDocumentedByStatements = this.dataPackageGraph.statementsMatching(dataNode, CITO("isDocumentedBy"), metadataNode);
                         if ( isDocumentedByStatements.length < 1 ) {
                             this.dataPackageGraph.add(isDocByStatement);
-
                         }
     				}, this);
     			}
@@ -1277,8 +1300,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     						isDocByStatement = rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode);
 
     					// Add the statements
-    					this.dataPackageGraph.add(isDocByStatement);
-    					this.dataPackageGraph.add(documentsStatement);
+                        documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), dataNode);
+                        if ( documentsStatements.length < 1 ) {
+                            this.dataPackageGraph.add(documentsStatement);
+                        }
+                        isDocumentedByStatements = this.dataPackageGraph.statementsMatching(dataNode, CITO("isDocumentedBy"), metadataNode);
+                        if ( isDocumentedByStatements.length < 1 ) {
+                            this.dataPackageGraph.add(isDocByStatement);
+                        }
     				}, this);
     			}
             },
@@ -1287,19 +1316,21 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              * Removes an object from the aggregation in the RDF graph
              */
             removeFromAggregation: function(id){
-            	if(id.indexOf(this.dataPackageGraph.cnResolveUrl) == -1) id = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
+                if ( id.indexOf(this.dataPackageGraph.cnResolveUrl) == -1 ) {
+                    id = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
+                }
 
-            	//Create a literal node for the removed object
+            	// Create a literal node for the removed object
             	var removedObjNode = rdf.sym(id),
-            	//Get the statements from the RDF where the removed object is the subject or object
+            	// Get the statements from the RDF where the removed object is the subject or object
             		statements = $.extend(true, [],
                         _.union(this.dataPackageGraph.statementsMatching(undefined, undefined, removedObjNode),
                         this.dataPackageGraph.statementsMatching(removedObjNode)));
 
-            	//Remove all the statements mentioning this object
+            	// Remove all the statements mentioning this object
                 try {
                     this.dataPackageGraph.remove(statements);
-                    
+
                 } catch (error) {
                     console.log(error);
                 }
