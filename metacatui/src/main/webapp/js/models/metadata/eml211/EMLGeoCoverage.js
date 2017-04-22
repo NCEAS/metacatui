@@ -102,11 +102,26 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 */
 		updateDOM: function(){
 			var objectDOM;
-
+			
+			if(!this.isValid()){
+				console.log("invalid geo coverage");
+				return "";
+			}
+			
 			if (this.get("objectDOM")) {
 				objectDOM = $(this.get("objectDOM").cloneNode(true));
 			} else {
 				objectDOM = $(document.createElement("geographiccoverage"));
+			}
+			
+			//If only one point is given, make sure both points are the same
+			if((this.get("north") && this.get("west")) && (!this.get("south") && !this.get("east"))){
+				this.set("south", this.get("north"));
+				this.set("east", this.get("west"));
+			}
+			else if((this.get("south") && this.get("east")) && (!this.get("north") && !this.get("west"))){
+				this.set("north", this.get("south"));
+				this.set("west", this.get("east"));
 			}
 			
 			// Description
@@ -132,6 +147,30 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 											$(document.createElement("southboundingcoordinate")).text(this.get("south")) );
 			 
 			 return objectDOM;
+		},
+		
+		isValid: function(){
+			
+			if(!this.get("description"))
+				return false;
+			
+			var valid = _.filter([this.get("north"), this.get("south"), this.get("east"), this.get("west")], function(n){
+				return ((n != null) && (n != "") && (typeof n != "undefined"))
+			});
+			
+			if(valid.length == 1 || valid.length == 3 || valid.length == 0)
+				return false;
+			else if (valid.length == 4)
+				return true;
+			else{
+				if( _.contains(valid, this.get("north")) && _.contains(valid, this.get("west")))
+					return true;
+				else if( _.contains(valid, this.get("south")) && _.contains(valid, this.get("east")))
+					return true;
+				else
+					return false;
+			}
+			
 		},
 		
 		trickleUpChange: function(){

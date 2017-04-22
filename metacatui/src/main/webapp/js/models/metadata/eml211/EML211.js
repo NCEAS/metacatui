@@ -50,7 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            taxonCoverage : [], //an array of EMLTaxonCoverages
 		            purpose: [],
 		            pubplace: null,
-		            methods: [], // array of EMLMethods objects
+		            methods: null, // An EMLMethods objects
 		            project: null // An EMLProject object
 		            //type: "Metadata"
         		});
@@ -87,6 +87,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			EMLProject.prototype.nodeNameMap(),
             			EMLTaxonCoverage.prototype.nodeNameMap(),
             			EMLTemporalCoverage.prototype.nodeNameMap(),
+						EMLMethods.prototype.nodeNameMap(),
             			{
             				"additionalclassifications" : "additionalClassifications",
 			            	"additionalinfo" : "additionalInfo",
@@ -313,12 +314,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
 					else if(_.contains(emlMethods, thisNode.localName)) {
 						if(typeof modelJSON[thisNode.localName] === "undefined") modelJSON[thisNode.localName] = [];
+						
 						var emlMethods = new EMLMethods({
 							objectDOM: thisNode,
 							parentModel: model
 						})
 
-						modelJSON[thisNode.localName].push(emlMethods);
+						modelJSON[thisNode.localName] = emlMethods;
 	
 					}
             		//Parse keywords
@@ -449,10 +451,42 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	}, this);
 	           	
 	           	//Serialize the geographic coverage
-	           /*	_.each(this.get("geoCoverage"), function(geoCoverage){
-		           	$(eml).find("geographiccoverage").replaceWith(geoCoverage.updateDOM());
-	           	});
-	          */ 	
+				if ( typeof this.get('geoCoverage') !== 'undefined' && this.get('geoCoverage').length > 0) {		
+
+					// Don't serialize if geoCoverage is invalid
+					var validCoverages = _.filter(this.get('geoCoverage'), function(cov) {
+						return cov.isValid();			
+					});
+
+					if ($(eml).find('coverage').length === 0) {
+						this.getEMLPosition(eml, 'coverage').after(document.createElement('coverage'));
+					}
+					
+					//Get the existing geo coverage nodes from the EML
+					var existingGeoCov = $(eml).find("geographiccoverage");
+
+					//Update the DOM of each model
+					_.each(validCoverages, function(cov, position){
+						
+						//Update the existing node if it exists
+						if(existingGeoCov.length-1 >= position){
+							$(existingGeoCov[position]).replaceWith(cov.updateDOM());
+						}
+						//Or, append new nodes
+						else{
+							var insertAfter = existingGeoCov.length? $(eml).find("geographiccoverage").last() : null;
+							
+							if(insertAfter)
+								insertAfter.after(cov.updateDOM());	
+							else
+								$(eml).find("coverage").append(cov.updateDOM());
+						}
+					}, this);	 
+					
+					//Remove existing taxon coverage nodes that don't have an accompanying model
+					this.removeExtraNodes($(eml).find("geographiccoverage"), validCoverages);					
+				}
+	           	
 	           	//Serialize the taxonomic coverage
 				if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length > 0) {
 					// TODO: This nonEmptyCoverages business could be wrapped up in a empty()
@@ -512,6 +546,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	//Serialize the publishers
 	           	this.serializeParties(eml, "publisher");
 	           	
+				// Serialize methods
+				if (this.get('methods')) {
+					if($(eml).find('methods').length > 0) {
+						$(eml).find('methods').remove();
+					}
+					
+					this.getEMLPosition(eml, "methods").after(this.get('methods').updateDOM());
+				}
 	           	//Serialize the keywords
 				this.serializeKeywords(eml, "keywordSets");
 	        	

@@ -583,10 +583,12 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Methods section of the page
          */
 	    renderMethods: function(){
-			_.each(this.model.get('methods'), function(m) { 
-				this.$(".section.methods").append(new EMLMethodsView({model: m, edit: this.edit}).render().el);
-			}, this);
-	    },
+			if (!this.model.get('methods')) {
+				this.model.set('methods', new EMLMethods({ edit: this.edit }));
+			}
+
+			this.$(".section.methods").append(new EMLMethodsView({ model: this.model.get('methods'), edit: this.edit }).render().el);
+		},
 	    
 	    /*
          * Renders the Projcet section of the page
