@@ -97,6 +97,11 @@ define(['jquery',
 			_.each(this.get('methodStepDescription'), function(step) {
 				$(objectDOM).append($(document.createElement('methodStep')).append(step.updateDOM()));
 			});
+
+			// Insert a blank methodStep if none are set but one of the sampling elements is
+			if (this.get('methodStepDescription').length == 0 && (this.get('samplingDescription') || this.get('studyExtentDescription'))) {
+				$(objectDOM).append("<methodStep><description><para>No method step description provided.</para></description></methodStep>");
+			}
 			
 			if (this.get('samplingDescription') || this.get('studyExtentDescription')) {
 				var samplingEl = $(document.createElement('sampling')),
