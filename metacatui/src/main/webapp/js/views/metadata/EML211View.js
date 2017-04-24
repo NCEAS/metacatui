@@ -1183,7 +1183,12 @@ define(['underscore', 'jquery', 'backbone',
 		
 		createTaxonomicClassifcationTable: function(classification) {
 			var finishedEl = $('<div class="row-striped root-taxonomic-classification"></div>');
-			$(finishedEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
+
+			// Add a remove button if this is not a new table
+			if (!(typeof classification === "undefined")) {
+				$(finishedEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
+			}
+			
 			
 			var tableEl = $(this.taxonomicClassificationTableTemplate());
 			var tableBodyEl = $("<tbody></tbody>");
@@ -1395,6 +1400,7 @@ define(['underscore', 'jquery', 'backbone',
 				// Add a new classification table if this is itself a new table
 				if ($(classificationEl).is(".new")) {
 					$(classificationEl).removeClass("new");
+					$(classificationEl).prepend(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
 					$(coverage).append(this.createTaxonomicClassifcationTable());
 				}
 			}
@@ -1417,12 +1423,6 @@ define(['underscore', 'jquery', 'backbone',
 
 				//Append the new row and remove the new class from the old row
 				$(e.target).parents("tr").removeClass("new").after(newRow);
-			}
-			
-			//If the table is new, add a new table to the page
-			if($(e.target).parents(".root-taxonomic-classification").is(".new")){
-				this.$(".taxonomic-coverage").append(this.createTaxonomicClassifcationTable());
-				$(e.target).parents(".root-taxonomic-classification").removeClass("new");
 			}
 		},
 		
