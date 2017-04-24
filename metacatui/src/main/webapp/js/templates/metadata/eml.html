@@ -2,22 +2,22 @@
 	<nav class="span2 metadata-toc side-nav">
 	<ul class="side-nav-items">
 		<li class="overview side-nav-item">
-			<a href="#" data-section="overview" class="active">Overview</a>
+			<a href="#" data-section="overview" class="<% if(activeSection == 'overview') { %> active <% } %>">Overview</a>
 		</li>
 		<li class="people side-nav-item">
-			<a href="#" data-section="people">People</a>
+			<a href="#" data-section="people" class="<% if(activeSection == 'people') { %> active <% } %>">People</a>
 		</li>
 		<li class="dates side-nav-item">
-			<a href="#" data-section="dates">Dates</a>
+			<a href="#" data-section="dates" class="<% if(activeSection == 'dates') { %> active <% } %>">Dates</a>
 		</li>
 		<li class="locations side-nav-item">
-			<a href="#" data-section="locations">Locations</a>
+			<a href="#" data-section="locations" class="<% if(activeSection == 'locations') { %> active <% } %>">Locations</a>
 		</li>
 		<li class="taxa side-nav-item">
-			<a href="#" data-section="taxa">Taxa</a>
+			<a href="#" data-section="taxa" class="<% if(activeSection == 'taxa') { %> active <% } %>">Taxa</a>
 		</li>
 		<li class="methods side-nav-item">
-			<a href="#" data-section="methods">Methods</a>
+			<a href="#" data-section="methods" class="<% if(activeSection == 'methods') { %> active <% } %>">Methods</a>
 		</li>
 		<!-- <li class="project side-nav-item">
 			<a href="#" data-section="project">Project</a>
@@ -28,22 +28,22 @@
 	</ul>
 	</nav>
 	<section class="span10 metadata-container edit">
-		<section class="section overview">
+		<section data-section="overview" class="section overview <% if(visibleSection != 'overview' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
 		
-		<section class="section people">
+		<section data-section="people" class="section people <% if(visibleSection != 'people' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
 		
-		<section class="section dates">
+		<section data-section="dates" class="section dates <% if(visibleSection != 'dates' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
 		
-		<section class="section locations">
+		<section data-section="locations" class="section locations <% if(visibleSection != 'locations' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
 		
-		<section class="section taxa">
+		<section data-section="taxa" class="section taxa <% if(visibleSection != 'taxa' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
 		
-		<section class="section methods">
+		<section data-section="methods" class="section methods <% if(visibleSection != 'methods' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
 		<!-- 
 		<section class="section project">

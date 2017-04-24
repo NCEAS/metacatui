@@ -58,13 +58,25 @@ define(['underscore', 'jquery', 'backbone',
         	
         	"keyup .eml-party.new .required" : "handlePersonTyping",
         	
-			"click .side-nav-item a"         : "scrollToSection",
+			"click .side-nav-item"           : "switchSection",
+			
         	"change #new-party-menu"         : "chooseNewPersonType",
+        	
 			"click  .remove"			     : "handleRemove"
         },
                 
         /* A list of the subviews */
         subviews: [],
+        
+        /* The active section in the view - can only be the section name (e.g. overview, people) 
+         * The active section is highlighted in the table of contents and is scrolled to when the page loads 
+         */
+        activeSection: "overview",
+        
+        /* The visible section in the view - can either be the section name (e.g. overview, people) or "all" 
+         * The visible section is the ONLY section that is displayed. If set to all, all sections are displayed.
+         */
+        visibleSection: "overview",
         
         template: _.template(Template),
         overviewTemplate: _.template(OverviewTemplate),
@@ -98,7 +110,10 @@ define(['underscore', 'jquery', 'backbone',
 			console.log("rendering EML");
 
 			//Render the basic structure of the page and table of contents
-			this.$el.html(this.template());
+			this.$el.html(this.template({
+				activeSection: this.activeSection,
+				visibleSection: this.visibleSection
+			}));
 			this.$container = this.$(".metadata-container");
 			
 			//Render all the EML sections when the model is synced
@@ -126,6 +141,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	this.renderMethods();
 	    	this.renderProject();
 	    	this.renderSharing();
+	    	
+	    	//Scroll to the active section
+	    	if(this.activeSection != "overview"){
+	    		MetacatUI.appView.scrollTo(this.$(".section." + this.activeSection));
+	    	}
 	    	
 			//When scrolling through the metadata, highlight the side navigation
 	    	$(document).scroll(this.highlightTOC);
@@ -1469,6 +1489,32 @@ define(['underscore', 'jquery', 'backbone',
         },
         
         /*
+         * Switch to the given section
+         */
+        switchSection: function(e){
+        	if(!e) return;
+        	
+        	e.preventDefault();
+        	
+        	var clickedEl = $(e.target),
+        		section = clickedEl.attr("data-section") || clickedEl.children("[data-section]").attr("data-section");
+        	
+        	if(this.visibleSection == "all")
+        		this.scrollToSection(section);
+        	else{
+        		this.$(".section." + this.activeSection).hide()
+        		this.$(".section." + section).show();
+        		
+        		this.highlightTOC(section);
+        		
+        		this.activeSection = section;
+        		this.visibleSection = section;
+        	}
+        		
+        		
+        },
+        
+        /*
          * When a user clicks on the section names in the side tabs, jump to the section
          */
         scrollToSection: function(e){
@@ -1500,6 +1546,9 @@ define(['underscore', 'jquery', 'backbone',
         	$(".side-nav-item a.active").removeClass("active");
         	//Set the clicked item to active
         	$(".side-nav [data-section='" + section + "']").addClass("active");
+        	
+        	//Set the active section on this view
+        	this.activeSection = section;
         },
         
         /*
@@ -1509,44 +1558,47 @@ define(['underscore', 'jquery', 'backbone',
         highlightTOC: function(section){
         	
         	//Check if we have scrolled past the data package table, so the table of contents is heightened
+        /*	var tableBottom  = $("#data-package-container").offset().top + $("#data-package-container").height(),
+        		windowHeight = window.outerHeight,
+        		scrollTop    = $(document).scrollTop() + $("#Navbar").outerHeight();
+        	
+        	$(".metadata-toc").css("top", tableBottom);
+     */   	
+        	
         	if($("#data-package-container").offset().top + $("#data-package-container").height() <= $(document).scrollTop() + $("#Navbar").outerHeight())
         		$(".metadata-toc").css("top", $("#Navbar").outerHeight());
         	else
         		$(".metadata-toc").css("top", "auto");
         	
-        	//Remove the active class from all the menu items
-        	$(".side-nav-item a.active").removeClass("active");
         	
         	if(typeof section == "string"){
+            	//Remove the active class from all the menu items
+            	$(".side-nav-item a.active").removeClass("active");
+            	
             	$(".side-nav [data-section='" + section + "']").addClass("active");
+            	this.activeSection = section;
+            	this.visibleSection = section;
             	return;
         	}
-        	else{
+        	else if(this.visibleSection == "all"){
+            	//Remove the active class from all the menu items
+            	$(".side-nav-item a.active").removeClass("active");
+            	
         		//Get the section
         		var top = $(window).scrollTop() + $("#Navbar").outerHeight() + 70,
         			sections = $(".metadata-container .section");
-        		
-        		//If we are at the bottom, highlight the last section
-        		if(sections.last().offset().top < top){
-        			$(".side-nav-item a").last().addClass("active");
-        			return;
-        		}
-        		//If we're at the top, highlight the top section
-        		else if( top < sections.first().offset().top + sections.first().outerHeight()){
-        			$(".side-nav-item a").first().addClass("active");
-        			return;
-        		}
-        		//If we're somewhere in the middle, find the right section
-        		else{
-        			
-        			for(var i=1; i < sections.length-1; i++){
-        				if( top > $(sections[i]).offset().top && top < $(sections[i+1]).offset().top ){
-        					$($(".side-nav-item a")[i]).addClass("active");
-        					break;
-        				}
-        			}
 
-        		}
+        		//If we're somewhere in the middle, find the right section	
+    			for(var i=0; i < sections.length; i++){
+    				if( top > $(sections[i]).offset().top && top < $(sections[i+1]).offset().top ){
+    					$($(".side-nav-item a")[i]).addClass("active");
+    					this.activeSection = $(sections[i]).attr("data-section");
+    					this.visibleSection = $(sections[i]).attr("data-section");
+    					break;
+    				}
+    			}
+
+        		
         	}        	        	
         },
         
