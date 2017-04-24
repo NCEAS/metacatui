@@ -119,7 +119,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				value = this.get('text');
 			}
 
-			return value.join('\n');
+			return value.join('\n\n');
 		}
 	});
 	
