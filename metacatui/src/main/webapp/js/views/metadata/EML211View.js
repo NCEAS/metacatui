@@ -1162,11 +1162,11 @@ define(['underscore', 'jquery', 'backbone',
 				.attr("data-category", "generalTaxonomicCoverage")
 				.text(coverage.get('generalTaxonomicCoverage') || ""	);
 
-			$(finishedEl).append($(document.createElement('h5')).text('General Taxononic Coverage'));
+			$(finishedEl).append($(document.createElement('h5')).text('General Taxonomic Coverage'));
 			$(finishedEl).append(generalCoverageEl);
 
 			// taxonomicClassifications
-			$(finishedEl).append($(document.createElement('h5')).text('Taxononic Classification(s)'));
+			$(finishedEl).append($(document.createElement('h5')).text('Taxonomic Classification(s)'));
 
 			// Makes a table... for the root level
 			for (var i = 0; i < classifications.length; i++) {
