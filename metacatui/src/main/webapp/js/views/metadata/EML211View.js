@@ -1557,20 +1557,18 @@ define(['underscore', 'jquery', 'backbone',
          */
         highlightTOC: function(section){
         	
-        	//Check if we have scrolled past the data package table, so the table of contents is heightened
-        /*	var tableBottom  = $("#data-package-container").offset().top + $("#data-package-container").height(),
-        		windowHeight = window.outerHeight,
-        		scrollTop    = $(document).scrollTop() + $("#Navbar").outerHeight();
+        	//Resize the vertical table of contents so it's always the same height as the editor body
+        	var tableBottom = document.getElementById("data-package-container").getBoundingClientRect().bottom,
+        		navTop = tableBottom;
         	
-        	$(".metadata-toc").css("top", tableBottom);
-     */   	
+        	if(tableBottom < $("#Navbar").outerHeight())
+        		navTop = $("#Navbar").outerHeight();
         	
-        	if($("#data-package-container").offset().top + $("#data-package-container").height() <= $(document).scrollTop() + $("#Navbar").outerHeight())
-        		$(".metadata-toc").css("top", $("#Navbar").outerHeight());
-        	else
-        		$(".metadata-toc").css("top", "auto");
+        	navTop += $("#editor-body .ui-resizable-handle").outerHeight();
         	
+        	$(".metadata-toc").css("top", navTop);
         	
+        	//Now change sections
         	if(typeof section == "string"){
             	//Remove the active class from all the menu items
             	$(".side-nav-item a.active").removeClass("active");
