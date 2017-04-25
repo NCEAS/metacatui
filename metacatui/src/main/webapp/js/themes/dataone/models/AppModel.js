@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone'],
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
-			publishServiceUrl: null,
+			//publishServiceUrl: null,
 			authServiceUrl: null,
 			queryServiceUrl: null,
 			metaServiceUrl: null,
@@ -88,7 +88,6 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("d1Service", this.get("d1CNService"));
 			}
 
-			//this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
 			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
 			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/');
