@@ -246,7 +246,13 @@ define(['jquery', 'underscore', 'backbone'],
 			};
 			
 			xhr.onerror = function(e){
-				window.open(url, "_blank");
+				var a = document.createElement('a');
+			    a.href = url;
+			    a.download = filename.trim(); // Set the file name.
+			    a.style.display = 'none';
+			    document.body.appendChild(a);
+			    a.click();
+			    
 				model.trigger("downloadComplete");
 			};
 			
