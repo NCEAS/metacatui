@@ -245,6 +245,11 @@ define(['jquery', 'underscore', 'backbone'],
 			    model.trigger("downloadComplete");
 			};
 			
+			xhr.onerror = function(e){
+				window.open(url, "_blank");
+				model.trigger("downloadComplete");
+			};
+			
 			xhr.onprogress = function(e){
 			    if (e.lengthComputable){
 			        var percent = (e.loaded / e.total) * 100;
