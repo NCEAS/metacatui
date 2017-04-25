@@ -27,7 +27,7 @@ if(includeEmail && MetacatUI.appModel.get("emailContact")){
 	<div class="alert <%=classes%>">
 		<%=msg%>
 		<%=email%>
-		<% if(remove){ %>
+		<% if(typeof remove != "undefined" && remove){ %>
 			<a href="#" class="close" data-dismiss="alert">&times;</a>
 		<% } %>
 	</div>
