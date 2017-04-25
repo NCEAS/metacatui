@@ -787,14 +787,12 @@ define(['jquery',
 		 * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
 		 */
 		insertOwnerControls: function(){
-			//Don't display editing controls when we are pointing to a CN
-		//	if(appModel.get("d1Service").toLowerCase().indexOf("cn") > -1)
-		//		return false;
+			if( !appModel.get("publishServiceUrl") )
+				return false;
 
 			//Do not show user controls for older versions of data sets
 			if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
 				return false;
-
 
 			var container = this.$(this.ownerControlsContainer);
 
