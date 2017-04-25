@@ -219,18 +219,12 @@ define(['jquery', 'underscore', 'backbone'],
 				url = this.get("url"),
 				model = this;
 
-			//If we are accessing objects via the resolve service, we need to find the direct URL
-			if(url.indexOf("/resolve/") > -1){
-				var dataSource = nodeModel.getMember(this.get("datasource")),
-					version = dataSource.readv2? "v2" : "v1";
-
-				url = dataSource.baseURL + "/" + version + "/object/" + this.get("id");
-			}
-
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
 			xhr.responseType = "blob";
-			xhr.withCredentials = true;
+			
+			if(appUserModel.get("loggedIn"))
+				xhr.withCredentials = true;
 
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 			xhr.onload = function(){
@@ -245,6 +239,17 @@ define(['jquery', 'underscore', 'backbone'],
 			    model.trigger("downloadComplete");
 			};
 			
+			xhr.onerror = function(e){
+				var a = document.createElement('a');
+			    a.href = url;
+			    a.download = filename.trim(); // Set the file name.
+			    a.style.display = 'none';
+			    document.body.appendChild(a);
+			    a.click();
+			    
+				model.trigger("downloadComplete");
+			};
+			
 			xhr.onprogress = function(e){
 			    if (e.lengthComputable){
 			        var percent = (e.loaded / e.total) * 100;
@@ -254,7 +259,10 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
-			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			
+			if(appUserModel.get("loggedIn"))
+				xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			
 			xhr.send();
 		},
 
