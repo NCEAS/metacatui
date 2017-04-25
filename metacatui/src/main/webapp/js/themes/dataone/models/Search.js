@@ -277,8 +277,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(this.filterIsAvailable("attribute") && ((filter == "attribute") || getAll) && this.get("attribute").length){
 				var attribute = this.get('attribute');
 				if (attribute) {
-					var expandedAttributes = appLookupModel.bioportalExpand(attribute[0].value);
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["attribute"], expandedAttributes, {operator: "OR"});
+					if(this.filterIsAvailable("annotation") && appModel.get("bioportalSearchUrl")){
+						var expandedAttributes = appLookupModel.bioportalExpand(attribute[0].value);
+						query += "+" + this.getGroupedQuery(this.fieldNameMap["attribute"], expandedAttributes, {operator: "OR"});
+					}
+					else
+						query += "+" + this.getGroupedQuery(this.fieldNameMap["attribute"], attribute, {operator: "OR"});						
 				}
 			}
 			
