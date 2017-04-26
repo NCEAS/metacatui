@@ -34,10 +34,10 @@ inject dependencies, such as:
 .. code::
 
     define(["chai", "chai-jquery", "chai-backbone",
-    "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLEntity"],
-    function(chai, chaiJquery, chaiBackbone, EMLEntity) {
+        "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLEntity"],
+        function(chai, chaiJquery, chaiBackbone, EMLEntity) {
 
-    // spec code goes here
+        // spec code goes here
     });
 
 If other libraries are needed, add the paths and shims to the `require.config()`
