@@ -34,7 +34,8 @@ require.config({
 define(["require", "mocha"], function(require, mocha) {
         // The array of tests in the suite
         var tests = [
-            "js/specs/models/metadata/eml211/EMLEntity.spec"
+            "js/specs/models/metadata/eml211/EMLEntity.spec",
+            "js/specs/models/metadata/eml211/EMLAttribute.spec"
         ];
 
         // Include model and view tests
