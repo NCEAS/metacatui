@@ -3192,8 +3192,6 @@ textarea.xlarge{
 	box-sizing: border-box;
 }
 .metadata-container h2{
-	border-bottom: 1px solid #DDD;
-    padding-bottom: 10px;
     padding-top: 40px;
     margin-bottom: 30px;
 }
@@ -3386,7 +3384,19 @@ textarea.xlarge{
 }
 .locations-table .header{
 	font-weight: bold;
-	margin-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #DDD;
+    padding-bottom: 10px;
+    background-color: #EEE;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+.locations-table .header .subtle{
+	font-size: .8em;
+    font-weight: normal;
+}
+.locations-table .header h5{
+	margin-bottom: 0px;
 }
 .locations-table .eml-geocoverage{
 	padding-top: 10px;
