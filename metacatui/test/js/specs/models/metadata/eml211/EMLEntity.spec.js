@@ -43,6 +43,12 @@ define(["chai", "chai-jquery", "chai-backbone",
 
                 });
 
+                it("should return an xml id attribute", function() {
+                    attributes.xmlID.should.be.a("string");
+                    attributes.xmlID.should.equal("12345");
+
+                });
+
                 it("should return an alternate identifier array", function() {
                     attributes.alternateidentifier.should.be.an("array");
                     attributes.alternateidentifier[0].should.equal("altid.1.1.png");
@@ -70,7 +76,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             getTestEntityXML: function() {
                 var xml = [];
                 xml.push(
-                    "<otherEntity>\n",
+                    "<otherEntity id=\"12345\">\n",
                     "\t<alternateIdentifier>altid.1.1.png</alternateIdentifier>\n",
                     "\t<alternateIdentifier>altid2.1.1.png</alternateIdentifier>\n",
                     "\t<entityName>entity.1.1.png</entityName>\n",

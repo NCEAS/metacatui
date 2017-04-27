@@ -15,6 +15,7 @@ define(["jquery", "underscore", "backbone"],
             defaults: {
 
                 /* Attributes from EML */
+                xmlID: null, // The XML id of the entity
                 alternateIdentifier: [], // Zero or more alt ids
                 entityName: null, // Required, the name of the entity
                 entityDescription: null, // Description of the entity
@@ -90,6 +91,10 @@ define(["jquery", "underscore", "backbone"],
                 }
 
                 $objectDOM = $(objectDOM);
+
+                // Add the XML id
+                modelJSON.xmlID = $objectDOM.attr("id");
+
                 // Add the alternateIdentifiers
                 modelJSON.alternateidentifier = [];
                 var alternateIds = $objectDOM.children("alternateidentifier");
