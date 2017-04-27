@@ -135,11 +135,15 @@ define(['underscore', 'jquery', 'backbone',
 		        		}
 	        		}
 	        		
-	        		if(hasError)
-	        			view.$(".notification.error").text("Please enter a geographic description and at least one lat, long pair.");
+	        		if(hasError){
+	        			var errorMsg = view.model.validate();
+	        			view.$(".notification.error").text(errorMsg);
+	        			view.$el.addClass("error");
+	        		}
 	        		else{
 	        			view.$("input.error, textarea.error").removeClass("error");
 	        			view.$(".notification.error").text("");
+	        			view.$el.removeClass("error");
 	        		}
         		}, 1);
         	},

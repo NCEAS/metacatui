@@ -455,7 +455,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
 					// Don't serialize if geoCoverage is invalid
 					var validCoverages = _.filter(this.get('geoCoverage'), function(cov) {
-						return cov.validate();			
+						return cov.isValid();			
 					});
 
 					if ( datasetNode.find('coverage').length === 0 && validCoverages.length ) {
@@ -695,7 +695,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             save: function(attributes, options){
                 
                 //Validate before we try anything else
-                if(!this.validate()){
+                if(!this.isValid()){
                 	this.trigger("cancelSave");
                 	return false;
                 }
@@ -831,8 +831,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              */
             validate: function() {
             	if(!this.get("title").length){
-            		this.trigger("required", "title");
-            		return "Title is required";
+            		this.trigger("required", ["title"]);
+            		
+            		var error = "Title is required";
+            		
+            		//Set the validation error message
+            		this.set("validationError", error);
+            		
+            		return error;
+            	}
+            	else{
+            		this.set("validationError", null);
+            		return;
             	}
             },
             

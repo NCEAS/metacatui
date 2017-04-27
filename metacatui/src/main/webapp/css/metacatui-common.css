@@ -3384,7 +3384,6 @@ textarea.xlarge{
 }
 .locations-table .header{
 	font-weight: bold;
-    margin-bottom: 10px;
     border-bottom: 1px solid #DDD;
     padding-bottom: 10px;
     background-color: #EEE;
@@ -3412,6 +3411,9 @@ textarea.xlarge{
 }
 .locations-table textarea.error{
 	border-color: red;
+}
+.eml-geocoverage.error {
+    background-color: rgba(251, 188, 188, 0.35);
 }
 /*******************************************
 Pager View
