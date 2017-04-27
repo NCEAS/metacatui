@@ -103,8 +103,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		updateDOM: function(){
 			var objectDOM;
 			
-			if(!this.isValid()){
-				console.log("invalid geo coverage");
+			if(!this.validate()){
 				return "";
 			}
 			
@@ -149,7 +148,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 return objectDOM;
 		},
 		
-		isValid: function(){
+		validate: function(){
 			
 			if(!this.get("description"))
 				return false;
