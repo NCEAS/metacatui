@@ -62,7 +62,7 @@ define(["chai", "chai-jquery", "chai-backbone",
 
                 it("should return an entity description", function() {
                     attributes.entityDescription.should.be.a("string");
-                    attributes.entityDescription.should.equal("A descrition of entity.1.1.png");
+                    attributes.entityDescription.should.equal("A description of entity.1.1.png");
                 });
 
                 it("should return an entity type", function() {
@@ -80,7 +80,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t<alternateIdentifier>altid.1.1.png</alternateIdentifier>\n",
                     "\t<alternateIdentifier>altid2.1.1.png</alternateIdentifier>\n",
                     "\t<entityName>entity.1.1.png</entityName>\n",
-                    "\t<entityDescription>A descrition of entity.1.1.png</entityDescription>\n",
+                    "\t<entityDescription>A description of entity.1.1.png</entityDescription>\n",
                     "\t<entityType>Portable Network graphic image</entityType>\n",
                     "</otherEntity>");
 
