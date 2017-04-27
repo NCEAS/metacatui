@@ -96,20 +96,20 @@ define(["jquery", "underscore", "backbone"],
                 modelJSON.xmlID = $objectDOM.attr("id");
 
                 // Add the alternateIdentifiers
-                modelJSON.alternateidentifier = [];
+                modelJSON.alternateIdentifier = [];
                 var alternateIds = $objectDOM.children("alternateidentifier");
                 _.each(alternateIds, function(alternateId) {
-                    modelJSON.alternateidentifier.push(alternateId.textContent);
+                    modelJSON.alternateIdentifier.push(alternateId.textContent);
                 });
 
                 // Add the entityName
-                modelJSON.entityname = $objectDOM.children("entityname").text();
+                modelJSON.entityName = $objectDOM.children("entityname").text();
 
                 // Add the entityDescription
-                modelJSON.entitydescription = $objectDOM.children("entitydescription").text();
+                modelJSON.entityDescription = $objectDOM.children("entitydescription").text();
 
                 // Add the entityType
-                modelJSON.entitytype = $objectDOM.children("entitytype").text();
+                modelJSON.entityType = $objectDOM.children("entitytype").text();
 
                 return modelJSON;
             },

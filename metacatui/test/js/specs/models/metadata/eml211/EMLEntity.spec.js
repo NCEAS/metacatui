@@ -50,24 +50,24 @@ define(["chai", "chai-jquery", "chai-backbone",
                 });
 
                 it("should return an alternate identifier array", function() {
-                    attributes.alternateidentifier.should.be.an("array");
-                    attributes.alternateidentifier[0].should.equal("altid.1.1.png");
-                    attributes.alternateidentifier[1].should.equal("altid2.1.1.png");
+                    attributes.alternateIdentifier.should.be.an("array");
+                    attributes.alternateIdentifier[0].should.equal("altid.1.1.png");
+                    attributes.alternateIdentifier[1].should.equal("altid2.1.1.png");
                 });
 
                 it("should return an entity name", function() {
-                    attributes.entityname.should.be.a("string");
-                    attributes.entityname.should.equal("entity.1.1.png");
+                    attributes.entityName.should.be.a("string");
+                    attributes.entityName.should.equal("entity.1.1.png");
                 });
 
                 it("should return an entity description", function() {
-                    attributes.entitydescription.should.be.a("string");
-                    attributes.entitydescription.should.equal("A descrition of entity.1.1.png");
+                    attributes.entityDescription.should.be.a("string");
+                    attributes.entityDescription.should.equal("A descrition of entity.1.1.png");
                 });
 
                 it("should return an entity type", function() {
-                    attributes.entitytype.should.be.a("string");
-                    attributes.entitytype.should.equal("Portable Network graphic image");
+                    attributes.entityType.should.be.a("string");
+                    attributes.entityType.should.equal("Portable Network graphic image");
                 });
             });
         });
