@@ -536,6 +536,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     
                 }
                 
+                if(datasetNode.find("coverage").children().length == 0)
+                	datasetNode.find("coverage").remove();
+                
                 //If there is no creator, create one from the user
                 if(!this.get("creator").length){
 	           		var party = new EMLParty({ parentModel: this, type: "creator" });

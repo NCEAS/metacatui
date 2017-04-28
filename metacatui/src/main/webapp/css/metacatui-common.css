@@ -3326,7 +3326,7 @@ textarea.xlarge{
 /* ---- Remove icons in the Editor ---- */
 .data-package-item .remove,
 .metadata-container .remove{
-	color: rgba(255,0,0,0.6);
+	color: #AAA;
 }
 .metadata-container .remove{
 	font-size: 1.7em;
@@ -3400,9 +3400,19 @@ textarea.xlarge{
 .locations-table .eml-geocoverage{
 	padding-top: 10px;
 	padding-bottom: 10px;
+	border: 1px solid white;
 }
 .locations-table .eml-geocoverage:nth-child(odd) {
     background-color: #EEE;
+}
+.metadata-container .locations .remove {
+    position: relative;
+    margin-left: 0px;
+    margin-top: 50%;
+    display: block;
+}
+.eml-geocoverage.show-remove{
+	border: 1px dashed red;
 }
 .locations-table .notification{
 	min-height: .8em;

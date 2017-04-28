@@ -31,7 +31,9 @@ define(['underscore', 'jquery', 'backbone',
         		"change"   : "updateModel",
         		"focusout .input-container" : "showRequired",
         		"keyup textarea.error" : "updateError",
-        		"click .coord.error"   : "updateError"
+        		"click .coord.error"   : "updateError",
+        		"mouseover .remove"    : "toggleRemoveClass",
+        		"mouseout  .remove"    : "toggleRemoveClass"
         	},
         	
         	render: function(e) {
@@ -69,7 +71,7 @@ define(['underscore', 'jquery', 'backbone',
         		//Get the attribute that was changed
         		if(!attribute) return false;
         		
-        		this.model.set(attribute, value);
+        		this.model.set(attribute, value);        		
         	},
         	
         	/*
@@ -148,6 +150,7 @@ define(['underscore', 'jquery', 'backbone',
         		}, 1);
         	},
         	
+        	
         	/*
         	 * When the user is typing in an input with an error, check if they've fixed the error
         	 */
@@ -158,6 +161,13 @@ define(['underscore', 'jquery', 'backbone',
         			input.removeClass("error");
         			this.$(".notification.error").text("");
         		}
+        	},
+        	
+        	/*
+        	 * Highlight what will be removed when the remove icon is hovered over
+        	 */
+        	toggleRemoveClass: function(){
+        		this.$el.toggleClass("show-remove");
         	},
         	
         	/*

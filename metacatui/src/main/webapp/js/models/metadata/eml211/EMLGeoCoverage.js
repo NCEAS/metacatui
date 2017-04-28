@@ -103,7 +103,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		updateDOM: function(){
 			var objectDOM;
 			
-			if(!this.validate()){
+			if(!this.isValid()){
 				return "";
 			}
 			
@@ -175,7 +175,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		trickleUpChange: function(){
-			MetacatUI.rootDataPackage.packageModel.set("changed", true);
+			this.get("parentModel").trigger("change");
 		},
 		
 		formatXML: function(xmlString){
