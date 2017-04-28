@@ -254,10 +254,13 @@ define(['underscore',
 							.attr("title", "Drag to resize")
 							.append($(document.createElement("i")).addClass("icon icon-caret-down"));
             $packageTableContainer.after(handle);
-            $packageTableContainer.resizable({ handles: { "s" : handle }, minHeight: 100, maxHeight: 900 });
+            $packageTableContainer.resizable({ 
+	            	handles: { "s" : handle }, 
+	            	minHeight: 100, 
+	            	maxHeight: 900
+            	});
             $packageTableContainer.css("height", "200px");
-
-            
+            	
             var table = this.dataPackageView.$el;
             this.listenTo(this.dataPackageView, "addOne", function(){
             	if(table.outerHeight() > $packageTableContainer.outerHeight() && table.outerHeight() < 220){
@@ -329,6 +332,7 @@ define(['underscore',
             		edit: true
             		});
             	this.subviews.push(emlView);
+            	this.emlView = emlView;
             	emlView.render();
                 // this.renderDataPackageItem(model, collection, options);
                // this.off("change", this.renderMember, model); // avoid double renderings      	
@@ -341,7 +345,13 @@ define(['underscore',
                             createLink: false });
 
                 this.subviews.push(citationView);
-                $("#citation-container").html(citationView.render().$el);  	
+                $("#citation-container").html(citationView.render().$el); 
+                
+                //If there is an EML subview, resize the table of contents
+                if(this.emlView){
+                	this.emlView.resizeTOC();
+                	$("#data-package-container + .ui-resizable-s").on("click", this.emlView.resizeTOC);
+                }
                 
                 //Remove the rendering class from the body element
                 $("body").removeClass("rendering");
