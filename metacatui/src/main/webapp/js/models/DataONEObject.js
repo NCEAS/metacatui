@@ -1004,8 +1004,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				
 				//If there is no system metadata, then retrieve it first
 				if(!this.get("sysMetaXML")){
-					this.on("sync", this.findLatestVersion);
-					this.fetch();
+					this.once("sync", this.findLatestVersion);
+					this.fetch({
+						url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
+						dataType: "text"
+					});
 					return;
 				}
 				
