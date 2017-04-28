@@ -15,7 +15,19 @@ require.config({
         "mocha": "./js/mocha",
         "chai": "./js/chai",
         "chai-jquery": "./js/chai-jquery",
-        "chai-backbone": "./js/chai-backbone"
+        "chai-backbone": "./js/chai-backbone",
+        "uuid": "../src/main/webapp/components/uuid",
+        "md5": "../src/main/webapp/components/md5",
+        "x2js": "../src/main/webapp/components/xml2json",
+        // The paths to the app components
+        "models": "../src/main/webapp/js/models",
+        "collections": "../src/main/webapp/js/collections",
+        "views": "../src/main/webapp/js/views",
+        "routers": "../src/main/webapp/js/routers",
+        "templates": "../src/main/webapp/js/templates",
+        "themes": "../src/main/webapp/js/themes"
+
+
     },
     shim: {
         "mocha": {
