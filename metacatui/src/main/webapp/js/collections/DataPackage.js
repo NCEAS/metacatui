@@ -1113,6 +1113,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         objectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
                         this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
     	            }, this);
+    	            
+    			    //Change all the resource map identifier literal node in the RDF graph
+    				if ( typeof idStatement != "undefined" ) {
+                        try {
+                            this.dataPackageGraph.remove(idStatement);
+                        } catch (error) {
+                            console.log(error);
+                        }
+                        idStatement.object.value = pid;
+                        this.dataPackageGraph.add(idStatement);
+
+                    }
 
     				// Change all the resource map subject nodes in the RDF graph
     				var rMapNode =  this.rdf.sym(cnResolveUrl + encodeURIComponent(oldPid));
@@ -1156,17 +1168,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 		this.addToAggregation(id);
                 	}, this);
 
-    			    //Change all the resource map identifier literal node in the RDF graph
-    				if ( typeof idStatement != "undefined" ) {
-                        try {
-                            this.dataPackageGraph.remove(idStatement);
-                        } catch (error) {
-                            console.log(error);
-                        }
-                        idStatement.object.value = pid;
-                        this.dataPackageGraph.add(idStatement);
-
-                    }
 
                 } else {
                     // Create the OAI-ORE graph from scratch
