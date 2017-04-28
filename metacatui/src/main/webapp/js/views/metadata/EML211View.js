@@ -558,6 +558,8 @@ define(['underscore', 'jquery', 'backbone',
 	    		//Render the view
 	    		geoView.render();
 	    		
+	    		geoView.$el.find(".remove-container").append(this.createRemoveButton(null, "geoCoverage", ".eml-geocoverage", ".locations-table"));
+	    		
 	    		//Add the locations section to the page
 	    		locationsTable.append(geoView.el);
 	    		
@@ -568,9 +570,12 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Now add one empty row to enter a new geo coverage
 	    	if(this.edit){
 	    		var newGeo = new EMLGeoCoverageView({
-	    			edit: true
+	    			edit: true,
+	    			model: new EMLGeoCoverage({ parentModel: this.model, isNew: true}),
+	    			isNew: true
 	    		});
 	    		locationsTable.append(newGeo.render().el);
+	    		newGeo.$el.find(".remove-container").append(this.createRemoveButton(null, "geoCoverage", ".eml-geocoverage", ".locations-table"));
 	    	}
 	    },
 	    
@@ -909,10 +914,13 @@ define(['underscore', 'jquery', 'backbone',
 	    		
 	    		//Render the new geo coverage view
 	    		var newGeo = new EMLGeoCoverageView({
-	    			edit: this.edit
+	    			edit: this.edit,
+	    			model: new EMLGeoCoverage({ parentModel: this.model, isNew: true}),
+	    			isNew: true
 	    		});
 	    		this.$(".locations-table").append(newGeo.render().el);
-	    		
+	    		newGeo.$el.find(".remove-container").append(this.createRemoveButton(null, "geoCoverage", ".eml-geocoverage", ".locations-table"));
+
 	    		//Unmark the view as new
 	    		viewEl.data("view").notNew();
 	    		
@@ -1691,17 +1699,20 @@ define(['underscore', 'jquery', 'backbone',
 					
 				}
 			} else if (selector) {
-				// Find the index this attribute is 
-				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
+				// Find the index this attribute is in the DOM
+				var position = $(e.target).parents(container).first().children(selector).index(selector);
 				
+				//Remove this index of the array
 				var currentValue = this.model.get(attribute);
 				currentValue.splice(position, 1);
 
+				//Set the array on the model so the 'set' function is executed
 				this.model.set(attribute, currentValue);
+				
 			} else { // Handle remove on a basic text field
 				// The DOM order matches the EML model attribute order so we can remove
 				// by that
-				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
+				var position = $(e.target).parents(container).first().children(selector).index(selector);
 				var currentValue = this.model.get(attribute);
 				
 				// Remove from the EML Model

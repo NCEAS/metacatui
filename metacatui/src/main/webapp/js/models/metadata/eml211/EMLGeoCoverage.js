@@ -104,7 +104,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			var objectDOM;
 			
 			if(!this.isValid()){
-				console.log("invalid geo coverage");
 				return "";
 			}
 			
@@ -149,32 +148,34 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 return objectDOM;
 		},
 		
-		isValid: function(){
+		validate: function(){
 			
 			if(!this.get("description"))
-				return false;
+				return "Each location must have a description";
 			
 			var valid = _.filter([this.get("north"), this.get("south"), this.get("east"), this.get("west")], function(n){
 				return ((n != null) && (n != "") && (typeof n != "undefined"))
 			});
 			
-			if(valid.length == 1 || valid.length == 3 || valid.length == 0)
-				return false;
+			if(valid.length == 0)
+				return "Each location description must have at least one coordinates pair.";
+			else if(valid.length == 1 || valid.length == 3)
+				return "Each coordinate must include a latitude AND longitude.";
 			else if (valid.length == 4)
-				return true;
+				return;
 			else{
 				if( _.contains(valid, this.get("north")) && _.contains(valid, this.get("west")))
-					return true;
+					return;
 				else if( _.contains(valid, this.get("south")) && _.contains(valid, this.get("east")))
-					return true;
+					return;
 				else
-					return false;
+					return "Each location must have at least one complete lat, long pair.";
 			}
 			
 		},
 		
 		trickleUpChange: function(){
-			MetacatUI.rootDataPackage.packageModel.set("changed", true);
+			this.get("parentModel").trigger("change");
 		},
 		
 		formatXML: function(xmlString){

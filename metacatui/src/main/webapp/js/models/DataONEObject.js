@@ -1004,8 +1004,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				
 				//If there is no system metadata, then retrieve it first
 				if(!this.get("sysMetaXML")){
-					this.on("sync", this.findLatestVersion);
-					this.fetch();
+					this.once("sync", this.findLatestVersion);
+					this.fetch({
+						url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
+						dataType: "text"
+					});
 					return;
 				}
 				
@@ -1145,10 +1148,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                   extension = objectFormats[0].get("extension");
               }
               
-              filename = this.get("id").replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
+              filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
+              filename.replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
+              
               if ( typeof extension !== "undefined" ) {
                   filename = filename + "." + extension;
               }
+              
               this.set("fileName", filename);
               
           }

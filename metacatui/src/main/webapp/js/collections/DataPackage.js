@@ -497,33 +497,47 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			}
 
     			//Sort the models in the collection so the metadata is saved first
-    			var metadataModels = this.where({ type: "Metadata" });
-    			var dataModels     = _.difference(this.models, metadataModels);
-    			var sortedModels   = _.union(metadataModels, dataModels);
-    			var modelsInProgress = [];
+    			var metadataModels  = this.where({ type: "Metadata" });
+    			var dataModels      = _.difference(this.models, metadataModels);
+    			var sortedModels    = _.union(metadataModels, dataModels);
+				var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
+    			var modelsToBeSaved = _.filter(sortedModels, function(m){ 
+										return (m.get("uploadStatus") == "q" || m.get("uploadStatus") == "e")
+										});
 
+    			//First quickly validate all the models before attempting to save any
+    			var allValid = _.every(modelsToBeSaved, function(m) {
+    				return m.isValid();
+    			});
+    			
+    			//If at least once model to be saved is invalid, cancel the save.
+    			if(!allValid){
+    				this.trigger("cancelSave");
+    				return;
+    			}
+    			
     			var failedSave = false;
 
     			//First save all the models of the collection, if needed
-    			_.each(sortedModels, function(model){
+    			_.each(modelsToBeSaved, function(model){
+    				//Don't save any more models when one has failed
     				if(failedSave) return;
 
     				//If this model is in progress or in the queue
-    				if(model.get("uploadStatus") == "p")
-    					modelsInProgress.push(model);
-    				else if(model.get("uploadStatus") == "q" || model.get("uploadStatus") == "e"){
+					this.listenToOnce(model, "cancelSave", function(){
+						failedSave = true;
+						sortedModels = [];
+					});
+					
+					//If the model is saved successfully, start this save function again
+					this.listenToOnce(model, "successSaving", this.save);
 
-    					this.listenToOnce(model, "cancelSave", function(){
-    						failedSave = true;
-    						sortedModels = [];
-    					});
+					//Save the model and watch for fails
+					model.save();
 
-    					//Save the model and watch for fails
-    					model.save();
-
-    					modelsInProgress.push(model);
-    					this.listenToOnce(model, "successSaving", this.save);
-    				}
+					//Add it to the list of models in progress
+					modelsInProgress.push(model);
+    				
     			}, this);
 
     			if(failedSave)
@@ -1099,6 +1113,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         objectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
                         this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
     	            }, this);
+    	            
+    			    //Change all the resource map identifier literal node in the RDF graph
+    				if ( typeof idStatement != "undefined" ) {
+                        try {
+                            this.dataPackageGraph.remove(idStatement);
+                        } catch (error) {
+                            console.log(error);
+                        }
+                        idStatement.object.value = pid;
+                        this.dataPackageGraph.add(idStatement);
+
+                    }
 
     				// Change all the resource map subject nodes in the RDF graph
     				var rMapNode =  this.rdf.sym(cnResolveUrl + encodeURIComponent(oldPid));
@@ -1142,17 +1168,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 		this.addToAggregation(id);
                 	}, this);
 
-    			    //Change all the resource map identifier literal node in the RDF graph
-    				if ( typeof idStatement != "undefined" ) {
-                        try {
-                            this.dataPackageGraph.remove(idStatement);
-                        } catch (error) {
-                            console.log(error);
-                        }
-                        idStatement.object.value = pid;
-                        this.dataPackageGraph.add(idStatement);
-
-                    }
 
                 } else {
                     // Create the OAI-ORE graph from scratch

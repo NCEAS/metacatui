@@ -390,7 +390,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		if(!Array.isArray(basicTextValues)) basicTextValues = [basicTextValues];
 	           		
 					// Remove existing nodes
-					$(eml).find('dataset').first().find(fieldName.toLowerCase()).remove();
+	           		datasetNode.find(fieldName.toLowerCase()).remove();
 					
 					// Create new nodes
 					var nodes = _.map(basicTextValues, function(value) {
@@ -401,12 +401,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
 					// Insert new nodes
 					if (fieldName.toLowerCase() === "alternateidentifier") {
-						$(eml).find('dataset').prepend(nodes);
+						datasetNode.prepend(nodes);
 					} else if (fieldName.toLowerCase() === "title") {
-						if ($(datasetNode).find("alternateidentifier").length > 0) {
-							$(eml).find('dataset').last().find("alternateidentifier").last().after(nodes);
+						if (datasetNode.find("alternateidentifier").length > 0) {
+							datasetNode.find("alternateidentifier").last().after(nodes);
 						} else {
-							$(eml).find('dataset').prepend(nodes);
+							datasetNode.prepend(nodes);
 						}
 					}
 	           	}, this);
@@ -422,7 +422,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           		if( ! emlTextModels.length ) return;
 	           		
 	           		// Get the node from the EML doc
-	           		var nodes = $(eml).find(fieldName);
+	           		var nodes = datasetNode.find(fieldName);
 	           		
 	           		// Update the DOMs for each model
 	           		_.each(emlTextModels, function(thisTextModel, i){
@@ -458,12 +458,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						return cov.isValid();			
 					});
 
-					if ($(eml).find('coverage').length === 0) {
-						this.getEMLPosition(eml, 'coverage').after(document.createElement('coverage'));
+					if ( datasetNode.find('coverage').length === 0 && validCoverages.length ) {
+						var coveragePosition = this.getEMLPosition(eml, 'coverage');
+						
+						if(coveragePosition)
+							coveragePosition.after(document.createElement('coverage'));
+						else
+							datasetNode.append(document.createElement('coverage'));
 					}
 					
 					//Get the existing geo coverage nodes from the EML
-					var existingGeoCov = $(eml).find("geographiccoverage");
+					var existingGeoCov = datasetNode.find("geographiccoverage");
 
 					//Update the DOM of each model
 					_.each(validCoverages, function(cov, position){
@@ -474,17 +479,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						}
 						//Or, append new nodes
 						else{
-							var insertAfter = existingGeoCov.length? $(eml).find("geographiccoverage").last() : null;
+							var insertAfter = existingGeoCov.length? datasetNode.find("geographiccoverage").last() : null;
 							
 							if(insertAfter)
 								insertAfter.after(cov.updateDOM());	
 							else
-								$(eml).find("coverage").append(cov.updateDOM());
+								datasetNode.find("coverage").append(cov.updateDOM());
 						}
 					}, this);	 
 					
 					//Remove existing taxon coverage nodes that don't have an accompanying model
-					this.removeExtraNodes($(eml).find("geographiccoverage"), validCoverages);					
+					this.removeExtraNodes(datasetNode.find("geographiccoverage"), validCoverages);					
 				}
 	           	
 	           	//Serialize the taxonomic coverage
@@ -499,12 +504,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					});
 
 					if (nonEmptyCoverages.length > 0) {
-						if ($(eml).find('coverage').length === 0) {
+						if (datasetNode.find('coverage').length === 0) {
 							this.getEMLPosition(eml, 'coverage').after(document.createElement('coverage'));
 						}
 						
 						//Get the existing taxon coverage nodes from the EML
-						var existingTaxonCov = $(eml).find("taxonomiccoverage");
+						var existingTaxonCov = datasetNode.find("taxonomiccoverage");
 
 						//Update the DOM of each model
 						_.each(this.get("taxonCoverage"), function(taxonCoverage, position){
@@ -515,7 +520,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 							}
 							//Or, append new nodes
 							else{
-								$(eml).find('coverage').append(taxonCoverage.updateDOM());	
+								datasetNode.find('coverage').append(taxonCoverage.updateDOM());	
 							}
 						});	 
 						
@@ -527,8 +532,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				
 	        	//Serialize the temporal coverage
                 if ( typeof this.get("temporalCoverage") !== "undefined" && this.get("temporalCoverage") !== null ) {
-    		        $(eml).find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
+                	datasetNode.find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
                     
+                }
+                
+                if(datasetNode.find("coverage").children().length == 0)
+                	datasetNode.find("coverage").remove();
+                
+                //If there is no creator, create one from the user
+                if(!this.get("creator").length){
+	           		var party = new EMLParty({ parentModel: this, type: "creator" });
+	           		
+	           		party.createFromUser();
+	           		
+	           		this.set("creator", [party]);
                 }
 	           	
 		        //Serialize the creators
@@ -548,8 +565,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	
 				// Serialize methods
 				if (this.get('methods')) {
-					if($(eml).find('methods').length > 0) {
-						$(eml).find('methods').remove();
+					if(datasetNode.find('methods').length > 0) {
+						datasetNode.find('methods').remove();
 					}
 					
 					var methodsEl = this.get('methods').updateDOM();
@@ -564,8 +581,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        	
 	        	//Serialize the intellectual rights
 	        	if(this.get("intellectualRights")){
-	        		if($(eml).find("intellectualRights").length)
-	        			$(eml).find("intellectualRights").html("<para>" + this.get("intellectualRights") + "</para>")
+	        		if(datasetNode.find("intellectualRights").length)
+	        			datasetNode.find("intellectualRights").html("<para>" + this.get("intellectualRights") + "</para>")
 	        		else{
 	        			
 	        			this.getEMLPosition(eml, "intellectualrights").after(
@@ -575,8 +592,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        	}
 	        	
 	        	//Serialize the project
-	        	if($(eml).find("project").length)
-	        		$(eml).find("project").replaceWith(this.get("project").updateDOM());
+	        	if(datasetNode.find("project").length)
+	        		datasetNode.find("project").replaceWith(this.get("project").updateDOM());
 	        	else if(this.get("project"))
 	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
 	              	           	
@@ -817,8 +834,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              */
             validate: function() {
             	if(!this.get("title").length){
-            		this.trigger("required", "title");
-            		return "Title is required";
+            		this.trigger("required", ["title"]);
+            		
+            		var error = "Title is required";
+            		
+            		//Set the validation error message
+            		this.set("validationError", error);
+            		
+            		return error;
+            	}
+            	else{
+            		this.set("validationError", null);
+            		return;
             	}
             },
             
