@@ -3368,12 +3368,12 @@ textarea.xlarge{
 	border-style: dashed;
 	border-width: 2px;
 }
-.data-package-item .remove{
-	font-size: 1.4em;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
+.data-package-item .icon{
+    margin-right: 10px;
     width: 1.4em;
+}
+.data-package-item .edit{
+	color: #19B36A;
 }
 
 /** Locations section **/
