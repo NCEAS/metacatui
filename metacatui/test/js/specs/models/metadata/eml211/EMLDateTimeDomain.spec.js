@@ -66,24 +66,6 @@ define(["chai", "chai-jquery", "chai-backbone",
                     attributes.dateTimeDomain.bounds[1].minimum.should.equal("2017-02-01T00:00:00");
                     attributes.dateTimeDomain.bounds[2].maximum.should.equal("2017-03-31T11:59:59");
                 });
-
-                it("should return storage type and type system arrays", function() {
-                    attributes.storageType.should.be.an("array");
-                    attributes.storageType[0].should.equal("string");
-                    attributes.storageType[1].should.equal("special_string");
-                    attributes.typeSystem.should.be.an("array");
-                    expect(attributes.typeSystem[0]).to.be.null;
-                    attributes.typeSystem[1].should.equal("http://schema.org/customTypes");
-                    attributes.typeSystem.length.should.equal(attributes.storageType.length);
-                });
-
-            });
-
-            describe("For an attribute with nominal measurement scale, .parse()", function() {
-
-                it("should return a measurementscale object", function() {
-                    attributes.measurementScale.should.be.an("object");
-                });
             });
         });
 
