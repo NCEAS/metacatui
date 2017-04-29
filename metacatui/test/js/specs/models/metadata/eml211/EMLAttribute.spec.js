@@ -1,7 +1,7 @@
 "use strict";
 
 define(["chai", "chai-jquery", "chai-backbone",
-    "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLAttribute"],
+"../../../../../../src/main/webapp/js/models/metadata/eml211/EMLAttribute"],
     function(chai, chaiJquery, chaiBackbone, EMLAttribute) {
 
         // Configure the Chai assertion library
@@ -38,7 +38,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             });
 
             describe(".parse()", function() {
-                it("should return an attribute object", function() {
+                it("should return an attributes object", function() {
                     attributes.should.be.an("object");
 
                 });
@@ -76,6 +76,13 @@ define(["chai", "chai-jquery", "chai-backbone",
                 });
 
             });
+
+            describe("For an attribute with nominal measurement scale, .parse()", function() {
+
+                it("should return a measurementscale object", function() {
+                    attributes.measurementScale.should.be.an("object");
+                });
+            });
         });
 
         var AttributeUtil = {
@@ -90,7 +97,17 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t<attributeDefinition>The code given for each collection site</attributeDefinition>\n",
                     "\t<storageType>string</storageType>\n",
                     "\t<storageType typeSystem=\"http://schema.org/customTypes\">special_string</storageType>\n",
-                    "\t<entityType>Portable Network graphic image</entityType>\n",
+                    "\t<measurementScale>\n",
+                    "\t\t<nominal>\n",
+                    "\t\t\t<nonNumericDomain>\n",
+                    "\t\t\t\t<textDomain>\n",
+                    "\t\t\t\t\t<definition>Any text</definition>\n",
+                    "\t\t\t\t\t<pattern>*</pattern>\n",
+                    "\t\t\t\t\t<source>Any source</source>\n",
+                    "\t\t\t\t</textDomain>\n",
+                    "\t\t\t</nonNumericDomain>\n",
+                    "\t\t</nominal>\n",
+                    "\t</measurementScale>\n",
                     "</attribute>");
 
                 return xml.join('');
