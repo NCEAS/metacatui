@@ -21,7 +21,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // If needed
                 responseXML = DateTimeDomainUtil.getTestDateTimeDomainXML();
-                attributes = emlDateTimeDomain.parse(responseXML);
+                attributes = emlDateTimeDomain.parse({objectDOM: responseXML});
 
             });
 
@@ -64,7 +64,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     attributes.dateTimeDomain.bounds[0].minimum.should.equal("2017-01-01T00:00:00");
                     attributes.dateTimeDomain.bounds[0].maximum.should.equal("2017-01-31T11:59:59");
                     attributes.dateTimeDomain.bounds[1].minimum.should.equal("2017-02-01T00:00:00");
-                    attributes.dateTimeDomain.bounds[1].maximum.should.equal("2017-03-31T11:59:59");
+                    attributes.dateTimeDomain.bounds[2].maximum.should.equal("2017-03-31T11:59:59");
                 });
 
                 it("should return storage type and type system arrays", function() {

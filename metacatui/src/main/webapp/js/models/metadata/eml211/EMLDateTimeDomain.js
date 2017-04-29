@@ -62,10 +62,10 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Add the formatString
-                attributes.formatString = $objectDOM.children("formatString");
+                attributes.formatString = $objectDOM.children("formatString").text();
 
                 // Add the dateTimePrecision
-                attributes.dateTimePrecision = $objectDOM.children("dateTimePrecision");
+                attributes.dateTimePrecision = $objectDOM.children("dateTimePrecision").text();
 
                 // Add in the dateTimeDomain
                 var dateTimeDomain = $objectDOM.children("dateTimeDomain");
@@ -82,7 +82,21 @@ define(["jquery", "underscore", "backbone",
                 }
                 var bounds = $(dateTimeDomainXML).find("bounds");
 
-                // bounds.each(function())
+                _.each(bounds, function(bound) {
+                    var bnd = {};
+                    // Get the minimum if available
+                    var min = $(bound).find("minimum").text();
+                    if ( min ) {
+                        bnd.minimum = min;
+                    }
+                    // Get the maximum if available
+                    var max = $(bound).find("maximum").text();
+                    if ( max ) {
+                        bnd.maximum = max;
+                    }
+                    domain.bounds.push(bnd);
+
+                }, domain);
 
                 return domain;
             },
