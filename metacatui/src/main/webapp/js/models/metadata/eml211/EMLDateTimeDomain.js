@@ -78,7 +78,7 @@ define(["jquery", "underscore", "backbone",
 
             /*
              * Parse the attribute/measurementScale/dateTime/dateTimeDomain fragment
-             * returning a domain object with bounds attribute consisting of an array
+             * returning a domain object with a bounds attribute consisting of an array
              * of objects with optional minimum and maximum attributes
              * For example:
              * {
