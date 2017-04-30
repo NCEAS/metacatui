@@ -15,7 +15,7 @@ define(["chai", "chai-jquery", "chai-backbone",
         describe("EMLDateTimeDomain Test Suite", function (){
             var emlDateTimeDomain = new EMLDateTimeDomain();
             var responseXML; // mock response from the server
-            var attributes; // object returned by EMLAttribute.parse()
+            var attributes; // object returned by EMLDateTimeDomain.parse()
 
             /* Setup */
             before(function() {
