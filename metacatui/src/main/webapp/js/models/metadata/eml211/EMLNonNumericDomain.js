@@ -50,18 +50,111 @@ define(["jquery", "underscore", "backbone",
             parse: function(attributes, options) {
 
                 var $objectDOM;
+                var nonNumericDomainNodeList;
+                var domainNodeList; // the list of domain elements
+                var domain; // the text or enumerated domain to parse
+                var domainObject; // The parsed domain object to be added to attributes.nonNumericDomain
 
-                $objectDOM = $(attributes.objectDOM);
+                /* JQuery seems to have a bug handling XML elements named "source"
+                 * $objectDOM = $(attributes.objectDOM) gives us:
+                 * <nominal>
+                 * ....<nonnumericdomain>
+                 * ........<textdomain>
+                 * ............<definition>Any text</definition>
+                 * ............<pattern>*</pattern>
+                 * ............<source>Any source
+                 * ........</textdomain>
+                 * ....</nonnumericdomain>
+                 * </nominal>
+                 * Note the lost </source>. Changing the element name to "sourced" works fine.
+                 * Use the DOMParser instead
+                 */
+                var parser = new DOMParser();
+                var parsedDOM = parser.parseFromString(attributes.objectDOM, "text/xml");
+                nonNumericDomainNodeList = $(parsedDOM).find("nonNumericDomain")
+
+                if ( nonNumericDomainNodeList && nonNumericDomainNodeList.length > 0 ) {
+                    domainNodeList = nonNumericDomainNodeList[0].children;
+
+                } else {
+                    // No content is available, return
+                    return attributes;
+                }
+
+                // Initialize an array of nonNumericDomain objects
+                attributes.nonNumericDomain = [];
+
+                // Set each domain if we have it
+                if ( domainNodeList && domainNodeList.length > 0 ) {
+
+                    _.each(domainNodeList, function(domain) {
+                        if ( domain ) {
+                            switch ( domain.localName ) {
+                                case "textDomain":
+                                    domainObject = this.parseTextDomain(domain);
+                                    break;
+                                case "enumeratedDomain":
+                                    domainObject = this.parseEnumeratedDomain(domain);
+                                    break;
+                                case "references":
+                                    // TODO: Support references
+                                    console.log("We don't support references yet.");
+                                default:
+                                    console.log("Unrecognized nonNumericDomain: " + domain.localName());
+                            }
+                        }
+                        attributes.nonNumericDomain.push(domainObject);
+                    }, this);
+
+                }
+
+                // Get the enumeratedDomain or textDomain fragments
+
+                $objectDOM = $(attributes.objectDOM); // use $objectDOM, not parsedDOM, for the rest
 
                 // Add the XML id
                 if ( $objectDOM.attr("id") ) {
                     attributes.xmlID = $objectDOM.attr("id");
                 }
 
-                // TODO: parse the fields
+                // Add in the textDomain content if present
 
                 return attributes;
             },
+
+            /* Parse the nonNumericDomain/textDomain fragment
+             * returning an object with a textDomain attribute, like:
+             * {
+             *     textDomain: {
+             *         definition: "Some definition",
+             *         pattern: ["*", "\w", "[0-9]"],
+             *         source: "Some source reference"
+             *     }
+             * }
+             */
+             parseTextDomain: function(domain) {
+                 var domainObject = {};
+                 domainObject.textDomain = {};
+                 var definition;
+                 var patterns = [];
+                 var source;
+
+                 // Add the definition
+                 definition = $(domain).children("definition").text();
+                 domainObject.textDomain.definition = definition;
+
+                 // Add the pattern
+                 _.each($(domain).children("pattern"), function(pattern) {
+                     patterns.push(pattern.textContent);
+                 });
+                 domainObject.textDomain.pattern = patterns;
+
+                 // Add the source
+                 source = $(domain).children("source").text();
+                 domainObject.textDomain.source = source;
+
+                 return domainObject;
+             },
 
             /* Serialize the model to XML */
             serialize: function() {
