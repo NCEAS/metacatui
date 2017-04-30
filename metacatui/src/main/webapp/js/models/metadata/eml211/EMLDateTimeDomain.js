@@ -76,6 +76,19 @@ define(["jquery", "underscore", "backbone",
                 return attributes;
             },
 
+            /*
+             * Parse the attribute/measurementScale/dateTime/dateTimeDomain fragment
+             * returning a domain object with bounds attribute consisting of an array
+             * of objects with optional minimum and maximum attributes
+             * For example:
+             * {
+             *     bounds: [
+             *         {minimum: 2015, maximum: 2016},
+             *         {minimum: 2017, maximum: 2018}
+             *     ]
+             * }
+             * TODO: Support the references element
+             */
             parseDateTimeDomain: function(dateTimeDomainXML) {
                 var domain = {
                     bounds: []
