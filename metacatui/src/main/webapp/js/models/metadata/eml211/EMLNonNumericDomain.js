@@ -89,6 +89,7 @@ define(["jquery", "underscore", "backbone",
 
                     _.each(domainNodeList, function(domain) {
                         if ( domain ) {
+                            // match the camelCase name since DOMParser() is XML-aware
                             switch ( domain.localName ) {
                                 case "textDomain":
                                     domainObject = this.parseTextDomain(domain);
@@ -98,7 +99,8 @@ define(["jquery", "underscore", "backbone",
                                     break;
                                 case "references":
                                     // TODO: Support references
-                                    console.log("We don't support references yet.");
+                                    console.log("In EMLNonNumericDomain.parse()" +
+                                        "We don't support references yet ");
                                 default:
                                     console.log("Unrecognized nonNumericDomain: " + domain.localName());
                             }
@@ -107,8 +109,6 @@ define(["jquery", "underscore", "backbone",
                     }, this);
 
                 }
-
-                // Get the enumeratedDomain or textDomain fragments
 
                 $objectDOM = $(attributes.objectDOM); // use $objectDOM, not parsedDOM, for the rest
 
@@ -132,29 +132,88 @@ define(["jquery", "underscore", "backbone",
              *     }
              * }
              */
-             parseTextDomain: function(domain) {
-                 var domainObject = {};
-                 domainObject.textDomain = {};
-                 var definition;
-                 var patterns = [];
-                 var source;
+            parseTextDomain: function(domain) {
+                var domainObject = {};
+                domainObject.textDomain = {};
+                var definition;
+                var patterns = [];
+                var source;
 
-                 // Add the definition
-                 definition = $(domain).children("definition").text();
-                 domainObject.textDomain.definition = definition;
+                // Add the definition
+                definition = $(domain).children("definition").text();
+                domainObject.textDomain.definition = definition;
 
-                 // Add the pattern
-                 _.each($(domain).children("pattern"), function(pattern) {
+                // Add the pattern
+                _.each($(domain).children("pattern"), function(pattern) {
                      patterns.push(pattern.textContent);
-                 });
-                 domainObject.textDomain.pattern = patterns;
+                });
+                domainObject.textDomain.pattern = patterns;
 
-                 // Add the source
-                 source = $(domain).children("source").text();
-                 domainObject.textDomain.source = source;
+                // Add the source
+                source = $(domain).children("source").text();
+                domainObject.textDomain.source = source;
 
                  return domainObject;
-             },
+            },
+
+            /* Parse the nonNumericDomain/enumeratedDomain fragment
+             * returning an object with an enumeratedDomain attribute, like:
+             * {
+             *     enumeratedDomain: {
+             *         codeDefinition: [
+             *             {
+             *                 code: "Some code", // required
+             *                 definition: "Some definition", // required
+             *                 source: "Some source"
+             *             } // repeatable
+             *         ]
+             *     }
+             * }
+             * or
+             * {
+             *     enumeratedDomain: {
+             *         externalCodeSet: [
+             *             codesetName: "Some code", // required
+             *             citation: [EMLCitation], // one of citation or codesetURL
+             *             codesetURL: ["Some URL"] // is required, both repeatable
+             *         ]
+             *     }
+             * }
+             * or
+             * {
+             *     entityCodeList: {
+             *         entityReference: "Some reference", // required
+             *         valueAttributeReference: "Some attr reference", // required
+             *         definitionAttributeReference: "Some definition attr reference", // required
+             *         orderAttributeReference: "Some order attr reference"
+             *     }
+             * }
+             */
+            parseEnumeratedDomain: function(domain) {
+                var domainObject = {};
+                domainObject.enumeratedDomain = {};
+                var codeDefinition = {};
+                var externalCodeSet = {};
+                var entityCodeList = {};
+
+                // Add the codeDefinitions if present
+                var codeDefinitions = $(domain).children("codeDefinition");
+
+                if ( codeDefinitions.length ) {
+                    domainObject.enumeratedDomain.codeDefinition = [];
+                    _.each(codeDefinitions, function(codeDef) {
+                        var code = $(codeDef).children("code").text();
+                        var definition = $(codeDef).children("definition").text();
+                        var source = $(codeDef).children("source").text() || undefined;
+                        domainObject.enumeratedDomain.codeDefinition.push({
+                            code: code,
+                            definition: definition,
+                            source: source
+                        });
+                    })
+                }
+                return domainObject;
+            },
 
             /* Serialize the model to XML */
             serialize: function() {
