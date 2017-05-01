@@ -26,8 +26,6 @@ require.config({
         "routers": "../src/main/webapp/js/routers",
         "templates": "../src/main/webapp/js/templates",
         "themes": "../src/main/webapp/js/themes"
-
-
     },
     shim: {
         "mocha": {
@@ -39,7 +37,6 @@ require.config({
             }
         }
     }
-
 });
 
 /* Set up the test suite */
@@ -47,7 +44,10 @@ define(["require", "mocha"], function(require, mocha) {
         // The array of tests in the suite
         var tests = [
             "js/specs/models/metadata/eml211/EMLEntity.spec",
-            "js/specs/models/metadata/eml211/EMLAttribute.spec"
+            "js/specs/models/metadata/eml211/EMLAttribute.spec",
+            "js/specs/models/metadata/eml211/EMLMeasurementScale.spec",
+            "js/specs/models/metadata/eml211/EMLNonNumericDomain.spec",
+            "js/specs/models/metadata/eml211/EMLDateTimeDomain.spec"
         ];
 
         // Include model and view tests

@@ -1,11 +1,12 @@
-define(["jquery", "underscore", "backbone"],
-    function($, _, Backbone) {
+define(["jquery", "underscore", "backbone",
+        "models/metadata/eml211/EMLMeasurementScale"],
+    function($, _, Backbone, EMLMeasurementScale) {
 
         /*
          * EMLAttribute represents a data attribute within an entity, such as
          * a column variable in a data table, or a feature attribute in a shapefile.
          *
-         * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
+         * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
          */
         var EMLAttribute = Backbone.Model.extend({
 
@@ -19,7 +20,7 @@ define(["jquery", "underscore", "backbone"],
                 attributeDefinition: null,
                 storageType: [], // Zero or more storage types
                 typeSystem: [], // Zero or more system types for storage type
-                measurementScale: null, // An EMLMeasurementScale objectDOM (nominal, ordinal, interval, ratio, datetime)
+                measurementScale: null, // An EMLMeasurementScale object (nominal, ordinal, interval, ratio, datetime)
                 missingValueCode: [], // Zero or more {code: value, definition: value} objects
                 accuracy: null, // An EMLAccuracy object
                 coverage: null, // an EMLCoverage object
@@ -68,7 +69,7 @@ define(["jquery", "underscore", "backbone"],
             },
 
             /*
-             * Parse the incoming entity's common XML elements
+             * Parse the incoming attribute's XML elements
              */
             parse: function(objectDOM) {
                 var modelJSON  = {}; // the attributes to return
@@ -99,7 +100,7 @@ define(["jquery", "underscore", "backbone"],
                     modelJSON.attributeLabel.push(attributeLabel.textContent);
                 });
 
-                // Add the attributeDEfinition
+                // Add the attributeDefinition
                 modelJSON.attributeDefinition = $objectDOM.children("attributeDefinition").text();
 
                 // Add the storageType
@@ -111,6 +112,13 @@ define(["jquery", "underscore", "backbone"],
                     var type = $(storageType).attr("typesystem");
                     modelJSON.typeSystem.push(type || null);
                 });
+
+                // Add the measurementScale
+                var measurementScale = $objectDOM.find("measurementscale");
+                if ( measurementScale ) {
+                    modelJSON.measurementScale =
+                        EMLMeasurementScale.getInstance(measurementScale[0]);
+                }
 
                 return modelJSON;
             },
