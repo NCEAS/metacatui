@@ -462,6 +462,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			if(field == "prov_usedByExecution" ||
 			   field == "prov_usedByProgram"   ||
+			   field == "prov_hasDerivations" ||
 			   field == "prov_generated")
 				return true;
 			else
@@ -518,7 +519,7 @@ define(['jquery', 'underscore', 'backbone'],
 				fields = _.reject(appSearchModel.getProvFields(), function(f){ return f.indexOf("xecution") > -1 }); //Leave out the first e in execution so we don't have to worry about case sensitivity
 
 			_.each(fields, function(provField, i){
-				if(model.isDerivationField(provField) && model.get(provField))
+				if(model.isDerivationField(provField) && model.has(provField))
 					derivations.push(model.get(provField));
 			});
 
