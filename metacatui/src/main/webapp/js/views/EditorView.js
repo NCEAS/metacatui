@@ -235,7 +235,6 @@ define(['underscore',
             	
             	//Listen for changes on this member
             	//this.listenTo(model, "change:uploadStatus", view.showControls);
-
             });
                        
         	//Render the Data Package view
@@ -265,8 +264,13 @@ define(['underscore',
             this.listenTo(this.dataPackageView, "addOne", function(){
             	if(table.outerHeight() > $packageTableContainer.outerHeight() && table.outerHeight() < 220){
                     $packageTableContainer.css("height", table.outerHeight() + handle.outerHeight());            		
+                    if(this.emlView)
+                    	this.emlView.resizeTOC();
             	}
             });
+            
+            if(this.emlView)
+            	this.emlView.resizeTOC();
             
             //Save the view as a subview
             this.subviews.push(this.dataPackageView);
@@ -346,12 +350,6 @@ define(['underscore',
 
                 this.subviews.push(citationView);
                 $("#citation-container").html(citationView.render().$el); 
-                
-                //If there is an EML subview, resize the table of contents
-                if(this.emlView){
-                	this.emlView.resizeTOC();
-                	$("#data-package-container + .ui-resizable-s").on("click", this.emlView.resizeTOC);
-                }
                 
                 //Remove the rendering class from the body element
                 $("body").removeClass("rendering");
