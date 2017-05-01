@@ -26,7 +26,7 @@ define(["chai", "chai-jquery", "chai-backbone",
 
                 // Parse an ordinal enumeratedDomain fragment
                 enumDomainCodeDefXML = NonNumericDomainUtil.getTestOrdinalEnumeratedCodeDefinitionDomainXML();
-                //enumDomainCodeDefAttrs = emlNonNumericDomain.parse({objectDOM: enumDomainCodeDefXML});
+                enumDomainCodeDefAttrs = emlNonNumericDomain.parse({objectDOM: enumDomainCodeDefXML});
             });
 
             /* Tear down */
@@ -79,37 +79,34 @@ define(["chai", "chai-jquery", "chai-backbone",
                 });
             });
 
-            xdescribe("For an ordinal scale with an enumerated domain code definition, .parse()", function() {
+            describe("For an ordinal scale with an enumerated domain code definition, .parse()", function() {
 
                 it("should return an attributes object", function() {
                     enumDomainCodeDefAttrs.should.be.an("object");
                 });
 
                 it("should return a nonNumericDomain object", function() {
-                    enumDomainCodeDefAttrs.nonNumericDomain.should.be.an("object");
-                    enumDomainCodeDefAttrs.nonNumericDomain.should.have.all.keys("enumeratedDomain");
+                    enumDomainCodeDefAttrs.nonNumericDomain.should.be.an("array");
+                    enumDomainCodeDefAttrs.nonNumericDomain.length.should.equal(1);
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].should.have.all.keys("enumeratedDomain");
                 });
 
                 it("should return an enumeratedDomain object", function() {
-                    enumDomainCodeDefAttrs.nonNumericDomain.enumeratedDomain.should.be.an("object");
-                    enumDomainCodeDefAttrs.nonNumericDomain.enumeratedDomain.should.have.all.keys("codeDefinition");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.should.be.an("object");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.should.have.all.keys("codeDefinition");
                 });
 
-                it("should return an enumeratedDomain codeDefinition object ", function() {
-                    enumDomainCodeDefAttrs.nonNumericDomain.enumeratedDomain.codeDefinition.should.be.an("object");
-                    enumDomainCodeDefAttrs.nonNumericDomain.enumeratedDomain.codeDefinition.should.have.all.keys("code", "definition", "source");
-                });
-
-                it("should return a textDomain pattern array", function() {
-                    enumDomainCodeDefAttrs.nonNumericDomain.textDomain.pattern.should.be.an("array");
-                    enumDomainCodeDefAttrs.nonNumericDomain.textDomain.pattern.length.should.equal(1);
-                    enumDomainCodeDefAttrs.nonNumericDomain.textDomain.pattern[0].should.equal("*");
-                    // TODO: test other regex patterns
-                });
-
-                it("should return a textDomain source string", function() {
-                    enumDomainCodeDefAttrs.nonNumericDomain.textDomain.source.should.be.a("string");
-                    enumDomainCodeDefAttrs.nonNumericDomain.textDomain.source.should.equal("Any source");
+                it("should return an enumeratedDomain codeDefinition array ", function() {
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition.should.be.an("array");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition.length.should.equal(2);
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition[0].should.be.an("object");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition[0].should.have.all.keys("code", "definition", "source");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition[0].code.should.equal("JAL");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition[0].definition.should.equal("Jalama Beach, California");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition[0].source.should.equal("USGS Place Name Gazateer");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition[1].code.should.equal("ALE");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition[1].definition.should.equal("Alegria, California");
+                    expect(enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.codeDefinition[1].source).to.not.exist;
                 });
             });
         });
@@ -147,7 +144,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t\t\t<codeDefinition>\n",
                     "\t\t\t\t<code>ALE</code>\n",
                     "\t\t\t\t<definition>Alegria, California</definition>\n",
-                    "\t\t\t\t<source>USGS Place Name Gazateer</source>\n",
+                    "\t\t\t\t<!-- Second codeDef has no source -->\n",
                     "\t\t\t</codeDefinition>\n",
                     "\t\t</enumeratedDomain>\n",
                     "\t</nonNumericDomain>\n",
