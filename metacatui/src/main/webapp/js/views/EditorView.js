@@ -5,13 +5,16 @@ define(['underscore',
         'collections/DataPackage',
         'models/metadata/eml211/EML211',
         'models/metadata/ScienceMetadata',
-        'views/metadata/EML211View',
-        'views/DataPackageView',
-        'views/SignInView',
         'views/CitationView',
+        'views/DataPackageView',
+        'views/metadata/EML211View',
+        'views/metadata/EMLEntityView',
+        'views/SignInView',
         'text!templates/editor.html',
         'collections/ObjectFormats'], 
-        function(_, $, Backbone, DataPackage, EML, ScienceMetadata, EMLView, DataPackageView, SignInView, CitationView,
+        function(_, $, Backbone, 
+        		DataPackage, EML, ScienceMetadata, 
+        		CitationView, DataPackageView, EMLView, EMLEntityView, SignInView,
         		EditorTemplate, ObjectFormats){
     
     var EditorView = Backbone.View.extend({
@@ -23,7 +26,8 @@ define(['underscore',
         
         /* Events that apply to the entire editor */
         events: {
-        	"click #save-editor" : "save"
+        	"click #save-editor"             : "save",
+        	"click .data-package-item .edit" : "showEntity"
         },
         
         /* The identifier of the root package EML being rendered */
@@ -542,6 +546,48 @@ define(['underscore',
 			
 			//Find the latest version of this metadata object
 			this.model.findLatestVersion();
+		},
+		
+		/*
+		 * Show the entity editor
+		 */
+		showEntity: function(e){
+        	if(!e || !e.target)
+        		return;
+        	
+        	//For EML metadata docs
+        	if(this.model.type == "EML"){
+	        	//Get the Entity View
+	        	var entityView = $(e.target).data("entityView"),
+	        		clickedEl = $(e.target);
+	        	
+	        	//If there isn't a view yet, create one
+	        	if(!entityView){
+	        		
+	        		var entityModel = _.find(this.model.get("entities"), 
+				        				function(m){ 
+				        					return m.get("id") == clickedEl.attr("data-id");
+				        				});
+	        		/*
+	        		if(!entityModel)
+	        			return false;
+	        		*/
+	        		entityView = new EMLEntityView({
+	        			model: entityModel,
+	        			edit: true
+	        		});
+	        		
+	        		//Attach the view to the edit button so we can access it again
+	        		clickedEl.data("entityView", entityView);
+	        		
+	        		entityView.render();
+	        	}
+	        	
+	        	//Show the modal window editor for this entity
+	        	if(entityView)
+	        		entityView.show();
+        	}
+        	
 		},
 		
 		showSignIn: function(){
