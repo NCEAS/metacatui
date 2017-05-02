@@ -34,6 +34,10 @@ define(["chai", "chai-jquery", "chai-backbone",
                     expect(emlOtherEntity).to.exist;
                     emlOtherEntity.should.exist;
                 });
+
+                it('should have a type attribute of otherEntity', function() {
+                    emlOtherEntity.get("type").should.equal("otherEntity");
+                });
             });
 
             describe(".parse()", function() {
