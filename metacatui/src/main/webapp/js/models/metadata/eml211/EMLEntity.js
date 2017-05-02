@@ -136,6 +136,14 @@ define(["jquery", "underscore", "backbone"],
             trickleUpChange: function(){
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
             }
+
+            /* Create a random id for entities */
+            createID: function(){
+                this.set("xmlID",
+                 Math.ceil(Math.random() *
+                 (9999999999999999 - 1000000000000000) + 1000000000000000));
+            },
+
         });
 
         return EMLEntity;
