@@ -127,6 +127,15 @@ define(["jquery", "underscore", "backbone"],
                 var attrIndex = this.attributeList.indexOf(attribute);
                 this.attributelist.splice(attrIndex, 1);
 
+            },
+
+            /* Validate the top level EMLEntity fields */
+            validate: function() {
+
+                // will be run by calls to isValid()
+                if ( ! this.get("entityName") ) {
+                    return new Error("An entity name is required.");
+                }
             }
 
         },
