@@ -14,14 +14,12 @@ define(["chai", "chai-jquery", "chai-backbone",
 
         describe("EMLEntity Test Suite", function (){
             var emlEntity = new EMLEntity();
-            var responseXML; // mock response from the server
-            var attributes; // object returned by EMLEntity.parse()
 
             /* Setup */
             before(function() {
-                // If needed
-                responseXML = EntityUtil.getTestEntityXML();
-                attributes = emlEntity.parse({objectDOM: responseXML});
+                emlEntity = new EMLEntity({
+                    objectDOM: EntityUtil.getTestEntityXML()
+                }, {parse: true});
 
             });
 
@@ -39,30 +37,30 @@ define(["chai", "chai-jquery", "chai-backbone",
 
             describe(".parse()", function() {
                 it("should return an attribute object", function() {
-                    attributes.should.be.an("object");
+                    emlEntity.attributes.should.be.an("object");
 
                 });
 
                 it("should return an xml id attribute", function() {
-                    attributes.xmlID.should.be.a("string");
-                    attributes.xmlID.should.equal("12345");
+                    emlEntity.get("xmlID").should.be.a("string");
+                    emlEntity.get("xmlID").should.equal("12345");
 
                 });
 
                 it("should return an alternate identifier array", function() {
-                    attributes.alternateIdentifier.should.be.an("array");
-                    attributes.alternateIdentifier[0].should.equal("altid.1.1.png");
-                    attributes.alternateIdentifier[1].should.equal("altid2.1.1.png");
+                    emlEntity.get("alternateIdentifier").should.be.an("array");
+                    emlEntity.get("alternateIdentifier")[0].should.equal("altid.1.1.png");
+                    emlEntity.get("alternateIdentifier")[1].should.equal("altid2.1.1.png");
                 });
 
                 it("should return an entity name", function() {
-                    attributes.entityName.should.be.a("string");
-                    attributes.entityName.should.equal("entity.1.1.png");
+                    emlEntity.get("entityName").should.be.a("string");
+                    emlEntity.get("entityName").should.equal("entity.1.1.png");
                 });
 
                 it("should return an entity description", function() {
-                    attributes.entityDescription.should.be.a("string");
-                    attributes.entityDescription.should.equal("A description of entity.1.1.png");
+                    emlEntity.get("entityDescription").should.be.a("string");
+                    emlEntity.get("entityDescription").should.equal("A description of entity.1.1.png");
                 });
             });
         });
