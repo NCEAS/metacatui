@@ -64,11 +64,6 @@ define(["chai", "chai-jquery", "chai-backbone",
                     attributes.entityDescription.should.be.a("string");
                     attributes.entityDescription.should.equal("A description of entity.1.1.png");
                 });
-
-                it("should return an entity type", function() {
-                    attributes.entityType.should.be.a("string");
-                    attributes.entityType.should.equal("Portable Network graphic image");
-                });
             });
         });
 
