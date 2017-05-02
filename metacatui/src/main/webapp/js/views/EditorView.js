@@ -4,6 +4,7 @@ define(['underscore',
         'backbone',
         'collections/DataPackage',
         'models/metadata/eml211/EML211',
+        'models/metadata/eml211/EMLOtherEntity',
         'models/metadata/ScienceMetadata',
         'views/CitationView',
         'views/DataPackageView',
@@ -13,7 +14,7 @@ define(['underscore',
         'text!templates/editor.html',
         'collections/ObjectFormats'], 
         function(_, $, Backbone, 
-        		DataPackage, EML, ScienceMetadata, 
+        		DataPackage, EML, EMLOtherEntity, ScienceMetadata, 
         		CitationView, DataPackageView, EMLView, EMLEntityView, SignInView,
         		EditorTemplate, ObjectFormats){
     
@@ -559,19 +560,36 @@ define(['underscore',
         	if(this.model.type == "EML"){
 	        	//Get the Entity View
 	        	var entityView = $(e.target).data("entityView"),
-	        		clickedEl = $(e.target);
+	        		clickedEl = $(e.target),
+	        		row = clickedEl.parents(".data-package-item");
 	        	
 	        	//If there isn't a view yet, create one
 	        	if(!entityView){
 	        		
+	        		//Get the entity model for this data package item
 	        		var entityModel = _.find(this.model.get("entities"), 
 				        				function(m){ 
 				        					return m.get("id") == clickedEl.attr("data-id");
 				        				});
-	        		/*
-	        		if(!entityModel)
-	        			return false;
-	        		*/
+	        		
+	        		//Create a new EMLOtherEntity if it doesn't exist
+	        		if(!entityModel){
+	        			entityModel = new EMLOtherEntity();
+	        			
+	        			//Listen to changes to required fields on the otherEntity models
+	        			this.listenTo(entityModel, "change:entityName", function(){
+	        				if(!entityModel.isValid()) return;
+	        				
+	        				//Get the current list of entities and the position this entity will be in
+	        				var currentEntities = this.model.get("entities"),
+	        					position = $(".data-package-item.data").index(row);
+	        				
+	        				//Add the entity model to the entity array
+	        				currentEntities.splice(position, 0, entityModel);
+	        			});
+	        		}
+	        		
+	        		//Create a new EMlEntityView
 	        		entityView = new EMLEntityView({
 	        			model: entityModel,
 	        			edit: true
@@ -580,6 +598,7 @@ define(['underscore',
 	        		//Attach the view to the edit button so we can access it again
 	        		clickedEl.data("entityView", entityView);
 	        		
+	        		//Render the view
 	        		entityView.render();
 	        	}
 	        	

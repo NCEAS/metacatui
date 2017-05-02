@@ -41,6 +41,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                 // Register change events
                 this.on( "change:entityType", EMLEntity.trickleUpChange);
+                
             },
 
             /*
@@ -72,6 +73,11 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 attributes.entityType = $objectDOM.children("entitytype").text();
 
                 return attributes;
+            },
+            
+            validate: function(){
+            	if(!this.get("entityName"))
+            		return "Please specify a data name.";
             }
 
         });
