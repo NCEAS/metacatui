@@ -35,7 +35,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 // if options.parse = true, Backbone will call parse()
 
                 // Call super() first
-                this.constructor.__super__.initialize.apply(this, attributes);
+                this.constructor.__super__.initialize.apply(this, [attributes]);
 
                 // EMLOtherEntity-specific work
 
@@ -46,15 +46,15 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
             /*
              * Parse the incoming other entity's XML elements
              */
-            parse: function(objectDOM) {
+            parse: function(attributes, options) {
 
 
                 // Call super() first
-                this.constructor.__super__.parse.apply(this, objectDOM);
+                this.constructor.__super__.parse.apply(this, [attributes, options]);
 
                 // EMLOtherEntity-specific work
-                var modelJSON  = {}; // the attributes to return
-                var $objectDOM;
+                var objectDOM  = attributes.objectDOM; // The otherEntity XML fragment
+                var $objectDOM; // The JQuery object of the XML fragment
 
                 // Use the cached object if we have it
                 if ( !objectDOM ) {
@@ -69,9 +69,9 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 $objectDOM = $(objectDOM);
 
                 // Add the entityType
-                modelJSON.entityType = $objectDOM.children("entitytype").text();
+                attributes.entityType = $objectDOM.children("entitytype").text();
 
-                return modelJSON;
+                return attributes;
             }
 
         });
