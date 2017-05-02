@@ -549,26 +549,33 @@ footer .logos a:hover, a:focus{
     
 /* EDITOR 
 ----------------------- */
-    .Editor .dropdown-menu li {
-        float: left;
-        position: relative;
-        width: 100%;
-    }
-    
-    .Editor .dropdown-menu li a {
-        background-color: #1F254F;
-        background-image: none;
-        color: #FFF;
-        font-weight: lighter;
-        font-family: "AllerLight";
-        text-align: left;
-        box-sizing: border-box;
-        text-align: center;
-    }
+.Editor .dropdown-menu li {
+    float: left;
+    position: relative;
+    width: 100%;
+}
+   
+.Editor .dropdown-menu li a {
+    background-color: #1F254F;
+    background-image: none;
+    color: #FFF;
+    font-weight: lighter;
+    font-family: "AllerLight";
+    text-align: left;
+    box-sizing: border-box;
+    text-align: center;
+}
 
-    .Editor .dropdown-menu li a:hover {
-        background-color: #19B36A;
-    }
+.Editor .dropdown-menu li a:hover {
+    background-color: #19B36A;
+}
+   
+.data-package-item .edit{
+	color: #19B36A;
+}
+.data-package-item .edit:hover{
+	color: #22ea8b;
+}
     
 /* MAPS 
 --------------------------------- */

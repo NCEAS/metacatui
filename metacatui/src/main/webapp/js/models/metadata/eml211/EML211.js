@@ -49,10 +49,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            temporalCoverage : null, //One EMLTempCoverage model
 		            taxonCoverage : [], //an array of EMLTaxonCoverages
 		            purpose: [],
+		            entities: [], //An array of EMLEntities
 		            pubplace: null,
 		            methods: null, // An EMLMethods objects
 		            project: null // An EMLProject object
-		            //type: "Metadata"
         		});
         	},
 

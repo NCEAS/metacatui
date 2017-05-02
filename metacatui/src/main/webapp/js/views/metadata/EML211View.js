@@ -148,7 +148,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	
 			//When scrolling through the metadata, highlight the side navigation
-	    	$(document).scroll(this.highlightTOC);
+	    	var view = this;
+	    	$(document).scroll(function(){
+	    		view.highlightTOC.call(view);
+	    	});
+	    	
         },
 	    
         /*
@@ -1539,9 +1543,9 @@ define(['underscore', 'jquery', 'backbone',
         	//Temporarily unbind the scroll listener while we scroll to the clicked section
         	$(document).unbind("scroll");
         	
-        	var highlightTOC = this.highlightTOC;
+        	var view = this;        	
         	setTimeout(function(){ 
-        		$(document).scroll(highlightTOC);
+        		$(document).scroll(view.highlightTOC.call(view));
         	}, 1500);
         	
         	//Scroll to the section
@@ -1565,16 +1569,7 @@ define(['underscore', 'jquery', 'backbone',
          */
         highlightTOC: function(section){
         	
-        	//Resize the vertical table of contents so it's always the same height as the editor body
-        	var tableBottom = document.getElementById("data-package-container").getBoundingClientRect().bottom,
-        		navTop = tableBottom;
-        	
-        	if(tableBottom < $("#Navbar").outerHeight())
-        		navTop = $("#Navbar").outerHeight();
-        	
-        	navTop += $("#editor-body .ui-resizable-handle").outerHeight();
-        	
-        	$(".metadata-toc").css("top", navTop);
+        	this.resizeTOC();
         	
         	//Now change sections
         	if(typeof section == "string"){
@@ -1606,6 +1601,21 @@ define(['underscore', 'jquery', 'backbone',
 
         		
         	}        	        	
+        },
+        
+    	/*
+    	 * Resizes the vertical table of contents so it's always the same height as the editor body
+    	 */
+        resizeTOC: function(){
+        	var tableBottom = document.getElementById("data-package-container").getBoundingClientRect().bottom,
+        		navTop = tableBottom;
+        	
+        	if(tableBottom < $("#Navbar").outerHeight())
+        		navTop = $("#Navbar").outerHeight();
+        	
+        	navTop += $("#editor-body .ui-resizable-handle").outerHeight();
+        	
+        	$(".metadata-toc").css("top", navTop);
         },
         
         /*

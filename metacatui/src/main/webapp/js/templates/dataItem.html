@@ -46,14 +46,15 @@
 <!--td></td-->
 <!-- Button column -->
 <td>
-    <input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
         <% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
+    		<input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
             <button type="button" class="addFiles btn btn-primary" title="Add Files">
                 <i class="icon-large icon-plus icon-on-left"></i>
                 <span>Add Files</span>
             </button>
 
         <% } else { %>
-            <i class="icon-large icon-remove remove removeFiles" title="Remove file"></i>
+            <i class="icon-large icon icon-pencil edit pointer" title="Edit metadata about this file"></i>
+            <i class="icon-large icon icon-remove remove removeFiles" title="Remove file"></i>
         <% } %>
 </td>
