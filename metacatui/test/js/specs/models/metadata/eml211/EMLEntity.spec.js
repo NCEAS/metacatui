@@ -21,7 +21,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // If needed
                 responseXML = EntityUtil.getTestEntityXML();
-                attributes = emlEntity.parse(responseXML);
+                attributes = emlEntity.parse({objectDOM: responseXML});
 
             });
 

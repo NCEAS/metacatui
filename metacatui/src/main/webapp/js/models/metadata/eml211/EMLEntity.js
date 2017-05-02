@@ -47,11 +47,11 @@ define(["jquery", "underscore", "backbone"],
             },
 
             /* Initialize an EMLEntity object */
-            initialize: function(attributes) {
-                if ( attributes && attributes.objectDOM) {
-                    this.set(this.parse(attributes.objectDOM));
-                }
+            initialize: function(attributes, options) {
 
+                // if options.parse = true, Backbone will call parse()
+
+                // Register change events
                 this.on(
                     "change:alternateIdentifier " +
                     "change:entityName " +
@@ -76,12 +76,12 @@ define(["jquery", "underscore", "backbone"],
              *     <entityDescription>A file summary</entityDescription>
              * </otherEntity>
              */
-            parse: function(objectDOM) {
-                var modelJSON  = {}; // the attributes to return
-                var $objectDOM;
+            parse: function(attributes, options) {
+                var objectDOM = attributes.objectDOM; // The entity XML fragment
+                var $objectDOM; // The JQuery object of the XML fragment
 
                 // Use the cached object if we have it
-                if ( !objectDOM ) {
+                if ( !attributes.objectDOM ) {
                     if ( this.get("objectDOM") ) {
                         objectDOM = this.get("objectDOM");
 
@@ -93,32 +93,49 @@ define(["jquery", "underscore", "backbone"],
                 $objectDOM = $(objectDOM);
 
                 // Add the XML id
-                modelJSON.xmlID = $objectDOM.attr("id");
+                attributes.xmlID = $objectDOM.attr("id");
 
                 // Add the alternateIdentifiers
-                modelJSON.alternateIdentifier = [];
+                attributes.alternateIdentifier = [];
                 var alternateIds = $objectDOM.children("alternateidentifier");
                 _.each(alternateIds, function(alternateId) {
-                    modelJSON.alternateIdentifier.push(alternateId.textContent);
+                    attributes.alternateIdentifier.push(alternateId.textContent);
                 });
 
                 // Add the entityName
-                modelJSON.entityName = $objectDOM.children("entityname").text();
+                attributes.entityName = $objectDOM.children("entityname").text();
 
                 // Add the entityDescription
-                modelJSON.entityDescription = $objectDOM.children("entitydescription").text();
+                attributes.entityDescription = $objectDOM.children("entitydescription").text();
 
-                // Add the entityType
-                modelJSON.entityType = $objectDOM.children("entitytype").text();
-
-                return modelJSON;
+                return attributes;
             },
 
+            /*
+             * Add an attribute to the attributeList, inserting it
+             * at the zero-based index
+             */
+            addAttribute: function(attribute, index) {
+                this.attributeList.splice(index, attribute);
+
+            },
+
+            /*
+             * Remove an attribute from the attributeList
+             */
+            removeAttribute: function(attribute) {
+                var attrIndex = this.attributeList.indexOf(attribute);
+                this.attributelist.splice(attrIndex, 1);
+
+            }
+
+        },
+
+        {
             /* Let the top level package know of attribute changes from this object */
             trickleUpChange: function(){
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
-            },
-
+            }
         });
 
         return EMLEntity;
