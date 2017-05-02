@@ -82,7 +82,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 	view.render();
                 });
                 
-                this.$el.data({ view: this });
+                this.$el.data({ 
+                	view: this,
+                	model: this.model
+                	});
                 
                 return this;
             },

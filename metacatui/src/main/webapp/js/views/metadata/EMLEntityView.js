@@ -1,8 +1,9 @@
 /* global define */
 define(['underscore', 'jquery', 'backbone', 
         'models/DataONEObject', 'models/metadata/eml211/EMLOtherEntity',
+        'views/DataPreviewView',
         'text!templates/metadata/eml-entity.html'], 
-    function(_, $, Backbone, DataONEObject, EMLOtherEntity, EMLEntityTemplate){
+    function(_, $, Backbone, DataONEObject, EMLOtherEntity, DataPreviewView, EMLEntityTemplate){
         
         /* 
             An EMLEntityView shows the basic attributes of a DataONEObject, as described by EML
@@ -28,6 +29,7 @@ define(['underscore', 'jquery', 'backbone',
             		var options = {};
             	
             	this.model = options.model || new EMLOtherEntity();
+            	this.DataONEObject = options.DataONEObject;
             },
             
             render: function(){
@@ -39,6 +41,20 @@ define(['underscore', 'jquery', 'backbone',
             		modelAttr.title = modelAttr.entityName;
             	
             	this.$el.html(this.template( modelAttr ));
+            	
+            	//Get the DataONEObject model
+            	if(this.DataONEObject){
+            		var dataPreview = new DataPreviewView({
+            			model: this.DataONEObject
+            		});
+            		dataPreview.render();
+            		this.$(".preview-container").html(dataPreview.el);
+            		
+            		if(dataPreview.$el.children().length){
+            			this.$(".preview-container").addClass("span5");
+            			this.$(".description").addClass("span7");
+            		}
+            	}
             	
             	//Initialize the modal window
             	this.$el.modal();

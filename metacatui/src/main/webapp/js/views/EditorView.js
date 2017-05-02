@@ -561,7 +561,8 @@ define(['underscore',
 	        	//Get the Entity View
 	        	var entityView = $(e.target).data("entityView"),
 	        		clickedEl = $(e.target),
-	        		row = clickedEl.parents(".data-package-item");
+	        		row = clickedEl.parents(".data-package-item"),
+	        		dataONEObject = row.data("model");
 	        	
 	        	//If there isn't a view yet, create one
 	        	if(!entityView){
@@ -592,6 +593,7 @@ define(['underscore',
 	        		//Create a new EMlEntityView
 	        		entityView = new EMLEntityView({
 	        			model: entityModel,
+	        			DataONEObject: dataONEObject,
 	        			edit: true
 	        		});
 	        		

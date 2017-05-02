@@ -3435,12 +3435,22 @@ textarea.xlarge{
 /** Entity section **/
 .Editor .modal{
 	height: 80%;
+	width: 70%;
+    max-width: 1000px;
+    min-width: 300px;
 }
 .Editor .modal-body{
 	max-height: calc(100% - 110px);
 	height: calc(100% - 110px);	
 }
-
+.modal .preview-container{
+    box-sizing: border-box;
+    float: left;
+}
+.modal .preview-container .thumbnail{
+	width: 100%;
+	box-sizing: border-box;
+}
 
 
 /*******************************************
