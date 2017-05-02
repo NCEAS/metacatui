@@ -13,16 +13,15 @@ define(["chai", "chai-jquery", "chai-backbone",
         chai.use(chaiBackbone); // exported from chai-backbone.js
 
         describe("EMLOtherEntity Test Suite", function (){
-            var emlOtherEntity = new EMLOtherEntity();
-            var responseXML; // mock response from the server
-            var attributes; // object returned by EMLOtherEntity.parse()
+            var otherEntityXML;
+            var emlOtherEntity;
 
             /* Setup */
             before(function() {
                 // If needed
-                responseXML = OtherEntityUtil.getTestOtherEntityXML();
-                attributes = emlOtherEntity.parse({objectDOM: responseXML});
-
+                emlOtherEntity = new EMLOtherEntity({
+                    objectDOM: OtherEntityUtil.getTestOtherEntityXML()
+                }, {parse: true});
             });
 
             /* Tear down */
@@ -39,35 +38,35 @@ define(["chai", "chai-jquery", "chai-backbone",
 
             describe(".parse()", function() {
                 it("should return an attribute object", function() {
-                    attributes.should.be.an("object");
+                    emlOtherEntity.attributes.should.be.an("object");
 
                 });
 
                 it("should return an xml id attribute", function() {
-                    attributes.xmlID.should.be.a("string");
-                    attributes.xmlID.should.equal("12345");
+                    emlOtherEntity.get("xmlID").should.be.a("string");
+                    emlOtherEntity.get("xmlID").should.equal("12345");
 
                 });
 
                 it("should return an alternate identifier array", function() {
-                    attributes.alternateIdentifier.should.be.an("array");
-                    attributes.alternateIdentifier[0].should.equal("altid.1.1.png");
-                    attributes.alternateIdentifier[1].should.equal("altid2.1.1.png");
+                    emlOtherEntity.get("alternateIdentifier").should.be.an("array");
+                    emlOtherEntity.get("alternateIdentifier")[0].should.equal("altid.1.1.png");
+                    emlOtherEntity.get("alternateIdentifier")[1].should.equal("altid2.1.1.png");
                 });
 
                 it("should return an entity name", function() {
-                    attributes.entityName.should.be.a("string");
-                    attributes.entityName.should.equal("entity.1.1.png");
+                    emlOtherEntity.get("entityName").should.be.a("string");
+                    emlOtherEntity.get("entityName").should.equal("entity.1.1.png");
                 });
 
                 it("should return an entity description", function() {
-                    attributes.entityDescription.should.be.a("string");
-                    attributes.entityDescription.should.equal("A description of entity.1.1.png");
+                    emlOtherEntity.get("entityDescription").should.be.a("string");
+                    emlOtherEntity.get("entityDescription").should.equal("A description of entity.1.1.png");
                 });
 
                 it("should return an entity type", function() {
-                    attributes.entityType.should.be.a("string");
-                    attributes.entityType.should.equal("Portable Network graphic image");
+                    emlOtherEntity.get("entityType").should.be.a("string");
+                    emlOtherEntity.get("entityType").should.equal("Portable Network graphic image");
                 });
             });
         });
@@ -84,7 +83,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t<entityType>Portable Network graphic image</entityType>\n",
                     "</otherEntity>");
 
-                return xml.join('');
+                return xml.join("");
             }
         }
     });
