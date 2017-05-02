@@ -63,7 +63,7 @@ define(["jquery", "underscore", "backbone"],
                     "change:attributeList " +
                     "change:constraint " +
                     "change:references",
-                    this.trickleUpChange);
+                    EMLEntity.trickleUpChange);
             },
 
             /*
