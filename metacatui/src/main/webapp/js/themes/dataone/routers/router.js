@@ -316,7 +316,7 @@ function ($, _, Backbone) {
 
 			if(!appView.signInView){
 				require(["views/SignInView"], function(SignInView){
-					appView.signInView = new SignInView();
+					appView.signInView = new SignInView({ el: "#Content"});
 					appView.showView(appView.signInView);
 				});
 			}
