@@ -86,7 +86,6 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                 return attributes;
             },
-<<<<<<< HEAD
 
             /* Serialize the EML DOM to XML */
             serialize: function() {
