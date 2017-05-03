@@ -2900,7 +2900,8 @@ input.subtle:focus,
 #RegistryGuide > div{
 	font-size: 1.8em;
 }
-.text-container input {
+.text-container input,
+.text-container textarea{
     width: 100%;
 }
 /*******************************************
@@ -3146,6 +3147,11 @@ textarea.xlarge{
 	box-sizing: border-box;
 	font-size: 1em;
 }
+.Editor textarea{
+	padding: .5em 1em;
+	box-sizing: border-box;
+	font-size: 1em;
+}
 .Editor .checkbox{
 	clear: both;
 	margin: 1em auto;
@@ -3166,6 +3172,9 @@ textarea.xlarge{
 }
 .Editor .input-logo + input{
 	width: calc(100% - 42px);
+}
+.Editor .required-icon{
+	color: red;
 }
 .metadata-container .section > * > *,
 .metadata-container .abstract {
@@ -3422,6 +3431,28 @@ textarea.xlarge{
 .eml-geocoverage.error {
     background-color: rgba(251, 188, 188, 0.35);
 }
+
+/** Entity section **/
+.Editor .modal{
+	height: 80%;
+	width: 70%;
+    max-width: 1000px;
+    min-width: 300px;
+}
+.Editor .modal-body{
+	max-height: calc(100% - 110px);
+	height: calc(100% - 110px);	
+}
+.modal .preview-container{
+    box-sizing: border-box;
+    float: left;
+}
+.modal .preview-container .thumbnail{
+	width: 100%;
+	box-sizing: border-box;
+}
+
+
 /*******************************************
 Pager View
 ******************************************/

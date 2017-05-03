@@ -54,6 +54,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                 // Register change events
                 this.on( "change:entityType", EMLEntity.trickleUpChange);
+
             },
 
             /*
@@ -85,6 +86,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                 return attributes;
             },
+<<<<<<< HEAD
 
             /* Serialize the EML DOM to XML */
             serialize: function() {
@@ -99,8 +101,14 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
 
                 this.set("objectXML", xmlString);
-                
+
                 return xmlString;
+            },
+
+            validate: function(){
+                if( !this.get("entityName") ) {
+                    return "Please specify a data name.";
+                }
             }
 
         });

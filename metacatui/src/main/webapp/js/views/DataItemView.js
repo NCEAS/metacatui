@@ -63,8 +63,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 this.$el.find(".dropdown-toggle").dropdown();
 
                 //Add the title data-attribute attribute to the name cell
-                if(this.model.get("type") == "Metadata") 
+                if(this.model.get("type") == "Metadata"){
                 	this.$el.find(".name").attr("data-attribute", "title");
+                	this.$el.addClass("folder");
+                }
+                else{
+                	this.$el.addClass("data");
+                }
                 
                 //listen for changes to rerender the view
                 this.listenTo(this.model, "change:fileName change:title change:id change:formatType " + 
@@ -77,7 +82,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 	view.render();
                 });
                 
-                this.$el.data({ view: this });
+                this.$el.data({ 
+                	view: this,
+                	model: this.model
+                	});
                 
                 return this;
             },

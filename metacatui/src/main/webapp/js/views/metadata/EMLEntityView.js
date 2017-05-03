@@ -1,8 +1,9 @@
 /* global define */
 define(['underscore', 'jquery', 'backbone', 
-        'models/DataONEObject', 'models/metadata/eml211/EMLEntity',
+        'models/DataONEObject', 'models/metadata/eml211/EMLOtherEntity',
+        'views/DataPreviewView',
         'text!templates/metadata/eml-entity.html'], 
-    function(_, $, Backbone, DataONEObject, EMLEntity, EMLEntityTemplate){
+    function(_, $, Backbone, DataONEObject, EMLOtherEntity, DataPreviewView, EMLEntityTemplate){
         
         /* 
             An EMLEntityView shows the basic attributes of a DataONEObject, as described by EML
@@ -20,21 +21,52 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            
+            	"change" : "updateModel"
             },
             
             initialize: function(options){
             	if(!options)
             		var options = {};
             	
-            	this.model = options.model || new EMLEntity();
+            	this.model = options.model || new EMLOtherEntity();
+            	this.DataONEObject = options.DataONEObject;
             },
             
             render: function(){
-            	this.$el.html(this.template( this.model.toJSON() ));
+            	var modelAttr = this.model.toJSON();
+            	
+            	if(!modelAttr.entityName)
+            		modelAttr.title = "this data";
+            	else
+            		modelAttr.title = modelAttr.entityName;
+            	
+            	this.$el.html(this.template( modelAttr ));
+            	
+            	//Get the DataONEObject model
+            	if(this.DataONEObject){
+            		var dataPreview = new DataPreviewView({
+            			model: this.DataONEObject
+            		});
+            		dataPreview.render();
+            		this.$(".preview-container").html(dataPreview.el);
+            		
+            		if(dataPreview.$el.children().length){
+            			this.$(".preview-container").addClass("span5");
+            			this.$(".description").addClass("span7");
+            		}
+            	}
             	
             	//Initialize the modal window
             	this.$el.modal();
+            },
+            
+            updateModel: function(e){
+            	var changedAttr = $(e.target).attr("data-category");
+            	
+            	if(!changedAttr) return;
+            	
+            	this.model.set(changedAttr, $(e.target).val());
+            	
             },
             
             show: function(){
