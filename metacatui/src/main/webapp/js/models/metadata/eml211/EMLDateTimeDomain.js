@@ -53,8 +53,19 @@ define(["jquery", "underscore", "backbone",
              */
             parse: function(attributes, options) {
                 var $objectDOM;
+                var objectXML = attributes.objectXML;
 
-                $objectDOM = $(attributes.objectDOM);
+                // Use the cached object if we have it
+                if ( ! objectXML ) {
+                    if ( this.get("objectXML") ) {
+                        objectXML = this.get("objectXML");
+
+                    } else {
+                        return {};
+                    }
+                }
+
+                $objectDOM = $(objectXML);
 
                 // Add the XML id
                 if ( $objectDOM.attr("id") ) {
@@ -73,6 +84,9 @@ define(["jquery", "underscore", "backbone",
                     attributes.dateTimeDomain = this.parseDateTimeDomain(dateTimeDomain);
 
                 }
+                attributes.objectXML = objectXML;
+                attributes.objectDOM = $objectDOM[0];
+
                 return attributes;
             },
 
