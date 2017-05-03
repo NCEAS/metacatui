@@ -32,7 +32,7 @@ define(['jquery',
 		
 		events: {
 											 "click" : "closePopovers",
-	 		            'click button.direct-search' : 'routeToMetadata',
+	 		              'click .btn.direct-search' : 'routeToMetadata',
 		 	          'keypress input.direct-search' : 'routeToMetadataOnEnter',
 		 	                 "click .toggle-slide"   : "toggleSlide",
 				 		 	      "click input.copy" : "higlightInput", 
@@ -40,7 +40,9 @@ define(['jquery',
 					 		   "click textarea.copy" : "higlightInput", 
 					 		   "focus textarea.copy" : "higlightInput",
 					 		 	  "click .open-chat" : "openChatWithMessage",
-					 		 "click .login.redirect" : "sendToLogin"
+					 		 "click .login.redirect" : "sendToLogin",
+					 	   "focus .jump-width-input" : "widenInput",
+					 	"focusout .jump-width-input" : "narrowInput"
 		},
 				
 		initialize: function () {
@@ -213,7 +215,7 @@ define(['jquery',
 			
 			if(!val) return false;
 			
-			uiRouter.navigate('view/'+ encodeURIComponent(val), {trigger: true});
+			uiRouter.navigate('view/'+ val, {trigger: true});
 		},
 		
 		routeToMetadataOnEnter: function(e){
@@ -376,6 +378,15 @@ define(['jquery',
 			e.preventDefault();			
 			e.target.setSelectionRange(0, 9999);
 		},
+		
+		widenInput: function(e){
+			$(e.target).css("width", "200px");
+		},
+		
+		narrowInput: function(e){
+			$(e.target).delay(500).animate({"width": "60px"});
+		},
+		
 		// scroll to top of page
 		scrollToTop: function() {
 			$("body,html").stop(true,true) //stop first for it to work in FF

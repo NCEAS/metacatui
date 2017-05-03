@@ -3081,10 +3081,12 @@ input.subtle{
 .input-append input.subtle{
     font-size: 13px;
 }
-input.subtle:focus,
-.nav .input > form > input[type="text"]:focus
+input.subtle:focus
 {
 	width: 200px;
+}
+.jump-width-input{
+	transition: width 1000s;
 }
 .input-submit{
 	margin-left: 10px;
