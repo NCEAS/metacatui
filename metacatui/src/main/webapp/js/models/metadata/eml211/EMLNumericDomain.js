@@ -44,7 +44,7 @@ define(["jquery", "underscore", "backbone",
 
                 var $objectDOM;
 
-                $objectDOM = $(attributes.objectDOM);
+                $objectDOM = $(attributes.objectXML);
 
                 // Add the XML id
                 if ( $objectDOM.attr("id") ) {
