@@ -21,7 +21,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // If needed
                 responseXML = AttributeUtil.getTestNominalAttributeXML();
-                attributes = emlAttribute.parse(responseXML);
+                attributes = emlAttribute.parse({objectXML: responseXML});
 
             });
 

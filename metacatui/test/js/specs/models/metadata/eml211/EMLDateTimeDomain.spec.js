@@ -21,7 +21,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // If needed
                 responseXML = DateTimeDomainUtil.getTestDateTimeDomainXML();
-                attributes = emlDateTimeDomain.parse({objectDOM: responseXML});
+                attributes = emlDateTimeDomain.parse({objectXML: responseXML});
 
             });
 

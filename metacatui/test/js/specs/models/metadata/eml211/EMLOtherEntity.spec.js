@@ -20,7 +20,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // If needed
                 emlOtherEntity = new EMLOtherEntity({
-                    objectDOM: OtherEntityUtil.getTestOtherEntityXML()
+                    objectXML: OtherEntityUtil.getTestOtherEntityXML()
                 }, {parse: true});
             });
 
