@@ -232,7 +232,7 @@ define(['underscore', 'jquery', 'backbone',
 	    			"contact" : "Contacts",
 	    			"metadataProvider" : "Metadata Provider",
 	    			"custodianSteward" : "Custodian/Steward",
-	    			"publisher" : "Publishers",
+	    			"publisher" : "Publisher",
 	    			"user" : "Users"
 	    	}
 	    	
@@ -315,11 +315,10 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Publisher
 	    	if(this.model.get("publisher").length){
 	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["publisher"] + "</h4>",
+	    			'<p class="subtle">Only one publisher can be specified.</p>',
 	    			'<div class="row-striped" data-attribute="publisher"></div>');
 	    		
-	    		_.each(this.model.get("publisher"), this.renderPerson, this);
-	    	
-	    		this.renderPerson(null, "publisher");
+	    		_.each(this.model.get("publisher"), this.renderPerson, this);	    	
 	    	}
 	    	else
 	    		emptyTypes.push("publisher");
@@ -443,9 +442,14 @@ define(['underscore', 'jquery', 'backbone',
 			// Add in a remove button
 			$(container).prepend(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
 
-    		this.renderPerson(null, partyType);
+			//Render a new person
+			if(partyType != "publisher")
+				this.renderPerson(null, partyType);
 	    },
 	    
+	    /*
+	     * This function is called when someone chooses a new person type from the dropdown list
+	     */
 	    chooseNewPersonType: function(e){
 	    	var partyType = $(e.target).val();
 	    	
@@ -458,14 +462,20 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Set the type on this person form
 	    	partyForm.attr("data-attribute", partyType);
 	    	
+	    	//Get the party type dropdown menu
+	    	var partyMenu = this.$("#new-party-menu");
+	    	
 	    	//Add a new header
-	    	this.$("#new-party-menu").before("<h4>" + this.partyTypeMap[partyType] + "</h4>");
+	    	partyMenu.before("<h4>" + this.partyTypeMap[partyType] + "</h4>");
+	    	
+	    	if(partyType == "publisher")
+	    		partyMenu.before('<p class="subtle">Only one publisher can be specified.</p>');
 	    			
 	    	//Remove this type from the dropdown menu
-	    	this.$("#new-party-menu").find("[value='" + partyType + "']").remove();
+	    	partyMenu.find("[value='" + partyType + "']").remove();
 	    	
 	    	//Remove the menu from the page temporarily
-	    	var menu = this.$("#new-party-menu").detach();
+	    	partyMenu.detach();
 	    	
 	    	//Add the new party type form
 	    	var newPartyContainer = $(document.createElement("div"))
@@ -473,7 +483,7 @@ define(['underscore', 'jquery', 'backbone',
 									.addClass("row-striped");
 	    	this.$(".section.people").append(newPartyContainer);
 	    	this.renderPerson(null, "new");
-	    	$(newPartyContainer).before(menu);
+	    	$(newPartyContainer).before(partyMenu);
 	    	
 	    	//Update the model
 	    	var attrToUpdate = _.contains(partyModel.get("roleOptions"), partyType)? "role" : "type";

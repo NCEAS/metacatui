@@ -3173,7 +3173,7 @@ textarea.xlarge{
 .Editor .input-logo + input{
 	width: calc(100% - 42px);
 }
-.Editor .required{
+.Editor .required-icon{
 	color: red;
 }
 .metadata-container .section > * > *,
