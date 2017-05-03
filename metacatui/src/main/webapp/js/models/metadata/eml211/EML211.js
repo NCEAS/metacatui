@@ -821,7 +821,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						console.log("error updating EML: ", response.responseText);
 						model.set("uploadStatus", "e");
 						model.resetID();
-						model.trigger("errorSaving", response.responseText);
+						
+						var errorDOM       = $($.parseHTML(response.responseText)),
+							errorContainer = errorDOM.filter("error"),
+							msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM,
+							errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
+						
+						model.trigger("errorSaving", errorMsg);
 					}
 	   			}, MetacatUI.appUserModel.createAjaxSettings());
 	   			
