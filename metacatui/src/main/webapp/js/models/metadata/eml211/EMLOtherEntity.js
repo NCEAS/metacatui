@@ -13,9 +13,21 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
             defaults: _.extend({
 
                 /* Attributes from EML */
-                entityType: null // The type of the entity
+                entityType: null, // The type of the entity
 
                 /* Attributes not from EML */
+                nodeOrder: [ // The order of the top level XML element nodes
+                    "alternateIdentifier",
+                    "entityName",
+                    "entityDescription",
+                    "physical",
+                    "coverage",
+                    "methods",
+                    "additionalInfo",
+                    "attributeList",
+                    "constraint",
+                    "entityType"
+                ],
 
             }, EMLEntity.prototype.defaults),
 
@@ -38,10 +50,11 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 this.constructor.__super__.initialize.apply(this, [attributes]);
 
                 // EMLOtherEntity-specific work
+                this.set("type", "otherEntity", {silent: true});
 
                 // Register change events
                 this.on( "change:entityType", EMLEntity.trickleUpChange);
-                
+
             },
 
             /*
@@ -49,35 +62,52 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
              */
             parse: function(attributes, options) {
 
+                var attributes = attributes || {};
 
                 // Call super() first
-                this.constructor.__super__.parse.apply(this, [attributes, options]);
+                attributes = this.constructor.__super__.parse.apply(this, [attributes, options]);
 
                 // EMLOtherEntity-specific work
-                var objectDOM  = attributes.objectDOM; // The otherEntity XML fragment
+                var objectXML  = attributes.objectXML; // The otherEntity XML fragment
+                var objectDOM; // The W3C DOM of the object XML fragment
                 var $objectDOM; // The JQuery object of the XML fragment
 
-                // Use the cached object if we have it
-                if ( !objectDOM ) {
-                    if ( this.get("objectDOM") ) {
-                        objectDOM = this.get("objectDOM");
-
-                    } else {
-                        return {};
-                    }
+                // Use the updated objectDOM if we have it
+                if ( this.get("objectDOM") ) {
+                    $objectDOM = $(this.get("objectDOM"));
+                } else {
+                    // Hmm, oddly not there, start from scratch =/
+                    $objectDOM = $(objectXML);
                 }
-
-                $objectDOM = $(objectDOM);
 
                 // Add the entityType
                 attributes.entityType = $objectDOM.children("entitytype").text();
+                attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
             },
-            
+
+            /* Serialize the EML DOM to XML */
+            serialize: function() {
+
+                var xmlString = "";
+
+                // Update the superclass fields in the objectDOM first
+                var objectDOM = this.constructor.__super__.updateDOM.apply(this, []);
+
+                // Then update the subclass fields in the objectDOM
+                // TODO
+
+
+                this.set("objectXML", xmlString);
+
+                return xmlString;
+            },
+
             validate: function(){
-            	if(!this.get("entityName"))
-            		return "Please specify a data name.";
+                if( !this.get("entityName") ) {
+                    return "Please specify a data name.";
+                }
             }
 
         });

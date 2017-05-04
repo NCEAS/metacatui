@@ -70,7 +70,7 @@ define(["jquery", "underscore", "backbone",
                  * Use the DOMParser instead
                  */
                 var parser = new DOMParser();
-                var parsedDOM = parser.parseFromString(attributes.objectDOM, "text/xml");
+                var parsedDOM = parser.parseFromString(attributes.objectXML, "text/xml");
                 nonNumericDomainNodeList = $(parsedDOM).find("nonNumericDomain")
 
                 if ( nonNumericDomainNodeList && nonNumericDomainNodeList.length > 0 ) {
@@ -110,7 +110,7 @@ define(["jquery", "underscore", "backbone",
 
                 }
 
-                $objectDOM = $(attributes.objectDOM); // use $objectDOM, not parsedDOM, for the rest
+                $objectDOM = $(attributes.objectXML); // use $objectDOM, not parsedDOM, for the rest
 
                 // Add the XML id
                 if ( $objectDOM.attr("id") ) {
@@ -118,7 +118,8 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Add in the textDomain content if present
-
+                // TODO
+                
                 return attributes;
             },
 

@@ -20,7 +20,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // If needed
                 emlOtherEntity = new EMLOtherEntity({
-                    objectDOM: OtherEntityUtil.getTestOtherEntityXML()
+                    objectXML: OtherEntityUtil.getTestOtherEntityXML()
                 }, {parse: true});
             });
 
@@ -33,6 +33,10 @@ define(["chai", "chai-jquery", "chai-backbone",
                 it('should exist', function() {
                     expect(emlOtherEntity).to.exist;
                     emlOtherEntity.should.exist;
+                });
+
+                it('should have a type attribute of otherEntity', function() {
+                    emlOtherEntity.get("type").should.equal("otherEntity");
                 });
             });
 

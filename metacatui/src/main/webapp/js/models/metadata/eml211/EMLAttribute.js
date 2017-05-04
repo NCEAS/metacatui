@@ -49,10 +49,7 @@ define(["jquery", "underscore", "backbone",
             },
 
             /* Initialize an EMLAttribute object */
-            initialize: function(attributes) {
-                if ( attributes && attributes.objectDOM) {
-                    this.set(this.parse(attributes.objectDOM));
-                }
+            initialize: function(attributes, options) {
 
                 this.on(
                     "change:attributeName " +
@@ -71,56 +68,58 @@ define(["jquery", "underscore", "backbone",
             /*
              * Parse the incoming attribute's XML elements
              */
-            parse: function(objectDOM) {
-                var modelJSON  = {}; // the attributes to return
+            parse: function(attributes, options) {
                 var $objectDOM;
+                var objectXML = attributes.objectXML;
 
                 // Use the cached object if we have it
-                if ( !objectDOM ) {
-                    if ( this.get("objectDOM") ) {
-                        objectDOM = this.get("objectDOM");
+                if ( ! objectXML ) {
+                    if ( this.get("objectXML") ) {
+                        objectXML = this.get("objectXML");
 
                     } else {
                         return {};
                     }
                 }
 
-                $objectDOM = $(objectDOM);
+                $objectDOM = $(objectXML);
 
                 // Add the XML id
-                modelJSON.xmlID = $objectDOM.attr("id");
+                attributes.xmlID = $objectDOM.attr("id");
 
                 // Add the attributeName
-                modelJSON.attributeName = $objectDOM.children("attributename").text();
+                attributes.attributeName = $objectDOM.children("attributename").text();
 
                 // Add the attributeLabel
-                modelJSON.attributeLabel = [];
+                attributes.attributeLabel = [];
                 var attributeLabels = $objectDOM.children("attributelabel");
                 _.each(attributeLabels, function(attributeLabel) {
-                    modelJSON.attributeLabel.push(attributeLabel.textContent);
+                    attributes.attributeLabel.push(attributeLabel.textContent);
                 });
 
                 // Add the attributeDefinition
-                modelJSON.attributeDefinition = $objectDOM.children("attributeDefinition").text();
+                attributes.attributeDefinition = $objectDOM.children("attributeDefinition").text();
 
                 // Add the storageType
-                modelJSON.storageType = [];
-                modelJSON.typeSystem = [];
+                attributes.storageType = [];
+                attributes.typeSystem = [];
                 var storageTypes = $objectDOM.children("storageType");
                 _.each(storageTypes, function(storageType) {
-                    modelJSON.storageType.push(storageType.textContent);
+                    attributes.storageType.push(storageType.textContent);
                     var type = $(storageType).attr("typesystem");
-                    modelJSON.typeSystem.push(type || null);
+                    attributes.typeSystem.push(type || null);
                 });
 
                 // Add the measurementScale
                 var measurementScale = $objectDOM.find("measurementscale");
                 if ( measurementScale ) {
-                    modelJSON.measurementScale =
+                    attributes.measurementScale =
                         EMLMeasurementScale.getInstance(measurementScale[0]);
                 }
+                attributes.objectXML = objectXML;
+                attributes.objectDOM = $objectDOM;
 
-                return modelJSON;
+                return attributes;
             },
 
             /* Let the top level package know of attribute changes from this object */

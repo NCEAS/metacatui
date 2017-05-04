@@ -22,11 +22,11 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // Parse a nominal textDomain fragment
                 textDomainXML = NonNumericDomainUtil.getTestNominalTextDomainXML();
-                textDomainAttrs = emlNonNumericDomain.parse({objectDOM: textDomainXML});
+                textDomainAttrs = emlNonNumericDomain.parse({objectXML: textDomainXML});
 
                 // Parse an ordinal enumeratedDomain fragment
                 enumDomainCodeDefXML = NonNumericDomainUtil.getTestOrdinalEnumeratedCodeDefinitionDomainXML();
-                enumDomainCodeDefAttrs = emlNonNumericDomain.parse({objectDOM: enumDomainCodeDefXML});
+                enumDomainCodeDefAttrs = emlNonNumericDomain.parse({objectXML: enumDomainCodeDefXML});
             });
 
             /* Tear down */

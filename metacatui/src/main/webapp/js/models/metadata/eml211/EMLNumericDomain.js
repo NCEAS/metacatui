@@ -27,8 +27,10 @@ define(["jquery", "underscore", "backbone",
              * Use this until we can figure out issues with $.parseXML().
              */
             nodeNameMap: {
+                "standardunit": "standardUnit",
+                "customunit": "customUnit",
                 "numericdomain": "numericDomain",
-                "numbertype": "numberType",
+                "numbertype": "numberType"
             },
 
             /* Initialize an EMLNonNumericDomain object */
@@ -44,7 +46,7 @@ define(["jquery", "underscore", "backbone",
 
                 var $objectDOM;
 
-                $objectDOM = $(attributes.objectDOM);
+                $objectDOM = $(attributes.objectXML);
 
                 // Add the XML id
                 if ( $objectDOM.attr("id") ) {
