@@ -54,7 +54,11 @@ define(["chai", "chai-jquery", "chai-backbone",
                     intervalDomainAttrs.unit.should.be.an("object");
                     intervalDomainAttrs.unit.standardUnit.should.be.a("string");
                     intervalDomainAttrs.unit.standardUnit.should.equal("meter");
+                });
 
+                it("should return a precision string", function() {
+                    intervalDomainAttrs.precision.should.be.a("string");
+                    intervalDomainAttrs.precision.should.equal("1");
                 });
 
                 it("should return a numericDomain object", function() {
@@ -80,7 +84,6 @@ define(["chai", "chai-jquery", "chai-backbone",
                     ratioDomainAttrs.unit.should.be.an("object");
                     ratioDomainAttrs.unit.standardUnit.should.be.a("string");
                     ratioDomainAttrs.unit.standardUnit.should.equal("celsius");
-
                 });
 
                 it("should return a numericDomain object", function() {
@@ -106,6 +109,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t<unit>\n",
                     "\t\t<standardUnit>meter</standardUnit>\n",
                     "\t</unit>\n",
+                    "\t<precision>1</precision>\n",
                     "\t<numericDomain>\n",
                     "\t\t<numberType>real</numberType>\n",
                     "\t\t<bounds>\n",
