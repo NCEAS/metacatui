@@ -575,7 +575,10 @@ define(['underscore',
 	        		
 	        		//Create a new EMLOtherEntity if it doesn't exist
 	        		if(!entityModel){
-	        			entityModel = new EMLOtherEntity();
+	        			entityModel = new EMLOtherEntity({
+	        				entityName : dataONEObject.get("fileName"),
+	        				entityType : dataONEObject.get("formatId") || dataONEObject.get("mediaType")
+	        			});
 	        			
 	        			//Listen to changes to required fields on the otherEntity models
 	        			this.listenTo(entityModel, "change:entityName", function(){

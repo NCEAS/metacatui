@@ -317,6 +317,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 dataONEObject.set("checksum", checksum);
                 dataONEObject.set("checksumAlgorithm", "MD5");
                 dataONEObject.set("uploadStatus", "q"); // set status to queued
+                dataONEObject.set("uploadResult", event.target.result);
                 delete event; // Let large files be garbage collected
                 
             },

@@ -2907,6 +2907,26 @@ input.subtle:focus,
 /*******************************************
 Editor View
 ******************************************/
+.Editor #Navbar{
+	padding-bottom: 0px;
+}
+.Editor #logo{
+	height: 40px;
+	margin-top: 5px;
+}
+.Editor .header .nav > li > a{
+	font-size: 1em;
+}
+.Editor .header .nav li a.btn{
+	font-size: .7em;
+}
+.Editor .header .border-image{
+	height: 15px;
+	margin-bottom: 5px;
+}
+.Editor #Content {
+    padding-top: 70px;
+}
 #editor-header {
     border-bottom: 1px solid #DDDDDD;
 }
@@ -3436,6 +3456,7 @@ textarea.xlarge{
 .Editor .modal{
 	height: 80%;
 	width: 70%;
+	left: 40%;
     max-width: 1000px;
     min-width: 300px;
 }
@@ -3451,7 +3472,15 @@ textarea.xlarge{
 	width: 100%;
 	box-sizing: border-box;
 }
-
+.modal.eml-entity .preview-container + .description{
+	float: right;
+	width: 100%;
+}
+.preview-container .thumbnail-square{
+	height: 250px;
+	width: 250px;
+	overflow: hidden;
+}
 
 /*******************************************
 Pager View
