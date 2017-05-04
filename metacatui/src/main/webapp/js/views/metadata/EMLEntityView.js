@@ -51,9 +51,10 @@ define(['underscore', 'jquery', 'backbone',
             		this.$(".preview-container").html(dataPreview.el);
             		
             		if(dataPreview.$el.children().length){
-            			this.$(".preview-container").addClass("span5");
-            			this.$(".description").addClass("span7");
+            			this.$(".description").css("width", "calc(100% - 310px)");
             		}
+            		else
+            			dataPreview.$el.remove();
             	}
             	
             	//Initialize the modal window
