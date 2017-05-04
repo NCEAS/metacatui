@@ -119,7 +119,9 @@ define(["jquery", "underscore", "backbone",
 
                 // Add in the textDomain content if present
                 // TODO
-                
+
+                attributes.objectDOM = $objectDOM[0];
+
                 return attributes;
             },
 

@@ -141,6 +141,7 @@ define(["jquery", "underscore", "backbone",
                     }
                     attributes.numericDomain = numericDomainObject;
                 }
+                attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
             },
