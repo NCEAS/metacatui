@@ -27,8 +27,10 @@ define(["jquery", "underscore", "backbone",
              * Use this until we can figure out issues with $.parseXML().
              */
             nodeNameMap: {
+                "standardunit": "standardUnit",
+                "customunit": "customUnit",
                 "numericdomain": "numericDomain",
-                "numbertype": "numberType",
+                "numbertype": "numberType"
             },
 
             /* Initialize an EMLNonNumericDomain object */
