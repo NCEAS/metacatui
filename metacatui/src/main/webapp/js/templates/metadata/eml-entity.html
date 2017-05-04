@@ -3,35 +3,45 @@
     <h3>Describe <span class="entity-name"><%=title%></span></h3>
   </div>
   <div class="modal-body">
-  	<div class="row-fluid">
-	  	<div class="preview-container"></div>
-  	
-  		<div class="description">
-		    <div class="entity-name basic-text-container" data-category="entityName">
-				<h5>Name <span class="required-icon">*</span></h5>
-				<div class="text-container">
-					<input type="text" data-category="entityName" class="basic-text" 
-					placeholder="Add a short name for this data" value="<%=entityName%>" >
+  	<ul class="nav nav-tabs">
+	  <li class="active"><a href="#overview">Overview</a></li>
+	  <li><a href="#attributes">Attributes</a></li>
+	</ul>
+	<div class="tab-content">
+		<div class="tab-pane active" id="overview">
+		  	<div class="row-fluid">
+			  	<div class="preview-container"></div>
+		  	
+		  		<div class="description">
+				    <div class="entity-name basic-text-container" data-category="entityName">
+						<h5>Name <span class="required-icon">*</span></h5>
+						<div class="text-container">
+							<input type="text" data-category="entityName" class="basic-text" 
+							placeholder="Add a short name for this data" value="<%=entityName%>" >
+						</div>
+					</div>
+					
+					<div class="row-fluid">
+						<h5>Description</h5>
+						<div class="text-container">
+							<textarea data-category="entityDescription" placeholder="General description of this data file and its contents"><%=entityDescription%></textarea>
+						</div>
+					</div>
 				</div>
 			</div>
 			
-			<div class="row-fluid">
-				<h5>Description</h5>
-				<div class="text-container">
-					<textarea data-category="entityDescription" placeholder="General description of this data file and its contents"><%=entityDescription%></textarea>
+			<div class="basic-text-container text-container">
+				<h5>Data type</h5>
+				<div>
+					<input data-category="entityType" value="<%=entityType%>" type="text" 
+					class="basic-text" placeholder="Specify the type of data this is" />
 				</div>
 			</div>
 		</div>
-	</div>
-	
-	<div class="basic-text-container text-container">
-		<h5>Data type</h5>
-		<div>
-			<input data-category="entityType" value="<%=entityType%>" type="text" 
-			class="basic-text" placeholder="Specify the type of data this is" />
+		<div class="tab-pane" id="attributes">
+			<h3>Attributes</h3>
 		</div>
 	</div>
-	
   </div>
   <div class="modal-footer">
     <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Done</button>

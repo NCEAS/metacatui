@@ -2911,7 +2911,7 @@ Editor View
 	padding-bottom: 0px;
 }
 .Editor #logo{
-	height: 40px;
+	height: 40px;	
 	margin-top: 5px;
 }
 .Editor .header .nav > li > a{
@@ -3453,26 +3453,43 @@ textarea.xlarge{
 }
 
 /** Entity section **/
-.Editor .modal{
+.eml-entity.modal{
 	height: 80%;
 	width: 70%;
 	left: 40%;
     max-width: 1000px;
     min-width: 300px;
 }
-.Editor .modal-body{
+.eml-entity .modal-body{
 	max-height: calc(100% - 110px);
 	height: calc(100% - 110px);	
+	padding: 0px;
 }
-.modal .preview-container{
-    box-sizing: border-box;
-    float: left;
+.eml-entity .nav-tabs li {
+    width: 50%;
 }
-.modal .preview-container .thumbnail{
+.eml-entity .nav-tabs li.active{
+	border-top: 0px;
+}
+.eml-entity .nav-tabs li a{
+	border-radius: 0px;
+    border-top: 0px;
+    text-align: center;
+}
+.eml-entity .tab-content{
+	padding: 20px;
 	width: 100%;
 	box-sizing: border-box;
 }
-.modal.eml-entity .preview-container + .description{
+.eml-entity .preview-container{
+    box-sizing: border-box;
+    float: left;
+}
+.eml-entity .preview-container .thumbnail{
+	width: 100%;
+	box-sizing: border-box;
+}
+.eml-entity .preview-container + .description{
 	float: right;
 	width: 100%;
 }
@@ -3480,6 +3497,9 @@ textarea.xlarge{
 	height: 250px;
 	width: 250px;
 	overflow: hidden;
+}
+.preview-container .description textarea{
+	min-height: 175px;
 }
 
 /*******************************************

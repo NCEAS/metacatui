@@ -21,7 +21,8 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            	"change" : "updateModel"
+            	"change" : "updateModel",
+            	"click .nav-tabs a" : "showTab"
             },
             
             initialize: function(options){
@@ -68,6 +69,11 @@ define(['underscore', 'jquery', 'backbone',
             	
             	this.model.set(changedAttr, $(e.target).val());
             	
+            },
+            
+            showTab: function(e){
+            	e.preventDefault();
+       		  	$(e.target).tab('show');
             },
             
             show: function(){
