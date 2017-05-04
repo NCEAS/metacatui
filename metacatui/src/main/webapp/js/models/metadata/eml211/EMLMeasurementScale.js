@@ -28,37 +28,37 @@ define(["jquery", "underscore", "backbone",
                     case "nominal":
                         instance = new EMLNonNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     case "ordinal":
                         instance = new EMLNonNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     case "interval":
                         instance = new EMLNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     case "ratio":
                         instance = new EMLNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     case "dateTime":
                         instance = new EMLDateTimeDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     default:
                         instance = new EMLNonNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": $measurementScale
+                            "objectXML": $measurementScale
                         }, options);
                 }
 
