@@ -48,6 +48,7 @@ define(["require", "mocha"], function(require, mocha) {
             "js/specs/models/metadata/eml211/EMLAttribute.spec",
             "js/specs/models/metadata/eml211/EMLMeasurementScale.spec",
             "js/specs/models/metadata/eml211/EMLNonNumericDomain.spec",
+            "js/specs/models/metadata/eml211/EMLNumericDomain.spec",
             "js/specs/models/metadata/eml211/EMLDateTimeDomain.spec"
         ];
 
