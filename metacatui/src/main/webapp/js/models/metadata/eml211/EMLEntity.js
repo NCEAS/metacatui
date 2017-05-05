@@ -177,9 +177,11 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
             },
 
             /* Copy the original XML and update fields in a DOM object */
-            updateDOM: function() {
+            updateDOM: function(objectDOM) {
                 var type = this.get("type") || "otherEntity";
-                var objectDOM = this.get("objectDOM");
+                if ( ! objectDOM ) {
+                    objectDOM = this.get("objectDOM");
+                }
                 var objectXML = this.get("objectXML");
 
                 // If present, use the cached DOM
@@ -221,27 +223,25 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
                 // Update the entityName
                 if ( this.get("entityName") ) {
-                    if( $(objectDOM).find("entityName").length ) {
+                    if ( $(objectDOM).find("entityName").length ) {
                         $(objectDOM).find("entityName").text(this.get("entityName"));
 
                     } else {
                         this.getEMLPosition(objectDOM, "entityName")
                             .after($(document.createElement("entityName"))
-                            .text(this.get("entityName"))
-                        );
+                            .text(this.get("entityName")));
                     }
                 }
 
                 // Update the entityDescription
                 if ( this.get("entityDescription") ) {
-                    if( $(objectDOM).find("entityDescription").length ) {
+                    if ( $(objectDOM).find("entityDescription").length ) {
                         $(objectDOM).find("entityDescription").text(this.get("entityDescription"));
 
                     } else {
                         this.getEMLPosition(objectDOM, "entityDescription")
                             .after($(document.createElement("entityDescription"))
-                            .text(this.get("entityName"))
-                        );
+                            .text(this.get("entityName")));
                     }
                 }
 
@@ -270,6 +270,13 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 }
 
                 // TODO: Update the attributeList section
+                var attributeList = this.get("attributeList");
+
+                if ( attributeList.length ) {
+                    _.each(attributeList, function(attribute) {
+                        objectDOM = attribute.updateDOM();
+                    });
+                }
 
                 // TODO: Update the constraint section
 
