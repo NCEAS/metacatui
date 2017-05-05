@@ -1,5 +1,6 @@
-define(["jquery", "underscore", "backbone", "models/DataONEObject"],
-    function($, _, Backbone, DataONEObject) {
+define(["jquery", "underscore", "backbone", "models/DataONEObject",
+        "models/metadata/eml211/EMLAttribute"],
+    function($, _, Backbone, DataONEObject, EMLAttribute) {
 
         /*
          * EMLEntity represents an abstract data entity, corresponding
@@ -122,6 +123,25 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"],
                 attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM[0];
 
+                // Add the attributeList - we need to use DOMParser() here
+                // because of the JQuery bug with <source> elements
+                var parser = new DOMParser();
+                var parsedDOM = parser.parseFromString(objectXML, "text/xml");
+                var attributeList = parsedDOM.getElementsByTagName("attributeList");
+                var attribute; // An individual EML attribute
+                var options = {parse: true};
+                attributes.attributeList = [];
+                if ( attributeList.length ) {
+                    _.each(attributeList[0].children, function(attr) {
+                        attribute = new EMLAttribute(
+                            {objectXML: attr.outerHTML},
+                            options
+                        );
+                        // Can't use this.addAttribute() here (no this yet)
+                        attributes.attributeList.push(attribute);
+                    }, this);
+
+                }
                 return attributes;
             },
 
@@ -181,7 +201,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"],
                 if ( xmlID ) {
                     $(objectDOM).attr("id", xmlID);
                 }
-                
+
                 // Update the alternateIdentifiers
                 var altIDs = this.get("alternateIdentifier");
                 if ( altIDs ) {
