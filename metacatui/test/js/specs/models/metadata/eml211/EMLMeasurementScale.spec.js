@@ -75,7 +75,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     emlMeasurementScale = EMLMeasurementScale.getInstance(xml);
                     domainName = emlMeasurementScale.get("measurementScale");
                     expect(emlMeasurementScale).to.be.an.an("Object");
-                    domainName.should.equal("datetime");
+                    domainName.should.equal("dateTime");
                 });
             });
         });

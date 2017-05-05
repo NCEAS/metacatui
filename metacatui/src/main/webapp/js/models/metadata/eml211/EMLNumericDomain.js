@@ -53,7 +53,10 @@ define(["jquery", "underscore", "backbone",
 
                 // do we have an appropriate measurementScale tree?
                 var index = _.indexOf(["measurementscale","interval", "ratio"], rootNodeName);
-                if ( index == -1 ) return {};
+                if ( index == -1 ) {
+                    throw new Error("The measurement scale XML does not have a root " +
+                        "node of 'measurementScale', 'interval', or 'ratio'.");
+                }
 
                 // If measurementScale is present, add it
                 if ( rootNodeName == "measurementscale" ) {
