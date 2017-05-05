@@ -87,6 +87,47 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 return attributes;
             },
 
+            /* Copy the original XML and update fields in a DOM object */
+            updateDOM: function(objectDOM) {
+                var type = this.get("type") || "otherEntity";
+                if ( ! objectDOM ) {
+                    objectDOM = this.get("objectDOM");
+                }
+                var objectXML = this.get("objectXML");
+
+                // If present, use the cached DOM
+                if ( objectDOM ) {
+                    objectDOM = objectDOM.cloneNode(true);
+
+                // otherwise, use the cached XML
+                } else if ( objectXML ){
+                    objectDOM = $(objectXML)[0].cloneNode(true);
+
+                // This is new, create it
+                } else {
+                    objectDOM = document.createElement(type);
+
+                }
+
+                // Now call the superclass
+                objectDOM = this.constructor.__super__.updateDOM.apply(this, [objectDOM]);
+
+                // And then update the EMLOtherEntity-specific fields
+                // Update the entityName
+                if ( this.get("entityType") ) {
+                    if ( $(objectDOM).find("entityType").length ) {
+                        $(objectDOM).find("entityType").text(this.get("entityType"));
+
+                    } else {
+                        this.getEMLPosition(objectDOM, "entityType")
+                            .after($(document.createElement("entityType"))
+                            .text(this.get("entityType")));
+                    }
+                }
+
+                return objectDOM;
+            },
+
             /* Serialize the EML DOM to XML */
             serialize: function() {
 
