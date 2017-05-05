@@ -82,6 +82,35 @@ define(["chai", "chai-jquery", "chai-backbone",
                 it("should return a measurementscale object", function() {
                     attributes.measurementScale.should.be.an("object");
                 });
+
+                it("should return a nonNumericDomain array", function() {
+                    attributes.measurementScale.get("nonNumericDomain").should.be.an("array");
+                    attributes.measurementScale.get("nonNumericDomain").length.should.equal(1);
+                    attributes.measurementScale.get("nonNumericDomain")[0].should.have.all.keys("textDomain");
+                });
+
+                it("should return a textDomain object", function() {
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.should.be.an("object");
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.should.have.all.keys("definition", "pattern", "source");
+                });
+
+                it("should return a textDomain definition string", function() {
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.definition.should.be.a("string");
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.definition.should.equal("Any text");
+                });
+
+                it("should return a textDomain pattern array", function() {
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.pattern.should.be.an("array");
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.pattern.length.should.equal(1);
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.pattern[0].should.equal("*");
+                    // TODO: test other regex patterns
+                });
+
+                it("should return a textDomain source string", function() {
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.source.should.be.a("string");
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.source.should.equal("Any source");
+                });
+
             });
         });
 
