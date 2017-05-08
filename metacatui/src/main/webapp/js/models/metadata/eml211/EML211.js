@@ -7,12 +7,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLTaxonCoverage', 
         'models/metadata/eml211/EMLTemporalCoverage', 
         'models/metadata/eml211/EMLDistribution', 
+        'models/metadata/eml211/EMLEntity',
         'models/metadata/eml211/EMLParty', 
         'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText',
 		'models/metadata/eml211/EMLMethods'], 
     function($, _, Backbone, uuid, ScienceMetadata, DataONEObject, 
-    		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLParty, EMLProject, EMLText, EMLMethods) {
+    		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLEntity, EMLParty, EMLProject, EMLText, EMLMethods) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -218,6 +219,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
             		emlDistribution = ["distribution"],
+            		emlEntities = ["datatable", "otherentity", "spatialvector"],
             		emlText = ["abstract", "additionalinfo"],
 					emlMethods = ["methods"];
             		
@@ -346,6 +348,35 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			//if(_.contains(this.get("intellRightsOptions"), value))
             			modelJSON["intellectualRights"] = value;
             			
+            		}
+            		//Parse Data Tables
+            		else if(_.contains(emlEntities, thisNode.localName)){
+            			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
+
+            			//Start an array of Entities
+            			if(typeof modelJSON["entities"] == "undefined") 
+            				modelJSON["entities"] = [];
+            			
+            			//Create the model
+            			var entityModel;
+            			if(thisNode.localName == "otherentity"){
+            				entityModel = new EMLOtherEntity({
+                				objectDOM: thisNode,
+                				parentModel: model
+                			}, {
+                				parse: true
+                			});
+            			}
+            			else{
+            				entityModel = new EMLEntity({
+                				objectDOM: thisNode,
+                				parentModel: model
+                			}, {
+                				parse: true
+                			});
+            			}
+            			
+            			modelJSON["entities"].push(entityModel);            			
             		}
             		else{
             			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;

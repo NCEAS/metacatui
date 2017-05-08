@@ -8,6 +8,9 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
          * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
          */
         var EMLOtherEntity = EMLEntity.extend({
+        	
+        	//The class name for this model
+        	type: "EMLOtherEntity",
 
             /* Attributes of any entity */
             defaults: _.extend({

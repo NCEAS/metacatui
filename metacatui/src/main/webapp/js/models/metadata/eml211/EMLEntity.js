@@ -11,6 +11,9 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
          * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
          */
         var EMLEntity = Backbone.Model.extend({
+        	
+        	//The class name for this model
+        	type: "EMLEntity",
 
             /* Attributes of any entity */
             defaults: {
@@ -97,7 +100,11 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     if ( this.get("objectXML") ) {
                         objectXML = this.get("objectXML");
 
-                    } else {
+                    } 
+                    else if(attributes.objectDOM){
+                    	objectXML = attributes.objectDOM.outerHTML;
+                    }
+                    else {
                         return {};
                     }
                 }
@@ -127,7 +134,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 // because of the JQuery bug with <source> elements
                 var parser = new DOMParser();
                 var parsedDOM = parser.parseFromString(objectXML, "text/xml");
-                var attributeList = parsedDOM.getElementsByTagName("attributeList");
+                var attributeList = parsedDOM.getElementsByTagName("attributelist");
                 var attribute; // An individual EML attribute
                 var options = {parse: true};
                 attributes.attributeList = [];
