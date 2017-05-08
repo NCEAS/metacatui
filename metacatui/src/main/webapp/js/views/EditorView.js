@@ -568,10 +568,7 @@ define(['underscore',
 	        	if(!entityView){
 	        		
 	        		//Get the entity model for this data package item
-	        		var entityModel = _.find(this.model.get("entities"), 
-				        				function(m){ 
-				        					return m.get("id") == clickedEl.attr("data-id");
-				        				});
+	        		var entityModel = this.model.getEntity(row.data("model"));
 	        		
 	        		//Create a new EMLOtherEntity if it doesn't exist
 	        		if(!entityModel){
@@ -593,12 +590,21 @@ define(['underscore',
 	        			});
 	        		}
 	        		
-	        		//Create a new EMlEntityView
-	        		entityView = new EMLEntityView({
-	        			model: entityModel,
-	        			DataONEObject: dataONEObject,
-	        			edit: true
-	        		});
+	        		//Create a new view for the entity based on the model type
+	        		if(entityModel.type == "EMLOtherEntity"){
+		        		entityView = new EMLEntityView({
+		        			model: entityModel,
+		        			DataONEObject: dataONEObject,
+		        			edit: true
+		        		});
+	        		}
+	        		else{
+	        			entityView = new EMLEntityView({
+		        			model: entityModel,
+		        			DataONEObject: dataONEObject,
+		        			edit: true
+		        		});
+	        		}
 	        		
 	        		//Attach the view to the edit button so we can access it again
 	        		clickedEl.data("entityView", entityView);

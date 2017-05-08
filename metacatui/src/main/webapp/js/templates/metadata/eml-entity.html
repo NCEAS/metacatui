@@ -4,12 +4,12 @@
   </div>
   <div class="modal-body">
   	<ul class="nav nav-tabs">
-	  <li class="active"><a href="#overview">Overview</a></li>
-	  <li><a href="#attributes">Attributes</a></li>
+	  <li class="active"><a href="#overview-<%=uniqueId%>">Overview</a></li>
+	  <li><a href="#attributes-<%=uniqueId%>">Attributes</a></li>
 	</ul>
 	<div class="tab-content">
-		<div class="tab-pane active" id="overview">
-		  	<div class="row-fluid">
+		<div class="tab-pane active" id="overview-<%=uniqueId%>">
+		  	<div class="row-fluid overview-container">
 			  	<div class="preview-container"></div>
 		  	
 		  		<div class="description">
@@ -29,17 +29,10 @@
 					</div>
 				</div>
 			</div>
-			
-			<div class="basic-text-container text-container">
-				<h5>Data type</h5>
-				<div>
-					<input data-category="entityType" value="<%=entityType%>" type="text" 
-					class="basic-text" placeholder="Specify the type of data this is" />
-				</div>
-			</div>
 		</div>
-		<div class="tab-pane" id="attributes">
-			<h3>Attributes</h3>
+		<div class="tab-pane attributes" id="attributes-<%=uniqueId%>">
+			<div class="accordion attribute-list">
+			</div>
 		</div>
 	</div>
   </div>

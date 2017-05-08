@@ -960,6 +960,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 
             },
             
+            /*
+             * Find the entity model for a given DataONEObject
+             */
+            getEntity: function(dataONEObj){
+
+            	var entity = _.find(this.get("entities"), function(e){
+            		if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
+            			return true;
+            		else if( e.get("entityName") == dataONEObj.get("fileName") )
+            			return true;
+            	});
+            	
+            	if(entity)
+            		return entity;
+            	
+            	var matchingTypes = _.filter(this.get("entities"), function(e){
+            		return (e.get("formatName") == (dataONEObject.get("formatId") || dataONEObject.get("mediaType")));
+            	});
+            	
+            	if(matchingTypes.length == 1)
+            		return matchingTypes[0];
+            	
+            	return false;
+            		
+            },
+            
             /* Initialize the object XML for brand spankin' new EML objects */
             createXML: function() {
                 var xml = "<eml:eml xmlns:eml=\"eml://ecoinformatics.org/eml-2.1.1\"></eml:eml>",

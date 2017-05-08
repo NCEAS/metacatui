@@ -30,7 +30,11 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 attributeList: [], // Zero to many EMLAttribute objects
                 constraint: [], // Zero to many EMLConstraint objects
                 references: null, // A reference to another EMLEntity by id (needs work)
-
+                
+                //Temporary attribute until we implement the eml-physical module
+                downloadID: null,
+                formatName: null,
+                
                 /* Attributes not from EML */
                 nodeOrder: [ // The order of the top level XML element nodes
                     "alternateIdentifier",
@@ -129,6 +133,22 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
                 attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM[0];
+                
+                //Find the id from the download distribution URL
+                var urlNode = $objectDOM.find("url");
+                if(urlNode.length){
+                	var downloadURL = urlNode.text();
+                	downloadURL = downloadURL.substring( downloadURL.indexOf("resolve/") + 8 );
+
+                	if(downloadURL.length)
+                        attributes.downloadID = downloadURL;
+                }
+                
+                //Find the format name
+                var formatNode = $objectDOM.find("formatName");
+                if(formatNode.length){
+                	attributes.formatName = formatNode.text();
+                }
 
                 // Add the attributeList - we need to use DOMParser() here
                 // because of the JQuery bug with <source> elements
