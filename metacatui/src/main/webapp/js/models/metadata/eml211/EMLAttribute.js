@@ -111,10 +111,27 @@ define(["jquery", "underscore", "backbone",
                 });
 
                 // Add the measurementScale
-                var measurementScale = $objectDOM.find("measurementscale");
+                /* JQuery seems to have a bug handling XML elements named "source"
+                 * $objectDOM = $(attributes.objectDOM) gives us:
+                 * <nominal>
+                 * ....<nonnumericdomain>
+                 * ........<textdomain>
+                 * ............<definition>Any text</definition>
+                 * ............<pattern>*</pattern>
+                 * ............<source>Any source
+                 * ........</textdomain>
+                 * ....</nonnumericdomain>
+                 * </nominal>
+                 * Note the lost </source>. Changing the element name to "sourced" works fine.
+                 * Use the DOMParser instead
+                 */
+                var parser = new DOMParser();
+                var parsedDOM = parser.parseFromString(objectXML, "text/xml");
+
+                var measurementScale = parsedDOM.getElementsByTagName("measurementScale")[0];
                 if ( measurementScale ) {
                     attributes.measurementScale =
-                        EMLMeasurementScale.getInstance(measurementScale[0]);
+                        EMLMeasurementScale.getInstance(measurementScale.outerHTML);
                 }
                 attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM;

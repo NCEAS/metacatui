@@ -75,7 +75,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     emlMeasurementScale = EMLMeasurementScale.getInstance(xml);
                     domainName = emlMeasurementScale.get("measurementScale");
                     expect(emlMeasurementScale).to.be.an.an("Object");
-                    domainName.should.equal("datetime");
+                    domainName.should.equal("dateTime");
                 });
             });
         });
@@ -126,7 +126,9 @@ define(["chai", "chai-jquery", "chai-backbone",
                 xml.push(
                     "<measurementScale>\n",
                     "\t<interval>\n",
-                    "\t\t<unit>meter<unit>\n",
+                    "\t\t<unit>\n",
+                    "\t\t\t<standardUnit>meter</standardUnit>\n",
+                    "\t\t</unit>\n",
                     "\t\t<numericDomain>\n",
                     "\t\t\t<numberType>whole</numberType>\n",
                     "\t\t</numericDomain>\n",
@@ -142,7 +144,9 @@ define(["chai", "chai-jquery", "chai-backbone",
                 xml.push(
                     "<measurementScale>\n",
                     "\t<ratio>\n",
-                    "\t\t<unit>meter<unit>\n",
+                    "\t\t<unit>\n",
+                    "\t\t\t<standardUnit>meter</standardUnit>\n",
+                    "\t\t</unit>\n",
                     "\t\t<numericDomain>\n",
                     "\t\t\t<numberType>float</numberType>\n",
                     "\t\t</numericDomain>\n",

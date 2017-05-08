@@ -20,45 +20,60 @@ define(["jquery", "underscore", "backbone",
             getInstance: function(measurementScaleXML) {
                 var instance = {};
                 var options = {parse: true};
-                var $measurementScale = $(measurementScaleXML);
-                var domainName = $measurementScale.children()[0].localName;
+                /* JQuery seems to have a bug handling XML elements named "source"
+                 * $objectDOM = $(attributes.objectDOM) gives us:
+                 * <nominal>
+                 * ....<nonnumericdomain>
+                 * ........<textdomain>
+                 * ............<definition>Any text</definition>
+                 * ............<pattern>*</pattern>
+                 * ............<source>Any source
+                 * ........</textdomain>
+                 * ....</nonnumericdomain>
+                 * </nominal>
+                 * Note the lost </source>. Changing the element name to "sourced" works fine.
+                 * Use the DOMParser instead
+                 */
+                var parser = new DOMParser();
+                var parsedDOM = parser.parseFromString(measurementScaleXML, "text/xml");
+                var domainName = $(parsedDOM).find("measurementScale").children()[0].localName;
 
                 // Return the appropriate sub class of EMLMeasurementScale
                 switch ( domainName ) {
                     case "nominal":
                         instance = new EMLNonNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     case "ordinal":
                         instance = new EMLNonNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     case "interval":
                         instance = new EMLNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     case "ratio":
                         instance = new EMLNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     case "dateTime":
                         instance = new EMLDateTimeDomain({
                             "measurementScale": domainName,
-                            "objectDOM": measurementScaleXML
+                            "objectXML": measurementScaleXML
                         }, options);
                         break;
                     default:
                         instance = new EMLNonNumericDomain({
                             "measurementScale": domainName,
-                            "objectDOM": $measurementScale
+                            "objectXML": $measurementScale
                         }, options);
                 }
 

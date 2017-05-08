@@ -67,9 +67,9 @@ define(["chai", "chai-jquery", "chai-backbone",
                     intervalDomainAttrs.numericDomain.numberType.should.equal("real");
                     intervalDomainAttrs.numericDomain.bounds.should.be.an("array");
                     intervalDomainAttrs.numericDomain.bounds.length.should.equal(2);
-                    intervalDomainAttrs.numericDomain.bounds[0].minimum.should.equal(0);
-                    intervalDomainAttrs.numericDomain.bounds[0].minimum.should.equal(100);
-                    intervalDomainAttrs.numericDomain.bounds[1].minimum.should.equal(200);
+                    intervalDomainAttrs.numericDomain.bounds[0].minimum.should.equal("0");
+                    intervalDomainAttrs.numericDomain.bounds[0].maximum.should.equal("100");
+                    intervalDomainAttrs.numericDomain.bounds[1].minimum.should.equal("200");
                     expect(intervalDomainAttrs.numericDomain.bounds[1].maximum).to.not.exist;
                 });
             });
@@ -92,9 +92,9 @@ define(["chai", "chai-jquery", "chai-backbone",
                     ratioDomainAttrs.numericDomain.numberType.should.equal("float");
                     ratioDomainAttrs.numericDomain.bounds.should.be.an("array");
                     ratioDomainAttrs.numericDomain.bounds.length.should.equal(2);
-                    ratioDomainAttrs.numericDomain.bounds[0].minimum.should.equal(-40.0);
-                    ratioDomainAttrs.numericDomain.bounds[0].minimum.should.equal(0.0);
-                    ratioDomainAttrs.numericDomain.bounds[1].maximum.should.equal(40.0);
+                    ratioDomainAttrs.numericDomain.bounds[0].minimum.should.equal("-40.0");
+                    ratioDomainAttrs.numericDomain.bounds[0].maximum.should.equal("0.0");
+                    ratioDomainAttrs.numericDomain.bounds[1].maximum.should.equal("40.0");
                     expect(ratioDomainAttrs.numericDomain.bounds[1].minimum).to.not.exist;
                 });
             });

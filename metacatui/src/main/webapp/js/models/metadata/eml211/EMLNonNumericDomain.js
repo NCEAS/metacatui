@@ -71,6 +71,16 @@ define(["jquery", "underscore", "backbone",
                  */
                 var parser = new DOMParser();
                 var parsedDOM = parser.parseFromString(attributes.objectXML, "text/xml");
+
+                var rootNodeName = $(parsedDOM)[0].documentElement.nodeName;
+
+                // do we have an appropriate measurementScale tree?
+                var index = _.indexOf(["measurementScale", "nominal", "ordinal"], rootNodeName);
+                if ( index == -1 ) {
+                    throw new Error("The measurement scale XML does not have a root " +
+                        "node of 'measurementScale', 'nominal', or 'ordinal'.");
+                }
+
                 nonNumericDomainNodeList = $(parsedDOM).find("nonNumericDomain")
 
                 if ( nonNumericDomainNodeList && nonNumericDomainNodeList.length > 0 ) {
@@ -90,7 +100,7 @@ define(["jquery", "underscore", "backbone",
                     _.each(domainNodeList, function(domain) {
                         if ( domain ) {
                             // match the camelCase name since DOMParser() is XML-aware
-                            switch ( domain.localName ) {
+                            switch ( domain.nodeName ) {
                                 case "textDomain":
                                     domainObject = this.parseTextDomain(domain);
                                     break;
@@ -102,7 +112,7 @@ define(["jquery", "underscore", "backbone",
                                     console.log("In EMLNonNumericDomain.parse()" +
                                         "We don't support references yet ");
                                 default:
-                                    console.log("Unrecognized nonNumericDomain: " + domain.localName());
+                                    console.log("Unrecognized nonNumericDomain: " + domain.nodeName);
                             }
                         }
                         attributes.nonNumericDomain.push(domainObject);
@@ -119,7 +129,9 @@ define(["jquery", "underscore", "backbone",
 
                 // Add in the textDomain content if present
                 // TODO
-                
+
+                attributes.objectDOM = $objectDOM[0];
+
                 return attributes;
             },
 

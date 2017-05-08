@@ -45,15 +45,106 @@ define(["jquery", "underscore", "backbone",
             parse: function(attributes, options) {
 
                 var $objectDOM;
+                var measurementScale;
+                var rootNodeName;
 
                 $objectDOM = $(attributes.objectXML);
+                rootNodeName = $objectDOM[0].localName;
 
-                // Add the XML id
-                if ( $objectDOM.attr("id") ) {
-                    attributes.xmlID = $objectDOM.attr("id");
+                // do we have an appropriate measurementScale tree?
+                var index = _.indexOf(["measurementscale","interval", "ratio"], rootNodeName);
+                if ( index == -1 ) {
+                    throw new Error("The measurement scale XML does not have a root " +
+                        "node of 'measurementScale', 'interval', or 'ratio'.");
                 }
 
-                // TODO: parse the fields
+                // If measurementScale is present, add it
+                if ( rootNodeName == "measurementscale" ) {
+                    attributes.measurementScale = $objectDOM.children().first()[0].localName;
+                    $objectDOM = $objectDOM.children().first();
+                } else {
+                    attributes.measurementScale = $objectDOM.localName;
+                }
+
+
+                // Add the unit
+                var unitObject = {};
+                var unit = $objectDOM.children("unit");
+                var standardUnit;
+                var customUnit;
+                if ( unit.length ) {
+                    standardUnit = $(unit).children("standardunit").text();
+                    standardUnit = $(unit).children("standardunit").text();
+                }
+
+                if ( standardUnit ) {
+                    unitObject.standardUnit = standardUnit;
+                } else {
+                    unitObject.customUnit = customUnit;
+                }
+                attributes.unit = unitObject;
+
+                // Add the precision
+                var precision = $objectDOM.children("precision").text();
+                if ( precision ) {
+                    attributes.precision = precision;
+                }
+
+                // Add the numericDomain
+                var numericDomainObject = {};
+                var numericDomain = $objectDOM.children("numericdomain");
+                var numberType;
+                var boundsArray = [];
+                var boundsObject;
+                var bounds;
+                var minimum;
+                var maximum;
+                var references;
+                if ( numericDomain ) {
+                    // Add the XML id of the numeric domain
+                    if ( $(numericDomain).attr("id") ) {
+                        numericDomainObject.xmlID = $(numericDomain).attr("id");
+                    }
+
+                    // Add the numberType
+                    numberType = $(numericDomain).children("numbertype");
+
+                    if ( numberType ) {
+                        numericDomainObject.numberType = numberType.text();
+
+                        // Add optional bounds
+                        bounds = $(numericDomain).children("bounds");
+                        if ( bounds.length ) {
+                            _.each(bounds, function(bound) {
+                                boundsObject = {}; // initialize on each
+                                minimum = $(bound).children("minimum").text();
+                                maximum = $(bound).children("maximum").text();
+                                if ( minimum && maximum ) {
+                                    boundsObject.minimum = minimum;
+                                    boundsObject.maximum = maximum;
+                                } else if ( minimum ) {
+                                    boundsObject.minimum = minimum;
+                                } else if ( maximum ) {
+                                    boundsObject.maximum = maximum;
+                                }
+                                // If one of min or max is defined, add to the bounds array
+                                if ( boundsObject.minimum || boundsObject.maximum ) {
+                                    boundsArray.push(boundsObject);
+                                }
+                            });
+                        }
+                        numericDomainObject.bounds = boundsArray;
+
+                    } else {
+                        // Otherwise look for references
+                        references = $(numericDomain).children("references");
+                        if ( references ) {
+                            numericDomainObject.references = references.text();
+                        }
+                    }
+                    attributes.numericDomain = numericDomainObject;
+                }
+                attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
             },
