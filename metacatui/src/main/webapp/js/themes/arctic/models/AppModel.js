@@ -15,7 +15,7 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			googleAnalyticsKey: null,
 			
-			nodeId: "urn:node:mnTestARCTIC",
+			nodeId: null,
 
 			searchMode: MetacatUI.mapKey ? 'map' : 'list',
 			searchHistory: [],
@@ -66,7 +66,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-            setPublicAccess: true // Set to true to force public read access on newly created objects
+                        setPublicAccess: false // Set to true to force public read access on newly created objects
 		},
 				
 		defaultView: "data",
