@@ -111,6 +111,20 @@ define(['underscore',
         	var view = this;
         	window.onbeforeunload = function(){ view.confirmClose() };
 
+          // When the user mistakenly drops a file into an area in the window
+          // that isn't a proper drop-target, prevent navigating away from the
+          // page. Without this, the user will lose their progress in the
+          // editor.
+          window.addEventListener("dragover", function(e) {
+            e = e || event;
+            e.preventDefault();
+          }, false);
+
+          window.addEventListener("drop", function(e) {
+            e = e || event;
+            e.preventDefault();
+          }, false);
+
             return this;
         },
         
