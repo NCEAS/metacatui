@@ -150,11 +150,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 	attributes.formatName = formatNode.text();
                 }
 
-                // Add the attributeList - we need to use DOMParser() here
-                // because of the JQuery bug with <source> elements
-                var parser = new DOMParser();
-                var parsedDOM = parser.parseFromString(objectXML, "text/xml");
-                var attributeList = parsedDOM.getElementsByTagName("attributelist");
+                // Add the attributeList
+                var attributeList = $objectDOM.find("attributelist");
                 var attribute; // An individual EML attribute
                 var options = {parse: true};
                 attributes.attributeList = [];

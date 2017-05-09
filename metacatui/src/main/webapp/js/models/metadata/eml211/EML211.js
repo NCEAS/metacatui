@@ -206,6 +206,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		if(response.indexOf("systemMetadata>") > -1) 
             			return DataONEObject.prototype.parse.call(this, response);
             			
+            		response = this.cleanUpXML(response);
             		this.set("objectXML", response);
             		var emlElement = $($.parseHTML(response)).filter("eml\\:eml");
             	}
@@ -1005,6 +1006,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     emlString = $(document.createElement("div")).append(eml.clone()).html();
                     
                     return emlString;
+            },
+            
+            cleanUpXML: function(xmlString){
+            	xmlString.replace("<source>", "<sourced>");
+            	xmlString.replace("</source>", "</sourced>");
+            	
+            	return xmlString;
             }
             
         });
