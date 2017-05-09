@@ -52,6 +52,31 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Insert the template HTML
             	this.$el.html(viewHTML);
+            	
+            	this.listenTo(this.model, "change:attributeName", this.updateHeader);
+            },
+            
+            updateHeader: function(){
+            	this.$(".heading").text(this.model.get("attributeName"));
+            },
+            
+            updateModel: function(e){
+            	if(!e) return;
+            	
+            	var newValue = $(e.target).val(),
+            		category  = $(e.target).attr("data-category"),
+            		currentValue = this.model.get(category);
+            	
+            	if(Array.isArray(currentValue)){
+            		var inputType = e.target.tagName.toLowercase(),
+            			index = this.$(inputType + "[data-category='" + category + "']").index(e.target);
+            		
+            		currentValue.split(index, 0, newValue);
+            		this.model.trigger("change:" + category);
+            	}
+            	else{
+            		this.model.set(category, newValue);
+            	}
             },
             
             toggleAttribute: function(e){
