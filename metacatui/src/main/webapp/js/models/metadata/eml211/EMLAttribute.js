@@ -139,6 +139,16 @@ define(["jquery", "underscore", "backbone",
 
                 return attributes;
             },
+            
+            validate: function(){
+            	var errors = {};
+            	
+            	if(!this.get("attributeName"))
+            		errors.attributeName = "Provide a name for this attribute.";
+            	
+            	if(Object.keys(errors).length)
+            		return errors;
+            },
 
             /* Let the top level package know of attribute changes from this object */
             trickleUpChange: function(){
