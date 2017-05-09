@@ -52,7 +52,7 @@ define(['jquery', 'underscore', 'backbone'],
             formatsServiceUrl: null,
             formatsUrl: "/formats",
 			//bioportalSearchUrl: null,
-			orcidBaseUrl: "https:/orcid.org",
+			orcidBaseUrl: "https://orcid.org",
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
 			//annotatorUrl: null,
@@ -66,7 +66,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-                        setPublicAccess: false // Set to true to force public read access on newly created objects
+			setPublicAccess: false // Set to true to force public read access on newly created objects
 		},
 				
 		defaultView: "data",
