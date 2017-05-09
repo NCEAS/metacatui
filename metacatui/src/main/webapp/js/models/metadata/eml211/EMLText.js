@@ -16,7 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		initialize: function(attributes){
 			var attributes = attributes || {}
 			
-			if(attributes.objectDOM) this.set(this.parse(attributes.objectDOM));
+			if(attributes.objectDOM) 
+				this.set(this.parse(attributes.objectDOM));
 
 			if(attributes.text) {
 				if (_.isArray(attributes.text)) {
