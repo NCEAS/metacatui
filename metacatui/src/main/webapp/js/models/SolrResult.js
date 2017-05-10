@@ -215,8 +215,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//if(this.get("isPublic")) return;
 
 			//Get info about this object
-			var filename = this.get("fileName") || this.get("title") || "",
-				url = this.get("url"),
+			var url = this.get("url"),
 				model = this;
 
 			//Create an XHR
@@ -230,7 +229,16 @@ define(['jquery', 'underscore', 'backbone'],
 			xhr.onload = function(){
 			    var a = document.createElement('a');
 			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+			   
+			    var filename = xhr.getResponseHeader('Content-Disposition');
+			    if(!filename){
+			    	filename = model.get("fileName") || model.get("title") || model.get("id") || "";
+			    }
+			    else
+			    	filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
+			    
 			    a.download = filename.trim(); // Set the file name.
+			    
 			    a.style.display = 'none';
 			    document.body.appendChild(a);
 			    a.click();
@@ -242,7 +250,9 @@ define(['jquery', 'underscore', 'backbone'],
 			xhr.onerror = function(e){
 				var a = document.createElement('a');
 			    a.href = url;
-			    a.download = filename.trim(); // Set the file name.
+			    
+			    var filename = model.get("fileName") || model.get("title") || model.get("id") || "";
+
 			    a.style.display = 'none';
 			    document.body.appendChild(a);
 			    a.click();
