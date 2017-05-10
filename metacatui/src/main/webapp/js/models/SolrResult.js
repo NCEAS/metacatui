@@ -252,6 +252,8 @@ define(['jquery', 'underscore', 'backbone'],
 			    a.href = url;
 			    
 			    var filename = model.get("fileName") || model.get("title") || model.get("id") || "";
+				if(filename)
+					a.download = filename;
 
 			    a.style.display = 'none';
 			    document.body.appendChild(a);
