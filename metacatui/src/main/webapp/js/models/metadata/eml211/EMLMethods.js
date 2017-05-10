@@ -48,9 +48,9 @@ define(['jquery',
 
 			if (!objectDOM) var objectDOM = this.get("objectDOM");
 
-			this.set('methodStepDescription', _.map($(objectDOM).find('methodstep description'), function(el) {
+			this.set('methodStepDescription', _.map($(objectDOM).find('methodstep description'), function(el, i) {
 				return new EMLText({
-					objectDOM: $(el).get(),
+					objectDOM: el,
 					type: 'description'
 				 });
 			}));

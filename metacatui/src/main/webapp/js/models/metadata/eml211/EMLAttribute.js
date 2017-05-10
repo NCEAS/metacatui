@@ -42,6 +42,7 @@ define(["jquery", "underscore", "backbone",
                 "attributename": "attributeName",
                 "attributelabel": "attributeLabel",
                 "attributedefinition": "attributeDefinition",
+                "sourced" : "source", 
                 "storagetype": "storageType",
                 "typesystem": "typeSystem",
                 "measurementscale": "measurementScale",
@@ -137,6 +138,16 @@ define(["jquery", "underscore", "backbone",
                 attributes.objectDOM = $objectDOM;
 
                 return attributes;
+            },
+            
+            validate: function(){
+            	var errors = {};
+            	
+            	if(!this.get("attributeName"))
+            		errors.attributeName = "Provide a name for this attribute.";
+            	
+            	if(Object.keys(errors).length)
+            		return errors;
             },
 
             /* Let the top level package know of attribute changes from this object */

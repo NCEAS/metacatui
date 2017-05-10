@@ -1,5 +1,5 @@
  <div class="accordion-heading">
-   <a class="accordion-toggle" href="#<%=attrId%>">
+   <a class="accordion-toggle heading" href="#<%=attrId%>">
      <%=title%>
    </a>
 </div>
@@ -8,21 +8,22 @@
     	
     	<div class="attribute-name basic-text-container" data-category="attributeName">
 			<h5>Attribute Name <span class="required-icon">*</span></h5>
-			<p class="subtle">The attribute name is
-              usually the name of the variable that is found in the header
-              of a data file.</p>
+			<p class="subtle">The attribute name is the official name of the attribute.
+			 It is usually found in the header of a data table.</p>
+              <p class="notification"></p>
 			<div class="text-container">
-				<input type="text" data-category="attributeName" class="basic-text" 
+				<input type="text" data-category="attributeName" class="basic-text input" 
 				placeholder="The name as it appears in the data" value="<%=attributeName%>" >
 			</div>
 		</div>
 		
 		<div class="attribute-label basic-text-container" data-category="attributeLabel">
-			<h5>Attribute Label <span class="required-icon">*</span></h5>
+			<h5>Attribute Label</h5>
 			<p class="subtle">A descriptive label that is used to display
               the name of an attribute.</p>
+              <p class="notification"></p>
 			<div class="text-container">
-				<input type="text" data-category="attributeLabel" class="basic-text" 
+				<input type="text" data-category="attributeLabel" class="basic-text input" 
 				placeholder="A short, descriptive label" value="<%=attributeLabel[0]%>" >
 			</div>
 		</div>
@@ -31,8 +32,9 @@
 			<h5>Definition</h5>
 			<p class="subtle">Explain the contents of the attribute fully so
               that a data user could interpret the attribute accurately.</p>
+              <p class="notification"></p>
 			<div class="text-container">
-				<textarea data-category="attributeDefinition" placeholder="Attribute definition"><%=attributeDefinition%></textarea>
+				<textarea data-category="attributeDefinition" placeholder="Attribute definition" class="input"><%=attributeDefinition%></textarea>
 			</div>
 		</div>
     	

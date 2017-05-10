@@ -163,7 +163,7 @@ define(["jquery", "underscore", "backbone",
                 domainObject.textDomain.pattern = patterns;
 
                 // Add the source
-                source = $(domain).children("source").text();
+                source = $(domain).children("sourced").text();
                 domainObject.textDomain.source = source;
 
                  return domainObject;
@@ -217,7 +217,7 @@ define(["jquery", "underscore", "backbone",
                     _.each(codeDefinitions, function(codeDef) {
                         var code = $(codeDef).children("code").text();
                         var definition = $(codeDef).children("definition").text();
-                        var source = $(codeDef).children("source").text() || undefined;
+                        var source = $(codeDef).children("sourced").text() || undefined;
                         domainObject.enumeratedDomain.codeDefinition.push({
                             code: code,
                             definition: definition,
