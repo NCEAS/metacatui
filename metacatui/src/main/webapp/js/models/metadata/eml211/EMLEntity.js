@@ -158,7 +158,10 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 if ( attributeList.length ) {
                     _.each(attributeList[0].children, function(attr) {
                         attribute = new EMLAttribute(
-                            {objectXML: attr.outerHTML},
+                            {
+                            	objectXML: attr.outerHTML,
+                            	parentModel: this
+                            },
                             options
                         );
                         // Can't use this.addAttribute() here (no this yet)

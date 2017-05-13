@@ -133,6 +133,7 @@ define(["jquery", "underscore", "backbone",
                 if ( measurementScale ) {
                     attributes.measurementScale =
                         EMLMeasurementScale.getInstance(measurementScale.outerHTML);
+                    attributes.measurementScale.set("parentModel", this);
                 }
                 attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM;

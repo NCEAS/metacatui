@@ -10,7 +10,7 @@ define(['underscore', 'jquery', 'backbone',
             one the measurement scale or category of an eml attribute
         */
         var EMLMeasurementScaleView = Backbone.View.extend({
-           
+                   	
             tagName: "div",
             
             className: "eml-measurement-scale",
@@ -123,13 +123,17 @@ define(['underscore', 'jquery', 'backbone',
             	var thisCategory = this.model.get("measurementScale");
             	if(thisCategory != newCategory){
             		var newModel;
+            		            		
+            		if(typeof this.modelCache != "object"){
+            			this.modelCache = {};
+            		}
             		
             		//Get the model type from this view's cache
-            		if(typeof this.modelCache[thisCategory] != "undefined")
+            		if(this.modelCache[thisCategory])
             			newModel = this.modelCache[thisCategory];
             		//Get a new model instance based on the type
             		else
-            			newModel = this.model.getInstance();
+            			newModel = EMLMeasurementScale.getInstance(newCategory);
             		
             		//save this model for later in case the user switches back
             		this.modelCache[thisCategory] = this.model;
@@ -143,7 +147,10 @@ define(['underscore', 'jquery', 'backbone',
             renderUnitDropdown: function(){
             	if(this.$("select.units").length) return;
             	
-            	var select = $(document.createElement("select")).addClass("units"),
+            	//Create a dropdown menu
+            	var select = $(document.createElement("select"))
+            					.addClass("units")
+            					.attr("data-category", "standardUnit"),
             		eml    = this.model.get("parentModel"),
             		i 	   = 0;
             	
@@ -160,7 +167,35 @@ define(['underscore', 'jquery', 'backbone',
             		return;
             	}
             	
-            	//units.each()
+            	//Create a default option
+            	var defaultOption = $(document.createElement("option"))
+										.text("Choose a standard unit");
+				select.append(defaultOption);
+				
+            	//Create each unit option in the unit dropdown
+            	units.each(function(unit){
+            		var option = $(document.createElement("option"))
+            						.val(unit.get("_name"))
+            						.text(unit.get("_name").charAt(0).toUpperCase() + 
+            								unit.get("_name").slice(1) + 
+            								" (" + unit.get("description") + ")")
+            						.data({ model: unit });
+            		select.append(option);
+            	}, this);
+            	
+            	//Add the dropdown to the page
+            	this.$(".units-container").append(select);
+            	
+            	//Select the unit from the EML, if there is one
+            	var currentUnit = this.model.get("unit");
+            	if(currentUnit && currentUnit.standardUnit){
+            		
+            		//Get the dropdown for this measurement scale
+            		var currentDropdown = this.$("." + this.model.get("measurementScale") + "-options select");
+ 
+            		//Select the unit from the EML
+            		currentDropdown.val(currentUnit.standardUnit);
+            	}
             }
         });
         

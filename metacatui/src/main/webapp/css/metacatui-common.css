@@ -3522,6 +3522,9 @@ textarea.xlarge{
     padding-top: 10px;
     margin-top: 20px;
 }
+.eml-measurement-scale select.units{
+	width: 100%;
+}
 
 /*******************************************
 Pager View

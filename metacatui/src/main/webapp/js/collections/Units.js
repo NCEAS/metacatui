@@ -9,6 +9,10 @@ define(["jquery", "underscore", "backbone", "x2js", "models/metadata/eml211/EMLU
     var Units = Backbone.Collection.extend({
 
         model: EMLUnit,
+        
+        comparator: function(unit){
+        	return unit.get("_name").charAt(0).toUpperCase() + unit.get("_name").slice(1);
+        },
 
         /* Create a new Units collection */
         initialize: function() {

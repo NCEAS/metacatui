@@ -19,7 +19,7 @@ define(["jquery", "underscore", "backbone",
              */
             getInstance: function(measurementScaleXML) {
                 var instance = {};
-                var options = {parse: true};
+                
                 /* JQuery seems to have a bug handling XML elements named "source"
                  * $objectDOM = $(attributes.objectDOM) gives us:
                  * <nominal>
@@ -34,14 +34,20 @@ define(["jquery", "underscore", "backbone",
                  * Note the lost </source>. Changing the element name to "sourced" works fine.
                  * Use the DOMParser instead
                  */
-                if(measurementScaleXML){
+                if(measurementScaleXML && measurementScaleXML.indexOf("<") > -1){
                     var parser = new DOMParser();
                     var parsedDOM = parser.parseFromString(measurementScaleXML, "text/xml");
                 	var domainName = $(parsedDOM).find("measurementscale").children()[0].localName;
+                	var options = {parse: true};
                 }
-                else{
-                	var domainName = this.get("measurementScale"); 
+                //If it's not an XML string, then it must be the domainName itself
+                else if(measurementScaleXML && measurementScaleXML.indexOf("<") == -1){
+                	var domainName = measurementScaleXML;
+                	var options = {};
+                	measurementScaleXML = null;
                 }
+                else
+                	return false;
                 
                 // Return the appropriate sub class of EMLMeasurementScale
                 switch ( domainName ) {
