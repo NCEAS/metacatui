@@ -1,5 +1,6 @@
 ﻿/* global define */
 define(['jquery', 'underscore', 'backbone', 'uuid',
+        'collections/Units',
         'models/metadata/ScienceMetadata',
         'models/DataONEObject',
         'models/metadata/eml211/EMLGeoCoverage', 
@@ -12,7 +13,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText',
 		'models/metadata/eml211/EMLMethods'], 
-    function($, _, Backbone, uuid, ScienceMetadata, DataONEObject, 
+    function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject, 
     		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLEntity, EMLParty, EMLProject, EMLText, EMLMethods) {
         
         /*
@@ -985,6 +986,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	
             	return false;
             		
+            },
+            
+            createUnits: function(){
+            	var units = new Units();
+            	units.fetch();
+            	this.set("units", units);
             },
             
             /* Initialize the object XML for brand spankin' new EML objects */

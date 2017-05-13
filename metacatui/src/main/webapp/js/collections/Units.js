@@ -23,6 +23,9 @@ define(["jquery", "underscore", "backbone", "x2js", "models/metadata/eml211/EMLU
 
         /* Retrieve the units from the tagged EML Github Repository */
         fetch: function(options) {
+        	if(typeof options != {})
+        		var options = {};
+        	
             var fetchOptions = _.extend({dataType: "text"}, options);
 
             return Backbone.Model.prototype.fetch.call(this, fetchOptions);

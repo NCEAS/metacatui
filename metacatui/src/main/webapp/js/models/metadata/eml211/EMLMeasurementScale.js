@@ -34,10 +34,15 @@ define(["jquery", "underscore", "backbone",
                  * Note the lost </source>. Changing the element name to "sourced" works fine.
                  * Use the DOMParser instead
                  */
-                var parser = new DOMParser();
-                var parsedDOM = parser.parseFromString(measurementScaleXML, "text/xml");
-                var domainName = $(parsedDOM).find("measurementScale").children()[0].localName;
-
+                if(measurementScaleXML){
+                    var parser = new DOMParser();
+                    var parsedDOM = parser.parseFromString(measurementScaleXML, "text/xml");
+                	var domainName = $(parsedDOM).find("measurementscale").children()[0].localName;
+                }
+                else{
+                	var domainName = this.get("measurementScale"); 
+                }
+                
                 // Return the appropriate sub class of EMLMeasurementScale
                 switch ( domainName ) {
                     case "nominal":
@@ -73,7 +78,7 @@ define(["jquery", "underscore", "backbone",
                     default:
                         instance = new EMLNonNumericDomain({
                             "measurementScale": domainName,
-                            "objectXML": $measurementScale
+                            "objectXML": measurementScaleXML
                         }, options);
                 }
 

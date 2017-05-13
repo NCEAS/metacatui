@@ -75,13 +75,13 @@ define(["jquery", "underscore", "backbone",
                 var rootNodeName = $(parsedDOM)[0].documentElement.nodeName;
 
                 // do we have an appropriate measurementScale tree?
-                var index = _.indexOf(["measurementScale", "nominal", "ordinal"], rootNodeName);
+                var index = _.indexOf(["measurementscale", "nominal", "ordinal"], rootNodeName);
                 if ( index == -1 ) {
                     throw new Error("The measurement scale XML does not have a root " +
                         "node of 'measurementScale', 'nominal', or 'ordinal'.");
                 }
 
-                nonNumericDomainNodeList = $(parsedDOM).find("nonNumericDomain")
+                nonNumericDomainNodeList = $(parsedDOM).find("nonnumericdomain")
 
                 if ( nonNumericDomainNodeList && nonNumericDomainNodeList.length > 0 ) {
                     domainNodeList = nonNumericDomainNodeList[0].children;
@@ -101,10 +101,10 @@ define(["jquery", "underscore", "backbone",
                         if ( domain ) {
                             // match the camelCase name since DOMParser() is XML-aware
                             switch ( domain.nodeName ) {
-                                case "textDomain":
+                                case "textdomain":
                                     domainObject = this.parseTextDomain(domain);
                                     break;
-                                case "enumeratedDomain":
+                                case "enumerateddomain":
                                     domainObject = this.parseEnumeratedDomain(domain);
                                     break;
                                 case "references":
@@ -210,7 +210,7 @@ define(["jquery", "underscore", "backbone",
                 var entityCodeList = {};
 
                 // Add the codeDefinitions if present
-                var codeDefinitions = $(domain).children("codeDefinition");
+                var codeDefinitions = $(domain).children("codedefinition");
 
                 if ( codeDefinitions.length ) {
                     domainObject.enumeratedDomain.codeDefinition = [];
@@ -259,7 +259,7 @@ define(["jquery", "underscore", "backbone",
             /**/
             getEMLPosition: function(objectDOM, nodeName) {
                 // TODO: set the node order
-                var nodeOrder = ["enumeratedDomain", "textDomain"];
+                var nodeOrder = ["enumerateddomain", "textdomain"];
 
                 var position = _.indexOf(nodeOrder, nodeName);
 

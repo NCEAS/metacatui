@@ -99,12 +99,12 @@ define(["jquery", "underscore", "backbone",
                 });
 
                 // Add the attributeDefinition
-                attributes.attributeDefinition = $objectDOM.children("attributeDefinition").text();
+                attributes.attributeDefinition = $objectDOM.children("attributedefinition").text();
 
                 // Add the storageType
                 attributes.storageType = [];
                 attributes.typeSystem = [];
-                var storageTypes = $objectDOM.children("storageType");
+                var storageTypes = $objectDOM.children("storagetype");
                 _.each(storageTypes, function(storageType) {
                     attributes.storageType.push(storageType.textContent);
                     var type = $(storageType).attr("typesystem");
@@ -129,7 +129,7 @@ define(["jquery", "underscore", "backbone",
                 var parser = new DOMParser();
                 var parsedDOM = parser.parseFromString(objectXML, "text/xml");
 
-                var measurementScale = parsedDOM.getElementsByTagName("measurementScale")[0];
+                var measurementScale = parsedDOM.getElementsByTagName("measurementscale")[0];
                 if ( measurementScale ) {
                     attributes.measurementScale =
                         EMLMeasurementScale.getInstance(measurementScale.outerHTML);

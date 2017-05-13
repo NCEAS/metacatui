@@ -129,6 +129,9 @@ define(['underscore', 'jquery', 'backbone',
 				this.listenTo(dataPackage, "successSaving", this.renderAllSections);
 			}, this);
 			
+			//Create a Unit collection for the entity and attribute section
+			this.model.createUnits();
+			
             return this;
         },
         

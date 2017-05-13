@@ -3468,7 +3468,7 @@ textarea.xlarge{
 /** Entity section **/
 .eml-entity.modal{
 	height: 80%;
-	width: 70%;
+	width: 80%;
 	left: 40%;
     max-width: 1000px;
     min-width: 300px;
@@ -3513,6 +3513,14 @@ textarea.xlarge{
 }
 .preview-container .description textarea{
 	min-height: 175px;
+}
+.eml-attribute input {
+    height: auto;
+}
+.eml-measurement-scale .options{
+	box-sizing: border-box;
+    padding-top: 10px;
+    margin-top: 20px;
 }
 
 /*******************************************

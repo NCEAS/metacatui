@@ -2,8 +2,9 @@
 define(['underscore', 'jquery', 'backbone', 
         'models/DataONEObject',
         'models/metadata/eml211/EMLAttribute',
+        'views/metadata/EMLMeasurementScaleView',
         'text!templates/metadata/eml-attribute.html'], 
-    function(_, $, Backbone, DataONEObject, EMLAttribute, EMLAttributeTemplate){
+    function(_, $, Backbone, DataONEObject, EMLAttribute, EMLMeasurementScaleView, EMLAttributeTemplate){
         
         /* 
             An EMLAttributeView displays the info about one attribute in a data object
@@ -48,11 +49,19 @@ define(['underscore', 'jquery', 'backbone',
             	//Render the template
             	var viewHTML = this.template(templateInfo);
             	
-            	if(this.isNew)
-            		this.$el.addClass("new");
-            	
             	//Insert the template HTML
             	this.$el.html(viewHTML);
+            	
+            	//Add the measurement scale view
+            	var measurementScaleView = new EMLMeasurementScaleView({
+            		model: this.model.get("measurementScale")
+            	});
+            	measurementScaleView.render();
+            	this.$(".measurement-scale-container").append(measurementScaleView.el);
+            	this.measurementScaleView = measurementScaleView;
+            	
+            	if(this.isNew)
+            		this.$el.addClass("new");
             	
             	this.listenTo(this.model, "change:attributeName", this.updateHeader);
             },
@@ -121,6 +130,10 @@ define(['underscore', 'jquery', 'backbone',
             		e.preventDefault();
             	
             	this.$(".accordion-body").slideToggle();
+            	
+            	if(this.$(".eml-measurement-scale").is(":visible")){
+            		this.measurementScaleView.postRender();            		
+            	}
             },
             
             collapse: function(){
