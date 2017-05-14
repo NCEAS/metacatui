@@ -75,7 +75,7 @@ define(["jquery", "underscore", "backbone",
                             "objectXML": measurementScaleXML
                         }, options);
                         break;
-                    case "dateTime":
+                    case "datetime":
                         instance = new EMLDateTimeDomain({
                             "measurementScale": domainName,
                             "objectXML": measurementScaleXML

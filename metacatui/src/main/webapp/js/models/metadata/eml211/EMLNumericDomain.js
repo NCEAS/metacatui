@@ -11,6 +11,8 @@ define(["jquery", "underscore", "backbone",
          */
         var EMLNumericDomain = Backbone.Model.extend({
 
+        	type: "EMLNumericDomain",
+        	
             /* Attributes of an EMLNonNumericDomain object */
             defaults: {
                 /* Attributes from EML, extends attributes from EMLMeasurementScale */

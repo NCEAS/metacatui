@@ -9,7 +9,9 @@ define(["jquery", "underscore", "backbone",
          * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
          */
         var EMLDateTimeDomain = Backbone.Model.extend({
-
+        	
+        	type: "EMLDateTimeDomain",
+        	
             /* Attributes of an EMLDateTimeDomain object */
             el: "dateTime",
 
@@ -73,13 +75,13 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Add the formatString
-                attributes.formatString = $objectDOM.children("formatString").text();
+                attributes.formatString = $objectDOM.find("formatstring").text();
 
                 // Add the dateTimePrecision
-                attributes.dateTimePrecision = $objectDOM.children("dateTimePrecision").text();
+                attributes.dateTimePrecision = $objectDOM.find("datetimeprecision").text();
 
                 // Add in the dateTimeDomain
-                var dateTimeDomain = $objectDOM.children("dateTimeDomain");
+                var dateTimeDomain = $objectDOM.find("datetimedomain");
                 if ( dateTimeDomain.length ) {
                     attributes.dateTimeDomain = this.parseDateTimeDomain(dateTimeDomain);
 
