@@ -951,8 +951,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             /*
              Add an entity into the EML 2.1.1 object
             */
-            addEntity: function(emlEntity) {
-                
+            addEntity: function(emlEntity, position) {
+            	//Get the current list of entities
+				var currentEntities = this.get("entities");
+				
+				if(!position)
+					currentEntities.push(emlEntity);
+				else
+					//Add the entity model to the entity array
+					currentEntities.splice(position, 0, entityModel);
+				
+				this.trigger("change:entities");
+				
                 return this;
             },
             /*
@@ -978,7 +988,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		return entity;
             	
             	var matchingTypes = _.filter(this.get("entities"), function(e){
-            		return (e.get("formatName") == (dataONEObject.get("formatId") || dataONEObject.get("mediaType")));
+            		return (e.get("formatName") == (dataONEObj.get("formatId") || dataONEObj.get("mediaType")));
             	});
             	
             	if(matchingTypes.length == 1)

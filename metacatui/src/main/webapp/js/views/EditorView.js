@@ -595,20 +595,27 @@ define(['underscore',
 	        		if(!entityModel){
 	        			entityModel = new EMLOtherEntity({
 	        				entityName : dataONEObject.get("fileName"),
-	        				entityType : dataONEObject.get("formatId") || dataONEObject.get("mediaType")
+	        				entityType : dataONEObject.get("formatId") || dataONEObject.get("mediaType"),
+	        				parentModel: this.model
 	        			});
 
-	        			//Listen to changes to required fields on the otherEntity models
-	        			this.listenTo(entityModel, "change:entityName", function(){
-	        				if(!entityModel.isValid()) return;
-
-	        				//Get the current list of entities and the position this entity will be in
-	        				var currentEntities = this.model.get("entities"),
-	        					position = $(".data-package-item.data").index(row);
-
-	        				//Add the entity model to the entity array
-	        				currentEntities.splice(position, 0, entityModel);
-	        			});
+	        			if(!dataONEObject.get("fileName")){
+		        			//Listen to changes to required fields on the otherEntity models
+		        			this.listenTo(entityModel, "change:entityName", function(){
+		        				if(!entityModel.isValid()) return;
+	
+		        				//Get the position this entity will be in
+		        				var position = $(".data-package-item.data").index(row);
+		        				
+		        				this.model.addEntity(entityModel, position);
+		        			});
+	        			}
+	        			else{
+	        				//Get the position this entity will be in
+	        				var position = $(".data-package-item.data").index(row);
+	        				
+	        				this.model.addEntity(entityModel, position);
+	        			}
 	        		}
 
 	        		//Create a new view for the entity based on the model type
