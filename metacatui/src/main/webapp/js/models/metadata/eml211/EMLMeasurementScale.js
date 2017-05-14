@@ -46,8 +46,6 @@ define(["jquery", "underscore", "backbone",
                 	var options = {};
                 	measurementScaleXML = null;
                 }
-                else
-                	return false;
                 
                 // Return the appropriate sub class of EMLMeasurementScale
                 switch ( domainName ) {

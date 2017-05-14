@@ -3522,7 +3522,10 @@ textarea.xlarge{
     padding-top: 10px;
     margin-top: 20px;
 }
-.eml-measurement-scale select.units{
+.eml-measurement-scale .hidden{
+	display: none;
+}
+.eml-measurement-scale .full-width{
 	width: 100%;
 }
 

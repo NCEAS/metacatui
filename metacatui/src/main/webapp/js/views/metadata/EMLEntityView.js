@@ -102,7 +102,7 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Add a new blank attribute view at the end
             	var emlAttribute = new EMLAttribute({
-        				parentModel: this.model.get("parentModel")
+        				parentModel: this.model
         			}),
             		view = new EMLAttributeView({
 			            		model: emlAttribute,

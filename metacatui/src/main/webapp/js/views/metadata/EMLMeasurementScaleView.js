@@ -22,7 +22,8 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            	"click .category" : "switchCategory"
+            	"click .category" : "switchCategory",
+            	"change .datetime-string" : "toggleCustomDateTimeFormat"
             },
             
             initialize: function(options){
@@ -30,7 +31,7 @@ define(['underscore', 'jquery', 'backbone',
             		var options = {};
             	
             	this.isNew = (options.isNew === true) ? true : this.model? false : true;
-            	this.model = options.model || new EMLMeasurementScale();
+            	this.model = options.model || EMLMeasurementScale.getInstance();
             },
             
             render: function(){
@@ -55,6 +56,8 @@ define(['underscore', 'jquery', 'backbone',
             	this.setCategory();
             	
             	this.renderUnitDropdown();
+            	
+            	this.chooseDateTimeFormat();
             },
                         
             updateModel: function(e){
@@ -149,7 +152,7 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Create a dropdown menu
             	var select = $(document.createElement("select"))
-            					.addClass("units")
+            					.addClass("units full-width")
             					.attr("data-category", "standardUnit"),
             		eml    = this.model.get("parentModel"),
             		i 	   = 0;
@@ -196,6 +199,40 @@ define(['underscore', 'jquery', 'backbone',
             		//Select the unit from the EML
             		currentDropdown.val(currentUnit.standardUnit);
             	}
+            },
+            
+            /*
+             *  Chooses the date-time format from the dropdown menu
+             */
+            chooseDateTimeFormat: function(){
+            	if(this.model.type == "EMLDateTimeDomain"){
+                	var formatString = this.model.get("formatString");
+                	
+                	var matchingOption = this.$("select.datetime-string[value='" + formatString + "']");
+                	
+                	if(matchingOption.length){
+                		this.$("select.datetime-string").val(formatString);
+                		this.$(".datetime-string-custom-container").hide();
+                	}
+                	else{
+                		this.$("select.datetime-string").val("custom");
+                		this.$(".datetime-string-custom").val(formatString);
+                		this.$(".datetime-string-custom-container").show();
+                	}
+                	
+            	}
+            },
+            
+            toggleCustomDateTimeFormat: function(e){
+            	var choice = this.$("select.datetime-string").val();
+            	
+            	if(choice == "custom"){
+            		this.$(".datetime-string-custom-container").show();
+            	}
+            	else{
+            		this.$(".datetime-string-custom-container").hide();
+            	}
+            		
             }
         });
         

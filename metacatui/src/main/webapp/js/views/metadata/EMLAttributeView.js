@@ -2,9 +2,11 @@
 define(['underscore', 'jquery', 'backbone', 
         'models/DataONEObject',
         'models/metadata/eml211/EMLAttribute',
+        'models/metadata/eml211/EMLMeasurementScale',
         'views/metadata/EMLMeasurementScaleView',
         'text!templates/metadata/eml-attribute.html'], 
-    function(_, $, Backbone, DataONEObject, EMLAttribute, EMLMeasurementScaleView, EMLAttributeTemplate){
+    function(_, $, Backbone, DataONEObject, EMLAttribute, EMLMeasurementScale,
+    		EMLMeasurementScaleView, EMLAttributeTemplate){
         
         /* 
             An EMLAttributeView displays the info about one attribute in a data object
@@ -31,7 +33,7 @@ define(['underscore', 'jquery', 'backbone',
             	if(!options)
             		var options = {};
             	
-            	this.isNew = (options.isNew === true) ? true : this.model? false : true;
+            	this.isNew = (options.isNew == true) ? true : options.model? false : true;
             	this.model = options.model || new EMLAttribute();
             },
             
@@ -53,15 +55,24 @@ define(['underscore', 'jquery', 'backbone',
             	this.$el.html(viewHTML);
             	
             	//Add the measurement scale view
+            	if(this.isNew){
+            		var measurementScaleModel = EMLMeasurementScale.getInstance();
+            		measurementScaleModel.set("parentModel", this.model);
+            	}
+            	else
+            		measurementScaleModel = this.model.get("measurementScale");
+            	
             	var measurementScaleView = new EMLMeasurementScaleView({
-            		model: this.model.get("measurementScale")
+            		model: measurementScaleModel
             	});
             	measurementScaleView.render();
             	this.$(".measurement-scale-container").append(measurementScaleView.el);
             	this.measurementScaleView = measurementScaleView;
             	
-            	if(this.isNew)
+            	if(this.isNew){
             		this.$el.addClass("new");
+            		this.measurementScaleView.postRender();
+            	}
             	
             	this.listenTo(this.model, "change:attributeName", this.updateHeader);
             },
@@ -85,7 +96,11 @@ define(['underscore', 'jquery', 'backbone',
             	if(Array.isArray(currentValue)){
             		var index = this.$(".input[data-category='" + category + "']").index(e.target);
             		
-            		currentValue.split(index, 0, newValue);
+            		if(currentValue.length > 0)
+            			currentValue.split(index, 0, newValue);
+            		else
+            			currentValue.push(newValue);
+            		
             		this.model.trigger("change:" + category);
             	}
             	else{
