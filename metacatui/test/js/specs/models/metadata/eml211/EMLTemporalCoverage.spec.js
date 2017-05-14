@@ -35,12 +35,12 @@ define(["chai", "chai-jquery", "chai-backbone",
             });
 
             describe("serializing", function() {
-                it("should correctly serialize a range of dates", function() {
+                it("should serialize a singleDateTime when endDate is not set on rangeOfDates", function() {
+                    var m = new EMLTemporalCoverage({
+                        objectDOM: $('<temporalcoverage><rangeofdates><begindate><calendardate>2015</calendardate></begindate></rangeofdates></temporalcoverage>').get(0)
+                    });
 
-                });
-
-                it ("should corectly serialize a single date time", function() {
-
+                    expect(m.serialize()).to.equal('<temporalCoverage><singleDateTime><calendarDate>2015</calendarDate></singleDateTime></temporalCoverage>');
                 });
             })
         });

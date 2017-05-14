@@ -126,33 +126,14 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				objectDOM = $("<temporalcoverage></temporalcoverage>");
 			}
 
-			// Fill in the range of dates DOM
-			if(this.get("beginDate") && this.get("endDate")){
-				
-				//Get or create the rangeOfDates element
-				var rangeOfDates = $(objectDOM).find("rangeofdates");
-				if(!rangeOfDates.length){
-					rangeOfDates = document.createElement("rangeofdates");
-					rangeOfDates.append(document.createElement("begindate"), document.createElement("enddate"));
-					$(objectDOM).append(rangeOfDates);
+			if (this.get('rangeOfDates')) {
+				if (this.get('rangeOfDates').endDate && this.get('rangeOfDates').endDate.calendarDate) {
+					$(objectDOM).append(this.serializeRangeOfDates(this.get('rangeOfDates')));
+				} else {
+					$(objectDOM).append(this.serializeSingleDateTime(this.get('rangeOfDates').beginDate));
 				}
-				
-				//Serialize the SingleDateTime types
-				$(rangeOfDates).find("begindate").html(this.serializeSingleDateTime(this.get("beginDate"), this.get("beginTime")));
-				$(rangeOfDates).find("enddate").html(this.serializeSingleDateTime(this.get("endDate"), this.get("endTime")));
-			
-			}
-			// Fill in the single date DOM
-			else if(this.get("beginDate")){
-				//Get or create the rangeOfDates element
-				var singleDateTime = $(objectDOM).find("singleDateTime");
-				if(!singleDateTime.length){
-					singleDateTime = document.createElement("singleDateTime");
-					$(objectDOM).append(singleDateTime);
-				}
-				
-				$(singleDateTime).html(this.serializeSingleDateTime(this.get("beginDate"), this.get("beginTime")));
-
+			} else if (this.get('singleDateTime')) {
+				$(objectDOM).append(this.serializeSingleDateTime(this.get('singleDateTime')));
 			}
 
 			// Remove empty (zero-length or whitespace-only) nodes
@@ -161,13 +142,49 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			return objectDOM;
 		},
 		
-		serializeSingleDateTime: function(date, time){
-			var xml = "<calendarDate>" + date + "</calendarDate>";
-			
-			if(time)
-				xml += "<time>" + time + "</time>";
-			
-			return xml;
+		serializeRangeOfDates: function(rangeOfDates) {
+			var objectDOM = $(document.createElement('rangeofdates')),
+			    beginDate = $(document.createElement('begindate')),
+				endDate = $(document.createElement('enddate'));
+
+			$(beginDate).append(this.serializeCalendarDate(rangeOfDates.beginDate.calendarDate));
+
+			if (this.get('rangeOfDates').beginDate.time) {
+				$(beginDate).append(this.serializeTime(rangeOfDates.beginDate.time));
+			}
+
+			$(endDate).append(this.serializeCalendarDate(rangeOfDates.endDate.calendarDate));
+
+			if (this.get('rangeOfDates').endDate.time) {
+				$(endDate).append(this.serializeTime(rangeOfDates.endDate.time));
+			}
+
+			objectDOM.append(beginDate);
+			objectDOM.append(endDate);
+
+			return objectDOM;
+		},
+
+		serializeSingleDateTime: function(singleDateTime) {
+			var objectDOM = $(document.createElement('singleDateTime'));
+
+			if (singleDateTime.calendarDate) {
+				$(objectDOM).append(this.serializeCalendarDate(singleDateTime.calendarDate));
+
+				if (singleDateTime.time) {
+					$(objectDOM).append(this.serializeTime(singleDateTime.time));
+				}
+			}
+
+			return objectDOM;
+		},
+		
+		serializeCalendarDate: function(date) {
+			return $(document.createElement('calendarDate')).html(date);
+		},
+		
+		serializeTime: function(time) {
+			return $(document.createElement('time')).html(time);
 		},
 		
 		trickleUpChange: function(){
