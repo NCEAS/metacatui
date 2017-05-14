@@ -270,7 +270,7 @@ define(['underscore', 'jquery', 'backbone',
             
             chooseNonNumericDomain: function(){
             	
-            	if(this.model.get("nonNumericDomain").length){
+            	if(this.model.get("nonNumericDomain") && this.model.get("nonNumericDomain").length){
             		//Hide the domain type details
             		this.$(".non-numeric-domain-type").hide();
             		
