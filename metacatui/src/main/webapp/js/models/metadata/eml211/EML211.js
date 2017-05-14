@@ -9,12 +9,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLTemporalCoverage', 
         'models/metadata/eml211/EMLDistribution', 
         'models/metadata/eml211/EMLEntity',
+        'models/metadata/eml211/EMLOtherEntity',
         'models/metadata/eml211/EMLParty', 
         'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText',
 		'models/metadata/eml211/EMLMethods'], 
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject, 
-    		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, EMLDistribution, EMLEntity, EMLParty, EMLProject, EMLText, EMLMethods) {
+    		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, 
+    		EMLDistribution, EMLEntity, EMLOtherEntity, EMLParty, EMLProject, EMLText, EMLMethods) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -628,8 +630,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        	if(datasetNode.find("project").length)
 	        		datasetNode.find("project").replaceWith(this.get("project").updateDOM());
 	        	else if(this.get("project"))
-	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
-	              	           	
+	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());	              	        
+	        	
 	           	//Camel-case the XML
 		    	var emlString = ""; 
 		    	_.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
@@ -981,6 +983,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
             			return true;
             		else if( e.get("entityName") == dataONEObj.get("fileName") )
+            			return true;
+            		else if( e.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName") )
             			return true;
             	});
             	

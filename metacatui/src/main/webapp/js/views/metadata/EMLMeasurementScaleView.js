@@ -2,8 +2,11 @@
 define(['underscore', 'jquery', 'backbone', 
         'models/DataONEObject',
         'models/metadata/eml211/EMLMeasurementScale',
-        'text!templates/metadata/eml-measurement-scale.html'], 
-    function(_, $, Backbone, DataONEObject, EMLMeasurementScale, EMLMeasurementScaleTemplate){
+        'text!templates/metadata/eml-measurement-scale.html',
+        'text!templates/metadata/nonNumericDomain.html',
+        'text!templates/metadata/textDomain.html'], 
+    function(_, $, Backbone, DataONEObject, EMLMeasurementScale, 
+    		EMLMeasurementScaleTemplate, NonNumericDomainTemplate, TextDomainTemplate){
         
         /* 
             An EMLMeasurementScaleView displays the info about 
@@ -19,11 +22,14 @@ define(['underscore', 'jquery', 'backbone',
             
             /* The HTML template for a measurement scale */
             template: _.template(EMLMeasurementScaleTemplate),
+            nonNumericDomainTemplate: _.template(NonNumericDomainTemplate),
+            textDomainTemplate: _.template(TextDomainTemplate),
             
             /* Events this view listens to */
             events: {
             	"click .category" : "switchCategory",
-            	"change .datetime-string" : "toggleCustomDateTimeFormat"
+            	"change .datetime-string" : "toggleCustomDateTimeFormat",
+            	"change .non-numeric-domain .domain" : "toggleNonNumericDomain"
             },
             
             initialize: function(options){
@@ -44,7 +50,32 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Insert the template HTML
             	this.$el.html(viewHTML);
-            	        	
+            	
+            	//Render any nonNumericDomain models
+            	if(this.model.get("nonNumericDomain")){
+            		this.$(".non-numeric-domain").append( this.nonNumericDomainTemplate(this.model.get("nonNumericDomain")) );
+            		
+            		_.each(this.model.get("nonNumericDomain"), function(domain){
+                		
+            			var nominalTextDomain = this.$(".nominal-options .text-domain"),
+            				ordinalTextDomain = this.$(".ordinal-options .text-domain");
+            			
+            			if(domain.textDomain){
+                			if(this.model.get("measurementScale") == "nominal"){
+                				nominalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
+                				ordinalTextDomain.html( this.textDomainTemplate() );
+                			}
+                			else{
+                				ordinalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
+                				nominalTextDomain.html( this.textDomainTemplate() );
+                			}
+                		}               			
+            			
+            		}, this);
+            	}
+            	else{
+            		this.$(".text-domain").html( this.textDomainTemplate() );   
+            	}
             },
             
             /* 
@@ -58,6 +89,8 @@ define(['underscore', 'jquery', 'backbone',
             	this.renderUnitDropdown();
             	
             	this.chooseDateTimeFormat();
+            	
+            	this.chooseNonNumericDomain();
             },
                         
             updateModel: function(e){
@@ -233,6 +266,35 @@ define(['underscore', 'jquery', 'backbone',
             		this.$(".datetime-string-custom-container").hide();
             	}
             		
+            },
+            
+            chooseNonNumericDomain: function(){
+            	
+            	if(this.model.get("nonNumericDomain").length){
+            		//Hide the domain type details
+            		this.$(".non-numeric-domain-type").hide();
+            		
+            		//If the domain type is text, select it and show it
+            		if( this.model.get("nonNumericDomain")[0].textDomain ){
+            			this.$("." + this.model.get("measurementScale") + "-options input[value='textDomain']").attr("checked", "checked");
+            			this.$(".non-numeric-domain-type.textDomain").show();
+            		}
+            		//If the domain type is enumerated, select it and show it
+            		else if( this.model.get("nonNumericDomain")[0].enumeratedDomain ){
+            			this.$("." + this.model.get("measurementScale") + "-options input[value='enumeratedDomain']").attr("checked", "checked");
+            			this.$(".non-numeric-domain-type.enumeratedDomain").show();
+            		}
+            	}
+            },
+            
+            toggleNonNumericDomain: function(){
+            	//Hide the domain type details
+        		this.$(".non-numeric-domain-type").hide();
+        		
+            	var value = this.$(".non-numeric-domain .domain:checked").val();
+            	
+            	this.$(".non-numeric-domain-type." + value).show();
+            	
             }
         });
         

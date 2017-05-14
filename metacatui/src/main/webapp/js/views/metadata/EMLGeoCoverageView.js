@@ -71,7 +71,12 @@ define(['underscore', 'jquery', 'backbone',
         		//Get the attribute that was changed
         		if(!attribute) return false;
         		
-        		this.model.set(attribute, value);        		
+        		this.model.set(attribute, value); 
+        		
+        		if(this.model.get("parentModel")){
+        			if(this.model.get("parentModel").type == "EML" && _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel")))
+        				MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        		}
         	},
         	
         	/*

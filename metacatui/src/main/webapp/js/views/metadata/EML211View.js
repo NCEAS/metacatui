@@ -544,12 +544,17 @@ define(['underscore', 'jquery', 'backbone',
             	beginTime = temporal.get("beginTime"),
             	endDate   = temporal.get("endDate"),
             	endTime   = temporal.get("endTime"),
-            	html      = this.datesTemplate({
-			    				beginDate: beginDate,
-			    				beginTime: beginTime,
-			    				endDate: endDate,
-			    				endTime: endTime
-    						});
+            	singleDate   = temporal.get("singleDateTime"),
+            	calendarDate = singleDate? singleDate.calendarDate : null,
+            	time         = singleDate? singleDate.time : null,
+            	html         = this.datesTemplate({
+				    				beginDate: beginDate,
+				    				beginTime: beginTime,
+				    				endDate: endDate,
+				    				endTime: endTime,
+				    				calendarDate: calendarDate,
+				    				time: time
+    						   });
             	
 	    	this.$(".section.dates").html(html);
 	    },
