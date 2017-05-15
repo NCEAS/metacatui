@@ -149,14 +149,34 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		validate: function(){
-			
+			var north = this.get("north"),
+				east = this.get("east"),
+				south = this.get("south"),
+				west = this.get("west");
+			 	
 			if(!this.get("description"))
 				return "Each location must have a description";
 			
-			var valid = _.filter([this.get("north"), this.get("south"), this.get("east"), this.get("west")], function(n){
-				return ((n != null) && (n != "") && (typeof n != "undefined"))
+			var valid = _.filter([north, south, east, west], function(n){
+				return typeof n !== "undefined" && n != null && !isNaN(n)
 			});
 			
+			// Check that the values are within the valid range [-180,180] / [-90, 90]
+			if (!this.validateCoordinate(north, -90, 90)) {
+				return "North bounding coordinate should be in the range -90 to 90.";
+			}
+
+			if (!this.validateCoordinate(east, -180, 180)) {
+				return "East bounding coordinate should be in the range -180 to 180.";
+			}
+
+			if (!this.validateCoordinate(south, -90, 90)) {
+				return "South bounding coordinate should be in the range -90 to 90.";
+			}
+
+			if (!this.validateCoordinate(west, -180, 180)) {
+				return "West bounding coordinate should be in the range -180 to 180.";
+			}
 			if(valid.length == 0)
 				return "Each location description must have at least one coordinates pair.";
 			else if(valid.length == 1 || valid.length == 3)
@@ -164,16 +184,36 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			else if (valid.length == 4)
 				return;
 			else{
-				if( _.contains(valid, this.get("north")) && _.contains(valid, this.get("west")))
+				if( _.contains(valid, north) && _.contains(valid, west))
 					return;
-				else if( _.contains(valid, this.get("south")) && _.contains(valid, this.get("east")))
+				else if( _.contains(valid, south) && _.contains(valid, east))
 					return;
 				else
 					return "Each location must have at least one complete lat, long pair.";
-			}
-			
+			}			
 		},
 		
+		// Validate a coordinate String by making sure it can be coerced into a number and
+		// is within the given bounds.
+		// Note: Min and max are inclusive
+		validateCoordinate: function(value, min=-180, max=180) {
+			if (typeof value === "undefined" || value === null || value === "" || isNaN(value)) {
+				return false;
+			}
+
+			var parsed = Number(value);
+
+			if (isNaN(parsed)) { 
+				return false;
+			}
+
+			if (parsed < min || parsed > max) {
+				return false;
+			}
+
+			return true;
+		},
+
 		trickleUpChange: function(){
 			this.get("parentModel").trigger("change");
 		},
