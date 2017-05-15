@@ -156,48 +156,60 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 	
 			if(!this.get("description"))
 				return "Each location must have a description";
+
+			var status = {
+				'north': {
+					isSet: typeof north !== "undefined" && north != null && north !== "",
+					isValid: this.validateCoordinate(north, -90, 90)
+				},
+				'east': {
+					isSet: typeof east !== "undefined" && east != null && east !== "",
+					isValid: this.validateCoordinate(east, -180, 180)
+				},
+				'south': {
+					isSet: typeof south !== "undefined" && south != null && south !== "",
+					isValid: this.validateCoordinate(south, -90, 90)
+				},
+				'west': {
+					isSet: typeof west !== "undefined" && west != null && west !== "",
+					isValid: this.validateCoordinate(west, -180, 180)
+				},
+			}
 			
-			var valid = _.filter([north, south, east, west], function(n){
-				return typeof n !== "undefined" && n != null && !isNaN(n)
-			});
-			
-			// Check that the values are within the valid range [-180,180] / [-90, 90]
-			if (!this.validateCoordinate(north, -90, 90)) {
-				return "North bounding coordinate should be in the range -90 to 90.";
-			}
+			// Check that either 2 or 4 are set
+			var isSet = _.filter(status, function(coord) { return coord.isSet == true; });
 
-			if (!this.validateCoordinate(east, -180, 180)) {
-				return "East bounding coordinate should be in the range -180 to 180.";
-			}
-
-			if (!this.validateCoordinate(south, -90, 90)) {
-				return "South bounding coordinate should be in the range -90 to 90.";
-			}
-
-			if (!this.validateCoordinate(west, -180, 180)) {
-				return "West bounding coordinate should be in the range -180 to 180.";
-			}
-			if(valid.length == 0)
-				return "Each location description must have at least one coordinates pair.";
-			else if(valid.length == 1 || valid.length == 3)
+			if (isSet.length == 0) {
+				return "Each location description must have at least one coordinate pair.";
+			} else if (isSet.length == 1 || isSet.length == 3) {
 				return "Each coordinate must include a latitude AND longitude.";
-			else if (valid.length == 4)
-				return;
-			else{
-				if( _.contains(valid, north) && _.contains(valid, west))
-					return;
-				else if( _.contains(valid, south) && _.contains(valid, east))
-					return;
-				else
-					return "Each location must have at least one complete lat, long pair.";
-			}			
+			}
+
+			if ((status.north.isSet && !status.west.isSet) || 
+				(!status.north.isSet && status.west.isSet)) {
+				return "Each coordinate must include a latitude AND longitude.";
+			} else if ((status.south.isSet && !status.east.isSet) || 
+					   (!status.south.isSet && status.east.isSet)) {
+				return "Each coordinate must include a latitude AND longitude.";
+			}
+
+			// Check that the set values are valid
+			if (status.north.isSet && !status.north.isValid) {
+				return "The North bounding coordinate must be between -90 and 90.";
+			} else if (status.east.isSet && !status.east.isValid) {
+				return "The East bounding coordinate must be between -180 and 180.";
+			} else if (status.south.isSet && !status.south.isValid) {
+				return "The South bounding coordinate must be between -90 and 90.";
+			} else if (status.west.isSet && !status.west.isValid) {
+				return "The West bounding coordinate must be between -180 and 180.";
+			}
 		},
 		
 		// Validate a coordinate String by making sure it can be coerced into a number and
 		// is within the given bounds.
 		// Note: Min and max are inclusive
 		validateCoordinate: function(value, min=-180, max=180) {
-			if (typeof value === "undefined" || value === null || value === "" || isNaN(value)) {
+			if (typeof value === "undefined" || value === null || value === "" && isNaN(value)) {
 				return false;
 			}
 
