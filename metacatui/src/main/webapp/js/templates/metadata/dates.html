@@ -7,19 +7,19 @@
 		<h5>End <span class="help-inline subtle">(leave blank if your data set is open-ended)</span></h5>
 	</div>
 </div>
-<div class="row-fluid">
+<div class="row-fluid temporal-coverage">
 	<div class="span6">
 		<div class="row-fluid">
 			<div class="span6">
-				<label class="control-label">Date</label>
+				<label class="control-label">Date <span class="help-inline subtle">(YYYYMMDD)</span></label>
 				<div class="controls">
-					<input type="date" class="span12 temporal-coverage" data-category="beginDate" value="<%=beginDate%>">
+					<input type="text" class="span12" data-category="beginDate" value="<%= beginDate %>">
 				</div>
 			</div>
 			<div class="span6">
-				<label class="control-label">Time</label>
+				<label class="control-label">Time <span class="help-inline subtle">(HH:MM:SSZ)</span></label>
 				<div class="controls">
-					<input type="time" class="span12 temporal-coverage" data-category="beginTime" value="<%=beginTime%>">
+					<input type="text" class="span12" data-category="beginTime" value="<%= beginTime %>">
 				</div>
 			</div>
 		</div>
@@ -27,15 +27,15 @@
 	<div class="span6">
 		<div class="row-fluid">
 			<div class="span6">
-				<label class="control-label">Date</label>
+				<label class="control-label">Date <span class="help-inline subtle">(YYYYMMDD)</span></label>
 				<div class="controls">
-					<input type="date" class="span12 temporal-coverage" data-category="endDate" value="<%=endDate%>">
+					<input type="text" class="span12" data-category="endDate" value="<%= endDate %>">
 				</div>
 			</div>
 			<div class="span6">
-				<label class="control-label">Time</label>
+				<label class="control-label">Time <span class="help-inline subtle">(HH:MM:SSZ)</span></label>
 				<div class="controls">
-					<input type="time" class="span12 temporal-coverage" data-category="endTime" value="<%=endTime%>">
+					<input type="text" class="span12" data-category="endTime" value="<%= endTime %>">
 				</div>
 			</div>
 		</div>

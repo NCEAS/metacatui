@@ -38,8 +38,8 @@ define(['underscore', 'jquery', 'backbone',
         	"keyup  .basic-text.new"       : "addBasicText",
 			
 			"change .temporal-coverage"    : "updateTemporalCoverage",
-			"keyup  .temporal-coverage.new": "updateTemporalCoverage",
-			
+			"focusout .temporal-coverage"  : "showTemporalCoverageValidation",
+
 			"keyup .eml-geocoverage.new"        : "updateLocations",
 			"click .eml-geocoverage.new .coord" : "updateLocations",
 			
@@ -536,25 +536,13 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Dates section of the page
          */
 	    renderDates: function(){
-	    	
-            var temporal = this.model.get('temporalCoverage') || new EMLTemporalCoverage();
-
-            //Update the begin date
-            var beginDate = temporal.get('beginDate'),
-            	beginTime = temporal.get("beginTime"),
-            	endDate   = temporal.get("endDate"),
-            	endTime   = temporal.get("endTime"),
-            	singleDate   = temporal.get("singleDateTime"),
-            	calendarDate = singleDate? singleDate.calendarDate : null,
-            	time         = singleDate? singleDate.time : null,
-            	html         = this.datesTemplate({
-				    				beginDate: beginDate,
-				    				beginTime: beginTime,
-				    				endDate: endDate,
-				    				endTime: endTime,
-				    				calendarDate: calendarDate,
-				    				time: time
-    						   });
+            var model = this.model.get('temporalCoverage') || new EMLTemporalCoverage();
+			var html = this.datesTemplate({
+				beginDate: model.get('beginDate'),
+				beginTime: model.get('beginTime'),
+				endDate: model.get('endDate'),
+				endTime: model.get('endTime')
+			});
             	
 	    	this.$(".section.dates").html(html);
 	    },
@@ -1280,9 +1268,9 @@ define(['underscore', 'jquery', 'backbone',
         	// div to figure out if this is the begin or end date and that use the
         	// 'type' attribute on the input element to determine whether this is a
         	// calendarDate or a time that's being updated
-        	var category     = $(e.target).attr("data-category"),
-	        	tempCovModel = this.model.get("temporalCoverage"),
-	        	value        = $(e.target).val().trim();
+        	var category = $(e.target).attr("data-category"),
+	        	model = this.model.get("temporalCoverage"),
+	        	value = $(e.target).val().trim();
 
         	// We can't update anything without a category
         	if (!category) return false;
@@ -1290,31 +1278,110 @@ define(['underscore', 'jquery', 'backbone',
         	// If this datetime isn't paired with an existing
         	// EMLTemporalCoverage instance, create one. Otherwise, mutate
         	// the existing one
-        	if (!tempCovModel) {
-
-        		tempCovModel = new EMLTemporalCoverage({
+        	if (!model) {
+        		model = new EMLTemporalCoverage({
 	        		parentModel: this.model
 	        	});
-	
-        		tempCovModel.set(category, value);
-	
-	        	// Add the newly-created model to the array
-	        	this.model.set("temporalCoverage", tempCovModel);
 
-        	} else {
-        		//If the value hasn't changed, exit
-        		if(value == tempCovModel.get(category))
-        			return;
-        		
-	        	// Set the new value
-        		tempCovModel.set(category, value);
-        	}
+	        	// Add the newly-created model to the array
+	        	this.model.set("temporalCoverage", model);
+			}
+
+			//If the value hasn't changed, exit
+			if (value == model.get(category)) {
+				return;
+			}
+				
+			// Set the new value
+			model.set(category, value);
 
         	// Trigger the tricking up of this change for which part of the
         	// temporal coverage is set by category
         	this.model.trigger("change");
         },
 
+		showTemporalCoverageValidation: function(e) {
+			var container = $(e.target).parents('.temporal-coverage').first(),
+			    inputs = $(container).find('input'),
+				errors = [],
+				values = {};
+
+			// Collect the values of all inputs to simplify validation
+			_.each(inputs, function(input) {
+				var category = $(input).attr('data-category');
+
+				if (!category) {
+					return {} ;
+				}
+
+				values[category] = $(input).val();
+			});
+
+			// Remove existing error borders and notifications
+			$(inputs).removeClass("error");
+			$(container).prev('.notification').remove();
+
+			if (values.beginDate == '') {
+				if (values.beginTime == '') {
+					$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
+				} else {
+					$(inputs).filter('input[data-category="beginDate"]').addClass("error");
+					errors.push('You must set a Date if you set a Time.');
+				}
+			} else {
+				$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
+			}
+
+			if (values.endDate == '') {
+				if (values.endTime == '') {
+					$(inputs).filter('input[data-category="endDate"]').removeClass("error");
+				} else {
+					$(inputs).filter('input[data-category="endDate"]').addClass("error");
+					errors.push('You must set a Date if you set a Time.');
+				}
+			} else {
+				$(inputs).filter('input[data-category="endDate"]').removeClass("error");
+			}
+
+			if (values.endDate != '') {
+				if (values.beginDate != '') {
+					$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
+				} else {
+					$(inputs).filter('input[data-category="beginDate"]').addClass("error");
+					errors.push('You must set a Begin Date if you set an End Time.');
+				}
+			} else {
+				$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
+			}
+
+			if (values.beginTime != '') {
+				if(values.beginTime.split(':').length < 3) {
+					$(inputs).filter('input[data-category="beginTime"]').addClass("error");
+					errors.push("Time must follow ISO 8601 format: e.g., HH:MM:SSZ, HH:MM:SS.SSS+08:00");
+				} else {
+					$(inputs).filter('input[data-category="beginTime"]').removeClass("error");
+				}
+			} else {
+				$(inputs).filter('input[data-category="beginTime"]').removeClass("error");
+			}
+
+			if (values.endTime != '') {
+				if(values.endTime.split(':').length < 3) {
+					$(inputs).filter('input[data-category="endTime"]').addClass("error");
+					errors.push("Time must follow ISO 8601 format: e.g., HH:MM:SSZ, HH:MM:SS.SSS+08:00");
+				} else {
+					$(inputs).filter('input[data-category="endTime"]').removeClass("error");
+				}
+			} else {
+				$(inputs).filter('input[data-category="endTime"]').removeClass("error");
+			}
+
+			if (errors.length > 0) {
+				container.before($(document.createElement("p"))
+											.addClass("error notification")
+											.text(errors[0]));
+			}			
+		},
 		
 		/* Update the underlying model and DOM for an EML TaxonomicCoverage
 		section. This method handles updating the underlying TaxonomicCoverage

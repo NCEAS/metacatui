@@ -1061,7 +1061,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		xmlString = "";
 	        	
 	        	//XML must be provided for this function
-	        	if(!xml) return;
+	        	if(!xml) return "";
 	        	//Support XML strings
 	        	else if(typeof xml == "string") 
 	        		xmlString = xml;

@@ -7,15 +7,17 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		defaults: {
 			objectXML: null,
 			objectDOM: null,
-			singleDateTime: null,
-			rangeofDates: null
+			beginDate: null,
+			beginTime: null,
+			endDate: null,
+			endTime: null
 		},
 		
 		initialize: function(attributes){
 			if(attributes && attributes.objectDOM) 
 				this.set(this.parse(attributes.objectDOM));
 
-			this.on("change:singleDateTime change:rangeOfDates", this.trickleUpChange);
+			this.on("change:beginDate change:beginTime change:endDate change:endTime", this.trickleUpChange);
 		},
 		
 		/*
@@ -45,47 +47,34 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			// If the temporalCoverage element has both a rangeOfDates and a
 			// singleDateTime (invalid EML), the rangeOfDates is preferred.
 			if (rangeOfDates.length) {
-				return {
-					'rangeOfDates' : this.parseRangeOfDates(rangeOfDates)
-				};
+				return this.parseRangeOfDates(rangeOfDates);
 			} else if (singleDateTime.length) {
-				return {
-					'singleDateTime' : this.parseSingleDateTime(singleDateTime)
-				};
+				return this.parseSingleDateTime(singleDateTime);
 			}
 		},
 
 		parseRangeOfDates: function(rangeOfDates) {
 			var beginDate = $(rangeOfDates).find('beginDate'),
 				endDate = $(rangeOfDates).find('endDate'),
-				properties = {
-					beginDate: { 
-						calendarDate: null,
-						time: null
-					},
-					endDate: {
-						calendarDate: null,
-						time: null
-					}
-				};
+				properties = {};
 			
 			if (beginDate.length > 0) {
 				if ($(beginDate).find('calendardate')) {
-					properties.beginDate.calendarDate = $(beginDate).find('calendardate').first().text();
+					properties.beginDate = $(beginDate).find('calendardate').first().text();
 				}
 
 				if ($(beginDate).find('time').length > 0) {
-					properties.beginDate.time = $(beginDate).find('time').first().text();
+					properties.beginTime = $(beginDate).find('time').first().text();
 				}
 			}
 
 			if (endDate.length > 0) {
 				if ($(endDate).find('calendardate').length > 0) {
-					properties.endDate.calendarDate = $(endDate).find('calendardate').first().text();
+					properties.endDate = $(endDate).find('calendardate').first().text();
 				}
 
 				if ($(endDate).find('time').length > 0) {
-					properties.endDate.time = $(endDate).find('time').first().text();
+					properties.endTime = $(endDate).find('time').first().text();
 				}
 			}
 
@@ -97,8 +86,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			    time = $(singleDateTime).find("time");
 
 			return { 
-				calendarDate: calendarDate.length > 0 ? calendarDate.first().text() : null, 
-				time: time.length > 0 ? time.first().text() : null
+				beginDate: calendarDate.length > 0 ? calendarDate.first().text() : null, 
+				beginTime: time.length > 0 ? time.first().text() : null
 			};
 		},
 
@@ -126,14 +115,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				objectDOM = $("<temporalcoverage></temporalcoverage>");
 			}
 
-			if (this.get('rangeOfDates')) {
-				if (this.get('rangeOfDates').endDate && this.get('rangeOfDates').endDate.calendarDate) {
-					$(objectDOM).append(this.serializeRangeOfDates(this.get('rangeOfDates')));
-				} else {
-					$(objectDOM).append(this.serializeSingleDateTime(this.get('rangeOfDates').beginDate));
-				}
-			} else if (this.get('singleDateTime')) {
-				$(objectDOM).append(this.serializeSingleDateTime(this.get('singleDateTime')));
+			if (this.get('beginDate') && this.get('endDate')) {
+				$(objectDOM).append(this.serializeRangeOfDates());
+			} else if (!this.get('endDate')) {
+				$(objectDOM).append(this.serializeSingleDateTime());
 			}
 
 			// Remove empty (zero-length or whitespace-only) nodes
@@ -142,37 +127,41 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			return objectDOM;
 		},
 		
-		serializeRangeOfDates: function(rangeOfDates) {
+		serializeRangeOfDates: function() {
 			var objectDOM = $(document.createElement('rangeofdates')),
-			    beginDate = $(document.createElement('begindate')),
-				endDate = $(document.createElement('enddate'));
+			    beginDateEl = $(document.createElement('begindate')),
+				endDateEl = $(document.createElement('enddate'));
 
-			$(beginDate).append(this.serializeCalendarDate(rangeOfDates.beginDate.calendarDate));
+			if (this.get('beginDate')) {
+				$(beginDateEl).append(this.serializeCalendarDate(this.get('beginDate')));
 
-			if (this.get('rangeOfDates').beginDate.time) {
-				$(beginDate).append(this.serializeTime(rangeOfDates.beginDate.time));
+				if (this.get('beginTime')) {
+					$(beginDateEl).append(this.serializeTime(this.get('beginTime')));
+				}
+
+				objectDOM.append(beginDateEl);
 			}
+			
+			if (this.get('endDate')) {
+				$(endDateEl).append(this.serializeCalendarDate(this.get('endDate')));
 
-			$(endDate).append(this.serializeCalendarDate(rangeOfDates.endDate.calendarDate));
-
-			if (this.get('rangeOfDates').endDate.time) {
-				$(endDate).append(this.serializeTime(rangeOfDates.endDate.time));
+				if (this.get('endTime')) {
+					$(endDateEl).append(this.serializeTime(this.get('endTime')));
+				}
+				objectDOM.append(endDateEl);
 			}
-
-			objectDOM.append(beginDate);
-			objectDOM.append(endDate);
-
+			
 			return objectDOM;
 		},
 
-		serializeSingleDateTime: function(singleDateTime) {
+		serializeSingleDateTime: function() {
 			var objectDOM = $(document.createElement('singleDateTime'));
 
-			if (singleDateTime.calendarDate) {
-				$(objectDOM).append(this.serializeCalendarDate(singleDateTime.calendarDate));
+			if (this.get('beginDate')) {
+				$(objectDOM).append(this.serializeCalendarDate(this.get('beginDate')));
 
-				if (singleDateTime.time) {
-					$(objectDOM).append(this.serializeTime(singleDateTime.time));
+				if (this.get('beginTime')) {
+					$(objectDOM).append(this.serializeTime(this.get('beginTime')));
 				}
 			}
 
@@ -193,6 +182,37 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		formatXML: function(xmlString){
 			return DataONEObject.prototype.formatXML.call(this, xmlString);
+		},
+
+		// Returns true or false depending on whether the information stored in the model,
+		// when serialized, should make an EML valid temporalCoverage
+		isValid: function() {
+			var beginDate = this.get('beginDate'),
+			    beginTime = this.get('beginTime'),
+				endDate = this.get('endDate'),
+				endTime = this.get('endTime');
+
+			// If endDate is set, beginDate must also be set
+			if (endDate && endDate.length > 0 && (!beginDate || beginDate.length == 0)) {
+				return false;
+			}
+
+			// beginTime is set when beginDate is not
+			if (beginTime && beginTime.length > 0 && (!beginDate || beginDate.length == 0)) {
+				return false;
+			}
+
+			// endTime is set when endDate is not
+			if (endTime && endTime.length > 0 && (!endDate || endDate.length == 0)) {
+				return false;
+			}
+
+			// A valid temporal coverage at least needs a start date
+			if (!beginDate) {
+				return false;
+			}
+
+			return true;
 		}
 	});
 	
