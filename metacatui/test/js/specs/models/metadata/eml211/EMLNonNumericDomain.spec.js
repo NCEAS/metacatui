@@ -22,11 +22,17 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // Parse a nominal textDomain fragment
                 textDomainXML = NonNumericDomainUtil.getTestNominalTextDomainXML();
-                textDomainAttrs = emlNonNumericDomain.parse({objectXML: textDomainXML});
+                textDomainAttrs = emlNonNumericDomain.parse({
+                    objectDOM: $(textDomainXML)[0],
+                    objectXML: textDomainXML
+                });
 
                 // Parse an ordinal enumeratedDomain fragment
                 enumDomainCodeDefXML = NonNumericDomainUtil.getTestOrdinalEnumeratedCodeDefinitionDomainXML();
-                enumDomainCodeDefAttrs = emlNonNumericDomain.parse({objectXML: enumDomainCodeDefXML});
+                enumDomainCodeDefAttrs = emlNonNumericDomain.parse({
+                    objectDOM: $(enumDomainCodeDefXML)[0],
+                    objectXML: enumDomainCodeDefXML
+                });
             });
 
             /* Tear down */
@@ -121,7 +127,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t\t<textDomain>\n",
                     "\t\t\t<definition>Any text</definition>\n",
                     "\t\t\t<pattern>*</pattern>\n",
-                    "\t\t\t<source>Any source</source>\n",
+                    "\t\t\t<sourced>Any source</sourced>\n",
                     "\t\t</textDomain>\n",
                     "\t</nonNumericDomain>\n",
                     "</nominal>\n");
@@ -139,7 +145,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t\t\t<codeDefinition>\n",
                     "\t\t\t\t<code>JAL</code>\n",
                     "\t\t\t\t<definition>Jalama Beach, California</definition>\n",
-                    "\t\t\t\t<source>USGS Place Name Gazateer</source>\n",
+                    "\t\t\t\t<sourced>USGS Place Name Gazateer</sourced>\n",
                     "\t\t\t</codeDefinition>\n",
                     "\t\t\t<codeDefinition>\n",
                     "\t\t\t\t<code>ALE</code>\n",
