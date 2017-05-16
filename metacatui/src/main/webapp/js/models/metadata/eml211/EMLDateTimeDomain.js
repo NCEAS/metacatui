@@ -9,9 +9,9 @@ define(["jquery", "underscore", "backbone",
          * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
          */
         var EMLDateTimeDomain = Backbone.Model.extend({
-        	
+
         	type: "EMLDateTimeDomain",
-        	
+
             /* Attributes of an EMLDateTimeDomain object */
             el: "dateTime",
 
@@ -55,19 +55,27 @@ define(["jquery", "underscore", "backbone",
              */
             parse: function(attributes, options) {
                 var $objectDOM;
-                var objectXML = attributes.objectXML;
+                var measurementScale;
+                var rootNodeName;
 
-                // Use the cached object if we have it
-                if ( ! objectXML ) {
-                    if ( this.get("objectXML") ) {
-                        objectXML = this.get("objectXML");
-
-                    } else {
-                        return {};
-                    }
+                if ( attributes.objectDOM ) {
+                    rootNodeName = $(attributes.objectDOM)[0].localName;
+                    $objectDOM = $(attributes.objectDOM);
+                } else if ( attributes.objectXML ) {
+                    rootNodeName = $(attributes.objectXML)[0].localName;
+                    $objectDOM = $($(attributes.objectXML)[0]);
+                } else {
+                    return {};
                 }
 
-                $objectDOM = $(objectXML);
+                // If measurementScale is present, add it
+                if ( rootNodeName == "measurementscale" ) {
+                    attributes.measurementScale = $objectDOM.children().first()[0].localName;
+                    $objectDOM = $objectDOM.children().first();
+                } else {
+                    attributes.measurementScale = $objectDOM.localName;
+                }
+
 
                 // Add the XML id
                 if ( $objectDOM.attr("id") ) {
@@ -86,7 +94,6 @@ define(["jquery", "underscore", "backbone",
                     attributes.dateTimeDomain = this.parseDateTimeDomain(dateTimeDomain);
 
                 }
-                attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
