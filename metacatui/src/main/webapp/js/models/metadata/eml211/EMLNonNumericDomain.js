@@ -63,7 +63,7 @@ define(["jquery", "underscore", "backbone",
                     rootNodeName = $(attributes.objectDOM)[0].localName;
                     $objectDOM = $(attributes.objectDOM);
                     var $objectXML = $($(attributes.objectXML)[0]);
-                } else if ( attributes.objectXML ){
+                } else if ( attributes.objectXML ) {
                     rootNodeName = $(attributes.objectXML)[0].localName;
                     $objectDOM = $($(attributes.objectXML)[0]);
                 } else {
