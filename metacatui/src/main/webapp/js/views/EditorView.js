@@ -12,12 +12,11 @@ define(['underscore',
         'views/metadata/EMLEntityView',
         'views/SignInView',
         'text!templates/editor.html',
-        'collections/ObjectFormats',
-        'collections/Units'],
+        'collections/ObjectFormats'],
         function(_, $, Backbone,
         		DataPackage, EML, EMLOtherEntity, ScienceMetadata,
         		CitationView, DataPackageView, EMLView, EMLEntityView, SignInView,
-        		EditorTemplate, ObjectFormats, Units){
+        		EditorTemplate, ObjectFormats){
 
     var EditorView = Backbone.View.extend({
 
@@ -48,12 +47,6 @@ define(['underscore',
             if ( typeof MetacatUI.objectFormats === "undefined" ) {
                 MetacatUI.objectFormats = new ObjectFormats();
                 MetacatUI.objectFormats.fetch();
-
-            }
-            // Ensure the units are cached for the editor's use
-            if ( typeof MetacatUI.units === "undefined" ) {
-                MetacatUI.units = new Units();
-                MetacatUI.units.fetch();
 
             }
             return this;
@@ -603,17 +596,17 @@ define(['underscore',
 		        			//Listen to changes to required fields on the otherEntity models
 		        			this.listenTo(entityModel, "change:entityName", function(){
 		        				if(!entityModel.isValid()) return;
-	
+
 		        				//Get the position this entity will be in
 		        				var position = $(".data-package-item.data").index(row);
-		        				
+
 		        				this.model.addEntity(entityModel, position);
 		        			});
 	        			}
 	        			else{
 	        				//Get the position this entity will be in
 	        				var position = $(".data-package-item.data").index(row);
-	        				
+
 	        				this.model.addEntity(entityModel, position);
 	        			}
 	        		}
