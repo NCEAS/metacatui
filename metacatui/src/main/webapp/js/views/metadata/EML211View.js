@@ -203,7 +203,9 @@ define(['underscore', 'jquery', 'backbone',
 		    
 		    //Usage
 		    //Find the model value that matches a radio button and check it
-		    $(".checkbox .usage[value='" + this.model.get("intellectualRights") + "']").attr("checked", "checked");
+			// Note the replace() call removing newlines and replacing them with a single space
+			// character. This is a temporary hack to fix https://github.com/NCEAS/metacatui/issues/128
+		    $(".checkbox .usage[value='" + this.model.get("intellectualRights").replace(/\r?\n|\r/g, ' ') + "']").attr("checked", "checked");
 	    	
 		    //Funding
 		    this.renderFunding();
