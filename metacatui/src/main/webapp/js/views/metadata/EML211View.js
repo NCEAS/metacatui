@@ -980,9 +980,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//If the text should be editable,
 	    	if(edit){	    		
 		    	//Format the paragraphs with carriage returns between paragraphs
-		    	_.each(paragraphs, function(p){
-		    		paragraphsString += p + String.fromCharCode(13);
-		    	})
+				paragraphsString = paragraphs.join(String.fromCharCode(13));
 		    		
 		    	//Create the textarea element
 		    	finishedEl = $(document.createElement("textarea"))
