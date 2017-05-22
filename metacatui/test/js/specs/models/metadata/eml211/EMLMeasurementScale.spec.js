@@ -75,7 +75,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     emlMeasurementScale = EMLMeasurementScale.getInstance(xml);
                     domainName = emlMeasurementScale.get("measurementScale");
                     expect(emlMeasurementScale).to.be.an.an("Object");
-                    domainName.should.equal("dateTime");
+                    domainName.should.equal("datetime");
                 });
             });
         });
@@ -92,7 +92,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t\t\t<textDomain>\n",
                     "\t\t\t\t<definition>Any text</definition>\n",
                     "\t\t\t\t<pattern>*</pattern>\n",
-                    "\t\t\t\t<source>Any source</source>\n",
+                    "\t\t\t\t<sourced>Any source</sourced>\n",
                     "\t\t\t</textDomain>\n",
                     "\t\t</nonNumericDomain>\n",
                     "\t</nominal>\n",
@@ -111,7 +111,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t\t\t<textDomain>\n",
                     "\t\t\t\t<definition>Any text</definition>\n",
                     "\t\t\t\t<pattern>*</pattern>\n",
-                    "\t\t\t\t<source>Any source</source>\n",
+                    "\t\t\t\t<sourced>Any source</sourced>\n",
                     "\t\t\t</textDomain>\n",
                     "\t\t</nonNumericDomain>\n",
                     "\t</ordinal>\n",

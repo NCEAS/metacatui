@@ -20,7 +20,7 @@ define(["chai", "chai-jquery", "chai-backbone",
             before(function() {
                 // If needed
                 emlOtherEntity = new EMLOtherEntity({
-                    objectXML: OtherEntityUtil.getTestOtherEntityXML()
+                    objectDOM: $(OtherEntityUtil.getTestOtherEntityXML())[0]
                 }, {parse: true});
             });
 
@@ -141,7 +141,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                     "\t\t\t\t\t\t<textDomain>\n",
                     "\t\t\t\t\t\t\t<definition>Any text</definition>\n",
                     "\t\t\t\t\t\t\t<pattern>*</pattern>\n",
-                    "\t\t\t\t\t\t\t<source>Any source</source>\n",
+                    "\t\t\t\t\t\t\t<sourced>Any source</sourced>\n",
                     "\t\t\t\t\t\t</textDomain>\n",
                     "\t\t\t\t\t</nonNumericDomain>\n",
                     "\t\t\t\t</nominal>\n",

@@ -10,9 +10,9 @@ define(["jquery", "underscore", "backbone",
          * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
          */
         var EMLNonNumericDomain = Backbone.Model.extend({
-        	
+
         	type: "EMLNonNumericDomain",
-        	
+
             /* Attributes of an EMLNonNumericDomain object */
             defaults: {
                 /* Attributes from EML, extends attributes from EMLMeasurementScale */
@@ -38,6 +38,7 @@ define(["jquery", "underscore", "backbone",
                 "valueattributereference": "valueAttributeReference",
                 "definitionattributereference": "definitionAttributeReference",
                 "orderattributereference": "orderAttributeReference",
+                "sourced": "source"
             },
 
             /* Initialize an EMLNonNumericDomain object */
@@ -56,25 +57,17 @@ define(["jquery", "underscore", "backbone",
                 var domainNodeList; // the list of domain elements
                 var domain; // the text or enumerated domain to parse
                 var domainObject; // The parsed domain object to be added to attributes.nonNumericDomain
+                var rootNodeName; // Name of the fragment root elements
 
-                /* JQuery seems to have a bug handling XML elements named "source"
-                 * $objectDOM = $(attributes.objectDOM) gives us:
-                 * <nominal>
-                 * ....<nonnumericdomain>
-                 * ........<textdomain>
-                 * ............<definition>Any text</definition>
-                 * ............<pattern>*</pattern>
-                 * ............<source>Any source
-                 * ........</textdomain>
-                 * ....</nonnumericdomain>
-                 * </nominal>
-                 * Note the lost </source>. Changing the element name to "sourced" works fine.
-                 * Use the DOMParser instead
-                 */
-                var parser = new DOMParser();
-                var parsedDOM = parser.parseFromString(attributes.objectXML, "text/xml");
-
-                var rootNodeName = $(parsedDOM)[0].documentElement.nodeName;
+                if ( attributes.objectDOM ) {
+                    rootNodeName = $(attributes.objectDOM)[0].localName;
+                    $objectDOM = $(attributes.objectDOM);
+                } else if ( attributes.objectXML ) {
+                    rootNodeName = $(attributes.objectXML)[0].localName;
+                    $objectDOM = $($(attributes.objectXML)[0]);
+                } else {
+                    return {};
+                }
 
                 // do we have an appropriate measurementScale tree?
                 var index = _.indexOf(["measurementscale", "nominal", "ordinal"], rootNodeName);
@@ -83,7 +76,7 @@ define(["jquery", "underscore", "backbone",
                         "node of 'measurementScale', 'nominal', or 'ordinal'.");
                 }
 
-                nonNumericDomainNodeList = $(parsedDOM).find("nonnumericdomain")
+                nonNumericDomainNodeList = $objectDOM.find("nonnumericdomain");
 
                 if ( nonNumericDomainNodeList && nonNumericDomainNodeList.length > 0 ) {
                     domainNodeList = nonNumericDomainNodeList[0].children;
@@ -102,7 +95,7 @@ define(["jquery", "underscore", "backbone",
                     _.each(domainNodeList, function(domain) {
                         if ( domain ) {
                             // match the camelCase name since DOMParser() is XML-aware
-                            switch ( domain.nodeName ) {
+                            switch ( domain.localName ) {
                                 case "textdomain":
                                     domainObject = this.parseTextDomain(domain);
                                     break;
@@ -121,8 +114,6 @@ define(["jquery", "underscore", "backbone",
                     }, this);
 
                 }
-
-                $objectDOM = $(attributes.objectXML); // use $objectDOM, not parsedDOM, for the rest
 
                 // Add the XML id
                 if ( $objectDOM.attr("id") ) {

@@ -12,7 +12,7 @@ define(["jquery", "underscore", "backbone",
         var EMLNumericDomain = Backbone.Model.extend({
 
         	type: "EMLNumericDomain",
-        	
+
             /* Attributes of an EMLNonNumericDomain object */
             defaults: {
                 /* Attributes from EML, extends attributes from EMLMeasurementScale */
@@ -50,8 +50,15 @@ define(["jquery", "underscore", "backbone",
                 var measurementScale;
                 var rootNodeName;
 
-                $objectDOM = $(attributes.objectXML);
-                rootNodeName = $objectDOM[0].localName;
+                if ( attributes.objectDOM ) {
+                    rootNodeName = $(attributes.objectDOM)[0].localName;
+                    $objectDOM = $(attributes.objectDOM);
+                } else if ( attributes.objectXML ) {
+                    rootNodeName = $(attributes.objectXML)[0].localName;
+                    $objectDOM = $($(attributes.objectXML)[0]);
+                } else {
+                    return {};
+                }
 
                 // do we have an appropriate measurementScale tree?
                 var index = _.indexOf(["measurementscale","interval", "ratio"], rootNodeName);

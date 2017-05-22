@@ -131,7 +131,42 @@ define(['underscore', 'jquery', 'backbone',
 		        			view.$(".north, .west").addClass("error");
 		        			hasError = true;
 		        		}
-		        		
+
+						if (north) {
+							var northParsed = Number(north);
+
+							if (isNaN(northParsed) || northParsed < -90 | northParsed > 90) {
+								view.$(".north").addClass("error");
+		        				hasError = true;
+							}
+						}
+
+						if (east) {
+							var eastParsed = Number(east);
+
+							if (isNaN(eastParsed) || eastParsed < -180 | eastParsed > 180) {
+								view.$(".east").addClass("error");
+		        				hasError = true;
+							}
+						}
+
+						if (south) {
+							var southParsed = Number(south);
+
+							if (isNaN(southParsed) || southParsed < -90 | southParsed > 90) {
+								view.$(".south").addClass("error");
+		        				hasError = true;
+							}
+						}
+
+						if (west) {
+							var westParsed = Number(west);
+
+							if (isNaN(westParsed) || westParsed < -180 | westParsed > 180) {
+								view.$(".west").addClass("error");
+		        				hasError = true;
+							}
+						}	
 		        		//Check if there isn't a geographic description
 		        		if( !description ){
 		        			view.$(".description").addClass("error");

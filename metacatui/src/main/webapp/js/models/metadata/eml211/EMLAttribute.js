@@ -42,7 +42,7 @@ define(["jquery", "underscore", "backbone",
                 "attributename": "attributeName",
                 "attributelabel": "attributeLabel",
                 "attributedefinition": "attributeDefinition",
-                "sourced" : "source", 
+                "sourced" : "source",
                 "storagetype": "storageType",
                 "typesystem": "typeSystem",
                 "measurementscale": "measurementScale",
@@ -71,19 +71,14 @@ define(["jquery", "underscore", "backbone",
              */
             parse: function(attributes, options) {
                 var $objectDOM;
-                var objectXML = attributes.objectXML;
 
-                // Use the cached object if we have it
-                if ( ! objectXML ) {
-                    if ( this.get("objectXML") ) {
-                        objectXML = this.get("objectXML");
-
-                    } else {
-                        return {};
-                    }
+                if ( attributes.objectDOM ) {
+                    $objectDOM = $(attributes.objectDOM);
+                } else if ( attributes.objectXML ) {
+                    $objectDOM = $($(attributes.objectXML)[0]);
+                } else {
+                    return {};
                 }
-
-                $objectDOM = $(objectXML);
 
                 // Add the XML id
                 attributes.xmlID = $objectDOM.attr("id");
@@ -111,42 +106,24 @@ define(["jquery", "underscore", "backbone",
                     attributes.typeSystem.push(type || null);
                 });
 
-                // Add the measurementScale
-                /* JQuery seems to have a bug handling XML elements named "source"
-                 * $objectDOM = $(attributes.objectDOM) gives us:
-                 * <nominal>
-                 * ....<nonnumericdomain>
-                 * ........<textdomain>
-                 * ............<definition>Any text</definition>
-                 * ............<pattern>*</pattern>
-                 * ............<source>Any source
-                 * ........</textdomain>
-                 * ....</nonnumericdomain>
-                 * </nominal>
-                 * Note the lost </source>. Changing the element name to "sourced" works fine.
-                 * Use the DOMParser instead
-                 */
-                var parser = new DOMParser();
-                var parsedDOM = parser.parseFromString(objectXML, "text/xml");
 
-                var measurementScale = parsedDOM.getElementsByTagName("measurementscale")[0];
+                var measurementScale = $objectDOM.find("measurementscale")[0];
                 if ( measurementScale ) {
                     attributes.measurementScale =
                         EMLMeasurementScale.getInstance(measurementScale.outerHTML);
                     attributes.measurementScale.set("parentModel", this);
                 }
-                attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM;
 
                 return attributes;
             },
-            
+
             validate: function(){
             	var errors = {};
-            	
+
             	if(!this.get("attributeName"))
             		errors.attributeName = "Provide a name for this attribute.";
-            	
+
             	if(Object.keys(errors).length)
             		return errors;
             },

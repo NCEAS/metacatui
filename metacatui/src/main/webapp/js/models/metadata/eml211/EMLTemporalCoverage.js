@@ -154,6 +154,16 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				$(singleDateTime).html(this.serializeSingleDateTime(this.get("beginDate"), this.get("beginTime")));
 
 			}
+			else if(this.get("singleDateTime")){
+				var singleDateTime = $(objectDOM).find("singledatetime");
+				if(!singleDateTime.length){
+					singleDateTime = document.createElement("singledatetime");
+					$(objectDOM).append(singleDateTime);
+				}
+				
+				if(this.get("singleDateTime").calendarDate)
+					$(singleDateTime).html(this.serializeSingleDateTime( this.get("singleDateTime").calendarDate ));
+			}
 
 			// Remove empty (zero-length or whitespace-only) nodes
 			$(objectDOM).find("*").filter(function() { return $.trim(this.innerHTML) === ""; } ).remove();
