@@ -28,6 +28,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         	
         	events: {
         		"change" : "updateModel",
+        		"keyup .method-step.new" : "addNewMethodStep"
         	},
         	
         	render: function() {
@@ -63,9 +64,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 				}
 
 				var el = $(document.createElement('textarea'))
-					.attr('rows', data.rows)
+					.attr('rows', '10')
 					.attr('data-attribute', data.category)
 					.attr('data-type', data.type)
+					.addClass("method-step").addClass(data.classes || "")
 					.text(text);
 
 				if (isNew) {
@@ -119,12 +121,22 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 					}));
 				}
 
-				// Add new textareas as needed
-				if ($(e.target).hasClass('new')) {
-					$(e.target).removeClass('new');
-					$(e.target).after($(this.renderTextArea(null, { category: changedAttr, type: textType, rows: $(e.target).attr('rows') })));
-				}
         	},
+        	
+        	addNewMethodStep: function(){
+        		// Add new textareas as needed
+        		var newStep = this.$(".method-step.new"),
+        			nextStepNum = this.$(".method-step").length + 1;
+        		
+        		newStep.removeClass("new");
+
+        		newStep.after(this.renderTextArea(null, { 
+						category: "methodStepDescription", 
+						type: "description",
+						classes: "new"
+					}));        		
+        		newStep.after( $(document.createElement("h5")).text("Step " + nextStepNum) );
+        	}
         });
         
         return EMLMethodsView;
