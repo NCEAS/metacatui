@@ -1,12 +1,12 @@
-<h5>Domain Type</h5>
+<h5>Possible Values</h5>
 	
 <label class="radio">
 	  <input type="radio" name="domainType" data-category="nonNumericDomain" 
 	  value="enumeratedDomain" class="domain" 
 	  />
-	  Enumerated Domain - Codes are used as the value of this attribute
+	  Code List - The values of this attribute are taken from a list of codes
 	  <span class="subtle"> e.g. data might have a variable named 'site' with
-             values 'A', 'B', and 'C', and the enumeratedDomain would
+             values 'A', 'B', and 'C', and the code list would
              explain how to interpret those codes.
 	  </span>
 </label>
@@ -15,7 +15,7 @@
 	  <input type="radio" name="domainType" data-category="nonNumericDomain" 
 	  value="textDomain" class="domain" 
 	  />
-	  Text Domain - Free text that does not have a finite set of values
+	  Text - Free text that does not have a finite set of values or text that adheres to a pattern
 	  <span class="subtle"> 
 	  	  e.g. '[0-9]{3}-[0-9]{3}-[0-9]{4}' allows for only
              numeric digits in the pattern of a US phone
@@ -27,5 +27,5 @@
 </div>
 
 <div class="enumerated-domain enumeratedDomain non-numeric-domain-type hidden">
-	<h5>Enumerated Domain Codes</h5>
+	<h5>Code List</h5>
 </div>
