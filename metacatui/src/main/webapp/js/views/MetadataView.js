@@ -839,8 +839,8 @@ define(['jquery',
 				//packageModel.once("sync", viewRef.createProvEditor, viewRef); 
 						
 				//Now get the RDF XML and check for the user's authority on this resource map
-				packageModel.fetch();
-				packageModel.checkAuthority();
+				//packageModel.fetch();
+				//packageModel.checkAuthority();
 			});
 			this.model.checkAuthority();
 		},
