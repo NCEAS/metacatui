@@ -1,9 +1,50 @@
-<% if(typeof definition == "undefined"){ var definition = ""; } %>
+<% 
+if(typeof definition == "undefined"){ var definition = ""; } 
+if(typeof pattern    == "undefined"){ var pattern = new Array(); } 
 
-<h5>Text Pattern Definition</h5>
-<p class="subtle">e.g. US telephone numbers in the format (999) 888-7777</p>
-<div class="text-container">
-	<input type="text" data-category="definition" class="basic-text input textDomain" 
-	placeholder="The kinds of text patterns allowed for this attribute" 
-	value="<%=definition%>" >
+%>
+
+<div class="text-options">
+
+	<div class="text-container pattern-details">
+		
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<td class="span6">
+						<label>
+							<strong>Description <i class="required-icon"></i></strong>
+							<p class="subtle">Describe the type of text allowed in this attribute</p>
+						</label>
+					</td>
+					<td class="span6">
+						<label>
+							<strong>Pattern</strong>
+							<p class="subtle">Specify a
+				                    regular expression pattern that constrains the set of
+				                    allowable values for the attribute. 
+				                    <a href="http://www.regular-expressions.info/quickstart.html">
+				                    	Need help with regular expressions?
+				                    </a>
+				            </p>
+						</label>
+					</td>
+				</tr>
+			</thead>
+			<tbody>	
+				<tr>
+					<td class="span6">	
+						<textarea data-category="definition" class="basic-text input textDomain" 
+							placeholder="The kind of text allowed for this attribute" 
+							rows="2"><%=definition%></textarea>
+					</td>
+					<td class="span6">
+						<input type="text" data-category="pattern" class="basic-text input textDomain" 
+							placeholder="e.g. [0-9]{3}-[0-9]{3}-[0-9]{4}" 
+							value="<%=pattern[0]%>" />
+					</td>
+				</tr>
+			</tbody>
+		</table>	
+	</div>
 </div>

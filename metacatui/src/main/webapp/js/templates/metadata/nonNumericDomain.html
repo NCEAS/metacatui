@@ -2,30 +2,51 @@
 	
 <label class="radio">
 	  <input type="radio" name="domainType" data-category="nonNumericDomain" 
-	  value="enumeratedDomain" class="domain" 
+	  value="enumeratedDomain" class="possible-text" 
 	  />
 	  Code List - The values of this attribute are taken from a list of codes
-	  <span class="subtle"> e.g. data might have a variable named 'site' with
+	  <p class="subtle"> e.g. data might have a variable named 'site' with
              values 'A', 'B', and 'C', and the code list would
              explain how to interpret those codes.
-	  </span>
+	  </p>
 </label>
 
 <label class="radio">
 	  <input type="radio" name="domainType" data-category="nonNumericDomain" 
-	  value="textDomain" class="domain" 
+	  value="pattern" class="possible-text" 
 	  />
-	  Text - Free text that does not have a finite set of values or text that adheres to a pattern
-	  <span class="subtle"> 
+	  Particular Text - This text is constrained to a pattern or regular expression
+	  <p class="subtle"> 
 	  	  e.g. '[0-9]{3}-[0-9]{3}-[0-9]{4}' allows for only
              numeric digits in the pattern of a US phone
              number.
-      </span>
+      </p>
 </label>
 
-<div class="text-domain textDomain non-numeric-domain-type hidden">
+<div class="text-domain textDomain non-numeric-domain-type pattern indent hidden">
 </div>
 
-<div class="enumerated-domain enumeratedDomain non-numeric-domain-type hidden">
-	<h5>Code List</h5>
+<label class="radio">
+	  <input type="radio" name="domainType" data-category="nonNumericDomain" 
+	  value="anything" class="possible-text" 
+	  />
+	  Anything - Any text is allowed
+</label>
+
+
+<div class="enumerated-domain enumeratedDomain non-numeric-domain-type indent hidden">
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th class="span6">
+					<strong>Code</strong>
+				</th>
+				<th class="span6">
+					<strong>Definition</strong>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
 </div>

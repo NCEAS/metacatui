@@ -3256,6 +3256,9 @@ textarea.xlarge{
 	color: #960303;
     font-weight: bold;
 }
+.eml-attribute .indent{
+	margin-left: 20px;
+}
 	
 	
 /* ---- Overview ---- */

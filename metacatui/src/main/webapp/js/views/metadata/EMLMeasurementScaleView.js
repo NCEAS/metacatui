@@ -29,7 +29,7 @@ define(['underscore', 'jquery', 'backbone',
             events: {
             	"click .category" : "switchCategory",
             	"change .datetime-string" : "toggleCustomDateTimeFormat",
-            	"change .non-numeric-domain .domain" : "toggleNonNumericDomain"
+            	"change .possible-text" : "toggleNonNumericDomain"
             },
             
             initialize: function(options){
@@ -52,30 +52,31 @@ define(['underscore', 'jquery', 'backbone',
             	this.$el.html(viewHTML);
             	
             	//Render any nonNumericDomain models
-            	if(this.model.get("nonNumericDomain")){
-            		this.$(".non-numeric-domain").append( this.nonNumericDomainTemplate(this.model.get("nonNumericDomain")) );
+        		this.$(".non-numeric-domain").append( this.nonNumericDomainTemplate(this.model.get("nonNumericDomain")) );
+        		
+        		//Render the text domain choices and details
+        		this.$(".text-domain").html( this.textDomainTemplate() );
+        		
+        		//If this attribute is already defined as nonNumericDomain, then fill in the metadata
+        		_.each(this.model.get("nonNumericDomain"), function(domain){
             		
-            		_.each(this.model.get("nonNumericDomain"), function(domain){
-                		
-            			var nominalTextDomain = this.$(".nominal-options .text-domain"),
-            				ordinalTextDomain = this.$(".ordinal-options .text-domain");
+        			var nominalTextDomain = this.$(".nominal-options .text-domain"),
+        				ordinalTextDomain = this.$(".ordinal-options .text-domain");
+        			
+        			if(domain.textDomain){
+            			if(this.model.get("measurementScale") == "nominal"){
+            				nominalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
+            			}
+            			else{
+            				ordinalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
+            			}
             			
-            			if(domain.textDomain){
-                			if(this.model.get("measurementScale") == "nominal"){
-                				nominalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
-                				ordinalTextDomain.html( this.textDomainTemplate() );
-                			}
-                			else{
-                				ordinalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
-                				nominalTextDomain.html( this.textDomainTemplate() );
-                			}
-                		}               			
-            			
-            		}, this);
-            	}
-            	else{
-            		this.$(".text-domain").html( this.textDomainTemplate() );   
-            	}
+            		}               			
+        			
+        		}, this);        			
+        		
+        		
+
             },
             
             /* 
@@ -91,6 +92,7 @@ define(['underscore', 'jquery', 'backbone',
             	this.chooseDateTimeFormat();
             	
             	this.chooseNonNumericDomain();
+            	
             },
                         
             updateModel: function(e){
@@ -271,17 +273,29 @@ define(['underscore', 'jquery', 'backbone',
             chooseNonNumericDomain: function(){
             	
             	if(this.model.get("nonNumericDomain") && this.model.get("nonNumericDomain").length){
-            		//Hide the domain type details
+            		
+            		//Hide all the details first
             		this.$(".non-numeric-domain-type").hide();
             		
+            		//Get the domain from the model
+            		var domain = this.model.get("nonNumericDomain")[0];
+            		
             		//If the domain type is text, select it and show it
-            		if( this.model.get("nonNumericDomain")[0].textDomain ){
-            			this.$("." + this.model.get("measurementScale") + "-options input[value='textDomain']").attr("checked", "checked");
-            			this.$(".non-numeric-domain-type.textDomain").show();
+            		if( domain.textDomain ){
+            			
+            			//If the pattern is just a wildcard, then check the "anything" radio button
+            			if(domain.textDomain.pattern && domain.textDomain.pattern.length && domain.textDomain.pattern[0] == "*")
+            				this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='anything']").prop("checked", true);            				
+            			//Otherwise, check the pattern radio button
+            			else{
+            				this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='pattern']").prop("checked", true);
+            				this.$("." + this.model.get("measurementScale") + "-options .non-numeric-domain-type.pattern").show();
+            			}
+            			
             		}
-            		//If the domain type is enumerated, select it and show it
-            		else if( this.model.get("nonNumericDomain")[0].enumeratedDomain ){
-            			this.$("." + this.model.get("measurementScale") + "-options input[value='enumeratedDomain']").attr("checked", "checked");
+            		//If the domain type is a code list, select it and show it
+            		else if( domain.enumeratedDomain ){
+            			this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='enumeratedDomain']").attr("checked", "checked");
             			this.$(".non-numeric-domain-type.enumeratedDomain").show();
             		}
             	}
@@ -291,9 +305,13 @@ define(['underscore', 'jquery', 'backbone',
             	//Hide the domain type details
         		this.$(".non-numeric-domain-type").hide();
         		
-            	var value = this.$(".non-numeric-domain .domain:checked").val();
+        		//Get the new value selected
+            	var value = this.$(".non-numeric-domain .possible-text:checked").val();
             	
-            	this.$(".non-numeric-domain-type." + value).show();
+            	var activeScale = this.$(".nominal-options").is(":visible")? "nominal" : "ordinal";
+            	
+            	//Show the form elements for that non numeric type
+            	this.$("." + activeScale + "-options .non-numeric-domain-type." + value).show();
             	
             }
         });
