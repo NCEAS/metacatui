@@ -27,9 +27,10 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            	"click .category" : "switchCategory",
+            	"click  .category"        : "switchCategory",
             	"change .datetime-string" : "toggleCustomDateTimeFormat",
-            	"change .possible-text" : "toggleNonNumericDomain"
+            	"change .possible-text"   : "toggleNonNumericDomain",
+            	"keyup  .new .codelist"   : "addNewCodeRow"
             },
             
             initialize: function(options){
@@ -71,11 +72,16 @@ define(['underscore', 'jquery', 'backbone',
             				ordinalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
             			}
             			
-            		}               			
+            			//Add the new code rows in the code list table
+            			this.addCodeRow("nominal");
+            			this.addCodeRow("ordinal");
+            			
+            		}
+        			else if(domain.enumeratedDomain){
+        				this.renderCodeList(domain.enumeratedDomain);
+        			}
         			
         		}, this);        			
-        		
-        		
 
             },
             
@@ -92,6 +98,42 @@ define(['underscore', 'jquery', 'backbone',
             	this.chooseDateTimeFormat();
             	
             	this.chooseNonNumericDomain();
+            	
+            },
+            
+            /*
+             * Render the table of code definitions from the enumeratedDomain node of the EML
+             */
+            renderCodeList: function(codeList){
+            	
+            	var scaleType  = this.model.get("measurementScale"),
+            		$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
+            	
+            	_.each(codeList.codeDefinition, function(definition){
+            		var row = $(document.createElement("tr"))
+            					.addClass("code-row")
+            					.append(
+            					$(document.createElement("td")).addClass("span2").append( 
+            							$(document.createElement("input"))
+            								.addClass("full-width codelist code")
+            								.attr("type", "text")
+            								.attr("data-category", "code")
+            								.attr("placeholder", "Code value allowed (e.g. \"site A\")")
+            								.val(definition.code) ),
+								$(document.createElement("td")).addClass("span10").append( 
+            							$(document.createElement("input"))
+            								.addClass("full-width codelist definition")
+            								.attr("type", "text")
+            								.attr("data-category", "codeDefinition")
+            								.attr("placeholder", "Definition of this code")
+            								.val(definition.definition) )
+            				  );
+            		
+            		//Add the row to the table
+            		$container.append(row);
+            	});
+            	
+            	this.addCodeRow();
             	
             },
                         
@@ -313,6 +355,44 @@ define(['underscore', 'jquery', 'backbone',
             	//Show the form elements for that non numeric type
             	this.$("." + activeScale + "-options .non-numeric-domain-type." + value).show();
             	
+            },
+            
+            addNewCodeRow: function(e){
+            	var $row 	   = $(e.target).parents(".code-row"),
+            		code 	   = $row.find(".code").val(),
+            		definition = $row.find(".definition").val();
+            	
+            	//Only add a row when there is a value for the code and code definition
+            	if(!code || !definition) return false;
+            	
+            	$row.removeClass("new");
+            	this.addCodeRow();            	
+            },
+            
+            addCodeRow: function(scaleType){
+            	if(!scaleType)
+            		var scaleType = this.model.get("measurementScale");
+            	
+        		var	$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
+            	
+            	//Add an empty row at the end to add a new code
+            	var row = $(document.createElement("tr"))
+	            			.addClass("code-row new")
+	            			.append(
+	    					$(document.createElement("td")).addClass("span2").append( 
+	    							$(document.createElement("input"))
+	    								.addClass("full-width codelist code")
+	    								.attr("type", "text")
+	    								.attr("data-category", "code")
+	    								.attr("placeholder", "Code value allowed (e.g. \"site A\")")),
+							$(document.createElement("td")).addClass("span10").append( 
+	    							$(document.createElement("input"))
+	    								.addClass("full-width codelist definition")
+	    								.attr("type", "text")
+	    								.attr("data-category", "codeDefinition")
+	    								.attr("placeholder", "Definition of this code")));
+            	
+            	$container.append(row);
             }
         });
         

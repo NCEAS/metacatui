@@ -3259,7 +3259,9 @@ textarea.xlarge{
 .eml-attribute .indent{
 	margin-left: 20px;
 }
-	
+.enumerated-domain .table input {
+    margin-bottom: 0px;
+}
 	
 /* ---- Overview ---- */
 .metadata-container .section.overview > div{
