@@ -30,7 +30,10 @@ define(['underscore', 'jquery', 'backbone',
             	"click  .category"        : "switchCategory",
             	"change .datetime-string" : "toggleCustomDateTimeFormat",
             	"change .possible-text"   : "toggleNonNumericDomain",
-            	"keyup  .new .codelist"   : "addNewCodeRow"
+            	"keyup  .new .codelist"   : "addNewCodeRow",
+            	"change .units"           : "updateModel",
+            	"change .datetime" 		  : "updateModel",
+            	"change .codelist"        : "updateModel"
             },
             
             initialize: function(options){
@@ -72,17 +75,16 @@ define(['underscore', 'jquery', 'backbone',
             				ordinalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
             			}
             			
-            			//Add the new code rows in the code list table
-            			this.addCodeRow("nominal");
-            			this.addCodeRow("ordinal");
-            			
             		}
         			else if(domain.enumeratedDomain){
         				this.renderCodeList(domain.enumeratedDomain);
         			}
         			
-        		}, this);        			
-
+        		}, this);       
+        		
+        		//Add the new code rows in the code list table
+    			this.addCodeRow("nominal");
+    			this.addCodeRow("ordinal");
             },
             
             /* 
@@ -393,6 +395,70 @@ define(['underscore', 'jquery', 'backbone',
 	    								.attr("placeholder", "Definition of this code")));
             	
             	$container.append(row);
+            },
+            
+            /*
+             * When the user changes the value of the form, update the model
+             */
+            updateModel: function(e){
+            	
+            	var updatedInput = $(e.target);
+            	
+            	//Update the standard unit
+            	if(updatedInput.is(".units")){
+            		var chosenUnit = updatedInput.val();
+            		this.model.set("unit", chosenUnit);
+            	}
+            	//Update the datetime format
+            	else if(updatedInput.is(".datetime")){
+            		var format = updatedInput.val();
+            		
+            		if(format == "custom"){
+            			format = this.$(".datetime-string-custom").val();
+            		}
+            		
+            		this.model.set("formatString", format);
+            	}
+            	else if(updatedInput.is(".codelist")){
+            		var row   = updatedInput.parents(".code-row"),
+            			code  = row.find(".code").val(),
+            			def   = row.find(".definition").val();
+            		
+            		if(!code || !def)
+            			return;
+            		
+            		var	index = this.$(".code-row").index(row);
+            			currentValue = this.model.get("nonNumericDomain");
+            			
+            		if(Array.isArray(currentValue) && typeof currentValue[0] == "object"){
+            			var codes = currentValue[0].enumeratedDomain.codeDefinition;
+            			
+            			if(typeof codes[index] == "object"){
+            				codes[index].code = code;
+                			codes[index].definition = def;
+            			}
+            			else{
+            				codes[index] = {
+        						code: code,
+        						definition: def
+            				}
+            			}
+            		}
+            		else{
+            			var nonNumericDomain = [{
+            				enumeratedDomain: {
+            					codeDefinition: [{
+                					code: code,
+                					definition: def
+            					}]
+            				}
+            			}];
+            			
+            			this.model.set("nonNumericDomain", nonNumericDomain);
+            		}
+            		
+            		this.model.trigger("change:nonNumericDomain");
+            	}
             }
         });
         
