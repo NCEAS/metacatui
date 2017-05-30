@@ -778,9 +778,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				numComplete = 0;
 			
 			_.each(nestedPackages, function(nestedPackage, i, nestedPackages){
-				//Only look one-level deep at all times to avoid going down a rabbit hole
-				if(nestedPackage.parentPackage && nestedPackage.parentPackage.parentPackage) return;
-				
+
 				//Flag the parent model as complete when all the nested package info is ready
 				nestedPackage.on("complete", function(){ 
 					numComplete++;
@@ -793,6 +791,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					}					
 				});
 				
+				//Only look one-level deep at all times to avoid going down a rabbit hole
+				if(nestedPackage.get("parentPackage") && nestedPackage.get("parentPackage").get("parentPackage")){
+					nestedPackage.flagComplete();
+					return;
+				}
+	
 				//Get the members of this nested package
 				nestedPackage.getMembers();
 			});			
