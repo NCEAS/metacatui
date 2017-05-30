@@ -29,6 +29,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			userProfiles: true,
 			profileUsername: null,
+			
+			ldapDNSuffix: "dc=ecoinformatics,dc=org",
 
 			useJsonp: true,
 
@@ -58,11 +60,11 @@ define(['jquery', 'underscore', 'backbone'],
 			//bioportalSearchUrl: null,
 			//orcidSearchUrl: null,
 			//orcidBioUrl: null,
-			//signInUrl: null,
+			signInUrl: null,
 			signOutUrl: null,
 			signInUrlOrcid: null,
 			signInUrlLdap: null,
-			tokenUrl: null,
+			//tokenUrl: null,
 			checkTokenUrl: null,
 			//annotatorUrl: null,
 			accountsUrl: null,
