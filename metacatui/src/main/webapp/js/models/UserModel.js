@@ -351,8 +351,10 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			
 			if(!username) return;
 			
-			if((username.indexOf("uid=") > -1) && (username.indexOf(",") > -1))
-				fullName = username.substring(username.indexOf("uid=") + 4, username.indexOf(","));
+			var ldapUidAttribute = appModel.get("ldapUidAttribute") || "uid" || "";
+			
+			if((username.indexOf(ldapUidAttribute + "=") > -1) && (username.indexOf(",") > -1))
+				fullName = username.substring(username.indexOf(ldapUidAttribute + "=") + 4, username.indexOf(","));
 			else if((username.indexOf("CN=") > -1) && (username.indexOf(",") > -1))
 				fullName = username.substring(username.indexOf("CN=") + 3, username.indexOf(","));
 			

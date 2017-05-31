@@ -29,6 +29,10 @@ define(['jquery', 'underscore', 'backbone'],
 
 			userProfiles: true,
 			profileUsername: null,
+			
+			ldapUidAttribute: "uid",
+			ldapOrgAttribute: "o",
+			ldapDNSuffix: "dc=ecoinformatics,dc=org",
 
 			useJsonp: true,
 

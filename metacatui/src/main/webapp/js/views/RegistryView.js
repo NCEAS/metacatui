@@ -604,9 +604,9 @@ define(['jquery', 'underscore', 'backbone', 'bootstrap', 'jqueryform', 'views/Si
 				return false;
 			}	
 
-			formObj.username.value = "uid=" + formObj.elements["uid"].value + ",o="
-					+ formObj.elements["organization"].value
-					+ "," + appModel.get("ldapDNSuffix");
+			formObj.username.value = appModel.get("ldapUidAttribute") + "=" + formObj.elements["uid"].value + 
+					"," + appModel.get("ldapOrgAttribute") + "=" + formObj.elements["organization"].value +
+					"," + appModel.get("ldapDNSuffix");
 			
 			// get the form data before replacing everything with the loading icon!
 			var formData = $("#loginForm").serialize();
