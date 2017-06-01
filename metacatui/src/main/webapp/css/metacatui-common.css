@@ -3262,7 +3262,36 @@ textarea.xlarge{
 .enumerated-domain .table input {
     margin-bottom: 0px;
 }
-	
+.attribute-menu.side-nav-items{
+	overflow-y: overlay;
+	margin-top: -20px;
+	position: fixed;
+	height: 400px;
+	background-color: #EEE;
+	border-right: 1px solid #DDD;
+}
+.attribute-list{
+	width: calc(100% - 170px - 40px);
+    float: right;
+    padding: 0px 20px;
+}
+.eml-attribute .title{
+	margin-bottom: 20px;
+}
+.attribute-menu{
+	min-width: 170px;
+}
+.attribute-menu-item a{
+	font-size: 1em;	
+}
+.attribute-menu-item.active a{
+	background-color: #1E254F;
+	color: white;
+}
+.attributes .attribute-menu-container{
+	width: 170px;
+}
+
 /* ---- Overview ---- */
 .metadata-container .section.overview > div{
 	margin-bottom: 20px;
@@ -3495,9 +3524,12 @@ textarea.xlarge{
     text-align: center;
 }
 .eml-entity .tab-content{
-	padding: 20px;
 	width: 100%;
 	box-sizing: border-box;
+}
+.eml-entity .overview-container{
+	padding: 20px;
+    width: calc(100% - 40px);
 }
 .eml-entity .preview-container{
     box-sizing: border-box;

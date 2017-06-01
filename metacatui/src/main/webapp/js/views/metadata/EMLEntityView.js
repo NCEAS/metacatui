@@ -27,6 +27,7 @@ define(['underscore', 'jquery', 'backbone',
             events: {
             	"change"            : "updateModel",
             	"click .nav-tabs a" : "showTab",
+            	"click .attribute-menu-item" : "showAttribute",
             	"keyup .eml-attribute.new" : "addNewAttribute"
             },
             
@@ -84,23 +85,41 @@ define(['underscore', 'jquery', 'backbone',
             renderAttributes: function(){
             	//Render the attributes
             	var attributes      = this.model.get("attributeList"),
-            		attributeListEl = this.$(".attribute-list");
+            		attributeListEl = this.$(".attribute-list"),
+            		attributeMenuEl = this.$(".attribute-menu");
             	
             	_.each(attributes, function(attr){
             		
+            		//Create an EMLAttributeView 
             		var view = new EMLAttributeView({
             			model: attr
+            		});
+            		
+            		//Create a link in the attribute menu
+            		attributeMenuEl.append( $(document.createElement("li"))
+            									.addClass("attribute-menu-item side-nav-item pointer")
+            									.attr("data-attribute-id", attr.cid)
+            									.data({ 
+            										model: attr,
+            										attributeView: view
+            										})
+            									.append( $(document.createElement("a"))
+            												.addClass("ellipsis")
+            												.text(attr.get("attributeName")) ));
+            		
+            		this.listenTo(attr, "change:attributeName", function(attr){
+            			this.$("[data-attribute-id='" + attr.cid + "'] a").text(attr.get("attributeName"));
             		});
             		
             		view.render();
             		
             		attributeListEl.append(view.el);
             		
-            		view.collapse();
+            		view.$el.hide();
             		
             	}, this);
             	
-            	//Add a new blank attribute view at the end
+            	//Add a new blank attribute view at the end        		
             	var emlAttribute = new EMLAttribute({
         				parentModel: this.model
         			}),
@@ -108,9 +127,33 @@ define(['underscore', 'jquery', 'backbone',
 			            		model: emlAttribute,
 			            		isNew: true
             				});
+            	
             	view.render();
             	attributeListEl.append(view.el);
+            	view.$el.hide();
             	
+        		attributeMenuEl.append( $(document.createElement("li"))
+        				.addClass("attribute-menu-item side-nav-item pointer")
+						.attr("data-attribute-id", emlAttribute.cid)
+						.data({ 
+							model: emlAttribute,
+							attributeView: view
+							})
+						.append( $(document.createElement("a"))
+									.addClass("ellipsis")
+									.text("Add new attribute") ));
+        		
+        		//Activate the first navigation item
+        		var firstAttr = this.$(".side-nav-item").first();
+        		firstAttr.addClass("active");
+        		//Show the first attribute view
+        		firstAttr.data("attributeView").$el.show();
+        		
+        		//When the attribute name is changed, update the navigation
+        		this.listenTo(emlAttribute, "change:attributeName", function(attr){
+        			this.$("[data-attribute-id='" + attr.cid + "'] a").text(attr.get("attributeName"));
+        		});
+        		
             	this.listenTo(emlAttribute, "change", this.addAttribute);
             },
             
@@ -152,13 +195,42 @@ define(['underscore', 'jquery', 'backbone',
             	}
             },
             
+            setAttrMenuHeight: function(e){
+            	var attrMenuHeight = this.$(".modal-body").height() - this.$(".nav-tabs").height();
+            	console.log(this.$(".modal-body"), this.$(".nav-tabs"));
+            	this.$(".attribute-menu").css("height", attrMenuHeight + "px");
+            },
+            
+            showAttribute: function(e){
+            	var clickedEl = $(e.target),
+            		menuItem = clickedEl.is(".attribute-menu-item") || clickedEl.parent(),
+            		attrView = menuItem.data("attributeView");
+            	            	
+            	//Change the active attribute in the menu
+            	this.$(".attribute-menu-item.active").removeClass("active");
+            	menuItem.addClass("active");
+            	
+            	//Hide the old attribute view
+            	this.$(".eml-attribute").hide();
+            	//Show the new attribute view
+            	attrView.$el.show();
+            },
+            
             showTab: function(e){
             	e.preventDefault();
-       		  	$(e.target).tab('show');
+            	
+       		  	var link = $(e.target);
+       		  	       		  	
+       		  	//Set the menu height
+       		  	if(link.attr("href").indexOf("attribute") > -1)
+       		  		this.setAttrMenuHeight();
+       		  	
+       		  	link.tab('show');
+
             },
             
             show: function(){
-            	this.$el.modal('show');
+            	this.$el.modal('show');            	
             },
             
             hide: function(){

@@ -2,7 +2,7 @@
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
     <h3>Describe <span class="entity-name"><%=title%></span></h3>
   </div>
-  <div class="modal-body">
+  <div class="modal-body entity-container">
   	<ul class="nav nav-tabs">
 	  <li class="active"><a href="#overview-<%=uniqueId%>">Overview</a></li>
 	  <li><a href="#attributes-<%=uniqueId%>">Attributes</a></li>
@@ -31,7 +31,10 @@
 			</div>
 		</div>
 		<div class="tab-pane attributes" id="attributes-<%=uniqueId%>">
-			<div class="accordion attribute-list">
+			<div class="row-fluid">
+				<div class="attribute-menu-container"><ul class="attribute-menu side-nav-items"></ul></div>
+				<div class="attribute-list">
+				</div>
 			</div>
 		</div>
 	</div>

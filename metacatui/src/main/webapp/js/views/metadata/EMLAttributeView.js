@@ -15,7 +15,7 @@ define(['underscore', 'jquery', 'backbone',
            
             tagName: "div",
             
-            className: "eml-attribute accordion-group",
+            className: "eml-attribute",
             
             id: null,
             
@@ -24,9 +24,8 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            	"change"                   : "updateModel",
-            	"click .accordion-toggle"  : "toggleAttribute",
-            	"focusout .accordion-body" : "showValidation"
+            	"change"   : "updateModel",
+            	"focusout" : "showValidation"
             },
             
             initialize: function(options){
@@ -39,11 +38,8 @@ define(['underscore', 'jquery', 'backbone',
             
             render: function(){
             	
-            	//Send unique ids to the template for the accordion
             	var templateInfo = {
-            			attrId:  this.model.cid,
-            			title:   this.model.get("attributeName")? 
-            					this.model.get("attributeName") : "Add New Attribute"
+            			title: this.model.get("attributeName")? this.model.get("attributeName") : "Add New Attribute"
             	}
             	
             	_.extend(templateInfo, this.model.toJSON());
@@ -138,21 +134,6 @@ define(['underscore', 'jquery', 'backbone',
             	}, 200);
 
 
-            },
-            
-            toggleAttribute: function(e){
-            	if(e)
-            		e.preventDefault();
-            	
-            	this.$(".accordion-body").slideToggle();
-            	
-            	if(this.$(".eml-measurement-scale").is(":visible")){
-            		this.measurementScaleView.postRender();            		
-            	}
-            },
-            
-            collapse: function(){
-            	this.$(".accordion-body").hide();
             }
         });
         
