@@ -177,10 +177,10 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
              * at the zero-based index
              */
             addAttribute: function(attribute, index) {
-                if ( ! index ) {
-                    this.attributeList.push(attribute);
+                if ( typeof index == "undefined" ) {
+                    this.get("attributeList").push(attribute);
                 } else {
-                    this.attributeList.splice(index, attribute);
+                    this.get("attributeList").splice(index, attribute);
                 }
             },
 
@@ -188,8 +188,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
              * Remove an attribute from the attributeList
              */
             removeAttribute: function(attribute) {
-                var attrIndex = this.attributeList.indexOf(attribute);
-                this.attributelist.splice(attrIndex, 1);
+                var attrIndex = this.get("attributeList").indexOf(attribute);
+                this.get("attributeList").splice(attrIndex, 1);
             },
 
             /* Validate the top level EMLEntity fields */

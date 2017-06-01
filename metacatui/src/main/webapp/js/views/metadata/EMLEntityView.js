@@ -116,10 +116,31 @@ define(['underscore', 'jquery', 'backbone',
             		
             		view.$el.hide();
             		
+            		this.listenTo(attr, "change", this.addAttribute);
+            		
             	}, this);
             	
             	//Add a new blank attribute view at the end
             	this.addNewAttribute();
+            	
+            	//If there are no attributes in this EML model yet, 
+            	//then make sure we show a new add attribute button when the user starts typing
+            	if(attributes.length == 0){
+            		var onlyAttrView = this.$(".attribute-menu-item").first().data("attributeView"),
+            			view = this,
+            			keyUpCallback = function(){
+            				//This attribute is no longer new
+            				view.$(".attribute-menu-item").first().removeClass("new");
+            			
+            				//Add a new attribute link and view
+            				view.addNewAttribute();
+            				
+            				//Don't listen to keyup anymore
+            				onlyAttrView.$el.off("keyup", keyUpCallback);
+            			};
+            		
+            		onlyAttrView.$el.on("keyup", keyUpCallback);
+            	}
             	
         		//Activate the first navigation item
         		var firstAttr = this.$(".side-nav-item").first();
@@ -128,7 +149,6 @@ define(['underscore', 'jquery', 'backbone',
         		//Show the first attribute view
         		firstAttr.data("attributeView").$el.show();
         		        		
-            	this.listenTo(emlAttribute, "change", this.addAttribute);
             },
             
             updateModel: function(e){
@@ -173,17 +193,8 @@ define(['underscore', 'jquery', 'backbone',
             },
                         
             addAttribute: function(emlAttribute){
-            	if(!emlAttribute.isValid())
-            		return;
-            	
-            	//Get the EML model
-            	var emlModel = this.model.get("parentModel"),
-            		entities = emlModel.get("entities");
-            	
-            	if(! _.contains(entities, emlAttribute) ){
-            		entities.push(emlAttribute);
-            		emlModel.trigger("change:entities");
-            	}
+            	//Add the attribute to the attribute list in the EMLEntity model
+            	this.model.addAttribute(emlAttribute);
             },
             
             setAttrMenuHeight: function(e){
