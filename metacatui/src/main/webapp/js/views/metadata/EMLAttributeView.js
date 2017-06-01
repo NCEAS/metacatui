@@ -68,20 +68,9 @@ define(['underscore', 'jquery', 'backbone',
             	if(this.isNew){
             		this.$el.addClass("new");
             		this.measurementScaleView.postRender();
-            	}
-            	
-            	this.listenTo(this.model, "change:attributeName", this.updateHeader);
+            	}            	
             },
-            
-            updateHeader: function(){
-            	var header = this.model.get("attributeName");
-            	
-            	if(header)
-            		this.$(".heading").text(header);
-            	else
-            		this.$(".heading").text("Incomplete Attribute");
-            },
-            
+
             updateModel: function(e){
             	if(!e) return;
             	
