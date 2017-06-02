@@ -117,6 +117,24 @@ define(["jquery", "underscore", "backbone",
 
                 return attributes;
             },
+            
+            serialize: function(){
+            	var objectDOM = this.updateDOM(),
+					xmlString = objectDOM.outerHTML;
+		
+				//Camel-case the XML
+		    	xmlString = this.formatXML(xmlString);
+	    	
+		    	return xmlString;
+            },
+            
+            updateDOM: function(){
+            	
+            },
+            
+            formatXML: function(xmlString){
+            	return DataONEObject.prototype.formatXML.call(this, xmlString);
+            },
 
             validate: function(){
             	var errors = {};

@@ -353,7 +353,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			modelJSON["intellectualRights"] = value;
             			
             		}
-            		//Parse Data Tables
+            		//Parse Entities
             		else if(_.contains(emlEntities, thisNode.localName)){
             			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
 
@@ -630,7 +630,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        	if(datasetNode.find("project").length)
 	        		datasetNode.find("project").replaceWith(this.get("project").updateDOM());
 	        	else if(this.get("project"))
-	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());	              	        
+	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());	  
+	        	
+	        	//Get the existing taxon coverage nodes from the EML
+				var existingEntities = datasetNode.find("otherEntity");
+				
+	        	//Serialize the entities
+	        	_.each(this.get("entities"), function(entity, position){					
+
+					//Update the existing node if it exists
+					if(existingEntities.length-1 >= position){
+						$(existingEntities[position]).replaceWith(entity.updateDOM());
+					}
+					//Or, append new nodes
+					else{
+						this.getEMLPosition(eml, "otherentity").after(entity.updateDOM());	
+					}
+	        		
+	        	}, this);
 	        	
 	           	//Camel-case the XML
 		    	var emlString = ""; 
@@ -965,6 +982,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				
 				this.trigger("change:entities");
 				
+				this.trickleUpChange();
+				
                 return this;
             },
             /*
@@ -1034,6 +1053,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	xmlString.replace("</source>", "</sourced>");
             	
             	return xmlString;
+            },
+            
+            trickleUpChange: function(){
+            	//Mark the package as changed
+				MetacatUI.rootDataPackage.packageModel.set("changed", true);
             }
             
         });

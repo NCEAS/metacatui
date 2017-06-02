@@ -254,9 +254,12 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                         $(objectDOM).find("entityName").text(this.get("entityName"));
 
                     } else {
-                        this.getEMLPosition(objectDOM, "entityName")
-                            .after($(document.createElement("entityName"))
-                            .text(this.get("entityName")));
+                        var insertAfter = this.getEMLPosition(objectDOM, "entityName");
+                        
+                        if(!insertAfter)
+                        	objectDOM.append($(document.createElement("entityName")).text(this.get("entityName")));
+                        else	
+                            insertAfter.after($(document.createElement("entityName")).text(this.get("entityName")));
                     }
                 }
 
@@ -266,9 +269,12 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                         $(objectDOM).find("entityDescription").text(this.get("entityDescription"));
 
                     } else {
-                        this.getEMLPosition(objectDOM, "entityDescription")
-                            .after($(document.createElement("entityDescription"))
-                            .text(this.get("entityName")));
+                        var insertAfter = this.getEMLPosition(objectDOM, "entityDescription");
+                        
+                        if(!insertAfter)
+                        	objectDOM.append($(document.createElement("entityDescription")).text(this.get("entityName")));
+                        else
+                            insertAfter.after($(document.createElement("entityDescription")).text(this.get("entityName")));
                     }
                 }
 
@@ -328,8 +334,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 // Otherwise, go through each node in the node list and find the
                 // position where this node will be inserted after
                 for ( var i = position - 1; i >= 0; i-- ) {
-                    if ( $(objectDOM).find(nodeOrder[i]).length ) {
-                        return $(objectDOM).find(nodeOrder[i].last());
+                    if ( $(objectDOM).find( nodeOrder[i].toLowerCase() ).length ) {
+                        return $(objectDOM).find(nodeOrder[i].toLowerCase()).last();
                     }
                 }
             },
