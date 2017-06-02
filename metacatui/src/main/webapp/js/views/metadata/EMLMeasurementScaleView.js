@@ -85,22 +85,19 @@ define(['underscore', 'jquery', 'backbone',
         		//Add the new code rows in the code list table
     			this.addCodeRow("nominal");
     			this.addCodeRow("ordinal");
+    			    			
             },
             
-            /* 
-             * Rendering functions to only be performed after the 
-             * attribute section is fully expanded by the user
-             */
             postRender: function(){
-            	//Change the category to the 
-            	this.setCategory();
-            	
-            	this.renderUnitDropdown();
+            	//Set the category
+    			this.$(".category[value='" + this.model.get("measurementScale") + "']").prop("checked", true);
+        		this.switchCategory();
+        		
+        		this.renderUnitDropdown();
             	
             	this.chooseDateTimeFormat();
             	
             	this.chooseNonNumericDomain();
-            	
             },
             
             /*
@@ -187,11 +184,6 @@ define(['underscore', 'jquery', 'backbone',
             	}, 200);
 
 
-            },
-            
-            setCategory: function(){
-            	this.$(".category[value='" + this.model.get("measurementScale") + "']").prop("checked", true);
-        		this.switchCategory();
             },
             
             switchCategory: function(){

@@ -54,6 +54,8 @@ define(['underscore', 'jquery', 'backbone',
             	if(this.isNew){
             		var measurementScaleModel = EMLMeasurementScale.getInstance();
             		measurementScaleModel.set("parentModel", this.model);
+            		
+            		this.$el.addClass("new");
             	}
             	else
             		measurementScaleModel = this.model.get("measurementScale");
@@ -65,10 +67,10 @@ define(['underscore', 'jquery', 'backbone',
             	this.$(".measurement-scale-container").append(measurementScaleView.el);
             	this.measurementScaleView = measurementScaleView;
             	
-            	if(this.isNew){
-            		this.$el.addClass("new");
-            		this.measurementScaleView.postRender();
-            	}            	
+            },
+            
+            postRender: function(){
+            	this.measurementScaleView.postRender();
             },
 
             updateModel: function(e){

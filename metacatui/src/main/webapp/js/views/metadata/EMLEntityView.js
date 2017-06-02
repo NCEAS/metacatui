@@ -62,6 +62,14 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Initialize the modal window
             	this.$el.modal();
+            	
+ 	       		  	
+       		  	//Set the menu height
+            	var view = this;
+       		  	this.$el.on("shown", function(){
+       		  		view.setAttrMenuHeight();
+       		  	});
+       		  		
             },
             
             renderPreview: function(){
@@ -113,7 +121,7 @@ define(['underscore', 'jquery', 'backbone',
             		view.render();
             		
             		attributeListEl.append(view.el);
-            		
+            		            		
             		view.$el.hide();
             		
             		this.listenTo(attr, "change", this.addAttribute);
@@ -148,6 +156,8 @@ define(['underscore', 'jquery', 'backbone',
         		
         		//Show the first attribute view
         		firstAttr.data("attributeView").$el.show();
+        		
+        		firstAttr.data("attributeView").postRender();
         		        		
             },
             
@@ -229,16 +239,14 @@ define(['underscore', 'jquery', 'backbone',
             	this.$(".eml-attribute").hide();
             	//Show the new attribute view
             	attrView.$el.show();
+            	
+            	attrView.postRender();
             },
             
             showTab: function(e){
             	e.preventDefault();
             	
        		  	var link = $(e.target);
-       		  	       		  	
-       		  	//Set the menu height
-       		  	if(link.attr("href").indexOf("attribute") > -1)
-       		  		this.setAttrMenuHeight();
        		  	
        		  	link.tab('show');
 
@@ -246,10 +254,8 @@ define(['underscore', 'jquery', 'backbone',
             
             show: function(){
             	
-            	if( this.$(".nav-tabs .attributes-tab.active").length )
-            		this.setAttrMenuHeight();
+            	this.$el.modal('show');    
             	
-            	this.$el.modal('show');         	
             },
             
             hide: function(){
