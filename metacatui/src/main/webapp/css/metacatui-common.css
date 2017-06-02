@@ -3181,7 +3181,8 @@ textarea.xlarge{
 	height: auto;
 }
 .Editor input.error,
-.Editor select.error{
+.Editor select.error,
+.Editor textarea.error{
 	border: 1px solid red;
 }
 .Editor .input-logo{
@@ -3282,11 +3283,11 @@ textarea.xlarge{
 .attribute-menu{
 	min-width: 170px;
 }
-.attribute-menu-item{
-	width: calc(100% - 10px);
-}
 .attribute-menu-item a{
 	font-size: 1em;	
+}
+.attribute-menu-item a.error{
+	color: #960303;
 }
 .attribute-menu-item.active a{
 	background-color: #1E254F;

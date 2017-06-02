@@ -141,9 +141,15 @@ define(["jquery", "underscore", "backbone",
 
             	if(!this.get("attributeName"))
             		errors.attributeName = "Provide a name for this attribute.";
+            	
+            	if(!this.get("attributeDefinition"))
+            		errors.attributeDefinition = "Provide a definition for this attribute.";
 
             	if(Object.keys(errors).length)
             		return errors;
+            	else{
+            		this.trigger("valid", this);
+            	}
             },
 
             /* Let the top level package know of attribute changes from this object */

@@ -110,9 +110,11 @@ define(['underscore', 'jquery', 'backbone',
 					view.$(".notification").text("");
 	        		
 	            	if(!view.model.isValid()){
+	            		
 	            		var errors = view.model.validationError;
 	            		
 	            		_.each(Object.keys(errors), function(attr){
+	            			
 	            			view.$(".input[data-category='" + attr + "']").addClass("error");
 	            			view.$("[data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
 	            			
@@ -120,6 +122,8 @@ define(['underscore', 'jquery', 'backbone',
 	            		
 	            		view.$el.addClass("error");
 	            	}
+	            	
+	            	
 					
 					
             	}, 200);

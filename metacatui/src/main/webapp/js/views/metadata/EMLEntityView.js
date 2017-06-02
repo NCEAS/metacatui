@@ -124,7 +124,9 @@ define(['underscore', 'jquery', 'backbone',
             		            		
             		view.$el.hide();
             		
-            		this.listenTo(attr, "change", this.addAttribute);
+            		this.listenTo(attr, "change",  this.addAttribute);
+            		this.listenTo(attr, "invalid", this.showAttributeValidation);
+            		this.listenTo(attr, "valid",   this.hideAttributeValidation);
             		
             	}, this);
             	
@@ -199,7 +201,9 @@ define(['underscore', 'jquery', 'backbone',
         			this.$("[data-attribute-id='" + attr.cid + "'] a").text(attr.get("attributeName"));
         		});
         		
-            	this.listenTo(newAttrModel, "change", this.addAttribute);
+            	this.listenTo(newAttrModel, "change",  this.addAttribute);
+            	this.listenTo(newAttrModel, "invalid", this.showAttributeValidation);
+            	this.listenTo(newAttrModel, "valid",   this.hideAttributeValidation);
             },
                         
             addAttribute: function(emlAttribute){
@@ -241,6 +245,22 @@ define(['underscore', 'jquery', 'backbone',
             	attrView.$el.show();
             	
             	attrView.postRender();
+            },
+            
+            /*
+             * Show the attribute validation errors in the attribute navigation menu
+             */
+            showAttributeValidation: function(attr){
+            	var errorIcon = $(document.createElement("i")).addClass("icon icon-exclamation-sign error icon-on-left");
+            	
+            	this.$(".attribute-menu-item[data-attribute-id='" + attr.cid + "']").find("a").addClass("error").prepend(errorIcon);
+            },
+            
+            /*
+             * Hide the attribute validation errors from the attribute navigation menu
+             */
+            hideAttributeValidation: function(attr){
+            	this.$(".attribute-menu-item[data-attribute-id='" + attr.cid + "']").find("a").removeClass("error").find(".icon").remove();
             },
             
             showTab: function(e){
