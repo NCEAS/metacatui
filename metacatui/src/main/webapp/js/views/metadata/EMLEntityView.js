@@ -25,7 +25,7 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            	"change"            		 : "updateModel",
+            	"change .input"            	 : "updateModel",
             	"click .nav-tabs a" 		 : "showTab",
             	"click .attribute-menu-item" : "showAttribute"
             },
@@ -208,7 +208,8 @@ define(['underscore', 'jquery', 'backbone',
                         
             addAttribute: function(emlAttribute){
             	//Add the attribute to the attribute list in the EMLEntity model
-            	this.model.addAttribute(emlAttribute);
+            	if( !_.contains(this.model.get("attributeList"), emlAttribute) )
+            		this.model.addAttribute(emlAttribute);            		
             },
             
             setAttrMenuHeight: function(e){
@@ -251,9 +252,15 @@ define(['underscore', 'jquery', 'backbone',
              * Show the attribute validation errors in the attribute navigation menu
              */
             showAttributeValidation: function(attr){
+            	
+            	var attrLink = this.$(".attribute-menu-item[data-attribute-id='" + attr.cid + "']").find("a");
+            	
+            	//If the validation is already displayed, then exit
+            	if(attrLink.is(".error")) return;
+            	
             	var errorIcon = $(document.createElement("i")).addClass("icon icon-exclamation-sign error icon-on-left");
             	
-            	this.$(".attribute-menu-item[data-attribute-id='" + attr.cid + "']").find("a").addClass("error").prepend(errorIcon);
+            	attrLink.addClass("error").prepend(errorIcon);
             },
             
             /*

@@ -144,6 +144,9 @@ define(["jquery", "underscore", "backbone",
             	
             	if(!this.get("attributeDefinition"))
             		errors.attributeDefinition = "Provide a definition for this attribute.";
+            	
+            	if(!this.get("measurementScale"))
+            		errors.measurementScale = "Choose a category.";
 
             	if(Object.keys(errors).length)
             		return errors;

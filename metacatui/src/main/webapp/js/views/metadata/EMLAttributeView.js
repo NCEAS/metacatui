@@ -24,8 +24,10 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            	"change"   : "updateModel",
-            	"focusout" : "showValidation"
+            	"change .input": "updateModel",
+            	"focusout" 	   : "showValidation",
+            	"keyup .error" : "hideValidation",
+            	"click .radio" : "hideValidation"
             },
             
             initialize: function(options){
@@ -54,6 +56,7 @@ define(['underscore', 'jquery', 'backbone',
             	if(this.isNew){
             		var measurementScaleModel = EMLMeasurementScale.getInstance();
             		measurementScaleModel.set("parentModel", this.model);
+            		this.model.set("measurementScale", measurementScaleModel);
             		
             		this.$el.addClass("new");
             	}
@@ -116,19 +119,28 @@ define(['underscore', 'jquery', 'backbone',
 	            		_.each(Object.keys(errors), function(attr){
 	            			
 	            			view.$(".input[data-category='" + attr + "']").addClass("error");
+	            			view.$(".radio [data-category='" + attr + "']").addClass("error");
 	            			view.$("[data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
 	            			
 	            		}, view);
 	            		
 	            		view.$el.addClass("error");
 	            	}
-	            	
-	            	
-					
-					
+	            	else if(!view.model.get("measurementScale")){
+	            		
+	            	}
+
             	}, 200);
 
-
+            },
+            
+            hideValidation: function(e){
+            	var input 	 = $(e.target),
+            		category = input.attr("data-category");
+            	
+            	input.removeClass("error");
+            	
+            	this.$("[data-category='" + category + "'] .notification").removeClass("error").empty();
             }
         });
         

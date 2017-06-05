@@ -3247,6 +3247,9 @@ textarea.xlarge{
 }
 
 /* ---- Attributes ----*/
+.eml-attribute {
+    padding-bottom: 20px;
+}
 .eml-attribute.error{
 	color: inherit;
 }

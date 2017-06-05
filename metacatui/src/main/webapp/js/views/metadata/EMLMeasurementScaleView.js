@@ -190,12 +190,18 @@ define(['underscore', 'jquery', 'backbone',
             	//Switch the category in the view
             	var newCategory = this.$("input[name='measurementScale']:checked").val();
             	
+            	//Show the new category options
             	this.$(".options").hide();
             	this.$("." + newCategory + "-options.options").show();
-            
-            	//Switch the model type, if needed
+            	
+            	//Get the current category
             	var thisCategory = this.model.get("measurementScale");
-            	if(thisCategory != newCategory){
+            	
+            	//Get the parent attribute model
+            	var parentEMLAttrModel = this.model.get("parentModel");
+            	
+            	//Switch the model type, if needed
+            	if(newCategory && (thisCategory != newCategory)){
             		var newModel;
             		            		
             		if(typeof this.modelCache != "object"){
@@ -209,11 +215,16 @@ define(['underscore', 'jquery', 'backbone',
             		else
             			newModel = EMLMeasurementScale.getInstance(newCategory);
             		
-            		//save this model for later in case the user switches back
-            		this.modelCache[thisCategory] = this.model;
+            		//Save this model for later in case the user switches back
+            		if(thisCategory)
+            			this.modelCache[thisCategory] = this.model;
             		
             		//save the new model
             		this.model = newModel;
+            		
+            		//Set references to and from this model and the parent attribute model
+            		this.model.set("parentModel", parentEMLAttrModel);
+            		parentEMLAttrModel.get("measurementScale", this.model);
             	}
             
             },
@@ -452,6 +463,7 @@ define(['underscore', 'jquery', 'backbone',
             		this.model.trigger("change:nonNumericDomain");
             	}
             }
+            
         });
         
         return EMLMeasurementScaleView;
