@@ -135,24 +135,6 @@ define(['underscore', 'jquery', 'backbone',
             	this.addCodeRow();
             	
             },
-                        
-            updateModel: function(e){
-            	if(!e) return;
-            	
-            	var newValue = $(e.target).val(),
-            		category  = $(e.target).attr("data-category"),
-            		currentValue = this.model.get(category);
-            	
-            	if(Array.isArray(currentValue)){
-            		var index = this.$(".input[data-category='" + category + "']").index(e.target);
-            		
-            		currentValue.split(index, 0, newValue);
-            		this.model.trigger("change:" + category);
-            	}
-            	else{
-            		this.model.set(category, newValue);
-            	}
-            },
             
             showValidation: function(){
             	
@@ -224,7 +206,7 @@ define(['underscore', 'jquery', 'backbone',
             		
             		//Set references to and from this model and the parent attribute model
             		this.model.set("parentModel", parentEMLAttrModel);
-            		parentEMLAttrModel.get("measurementScale", this.model);
+            		parentEMLAttrModel.set("measurementScale", this.model);
             	}
             
             },
