@@ -189,6 +189,11 @@ define(["jquery", "underscore", "backbone",
             trickleUpChange: function(){
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
             },
+            
+            /* Validate the values of this model */
+            validate: function(){
+            	if( !this.get("formatString") ) return { formatString: "Choose a datetime format." }
+            }
 
         });
 

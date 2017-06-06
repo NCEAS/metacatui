@@ -126,8 +126,10 @@ define(['underscore', 'jquery', 'backbone',
 	            		
 	            		view.$el.addClass("error");
 	            	}
-	            	else if(!view.model.get("measurementScale")){
-	            		
+	            	
+	            	//If the measurement scale model is not valid
+	            	if(view.model.get("measurementScale") && !view.model.get("measurementScale").isValid()){
+	            		view.measurementScaleView.showValidation();
 	            	}
 
             	}, 200);

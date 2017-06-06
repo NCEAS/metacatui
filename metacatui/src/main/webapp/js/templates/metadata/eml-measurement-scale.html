@@ -56,10 +56,11 @@
 	<div class="units-container"></div>
 </div>
 
-<div class="row-fluid datetime-options options well hidden">
+<div class="row-fluid datetime-options options well hidden" data-category="formatString">
 	<h5>Date-Time Format</h5>
-	<select data-category="formatString" class="datetime-string datetime full-width">
-		<option>Choose a date-time format</option>
+	<p class="notification"></p>
+	<select data-category="formatString" class="datetime-string datetime full-width input">
+		<option value="">Choose a date-time format</option>
 		<option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2008-09-15)</option>
 		<option value="YYYY-MM-DDThh:mm:ss">YYYY-MM-DDThh:mm:ss (e.g. 2008-09-15T02:45:30)</option>
 		<option value="hh:mm:ss">hh:mm:ss (e.g. 02:45:30)</option>
@@ -75,6 +76,6 @@
 	
 	<div class="hidden datetime-string-custom-container">
 		<h6>Custom Date-Time Format</h6>
-		<input type="text" class="datetime-string-custom datetime full-width" data-category="formatString" placeholder="Specify a custom date-time format" /> 
+		<input type="text" class="datetime-string-custom datetime full-width input" data-category="formatString" placeholder="Specify a custom date-time format" /> 
 	</div>
 </div>

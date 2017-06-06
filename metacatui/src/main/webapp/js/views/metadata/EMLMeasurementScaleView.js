@@ -137,34 +137,26 @@ define(['underscore', 'jquery', 'backbone',
             },
             
             showValidation: function(){
-            	
-            	var view = this;
-            	
-            	setTimeout(function(){
-					//If the user focused on another element in this view, don't do anything
-					if( _.contains($(document.activeElement).parents(), view.el) )
-						return;
-					
-					//Reset the error messages and styling
-					view.$el.removeClass("error");
-					view.$(".error").removeClass("error");
-					view.$(".notification").text("");
-	        		
-	            	if(!view.model.isValid()){
-	            		var errors = view.model.validationError;
-	            		
-	            		_.each(Object.keys(errors), function(attr){
-	            			view.$(".input[data-category='" + attr + "']").addClass("error");
-	            			view.$("[data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
-	            			
-	            		}, view);
-	            		
-	            		view.$el.addClass("error");
-	            	}
-					
-					
-            	}, 200);
 
+					
+				//Reset the error messages and styling
+				this.$(".error").removeClass("error");
+				this.$(".notification").text("");
+        		
+            	if(!this.model.isValid()){
+            		var errors = this.model.validationError;
+            		
+            		_.each(Object.keys(errors), function(attr){
+            			
+            			this.$(".input[data-category='" + attr + "']").addClass("error");
+            			
+            			this.$("[data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
+            			
+            		}, this);
+            		
+            	}
+            	
+            	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
 
             },
             
@@ -272,7 +264,7 @@ define(['underscore', 'jquery', 'backbone',
             	if(this.model.type == "EMLDateTimeDomain"){
                 	var formatString = this.model.get("formatString");
                 	
-                	var matchingOption = this.$("select.datetime-string[value='" + formatString + "']");
+                	var matchingOption = this.$("select.datetime-string [value='" + formatString + "']");
                 	
                 	if(matchingOption.length){
                 		this.$("select.datetime-string").val(formatString);
