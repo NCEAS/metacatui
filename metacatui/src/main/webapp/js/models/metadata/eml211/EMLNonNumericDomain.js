@@ -273,6 +273,52 @@ define(["jquery", "underscore", "backbone",
             /* Let the top level package know of attribute changes from this object */
             trickleUpChange: function(){
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
+            },
+            
+            validate: function(){
+            	var errors = {};
+            	
+            	if( !this.get("nonNumericDomain").length )
+            		errors.nonNumericDomain = "Choose a possible value type.";
+            	else{
+            		var domain = this.get("nonNumericDomain")[0];
+            		
+            		_.each(Object.keys(domain), function(key){
+            			
+            			//For enumerated domain types
+            			if(key == "enumeratedDomain" && domain[key].codeDefinition){
+            			
+            				var isEmpty = false;
+            				
+            				//Validate the list of codes
+            				for(var i=0; i < domain[key].codeDefinition.length; i++){
+            					
+            					var codeDef = domain[key].codeDefinition[i];
+            					
+            					//If either the code or definition is missing in at least one codeDefinition set, 
+            					//then this model is invalid
+            					if((codeDef.code && !codeDef.definition) || (!codeDef.code && codeDef.definition)){
+            						errors.enumeratedDomain = "Provide both a code and definition in each row.";
+            						i = domain[key].codeDefinition.length;
+            					}
+            					else if(domain[key].codeDefinition.length == 1 && !codeDef.code && !codeDef.definition)
+            						isEmpty = true;
+            						
+            				}
+            				
+            				if(isEmpty)
+            					errors.enumeratedDomain = "Define at least one code and definition.";
+            			
+            			}
+            			
+            		}, this);
+            		
+            	}
+            	
+            	if(Object.keys(errors).length)
+            		return errors;
+            	else
+            		return;
             }
 
         });

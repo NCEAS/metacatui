@@ -343,23 +343,19 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
             /*Format the EML XML for entities*/
             formatXML: function(xmlString){
                 return DataONEObject.prototype.formatXML.call(this, xmlString);
-            }
-
-
-        },
-
-        {
-            /* Let the top level package know of attribute changes from this object */
-            trickleUpChange: function(){
-                MetacatUI.rootDataPackage.packageModel.set("changed", true);
             },
 
-            /* Create a random id for entities */
-            createID: function(){
-                this.set("xmlID",
-                 Math.ceil(Math.random() *
-                 (9999999999999999 - 1000000000000000) + 1000000000000000));
-            }
+	        /* Let the top level package know of attribute changes from this object */
+	        trickleUpChange: function(){
+	            MetacatUI.rootDataPackage.packageModel.set("changed", true);
+	        },
+	
+	        /* Create a random id for entities */
+	        createID: function(){
+	            this.set("xmlID",
+	             Math.ceil(Math.random() *
+	             (9999999999999999 - 1000000000000000) + 1000000000000000));
+	        }
 
         });
 

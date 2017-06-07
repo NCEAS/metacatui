@@ -33,7 +33,8 @@ define(['underscore', 'jquery', 'backbone',
             	"keyup  .new .codelist"   : "addNewCodeRow",
             	"change .units"           : "updateModel",
             	"change .datetime" 		  : "updateModel",
-            	"change .codelist"        : "updateModel"
+            	"change .codelist"        : "updateModel",
+            	"focusout .code-row"      : "showValidation"
             },
             
             initialize: function(options){
@@ -114,14 +115,16 @@ define(['underscore', 'jquery', 'backbone',
             					.append(
             					$(document.createElement("td")).addClass("span2").append( 
             							$(document.createElement("input"))
-            								.addClass("full-width codelist code")
+            								.addClass("full-width codelist code input")
+            								.attr("value", "")
             								.attr("type", "text")
             								.attr("data-category", "code")
             								.attr("placeholder", "Code value allowed (e.g. \"site A\")")
             								.val(definition.code) ),
 								$(document.createElement("td")).addClass("span10").append( 
             							$(document.createElement("input"))
-            								.addClass("full-width codelist definition")
+            								.addClass("full-width codelist definition input")
+            								.attr("value", "")
             								.attr("type", "text")
             								.attr("data-category", "codeDefinition")
             								.attr("placeholder", "Definition of this code")
@@ -136,28 +139,61 @@ define(['underscore', 'jquery', 'backbone',
             	
             },
             
-            showValidation: function(){
+            showValidation: function(e){
 
-					
 				//Reset the error messages and styling
 				this.$(".error").removeClass("error");
 				this.$(".notification").text("");
         		
+				//If the measurement scale model is NOT valid
             	if(!this.model.isValid()){
-            		var errors = this.model.validationError;
+            		//Get the errors
+            		var errors = this.model.validationError,
+            			modelType = this.model.get("measurementScale");
             		
+            		//Display error messages for each type of error
             		_.each(Object.keys(errors), function(attr){
             			
-            			this.$(".input[data-category='" + attr + "']").addClass("error");
-            			
-            			this.$("[data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
-            			
+            			//If this is an enumeratedDomain error
+            			if(attr == "enumeratedDomain"){
+            				
+            				var view = this;
+            				
+            				//Give the user a few milliseconds to focus on a new element
+            				setTimeout(function(){
+            					
+            					//Highlight the inputs in code rows that are empty
+                				var emptyInputs = view.$("." + modelType + "-options .codelist.input")
+					                					.not(document.activeElement)
+					                					.filter(function(){
+					                						if( $(this).val() ) return false;
+					                						else return true;
+					                					});
+                				emptyInputs.addClass("error");
+                				
+                				if(emptyInputs.length)
+                					view.$("." + modelType + "-options [data-category='enumeratedDomain'] .notification").text(errors[attr]).addClass("error");
+
+                        	}, 200);
+            				
+            			}
+            			//For all other attributes, just display the errors the same way
+            			else{
+                			this.$("." + modelType + "-options [data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
+                			this.$("." + modelType + "-options .input[data-category='" + attr + "']").addClass("error");
+            			}
+            			            			
             		}, this);
-            		
+            	
+            		//Trigger the invalid event on the attribute model
+                	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
+
+            	}
+            	else{
+            		//Trigger the valid event on the attribute model
+            		this.model.get("parentModel").trigger("valid", this.model.get("parentModel"));
             	}
             	
-            	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
-
             },
             
             switchCategory: function(){
@@ -322,7 +358,7 @@ define(['underscore', 'jquery', 'backbone',
             	}
             },
             
-            toggleNonNumericDomain: function(){
+            toggleNonNumericDomain: function(e){
             	//Hide the domain type details
         		this.$(".non-numeric-domain-type").hide();
         		
@@ -333,6 +369,8 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Show the form elements for that non numeric type
             	this.$("." + activeScale + "-options .non-numeric-domain-type." + value).show();
+            	
+            	this.updateModel(e);
             	
             },
             
@@ -360,13 +398,15 @@ define(['underscore', 'jquery', 'backbone',
 	            			.append(
 	    					$(document.createElement("td")).addClass("span2").append( 
 	    							$(document.createElement("input"))
-	    								.addClass("full-width codelist code")
+	    								.addClass("full-width codelist code input")
+	    								.attr("value", "")
 	    								.attr("type", "text")
 	    								.attr("data-category", "code")
 	    								.attr("placeholder", "Code value allowed (e.g. \"site A\")")),
 							$(document.createElement("td")).addClass("span10").append( 
 	    							$(document.createElement("input"))
-	    								.addClass("full-width codelist definition")
+	    								.addClass("full-width codelist definition input")
+	    								.attr("value", "")
 	    								.attr("type", "text")
 	    								.attr("data-category", "codeDefinition")
 	    								.attr("placeholder", "Definition of this code")));
@@ -396,13 +436,26 @@ define(['underscore', 'jquery', 'backbone',
             		
             		this.model.set("formatString", format);
             	}
+            	else if(updatedInput.is(".possible-text")){
+            		var possibleText = updatedInput.val();
+            		
+            		if(possibleText == "enumeratedDomain" && !this.model.get("nonNumericDomain").length){
+	            		var nonNumericDomain = [{
+	        				enumeratedDomain: {
+	        					codeDefinition: [{
+	            					code: code,
+	            					definition: def
+	        					}]
+	        				}
+	        			}];
+	        			
+	        			this.model.set("nonNumericDomain", nonNumericDomain);
+            		}
+            	}
             	else if(updatedInput.is(".codelist")){
             		var row   = updatedInput.parents(".code-row"),
             			code  = row.find(".code").val(),
             			def   = row.find(".definition").val();
-            		
-            		if(!code || !def)
-            			return;
             		
             		var	index = this.$(".code-row").index(row);
             			currentValue = this.model.get("nonNumericDomain");

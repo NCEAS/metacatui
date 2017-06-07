@@ -3522,7 +3522,8 @@ textarea.xlarge{
 }
 .eml-entity .nav-tabs{
 	position: fixed;
-    width: calc(80% - 10px);
+    width: calc(80% - 12px);
+    max-width: 988px;
     background-color: white;
 }
 .eml-entity .nav-tabs li {
