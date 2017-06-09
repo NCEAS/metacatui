@@ -3561,6 +3561,10 @@ textarea.xlarge{
 .attributes .attribute-menu-container{
 	width: 170px;
 }
+.eml-attribute .non-numeric-domain.error{
+	color: inherit;
+	border-color: red;
+}
 
 /* ---- Overview ---- */
 .metadata-container .section.overview > div{

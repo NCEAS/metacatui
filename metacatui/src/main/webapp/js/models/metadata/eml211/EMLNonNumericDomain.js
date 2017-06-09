@@ -310,6 +310,9 @@ define(["jquery", "underscore", "backbone",
             					errors.enumeratedDomain = "Define at least one code and definition.";
             			
             			}
+            			else if(key == "textDomain" && !domain[key].definition){
+            				errors.definition = "Provide a description of the kind of text allowed.";				
+            			}
             			
             		}, this);
             		

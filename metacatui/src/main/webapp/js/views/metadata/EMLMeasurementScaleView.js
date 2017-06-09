@@ -34,6 +34,7 @@ define(['underscore', 'jquery', 'backbone',
             	"change .units"           : "updateModel",
             	"change .datetime" 		  : "updateModel",
             	"change .codelist"        : "updateModel",
+            	"change .textDomain"      : "updateModel",
             	"focusout .code-row"      : "showValidation"
             },
             
@@ -146,7 +147,7 @@ define(['underscore', 'jquery', 'backbone',
 				this.$(".notification").text("");
         		
 				//If the measurement scale model is NOT valid
-            	if(!this.model.isValid()){
+            	if( !this.model.isValid() ){
             		//Get the errors
             		var errors = this.model.validationError,
             			modelType = this.model.get("measurementScale");
@@ -181,6 +182,11 @@ define(['underscore', 'jquery', 'backbone',
             			else{
                 			this.$("." + modelType + "-options [data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
                 			this.$("." + modelType + "-options .input[data-category='" + attr + "']").addClass("error");
+            			}
+            			
+            			//Highlight the border of the non numeric domain container
+            			if(attr == "nonNumericDomain"){
+            				this.$("." + modelType + "-options.non-numeric-domain").addClass("error");
             			}
             			            			
             		}, this);
@@ -451,6 +457,32 @@ define(['underscore', 'jquery', 'backbone',
 	        			
 	        			this.model.set("nonNumericDomain", nonNumericDomain);
             		}
+            		else if(possibleText == "pattern" && !this.model.get("nonNumericDomain").length){
+            			var textDomain = {
+            					definition: null,
+            					pattern: [],
+            					source: null
+            			}
+            			
+            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
+            		}
+            		else if(possibleText == "anything"){
+            			var textDomain = {
+            					definition: "Any text",
+            					pattern: ["*"],
+            					source: null
+            			}
+            			
+            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
+            		}
+            	}
+            	else if(updatedInput.is(".textDomain")){
+            		var textDomain = this.model.get("nonNumericDomain")[0].textDomain;
+            		
+            		if(updatedInput.attr("data-category") == "definition")
+            			textDomain.definition = updatedInput.val();
+            		else if(updatedInput.attr("data-category") == "pattern")
+            			textDomain.pattern[0] = updatedInput.val();
             	}
             	else if(updatedInput.is(".codelist")){
             		var row   = updatedInput.parents(".code-row"),
