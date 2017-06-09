@@ -35,12 +35,12 @@
 			        		<li><a href="/history">History</a></li>
 			        	</ul>
 					</li>
-			       <li><a href="#share" class="btn btn-primary show-new-editor">Submit Data</a></li>
+			       <li><a href="#share" class="btn btn-primary">Submit Data</a></li>
 					<% if (loggedIn) { %>
         				<li class="dropdown">
 							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><%=formattedName%><b class="caret"></b></a>
 							<ul class="dropdown-menu">
-								<li><a href="#share" class="show-new-editor">Submit data</a></li>
+								<li><a href="#share">Submit data</a></li>
 								<li><a href="#profile/<%=username%>">My profile</a></li>
 								<li><a href="#profile/<%=username%>/s=settings/s=groups">My groups</a></li>
 								<li><a href="#data/my-data">My data sets</a></li>
@@ -49,7 +49,7 @@
 						</li>
 			        <% } else { %>
 			        		<li>
-			        			<a href="<%=(appModel.get('signInUrlOrcid') + window.location.href)%>" class="fancybox login btn redirect"><img src="img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>
+			        			<a href="<%=(MetacatUI.appModel.get('signInUrlOrcid') + window.location.href)%>" class="fancybox login btn redirect"><img src="img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>
 			        		</li>
 			       <%  } %>
 				</ul>

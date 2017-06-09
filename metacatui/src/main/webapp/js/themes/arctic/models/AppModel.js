@@ -9,7 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes for the Application
 		defaults: {
 			headerType: 'default',
-			title: window.themeTitle || "Metacat Data Catalog",
+			title: MetacatUI.themeTitle || "Metacat Data Catalog",
 
 			emailContact: "support@arcticdata.io",
 
@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			nodeId: null,
 
-			searchMode: mapKey ? 'map' : 'list',
+			searchMode: MetacatUI.mapKey ? 'map' : 'list',
 			searchHistory: [],
 			sortOrder: 'dateUploaded+desc',
 			page: 0,
@@ -29,12 +29,9 @@ define(['jquery', 'underscore', 'backbone'],
 
 			userProfiles: true,
 			profileUsername: null,
-
-			useJsonp: true,
-
+						
 			maxDownloadSize: 3000000000,
 
-			metacatVersion: "2.8.0",
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
@@ -49,11 +46,11 @@ define(['jquery', 'underscore', 'backbone'],
 			authServiceUrl: null,
 			queryServiceUrl: null,
 			metaServiceUrl: null,
-			registryServiceUrl: null,
-			ldapwebServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
+			formatsServiceUrl: null,
+            formatsUrl: "/formats",
 			resolveServiceUrl: null,
 			//bioportalSearchUrl: null,
 			orcidBaseUrl: "https:/orcid.org",
@@ -70,9 +67,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-			checkTokenUrl: null,
-			prov: true,
-			useSeriesId: true,
+			setPublicAccess: false, // Set to true to force public read access on newly created objects
 			mdqUrl: "https://quality.nceas.ucsb.edu/quality/"
 
 		},
@@ -99,18 +94,12 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 
-			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
-			if(this.get("useJsonp"))
-				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");
-
 			//Set the NSF Award API proxy
 			if(typeof this.get("grantsUrl") != "undefined")
 				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
 
 			//DataONE CN API
 			if(this.get("d1CNBaseUrl")){
-
-				this.set("resolveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/resolve/");
 				
 				//Account services
 				if(typeof this.get("accountsUrl") != "undefined"){
@@ -129,60 +118,40 @@ define(['jquery', 'underscore', 'backbone'],
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
 
-				if(this.get("useJsonp") && (typeof this.get("d1LogServiceUrl") != "undefined"))
-					this.set('d1LogServiceUrl', this.get("d1LogServiceUrl") + "?");
-
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
+				
+				// Object format list
+                if ( typeof this.get("formatsUrl") != "undefined" ) {
+                    this.set("formatsServiceUrl", 
+                        this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+                }
 
-				//Settings for the DataONE API v2 only
-				if(this.get("d1CNService").indexOf("v2") > -1){
+				//Authentication / portal URLs
+				this.set('portalUrl', this.get('d1CNBaseUrl') + 'portal/');
+				this.set('tokenUrl',  this.get('portalUrl') + 'token');
 
-					//Authentication / portal URLs
-					this.set('portalUrl', this.get('d1CNBaseUrl') + 'portal/');
-					this.set('tokenUrl',  this.get('portalUrl') + 'token');
-					this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
+				//Annotator API
+				if(typeof this.get("annotatorUrl") !== "undefined")
+					this.set('annotatorUrl', this.get('d1CNBaseUrl') + 'portal/annotator');
 
-					//Annotator API
-					if(typeof this.get("annotatorUrl") !== "undefined")
-						this.set('annotatorUrl', this.get('d1CNBaseUrl') + 'portal/annotator');
-
-					//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
-					if(typeof this.get("signInUrl") !== "undefined"){
-						this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
-					}
-					if(typeof this.get("signInUrlOrcid") !== "undefined")
-						this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
-					if(typeof this.get("signInUrlLdap") !== "undefined")
-						this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
-					if(this.get('orcidBaseUrl'))
-						this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
-					if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
-						this.set("signOutUrl", this.get('portalUrl') + "logout");
+				//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
+				if(typeof this.get("signInUrl") !== "undefined"){
+					this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
 				}
-				else{
-					//Turn the provenance features off
-					if(typeof this.get("prov") != "undefined")
-						this.set("prov", false);
-					//Turn the seriesId feature off
-					if(typeof this.get("useSeriesId") != "undefined")
-						this.set("useSeriesId", false);
-				}
-			}
+				if(typeof this.get("signInUrlOrcid") !== "undefined")
+					this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
+				if(typeof this.get("signInUrlLdap") !== "undefined")
+					this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+				if(this.get('orcidBaseUrl'))
+					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+				if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
+					this.set("signOutUrl", this.get('portalUrl') + "logout");
 
-			//Settings for older versions of metacat, using DataONE API v1
-			if((this.get("metacatVersion") < "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/v1") > -1)){
-				//The package service API is different
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
 			}
-			//Whenever the Metacat version is at least 2.5.0 and we are querying a MN
-			else if((this.get("metacatVersion") >= "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/") > -1)){
-				//The package service for v2 DataONE API
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
-
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", true);
-			}
+			
+			//The package service for v2 DataONE API
+			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
 			this.on("change:pid", this.changePid);
 		},

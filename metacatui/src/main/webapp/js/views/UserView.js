@@ -57,25 +57,25 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			this.$el.show();
 						
 			// set the header type
-			appModel.set('headerType', 'default');
+			MetacatUI.appModel.set('headerType', 'default');
 						
 			//Render the user profile only after the app user's info has been checked
 			//This prevents the app from rendering the profile before the login process has completed - which would
 			//cause this profile to render twice (first before the user is logged in then again after they log in)
-			if(appUserModel.get("checked")) this.renderUser();
-			else appUserModel.on("change:checked", this.renderUser, this);
+			if(MetacatUI.appUserModel.get("checked")) this.renderUser();
+			else MetacatUI.appUserModel.on("change:checked", this.renderUser, this);
 							
 			return this;
 		},
 		
 		renderUser: function(){
-			this.model = appUserModel;
+			this.model = MetacatUI.appUserModel;
 
-			var username = appModel.get("profileUsername"),
-				currentUser = appUserModel.get("username") || "";
+			var username = MetacatUI.appModel.get("profileUsername"),
+				currentUser = MetacatUI.appUserModel.get("username") || "";
 			
 			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
-				this.model = appUserModel;
+				this.model = MetacatUI.appUserModel;
 				this.model.set("type", "user");
 				
 				//If the user is logged in, display the settings options
@@ -95,18 +95,18 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				});
 
 				//Is this a member node?	
-				if(nodeModel.get("checked") && this.model.isNode()){
+				if(MetacatUI.nodeModel.get("checked") && this.model.isNode()){
 					this.model.saveAsNode();
-					this.model.set("nodeInfo", _.findWhere(nodeModel.get("members"), { identifier: "urn:node:" + username }));
+					this.model.set("nodeInfo", _.findWhere(MetacatUI.nodeModel.get("members"), { identifier: "urn:node:" + username }));
 					this.renderProfile();
 					this.resetSections();
 					return;
 				}
 				//If the node model hasn't been checked yet
-				else if(!nodeModel.get("checked")){
+				else if(!MetacatUI.nodeModel.get("checked")){
 					var user = this.model,
 						view = this;
-					this.listenTo(nodeModel, "change:checked", function(){
+					this.listenTo(MetacatUI.nodeModel, "change:checked", function(){
 						if(user.isNode())
 							view.render();
 					});
@@ -175,8 +175,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			this.$profile = $(profileEl);
 						
 			//If this user hasn't uploaded anything yet, display so
-			this.listenTo(statsModel, "change:totalUploads", function(){
-				if(!statsModel.get("totalUploads"))
+			this.listenTo(MetacatUI.statsModel, "change:totalUploads", function(){
+				if(!MetacatUI.statsModel.get("totalUploads"))
 					this.noActivity();
 			});
 			
@@ -219,7 +219,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			this.sectionHolder.append(this.settingsTemplate(this.model.toJSON()));
 			this.$settings = this.$("[data-section='settings']");
 			
-			if(appModel.get("userProfiles")){
+			if(MetacatUI.appModel.get("userProfiles")){
 	
 				//Draw the group list
 				this.insertCreateGroupForm();
@@ -252,7 +252,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		insertMenu: function(){
 
 			//If the user is not logged in, then remove the menu 
-			if(!appUserModel.get("loggedIn")){
+			if(!MetacatUI.appUserModel.get("loggedIn")){
 				this.$(".nav").remove();
 				return;
 			}
@@ -346,7 +346,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			
 			//Visually highlight the subsection
 			subsection.addClass("highlight");
-			appView.scrollTo(subsection);
+			MetacatUI.appView.scrollTo(subsection);
 			//Wait about a second and then remove the highlight style
 			window.setTimeout(function(){ subsection.removeClass("highlight"); }, 1500);
 		},
@@ -364,19 +364,19 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				view = this;
 			
 			//Insert a couple stats into the profile
-			this.listenToOnce(statsModel, "change:firstUpload", this.insertFirstUpload);
-			this.listenToOnce(statsModel, "change:totalUploads", function(){
-				view.$("#total-upload-container").text(appView.commaSeparateNumber(statsModel.get("totalUploads")));
+			this.listenToOnce(MetacatUI.statsModel, "change:firstUpload", this.insertFirstUpload);
+			this.listenToOnce(MetacatUI.statsModel, "change:totalUploads", function(){
+				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalUploads")));
 			});
-			statsModel.once("change:downloads", function(){
-				view.$("#total-download-container").text(appView.commaSeparateNumber(this.get("downloads")));
+			MetacatUI.statsModel.once("change:downloads", function(){
+				view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
 			});
 			
 			//Create a base query for the statistics
 			var statsSearchModel = this.model.get("searchModel").clone();
 			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});			
-			statsModel.set("query", statsSearchModel.getQuery());
-			statsModel.set("searchModel", statsSearchModel);
+			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+			MetacatUI.statsModel.set("searchModel", statsSearchModel);
 			
 			//Create the description for this profile
 			var description;
@@ -463,18 +463,18 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		 * Insert the first year of contribution for this user
 		 */
 		insertFirstUpload: function(){
-			if(this.model.noActivity || !statsModel.get("firstUpload")){
+			if(this.model.noActivity || !MetacatUI.statsModel.get("firstUpload")){
 				this.$("#first-upload-container, #first-upload-year-container").hide();
 				return;
 			}
 			
 			// Get the first upload or first operational date
 			if(this.model.get("type") == "node"){
-				var node = _.findWhere(nodeModel.get("members"), {identifier: "urn:node:" + this.model.get("username") }),
+				var node = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: "urn:node:" + this.model.get("username") }),
 					firstUpload = node.memberSince? new Date(node.memberSince.substring(0, node.memberSince.indexOf("T"))) : new Date();				
 			}
 			else{
-				var	firstUpload = new Date(statsModel.get("firstUpload"));
+				var	firstUpload = new Date(MetacatUI.statsModel.get("firstUpload"));
 			}
 			
 			// Construct the first upload date sentence
@@ -544,19 +544,19 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			var view = this;
 			
 			var requestSettings = {
-					url: appModel.get("queryServiceUrl") + 
+					url: MetacatUI.appModel.get("queryServiceUrl") + 
 						"q=replicaMN:" + 
-						appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier)) + 
+						MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier)) + 
 						"&wt=json&rows=0",
 					type: "GET",
 					dataType: "json",
 					success: function(data, textStatus, xhr){
-						view.$("#total-replicas-container").html(appView.commaSeparateNumber(data.response.numFound));
+						view.$("#total-replicas-container").html(MetacatUI.appView.commaSeparateNumber(data.response.numFound));
 						view.$("#total-replicas-wrapper").show();
 					}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		/*
@@ -566,7 +566,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			if(this.model.noActivity){
 				this.$("#data-list").html(this.noResultsTemplate({
 					fullName: this.model.get("fullName"),
-					username: ((this.model == appUserModel) && appUserModel.get("loggedIn"))? this.model.get("username") : null
+					username: ((this.model == MetacatUI.appUserModel) && MetacatUI.appUserModel.get("loggedIn"))? this.model.get("username") : null
 				}));
 				return;
 			}
@@ -609,8 +609,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				$(list).append(listItem);
 			});
 			
-			if(this.model.get("username") == appUserModel.get("username")){
-				var link = $(document.createElement("a")).attr("href", "#profile/" + appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
+			if(this.model.get("username") == MetacatUI.appUserModel.get("username")){
+				var link = $(document.createElement("a")).attr("href", "#profile/" + MetacatUI.appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
 					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-plus"),
 					listItem = $(document.createElement("li")).addClass("list-group-item create-group").append( $(link).prepend(icon) );
 				
@@ -1095,7 +1095,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				return;
 			
 			var expires    = this.model.get("expires"),
-				rTokenName = (appModel.get("d1CNBaseUrl").indexOf("cn.dataone.org") > -1)? "dataone_token" : "dataone_test_token",
+				rTokenName = (MetacatUI.appModel.get("d1CNBaseUrl").indexOf("cn.dataone.org") > -1)? "dataone_token" : "dataone_test_token",
 				rToken = 'options(' + rTokenName +' = "' + token + '")',
 				matlabToken = "import org.dataone.client.run.RunManager; mgr = RunManager.getInstance(); mgr.configuration.authentication_token = '" + token + "';",
 				tokenInput = $(document.createElement("textarea")).attr("type", "text").attr("rows", "5").addClass("token copy").text(token),
@@ -1172,10 +1172,10 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		            
 		            //Ids/Usernames that we want to ignore in the autocompelte
 		            var ignoreEquivIds = ($(this.element).attr("id") == "map-request-field"),
-		            	ignoreIds = ignoreEquivIds? appUserModel.get("identitiesUsernames") : [];		            	
-		            ignoreIds.push(appUserModel.get("username").toLowerCase());
+		            	ignoreIds = ignoreEquivIds? MetacatUI.appUserModel.get("identitiesUsernames") : [];		            	
+		            ignoreIds.push(MetacatUI.appUserModel.get("username").toLowerCase());
 		            
-		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
+		            var url = MetacatUI.appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
 					var requestSettings = {
 						url: url, 
 						success: function(data, textStatus, xhr) {
@@ -1195,11 +1195,11 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 	
 						}
 					}
-					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 					
 					//Send an ORCID search when the search string gets long enough
 					if(request.term.length > 3)
-						appLookupModel.orcidSearch(request, response, false, ignoreIds);       
+						MetacatUI.appLookupModel.orcidSearch(request, response, false, ignoreIds);       
 		        },
 				select: function(e, ui) {
 					e.preventDefault();
@@ -1265,9 +1265,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			this.$profile = null;
 			
 			//Stop listening to changes in models
-			this.stopListening(statsModel);		
+			this.stopListening(MetacatUI.statsModel);		
 			this.stopListening(this.model);
-			this.stopListening(appUserModel);
+			this.stopListening(MetacatUI.appUserModel);
 			
 			//Close the subviews
 			_.each(this.subviews, function(view){

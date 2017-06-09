@@ -30,6 +30,6 @@ To override html templates (or any other resource, like a Model or View):
 Example (using navbar):
 -Copy 'js/templates/navbar.html' to 'js/themes/<theme>/templates/navbar.html'
 -Edit 'js/themes/<theme>/config.js' to include:
-	'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',
+	'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html',
 	
 	

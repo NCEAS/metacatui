@@ -9,7 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes for the Application
 		defaults: {
 			headerType: 'default',
-			title: window.themeTitle || "Metacat Data Catalog",
+			title: MetacatUI.themeTitle || "Metacat Data Catalog",
 
 			emailContact: "",
 
@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			nodeId: "urn:node:CN",
 
-			searchMode: mapKey ? 'map' : 'list',
+			searchMode: MetacatUI.mapKey ? 'map' : 'list',
 			searchHistory: [],
 			sortOrder: 'dateUploaded+desc',
 			page: 0,
@@ -30,11 +30,8 @@ define(['jquery', 'underscore', 'backbone'],
 			userProfiles: true,
 			profileUsername: null,
 
-			useJsonp: true,
-
 			maxDownloadSize: 3000000000,
 
-			metcatVersion: "2.8.0",
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
@@ -47,8 +44,6 @@ define(['jquery', 'underscore', 'backbone'],
 			authServiceUrl: null,
 			queryServiceUrl: null,
 			metaServiceUrl: null,
-			registryServiceUrl: null,
-			ldapwebServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			//objectServiceUrl: null,
@@ -72,9 +67,6 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-			checkTokenUrl: null,
-		    prov: true,
-			useSeriesId: true,
 			mdqUrl: null
 
 		},
@@ -90,7 +82,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
 			this.set('authServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/isAuthorized/');
-			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/');
+			this.set('queryServiceUrl',   this.get('baseUrl')  + this.get('d1Service') + '/query/solr/?');
 			this.set('metaServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/meta/');
 			//this.set('objectServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/object/');
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
@@ -110,76 +102,34 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("accountsMapsUrl",    this.get("accountsUrl") + "map/");
 			}
 
-			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)
-			if(this.get("useJsonp"))
-				this.set("queryServiceUrl", this.get("queryServiceUrl") + "?");			
+			//The view service for member node installations of metacatui
+			this.set('viewServiceUrl',    this.get('baseUrl') + this.get('d1CNService') + '/views/metacatui/');
 
-			//Settings for the DataONE API v2 only
-			if(this.get("d1CNService").indexOf("v2") > -1){
-				//Turn provenance feature on
-				if(typeof this.get("prov") != "undefined")
-					this.set("prov", true);
+			//Authentication / portal URLs
+			this.set('portalUrl', this.get('d1CNBaseUrl') + '/portal/');
+			this.set('tokenUrl',  this.get('portalUrl') + 'token');
 
-				//Use the seriesId feature with the v2 API
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", true);
+			//Annotator API
+			if(typeof this.get("annotatorUrl") !== "undefined")
+				this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');
 
-				//The view service for member node installations of metacatui
-				this.set('viewServiceUrl',    this.get('baseUrl') + this.get('d1CNService') + '/views/metacatui/');
-
-				//Authentication / portal URLs
-				this.set('portalUrl', this.get('d1CNBaseUrl') + '/portal/');
-				this.set('tokenUrl',  this.get('portalUrl') + 'token');
-				this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
-
-				//Annotator API
-				if(typeof this.get("annotatorUrl") !== "undefined")
-					this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');
-
-				//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
-				if(typeof this.get("signInUrl") !== "undefined"){
-					this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
-					this.set("signOutUrl", this.get('portalUrl') + "logout");
-				}
-				if(typeof this.get("signInUrlOrcid") !== "undefined")
-					this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
-				if(typeof this.get("signInUrlLdap") !== "undefined")
-					this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
-				if(this.get('orcidBaseUrl'))
-					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+			//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
+			if(typeof this.get("signInUrl") !== "undefined"){
+				this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
+				this.set("signOutUrl", this.get('portalUrl') + "logout");
 			}
-			else{
-				//Turn the provenance features off
-				if(typeof this.get("prov") != "undefined")
-					this.set("prov", false);
-				//Turn the seriesId feature off
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", false);
-			}
+			if(typeof this.get("signInUrlOrcid") !== "undefined")
+				this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
+			if(typeof this.get("signInUrlLdap") !== "undefined")
+				this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+			if(this.get('orcidBaseUrl'))
+				this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
-			//Settings for older versions of metacat
-			if((this.get("metcatVersion") < "2.5.0") && (this.get("d1Service").indexOf("mn/v1") > -1)){
-				//The package service API is different
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/package/');
-
-				//Turn the provenance features off
-				if(typeof this.get("prov") != "undefined")
-					this.set("prov", false);
-				//Turn the seriesId feature off
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", false);
-			}
-			//Whenever the Metacat version is at least 2.5.0 and we are querying a MN
-			else if((this.get("metcatVersion") >= "2.5.0") && (this.get("d1Service").toLowerCase().indexOf("mn/") > -1)){
-				//The package service for v2 DataONE API
-				this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
-
-				if(typeof this.get("useSeriesId") != "undefined")
-					this.set("useSeriesId", true);
-			}
+			//The package service for v2 DataONE API
+			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
 			//Only use these settings in production
-			if(this.get("d1CNBaseUrl").indexOf("cn.dataone.org") > -1)
+			if(this.get("baseUrl").indexOf("search.dataone.org") > -1)
 				this.set("googleAnalyticsKey", "UA-15017327-17");
 
 			//Set up the bioportal search URL

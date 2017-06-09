@@ -3,21 +3,27 @@
 'use strict';
 
 /** NOTE: The theme name and themeMap are specified in the loader.js file **/
-var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
-if(mapKey){
-	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
+var MetacatUI = MetacatUI || {};
+MetacatUI.recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
+if( MetacatUI.mapKey ){
+	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + MetacatUI.mapKey;
 	define('gmaps', 
 			['async!' + gmapsURL], 
 			function() {
 				return google.maps;
-			}
-		);
-}
-else{
+			});
+            
+} else {
 	define('gmaps', null);
+    
 }
-if(useD3) var d3URL = '../components/d3.v3.min';
-else 	  var d3URL = null;
+if ( MetacatUI.useD3 ) {
+    MetacatUI.d3URL = '../components/d3.v3.min';
+    
+} else {
+    MetacatUI.d3URL = null;
+    
+}
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively 
@@ -25,8 +31,8 @@ else 	  var d3URL = null;
 require.config({
   baseUrl: 'js/',
   waitSeconds: 180, //wait 3 minutes before throwing a timeout error
-  map: themeMap,
-  urlArgs: "v=" + window.metacatUIVersion,
+  map: MetacatUI.themeMap,
+  urlArgs: "v=" + MetacatUI.metacatUIVersion,
   paths: {
     jquery: 'https://code.jquery.com/jquery-1.9.1',//'../components/jquery',
     jqueryui: '../components/jquery-ui-1.10.3.custom.min',
@@ -35,12 +41,10 @@ require.config({
     backbone: '../components/backbone-min',
     bootstrap: '../components/bootstrap.min',
     text: '../components/require-text',
-    moment: '../components/moment.min',
     jws: '../components/jws-3.2.min',
     jsrasign: '../components/jsrsasign-4.9.0.min',    
-    domReady: '../components/domready',
     async: '../components/async',
-    recaptcha: [recaptchaURL, 'scripts/placeholder'],
+    recaptcha: [MetacatUI.recaptchaURL, 'scripts/placeholder'],
 	nGeohash: '../components/geohash/main',
 	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
     annotator: '../components/annotator/v1.2.10/annotator-full',
@@ -49,8 +53,9 @@ require.config({
     uuid: '../components/uuid',
     md5: '../components/md5',
     rdflib: '../components/rdflib.min',
+    x2js: '../components/xml2json',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
-	d3: d3URL,
+	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
 	BarChart: ['views/BarChartView', null],
 	CircleBadge: ['views/CircleBadgeView', null],
@@ -83,21 +88,27 @@ require.config({
 	},
 	fancybox: {
 		deps: ['jquery']
-	}
+	},
+	uuid: {
+        exports: 'uuid'
+    },
+    rdflib: {
+        exports: 'rdf'
+    }
   }
 });
 
-var appModel = appModel || {};
-var appView = appView || {};
-var uiRouter = uiRouter || {};
-var appSearchResults = appSearchResults || {};
-var appSearchModel = appSearchModel || {};
-var registryModel = registryModel || {};
-var statsModel = statsModel || {};
-var mapModel = mapModel || {};
-var appLookupModel = appLookupModel || {};
-var nodeModel = nodeModel || {};
-var appUserModel = appUserModel || {};
+MetacatUI.appModel = MetacatUI.appModel || {};
+MetacatUI.appView = MetacatUI.appView || {};
+MetacatUI.uiRouter = MetacatUI.uiRouter || {};
+MetacatUI.appSearchResults = MetacatUI.appSearchResults || {};
+MetacatUI.appSearchModel = MetacatUI.appSearchModel || {};
+MetacatUI.rootDataPackage = MetacatUI.rootDataPackage || {};
+MetacatUI.statsModel = MetacatUI.statsModel || {};
+MetacatUI.mapModel = MetacatUI.mapModel || {};
+MetacatUI.appLookupModel = MetacatUI.appLookupModel || {};
+MetacatUI.nodeModel = MetacatUI.nodeModel || {};
+MetacatUI.appUserModel = MetacatUI.appUserModel || {};
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
@@ -105,39 +116,36 @@ function(Bootstrap, AppView, AppModel) {
 	'use strict';  
     		
 	// initialize the application
-	appModel = new AppModel({context: '/' + metacatContext});
+	MetacatUI.appModel = new AppModel({context: '/' + MetacatUI.metacatContext});
 	
 	//Check for custom settings in the theme config file
-	if(typeof customAppConfig == "function") customAppConfig();
+	if(typeof MetacatUI.customAppConfig == "function") MetacatUI.customAppConfig();
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 
-	         'routers/router', 
-	         'collections/SolrResults', 
-	         'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', "models/UserModel"
+	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 
+             'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', 
+             'models/UserModel', 'models/DataONEObject', 'collections/DataPackage'
 	         ],
-	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel, LookupModel, NodeModel, UserModel) {
+	function(Backbone, UIRouter, SolrResultList, Search, Stats, MapModel, LookupModel, NodeModel, UserModel, DataONEObject, DataPackage) {
 		'use strict';  
 	    		
-		//Create all the other models first
-		appSearchResults = new SolrResultList([], {});
+		//Create all the other models and collections first
+		MetacatUI.appSearchResults = new SolrResultList([], {});
 		
-		appSearchModel = new Search();
+		MetacatUI.appSearchModel = new Search();
+				
+		MetacatUI.statsModel = new Stats();
 		
-		registryModel = new RegistryModel();
+		MetacatUI.mapModel = (typeof customMapModelOptions == "object")? new MapModel(customMapModelOptions) : new MapModel();
 		
-		statsModel = new Stats();
+		MetacatUI.appLookupModel = new LookupModel();
 		
-		mapModel = (typeof customMapModelOptions == "object")? new MapModel(customMapModelOptions) : new MapModel();
+		MetacatUI.nodeModel = new NodeModel();
 		
-		appLookupModel = new LookupModel();
-		
-		nodeModel = new NodeModel();
-		
-		appUserModel = new UserModel();
+		MetacatUI.appUserModel = new UserModel();
 		
 		//Load the App View now
-		appView = new AppView();
+		MetacatUI.appView = new AppView();
 			
 		// Initialize routing and start Backbone.history()
 		(function() {
@@ -183,10 +191,12 @@ function(Bootstrap, AppView, AppModel) {
 		
 		//Make the router and begin the Backbone history
 		//The router will figure out which view to load first based on window location
-		uiRouter = new UIRouter();
+		MetacatUI.uiRouter = new UIRouter();
 		Backbone.history.start();
 	  
 	});
     	
 });
+
+
 

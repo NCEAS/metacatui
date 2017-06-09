@@ -20,12 +20,12 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		bioportalSearch: function(request, response, localValues, allValues) {
 			
 			// make sure we have something to lookup
-			if (!appModel.get('bioportalSearchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
 				response(localValues);
 				return;
 			}
 			
-			var query = appModel.get('bioportalSearchUrl') + request.term;
+			var query = MetacatUI.appModel.get('bioportalSearchUrl') + request.term;
 			var availableTags = [];
 			$.get(query, function(data, textStatus, xhr) {
 			

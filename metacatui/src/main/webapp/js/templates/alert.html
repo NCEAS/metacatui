@@ -15,8 +15,8 @@ if(includeEmail === undefined){
 		var includeEmail = false;
 }
 var email = "";
-if(includeEmail && appModel.get("emailContact")){
-	email = "<span class='webmaster-email'><i class='icon-envelope-alt icon'></i>Need help? Email us at <a href='mailto:" + appModel.get('emailContact') + "'>" + appModel.get('emailContact') + "</a></span>";
+if(includeEmail && MetacatUI.appModel.get("emailContact")){
+	email = "<span class='webmaster-email'><i class='icon-envelope-alt icon'></i>Need help? Email us at <a href='mailto:" + MetacatUI.appModel.get('emailContact') + "'>" + MetacatUI.appModel.get('emailContact') + "</a></span>";
 }
 %>
 

@@ -1,10 +1,10 @@
-
+﻿
 
 <h5 class="result-header-count bold-header" id="countstats">
 <% if(numFound > 0){
-		print('<span>' + appView.commaSeparateNumber(start) + '</span>');
-		print(' to <span>' + appView.commaSeparateNumber(end) + '</span>');
-		print(' of <span>' + appView.commaSeparateNumber(numFound) + '</span>');
+		print('<span>' + MetacatUI.appView.commaSeparateNumber(start) + '</span>');
+		print(' to <span>' + MetacatUI.appView.commaSeparateNumber(end) + '</span>');
+		print(' of <span>' + MetacatUI.appView.commaSeparateNumber(numFound) + '</span>');
 	}
 	else if(numFound == 0){
 		print('<span>0</span>');

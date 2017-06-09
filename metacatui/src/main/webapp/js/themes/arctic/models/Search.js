@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//annotation: [],
 				additionalCriteria: [],
 				id: [],
-				seriesId: appModel.get("useSeriesId")? [] : undefined,
+				seriesId: MetacatUI.appModel.get("useSeriesId")? [] : undefined,
 				formatType: [{
 					value: "METADATA",
 					label: "science metadata",
@@ -399,14 +399,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					
 					query += "+" + model.escapeSpecialChar(filterValue);
 				}
-			}
-			
-			//-----Theme restrictions from Registry Model-----
-			if((filter == "registryCriteria") || getAll){
-				var registryCriteria = registryModel.get('searchFields');
-				_.each(registryCriteria, function(value, key, list) {
-					query += "+" + model.escapeSpecialChar(value);
-				});
 			}
 			
 			//-----Other Filters/Basic Filters-----			

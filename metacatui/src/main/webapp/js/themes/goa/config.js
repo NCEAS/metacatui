@@ -1,17 +1,17 @@
-var theme = theme || "goa";
-var themeTitle = "Gulf of Alaska Data Portal";
-var themeMap = 
+MetacatUI.theme = MetacatUI.theme || "goa";
+MetacatUI.themeTitle = "Gulf of Alaska Data Portal";
+MetacatUI.themeMap = 
 {
 	'*': {
 		// example overrides are provided here
-		//'views/AboutView' : 'themes/' + theme + '/views/AboutView.js',
-		'templates/app.html' : 'themes/' + theme + '/templates/app.html',
-		'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',
-		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
-		'templates/search.html' : 'themes/' + theme + '/templates/search.html',
-		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
-		'templates/alert.html' : 'themes/' + theme + '/templates/alert.html',
-		'routers/router' : 'themes/' + theme + '/routers/router'
-		//'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html'
+		//'views/AboutView' : 'themes/' + MetacatUI.theme + '/views/AboutView.js',
+		'templates/app.html' : 'themes/' + MetacatUI.theme + '/templates/app.html',
+		'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html',
+		'templates/footer.html' : 'themes/' + MetacatUI.theme + '/templates/footer.html',
+		'templates/search.html' : 'themes/' + MetacatUI.theme + '/templates/search.html',
+		'templates/defaultHeader.html' : 'themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
+		'templates/alert.html' : 'themes/' + MetacatUI.theme + '/templates/alert.html',
+		'routers/router' : 'themes/' + MetacatUI.theme + '/routers/router'
+		//'templates/resultsItem.html' : 'themes/' + MetacatUI.theme + '/templates/resultsItem.html'
 		}
 };

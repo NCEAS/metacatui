@@ -9,7 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
 		// This model contains all of the attributes for the Application
 		defaults: {
 			headerType: 'default',
-			title: window.themeTitle || "Metacat Data Catalog",
+			title: MetacatUI.themeTitle || "Metacat Data Catalog",
 			searchMode: 'map',
 			sortOrder: 'dateUploaded+desc',
 			previousPid: null,
@@ -30,18 +30,18 @@ define(['jquery', 'underscore', 'backbone'],
 			authServiceUrl: null,
 			queryServiceUrl: null,
 			metaServiceUrl: null,
-			registryServiceUrl: null,
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
-			bioportalSearchUrl: null,
+			formatsServiceUrl: null,
+            formatsUrl: "/formats",
+            bioportalSearchUrl: null,
 			orcidSearchUrl: null,
 			signInUrl: null,
 			signOutUrl: null,
 			signInUrlOrcid: null,
 			signInUrlLdap: null,
 			tokenUrl: null,
-			checkTokenUrl: null,
 			//annotatorUrl: null,
 			accountsUrl: null
 		},
@@ -58,17 +58,20 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
-			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 			
+			// Object format list
+            if ( typeof this.get("formatsUrl") != "undefined" ) {
+                this.set("formatsServiceUrl", 
+                    this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+            }
+            
 			//Token URLs
 			if(typeof this.get("tokenUrl") != "undefined"){
 				this.set("portalUrl", this.get("d1CNBaseUrl") + "portal/");
 				this.set("tokenUrl",  this.get("portalUrl") + "token");
-				
-				this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
-				
+								
 				//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
 				if(typeof this.get("signInUrl") !== "undefined")
 					this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");

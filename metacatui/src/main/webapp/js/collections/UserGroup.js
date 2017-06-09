@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 		nameAvailable: null, 
 		
 		url: function(){
-			return appModel.get("accountsUrl") + encodeURIComponent(this.groupId);
+			return MetacatUI.appModel.get("accountsUrl") + encodeURIComponent(this.groupId);
 		},
 				
 		comparator: "lastName", //Sort by last name
@@ -168,7 +168,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 			//Create the member and owner XML
 			this.forEach(function(member){
 				//Don't list yourself as an owner or member (implied)
-				if(appUserModel == member) return;
+				if(MetacatUI.appUserModel == member) return;
 				
 				var username = member.get("username") ? member.get("username").trim() : null;
 				if(!username) return;
@@ -203,9 +203,9 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 					withCredentials: true
 				},
 				headers: {
-			        "Authorization": "Bearer " + appUserModel.get("token")
+			        "Authorization": "Bearer " + MetacatUI.appUserModel.get("token")
 			    },
-				url: appModel.get("groupsUrl"),
+				url: MetacatUI.appModel.get("groupsUrl"),
 				data: formData,
 				success: function(data, textStatus, xhr) {
 					if(typeof onSuccess != "undefined") 
@@ -257,7 +257,7 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 		isOwner: function(model){
 			if(typeof model === "undefined") return false;
 			
-			if(this.pending && (model == appUserModel)) return true; 
+			if(this.pending && (model == MetacatUI.appUserModel)) return true; 
 			
 			var usernames = [];
 			_.each(this.getOwners(), function(user){ usernames.push(user.get("username")); });

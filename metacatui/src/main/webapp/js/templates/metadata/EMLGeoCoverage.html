@@ -1,0 +1,25 @@
+<% if(edit){ %>
+	<p class="notification error"></p>
+	<div class="row-fluid input-container">
+		<div class="span5">
+			<label class="subtle">Short geographic description</label>
+			<textarea data-attribute="description" class="description"><%=model.description%></textarea>
+		</div>
+		<div class="span6">
+			<div class="row-fluid">
+				<div class="span6">
+					<label class="subtle">Northwest coordinates</label>
+					<input type="number" value="<%=model.north%>" data-attribute="north" class="coord north" placeholder="Lat" />
+					<input type="number" value="<%=model.west%>" data-attribute="west" class="coord west" placeholder="Long" />
+				</div>
+				<div class="span6">
+					<label class="subtle">Southeast coordinates</label>
+					<input type="number" value="<%=model.south%>" data-attribute="south" class="coord south" placeholder="Lat" />
+					<input type="number" value="<%=model.east%>" data-attribute="east" class="coord east" placeholder="Long" />
+				</div>
+			</div>
+		</div>
+		<div class="span1 remove-container">
+		</div>
+	</div>
+<% } %>

@@ -269,7 +269,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								  		return yPos; 
 								  	})
 								  	.attr("width", function(d){
-								  		return ((d.x + ": " + appView.commaSeparateNumber(d.y)).length * 8) + labelXPadding;
+								  		return ((d.x + ": " + MetacatUI.appView.commaSeparateNumber(d.y)).length * 8) + labelXPadding;
 								  	})
 								  	.attr("height", labelHeight + labelYPadding)
 								  	.attr("rx", 5) //For rounded corners
@@ -298,7 +298,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 								  		return yPos + labelYPadding * 2; 
 								  	})
 								    .text(function(d){ 
-								    	var val = appView.commaSeparateNumber(d.y);
+								    	var val = MetacatUI.appView.commaSeparateNumber(d.y);
 								  		  if((max < 1) && (viewRef.yFormat().indexOf("%") > -1))
 								  			  val = (val * 100) + "%";
 								    	return d.x + ": " + val; })
@@ -314,7 +314,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					  		  
 					  		  return "translate(" + textX + "," + textY + ")"; })
 					  	  .text(function(d){ 
-					  		  var val = appView.commaSeparateNumber(d.y);
+					  		  var val = MetacatUI.appView.commaSeparateNumber(d.y);
 					  		  if((max < 1) && (viewRef.yFormat().indexOf("%") > -1))
 					  			  val = (val * 100) + "%";
 					  		  return val;

@@ -1,0 +1,18 @@
+<tr class="form-inline">
+    <td class="span4">
+        <select data-category="rankName" class="taxon-rank-name tooltip-this span12" >
+            <option value="">Rank Name</option>
+            <option value="Domain" <%= taxonRankName === "Domain" ? "selected" : void 0 %>>Domain</option>
+            <option value="Kingdom" <%= taxonRankName === "Kingdom" ? "selected" : void 0 %>>Kingdom</option>
+            <option value="Phylum" <%= taxonRankName === "Phylum" ? "selected" : void 0 %>>Phylum</option>
+            <option value="Class" <%= taxonRankName === "Class" ? "selected" : void 0 %>>Class</option>
+            <option value="Order" <%= taxonRankName === "Order" ? "selected" : void 0 %>>Order</option>
+            <option value="Family" <%= taxonRankName === "Family" ? "selected" : void 0 %>>Family</option>
+            <option value="Genus" <%= taxonRankName === "Genus" ? "selected" : void 0 %>>Genus</option>
+            <option value="Species" <%= taxonRankName === "Species" ? "selected" : void 0 %>>Species</option>
+        </select>
+    </td>
+    <td class="span8">
+        <input type="text" data-category="rankValue" value="<%= taxonRankValue %>" class="taxon-rank-value tooltip-this span12" placeholder="Rank value"/>
+    </td>
+</tr>

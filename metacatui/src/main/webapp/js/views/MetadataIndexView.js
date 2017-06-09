@@ -62,11 +62,9 @@ define(['jquery',
 			var view = this;
 						
 			//Get all the fields from the Solr index
-			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json&json.wrf=?';
+			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json';
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
+				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 				success: function(data, textStatus, xhr){ 
 
 					if(data.response.numFound == 0){
@@ -87,7 +85,7 @@ define(['jquery',
 							//If this is a data object and there is a science metadata doc that describes it, then navigate to that Metadata View.
 							if((doc.formatType == "DATA") && (doc.isDocumentedBy && doc.isDocumentedBy.length)){
 								view.onClose();
-								uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
+								MetacatUI.uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
 								return;
 							}
 							
@@ -146,13 +144,13 @@ define(['jquery',
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 			
 			//Send a request for the EML doc itself to extract certain info
 			if(this.parentView && this.parentView.model){
 				var formatId = this.parentView.model.get("formatId");
 				if(formatId.indexOf("eml://") >= 0){
-					var url = appModel.get("baseUrl") + appModel.get("context") + appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
+					var url = MetacatUI.appModel.get("baseUrl") + MetacatUI.appModel.get("context") + MetacatUI.appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
 					
 					var requestSettings = {
 						url: url, 
@@ -207,7 +205,7 @@ define(['jquery',
 						}
 					}
 					
-					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 				}
 			}
 						

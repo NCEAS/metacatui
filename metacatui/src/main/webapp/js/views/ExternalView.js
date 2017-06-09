@@ -33,9 +33,9 @@ define(['jquery', 'underscore', 'backbone'],
 			} 
 			else if((href.lastIndexOf(".pdf") > 0) || (href.lastIndexOf(".bin") > 0) || (href.lastIndexOf(".exe") > 0) || (href.lastIndexOf(".tar.gz") > 0) || (href.lastIndexOf(".zip") > 0) || (href.lastIndexOf(".tar") > 0)){
 				if(href.indexOf(this.url) > 0)
-					window.location = appModel.get("baseUrl") + href;
+					window.location = MetacatUI.appModel.get("baseUrl") + href;
 				else
-					window.location = appModel.get("baseUrl") + this.url + "/" + href;
+					window.location = MetacatUI.appModel.get("baseUrl") + this.url + "/" + href;
 				
 				return false;
 			}
@@ -120,7 +120,7 @@ define(['jquery', 'underscore', 'backbone'],
 		render: function () {
 			
 			// request a smaller header
-			appModel.set('headerType', 'default');
+			MetacatUI.appModel.set('headerType', 'default');
 			
 			// catch all link clicks so we navigate within the UI - careful when calling this!
 			this.undelegateEvents();
@@ -191,7 +191,7 @@ define(['jquery', 'underscore', 'backbone'],
 						// make sure we scroll
 						viewRef.postRender();
 						// make sure our browser history has it
-						uiRouter.navigate("external/" + computedUrl);
+						MetacatUI.uiRouter.navigate("external/" + computedUrl);
 						
 					});
 			

@@ -11,6 +11,10 @@ a:hover{
 .subtle{
 	color: #999;
 }
+.btn-disabled{
+	pointer-events: none;
+	opacity: .8;
+}
 .footnote{
 	font-size: .7em;
 }
@@ -23,8 +27,15 @@ a:hover{
 	text-shadow: none;
     font-weight: normal;
 }
-.danger{
+.danger, 
+.error{
 	color: #960303;
+}
+.tooltip-error .tooltip-inner{
+	background-color: #960303;
+}
+.tooltip-error .tooltip .tooltip-arrow{
+	border-top-color: #960303;
 }
 .strong{
 	font-weight: bold;
@@ -60,7 +71,20 @@ a:hover{
 .tooltip{
 	font-size: 12px;
 }
-
+[contenteditable]{
+	cursor: text;
+}
+.row-striped{
+	border: 1px solid #e5e5e5;
+    margin-bottom: 40px;
+    border-radius: 4px;
+}
+.row-striped > .row-fluid{
+	padding: 20px;
+}
+.row-striped > .row-fluid:nth-child(even){
+	background-color: #EFEFEF;
+}
 /****************************************** 
 ** General Structure ***
 ******************************************/
@@ -296,6 +320,15 @@ header .citation {
 	background-color: #FFF;
 	border-color: #DDD;
 	color: #333;
+}
+.alert .close{
+	font-size: 3em;
+    position: absolute;
+    left: 97%;
+    top: 20px;
+}
+.alert-error .close{
+	color: #FF0000;
 }
 .notification.success, 
 .icon.success{
@@ -3128,6 +3161,686 @@ input.subtle:focus
 }
 #RegistryGuide > div{
 	font-size: 1.8em;
+}
+.text-container input,
+.text-container textarea{
+    width: 100%;
+}
+/*******************************************
+Editor View
+******************************************/
+.Editor #Navbar{
+	padding-bottom: 0px;
+}
+.Editor #logo{
+	height: 40px;	
+	margin-top: 5px;
+}
+.Editor .header .nav > li > a{
+	font-size: 1em;
+}
+.Editor .header .nav li a.btn{
+	font-size: .7em;
+}
+.Editor .header .border-image{
+	height: 15px;
+	margin-bottom: 5px;
+}
+.Editor #Content {
+    padding-top: 70px;
+}
+#editor-header {
+    border-bottom: 1px solid #DDDDDD;
+}
+
+#editor-header .citation{
+	padding: 1em;
+    margin-bottom: 0px;
+    font-size: 1.1em;
+    line-height: 1.6em;
+}
+.side-nav-item a {
+    width: 100%;
+    display: block;
+    height: 3em;
+    font-size: 1.3em;
+    line-height: 3em;
+    padding-left: 20px;
+    box-sizing: border-box;
+}
+ul.side-nav-items {
+    margin-left: 0px;
+}
+.side-nav-item {
+    list-style: none;
+    display: block;
+}
+.side-nav {
+    position: fixed;
+    background-color: #EEE;
+    height: 100%;
+    width: 140px;
+    margin-left: 0px;
+    border-right: 1px solid #DDD;
+}
+.side-nav + .metadata-container{
+	margin-left: 14.893617021276595%;
+	padding-left: 20px;
+}
+.Editor #Footer {
+    left: 14.893617021276595%;
+    width: 85.1%;
+    margin-left: 0px;
+    margin-bottom: 0px;
+}
+.Editor.rendering #Footer{
+	margin-left: 0%;
+	width: 100%;
+}
+#editor-footer{
+	background-color: #333;
+    position: fixed;
+    width: 100%;
+    box-sizing: border-box;
+    bottom: 0px;
+    padding: 20px;
+    z-index:3;
+}
+
+/* Editor package table container */
+#data-package-container {
+    overflow: auto;   
+    position: relative;
+}
+
+/* Editor package table */
+#data-package-table {
+	margin-bottom: 0px;
+	width: calc(100% - 2px);
+}
+
+/* Editor package table row */
+.data-package-item td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.data-package-item td.name div {
+	padding: 8px 0 8px 0;
+}
+.data-package-item td.error > [contenteditable]{
+	border: 2px solid red;
+}
+/* Editor package table column 1 */
+.data-package-item td:first-of-type {
+	padding-left: 20px;
+    width: 100px;
+}
+
+/* Editor package table column 2 */
+.data-package-item td:nth-of-type(2) {
+    white-space: normal;
+}
+
+/* Editor package table column 3 */
+.data-package-item td:nth-of-type(3) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100px;
+}
+
+/* Editor package table column 4 */
+.data-package-item td:nth-of-type(4) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100px;
+}
+
+/* Editor package table column 5 */
+.data-package-item td:last-of-type {
+    text-align: right;
+    padding-right: 20px;
+    padding-left: 0px;
+    width: 100px;
+}
+
+
+/* Editor package table last column buttons */
+.data-package-item td button {
+    text-align: center;
+    vertical-align: middle;
+    width: 9em;
+    padding-top: .5em;
+}
+
+/* Give icons breathing */
+.data-package-item button i {
+    margin-left: .3em;
+    margin-right: .3em;
+}
+
+.data-package-item.remove-highlight td{
+	border-color: #FF0000;
+	border-style: dashed;
+	border-width: 2px 0px 2px 0px;
+}
+.data-package-item.remove-highlight td:first-of-type{
+	border-left-width: 1px;
+}
+.data-package-item.remove-highlight td:last-of-type{
+	border-right-width: 1px;
+}
+
+.Editor #data-package-table ul li a span {
+    margin-left: .3em;
+    margin-right: .3em;
+    text-align: right;
+}
+
+.Editor #data-package-table ul li i {
+    margin-left: .3em;
+    margin-right: .3em;
+}
+
+/* Editor package table button dropdown */
+.Editor #data-package-table td:last-of-type ul {
+    margin-right: 20px;
+    background-color: #1F254F;
+    border-radius: 4px;
+}  
+
+/* Editor package table button dropdown list items */
+.Editor #data-package-table td:last-of-type ul li {
+    margin-right: 20px;
+    background-color: #1F254F;
+}  
+
+#data-package-container + .ui-resizable-handle{
+	border: 1px solid #D5D5D5;
+	border-right-width: 0px;
+    border-left-width: 0px;
+    background-color: #FFF;
+	height: 10px;
+	width: 100%;
+	bottom: 1px;
+}
+#data-package-container + .ui-resizable-handle .icon{
+    font-size: 15px;
+    color: #D5D5D5;
+    z-index: 91;
+    margin: -3px auto 0px auto;
+    display: block;
+    width: 15px;
+}
+#data-package-container + .ui-resizable-handle:hover{
+	cursor:ns-resize;	
+}
+
+.editor-controls .btn{
+	float: right;
+	margin-left: 10px;
+	color: #FFF;
+	border-color: #FFF;
+}
+.metadata-container.edit textarea{
+	width: 100%;
+	margin-bottom: 20px;
+}
+textarea.xlarge{
+	height: 200px;
+}
+
+/* Highlight drop zones with a dashed border */
+.droppable {
+    border: 2px dashed #1F254F;
+    
+} 
+.Editor .disable-layer{
+	background-color: rgba(0,0,0,.6);
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    z-index: 2;
+}
+.Editor .dropdown-menu li a i {
+    vertical-align: middle;
+}
+.Editor #Content > .alert-container{
+	position: fixed;
+    left: 0px;
+    min-width: 100%;
+    z-index: 1;
+    margin-left: 0px;
+    top: 107px;
+}
+.Editor #Content > .alert-container .alert{
+	padding: 20px;
+	font-weight: bold;
+	border-radius: 0px;
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
+}
+.Editor input,
+.Editor select{
+	padding: .5em 1em;
+	height: 2.4em;
+	box-sizing: border-box;
+	font-size: 1em;
+}
+.Editor textarea{
+	padding: .5em 1em;
+	box-sizing: border-box;
+	font-size: 1em;
+}
+.Editor .checkbox{
+	clear: both;
+	margin: 1em auto;
+}
+.Editor .checkbox input{
+	padding: 0px;
+	height: auto;
+}
+.Editor input.error,
+.Editor select.error,
+.Editor textarea.error{
+	border: 1px solid red;
+}
+.Editor .input-logo{
+	height: 28px;
+    width: 28px;
+    margin-right: 5px;
+    vertical-align: top;
+}
+.Editor .input-logo + input{
+	width: calc(100% - 42px);
+}
+.Editor .required-icon{
+	color: red;
+}
+.metadata-container .section > * > *,
+.metadata-container .abstract {
+    padding-left: 40px;
+}
+.metadata-container .abstract h5,
+.metadata-container .taxa h5,
+.metadata-container .taxa .row-striped{
+	padding-left: 0px;
+}
+.metadata-container .abstract textarea,
+.metadata-container .taxa textarea{
+	padding-left: 10px;
+}
+.metadata-container .section > h2,
+.metadata-container .section.people h4,
+.metadata-container .section.people p,
+.metadata-container .section.people .row-striped,
+.metadata-container #new-party-menu,
+.metadata-container .taxonomic-coverage {
+    margin-left: 40px;
+}
+.metadata-container *{
+	box-sizing: border-box;
+}
+.metadata-container h2{
+    padding-top: 40px;
+    margin-bottom: 30px;
+}
+.metadata-container h5 > .subtle{
+	margin-left: 20px;
+	font-weight: normal;
+}
+.metadata-container .section {
+    width: 100%;
+    clear: both;
+} 
+.metadata-container .section > .row-striped:last-child {
+    margin-bottom: 0px;
+}
+.Editor .header-dropdown{
+	font-size: 1.3em;
+    width: 100%;
+    height: 2.4em;
+    width: calc(100% - 40px);
+}
+.metdata-container .checkbox{
+	clear: both;
+}
+
+/* ---- Attributes ----*/
+.eml-attribute {
+    padding-bottom: 20px;
+}
+.eml-attribute.error{
+	color: inherit;
+}
+.eml-attribute.error .accordion-heading{
+	background-color: rgba(255, 0, 0, 0.11);
+}
+.eml-attribute.error .accordion-heading a{
+	color: #960303;
+    font-weight: bold;
+}
+.eml-attribute .indent{
+	margin-left: 20px;
+}
+.enumerated-domain .table input {
+    margin-bottom: 0px;
+}
+.attribute-menu.side-nav-items{
+	overflow-y: overlay;
+	margin-top: 40px;
+	position: fixed;
+	height: 400px;
+	background-color: #EEE;
+	border-right: 1px solid #DDD;
+}
+.attribute-list{
+	width: calc(100% - 170px - 60px);
+    float: right;
+    padding: 0px 20px;
+    margin-top: 40px;
+}
+.eml-attribute .title{
+	margin-bottom: 20px;
+}
+.attribute-menu{
+	min-width: 170px;
+}
+.attribute-menu-item a{
+	font-size: 1em;	
+}
+.attribute-menu-item a.error{
+	color: #960303;
+}
+.attribute-menu-item.active a{
+	background-color: #1E254F;
+	color: white;
+}
+.attributes .attribute-menu-container{
+	width: 170px;
+}
+
+/* ---- Overview ---- */
+.metadata-container .section.overview > div{
+	margin-bottom: 20px;
+}
+
+/* ---- Funding ---- */
+.metadata-container .funding-container{
+	padding-left: 0px;
+}
+.Editor input.funding{
+	padding-left: 35px;
+}  
+.metadata-container .funding-row{
+	position: relative;
+	padding-left: 40px;
+}
+.metadata-container .funding-row .remove{
+	position: absolute;
+	top: 4px;
+	left: -20px;
+}
+.Editor .funding-row .ui-autocomplete{
+	position: absolute !important;
+    font-size: 1.2em;
+}
+.Editor .ui-autocomplete .ui-menu-item {
+    font-size: .7em;
+}
+.Editor .funding-container .ui-helper-hidden-accessible{
+	display: none;
+}
+.metadata-container .funding-container .autocomplete-container{
+	position: relative;
+}
+.Editor .funding-container .icon-spinner{
+	top: 5px;
+	left: 45px;
+    position: absolute;
+    font-size: 1.5em;
+    display: none;
+}
+.metadata-container #funding-visible{
+	padding-left: 30px;
+}
+
+/* ---- People / Parties ---- */
+.controls-well > .party{
+	margin-bottom: 30px;
+	border-bottom: 1px solid #DDD;
+}
+.row-striped > .eml-party {
+    padding-top: 10px;
+}
+.eml-party .notification{
+	height: 40px;
+}
+.metadata-container .section.people h4 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+
+/* ---- Keywords ---- */
+.metadata-container .keywords .span2{
+	margin-left: 0px;
+	width: 16.893617%;
+}
+
+/* ---- Usage ---- */
+.metadata-container .usage input{
+	float: left;
+}
+.metadata-container .usage{
+	max-width: 500px;
+}
+.metadata-container .usage .text{
+	min-width: 225px;
+}
+
+/* ---- Basic text ---- */
+.metadata-container .section .text-container {
+    padding-left: 0px;
+}
+.basic-text-row{
+	padding-left: 40px;
+}
+
+/* ---- Taxon Coverage ---- */
+.row-fluid.taxonomic-coverage {
+    padding-right: 40px;
+    width: calc(100% - 40px)
+}
+.taxonomic-coverage .notification{
+	padding-left: 0px;
+	position: absolute;
+	margin-top: -25px;
+}
+.taxonomic-coverage > .row-striped{
+	margin-top: 20px; 
+}
+.taxonomic-coverage > .row-striped:first-child,
+.taxonomic-coverage > .notification + .row-striped:nth-child(2){
+	margin-top: 0px;
+}
+.root-taxonomic-classification{
+	margin-bottom: 0px;
+}
+   
+/* ---- Remove icons in the Editor ---- */
+.data-package-item .remove,
+.metadata-container .remove{
+	color: #AAA;
+}
+.metadata-container .remove{
+	font-size: 1.7em;
+    position: absolute;
+    left: 14.893617021276595%;
+    margin-left: 21px;
+}
+.metadata-container .remove{
+	opacity: .5;
+}
+.metadata-container .remove:hover{
+	opacity: 1;
+}
+.metadata-container .keyword-row:hover .remove,
+.metadata-container .basic-text-row:hover .remove,
+.metadata-container .funding-row:hover .remove,
+.metadata-container .root-taxonomic-classification:hover .remove{
+	display: inline-block;
+}
+
+/* temp hack to test removing eml taxon*/
+.root-taxonomic-classification .remove {
+	display: inline-block;
+}
+
+/* temp hack to test removing eml taxon*/
+.root-taxonomic-classification .remove {
+	display: inline-block;
+}
+
+.data-package-item .remove:hover,
+.metadata-container .remove:hover{
+	cursor: pointer;
+	color: rgba(255,0,0,1);
+}
+.metadata-container .remove:hover ~ input,
+.metadata-container .remove:hover ~ select{
+	border-color: #FF0000;
+	border-style: dashed;
+	border-width: 2px;
+}
+.data-package-item .icon{
+    margin-right: 10px;
+    width: 1.4em;
+}
+
+/** Locations section **/
+.locations .coord{
+	width: 5em;
+    padding: 5px;
+    font-size: .9em;
+}
+.locations-table .header{
+	font-weight: bold;
+    border-bottom: 1px solid #DDD;
+    padding-bottom: 10px;
+    background-color: #EEE;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+.locations-table .header .subtle{
+	font-size: .8em;
+    font-weight: normal;
+}
+.locations-table .header h5{
+	margin-bottom: 0px;
+}
+.locations-table .eml-geocoverage{
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border: 1px solid white;
+}
+.locations-table .eml-geocoverage:nth-child(odd) {
+    background-color: #EEE;
+}
+.metadata-container .locations .remove {
+    position: relative;
+    margin-left: 0px;
+    margin-top: 50%;
+    display: block;
+}
+.eml-geocoverage.show-remove{
+	border: 1px dashed red;
+}
+.locations-table .notification{
+	min-height: .8em;
+    font-size: .8em;
+    margin-bottom: 0px;
+}
+.locations-table textarea.error{
+	border-color: red;
+}
+.eml-geocoverage.error {
+    background-color: rgba(251, 188, 188, 0.35);
+}
+
+/** Entity section **/
+.eml-entity.modal{
+	height: 80%;
+	width: 80%;
+	left: 40%;
+    max-width: 1000px;
+    min-width: 300px;
+}
+.eml-entity .modal-body{
+	max-height: calc(100% - 110px);
+	height: calc(100% - 110px);	
+	padding: 0px;
+}
+.eml-entity .nav-tabs{
+	position: fixed;
+    width: calc(80% - 12px);
+    max-width: 988px;
+    background-color: white;
+}
+.eml-entity .nav-tabs li {
+    width: 50%;
+}
+.eml-entity .nav-tabs li.active{
+	border-top: 0px;
+}
+.eml-entity .nav-tabs li a{
+	border-radius: 0px;
+    border-top: 0px;
+    text-align: center;
+}
+.eml-entity .tab-content{
+	width: 100%;
+	box-sizing: border-box;
+}
+.eml-entity .overview-container{
+	padding: 20px;
+	margin-top: 20px;
+    width: calc(100% - 40px);
+}
+.eml-entity .preview-container{
+    box-sizing: border-box;
+    float: left;
+}
+.eml-entity .preview-container .thumbnail{
+	width: 100%;
+	box-sizing: border-box;
+}
+.eml-entity .preview-container + .description{
+	float: right;
+	width: 100%;
+}
+.preview-container .thumbnail-square{
+	height: 250px;
+	width: 250px;
+	overflow: hidden;
+}
+.preview-container .description textarea{
+	min-height: 175px;
+}
+.eml-attribute input {
+    height: auto;
+}
+.eml-measurement-scale .options{
+	box-sizing: border-box;
+    padding-top: 10px;
+    margin-top: 20px;
+}
+.eml-measurement-scale .hidden{
+	display: none;
+}
+.eml-measurement-scale .full-width{
+	width: 100%;
 }
 /*******************************************
 Pager View

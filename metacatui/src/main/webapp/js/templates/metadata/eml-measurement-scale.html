@@ -1,0 +1,81 @@
+<div class="row-fluid" data-category="measurementScale">
+	<h5>Category <span class="required-icon">*</span></h5>
+	<p class="notification"></p>
+	<label class="radio">
+		  <input type="radio" name="measurementScale" data-category="measurementScale" 
+		  value="nominal" class="category"
+		  />
+		  Unordered (statistically nominal) - unordered categories or text 
+		  <span class="subtle"> e.g. male, female </span>
+	</label>
+	<label class="radio">
+		  <input type="radio" name="measurementScale" data-category="measurementScale" 
+		  value="ordinal" class="category" 
+		  />
+		  Ordered (statistically ordinal) - ordered categories
+		  <span class="subtle"> e.g. low, high </span>
+	</label>
+	<label class="radio">
+		  <input type="radio" name="measurementScale" data-category="measurementScale" 
+		  value="interval" class="category" 
+		  />
+		  Relative (statistically interval) - Values from a scale with equidistant points
+		  <span class="subtle"> e.g. 12.2 degrees Celsius </span>
+	</label>
+	<label class="radio">
+		  <input type="radio" name="measurementScale" data-category="measurementScale" 
+		  value="ratio" class="category" 
+		  />
+		  Absolute (statistically ratio) - Measurement scale with a meaningful zero point
+		  <span class="subtle"> e.g. 273 Kelvin </span>
+	</label>
+	<label class="radio">
+		  <input type="radio" name="measurementScale" data-category="measurementScale" 
+		  value="datetime" class="category" 
+		  />
+		  Date-Time - Date or time values from the Gregorian calendar
+		  <span class="subtle"> e.g. 2002-10-22 </span>
+	</label>
+</div>
+
+<div class="row-fluid nominal-options non-numeric-domain options well hidden">	
+</div>
+
+<div class="row-fluid ordinal-options non-numeric-domain options well hidden">
+</div>
+
+<div class="row-fluid interval-options options well hidden">
+	<h5>Standard Unit <span class="required-icon">*</span></h5>
+	<p class="subtle">The name of a standard unit used to make this measurement</p>
+	<div class="units-container"></div>
+</div>
+
+<div class="row-fluid ratio-options options well hidden">
+	<h5>Standard Unit <span class="required-icon">*</span></h5>
+	<p class="subtle">The name of a standard unit used to make this measurement</p>
+	<div class="units-container"></div>
+</div>
+
+<div class="row-fluid datetime-options options well hidden" data-category="formatString">
+	<h5>Date-Time Format <span class="required-icon">*</span></h5>
+	<p class="notification"></p>
+	<select data-category="formatString" class="datetime-string datetime full-width input">
+		<option value="">Choose a date-time format</option>
+		<option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2008-09-15)</option>
+		<option value="YYYY-MM-DDThh:mm:ss">YYYY-MM-DDThh:mm:ss (e.g. 2008-09-15T02:45:30)</option>
+		<option value="hh:mm:ss">hh:mm:ss (e.g. 02:45:30)</option>
+		<option value="hh:mm:ss.sss">hh:mm:ss.sss (e.g. 02:45:30.432)</option>
+		<option value="hh:mm.mm">hh:mm.mm (e.g. 02:45.50)</option>
+		<option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 15/09/2008)</option>
+		<option value="MM/DD/YYYY">MM/DD/YYYY (e.g. 09/15/2008)</option>
+		<option value="YYYY-WWW-DD">YYYY-WWW-DD (e.g. 2008-SEP-15)</option>
+		<option value="YYYYWWWDD">YYYYWWWDD (e.g. 2008SEP15)</option>
+		<option value="YYYY-WWW-DD">YYYY-WWW-DD (e.g. 2008-SEP-15)</option>
+		<option value="custom">Custom format (specify below)</option>
+	</select>
+	
+	<div class="hidden datetime-string-custom-container">
+		<h6>Custom Date-Time Format <span class="required-icon">*</span></h6>
+		<input type="text" class="datetime-string-custom datetime full-width input" data-category="formatString" placeholder="Specify a custom date-time format" /> 
+	</div>
+</div>

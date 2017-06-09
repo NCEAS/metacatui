@@ -1,37 +1,37 @@
-var theme = theme || "arctic";
-var themeTitle = "NSF Arctic Data Center";
-var themeMap = 
+MetacatUI.theme = MetacatUI.theme || "arctic";
+MetacatUI.themeTitle = "NSF Arctic Data Center";
+MetacatUI.themeMap = 
 {
 	'*': {
 		// Templates include extension
-		'templates/app.html' : 'themes/' + theme + '/templates/app.html',
-		'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html',
-		'templates/featuredData.html' : 'themes/' + theme + '/templates/featuredData.html',
-		'templates/footer.html' : 'themes/' + theme + '/templates/footer.html',
-		'templates/mainContent.html' : 'themes/' + theme + '/templates/mainContent.html',
-		'templates/altHeader.html' : 'themes/' + theme + '/templates/altHeader.html',
-		'templates/defaultHeader.html' : 'themes/' + theme + '/templates/defaultHeader.html',
-		'templates/tools.html' : 'themes/' + theme + '/templates/tools.html',
-		'templates/about.html' : 'themes/' + theme + '/templates/about.html',
-		'templates/userProfileMenu.html' : 'themes/' + theme + '/templates/userProfileMenu.html',
-		'templates/publishDOI.html' : 'themes/' + theme + '/templates/publishDOI.html',
-		'templates/resultsItem.html' : 'themes/' + theme + '/templates/resultsItem.html',
-		'templates/noResults.html' : 'themes/' + theme + '/templates/noResults.html',
-		'templates/loginButtons.html' : 'themes/' + theme + '/templates/loginButtons.html',
-		'templates/metadata.html' : 'themes/' + theme + '/templates/metadata.html',
-		'templates/insertProgress.html' : 'themes/' + theme + '/templates/insertProgress.html',
-		'models/AppModel' : 'js/themes/' + theme + '/models/AppModel.js',
-		'models/Map' : 'js/themes/' + theme + '/models/Map.js',
-		'models/Search' : 'js/themes/' + theme + '/models/Search.js',
-		'routers/router' : 'js/themes/' + theme + '/routers/router.js'
+		'templates/app.html' : 'themes/' + MetacatUI.theme + '/templates/app.html',
+		'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html',
+		'templates/featuredData.html' : 'themes/' + MetacatUI.theme + '/templates/featuredData.html',
+		'templates/footer.html' : 'themes/' + MetacatUI.theme + '/templates/footer.html',
+		'templates/mainContent.html' : 'themes/' + MetacatUI.theme + '/templates/mainContent.html',
+		'templates/altHeader.html' : 'themes/' + MetacatUI.theme + '/templates/altHeader.html',
+		'templates/defaultHeader.html' : 'themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
+		'templates/tools.html' : 'themes/' + MetacatUI.theme + '/templates/tools.html',
+		'templates/about.html' : 'themes/' + MetacatUI.theme + '/templates/about.html',
+		'templates/userProfileMenu.html' : 'themes/' + MetacatUI.theme + '/templates/userProfileMenu.html',
+		'templates/publishDOI.html' : 'themes/' + MetacatUI.theme + '/templates/publishDOI.html',
+		'templates/resultsItem.html' : 'themes/' + MetacatUI.theme + '/templates/resultsItem.html',
+		'templates/noResults.html' : 'themes/' + MetacatUI.theme + '/templates/noResults.html',
+		'templates/loginButtons.html' : 'themes/' + MetacatUI.theme + '/templates/loginButtons.html',
+		'templates/metadata.html' : 'themes/' + MetacatUI.theme + '/templates/metadata.html',
+		'templates/insertProgress.html' : 'themes/' + MetacatUI.theme + '/templates/insertProgress.html',
+		'models/AppModel' : 'js/themes/' + MetacatUI.theme + '/models/AppModel.js',
+		'models/Map' : 'js/themes/' + MetacatUI.theme + '/models/Map.js',
+		'models/Search' : 'js/themes/' + MetacatUI.theme + '/models/Search.js',
+		'routers/router' : 'js/themes/' + MetacatUI.theme + '/routers/router.js'
 		}
 };
 
-var customMapModelOptions = {
+MetacatUI.customMapModelOptions = {
 	tileHue: "231"
 }
 
-var customAppConfig = function(){	
+MetacatUI.customAppConfig = function(){	
 	//Gmaps key: AIzaSyCYoTkUEpMAiOoWx5M61ButwgNGX8fIHUs
 	
 	//Check that slaask didn't fail before getting its dependency, Pusher
@@ -46,9 +46,9 @@ var customAppConfig = function(){
 	    };
 	}
 	*/
-	if(appModel.get("baseUrl").indexOf("arcticdata.io") > -1){
-		appModel.set("nodeId", "urn:node:ARCTIC");
-		appModel.set("googleAnalyticsKey", "UA-75482301-1");
+	if(MetacatUI.appModel.get("baseUrl").indexOf("arcticdata.io") > -1){
+		MetacatUI.appModel.set("nodeId", "urn:node:ARCTIC");
+		MetacatUI.appModel.set("googleAnalyticsKey", "UA-75482301-1");
 	}
 }
 

@@ -28,7 +28,7 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route tooltip-this" download title="Click to Download" href="', appModel.get('objectServiceUrl'), URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
+				print('<a class="download stop-route tooltip-this" download title="Click to Download" href="', MetacatUI.appModel.get('objectServiceUrl'), URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
 			}			
           	%>          
       </div>
@@ -36,7 +36,7 @@
 		<% 
 		
 		if (typeof read_count_i !== "undefined"){ 
-			var readableCount = appView.commaSeparateNumber(read_count_i); %>
+			var readableCount = MetacatUI.appView.commaSeparateNumber(read_count_i); %>
 			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><span class="count-container"><%=readableCount%></span> <i class="icon icon-eye-open views stop-route"></i></span>
 		<% }
 		else{ 

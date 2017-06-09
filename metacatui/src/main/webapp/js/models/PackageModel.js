@@ -83,15 +83,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 		},
 		
 		setURL: function(){	
-			if(appModel.get("packageServiceUrl"))
-				this.set("url", appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id")));
+			if(MetacatUI.appModel.get("packageServiceUrl"))
+				this.set("url", MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id")));
 		},
 		
 		/*
 		 * Set the URL for fetch
 		 */
 		url: function(){
-			return appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
+			return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
 		},
 		
 		/* Retrieve the id of the resource map/package that this id belongs to */
@@ -103,7 +103,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			var model = this;
 			
 			//Get the id of the resource map for this member
-			var provFlList = appSearchModel.getProvFlList() + "prov_instanceOfClass,";
+			var provFlList = MetacatUI.appSearchModel.getProvFlList() + "prov_instanceOfClass,";
 			var query = 'fl=resourceMap,fileName,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,isPublic,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
 						'&rows=1' +
 						'&q=id:%22' + encodeURIComponent(id) + '%22' +
@@ -111,7 +111,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						
 
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query,
+				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 					//There should be only one response since we searched by id
 					if(typeof data.response.docs !== "undefined"){
@@ -139,7 +139,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		/* Get all the members of a resource map/package based on the id attribute of this model. 
@@ -152,7 +152,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				pids    = []; //Keep track of each object pid
 			
 			//*** Find all the files that are a part of this resource map and the resource map itself
-			var provFlList = appSearchModel.getProvFlList();
+			var provFlList = MetacatUI.appSearchModel.getProvFlList();
 			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,' +
 							'rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic,isService,'+
 							'serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
@@ -161,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						'&wt=json';
 			
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query,
+				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 				
 					//Separate the resource maps from the data/metadata objects
@@ -195,7 +195,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			
 			return this;
 		},
@@ -209,7 +209,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			var fetchOptions = _.extend({dataType: "text"}, options);
             
             //Add the authorization options 
-            fetchOptions = _.extend(fetchOptions, appUserModel.createAjaxSettings());
+            fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
             
             
             return Backbone.Model.prototype.fetch.call(this, fetchOptions);
@@ -241,7 +241,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
                 models = []; // the models returned by parse()
                 
             try {
-                rdf.parse(response, this.dataPackageGraph, appModel.get("objectServiceUrl") + (encodeURIComponent(this.id) || encodeURIComponent(this.seriesid)), 'application/rdf+xml');
+                rdf.parse(response, this.dataPackageGraph, MetacatUI.appModel.get("objectServiceUrl") + (encodeURIComponent(this.id) || encodeURIComponent(this.seriesid)), 'application/rdf+xml');
                 
                 // List the package members
                 memberStatements = this.dataPackageGraph.statementsMatching(
@@ -314,7 +314,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			if(!this.get("hasSystemMetadata")){
 				var model = this;
 				var requestSettings = {
-						url: appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
+						url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
 						success: function(response){
 							model.parseSysMeta(response);
 							
@@ -323,7 +323,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						},
 						dataType: "text"
 				}
-				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 				return;
 			}
 			
@@ -351,7 +351,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				formData.append("pid", this.get("id"));
 
 				var requestSettings = {
-						url: appModel.get("metaServiceUrl"),
+						url: MetacatUI.appModel.get("metaServiceUrl"),
 						type: "PUT",
 						cache: false,
 					    contentType: false,
@@ -364,7 +364,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 							console.log("error updating system metadata");
 						}
 				}
-				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			}
 			else{
 				//Add the ids to the form data
@@ -387,7 +387,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				console.log(mapXML);
 				
 				var requestSettings = {
-						url: appModel.get("objectServiceUrl"),
+						url: MetacatUI.appModel.get("objectServiceUrl"),
 						type: "PUT",
 						cache: false,
 						contentType: false,
@@ -400,7 +400,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 							console.log("error udpating object");
 						}
 				}
-				$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			}
 		},
 		
@@ -551,13 +551,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
         	xml.find("formatid").text(this.get("formatId"));
         	xml.find("size").text(this.get("size"));
         	xml.find("checksum").text(this.get("checksum"));
-        	xml.find("submitter").text(this.get("submitter") || appUserModel.get("username"));
-        	xml.find("rightsholder").text(this.get("rightsHolder") || appUserModel.get("username"));
+        	xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
+        	xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
         	xml.find("archived").text(this.get("archived"));
         	xml.find("dateuploaded").text(this.get("dateUploaded") || new Date().toISOString());
         	xml.find("datesysmetadatamodified").text(this.get("dateSysMetadataModified") || new Date().toISOString());
-        	xml.find("originmembernode").text(this.get("originMemberNode") || nodeModel.get("currentMemberNode"));
-        	xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || nodeModel.get("currentMemberNode"));
+        	xml.find("originmembernode").text(this.get("originMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
+        	xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 
         	if(this.get("obsoletes"))
         		xml.find("obsoletes").text(this.get("obsoletes"));
@@ -717,7 +717,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			
 			var model = this;
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query,
+				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 					var results = data.grouped.formatType.groups,
 						rMapList = _.where(results, { groupValue: "RESOURCE" })[0].doclist,
@@ -748,7 +748,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		//Create the URL string that is used to download this package
@@ -756,16 +756,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			var url = null;
 			
 			//If we haven't set a packageServiceURL upon app initialization and we are querying a CN, then the packageServiceURL is dependent on the MN this package is from
-			if(!appModel.get("packageServiceUrl") && (appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && nodeModel.get("members").length){
+			if(!MetacatUI.appModel.get("packageServiceUrl") && (MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && MetacatUI.nodeModel.get("members").length){
 				var source = this.get("datasource"),
-					node   = _.find(nodeModel.get("members"), {identifier: source});
+					node   = _.find(MetacatUI.nodeModel.get("members"), {identifier: source});
 				
 				//If this node has MNRead v2 services...
 				if(node && node.readv2)
 					url = node.baseURL + "/v2/packages/application%2Fbagit-097/" + encodeURIComponent(this.get("id"));			
 			}
-			else if(appModel.get("packageServiceUrl"))
-				url = appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id"));
+			else if(MetacatUI.appModel.get("packageServiceUrl"))
+				url = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id"));
 			
 			this.set("url", url);
 			return url;
@@ -807,7 +807,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			if(!metadata) return false;
 			
 			//Load the rendered metadata from the view service
-			var viewService = appModel.get("viewServiceUrl") + metadata.get("id");
+			var viewService = MetacatUI.appModel.get("viewServiceUrl") + metadata.get("id");
 			var requestSettings = {
 					url: viewService, 
 					success: function(data, response, xhr){
@@ -829,11 +829,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						}
 					}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		getLogInfo: function(){
-			if(!appModel.get("d1LogServiceUrl") || (typeof appModel.get("d1LogServiceUrl") == "undefined")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl") || (typeof MetacatUI.appModel.get("d1LogServiceUrl") == "undefined")) return;
 			
 			var model = this;
 			
@@ -848,7 +848,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				facets: "pid"
 			});
 			
-			var url = appModel.get("d1LogServiceUrl") + "q=" + logsSearch.getQuery() + logsSearch.getFacetQuery();
+			var url = MetacatUI.appModel.get("d1LogServiceUrl") + "q=" + logsSearch.getQuery() + logsSearch.getFacetQuery();
 			var requestSettings = {
 				url: url + "&wt=json&rows=0",
 				success: function(data, textStatus, xhr){
@@ -871,7 +871,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					model.trigger("changeAll");
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 				
 		/*
@@ -882,19 +882,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			var model = this;
 			
 			//See if there are any prov fields in our index before continuing
-			if(!appSearchModel.getProvFields()) return this;
+			if(!MetacatUI.appSearchModel.getProvFields()) return this;
 			
 			//Start keeping track of the sources and derivations
 			var sources 		   = new Array(),
 				derivations 	   = new Array();
 			
 			//Search for derivations of this package
-			var derivationsQuery = appSearchModel.getGroupedQuery("prov_wasDerivedFrom", 
+			var derivationsQuery = MetacatUI.appSearchModel.getGroupedQuery("prov_wasDerivedFrom", 
 					_.map(this.get("members"), function(m){ return m.get("id"); }), "OR") +
 					"%20-obsoletedBy:*";
 			
 			var requestSettings = {
-					url: appModel.get("queryServiceUrl") + "&q=" + derivationsQuery + "&wt=json&rows=1000" +
+					url: MetacatUI.appModel.get("queryServiceUrl") + "&q=" + derivationsQuery + "&wt=json&rows=1000" +
 						 "&fl=id,resourceMap,documents,isDocumentedBy,prov_wasDerivedFrom",
 					success: function(data){
 						_.each(data.response.docs, function(result){
@@ -919,7 +919,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						model.getExternalProvTrace();
 					}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		getExternalProvTrace: function(){
@@ -942,17 +942,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			}
 			else{
 				//Create a query where we retrieve the ID of the resource map of each source and derivation
-				var idQuery = appSearchModel.getGroupedQuery("id", externalProvEntities, "OR");
+				var idQuery = MetacatUI.appSearchModel.getGroupedQuery("id", externalProvEntities, "OR");
 				
 				//Create a query where we retrieve the metadata for each source and derivation
-				var metadataQuery = appSearchModel.getGroupedQuery("documents", externalProvEntities, "OR");
+				var metadataQuery = MetacatUI.appSearchModel.getGroupedQuery("documents", externalProvEntities, "OR");
 			}
 			
 			//TODO: Find the products of programs/executions
 					
 			//Make a comma-separated list of the provenance field names 
 			var provFieldList = "";
-			_.each(appSearchModel.getProvFields(), function(fieldName, i, list){
+			_.each(MetacatUI.appSearchModel.getProvFields(), function(fieldName, i, list){
 				provFieldList += fieldName;
 				if(i < list.length-1) provFieldList += ",";
 			});
@@ -969,7 +969,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			
 			//Send the query to the query service
 			var requestSettings = {
-				url: appModel.get("queryServiceUrl") + query, 
+				url: MetacatUI.appModel.get("queryServiceUrl") + query, 
 				success: function(data, textStatus, xhr){	
 								
 					//Do any of our docs have multiple resource maps?
@@ -981,11 +981,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						var allMapIDs = _.uniq(_.flatten(_.pluck(hasMultipleMaps, "resourceMap")));
 						if(allMapIDs.length){
 							
-							var query = "q=+-obsoletedBy:*+" + appSearchModel.getGroupedQuery("id", allMapIDs, "OR") + 
+							var query = "q=+-obsoletedBy:*+" + MetacatUI.appSearchModel.getGroupedQuery("id", allMapIDs, "OR") + 
 										"&fl=obsoletes,id" +
 										"&wt=json";
 							var requestSettings = {
-								url: appModel.get("queryServiceUrl") + query, 
+								url: MetacatUI.appModel.get("queryServiceUrl") + query, 
 								success: function(mapData, textStatus, xhr){	
 								
 									//Create a list of resource maps that are not obsoleted by any other resource map retrieved
@@ -997,7 +997,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 									model.sortProvTrace(data.response.docs);
 								}
 							}
-							$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+							$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 						}
 						else
 							model.sortProvTrace(data.response.docs);
@@ -1008,7 +1008,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			
 			return this;
 		},
@@ -1278,7 +1278,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
-			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+			xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
 			xhr.send();
 		},
 		
@@ -1300,7 +1300,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			console.log("check auth of package");
 			
 			//Call the auth service
-			var authServiceUrl = appModel.get('authServiceUrl');
+			var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
 			if(!authServiceUrl) return false;
 
 			var model = this;
@@ -1316,7 +1316,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					model.set("isAuthorized", false);
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 		
 		flagComplete: function(){

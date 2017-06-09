@@ -15,8 +15,7 @@ function ($, _, Backbone) {
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
 			"signinldaperror"			: "renderLdapSignInError",
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
-			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
-			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
+			'share(/*pid)'       		: 'renderEditor'  // metadata Editor
 		},
 		
 		initialize: function(){
@@ -58,19 +57,19 @@ function ($, _, Backbone) {
 		renderIndex: function (param) {
 			this.routeHistory.push("index");
 			
-			if(!appView.indexView){
+			if(!MetacatUI.appView.indexView){
 				require(["views/IndexView"], function(IndexView){
-					appView.indexView = new IndexView();
-					appView.showView(appView.indexView);					
+					MetacatUI.appView.indexView = new IndexView();
+					MetacatUI.appView.showView(MetacatUI.appView.indexView);					
 				});
 			}
 			else
-				appView.showView(appView.indexView);
+				MetacatUI.appView.showView(MetacatUI.appView.indexView);
 		},
 		
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
-			appModel.set('lastPid', appModel.get("pid"));
+			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
 			
 			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
 			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
@@ -78,82 +77,70 @@ function ($, _, Backbone) {
 			var seriesId;
 						
 			//Check for a seriesId
-			if(appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
+			if(pid.indexOf("version:") > -1){
 				seriesId = pid.substr(0, pid.indexOf(", version:"));
 				
 				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);				
 			}
 			
 			//Save the id in the app model
-			appModel.set('pid', pid);
+			MetacatUI.appModel.set('pid', pid);
 			
-			if(!appView.metadataView){
+			if(!MetacatUI.appView.metadataView){
 				require(['views/MetadataView'], function(MetadataView){
-					appView.metadataView = new MetadataView();
+					MetacatUI.appView.metadataView = new MetadataView();
 
 					//Send the id(s) to the view
-					appView.metadataView.seriesId = seriesId;
-					appView.metadataView.pid = pid;
+					MetacatUI.appView.metadataView.seriesId = seriesId;
+					MetacatUI.appView.metadataView.pid = pid;
 					
-					appView.showView(appView.metadataView);
+					MetacatUI.appView.showView(MetacatUI.appView.metadataView);
 				});
 			}
 			else{
 				//Send the id(s) to the view
-				appView.metadataView.seriesId = seriesId;
-				appView.metadataView.pid = pid;
+				MetacatUI.appView.metadataView.seriesId = seriesId;
+				MetacatUI.appView.metadataView.pid = pid;
 				
-				appView.showView(appView.metadataView);
+				MetacatUI.appView.showView(MetacatUI.appView.metadataView);
 			}
 		},
 		
-		
-		renderRegistry: function (stage, pid) {
-			this.routeHistory.push("registry");
+		/*
+          Renders the editor view given a root package identifier,
+          or a metadata identifier.  If the latter, the corresponding
+          package identifier will be queried and then rendered.
+        */
+		renderEditor: function (pid) {
+			this.routeHistory.push("share");
 			
-			if(!appView.registryView){
-				require(['views/RegistryView'], function(RegistryView){
-					appView.registryView = new RegistryView();
-					appView.registryView.stage = stage;
-					appView.registryView.pid = pid;
-					appView.showView(appView.registryView);
+			if( ! MetacatUI.appView.editorView ){
+				require(['views/EditorView'], function(EditorView) {
+					MetacatUI.appView.editorView = new EditorView({pid: pid});
+					MetacatUI.appView.editorView.pid = pid;
+					MetacatUI.appView.showView(MetacatUI.appView.editorView);
 				});
-			}
-			else{
-				appView.registryView.stage = stage;
-				appView.registryView.pid = pid;
-				appView.showView(appView.registryView);
-			}
-		},
-		
-		renderLdap: function (stage) {
-			this.routeHistory.push("ldap");
-			
-			if(!appView.ldapView){
-				require(["views/LdapView"], function(LdapView){
-					appView.ldapView = new LdapView();
-					appView.ldapView.stage = stage;
-					appView.showView(appView.ldapView);
-				});
-			}else{
-				appView.ldapView.stage = stage;
-				appView.showView(appView.ldapView);
+                
+			} else {
+				MetacatUI.appView.editorView.pid = pid;
+				MetacatUI.appView.showView(MetacatUI.appView.editorView);
+                
 			}
 		},
 		
 		renderLdapSignInError: function(){
 			this.routeHistory.push("signinldaperror");
 			
-			if(!appView.signInView){
+			if(!MetacatUI.appView.signInView){
 				require(['views/SignInView'], function(SignInView){
-					appView.signInView = new SignInView({ el: "#Content"});
-					appView.signInView.ldapError = true;
-					appView.showView(appView.signInView);
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
+					MetacatUI.appView.signInView.ldapError = true;
+					MetacatUI.appView.showView(MetacatUI.appView.signInView);
 				});
 			}
 			else{
-				appView.signInView.ldapError = true;
-				appView.showView(appView.signInView);
+				MetacatUI.appView.signInView.ldapError = true;
+				MetacatUI.appView.showView(MetacatUI.appView.signInView);
 			}
 		},
 		
@@ -161,18 +148,18 @@ function ($, _, Backbone) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
 			
-			if(((typeof appModel.get("tokenUrl") == "undefined") || !appModel.get("tokenUrl")) && !appView.registryView){
+			if(((typeof MetacatUI.appModel.get("tokenUrl") == "undefined") || !MetacatUI.appModel.get("tokenUrl")) && !MetacatUI.appView.registryView){
 				require(['views/RegistryView'], function(RegistryView){
-					appView.registryView = new RegistryView();
-					if(appView.currentView && appView.currentView.onClose)
-						appView.currentView.onClose();
-					appUserModel.logout();
+					MetacatUI.appView.registryView = new RegistryView();
+					if(MetacatUI.appView.currentView && MetacatUI.appView.currentView.onClose)
+						MetacatUI.appView.currentView.onClose();
+					MetacatUI.appUserModel.logout();
 				});
 			}
 			else{
-				if(appView.currentView && appView.currentView.onClose)
-					appView.currentView.onClose();
-				appUserModel.logout();
+				if(MetacatUI.appView.currentView && MetacatUI.appView.currentView.onClose)
+					MetacatUI.appView.currentView.onClose();
+				MetacatUI.appUserModel.logout();
 			}	
 		},
 		
@@ -180,22 +167,22 @@ function ($, _, Backbone) {
 			// use this for rendering "external" content pulled in dynamically
 			this.routeHistory.push("external");
 			
-			if(!appView.externalView){
+			if(!MetacatUI.appView.externalView){
 				require(['views/ExternalView'], function(ExternalView){				
-					appView.externalView = new ExternalView();
-					appView.externalView.url = url;
-					appView.showView(appView.externalView);
+					MetacatUI.appView.externalView = new ExternalView();
+					MetacatUI.appView.externalView.url = url;
+					MetacatUI.appView.showView(MetacatUI.appView.externalView);
 				});
 			}
 			else{
-				appView.externalView.url = url;
-				appView.showView(appView.externalView);	
+				MetacatUI.appView.externalView.url = url;
+				MetacatUI.appView.showView(MetacatUI.appView.externalView);	
 			}
 		},
 		
 		navigateToDefault: function(){
 			//Navigate to the default view
-			this.navigate(appModel.defaultView, {trigger: true});
+			this.navigate(MetacatUI.appModel.defaultView, {trigger: true});
 		},
 		
 		closeLastView: function(){

@@ -1,0 +1,45 @@
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Describe <span class="entity-name"><%=title%></span></h3>
+  </div>
+  <div class="modal-body entity-container">
+  	<ul class="nav nav-tabs">
+	  <li class="active overview-tab"><a href="#overview-<%=uniqueId%>">Overview</a></li>
+	  <li class="attributes-tab"><a href="#attributes-<%=uniqueId%>">Attributes</a></li>
+	</ul>
+	<div class="tab-content">
+		<div class="tab-pane active" id="overview-<%=uniqueId%>">
+		  	<div class="row-fluid overview-container">
+			  	<div class="preview-container"></div>
+		  	
+		  		<div class="description">
+				    <div class="entity-name basic-text-container" data-category="entityName">
+						<h5>Name <span class="required-icon">*</span></h5>
+						<div class="text-container">
+							<input type="text" data-category="entityName" class="basic-text" 
+							placeholder="Add a short name for this data" value="<%=entityName%>" >
+						</div>
+					</div>
+					
+					<div class="row-fluid">
+						<h5>Description</h5>
+						<div class="text-container">
+							<textarea data-category="entityDescription" placeholder="General description of this data file and its contents"><%=entityDescription%></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="tab-pane attributes" id="attributes-<%=uniqueId%>">
+			<div class="row-fluid">
+				<div class="attribute-menu-container"><ul class="attribute-menu side-nav-items"></ul></div>
+				<div class="attribute-list">
+				</div>
+			</div>
+		</div>
+	</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Done</button>
+  </div>
+</div>

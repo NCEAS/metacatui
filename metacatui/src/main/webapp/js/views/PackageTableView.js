@@ -62,8 +62,8 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			if(!this.model.complete) return false;
 
 			// Grab all of our URLs
-			var queryServiceUrl   = appModel.get('queryServiceUrl');
-			var packageServiceUrl = appModel.get('packageServiceUrl');
+			var queryServiceUrl   = MetacatUI.appModel.get('queryServiceUrl');
+			var packageServiceUrl = MetacatUI.appModel.get('packageServiceUrl');
 			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
@@ -119,7 +119,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			var downloadButtonHTML = "";
 			if(this.model.getURL() && this.model.get("id")){
 								
-				if(this.model.getTotalSize() < appModel.get("maxDownloadSize")){	
+				if(this.model.getTotalSize() < MetacatUI.appModel.get("maxDownloadSize")){	
 					
 					downloadButtonHTML = this.downloadButtonTemplate({ 
 						href: this.model.get("url"),
@@ -389,7 +389,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			});
 			var downloadButton = $.parseHTML(downloadButtonHTML.trim());
 			
-			//if(appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
+			//if(MetacatUI.appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
 			//$(downloadButton).on("click", null, this, this.download);
 			
 			$(downloadBtnCell).append(downloadButton);

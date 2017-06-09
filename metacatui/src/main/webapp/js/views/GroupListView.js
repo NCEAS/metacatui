@@ -100,7 +100,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			}
 						
 			//Add some group controls for the owners
-			if(group.isOwner(appUserModel))
+			if(group.isOwner(MetacatUI.appUserModel))
 				this.addControls();
 			
 			this.listenTo(group, "add", this.addMember);
@@ -120,7 +120,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				name     = member.get("fullName") || member.get("usernameReadable") || member.get("username");
 			
 			//If this is the currently-logged-in user, display "Me"
-			if(username == appUserModel.get("username"))
+			if(username == MetacatUI.appUserModel.get("username"))
 				name = name + " (Me)";
 			
 			//Create a list item for this member
@@ -150,13 +150,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 				this.$el.append(memberEl);
 			
 			//Add an owner icon for owners of the group or to assign owners to the group
-			if(this.collection.isOwner(member) || this.collection.isOwner(appUserModel)){
+			if(this.collection.isOwner(member) || this.collection.isOwner(MetacatUI.appUserModel)){
 				var ownerIcon = this.getOwnerEl(member);
 				memberIcon.after(ownerIcon);
 			}
 			
 			//If the current user is an owner of this group, then display a 'remove member' button - but not for themselves
-			if(this.collection.isOwner(appUserModel) && (username.toLowerCase() != appUserModel.get("username").toLowerCase())){
+			if(this.collection.isOwner(MetacatUI.appUserModel) && (username.toLowerCase() != MetacatUI.appUserModel.get("username").toLowerCase())){
 				//Add a remove icon for each member
 				var removeIcon = $(document.createElement("i")).addClass("icon icon-remove icon-negative remove-member"),
 					clearfix   = $(document.createElement("div")).addClass('clear'),
@@ -264,7 +264,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			var username = $(e.target).parents(".member").attr("data-username");
 			if(!username) return;
 			
-			if(username.toLowerCase() == appUserModel.get("username").toLowerCase()){
+			if(username.toLowerCase() == MetacatUI.appUserModel.get("username").toLowerCase()){
 				this.addMemberNotification({
 					status: "error",
 					msg: "You can't remove yourself from a group."
@@ -354,7 +354,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			//Make sure we have at least one owner in this group left
 			var	newOwners = _.without( this.collection.getOwners(), member);
 			if(newOwners.length < 1){
-				appView.showAlert("Groups need to have at least one owner.", "aler-error", this.$el, true);
+				MetacatUI.appView.showAlert("Groups need to have at least one owner.", "aler-error", this.$el, true);
 				return;
 			}
 			
@@ -400,7 +400,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		},
 		
 		addControls: function(){
-			if(!appUserModel.get("loggedIn") || (!this.collection.isOwner(appUserModel)) || this.$addMember) return;
+			if(!MetacatUI.appUserModel.get("loggedIn") || (!this.collection.isOwner(MetacatUI.appUserModel)) || this.$addMember) return;
 			
 			//Add a form for adding a new member
 			var addMemberInput    = $(document.createElement("input"))
@@ -482,9 +482,9 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 		            _.each(ignoreIds, function(id){
 		            	ignoreIds.push(id.toLowerCase());
 		            });		            
-		            ignoreIds.push(appUserModel.get("username").toLowerCase());
+		            ignoreIds.push(MetacatUI.appUserModel.get("username").toLowerCase());
 
-		            var url = appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
+		            var url = MetacatUI.appModel.get("accountsUrl") + "?query=" + encodeURIComponent(term);					
 					var requestSettings = {
 							url: url, 
 							type: "GET",
@@ -507,11 +507,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 					            response(list);
 							}
 					}
-					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		            
 					//Send an ORCID search when the search string gets long enough
 					if(request.term.length > 3)
-						appLookupModel.orcidSearch(request, response, false, ignoreIds);
+						MetacatUI.appLookupModel.orcidSearch(request, response, false, ignoreIds);
 		        },
 				select: function(e, ui) {
 					e.preventDefault();

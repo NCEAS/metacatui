@@ -74,7 +74,7 @@ define(['jquery',
 		setUpTree : function() {
 			this.$el.append('<div id="bioportal-tree"></div>');
 			var tree = $("#bioportal-tree").NCBOTree({
-				  apikey: appModel.get("bioportalAPIKey"),
+				  apikey: MetacatUI.appModel.get("bioportalAPIKey"),
 				  ontology: "ECSO"
 				});
 			
@@ -115,7 +115,7 @@ define(['jquery',
 		
 		setUpAnnotator: function() {
 						
-			var bioportalSearchUrl = appModel.get('bioportalSearchUrl');
+			var bioportalSearchUrl = MetacatUI.appModel.get('bioportalSearchUrl');
 			if (!bioportalSearchUrl) {
 				// do not use annotator
 				console.log("bioportalSearchUrl is not configured, annotation is disabled");
@@ -124,12 +124,12 @@ define(['jquery',
 			}
 			
 			// get the pid
-			var pid = appModel.get('pid');
+			var pid = MetacatUI.appModel.get('pid');
 			
 			// which URI are we annotating?
 			var uri = null;
 			//uri = window.location.href;
-			uri = appModel.get("resolveServiceUrl") + pid;
+			uri = MetacatUI.appModel.get("resolveServiceUrl") + pid;
 			// TODO: use a more stable URI?
 			//uri = "https://cn.dataone.org/cn/v2/resolve/" + pid;
 			
@@ -142,10 +142,10 @@ define(['jquery',
 
 			// use authentication plugin if configured
 			var authOptions = false;
-			if (appUserModel.get('token')) {
-			//if (appModel.get('tokenUrl')) {
+			if (MetacatUI.appUserModel.get('token')) {
+			//if (MetacatUI.appModel.get('tokenUrl')) {
 				// check if we are using our own token generator
-				var tokenUrl = appModel.get('tokenUrl');
+				var tokenUrl = MetacatUI.appModel.get('tokenUrl');
 				authOptions = {
 					tokenUrl: tokenUrl,
 				}
@@ -157,7 +157,7 @@ define(['jquery',
 				Tags: false,
 				Auth: authOptions,
 				Store: {
-					prefix: appModel.get('annotatorUrl'),
+					prefix: MetacatUI.appModel.get('annotatorUrl'),
 					annotationData: {
 						'uri': uri,
 						'pid': pid
@@ -236,7 +236,7 @@ define(['jquery',
 		    
 		    
 			this.$el.data('annotator').plugins.Tags.input.semHoverAutocomplete({
-				source: appLookupModel.bioportalSearch,
+				source: MetacatUI.appLookupModel.bioportalSearch,
 				position: {
 					my: "left top",
 					at: "left bottom",
@@ -305,7 +305,7 @@ define(['jquery',
 					var type = $(resourceElem).attr('type');
 					if (type == "orcid_sm" || type == "party") {
 						view.$el.data('annotator').plugins.Tags.input.semHoverAutocomplete({
-							source: appLookupModel.orcidSearch,
+							source: MetacatUI.appLookupModel.orcidSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "prov:wasAttributedTo"});
@@ -313,7 +313,7 @@ define(['jquery',
 
 					} else {
 						view.$el.data('annotator').plugins.Tags.input.semHoverAutocomplete({
-							source: appLookupModel.bioportalSearch,
+							source: MetacatUI.appLookupModel.bioportalSearch,
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
@@ -322,7 +322,7 @@ define(['jquery',
 					
 					// set up the tree
 					var tree = $("#bioportal-tree-annotator").NCBOTree({
-						  apikey: appModel.get("bioportalAPIKey"),
+						  apikey: MetacatUI.appModel.get("bioportalAPIKey"),
 						  ontology: "ECSO",
 						  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
 						});
@@ -369,7 +369,7 @@ define(['jquery',
 						});
 						$(element).after(annotationPopover);
 					};
-					appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);
+					MetacatUI.appLookupModel.bioportalGetConcepts(conceptUri, renderAnnotation);
 					
 					
 				});
@@ -446,7 +446,7 @@ define(['jquery',
 			// now look them up and render when finished
 			var annotatorEl = (typeof this.$el != "undefined")? this.$el : this,
 					view = $(annotatorEl).data("annotator-view");
-			appLookupModel.bioportalGetConceptsBatch(
+			MetacatUI.appLookupModel.bioportalGetConceptsBatch(
 					uris, 
 					function() {view.renderAnnotations(annotations);});
 			
@@ -512,7 +512,7 @@ define(['jquery',
 							.prepend($(document.createElement("i"))
 										.addClass("icon-on-left icon-plus"));
 			
-			if (!appUserModel.get("loggedIn")) {
+			if (!MetacatUI.appUserModel.get("loggedIn")) {
 				addBtn.addClass("disabled");
 			}
 			
@@ -574,7 +574,7 @@ define(['jquery',
 					section.append(view.annotationTemplate({
 						annotation: annotation,
 						concept: null,
-						appUserModel: appUserModel
+						appUserModel: MetacatUI.appUserModel
 					}));	
 				
 				}
@@ -587,11 +587,11 @@ define(['jquery',
 			console.log("renderAnnotation");
 			
 			var canEdit = 
-				_.contains(annotationModel.get("permissions").admin, appUserModel.get("username"))
+				_.contains(annotationModel.get("permissions").admin, MetacatUI.appUserModel.get("username"))
 				||
-				_.contains(annotationModel.get("permissions").update, appUserModel.get("username"))
+				_.contains(annotationModel.get("permissions").update, MetacatUI.appUserModel.get("username"))
 				|| 
-				_.contains(annotationModel.get("permissions").delete, appUserModel.get("username"));
+				_.contains(annotationModel.get("permissions").delete, MetacatUI.appUserModel.get("username"));
 			
 			// render it in the document
 			var highlight = $("[data-annotation-id='" + annotationModel.get("id") + "']");

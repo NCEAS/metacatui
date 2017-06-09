@@ -547,7 +547,39 @@ footer .logos a:hover, a:focus{
     	background-color: #19B36A;
     }
     
- 
+/* EDITOR 
+----------------------- */
+.Editor .dropdown-menu li {
+    float: left;
+    position: relative;
+    width: 100%;
+}
+   
+.Editor .dropdown-menu li a {
+    background-color: #1F254F;
+    background-image: none;
+    color: #FFF;
+    font-weight: lighter;
+    font-family: "AllerLight";
+    text-align: left;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.Editor .dropdown-menu li a:hover {
+    background-color: #19B36A;
+}
+   
+.data-package-item .edit{
+	color: #19B36A;
+}
+.data-package-item .edit:hover{
+	color: #22ea8b;
+}
+.eml-entity .nav-tabs li.active a {
+    border-top: 2px solid #1E254F;
+}
+    
 /* MAPS 
 --------------------------------- */
 #map-container{
@@ -769,7 +801,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	font-size: 14px;
     }
     #Content{
-    	padding-top: 132px;
+    	padding-top: 118px;
     }
     .mapMode #Content{
     	padding-top: 112px;
@@ -1421,6 +1453,28 @@ MDQ items
 	.select-editable input:focus { 
 		outline:none; 
 	}	
+	
+  /* EDITOR CSS
+  -------------------------------------------------- */	
+	.side-nav-item a{
+		color: #1E254F;
+	}
+
+	.side-nav-item a.active{
+		background-color: #1E254F;
+		transition: none;
+		color: #FFFFFF;
+	}
+	
+	.side-nav-item a:focus{
+		text-decoration: none;
+	}
+	
+	.side-nav-item a:hover{
+		background-color: #313d81;
+		transition: none;
+		color: #FFFFFF;
+	}
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
@@ -2165,8 +2219,6 @@ MDQ items
  
  pre{
 	 padding: 10px;
-	background: rgba(22,97,148,0.7);
-	color: #FFFFFF;
 	font-size: 15px;
 	border-radius: 5px;
 	-moz-border-radius: 5px;

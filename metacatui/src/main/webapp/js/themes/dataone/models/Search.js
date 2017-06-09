@@ -44,7 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				additionalCriteria: [],
 				dataSource: [],
 				id: [],
-				seriesId: appModel.get("useSeriesId")? [] : undefined,
+				seriesId: [],
 				formatType: [{
 					value: "METADATA",
 					label: "science metadata",
@@ -277,8 +277,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(this.filterIsAvailable("attribute") && ((filter == "attribute") || getAll) && this.get("attribute").length){
 				var attribute = this.get('attribute');
 				if (attribute) {
-					if(this.filterIsAvailable("annotation") && appModel.get("bioportalSearchUrl")){
-						var expandedAttributes = appLookupModel.bioportalExpand(attribute[0].value);
+					if(this.filterIsAvailable("annotation") && MetacatUI.appModel.get("bioportalSearchUrl")){
+						var expandedAttributes = MetacatUI.appLookupModel.bioportalExpand(attribute[0].value);
 						query += "+" + this.getGroupedQuery(this.fieldNameMap["attribute"], expandedAttributes, {operator: "OR"});
 					}
 					else
@@ -419,14 +419,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					
 					query += "+" + filterValue;
 				}
-			}
-			
-			//-----Theme restrictions from Registry Model-----
-			if((filter == "registryCriteria") || getAll){
-				var registryCriteria = registryModel.get('searchFields');
-				_.each(registryCriteria, function(value, key, list) {
-					query += "+" + model.escapeSpecialChar(value);
-				});
 			}
 			
 			//-----Other Filters/Basic Filters-----			

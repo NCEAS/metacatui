@@ -25,24 +25,24 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		},
 		
 		initialize: function () {
-			// listen to the appModel for changes in username
-			this.listenTo(appUserModel, 'change:username', this.render);
-			this.listenTo(appUserModel, 'change:fullName', this.render);
-			this.listenTo(appUserModel, 'change:loggedIn', this.render);
-			this.listenTo(appModel, 'change:headerType', this.toggleHeaderType);				
+			// listen to the MetacatUI.appModel for changes in username
+			this.listenTo(MetacatUI.appUserModel, 'change:username', this.render);
+			this.listenTo(MetacatUI.appUserModel, 'change:fullName', this.render);
+			this.listenTo(MetacatUI.appUserModel, 'change:loggedIn', this.render);
+			this.listenTo(MetacatUI.appModel, 'change:headerType', this.toggleHeaderType);				
 		},
 				
 		render: function () {		
-			var name = appUserModel.get('fullName') ? appUserModel.get('fullName').charAt(0).toUpperCase() + appUserModel.get("fullName").substring(1) : appUserModel.get("username");
+			var name = MetacatUI.appUserModel.get('fullName') ? MetacatUI.appUserModel.get('fullName').charAt(0).toUpperCase() + MetacatUI.appUserModel.get("fullName").substring(1) : MetacatUI.appUserModel.get("username");
 			
 			//Insert the navbar template			
 			this.$el.html(
 				this.template({
-					username:   appUserModel.get('username'),
+					username:   MetacatUI.appUserModel.get('username'),
 					formattedName:   name,
-					firstName:  appUserModel.get('firstName'),
-					loggedIn:   appUserModel.get("loggedIn"),
-					baseUrl:    appModel.get('baseUrl')
+					firstName:  MetacatUI.appUserModel.get('firstName'),
+					loggedIn:   MetacatUI.appUserModel.get("loggedIn"),
+					baseUrl:    MetacatUI.appModel.get('baseUrl')
 				}));
 			
 			//Insert the sign-in button
@@ -67,16 +67,16 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			$("#search_txt").val('');
 			
 			//Clear the search model to start a fresh search
-			appSearchModel.clear().set(appSearchModel.defaults);
+			appSearchModel.clear().set(MetacatUI.appSearchModel.defaults);
 			
 			//Create a new array with the new search term
 			var newSearch = [searchTerm];
 			
 			//Set up the search model for this new term
-			appSearchModel.set('all', newSearch);
+			MetacatUI.appSearchModel.set('all', newSearch);
 			
 			// make sure the browser knows where we are
-			uiRouter.navigate("data", {trigger: true});
+			MetacatUI.uiRouter.navigate("data", {trigger: true});
 			
 			// ...but don't want to follow links
 			return false;
@@ -85,18 +85,18 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		
 		resetSearch: function(e){ 
 			e.preventDefault();
-			appView.resetSearch(); 
+			MetacatUI.appView.resetSearch(); 
 		},
 		
 		resetEditor: function(e){
 			e.preventDefault();
 			
 			//If we're currently on the editor view then refresh
-			if(appView.currentView.type == "Editor")
-				appView.showView(appView.registryView);
+			if(MetacatUI.appView.currentView.type == "Editor")
+				MetacatUI.appView.showView(MetacatUI.appView.registryView);
 			//Otherwise, just navigate to it
 			else
-				uiRouter.navigate("share", { trigger: true });
+				MetacatUI.uiRouter.navigate("share", { trigger: true });
 		},
 		
 		hideDropdown: function(){
@@ -131,7 +131,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		
 		toggleHeaderType: function(){
 			// set the navbar class based on what the page requested
-			var headerType = appModel.get('headerType');
+			var headerType = MetacatUI.appModel.get('headerType');
 			if (headerType == "default") {
 				//Remove the alt class
 				$(this.$el).removeClass("alt");

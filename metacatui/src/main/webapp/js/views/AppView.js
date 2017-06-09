@@ -1,15 +1,15 @@
-/*global define */
+﻿﻿/*global define */
 define(['jquery',
-				'underscore', 
-				'backbone',
-				'views/AltHeaderView',
-				'views/NavbarView',
-				'views/FooterView',
-				'text!templates/alert.html',
-				'text!templates/appHead.html',
-				'text!templates/app.html',
-				'text!templates/loading.html'
-				], 				
+		'underscore', 
+		'backbone',
+		'views/AltHeaderView',
+		'views/NavbarView',
+		'views/FooterView',
+		'text!templates/alert.html',
+		'text!templates/appHead.html',
+		'text!templates/app.html',
+		'text!templates/loading.html'
+	    ], 				
 	function($, _, Backbone, AltHeaderView, NavbarView, FooterView, AlertTemplate, AppHeadTemplate, AppTemplate, LoadingTemplate) {
 	'use strict';
 	
@@ -52,13 +52,13 @@ define(['jquery',
 			}
 			
 			//Is there a logged-in user?
-			appUserModel.checkStatus();
+			MetacatUI.appUserModel.checkStatus();
 
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!			
 			$("head").prepend(this.appHeadTemplate({
-				theme: theme, 
-				themeTitle: themeTitle,
-				googleAnalyticsKey: appModel.get("googleAnalyticsKey")
+				theme: MetacatUI.theme, 
+				themeTitle: MetacatUI.themeTitle,
+				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
 				}));
 									
 			// set up the body
@@ -75,8 +75,8 @@ define(['jquery',
 			app.footerView.setElement($('#Footer')).render();
 			
 			//Load the Slaask chat widget if it is enabled in this theme
-			if(appModel.get("slaaskKey") && window._slaask)
-		    	_slaask.init(appModel.get("slaaskKey"));
+			if(MetacatUI.appModel.get("slaaskKey") && window._slaask)
+		    	_slaask.init(MetacatUI.appModel.get("slaaskKey"));
 			
 			// listen for image loading - bind only once in init method
 			var imageEl = $('#bg_image');
@@ -87,8 +87,8 @@ define(['jquery',
 				});
 			}
 			
-			//Change the document title when the app changes the appModel title at any time
-			this.listenTo(appModel, "change:title", this.changeTitle);
+			//Change the document title when the app changes the MetacatUI.appModel title at any time
+			this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
 			
 			this.listenForActivity();
 			
@@ -97,7 +97,7 @@ define(['jquery',
 		
 		//Changes the web document's title
 		changeTitle: function(){
-			document.title = appModel.get("title");
+			document.title = MetacatUI.appModel.get("title");
 		},
 				
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -148,7 +148,7 @@ define(['jquery',
 				//Check if the view will need to cancel the close
 				if((typeof this.currentView.confirmClose == "function") && (this.currentView != view)){
 					if(!this.currentView.confirmClose()){
-						uiRouter.undoLastRoute();
+						MetacatUI.uiRouter.undoLastRoute();
 						return;
 					}
 				}
@@ -195,7 +195,7 @@ define(['jquery',
 		},	
 		
 		sendAnalytics: function(){
-			if(!appModel.get("googleAnalyticsKey") || (typeof ga === "undefined")) return;
+			if(!MetacatUI.appModel.get("googleAnalyticsKey") || (typeof ga === "undefined")) return;
 			
 			var page = window.location.hash || "/";
 			page = page.replace("#", ""); //remove the leading pound sign
@@ -215,7 +215,7 @@ define(['jquery',
 			
 			if(!val) return false;
 			
-			uiRouter.navigate('view/'+ val, {trigger: true});
+			MetacatUI.uiRouter.navigate('view/'+ val, {trigger: true});
 		},
 		
 		routeToMetadataOnEnter: function(e){
@@ -238,15 +238,15 @@ define(['jquery',
 		
 		resetSearch: function(){
 			// Clear the search and map model to start a fresh search
-			appSearchModel.clear();
-			appSearchModel.set(appSearchModel.defaults);
-			mapModel.clear();
-			mapModel.set(mapModel.defaults);
+			MetacatUI.appSearchModel.clear();
+			MetacatUI.appSearchModel.set(MetacatUI.appSearchModel.defaults);
+			MetacatUI.mapModel.clear();
+			MetacatUI.mapModel.set(MetacatUI.mapModel.defaults);
 			
 			//Clear the search history
-			appModel.set("searchHistory", new Array());
+			MetacatUI.appModel.set("searchHistory", new Array());
 			
-			uiRouter.navigate('data', {trigger: true});
+			MetacatUI.uiRouter.navigate('data', {trigger: true});
 		},
 		
 		closePopovers: function(e){
@@ -271,7 +271,7 @@ define(['jquery',
 			});		
 		},
 		
-		showAlert: function(msg, classes, container, delay) {
+showAlert: function(msg, classes, container, delay, options) {
 			if(!classes)
 				var classes = 'alert-success';
 			if(!container || !$(container).length)
@@ -281,15 +281,30 @@ define(['jquery',
 			if($(container).children(".alert-container").length > 0)
 				$(container).children(".alert-container").remove();
 			
+			//Allow messages to be HTML or strings
+			if(typeof msg != "string")
+				msg = $(document.createElement("div")).append($(msg)).html();
+			
+			var emailOptions = "";
+			
+			//Check for more options
+			if(typeof options != "undefined" && options.emailBody)
+				emailOptions += "?body=" + options.emailBody;
+			
+			//Allow error messages to be removed
+			var remove = options? options.remove : false;
+			
 			var alert = $.parseHTML(this.alertTemplate({
 				msg: msg,
-				classes: classes
+				classes: classes,
+				emailOptions: emailOptions,
+				remove: remove
 			}).trim());
 			
 			if(delay){
 				$(alert).hide();
 				$(container).prepend(alert);
-				$(alert).show().delay(3000).fadeOut();
+				$(alert).show().delay(typeof delay == "number"? delay : 3000).fadeOut();
 			}
 			else
 				$(container).prepend(alert);
@@ -298,19 +313,19 @@ define(['jquery',
 		// Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else
 		// When a user checks back, we want to check for log-in status
 		listenForActivity: function(){
-			appUserModel.on("change:loggedIn", function(){
-				if(!appUserModel.get("loggedIn")) return;
+			MetacatUI.appUserModel.on("change:loggedIn", function(){
+				if(!MetacatUI.appUserModel.get("loggedIn")) return;
 					
 				//Check the user's token on focus
 				$(window).focus(function(){
-					if(!appUserModel.get("loggedIn")) return;
+					if(!MetacatUI.appUserModel.get("loggedIn")) return;
 					
-					if(appModel.get("tokenUrl")){
+					if(MetacatUI.appModel.get("tokenUrl")){
 						//If the user's token is no longer valid, then refresh the page
-						appUserModel.checkToken();
+						MetacatUI.appUserModel.checkToken();
 					}
 					else{
-						appUserModel.checkStatus();
+						MetacatUI.appUserModel.checkStatus();
 					}
 				});
 			});
@@ -319,7 +334,7 @@ define(['jquery',
 		openChatWithMessage: function(){
 			if(!_slaask) return;
 
-	    	$("#slaask-input").val(appModel.get("defaultSupportMessage"));
+	    	$("#slaask-input").val(MetacatUI.appModel.get("defaultSupportMessage"));
 	    	$("#slaask-button").trigger("click");	
 			
 		},
@@ -396,10 +411,11 @@ define(['jquery',
 		
 		scrollTo: function(pageElement, offsetTop){
 			//Find the header height if it is a fixed element
-			var headerOffset = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
+			if(typeof offsetTop == "undefined")
+				var offsetTop = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
 			
 			$("body,html").stop(true,true) //stop first for it to work in FF
-						  .animate({ scrollTop: $(pageElement).offset().top - 40 - headerOffset}, 1000);
+						  .animate({ scrollTop: $(pageElement).offset().top - 40 - offsetTop}, 1000);
 			return false;
 		},
 		

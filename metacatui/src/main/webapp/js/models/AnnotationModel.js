@@ -19,14 +19,14 @@ define(['jquery', 'underscore', 'backbone'],
 		
 		bioportalGetConcepts: function(uri) {
 			var model = this;
-			appLookupModel.bioportalGetConcepts(uri, function(concepts){
+			MetacatUI.appLookupModel.bioportalGetConcepts(uri, function(concepts){
 				model.set("concept", concepts[0]);
 			});						
 		},
 		
 		orcidGetConcepts: function(uri) {
 			var model = this;
-			appLookupModel.orcidGetConcepts(uri, function(concepts){
+			MetacatUI.appLookupModel.orcidGetConcepts(uri, function(concepts){
 				model.set("concept", concepts[0]);
 			});
 		},
@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 			
 			var requestSettings = {
-				url: appModel.get("accountsUrl") + encodeURIComponent(username),
+				url: MetacatUI.appModel.get("accountsUrl") + encodeURIComponent(username),
 				type: "GET",
 				success: function(data, textStatus, xhr){
 					var lastName = $(data).find("person").first().find("familyName").text(),
@@ -55,7 +55,7 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 			}
 			
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()))
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()))
 		}
 	});
 	

@@ -1,10 +1,10 @@
-var theme = theme || "default";
-var themeTitle = "Metacat Data Catalog";
-var themeMap = 
+MetacatUI.theme = MetacatUI.theme || "default";
+MetacatUI.themeTitle = "Metacat Data Catalog";
+MetacatUI.themeMap = 
 {
 	'*': {
 		// example overrides are provided here
-		//'views/AboutView' : 'themes/' + theme + '/views/AboutView.js',
-		//'templates/navbar.html' : 'themes/' + theme + '/templates/navbar.html'
+		//'views/AboutView' : 'themes/' + MetacatUI.theme + '/views/AboutView.js',
+		//'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html'
 		}
 };

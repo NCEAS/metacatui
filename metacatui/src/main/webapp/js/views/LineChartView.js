@@ -397,7 +397,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  
 				  labels.append("text")
 				  		.text(function(d, i){
-				  			return viewRef.labelValue + appView.commaSeparateNumber(d.count);
+				  			return viewRef.labelValue + MetacatUI.appView.commaSeparateNumber(d.count);
 				  		})
 				  		.attr("x", function(d, i){
 				  			var xPos = viewRef.x(d.date) - (labelWidth/2);

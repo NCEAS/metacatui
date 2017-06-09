@@ -26,7 +26,7 @@
 				<div id="ldap-login" class="accordion-body <% if(collapseLdap) { %> collapse <% } %>">
 					 <div class="accordion-inner center">
 					 
-					 	<form action="<%=(appModel.get('signInUrlLdap') + redirectUrl)%>"
+					 	<form action="<%=(MetacatUI.appModel.get('signInUrlLdap') + redirectUrl)%>"
 					 	id="SignInLdap" class="form-inline input-group" 
 					 	method="post" 
 					   	onsubmit="if (this.usernameVisible.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.usernameVisible.value + ',' + this.rdn.value;} return true;">

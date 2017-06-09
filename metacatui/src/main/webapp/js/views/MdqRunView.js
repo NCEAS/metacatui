@@ -13,7 +13,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 			"change #suiteId" : "switchSuite"
 		},
 
-		suitesUrl: appModel.get("mdqUrl") + "suites/",
+		suitesUrl: MetacatUI.appModel.get("mdqUrl") + "suites/",
 
 		url: null,
 
@@ -39,7 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 
 			var suiteId = $(select).val();
 
-			uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: true});
+			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: true});
 
 			return false;
 		},
@@ -81,11 +81,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 								viewRef.showResults(formData);
 						    }
 						}
-						var url = appModel.get("objectServiceUrl") + viewRef.pid;
+						var url = MetacatUI.appModel.get("objectServiceUrl") + viewRef.pid;
 						xhr.open('GET', url);
 						xhr.responseType = 'blob';
 						xhr.withCredentials = true;
-						xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+						xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
 						xhr.send();
 		
 						//Render a Citation View for the page header
@@ -94,11 +94,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 						viewRef.citationView = citationView;
 				    }
 				}
-				var url = appModel.get("metaServiceUrl") + this.pid;
+				var url = MetacatUI.appModel.get("metaServiceUrl") + this.pid;
 				xhr.open('GET', url);
 				xhr.responseType = 'blob';
 				xhr.withCredentials = true;
-				xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
+				xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
 				xhr.send();
 				
 			} else {
@@ -304,7 +304,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
-				this.$('.format-charts-data').html("<h2 class='" + svgClass + " fallback'>" + appView.commaSeparateNumber(dataCount) + " data files</h2>");
+				this.$('.format-charts-data').html("<h2 class='" + svgClass + " fallback'>" + MetacatUI.appView.commaSeparateNumber(dataCount) + " data files</h2>");
 
 				return;
 			}

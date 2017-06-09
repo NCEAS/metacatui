@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'],
 			appSearchModel.set('all', newSearch);
 			
 			// make sure the browser knows where we are going
-			uiRouter.navigate("data", {trigger: true});
+			MetacatUI.uiRouter.navigate("data", {trigger: true});
 			
 			// ...but don't want to follow links
 			return false;

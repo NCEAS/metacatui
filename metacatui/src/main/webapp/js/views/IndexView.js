@@ -26,7 +26,7 @@ define(['jquery',
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
 		render: function () {			
-			appModel.set('headerType', 'alt');
+			MetacatUI.appModel.set('headerType', 'alt');
 						
 			this.$el.html('<section id="mainContent" /><section id="FeaturedData" />');			
 			var maincontentView = new MainContentView();

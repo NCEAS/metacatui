@@ -115,31 +115,31 @@ define(['jquery',
 		render: function () {
 			
 			//Use the global models if there are no other models specified at time of render
-			if((appModel.get("searchHistory").length > 0) && (!this.searchModel || Object.keys(this.searchModel).length == 0)){
-				this.searchModel = _.last(appModel.get("searchHistory")).search.clone();
-				mapModel = _.last(appModel.get("searchHistory")).map.clone();
+			if((MetacatUI.appModel.get("searchHistory").length > 0) && (!this.searchModel || Object.keys(this.searchModel).length == 0)){
+				this.searchModel = _.last(MetacatUI.appModel.get("searchHistory")).search.clone();
+				MetacatUI.mapModel = _.last(MetacatUI.appModel.get("searchHistory")).map.clone();
 			}
-			else if((typeof appSearchModel !== "undefined") && (!this.searchModel || Object.keys(this.searchModel).length == 0))
-				this.searchModel = appSearchModel;
+			else if((typeof MetacatUI.appSearchModel !== "undefined") && (!this.searchModel || Object.keys(this.searchModel).length == 0))
+				this.searchModel = MetacatUI.appSearchModel;
 			
-		    if(((typeof this.searchResults === "undefined") || (!this.searchResults || Object.keys(this.searchResults).length == 0)) && (appSearchResults && (Object.keys(appSearchResults).length > 0))) 
-		    	this.searchResults = appSearchResults;
+		    if(((typeof this.searchResults === "undefined") || (!this.searchResults || Object.keys(this.searchResults).length == 0)) && (MetacatUI.appSearchResults && (Object.keys(MetacatUI.appSearchResults).length > 0))) 
+		    	this.searchResults = MetacatUI.appSearchResults;
 		    
 			//Get the search mode - either "map" or "list"
 			if((typeof this.mode === "undefined") || !this.mode){
-				this.mode = appModel.get("searchMode");
+				this.mode = MetacatUI.appModel.get("searchMode");
 				if((typeof this.mode === "undefined") || !this.mode)
 					this.mode = "map";
 				
-				appModel.set("searchMode", this.mode);
+				MetacatUI.appModel.set("searchMode", this.mode);
 			}
 			if($(window).outerWidth() <= 600){ 
 				this.mode = "list"; 
-				appModel.set("searchMode", "list");
+				MetacatUI.appModel.set("searchMode", "list");
 				gmaps = null;
 			}
 			
-			appModel.set('headerType', 'default');
+			MetacatUI.appModel.set('headerType', 'default');
 			$("body").addClass("DataCatalog");
 			
 			//Populate the search template with some model attributes
@@ -148,15 +148,14 @@ define(['jquery',
 			});
 			
 			var templateVars = {	
-					searchOptions   : registryModel.get('searchOptions'),
 					gmaps           : gmaps,
-					mode		    : appModel.get("searchMode"),
+					mode		    : MetacatUI.appModel.get("searchMode"),
 					useMapBounds    : this.searchModel.get("useGeohash"),
-					username        : appUserModel.get('username'),
-					isMySearch      : (_.indexOf(this.searchModel.get("username"), appUserModel.get("username")) > -1),
+					username        : MetacatUI.appUserModel.get('username'),
+					isMySearch      : (_.indexOf(this.searchModel.get("username"), MetacatUI.appUserModel.get("username")) > -1),
 					loading         : loadingHTML,
 					searchModelRef  : this.searchModel, 
-					dataSourceTitle : (window.theme == "dataone") ? "Member Node" : "Data source"
+					dataSourceTitle : (MetacatUI.theme == "dataone") ? "Member Node" : "Data source"
 				}
 			var cel = this.template(_.extend(this.searchModel.toJSON(), templateVars));
 			
@@ -230,7 +229,7 @@ define(['jquery',
 			// needs to be bound before the listenTo call can be made
 			this.stopListening(this.searchResults);
 			this.stopListening(this.searchModel);
-			this.stopListening(appModel);
+			this.stopListening(MetacatUI.appModel);
 			this.listenTo(this.searchResults, 'reset', this.cacheSearch);
 			this.listenTo(this.searchResults, 'add', this.addOne);
 			this.listenTo(this.searchResults, 'reset', this.addAll);
@@ -238,12 +237,12 @@ define(['jquery',
 			
 			//List data sources
 			this.listDataSources();
-			this.listenTo(nodeModel, 'change:members', this.listDataSources);
+			this.listenTo(MetacatUI.nodeModel, 'change:members', this.listDataSources);
 			
-			// listen to the appModel for the search trigger			
-			this.listenTo(appModel, 'search', this.getResults);
+			// listen to the MetacatUI.appModel for the search trigger			
+			this.listenTo(MetacatUI.appModel, 'search', this.getResults);
 			
-			this.listenTo(appUserModel, "change:loggedIn", this.triggerSearch);
+			this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.triggerSearch);
 			
 			// and go to a certain page if we have it
 			this.getResults();	
@@ -255,7 +254,7 @@ define(['jquery',
 				$(".auto-height-member").resize(this.setAutoHeight);
 			}
 
-			if (appModel.get("bioportalAPIKey")) {
+			if (MetacatUI.appModel.get("bioportalAPIKey")) {
 				this.setUpTree();
 			}
 			
@@ -266,7 +265,7 @@ define(['jquery',
 			this.$el.data("data-catalog-view", this);
 
 			var tree = $("#bioportal-tree").NCBOTree({
-				  apikey: appModel.get("bioportalAPIKey"),
+				  apikey: MetacatUI.appModel.get("bioportalAPIKey"),
 				  ontology: "ECSO",
 				  width: "400",
 				  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
@@ -428,8 +427,8 @@ define(['jquery',
 		 */
 		setAutoHeight: function(){
 			//If we are in list mode, don't determine the height of any elements because we are not "full screen"
-			if(appModel.get("searchMode") == "list"){
-				appView.$(".auto-height").height("auto");
+			if(MetacatUI.appModel.get("searchMode") == "list"){
+				MetacatUI.appView.$(".auto-height").height("auto");
 				return;
 			}
 			
@@ -460,8 +459,8 @@ define(['jquery',
 			}
 			
 			//Trigger a resize for the map so that all of the map background images are loaded
-			if(gmaps && mapModel.get("map"))
-				google.maps.event.trigger(mapModel.get("map"), 'resize');
+			if(gmaps && MetacatUI.mapModel.get("map"))
+				google.maps.event.trigger(MetacatUI.mapModel.get("map"), 'resize');
 		},
 		
 		/**
@@ -477,14 +476,14 @@ define(['jquery',
 				this.searchModel.set('sortOrder', sortOrder);
 						
 			//Trigger a search to load the results
-			appModel.trigger('search');
+			MetacatUI.appModel.trigger('search');
 			
 			// make sure the browser knows where we are
 			var route = Backbone.history.fragment;
 			if (route.indexOf("data") < 0) {
-				uiRouter.navigate("data");
+				MetacatUI.uiRouter.navigate("data");
 			} else {
-				uiRouter.navigate(route);
+				MetacatUI.uiRouter.navigate(route);
 			}
 			
 			// ...but don't want to follow links
@@ -531,7 +530,7 @@ define(['jquery',
 			if(this.isSubView)
 				var page = 0;
 			else{
-				var page = appModel.get("page");
+				var page = MetacatUI.appModel.get("page");
 				if (page == null) {
 					page = 0;
 				}
@@ -557,7 +556,7 @@ define(['jquery',
 		 * After the search results have been returned, check if any of them are derived data or have derivations
 		 */
 		checkForProv: function(){
-			if(!appModel.get("prov")) return;
+			if(!MetacatUI.appModel.get("prov")) return;
 			
 			var maps = [],
 				hasSources = [],
@@ -623,11 +622,11 @@ define(['jquery',
 		},
 		
 		cacheSearch: function(){
-			appModel.get("searchHistory").push({
+			MetacatUI.appModel.get("searchHistory").push({
 				search:  this.searchModel.clone(),
-				map:     mapModel.clone()
+				map:     MetacatUI.mapModel.clone()
 			});
-			appModel.trigger("change:searchHistory");
+			MetacatUI.appModel.trigger("change:searchHistory");
 		},
 		
 		/**
@@ -735,7 +734,7 @@ define(['jquery',
 			this.triggerSearch();
 			
 			//Send this event to Google Analytics
-			if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+			if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
 				ga("send", "event", "search", "filter, " + category, value);
 		},
 		
@@ -906,7 +905,7 @@ define(['jquery',
 					  $("#filter-year").buttonset("refresh");
 					  
 					 //Send this event to Google Analytics
-				   	 if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+				   	 if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
 						ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
 					
 					}
@@ -916,7 +915,7 @@ define(['jquery',
 							this.showFilter($('#publish_year').attr("data-category"), true, true, minVal + " to " + maxVal, {replace: true});
 							
 							//Send this event to Google Analytics
-							if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+							if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
 								ga("send", "event", "search", "filter, Publication Year", minVal + " to " + maxVal);
 						}
 						else
@@ -926,7 +925,7 @@ define(['jquery',
 							this.showFilter($('#data_year').attr("data-category"), true, true, minVal + " to " + maxVal, {replace: true});
 							
 							//Send this event to Google Analytics
-							if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+							if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
 								ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
 						}
 						else
@@ -1053,7 +1052,7 @@ define(['jquery',
 			this.triggerSearch();
 			
 			//Send this event to Google Analytics
-			if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+			if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
 				ga("send", "event", "search", "filter, " + category, term);
 		},
 		
@@ -1106,7 +1105,7 @@ define(['jquery',
 			
 			//Then reset the model
 			this.searchModel.clear();
-			mapModel.clear();
+			MetacatUI.mapModel.clear();
 			
 			//Reset the year slider handles
 			$("#year-range").slider("values", [this.searchModel.get('yearMin'), this.searchModel.get('yearMax')])
@@ -1257,10 +1256,10 @@ define(['jquery',
 		listDataSources: function(){
 			if(!this.filters) return;
 
-			if(nodeModel.get("members").length < 1) return;
+			if(MetacatUI.nodeModel.get("members").length < 1) return;
 			
 			//Get the member nodes
-			var members = _.sortBy(nodeModel.get("members"), function(m){ 
+			var members = _.sortBy(MetacatUI.nodeModel.get("members"), function(m){ 
 					if(m.name)
 						return m.name.toLowerCase();
 					else
@@ -1507,15 +1506,15 @@ define(['jquery',
 							 "&wt=json&";
 
 			//If we've cached these filter results, then use the cache instead of sending a new request
-			if(!appSearchModel.autocompleteCache) appSearchModel.autocompleteCache = {}; 
-			else if(appSearchModel.autocompleteCache[facetQuery]){
-				this.setupAutocomplete(appSearchModel.autocompleteCache[facetQuery]);
+			if(!MetacatUI.appSearchModel.autocompleteCache) MetacatUI.appSearchModel.autocompleteCache = {}; 
+			else if(MetacatUI.appSearchModel.autocompleteCache[facetQuery]){
+				this.setupAutocomplete(MetacatUI.appSearchModel.autocompleteCache[facetQuery]);
 				return;
 			}
 
 			//Get the facet counts for the autocomplete
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + facetQuery,
+				url: MetacatUI.appModel.get('queryServiceUrl') + facetQuery,
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr){
@@ -1528,7 +1527,7 @@ define(['jquery',
 						if(typeof c == "string") c = [c];
 						_.each(c, function(thisCategory){
 							//Get the field name(s)
-							var fieldNames = appSearchModel.facetNameMap[thisCategory];
+							var fieldNames = MetacatUI.appSearchModel.facetNameMap[thisCategory];
 							if(typeof fieldNames == "string") fieldNames = [fieldNames];
 							
 							//Get the facet counts
@@ -1546,13 +1545,13 @@ define(['jquery',
 					}
 					
 					//Save these facets in the app so we don't have to send another query
-					appSearchModel.autocompleteCache[facetQuery] = rankedSuggestions;
+					MetacatUI.appSearchModel.autocompleteCache[facetQuery] = rankedSuggestions;
 					
 					//Now setup the actual autocomplete menu
 					viewRef.setupAutocomplete(input, rankedSuggestions);
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 		
 		setupAutocomplete: function(input, rankedSuggestions){
@@ -1683,7 +1682,7 @@ define(['jquery',
 		},
 		
 		updatePageNumber: function(page) {
-			appModel.set("page", page);
+			MetacatUI.appModel.set("page", page);
 
 			if(!this.isSubView){
 				var route = Backbone.history.fragment,
@@ -1698,7 +1697,7 @@ define(['jquery',
 				else if(subroutePos >= 0)
 					route = route.substring(0, subroutePos);
 				
-				uiRouter.navigate(route);	
+				MetacatUI.uiRouter.navigate(route);	
 			}
 		},
 
@@ -1709,7 +1708,7 @@ define(['jquery',
 			this.$resultsview.show();
 			this.updateStats();
 			
-			var page = appModel.get("page");
+			var page = MetacatUI.appModel.get("page");
 			page++;
 			this.updatePageNumber(page);
 		},
@@ -1721,7 +1720,7 @@ define(['jquery',
 			this.$resultsview.show();
 			this.updateStats();
 			
-			var page = appModel.get("page");
+			var page = MetacatUI.appModel.get("page");
 			page--;
 			this.updatePageNumber(page);
 		},
@@ -1757,10 +1756,10 @@ define(['jquery',
 			
 			//Get the map options and create the map
 			gmaps.visualRefresh = true;
-			var mapOptions = mapModel.get('mapOptions');
+			var mapOptions = MetacatUI.mapModel.get('mapOptions');
 			$("#map-container").append('<div id="map-canvas"></div>');
 			this.map = new gmaps.Map($('#map-canvas')[0], mapOptions);
-			mapModel.set("map", this.map);
+			MetacatUI.mapModel.set("map", this.map);
 			
 			//Hide the map filter toggle element
 			this.$(this.mapFilterToggle).hide();
@@ -1781,8 +1780,8 @@ define(['jquery',
 				//Trigger a resize so the map background image tiles load completely
 				google.maps.event.trigger(mapRef, 'resize');
 				
-				var currentMapCenter = mapModel.get("map").getCenter(),
-					savedMapCenter   = mapModel.get("mapOptions").center,
+				var currentMapCenter = MetacatUI.mapModel.get("map").getCenter(),
+					savedMapCenter   = MetacatUI.mapModel.get("mapOptions").center,
 					needsRecentered  = (currentMapCenter != savedMapCenter);
 				
 				//If we are doing a new search...
@@ -1792,7 +1791,7 @@ define(['jquery',
 					if(viewRef.map.getZoom() == mapOptions.minZoom){
 						
 						if(!viewRef.hasZoomed){
-							if(needsRecentered && !viewRef.hasDragged) mapModel.get("map").setCenter(savedMapCenter);
+							if(needsRecentered && !viewRef.hasDragged) MetacatUI.mapModel.get("map").setCenter(savedMapCenter);
 							return; 
 						}
 						
@@ -1804,7 +1803,7 @@ define(['jquery',
 					else{
 						//If the user has not zoomed or dragged to a new area of the map yet and our map is off-center, recenter it
 						if(!viewRef.hasZoomed && needsRecentered)
-							mapModel.get("map").setCenter(savedMapCenter);
+							MetacatUI.mapModel.get("map").setCenter(savedMapCenter);
 							
 						//Show the map filter toggle element
 						viewRef.$(viewRef.mapFilterToggle).show();
@@ -1825,13 +1824,13 @@ define(['jquery',
 						viewRef.searchModel.set('east',  east);
 						
 						//Save the center position and zoom level of the map
-						mapModel.get("mapOptions").center = mapRef.getCenter();
-						mapModel.get("mapOptions").zoom   = mapRef.getZoom();
+						MetacatUI.mapModel.get("mapOptions").center = mapRef.getCenter();
+						MetacatUI.mapModel.get("mapOptions").zoom   = mapRef.getZoom();
 						
 						//Determine the precision of geohashes to search for
 						var zoom = mapRef.getZoom();												
 						
-						var precision = mapModel.getSearchPrecision(zoom);
+						var precision = MetacatUI.mapModel.getSearchPrecision(zoom);
 						
 						//Get all the geohash tiles contained in the map bounds
 						var geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
@@ -1843,7 +1842,7 @@ define(['jquery',
 					
 					//Reset to the first page
 					if(viewRef.hasZoomed)
-						appModel.set("page", 0);	
+						MetacatUI.appModel.set("page", 0);	
 
 					//Trigger a new search
 					viewRef.triggerSearch();
@@ -1853,7 +1852,7 @@ define(['jquery',
 				//Else, if this is the fresh map render on page load
 				else{
 					if(needsRecentered && !viewRef.hasDragged) 
-						mapModel.get("map").setCenter(savedMapCenter);
+						MetacatUI.mapModel.get("map").setCenter(savedMapCenter);
 					
 					//Show the map filter toggle element
 					if(viewRef.map.getZoom() > mapOptions.minZoom)
@@ -1899,7 +1898,7 @@ define(['jquery',
 			
 			//Reset the map settings
 			this.searchModel.resetGeohash();
-			mapModel.set("mapOptions", mapModel.defaults().mapOptions);
+			MetacatUI.mapModel.set("mapOptions", MetacatUI.mapModel.defaults().mapOptions);
 			
 			this.allowSearch = false;
 		},
@@ -1923,10 +1922,10 @@ define(['jquery',
 			
 			//Tell the map to trigger a new search and redraw tiles
 			this.allowSearch = true;			
-			google.maps.event.trigger(mapModel.get("map"), "idle");
+			google.maps.event.trigger(MetacatUI.mapModel.get("map"), "idle");
 			
 			//Send this event to Google Analytics
-			if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+			if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
 				var action = isOn? "on" : "off";
 				ga("send", "event", "map", action);
 			}
@@ -1971,7 +1970,7 @@ define(['jquery',
 				//Set up the options for each marker
 				var markerOptions = {
 					position: position,
-					icon: mapModel.get("markerImage"),
+					icon: MetacatUI.mapModel.get("markerImage"),
 					zIndex: 99999,
 					map: this.map
 				};
@@ -2114,12 +2113,12 @@ define(['jquery',
 			
 			//Determine the geohash level we will use to draw tiles
 			var currentZoom     = this.map.getZoom(),
-				geohashLevelNum	= mapModel.determineGeohashLevel(currentZoom),
+				geohashLevelNum	= MetacatUI.mapModel.determineGeohashLevel(currentZoom),
 				geohashLevel    = "geohash_" + geohashLevelNum,
 				geohashes       = this.searchResults.facetCounts[geohashLevel];
 			
 			//Save the current geohash level in the map model
-			mapModel.set("tileGeohashLevel", geohashLevelNum);
+			MetacatUI.mapModel.set("tileGeohashLevel", geohashLevelNum);
 			
 			//Get all the geohashes contained in the map
 			var mapBBoxes = _.flatten(_.values(this.searchModel.get("geohashGroups")));
@@ -2160,8 +2159,8 @@ define(['jquery',
 			}
 			
 			//Create a range of lightness to make different colors on the tiles
-			var lightnessMin = mapModel.get("tileLightnessMin"),
-				lightnessMax = mapModel.get("tileLightnessMax"),
+			var lightnessMin = MetacatUI.mapModel.get("tileLightnessMin"),
+				lightnessMax = MetacatUI.mapModel.get("tileLightnessMax"),
 				lightnessRange = lightnessMax - lightnessMin;
 			
 			//Get some stats on our tile counts so we can normalize them to create a color scale
@@ -2199,7 +2198,7 @@ define(['jquery',
 					neLatLng	   = new google.maps.LatLng(geohashBox[2], geohashBox[3]),
 					bounds 		   = new google.maps.LatLngBounds(swLatLng, neLatLng),
 					tileCount	   = filteredTileGeohashes[i+1],
-					drawMarkers    = mapModel.get("drawMarkers"),
+					drawMarkers    = MetacatUI.mapModel.get("drawMarkers"),
 					marker,
 					count,
 					color;
@@ -2210,7 +2209,7 @@ define(['jquery',
 				else
 					var lightness = (((tileCount-minCount)/(maxCount-minCount)) * lightnessRange) + lightnessMin;
 								
-				var color = "hsl(" + mapModel.get("tileHue") + "," + lightness + "%,50%)";
+				var color = "hsl(" + MetacatUI.mapModel.get("tileHue") + "," + lightness + "%,50%)";
 				
 				//Add the count to the tile
 				var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
@@ -2220,7 +2219,7 @@ define(['jquery',
 					bounds: countLocation,
 					   map: this.map,
 					  text: tileCount,
-					 color: mapModel.get("tileLabelColor")
+					 color: MetacatUI.mapModel.get("tileLabelColor")
 				});
 				
 				//Set up the default tile options 
@@ -2233,7 +2232,7 @@ define(['jquery',
 					    };
 				
 				//Merge these options with any tile options set in the map model
-				var modelTileOptions =  mapModel.get("tileOptions");					
+				var modelTileOptions =  MetacatUI.mapModel.get("tileOptions");					
 				for(var attr in modelTileOptions){
 					tileOptions[attr] = modelTileOptions[attr];
 				}
@@ -2249,7 +2248,7 @@ define(['jquery',
 			if(this.markerGeohashes.length > 0) this.addMarkers();
 			
 			//If the map is zoomed all the way in, draw info windows for each tile that will be displayed when they are clicked on
-			if(mapModel.isMaxZoom(this.map)) this.addTileInfoWindows();
+			if(MetacatUI.mapModel.isMaxZoom(this.map)) this.addTileInfoWindows();
 		},
 			
 		/**
@@ -2286,7 +2285,7 @@ define(['jquery',
 			});
 			
 			//If we are at the max zoom, we will display an info window. If not, we will zoom in.
-			if(!mapModel.isMaxZoom(viewRef.map)){
+			if(!MetacatUI.mapModel.isMaxZoom(viewRef.map)){
 				
 				/** Set up some helper functions for zooming in on the map **/
 				var myFitBounds = function(myMap, bounds) {
@@ -2348,7 +2347,7 @@ define(['jquery',
 					
 					
 					//Send this event to Google Analytics
-					if(appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
+					if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined"))
 						ga("send", "event", "map", "clickTile", "geohash : " + tileObject.geohash);
 				});
 			}
@@ -2358,13 +2357,13 @@ define(['jquery',
 		
 		highlightTile: function(tile){
 			//Change the tile style on hover
-			tile.shape.setOptions(mapModel.get('tileOnHover'));
+			tile.shape.setOptions(MetacatUI.mapModel.get('tileOnHover'));
 			
 			//Change the label color on hover
 			var div = tile.text.div_;
-			div.style.color = mapModel.get("tileLabelColorOnHover");
+			div.style.color = MetacatUI.mapModel.get("tileLabelColorOnHover");
 			tile.text.div_ = div;
-			$(div).css("color", mapModel.get("tileLabelColorOnHover"));
+			$(div).css("color", MetacatUI.mapModel.get("tileLabelColorOnHover"));
 		},
 		
 		unhighlightTile: function(tile){
@@ -2373,9 +2372,9 @@ define(['jquery',
 			
 			//Change back the label color
 			var div = tile.text.div_;
-			div.style.color = mapModel.get("tileLabelColor");
+			div.style.color = MetacatUI.mapModel.get("tileLabelColor");
 			tile.text.div_ = div;
-			$(div).css("color", mapModel.get("tileLabelColor"));
+			$(div).css("color", MetacatUI.mapModel.get("tileLabelColor"));
 		},
 		
 		/**
@@ -2390,7 +2389,7 @@ define(['jquery',
 			
 			//Clone the Search model
 			var searchModelClone = this.searchModel.clone(),
-				geohashLevel = mapModel.get("tileGeohashLevel"),
+				geohashLevel = MetacatUI.mapModel.get("tileGeohashLevel"),
 				viewRef = this,
 				markers = this.markers;
 			
@@ -2405,7 +2404,7 @@ define(['jquery',
 						"&wt=json";
 						
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + query, 
+				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 				success: function(data, textStatus, xhr){
 					var docs = data.response.docs;
 					var uniqueGeohashes = viewRef.markerGeohashes;
@@ -2436,7 +2435,7 @@ define(['jquery',
 							//Set up the options for each marker
 							var markerOptions = {
 								position: latLng,
-								icon: mapModel.get("markerImage"),
+								icon: MetacatUI.mapModel.get("markerImage"),
 								zIndex: 99999,
 								map: viewRef.map
 							};
@@ -2447,7 +2446,7 @@ define(['jquery',
 					});
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 
 		},
 		
@@ -2463,7 +2462,7 @@ define(['jquery',
 			
 			//Clone the Search model
 			var searchModelClone = this.searchModel.clone(),
-				geohashLevel = mapModel.get("tileGeohashLevel"),
+				geohashLevel = MetacatUI.mapModel.get("tileGeohashLevel"),
 				geohashName	 = "geohash_" + geohashLevel,
 				viewRef = this,
 				infoWindows = [];
@@ -2479,7 +2478,7 @@ define(['jquery',
 						"&wt=json";
 			
 			var requestSettings = {
-				url: appModel.get('queryServiceUrl') + query, 
+				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 				success: function(data, textStatus, xhr){
 					//Make an infoWindow for each doc
 					var docs = data.response.docs;
@@ -2524,7 +2523,7 @@ define(['jquery',
 						gmaps.event.addListener(tile.shape, 'click', function(clickEvent) {
 							
 							//--- We are at max zoom, display an infowindow ----//
-							if(mapModel.isMaxZoom(viewRef.map)){
+							if(MetacatUI.mapModel.isMaxZoom(viewRef.map)){
 								
 								//Find the infowindow that belongs to this tile in the view
 								infoWindow.open(viewRef.map);
@@ -2559,7 +2558,7 @@ define(['jquery',
 					viewRef.infoWindows = infoWindows;
 				}		
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 		
 		/**
@@ -2667,13 +2666,13 @@ define(['jquery',
 			var numFound = this.searchResults.length;
 			if (numFound == 0){
 				this.$results.html('<p id="no-results-found">No results found.</p>');
-				if(theme == "arctic"){
+				if(MetacatUI.theme == "arctic"){
 					//When we get new results, check if the user is searching for their own datasets and display a message
-					if((appView.dataCatalogView.searchModel.getQuery() == appUserModel.get("searchModel").getQuery()) && !appSearchResults.length){
+					if((MetacatUI.appView.dataCatalogView.searchModel.getQuery() == MetacatUI.appUserModel.get("searchModel").getQuery()) && !MetacatUI.appSearchResults.length){
 						$("#no-results-found").after("<h3>Where are my data sets?</h3><p>If you are a previous ACADIS Gateway user, " +
 						"you will need to take additional steps to access your data sets in the new NSF Arctic Data Center." +
 						"<a href='mailto:support@arcticdata.io'>Send us a message at support@arcticdata.io</a> with your old ACADIS " +
-						"Gateway username and your ORCID identifier (" + appUserModel.get("username") + "), we will help.</p>");
+						"Gateway username and your ORCID identifier (" + MetacatUI.appUserModel.get("username") + "), we will help.</p>");
 					}
 				}
 				return;
@@ -2710,8 +2709,8 @@ define(['jquery',
 		 */
 		addOne: function (result) {
 			//Get the view and package service URL's
-			this.$view_service = appModel.get('viewServiceUrl');
-			this.$package_service = appModel.get('packageServiceUrl');
+			this.$view_service = MetacatUI.appModel.get('viewServiceUrl');
+			this.$package_service = MetacatUI.appModel.get('packageServiceUrl');
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
 			
 			//Create a new result item
@@ -2730,7 +2729,7 @@ define(['jquery',
 						position = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
 						marker = new gmaps.Marker({
 							position: position,
-							icon: mapModel.get("markerImage"),
+							icon: MetacatUI.mapModel.get("markerImage"),
 							zIndex: 99999
 						});
 				}
@@ -2751,14 +2750,14 @@ define(['jquery',
 			}
 			
 			if(this.mode == 'map'){
-				appModel.set('searchMode', 'list');
+				MetacatUI.appModel.set('searchMode', 'list');
 				this.mode = "list";
 				this.$("#map-canvas").detach();
 				this.setAutoHeight();
 				this.getResults();
 			}
 			else if (this.mode == 'list'){
-				appModel.set('searchMode', 'map');
+				MetacatUI.appModel.set('searchMode', 'map');
 				this.mode = "map";
 				this.renderMap();
 				this.setAutoHeight();

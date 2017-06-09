@@ -12,14 +12,14 @@ define(['jquery', 'underscore', 'backbone'],
 			members: [],
 			coordinators: [],
 			hiddenMembers: [],
-			currentMemberNode: appModel.get("nodeId") || null,
+			currentMemberNode: MetacatUI.appModel.get("nodeId") || null,
 			checked: false
 		},
 		
 		initialize: function(){
 			var model = this;
 			
-			if(appModel.get('nodeServiceUrl')){
+			if(MetacatUI.appModel.get('nodeServiceUrl')){
 				//Get the node information from the CN
 				this.getNodeInfo();
 			}
@@ -71,7 +71,7 @@ define(['jquery', 'underscore', 'backbone'],
 				coordList  = this.get('coordinators');
 			
 			$.ajax({
-				url: appModel.get('nodeServiceUrl'),  
+				url: MetacatUI.appModel.get('nodeServiceUrl'),  
 				dataType: "text",
 				success: function(data, textStatus, xhr) { 
 					
@@ -154,7 +154,7 @@ define(['jquery', 'underscore', 'backbone'],
 				
 				//Find the node we are currently querying, if there is one
 				if(!thisModel.get("currentMemberNode")){
-					var thisMember = _.findWhere(thisModel.get("members"), { baseURL:  (appModel.get("baseUrl") + appModel.get('context') + appModel.get("d1Service")).replace("/v2", "").replace("/v1", "") });
+					var thisMember = _.findWhere(thisModel.get("members"), { baseURL:  (MetacatUI.appModel.get("baseUrl") + MetacatUI.appModel.get('context') + MetacatUI.appModel.get("d1Service")).replace("/v2", "").replace("/v1", "") });
 					if(thisMember !== undefined)
 						thisModel.set("currentMemberNode", thisMember.identifier);
 					
