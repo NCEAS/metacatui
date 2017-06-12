@@ -35,7 +35,8 @@ define(['underscore', 'jquery', 'backbone',
             	"change .datetime" 		  : "updateModel",
             	"change .codelist"        : "updateModel",
             	"change .textDomain"      : "updateModel",
-            	"focusout .code-row"      : "showValidation"
+            	"focusout .code-row"      : "showValidation",
+            	"focusout .units.input"   : "showValidation"
             },
             
             initialize: function(options){
@@ -257,8 +258,8 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Create a dropdown menu
             	var select = $(document.createElement("select"))
-            					.addClass("units full-width")
-            					.attr("data-category", "standardUnit"),
+            					.addClass("units full-width input")
+            					.attr("data-category", "unit"),
             		eml    = this.model.get("parentModel"),
             		i 	   = 0;
             	
@@ -312,6 +313,13 @@ define(['underscore', 'jquery', 'backbone',
             chooseDateTimeFormat: function(){
             	if(this.model.type == "EMLDateTimeDomain"){
                 	var formatString = this.model.get("formatString");
+                	
+                	//Go back to the default option when the model isn't set yet
+                	if(!formatString){
+                		var options = this.$("select.datetime-string option");
+                		this.$("select.datetime-string").val(options.first().val());
+                		return;
+                	}
                 	
                 	var matchingOption = this.$("select.datetime-string [value='" + formatString + "']");
                 	
@@ -481,6 +489,9 @@ define(['underscore', 'jquery', 'backbone',
             		}
             	}
             	else if(updatedInput.is(".textDomain")){
+            		if(typeof this.model.get("nonNumericDomain")[0] != "object")
+            			this.model.get("nonNumericDomain")[0] = { textDomain: null };
+            		
             		var textDomain = this.model.get("nonNumericDomain")[0].textDomain;
             		
             		if(updatedInput.attr("data-category") == "definition")

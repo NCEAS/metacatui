@@ -206,6 +206,17 @@ define(["jquery", "underscore", "backbone",
                     }
                 }
             },
+            
+            validate: function(){
+            	var errors = {};
+            	
+            	if(!this.get("unit"))
+            		errors.unit = "Choose a unit.";
+            	
+            	if( Object.keys(errors).length )
+            		return errors;
+
+            },
 
             /* Let the top level package know of attribute changes from this object */
             trickleUpChange: function(){
