@@ -241,6 +241,13 @@ define(['underscore', 'jquery', 'backbone',
             		//Set references to and from this model and the parent attribute model
             		this.model.set("parentModel", parentEMLAttrModel);
             		parentEMLAttrModel.set("measurementScale", this.model);
+            		
+            		//Update the codelist values, if needed
+            		if(newCategory == "nominal" || newCategory == "ordinal" && 
+            				this.model.get("nonNumericDomain").length &&
+            				this.model.get("nonNumericDomain")[0].enumeratedDomain){
+            			this.updateCodeList();
+            		}
             	}
             
             },
@@ -358,7 +365,7 @@ define(['underscore', 'jquery', 'backbone',
             		}
             		//If the domain type is a code list, select it and show it
             		else if( domain.enumeratedDomain ){
-            			this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='enumeratedDomain']").attr("checked", "checked");
+            			this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='enumeratedDomain']").prop("checked", true);
             			this.$(".non-numeric-domain-type.enumeratedDomain").show();
             		}
             	}
@@ -445,26 +452,23 @@ define(['underscore', 'jquery', 'backbone',
             	else if(updatedInput.is(".possible-text")){
             		var possibleText = updatedInput.val();
             		
-            		if(possibleText == "enumeratedDomain" && !this.model.get("nonNumericDomain").length){
-	            		var nonNumericDomain = [{
-	        				enumeratedDomain: {
-	        					codeDefinition: [{
-	            					code: code,
-	            					definition: def
-	        					}]
-	        				}
-	        			}];
-	        			
-	        			this.model.set("nonNumericDomain", nonNumericDomain);
+            		if(possibleText == "enumeratedDomain"){
+            				
+        				//Update the code list
+        				this.updateCodeList();
+		            		
             		}
-            		else if(possibleText == "pattern" && !this.model.get("nonNumericDomain").length){
-            			var textDomain = {
-            					definition: null,
-            					pattern: [],
-            					source: null
+            		else if(possibleText == "pattern"){
+            			if(this.model.get("nonNumericDomain").length && !this.model.get("nonNumericDomain")[0].textDomain){
+            				            			
+	            			var textDomain = {
+	            					definition: null,
+	            					pattern: [],
+	            					source: null
+	            			}
+	            			
+	            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
             			}
-            			
-            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
             		}
             		else if(possibleText == "anything"){
             			var textDomain = {
@@ -485,42 +489,43 @@ define(['underscore', 'jquery', 'backbone',
             			textDomain.pattern[0] = updatedInput.val();
             	}
             	else if(updatedInput.is(".codelist")){
-            		var row   = updatedInput.parents(".code-row"),
-            			code  = row.find(".code").val(),
-            			def   = row.find(".definition").val();
-            		
-            		var	index = this.$(".code-row").index(row);
-            			currentValue = this.model.get("nonNumericDomain");
+            		var row = updatedInput.parents(".code-row"),
+            			index = this.$("." + this.model.get("measurementScale") + "-options .code-row").index(row);
             			
-            		if(Array.isArray(currentValue) && typeof currentValue[0] == "object"){
-            			var codes = currentValue[0].enumeratedDomain.codeDefinition;
-            			
-            			if(typeof codes[index] == "object"){
-            				codes[index].code = code;
-                			codes[index].definition = def;
-            			}
-            			else{
-            				codes[index] = {
-        						code: code,
-        						definition: def
-            				}
-            			}
-            		}
-            		else{
-            			var nonNumericDomain = [{
-            				enumeratedDomain: {
-            					codeDefinition: [{
-                					code: code,
-                					definition: def
-            					}]
-            				}
-            			}];
-            			
-            			this.model.set("nonNumericDomain", nonNumericDomain);
-            		}
-            		
-            		this.model.trigger("change:nonNumericDomain");
+            		this.updateCodeList(index);
             	}
+            },
+            
+            updateCodeList: function(rowNum){
+            	
+            	//If the model is not set as an enumerated domain yet
+    			if(!this.model.get("nonNumericDomain").length || 
+    					!this.model.get("nonNumericDomain")[0] || 
+    					!this.model.get("nonNumericDomain")[0].enumeratedDomain){
+    				
+    				//Go through each code row in this view and grab the values
+    				_.each(this.$("." + this.model.get("measurementScale") + "-options .code-row"), function(row, i){
+    					var $row = $(row),
+    						code = $row.find(".code").val(),
+    						def  = $row.find(".definition").val();
+    					
+    					if(code || def){
+        					this.model.updateEnumeratedDomain(code, def, i);    					    						
+    					}
+    					
+    				}, this);
+    			}
+    			else if(rowNum > -1){
+    				var $row = $(this.$("." + this.model.get("measurementScale") + "-options .code-row")[rowNum]),
+						code = $row.find(".code").val(),
+						def  = $row.find(".definition").val();
+					
+					if(code || def){
+						this.model.updateEnumeratedDomain(code, def, rowNum);    					    						
+					}
+    			}
+
+    			
             }
             
         });

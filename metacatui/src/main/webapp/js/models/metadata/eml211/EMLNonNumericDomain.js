@@ -220,6 +220,33 @@ define(["jquery", "underscore", "backbone",
                 }
                 return domainObject;
             },
+            
+            updateEnumeratedDomain: function(code, def, index){
+            	var nonNumDomain = this.get("nonNumericDomain")[0];
+            	
+            	if(!nonNumDomain || !nonNumDomain.enumeratedDomain){
+            		this.set("nonNumericDomain", [{
+			    				enumeratedDomain: {
+			    					codeDefinition: [{
+			        					code: code,
+			        					definition: def
+			    					}]
+			    				}
+			    			}]);
+            	}
+            	else if(index > -1 && typeof nonNumDomain.enumeratedDomain.codeDefinition[index] == "object"){
+            		nonNumDomain.enumeratedDomain.codeDefinition[index].code = code;
+            		nonNumDomain.enumeratedDomain.codeDefinition[index].definition = def;
+            		this.trigger("change:nonNumericDomain");
+            	}
+            	else{
+            		nonNumDomain.enumeratedDomain.codeDefinition.push({
+            			code: code,
+            			definition: def
+            		});
+            		this.trigger("change:nonNumericDomain");
+            	}
+            },
 
             /* Serialize the model to XML */
             serialize: function() {

@@ -3188,6 +3188,7 @@ Editor View
 }
 .Editor #Content {
     padding-top: 70px;
+    max-width: 100%;
 }
 #editor-header {
     border-bottom: 1px solid #DDDDDD;
