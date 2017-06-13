@@ -3566,6 +3566,16 @@ textarea.xlarge{
 	color: inherit;
 	border-color: red;
 }
+.eml-attribute .category-container.error{
+	color: inherit;
+	border: 1px solid red;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
 
 /* ---- Overview ---- */
 .metadata-container .section.overview > div{
