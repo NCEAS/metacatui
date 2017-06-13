@@ -118,6 +118,8 @@ define(["jquery", "underscore", "backbone",
                 // Add the XML id
                 if ( $objectDOM.attr("id") ) {
                     attributes.xmlID = $objectDOM.attr("id");
+                } else {
+                    attributes.xmlID = DataONEObject.generateId();
                 }
 
                 // Add in the textDomain content if present
@@ -141,10 +143,20 @@ define(["jquery", "underscore", "backbone",
             parseTextDomain: function(domain) {
                 var domainObject = {};
                 domainObject.textDomain = {};
+                var xmlID;
                 var definition;
                 var patterns = [];
                 var source;
 
+                // Add the XML id attribute
+                if ( $(domain).attr("id") ) {
+                    xmlID = $(domain).attr("id");
+                } else {
+                    // Generate an id if it's not found
+                    xmlID = DataONEObject.generateId();
+                }
+                domainObject.textDomain.xmlID = xmlID;
+                
                 // Add the definition
                 definition = $(domain).children("definition").text();
                 domainObject.textDomain.definition = definition;
@@ -201,7 +213,17 @@ define(["jquery", "underscore", "backbone",
                 var codeDefinition = {};
                 var externalCodeSet = {};
                 var entityCodeList = {};
+                var xmlID;
 
+                // Add the XML id attribute
+                if ( $(domain).attr("id") ) {
+                    xmlID = $(domain).attr("id");
+                } else {
+                    // Generate an id if it's not found
+                    xmlID = DataONEObject.generateId();
+                }
+                domainObject.enumeratedDomain.xmlID = xmlID;
+                
                 // Add the codeDefinitions if present
                 var codeDefinitions = $(domain).children("codedefinition");
 
@@ -220,33 +242,6 @@ define(["jquery", "underscore", "backbone",
                 }
                 return domainObject;
             },
-            
-            updateEnumeratedDomain: function(code, def, index){
-            	var nonNumDomain = this.get("nonNumericDomain")[0];
-            	
-            	if(!nonNumDomain || !nonNumDomain.enumeratedDomain){
-            		this.set("nonNumericDomain", [{
-			    				enumeratedDomain: {
-			    					codeDefinition: [{
-			        					code: code,
-			        					definition: def
-			    					}]
-			    				}
-			    			}]);
-            	}
-            	else if(index > -1 && typeof nonNumDomain.enumeratedDomain.codeDefinition[index] == "object"){
-            		nonNumDomain.enumeratedDomain.codeDefinition[index].code = code;
-            		nonNumDomain.enumeratedDomain.codeDefinition[index].definition = def;
-            		this.trigger("change:nonNumericDomain");
-            	}
-            	else{
-            		nonNumDomain.enumeratedDomain.codeDefinition.push({
-            			code: code,
-            			definition: def
-            		});
-            		this.trigger("change:nonNumericDomain");
-            	}
-            },
 
             /* Serialize the model to XML */
             serialize: function() {
@@ -262,18 +257,42 @@ define(["jquery", "underscore", "backbone",
             /* Copy the original XML DOM and update it with new values from the model */
             updateDOM: function() {
                 var objectDOM;
+                var xmlID;
 
                 if ( this.get("objectDOM") ) {
                     objectDOM = this.get("objectDOM").cloneNode(true);
                 } else {
-                    objectDOM = document.createElement(/*this.el*/);
+                    if ( this.get("measurementScale") ) {
+                        objectDOM = document.createElement(this.get("measurementScale"));
+
+                    } else {
+                        console.log("In EMLNonNumericDomain.updateDOM(), " +
+                            "measurementScale is missing, defaulting to nominal");
+                        objectDOM = document.createElement("nominal");
+
+                    }
                 }
+                if ( this.get("nonNumericDomain").length ) {
 
-                // TODO: Populate the DOM with model values
-            },
+                    // Update each nonNumericDomain in the DOM
+                    _.each(this.get("nonNumericDomain"), function(domain) {
+                        
+                        // If the domain exists, update it
+                        if ( ) {
+                            
+                        // Otherwise append it
+                        } else {
+                            
+                        }
+                    });
 
-            formatXML: function(xmlString){
-                return DataONEObject.prototype.formatXML.call(this, xmlString);
+                } else {
+                    // We have no content, so cant create a valid domain
+                    console.log("In EMLNonNumericDomain.updateDOM(), " +
+                        "there is no domain content, returning undefined.");
+                    return undefined;
+                }
+                return objectDOM;
             },
 
             /**/
@@ -303,52 +322,50 @@ define(["jquery", "underscore", "backbone",
             },
             
             validate: function(){
-            	var errors = {};
-            	
-            	if( !this.get("nonNumericDomain").length )
-            		errors.nonNumericDomain = "Choose a possible value type.";
-            	else{
-            		var domain = this.get("nonNumericDomain")[0];
-            		
-            		_.each(Object.keys(domain), function(key){
-            			
-            			//For enumerated domain types
-            			if(key == "enumeratedDomain" && domain[key].codeDefinition){
-            			
-            				var isEmpty = false;
-            				
-            				//Validate the list of codes
-            				for(var i=0; i < domain[key].codeDefinition.length; i++){
-            					
-            					var codeDef = domain[key].codeDefinition[i];
-            					
-            					//If either the code or definition is missing in at least one codeDefinition set, 
-            					//then this model is invalid
-            					if((codeDef.code && !codeDef.definition) || (!codeDef.code && codeDef.definition)){
-            						errors.enumeratedDomain = "Provide both a code and definition in each row.";
-            						i = domain[key].codeDefinition.length;
-            					}
-            					else if(domain[key].codeDefinition.length == 1 && !codeDef.code && !codeDef.definition)
-            						isEmpty = true;
-            						
-            				}
-            				
-            				if(isEmpty)
-            					errors.enumeratedDomain = "Define at least one code and definition.";
-            			
-            			}
-            			else if(key == "textDomain" && !domain[key].definition){
-            				errors.definition = "Provide a description of the kind of text allowed.";				
-            			}
-            			
-            		}, this);
-            		
-            	}
-            	
-            	if(Object.keys(errors).length)
-            		return errors;
-            	else
-            		return;
+                var errors = {};
+                
+                if( !this.get("nonNumericDomain").length )
+                    errors.nonNumericDomain = "Choose a possible value type.";
+                else {
+                    var domain = this.get("nonNumericDomain")[0];
+                    
+                    _.each(Object.keys(domain), function(key){
+                        
+                        //For enumerated domain types
+                        if(key == "enumeratedDomain" && domain[key].codeDefinition){
+                            
+                            var isEmpty = false;
+                            
+                            //Validate the list of codes
+                            for(var i=0; i < domain[key].codeDefinition.length; i++){
+                                
+                                var codeDef = domain[key].codeDefinition[i];
+                                
+                                //If either the code or definition is missing in at least one codeDefinition set, 
+                                //then this model is invalid
+                                if((codeDef.code && !codeDef.definition) || (!codeDef.code && codeDef.definition)){
+                                    errors.enumeratedDomain = "Provide both a code and definition in each row.";
+                                    i = domain[key].codeDefinition.length;
+                                }
+                                else if(domain[key].codeDefinition.length == 1 && !codeDef.code && !codeDef.definition)
+                                isEmpty = true;
+                                
+                            }
+                            
+                            if(isEmpty)
+                            errors.enumeratedDomain = "Define at least one code and definition.";
+                            
+                        }
+                        
+                    }, this);
+                    
+                }
+                
+                if (Object.keys(errors).length) {
+                    return errors;                    
+                } else {
+                    return;                    
+                }
             }
 
         });
