@@ -191,6 +191,16 @@ define(['underscore', 'jquery', 'backbone',
             	this.$(".attribute-list").append(newAttrView.el);
             	newAttrView.$el.hide();
             	
+            	//Change the last menu item if it still says "Add attribute"
+            	if(this.$(".attribute-menu-item").length == 1){
+            		var firstAttrMenuItem = this.$(".attribute-menu-item").first();
+            		
+            		if( firstAttrMenuItem.find(".name").text() == "Add attribute" ){
+            			firstAttrMenuItem.find(".name").text("New attribute");
+            			firstAttrMenuItem.find(".add").hide();
+            		}
+            	}
+            	
             	//Create the new menu item
             	var menuItem = $(this.attributeMenuItemTemplate({
 	            		attrId: newAttrModel.cid,
