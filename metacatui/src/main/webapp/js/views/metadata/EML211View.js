@@ -1606,6 +1606,9 @@ define(['underscore', 'jquery', 'backbone',
         		
         		this.activeSection = section;
         		this.visibleSection = section;
+        		
+        		//if(this.$el.scrollTop() < $("#Navbar").height())
+        		$("body").scrollTop(this.$(".section." + section).offset().top - $("#Navbar").height());
         	}
         		
         		
