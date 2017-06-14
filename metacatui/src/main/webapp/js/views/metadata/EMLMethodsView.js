@@ -64,7 +64,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 				}
 
 				var el = $(document.createElement('textarea'))
-					.attr('rows', '10')
+					.attr('rows', '7')
 					.attr('data-attribute', data.category)
 					.attr('data-type', data.type)
 					.addClass("method-step").addClass(data.classes || "")
