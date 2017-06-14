@@ -539,8 +539,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					});
 
 					if (nonEmptyCoverages.length > 0) {
+						
+						//Create the <coverage> node if there isn't one already
 						if (datasetNode.find('coverage').length === 0) {
-							this.getEMLPosition(eml, 'coverage').after(document.createElement('coverage'));
+							var insertAfter = this.getEMLPosition(eml, 'coverage');
+							
+							if(insertAfter)
+								insertAfter.after(document.createElement('coverage'));
+							else
+								datasetNode.append(document.createElement("coverage"));
 						}
 						
 						//Get the existing taxon coverage nodes from the EML
@@ -600,14 +607,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	
 				// Serialize methods
 				if (this.get('methods')) {
-					if(datasetNode.find('methods').length > 0) {
-						datasetNode.find('methods').remove();
-					}
 					
+					//Serialize the methods model
 					var methodsEl = this.get('methods').updateDOM();
 
-					if ($(methodsEl).children().length > 0) {
-						this.getEMLPosition(eml, "methods").after(methodsEl);
+					//Add the <methods> node to the EML
+					if (datasetNode.find('methods').length === 0){
+						var insertAfter = this.getEMLPosition(eml, "methods");
+						
+						if(insertAfter)
+							insertAfter.after(methodsEl);
+						else
+							datasetNode.append(methodsEl);
 					}
 					
 				}
