@@ -187,9 +187,11 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
             /*
              * Remove an attribute from the attributeList
              */
-            removeAttribute: function(attribute) {
-                var attrIndex = this.get("attributeList").indexOf(attribute);
-                this.get("attributeList").splice(attrIndex, 1);
+            removeAttribute: function(attribute, index) {
+            	if(!index)
+            		var attrIndex = this.get("attributeList").indexOf(attribute);
+                
+            	this.get("attributeList").splice(attrIndex, 1);
             },
 
             /* Validate the top level EMLEntity fields */

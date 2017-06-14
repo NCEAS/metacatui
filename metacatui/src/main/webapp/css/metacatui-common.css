@@ -3547,7 +3547,10 @@ textarea.xlarge{
 	margin-bottom: 20px;
 }
 .attribute-menu{
-	min-width: 170px;
+	width: 170px;
+}
+.attribute-menu-item{
+	position: relative;
 }
 .attribute-menu-item a{
 	font-size: 1em;	
@@ -3558,6 +3561,30 @@ textarea.xlarge{
 .attribute-menu-item.active a{
 	background-color: #1E254F;
 	color: white;
+}
+.attribute-menu-item .remove{
+	position: absolute;
+    top: 0px;
+    right: 0px;
+    font-size: 1.3em;
+    color: red;
+    display: none;
+    padding: 13px;
+}
+.attribute-menu-item:hover .remove{
+	display: block;
+}
+.attribute-menu-item.side-nav-item.remove-preview a,
+.attribute-menu-item.side-nav-item.remove-preview a:hover{
+	border: 2px dashed red;
+    background-color: #f7f7f7;
+    color: red;
+}
+.attribute-menu-item.side-nav-item.remove-preview .remove:hover{
+	background-color: rgba(247, 247, 247, .5);
+}
+.attribute-menu-item.new:hover .remove{
+	display: none;
 }
 .attributes .attribute-menu-container{
 	width: 170px;

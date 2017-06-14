@@ -3,11 +3,13 @@ define(['underscore', 'jquery', 'backbone',
         'models/DataONEObject', 'models/metadata/eml211/EMLAttribute', 'models/metadata/eml211/EMLEntity',
         'views/DataPreviewView',
         'views/metadata/EMLAttributeView',
-        'text!templates/metadata/eml-entity.html'], 
+        'text!templates/metadata/eml-entity.html',
+        'text!templates/metadata/eml-attribute-menu-item.html'], 
     function(_, $, Backbone, DataONEObject, EMLAttribute, EMLEntity, 
     		DataPreviewView, 
     		EMLAttributeView,
-    		EMLEntityTemplate){
+    		EMLEntityTemplate,
+    		EMLAttributeMenuItemTemplate){
         
         /* 
             An EMLEntityView shows the basic attributes of a DataONEObject, as described by EML
@@ -22,12 +24,16 @@ define(['underscore', 'jquery', 'backbone',
             
             /* The HTML template for an entity */
             template: _.template(EMLEntityTemplate),
+            attributeMenuItemTemplate: _.template(EMLAttributeMenuItemTemplate),
             
             /* Events this view listens to */
             events: {
-            	"change .input"            	 : "updateModel",
-            	"click .nav-tabs a" 		 : "showTab",
-            	"click .attribute-menu-item" : "showAttribute"
+            	"change .input" : "updateModel",
+            	"click .nav-tabs a" : "showTab",
+            	"click .attribute-menu-item" : "showAttribute",
+            	"mouseover .attribute-menu-item .remove" : "previewAttrRemove",
+            	"mouseout .attribute-menu-item .remove"  : "previewAttrRemove",
+            	"click .attribute-menu-item .remove" : "removeAttribute"
             },
             
             initialize: function(options){
@@ -103,19 +109,19 @@ define(['underscore', 'jquery', 'backbone',
             		});
             		
             		//Create a link in the attribute menu
-            		attributeMenuEl.append( $(document.createElement("li"))
-            									.addClass("attribute-menu-item side-nav-item pointer")
-            									.attr("data-attribute-id", attr.cid)
-            									.data({ 
-            										model: attr,
-            										attributeView: view
-            										})
-            									.append( $(document.createElement("a"))
-            												.addClass("ellipsis")
-            												.text(attr.get("attributeName")) ));
+            		var menuItem = $(this.attributeMenuItemTemplate({
+	            			attrId: attr.cid,
+	            			attributeName: attr.get("attributeName"),
+	            			classes: ""
+	            		})).data({ 
+							model: attr,
+							attributeView: view
+							});
+            		attributeMenuEl.append(menuItem);
+            		menuItem.find(".tooltip-this").tooltip();
             		
             		this.listenTo(attr, "change:attributeName", function(attr){
-            			this.$("[data-attribute-id='" + attr.cid + "'] a").text(attr.get("attributeName"));
+            			menuItem.find(".name").text(attr.get("attributeName"));
             		});
             		
             		view.render();
@@ -185,20 +191,23 @@ define(['underscore', 'jquery', 'backbone',
             	this.$(".attribute-list").append(newAttrView.el);
             	newAttrView.$el.hide();
             	
-            	this.$(".attribute-menu").append( $(document.createElement("li"))
-        				.addClass("attribute-menu-item side-nav-item new pointer")
-						.attr("data-attribute-id", newAttrModel.cid)
-						.data({ 
-							model: newAttrModel,
-							attributeView: newAttrView
-							})
-						.append( $(document.createElement("a"))
-									.addClass("ellipsis")
-									.append( $(document.createElement("i")).addClass("icon icon-on-left icon-plus"), "Add attribute") ));
+            	//Create the new menu item
+            	var menuItem = $(this.attributeMenuItemTemplate({
+	            		attrId: newAttrModel.cid,
+	            		attributeName: "Add attribute",
+	            		classes: "new"
+	            	})).data({ 
+						model: newAttrModel,
+						attributeView: newAttrView
+					});   
+            	menuItem.find(".add").show();
+            	this.$(".attribute-menu").append(menuItem);
+            	menuItem.find(".tooltip-this").tooltip();
         		
             	//When the attribute name is changed, update the navigation
         		this.listenTo(newAttrModel, "change:attributeName", function(attr){
-        			this.$("[data-attribute-id='" + attr.cid + "'] a").text(attr.get("attributeName"));
+        			menuItem.find(".name").text(attr.get("attributeName"));
+        			menuItem.find(".add").hide();
         		});
         		
             	this.listenTo(newAttrModel, "change",  this.addAttribute);
@@ -212,22 +221,71 @@ define(['underscore', 'jquery', 'backbone',
             		this.model.addAttribute(emlAttribute);            		
             },
             
+            removeAttribute: function(e){
+            	var removeBtn = $(e.target);
+            	
+            	var menuItem  = removeBtn.parents(".attribute-menu-item"),
+            		attrModel = menuItem.data("model");
+            	
+            	if(attrModel){
+            		//Remove the attribute from the model
+            		this.model.removeAttribute(attrModel);
+            	
+            		//If this menu item is active, then make the next attribute active instead
+            		if(menuItem.is(".active")){
+            			var nextMenuItem = menuItem.next();
+            			
+            			if(!nextMenuItem.length || nextMenuItem.is(".new")){
+            				nextMenuItem = menuItem.prev();
+            			}
+            			
+            			if(nextMenuItem.length){
+	            			nextMenuItem.addClass("active");
+	            			
+	            			this.showAttribute(nextMenuItem.data("model"));
+            			}
+            		}
+            			
+            		//Remove the elements for this attribute from the page
+            		menuItem.remove();
+	            	this.$(".eml-attribute[data-attribute-id='" + attrModel.cid + "']").remove();
+	            	$(".tooltip").remove();
+            	}
+            },
+            
             setAttrMenuHeight: function(e){
             	var attrMenuHeight = this.$(".modal-body").height() - this.$(".nav-tabs").height();
 
             	this.$(".attribute-menu").css("height", attrMenuHeight + "px");
             },
             
+            /*
+             * Shows the attribute in the attribute editor
+             * Param e - JS event or attribute model
+             */
             showAttribute: function(e){
-            	var clickedEl = $(e.target),
-            		menuItem = clickedEl.is(".attribute-menu-item") || clickedEl.parent();
+            	
+            	if(e.target){
+                   	var clickedEl = $(e.target),
+                   		menuItem = clickedEl.is(".attribute-menu-item") || clickedEl.parents(".attribute-menu-item");  
+                	
+                	if(clickedEl.is(".remove"))
+                		return;
+            	}
+            	else{
+            		var menuItem = this.$(".attribute-menu-item[data-attribute-id='" + e.cid + "']");
+            	}
+            	
+            	if(!menuItem)
+            		return;
             	
             	//If the user clicked on the add attribute link
-            	if( menuItem.is(".new") ){
-
+            	if( menuItem.is(".new") && this.$(".new.attribute-menu-item").length < 2 ){
+            		
             		//Change the attribute menu item
-            		menuItem.removeClass("new").find("a").text("New attribute");
+            		menuItem.removeClass("new").find(".name").text("New attribute");
             		this.$(".eml-attribute.new").removeClass("new");
+            		menuItem.find(".add").hide();
             		
             		//Add a new attribute view and menu item
             		this.addNewAttribute();
@@ -267,7 +325,17 @@ define(['underscore', 'jquery', 'backbone',
              * Hide the attribute validation errors from the attribute navigation menu
              */
             hideAttributeValidation: function(attr){
-            	this.$(".attribute-menu-item[data-attribute-id='" + attr.cid + "']").find("a").removeClass("error").find(".icon").remove();
+            	this.$(".attribute-menu-item[data-attribute-id='" + attr.cid + "']")
+            		.find("a").removeClass("error").find(".icon.error").remove();
+            },
+            
+            /*
+             * Show the user what will be removed when this remove button is clicked
+             */
+            previewAttrRemove: function(e){
+            	var removeBtn = $(e.target);
+            	
+            	removeBtn.parents(".attribute-menu-item").toggleClass("remove-preview");            	
             },
             
             showTab: function(e){
