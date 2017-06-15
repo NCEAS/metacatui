@@ -3384,7 +3384,7 @@ ul.side-nav-items {
 	color: #FFF;
 	border-color: #FFF;
 }
-.metadata-container.edit textarea{
+.metadata-container textarea{
 	width: 100%;
 	margin-bottom: 20px;
 }
@@ -3719,7 +3719,8 @@ textarea.xlarge{
 .metadata-container .basic-text-row input,
 .metadata-container .keyword-row,
 .metadata-container .funding-row,
-.metadata-container .party-details{
+.metadata-container .party-details,
+.metadata-container .method-step{
 	width: calc(100% - 20px - 1em);
 }
 
