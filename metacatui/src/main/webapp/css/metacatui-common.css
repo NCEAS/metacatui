@@ -3321,17 +3321,6 @@ ul.side-nav-items {
     width: 1.4em;
 }
 
-.data-package-item.remove-highlight td{
-	border-color: #FF0000;
-	border-style: dashed;
-	border-width: 2px 0px 2px 0px;
-}
-.data-package-item.remove-highlight td:first-of-type{
-	border-left-width: 1px;
-}
-.data-package-item.remove-highlight td:last-of-type{
-	border-right-width: 1px;
-}
 
 .Editor #data-package-table ul li a span {
     margin-left: .3em;
@@ -3554,7 +3543,6 @@ textarea.xlarge{
 }
 .attribute-menu-item.side-nav-item.remove-preview a,
 .attribute-menu-item.side-nav-item.remove-preview a:hover{
-	border: 2px dashed red;
     background-color: #f7f7f7;
     color: red;
 }
@@ -3719,7 +3707,8 @@ textarea.xlarge{
     float: right;
     margin-right: 14px;
 }
-.taxonomic-coverage-row.new .remove{
+.taxonomic-coverage-row.new .remove,
+.eml-geocoverage.new .remove{
 	visibility: hidden;
 }
 .root-taxonomic-classification-container > .remove{
@@ -3727,6 +3716,11 @@ textarea.xlarge{
 	color: white;
 	z-index: 1;
 }
+.remove-preview,
+.locations-table .eml-geocoverage.remove-preview{
+	opacity: .3;
+}
+
 /* The width of each input element next to the remove button */
 .metadata-container .basic-text-row input,
 .metadata-container .keyword-row,
@@ -3781,9 +3775,6 @@ textarea.xlarge{
     margin-left: 0px;
     margin-top: 50%;
     display: block;
-}
-.eml-geocoverage.show-remove{
-	border: 1px dashed red;
 }
 .locations-table .notification{
 	min-height: .8em;

@@ -31,7 +31,9 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	events: {
         		"change" 		: "updateModel",
         		"keyup .phone"  : "formatPhone",
-        		"focusout .row-fluid"      : "showRequired"
+        		"focusout .row-fluid" : "showRequired",
+        		"mouseover .remove" : "previewRemove",
+        		"mouseout .remove"  : "previewRemove"
         	},
         	
         	render: function(){
@@ -258,6 +260,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	        }
         	        
         	        $(e.target).val(input);
+        	},
+        	
+        	previewRemove: function(){
+        		this.$el.toggleClass("remove-preview");
         	},
 
         	/*

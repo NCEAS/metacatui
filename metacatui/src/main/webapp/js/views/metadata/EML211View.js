@@ -34,8 +34,10 @@ define(['underscore', 'jquery', 'backbone',
         events: {
         	"change .text"                 : "updateText",
 
-        	"change .basic-text"           : "updateBasicText",
-        	"keyup  .basic-text.new"       : "addBasicText",
+        	"change .basic-text"            : "updateBasicText",
+        	"keyup  .basic-text.new"        : "addBasicText",
+        	"mouseover .basic-text-row .remove" : "previewTextRemove",
+        	"mouseout .basic-text-row .remove"  : "previewTextRemove",
 			
 			"change .temporal-coverage"    : "updateTemporalCoverage",
 			"focusout .temporal-coverage"  : "showTemporalCoverageValidation",
@@ -48,14 +50,20 @@ define(['underscore', 'jquery', 'backbone',
 			"keyup .taxonomic-coverage .new select"  : "addNewTaxon",
 			"focusout .taxonomic-coverage tr"        : "showTaxonValidation",
         	"click .taxonomic-coverage-row .remove"  : "removeTaxonRank",
+        	"mouseover .taxonomic-coverage .remove"  : "previewTaxonRemove",
+        	"mouseout .taxonomic-coverage .remove"   : "previewTaxonRemove",
 			
         	"change .keywords"               : "updateKeywords",
         	"keyup .keyword-row.new input"   : "addNewKeyword",
+        	"mouseover .keyword-row .remove" : "previewKeywordRemove",
+        	"mouseout .keyword-row .remove"  : "previewKeywordRemove",
         	
 			"change .usage"                  : "updateRadioButtons",
         	
 			"change .funding"                : "updateFunding",
         	"keyup .funding.new"             : "addFunding",
+        	"mouseover .funding-row .remove" : "previewFundingRemove",        	
+        	"mouseout .funding-row .remove"  : "previewFundingRemove",
         	
         	"keyup .eml-party.new .required" : "handlePersonTyping",
         	
@@ -695,7 +703,10 @@ define(['underscore', 'jquery', 'backbone',
 		    	//Append all the elements to a container
 		    	var containerEl = $(document.createElement("div"))
 		    						.addClass("ui-autocomplete-container funding-row")
-
+		    						.append(fundingInput, 
+									  loadingSpinner, 
+									  hiddenFundingInput);
+		    	
 				if (!value){
 					$(fundingInput).addClass("new");
 					
@@ -706,10 +717,6 @@ define(['underscore', 'jquery', 'backbone',
 				} else { // Add a remove button if this is a non-new funding element
 					$(containerEl).append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 				}
-
-		    	$(containerEl).append(fundingInput, 
-									  loadingSpinner, 
-									  hiddenFundingInput);
 		    	
 		    	var view = this;
 		    	
@@ -751,6 +758,10 @@ define(['underscore', 'jquery', 'backbone',
 			    
 			    this.$(".funding-container").append(containerEl);
 	    	}
+	    },
+	    
+	    previewFundingRemove: function(e){
+	    	$(e.target).parents(".funding-row").toggleClass("remove-preview");
 	    },
 	    
 	    addKeyword: function(keyword, model){
@@ -810,6 +821,10 @@ define(['underscore', 'jquery', 'backbone',
 			row.append(keywordInput, thesInput);
 
 			this.$(".keywords").append(row);
+		},
+		
+		previewKeywordRemove: function(e){
+			var row = $(e.target).parents(".keyword-row").toggleClass("remove-preview");
 		},
 	    
 	    /*
@@ -1163,6 +1178,10 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(e.target).parent().after(newRow);
 	    	
 			$(e.target).after(this.createRemoveButton(null, 'alternateIdentifier', '.basic-text-row', "div.text-container"));
+	    },
+	    
+	    previewTextRemove: function(e){
+	    	$(e.target).parents(".basic-text-row").toggleClass("remove-preview");
 	    },
 	    
 	    
@@ -1593,6 +1612,18 @@ define(['underscore', 'jquery', 'backbone',
 					tableContainer.prev(".notification").remove();
 			}
 
+		},
+		
+		previewTaxonRemove: function(e){
+			var removeBtn = $(e.target);
+			
+			if(removeBtn.parent().is(".root-taxonomic-classification-container")){
+				removeBtn.parent().toggleClass("remove-preview");
+			}
+			else{
+				removeBtn.parents(".taxonomic-coverage-row").toggleClass("remove-preview");
+			}
+				
 		},
         
         updateRadioButtons: function(e){
