@@ -257,7 +257,9 @@ define(["jquery", "underscore", "backbone",
             /* Copy the original XML DOM and update it with new values from the model */
             updateDOM: function() {
                 var objectDOM;
-                var xmlID;
+                var xmlID; // The id of the textDomain or enumeratedDomain fragment
+                var domainType; // Either textDomain or enumeratedDomain
+                var $domainInDOM; // The jQuery object of the text or enumerated domain from the DOM
 
                 if ( this.get("objectDOM") ) {
                     objectDOM = this.get("objectDOM").cloneNode(true);
@@ -277,14 +279,73 @@ define(["jquery", "underscore", "backbone",
                     // Update each nonNumericDomain in the DOM
                     _.each(this.get("nonNumericDomain"), function(domain) {
                         
-                        // If the domain exists, update it
-                        if ( ) {
+                        // Is this a textDomain or enumeratedDomain?
+                        if ( typeof domain.textDomain === "object" ) {
+                            domainType = "textDomain";
+                            xmlID = domain.textDomain.xmlID;
                             
-                        // Otherwise append it
+                        } else if ( typeof domain.enumeratedDomain === "object" ) {
+                            domainType = "enumeratedDomain";
+                            xmlID = domain.textDomain.xmlID;
                         } else {
-                            
+                            console.log("Unrecognized NonNumericDomain type. Skipping.");
                         }
-                    });
+                        
+                        // Update the existing DOM node by id
+                        if ( xmlID ) {
+                            $domainInDOM = $(objectDOM).find("#" + xmlID);
+                            
+                            if ( $domainInDOM.length ) {
+                                if ( domainType === "textDomain" ) {
+                                    $domainInDOM.children("definition").text(domain.textDomain.definition);
+                                    // Remove existing patterns
+                                    $domainInDOM.children("pattern").remove();
+                                    
+                                    // Add any new patterns
+                                    if ( domain.textDomain.pattern && domain.textDomain.pattern.length ) {
+                                        var patterns = Array.from(domain.textDomain.pattern).reverse();
+                                        _.each(patterns, function(pattern) {
+                                            // Prepend before the sourced element if present
+                                            var pat = document.createElement("pattern");
+                                            pat.textContent = pattern;
+                                            if ( $domainInDOM.children("sourced").length ) {
+                                                $domainInDOM.children("sourced").before(pat);
+                                            } else {
+                                                $domainInDOM.append(pat);
+                                            }
+                                        });
+                                    } else {
+                                        // Remove patterns in the DOM not present in the textDomain
+                                        $domainInDOM.children("pattern").remove();
+                                    }
+                                    
+                                    // Update any new source
+                                    if ( domain.textDomain.source ) {
+                                        if ( $domainInDOM.children("sourced").length ) {
+                                            $domainInDOM.children("sourced").text(domain.textDomain.source);
+                                        } else {
+                                            // 
+                                            var src = document.createElement("sourced");
+                                            src.textContent = domain.textDomain.source;
+                                            $domainInDOM.children("textDomain").append(src);
+                                        }
+                                    } else {
+                                        // Remove the source in the DOM not present in the textDomain
+                                        // TODO: Uncomment this when we support "source" in the UI
+                                        // $domainInDOM.children("source").remove();
+
+                                    }
+                                    
+                                } else if ( domainType === "enumeratedDomain") {
+                                    
+                                }
+                            }
+                        // Otherwise append to the DOM
+                        } else {
+
+                        }
+
+                    }, this);
 
                 } else {
                     // We have no content, so cant create a valid domain
