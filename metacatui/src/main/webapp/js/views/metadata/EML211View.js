@@ -243,7 +243,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Creators
 	    	this.$(".section.people").append("<h4>" + this.partyTypeMap["creator"] + "</h4>",
-					'<p>One or more creators is required. If none are entered, you will be set as the creator of this document.</p>',
+					'<p class="subtle">One or more creators is required. If none are entered, you will be set as the creator of this document.</p>',
 	    			'<div class="row-striped" data-attribute="creator"></div>');	    	
 	    	_.each(this.model.get("creator"), this.renderPerson, this);
 	    	this.renderPerson(null, "creator");
@@ -429,7 +429,7 @@ define(['underscore', 'jquery', 'backbone',
 	    			container.append(partyView.render().el);
 				
 				// Add in a remove button
-				$(container).find("div.eml-party").first().prepend(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
+				$(container).find("div.eml-party").append(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
 	    	}
 
 	    },
@@ -445,7 +445,7 @@ define(['underscore', 'jquery', 'backbone',
     		if(this.$("[data-attribute='" + partyType + "'] .eml-party.new").length > 1) return;
     		
 			// Add in a remove button
-			$(container).prepend(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
+			$(container).append(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
 
 			//Render a new person
 			if(partyType != "publisher")
@@ -699,7 +699,7 @@ define(['underscore', 'jquery', 'backbone',
 					$(fundingInput).addClass("new");
 					
 					if(event) {
-						$(event.target).parents("div.funding-row").first().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+						$(event.target).parents("div.funding-row").append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 						$(event.target).removeClass("new");
 					}
 				} else { // Add a remove button if this is a non-new funding element
@@ -786,7 +786,7 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Add a remove button unless this is the .new keyword
 			if(keyword) {
-				row.prepend(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
+				row.append(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
 			}
 
 	    	this.$(".keywords").append(row);
@@ -798,7 +798,7 @@ define(['underscore', 'jquery', 'backbone',
 			$(e.target).parents(".keyword-row").first().removeClass("new");
 
 			// Add in a remove button
-			$(e.target).parents(".keyword-row").first().prepend(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
+			$(e.target).parents(".keyword-row").append(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
 			
 			var row          = $(document.createElement("div")).addClass("row-fluid keyword-row new").data({ model: new EMLKeywordSet() }),
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10"),
@@ -837,7 +837,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		$(row).removeClass("new");
 				
 				// Add in a remove button
-				$(e.target).parent().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+				$(e.target).parent().append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 
 	    		this.addFunding();
 	    	}
@@ -897,7 +897,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Add a new row when the user has added a new keyword just now
 	    	if(row.is(".new")){
 	    		row.removeClass("new");
-				row.prepend(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
+				row.append(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
 	    		this.addKeyword();
 	    	} else {
 				console.log('not new');
@@ -1161,7 +1161,7 @@ define(['underscore', 'jquery', 'backbone',
 			
 	    	$(e.target).parent().after(newRow);
 	    	
-			$(e.target).before(this.createRemoveButton(null, 'alternateIdentifier', '.basic-text-row', "div.text-container"));
+			$(e.target).after(this.createRemoveButton(null, 'alternateIdentifier', '.basic-text-row', "div.text-container"));
 	    },
 	    
 	    
@@ -1497,7 +1497,7 @@ define(['underscore', 'jquery', 'backbone',
 				// Add a new classification table if this is itself a new table
 				if ($(classificationEl).is(".new")) {
 					$(classificationEl).removeClass("new");
-					$(classificationEl).prepend(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
+					$(classificationEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
 					$(coverage).append(this.createTaxonomicClassifcationTable());
 				}
 			}
@@ -1606,6 +1606,9 @@ define(['underscore', 'jquery', 'backbone',
         		
         		this.activeSection = section;
         		this.visibleSection = section;
+        		
+        		//if(this.$el.scrollTop() < $("#Navbar").height())
+        		$("body").scrollTop(this.$(".section." + section).offset().top - $("#Navbar").height());
         	}
         		
         		

@@ -366,7 +366,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
             else if(term.match(/\d/)) return; //Don't search for digit only since it's most likely a user just entering the grant number directy
             else filterBy = "keyword";
      
-            var url = appModel.get("grantsUrl") + "?" + filterBy + "=" + term + "&printFields=title,id";					
+            var url = MetacatUI.appModel.get("grantsUrl") + "?" + filterBy + "=" + term + "&printFields=title,id";					
 			var requestSettings = {
 				url: url, 
 				success: function(data, textStatus, xhr) {

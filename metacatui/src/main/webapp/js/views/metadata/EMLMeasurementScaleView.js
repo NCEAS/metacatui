@@ -148,7 +148,18 @@ define(['underscore', 'jquery', 'backbone',
 				this.$(".notification").text("");
         		
 				//If the measurement scale model is NOT valid
-            	if( !this.model.isValid() ){
+				if( !this.$(".category:checked").length ){
+					this.$(".category-container")
+						.addClass("error")
+						.find(".notification")
+						.text("Choose a category")
+						.addClass("error");
+					
+					//Trigger the invalid event on the attribute model
+                	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
+    			
+				}
+				else if( !this.model.isValid() ){
             		//Get the errors
             		var errors = this.model.validationError,
             			modelType = this.model.get("measurementScale");
@@ -467,7 +478,7 @@ define(['underscore', 'jquery', 'backbone',
 		            		
             		}
             		else if(possibleText == "pattern"){
-            			if(this.model.get("nonNumericDomain").length && !this.model.get("nonNumericDomain")[0].textDomain){
+            			if(!this.model.get("nonNumericDomain").length || !this.model.get("nonNumericDomain")[0].textDomain){
             				            			
 	            			var textDomain = {
 	            					definition: null,
@@ -476,6 +487,14 @@ define(['underscore', 'jquery', 'backbone',
 	            			}
 	            			
 	            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
+            			}
+            			else{
+            				var textDomain = {
+            						definition: this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='definition']").val(),
+            						pattern: [this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='pattern']").val()],
+            						source: null
+            				}
+            				this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
             			}
             		}
             		else if(possibleText == "anything"){
@@ -490,7 +509,7 @@ define(['underscore', 'jquery', 'backbone',
             	}
             	else if(updatedInput.is(".textDomain")){
             		if(typeof this.model.get("nonNumericDomain")[0] != "object")
-            			this.model.get("nonNumericDomain")[0] = { textDomain: null };
+            			this.model.get("nonNumericDomain")[0] = { textDomain: { definition: null, pattern: [], source: null } };
             		
             		var textDomain = this.model.get("nonNumericDomain")[0].textDomain;
             		
