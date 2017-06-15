@@ -3664,18 +3664,16 @@ textarea.xlarge{
 
 
 /* ---- Taxon Coverage ---- */
-.row-fluid.taxonomic-coverage {
-    padding-right: 40px;
-}
 .taxonomic-coverage .notification{
 	padding-left: 0px;
 	position: absolute;
 	margin-top: -25px;
 }
-.taxonomic-coverage > .row-striped{
-	margin-top: 20px; 
+.root-taxonomic-classification-container{
+	margin-top: 20px;
+	position: relative; 
 }
-.taxonomic-coverage > .row-striped:first-child,
+.root-taxonomic-classification-container:first-child,
 .taxonomic-coverage > .notification + .row-striped:nth-child(2){
 	margin-top: 0px;
 }
@@ -3683,7 +3681,9 @@ textarea.xlarge{
 	margin-bottom: 0px;
 	position: relative;
 }
-
+.taxon-rank-value{
+	width: calc(100% - 50px);
+}
 /* ---- Methods ---- */
 .metadata-container .sampling{
 	margin-top: 20px;
@@ -3711,9 +3711,21 @@ textarea.xlarge{
 	right: 10px;
     top: 5px;
 }
-.root-taxonomic-classification .remove{
-	top: 0px;
-    right: -40px;
+
+.taxonomic-coverage-row .remove{
+	position: relative;
+    line-height: 2.2em;
+    font-size: 1.1em;
+    float: right;
+    margin-right: 14px;
+}
+.taxonomic-coverage-row.new .remove{
+	visibility: hidden;
+}
+.root-taxonomic-classification-container > .remove{
+	right: 20px;
+	color: white;
+	z-index: 1;
 }
 /* The width of each input element next to the remove button */
 .metadata-container .basic-text-row input,
