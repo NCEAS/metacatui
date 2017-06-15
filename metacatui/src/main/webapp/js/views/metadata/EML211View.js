@@ -47,7 +47,8 @@ define(['underscore', 'jquery', 'backbone',
 			"keyup .taxonomic-coverage .new input"   : "addNewTaxon",
 			"keyup .taxonomic-coverage .new select"  : "addNewTaxon",
 			"focusout .taxonomic-coverage tr"        : "showTaxonValidation",
-        	
+        	"click .taxonomic-coverage-row .remove"  : "removeTaxonRank",
+			
         	"change .keywords"               : "updateKeywords",
         	"keyup .keyword-row.new input"   : "addNewKeyword",
         	
@@ -595,7 +596,7 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Taxa section of the page
          */
 	    renderTaxa: function(){
-	    	this.$(".section.taxa").empty().append("<h2>Taxa</h2>");
+	    	this.$(".section.taxa").html($(document.createElement("h2")).text("Taxa"));
 
 			var taxonomy = this.model.get('taxonCoverage');
 
@@ -1209,7 +1210,7 @@ define(['underscore', 'jquery', 'backbone',
 			
 			
 			var tableEl = $(this.taxonomicClassificationTableTemplate());
-			var tableBodyEl = $("<tbody></tbody>");
+			var tableBodyEl = $(document.createElement("tbody"));
 
 			var queue = [classification],
 			 	rows = [],
@@ -1225,7 +1226,7 @@ define(['underscore', 'jquery', 'backbone',
 				}
 
 				rows.push({
-					'taxonRankName' : cur.taxonRankName,
+					'taxonRankName' : cur.taxonRankName.toLowerCase(),
 					'taxonRankValue' : cur.taxonRankValue
 				});
 
@@ -1521,6 +1522,11 @@ define(['underscore', 'jquery', 'backbone',
 				//Append the new row and remove the new class from the old row
 				$(e.target).parents("tr").removeClass("new").after(newRow);
 			}
+		},
+		
+		removeTaxonRank: function(e){
+			var row = $(e.target).parents(".taxonomic-coverage-row");
+			
 		},
 		
 		/*
