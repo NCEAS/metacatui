@@ -3572,6 +3572,18 @@ textarea.xlarge{
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
 }
+.code-row.new .remove{
+	display: none;
+}
+.code-row .remove{
+	width: 20px;
+	float: right;
+	margin-left: 10px;
+	line-height: 2.2em;
+}
+.code-row .definition{
+	width: calc(100% - 30px);
+}
 
 /* ---- Overview ---- */
 .metadata-container .section.overview > div{
@@ -3697,10 +3709,9 @@ textarea.xlarge{
     margin-top: .2em;
 }
 
-.data-package-item .remove:hover,
-.metadata-container .remove:hover{
+.Editor .remove:hover{
 	cursor: pointer;
-	color: rgba(255,0,0,1);
+	color: #FF0000;
 }
 .metadata-container .eml-party .remove{
 	right: 10px;

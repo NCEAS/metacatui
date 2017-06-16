@@ -349,6 +349,16 @@ define(["jquery", "underscore", "backbone",
             		return errors;
             	else
             		return;
+            },
+            
+            removeCode: function(index){
+            	var codeToRemove = this.get("nonNumericDomain")[0].enumeratedDomain.codeDefinition[index];
+            	
+            	var newCodeList = _.without(this.get("nonNumericDomain")[0].enumeratedDomain.codeDefinition, codeToRemove);
+            	
+            	this.get("nonNumericDomain")[0].enumeratedDomain.codeDefinition = newCodeList;
+            	
+            	this.trigger("change:nonNumericDomain");
             }
 
         });

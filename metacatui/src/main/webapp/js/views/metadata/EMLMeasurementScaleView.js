@@ -3,10 +3,11 @@ define(['underscore', 'jquery', 'backbone',
         'models/DataONEObject',
         'models/metadata/eml211/EMLMeasurementScale',
         'text!templates/metadata/eml-measurement-scale.html',
+        'text!templates/metadata/codelist-row.html',
         'text!templates/metadata/nonNumericDomain.html',
         'text!templates/metadata/textDomain.html'], 
-    function(_, $, Backbone, DataONEObject, EMLMeasurementScale, 
-    		EMLMeasurementScaleTemplate, NonNumericDomainTemplate, TextDomainTemplate){
+    function(_, $, Backbone, DataONEObject, EMLMeasurementScale,
+    		EMLMeasurementScaleTemplate, CodeListRowTemplate, NonNumericDomainTemplate, TextDomainTemplate){
         
         /* 
             An EMLMeasurementScaleView displays the info about 
@@ -22,6 +23,7 @@ define(['underscore', 'jquery', 'backbone',
             
             /* The HTML template for a measurement scale */
             template: _.template(EMLMeasurementScaleTemplate),
+            codeListRowTemplate: _.template(CodeListRowTemplate),
             nonNumericDomainTemplate: _.template(NonNumericDomainTemplate),
             textDomainTemplate: _.template(TextDomainTemplate),
             
@@ -31,6 +33,9 @@ define(['underscore', 'jquery', 'backbone',
             	"change .datetime-string" : "toggleCustomDateTimeFormat",
             	"change .possible-text"   : "toggleNonNumericDomain",
             	"keyup  .new .codelist"   : "addNewCodeRow",
+            	"click .code-row .remove" : "removeCodeRow",
+            	"mouseover .code-row .remove" : "previewCodeRemove",
+            	"mouseout .code-row .remove"  : "previewCodeRemove",
             	"change .units"           : "updateModel",
             	"change .datetime" 		  : "updateModel",
             	"change .codelist"        : "updateModel",
@@ -112,33 +117,12 @@ define(['underscore', 'jquery', 'backbone',
             		$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
             	
             	_.each(codeList.codeDefinition, function(definition){
-            		var row = $(document.createElement("tr"))
-            					.addClass("code-row")
-            					.append(
-            					$(document.createElement("td")).addClass("span2").append( 
-            							$(document.createElement("input"))
-            								.addClass("full-width codelist code input")
-            								.attr("value", "")
-            								.attr("type", "text")
-            								.attr("data-category", "code")
-            								.attr("placeholder", "Code value allowed (e.g. \"site A\")")
-            								.val(definition.code) ),
-								$(document.createElement("td")).addClass("span10").append( 
-            							$(document.createElement("input"))
-            								.addClass("full-width codelist definition input")
-            								.attr("value", "")
-            								.attr("type", "text")
-            								.attr("data-category", "codeDefinition")
-            								.attr("placeholder", "Definition of this code")
-            								.val(definition.definition) )
-            				  );
+            		var row = this.codeListRowTemplate(definition);
             		
             		//Add the row to the table
             		$container.append(row);
-            	});
-            	
-            	this.addCodeRow();
-            	
+            	}, this);
+
             },
             
             showValidation: function(e){
@@ -415,7 +399,8 @@ define(['underscore', 'jquery', 'backbone',
             	if(!code || !definition) return false;
             	
             	$row.removeClass("new");
-            	this.addCodeRow();            	
+            	var row = this.addCodeRow();    
+            	$(row).addClass("new");
             },
             
             addCodeRow: function(scaleType){
@@ -424,26 +409,23 @@ define(['underscore', 'jquery', 'backbone',
             	
         		var	$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
             	
-            	//Add an empty row at the end to add a new code
-            	var row = $(document.createElement("tr"))
-	            			.addClass("code-row new")
-	            			.append(
-	    					$(document.createElement("td")).addClass("span2").append( 
-	    							$(document.createElement("input"))
-	    								.addClass("full-width codelist code input")
-	    								.attr("value", "")
-	    								.attr("type", "text")
-	    								.attr("data-category", "code")
-	    								.attr("placeholder", "Code value allowed (e.g. \"site A\")")),
-							$(document.createElement("td")).addClass("span10").append( 
-	    							$(document.createElement("input"))
-	    								.addClass("full-width codelist definition input")
-	    								.attr("value", "")
-	    								.attr("type", "text")
-	    								.attr("data-category", "codeDefinition")
-	    								.attr("placeholder", "Definition of this code")));
+            	//Create a code list row from the template
+            	var row = this.codeListRowTemplate({ code: "", definition: ""});
             	
             	$container.append(row);
+            	
+            	return row;
+            },
+            
+            removeCodeRow: function(e){
+            	var codeRow = $($(e.target).parents(".code-row")),
+            		allRows = codeRow.parents(".enumerated-domain").find(".code-row"),
+            		index   = allRows.index(codeRow);
+            	
+            	this.model.removeCode(index);
+            	
+            	codeRow.remove();
+            	
             },
             
             /*
@@ -556,6 +538,10 @@ define(['underscore', 'jquery', 'backbone',
     			}
 
     			
+            },
+            
+            previewCodeRemove: function(e){
+            	$(e.target).parents(".code-row").toggleClass("remove-preview");
             }
             
         });
