@@ -3378,7 +3378,7 @@ ul.side-nav-items {
 	margin-bottom: 20px;
 }
 textarea.xlarge{
-	height: 200px;
+	min-height: 200px;
 }
 
 /* Highlight drop zones with a dashed border */
@@ -3668,6 +3668,10 @@ textarea.xlarge{
 .root-taxonomic-classification{
 	margin-bottom: 0px;
 	position: relative;
+}
+.root-taxonomic-classification th > .subtle {
+    font-weight: normal;
+    margin-bottom: 0px;
 }
 .taxon-rank-value{
 	width: calc(100% - 50px);

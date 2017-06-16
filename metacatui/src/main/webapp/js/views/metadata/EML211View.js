@@ -16,12 +16,14 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
         'text!templates/metadata/locationsSection.html',
+        'text!templates/metadata/taxonomicCoverage.html',
 		'text!templates/metadata/taxonomicClassificationTable.html', 
 		'text!templates/metadata/taxonomicClassificationRow.html'], 
 	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView,
 			EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
 			EMLTemporalCoverage, EMLMethods, Template, OverviewTemplate,
-			 DatesTemplate, LocationsTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
+			 DatesTemplate, LocationsTemplate, 
+			 TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -91,6 +93,7 @@ define(['underscore', 'jquery', 'backbone',
         overviewTemplate: _.template(OverviewTemplate),
         datesTemplate: _.template(DatesTemplate),
         locationsTemplate: _.template(LocationsTemplate),
+        taxonomicCoverageTemplate: _.template(TaxonomicCoverageTemplate),
 		taxonomicClassificationTableTemplate: _.template(TaxonomicClassificationTable),
         taxonomicClassificationRowTemplate: _.template(TaxonomicClassificationRow),
         
@@ -1188,33 +1191,22 @@ define(['underscore', 'jquery', 'backbone',
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
 		// each root-level taxonomicClassification
 		createTaxonomicCoverage: function(coverage) {
-            var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
-			$(finishedEl).data({ model: coverage });
-			$(finishedEl).attr("data-category", "taxonomic-coverage");
+            var finishedEl = $(this.taxonomicCoverageTemplate({
+            	generalTaxonomicCoverage: coverage.get('generalTaxonomicCoverage') || ""
+            }));
+			finishedEl.data({ model: coverage });
 
 			var classifications = coverage.get("taxonomicClassification");
 
-			// Make a textarea for the generalTaxonomicCoverage
-			var generalCoverageEl = $(document.createElement('textarea'))
-				.addClass("medium text")
-				.attr("data-category", "generalTaxonomicCoverage")
-				.text(coverage.get('generalTaxonomicCoverage') || ""	);
-
-			$(finishedEl).append($(document.createElement('h5')).text('General Taxonomic Coverage'));
-			$(finishedEl).append(generalCoverageEl);
-
-			// taxonomicClassifications
-			$(finishedEl).append($(document.createElement('h5')).text('Taxonomic Classification(s)'));
-
 			// Makes a table... for the root level
 			for (var i = 0; i < classifications.length; i++) {
-				$(finishedEl).append(this.createTaxonomicClassifcationTable(classifications[i]));
+				finishedEl.append(this.createTaxonomicClassifcationTable(classifications[i]));
 			}
 
 			// Create a new, blank table for another taxonomicClassification
 			var newTableEl = this.createTaxonomicClassifcationTable();
 
-			$(finishedEl).append(newTableEl);
+			finishedEl.append(newTableEl);
 
 			return finishedEl;
 		},
