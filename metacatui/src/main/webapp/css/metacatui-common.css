@@ -3529,6 +3529,9 @@ textarea.xlarge{
 	background-color: #1E254F;
 	color: white;
 }
+.attribute-menu-item .add{
+	display: none;
+}
 .attribute-menu-item .remove{
 	position: absolute;
     top: 0px;
