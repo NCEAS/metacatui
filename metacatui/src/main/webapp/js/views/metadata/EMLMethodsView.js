@@ -29,7 +29,9 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         	events: {
         		"change" : "updateModel",
         		"keyup .method-step.new" : "addNewMethodStep",
-        		"click .remove" : "removeMethodStep"
+        		"click .remove" : "removeMethodStep",
+        		"mouseover .remove" : "previewRemove",
+        		"mouseout .remove"  : "previewRemove"
         	},
         	
         	render: function() {
@@ -179,6 +181,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
             		}
         		});
     
+        	},
+        	
+        	previewRemove: function(e){
+        		$(e.target).parents(".step-container").toggleClass("remove-preview");
         	}
         });
         

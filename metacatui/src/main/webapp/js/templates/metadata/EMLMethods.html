@@ -11,7 +11,9 @@
 	<% _(methodStepDescription).each(function(step, i) { %>
 		<div class="step-container">
 			<h5>Step <span class="step-num"><%=i+1%></span></h5>
-			<textarea data-attribute="methodStepDescription" data-type="description" rows="7" class="method-step"><%=step%></textarea>
+			<textarea data-attribute="methodStepDescription" 
+					  data-type="description" 
+					  rows="7" class="method-step"><%=step%></textarea>
 			<i class="remove icon-remove"></i>
 		</div>
 	<% }) %>

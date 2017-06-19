@@ -207,7 +207,7 @@ define(['underscore', 'jquery', 'backbone',
         	 * Highlight what will be removed when the remove icon is hovered over
         	 */
         	toggleRemoveClass: function(){
-        		this.$el.toggleClass("show-remove");
+        		this.$el.toggleClass("remove-preview");
         	},
         	
         	/*

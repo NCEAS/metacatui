@@ -35,8 +35,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 "click .removeFiles"   : "handleRemove",      // Edit dropdown, remove sci{data,meta} from collection
                 "click .cancel"        : "handleCancel",      // Cancel a file load
                 "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
-                "mouseover .remove"    : "showRemove",
-                "mouseout  .remove"    : "hideRemove"
+                "mouseover .remove"    : "previewRemove",
+                "mouseout  .remove"    : "previewRemove"
             },
             
             /* Initialize the object - post constructor */
@@ -491,18 +491,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             },
             
             /*
-             * STyle this table row to indicate it will be removed
+             * Style this table row to indicate it will be removed
              */
-            showRemove: function(){
-            	this.$el.addClass("remove-highlight");
+            previewRemove: function(){
+            	this.$el.toggleClass("remove-preview");
             },
-            
-            /*
-             * Remove the styling on this table row that indicates it will be removed
-             */
-            hideRemove: function(){
-            	this.$el.removeClass("remove-highlight");
-            },
+
             
             showRequired: function(attr){
 				

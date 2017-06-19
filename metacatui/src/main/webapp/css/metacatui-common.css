@@ -3321,17 +3321,6 @@ ul.side-nav-items {
     width: 1.4em;
 }
 
-.data-package-item.remove-highlight td{
-	border-color: #FF0000;
-	border-style: dashed;
-	border-width: 2px 0px 2px 0px;
-}
-.data-package-item.remove-highlight td:first-of-type{
-	border-left-width: 1px;
-}
-.data-package-item.remove-highlight td:last-of-type{
-	border-right-width: 1px;
-}
 
 .Editor #data-package-table ul li a span {
     margin-left: .3em;
@@ -3389,7 +3378,7 @@ ul.side-nav-items {
 	margin-bottom: 20px;
 }
 textarea.xlarge{
-	height: 200px;
+	min-height: 200px;
 }
 
 /* Highlight drop zones with a dashed border */
@@ -3540,6 +3529,9 @@ textarea.xlarge{
 	background-color: #1E254F;
 	color: white;
 }
+.attribute-menu-item .add{
+	display: none;
+}
 .attribute-menu-item .remove{
 	position: absolute;
     top: 0px;
@@ -3554,7 +3546,6 @@ textarea.xlarge{
 }
 .attribute-menu-item.side-nav-item.remove-preview a,
 .attribute-menu-item.side-nav-item.remove-preview a:hover{
-	border: 2px dashed red;
     background-color: #f7f7f7;
     color: red;
 }
@@ -3580,6 +3571,18 @@ textarea.xlarge{
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
+}
+.code-row.new .remove{
+	display: none;
+}
+.code-row .remove{
+	width: 20px;
+	float: right;
+	margin-left: 10px;
+	line-height: 2.2em;
+}
+.code-row .definition{
+	width: calc(100% - 30px);
 }
 
 /* ---- Overview ---- */
@@ -3664,18 +3667,16 @@ textarea.xlarge{
 
 
 /* ---- Taxon Coverage ---- */
-.row-fluid.taxonomic-coverage {
-    padding-right: 40px;
-}
 .taxonomic-coverage .notification{
 	padding-left: 0px;
 	position: absolute;
 	margin-top: -25px;
 }
-.taxonomic-coverage > .row-striped{
-	margin-top: 20px; 
+.root-taxonomic-classification-container{
+	margin-top: 20px;
+	position: relative; 
 }
-.taxonomic-coverage > .row-striped:first-child,
+.root-taxonomic-classification-container:first-child,
 .taxonomic-coverage > .notification + .row-striped:nth-child(2){
 	margin-top: 0px;
 }
@@ -3683,7 +3684,13 @@ textarea.xlarge{
 	margin-bottom: 0px;
 	position: relative;
 }
-
+.root-taxonomic-classification th > .subtle {
+    font-weight: normal;
+    margin-bottom: 0px;
+}
+.taxon-rank-value{
+	width: calc(100% - 50px);
+}
 /* ---- Methods ---- */
 .metadata-container .sampling{
 	margin-top: 20px;
@@ -3702,19 +3709,36 @@ textarea.xlarge{
     margin-top: .2em;
 }
 
-.data-package-item .remove:hover,
-.metadata-container .remove:hover{
+.Editor .remove:hover{
 	cursor: pointer;
-	color: rgba(255,0,0,1);
+	color: #FF0000;
 }
 .metadata-container .eml-party .remove{
 	right: 10px;
     top: 5px;
 }
-.root-taxonomic-classification .remove{
-	top: 0px;
-    right: -40px;
+
+.taxonomic-coverage-row .remove{
+	position: relative;
+    line-height: 2.2em;
+    font-size: 1.1em;
+    float: right;
+    margin-right: 14px;
 }
+.taxonomic-coverage-row.new .remove,
+.eml-geocoverage.new .remove{
+	visibility: hidden;
+}
+.root-taxonomic-classification-container > .remove{
+	right: 20px;
+	color: white;
+	z-index: 1;
+}
+.remove-preview,
+.locations-table .eml-geocoverage.remove-preview{
+	opacity: .3;
+}
+
 /* The width of each input element next to the remove button */
 .metadata-container .basic-text-row input,
 .metadata-container .keyword-row,
@@ -3769,9 +3793,6 @@ textarea.xlarge{
     margin-left: 0px;
     margin-top: 50%;
     display: block;
-}
-.eml-geocoverage.show-remove{
-	border: 1px dashed red;
 }
 .locations-table .notification{
 	min-height: .8em;

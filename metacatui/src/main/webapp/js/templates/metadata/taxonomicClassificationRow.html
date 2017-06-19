@@ -1,18 +1,19 @@
-<tr class="form-inline">
+<tr class="form-inline taxonomic-coverage-row">
     <td class="span4">
         <select data-category="rankName" class="taxon-rank-name tooltip-this span12" >
             <option value="">Rank Name</option>
-            <option value="Domain" <%= taxonRankName === "Domain" ? "selected" : void 0 %>>Domain</option>
-            <option value="Kingdom" <%= taxonRankName === "Kingdom" ? "selected" : void 0 %>>Kingdom</option>
-            <option value="Phylum" <%= taxonRankName === "Phylum" ? "selected" : void 0 %>>Phylum</option>
-            <option value="Class" <%= taxonRankName === "Class" ? "selected" : void 0 %>>Class</option>
-            <option value="Order" <%= taxonRankName === "Order" ? "selected" : void 0 %>>Order</option>
-            <option value="Family" <%= taxonRankName === "Family" ? "selected" : void 0 %>>Family</option>
-            <option value="Genus" <%= taxonRankName === "Genus" ? "selected" : void 0 %>>Genus</option>
-            <option value="Species" <%= taxonRankName === "Species" ? "selected" : void 0 %>>Species</option>
+            <option value="Domain" <%= taxonRankName === "domain" ? "selected" : void 0 %>>Domain</option>
+            <option value="Kingdom" <%= taxonRankName === "kingdom" ? "selected" : void 0 %>>Kingdom</option>
+            <option value="Phylum" <%= taxonRankName === "phylum" ? "selected" : void 0 %>>Phylum</option>
+            <option value="Class" <%= taxonRankName === "class" ? "selected" : void 0 %>>Class</option>
+            <option value="Order" <%= taxonRankName === "order" ? "selected" : void 0 %>>Order</option>
+            <option value="Family" <%= taxonRankName === "family" ? "selected" : void 0 %>>Family</option>
+            <option value="Genus" <%= taxonRankName === "genus" ? "selected" : void 0 %>>Genus</option>
+            <option value="Species" <%= taxonRankName === "species" ? "selected" : void 0 %>>Species</option>
         </select>
     </td>
-    <td class="span8">
-        <input type="text" data-category="rankValue" value="<%= taxonRankValue %>" class="taxon-rank-value tooltip-this span12" placeholder="Rank value"/>
+    <td class="span7">
+        <input type="text" data-category="rankValue" value="<%= taxonRankValue %>" class="taxon-rank-value" placeholder="e.g., Animalia, Chordata, Mammalia, Ursus arctos"/>
+    	<i class="icon-remove remove icon" title="Remove"></i>
     </td>
 </tr>

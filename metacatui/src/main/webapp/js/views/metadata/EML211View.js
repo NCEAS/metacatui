@@ -16,12 +16,14 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
         'text!templates/metadata/locationsSection.html',
+        'text!templates/metadata/taxonomicCoverage.html',
 		'text!templates/metadata/taxonomicClassificationTable.html', 
 		'text!templates/metadata/taxonomicClassificationRow.html'], 
 	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView,
 			EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
 			EMLTemporalCoverage, EMLMethods, Template, OverviewTemplate,
-			 DatesTemplate, LocationsTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
+			 DatesTemplate, LocationsTemplate, 
+			 TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -34,8 +36,10 @@ define(['underscore', 'jquery', 'backbone',
         events: {
         	"change .text"                 : "updateText",
 
-        	"change .basic-text"           : "updateBasicText",
-        	"keyup  .basic-text.new"       : "addBasicText",
+        	"change .basic-text"            : "updateBasicText",
+        	"keyup  .basic-text.new"        : "addBasicText",
+        	"mouseover .basic-text-row .remove" : "previewTextRemove",
+        	"mouseout .basic-text-row .remove"  : "previewTextRemove",
 			
 			"change .temporal-coverage"    : "updateTemporalCoverage",
 			"focusout .temporal-coverage"  : "showTemporalCoverageValidation",
@@ -47,14 +51,21 @@ define(['underscore', 'jquery', 'backbone',
 			"keyup .taxonomic-coverage .new input"   : "addNewTaxon",
 			"keyup .taxonomic-coverage .new select"  : "addNewTaxon",
 			"focusout .taxonomic-coverage tr"        : "showTaxonValidation",
-        	
+        	"click .taxonomic-coverage-row .remove"  : "removeTaxonRank",
+        	"mouseover .taxonomic-coverage .remove"  : "previewTaxonRemove",
+        	"mouseout .taxonomic-coverage .remove"   : "previewTaxonRemove",
+			
         	"change .keywords"               : "updateKeywords",
         	"keyup .keyword-row.new input"   : "addNewKeyword",
+        	"mouseover .keyword-row .remove" : "previewKeywordRemove",
+        	"mouseout .keyword-row .remove"  : "previewKeywordRemove",
         	
 			"change .usage"                  : "updateRadioButtons",
         	
 			"change .funding"                : "updateFunding",
         	"keyup .funding.new"             : "addFunding",
+        	"mouseover .funding-row .remove" : "previewFundingRemove",        	
+        	"mouseout .funding-row .remove"  : "previewFundingRemove",
         	
         	"keyup .eml-party.new .required" : "handlePersonTyping",
         	
@@ -82,6 +93,7 @@ define(['underscore', 'jquery', 'backbone',
         overviewTemplate: _.template(OverviewTemplate),
         datesTemplate: _.template(DatesTemplate),
         locationsTemplate: _.template(LocationsTemplate),
+        taxonomicCoverageTemplate: _.template(TaxonomicCoverageTemplate),
 		taxonomicClassificationTableTemplate: _.template(TaxonomicClassificationTable),
         taxonomicClassificationRowTemplate: _.template(TaxonomicClassificationRow),
         
@@ -595,7 +607,7 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Taxa section of the page
          */
 	    renderTaxa: function(){
-	    	this.$(".section.taxa").empty().append("<h2>Taxa</h2>");
+	    	this.$(".section.taxa").html($(document.createElement("h2")).text("Taxa"));
 
 			var taxonomy = this.model.get('taxonCoverage');
 
@@ -694,7 +706,10 @@ define(['underscore', 'jquery', 'backbone',
 		    	//Append all the elements to a container
 		    	var containerEl = $(document.createElement("div"))
 		    						.addClass("ui-autocomplete-container funding-row")
-
+		    						.append(fundingInput, 
+									  loadingSpinner, 
+									  hiddenFundingInput);
+		    	
 				if (!value){
 					$(fundingInput).addClass("new");
 					
@@ -705,10 +720,6 @@ define(['underscore', 'jquery', 'backbone',
 				} else { // Add a remove button if this is a non-new funding element
 					$(containerEl).append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 				}
-
-		    	$(containerEl).append(fundingInput, 
-									  loadingSpinner, 
-									  hiddenFundingInput);
 		    	
 		    	var view = this;
 		    	
@@ -750,6 +761,10 @@ define(['underscore', 'jquery', 'backbone',
 			    
 			    this.$(".funding-container").append(containerEl);
 	    	}
+	    },
+	    
+	    previewFundingRemove: function(e){
+	    	$(e.target).parents(".funding-row").toggleClass("remove-preview");
 	    },
 	    
 	    addKeyword: function(keyword, model){
@@ -809,6 +824,10 @@ define(['underscore', 'jquery', 'backbone',
 			row.append(keywordInput, thesInput);
 
 			this.$(".keywords").append(row);
+		},
+		
+		previewKeywordRemove: function(e){
+			var row = $(e.target).parents(".keyword-row").toggleClass("remove-preview");
 		},
 	    
 	    /*
@@ -1164,52 +1183,45 @@ define(['underscore', 'jquery', 'backbone',
 			$(e.target).after(this.createRemoveButton(null, 'alternateIdentifier', '.basic-text-row', "div.text-container"));
 	    },
 	    
+	    previewTextRemove: function(e){
+	    	$(e.target).parents(".basic-text-row").toggleClass("remove-preview");
+	    },
+	    
 	    
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
 		// each root-level taxonomicClassification
 		createTaxonomicCoverage: function(coverage) {
-            var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
-			$(finishedEl).data({ model: coverage });
-			$(finishedEl).attr("data-category", "taxonomic-coverage");
+            var finishedEl = $(this.taxonomicCoverageTemplate({
+            	generalTaxonomicCoverage: coverage.get('generalTaxonomicCoverage') || ""
+            }));
+			finishedEl.data({ model: coverage });
 
 			var classifications = coverage.get("taxonomicClassification");
 
-			// Make a textarea for the generalTaxonomicCoverage
-			var generalCoverageEl = $(document.createElement('textarea'))
-				.addClass("medium text")
-				.attr("data-category", "generalTaxonomicCoverage")
-				.text(coverage.get('generalTaxonomicCoverage') || ""	);
-
-			$(finishedEl).append($(document.createElement('h5')).text('General Taxonomic Coverage'));
-			$(finishedEl).append(generalCoverageEl);
-
-			// taxonomicClassifications
-			$(finishedEl).append($(document.createElement('h5')).text('Taxonomic Classification(s)'));
-
 			// Makes a table... for the root level
 			for (var i = 0; i < classifications.length; i++) {
-				$(finishedEl).append(this.createTaxonomicClassifcationTable(classifications[i]));
+				finishedEl.append(this.createTaxonomicClassifcationTable(classifications[i]));
 			}
 
 			// Create a new, blank table for another taxonomicClassification
 			var newTableEl = this.createTaxonomicClassifcationTable();
 
-			$(finishedEl).append(newTableEl);
+			finishedEl.append(newTableEl);
 
 			return finishedEl;
 		},
 		
 		createTaxonomicClassifcationTable: function(classification) {
-			var finishedEl = $('<div class="row-striped root-taxonomic-classification"></div>');
+			var finishedEl = $('<div class="row-striped root-taxonomic-classification-container"></div>');
 
 			// Add a remove button if this is not a new table
 			if (!(typeof classification === "undefined")) {
-				$(finishedEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
+				$(finishedEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', '.root-taxonomic-classification-container', '.taxonomic-coverage'));
 			}
 			
 			
 			var tableEl = $(this.taxonomicClassificationTableTemplate());
-			var tableBodyEl = $("<tbody></tbody>");
+			var tableBodyEl = $(document.createElement("tbody"));
 
 			var queue = [classification],
 			 	rows = [],
@@ -1225,7 +1237,7 @@ define(['underscore', 'jquery', 'backbone',
 				}
 
 				rows.push({
-					'taxonRankName' : cur.taxonRankName,
+					'taxonRankName' : cur.taxonRankName.toLowerCase(),
 					'taxonRankValue' : cur.taxonRankValue
 				});
 
@@ -1395,38 +1407,45 @@ define(['underscore', 'jquery', 'backbone',
 		TODO: Finish this function
 		TODO: Link this function into the DOM
 		*/
-		updateTaxonCoverage: function(e) {
-			if (!e) return false;
+		updateTaxonCoverage: function(options) {
 			
-			/*	Getting `model` here is different than in other places because
-				the thing being updated is an `input` or `select` element which
-				is part of a `taxonomicClassification`. The model is
-				`TaxonCoverage` which has one or more
-				`taxonomicClassifications`. So we have to walk up to the
-				hierarchy from input < td < tr < tbody < table < div to get at
-				the underlying TaxonCoverage model.
-			*/
-	    	var coverage = $(e.target).parents("div.taxonomic-coverage"),
-				classificationEl = $(e.target).parents("table.root-taxonomic-classification"),
-	    		model =  $(coverage).data("model") || this.model,
-				category = $(e.target).attr("data-category"),
-				value = $(e.target).val().trim();
-	    	
-	    	//We can't update anything without a coverage, or
-	    	//classification
-			if (!coverage) return false;
-			if (!classificationEl) return false;
-
-			// Use `category` to determine if we're updating the generalTaxonomicCoverage or
-			// the taxonomicClassification
-			if (category && category === "generalTaxonomicCoverage") {
-				model.set('generalTaxonomicCoverage', value);
+			if(options.target){
+				var e = options;
 				
-				return;
+				/*	Getting `model` here is different than in other places because
+					the thing being updated is an `input` or `select` element which
+					is part of a `taxonomicClassification`. The model is
+					`TaxonCoverage` which has one or more
+					`taxonomicClassifications`. So we have to walk up to the
+					hierarchy from input < td < tr < tbody < table < div to get at
+					the underlying TaxonCoverage model.
+				*/
+		    	var coverage = $(e.target).parents(".taxonomic-coverage"),
+					classificationEl = $(e.target).parents(".root-taxonomic-classification"),
+		    		model =  $(coverage).data("model") || this.model,
+					category = $(e.target).attr("data-category"),
+					value = $(e.target).val().trim();
+		    	
+		    	//We can't update anything without a coverage, or
+		    	//classification
+				if (!coverage) return false;
+				if (!classificationEl) return false;
+	
+				// Use `category` to determine if we're updating the generalTaxonomicCoverage or
+				// the taxonomicClassification
+				if (category && category === "generalTaxonomicCoverage") {
+					model.set('generalTaxonomicCoverage', value);
+					
+					return;
+				}
+			}
+			else{
+				var coverage = options.coverage,
+					model    = $(coverage).data("model");
 			}
 			
 			// Find all of the root-level taxonomicClassifications
-			var classificationTables = $(coverage).find("table.root-taxonomic-classification");
+			var classificationTables = $(coverage).find(".root-taxonomic-classification");
 
 			if (!classificationTables) return false;
 
@@ -1482,7 +1501,7 @@ define(['underscore', 'jquery', 'backbone',
 			
 			// Handle adding new tables and rows
 			// Do nothing if the value isn't set
-			if (value !== "") {
+			if (value) {
 				// Add a new row if this is itself a new row
 				if ($(e.target).parents("tr").first().is(".new")) {
 					var newRowEl = $(this.taxonomicClassificationRowTemplate({
@@ -1497,7 +1516,7 @@ define(['underscore', 'jquery', 'backbone',
 				// Add a new classification table if this is itself a new table
 				if ($(classificationEl).is(".new")) {
 					$(classificationEl).removeClass("new");
-					$(classificationEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
+					$(classificationEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', '.root-taxonomic-classification-container', '.taxonomic-coverage'));
 					$(coverage).append(this.createTaxonomicClassifcationTable());
 				}
 			}
@@ -1521,6 +1540,18 @@ define(['underscore', 'jquery', 'backbone',
 				//Append the new row and remove the new class from the old row
 				$(e.target).parents("tr").removeClass("new").after(newRow);
 			}
+		},
+		
+		removeTaxonRank: function(e){
+			var row = $(e.target).parents(".taxonomic-coverage-row"),
+				coverageEl = $(row).parents(".taxonomic-coverage"),
+				view = this;
+			
+			//Animate the row away and then remove it
+			row.slideUp("fast", function(){
+				row.remove();
+				view.updateTaxonCoverage({ coverage: coverageEl });
+			});
 		},
 		
 		/*
@@ -1573,6 +1604,18 @@ define(['underscore', 'jquery', 'backbone',
 					tableContainer.prev(".notification").remove();
 			}
 
+		},
+		
+		previewTaxonRemove: function(e){
+			var removeBtn = $(e.target);
+			
+			if(removeBtn.parent().is(".root-taxonomic-classification-container")){
+				removeBtn.parent().toggleClass("remove-preview");
+			}
+			else{
+				removeBtn.parents(".taxonomic-coverage-row").toggleClass("remove-preview");
+			}
+				
 		},
         
         updateRadioButtons: function(e){

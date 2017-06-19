@@ -275,7 +275,10 @@ define(['underscore',
             $packageTableContainer.resizable({
 	            	handles: { "s" : handle },
 	            	minHeight: 100,
-	            	maxHeight: 900
+	            	maxHeight: 900,
+	            	resize: function(){
+	            		view.emlView.resizeTOC();
+	            	}
             	});
             $packageTableContainer.css("height", "200px");
 
