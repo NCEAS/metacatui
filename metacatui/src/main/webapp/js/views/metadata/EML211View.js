@@ -119,8 +119,6 @@ define(['underscore', 'jquery', 'backbone',
         render: function() {        
 			MetacatUI.appModel.set('headerType', 'default');
 			
-			console.log("rendering EML");
-
 			//Render the basic structure of the page and table of contents
 			this.$el.html(this.template({
 				activeSection: this.activeSection,
@@ -143,7 +141,7 @@ define(['underscore', 'jquery', 'backbone',
 			
 			//Create a Unit collection for the entity and attribute section
 			this.model.createUnits();
-			
+						
             return this;
         },
         
@@ -632,11 +630,15 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Methods section of the page
          */
 	    renderMethods: function(){
-			if (!this.model.get('methods')) {
-				this.model.set('methods', new EMLMethods({ edit: this.edit }));
+	    	var methodsModel = this.model.get("methods");
+	    	
+			if (!methodsModel) {
+				methodsModel = new EMLMethods({ edit: this.edit, parentModel: this.model });
 			}
 
-			this.$(".section.methods").append(new EMLMethodsView({ model: this.model.get('methods'), edit: this.edit }).render().el);
+			this.$(".section.methods").append(new EMLMethodsView({ 
+				model: methodsModel, 
+				edit: this.edit }).render().el);
 		},
 	    
 	    /*
