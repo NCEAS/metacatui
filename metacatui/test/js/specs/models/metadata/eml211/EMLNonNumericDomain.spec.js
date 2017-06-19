@@ -181,7 +181,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                 xml.push(
                     "<ordinal>\n",
                     "\t<nonNumericDomain>\n",
-                    "\t\t<enumeratedDomain>\n",
+                    "\t\t<enumeratedDomain id=\"54321\">\n",
                     "\t\t\t<codeDefinition>\n",
                     "\t\t\t\t<code>JAL</code>\n",
                     "\t\t\t\t<definition>Jalama Beach, California</definition>\n",
