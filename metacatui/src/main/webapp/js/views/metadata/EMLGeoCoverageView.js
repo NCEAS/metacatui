@@ -15,6 +15,10 @@ define(['underscore', 'jquery', 'backbone',
         	
         	className: "row-fluid eml-geocoverage",
         	
+        	attributes: {
+        		"data-category": "geoCoverage"
+        	},
+        	
         	editTemplate: _.template(EMLGeoCoverageTemplate),
         	
         	initialize: function(options){
@@ -29,7 +33,7 @@ define(['underscore', 'jquery', 'backbone',
         	
         	events: {
         		"change"   : "updateModel",
-        		"focusout .input-container" : "showRequired",
+        		"focusout .input-container" : "showValidation",
         		"keyup textarea.error" : "updateError",
         		"click .coord.error"   : "updateError",
         		"mouseover .remove"    : "toggleRemoveClass",
@@ -82,7 +86,7 @@ define(['underscore', 'jquery', 'backbone',
         	/*
         	 * If the model isn't valid, show verification messages
         	 */
-        	showRequired: function(e){
+        	showValidation: function(e){
         		
         		var view = this;
         		
@@ -92,6 +96,14 @@ define(['underscore', 'jquery', 'backbone',
         			
 	        		if( geoCoverage.length && geoCoverage[0] == view.el )
 	        			return;
+	        		
+	        		//If the model is valid, then remove error styling and exit
+	        		if(view.model.isValid()){
+	        			view.$(".error").removeClass("error");
+	        			view.$el.removeClass("error");
+	        			view.$(".notification").empty();
+	        			return;
+	        		}
 	        		
 	        		//Check if the model is valid
 	        		var north = view.$(".north").val(),

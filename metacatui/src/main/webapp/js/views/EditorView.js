@@ -434,7 +434,8 @@ define(['underscore',
         	this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.handleSaveCancel);
 
         	//When the model is invalid, show the required fields
-        	this.listenTo(this.model, "required", this.showRequired);
+        	this.listenTo(this.model, "invalid", this.showValidation);
+        	this.listenTo(this.model, "valid",   this.showValidation);
         },
 
         /*
@@ -696,7 +697,7 @@ define(['underscore',
         	$(".disable-layer").remove();
 
         	//When the package is saved, revert the Save button back to normal
-        	this.$("#save-editor").html("Save").removeClass("btn-disabled");
+        	this.$("#save-editor").html("Submit").removeClass("btn-disabled");
 	    },
 
         /* Toggle the editor footer controls (Save bar) */
@@ -726,27 +727,70 @@ define(['underscore',
 	    	$(container).find(".loading").remove();
 	    },
 
-		showRequired: function(attr){
-			var reqEl = $("[data-attribute='" + attr + "']");
-			if(!reqEl) return;
+		showValidation: function(){
+			
+			//First clear all the error messaging
+			this.$(".notification.error").empty();
+			this.$(".side-nav-item .icon").hide();
+			this.$(".error").removeClass("error");
+			$(".alert-container").remove();
+			
+			var errors = this.model.validationError;
+			
+			_.each(errors, function(errorMsg, category){
+				
+				var categoryEls = this.$("[data-category='" + category + "']"),
+					dataItemRow = categoryEls.parents(".data-package-item");
 
-			//Style the field as required
-			reqEl.addClass("error");
-
-			//If this field is in a DataItemView, then delegate to that view
-			var dataItemRow = reqEl.parents(".data-package-item");
-
-			if(dataItemRow.length && dataItemRow.data("view") && (typeof dataItemRow.data("view").showRequired == "function")){
-				dataItemRow.data("view").showRequired(attr);
+				//If this field is in a DataItemView, then delegate to that view
+				if(dataItemRow.length && dataItemRow.data("view")){
+					dataItemRow.data("view").showValidation(category, errorMsg);
+					return;
+				}
+				else{
+					var elsWithViews = _.filter(categoryEls, function(el){
+							return ( $(el).data("view") && $(el).data("view").showValidation );
+						});
+					
+					if(elsWithViews.length){
+						_.each(elsWithViews, function(el){
+							$(el).data("view").showValidation();
+						});
+					}
+					else{
+						//Show the error message
+						categoryEls.filter(".notification").addClass("error").text(errorMsg);						
+					}
+				}
+				
+				//Get the link in the table of contents navigation
+				var navigationLink = this.$(".side-nav-item[data-category='" + category + "']");
+				
+				if(!navigationLink.length){
+					var section = categoryEls.parents("[data-section]");
+					navigationLink = this.$(".side-nav-item." + $(section).attr("data-section"));
+				}
+				
+				//Show the error icon in the table of contents				
+				navigationLink.addClass("error")
+					.find(".icon")
+					.addClass("error")
+					.show();
+				
+				this.model.once("change:" + category, this.model.isValid);
+				
+			}, this);
+			
+			if(errors){
+				MetacatUI.appView.showAlert("Provide the missing information flagged below.", 
+						"alert-error", 
+						this.$el, 
+						null, 
+						{
+	        				remove: true
+						});
 			}
-			else{
-				reqEl.parent().prepend( $(document.createElement("div"))
-												.addClass("error notification")
-												.text("A" + attr + " is required.") );
-			}
 
-			//Scroll to the element
-			MetacatUI.appView.scrollTo(reqEl, $("#Navbar").outerHeight() + 100);
 		},
 
 	    /*

@@ -2,22 +2,40 @@
 	<nav class="span2 metadata-toc side-nav">
 	<ul class="side-nav-items">
 		<li class="overview side-nav-item">
-			<a href="#" data-section="overview" class="<% if(activeSection == 'overview') { %> active <% } %>">Overview</a>
+			<a href="#" data-section="overview" class="<% if(activeSection == 'overview') { %> active <% } %>">
+				<i class="icon error icon-exclamation-sign hidden"></i>
+				Overview
+			</a>
 		</li>
 		<li class="people side-nav-item">
-			<a href="#" data-section="people" class="<% if(activeSection == 'people') { %> active <% } %>">People</a>
+			<a href="#" data-section="people" class="<% if(activeSection == 'people') { %> active <% } %>">
+				<i class="icon error icon-exclamation-sign hidden"></i>
+				People
+			</a>
 		</li>
-		<li class="dates side-nav-item">
-			<a href="#" data-section="dates" class="<% if(activeSection == 'dates') { %> active <% } %>">Dates</a>
+		<li class="dates side-nav-item" data-category="temporalCoverage">
+			<a href="#" data-section="dates" class="<% if(activeSection == 'dates') { %> active <% } %>">
+				<i class="icon error icon-exclamation-sign hidden"></i>
+				Dates
+			</a>
 		</li>
-		<li class="locations side-nav-item">
-			<a href="#" data-section="locations" class="<% if(activeSection == 'locations') { %> active <% } %>">Locations</a>
+		<li class="locations side-nav-item" data-category="geoCoverage">
+			<a href="#" data-section="locations" class="<% if(activeSection == 'locations') { %> active <% } %>">
+				<i class="icon error icon-exclamation-sign hidden"></i>
+				Locations
+			</a>
 		</li>
-		<li class="taxa side-nav-item">
-			<a href="#" data-section="taxa" class="<% if(activeSection == 'taxa') { %> active <% } %>">Taxa</a>
+		<li class="taxa side-nav-item" data-category="taxonCoverage">
+			<a href="#" data-section="taxa" class="<% if(activeSection == 'taxa') { %> active <% } %>">
+				<i class="icon error icon-exclamation-sign hidden"></i>
+				Taxa
+			</a>
 		</li>
-		<li class="methods side-nav-item">
-			<a href="#" data-section="methods" class="<% if(activeSection == 'methods') { %> active <% } %>">Methods</a>
+		<li class="methods side-nav-item" data-category="methods">
+			<a href="#" data-section="methods" class="<% if(activeSection == 'methods') { %> active <% } %>">
+				<i class="icon error icon-exclamation-sign hidden"></i>
+				Methods
+			</a>
 		</li>
 		<!-- <li class="project side-nav-item">
 			<a href="#" data-section="project">Project</a>
@@ -34,13 +52,16 @@
 		<section data-section="people" class="section people <% if(visibleSection != 'people' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
 		
-		<section data-section="dates" class="section dates <% if(visibleSection != 'dates' && visibleSection != 'all') { %> hidden <% } %>">
+		<section data-section="dates" class="section dates <% if(visibleSection != 'dates' && visibleSection != 'all') { %> hidden <% } %>"
+				data-category="temporalCoverage">
 		</section>
 		
-		<section data-section="locations" class="section locations <% if(visibleSection != 'locations' && visibleSection != 'all') { %> hidden <% } %>">
+		<section data-section="locations" class="section locations <% if(visibleSection != 'locations' && visibleSection != 'all') { %> hidden <% } %>"
+				data-category="geoCoverage">
 		</section>
 		
-		<section data-section="taxa" class="section taxa <% if(visibleSection != 'taxa' && visibleSection != 'all') { %> hidden <% } %>">
+		<section data-section="taxa" class="section taxa <% if(visibleSection != 'taxa' && visibleSection != 'all') { %> hidden <% } %>"
+				data-category="taxonCoverage">
 		</section>
 		
 		<section data-section="methods" class="section methods <% if(visibleSection != 'methods' && visibleSection != 'all') { %> hidden <% } %>">

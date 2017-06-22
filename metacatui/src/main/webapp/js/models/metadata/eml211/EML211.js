@@ -46,7 +46,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            abstract: [], //array of EMLText objects
 		            keywordSets: [], //array of EMLKeywordSet objects
 		            additionalInfo: [],
-		            intellectualRights: "",
+		            intellectualRights: "This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
 		            onlineDist: [], // array of EMLOnlineDist objects
 		            offlineDist: [], // array of EMLOfflineDist objects
 		            geoCoverage : [], //an array for EMLGeoCoverages
@@ -71,6 +71,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 this.on("sync", function(){
                 	this.set("synced", true);
                 });
+                
             },
             
             url: function(){
@@ -875,7 +876,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					success: function(model, response, xhr){
 						console.log('yay, EML has been saved');
 						
-						model.set("uploadStatus", "c");
+						model.set("uploadStatus", model.defaults().uploadStatus);
                         model.set("sysMetaXML", model.serializeSysMeta());
                         model.fetch({merge: true, sysMeta: true});
 						model.trigger("successSaving", model);                        
@@ -902,18 +903,110 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Checks if this EML model has all the required values necessary to save to the server
              */
             validate: function() {
-            	if(!this.get("title").length){
-            		this.trigger("required", ["title"]);
-            		
-            		var error = "Title is required";
-            		
-            		//Set the validation error message
-            		this.set("validationError", error);
-            		
-            		return error;
+            	var errors = {};
+            	
+            	//A title is always required by EML
+            	if(!this.get("title").length){           		
+            		errors.title = "A title is required";            		
             	}
+            	
+            	//Validate the EMLParty models
+            	var partyTypes = ["associatedParty", "contact", "creator", "metadataProvider", "publisher"];
+            	_.each(partyTypes, function(type){
+            		
+            		var people = this.get(type);
+            		_.each(people, function(person, i){
+            			
+            			if( !person.isValid() ){
+            				if( !errors[type] )
+            					errors[type] = [person.validationError];
+            				else
+            					errors[type].push(person.validationError);
+            			}
+            			
+            		}, this);
+            		
+            	}, this);
+            	
+            	//Validate the EMLGeoCoverage models
+            	_.each(this.get("geoCoverage"), function(geoCoverageModel, i){
+            		
+            		if( !geoCoverageModel.isValid() ){
+            			if( !errors.geoCoverage )
+            				errors.geoCoverage = [geoCoverageModel.validationError];
+            			else
+            				errors.geoCoverage.push(geoCoverageModel.validationError);
+            		}
+            		
+            	}, this);
+            	
+            	//Check the required fields for this MetacatUI configuration
+            	if(MetacatUI.appModel.get("emlEditorRequiredFields")){
+                	_.each(Object.keys(MetacatUI.appModel.get("emlEditorRequiredFields")), function(key){
+                		var isRequired = MetacatUI.appModel.get("emlEditorRequiredFields")[key];
+                		
+                		//If it's not required, then exit
+                		if(!isRequired) return;
+                		
+                		if(key == "alternateIdentifier"){
+                			if( !this.get("alternateIdentifier").length )
+                				errors.alternateIdentifier = "At least one alternate identifier is required."
+                		}
+                		else if(key == "generalTaxonomicCoverage"){
+                			if( !this.get("taxonCoverage").length || !this.get("taxonCoverage")[0].get("generalTaxonomicCoverage") )
+                				errors.generalTaxonomicCoverage = "Provide a description of the general taxonomic coverage of this data set.";
+                		}
+                		else if(key == "geoCoverage"){
+                			if(!this.get("geoCoverage").length)
+                				errors.geoCoverage = "At least one location is required.";
+                		}
+                		else if(key == "intellectualRights"){
+                			if( !this.get("intellectualRights") )
+                				errors.intellectualRights = "Select usage rights for this data set.";
+                		}
+                		else if(key == "studyExtentDescription"){
+                			if( !this.get("methods") || !this.get("methods").get("studyExtentDescription") )
+                				errors.studyExtentDescription = "Provide a study extent description.";
+                		}
+                		else if(key == "samplingDescription"){
+                			if( !this.get("methods") || !this.get("methods").get("samplingDescription") )
+                				errors.samplingDescription = "Provide a sampling description.";
+                		}
+                		else if(key == "temporalCoverage"){
+                			if(!this.get("temporalCoverage"))
+                				errors.temporalCoverage = "Provide the date(s) for this data set.";
+                		}
+                		else if(key == "taxonCoverage"){
+                			if(!this.get("taxonCoverage").length)
+                				errors.taxonCoverage = "At least one taxa rank and value is required.";
+                		}
+                		else if(key == "keywordSets"){
+                			if( !this.get("keywordSets").length )
+                				errors.keywordSets = "Provide at least one keyword.";
+                		}
+                		else if(key == "methods"){
+                			if(!this.get("methods"))
+                				errors.methods = "At least one method step is required.";
+                		}
+                		else if(key == "funding"){
+                			if(!this.get("project") || !this.get("project").get("funding").length)
+                				errors.funding = "Provide at least one project funding number or name.";
+                		}
+                		else if(key == "abstract"){
+                			if(!this.get("abstract").length)
+                				errors["abstract"] = "Provide an abstract.";
+                		}
+                		else if( !this.get(key) || (Array.isArray(this.get(key)) && !this.get(key).length) ){
+                			errors[key] = "Provide a " + key + ".";
+                		}
+                	}, this);
+            		
+            	}
+            	
+            	if( Object.keys(errors).length )
+            		return errors;
             	else{
-            		this.set("validationError", null);
+            		this.trigger("valid");
             		return;
             	}
             },

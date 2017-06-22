@@ -3,13 +3,13 @@
 
 <div class="container" data-category="attribute">
 	
-	<p class="notification"></p>
+	<p class="notification" data-category="attribute"></p>
     	
    	<div class="attribute-name basic-text-container" data-category="attributeName">
-		<h5>Attribute Name <span class="required-icon">*</span></h5>
+		<h5>Attribute Name <span class="required-icon"></span></h5>
 		<p class="subtle">The official name of the attribute as it appears in the data.
 		 It is usually found in the header of a data table.</p>
-             <p class="notification"></p>
+             <p class="notification" data-category="attributeName"></p>
 		<div class="text-container">
 			<input type="text" data-category="attributeName" class="basic-text input" 
 			placeholder="e.g. spden, temp" value="<%=attributeName%>" >
@@ -20,7 +20,7 @@
 		<h5>Attribute Label</h5>
 		<p class="subtle">A short, descriptive label that is used to display
              the name of this attribute.</p>
-             <p class="notification"></p>
+             <p class="notification" data-category="attributeLabel"></p>
 		<div class="text-container">
 			<input type="text" data-category="attributeLabel" class="basic-text input" 
 			placeholder="e.g. Species Density, Temperature" value="<%=attributeLabel[0]%>" >
@@ -28,10 +28,10 @@
 	</div>
 	
 	<div class="row-fluid" data-category="attributeDefinition">
-		<h5>Definition <span class="required-icon">*</span></h5>
+		<h5>Definition <span class="required-icon"></span></h5>
 		<p class="subtle">Explain the contents of the attribute fully so
              that a data user could interpret the attribute accurately.</p>
-             <p class="notification"></p>
+             <p class="notification" data-category="attributeDefinition"></p>
 		<div class="text-container">
 			<textarea data-category="attributeDefinition" placeholder="e.g. 'spden' is the number of individuals of all macro invertebrate species found in the plot" class="input"><%=attributeDefinition%></textarea>
 		</div>

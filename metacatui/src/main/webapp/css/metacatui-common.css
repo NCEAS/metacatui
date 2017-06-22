@@ -3209,6 +3209,12 @@ Editor View
     padding-left: 20px;
     box-sizing: border-box;
 }
+.side-nav-item.error a{
+	color: red;
+}
+.side-nav-item a .icon.hidden{
+	display: none;
+}
 ul.side-nav-items {
     margin-left: 0px;
 }
@@ -3402,7 +3408,7 @@ textarea.xlarge{
     min-width: 100%;
     z-index: 1;
     margin-left: 0px;
-    top: 107px;
+    top: 0px;
 }
 .Editor #Content > .alert-container .alert{
 	padding: 20px;
@@ -3447,6 +3453,9 @@ textarea.xlarge{
 }
 .Editor .required-icon{
 	color: red;
+}
+.Editor .required-icon:after{
+	content: "*";
 }
 .metadata-container *{
 	box-sizing: border-box;
@@ -3667,7 +3676,7 @@ textarea.xlarge{
 
 
 /* ---- Taxon Coverage ---- */
-.taxonomic-coverage .notification{
+.root-taxonomic-classification-container .notification{
 	padding-left: 0px;
 	position: absolute;
 	margin-top: -25px;
@@ -3780,10 +3789,6 @@ textarea.xlarge{
 	padding-top: 10px;
 	padding-bottom: 10px;
 	padding-left: 10px;
-	border: 1px solid white;
-	border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
 }
 .locations-table .eml-geocoverage:nth-child(odd) {
     background-color: #EEE;

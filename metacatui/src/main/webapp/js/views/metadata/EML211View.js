@@ -141,7 +141,7 @@ define(['underscore', 'jquery', 'backbone',
 			
 			//Create a Unit collection for the entity and attribute section
 			this.model.createUnits();
-						
+									
             return this;
         },
         
@@ -154,6 +154,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	this.renderMethods();
 	    	this.renderProject();
 	    	this.renderSharing();
+	    	
+	    	this.renderRequiredIcons();
 	    	
 	    	//Scroll to the active section
 	    	if(this.activeSection != "overview"){
@@ -215,8 +217,9 @@ define(['underscore', 'jquery', 'backbone',
 		    //Find the model value that matches a radio button and check it
 			// Note the replace() call removing newlines and replacing them with a single space
 			// character. This is a temporary hack to fix https://github.com/NCEAS/metacatui/issues/128
-		    $(".checkbox .usage[value='" + this.model.get("intellectualRights").replace(/\r?\n|\r/g, ' ') + "']").attr("checked", "checked");
-	    	
+		    if(this.model.get("intellectualRights"))
+		    	this.$(".checkbox .usage[value='" + this.model.get("intellectualRights").replace(/\r?\n|\r/g, ' ') + "']").prop("checked", true);
+		    	
 		    //Funding
 		    this.renderFunding();
 			
@@ -252,7 +255,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	
 	    	//Creators
-	    	this.$(".section.people").append("<h4>" + this.partyTypeMap["creator"] + "</h4>",
+	    	this.$(".section.people").append("<h4>" + this.partyTypeMap["creator"] + "<i class='required-icon hidden' data-category='creator'></i></h4>",
 					'<p class="subtle">One or more creators is required. If none are entered, you will be set as the creator of this document.</p>',
 	    			'<div class="row-striped" data-attribute="creator"></div>');	    	
 	    	_.each(this.model.get("creator"), this.renderPerson, this);
@@ -260,7 +263,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		    	
 	    	//Principal Investigators
 	    	if(PIs.length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["principalInvestigator"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["principalInvestigator"] + "<i class='required-icon hidden' data-category='principalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="principalInvestigator"></div>');	    	
 		    	_.each(PIs, this.renderPerson, this);
 	    	
@@ -272,7 +275,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Co-PIs
 	    	if(coPIs.length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["coPrincipalInvestigator"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["coPrincipalInvestigator"] + "<i class='required-icon hidden' data-category='coPrincipalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="coPrincipalInvestigator"></div>');
 		    	_.each(coPIs, this.renderPerson, this);
 	    	
@@ -283,7 +286,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Collab PIs
 	    	if(collbalPIs.length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["collaboratingPrincipalInvestigator"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["collaboratingPrincipalInvestigator"] + "<i class='required-icon hidden' data-category='collaboratingPrincipalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="collaboratingPrincipalInvestigator"></div>');
 		    	_.each(collbalPIs, this.renderPerson, this);
 	    	
@@ -294,7 +297,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Contact
 	    	if(this.model.get("contact").length){
-	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["contact"] + "</h4>",
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["contact"] + "<i class='required-icon hidden' data-category='contact'></i></h4>",
 					'<p>One or more contacts is required. If none are entered, you will be set as the contact for this document.</p>',
 	    			'<div class="row-striped" data-attribute="contact"></div>');
 	    		_.each(this.model.get("contact"), this.renderPerson, this);
@@ -306,7 +309,7 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	//Metadata Provider
 	    	if(this.model.get("metadataProvider").length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["metadataProvider"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["metadataProvider"] + "<i class='required-icon hidden' data-category='metadataProvider'></i></h4>",
 		    			'<div class="row-striped" data-attribute="metadataProvider"></div>');
 		    	_.each(this.model.get("metadataProvider"), this.renderPerson, this);
 		    	
@@ -317,7 +320,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Custodian/Steward
 	    	if(custodian.length){
-	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["custodianSteward"] + "</h4>",
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["custodianSteward"] + "<i class='required-icon hidden' data-category='custodianSteward'></i></h4>",
 	    			'<div class="row-striped" data-attribute="custodianSteward"></div>');
 	    		
 	    		_.each(custodian, this.renderPerson, this);
@@ -329,7 +332,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Publisher
 	    	if(this.model.get("publisher").length){
-	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["publisher"] + "</h4>",
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["publisher"] + "<i class='required-icon hidden' data-category='publisher'></i></h4>",
 	    			'<p class="subtle">Only one publisher can be specified.</p>',
 	    			'<div class="row-striped" data-attribute="publisher"></div>');
 	    		
@@ -340,7 +343,7 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	//User
 	    	if(user.length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["user"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["user"] + "<i class='required-icon hidden' data-category='user'></i></h4>",
 		    			'<div class="row-striped" data-attribute="user"></div>');
 		    	
 		    	_.each(user, this.renderPerson, this);
@@ -1049,11 +1052,24 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//If this category isn't set yet, then create a new EMLText model
 	    	if(!textModel){
-	    		this.model.set(category, 
-	    						new EMLText({ text: paragraphs, parentModel: this.model, parentAttribute: category }));
+	    		
+	    		//Get the current value for this category and create a new EMLText model
+	    		var currentValue = this.model.get(category),
+	    			newTextModel = new EMLText({ text: paragraphs, parentModel: this.model });
 	    		
 	    		// Save the new model onto the underlying DOM node
-	    		$(e.target).data({ "model" : this.model.get(category) });
+	    		$(e.target).data({ "model" : newTextModel });
+	    		
+	    		//Set the new EMLText model on the EML model
+	    		if(Array.isArray(currentValue)){
+	    			currentValue.push(newTextModel);
+	    			this.model.trigger("change:" + category);
+	    			this.model.trigger("change");
+	    		}
+	    		else{
+	    			this.model.set(category, newTextModel);
+	    		}
+
 	    	}
 	    	//Update the existing EMLText model
 	    	else{
@@ -1085,8 +1101,8 @@ define(['underscore', 'jquery', 'backbone',
 				    			.attr("type", "text")
 				    			.attr("data-category", category)
 				    			.addClass("basic-text");
-					textRow.append(this.createRemoveButton(null, category, 'div.basic-text-row', 'div.text-container'));
 					textRow.append(input.clone().val(value));
+					textRow.append(this.createRemoveButton(null, category, 'div.basic-text-row', 'div.text-container'));
 		    		textContainer.append(textRow);
 		    		
 		    		//At the end, append an empty input for the user to add a new one
@@ -1189,28 +1205,40 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(e.target).parents(".basic-text-row").toggleClass("remove-preview");
 	    },
 	    
+	    renderRequiredIcons: function(){
+	    	var requiredFields = MetacatUI.appModel.get("emlEditorRequiredFields");
+	    	
+	    	_.each( Object.keys(requiredFields), function(field){
+	    		
+	    		if(requiredFields[field])
+	    			this.$(".required-icon[data-category='" + field + "']").show();
+	    		
+	    	}, this);
+	    },
 	    
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
 		// each root-level taxonomicClassification
 		createTaxonomicCoverage: function(coverage) {
-            var finishedEl = $(this.taxonomicCoverageTemplate({
-            	generalTaxonomicCoverage: coverage.get('generalTaxonomicCoverage') || ""
-            }));
-			finishedEl.data({ model: coverage });
+            var finishedEls = $(this.taxonomicCoverageTemplate({
+            		generalTaxonomicCoverage: coverage.get('generalTaxonomicCoverage') || ""
+            	})),
+            	coverageEl = finishedEls.filter(".taxonomic-coverage");
+            
+            coverageEl.data({ model: coverage });
 
 			var classifications = coverage.get("taxonomicClassification");
 
 			// Makes a table... for the root level
 			for (var i = 0; i < classifications.length; i++) {
-				finishedEl.append(this.createTaxonomicClassifcationTable(classifications[i]));
+				coverageEl.append(this.createTaxonomicClassifcationTable(classifications[i]));
 			}
 
 			// Create a new, blank table for another taxonomicClassification
 			var newTableEl = this.createTaxonomicClassifcationTable();
 
-			finishedEl.append(newTableEl);
+			coverageEl.append(newTableEl);
 
-			return finishedEl;
+			return finishedEls;
 		},
 		
 		createTaxonomicClassifcationTable: function(classification) {

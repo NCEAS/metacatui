@@ -492,7 +492,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			this.get("parentModel").trigger("change");
 			
 			//Trigger a custom event that marks the model as valid
-			this.trigger("valid");
+			this.isValid();
     	},
 		
 		/*
@@ -534,12 +534,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		/*
 		 * Checks the values of the model to determine if it is EML-valid
 		 */
-		isValid: function(){
+		validate: function(){
 			//The EMLParty must have either an organization name, position name, or surname. It must ALSO have a type or role.
-			return ((this.get("organizationName") || 
-					this.get("positionName") || 
-					(this.get("individualName") && this.get("individualName").surName)))// &&
-					//((this.get("type") == "associatedParty" && this.get("role")) || this.get("type")) );
+			if ( !this.get("organizationName") && !this.get("positionName") && 
+					(!this.get("individualName") || (this.get("individualName") && !this.get("individualName").surName)))
+				return { name: "Either a last name, position name, or organization name is required." };
 		},
 		
 		isOrcid: function(username){

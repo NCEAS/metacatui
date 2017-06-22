@@ -18,6 +18,26 @@ define(['jquery', 'underscore', 'backbone'],
 			profileUsername: null,
 			page: 0,
 			profileQuery: null,
+			
+			/*
+			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
+			 * Any field set to true will prevent the user from saving the Editor until a value has been given
+			 */
+			emlEditorRequiredFields: {
+				abstract: true,
+				alternateIdentifier: false,
+				funding: true,
+				generalTaxonomicCoverage: false,
+				geoCoverage: true,
+				intellectualRights: true,
+				keywordSets: false,
+				methods: false,
+				samplingDescription: false,
+				studyExtentDescription: false,
+				taxonCoverage: false,
+				temporalCoverage: true
+			},
+			
 			baseUrl: "https://knb.ecoinformatics.org",
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
