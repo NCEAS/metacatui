@@ -4,13 +4,14 @@ define(['jquery',
 		'backbone',
 		'gmaps',
 		'models/SolrResult',
+		'views/DownloadButtonView',
 		'text!templates/loading.html',
 		'text!templates/alert.html',
 		'text!templates/attribute.html',
-		'text!templates/downloadButton.html',
 		'text!templates/dataDisplay.html',
 	 ], 				
-	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, DataDisplayTemplate) {
+	function($, _, Backbone, gmaps, SolrResult, DownloadButtonView, 
+			LoadingTemplate, alertTemplate, AttributeTemplate, DataDisplayTemplate) {
 		
 	var MetadataIndexView = Backbone.View.extend({
 		
@@ -18,7 +19,7 @@ define(['jquery',
 		
 		id: 'Metadata',
 		
-		className: "metadata-index container form-horizontal", 
+		className: "metadata-index container form-horizontal",
 		
 		tagName: 'article',
 		
@@ -27,9 +28,7 @@ define(['jquery',
 		loadingTemplate: _.template(LoadingTemplate),
 		
 		attributeTemplate: _.template(AttributeTemplate),
-		
-		downloadButtonTemplate: _.template(DownloadButtonTemplate),
-		
+				
 		alertTemplate: _.template(alertTemplate),
 				
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
@@ -340,9 +339,9 @@ define(['jquery',
 				
 				var icon   = $(document.createElement("i")).addClass(icon),
 					title  = $(document.createElement("span")).text(solrResult.get("id")).addClass("title"),
-					downloadBtn = view.downloadButtonTemplate({ href: solrResult.get("url"), className: "btn btn-primary" }),
+					downloadBtn = new DownloadButtonView({ model: solrResult }),
 					anchor = $(document.createElement("a")).attr("name", encodeURIComponent(solrResult.get("id"))),
-					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn);
+					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn.render().el);
 				
 				//Create the section
 				var entityDetailsSection = view.formatAttributeSection(solrResult, keys, header, "entitydetails")
