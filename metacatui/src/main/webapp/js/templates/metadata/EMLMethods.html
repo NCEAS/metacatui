@@ -1,6 +1,7 @@
 <h2>Methods &amp; Sampling</h2>
+<p class="notification" data-category="methods"></p>
 <div class="row-fluid methodStep">
-	<h4>Methods</h4>
+	<h4>Methods <i class="required-icon hidden" data-category="methods"></i></h4>
 	<p class="subtle">Information about the methods employed in collecting
             or generating a data set or other resource. 
             Each method step documents the series of procedures followed to produce
@@ -28,16 +29,18 @@
 <div class="row-fluid sampling">
 	<h4>Sampling</h4>
 	
-	<h5>Study Extent</h5>
+	<h5>Study Extent <i class="required-icon hidden" data-category="studyExtentDescription"></i></h5>
 	<p class="subtle">A description of the geographic area sampled,
                   the sampling frequency, and living organisms sampled.</p>
+    <p class="notification" data-category="studyExtentDescription"></p>
 	<textarea class="studyextent" data-attribute="studyExtentDescription" data-type="description" rows="5"><%= studyExtentDescription %></textarea>
 	
-	<h5>Description</h5>
+	<h5>Description <i class="required-icon hidden" data-category="samplingDescription"></i></h5>
 	<p class="subtle">Description of the sampling
                   procedures used in this research project. This would 
                   be similar to a description of sampling
                   procedures found in the methods section of a journal
                   article.</p>
+    <p class="notification" data-category="samplingDescription"></p>
 	<textarea class="description" data-attribute="samplingDescription" data-type="samplingDescription" rows="7"><%= samplingDescription %></textarea>
 </div>

@@ -8,6 +8,7 @@ define(['jquery',
 		'clipboard',
 		'models/PackageModel',
 		'models/SolrResult',
+		'views/DownloadButtonView',
 		'views/ProvChartView',
 		'views/MetadataIndexView',
 		'views/ExpandCollapseListView',
@@ -23,7 +24,6 @@ define(['jquery',
 		'text!templates/loading.html',
 		'text!templates/metadataControls.html',
 		'text!templates/usageStats.html',
-		'text!templates/downloadButton.html',
 		'text!templates/downloadContents.html',
 		'text!templates/alert.html',
 		'text!templates/editMetadata.html',
@@ -31,9 +31,9 @@ define(['jquery',
 		'text!templates/map.html'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, Package, SolrResult,
-			 ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
-			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadButtonTemplate,
+			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
 			 MapTemplate, AnnotationTemplate) {
 	'use strict';
@@ -71,7 +71,6 @@ define(['jquery',
 		loadingTemplate: _.template(LoadingTemplate),
 		controlsTemplate: _.template(ControlsTemplate),
 		dataSourceTemplate: _.template(DataSourceTemplate),
-		downloadButtonTemplate: _.template(DownloadButtonTemplate),
 		downloadContentsTemplate: _.template(DownloadContentsTemplate),
 		editMetadataTemplate: _.template(EditMetadataTemplate),
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
@@ -215,6 +214,11 @@ define(['jquery',
 				var loadSettings = {
 						url: endpoint,
 						success: function(response, status, xhr) {
+							
+							//If the user has navigated away from the MetadataView, then don't render anything further
+							if(MetacatUI.appView.currentView != viewRef)
+								return;
+								
 							//Our fallback is to show the metadata details from the Solr index
 							if (status=="error")
 								viewRef.renderMetadataFromIndex();
@@ -241,7 +245,6 @@ define(['jquery',
 								if(viewRef.$el.is(".no-stylesheet") && !viewRef.model.get("indexed"))
 									viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
 
-								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
 
 								viewRef.trigger("metadataLoaded");
@@ -579,6 +582,8 @@ define(['jquery',
 			//Insert the package table HTML
 			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
+
+			$(tableContainer).find(".tooltip-this").tooltip();
 
 			this.subviews.push(tableView);
 		},
@@ -1380,11 +1385,11 @@ define(['jquery',
 				if(packageMembers.length > 150) return;
 
 				//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
-				for(var i=0; i < packageMembers.length; i++){
-					var solrResult = packageMembers[i],
-						objID      = solrResult.get("id");
+				_.each(packageMembers, function(solrResult, i){
+					var objID = solrResult.get("id");
 
-					if(objID == viewRef.pid) continue;
+					if(objID == viewRef.pid) 
+						return;
 
 					//Is this a visual object (image or PDF)?
 					var type = solrResult.type == "SolrResult" ? solrResult.getType() : "Data set";
@@ -1397,48 +1402,56 @@ define(['jquery',
 					var anchor         = $(document.createElement("a")).attr("id", objID.replace(/[^A-Za-z0-9]/g, "-")),
 						container      = viewRef.findEntityDetailsContainer(objID);
 
-					if(solrResult.get("size") < MetacatUI.appModel.get("maxDownloadSize"))
-						var downloadButton = $.parseHTML(viewRef.downloadButtonTemplate({href: solrResult.get("url")}).trim());
-					else
-						var downloadButton = $.parseHTML(viewRef.downloadButtonTemplate({ tooLarge: true }).trim());
-
+					var downloadButton = new DownloadButtonView({ model: solrResult });
+					downloadButton.render();
+					
 					//Insert the data display HTML and the anchor tag to mark this spot on the page
 					if(container){
 						if((type == "image") || (type == "PDF")){
-							if((type == "PDF") && !solrResult.get("isPublic")){
-
-								var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({
-													type : type,
-													src : solrResult.get("url"),
-													objID : objID
-												  }).trim());
-
-								//Send the auth token in a XHR request to get the PDF
-								//Create an XHR
-								var xhr = new XMLHttpRequest();
-								xhr.responseType = "blob";
-								xhr.withCredentials = true;
-
-								//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
-								xhr.onload = function(){
-								    var iframe = $(dataDisplay).find("iframe");
-								    iframe.attr("src", window.URL.createObjectURL(xhr.response)); // xhr.response is a blob
-								    var a = $(dataDisplay).find("a.zoom-in").remove();
-								    //TODO: Allow fancybox previews of private PDFs
-
-								};
-
-								//Open and send the request with the user's auth token
-								xhr.open('GET', solrResult.get("url"));
-								xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
-								xhr.send();
-							}
-
+							
+							//Create the data display HTML
+							var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({
+												type : type,
+												src : solrResult.get("url"),
+												objID : objID
+											  }).trim());
+							
 							//Insert into the page
 							if($(container).children("label").length > 0)
 								$(container).children("label").first().after(dataDisplay);
 							else
 								$(container).prepend(dataDisplay);
+							
+							//If this image or PDF is private, we need to load it via an XHR request
+							if( !solrResult.get("isPublic") ){
+								//Create an XHR
+								var xhr = new XMLHttpRequest();
+								xhr.responseType = "blob";
+								xhr.withCredentials = true;
+								
+								if(type == "PDF"){
+									//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+									xhr.onload = function(){
+									    var iframe = $(dataDisplay).find("iframe");
+									    iframe.attr("src", window.URL.createObjectURL(xhr.response)); // xhr.response is a blob
+									    var a = $(dataDisplay).find("a.zoom-in").remove();
+									    //TODO: Allow fancybox previews of private PDFs
+
+									}
+								}
+								else if(type == "image"){
+									xhr.onload = function(){
+										
+										if(xhr.response)
+											$(dataDisplay).find("img").attr("src", window.URL.createObjectURL(xhr.response));
+									}
+								}
+								
+								//Open and send the request with the user's auth token
+								xhr.open('GET', solrResult.get("url"));
+								xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
+								xhr.send();
+							}
 
 						}
 
@@ -1446,12 +1459,11 @@ define(['jquery',
 
 						var nameLabel = $(container).find("label:contains('Entity Name')");
 						if(nameLabel.length){
-							$(nameLabel).parent().after(downloadButton);
-							$(downloadButton).find(".tooltip-this").tooltip();
+							$(nameLabel).parent().after(downloadButton.el);
 						}
 					}
 
-				}
+				});
 
 				//==== Initialize the fancybox images =====
 				// We will be checking every half-second if all the HTML has been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
@@ -1776,6 +1788,9 @@ define(['jquery',
 		},
 
 		showError: function(msg){
+			//Remove any existing error messages
+			this.$el.children(".alert-container").remove();
+			
 			this.$el.prepend(
 				this.alertTemplate({
 					msg: msg,
@@ -1868,8 +1883,8 @@ define(['jquery',
 			this.stopListening();
 
 			_.each(this.subviews, function(subview) {
-				if(subview.el != viewRef.el)
-					subview.remove();
+				if(subview.onClose)
+					subview.onClose();
 			});
 
 			this.packageModels =  new Array();

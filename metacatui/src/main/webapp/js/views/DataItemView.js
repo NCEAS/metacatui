@@ -498,29 +498,19 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             },
 
             
-            showRequired: function(attr){
+            showValidation: function(attr, errorMsg){
 				
-				//Create a tooltip that tells the user this field is required
-				this.$el.tooltip({
-					placement: "top",
-					title: "A " + attr + " is required"
-				});
+            	//Find the element that is required
+            	var requiredEl = this.$("[data-category='" + attr + "']").addClass("error");
 				
-            	//Get the parent table and add a tooltip error class
-				this.$el.parents("table").addClass("tooltip-error");
-				
-				//Show the tooltip
-				this.$el.tooltip("show");
-				
+            	//When it is updated, remove the error styling
 				this.listenToOnce(this.model, "change:" + attr, this.hideRequired);
             },
             
             hideRequired: function(){
-            	//Get the parent table and remove a tooltip error class
-				this.$el.parents("table").removeClass("tooltip-error");
-				
-            	//Show the tooltip
-				this.$el.tooltip("destroy");
+
+            	//Remove the error styling
+				this.$(".error").removeClass("error");
             }
         });
         

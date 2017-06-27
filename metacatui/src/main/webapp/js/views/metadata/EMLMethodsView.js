@@ -37,9 +37,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         	render: function() {
         		//Save the view and model on the element
         		this.$el.data({
-        			model: this.model,
-        			view: this
-        		});
+	        			model: this.model,
+	        			view: this
+	        		})
+	        		.attr("data-category", "methods");
 
 				if (this.edit) {
 					this.$el.html(this.editTemplate({
@@ -129,7 +130,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 				}
 				
 				//Add this model to the parent EML model when it is valid
-				if(this.isValid()){
+				if(this.model.isValid()){
 					this.model.get("parentModel").set("methods", this.model);
 				}
 				

@@ -1,12 +1,14 @@
-define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templates/downloadContents.html', 'text!templates/downloadButton.html'], 				
-	function($, _, Backbone, Package, Template, DownloadButtonTemplate) {
+define(['jquery', 'underscore', 'backbone', 
+        'models/PackageModel', 
+        'views/DownloadButtonView',
+        'text!templates/downloadContents.html'], 				
+	function($, _, Backbone, Package, DownloadButtonView, Template) {
 	'use strict';
 
 	
 	var PackageTable = Backbone.View.extend({
 		
 		template: _.template(Template),		
-		downloadButtonTemplate: _.template(DownloadButtonTemplate),
 		
 		type: "PackageTable",
 		
@@ -16,8 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 		
 		events: {
 			"click .expand-control"   : "expand",
-			"click .collapse-control" : "collapse",
-			"click .btn.download"     : "download"
+			"click .collapse-control" : "collapse"
 		},
 		
 		initialize: function(options){
@@ -115,28 +116,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				tbody.html("<tr><td colspan='100%'>This is an empty dataset.</td></tr>");
 			}
 			
-			//Draw and insert the HTML table
-			var downloadButtonHTML = "";
-			if(this.model.getURL() && this.model.get("id")){
-								
-				if(this.model.getTotalSize() < MetacatUI.appModel.get("maxDownloadSize")){	
-					
-					downloadButtonHTML = this.downloadButtonTemplate({ 
-						href: this.model.get("url"),
-						id: this.model.get("id"),
-						text: "Download all",
-						className: "btn btn-primary "
-					});
-					
-				}
-				else{
-					downloadButtonHTML = this.downloadButtonTemplate({
-						text: "Download all",
-						tooLarge: true
-					});
-				}
-			}
-			
 			if(!this.title && metadata){
 				this.title = '<a href="#view/' + metadata.get("id") + 
 					'">Files in this dataset';
@@ -151,7 +130,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			}
 			
 			this.$el.html(this.template({
-				downloadButton : downloadButtonHTML,
 				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
 			          metadata : this.nested ? metadata : null,
@@ -159,6 +137,14 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 					 packageId : this.model.get("id"),
 					    nested : this.nested
 			}));
+			
+			//Insert the Download All button
+			if(this.model.getURL() && this.model.get("id")){
+								
+				var downloadBtn = new DownloadButtonView({ model: this.model });
+				downloadBtn.render();
+				this.$(".download-container").append(downloadBtn.el);
+			}
 			
 			//Add the table body and footer
 			this.$("thead").after(tbody);
@@ -381,18 +367,10 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");	
 			
-			var downloadButtonHTML = this.downloadButtonTemplate({ 
-				href: url, 
-				fileName: entityName,
-				id: memberModel.get("id"),
-				isPublic: memberModel.get("isPublic"),
-			});
-			var downloadButton = $.parseHTML(downloadButtonHTML.trim());
+			var downloadButton = new DownloadButtonView({ model: memberModel });
+			downloadButton.render();
 			
-			//if(MetacatUI.appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
-			//$(downloadButton).on("click", null, this, this.download);
-			
-			$(downloadBtnCell).append(downloadButton);
+			$(downloadBtnCell).append(downloadButton.el);
 			$(tr).append(downloadBtnCell);
 			
 			if(collapsable)
@@ -401,50 +379,6 @@ define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templat
 				tr.css("display", "none");
 
 			return tr;
-		},
-
-		download: function(e){				
-			e.preventDefault();
-			
-			var button = (e.target.tagName == "A")? $(e.target) : $(e.target).parents("a"),
-				id = button.attr("data-id"),
-				packageModel = this.model? this.model : (e.data && e.data.model)? e.data.model : null;
-			
-			if(!packageModel || button.is(".in-progress"))
-				return true;
-			
-			//Show that the download has started
-			button.addClass("in-progress");
-			var buttonHTML = button.html();
-			button.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
-				
-			//Find the model with this ID
-			var modelToDownload = (packageModel.get("id") == id) ? packageModel : _.find(packageModel.get("members"), function(m){
-				return (m.get("id") == id);
-			});
-			
-			//If we found a model, fire the download event
-			if(modelToDownload){ 
-				modelToDownload.downloadWithCredentials();
-				
-				this.listenTo(modelToDownload, "downloadComplete", function(){
-					
-					//Show that the download is complete
-					button.html("Complete <i class='icon icon-on-right icon-ok'></i>");
-					button.addClass("complete");
-					button.removeClass("in-progress");
-					
-					//Put the download button back to normal
-					setTimeout(function(){
-						
-						//After one second, change the background color with an animation
-						button.removeClass("complete");
-						button.html(buttonHTML);
-						
-					}, 2000);
-				});
-				
-			}		
 		},
 		
 		expand: function(e){

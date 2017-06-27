@@ -58,7 +58,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
-                    uploadStatus: "q", //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
+                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
@@ -86,7 +86,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 this.on("sync", function(){
                 	this.set("synced", true);
                 });
-                
+               
             },
             
             /*

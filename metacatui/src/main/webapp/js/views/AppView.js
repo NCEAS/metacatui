@@ -271,7 +271,7 @@ define(['jquery',
 			});		
 		},
 		
-showAlert: function(msg, classes, container, delay, options) {
+		showAlert: function(msg, classes, container, delay, options) {
 			if(!classes)
 				var classes = 'alert-success';
 			if(!container || !$(container).length)
