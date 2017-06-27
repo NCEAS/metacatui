@@ -172,20 +172,26 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 			//The publisher (source member node)
 			var publisherText = "";
-			if (typeof datasource !== "undefined") {
+			if (typeof datasource !== "undefined" && datasource) {
 				var memberNode = MetacatUI.nodeModel.getMember(datasource);
-				
+								
 				if(memberNode) 
   					publisherText = memberNode.name + ". "; 
   				else
   					publisherText = datasource + ". "; 
 			}
+			else{
+				var memberNode = MetacatUI.nodeModel.getMember(MetacatUI.nodeModel.get("currentMemberNode"));
+				
+				if(memberNode) 
+  					publisherText = memberNode.name + ". ";
+			}
 			
 			var publisherEl = $(document.createElement("span")).addClass('publisher');
 
 			// Only set text if we have a non-zero-length publisherText string
-			if (publisherText !== null && publisherText.length > 0) {
-				publisherEl.text(publisherText + ". ");
+			if (publisherText) {
+				publisherEl.text(publisherText);
 			}
 
 			//The ID
