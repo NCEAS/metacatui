@@ -209,8 +209,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else
 				var linkEl = document.createElement("span");
 
-			if ((typeof title !== "undefined") && title)
-				var titleEl = $(document.createElement("span")).addClass("title").attr("data-id", id).text(title + ". ");
+			if ((typeof title !== "undefined") && title){
+				if(title.trim().charAt(title.length-1) != ".")
+					title = title.trim() + ". ";
+				else
+					title = title.trim() + " ";
+				
+				var titleEl = $(document.createElement("span")).addClass("title").attr("data-id", id).text(title);
+			}
 			else
 				var titleEl = document.createElement("span");
 
