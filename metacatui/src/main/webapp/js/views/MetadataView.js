@@ -214,6 +214,11 @@ define(['jquery',
 				var loadSettings = {
 						url: endpoint,
 						success: function(response, status, xhr) {
+							
+							//If the user has navigated away from the MetadataView, then don't render anything further
+							if(MetacatUI.appView.currentView != viewRef)
+								return;
+								
 							//Our fallback is to show the metadata details from the Solr index
 							if (status=="error")
 								viewRef.renderMetadataFromIndex();
@@ -240,7 +245,6 @@ define(['jquery',
 								if(viewRef.$el.is(".no-stylesheet") && !viewRef.model.get("indexed"))
 									viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
 
-								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
 
 								viewRef.trigger("metadataLoaded");
@@ -1879,8 +1883,8 @@ define(['jquery',
 			this.stopListening();
 
 			_.each(this.subviews, function(subview) {
-				if(subview.el != viewRef.el)
-					subview.remove();
+				if(subview.onClose)
+					subview.onClose();
 			});
 
 			this.packageModels =  new Array();
