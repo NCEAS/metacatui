@@ -91,8 +91,8 @@ define(['underscore', 'jquery', 'backbone',
         		}, this);       
         		
         		//Add the new code rows in the code list table
-    			this.addCodeRow("nominal");
-    			this.addCodeRow("ordinal");
+    			this.addNewCodeRow("nominal");
+    			this.addNewCodeRow("ordinal");
     			    			
             },
             
@@ -391,16 +391,23 @@ define(['underscore', 'jquery', 'backbone',
             },
             
             addNewCodeRow: function(e){
-            	var $row 	   = $(e.target).parents(".code-row"),
-            		code 	   = $row.find(".code").val(),
-            		definition = $row.find(".definition").val();
+            	if(typeof e == "object"){
+	            	var $row 	   = $(e.target).parents(".code-row"),
+	            		code 	   = $row.find(".code").val(),
+	            		definition = $row.find(".definition").val();
+	            	
+	            	//Only add a row when there is a value for the code and code definition
+	            	if(!code || !definition) return false;
             	
-            	//Only add a row when there is a value for the code and code definition
-            	if(!code || !definition) return false;
+	            	$row.removeClass("new");
+
+	            	var newRow = this.addCodeRow();
+            	}
+            	else if(typeof e == "string"){
+	            	var newRow = this.addCodeRow(e);	            	
+            	}
             	
-            	$row.removeClass("new");
-            	var row = this.addCodeRow();    
-            	$(row).addClass("new");
+            	newRow.addClass("new");
             },
             
             addCodeRow: function(scaleType){
@@ -410,7 +417,7 @@ define(['underscore', 'jquery', 'backbone',
         		var	$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
             	
             	//Create a code list row from the template
-            	var row = this.codeListRowTemplate({ code: "", definition: ""});
+            	var row = $(this.codeListRowTemplate({ code: "", definition: ""}));
             	
             	$container.append(row);
             	
