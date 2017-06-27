@@ -1081,7 +1081,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					currentEntities.push(emlEntity);
 				else
 					//Add the entity model to the entity array
-					currentEntities.splice(position, 0, entityModel);
+					currentEntities.splice(position, 0, emlEntity);
 				
 				this.trigger("change:entities");
 				
