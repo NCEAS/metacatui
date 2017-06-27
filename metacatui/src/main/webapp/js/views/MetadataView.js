@@ -1784,6 +1784,9 @@ define(['jquery',
 		},
 
 		showError: function(msg){
+			//Remove any existing error messages
+			this.$el.children(".alert-container").remove();
+			
 			this.$el.prepend(
 				this.alertTemplate({
 					msg: msg,
