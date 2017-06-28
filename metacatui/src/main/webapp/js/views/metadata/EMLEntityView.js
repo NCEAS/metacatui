@@ -180,7 +180,8 @@ define(['underscore', 'jquery', 'backbone',
             
             addNewAttribute: function(){
             	var newAttrModel = new EMLAttribute({
-            			parentModel: this.model
+            			parentModel: this.model,
+                        xmlID: DataONEObject.generateId()
             		}),
             		newAttrView  = new EMLAttributeView({ 
             			isNew: true,
