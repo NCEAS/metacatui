@@ -338,7 +338,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             
             /* Handle remove events for this row in the data package table */
             handleRemove: function(event) {
-                console.log("DataItemView.remove() called.");
                 var eventId,         // The id of the row of this event
                     removalIds = [], // The list of target ids to remove
                     dataONEObject,   // The model represented by this row
@@ -371,6 +370,15 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     if ( documents.length > 0 ) {
                         _.each(documents, removalIds.push());
                     }
+                }
+                //Data objects may need to be removed from the EML model entities list
+                else if(dataONEObject && this.parentSciMeta.type == "EML"){
+                	
+                	var matchingEntity = this.parentSciMeta.getEntity(dataONEObject);
+                	
+                	if(matchingEntity)
+                		this.parentSciMeta.removeEntity(matchingEntity);
+                		
                 }
                 
                 // Remove the id from the documents array in the science metadata

@@ -1092,8 +1092,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             /*
              Remove an entity from the EML 2.1.1 object
             */
-            removeEntity: function(emlEntityId) {
+            removeEntity: function(emlEntity) {
+                if(!emlEntity || typeof emlEntity != "object")
+                	return;
                 
+            	//Get the current list of entities
+            	var entities = this.get("entities");
+            	
+            	entities = _.without(entities, emlEntity);
+            	
+            	this.set("entities", entities);
             },
             
             /*
@@ -1102,13 +1110,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             getEntity: function(dataONEObj){
 
             	var entity = _.find(this.get("entities"), function(e){
-            		if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
+            		
+            		//Matches of the checksum or identifier are definite matches
+            		if( e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObject.get("checksumAlgorithm").toUpperCase() == "MD5")
             			return true;
-            		else if( e.get("entityName") == dataONEObj.get("fileName") )
+            		else if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
             			return true;
-            		else if( e.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName") )
-            			return true;
-            	});
+            		
+            		//If this entity name matches the dataone object file name, AND no other dataone object file name
+            		if( (e.get("entityName") == dataONEObj.get("fileName")) || (e.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName")) ){
+            			var otherEntities = _.without(this.get("entities"), e);
+            			
+            			var otherMatchingEntity = _.find(otherEntities, function(otherE){
+            				if( (otherE.get("entityName") == dataONEObj.get("fileName")) || (otherE.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName")) )
+            					return true;
+            			});
+            			
+            			if( !otherMatchingEntity )
+            				return true;
+            		}
+            		
+            	}, this);
             	
             	if(entity)
             		return entity;

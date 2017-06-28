@@ -24,6 +24,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 entityName: null, // Required, the name of the entity
                 entityDescription: null, // Description of the entity
                 physical: [], // Zero to many EMLPhysical objects
+                physicalMD5Checksum: null,
+                physicalSize: null,
                 coverage: [], // Zero to many EML{Geo|Taxon|Temporal}Coverage objects
                 methods: null, // Zero or one EMLMethod object
                 additionalInfo: [], // Zero to many EMLText objects
@@ -131,6 +133,16 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 // Add the entityDescription
                 attributes.entityDescription = $objectDOM.children("entitydescription").text();
 
+                //Get some physical attributes from the EMLPhysical module
+                var physical = $objectDOM.find("physical");
+                if(physical){
+                	attributes.physicalSize = physical.find("size").text();
+                	
+                	var checksumType = physical.find("authentication").attr("method");
+                	if(checksumType == "MD5")
+                		attributes.physicalMD5Checksum = physical.find("authentication").text();
+                }
+                
                 attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM[0];
                 
