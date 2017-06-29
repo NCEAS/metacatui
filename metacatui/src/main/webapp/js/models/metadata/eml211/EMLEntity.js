@@ -219,6 +219,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
             /* Copy the original XML and update fields in a DOM object */
             updateDOM: function(objectDOM) {
+                var nodeToInsertAfter;
                 var type = this.get("type") || "otherEntity";
                 if ( ! objectDOM ) {
                     objectDOM = this.get("objectDOM");
@@ -236,12 +237,15 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 // This is new, create it
                 } else {
                     objectDOM = document.createElement(type);
-
                 }
 
                 // update the id attribute
                 var xmlID = this.get("xmlID");
                 if ( xmlID ) {
+                    $(objectDOM).attr("id", xmlID);
+                } else {
+                    xmlID = DataONEObject.generateId();
+                    this.set("xmlID", xmlID, {silent: true});
                     $(objectDOM).attr("id", xmlID);
                 }
 
@@ -268,12 +272,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                         $(objectDOM).find("entityName").text(this.get("entityName"));
 
                     } else {
-                        var insertAfter = this.getEMLPosition(objectDOM, "entityName");
-                        
-                        if(!insertAfter)
-                        	objectDOM.append($(document.createElement("entityName")).text(this.get("entityName")));
-                        else	
-                            insertAfter.after($(document.createElement("entityName")).text(this.get("entityName")));
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "entityName");
+                        if ( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("entityName"))
+                                .text(this.get("entityName"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after($(document.createElement("entityName"))
+                                .text(this.get("entityName"))[0]);
+                        }
                     }
                 }
 
@@ -283,12 +289,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                         $(objectDOM).find("entityDescription").text(this.get("entityDescription"));
 
                     } else {
-                        var insertAfter = this.getEMLPosition(objectDOM, "entityDescription");
-                        
-                        if(!insertAfter)
-                        	objectDOM.append($(document.createElement("entityDescription")).text(this.get("entityName")));
-                        else
-                            insertAfter.after($(document.createElement("entityDescription")).text(this.get("entityName")));
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "entityDescription");
+                        if ( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("entityDescription"))
+                                .text(this.get("entityName"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after($(document.createElement("entityDescription"))
+                                .text(this.get("entityName"))[0]);
+                        }
                     }
                 }
 
@@ -318,11 +326,37 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
                 // TODO: Update the attributeList section
                 var attributeList = this.get("attributeList");
+                var attrIds = _.map(attributeList, function(attribute) {
+                    return attribute.get("xmlID");
+                });
+                var existingIdsInDOM = $(objectDOM).find("attribute").attr("id");
+                var attributeListInDOM = $(objectDOM).children("attributelist");
+                var attributeListNode;
+                if ( attributeListInDOM.length ) {
+                    attributeListNode = attributeListInDOM[0];
+                } else {
+                    attributeListNode = document.createElement("attributeList");
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeList");
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).append(attributeListNode);
+                    } else {
+                        $(nodeToInsertAfter).after(attributeListNode);
+                    }
+                }
 
+                var updatedAttrDOM;
                 if ( attributeList.length ) {
-                    _.each(attributeList, function(attribute) {
-                        objectDOM = attribute.updateDOM();
-                    });
+                    // Add or modify each attribute
+                    _.each(attributeList, function(attribute, position) {
+                        if ( _.contains(existingIdsInDOM, attribute.get("xmlID")) ) {
+                            // TODO: If the attr by id exists, replace in DOM
+                            // Update the existing  Pass in the objectDOM for the attribute.
+                            
+                        } else {
+                            updatedAttrDOM = attribute.updateDOM();
+                            $(attributeListNode).append(updatedAttrDOM);
+                        }
+                    }, this);
                 }
 
                 // TODO: Update the constraint section
