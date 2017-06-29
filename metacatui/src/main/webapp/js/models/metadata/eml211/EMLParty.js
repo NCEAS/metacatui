@@ -200,7 +200,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			this.set("individualName", name);
 			
 			//Get the email and username
-			this.set("email", [MetacatUI.appUserModel.get("email")]);
+			if(MetacatUI.appUserModel.get("email"))
+				this.set("email", [MetacatUI.appUserModel.get("email")]);
+			
 			this.set("userId", [MetacatUI.appUserModel.get("username")]);
 		},
 		
