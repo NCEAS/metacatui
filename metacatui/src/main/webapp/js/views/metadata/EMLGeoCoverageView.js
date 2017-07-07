@@ -78,8 +78,13 @@ define(['underscore', 'jquery', 'backbone',
         		this.model.set(attribute, value); 
         		
         		if(this.model.get("parentModel")){
-        			if(this.model.get("parentModel").type == "EML" && _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel")))
+        			if(this.model.get("parentModel").type == "EML" && _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel"))){
         				MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        		    	
+        				//Validate the EML again
+        		    	if(this.model.get("parentModel").isValid())
+        		    		this.model.get("parentModel").trigger("valid");
+        			}
         		}
         	},
         	
