@@ -501,9 +501,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			var dataModels      = _.difference(this.models, metadataModels);
     			var sortedModels    = _.union(metadataModels, dataModels);
 				var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
-    			var modelsToBeSaved = _.filter(sortedModels, function(m){ 
+    			var modelsToBeSaved = _.difference(_.union(_.filter(sortedModels, function(m){ 
 										return (m.get("uploadStatus") == "q" || m.get("uploadStatus") == "e")
-										});
+										}), modelsInProgress));
 
     			//First quickly validate all the models before attempting to save any
     			var allValid = _.every(modelsToBeSaved, function(m) {
