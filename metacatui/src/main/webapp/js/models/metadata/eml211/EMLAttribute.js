@@ -182,8 +182,8 @@ define(["jquery", "underscore", "backbone",
 
                 // Update the attributeName
                 if ( this.get("attributeName") ) {
-                    if ( $(objectDOM).find("attributeName").length ) {
-                        $(objectDOM).find("attributeName").text(this.get("attributeName"));
+                    if ( $(objectDOM).find("attributename").length ) {
+                        $(objectDOM).find("attributename").text(this.get("attributeName"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeName");
                         
@@ -199,13 +199,14 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Update the attributeLabels
+                nodeToInsertAfter = undefined;
                 var attributeLabels = this.get("attributeLabel");
                 if ( attributeLabels ) {
                     if ( attributeLabels.length ) {
                         // Copy and reverse the array for inserting
                         attributeLabels = Array.from(attributeLabels).reverse();
                         // Remove all current attributeLabels
-                        $(objectDOM).find("attributeLabel").remove();
+                        $(objectDOM).find("attributelabel").remove();
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeLabel");
 
                         if( ! nodeToInsertAfter ) {
@@ -227,9 +228,10 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Update the attributeDefinition
+                nodeToInsertAfter = undefined;
                 if ( this.get("attributeDefinition") ) {
-                    if ( $(objectDOM).find("attributeDefinition").length ) {
-                        $(objectDOM).find("attributeDefinition").text(this.get("attributeDefinition"));
+                    if ( $(objectDOM).find("attributedefinition").length ) {
+                        $(objectDOM).find("attributedefinition").text(this.get("attributeDefinition"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeDefinition");
                         
@@ -244,13 +246,14 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Update the storageTypes
+                nodeToInsertAfter = undefined;
                 var storageTypes = this.get("storageTypes");
                 if ( storageTypes ) {
                     if ( storageTypes.length ) {
                         // Copy and reverse the array for inserting
                         storageTypes = Array.from(storageTypes).reverse();
                         // Remove all current attributeLabels
-                        $(objectDOM).find("storageType").remove();
+                        $(objectDOM).find("storagetype").remove();
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "storageType");
 
                         if( ! nodeToInsertAfter ) {
@@ -272,6 +275,38 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Update the measurementScale
+                nodeToInsertAfter = undefined;
+                var measurementScale = this.get("measurementScale");
+                var measurementScaleNodes;
+                var measurementScaleNode;
+                var domainNode;
+                if ( typeof measurementScale !== "undefined" ) {
+                    
+                    // Find the measurementScale child or create a new one
+                    measurementScaleNodes = $(objectDOM).children("measurementscale");
+                    if ( measurementScaleNodes.length ) {
+                        measurementScaleNode = measurementScaleNodes[0];
+                        
+                    } else {
+                        measurementScaleNode = document.createElement("measurementscale");
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "measurementScale");
+                        
+                        if ( typeof nodeToInsertAfter === "undefined" ) {
+                            $(objectDOM).append(measurementScaleNode);
+                        } else {
+                            $(nodeToInsertAfter).after(measurementScaleNode);
+                        }
+                    }
+                    
+                    // Append the measurementScale domain content
+                    domainNode = measurementScale.updateDOM();
+                    if (typeof domainNode !== "undefined" ) {
+                        $(measurementScaleNode).append(domainNode);
+                    }
+
+                } else {
+                    console.log("No measurementScale object has been defined.");
+                }
                 return objectDOM;
             },
             
