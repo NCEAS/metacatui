@@ -68,8 +68,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
                     objectXML: null, // A cached version of the object fetched from the server
                     isAuthorized: null, // If the stated permission is authorized by the user
-                    collections: [] //References to collections that this model is in
-	        	}
                     collections: [], //References to collections that this model is in
                     prov_generated: [],
                     prov_generatedByExecution: [],
@@ -86,6 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     prov_wasExecutedByExecution: [],
                     prov_wasExecutedByUser: [],
                     prov_wasInformedBy: []
+                }
         	},
         	
             initialize: function(attrs, options) {
