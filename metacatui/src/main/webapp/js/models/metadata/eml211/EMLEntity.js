@@ -324,7 +324,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     }
                 }
 
-                // TODO: Update the attributeList section
+                // Update the attributeList section
                 var attributeList = this.get("attributeList");
                 var attrIds = _.map(attributeList, function(attribute) {
                     return attribute.get("xmlID");
