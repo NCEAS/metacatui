@@ -574,10 +574,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				}
 				
 	        	//Serialize the temporal coverage
-                if ( typeof this.get("temporalCoverage") !== "undefined" && this.get("temporalCoverage") !== null ) {
-                	datasetNode.find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
-                    
+				var existingTemporalCoverage = datasetNode.find("temporalcoverage");
+                if ( this.get("temporalCoverage") ) {
+                	if(existingTemporalCoverage.length)
+                		existingTemporalCoverage.replaceWith(this.get("temporalCoverage").updateDOM());
+                	else{
+                		var insertAfter = this.getEMLPosition(eml, "temporalCoverage");
+                		
+                		if(!insertAfter)
+                			datasetNode.find("coverage").append(this.get("temporalCoverage").updateDOM());
+                		else
+                			insertAfter.after(this.get("temporalCoverage").updateDOM());
+                	}
                 }
+                else
+                	existingTemporalCoverage.remove();
                 
                 if(datasetNode.find("coverage").children().length == 0)
                 	datasetNode.find("coverage").remove();

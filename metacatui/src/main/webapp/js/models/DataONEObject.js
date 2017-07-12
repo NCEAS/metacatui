@@ -70,6 +70,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     isAuthorized: null, // If the stated permission is authorized by the user
                     collections: [] //References to collections that this model is in
 	        	}
+                    collections: [], //References to collections that this model is in
+                    prov_generated: [],
+                    prov_generatedByExecution: [],
+                    prov_generatedByProgram: [],
+                    prov_generatedByUser: [],
+                    prov_hasDerivations: [],
+                    prov_hasSources: [],
+                    prov_instanceOfClass: [],
+                    prov_used: [],
+                    prov_usedByExecution: [],
+                    prov_usedByProgram: [],
+                    prov_usedByUser: [],
+                    prov_wasDerivedFrom: [],
+                    prov_wasExecutedByExecution: [],
+                    prov_wasExecutedByUser: [],
+                    prov_wasInformedBy: []
         	},
         	
             initialize: function(attrs, options) {
