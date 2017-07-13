@@ -16,7 +16,6 @@ define(["jquery", "underscore", "backbone",
             /* Attributes of an EMLNonNumericDomain object */
             defaults: {
                 /* Attributes from EML, extends attributes from EMLMeasurementScale */
-                xmlID: null, // the id of the nonNumericDomain element
                 measurementScale: null, // the name of this measurement scale
                 nonNumericDomain: [] // One or more of enumeratedDomain, textDomain, references
             },
@@ -113,13 +112,6 @@ define(["jquery", "underscore", "backbone",
                         attributes.nonNumericDomain.push(domainObject);
                     }, this);
 
-                }
-
-                // Add the XML id
-                if ( $objectDOM.attr("id") ) {
-                    attributes.xmlID = $objectDOM.attr("id");
-                } else {
-                    attributes.xmlID = DataONEObject.generateId();
                 }
 
                 // Add in the textDomain content if present
