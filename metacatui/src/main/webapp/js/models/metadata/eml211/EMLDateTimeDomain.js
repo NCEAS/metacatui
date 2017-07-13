@@ -18,7 +18,6 @@ define(["jquery", "underscore", "backbone",
             defaults: {
 
                 /* Attributes from EML */
-                xmlID: null, // The XML id of the attribute
                 formatString: null, // Required format string (e.g. YYYY)
                 dateTimePrecision: null, // The precision of the date time value
                 dateTimeDomain: null, // Zero or more bounds, or a references object
@@ -75,12 +74,6 @@ define(["jquery", "underscore", "backbone",
                     $objectDOM = $objectDOM.children().first();
                 } else {
                     attributes.measurementScale = $objectDOM.localName;
-                }
-
-
-                // Add the XML id
-                if ( $objectDOM.attr("id") ) {
-                    attributes.xmlID = $objectDOM.attr("id");
                 }
 
                 // Add the formatString
@@ -171,16 +164,6 @@ define(["jquery", "underscore", "backbone",
                 } else {
                     objectDOM = document.createElement(type);
 
-                }
-
-                // update the id attribute
-                var xmlID = this.get("xmlID");
-                if ( xmlID ) {
-                    $(objectDOM).attr("id", xmlID);
-                } else {
-                    xmlID = DataONEObject.generateId();
-                    this.set("xmlID", xmlID, {silent: true});
-                    $(objectDOM).attr("id", xmlID);
                 }
 
                 // Update the formatString
