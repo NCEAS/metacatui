@@ -236,6 +236,25 @@ define(["jquery", "underscore", "backbone",
                         $(nodeToInsertAfter).after(unitNode);
                     }
                 }
+                
+                // Update the precision
+                if ( this.get("precision") ) {
+                    if ( $(objectDOM).find("precision").length ) {
+                        $(objectDOM).find("precision").text(this.get("precision"));
+                    } else {
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "precision");
+                        
+                        if( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("precision"))
+                                .text(this.get("precision"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after(
+                                $(document.createElement("precision"))
+                                    .text(this.get("precision"))[0]
+                            );
+                        }
+                    }
+                }
                 return objectDOM;
             },
 
