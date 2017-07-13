@@ -16,7 +16,6 @@ define(["jquery", "underscore", "backbone",
             /* Attributes of an EMLNonNumericDomain object */
             defaults: {
                 /* Attributes from EML, extends attributes from EMLMeasurementScale */
-                xmlID: null, // the id of the nonNumericDomain element
                 measurementScale: null, // the required name of this measurement scale
                 unit: null, // the required standard or custom unit definition
                 precision: null, // the precision of the observed number
@@ -170,16 +169,74 @@ define(["jquery", "underscore", "backbone",
             },
 
             /* Copy the original XML DOM and update it with new values from the model */
-            updateDOM: function() {
-                var objectDOM;
+            updateDOM: function(objectDOM) {
+                var nodeToInsertAfter;
+                var type = this.get("measurementScale");
+                if ( typeof type === "undefined") {
+                    console.warn("Defaulting to an interval measurementScale.");
+                    type = "interval";
+                }
+                if ( ! objectDOM ) {
+                    objectDOM = this.get("objectDOM");
+                }
+                var objectXML = this.get("objectXML");
 
-                if ( this.get("objectDOM") ) {
-                    objectDOM = this.get("objectDOM").cloneNode(true);
+                // If present, use the cached DOM
+                if ( objectDOM ) {
+                    objectDOM = objectDOM.cloneNode(true);
+
+                // otherwise, use the cached XML
+                } else if ( objectXML ){
+                    objectDOM = $(objectXML)[0].cloneNode(true);
+
+                // This is new, create it
                 } else {
-                    objectDOM = document.createElement(/*this.el*/);
+                    objectDOM = document.createElement(type);
+
                 }
 
-                // TODO: Populate the DOM with model values
+                // Update the unit
+                var unit = this.get("unit");
+                var unitNode;
+                var unitTypeNode;
+                if ( unit ) {
+                    // Remove any existing unit
+                    if ( $(objectDOM).find("unit").length ) {
+                        $(objectDOM).find("unit").remove();
+                    }
+                    // Build a unit element, and populate a standard or custom child
+                    unitNode = document.createElement("unit");
+                    if ( typeof unit.standardUnit !== "undefined") {
+                        unitTypeNode = document.createElement("standardUnit");
+                        $(unitTypeNode).text(unit.standardUnit);
+                    } else if ( typeof unit.customUnit !== "undefined" ) {
+                        unitTypeNode = document.createElement("customUnit");
+                        $(unitTypeNode).text(unit.customUnit);
+                    } else {
+                        // Hmm, unit isn't an object?
+                        // Default to a standard unit
+                        unitTypeNode = document.createElement("standardUnit");
+                        if ( typeof unit === "string") {
+                            $(unitTypeNode).text(unit);
+                            console.warn("EMLNumericDomain.unit should be an object.");
+                        } else {
+                            // We're really striking out. Default to dimensionless.
+                            $(unitTypeNode).text("dimensionless");
+                            console.warn("Defaulting EMLNumericDomain.unit to dimensionless.");
+                        }
+                    }
+                    $(unitNode).append(unitTypeNode);
+                    
+                    // Add the unit to the DOM
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "unit");
+                    
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).append(unitNode);
+                    } else {
+                        $(nodeToInsertAfter).after(unitNode);
+                    }
+                }
+                return objectDOM;
             },
 
             formatXML: function(xmlString){
