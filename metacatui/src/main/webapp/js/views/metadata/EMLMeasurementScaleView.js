@@ -445,7 +445,7 @@ define(['underscore', 'jquery', 'backbone',
             	//Update the standard unit
             	if(updatedInput.is(".units")){
             		var chosenUnit = updatedInput.val();
-            		this.model.set("unit", chosenUnit);
+            		this.model.set("unit", {standardUnit: chosenUnit});
             	}
             	//Update the datetime format
             	else if(updatedInput.is(".datetime")){
