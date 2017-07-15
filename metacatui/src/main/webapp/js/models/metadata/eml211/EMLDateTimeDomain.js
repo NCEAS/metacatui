@@ -284,7 +284,7 @@ define(["jquery", "underscore", "backbone",
                 // position where this node will be inserted after
                 for ( var i = position - 1; i >= 0; i-- ) {
                     if ( $(objectDOM).find(nodeOrder[i]).length ) {
-                        return $(objectDOM).find(nodeOrder[i].last());
+                        return $(objectDOM).find(nodeOrder[i]).last();
                     }
                 }
             },

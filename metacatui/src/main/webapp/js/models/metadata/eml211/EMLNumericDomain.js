@@ -19,7 +19,7 @@ define(["jquery", "underscore", "backbone",
                 measurementScale: null, // the required name of this measurement scale
                 unit: null, // the required standard or custom unit definition
                 precision: null, // the precision of the observed number
-                numericDomain: [] // a required numeric domain object or its reference
+                numericDomain: {} // a required numeric domain object or its reference
             },
 
             /**
@@ -346,7 +346,7 @@ define(["jquery", "underscore", "backbone",
                 // position where this node will be inserted after
                 for ( var i = position - 1; i >= 0; i-- ) {
                     if ( $(objectDOM).find(nodeOrder[i]).length ) {
-                        return $(objectDOM).find(nodeOrder[i].last());
+                        return $(objectDOM).find(nodeOrder[i]).last();
                     }
                 }
             },
