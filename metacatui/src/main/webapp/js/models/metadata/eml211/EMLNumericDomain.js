@@ -255,6 +255,74 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                
+                // Update the numericDomain
+                var numericDomain = this.get("numericDomain");
+                var numericDomainNode = $(objectDOM).find("numericdomain")[0];
+                var numberType;
+                var numberTypeNode;
+                var minBound;
+                var maxBound;
+                var boundsNode;
+                var minBoundNode;
+                var maxBoundNode;
+                if ( numericDomain ) {
+                    
+                    // Remove the existing numericDomainNode node
+                    if ( typeof numericDomainNode !== "undefined" ) {
+                        numericDomainNode.remove();
+                    } 
+                    // Build the new numericDomain node
+                    numericDomainNode = document.createElement("numericdomain");
+                    
+                    // Do we have numberType?
+                    if ( typeof numericDomain.numberType !== "undefined" ) {
+                        numberTypeNode = document.createElement("numbertype");
+                        $(numberTypeNode).text(numericDomain.numberType);
+                        $(numericDomainNode).append(numberTypeNode);
+                    }
+                    
+                    // Do we have bounds?
+                    if ( typeof numericDomain.bounds !== "undefined" &&
+                         numericDomain.bounds.length ) {
+                        
+                        _.each(numericDomain.bounds, function(bound) {
+                            minBound = bound.minimum;
+                            maxBound = bound.maximum;
+                            boundsNode = document.createElement("bounds");
+                            var hasBounds = typeof minBound !== "undefined" || typeof maxBound !== "undefined";
+                            if ( hasBounds ) {
+                                // Populate the minimum element
+                                if ( typeof minBound !== "undefined" ) {
+                                    minBoundNode = document.createElement("minimum");
+                                    minBoundNode.text(minBound);
+                                }
+
+                                // Populate the maximum element
+                                if ( typeof maxBound !== "undefined" ) {
+                                    maxBoundNode = document.createElement("maximum");
+                                    maxBoundNode.text(maxBound);
+                                }
+                                $(boundsNode).append(minBoundNode);
+                                $(boundsNode).append(maxBoundNode);
+                                $(numericDomainNode).append(boundsNode);
+                            } else {
+                                // Do nothing. Content is missing, don't append the node
+                            }
+                        });
+                    } else {
+                        // Basically do nothing. Don't append the numericDomain element
+                        // TODO: handle numericDomain.references
+                        
+                    }
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "numericDomain");
+                    
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).append(numericDomainNode);
+                    } else {
+                        $(nodeToInsertAfter).after(numericDomainNode);
+                    }
+                }
                 return objectDOM;
             },
 
