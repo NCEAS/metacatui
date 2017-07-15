@@ -247,25 +247,36 @@ define(["jquery", "underscore", "backbone",
             },
 
             /* Copy the original XML DOM and update it with new values from the model */
-            updateDOM: function() {
+            updateDOM: function(objectDOM) {
                 var objectDOM;
                 var xmlID; // The id of the textDomain or enumeratedDomain fragment
                 var domainType; // Either textDomain or enumeratedDomain
                 var $domainInDOM; // The jQuery object of the text or enumerated domain from the DOM
-
-                if ( this.get("objectDOM") ) {
-                    objectDOM = this.get("objectDOM").cloneNode(true);
-                } else {
-                    if ( this.get("measurementScale") ) {
-                        objectDOM = document.createElement(this.get("measurementScale"));
-
-                    } else {
-                        console.log("In EMLNonNumericDomain.updateDOM(), " +
-                            "measurementScale is missing, defaulting to nominal");
-                        objectDOM = document.createElement("nominal");
-
-                    }
+                var nodeToInsertAfter;
+                var type = this.get("measurementScale");
+                if ( typeof type === "undefined") {
+                    console.warn("Defaulting to an nominal measurementScale.");
+                    type = "nominal";
                 }
+                if ( ! objectDOM ) {
+                    objectDOM = this.get("objectDOM");
+                }
+                var objectXML = this.get("objectXML");
+
+                // If present, use the cached DOM
+                if ( objectDOM ) {
+                    objectDOM = objectDOM.cloneNode(true);
+
+                // otherwise, use the cached XML
+                } else if ( objectXML ){
+                    objectDOM = $(objectXML)[0].cloneNode(true);
+
+                // This is new, create it
+                } else {
+                    objectDOM = document.createElement(type);
+
+                }
+
                 if ( this.get("nonNumericDomain").length ) {
 
                     // Update each nonNumericDomain in the DOM
