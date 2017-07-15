@@ -248,7 +248,7 @@ define(["jquery", "underscore", "backbone",
                             } else {
                                 // Do nothing. Content is missing, don't append the node
                             }
-                        })
+                        });
                     } else {
                         // Basically do nothing. Don't append the dateTimeDomain element
                         // TODO: handle dateTimeDomain.references
