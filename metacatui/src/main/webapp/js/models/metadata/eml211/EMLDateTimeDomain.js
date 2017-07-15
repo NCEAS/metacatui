@@ -257,13 +257,9 @@ define(["jquery", "underscore", "backbone",
                     nodeToInsertAfter = this.getEMLPosition(objectDOM, "dateTimeDomain");
                     
                     if( ! nodeToInsertAfter ) {
-                        $(objectDOM).append($(document.createElement("datetimeprecision"))
-                            .text(this.get("dateTimePrecision"))[0]);
+                        $(objectDOM).append(dateTimeDomainNode);
                     } else {
-                        $(nodeToInsertAfter).after(
-                            $(document.createElement("datetimeprecision"))
-                                .text(this.get("dateTimePrecision"))[0]
-                        );
+                        $(nodeToInsertAfter).after(dateTimeDomainNode);
                     }
                 }
                 return objectDOM;
