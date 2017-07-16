@@ -168,36 +168,41 @@ define(["jquery", "underscore", "backbone",
 
             /* Parse the nonNumericDomain/enumeratedDomain fragment
              * returning an object with an enumeratedDomain attribute, like:
-             * {
-             *     enumeratedDomain: {
-             *         codeDefinition: [
-             *             {
-             *                 code: "Some code", // required
-             *                 definition: "Some definition", // required
-             *                 source: "Some source"
-             *             } // repeatable
-             *         ]
+             * var emlCitation = new EMLCitation || {};
+             * var nonNumericDomain = [
+             *     {
+             *         enumeratedDomain: {
+             *             codeDefinition: [
+             *                 {
+             *                     code: "Some code", // required
+             *                     definition: "Some definition", // required
+             *                     source: "Some source"
+             *                 } // repeatable
+             *             ]
+             *         }
+             *     }, // or
+             *     {
+             *         enumeratedDomain: {
+             *             externalCodeSet: [
+             *                 {
+             *                     codesetName: "Some code", // required
+             *                     citation: [emlCitation], // one of citation or codesetURL
+             *                     codesetURL: ["Some URL"] // is required, both repeatable
+             *                 } // repeatable
+             *             ]
+             *         }
+             *     }, // or
+             *     {
+             *         enumeratedDomain: {
+             *             entityCodeList: {
+             *                 entityReference: "Some reference", // required
+             *                 valueAttributeReference: "Some attr reference", // required
+             *                 definitionAttributeReference: "Some definition attr reference", // required
+             *                 orderAttributeReference: "Some order attr reference"
+             *             }
+             *         }
              *     }
-             * }
-             * or
-             * {
-             *     enumeratedDomain: {
-             *         externalCodeSet: [
-             *             codesetName: "Some code", // required
-             *             citation: [EMLCitation], // one of citation or codesetURL
-             *             codesetURL: ["Some URL"] // is required, both repeatable
-             *         ]
-             *     }
-             * }
-             * or
-             * {
-             *     entityCodeList: {
-             *         entityReference: "Some reference", // required
-             *         valueAttributeReference: "Some attr reference", // required
-             *         definitionAttributeReference: "Some definition attr reference", // required
-             *         orderAttributeReference: "Some order attr reference"
-             *     }
-             * }
+             * ]
              */
             parseEnumeratedDomain: function(domain) {
                 var domainObject = {};
@@ -292,6 +297,7 @@ define(["jquery", "underscore", "backbone",
                             xmlID = domain.textDomain.xmlID;
                         } else {
                             console.log("Unrecognized NonNumericDomain type. Skipping.");
+                            // TODO: Handle references here
                         }
                         
                         // Update the existing DOM node by id
