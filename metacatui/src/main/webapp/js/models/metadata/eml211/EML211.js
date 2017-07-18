@@ -951,6 +951,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	}, this);
             	
+            	//Validate the EMLTaxonCoverage model
+            	var taxonModel = this.get("taxonCoverage")[0];
+            		
+        		if( !taxonModel.isValid() ){
+        			errors = _.extend(errors, taxonModel.validationError);
+        		}
+            	
             	//Check the required fields for this MetacatUI configuration
             	if(MetacatUI.appModel.get("emlEditorRequiredFields")){
                 	_.each(Object.keys(MetacatUI.appModel.get("emlEditorRequiredFields")), function(key){

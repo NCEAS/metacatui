@@ -151,6 +151,36 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			
 			return finishedEl;
 		},
+		
+		/* Validate this model */
+		validate: function(){
+			var errors = {};
+			
+			if(!this.get("generalTaxonomicCoverage"))
+				errors.generalTaxonomicCoverage = "Provide a description of the taxonomic coverage.";
+			
+			if( !this.get("taxonomicClassification").length )
+				errors.taxonomicClassification = "Provide at least one complete taxonomic classification.";
+			else{
+				//Every taxonomic classification should be valid
+				if(!_.every(this.get("taxonomicClassification"), this.isClassificationValid, this))
+					errors.taxonomicClassification = "Every classification row should have a rank and value.";
+			}
+			
+			if(Object.keys(errors).length)
+				return errors;
+			
+		},
+		
+		isClassificationValid: function(taxonomicClassification){
+			if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue)
+				return false;
+			
+			if(taxonomicClassification.taxonomicClassification)
+				return this.isClassificationValid(taxonomicClassification.taxonomicClassification);
+			else
+				return true;
+		},
 
 		trickleUpChange: function(){
 			MetacatUI.rootDataPackage.packageModel.set("changed", true);

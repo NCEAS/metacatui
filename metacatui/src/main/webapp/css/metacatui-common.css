@@ -3743,6 +3743,11 @@ textarea.xlarge{
 	color: white;
 	z-index: 1;
 }
+.root-taxonomic-classification > .remove {
+    top: 10px;
+    right: 18px;
+    color: #FFFFFF;
+}
 .remove-preview,
 .locations-table .eml-geocoverage.remove-preview{
 	opacity: .3;
