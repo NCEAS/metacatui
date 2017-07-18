@@ -172,6 +172,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			
 		},
 		
+		isEmpty: function(){
+			return (!this.get("generalTaxonomicCoverage") && !this.get("taxonomicClassification").length)
+		},
+		
 		isClassificationValid: function(taxonomicClassification){
 			if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue)
 				return false;

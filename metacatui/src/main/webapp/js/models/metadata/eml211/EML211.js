@@ -954,7 +954,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	//Validate the EMLTaxonCoverage model
             	var taxonModel = this.get("taxonCoverage")[0];
             		
-        		if( !taxonModel.isValid() ){
+        		if( !taxonModel.isEmpty() && !taxonModel.isValid() ){
         			errors = _.extend(errors, taxonModel.validationError);
         		}
             	
