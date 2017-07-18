@@ -3651,6 +3651,11 @@ textarea.xlarge{
     margin-top: 2em;
     margin-bottom: 1em;
 }
+.eml-party .phone{
+	font-size: .8em;
+    padding: 5px;
+    height: 3em;
+}
 
 /* ---- Keywords ---- */
 .metadata-container .keywords .span2{
@@ -3742,6 +3747,11 @@ textarea.xlarge{
 	right: 20px;
 	color: white;
 	z-index: 1;
+}
+.root-taxonomic-classification > .remove {
+    top: 10px;
+    right: 18px;
+    color: #FFFFFF;
 }
 .remove-preview,
 .locations-table .eml-geocoverage.remove-preview{

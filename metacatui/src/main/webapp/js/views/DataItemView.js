@@ -23,6 +23,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             /* Events this view listens to */
             events: {
                 "focusout .name"       : "updateName",
+                "click    .name"       : "emptyName",
                 /* "click .rename"     : "rename", */
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
@@ -504,7 +505,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             previewRemove: function(){
             	this.$el.toggleClass("remove-preview");
             },
-
+            
+            emptyName: function(e){
+            	if(this.$(".name .required-icon").length)
+            		this.$(".name").children().empty();
+            },
             
             showValidation: function(attr, errorMsg){
 				
