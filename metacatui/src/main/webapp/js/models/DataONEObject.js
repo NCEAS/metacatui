@@ -68,8 +68,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
                     objectXML: null, // A cached version of the object fetched from the server
                     isAuthorized: null, // If the stated permission is authorized by the user
-                    collections: [] //References to collections that this model is in
-	        	}
+                    collections: [], //References to collections that this model is in
+                    prov_generated: [],
+                    prov_generatedByExecution: [],
+                    prov_generatedByProgram: [],
+                    prov_generatedByUser: [],
+                    prov_hasDerivations: [],
+                    prov_hasSources: [],
+                    prov_instanceOfClass: [],
+                    prov_used: [],
+                    prov_usedByExecution: [],
+                    prov_usedByProgram: [],
+                    prov_usedByUser: [],
+                    prov_wasDerivedFrom: [],
+                    prov_wasExecutedByExecution: [],
+                    prov_wasExecutedByUser: [],
+                    prov_wasInformedBy: []
+                }
         	},
         	
             initialize: function(attrs, options) {
@@ -269,7 +284,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             		if(!response.response.docs.length){
             			this.set("notFound", true);
             		}
-            		         		
+            		            		
             	    return response.response.docs[0];                   
                 }
             	else
@@ -301,7 +316,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             			}
             			//If it's a new text node, just store the text value and add as a new object attribute
             			else if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 3)){
-            				obj = item.nodeValue == "false" ? false : item.nodeValue == "true" ? true : item.nodeValue;
+            				obj = item.nodeValue;
             			}
             			//If this node name is already stored as an object attribute...
             			else if(typeof(obj[nodeName]) != "undefined"){	
@@ -402,94 +417,92 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 			return containerNode;
 		  },
 		  
-		  /*
-		   * Saves the DataONEObject System Metadata to the server
-		   */
-		  save: function(attributes, options){
+            /*
+            * Saves the DataONEObject System Metadata to the server
+            */
+            save: function(attributes, options){
 
-              // Set missing file names before saving
-              if ( ! this.get("fileName") ) {
-                  this.setMissingFileName();
-                  
-              }
-
-			 if ( !this.hasUpdates() ) {
-				 this.set("uploadStatus", null);
-				 return;
-			 }
-			 
-			 //Set the upload transfer as in progress
-			 this.set("uploadStatus", "p");
-			 
-			//Create a FormData object to send data with our XHR
-			var formData = new FormData();
-  			
-			//Create the system metadata XML
-  			var sysMetaXML = this.serializeSysMeta();
-
-  			//Send the system metadata as a Blob 
-			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
-  			//Add the system metadata XML to the XHR data
-  			formData.append("sysmeta", xmlBlob, "sysmeta.xml");
-  			
-  			//Add the identifier to the XHR data
-			formData.append("pid", this.get("id"));
-            
-            if ( this.isNew() ) {
-                // Create the new object (MN.create())
-                formData.append("object", this.get("uploadFile"), this.get("fileName"));
-                
-            } else {
-                if ( this.hasContentChanges ) {
-                    // Update the object (MN.update())
-                    console.log("TODO: enable replacement of DATA objects");
-                } else {
-                    // Don't add the object (MN.updateSystemMetadata())
-                    console.log("TODO: enable update of DATA object sysmeta");
-                    
+                // Set missing file names before saving
+                if ( ! this.get("fileName") ) {
+                    this.setMissingFileName();
                 }
-            }
 
-			//Put together the AJAX and Backbone.save() options
-			var requestSettings = {
-					url: this.url(),
-					cache: false,
-				    contentType: false,
-				    dataType: "text",
-				    processData: false,
-					data: formData,
-					parse: false,
-					success: function(model, response, xhr){
-						console.log('yay, DataONEObject has been saved');
-						
-						model.set("uploadStatus", "c");
-						model.trigger("successSaving", model);
+                if ( !this.hasUpdates() ) {
+                    this.set("uploadStatus", null);
+                    return;
+                }
+
+                //Set the upload transfer as in progress
+                this.set("uploadStatus", "p");
+                
+                //Create a FormData object to send data with our XHR
+                var formData = new FormData();
+                
+                //Create the system metadata XML
+                var sysMetaXML = this.serializeSysMeta();
+
+                //Send the system metadata as a Blob 
+                var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
+                //Add the system metadata XML to the XHR data
+                formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+                
+                //Add the identifier to the XHR data
+                formData.append("pid", this.get("id"));
+            
+                if ( this.isNew() ) {
+                    // Create the new object (MN.create())
+                    formData.append("object", this.get("uploadFile"), this.get("fileName"));
+                    
+                } else {
+                    if ( this.hasContentChanges ) {
+                        // Update the object (MN.update())
+                        console.log("TODO: enable replacement of DATA objects");
+                    } else {
+                        // Don't add the object (MN.updateSystemMetadata())
+                        console.log("TODO: enable update of DATA object sysmeta");
+                        
+                    }
+                }
+
+                //Put together the AJAX and Backbone.save() options
+                var requestSettings = {
+                    url: this.url(),
+                    cache: false,
+                    contentType: false,
+                    dataType: "text",
+                    processData: false,
+                    data: formData,
+                    parse: false,
+                    success: function(model, response, xhr){
+                        console.log('yay, DataONEObject has been saved');
+                        
+                        model.set("uploadStatus", "c");
+                        model.trigger("successSaving", model);
                         model.fetch({merge: true}); // Get the newest sysmeta set by the MN
                         // Reset the content changes status
                         model.set("hasContentChanges", false);
-                        
-					},
-					error: function(model, response, xhr){
-						console.log("error updating system metadata");
-						model.set("uploadStatus", "e");
-						model.trigger("errorSaving", response.responseText);
-					}
-			}
-			
-			//Add the user settings
-			requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
-			
-			//Send the Save request
-			Backbone.Model.prototype.save.call(this, null, requestSettings);
+                    },
+                    error: function(model, response, xhr){
+                        console.log("error updating system metadata");
+                        model.set("uploadStatus", "e");
+                        model.trigger("errorSaving", response.responseText);
+                    }
+                };
+
+                //Add the user settings
+                requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+                
+                //Send the Save request
+	            Backbone.Model.prototype.save.call(this, null, requestSettings);
             
-		  },
+		    },
 		  
-		  /*
-		   * Check if the current user is authorized to perform an action on this object
-		   */
-		  checkAuthority: function(action){
-			  if(!action) var action = "changePermission";
-			  
+		    /*
+		     * Check if the current user is authorized to perform an action on this object
+		     */
+		    checkAuthority: function(action){
+			if(!action) var action = "changePermission";
+			
 				var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
 				if(!authServiceUrl) return false;
 
@@ -508,9 +521,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				}
 				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
-		  },
-		  
-		  serializeSysMeta: function(options){
+		    },
+		
+		    serializeSysMeta: function(options){
 	        	//Get the system metadata XML that currently exists in the system
                 var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
                     xml, // sysmeta as DOM object
@@ -1101,63 +1114,76 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	return xmlString;
 	        },
 		  
-          /**
-           * Convert number of bytes into human readable format
-           *
-           * @return sizeStr for the given model
-           */
-          bytesToSize: function(){  
-              var kilobyte = 1024;
-              var megabyte = kilobyte * 1024;
-              var gigabyte = megabyte * 1024;
-              var terabyte = gigabyte * 1024;
-              var precision = 0;
-          
-              var bytes = this.get("size");                        
+            /**
+             * Convert number of bytes into human readable format
+             *
+             * @return sizeStr for the given model
+             */
+            bytesToSize: function(){  
+                var kilobyte = 1024;
+                var megabyte = kilobyte * 1024;
+                var gigabyte = megabyte * 1024;
+                var terabyte = gigabyte * 1024;
+                var precision = 0;
+            
+                var bytes = this.get("size");                        
+           
+                if ((bytes >= 0) && (bytes < kilobyte)) {
+                    this.set("sizeStr", bytes + ' B');
          
-              if ((bytes >= 0) && (bytes < kilobyte)) {
-                  this.set("sizeStr", bytes + ' B');
-       
-              } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-                  this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
-       
-              } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-                  precision = 2;
-                  this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
-       
-              } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-                  precision = 2;
-                  this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
-       
-              } else if (bytes >= terabyte) {
-                  precision = 2;
-                  this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
-       
-              } else {
-                  this.set("sizeStr", bytes + ' B');
-                  
-              }
-          },
-          
-          /* Ensure we have a file name */
-          setMissingFileName: function() {
-              var objectFormats, filename, extension;
-              
-              objectFormats = MetacatUI.objectFormats.where({formatId: this.get("formatId")});
-              if ( objectFormats.length > 0 ) {
-                  extension = objectFormats[0].get("extension");
-              }
-              
-              filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
-              filename.replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
-              
-              if ( typeof extension !== "undefined" ) {
-                  filename = filename + "." + extension;
-              }
-              
-              this.set("fileName", filename);
-              
-          }
+                } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+                    this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
+         
+                } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
+         
+                } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
+         
+                } else if (bytes >= terabyte) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
+         
+                } else {
+                    this.set("sizeStr", bytes + ' B');
+                    
+                }
+            },
+            
+            /* Ensure we have a file name */
+            setMissingFileName: function() {
+                var objectFormats, filename, extension;
+                
+                objectFormats = MetacatUI.objectFormats.where({formatId: this.get("formatId")});
+                if ( objectFormats.length > 0 ) {
+                    extension = objectFormats[0].get("extension");
+                }
+                
+                filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
+                filename.replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
+                
+                if ( typeof extension !== "undefined" ) {
+                    filename = filename + "." + extension;
+                }
+                
+                this.set("fileName", filename);
+                
+            }
+        },
+        {
+            /* Generate a unique identifier to be used as an XML id attribute */
+            generateId: function() {
+                var idStr = ''; // the id to return
+                var length = 30; // the length of the generated string
+                var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'.split('');
+
+                for (var i = 0; i < length; i++) {
+                    idStr += chars[Math.floor(Math.random() * chars.length)];
+                }
+                return idStr;
+            }
         }); 
         
         return DataONEObject; 

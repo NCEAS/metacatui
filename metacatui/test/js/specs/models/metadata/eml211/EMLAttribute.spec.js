@@ -91,7 +91,7 @@ define(["chai", "chai-jquery", "chai-backbone",
 
                 it("should return a textDomain object", function() {
                     attributes.measurementScale.get("nonNumericDomain")[0].textDomain.should.be.an("object");
-                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.should.have.all.keys("definition", "pattern", "source");
+                    attributes.measurementScale.get("nonNumericDomain")[0].textDomain.should.have.all.keys("xmlID","definition", "pattern", "source");
                 });
 
                 it("should return a textDomain definition string", function() {

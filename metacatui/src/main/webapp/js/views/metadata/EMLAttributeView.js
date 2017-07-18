@@ -35,7 +35,7 @@ define(['underscore', 'jquery', 'backbone',
             		var options = {};
             	
             	this.isNew = (options.isNew == true) ? true : options.model? false : true;
-            	this.model = options.model || new EMLAttribute();
+            	this.model = options.model || new EMLAttribute({xmlID: DataONEObject.generateId()});
             },
             
             render: function(){
