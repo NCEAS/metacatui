@@ -168,7 +168,7 @@ define(["jquery", "underscore", "backbone",
 
             /* Parse the nonNumericDomain/enumeratedDomain fragment
              * returning an object with an enumeratedDomain attribute, like:
-             * var emlCitation = new EMLCitation || {};
+             * var emlCitation = {};
              * var nonNumericDomain = [
              *     {
              *         enumeratedDomain: {
@@ -255,9 +255,20 @@ define(["jquery", "underscore", "backbone",
             updateDOM: function(objectDOM) {
                 var objectDOM;
                 var xmlID; // The id of the textDomain or enumeratedDomain fragment
+                var nonNumericDomainNode;
                 var domainType; // Either textDomain or enumeratedDomain
                 var $domainInDOM; // The jQuery object of the text or enumerated domain from the DOM
                 var nodeToInsertAfter;
+                var domainNode; // Either a textDomain or enumeratedDomain node
+                var definitionNode;
+                var patternNode;
+                var patterns;
+                var sourceNode;
+                var enumeratedDomainNode;
+                var codeDefinitions;
+                var codeDefinitionNode;
+                var codeNode;
+                
                 var type = this.get("measurementScale");
                 if ( typeof type === "undefined") {
                     console.warn("Defaulting to an nominal measurementScale.");
@@ -312,15 +323,15 @@ define(["jquery", "underscore", "backbone",
                                     
                                     // Add any new patterns
                                     if ( domain.textDomain.pattern && domain.textDomain.pattern.length ) {
-                                        var patterns = Array.from(domain.textDomain.pattern).reverse();
+                                        patterns = Array.from(domain.textDomain.pattern).reverse();
                                         _.each(patterns, function(pattern) {
                                             // Prepend before the sourced element if present
-                                            var pat = document.createElement("pattern");
-                                            pat.textContent = pattern;
+                                            patternNode = document.createElement("pattern");
+                                            $(patternNode).text(pattern);
                                             if ( $domainInDOM.children("sourced").length ) {
-                                                $domainInDOM.children("sourced").before(pat);
+                                                $domainInDOM.children("sourced").before(patternNode);
                                             } else {
-                                                $domainInDOM.append(pat);
+                                                $domainInDOM.append(patternNode);
                                             }
                                         });
                                     } else {
@@ -346,20 +357,93 @@ define(["jquery", "underscore", "backbone",
                                     }
                                     
                                 } else if ( domainType === "enumeratedDomain") {
-                                    
+                                    // TODO
                                 }
                             }
                         // Otherwise append to the DOM
                         } else {
+                            
+                            // Add the nonNumericDomain element
+                            nonNumericDomainNode = document.createElement("nonnumericdomain");
+                            
+                            if ( domainType === "textDomain" ) {
+                                
+                                // Add the definiton element
+                                domainNode = document.createElement("textdomain");
+                                if ( domain.textDomain.definition ) {
+                                    definitionNode = document.createElement("definition");
+                                    $(definitionNode).text(domain.textDomain.definition);
+                                    $(domainNode).append(definitionNode);
+                                }
+                                
+                                // Add the pattern element(s)
+                                if ( domain.textDomain.pattern.length ) {
+                                    _.each(domain.textDomain.pattern, function(pattern) {
+                                        patternNode = document.createElement("pattern");
+                                        $(domainNode).append(patternNode);
+                                    }, this);
+                                }
 
+                                // Add the source element
+                                if ( domain.textDomain.source ) {
+                                    sourceNode = document.createElement("sourced"); // Accommodate parseHTML() with "d"
+                                    $(sourceNode).text(domain.textDomain.source);
+                                    $(domainNode).append(sourceNode);
+                                }
+                                
+                            } else if ( domainType === "enumeratedDomain" ) {
+                                domainNode = document.createElement("enumerateddomain");
+                                
+                                if ( domain.enumeratedDomain.codeDefinition.length ) {
+                                    
+                                    // Add each codeDefinition
+                                    _.each(domain.enumeratedDomain.codeDefinition, function(codeDef) {
+                                        
+                                        // Add the required code element
+                                        if ( codeDef.code ) {
+                                            codeDefinitionNode = document.createElement("codedefinition");
+                                            codeNode = document.createElement("code");
+                                            $(codeNode).text(codeDef.code);
+                                            $(codeDefinitionNode).append(codeNode);
+                                        }
+                                        
+                                        // Add the required definition element
+                                        if ( codeDef.definition ) {
+                                            definitionNode = document.createElement("definition");
+                                            $(definitionNode).text(codeDef.definition);
+                                            $(codeDefinitionNode).append(definitionNode);
+                                        }
+
+                                        // Add the optional source element
+                                        if ( codeDef.source ) {
+                                            sourceNode = document.createElement("sourced"); // Accommodate parseHTML() with "d"
+                                            $(sourceNode).text(codeDef.source);
+                                            $(codeDefinitionNode).append(sourceNode);
+                                        }
+                                        $(domainNode).append(codeDefinitionNode);
+                                        
+                                    }, this);
+                                    
+                                } else if ( domain.enumeratedDomain.externalCodeSet ) {
+                                    // TODO Handle externalCodeSet
+                                    
+                                } else if ( domain.enumeratedDomain.entityCodeList ) {
+                                    // TODO Handle entityCodeList
+                                }
+                                
+                            } else {
+                                console.log("The domainType: " + domainType + " is not recognized.");
+                            }
+                            $(nonNumericDomainNode).append(domainNode);
+                            $(objectDOM).append(nonNumericDomainNode);
                         }
-
                     }, this);
 
                 } else {
-                    // We have no content, so cant create a valid domain
-                    console.log("In EMLNonNumericDomain.updateDOM(), " +
-                        "there is no domain content, returning undefined.");
+                    // We have no content, so can't create a valid domain
+                    console.log("In EMLNonNumericDomain.updateDOM(),\n" +
+                        "references are not handled yet. Returning undefined.");
+                    // TODO: handle references here
                     return undefined;
                 }
                 return objectDOM;
