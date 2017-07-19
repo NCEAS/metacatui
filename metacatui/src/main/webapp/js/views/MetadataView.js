@@ -1382,6 +1382,9 @@ define(['jquery',
 
 				//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
 				_.each(packageMembers, function(solrResult, i){
+					//Don't display any info about nested packages
+					if(solrResult.type == "Package") return;
+					
 					var objID = solrResult.get("id");
 
 					if(objID == viewRef.pid) 
