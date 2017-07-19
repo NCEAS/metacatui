@@ -305,7 +305,7 @@ define(["jquery", "underscore", "backbone",
                             
                         } else if ( typeof domain.enumeratedDomain === "object" ) {
                             domainType = "enumeratedDomain";
-                            xmlID = domain.textDomain.xmlID;
+                            xmlID = domain.enumeratedDomain.xmlID;
                         } else {
                             console.log("Unrecognized NonNumericDomain type. Skipping.");
                             // TODO: Handle references here
@@ -449,7 +449,69 @@ define(["jquery", "underscore", "backbone",
                 return objectDOM;
             },
 
-            /**/
+            /*
+             * Update the codeDefinitionList in the  first enumeratedDomain
+             * found in the nonNumericDomain array.
+             * TODO: Refactor this to support externalCodeSet and entityCodeList
+             * TODO: Support the source field
+             * TODO: Support repeatable enumeratedDomains
+             * var nonNumericDomain = [
+             *     {
+             *         enumeratedDomain: {
+             *             codeDefinition: [
+             *                 {
+             *                     code: "Some code", // required
+             *                     definition: "Some definition", // required
+             *                     source: "Some source"
+             *                 } // repeatable
+             *             ]
+             *         }
+             *     }
+             * ]
+             */
+            updateEnumeratedDomain: function(code, definition, index) {
+                var nonNumericDomain = this.get("nonNumericDomain");
+                var enumeratedDomain = {};
+                var codeDefinitions;
+                
+                // Create from scratch
+                if ( ! nonNumericDomain.length ) {
+                    nonNumericDomain.push({
+                        enumeratedDomain: {
+                            codeDefinition: [
+                                {
+                                    code: code,
+                                    definition: definition
+                                }
+                            ]
+                        }
+                    })
+                // Update existing
+                } else {
+                    enumeratedDomain = this.get("nonNumericDomain")[0].enumeratedDomain;
+                    if ( typeof enumeratedDomain !== "undefined" ) {
+                        codeDefinitions = enumeratedDomain.codeDefinition;
+                        if ( codeDefinitions.length >= index ) {
+                            codeDefinitions[index] = {
+                                code: code,
+                                definition: definition
+                            }
+                        } else {
+                            codeDefinitions.push({
+                                code: code,
+                                definition: definition
+                            });
+                        }
+                        
+                    }
+                }
+            },
+            
+            /*
+             * Get the DOM node preceding the given nodeName
+             * to find what position in the EML document
+             * the named node should be appended
+             */
             getEMLPosition: function(objectDOM, nodeName) {
                 // TODO: set the node order
                 var nodeOrder = ["enumerateddomain", "textdomain"];
