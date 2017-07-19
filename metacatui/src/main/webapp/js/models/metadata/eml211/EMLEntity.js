@@ -85,6 +85,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     "change:constraint " +
                     "change:references",
                     EMLEntity.trickleUpChange);
+                
             },
 
             /*
@@ -242,10 +243,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 // update the id attribute
                 var xmlID = this.get("xmlID");
                 if ( xmlID ) {
-                    $(objectDOM).attr("id", xmlID);
-                } else {
-                    xmlID = DataONEObject.generateId();
-                    this.set("xmlID", xmlID, {silent: true});
                     $(objectDOM).attr("id", xmlID);
                 }
 

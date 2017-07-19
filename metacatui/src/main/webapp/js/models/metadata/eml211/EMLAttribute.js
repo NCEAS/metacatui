@@ -96,9 +96,6 @@ define(["jquery", "underscore", "backbone",
                 // Add the XML id
                 if ( typeof $objectDOM.attr("id") !== "undefined" ) {
                     attributes.xmlID = $objectDOM.attr("id");
-                } else {
-                    attributes.xmlID = DataONEObject.generateId();
-                    
                 }
 
                 // Add the attributeName
@@ -173,10 +170,6 @@ define(["jquery", "underscore", "backbone",
                 // update the id attribute
                 var xmlID = this.get("xmlID");
                 if ( xmlID ) {
-                    $(objectDOM).attr("id", xmlID);
-                } else {
-                    xmlID = DataONEObject.generateId();
-                    this.set("xmlID", xmlID, {silent: true});
                     $(objectDOM).attr("id", xmlID);
                 }
 

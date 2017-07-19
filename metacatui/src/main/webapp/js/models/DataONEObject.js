@@ -1170,6 +1170,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
                 this.set("fileName", filename);
                 
+            },
+            
+            getXMLSafeID: function(){
+            	var id = this.get("id");
+            	
+            	//Replace XML id attribute invalid characters and patterns in the identifier
+            	id = id.replace(/</g, "-").replace(/:/g, "-").replace(/&[a-zA-Z0-9]+;/g);
+            	
+            	return id;
             }
         },
         {

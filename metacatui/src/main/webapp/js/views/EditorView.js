@@ -593,7 +593,8 @@ define(['underscore',
 	        			entityModel = new EMLOtherEntity({
 	        				entityName : dataONEObject.get("fileName"),
 	        				entityType : dataONEObject.get("formatId") || dataONEObject.get("mediaType"),
-	        				parentModel: this.model
+	        				parentModel: this.model,
+	        				xmlID: dataONEObject.getXMLSafeID()
 	        			});
 
 	        			if(!dataONEObject.get("fileName")){

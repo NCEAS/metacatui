@@ -1130,7 +1130,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	var entity = _.find(this.get("entities"), function(e){
             		
             		//Matches of the checksum or identifier are definite matches
-            		if( e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObject.get("checksumAlgorithm").toUpperCase() == "MD5")
+            		if( e.get("xmlID") == dataONEObj.getXMLSafeID() )
+            			return true;
+            		else if( e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObject.get("checksumAlgorithm").toUpperCase() == "MD5")
             			return true;
             		else if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
             			return true;
@@ -1150,15 +1152,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	}, this);
             	
+            	//Create an XML-safe ID and set it on the Entity model
+            	entity.set("xmlID", dataONEObj.getXMLSafeID());
+            	
             	if(entity)
             		return entity;
             	
+            	//See if one data object is of this type in the package
             	var matchingTypes = _.filter(this.get("entities"), function(e){
             		return (e.get("formatName") == (dataONEObj.get("formatId") || dataONEObj.get("mediaType")));
             	});
             	
-            	if(matchingTypes.length == 1)
+            	if(matchingTypes.length == 1){
+                	//Create an XML-safe ID and set it on the Entity model
+            		matchingTypes[0].set("xmlID", dataONEObj.getXMLSafeID());
+                	
             		return matchingTypes[0];
+            	}
             	
             	return false;
             		
