@@ -323,14 +323,10 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
                 // Update the attributeList section
                 var attributeList = this.get("attributeList");
-                var attrIds = _.map(attributeList, function(attribute) {
-                    return attribute.get("xmlID");
-                });
-                var existingIdsInDOM = $(objectDOM).find("attribute").attr("id");
                 var attributeListInDOM = $(objectDOM).children("attributelist");
-                var attributeListNode;
                 if ( attributeListInDOM.length ) {
                     attributeListNode = attributeListInDOM[0];
+                    $(attributeListNode).children().remove(); // Each attr will be replaced
                 } else {
                     attributeListNode = document.createElement("attributeList");
                     nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeList");
@@ -343,17 +339,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
                 var updatedAttrDOM;
                 if ( attributeList.length ) {
-                    // Add or modify each attribute
-                    _.each(attributeList, function(attribute, position) {
-                        if ( _.contains(existingIdsInDOM, attribute.get("xmlID")) ) {
-                            // TODO: If the attr by id exists, replace in DOM
-                            // Update the existing  Pass in the objectDOM for the attribute.
-                            
-                        } else {
+                    // Add each attribute
+                    _.each(attributeList, function(attribute) {
                             updatedAttrDOM = attribute.updateDOM();
                             $(attributeListNode).append(updatedAttrDOM);
-                        }
                     }, this);
+                } else {
+                    // Attributes are not defined, remove them from the DOM
+                    attributeListNode.remove();
                 }
 
                 // TODO: Update the constraint section
@@ -393,15 +386,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 	        /* Let the top level package know of attribute changes from this object */
 	        trickleUpChange: function(){
 	            MetacatUI.rootDataPackage.packageModel.set("changed", true);
-	        },
-	
-	        /* Create a random id for entities */
-	        createID: function(){
-	            this.set("xmlID",
-	             Math.ceil(Math.random() *
-	             (9999999999999999 - 1000000000000000) + 1000000000000000));
 	        }
-
         });
 
         return EMLEntity;
