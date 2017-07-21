@@ -3751,7 +3751,7 @@ textarea.xlarge{
 .root-taxonomic-classification > .remove {
     top: 10px;
     right: 18px;
-    color: #FFFFFF;
+    color: #999999;
 }
 .remove-preview,
 .locations-table .eml-geocoverage.remove-preview{
