@@ -1639,7 +1639,7 @@ define(['underscore', 'jquery', 'backbone',
 		previewTaxonRemove: function(e){
 			var removeBtn = $(e.target);
 			
-			if(removeBtn.parent().is(".root-taxonomic-classification-container")){
+			if(removeBtn.parent().is(".root-taxonomic-classification")){
 				removeBtn.parent().toggleClass("remove-preview");
 			}
 			else{
