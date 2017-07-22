@@ -100,23 +100,15 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
              */
             parse: function(attributes, options) {
                 var $objectDOM;
+                var objectDOM = attributes.objectDOM;
                 var objectXML = attributes.objectXML;
 
                 // Use the cached object if we have it
-                if ( ! objectXML ) {
-                    if ( this.get("objectXML") ) {
-                        objectXML = this.get("objectXML");
-
-                    } 
-                    else if(attributes.objectDOM){
-                    	objectXML = attributes.objectDOM.outerHTML;
-                    }
-                    else {
-                        return {};
-                    }
+                if ( objectDOM ) {
+                    $objectDOM = $(objectDOM);
+                } else if ( objectXML ) {
+                    $objectDOM = $(objectXML);
                 }
-
-                $objectDOM = $(objectXML);
 
                 // Add the XML id
                 attributes.xmlID = $objectDOM.attr("id");
@@ -172,11 +164,10 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     _.each(attributeList[0].children, function(attr) {
                         attribute = new EMLAttribute(
                             {
-                            	objectXML: attr.outerHTML,
-                            	parentModel: this
-                            },
-                            options
-                        );
+                                objectDOM: attr,
+                                objectXML: attr.outerHTML,
+                                parentModel: this
+                            }, options);
                         // Can't use this.addAttribute() here (no this yet)
                         attributes.attributeList.push(attribute);
                     }, this);
