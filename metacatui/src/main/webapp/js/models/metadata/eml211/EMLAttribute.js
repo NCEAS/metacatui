@@ -88,7 +88,7 @@ define(["jquery", "underscore", "backbone",
                 if ( attributes.objectDOM ) {
                     $objectDOM = $(attributes.objectDOM);
                 } else if ( attributes.objectXML ) {
-                    $objectDOM = $($(attributes.objectXML)[0]);
+                    $objectDOM = $(attributes.objectXML);
                 } else {
                     return {};
                 }
@@ -128,7 +128,7 @@ define(["jquery", "underscore", "backbone",
                         EMLMeasurementScale.getInstance(measurementScale.outerHTML);
                     attributes.measurementScale.set("parentModel", this);
                 }
-                attributes.objectDOM = $objectDOM;
+                attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
             },
@@ -294,6 +294,7 @@ define(["jquery", "underscore", "backbone",
                     // Append the measurementScale domain content
                     domainNode = measurementScale.updateDOM();
                     if (typeof domainNode !== "undefined" ) {
+                        $(measurementScaleNode).children().remove();
                         $(measurementScaleNode).append(domainNode);
                     }
 
