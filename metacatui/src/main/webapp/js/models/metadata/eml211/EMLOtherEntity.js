@@ -76,8 +76,8 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 var $objectDOM; // The JQuery object of the XML fragment
 
                 // Use the updated objectDOM if we have it
-                if ( this.get("objectDOM") ) {
-                    $objectDOM = $(this.get("objectDOM"));
+                if ( attributes.objectDOM ) {
+                    $objectDOM = $(attributes.objectDOM);
                 } else {
                     // Hmm, oddly not there, start from scratch =/
                     $objectDOM = $(objectXML);
@@ -85,7 +85,6 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                 // Add the entityType
                 attributes.entityType = $objectDOM.children("entitytype").text();
-                attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
             },
