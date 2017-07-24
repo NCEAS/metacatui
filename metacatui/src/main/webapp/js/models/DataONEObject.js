@@ -267,7 +267,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             		
             		//Parse the XML to JSON
             		var sysMetaValues = this.toJson(systemMetadata);
-            		
+            		            		
             		//Convert the JSON to a camel-cased version, which matches Solr and is easier to work with in code
             		_.each(Object.keys(sysMetaValues), function(key){
             			var camelCasedKey = this.nodeNameMap()[key];
@@ -316,7 +316,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             			}
             			//If it's a new text node, just store the text value and add as a new object attribute
             			else if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 3)){
-            				obj = item.nodeValue;
+            				obj = item.nodeValue == "false" ? false : item.nodeValue == "true" ? true : item.nodeValue;
             			}
             			//If this node name is already stored as an object attribute...
             			else if(typeof(obj[nodeName]) != "undefined"){	
