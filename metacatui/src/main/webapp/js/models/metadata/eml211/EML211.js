@@ -1152,11 +1152,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	}, this);
             	
-            	//Create an XML-safe ID and set it on the Entity model
-            	entity.set("xmlID", dataONEObj.getXMLSafeID());
-            	
-            	if(entity)
+            	//If we found an entity, give it an ID and return it
+            	if(entity){
+                	
+                	//Create an XML-safe ID and set it on the Entity model
+                	entity.set("xmlID", dataONEObj.getXMLSafeID());
+                	
             		return entity;
+            	}
             	
             	//See if one data object is of this type in the package
             	var matchingTypes = _.filter(this.get("entities"), function(e){
