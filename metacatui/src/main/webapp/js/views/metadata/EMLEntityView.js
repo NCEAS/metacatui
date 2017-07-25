@@ -356,9 +356,16 @@ define(['underscore', 'jquery', 'backbone',
             showTab: function(e){
             	e.preventDefault();
             	
+            	//Get hte clicked link
        		  	var link = $(e.target);
        		  	
-       		  	link.tab('show');
+       		  	//Remove the active class from all links and add it to the new active link
+       		  	this.$(".nav-tabs li").removeClass("active");
+       		  	link.parent("li").addClass("active");
+       		  	
+       		  	//Hide all the panes and show the correct one
+       		  	this.$(".tab-pane").hide();
+       		  	this.$(link.attr("href")).show();
 
             },
             
