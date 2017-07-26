@@ -472,7 +472,7 @@ define(['underscore',
 
             this.toggleControls();
 
-        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
+        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000, {remove: true});
 
             // Reset the state to clean
             MetacatUI.rootDataPackage.packageModel.set("changed", false);
@@ -531,7 +531,7 @@ define(['underscore',
 				  "<li>The content was removed because it was invalid.</li>" +
 			  "</ul>";
 			this.hideLoading();
-			MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
+			MetacatUI.appView.showAlert(msg, "alert-error", this.$el, null, {remove: true});
 
 		},
 
@@ -557,7 +557,7 @@ define(['underscore',
 
 					//Show a warning that the user was trying to edit old content
 					MetacatUI.appView.showAlert("You've been forwarded to the newest version of your dataset for editing.",
-							"alert-warning", this.$el, 12000);
+							"alert-warning", this.$el, 12000, { remove: true });
 				}
 				else
 					view.getDataPackage();

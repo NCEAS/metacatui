@@ -887,7 +887,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					success: function(model, response, xhr){
 						console.log('yay, EML has been saved');
 						
-						model.set("uploadStatus", model.defaults().uploadStatus);
+						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
                         model.fetch({merge: true, sysMeta: true});
 						model.trigger("successSaving", model);                        

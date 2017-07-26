@@ -497,14 +497,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			}
 
     			//Sort the models in the collection so the metadata is saved first
-    			var metadataModels  = this.where({ type: "Metadata" });
-    			var dataModels      = _.difference(this.models, metadataModels);
-    			var sortedModels    = _.union(metadataModels, dataModels);
+    			var metadataModels   = this.where({ type: "Metadata" });
+    			var dataModels       = _.difference(this.models, metadataModels);
+    			var sortedModels     = _.union(metadataModels, dataModels);
 				var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
-    			var modelsToBeSaved = _.difference(_.union(_.filter(sortedModels, function(m){ 
-										return (m.get("uploadStatus") == "q" || m.get("uploadStatus") == "e")
-										}), modelsInProgress));
-
+				var modelsToBeSaved  = _.filter(sortedModels, function(m){ 
+											//Models should be saved if they are in the save queue, had an error saving earlier,
+											//or they are Science Metadata model that is NOT already in progress
+											return (m.get("uploadStatus") == "q" || 
+													m.get("uploadStatus") == "e" || 
+													(m.get("type") == "Metadata" && m.get("uploadStatus") != "p" && m.get("uploadStatus") != "c"))
+									    });
+				
     			//First quickly validate all the models before attempting to save any
     			var allValid = _.every(modelsToBeSaved, function(m) {
     				return m.isValid();
@@ -628,6 +632,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             collection.packageModel.fetch({merge: true});
                             // Reset the content changes status
                             collection.packageModel.set("hasContentChanges", false);
+                            
+                            //Reset the upload status for all members
+                            _.each(collection.where({ uploadStatus: "c" }), function(m){
+                            	m.set("uploadStatus", m.defaults().uploadStatus);
+                            });
 						},
 						error: function(data){
 							console.log("error udpating object");
