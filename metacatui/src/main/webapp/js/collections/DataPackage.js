@@ -114,7 +114,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     (encodeURIComponent(this.packageModel.get("id")) || encodeURIComponent(this.packageModel.get("seriesid")));
 
             },
-
+			
             /*
              * The DataPackage collection stores DataPackages and
              * DataONEObjects, including Metadata nad Data objects.
@@ -313,6 +313,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
 
                 //Fetch the resource map RDF XML
+                console.log("DataPackage: fetch returning.")
                 return Backbone.Collection.prototype.fetch.call(this, fetchOptions);
             },
 
@@ -361,6 +362,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         if ( memberPID )
                             memberPIDs.push(memberPID);
 
+						console.log("member PID: " + memberPID)
                         //TODO: Test passing merge:true when adding a model and this if statement may not be necessary
                         //Create a DataONEObject model to represent this collection member and add to the collection
                         if(!_.contains(this.pluck("id"), memberPID)){
@@ -422,6 +424,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                           }
                     }, this);
 
+					// All models must be syned before provenance relationships can be parsed, as the provenance
+					// info is stored in the models, which are fetched and created one at a time.
+					this.on("complete", this.parseProv, this);
+
                     //Retrieve the model for each member
                     _.each(memberPIDs, function(pid){
 
@@ -456,7 +462,20 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         	});
 
                     }, this);
+				} catch (error) {
+					console.log(error);
+				}
+				
+				return models;
+			},
+			
+			/* Parse the provenance relationships from the RDF graph, after all DataPackage members
+			   have been fetched, as the prov info will be stored in them.
+			   */
+			parseProv: function() {
+				console.log("DataPackage: parseProv() called.");
 
+				try {
                     /* Now run the SPARQL queries for the provenance relationships */
                     var provQueries = [];
                     /* result: pidValue, wasDerivedFromValue (prov_wasDerivedFrom) */
@@ -706,6 +725,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                     "} \n"+
                                   "]]> \n"
 
+					// These are the provenance fields that are currently searched for in the provenance queries, but
+					// not all of these fields are displayed by any view.
                     this.provFields = ["prov_wasDerivedFrom", "prov_generated", "prov_wasInformedBy", "prov_used",
                                       "prov_generatedByProgram", "prov_generatedByExecution", "prov_generatedByUser",
                                       "prov_usedByProgram", "prov_usedByExecution", "prov_usedByUser", "prov_wasExecutedByExecution",
@@ -719,27 +740,25 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                        to the 'onResult' function. When each query has completed, the 'onDone' function
                        is called for that query.
                     */
-
-                    var myDataPackageGraph = rdf.graph();
-                    var baseUrl="https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object"
-                    rdf.parse(response, myDataPackageGraph, baseUrl, 'application/rdf+xml');
+					
+					//var myDataPackageGraph = rdf.graph();
+					//this.rdf.parse(this.objectXML, myDataPackageGraph, this.url(), 'application/rdf+xml');
                     //var eq = rdf.SPARQLToQuery(provQueries['prov_wasDerivedFrom'], false, myDataPackageGraph);
-
-                    //this.rdf.parse(response, this.dataPackageGraph, this.url(), 'application/rdf+xml');
-                    this.boundOnResult = this.onResult.bind(this);
-                    this.boundOnDone = this.onDone.bind(this);
-
+                    var eq = rdf.SPARQLToQuery(provQueries['prov_wasDerivedFrom'], false, this.dataPackageGraph);
+					
+					this.onResult = _.bind(this.onResult, this);
+					this.onDone   = _.bind(this.onDone, this);
+					
                     for (var iquery = 0; iquery < keys.length; iquery++) {
-                      var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, myDataPackageGraph);
-                      myDataPackageGraph.query(eq, this.boundOnResult, this.url(), this.boundOnDone)
-
+                      var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, this.dataPackageGraph);
+                      //var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, myDataPackageGraph);
+                      this.dataPackageGraph.query(eq, this.onResult, this.url(), this.onDone)
                     }
                 } catch (error) {
                     console.log(error);
                 }
-                return models;
             },
-
+			
             /* This callback is called for every query solution of the SPARQL queries. One
                query may result in multple queries solutions and calls to this function. */
             onResult: function(result) {
@@ -752,28 +771,37 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               var memberPid = getValue("?pid");
               var resval;
               var provFieldResult;
+			  var provFieldValues;
               // If there is a solution for this query, assign the
               // prov field to the member with id = '?pid'
               if(getValue("?pid")) {
-                console.log("result pid: " + memberPid);
-
                 var memberModel = null;
+			  	var provFieldValues;
+				// TODO: check if prov field was found
                 for (var iFld = 0; iFld < this.provFields.length; iFld++) {
                     resval = "?" + this.provFields[iFld];
                     provFieldResult = getValue(resval);
                     if(provFieldResult != " ") {
-                      console.log(this.provFields[iFld] + ": " + getValue(resval));
+			  			console.log("pid: " + memberPid + ", " + this.provFields[iFld] + ": " + getValue(resval));
                       // Find the model for the result 'pid' and add the result
                       // prov_* value to it.
-                      memberModel = this.get(memberPid);
-                      if (typeof memberModel != 'undefined') {
-                        memberModel.set(this.provFields[iFld], provFieldResult);
-                        this.add(memberModel, { merge: true });
+					  memberModel = this.get(memberPid);
+					  if (typeof memberModel !== 'undefined') {
+					  	provFieldValues = memberModel.get(this.provFields[iFld]);
+						// Store the isDocumentedBy relationship
+						if(typeof provFieldValues == "undefined")
+							 provFieldValues = [scimetaID];
+						else if(Array.isArray(provFieldValues) && !_.contains(provFieldValues, provFieldResult))
+							provFieldValues.push(provFieldResult);
+							
+						provFieldValues = _.uniq(provFieldValues);
+						memberModel.set(this.provFields[iFld], provFieldValues);
+						this.add(memberModel, { merge: true });
                       }
                    }
                 }
               } else {
-                  console.log("No solution for quer y: " + this.provFields[iFld]);
+                  console.log("No solution for query: " + this.provFields[iFld]);
               }
             },
 
@@ -781,19 +809,20 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             onDone: function() {
               if(this.queriesToRun > 0) {
                 this.queriesToRun--;
-                console.log("queriesToRun: " + this.queriesToRun);
               } else {
                 console.log("All prov queries have completed.");
+                // Signal that all prov queries have finished
                 this.trigger("queryDone");
               }
             },
-
+			
             /*
              * Use the DataONEObject parseSysMeta() function
              */
             parseSysMeta: function(){
             	return DataONEObject.parseSysMeta.call(this, arguments[0]);
             },
+
 
             /*
     		 * Overwrite the Backbone.Collection.sync() function to set custom options
@@ -824,7 +853,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			var dataModels      = _.difference(this.models, metadataModels);
     			var sortedModels    = _.union(metadataModels, dataModels);
 				var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
-    			var modelsToBeSaved = _.difference(_.union(_.filter(sortedModels, function(m){ 
+    			var modelsToBeSaved = _.difference(_.union(_.filter(sortedModels, function(m){
 										return (m.get("uploadStatus") == "q" || m.get("uploadStatus") == "e")
 										}), modelsInProgress));
 
@@ -1281,9 +1310,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 	return;
 
                 this.sort();
-                this.trigger("complete", this);
-
                 console.log("DataPackage is complete. All " + this.length + " models have been synced and added.");
+                this.trigger("complete", this);
             },
 
             /*
