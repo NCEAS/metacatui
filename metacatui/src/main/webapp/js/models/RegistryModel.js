@@ -44,7 +44,7 @@ define(['jquery', 'underscore', 'backbone'],
 				 	//If we have gone through the queue and we still haven't found the entry in the index, 
 				 	// then mark this entry as an error.
 				 	else if((timeouts.length > 0) && (checkCount > timeouts.length)){
-				 		model.set("status", "error");
+				 		model.set("status", "timeout");
 				 		
 				 		//Clear all the timeouts we set earlier
 				 		_.each(timeouts, function(timeoutId){
@@ -67,8 +67,8 @@ define(['jquery', 'underscore', 'backbone'],
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));				
 
 			//Now create a queue of queries that will be sent periodically 
-			var thirtyMinutes = 1800000;
-			for(var msDelay=500; msDelay < thirtyMinutes; msDelay*=2){
+			var tenMinutes = 600000;
+			for(var msDelay=500; msDelay < tenMinutes; msDelay*=2){
 				var timerId = window.setTimeout(function(){
 					$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));				
 				}, msDelay);	

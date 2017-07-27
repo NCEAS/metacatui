@@ -23,6 +23,19 @@
 		
 		<a class="btn btn-primary btn-large center" href="#view/<%=id%>">View your data set</a>	
 	
+	<% } else if(status == "timeout"){ %>
+	
+		<h1>Thank you for your submission</h1>
+		<p>Your submission was successful, but is still being processed in our system. 
+		When it is done being processed, it will be listed in your <a href="#my-profile">profile</a>.
+		</p>
+		
+		<div class="progress">
+		  <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+		    <span class="sr-only">Received</span>
+		  </div>
+		</div>
+				
 	<% } else if(status == "error"){ %>
 	
 		<h1>Thank you for your submission</h1>
