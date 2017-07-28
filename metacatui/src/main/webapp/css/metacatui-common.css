@@ -3817,7 +3817,8 @@ textarea.xlarge{
 .locations-table textarea.error{
 	border-color: red;
 }
-.eml-geocoverage.error {
+.eml-geocoverage.error,
+.locations-table .eml-geocoverage.error:nth-child(odd) {
     background-color: rgba(251, 188, 188, 0.35);
 }
 

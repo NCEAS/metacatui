@@ -35,7 +35,7 @@ define(['underscore', 'jquery', 'backbone',
         		"change"   : "updateModel",
         		"focusout .input-container" : "showValidation",
         		"keyup textarea.error" : "updateError",
-        		"click .coord.error"   : "updateError",
+        		"keyup .coord.error"   : "updateError",
         		"mouseover .remove"    : "toggleRemoveClass",
         		"mouseout  .remove"    : "toggleRemoveClass"
         	},
@@ -75,15 +75,13 @@ define(['underscore', 'jquery', 'backbone',
         		//Get the attribute that was changed
         		if(!attribute) return false;
         		
-        		this.model.set(attribute, value); 
+        		this.model.set(attribute, value);
+        		
+        		//this.model.isValid();
         		
         		if(this.model.get("parentModel")){
         			if(this.model.get("parentModel").type == "EML" && _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel"))){
-        				MetacatUI.rootDataPackage.packageModel.set("changed", true);
-        		    	
-        				//Validate the EML again
-        		    	if(this.model.get("parentModel").isValid())
-        		    		this.model.get("parentModel").trigger("valid");
+        				MetacatUI.rootDataPackage.packageModel.set("changed", true);        		    	
         			}
         		}
         	},
@@ -216,7 +214,12 @@ define(['underscore', 'jquery', 'backbone',
         		
         		if(input.val()){
         			input.removeClass("error");
-        			this.$(".notification.error").text("");
+        			
+        			//If there are no more errors, remove the error class from the view
+        			if(!this.$(".error").length){
+            			this.$(".notification.error").text("");
+        				this.$el.removeClass("error");
+        			}
         		}
         	},
         	
