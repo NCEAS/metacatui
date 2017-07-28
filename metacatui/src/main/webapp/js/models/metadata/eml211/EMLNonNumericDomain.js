@@ -380,6 +380,7 @@ define(["jquery", "underscore", "backbone",
                                 if ( domain.textDomain.pattern.length ) {
                                     _.each(domain.textDomain.pattern, function(pattern) {
                                         patternNode = document.createElement("pattern");
+                                        $(patternNode).text(pattern);
                                         $(domainNode).append(patternNode);
                                     }, this);
                                 }

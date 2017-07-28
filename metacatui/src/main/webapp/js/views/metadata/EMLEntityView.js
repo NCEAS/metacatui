@@ -349,6 +349,10 @@ define(['underscore', 'jquery', 'backbone',
             	removeBtn.parents(".attribute-menu-item").toggleClass("remove-preview");            	
             },
             
+            /*
+             * Show the entity overview or attributes tab
+             * depending on the click target
+             */
             showTab: function(e){
             	e.preventDefault();
             	
@@ -365,12 +369,18 @@ define(['underscore', 'jquery', 'backbone',
 
             },
             
+            /*
+             * Show the entity in a modal dialog
+             */
             show: function(){
             	
             	this.$el.modal('show');    
             	
             },
             
+            /*
+             * Hide the entity modal dialog
+             */
             hide: function(){
             	this.$el.modal('hide');
             }
