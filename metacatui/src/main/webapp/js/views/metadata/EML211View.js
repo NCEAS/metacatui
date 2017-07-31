@@ -1832,19 +1832,16 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Handle remove on a EML model / sub-model
 			if (submodel) {
-				if (!attribute) return;
 
 				model = this.model.get(submodel);
 
 				if (!model) return;
 
-				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
-
 				// Get the current value of the attribute so we can remove from it
 				var currentValue,
 					submodelIndex;
 
-				if (_.isArray(this.model.get(submodel))) {
+				if (Array.isArray(this.model.get(submodel))) {
 					// Stop now if there's nothing to remove in the first place
 					if (this.model.get(submodel).length == 0) return;
 
@@ -1858,9 +1855,15 @@ define(['underscore', 'jquery', 'backbone',
 					currentValue = this.model.get(submodel).get(attribute);
 				}
 
+				//FInd the position of this field in the list of fields
+				var position = $(e.target).parents(container)
+								.first()
+								.children(selector)
+								.index($(e.target).parents(selector));
+				
 				// Remove from the EML Model
 				if (position >= 0) {
-					if (_.isArray(this.model.get(submodel))) {
+					if (Array.isArray(this.model.get(submodel))) {
 						currentValue.splice(position, 1); // Splice returns the removed members
 						this.model.get(submodel)[submodelIndex].set(attribute, currentValue);
 					} else {
@@ -1869,13 +1872,16 @@ define(['underscore', 'jquery', 'backbone',
 					}
 					
 				}
+				
 			} else if (selector) {
 				// Find the index this attribute is in the DOM
 				var position = $(e.target).parents(container).first().children(selector).index(selector);
 				
 				//Remove this index of the array
 				var currentValue = this.model.get(attribute);
-				currentValue.splice(position, 1);
+				
+				if(Array.isArray(currentValue))
+					currentValue.splice(position, 1);
 
 				//Set the array on the model so the 'set' function is executed
 				this.model.set(attribute, currentValue);
