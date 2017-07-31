@@ -89,7 +89,7 @@ define(['underscore', 'jquery', 'backbone',
         	/*
         	 * If the model isn't valid, show verification messages
         	 */
-        	showValidation: function(e){
+        	showValidation: function(e, options){
         		
         		var view = this;
         		
@@ -117,8 +117,18 @@ define(['underscore', 'jquery', 'backbone',
 	        			hasError = false;
 	        		
 	        		//Find any incomplete coordinates
-	        		if(view.isNew && !north && !south && !east && !west && !description)
+	        		if(view.isNew && !north && !south && !east && !west && !description){
+	        			
+	        			//If the model is empty and the EML has a geoCoverage error, display that and exit
+	        			var validationErrors = view.model.get("parentModel").validationError;
+	        			if(validationErrors && validationErrors.geoCoverage){
+	        				view.$(".notification").text(validationErrors.geoCoverage).addClass("error");
+		        			view.$el.addClass("error");
+		        			return;
+	        			}
+	        				
 	        			hasError = false;
+	        		}
 	        		else{
 		        		if(north && !west){
 		        			view.$(".west").addClass("error");
@@ -193,8 +203,8 @@ define(['underscore', 'jquery', 'backbone',
 	        		}
 	        		
 	        		if(hasError){
-	        			var errorMsg = view.model.validate();
-	        			view.$(".notification.error").text(errorMsg);
+	        			var errorMsg = view.model.validationError;
+	        			view.$(".notification").text(errorMsg).addClass("error");
 	        			view.$el.addClass("error");
 	        		}
 	        		else{

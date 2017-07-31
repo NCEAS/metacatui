@@ -760,7 +760,10 @@ define(['underscore',
 					}
 					else{
 						//Show the error message
-						categoryEls.filter(".notification").addClass("error").text(errorMsg);						
+						categoryEls.filter(".notification").addClass("error").text(errorMsg);
+						
+						//Add the error message to inputs
+						categoryEls.filter("textarea, input").addClass("error");
 					}
 				}
 				

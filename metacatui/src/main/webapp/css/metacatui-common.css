@@ -3169,6 +3169,9 @@ input.subtle:focus
 /*******************************************
 Editor View
 ******************************************/
+.Editor #Footer{
+	display: none;
+}
 .Editor #Navbar{
 	padding-bottom: 0px;
 }
@@ -3226,17 +3229,18 @@ ul.side-nav-items {
     position: fixed;
     background-color: #EEE;
     height: 100%;
-    width: 140px;
+    width: 160px;
+    min-width: 160px;
     margin-left: 0px;
     border-right: 1px solid #DDD;
 }
 .side-nav + .metadata-container{
-	margin-left: 14.893617021276595%;
+	margin-left: 160px;
 	padding-left: 20px;
 }
 .Editor #Footer {
-    left: 14.893617021276595%;
-    width: 85.1%;
+    left: 160px;
+    width: calc(100% - 160px);
     margin-left: 0px;
     margin-bottom: 0px;
 }
