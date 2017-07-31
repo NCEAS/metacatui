@@ -72,6 +72,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					return model.parseTaxonomicClassification(tc); 
 				})
 			};
+			
+			if(Array.isArray(modelJSON.taxonomicClassification) && !modelJSON.taxonomicClassification.length)
+				modelJSON.taxonomicClassification = {};
 
 			return modelJSON;
 		},
@@ -177,7 +180,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		isClassificationValid: function(taxonomicClassification){
-			if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue)
+			if( ! Object.keys(taxonomicClassification).length )
+				return true;
+			else if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue)
 				return false;
 			
 			if(taxonomicClassification.taxonomicClassification)
