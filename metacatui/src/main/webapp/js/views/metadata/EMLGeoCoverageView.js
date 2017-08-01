@@ -120,13 +120,18 @@ define(['underscore', 'jquery', 'backbone',
 	        		if(view.isNew && !north && !south && !east && !west && !description){
 	        			
 	        			//If the model is empty and the EML has a geoCoverage error, display that and exit
-	        			var validationErrors = view.model.get("parentModel").validationError;
-	        			if(validationErrors && validationErrors.geoCoverage){
-	        				view.$(".notification").text(validationErrors.geoCoverage).addClass("error");
-		        			view.$el.addClass("error");
-		        			return;
-	        			}
+	        			var emlModel = view.model.get("parentModel");
+	        			if( emlModel && emlModel.type == "EML" && $(".eml-geocoverage").index(view.el) == 0 ){
 	        				
+	        				var validationErrors = emlModel.validationError;
+		        			if(validationErrors && validationErrors.geoCoverage){
+		        				view.$(".notification").text(validationErrors.geoCoverage).addClass("error");
+			        			view.$el.addClass("error");
+			        			return;
+		        			}
+	        			}
+	        			
+	        			//Otherwise, there is no error
 	        			hasError = false;
 	        		}
 	        		else{
