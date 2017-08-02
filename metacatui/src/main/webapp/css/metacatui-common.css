@@ -3274,6 +3274,7 @@ ul.side-nav-items {
 .data-package-item td {
     vertical-align: middle;
     white-space: nowrap;
+    position: relative;
 }
 
 .data-package-item td.name div {
@@ -3397,11 +3398,17 @@ textarea.xlarge{
     
 } 
 .Editor .disable-layer{
-	background-color: rgba(0,0,0,.6);
+	background-color: rgba(255, 255, 255, 0.6);
     height: 100%;
     width: 100%;
     position: absolute;
+    top: 0px;
     z-index: 2;
+}
+.Editor.disable input,
+.Editor.disable textarea,
+.Editor.disable select{
+	
 }
 .Editor .dropdown-menu li a i {
     vertical-align: middle;

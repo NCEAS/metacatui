@@ -447,14 +447,8 @@ define(['underscore',
         	//If the save button is disabled, then we don't want to save right now
         	if(btn.is(".btn-disabled")) return;
 
-        	var btn = this.$("#save-editor");
-
-        	//Change the style of the save button
-        	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving ...').addClass("btn-disabled");
-
-	       	//Disable the form
-        	$("body").prepend($(document.createElement("div")).addClass("disable-layer"));
-
+	       	this.showSaving();
+	       	
         	//Save the package!
         	MetacatUI.rootDataPackage.save();
         },
@@ -488,9 +482,6 @@ define(['underscore',
         	var errorId = "error" + Math.round(Math.random()*100),
         		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
 
-        	//Remove the disabler layer
-        	$(".disable-layer").remove();
-
         	message.append($(document.createElement("a"))
         						.text("See details")
         						.attr("data-toggle", "collapse")
@@ -505,6 +496,9 @@ define(['underscore',
         		emailBody: "Error message: Data Package save error: " + errorMsg,
         		remove: true
         		});
+        	
+        	//Reset the Saving styling
+        	this.hideSaving();
         },
 
         /*
@@ -692,13 +686,32 @@ define(['underscore',
 
 	    	this.$(".editor-controls").slideUp();
 	    },
+	    
+	    showSaving: function(){
+
+        	//Change the style of the save button
+        	this.$("#save-editor")
+        		.html('<i class="icon icon-spinner icon-spin"></i> Saving ...')
+        		.addClass("btn-disabled");
+
+	    	this.$("input, textarea, select, button").prop("disabled", true);
+	    	
+	    	//Disable the buttons and editable parts of the DataItemViews
+	    	this.$(".data-package-item .controls").prepend(
+	    			$(document.createElement("div")).addClass("disable-layer"));
+	    	this.$(".data-package-item .name > div").prop("contenteditable", false);
+	    },
 
 	    hideSaving: function(){
-	    	//Remove the disabler layer
-        	$(".disable-layer").remove();
+	    	this.$("input, textarea, select, button").prop("disabled", false);
 
         	//When the package is saved, revert the Save button back to normal
         	this.$("#save-editor").html("Submit").removeClass("btn-disabled");
+        	
+	    	//Enable the buttons and editable parts of the DataItemViews
+        	this.$(".data-package-item .controls .disable-layer").remove();
+	    	this.$(".data-package-item .name > div").prop("contenteditable", true);
+	    
 	    },
 
         /* Toggle the editor footer controls (Save bar) */

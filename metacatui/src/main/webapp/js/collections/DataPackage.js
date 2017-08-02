@@ -643,6 +643,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 							//Reset the id back to its original state
 							collection.packageModel.resetID();
+							
+							//Reset the upload status for all members
+                            _.each(collection.where({ uploadStatus: "c" }), function(m){
+                            	m.set("uploadStatus", m.defaults().uploadStatus);
+                            });
 
 							collection.trigger("error", data.responseText);
 						}
