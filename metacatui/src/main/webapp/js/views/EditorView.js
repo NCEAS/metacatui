@@ -694,23 +694,15 @@ define(['underscore',
         		.html('<i class="icon icon-spinner icon-spin"></i> Saving ...')
         		.addClass("btn-disabled");
 
-	    	this.$("input, textarea, select, button").prop("disabled", true);
+	    	this.$("input, textarea, select, button").prop("disabled", true);	    	
 	    	
-	    	//Disable the buttons and editable parts of the DataItemViews
-	    	this.$(".data-package-item .controls").prepend(
-	    			$(document.createElement("div")).addClass("disable-layer"));
-	    	this.$(".data-package-item .name > div").prop("contenteditable", false);
 	    },
 
 	    hideSaving: function(){
 	    	this.$("input, textarea, select, button").prop("disabled", false);
 
         	//When the package is saved, revert the Save button back to normal
-        	this.$("#save-editor").html("Submit").removeClass("btn-disabled");
-        	
-	    	//Enable the buttons and editable parts of the DataItemViews
-        	this.$(".data-package-item .controls .disable-layer").remove();
-	    	this.$(".data-package-item .name > div").prop("contenteditable", true);
+        	this.$("#save-editor").html("Submit").removeClass("btn-disabled");	    
 	    
 	    },
 

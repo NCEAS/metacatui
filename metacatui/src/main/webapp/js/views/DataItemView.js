@@ -72,6 +72,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 	this.$el.addClass("data");
                 }
                 
+                //Check if the data package is in progress of being uploaded
+                this.toggleSaving();
+                
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:uploadStatus", this.toggleSaving);
+                
                 //listen for changes to rerender the view
                 this.listenTo(this.model, "change:fileName change:title change:id change:formatType " + 
                 		"change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
@@ -524,6 +529,28 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
 
             	//Remove the error styling
 				this.$(".error").removeClass("error");
+            },
+            
+            /*
+             * Show the data item as saving
+             */
+            showSaving: function(){
+            	this.$("button").prop("disabled", true);
+            	this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
+            	this.$(".name > div").prop("contenteditable", false);
+            },
+            
+            hideSaving: function(){
+            	this.$("button").prop("disabled", false);
+            	this.$(".disable-layer").remove();
+            	this.$(".name > div").prop("contenteditable", true);
+            },
+            
+            toggleSaving: function(){
+            	if(MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "p")
+            		this.showSaving();
+            	else
+            		this.hideSaving();
             }
         });
         

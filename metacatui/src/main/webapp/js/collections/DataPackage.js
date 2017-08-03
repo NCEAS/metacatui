@@ -477,7 +477,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     		 */
     		save: function(options){
     			if(!options) var options = {};
-
+    			
+    			this.packageModel.set("uploadStatus", "p");
+    			
     			//Get the system metadata first if we haven't retrieved it yet
     			if(!this.packageModel.get("sysMetaXML")){
     				var collection = this;
@@ -517,6 +519,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			//If at least once model to be saved is invalid, cancel the save.
     			if(!allValid){
     				this.trigger("cancelSave");
+    				this.packageModel.set("uploadStatus", this.packageModel.defaults().uploadStatus);
     				return;
     			}
     			
@@ -531,10 +534,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					this.listenToOnce(model, "cancelSave", function(){
 						failedSave = true;
 						sortedModels = [];
+						this.packageModel.set("uploadStatus", this.packageModel.defaults().uploadStatus);
 					});
 					
 					//If the model is saved successfully, start this save function again
 					this.listenToOnce(model, "successSaving", this.save);
+					
+					//If the model fails to save, start this save function
+					this.listenToOnce(model, "errorSaving", this.save);
 
 					//Save the model and watch for fails
 					model.save();
@@ -637,6 +644,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             _.each(collection.where({ uploadStatus: "c" }), function(m){
                             	m.set("uploadStatus", m.defaults().uploadStatus);
                             });
+                            
+                            //Reset the upload status for the package
+                            collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
 						},
 						error: function(data){
 							console.log("error udpating object");
@@ -648,6 +658,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             _.each(collection.where({ uploadStatus: "c" }), function(m){
                             	m.set("uploadStatus", m.defaults().uploadStatus);
                             });
+                            
+                            //Reset the upload status for the package
+                            collection.packageModel.set("uploadStatus", "e");
 
 							collection.trigger("error", data.responseText);
 						}
