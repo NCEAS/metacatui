@@ -1,5 +1,5 @@
-define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvStatementView"], 				
-	function($, _, Backbone, CitationView, ProvStatement) {
+define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEntitySelectView", "views/ProvStatementView"], 				
+	function($, _, Backbone, CitationView, ProvEntitySelect, ProvStatement) {
 	'use strict';
 
 	
@@ -20,6 +20,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			this.editor 	   = options.editor        || false;
 			this.editorType    = options.editorType    || null;
 
+			this.selectProvEntityView = null;
 			//For Sources charts
 			if(!this.derivations && this.sources){
 				this.type 		    = "sources";
@@ -68,7 +69,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			}
 			
 			//For empty editor charts
-			if(this.editor && !this.provEntities.length){
+			if(this.editor && !this.provEntities){
 				this.type = options.editorType || null;
 				this.sources = [];
 				this.derivations = [];
@@ -105,7 +106,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 		events: {
 			"click .expand-control"   : "expandNodes",
 			"click .collapse-control" : "collapseNodes",
-			"click .preview"         : "previewData"
+			"click .preview"          : "previewData",
+			"click .editor"           : "selectProvEntities",
+			"click #selectDone"       : "getSelectedProvEntities",
 		},
 		
 		subviews: new Array(),
@@ -231,6 +234,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			return this;
 		},
 		
+
 		createNode: function(provEntity, position, metadata){
 			//What kind of icon will visually represent this object type?
 			var icon = "",
@@ -617,6 +621,30 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			window.location = $(button).attr("href");  //navigate to the link href
 		},
 		
+		// Display a modal dialog that will be used to select a list of package
+		// members that will be associated with the current member (that belongs to this)
+		// metadata detail section), by a provenance relationship.
+		selectProvEntities: function(e) {
+			this.selectProvEntityView = new ProvEntitySelect({
+				parentView    : this,
+				title 		  : "Add provenance",
+				selectLabel   : "Choose from sources",
+				selectMode    : "multiple",
+				packageModel  : this.packageModel,
+				displayRows   : Math.min(10, this.packageModel.get("members").length)
+			});
+			this.$el.append(this.selectProvEntityView.render());
+			// Display the modal and wait for completion.
+			$('#selectModal').modal('show');
+		},
+		
+		getSelectedProvEntities: function() {
+			var values = null;
+			values = this.selectProvEntityView.readSelected();
+			console.log("entities selected: " + values);
+			$('#selectModal').modal('toggle');
+		},
+			
 		onClose: function() {			
 			this.remove();			
 		}
