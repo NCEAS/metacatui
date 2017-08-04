@@ -59,6 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
                     uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
+                    uploadProgress: null,
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     notFound: false, //Whether or not this object was found in the system
@@ -169,14 +170,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     
                 }
         	},
-            
-            /* Validates the objects attributes on set() */
-            validate: function() {
-                var valid = false;
-                
-                return valid;
-                
-            },
             
             /*
              * Overload Backbone.Model.fetch, so that we can set custom options for each fetch() request
@@ -434,21 +427,28 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 
                 //Set the upload transfer as in progress
                 this.set("uploadStatus", "p");
+                this.set("uploadProgress", 5);
                 
                 //Create a FormData object to send data with our XHR
                 var formData = new FormData();
                 
+                //Add the identifier to the XHR data
+                formData.append("pid", this.get("id"));
+            				
+				//Get the new checksum of the object 
+				var checksum = md5(this.get("uploadFile"));
+				this.set("checksum", checksum);
+				
                 //Create the system metadata XML
                 var sysMetaXML = this.serializeSysMeta();
-
+                
+                console.log(checksum, sysMetaXML);
+				
                 //Send the system metadata as a Blob 
                 var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
                 //Add the system metadata XML to the XHR data
                 formData.append("sysmeta", xmlBlob, "sysmeta.xml");
-                
-                //Add the identifier to the XHR data
-                formData.append("pid", this.get("id"));
-            
+				
                 if ( this.isNew() ) {
                     // Create the new object (MN.create())
                     formData.append("object", this.get("uploadFile"), this.get("fileName"));
@@ -463,6 +463,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                         
                     }
                 }
+                
+                var model = this;
 
                 //Put together the AJAX and Backbone.save() options
                 var requestSettings = {
@@ -473,6 +475,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     processData: false,
                     data: formData,
                     parse: false,
+                    xhr: function(){
+                      var xhr = new window.XMLHttpRequest();
+                      
+                      //Upload progress
+                      xhr.upload.addEventListener("progress", function(evt){
+                        if (evt.lengthComputable) {
+                          var percentComplete = evt.loaded / evt.total * 100;
+                          
+                          model.set("uploadProgress", percentComplete);
+                        }
+                      }, false);
+
+                      return xhr;
+                    },
                     success: function(model, response, xhr){
                         console.log('yay, DataONEObject has been saved');
                         
@@ -483,8 +499,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                         model.set("hasContentChanges", false);
                     },
                     error: function(model, response, xhr){
-                        console.log("error updating system metadata");
                         model.set("uploadStatus", "e");
+                        model.set("errorMessage", response.responseText);
                         model.trigger("errorSaving", response.responseText);
                     }
                 };
@@ -501,7 +517,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 		     * Check if the current user is authorized to perform an action on this object
 		     */
 		    checkAuthority: function(action){
-			if(!action) var action = "changePermission";
+		    	if(!action) var action = "changePermission";
 			
 				var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
 				if(!authServiceUrl) return false;
@@ -980,6 +996,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		//Add this item to the queue
 	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus"))
 	        			this.set("uploadStatus", "q");
+	        },
+	        
+	        /*
+	         * Updates the progress percentage when the model is getting uploaded
+	         */
+	        updateProgress: function(e){
+	        	if(e.lengthComputable){
+	                var max = e.total;
+	                var current = e.loaded;
+
+	                var Percentage = (current * 100)/max;
+	                console.log(Percentage);
+
+
+	                if(Percentage >= 100)
+	                {
+	                   // process completed  
+	                }
+	            }  
 	        },
 	        
 	        /*

@@ -54,6 +54,9 @@ a:hover{
 .success{
 	color: green;
 }
+.icon.warning{
+	color: #ffbc00;
+}
 .list-group-item.success {
     background-color: #dff0d8;
 }
@@ -3313,7 +3316,7 @@ ul.side-nav-items {
 /* Editor package table column 5 */
 .data-package-item td:last-of-type {
     text-align: right;
-    padding-right: 20px;
+    padding-right: 10px;
     padding-left: 0px;
     width: 100px;
 }
@@ -3323,15 +3326,32 @@ ul.side-nav-items {
 .data-package-item td button {
     text-align: center;
     vertical-align: middle;
-    width: 9em;
+    width: 8em;
     padding-top: .5em;
 }
-
+.data-package-item td button .icon{
+	margin-left: 0px;
+}
 .data-package-item .icon{
     margin-right: 10px;
     width: 1.4em;
 }
 
+/* Editor package table status column */
+.data-package-item .status{
+	width: 60px;
+}
+.data-package-item .progress{
+	margin: 0px;
+}
+.data-package-item .status .icon{
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.data-package-item .status{
+	text-align: center;
+}
 
 .Editor #data-package-table ul li a span {
     margin-left: .3em;

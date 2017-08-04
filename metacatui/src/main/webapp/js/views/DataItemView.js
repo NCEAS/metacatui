@@ -75,12 +75,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 //Check if the data package is in progress of being uploaded
                 this.toggleSaving();
                 
+                //Listen to changes to the upload progress of this object
+                this.listenTo(this.model, "change:uploadProgress", this.showUploadProgress);
+                
+                //Listen to changes to the upload status of the entire package
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:uploadStatus", this.toggleSaving);
                 
                 //listen for changes to rerender the view
                 this.listenTo(this.model, "change:fileName change:title change:id change:formatType " + 
                 		"change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
-                		"change:size change:nodeLevel", this.render); // render changes to the item
+                		"change:size change:nodeLevel change:uploadStatus", this.render); // render changes to the item
 
                 var view = this;
                 this.listenTo(this.model, "replace", function(newModel){
@@ -232,6 +236,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                             mediaType: file.type,
                             uploadFile: file,
                             uploadReader: reader,
+                            uploadStatus: "q",
                             isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });
@@ -551,6 +556,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             		this.showSaving();
             	else
             		this.hideSaving();
+            },
+            
+            showUploadProgress: function(){
+            	this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
             }
         });
         

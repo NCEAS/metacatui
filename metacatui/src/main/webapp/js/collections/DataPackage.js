@@ -507,7 +507,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 											//Models should be saved if they are in the save queue, had an error saving earlier,
 											//or they are Science Metadata model that is NOT already in progress
 											return (m.get("uploadStatus") == "q" || 
-													m.get("uploadStatus") == "e" || 
+													//m.get("uploadStatus") == "e" || 
 													(m.get("type") == "Metadata" && m.get("uploadStatus") != "p" && m.get("uploadStatus") != "c"))
 									    });
 				
@@ -623,7 +623,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 				var collection = this;
 				var requestSettings = {
-						url: MetacatUI.appModel.get("objectServiceUrl"),
+						url: this.url(),
 						type: requestType,
 						cache: false,
 						contentType: false,
