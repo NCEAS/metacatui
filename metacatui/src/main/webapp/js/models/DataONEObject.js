@@ -62,6 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     uploadProgress: null,
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
+                    errorMessage: null,
                     notFound: false, //Whether or not this object was found in the system
                     originalAttrs: [], // An array of original attributes in a DataONEObject
                     changed: false, // If any attributes have been changed, including attrs in nested objects
@@ -499,8 +500,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                         model.set("hasContentChanges", false);
                     },
                     error: function(model, response, xhr){
-                        model.set("uploadStatus", "e");
                         model.set("errorMessage", response.responseText);
+                        model.set("uploadStatus", "e");
                         model.trigger("errorSaving", response.responseText);
                     }
                 };

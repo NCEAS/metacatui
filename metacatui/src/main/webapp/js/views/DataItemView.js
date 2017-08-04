@@ -75,6 +75,37 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 //Check if the data package is in progress of being uploaded
                 this.toggleSaving();
                 
+                if(this.model.get("uploadStatus") == "e" && this.model.get("errorMessage")){
+                	var errorMsg = this.model.get("errorMessage");
+                	errorMsg = $(errorMsg).find("description").text() || errorMsg;
+                	
+                	this.$(".icon.error").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip error'><h6>Error saving:</h6><div>" + errorMsg + "</div></div>",
+                		container: "body"
+                	});
+                }
+                else if(this.model.get("uploadStatus") == "q"){
+                	this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>In the upload queue</div>",
+                		container: "body"
+                	})
+                }
+                else if(this.model.get("uploadStatus") == "c"){
+                	this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>Upload complete</div>",
+                		container: "body"
+                	})
+                }
+                	
                 //Listen to changes to the upload progress of this object
                 this.listenTo(this.model, "change:uploadProgress", this.showUploadProgress);
                 
