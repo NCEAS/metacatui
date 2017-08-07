@@ -3361,6 +3361,9 @@ ul.side-nav-items {
 .status-tooltip.error div{
 	color: white;
 }
+.data-package-item.loading{
+	opacity: .6;
+}
 
 .Editor #data-package-table ul li a span {
     margin-left: .3em;

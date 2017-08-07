@@ -1,5 +1,4 @@
 ﻿﻿/* global define */
-"use strict";
 define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats', 'md5'],
     function($, _, Backbone, uuid, ObjectFormats, md5){
   
@@ -442,9 +441,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				
                 //Create the system metadata XML
                 var sysMetaXML = this.serializeSysMeta();
-                
-                console.log(checksum, sysMetaXML);
-				
+                				
                 //Send the system metadata as a Blob 
                 var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
                 //Add the system metadata XML to the XHR data
@@ -1043,6 +1040,79 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		
 	        	}, this);
 	        },
+	        
+	        loadFile: function(){
+                var reader = new FileReader(),
+                	model  = this;
+                
+                // Set up the reader event handlers and
+                // pass the event *and* the dataONEObject to the handlers
+                reader.onprogress = function(event) {
+                	model.handleFileLoadProgress(event);
+                }
+                
+                reader.onerror = function(event) {
+                	model.handleFileLoadError(event);
+                }
+                
+                reader.onload = function(event) {
+                	model.handleFileLoadSuccess(event);
+                }
+                
+                reader.onabort = function(event) {
+                	model.handleFileLoadAbort(event);
+                }
+                
+                // Now initiate the file read
+                reader.readAsArrayBuffer(this.get("uploadFile"));
+                
+                this.set("uploadReader", reader);
+	        },
+	        
+	        handleFileLoadSuccess: function(event){
+	        	// event.target.result has the file object bytes
+                
+                // Make the DataONEObject for the file, add it to the collection
+                var checksum = md5(event.target.result);
+                this.set("checksum", checksum);
+                this.set("checksumAlgorithm", "MD5");
+                
+                this.set("uploadStatus", "q"); // set status to queued
+                this.set("uploadResult", event.target.result);
+                
+                delete event; // Let large files be garbage collected
+	        },
+	        
+            /* During file reading, deal with abort events */
+	        handleFileLoadAbort: function(event){
+                // When file reading is aborted, update the model upload status
+	        	
+	        },
+	        
+            /* During file reading, handle the user's cancel request */
+            handleFileCancel: function(event) {
+                // TODO: enable canceling of the file read from disk
+                // Need to get a reference to the FileReader to call abort
+                // 
+                // this.uploadReader.abort(); ?
+                
+            },
+	        
+            /* During file reading, deal with read errors */ 
+	        handleFileLoadError: function(event){
+                // On error, update the model upload status
+	        	
+	        },
+	        
+	        /* During file reading, update the import progress in the model */
+            handleFileLoadProgress: function(event) {
+                // event is a ProgressEvent - use it to update the import progress bar
+                
+                if ( event.lengthComputable ) {
+                    var percentLoaded = Math.round((event.loaded/event.total) * 100);
+                    this.set("percentLoaded", percentLoaded);
+                }
+            },
 	        
 	        /*
 	         * Finds the latest version of this object by travesing the obsolescence chain

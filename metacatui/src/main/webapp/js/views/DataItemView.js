@@ -86,15 +86,17 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 		title: "<div class='status-tooltip error'><h6>Error saving:</h6><div>" + errorMsg + "</div></div>",
                 		container: "body"
                 	});
+                	this.$el.removeClass("loading");
                 }
                 else if(this.model.get("uploadStatus") == "q"){
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
-                		title: "<div class='status-tooltip'>In the upload queue</div>",
+                		title: "<div class='status-tooltip'>Ready to Submit</div>",
                 		container: "body"
-                	})
+                	});
+                	this.$el.removeClass("loading");
                 }
                 else if(this.model.get("uploadStatus") == "c"){
                 	this.$(".status .icon").tooltip({
@@ -103,7 +105,22 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 		html: true,
                 		title: "<div class='status-tooltip'>Upload complete</div>",
                 		container: "body"
-                	})
+                	});
+                	this.$el.removeClass("loading");
+                }
+                else if(this.model.get("uploadStatus") == "l"){
+                	this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>Reading file...</div>",
+                		container: "body"
+                	});
+                	
+                	this.$el.addClass("loading");
+                }
+                else{
+                	this.$el.removeClass("loading");
                 }
                 	
                 //Listen to changes to the upload progress of this object
@@ -258,7 +275,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     _.each(fileList, function(file) {
                         console.log("Processing " + file.name + ", size: " + file.size);
                         
-                        var reader = new FileReader();
                         dataONEObject = new DataONEObject({
                             synced: true,
                             type: "Data",
@@ -266,8 +282,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                             size: file.size,
                             mediaType: file.type,
                             uploadFile: file,
-                            uploadReader: reader,
-                            uploadStatus: "q",
+                            uploadStatus: "l",
                             isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });
@@ -284,83 +299,20 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                         dataONEObject.bytesToSize();
                         this.collection.add(dataONEObject);
                         
-                        // Set up the reader event handlers and
-                        // pass the event *and* the dataONEObject to the handlers
-                        reader.onprogress = function(event) {
-                            self.handleLoadProgress(event, dataONEObject);
-                        }
-                        
-                        reader.onerror = function(event) {
-                            self.handleLoadError(event, dataONEObject);
-                        }
-                        
-                        reader.onload = function(event) {
-                            self.handleLoadSuccess(event, dataONEObject);
-                        }
-                        
-                        reader.onabort = function(event) {
-                            self.handleLoadAbort(event, dataONEObject);
-                        }
-                        
-                        // Now initiate the file read
-                        reader.readAsArrayBuffer(file);
-                        
+                        dataONEObject.loadFile();
+                                                
                     }, this);
                     
                     MetacatUI.rootDataPackage.packageModel.set("changed", true);
                 }
                 
             },
-            
-            /* During file reading, handle the user's cancel request */
-            handleCancel: function(event) {
-                // TODO: enable canceling of the file read from disk
-                // Need to get a reference to the FileReader to call abort
-                // 
-                // dataONEObject.uploadReader.abort(); ?
-                
-            },
-            
-            /* During file reading, deal with abort events */
-            handleLoadAbort: function(event, dataONEObject) {
-                // When file reading is aborted, update the model upload status
-                
-            },
-            
-            /* During file reading, deal with read errors */ 
-            handleLoadError: function(event, dataONEObject) {
-                // On error, update the model upload status
-            },
-            
-            /* During file reading, update the import progress in the model */
-            handleLoadProgress: function(event, dataONEObject) {
-                // event is a ProgressEvent - use it to update the import progress bar
-                
-                if ( event.lengthComputable ) {
-                    var percentLoaded = Math.round((event.loaded/event.total) * 100);
-                    dataONEObject.set("percentLoaded", percentLoaded);
-                }
-            },
-            
+                        
             /* During file reading, update the progress bar */
             updateLoadProgress: function(event) {
                 console.log(event);
                 
                 // TODO: Update the progress bar
-                
-            },
-            
-            /* During file reading, handle a successful read */
-            handleLoadSuccess: function(event, dataONEObject) {
-                // event.target.result has the file object bytes
-                
-                // Make the DataONEObject for the file, add it to the collection
-                var checksum = md5(event.target.result);
-                dataONEObject.set("checksum", checksum);
-                dataONEObject.set("checksumAlgorithm", "MD5");
-                dataONEObject.set("uploadStatus", "q"); // set status to queued
-                dataONEObject.set("uploadResult", event.target.result);
-                delete event; // Let large files be garbage collected
                 
             },
             
