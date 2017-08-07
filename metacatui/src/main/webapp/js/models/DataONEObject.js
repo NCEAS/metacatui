@@ -437,7 +437,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 formData.append("pid", this.get("id"));
             				
 				//Get the new checksum of the object 
-				var checksum = md5(this.get("uploadFile"));
+				var checksum = md5(this.get("uploadResult"));
 				this.set("checksum", checksum);
 				
                 //Create the system metadata XML
