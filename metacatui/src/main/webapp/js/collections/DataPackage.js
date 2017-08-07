@@ -508,7 +508,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 											//or they are Science Metadata model that is NOT already in progress
 											return (m.get("uploadStatus") == "q" || 
 													//m.get("uploadStatus") == "e" || 
-													(m.get("type") == "Metadata" && m.get("uploadStatus") != "p" && m.get("uploadStatus") != "c"))
+													(m.get("type") == "Metadata" && 
+															m.get("uploadStatus") != "p" && 
+															m.get("uploadStatus") != "c" &&
+															m.get("uploadStatus" != "e" )))
 									    });
 				
     			//First quickly validate all the models before attempting to save any
