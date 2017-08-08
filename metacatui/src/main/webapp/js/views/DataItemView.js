@@ -119,6 +119,29 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 	
                 	this.$el.addClass("loading");
                 }
+                else if(this.model.get("uploadStatus") == "p"){
+                	var model = this.model;
+                	
+                	this.$(".status .progress").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: function(){
+                			if(model.get("uploadProgress")){
+                				var percentDone = model.get("uploadProgress").toString();
+                				if(percentDone.indexOf(".") > -1)               				
+                					percentDone = percentDone.substring(0, percentDone.indexOf("."));
+                			}
+                			else
+                				var percentDone = "0";
+                			
+                			return "<div class='status-tooltip'>Uploading: " + percentDone + "% complete</div>";
+                		},
+                		container: "body"
+                	});
+                	                	
+                	this.$el.removeClass("loading");
+                }
                 else{
                 	this.$el.removeClass("loading");
                 }
