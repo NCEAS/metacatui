@@ -127,7 +127,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 		trigger: "hover",
                 		html: true,
                 		title: function(){
-                			if(model.get("uploadProgress")){
+                			if(model.get("numSaveAttempts") > 0){
+                				return "<div class='status-tooltip'>Unable to save. Trying again... (attempt " + model.get("numSaveAttempts") + ")</div>";
+                			}
+                			else if(model.get("uploadProgress")){
                 				var percentDone = model.get("uploadProgress").toString();
                 				if(percentDone.indexOf(".") > -1)               				
                 					percentDone = percentDone.substring(0, percentDone.indexOf("."));
@@ -135,7 +138,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 			else
                 				var percentDone = "0";
                 			
-                			return "<div class='status-tooltip'>Uploading: " + percentDone + "% complete</div>";
+                			return "<div class='status-tooltip'>Uploading: " + percentDone + "%</div>";
                 		},
                 		container: "body"
                 	});
@@ -565,7 +568,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             },
             
             showUploadProgress: function(){
-            	this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
+            	
+            	if(this.model.get("numSaveAttempts") > 0){
+            		this.$(".progress .bar").css("width", "100%");
+            	}
+            	else{
+                	this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
+            	}
             }
         });
         
