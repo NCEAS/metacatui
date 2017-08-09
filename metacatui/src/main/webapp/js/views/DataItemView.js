@@ -1,9 +1,10 @@
 ﻿﻿/* global define */
-define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templates/dataItem.html'], 
-    function(_, $, Backbone, DataONEObject, DataItemTemplate){
+define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 
+        'models/metadata/eml211/EMLOtherEntity', 'text!templates/dataItem.html'], 
+    function(_, $, Backbone, DataONEObject, EMLOtherEntity, DataItemTemplate){
         
         /* 
-            A DataITemView represents a single data item in a data package as a single row of 
+            A DataItemView represents a single data item in a data package as a single row of 
             a nested table.  An item may represent a metadata object (as a folder), or a data
             object described by the metadata (as a file).  Every metadata DataItemView has a
             resource map associated with it that describes the relationships between the 
@@ -248,8 +249,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 var fileList,            // The list of chosen files
                     parentDataPackage,   // The id of the first resource of this row's scimeta
                     dataONEObject,       // The dataONEObject to represent this file
-                    self = this;         // A reference to this view
-                
+                    self = this,         // A reference to this view
+                    entityModel;         // A placeholder for each added entity
                 event.stopPropagation();
                 event.preventDefault();
                 // handle drag and drop files
@@ -294,6 +295,21 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                         } else {
                             this.parentSciMeta.get("documents").push(dataONEObject.id);
                             
+                        }
+                        
+                        // Add or append an entity to the parent's entity list
+                        entityModel = new EMLOtherEntity({
+                            entityName : dataONEObject.get("fileName"),
+                            entityType : dataONEObject.get("formatId") || 
+                                         dataONEObject.get("mediaType") || 
+                                         "application/octet-stream",
+                            parentModel: this.model,
+                            xmlID: dataONEObject.getXMLSafeID()
+                        });
+                        if (typeof this.parentSciMeta.get("entities") === "undefined") {
+                            this.parentSciMeta.set("entities", [entityModel]);
+                        } else {
+                            this.parentSciMeta.get("entities").push(entityModel);
                         }
                         this.parentSciMeta.set("uploadStatus", "q");
                         dataONEObject.bytesToSize();
