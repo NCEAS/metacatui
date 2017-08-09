@@ -1059,20 +1059,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             /*
              * Returns the node in the given EML document that the given node type should be inserted after
              */
-            getEMLPosition: function(eml, nodeName){
+            getEMLPosition: function(eml, nodeName) {
             	var nodeOrder = ["alternateidentifier", "shortname", "title", "creator", "metadataprovider", "associatedparty",
 	           		             "pubdate", "language", "series", "abstract", "keywordset", "additionalinfo", "intellectualrights", 
 	           		             "distribution", "coverage", "purpose", "maintenance", "contact", "publisher", "pubplace", 
 	           		             "methods", "project", "datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-            	
-            	var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
-            	if(position == -1)
-            		return false;
+                var entityNodes = ["datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
+                var isEntityNode = _.contains(entityNodes, nodeName);
+                var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
+                if ( position == -1 ) {
+                    return false;
+                }
             	
             	//Go through each node in the node list and find the position where this node will be inserted after
-            	for(var i=position-1; i>=0; i--){
-            		if($(eml).find(nodeOrder[i]).length)
-            			return $(eml).find(nodeOrder[i]).last();
+                for (var i = position - 1; i >= 0; i--) {
+                    if ( $(eml).find(nodeOrder[i]).length ) {
+                        // Handle non-entity nodes
+                        if ( ! isEntityNode ) {
+                            return $(eml).find(nodeOrder[i]).last();
+                        } else {
+                            // Handle entity nodes by returning the 
+                            // last child of the parent <dataset> since
+                            // entities have a {0..n}+ model 
+                            // (i.e optional, repeatable, no specific order)
+                            return $(eml).find("dataset").children().last();
+                        }
+                    }
             	}
             	
             	return false;
