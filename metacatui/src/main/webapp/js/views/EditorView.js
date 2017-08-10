@@ -193,7 +193,7 @@ define(['underscore',
 
                 // Set the listeners
                 this.setListeners();
-
+                
                 //Render the data package
                 this.renderDataPackage();
 
@@ -349,8 +349,20 @@ define(['underscore',
             	console.log("Rendering EML Model ", model.get("id"));
 
             	//Create an EML model
-                if(model.type != "EML")
-                	model = new EML(model.toJSON());
+                if(model.type != "EML"){
+                	//Create a new EML model from the ScienceMetadata model
+                	var EMLmodel = new EML(model.toJSON());
+                	//Replace the old ScienceMetadata model in the collection
+                	MetacatUI.rootDataPackage.remove(model);
+                	MetacatUI.rootDataPackage.add(EMLmodel, { silent: true });
+                	model.trigger("replace", EMLmodel);
+                	
+                	//Fetch the EML and render it
+                	this.listenToOnce(EMLmodel, "sync", this.renderMetadata);                	
+                	EMLmodel.fetch();
+                	
+                	return;
+                }
 
             	//Create an EML211 View and render it
             	emlView = new EMLView({
