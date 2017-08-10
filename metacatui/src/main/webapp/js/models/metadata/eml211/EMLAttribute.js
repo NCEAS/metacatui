@@ -316,14 +316,14 @@ define(["jquery", "underscore", "backbone",
 
                 // Append to the bottom if not found
                 if ( position == -1 ) {
-                    return $(objectDOM).children().last();
+                    return $(objectDOM).children().last()[0];
                 }
 
                 // Otherwise, go through each node in the node list and find the
                 // position where this node will be inserted after
                 for ( var i = position - 1; i >= 0; i-- ) {
-                    if ( $(objectDOM).find( nodeOrder[i].toLowerCase() ).length ) {
-                        return $(objectDOM).find(nodeOrder[i].toLowerCase()).last();
+                    if ( $(objectDOM).find(nodeOrder[i].toLowerCase()).length ) {
+                        return $(objectDOM).find(nodeOrder[i].toLowerCase()).last()[0];
                     }
                 }
             },
