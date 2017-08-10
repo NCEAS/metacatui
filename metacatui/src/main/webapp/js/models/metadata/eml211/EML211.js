@@ -887,6 +887,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					success: function(model, response, xhr){
 						console.log('yay, EML has been saved');
 						
+						model.set("numSaveAttempts", 0);
 						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
                         model.fetch({merge: true, sysMeta: true});
@@ -894,15 +895,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					},
 					error: function(model, response, xhr){
 						console.log("error updating EML: ", response.responseText);
-						model.set("uploadStatus", "e");
-						model.resetID();
 						
-						var errorDOM       = $($.parseHTML(response.responseText)),
-							errorContainer = errorDOM.filter("error"),
-							msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM,
-							errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
-						
-						model.trigger("errorSaving", errorMsg);
+						model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                    	var numSaveAttempts = model.get("numSaveAttempts");
+
+                		if(numSaveAttempts < 3){
+                    		
+                    		//Try saving again in 10, 40, and 90 seconds
+                    		setTimeout(function(){ 
+                    				model.save.call(model);
+                    			}, 
+                    			(numSaveAttempts * numSaveAttempts) * 10000);
+                    	}
+                		else{
+                			model.set("numSaveAttempts", 0);
+                			
+							model.set("uploadStatus", "e");
+							model.resetID();
+							
+							var errorDOM       = $($.parseHTML(response.responseText)),
+								errorContainer = errorDOM.filter("error"),
+								msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM,
+								errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
+							
+							model.trigger("errorSaving", errorMsg);
+                		}
 					}
 	   			}, MetacatUI.appUserModel.createAjaxSettings());
 	   			

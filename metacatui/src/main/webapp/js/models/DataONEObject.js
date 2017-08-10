@@ -62,6 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     errorMessage: null,
+                    numSaveAttempts: 0,
                     notFound: false, //Whether or not this object was found in the system
                     originalAttrs: [], // An array of original attributes in a DataONEObject
                     changed: false, // If any attributes have been changed, including attrs in nested objects
@@ -427,7 +428,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 
                 //Set the upload transfer as in progress
                 this.set("uploadStatus", "p");
-                this.set("uploadProgress", 5);
+                this.set("uploadProgress", 2);
                 
                 //Create a FormData object to send data with our XHR
                 var formData = new FormData();
@@ -490,6 +491,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     success: function(model, response, xhr){
                         console.log('yay, DataONEObject has been saved');
                         
+                        model.set("numSaveAttempts", 0);
                         model.set("uploadStatus", "c");
                         model.trigger("successSaving", model);
                         model.fetch({merge: true}); // Get the newest sysmeta set by the MN
@@ -497,9 +499,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                         model.set("hasContentChanges", false);
                     },
                     error: function(model, response, xhr){
-                        model.set("errorMessage", response.responseText);
-                        model.set("uploadStatus", "e");
-                        model.trigger("errorSaving", response.responseText);
+
+                		model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                    	var numSaveAttempts = model.get("numSaveAttempts");
+
+                		if(numSaveAttempts < 3){
+                    		
+                    		//Try saving again in 10, 40, and 90 seconds
+                    		setTimeout(function(){ 
+                    				model.save.call(model);
+                    			}, 
+                    			(numSaveAttempts * numSaveAttempts) * 10000);
+                    	}
+                    	else{
+                    		model.set("numSaveAttempts", 0);
+                    	
+	                        model.set("errorMessage", response.responseText);
+	                        model.set("uploadStatus", "e");
+	                        model.trigger("errorSaving", response.responseText);
+                    	}
                     }
                 };
 

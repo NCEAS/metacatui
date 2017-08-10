@@ -120,6 +120,32 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	
                 	this.$el.addClass("loading");
                 }
+                else if(this.model.get("uploadStatus") == "p"){
+                	var model = this.model;
+                	
+                	this.$(".status .progress").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: function(){
+                			if(model.get("numSaveAttempts") > 0){
+                				return "<div class='status-tooltip'>Unable to save. Trying again... (attempt " + model.get("numSaveAttempts") + ")</div>";
+                			}
+                			else if(model.get("uploadProgress")){
+                				var percentDone = model.get("uploadProgress").toString();
+                				if(percentDone.indexOf(".") > -1)               				
+                					percentDone = percentDone.substring(0, percentDone.indexOf("."));
+                			}
+                			else
+                				var percentDone = "0";
+                			
+                			return "<div class='status-tooltip'>Uploading: " + percentDone + "%</div>";
+                		},
+                		container: "body"
+                	});
+                	                	
+                	this.$el.removeClass("loading");
+                }
                 else{
                 	this.$el.removeClass("loading");
                 }
@@ -558,7 +584,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             },
             
             showUploadProgress: function(){
-            	this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
+            	
+            	if(this.model.get("numSaveAttempts") > 0){
+            		this.$(".progress .bar").css("width", "100%");
+            	}
+            	else{
+                	this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
+            	}
             }
         });
         
