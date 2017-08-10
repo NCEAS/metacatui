@@ -75,6 +75,14 @@ define(["jquery", "underscore", "backbone",
                         "node of 'measurementScale', 'nominal', or 'ordinal'.");
                 }
 
+                // If measurementScale is present, add it
+                if ( rootNodeName == "measurementscale" ) {
+                    attributes.measurementScale = $objectDOM.children().first()[0].localName;
+                    $objectDOM = $objectDOM.children().first();
+                } else {
+                    attributes.measurementScale = $objectDOM.localName;
+                }
+
                 nonNumericDomainNodeList = $objectDOM.find("nonnumericdomain");
 
                 if ( nonNumericDomainNodeList && nonNumericDomainNodeList.length > 0 ) {
