@@ -17,12 +17,14 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.pointerHeight = options.pointerHeight || 15;     //Pixel height of the pointer/arrow image
 			this.offsetTop     = options.offsetTop     || this.nodeHeight; //The top margin of the chart, in pixels
 			this.title 		   = options.title         || "";
-			this.editor 	   = options.editor        || false;
+			this.editModeOn    = options.editModeOn    || false;
 			this.editorType    = options.editorType    || null;
 
 			this.selectProvEntityView = null;
+			this.type = null;
 			//For Sources charts
-			if(!this.derivations && this.sources){
+			if((!this.derivations && this.sources) || (this.editModeOn && this.editorType == "sources")) {
+				console.log("***** provchart: configuring sources for member " + this.context.get("id") + ", type: " + this.context.get("type"));
 				this.type 		    = "sources";
 				this.provEntities   = this.sources;
 				
@@ -41,12 +43,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				this.numSources      = this.sources.length;
 				this.numPrograms     = this.programs.length;
 				this.numProvEntities = this.numSources;
-				this.numPrograms     = this.programs.length;
 				this.numDerivations = 0;
 			}
 			
 			//For Derivations charts
-			if(!this.sources && this.derivations){
+			if((!this.sources && this.derivations) || (this.editModeOn && this.editorType == "derivations")) {
+				console.log("***** provchart: configuring derivations for member " + this.context.get("id") + ", type: " + this.context.get("type"));
 				this.type 	   	     = "derivations";
 				this.provEntities = this.derivations;
 				
@@ -63,26 +65,29 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				this.programs     = programs;
 				
 				this.numDerivations  = this.derivations.length;
-				this.numProvEntities = this.numDerivations;
 				this.numPrograms     = this.programs.length;
+				this.numProvEntities = this.numDerivations;
 				this.numSources      = 0;
 			}
 			
 			//For empty editor charts
-			if(this.editor && !this.provEntities){
-				this.type = options.editorType || null;
-				this.sources = [];
-				this.derivations = [];
-				this.programs = [];
-				this.provEntities = [];
-				this.numDerivations = 0;
-				this.numSources = 0;
-				this.numProvEntities = 0;
-				this.className += " editor empty";
+			//if(this.editor && !this.provEntities){
+			//	this.type = options.editorType || null;
+			//	this.sources = [];
+			//	this.derivations = [];
+			//	this.programs = [];
+			//	this.provEntities = [];
+			//	this.numDerivations = 0;
+			//	this.numSources = 0;
+			//	this.numProvEntities = 0;
+			//	this.className += " editor empty";
+			//}
+			if(this.editModeOn) {
+				this.className += " editor ";
 			}
 			
 			//Add the chart type to the class list
-			this.className = this.className + " " + this.type;
+			this.className = this.className + " " + this.type	;
 			
 			//Create a title
 			if((this.context.get("type") == "program") && (this.type == "derivations")){
@@ -92,7 +97,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				this.title = this.numProvEntities + " inputs";				
 			}
 			else
-				this.title 	   = this.numProvEntities + " " + this.type;
+				this.title = this.numProvEntities + " " + this.type;
 			
 			//The default height of the chart when all nodes are visible/expanded
 			this.height = (this.numProvEntities * this.nodeHeight);
@@ -107,7 +112,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			"click .expand-control"   : "expandNodes",
 			"click .collapse-control" : "collapseNodes",
 			"click .preview"          : "previewData",
-			"click .editor"           : "selectProvEntities",
+			"click .editorNode"       : "selectProvEntities",
 			"click #selectDone"       : "getSelectedProvEntities",
 		},
 		
@@ -115,12 +120,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		
 		render: function(){
 			//Nothing to do if there are no entities and it isn't an editor
-			if(!this.numProvEntities && !this.editor) return false;
+			if(!this.numProvEntities && !this.editModeOn) return false;
 			
 			var view = this;
+			console.log("*** rendering " + this.type + " prov chart for package member: " + this.context.get("id"));
 			
-			//Are there any programs?
-			if(this.programs.length && !this.editor){
+			//Are there any programs? If no programs are present in this package member and edit mode is on,
+			// then we need to draw an edit icon in the program position, unless this member is a program (programs
+		    // aren't connected directly to programs).
+			if(this.programs.length || (this.editModeOn && (this.context.get("type") != "program"))) {
+				console.log("render: setting programs for id: " + this.context.get("id") + ", type: " + this.type);
 				this.$el.append($(document.createElement("div")).addClass(this.type + "-programs programs"));
 			}
 			
@@ -157,10 +166,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					//Programs will be positioned at a different point in the graph
 					if(entity.get("type") == "program"){
 						//Find the program position
-						this.$(".programs").append(this.createNode(entity, programPosition, metadata));
+						view.$(".programs").append(view.createNode(entity, programPosition, metadata));
 					}
 					else
-						this.$el.append(view.createNode(entity, position, metadata));						
+						view.$el.append(view.createNode(entity, position, metadata));						
 				}
 				
 				//Derivation charts have a pointer for each node
@@ -178,14 +187,25 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				
 			}, this);	
 			
-			//If we are drawing a blank editor
-			if(this.editor){
-				this.$el.append(this.createEditorNode());
+			// If edit mode is on, then draw an editor node. 
+			//if(this.context.type != "Package" && this.editModeOn){
+			if(this.editModeOn) {
+				console.log("render: drawing editor icons");
+				var nodeType;
+				// If a program prov icon has already been
+				// displayed, then don't display a program edit icon, as currently only one program is
+				// supported per ProvCharView.
+				if((this.context.get("type") != "program") && this.numPrograms == 0) {
+					this.$(".programs").append(this.createEditorNode("program", this.context.get("id"), programPosition));
+					programPosition++;
+					this.numPrograms++;
+				}
 				
-				//Derivation charts have a pointer for each node
-				if(this.type == "derivations") this.$el.append(this.createConnecter(this.numProvEntities));
-				//Source charts have a connector for each node and one pointer
-				if(this.type == "sources")	this.$el.append(this.createConnecter(this.numProvEntities));
+				// Draw a data node editor
+				this.$el.append(this.createEditorNode("data", this.context.get("id"), position));
+				position++;
+				if(this.editorType == "sources") this.numSources++;
+				if(this.editorType == "derivations") this.numDerivations++;
 			}
 			
 			//Move the last-viewed prov node to the top of the chart so it is always displayed first
@@ -194,6 +214,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 	
 			//Add classes
 			this.$el.addClass(this.className);
+			console.log("adding class to this.$el: " + this.className);
 			if(this.numPrograms > 0) this.$el.addClass("has-programs");
 			if(this.numDerivations == 1 && !this.numPrograms) this.$el.addClass("one-derivation");
 			
@@ -207,7 +228,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if((this.type == "sources") && !this.numPrograms) this.$el.append(this.createPointer());
 			
 			//Charts with programs need an extra connecter
-			if(this.programs.length) 
+			if(this.numPrograms) 
 				this.$(".programs").append(this.createConnecter());
 			
 			if(this.$(".collapsed").length){
@@ -237,6 +258,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 
 		createNode: function(provEntity, position, metadata){
 			//What kind of icon will visually represent this object type?
+			console.log("creatNode: drawing " + provEntity.get("type") + " node for id " + provEntity.get("id"));
 			var icon = "",
 				type = null;
 			
@@ -484,27 +506,82 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			return (typeof svg != "undefined")? svg : nodeEl;
 		},
 		
-		createEditorNode: function(){
+		createEditorNode: function(type, id, position){
+			console.log("createEditorNode:	 drawing " + type + " editor node for id " + id);
+			
 			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
-			var position = this.numProvEntities,
-				top = (position * this.nodeHeight) - (this.nodeHeight/2),
-				isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";			
+			if(type == "program"){
+				var distanceFromMiddle = (position * this.nodeHeight) - (this.nodeHeight/2),
+					operator           = distanceFromMiddle > 0 ? "+" : "-",
+					top                = "calc(50% " + operator + " " + Math.abs(distanceFromMiddle).toString() + "px)",
+					isCollapsed        = "expanded";
+			} else{
+				var top = (position * this.nodeHeight) - (this.nodeHeight/2),
+					isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";					
+			}
 			
-			//Create a DOM element to represent the node	
-			var nodeEl = $(document.createElement("div"))
-						 .addClass(this.type + " node pointer popover-this editor " + isCollapsed)
-						 .attr("tabindex", 0)
-						 .attr("data-id", "")
-						 .css("top", top);
+			var nodeEl = null;
+			var svg = null;
+			// Only two types of editor nodes, "data" and "program"
+			if(type != "program"){
+				//Create a DOM element to represent the node	
+				nodeEl = document.createElement("div");
+				$(nodeEl).css("top", top);
+				//Add classes via .attr() so it works for SVG, too
+				var currentClasses = $(nodeEl).attr("class") || "";
+				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editorNode " + isCollapsed);
+				$(nodeEl).attr("tabindex", 0);
+				//Reference the id of the data object
+				$(nodeEl).attr("data-id", id);
+						 
+				//Create the plus icon
+				var iconEl = document.createElement("i");
+				$(iconEl).addClass("editor icon icon-plus");
+						
+				//Put the icon in the node
+				$(nodeEl).append(iconEl);
+			} else {
+				//Create an SVG drawing for the program arrow shape
+				svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+				nodeEl = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+				$(nodeEl).attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20");
+				$(nodeEl).attr("fill", "#FFFFFF");
+
+				//Set a viewBox, height, width, and top position
+				svg.setAttribute("viewBox", "0 0 " + this.nodeHeight + " " + this.nodeHeight);
+				//svg.setAttribute("class", "popover-this");
+				$(svg).attr("width", this.nodeHeight + "px").attr("height", this.nodeHeight + "px").css("top", top);
+				
+				//Create the code icon
+				//`var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+				//			.text("\u{F121}")
+				//			.attr("class", "icon icon-foo program-icon pointer editor");
+				
+				//Create a group element to contain the icon
+				var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+				//$(g).attr("transform", "translate(18,43)")
+				$(g).attr("class", "editor icon icon-plus");
+						
+				//Add classes via .attr() so it works for SVG, too
+				var currentClasses = $(nodeEl).attr("class") || "";
+				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editorNode " + isCollapsed);
+				$(nodeEl).attr("tabindex", 0);
+				$(nodeEl).attr("data-id", id);
+				
+				//Glue it all together
+				//$(g).append(iconEl);
+				$(svg).append(nodeEl, g);
+			}
 			
-			//Create the plus icon
-			var iconEl = $(document.createElement("i"))
-						 .addClass("editor icon icon-plus");
+			if(svg != null) {
+				console.log("returning svg");
+				return (svg);
+			} else {
+				console.log("returning nodeEl");
+				return(nodeEl);
+			}
 			
-			//Put the icon in the node
-			$(nodeEl).append(iconEl);
-			
-			return nodeEl;
+			//return (svg != null)? svg : nodeEl;
 		},
 		
 		createConnecter: function(position){
@@ -643,6 +720,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			values = this.selectProvEntityView.readSelected();
 			console.log("entities selected: " + values);
 			$('#selectModal').modal('toggle');
+			this.selectProvEntityView.remove();
+			this.selectProvEntityView.unbind();
+			this.selectProvEntityView = null;
 		},
 			
 		onClose: function() {			

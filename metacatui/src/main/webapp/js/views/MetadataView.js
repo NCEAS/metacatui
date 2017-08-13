@@ -493,10 +493,35 @@ define(['jquery',
 				$("#downloadPackage").remove();
 
 			    //Show the provenance trace for this package
-				if(packageModel.get("provenanceFlag") == "complete")
+				if(packageModel.get("provenanceFlag") == "complete") {
 					viewRef.drawProvCharts(packageModel);
-				else{
-					viewRef.listenToOnce(packageModel, "change:provenanceFlag", viewRef.drawProvCharts);
+					// Create a provenance editor for just the topmost package, if the user is authorized.
+					// It was necessary to wait until the package details were available, as the provenance
+					// editor requires them. We need :
+					//if(viewRef.model.get("resourceMap") == packageModel.get("id")) {
+					//	if(packageModel.get("isAuthorized")) {
+					//		viewRef.createProvEditor(packageModel);
+					//	} else {
+					//	    packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
+					//	}
+					//}
+				}
+				else {
+					console.log("Setting listener on change:provenanceFlag");
+					viewRef.listenToOnce(packageModel, "change:provenanceFlag", function() {
+						console.log("Prov status changed, defering drawing prov charts.");
+						viewRef.drawProvCharts(packageModel);
+						// Create a provenance editor for just the topmost package, if the user is authorized.
+						// It was necessary to wait until the package details were available, as the provenance
+						// editor requires them. We need :
+						//if(viewRef.model.get("resourceMap") == packageModel.get("id")) {
+						//	if(packageModel.get("isAuthorized")) {
+						//		viewRef.createProvEditor(packageModel);
+						//	} else {
+						//	    packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
+						//	}
+						//}
+					});
 					packageModel.getProvTrace();
 				}
 			});
@@ -844,8 +869,8 @@ define(['jquery',
 				//packageModel.once("sync", viewRef.createProvEditor, viewRef); 
 						
 				//Now get the RDF XML and check for the user's authority on this resource map
-				//packageModel.fetch();
-				//packageModel.checkAuthority();
+				packageModel.fetch();
+				packageModel.checkAuthority();
 			});
 			this.model.checkAuthority();
 		},
@@ -960,6 +985,22 @@ define(['jquery',
 		drawProvCharts: function(packageModel){
 			//Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn
 			if(packageModel.get("provenanceFlag") != "complete") return false;
+			console.log("drawProvCharts called.");
+			
+			// Only render prov edit icons for the parent package, skip this iteration for other packages.
+			if(this.model.get("resourceMap") != packageModel.get("id")) {
+				console.log("Skipping rendering of prov icons for package with id: " + packageModel.getId("id"));
+				return;
+			}
+			// If the user is authorized to edit the provenance for this package and 
+			// the top most package is being rendered, then turn on editing, so that
+			// edit icons are displayed.
+			//TODO: reenable auth check when sign in sets it again (maybe DataPackage is modified now instaed?)
+			//if(packageModel.get("isAuthorized")) {
+			var isAuthorized = true;
+			var editModeOn = false; 
+			isAuthorized ? editModeOn = true : editModeOn = false;
+			console.log("edit mode on: " + editModeOn);
 
 			var view = this;
 
@@ -990,46 +1031,57 @@ define(['jquery',
 				this.$(this.articleContainer).after(derivationProvChart.render().el);
 			}
 
-			if(packageModel.get("sources").length || packageModel.get("derivations").length){
+			if(packageModel.get("sources").length || packageModel.get("derivations").length || editModeOn) {
 				//Draw the provenance charts for each member of this package at an object level
 				_.each(packageModel.get("members"), function(member, i){
+					// Don't draw prov charts for metadata objects.
+					if(member.get("type") == "metadata") return;
 					var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
-
+					
 					//Retrieve the sources and derivations for this member
 					var memberSources 	  = member.get("provSources") || new Array(),
 						memberDerivations = member.get("provDerivations") || new Array();
 
-					//Make the source chart for this member
-					if(memberSources.length){
+					//Make the source chart for this member.
+					// If edit is on, then either a 'blank' sources ProvChart will be displayed if there
+					// are no sources for this member, or edit icons will be displayed with prov icons.
+					if(memberSources.length || editModeOn){
 						var memberSourcesProvChart = new ProvChart({
 							sources      : memberSources,
 							context      : member,
 							contextEl    : entityDetailsSection,
 							packageModel : packageModel,
-							parentView   : view
+							parentView   : view,
+							editModeOn   : editModeOn,
+							editorType   : "sources"
 						});
 						view.subviews.push(memberSourcesProvChart);
 						$(entityDetailsSection).before(memberSourcesProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
-					}
-					if(memberDerivations.length){
-						//Make the derivation chart for this member
+					} 
+
+					//Make the derivation chart for this member
+					// If edit is on, then either a 'blank' derivations ProvChart will be displayed if there, 
+					// are no derivations for this member or edit icons will be displayed with prov icons.
+					if(memberDerivations.length || editModeOn){
 						var memberDerivationsProvChart = new ProvChart({
 							derivations  : memberDerivations,
 							context      : member,
 							contextEl    : entityDetailsSection,
 							packageModel : packageModel,
-							parentView   : view
+							parentView   : view,
+							editModeOn   : editModeOn,
+							editorType   : "derivations"
 						});
 						view.subviews.push(memberDerivationsProvChart);
 						$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
-					}
+					} 
 				});
 			}
 
 			//Make all of the prov chart nodes look different based on id
-			if(this.$(".prov-chart").length > 0){
+			if(this.$(".prov-chart").length > 10000){
 				var allNodes = this.$(".prov-chart .node"),
 				ids      = [],
 				view     = this,
@@ -1039,7 +1091,7 @@ define(['jquery',
 				ids = _.uniq(ids);
 
 				_.each(ids, function(id){
-					var matchingNodes = view.$(".prov-chart .node[data-id='" + id + "']");
+					var matchingNodes = view.$(".prov-chart .node[data-id='" + id + "']").not(".editorNode");
 					//var matchingEntityDetails = view.findEntityDetailsContainer(id);
 
 					//Don't use the unique class on images since they will look a lot different anyway by their image
@@ -1064,82 +1116,6 @@ define(['jquery',
 			}
 		},
 		
-		/*
-		 * Creates a provenance editor
-		 */
-		createProvEditor: function(){
-			//Get the package - just get the first one for now
-			//TODO: Make sure this is the parent resource map
-			var packageModel = this.packageModels[0];
-						
-			//If this user is not authorized to edit this resource map, then exit
-			//Or if this is package hasn't been retrieved yet, then exit
-			if(!packageModel.get("id") || !packageModel.get("isAuthorized") || !packageModel.get("objectXML")) return;
-			
-			//Render the prov charts in the gutters
-			_.each(this.$(".entitydetails"), function(entityDetailsEl){
-				//If this section doesn't have a prov chart already, create a new blank one
-				if(!$(entityDetailsEl).is(".hasProvLeft") || !$(entityDetailsEl).is(".hasProvRight")){
-
-					$(entityDetailsEl).parent().addClass("gutters");
-					
-					//Get the id of this entity
-					var entityId = $(entityDetailsEl).attr("data-id"),
-						model,
-						packageModel;
-
-					//Get the model for this entity and its package model
-					findMember: for(var i=0; i<this.packageModels.length; i++){
-						packageModel = this.packageModels[i];
-						var members = packageModel.get("members");
-						//Find the member by id
-						for(var ii=0; ii<members.length; ii++){
-							if(members[ii].get("id") == entityId){
-								model = members[ii];
-								break findMember;
-							}							
-						}
-					}
-					
-					//Create the blank prov chart editor for sources
-					if(!$(entityDetailsEl).is(".hasProvLeft")){
-						//Create the chart view
-						var sourcesProvEditor = new ProvChart({
-							context      : model,
-							contextEl    : entityDetailsEl,
-							packageModel : packageModel,
-							parentView   : this,
-							editor       : true,
-							editorType   : "sources"
-						});
-						//Add the view to the subviews list
-						this.subviews.push(sourcesProvEditor);
-						
-						//Render the chart and insert into the page
-						$(entityDetailsEl).before(sourcesProvEditor.render().el);
-					}
-					
-					//Create the blank prov chart editor for derivations
-					if(!$(entityDetailsEl).is(".hasProvRight")){	
-						//Create the chart view
-						var derivationsProvEditor = new ProvChart({
-							context      : model,
-							contextEl    : entityDetailsEl,
-							packageModel : packageModel,
-							parentView   : this,
-							editor       : true,
-							editorType   : "derivations"
-						});
-						//Add the view to the subviews list
-						this.subviews.push(derivationsProvEditor);
-						
-						//Render the chart and insert into the page
-						$(entityDetailsEl).after(derivationsProvEditor.render().el);
-					}
-				}
-			}, this);
-		},
-
 		/*
 		 * param dataObject - a SolrResult representing the data object returned from the index
 		 * returns - true if this data object is an image, false if it is other
