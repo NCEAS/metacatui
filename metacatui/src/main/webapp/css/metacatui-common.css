@@ -3336,6 +3336,14 @@ ul.side-nav-items {
     margin-right: 10px;
     width: 1.4em;
 }
+.data-package-item.loading .edit.icon,
+.data-package-item.loading .edit.icon:hover{
+	cursor: default;
+	color: #999;
+}
+.data-package-item.error-saving .disable-layer{
+	width: 70px;
+}
 
 /* Editor package table status column */
 .data-package-item .status{
@@ -3447,11 +3455,6 @@ textarea.xlarge{
     position: absolute;
     top: 0px;
     z-index: 2;
-}
-.Editor.disable input,
-.Editor.disable textarea,
-.Editor.disable select{
-	
 }
 .Editor .dropdown-menu li a i {
     vertical-align: middle;

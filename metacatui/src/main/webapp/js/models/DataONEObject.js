@@ -91,6 +91,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
         	
             initialize: function(attrs, options) {
                 this.on("change:size", this.bytesToSize);
+                if(attrs.size)
+                    this.bytesToSize();
                 
                 // Cache an array of original attribute names to help in handleChange()
                 if(this.type == "DataONEObject")
@@ -514,7 +516,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     	else{
                     		model.set("numSaveAttempts", 0);
                     	
-	                        model.set("errorMessage", response.responseText);
+                    		var parsedResponse = $(response.responseText).not("style, title").text();                    		
+	                        model.set("errorMessage", parsedResponse);
+	                        
 	                        model.set("uploadStatus", "e");
 	                        model.trigger("errorSaving", response.responseText);
                     	}
@@ -1063,6 +1067,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 var reader = new FileReader(),
                 	model  = this;
                 
+                //Trigger the file added event
+                MetacatUI.rootDataPackage.trigger("fileAdded", this);
+                
                 // Set up the reader event handlers and
                 // pass the event *and* the dataONEObject to the handlers
                 reader.onprogress = function(event) {
@@ -1097,8 +1104,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
                 this.set("uploadStatus", "q"); // set status to queued
                 this.set("uploadResult", event.target.result);
-                
+                                
                 delete event; // Let large files be garbage collected
+                                
+                this.once("successSaving", function(){ 
+                	MetacatUI.rootDataPackage.add(this);
+                });
+                
+                //Upload the file
+                this.save();
 	        },
 	        
             /* During file reading, deal with abort events */

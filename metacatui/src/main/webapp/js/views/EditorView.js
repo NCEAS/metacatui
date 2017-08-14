@@ -587,6 +587,9 @@ define(['underscore',
 	        		clickedEl = $(e.target),
 	        		row = clickedEl.parents(".data-package-item"),
 	        		dataONEObject = row.data("model");
+	        	
+	        	if(dataONEObject.get("uploadStatus") == "p" || dataONEObject.get("uploadStatus") == "l" || dataONEObject.get("uploadStatus") == "e")
+	        		return;
 
 	        	//If there isn't a view yet, create one
 	        	if(!entityView){

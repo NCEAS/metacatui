@@ -101,6 +101,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                 this.on("add", this.saveReference);
                 this.on("add", this.triggerComplete);
+                this.on("add", this.handleAdd);
                 this.on("successSaving", this.updateRelationships);
 
                 return this;
@@ -1427,6 +1428,28 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              */
             getQueue: function(){
             	return this.filter(function(m){ return m.get("uploadStatus") == "q" || m.get("uploadStatus") == "p" });
+            },
+            
+            handleAdd: function(dataONEObject){
+            	var metadataModel = this.find(function(m){ return m.get("type") == "Metadata" });
+            	
+            	// Append to or create a new documents list
+                if ( ! Array.isArray(metadataModel.get("documents")) ) {
+                	metadataModel.set("documents", [dataONEObject.id]);
+                    
+                } else {
+                	metadataModel.get("documents").push(dataONEObject.id);
+                }
+                
+                // Create an EML Entity for this DataONE Object
+                if(metadataModel.type == "EML"){                	
+                	metadataModel.createEntity(dataONEObject);
+	            }
+
+                metadataModel.set("uploadStatus", "q");
+                                
+                this.packageModel.set("changed", true);
+                this.packageModel.trigger("change:changed");
             },
 
             /*

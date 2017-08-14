@@ -1206,6 +1206,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             },
             
+            createEntity: function(dataONEObject){
+            	// Add or append an entity to the parent's entity list
+                var entityModel = new EMLOtherEntity({
+                    entityName : dataONEObject.get("fileName"),
+                    entityType : dataONEObject.get("formatId") || 
+                                 dataONEObject.get("mediaType") || 
+                                 "application/octet-stream",
+                    parentModel: this,
+                    xmlID: dataONEObject.getXMLSafeID()
+                });
+                
+                this.addEntity(entityModel);
+                
+            },
+            
             createUnits: function(){
             	var units = new Units();
             	units.fetch();

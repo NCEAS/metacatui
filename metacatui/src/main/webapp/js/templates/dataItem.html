@@ -14,16 +14,20 @@
 <!-- Files column -->
 
 <td class="name" title="Click to rename" <% if(type == "Metadata"){ %> data-category="title" <% } %> >
-    <div contenteditable="true">
-        <% if (typeof title != "undefined" && title && title.length) { %>
-            <%= title %>
-        <% } else if ( typeof fileName != "undefined" && fileName) { %>
-            <%= fileName %>
-        <% } else if(type == "Metadata"){ %>
-            Untitled dataset: Add a descriptive title for your dataset <span class="required-icon"></span>
-        <% } else { %>
-            <%= id %>
-        <% } %>
+    <% if(uploadStatus != "l" && uploadStatus != "p"){ %>
+    	<div contenteditable="true">
+    <% } else { %>
+    	<div>
+    <% } %>
+	        <% if (typeof title != "undefined" && title && title.length) { %>
+	            <%= title %>
+	        <% } else if ( typeof fileName != "undefined" && fileName) { %>
+	            <%= fileName %>
+	        <% } else if(type == "Metadata"){ %>
+	            Untitled dataset: Add a descriptive title for your dataset <span class="required-icon"></span>
+	        <% } else { %>
+	            <%= id %>
+	        <% } %>
     </div>
 </td>
 

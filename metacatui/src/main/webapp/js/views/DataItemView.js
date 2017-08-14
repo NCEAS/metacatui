@@ -55,6 +55,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 // Set the data-id for identifying events to model ids
                 this.$el.attr("data-id", this.model.get("id"));
                 
+                //Destroy the old tooltip
+                this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
+                
                 var attributes = this.model.toJSON();
                 
                 //Format the title
@@ -76,9 +79,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 //Check if the data package is in progress of being uploaded
                 this.toggleSaving();
                 
+                //Create tooltips based on the upload status
                 if(this.model.get("uploadStatus") == "e" && this.model.get("errorMessage")){
                 	var errorMsg = this.model.get("errorMessage");
-                	errorMsg = $(errorMsg).find("description").text() || errorMsg;
                 	
                 	this.$(".icon.error").tooltip({
                 		placement: "top",
@@ -129,7 +132,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 		html: true,
                 		title: function(){
                 			if(model.get("numSaveAttempts") > 0){
-                				return "<div class='status-tooltip'>Unable to save. Trying again... (attempt " + model.get("numSaveAttempts") + ")</div>";
+                				return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + model.get("numSaveAttempts") + " of 3)</div>";
                 			}
                 			else if(model.get("uploadProgress")){
                 				var percentDone = model.get("uploadProgress").toString();
@@ -144,7 +147,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 		container: "body"
                 	});
                 	                	
-                	this.$el.removeClass("loading");
+                	this.$el.addClass("loading");
                 }
                 else{
                 	this.$el.removeClass("loading");
@@ -275,8 +278,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 var fileList,            // The list of chosen files
                     parentDataPackage,   // The id of the first resource of this row's scimeta
                     dataONEObject,       // The dataONEObject to represent this file
-                    self = this,         // A reference to this view
-                    entityModel;         // A placeholder for each added entity
+                    self = this;         // A reference to this view
+
                 event.stopPropagation();
                 event.preventDefault();
                 // handle drag and drop files
@@ -314,38 +317,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                             resourceMap: [this.collection.packageModel.id]
                         });
                         
-                        // Append to or create a new documents list
-                        if ( typeof this.parentSciMeta.get("documents") === "undefined" ) {
-                            this.parentSciMeta.set("documents", [dataONEObject.id]);
-                            
-                        } else {
-                            this.parentSciMeta.get("documents").push(dataONEObject.id);
-                            
-                        }
-                        
-                        // Add or append an entity to the parent's entity list
-                        entityModel = new EMLOtherEntity({
-                            entityName : dataONEObject.get("fileName"),
-                            entityType : dataONEObject.get("formatId") || 
-                                         dataONEObject.get("mediaType") || 
-                                         "application/octet-stream",
-                            parentModel: this.model,
-                            xmlID: dataONEObject.getXMLSafeID()
-                        });
-                        if (typeof this.parentSciMeta.get("entities") === "undefined") {
-                            this.parentSciMeta.set("entities", [entityModel]);
-                        } else {
-                            this.parentSciMeta.get("entities").push(entityModel);
-                        }
-                        this.parentSciMeta.set("uploadStatus", "q");
-                        dataONEObject.bytesToSize();
-                        this.collection.add(dataONEObject);
-                        
                         dataONEObject.loadFile();
                                                 
                     }, this);
                     
-                    MetacatUI.rootDataPackage.packageModel.set("changed", true);
                 }
                 
             },
@@ -386,10 +361,18 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
                     eventId = event.delegateTarget.dataset.id;
                     removalIds.push(eventId);
-                    
                 }
 
                 this.parentSciMeta = this.getParentScienceMetadata(event);
+                
+                if(!this.parentSciMeta){
+                	this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
+                	
+                	// Remove the row
+                    this.remove();
+                    return;
+                }
+
                 this.collection = this.getParentDataPackage(event);
                                 
                 // Get the corresponding model
@@ -430,6 +413,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 // Remove each object from the collection
                 this.collection.remove(removalIds);
                 
+                this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
+                
                 // Remove the row
                 this.remove();
                 
@@ -458,6 +443,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     } else {
                         console.log("The model of the event isn't in the root package.");
                         console.log("TODO: Check in nested packages.");
+                        return;
                     }
                     
                     // Is this a Data or Metadata model?
@@ -574,13 +560,20 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             	this.$("button").prop("disabled", false);
             	this.$(".disable-layer").remove();
             	this.$(".name > div").prop("contenteditable", true);
+            	this.$el.removeClass("error-saving");
             },
             
             toggleSaving: function(){
-            	if(MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "p")
+            	if(this.model.get("uploadStatus") == "p" || 
+            			this.model.get("uploadStatus") == "l" ||
+            			this.model.get("uploadStatus") == "e" ||
+            			MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "p")
             		this.showSaving();
             	else
             		this.hideSaving();
+            	
+            	if(this.model.get("uploadStatus") == "e")
+            		this.$el.addClass("error-saving");
             },
             
             showUploadProgress: function(){
