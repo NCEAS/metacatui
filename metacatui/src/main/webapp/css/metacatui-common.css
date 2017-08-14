@@ -3232,7 +3232,7 @@ ul.side-nav-items {
     position: fixed;
     background-color: #EEE;
     height: 100%;
-    width: 160px;
+    max-width: 160px;
     min-width: 160px;
     margin-left: 0px;
     border-right: 1px solid #DDD;
