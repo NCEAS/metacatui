@@ -936,9 +936,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	e.preventDefault();
 	    	
-	    	//If we were brought here by a click but there is no value, exit.
-	    	//We only want to react to clicks on the up and down arrows of the number input
-	    	if(e.type == "click" && !$(e.target).val())
+	    	// Don't create a new EMLGeoCoverageView if the value isn't set
+	    	if(!$(e.target).val())
 	    		return;
 	    	
 	    	var viewEl = $(e.target).parents(".eml-geocoverage");
