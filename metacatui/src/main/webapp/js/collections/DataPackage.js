@@ -109,11 +109,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             // Build the DataPackage URL based on the MetacatUI.appModel.objectServiceUrl
             // and id or seriesid
-            url: function() {
-
-                return MetacatUI.appModel.get("objectServiceUrl") +
-                    (encodeURIComponent(this.packageModel.get("id")) || encodeURIComponent(this.packageModel.get("seriesid")));
-
+            url: function(options) {
+            	
+            	if(options && options.update){
+            		return MetacatUI.appModel.get("objectServiceUrl") +
+                    (encodeURIComponent(this.packageModel.get("oldPid")) || encodeURIComponent(this.packageModel.get("seriesid")));
+            	}
+            	else{
+	                return MetacatUI.appModel.get("objectServiceUrl") +
+	                    (encodeURIComponent(this.packageModel.get("id")) || encodeURIComponent(this.packageModel.get("seriesid")));
+            	}
             },
 
             /*
@@ -627,7 +632,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 				var collection = this;
 				var requestSettings = {
-						url: this.url(),
+						url: this.packageModel.isNew()? this.url() : this.url({ update: true }),
 						type: requestType,
 						cache: false,
 						contentType: false,
