@@ -74,8 +74,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 
             },
             
-            url: function(){
-            	return MetacatUI.appModel.get("objectServiceUrl") + (this.get("id") || this.get("seriesid"));
+            url: function(options) {
+                var identifier;
+                if ( options && options.update ) {
+                    identifier = this.get("oldPid") || this.get("seriesid");
+                } else {
+                    identifier = this.get("id") || this.get("seriesid");
+                }
+                return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(identifier);
             },
             
             /*
@@ -882,8 +888,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				    dataType: "text",
 				    processData: false,
 					parse: false,
-					//Use the URL function to determine the URL, unless this is an update - then make sure the URL uses the old pid
-					url: this.isNew()? this.url() : MetacatUI.appModel.get("objectServiceUrl") + this.get("oldPid"),
+					//Use the URL function to determine the URL
+					url: this.isNew() ? this.url() : this.url({update: true}),
 					success: function(model, response, xhr){
 						console.log('yay, EML has been saved');
 						
