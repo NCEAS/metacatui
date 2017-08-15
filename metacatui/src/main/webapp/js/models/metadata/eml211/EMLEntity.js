@@ -16,42 +16,43 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
         	type: "EMLEntity",
 
             /* Attributes of any entity */
-            defaults: {
-
-                /* Attributes from EML */
-                xmlID: null, // The XML id of the entity
-                alternateIdentifier: [], // Zero or more alt ids
-                entityName: null, // Required, the name of the entity
-                entityDescription: null, // Description of the entity
-                physical: [], // Zero to many EMLPhysical objects
-                physicalMD5Checksum: null,
-                physicalSize: null,
-                coverage: [], // Zero to many EML{Geo|Taxon|Temporal}Coverage objects
-                methods: null, // Zero or one EMLMethod object
-                additionalInfo: [], // Zero to many EMLText objects
-                attributeList: [], // Zero to many EMLAttribute objects
-                constraint: [], // Zero to many EMLConstraint objects
-                references: null, // A reference to another EMLEntity by id (needs work)
-                
-                //Temporary attribute until we implement the eml-physical module
-                downloadID: null,
-                formatName: null,
-                
-                /* Attributes not from EML */
-                nodeOrder: [ // The order of the top level XML element nodes
-                    "alternateIdentifier",
-                    "entityName",
-                    "entityDescription",
-                    "physical",
-                    "coverage",
-                    "methods",
-                    "additionalInfo",
-                    "attributeList",
-                    "constraint"
-                ],
-                parentModel: null, // The parent model this entity belongs to
-                objectXML: null, // The serialized XML of this EML entity
-                objectDOM: null  // The DOM of this EML entity
+            defaults: function(){
+            	return {
+	                /* Attributes from EML */
+	                xmlID: null, // The XML id of the entity
+	                alternateIdentifier: [], // Zero or more alt ids
+	                entityName: null, // Required, the name of the entity
+	                entityDescription: null, // Description of the entity
+	                physical: [], // Zero to many EMLPhysical objects
+	                physicalMD5Checksum: null,
+	                physicalSize: null,
+	                coverage: [], // Zero to many EML{Geo|Taxon|Temporal}Coverage objects
+	                methods: null, // Zero or one EMLMethod object
+	                additionalInfo: [], // Zero to many EMLText objects
+	                attributeList: [], // Zero to many EMLAttribute objects
+	                constraint: [], // Zero to many EMLConstraint objects
+	                references: null, // A reference to another EMLEntity by id (needs work)
+	                
+	                //Temporary attribute until we implement the eml-physical module
+	                downloadID: null,
+	                formatName: null,
+	                
+	                /* Attributes not from EML */
+	                nodeOrder: [ // The order of the top level XML element nodes
+	                    "alternateIdentifier",
+	                    "entityName",
+	                    "entityDescription",
+	                    "physical",
+	                    "coverage",
+	                    "methods",
+	                    "additionalInfo",
+	                    "attributeList",
+	                    "constraint"
+	                ],
+	                parentModel: null, // The parent model this entity belongs to
+	                objectXML: null, // The serialized XML of this EML entity
+	                objectDOM: null  // The DOM of this EML entity
+            	}
             },
 
             /*

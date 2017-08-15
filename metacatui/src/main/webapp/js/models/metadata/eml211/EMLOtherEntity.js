@@ -13,26 +13,28 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
         	type: "EMLOtherEntity",
 
             /* Attributes of any entity */
-            defaults: _.extend({
-
-                /* Attributes from EML */
-                entityType: null, // The type of the entity
-
-                /* Attributes not from EML */
-                nodeOrder: [ // The order of the top level XML element nodes
-                    "alternateIdentifier",
-                    "entityName",
-                    "entityDescription",
-                    "physical",
-                    "coverage",
-                    "methods",
-                    "additionalInfo",
-                    "attributeList",
-                    "constraint",
-                    "entityType"
-                ],
-
-            }, EMLEntity.prototype.defaults),
+            defaults: function(){
+	            return	_.extend({
+	
+		                /* Attributes from EML */
+		                entityType: null, // The type of the entity
+		
+		                /* Attributes not from EML */
+		                nodeOrder: [ // The order of the top level XML element nodes
+		                    "alternateIdentifier",
+		                    "entityName",
+		                    "entityDescription",
+		                    "physical",
+		                    "coverage",
+		                    "methods",
+		                    "additionalInfo",
+		                    "attributeList",
+		                    "constraint",
+		                    "entityType"
+		                ],
+	
+	            	}, EMLEntity.prototype.defaults());
+            },
 
             /*
              * The map of lower case to camel case node names
