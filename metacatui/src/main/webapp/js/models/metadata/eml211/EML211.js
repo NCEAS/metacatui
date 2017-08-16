@@ -919,6 +919,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
                     	var numSaveAttempts = model.get("numSaveAttempts");
 
+                    	//Reset the identifier changes
+                    	model.resetID();
+                    	
                 		if(numSaveAttempts < 3){
                     		
                     		//Try saving again in 10, 40, and 90 seconds
@@ -929,9 +932,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     	}
                 		else{
                 			model.set("numSaveAttempts", 0);
-                			
-							model.resetID();
-							
+                										
 							var errorDOM       = $($.parseHTML(response.responseText)),
 								errorContainer = errorDOM.filter("error"),
 								msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM.not("style, title"),
