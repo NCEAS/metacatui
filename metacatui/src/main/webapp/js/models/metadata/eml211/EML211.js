@@ -890,6 +890,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					parse: false,
 					//Use the URL function to determine the URL
 					url: this.isNew() ? this.url() : this.url({update: true}),
+					xhr: function(){
+	                      var xhr = new window.XMLHttpRequest();
+	                      
+	                      //Upload progress
+	                      xhr.upload.addEventListener("progress", function(evt){
+	                        if (evt.lengthComputable) {
+	                          var percentComplete = evt.loaded / evt.total * 100;
+	                          
+	                          model.set("uploadProgress", percentComplete);
+	                        }
+	                      }, false);
+
+	                      return xhr;
+	                },
 					success: function(model, response, xhr){
 						console.log('yay, EML has been saved');
 						
@@ -916,14 +930,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 		else{
                 			model.set("numSaveAttempts", 0);
                 			
-							model.set("uploadStatus", "e");
 							model.resetID();
 							
 							var errorDOM       = $($.parseHTML(response.responseText)),
 								errorContainer = errorDOM.filter("error"),
-								msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM,
+								msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM.not("style, title"),
 								errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
 							
+		                    model.set("errorMessage", errorMsg);
+
+		                    model.set("uploadStatus", "e");
+		                        
 							model.trigger("errorSaving", errorMsg);
                 		}
 					}

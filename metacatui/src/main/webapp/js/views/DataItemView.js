@@ -552,7 +552,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              */
             showSaving: function(){
             	this.$("button").prop("disabled", true);
-            	this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
+            	
+            	if(this.model.get("type") != "Metadata")
+            		this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
+            	
             	this.$(".name > div").prop("contenteditable", false);
             },
             
@@ -566,7 +569,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             toggleSaving: function(){
             	if(this.model.get("uploadStatus") == "p" || 
             			this.model.get("uploadStatus") == "l" ||
-            			this.model.get("uploadStatus") == "e" ||
+            			( this.model.get("uploadStatus") == "e" && this.model.get("type") != "Metadata") ||
             			MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "p")
             		this.showSaving();
             	else

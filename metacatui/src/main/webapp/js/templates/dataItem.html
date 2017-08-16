@@ -47,10 +47,8 @@
 
 <% } %>
 <!-- Guide or Status column -->
-<td class="status">
-	<% if( type == "Metadata" ){ %>
-		
-	<% } else if( uploadStatus == "p" ){ %>
+<td class="status">		
+	<%  if( uploadStatus == "p" ){ %>
 		<div class="progress progress-striped active">
 			<div class="bar" style="width: <%=uploadProgress%>%;"></div>
 		</div>
@@ -58,9 +56,9 @@
 		<i class="icon icon-ok-circle success icon-large"></i>
 	<% } else if( uploadStatus == "e" ) { %>
 		<i class="icon icon-exclamation-sign danger error icon-large"></i>
-	<% } else if( uploadStatus == "q" ){ %>
+	<% } else if( uploadStatus == "q" && type != "Metadata"){ %>
 		<i class="icon icon-circle-blank warning icon-large"></i>
-	<% } else if( uploadStatus == "l"){ %>
+	<% } else if( uploadStatus == "l" && type != "Metadata"){ %>
 		<i class="icon icon-circle-blank icon-large"></i>
 	<% } %>
 </td>
