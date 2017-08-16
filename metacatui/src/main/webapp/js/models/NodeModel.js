@@ -159,6 +159,9 @@ define(['jquery', 'underscore', 'backbone'],
 						thisModel.set("currentMemberNode", thisMember.identifier);
 					
 					thisModel.trigger("change:currentMemberNode");
+					
+					if(!MetacatUI.appModel.get("nodeId"))
+						MetacatUI.appModel.set("nodeId", thisMember.identifier);	
 				}
 			});
 		}
