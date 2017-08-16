@@ -67,7 +67,7 @@ define(['underscore', 'jquery', 'backbone',
         	"mouseover .funding-row .remove" : "previewFundingRemove",        	
         	"mouseout .funding-row .remove"  : "previewFundingRemove",
         	
-        	"keyup .eml-party.new .required" : "handlePersonTyping",
+        	"keyup .eml-party.new" : "handlePersonTyping",
         	
 			"click .side-nav-item"           : "switchSection",
 			
