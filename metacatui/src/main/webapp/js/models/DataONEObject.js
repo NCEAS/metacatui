@@ -1109,6 +1109,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                                 
                 this.once("successSaving", function(){ 
                 	MetacatUI.rootDataPackage.add(this);
+                	MetacatUI.rootDataPackage.handleAdd(this);
                 });
                 
                 //Upload the file
