@@ -1879,8 +1879,8 @@ define(['underscore', 'jquery', 'backbone',
 				//Remove this index of the array
 				var currentValue = this.model.get(attribute);
 				
-				if(Array.isArray(currentValue))
-					currentValue.splice(position, 1);
+				if( Array.isArray(currentValue) )
+					currentValue = currentValue.splice(position, 1);
 
 				//Set the array on the model so the 'set' function is executed
 				this.model.set(attribute, currentValue);
