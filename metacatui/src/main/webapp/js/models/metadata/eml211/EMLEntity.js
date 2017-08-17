@@ -281,10 +281,10 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "entityDescription");
                         if ( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("entityDescription"))
-                                .text(this.get("entityName"))[0]);
+                                .text(this.get("entityDescription"))[0]);
                         } else {
                             $(nodeToInsertAfter).after($(document.createElement("entityDescription"))
-                                .text(this.get("entityName"))[0]);
+                                .text(this.get("entityDescription"))[0]);
                         }
                     }
                 }
