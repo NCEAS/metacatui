@@ -674,6 +674,18 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			return payload;			
 		},
 		
+		verifyLoginStatus: function(){
+			if(!appUserModel.get("loggedIn")) return;
+						
+			if(appModel.get("tokenUrl")){
+				//If the user's token is no longer valid, then refresh the page
+				appUserModel.checkToken();
+			}
+			else{
+				appUserModel.checkStatus();
+			}
+		},
+		
 		update: function(onSuccess, onError){
 			var model = this;
 			
@@ -855,7 +867,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 		
 		createAjaxSettings: function(){
-			if(!this.get("token")) return {}
+			if(!this.get("token")){
+				return { 
+					xhrFields: {
+						withCredentials: true
+					}
+				}
+			}
 			
 			return { xhrFields: {
 					withCredentials: true

@@ -302,17 +302,8 @@ define(['jquery',
 				if(!appUserModel.get("loggedIn")) return;
 					
 				//Check the user's token on focus
-				$(window).focus(function(){
-					if(!appUserModel.get("loggedIn")) return;
-					
-					if(appModel.get("tokenUrl")){
-						//If the user's token is no longer valid, then refresh the page
-						appUserModel.checkToken();
-					}
-					else{
-						appUserModel.checkStatus();
-					}
-				});
+				$(window).unbind("focus", appUserModel.verifyLoginStatus);
+				$(window).focus(appUserModel.verifyLoginStatus);
 			});
 		},
 		
