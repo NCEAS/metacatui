@@ -1874,7 +1874,7 @@ define(['underscore', 'jquery', 'backbone',
 				
 			} else if (selector) {
 				// Find the index this attribute is in the DOM
-				var position = $(e.target).parents(container).first().children(selector).index(selector);
+				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parents(selector));
 				
 				//Remove this index of the array
 				var currentValue = this.model.get(attribute);
