@@ -1338,7 +1338,7 @@ define(['underscore', 'jquery', 'backbone',
 
         	// Trigger the tricking up of this change for which part of the
         	// temporal coverage is set by category
-        	this.model.trigger("change");
+        	MetacatUI.rootDataPackage.packageModel.set("changed", true);
         },
 
 		showTemporalCoverageValidation: function(e) {
