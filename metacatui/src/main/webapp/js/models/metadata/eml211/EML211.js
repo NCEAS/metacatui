@@ -692,34 +692,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              */
             serializeParties: function(eml, type){
             	
+            	//Remove the nodes from the EML for this party type
+            	$(eml).find(type.toLowerCase()).remove();
+            	
+            	//Serialize each party of this type
 	           	_.each(this.get(type), function(party, i){
-	           		//Get the existing nodes in the EML
-	           		var existingNode = $(eml).find(type.toLowerCase() + "#" + party.get("xmlID"));
 	           		
-	           		if(!existingNode.length){
-	           			existingNode = $(eml).find(type.toLowerCase());
-	           			if( existingNode.length )
-	           				existingNode = existingNode.eq(i);
-	           		}
-	           			
-	           		//Update the EMLParty DOM and insert into the EML
-	           		if ( existingNode.length ) {
-	           			existingNode.replaceWith(party.updateDOM());
-                        
-	           		} else {
-	           			var insertAfter = $(eml).find(type.toLowerCase()).last();
-	           			if( !insertAfter.length ) {
-	           				insertAfter = this.getEMLPosition(eml, type);
-	           			    
-	           			}
-	           			
-                        if ( insertAfter.length ) {
-    	           			insertAfter.after(party.updateDOM());
-                            
-                        } else {
-                            
-                        }
-	           		}
+	           		//Get the last node of this type to insert after
+           			var insertAfter = $(eml).find(type.toLowerCase()).last();
+           			
+           			//If there isn't a node found, find the EML position to insert after
+           			if( !insertAfter.length ) {
+           				insertAfter = this.getEMLPosition(eml, type);           			    
+           			}
+           			
+           			//Insert the party DOM at the insert position
+                    if ( insertAfter && insertAfter.length ) {
+	           			insertAfter.after(party.updateDOM());                        
+                    }
+           			//If an insert position still hasn't been found, then just append to the dataset node
+                    else{
+                    	$(eml).find("dataset").append(party.updateDOM());
+                    }
+                    
 	           	}, this);
 	           	
 	        	//Create a certain parties from the current app user if none is given
