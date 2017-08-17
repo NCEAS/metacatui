@@ -28,7 +28,8 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            	"change .input" : "updateModel",
+            	"change input" : "updateModel",
+            	"change textarea" : "updateModel",
             	"click .nav-tabs a" : "showTab",
             	"click .attribute-menu-item" : "showAttribute",
             	"mouseover .attribute-menu-item .remove" : "previewAttrRemove",
