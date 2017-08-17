@@ -524,27 +524,19 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				return m.isValid();
     			});
     			
-    			//If at least once model to be saved is invalid, cancel the save.
-    			if(!allValid){
-    				this.trigger("cancelSave");
+                // If at least once model to be saved is invalid, 
+                // or the metadata failed to save, cancel the save.
+                if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
+                         return model.get("uploadStatus");
+                    } ), "e") ) {
     				this.packageModel.set("uploadStatus", this.packageModel.defaults().uploadStatus);
+                    this.packageModel.set("changed", false);
+                    this.trigger("cancelSave");
     				return;
     			}
     			
-    			var failedSave = false;
-
     			//First save all the models of the collection, if needed
     			_.each(modelsToBeSaved, function(model){
-    				//Don't save any more models when one has failed
-    				if(failedSave) return;
-
-    				//If this model is in progress or in the queue
-					this.listenToOnce(model, "cancelSave", function(){
-						failedSave = true;
-						sortedModels = [];
-						this.packageModel.set("uploadStatus", this.packageModel.defaults().uploadStatus);
-					});
-					
 					//If the model is saved successfully, start this save function again
 					this.listenToOnce(model, "successSaving", this.save);
 					
@@ -558,9 +550,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					modelsInProgress.push(model);
     				
     			}, this);
-
-    			if(failedSave)
-    				return;
 
     			//If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
     			if(modelsInProgress.length) return;
