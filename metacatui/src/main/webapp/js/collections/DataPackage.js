@@ -529,7 +529,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
                          return model.get("uploadStatus");
                     } ), "e") ) {
-    				this.packageModel.set("uploadStatus", this.packageModel.defaults().uploadStatus);
                     this.packageModel.set("changed", false);
                     this.trigger("cancelSave");
     				return;
