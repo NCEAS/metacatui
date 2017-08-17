@@ -432,6 +432,11 @@ define(['underscore',
             if ( typeof MetacatUI.rootDataPackage.packageModel !== "undefined" ) {
                 this.stopListening(MetacatUI.rootDataPackage.packageModel, "change:changed");
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", function(event) {
+                    if (MetacatUI.rootDataPackage.packageModel.get("changed") ) {
+                        this.model.set("uploadStatus", "q"); // Clears the error status
+                    }
+                });
 
             }
 
