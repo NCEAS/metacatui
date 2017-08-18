@@ -262,6 +262,8 @@ define(['underscore', 'jquery', 'backbone',
             		menuItem.remove();
 	            	this.$(".eml-attribute[data-attribute-id='" + attrModel.cid + "']").remove();
 	            	$(".tooltip").remove();
+	            	
+	            	this.model.trickleUpChange();
             	}
             },
             
