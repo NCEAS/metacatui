@@ -1655,6 +1655,8 @@ define(['underscore', 'jquery', 'backbone',
         		this.model.set($(e.target).attr("data-category"), "");
         	else
         		this.model.set($(e.target).attr("data-category"), choice);
+        	
+        	this.model.trickleUpChange();
         },
         
         /*
