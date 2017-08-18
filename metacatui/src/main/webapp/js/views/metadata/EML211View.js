@@ -866,6 +866,8 @@ define(['underscore', 'jquery', 'backbone',
 	    		this.addFunding();
 	    	}
 	    	
+	    	this.model.trickleUpChange();
+	    	
 	    },
 	    
 	    //TODO: Comma and semi-colon seperate keywords
