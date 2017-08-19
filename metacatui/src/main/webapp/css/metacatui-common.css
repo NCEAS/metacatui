@@ -969,7 +969,7 @@ img.icon{
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .gutters .entitydetails{
 	width: 60%; /* IE fallback */
-	width: calc(100% - 219px); /* 100% - prov-chart width - (padding + borders)*/
+	width: calc(100% - 220px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;	
 	margin-left: 105px;
 	box-sizing: border-box;
