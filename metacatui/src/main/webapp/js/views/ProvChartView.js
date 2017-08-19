@@ -252,6 +252,25 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			//Lastly, add the title
 			this.$el.prepend($(document.createElement("h3")).addClass("title").text(this.title));
 						
+			// Render the non-editor prov nodes so that the each have a unique style.
+			var nodeMin = 1;
+			var nodeMax = 23; // Max number of 'uniqueNoden' css classes defined (in metacatui-common.css)
+			var i = view.getRandomInt(nodeMin, nodeMin+5);
+			_.each(view.$(".node").not(".editor"), function(thisNode){
+				//Don't use the unique class on images since they will look a lot different anyway by their image
+				if(!$(thisNode).first().hasClass("image")){
+					var className = "uniqueNode" + i;
+					//Add the unique class and up the iterator
+					if($(thisNode).prop("tagName") != "polygon")
+						$(thisNode).addClass(className);
+					else
+						$(thisNode).attr("class", $(thisNode).attr("class") + " " + className);
+						
+					// Increment the node counter, but not past the max value, which is the number of
+					// unique css classes that are defined.
+					(i == nodeMax) ? i = nodeMin : i++;
+				}
+			});
 			return this;
 		},
 		
