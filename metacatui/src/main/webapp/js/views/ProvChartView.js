@@ -271,6 +271,21 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					(i == nodeMax) ? i = nodeMin : i++;
 				}
 			});
+			// For non-editor nodes, set mouseenter and mouseleave event handlers to 
+			// display a delete icon that can be clicked to delete the node from the prov chart.
+			view.$(".node").not(".editor").hover(
+  				function(e) {
+				    $(e.target).find("i.icon-remove").removeClass("hide");
+				    $(e.target).find("i.icon-remove").addClass("show");
+					$(e.target).find("i.icon-remove").on("click", function(evt){
+					});
+  				}, 
+				function(e) {
+				    $(e.target).find("i.icon-remove").removeClass("show");
+				    $(e.target).find("i.icon-remove").addClass("hide");
+  				}
+			);
+			
 			return this;
 		},
 		
