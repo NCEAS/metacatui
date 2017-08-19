@@ -559,6 +559,11 @@ img.icon{
 .prov-chart .node.program{
 	fill: #FFFFFF;
 }
+.prov-chart polygon.program.editor.node{
+	stroke: grey;
+	stroke-width: 1px;
+	stroke-dasharray: 2px,2px;
+}
 .prov-chart .programs svg{
 	position: absolute;
 }
@@ -591,6 +596,19 @@ img.icon{
 .prov-chart .node.previous{
 	border-width: 3px;
 }
+.prov-chart .node .icon-remove.hide{
+	display: none;
+}
+.prov-chart .node .icon-remove.show{
+	position:absolute;
+	display: block;
+	top: 0px;
+	height: 5px;
+	width: 5px;
+	right: 0px;
+	color: #ff0000;
+}
+
 .prov-chart .connecter{
 	border-top-width: 1px;
 	border-top-style: solid;
