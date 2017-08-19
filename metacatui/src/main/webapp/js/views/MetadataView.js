@@ -495,6 +495,9 @@ define(['jquery',
 			    //Show the provenance trace for this package
 				if(packageModel.get("provenanceFlag") == "complete") {
 					viewRef.drawProvCharts(packageModel);
+					// Check each prov chart to see if it has been marked for re-rendering and
+					// redraw it if it has been.
+					viewRef.listenToOnce(packageModel, "redrawProvCharts", viewRef.redrawProvCharts);
 					// Create a provenance editor for just the topmost package, if the user is authorized.
 					// It was necessary to wait until the package details were available, as the provenance
 					// editor requires them. We need :
@@ -511,6 +514,8 @@ define(['jquery',
 					viewRef.listenToOnce(packageModel, "change:provenanceFlag", function() {
 						console.log("Prov status changed, defering drawing prov charts.");
 						viewRef.drawProvCharts(packageModel);
+						viewRef.listenToOnce(packageModel, "redrawProvCharts", viewRef.redrawProvCharts);
+
 						// Create a provenance editor for just the topmost package, if the user is authorized.
 						// It was necessary to wait until the package details were available, as the provenance
 						// editor requires them. We need :
@@ -1114,6 +1119,43 @@ define(['jquery',
 					}
 				});
 			}
+		},
+		
+		/* Step through all prov charts and re-render each one that has been
+		   marked for re-rendering.
+		*/
+		redrawProvCharts: function() {
+			var view = this;
+			
+			console.log("redrawProvCharts called.");
+
+			_.each(this.subviews, function(thisView, i) {
+				
+				console.log("checking view: " + thisView.className);
+				// Check if this is a ProvChartView
+				if(thisView.className.indexOf("prov-chart") !== -1) {
+					console.log("found prov chart " + thisView.cid);
+					// Check if this ProvChartView is marked for re-rendering
+					// Erase the current ProvChartView
+					thisView.onClose();
+				}
+			});
+			
+			// Remove prov charts from the array of subviews.
+			this.subviews = _.filter(this.subviews, function(item) {
+	  			return item.className.indexOf("prov-chart") == -1; 
+ 			});
+			
+			_.each(this.packageModels, function(packageModel){
+				console.log("Checking packageMode: " + packageModel.get("id"));
+				if(packageModel.get("provenanceFlag") == "complete") {
+					console.log("redrawing prov chart for packageModel", packageModel.get("id"));
+					view.drawProvCharts(packageModel);
+					// Check each prov chart to see if it has been marked for re-rendering and
+					// redraw it if it has been.
+					view.listenToOnce(packageModel, "redrawProvCharts", view.redrawProvCharts);
+				}
+			});
 		},
 		
 		/*

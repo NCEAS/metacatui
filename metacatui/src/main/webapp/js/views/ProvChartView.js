@@ -723,6 +723,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.selectProvEntityView.remove();
 			this.selectProvEntityView.unbind();
 			this.selectProvEntityView = null;
+			this.packageModel.trigger("redrawProvCharts");
 		},
 			
 		onClose: function() {			
