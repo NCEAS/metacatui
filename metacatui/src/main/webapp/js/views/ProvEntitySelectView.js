@@ -27,11 +27,23 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 		
 		render: function(){
 			var members = this.packageModel.get("members")
-			console.log("i'm rendering!");
+			console.log("rendering selection modal!");
 			// Reset the rendered view
 			this.$el.html('');
 			
 			if(!members) return false;
+			var view = this;
+			// Remove the current package member from the list of prov entities to select
+			// (a package member can't be related to itself).
+			members = _.filter(members, function(item) {
+					return item.get("id") != view.context.get("id");
+			});	
+			// Don't display metadata in the selection view
+			members = _.filter(members, function(item) {
+					return item.get("formatType") != "METADATA";
+			});	
+			
+			// Set the number of items to display in the select list
 			if(this.displayRows == 0) this.displayRows == Math.min(10, members.length);
 			
 			return this.$el.html(this.template({
