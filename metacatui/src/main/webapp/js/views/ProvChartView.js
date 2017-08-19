@@ -22,6 +22,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 
 			this.selectProvEntityView = null;
 			this.type = null;
+			// Does this chart need to be re-rendered after prov relationships have been updated?
+			this.rerender = false;
 			//For Sources charts
 			if((!this.derivations && this.sources) || (this.editModeOn && this.editorType == "sources")) {
 				console.log("***** provchart: configuring sources for member " + this.context.get("id") + ", type: " + this.context.get("type"));
@@ -82,9 +84,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			//	this.numProvEntities = 0;
 			//	this.className += " editor empty";
 			//}
-			if(this.editModeOn) {
-				this.className += " editor ";
-			}
+			
+			//if(this.editModeOn) {
+			//	this.className += " editor ";
+			//}
 			
 			//Add the chart type to the class list
 			this.className = this.className + " " + this.type	;
@@ -101,7 +104,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//The default height of the chart when all nodes are visible/expanded
 			this.height = (this.numProvEntities * this.nodeHeight);
-
+			
 		},
 		
 		tagName: "aside",
@@ -112,7 +115,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			"click .expand-control"   : "expandNodes",
 			"click .collapse-control" : "collapseNodes",
 			"click .preview"          : "previewData",
-			"click .editorNode"       : "selectProvEntities",
+			//"click .editor"		      : "selectProvEntities",
 			"click #selectDone"       : "getSelectedProvEntities",
 		},
 		
@@ -168,16 +171,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 						//Find the program position
 						view.$(".programs").append(view.createNode(entity, programPosition, metadata));
 					}
-					else
+					else {
 						view.$el.append(view.createNode(entity, position, metadata));						
+						// Sources and Derivation charts have a pointer for each node
+						view.$el.append(view.createConnecter(position));
+					}
 				}
-				
-				//Derivation charts have a pointer for each node
-				if(view.type == "derivations")
-					view.$el.append(view.createConnecter(position));
-				
-				//Source charts have a connector for each node and one pointer
-				if(view.type == "sources")	view.$el.append(view.createConnecter(position));
 				
 				//Bump the position for non-programs only
 				if(entity.get("type") == "program")
@@ -204,6 +203,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				// Draw a data node editor
 				this.$el.append(this.createEditorNode("data", this.context.get("id"), position));
 				position++;
+				
 				if(this.editorType == "sources") this.numSources++;
 				if(this.editorType == "derivations") this.numDerivations++;
 			}
@@ -252,6 +252,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			//Lastly, add the title
 			this.$el.prepend($(document.createElement("h3")).addClass("title").text(this.title));
 						
+			// Display a prov entity selection box when an edit node is clicked.
+			this.$(".editor").click(function(e) {
+				view.selectProvEntities(e);
+			});
+			
 			// Render the non-editor prov nodes so that the each have a unique style.
 			var nodeMin = 1;
 			var nodeMax = 23; // Max number of 'uniqueNoden' css classes defined (in metacatui-common.css)
@@ -271,6 +276,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					(i == nodeMax) ? i = nodeMin : i++;
 				}
 			});
+			
 			// For non-editor nodes, set mouseenter and mouseleave event handlers to 
 			// display a delete icon that can be clicked to delete the node from the prov chart.
 			view.$(".node").not(".editor").hover(
@@ -362,9 +368,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				//Glue it all together
 				$(g).append(iconEl);
 				$(svg).append(nodeEl, g);
-				
 			}
-			
+
 			//Add classes via .attr() so it works for SVG, too
 			var currentClasses = $(nodeEl).attr("class") || "";
 			$(nodeEl).attr("class", currentClasses + " " + type + " node pointer popover-this " + isCollapsed)
@@ -382,6 +387,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 							 .addClass(icon + " icon");
 				//Put the icon in the node
 				$(nodeEl).append(iconEl);		
+			}
+			
+			// Add a delete icon to the node if editing is on
+			if(this.editModeOn) {
+				var deleteIcon = $(document.createElement("i")).attr("class", "icon-remove hide");
+				$(nodeEl).append(deleteIcon);
 			}
 		
 			//The placement and title of the popover depends on what type of chart this is
@@ -563,14 +574,14 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				$(nodeEl).css("top", top);
 				//Add classes via .attr() so it works for SVG, too
 				var currentClasses = $(nodeEl).attr("class") || "";
-				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editorNode " + isCollapsed);
+				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editor " + isCollapsed);
 				$(nodeEl).attr("tabindex", 0);
 				//Reference the id of the data object
 				$(nodeEl).attr("data-id", id);
 						 
 				//Create the plus icon
 				var iconEl = document.createElement("i");
-				$(iconEl).addClass("editor icon icon-plus");
+				$(iconEl).addClass(" icon icon-plus");
 						
 				//Put the icon in the node
 				$(nodeEl).append(iconEl);
@@ -579,32 +590,44 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 				nodeEl = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
 				$(nodeEl).attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20");
-				$(nodeEl).attr("fill", "#FFFFFF");
 
 				//Set a viewBox, height, width, and top position
 				svg.setAttribute("viewBox", "0 0 " + this.nodeHeight + " " + this.nodeHeight);
-				//svg.setAttribute("class", "popover-this");
+				//svg.setAttribute("class", "editor");
 				$(svg).attr("width", this.nodeHeight + "px").attr("height", this.nodeHeight + "px").css("top", top);
 				
 				//Create the code icon
-				//`var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
-				//			.text("\u{F121}")
-				//			.attr("class", "icon icon-foo program-icon pointer editor");
+				//var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+				//			.text("\u{f067}")
+				//			.attr("class", "icon icon-foo program-icon pointer");
+							
+				//Create the plus icon
+				var iconEl = document.createElement("i");
+				$(iconEl).addClass(" icon icon-plus");
 				
 				//Create a group element to contain the icon
 				var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-				//$(g).attr("transform", "translate(18,43)")
-				$(g).attr("class", "editor icon icon-plus");
-						
+				$(g).attr("transform", "translate(18,43)")
+				//$(g).attr("class", "program-icon pointer ");
+				$(g).attr("class", " pointer ");
+				
 				//Add classes via .attr() so it works for SVG, too
 				var currentClasses = $(nodeEl).attr("class") || "";
-				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editorNode " + isCollapsed);
+				$(nodeEl).attr("class", currentClasses + " " + type + " editor node pointer " + isCollapsed);
 				$(nodeEl).attr("tabindex", 0);
 				$(nodeEl).attr("data-id", id);
 				
+				// Display select box to this editor node if it is clicked.
+				//$(nodeEl).click(this.selectProvEntities);
+				
+				//var iconEl = $(document.createElement("i"))
+				//		 .addClass(icon + " icon");
+				//		 	//Put the icon in the node
+				//$(nodeEl).append(iconEl);
+				
 				//Glue it all together
-				//$(g).append(iconEl);
-				$(svg).append(nodeEl, g);
+				$(g).append(iconEl);
+				$(svg).append(nodeEl, g);	
 			}
 			
 			if(svg != null) {
@@ -736,12 +759,47 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		// members that will be associated with the current member (that belongs to this)
 		// metadata detail section), by a provenance relationship.
 		selectProvEntities: function(e) {
+			// TODO: determine if this select was called from a program edit icon or a
+			// data edit icon.
+			var title = null;
+			var label = "Choose files in this dataset: ";
+			var selectEntityType = "data";
+			var isProgram = false;
+			var thisClass = null;
+			var myClasses = Array.from(e.currentTarget.classList.values());
+			if(myClasses.includes("program")) {
+				isProgram = true; 
+				selectEntityType = "program";
+			}
+			console.log("selecting entities");
+			
+			// Set the selection box labels according to the edit icon that was clicked,
+			// and the ProvChart that it was clicked in.
+			if(this.editorType == "sources") {
+				if(isProgram) {
+					title = "Add the program that generated " + this.context.get("fileName");
+				} else {
+					title = "Add source data to " + this.context.get("fileName");
+				}
+			} else if(this.editorType == "derivations") {
+				if(isProgram) {
+					title = "Add the program that read " + this.context.get("fileName");
+				} else {
+					title = "Add derived data to " + this.context.get("fileName");
+				}	
+			} else {
+				title = "Add data to " + this.context.get("fileName");
+				label = "Choose from: ";
+			}
+			
 			this.selectProvEntityView = new ProvEntitySelect({
 				parentView    : this,
-				title 		  : "Add provenance",
-				selectLabel   : "Choose from sources",
-				selectMode    : "multiple",
+				title 		  : title,
+				selectLabel   : label,
+				selectEntityType : selectEntityType , // Can be either "data" or "program"
 				packageModel  : this.packageModel,
+				context       : this.context,
+				// Number of ows in the select list
 				displayRows   : Math.min(10, this.packageModel.get("members").length)
 			});
 			this.$el.append(this.selectProvEntityView.render());
@@ -749,21 +807,152 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			$('#selectModal').modal('show');
 		},
 		
-		getSelectedProvEntities: function() {
-			var values = null;
-			values = this.selectProvEntityView.readSelected();
-			console.log("entities selected: " + values);
-			$('#selectModal').modal('toggle');
-			this.selectProvEntityView.remove();
-			this.selectProvEntityView.unbind();
+		// Read selected values from a ProvEntitySelectView which is a modal dialog
+		// that displays a selection list of package members to add to a prov chart.
+		getSelectedProvEntities: function(e) {
+			var selectedValues = null;
+			var values = [];
+			var myClasses = null;
+			var isProgram = false;
+
+			// Read values from the selection list modal dialog
+			selectedValues  = this.selectProvEntityView.readSelected();
+			console.log("entities selected: " + selectedValues);
+			// Return if no values were selected.
+			if(selectedValues == null || selectedValues.length == 0) {
+			    $('#selectModal').modal('hide');
+				this.selectProvEntityView.onClose();	
+				this.selectProvEntityView = null;
+				return false;
+			}	
+			
+			// Hide the selection modal dialog
+			$('#selectModal').modal('hide');
+
+			// Get the entity type ("program" or "data") from the selection view. This
+			// is the entity type of the prov icon that was clicked in order to add
+			// this type to the prov of the current package member. The entityType
+			// is either "program" or "data".
+			var entityType = this.selectProvEntityView.selectEntityType;
+			// Remove the selection modal
+			this.selectProvEntityView.onClose();
+			//Backbone.View.prototype.remove.call(this.selectedProvEntityView);
 			this.selectProvEntityView = null;
+			
+			// Return if no values were selected.
+			if(selectedValues.length == 0) return false;
+			// If a single value was returned, then put it into an array so 
+			// so the loop can be used.
+			if(typeof selectedValues == "string") {
+				values[0] = selectedValues;
+			} else {
+				values = selectedValues;
+			}
+				
+			var memberPid = this.context.get("id");
+			// Loop through selected values, adding the proper relationships between the selected
+			// value and the current package member.
+			for (var i = 0; i < values.length; i++) { 
+    			var thisPid = values[i];
+				console.log("searching for pid: " + thisPid);
+				if(this.editorType == "sources") {
+					// This is a sources chart
+					if(entityType == "program") {
+						// source fields: prov_generatedByExecution, prov_generatedByProgram, prov_used, 
+						// prov_wasDerivedFrom, prov_wasInformedBy
+						this.addProvRel(this.packageModel, memberPid, "prov_generatedByProgram", thisPid);
+						this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
+						this.addProvRel(this.packageModel, thisPid,   "prov_generated", memberPid);
+						this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+					} else {
+						this.addProvRel(this.packageModel, memberPid, "prov_wasDerivedFrom", thisPid);
+						this.setMemberAttr(this.packageModel, thisPid, "type", "data");
+						this.addProvRel(this.packageModel, thisPid, "prov_hasDerivations", memberPid);
+					}
+				} else {
+					// This is a derivations chart
+					// derivation fields: prov_usedByExecution, prov_usedByProgram, prov_hasDerivations,
+					// prov_generated
+					if(entityType == "program") {
+			    		//var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == thisPid});
+						this.addProvRel(this.packageModel, memberPid, "prov_usedByProgram", thisPid);
+						this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
+						this.addProvRel(this.packageModel, thisPid,   "prov_used", memberPid);
+						this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+					} else {
+						this.addProvRel(this.packageModel, thisPid, "prov_wasDerivedFrom", memberPid);
+						this.setMemberAttr(this.packageModel, thisPid, "type", "data")
+						this.addProvRel(this.packageModel, memberPid, "prov_hasDerivations", thisPid);
+					}
+				}
+				
+			}
+			
 			this.packageModel.trigger("redrawProvCharts");
 		},
 			
 		onClose: function() {			
-			this.remove();			
-		}
+			//var provEntitiesToAdd = getProvEntities();
+			// Erase the current ProvChartView
+			this.remove();
+			this.unbind();
+		},
 		
+		getRandomInt: function(min, max) {
+  			min = Math.ceil(min);
+  			max = Math.floor(max);
+  			return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+		}, 
+		
+		// Add provenance relationships to a package member. Most of the provenance relationships store arrays of package
+		// members and not pids (prov_used, prov_generatedByProgram, etc), however, some of them store just strings (prov_instanceOfClass)
+		// Set the predicate attribute of the 'subject' package member to the 'object' package member, thereby establishing a 
+		// provenance relationship between the two.
+		addProvRel: function(packageModel, subjectId, predicate, object) {
+			var subjectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == subjectId});
+			var objectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == object});
+			
+			// Is the predicate a source or destination field
+			var isSource = subjectMember.isSourceField(predicate)
+			var isDerivation = subjectMember.isDerivationField(predicate)
+			// If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
+			// such as the field 'prov_instanceOfClass'
+			if (!isSource && !isDerivation) {
+				subjectMember.set(predicate, object);
+			} else if (isSource) {
+				// Also populate the 'sources' accumulated attribute
+				subjectMember.set("provSources", _.union(subjectMember.get("provSources"), [objectMember]));
+				subjectMember.set(predicate, _.union(subjectMember.get(predicate), [objectMember]));
+			} else {
+				// Its a derivation field
+				// Also populate the 'derivations' accumulator field
+				subjectMember.set("provDerivations", _.union(subjectMember.get("provDerivations"), [objectMember]));
+				subjectMember.set(predicate, _.union(subjectMember.get(predicate), [objectMember]));
+			}
+		},
+		
+		removeProvRel: function(packageModel, subjectId, predicate, object) {
+			var subjectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == subjectId});
+			var objectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == object});
+			// Is the predicate a source or destination field
+			var isSource = subjectMember.isSourceField(predicate)
+			var isDerivation = subjectMember.isDerivationField(predicate)
+			// If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
+			// such as the field 'prov_instanceOfClass'
+			if (!isSource && !isDerivation) {
+				subjectMember.set(predicate) = null;
+			} else {
+				subjectMember.set(predicate) = _.filter(subjectMember.get(predicate), function(item) {
+						return item.get("id") != object
+				});
+			};
+		},
+		
+		// Locate a package member give a pid, and set the supplied attribute with the value;
+		setMemberAttr: function(packageModel, pid, attr, value) {
+			var thisMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == pid});
+			thisMember.set(attr, value);
+		}
 	});
 	
 	return ProvChartView;
