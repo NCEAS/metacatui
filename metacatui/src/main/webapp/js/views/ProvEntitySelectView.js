@@ -72,6 +72,12 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 			}
             console.log("pes: selected entities: " + values);
 			return values;
+		},
+		
+		onClose: function() {			
+			console.log("closing ProvEntitySelectionView");
+			this.remove();			
+			this.unbind();
 		}
 	});
 	
