@@ -11,9 +11,12 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 			this.parentView    = options.parentView    || null;		
 			this.title 		   = options.title         || "Add provenance";
 			this.selectLabel   = options.selectLabel   || "Choose from the files in this dataset";
-			this.selectMode    = options.selectMode    || "multiple";
-			this.packageModel  = options.packageModel  || null
+			this.selectEntityType  = options.selectEntityType || "data";
+			this.packageModel  = options.packageModel  || null;
+			this.context       = options.context       || null;
 			this.displayRows   = options.displayRows   || 0;
+			
+			(this.selectEntityType == "program") ? this.selectMode = "" : this.selectMode = "multiple";
 		},
 		
 		tagName: "div",
@@ -59,7 +62,7 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 			// First see if a pid value was entered in the text box.
 			// If yes then this value will be used instead of the
 			// select list.
-			console.log("read selected");
+			console.log("reading selected entities");
 			var values = $('#pidValue').val();
 			if(typeof values !== undefined && values != "") {
 			    console.log("returning text: " + values);
