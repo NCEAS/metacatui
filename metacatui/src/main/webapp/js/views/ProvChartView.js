@@ -73,23 +73,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				this.numSources      = 0;
 			}
 			
-			//For empty editor charts
-			//if(this.editor && !this.provEntities){
-			//	this.type = options.editorType || null;
-			//	this.sources = [];
-			//	this.derivations = [];
-			//	this.programs = [];
-			//	this.provEntities = [];
-			//	this.numDerivations = 0;
-			//	this.numSources = 0;
-			//	this.numProvEntities = 0;
-			//	this.className += " editor empty";
-			//}
-			
-			//if(this.editModeOn) {
-			//	this.className += " editor ";
-			//}
-			
 			//Add the chart type to the class list
 			this.className = this.className + " " + this.type	;
 			
