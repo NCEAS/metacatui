@@ -596,16 +596,22 @@ img.icon{
 .prov-chart .node.previous{
 	border-width: 3px;
 }
-.prov-chart .node .icon-remove.hide{
+.prov-chart .icon-remove-sign.hide{
 	display: none;
 }
-.prov-chart .node .icon-remove.show{
+.prov-chart .data.icon-remove-sign.show{
 	position:absolute;
 	display: block;
-	top: 0px;
+	top: 5px;
 	height: 5px;
 	width: 5px;
-	right: 0px;
+	right: 5px;
+	color: #ff0000;
+}
+.prov-chart .program.icon-remove-sign.show{
+	position:absolute;
+	display: block;
+	font-size:25px;
 	color: #ff0000;
 }
 
@@ -697,21 +703,34 @@ img.icon{
 .prov-chart .node.editor{
 	border-color: #333;
     border-style: dashed;
+	text-align: center;
+	line-height: 16px;
+	font-size: 14px;
+	color:#C0C0C0;
+}
+.prov-chart i.icon.icon-plus{
+	color:#C0C0C0;
 }
 .prov-chart.editor.empty .prov-pointer{
 	-webkit-filter: saturate(0);
     filter: saturate(0);
 }
+/*
 .node .editor.icon {
     margin-left: 3px;
 }
+*/
 .prov-chart .program.node.active{
 	stroke: #00eb89;
 	stroke-width: 2px;
 	transition: stroke 200ms; 
 }
-.program-icon{
+.prov-chart .program-icon{
 	font-size: 25px;
+}
+/* Program editor node text */
+.prov-chart .editor text {
+    fill: #C0C0C0;
 }
 /********* The Prov Chart colors *******/		
 .prov-chart .node.uniqueNode1,
