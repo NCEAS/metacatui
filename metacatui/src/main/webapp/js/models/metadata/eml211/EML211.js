@@ -74,8 +74,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 
             },
             
-            url: function(){
-            	return MetacatUI.appModel.get("objectServiceUrl") + (this.get("id") || this.get("seriesid"));
+            url: function(options) {
+                var identifier;
+                if ( options && options.update ) {
+                    identifier = this.get("oldPid") || this.get("seriesid");
+                } else {
+                    identifier = this.get("id") || this.get("seriesid");
+                }
+                return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(identifier);
             },
             
             /*
@@ -686,34 +692,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              */
             serializeParties: function(eml, type){
             	
+            	//Remove the nodes from the EML for this party type
+            	$(eml).find(type.toLowerCase()).remove();
+            	
+            	//Serialize each party of this type
 	           	_.each(this.get(type), function(party, i){
-	           		//Get the existing nodes in the EML
-	           		var existingNode = $(eml).find(type.toLowerCase() + "#" + party.get("xmlID"));
 	           		
-	           		if(!existingNode.length){
-	           			existingNode = $(eml).find(type.toLowerCase());
-	           			if( existingNode.length )
-	           				existingNode = existingNode.eq(i);
-	           		}
-	           			
-	           		//Update the EMLParty DOM and insert into the EML
-	           		if ( existingNode.length ) {
-	           			existingNode.replaceWith(party.updateDOM());
-                        
-	           		} else {
-	           			var insertAfter = $(eml).find(type.toLowerCase()).last();
-	           			if( !insertAfter.length ) {
-	           				insertAfter = this.getEMLPosition(eml, type);
-	           			    
-	           			}
-	           			
-                        if ( insertAfter.length ) {
-    	           			insertAfter.after(party.updateDOM());
-                            
-                        } else {
-                            
-                        }
-	           		}
+	           		//Get the last node of this type to insert after
+           			var insertAfter = $(eml).find(type.toLowerCase()).last();
+           			
+           			//If there isn't a node found, find the EML position to insert after
+           			if( !insertAfter.length ) {
+           				insertAfter = this.getEMLPosition(eml, type);           			    
+           			}
+           			
+           			//Insert the party DOM at the insert position
+                    if ( insertAfter && insertAfter.length ) {
+	           			insertAfter.after(party.updateDOM());                        
+                    }
+           			//If an insert position still hasn't been found, then just append to the dataset node
+                    else{
+                    	$(eml).find("dataset").append(party.updateDOM());
+                    }
+                    
 	           	}, this);
 	           	
 	        	//Create a certain parties from the current app user if none is given
@@ -882,27 +883,62 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				    dataType: "text",
 				    processData: false,
 					parse: false,
-					//Use the URL function to determine the URL, unless this is an update - then make sure the URL uses the old pid
-					url: this.isNew()? this.url() : MetacatUI.appModel.get("objectServiceUrl") + this.get("oldPid"),
+					//Use the URL function to determine the URL
+					url: this.isNew() ? this.url() : this.url({update: true}),
+					xhr: function(){
+	                      var xhr = new window.XMLHttpRequest();
+	                      
+	                      //Upload progress
+	                      xhr.upload.addEventListener("progress", function(evt){
+	                        if (evt.lengthComputable) {
+	                          var percentComplete = evt.loaded / evt.total * 100;
+	                          
+	                          model.set("uploadProgress", percentComplete);
+	                        }
+	                      }, false);
+
+	                      return xhr;
+	                },
 					success: function(model, response, xhr){
 						console.log('yay, EML has been saved');
 						
-						model.set("uploadStatus", model.defaults().uploadStatus);
+						model.set("numSaveAttempts", 0);
+						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
                         model.fetch({merge: true, sysMeta: true});
 						model.trigger("successSaving", model);                        
 					},
 					error: function(model, response, xhr){
 						console.log("error updating EML: ", response.responseText);
-						model.set("uploadStatus", "e");
-						model.resetID();
 						
-						var errorDOM       = $($.parseHTML(response.responseText)),
-							errorContainer = errorDOM.filter("error"),
-							msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM,
-							errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
-						
-						model.trigger("errorSaving", errorMsg);
+						model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                    	var numSaveAttempts = model.get("numSaveAttempts");
+
+                    	//Reset the identifier changes
+                    	model.resetID();
+                    	
+                		if(numSaveAttempts < 3){
+                    		
+                    		//Try saving again in 10, 40, and 90 seconds
+                    		setTimeout(function(){ 
+                    				model.save.call(model);
+                    			}, 
+                    			(numSaveAttempts * numSaveAttempts) * 10000);
+                    	}
+                		else{
+                			model.set("numSaveAttempts", 0);
+                										
+							var errorDOM       = $($.parseHTML(response.responseText)),
+								errorContainer = errorDOM.filter("error"),
+								msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM.not("style, title"),
+								errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
+							
+		                    model.set("errorMessage", errorMsg);
+
+		                    model.set("uploadStatus", "e");
+		                        
+							model.trigger("errorSaving", errorMsg);
+                		}
 					}
 	   			}, MetacatUI.appUserModel.createAjaxSettings());
 	   			
@@ -950,6 +986,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
             		
             	}, this);
+            	
+            	//Validate the EMLTaxonCoverage model
+            	var taxonModel = this.get("taxonCoverage")[0];
+            		
+        		if( !taxonModel.isEmpty() && !taxonModel.isValid() ){
+        			errors = _.extend(errors, taxonModel.validationError);
+        		}
             	
             	//Check the required fields for this MetacatUI configuration
             	if(MetacatUI.appModel.get("emlEditorRequiredFields")){
@@ -1052,20 +1095,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             /*
              * Returns the node in the given EML document that the given node type should be inserted after
              */
-            getEMLPosition: function(eml, nodeName){
+            getEMLPosition: function(eml, nodeName) {
             	var nodeOrder = ["alternateidentifier", "shortname", "title", "creator", "metadataprovider", "associatedparty",
 	           		             "pubdate", "language", "series", "abstract", "keywordset", "additionalinfo", "intellectualrights", 
 	           		             "distribution", "coverage", "purpose", "maintenance", "contact", "publisher", "pubplace", 
 	           		             "methods", "project", "datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-            	
-            	var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
-            	if(position == -1)
-            		return false;
+                var entityNodes = ["datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
+                var isEntityNode = _.contains(entityNodes, nodeName);
+                var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
+                if ( position == -1 ) {
+                    return false;
+                }
             	
             	//Go through each node in the node list and find the position where this node will be inserted after
-            	for(var i=position-1; i>=0; i--){
-            		if($(eml).find(nodeOrder[i]).length)
-            			return $(eml).find(nodeOrder[i]).last();
+                for (var i = position - 1; i >= 0; i--) {
+                    if ( $(eml).find(nodeOrder[i]).length ) {
+                        // Handle non-entity nodes
+                        if ( ! isEntityNode ) {
+                            return $(eml).find(nodeOrder[i]).last();
+                        } else {
+                            // Handle entity nodes by returning the 
+                            // last child of the parent <dataset> since
+                            // entities have a {0..n}+ model 
+                            // (i.e optional, repeatable, no specific order)
+                            return $(eml).find("dataset").children().last();
+                        }
+                    }
             	}
             	
             	return false;
@@ -1123,7 +1178,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	var entity = _.find(this.get("entities"), function(e){
             		
             		//Matches of the checksum or identifier are definite matches
-            		if( e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObject.get("checksumAlgorithm").toUpperCase() == "MD5")
+            		if( e.get("xmlID") == dataONEObj.getXMLSafeID() )
+            			return true;
+            		else if( e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObj.get("checksumAlgorithm").toUpperCase() == "MD5")
             			return true;
             		else if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
             			return true;
@@ -1143,18 +1200,44 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	}, this);
             	
-            	if(entity)
+            	//If we found an entity, give it an ID and return it
+            	if(entity){
+                	
+                	//Create an XML-safe ID and set it on the Entity model
+                	entity.set("xmlID", dataONEObj.getXMLSafeID());
+                	
             		return entity;
+            	}
             	
+            	//See if one data object is of this type in the package
             	var matchingTypes = _.filter(this.get("entities"), function(e){
             		return (e.get("formatName") == (dataONEObj.get("formatId") || dataONEObj.get("mediaType")));
             	});
             	
-            	if(matchingTypes.length == 1)
+            	if(matchingTypes.length == 1){
+                	//Create an XML-safe ID and set it on the Entity model
+            		matchingTypes[0].set("xmlID", dataONEObj.getXMLSafeID());
+                	
             		return matchingTypes[0];
+            	}
             	
             	return false;
             		
+            },
+            
+            createEntity: function(dataONEObject){
+            	// Add or append an entity to the parent's entity list
+                var entityModel = new EMLOtherEntity({
+                    entityName : dataONEObject.get("fileName"),
+                    entityType : dataONEObject.get("formatId") || 
+                                 dataONEObject.get("mediaType") || 
+                                 "application/octet-stream",
+                    parentModel: this,
+                    xmlID: dataONEObject.getXMLSafeID()
+                });
+                
+                this.addEntity(entityModel);
+                
             },
             
             createUnits: function(){

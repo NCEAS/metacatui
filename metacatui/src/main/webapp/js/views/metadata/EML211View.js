@@ -67,7 +67,7 @@ define(['underscore', 'jquery', 'backbone',
         	"mouseover .funding-row .remove" : "previewFundingRemove",        	
         	"mouseout .funding-row .remove"  : "previewFundingRemove",
         	
-        	"keyup .eml-party.new .required" : "handlePersonTyping",
+        	"keyup .eml-party.new" : "handlePersonTyping",
         	
 			"click .side-nav-item"           : "switchSection",
 			
@@ -866,6 +866,8 @@ define(['underscore', 'jquery', 'backbone',
 	    		this.addFunding();
 	    	}
 	    	
+	    	this.model.trickleUpChange();
+	    	
 	    },
 	    
 	    //TODO: Comma and semi-colon seperate keywords
@@ -936,9 +938,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	e.preventDefault();
 	    	
-	    	//If we were brought here by a click but there is no value, exit.
-	    	//We only want to react to clicks on the up and down arrows of the number input
-	    	if(e.type == "click" && !$(e.target).val())
+	    	// Don't create a new EMLGeoCoverageView if the value isn't set
+	    	if(!$(e.target).val())
 	    		return;
 	    	
 	    	var viewEl = $(e.target).parents(".eml-geocoverage");
@@ -1339,7 +1340,7 @@ define(['underscore', 'jquery', 'backbone',
 
         	// Trigger the tricking up of this change for which part of the
         	// temporal coverage is set by category
-        	this.model.trigger("change");
+        	MetacatUI.rootDataPackage.packageModel.set("changed", true);
         },
 
 		showTemporalCoverageValidation: function(e) {
@@ -1639,7 +1640,7 @@ define(['underscore', 'jquery', 'backbone',
 		previewTaxonRemove: function(e){
 			var removeBtn = $(e.target);
 			
-			if(removeBtn.parent().is(".root-taxonomic-classification-container")){
+			if(removeBtn.parent().is(".root-taxonomic-classification")){
 				removeBtn.parent().toggleClass("remove-preview");
 			}
 			else{
@@ -1656,6 +1657,8 @@ define(['underscore', 'jquery', 'backbone',
         		this.model.set($(e.target).attr("data-category"), "");
         	else
         		this.model.set($(e.target).attr("data-category"), choice);
+        	
+        	this.model.trickleUpChange();
         },
         
         /*
@@ -1832,19 +1835,16 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Handle remove on a EML model / sub-model
 			if (submodel) {
-				if (!attribute) return;
 
 				model = this.model.get(submodel);
 
 				if (!model) return;
 
-				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
-
 				// Get the current value of the attribute so we can remove from it
 				var currentValue,
 					submodelIndex;
 
-				if (_.isArray(this.model.get(submodel))) {
+				if (Array.isArray(this.model.get(submodel))) {
 					// Stop now if there's nothing to remove in the first place
 					if (this.model.get(submodel).length == 0) return;
 
@@ -1858,9 +1858,15 @@ define(['underscore', 'jquery', 'backbone',
 					currentValue = this.model.get(submodel).get(attribute);
 				}
 
+				//FInd the position of this field in the list of fields
+				var position = $(e.target).parents(container)
+								.first()
+								.children(selector)
+								.index($(e.target).parents(selector));
+				
 				// Remove from the EML Model
 				if (position >= 0) {
-					if (_.isArray(this.model.get(submodel))) {
+					if (Array.isArray(this.model.get(submodel))) {
 						currentValue.splice(position, 1); // Splice returns the removed members
 						this.model.get(submodel)[submodelIndex].set(attribute, currentValue);
 					} else {
@@ -1869,13 +1875,16 @@ define(['underscore', 'jquery', 'backbone',
 					}
 					
 				}
+				
 			} else if (selector) {
 				// Find the index this attribute is in the DOM
-				var position = $(e.target).parents(container).first().children(selector).index(selector);
+				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parents(selector));
 				
 				//Remove this index of the array
 				var currentValue = this.model.get(attribute);
-				currentValue.splice(position, 1);
+				
+				if( Array.isArray(currentValue) )
+					currentValue.splice(position, 1);
 
 				//Set the array on the model so the 'set' function is executed
 				this.model.set(attribute, currentValue);

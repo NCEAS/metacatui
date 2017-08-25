@@ -576,6 +576,9 @@ footer .logos a:hover, a:focus{
 .data-package-item .edit:hover{
 	color: #22ea8b;
 }
+.data-package-item .bar{
+	background-color: #1E254F;
+}
 .eml-entity .nav-tabs li.active a {
     border-top: 2px solid #1E254F;
 }

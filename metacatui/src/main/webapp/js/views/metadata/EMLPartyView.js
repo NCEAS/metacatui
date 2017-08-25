@@ -151,6 +151,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		}
         		else
         			this.model.set(changedAttr, $(e.target).val());
+        		
+        		this.model.trickleUpChange();
         		    		        			
         	},
         	
@@ -188,6 +190,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
     			//Manually trigger the change event since it's an object
         		this.model.trigger("change:address");
         		this.model.trigger("change");
+        		
+        		this.model.trickleUpChange();
         	},
         	
         	updateName: function(e){
@@ -222,6 +226,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		//Manually trigger a change on the name attribute
         		this.model.trigger("change:individualName");
         		this.model.trigger("change");
+        		
+        		this.model.trickleUpChange();
         	},
         	
         	showValidation: function(){

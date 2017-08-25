@@ -1,9 +1,10 @@
 ﻿﻿/* global define */
-define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templates/dataItem.html'], 
-    function(_, $, Backbone, DataONEObject, DataItemTemplate){
+define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 
+        'models/metadata/eml211/EMLOtherEntity', 'text!templates/dataItem.html'], 
+    function(_, $, Backbone, DataONEObject, EMLOtherEntity, DataItemTemplate){
         
         /* 
-            A DataITemView represents a single data item in a data package as a single row of 
+            A DataItemView represents a single data item in a data package as a single row of 
             a nested table.  An item may represent a metadata object (as a folder), or a data
             object described by the metadata (as a file).  Every metadata DataItemView has a
             resource map associated with it that describes the relationships between the 
@@ -23,6 +24,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             /* Events this view listens to */
             events: {
                 "focusout .name"       : "updateName",
+                "click    .name"       : "emptyName",
                 /* "click .rename"     : "rename", */
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
@@ -53,6 +55,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 // Set the data-id for identifying events to model ids
                 this.$el.attr("data-id", this.model.get("id"));
                 
+                //Destroy the old tooltip
+                this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
+                
                 var attributes = this.model.toJSON();
                 
                 //Format the title
@@ -71,10 +76,93 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 	this.$el.addClass("data");
                 }
                 
+                //Check if the data package is in progress of being uploaded
+                this.toggleSaving();
+                
+                //Create tooltips based on the upload status
+                if(this.model.get("uploadStatus") == "e" && this.model.get("errorMessage")){
+                	var errorMsg = this.model.get("errorMessage");
+                	
+                	this.$(".icon.error").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip error'><h6>Error saving:</h6><div>" + errorMsg + "</div></div>",
+                		container: "body"
+                	});
+                	this.$el.removeClass("loading");
+                }
+                else if(this.model.get("uploadStatus") == "q"){
+                	this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>Ready to Submit</div>",
+                		container: "body"
+                	});
+                	this.$el.removeClass("loading");
+                }
+                else if(this.model.get("uploadStatus") == "c"){
+                	this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>Upload complete</div>",
+                		container: "body"
+                	});
+                	this.$el.removeClass("loading");
+                }
+                else if(this.model.get("uploadStatus") == "l"){
+                	this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>Reading file...</div>",
+                		container: "body"
+                	});
+                	
+                	this.$el.addClass("loading");
+                }
+                else if(this.model.get("uploadStatus") == "p"){
+                	var model = this.model;
+                	
+                	this.$(".status .progress").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: function(){
+                			if(model.get("numSaveAttempts") > 0){
+                				return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + model.get("numSaveAttempts") + " of 3)</div>";
+                			}
+                			else if(model.get("uploadProgress")){
+                				var percentDone = model.get("uploadProgress").toString();
+                				if(percentDone.indexOf(".") > -1)               				
+                					percentDone = percentDone.substring(0, percentDone.indexOf("."));
+                			}
+                			else
+                				var percentDone = "0";
+                			
+                			return "<div class='status-tooltip'>Uploading: " + percentDone + "%</div>";
+                		},
+                		container: "body"
+                	});
+                	                	
+                	this.$el.addClass("loading");
+                }
+                else{
+                	this.$el.removeClass("loading");
+                }
+                	
+                //Listen to changes to the upload progress of this object
+                this.listenTo(this.model, "change:uploadProgress", this.showUploadProgress);
+                
+                //Listen to changes to the upload status of the entire package
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:uploadStatus", this.toggleSaving);
+                
                 //listen for changes to rerender the view
                 this.listenTo(this.model, "change:fileName change:title change:id change:formatType " + 
                 		"change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
-                		"change:size change:nodeLevel", this.render); // render changes to the item
+                		"change:size change:nodeLevel change:uploadStatus", this.render); // render changes to the item
 
                 var view = this;
                 this.listenTo(this.model, "replace", function(newModel){
@@ -191,7 +279,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     parentDataPackage,   // The id of the first resource of this row's scimeta
                     dataONEObject,       // The dataONEObject to represent this file
                     self = this;         // A reference to this view
-                
+
                 event.stopPropagation();
                 event.preventDefault();
                 // handle drag and drop files
@@ -217,7 +305,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     _.each(fileList, function(file) {
                         console.log("Processing " + file.name + ", size: " + file.size);
                         
-                        var reader = new FileReader();
                         dataONEObject = new DataONEObject({
                             synced: true,
                             type: "Data",
@@ -225,100 +312,24 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                             size: file.size,
                             mediaType: file.type,
                             uploadFile: file,
-                            uploadReader: reader,
+                            uploadStatus: "l",
                             isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });
                         
-                        // Append to or create a new documents list
-                        if ( typeof this.parentSciMeta.get("documents") === "undefined" ) {
-                            this.parentSciMeta.set("documents", [dataONEObject.id]);
-                            
-                        } else {
-                            this.parentSciMeta.get("documents").push(dataONEObject.id);
-                            
-                        }
-                        this.parentSciMeta.set("uploadStatus", "q");
-                        dataONEObject.bytesToSize();
-                        this.collection.add(dataONEObject);
-                        
-                        // Set up the reader event handlers and
-                        // pass the event *and* the dataONEObject to the handlers
-                        reader.onprogress = function(event) {
-                            self.handleLoadProgress(event, dataONEObject);
-                        }
-                        
-                        reader.onerror = function(event) {
-                            self.handleLoadError(event, dataONEObject);
-                        }
-                        
-                        reader.onload = function(event) {
-                            self.handleLoadSuccess(event, dataONEObject);
-                        }
-                        
-                        reader.onabort = function(event) {
-                            self.handleLoadAbort(event, dataONEObject);
-                        }
-                        
-                        // Now initiate the file read
-                        reader.readAsArrayBuffer(file);
-                        
+                        dataONEObject.loadFile();
+                                                
                     }, this);
                     
-                    MetacatUI.rootDataPackage.packageModel.set("changed", true);
                 }
                 
             },
-            
-            /* During file reading, handle the user's cancel request */
-            handleCancel: function(event) {
-                // TODO: enable canceling of the file read from disk
-                // Need to get a reference to the FileReader to call abort
-                // 
-                // dataONEObject.uploadReader.abort(); ?
-                
-            },
-            
-            /* During file reading, deal with abort events */
-            handleLoadAbort: function(event, dataONEObject) {
-                // When file reading is aborted, update the model upload status
-                
-            },
-            
-            /* During file reading, deal with read errors */ 
-            handleLoadError: function(event, dataONEObject) {
-                // On error, update the model upload status
-            },
-            
-            /* During file reading, update the import progress in the model */
-            handleLoadProgress: function(event, dataONEObject) {
-                // event is a ProgressEvent - use it to update the import progress bar
-                
-                if ( event.lengthComputable ) {
-                    var percentLoaded = Math.round((event.loaded/event.total) * 100);
-                    dataONEObject.set("percentLoaded", percentLoaded);
-                }
-            },
-            
+                        
             /* During file reading, update the progress bar */
             updateLoadProgress: function(event) {
                 console.log(event);
                 
                 // TODO: Update the progress bar
-                
-            },
-            
-            /* During file reading, handle a successful read */
-            handleLoadSuccess: function(event, dataONEObject) {
-                // event.target.result has the file object bytes
-                
-                // Make the DataONEObject for the file, add it to the collection
-                var checksum = md5(event.target.result);
-                dataONEObject.set("checksum", checksum);
-                dataONEObject.set("checksumAlgorithm", "MD5");
-                dataONEObject.set("uploadStatus", "q"); // set status to queued
-                dataONEObject.set("uploadResult", event.target.result);
-                delete event; // Let large files be garbage collected
                 
             },
             
@@ -350,10 +361,18 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 if ( typeof event.delegateTarget.dataset.id !== "undefined" ) {
                     eventId = event.delegateTarget.dataset.id;
                     removalIds.push(eventId);
-                    
                 }
 
                 this.parentSciMeta = this.getParentScienceMetadata(event);
+                
+                if(!this.parentSciMeta){
+                	this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
+                	
+                	// Remove the row
+                    this.remove();
+                    return;
+                }
+
                 this.collection = this.getParentDataPackage(event);
                                 
                 // Get the corresponding model
@@ -394,6 +413,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                 // Remove each object from the collection
                 this.collection.remove(removalIds);
                 
+                this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
+                
                 // Remove the row
                 this.remove();
                 
@@ -422,6 +443,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
                     } else {
                         console.log("The model of the event isn't in the root package.");
                         console.log("TODO: Check in nested packages.");
+                        return;
                     }
                     
                     // Is this a Data or Metadata model?
@@ -504,7 +526,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
             previewRemove: function(){
             	this.$el.toggleClass("remove-preview");
             },
-
+            
+            emptyName: function(e){
+            	if(this.$(".name .required-icon").length)
+            		this.$(".name").children().empty();
+            },
             
             showValidation: function(attr, errorMsg){
 				
@@ -519,6 +545,48 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject', 'text!templa
 
             	//Remove the error styling
 				this.$(".error").removeClass("error");
+            },
+            
+            /*
+             * Show the data item as saving
+             */
+            showSaving: function(){
+            	this.$("button").prop("disabled", true);
+            	
+            	if(this.model.get("type") != "Metadata")
+            		this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
+            	
+            	this.$(".name > div").prop("contenteditable", false);
+            },
+            
+            hideSaving: function(){
+            	this.$("button").prop("disabled", false);
+            	this.$(".disable-layer").remove();
+            	this.$(".name > div").prop("contenteditable", true);
+            	this.$el.removeClass("error-saving");
+            },
+            
+            toggleSaving: function(){
+            	if(this.model.get("uploadStatus") == "p" || 
+            			this.model.get("uploadStatus") == "l" ||
+            			( this.model.get("uploadStatus") == "e" && this.model.get("type") != "Metadata") ||
+            			MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "p")
+            		this.showSaving();
+            	else
+            		this.hideSaving();
+            	
+            	if(this.model.get("uploadStatus") == "e")
+            		this.$el.addClass("error-saving");
+            },
+            
+            showUploadProgress: function(){
+            	
+            	if(this.model.get("numSaveAttempts") > 0){
+            		this.$(".progress .bar").css("width", "100%");
+            	}
+            	else{
+                	this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
+            	}
             }
         });
         

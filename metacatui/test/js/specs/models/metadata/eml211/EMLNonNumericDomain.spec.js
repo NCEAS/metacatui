@@ -64,7 +64,7 @@ define(["chai", "chai-jquery", "chai-backbone",
 
                 it("should return a textDomain object", function() {
                     textDomainAttrs.nonNumericDomain[0].textDomain.should.be.an("object");
-                    textDomainAttrs.nonNumericDomain[0].textDomain.should.have.all.keys("definition", "pattern", "source");
+                    textDomainAttrs.nonNumericDomain[0].textDomain.should.have.all.keys("xmlID", "definition", "pattern", "source");
                 });
 
                 it("should return a textDomain definition string", function() {
@@ -85,6 +85,46 @@ define(["chai", "chai-jquery", "chai-backbone",
                 });
             });
 
+            describe("For a nominal scale with a text domain, updateDOM()", function() {
+                var emlNonNumericDomain;
+                var updatedDOM;
+                var options;
+                var nonNumericDomain;
+                var textDomain;
+
+                /* Set up */
+                before(function() {
+                    emlNonNumericDomain = new EMLNonNumericDomain({
+                        measurementScale: "nominal",
+                        objectDOM: $(NonNumericDomainUtil.getTestNominalTextDomainXML())
+                    }, {parse: true});
+
+                    options = {silent: true};
+                    nonNumericDomain = emlNonNumericDomain.get("nonNumericDomain");
+                    textDomain = nonNumericDomain[0].textDomain;
+                    textDomain.definition = "Another definition";
+                    textDomain.pattern[0] = "{0-9}{0-9}{0-9}";
+                    textDomain.source = "Another source";
+                    nonNumericDomain[0].textDomain = textDomain;
+                    emlNonNumericDomain.set("nonNumericDomain", nonNumericDomain);
+                    updatedDOM = emlNonNumericDomain.updateDOM();
+                });
+
+                /* Tear down*/
+                after(function() {
+                    emlNonNumericDomain = undefined;
+                    nonNumericDomain = undefined;
+                    updatedDOM = undefined;
+                });
+
+                it("should return a modified text domain definition and pattern", function() {
+                    $(updatedDOM).children("nonNumericDomain").children("textdomain").attr("id").should.equal("12345");
+                    $(updatedDOM).children("nonNumericDomain").children("textdomain").children("definition")[0].textContent.should.equal("Another definition");
+                    $(updatedDOM).children("nonNumericDomain").children("textdomain").children("pattern")[0].textContent.should.equal("{0-9}{0-9}{0-9}");
+                });
+
+            });
+
             describe("For an ordinal scale with an enumerated domain code definition, .parse()", function() {
 
                 it("should return an attributes object", function() {
@@ -99,7 +139,7 @@ define(["chai", "chai-jquery", "chai-backbone",
 
                 it("should return an enumeratedDomain object", function() {
                     enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.should.be.an("object");
-                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.should.have.all.keys("codeDefinition");
+                    enumDomainCodeDefAttrs.nonNumericDomain[0].enumeratedDomain.should.have.all.keys("codeDefinition", "xmlID");
                 });
 
                 it("should return an enumeratedDomain codeDefinition array ", function() {
@@ -124,7 +164,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                 xml.push(
                     "<nominal>\n",
                     "\t<nonNumericDomain>\n",
-                    "\t\t<textDomain>\n",
+                    "\t\t<textDomain id=\"12345\">\n",
                     "\t\t\t<definition>Any text</definition>\n",
                     "\t\t\t<pattern>*</pattern>\n",
                     "\t\t\t<sourced>Any source</sourced>\n",
@@ -141,7 +181,7 @@ define(["chai", "chai-jquery", "chai-backbone",
                 xml.push(
                     "<ordinal>\n",
                     "\t<nonNumericDomain>\n",
-                    "\t\t<enumeratedDomain>\n",
+                    "\t\t<enumeratedDomain id=\"54321\">\n",
                     "\t\t\t<codeDefinition>\n",
                     "\t\t\t\t<code>JAL</code>\n",
                     "\t\t\t\t<definition>Jalama Beach, California</definition>\n",

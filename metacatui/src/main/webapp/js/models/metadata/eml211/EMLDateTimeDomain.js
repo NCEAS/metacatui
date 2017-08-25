@@ -13,16 +13,16 @@ define(["jquery", "underscore", "backbone",
         	type: "EMLDateTimeDomain",
 
             /* Attributes of an EMLDateTimeDomain object */
-            el: "dateTime",
+            el: "datetime",
 
             defaults: {
 
                 /* Attributes from EML */
-                xmlID: null, // The XML id of the attribute
                 formatString: null, // Required format string (e.g. YYYY)
                 dateTimePrecision: null, // The precision of the date time value
                 dateTimeDomain: null, // Zero or more bounds, or a references object
                 /* Attributes not from EML */
+                type: "dateTime",
                 parentModel: null, // The parent model this attribute belongs to
                 objectXML: null, // The serialized XML of this EML measurement scale
                 objectDOM: null  // The DOM of this EML measurement scale
@@ -74,12 +74,6 @@ define(["jquery", "underscore", "backbone",
                     $objectDOM = $objectDOM.children().first();
                 } else {
                     attributes.measurementScale = $objectDOM.localName;
-                }
-
-
-                // Add the XML id
-                if ( $objectDOM.attr("id") ) {
-                    attributes.xmlID = $objectDOM.attr("id");
                 }
 
                 // Add the formatString
@@ -149,16 +143,126 @@ define(["jquery", "underscore", "backbone",
             },
 
             /* Copy the original XML DOM and update it with new values from the model */
-            updateDOM: function() {
-                var objectDOM;
+            updateDOM: function(objectDOM) {
 
-                if ( this.get("objectDOM") ) {
-                    objectDOM = this.get("objectDOM").cloneNode(true);
+                var nodeToInsertAfter;
+                var type = this.get("type") || "datetime";
+                if ( ! objectDOM ) {
+                    objectDOM = this.get("objectDOM");
+                }
+                var objectXML = this.get("objectXML");
+
+                // If present, use the cached DOM
+                if ( objectDOM ) {
+                    objectDOM = objectDOM.cloneNode(true);
+
+                // otherwise, use the cached XML
+                } else if ( objectXML ){
+                    objectDOM = $(objectXML)[0].cloneNode(true);
+
+                // This is new, create it
                 } else {
-                    objectDOM = document.createElement(this.el);
+                    objectDOM = document.createElement(type);
+
                 }
 
-                // TODO: Populate the DOM with model values
+                // Update the formatString
+                if ( this.get("formatString") ) {
+                    if ( $(objectDOM).find("formatstring").length ) {
+                        $(objectDOM).find("formatstring").text(this.get("formatString"));
+                    } else {
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "formatString");
+                        
+                        if( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("formatstring"))
+                                .text(this.get("formatString"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after(
+                                $(document.createElement("formatstring"))
+                                    .text(this.get("formatString"))[0]
+                            );
+                        }
+                    }
+                }
+
+                // Update the dateTimePrecision
+                if ( this.get("dateTimePrecision") ) {
+                    if ( $(objectDOM).find("datetimeprecision").length ) {
+                        $(objectDOM).find("datetimeprecision").text(this.get("dateTimePrecision"));
+                    } else {
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "dateTimePrecision");
+                        
+                        if( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("datetimeprecision"))
+                                .text(this.get("dateTimePrecision"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after(
+                                $(document.createElement("datetimeprecision"))
+                                    .text(this.get("dateTimePrecision"))[0]
+                            );
+                        }
+                    }
+                }
+
+                // Update the dateTimeDomain
+                var dateTimeDomain = this.get("dateTimeDomain");
+                var dateTimeDomainNode = $(objectDOM).find("datetimedomain")[0];
+                var minBound;
+                var maxBound;
+                var boundsNode;
+                var minBoundNode;
+                var maxBoundNode;
+                if ( dateTimeDomain ) {
+                    
+                    // Remove the existing dateTimeDomain node
+                    if ( typeof dateTimeDomainNode !== "undefined" ) {
+                        dateTimeDomainNode.remove();
+                    } 
+                    
+                    // Do we have bounds?
+                    if ( typeof dateTimeDomain.bounds !== "undefined" &&
+                         dateTimeDomain.bounds.length ) {
+                        // Build the new dateTimeDomain node
+                        dateTimeDomainNode = document.createElement("datetimedomain");
+                        
+                        _.each(dateTimeDomain.bounds, function(bound) {
+                            minBound = bound.minimum;
+                            maxBound = bound.maximum;
+                            boundsNode = document.createElement("bounds");
+                            var hasBounds = typeof minBound !== "undefined" || typeof maxBound !== "undefined";
+                            if ( hasBounds ) {
+                                // Populate the minimum element
+                                if ( typeof minBound !== "undefined" ) {
+                                    minBoundNode = document.createElement("minimum");
+                                    minBoundNode.text(minBound);
+                                }
+
+                                // Populate the maximum element
+                                if ( typeof maxBound !== "undefined" ) {
+                                    maxBoundNode = document.createElement("maximum");
+                                    maxBoundNode.text(maxBound);
+                                }
+                                $(boundsNode).append(minBoundNode);
+                                $(boundsNode).append(maxBoundNode);
+                                $(dateTimeDomainNode).append(boundsNode);
+                            } else {
+                                // Do nothing. Content is missing, don't append the node
+                            }
+                        });
+                    } else {
+                        // Basically do nothing. Don't append the dateTimeDomain element
+                        // TODO: handle dateTimeDomain.references
+                        
+                    }
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "dateTimeDomain");
+                    
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).append(dateTimeDomainNode);
+                    } else {
+                        $(nodeToInsertAfter).after(dateTimeDomainNode);
+                    }
+                }
+                return objectDOM;
             },
 
             formatXML: function(xmlString){
@@ -173,14 +277,14 @@ define(["jquery", "underscore", "backbone",
 
                 // Append to the bottom if not found
                 if ( position == -1 ) {
-                    return $(objectDOM).children().last();
+                    return $(objectDOM).children().last()[0];
                 }
 
                 // Otherwise, go through each node in the node list and find the
                 // position where this node will be inserted after
                 for ( var i = position - 1; i >= 0; i-- ) {
                     if ( $(objectDOM).find(nodeOrder[i]).length ) {
-                        return $(objectDOM).find(nodeOrder[i].last());
+                        return $(objectDOM).find(nodeOrder[i]).last()[0];
                     }
                 }
             },

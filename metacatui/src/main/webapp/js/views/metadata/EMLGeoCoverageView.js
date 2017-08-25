@@ -35,7 +35,7 @@ define(['underscore', 'jquery', 'backbone',
         		"change"   : "updateModel",
         		"focusout .input-container" : "showValidation",
         		"keyup textarea.error" : "updateError",
-        		"click .coord.error"   : "updateError",
+        		"keyup .coord.error"   : "updateError",
         		"mouseover .remove"    : "toggleRemoveClass",
         		"mouseout  .remove"    : "toggleRemoveClass"
         	},
@@ -75,15 +75,13 @@ define(['underscore', 'jquery', 'backbone',
         		//Get the attribute that was changed
         		if(!attribute) return false;
         		
-        		this.model.set(attribute, value); 
+        		this.model.set(attribute, value);
+        		
+        		//this.model.isValid();
         		
         		if(this.model.get("parentModel")){
         			if(this.model.get("parentModel").type == "EML" && _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel"))){
-        				MetacatUI.rootDataPackage.packageModel.set("changed", true);
-        		    	
-        				//Validate the EML again
-        		    	if(this.model.get("parentModel").isValid())
-        		    		this.model.get("parentModel").trigger("valid");
+        				MetacatUI.rootDataPackage.packageModel.set("changed", true);        		    	
         			}
         		}
         	},
@@ -91,7 +89,7 @@ define(['underscore', 'jquery', 'backbone',
         	/*
         	 * If the model isn't valid, show verification messages
         	 */
-        	showValidation: function(e){
+        	showValidation: function(e, options){
         		
         		var view = this;
         		
@@ -119,8 +117,23 @@ define(['underscore', 'jquery', 'backbone',
 	        			hasError = false;
 	        		
 	        		//Find any incomplete coordinates
-	        		if(view.isNew && !north && !south && !east && !west && !description)
+	        		if(view.isNew && !north && !south && !east && !west && !description){
+	        			
+	        			//If the model is empty and the EML has a geoCoverage error, display that and exit
+	        			var emlModel = view.model.get("parentModel");
+	        			if( emlModel && emlModel.type == "EML" && $(".eml-geocoverage").index(view.el) == 0 ){
+	        				
+	        				var validationErrors = emlModel.validationError;
+		        			if(validationErrors && validationErrors.geoCoverage){
+		        				view.$(".notification").text(validationErrors.geoCoverage).addClass("error");
+			        			view.$el.addClass("error");
+			        			return;
+		        			}
+	        			}
+	        			
+	        			//Otherwise, there is no error
 	        			hasError = false;
+	        		}
 	        		else{
 		        		if(north && !west){
 		        			view.$(".west").addClass("error");
@@ -195,8 +208,8 @@ define(['underscore', 'jquery', 'backbone',
 	        		}
 	        		
 	        		if(hasError){
-	        			var errorMsg = view.model.validate();
-	        			view.$(".notification.error").text(errorMsg);
+	        			var errorMsg = view.model.validationError;
+	        			view.$(".notification").text(errorMsg).addClass("error");
 	        			view.$el.addClass("error");
 	        		}
 	        		else{
@@ -216,7 +229,12 @@ define(['underscore', 'jquery', 'backbone',
         		
         		if(input.val()){
         			input.removeClass("error");
-        			this.$(".notification.error").text("");
+        			
+        			//If there are no more errors, remove the error class from the view
+        			if(!this.$(".error").length){
+            			this.$(".notification.error").text("");
+        				this.$el.removeClass("error");
+        			}
         		}
         	},
         	

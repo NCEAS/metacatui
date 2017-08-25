@@ -1,5 +1,5 @@
 /**
- *   MetacatUI v2.0.0
+ *   MetacatUI v2.0.0RC1
  *   https://github.com/NCEAS/metacatui
  *   MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.
  **/
@@ -15,7 +15,7 @@ if ( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ) {
 MetacatUI.useD3 = true; 
 
 //This version of Metacat UI - used for cache busting
-MetacatUI.metacatUIVersion = "2.0.0";
+MetacatUI.metacatUIVersion = "2.0.0RC1";
 
 MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");

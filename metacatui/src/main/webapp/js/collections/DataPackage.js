@@ -1,4 +1,4 @@
-/* global define */
+﻿/* global define */
 "use strict";
 
 define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
@@ -32,26 +32,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             //A DataONEObject representing the resource map itself
             packageModel: null,
-			
-			queriesToRun: 0,
-			
-			// All provenance sources, for this or external packages
-			sources: [],
-			
-			// All provenance derivation, for this or external packages.
-			derivations: [],
-			
-			// Have provenance relationships been obtained for this package?
-			provenanceFlag: null,
-			
-			// Packages that have one or more source links to this package
-			sourcePackages: [],
-			
-			// Packages that have one or more derivation links to this package
-			derivationPackages: [],
-			sourceDocs: [],
-			derivationDocs: [],
-			relatedModels: [], 
 
             // The science data identifiers associated with this
             // data package (from cito:documents), mapped to the science metadata
@@ -128,13 +108,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             // Build the DataPackage URL based on the MetacatUI.appModel.objectServiceUrl
             // and id or seriesid
-            url: function() {
-
-                return MetacatUI.appModel.get("objectServiceUrl") +
-                    (encodeURIComponent(this.packageModel.get("id")) || encodeURIComponent(this.packageModel.get("seriesid")));
-
+            url: function(options) {
+            	
+            	if(options && options.update){
+            		return MetacatUI.appModel.get("objectServiceUrl") +
+                    (encodeURIComponent(this.packageModel.get("oldPid")) || encodeURIComponent(this.packageModel.get("seriesid")));
+            	}
+            	else{
+	                return MetacatUI.appModel.get("objectServiceUrl") +
+	                    (encodeURIComponent(this.packageModel.get("id")) || encodeURIComponent(this.packageModel.get("seriesid")));
+            	}
             },
-			
+
             /*
              * The DataPackage collection stores DataPackages and
              * DataONEObjects, including Metadata nad Data objects.
@@ -333,7 +318,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
 
                 //Fetch the resource map RDF XML
-                console.log("DataPackage: fetch returning.")
                 return Backbone.Collection.prototype.fetch.call(this, fetchOptions);
             },
 
@@ -382,7 +366,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         if ( memberPID )
                             memberPIDs.push(memberPID);
 
-						console.log("member PID: " + memberPID)
                         //TODO: Test passing merge:true when adding a model and this if statement may not be necessary
                         //Create a DataONEObject model to represent this collection member and add to the collection
                         if(!_.contains(this.pluck("id"), memberPID)){
@@ -444,10 +427,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                           }
                     }, this);
 
-					// All models must be syned before provenance relationships can be parsed, as the provenance
-					// info is stored in the models, which are fetched and created one at a time.
-					//this.on("complete", this.parseProv, this);
-
                     //Retrieve the model for each member
                     _.each(memberPIDs, function(pid){
 
@@ -482,370 +461,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         	});
 
                     }, this);
-				} catch (error) {
-					console.log(error);
-				}
-				
-				return models;
-			},
-			
-			/* Parse the provenance relationships from the RDF graph, after all DataPackage members
-			   have been fetched, as the prov info will be stored in them.
-			   */
-			parseProv: function() {
-				console.log("DataPackage: parseProv() called.");
 
-				try {
-                    /* Now run the SPARQL queries for the provenance relationships */
-                    var provQueries = [];
-                    /* result: pidValue, wasDerivedFromValue (prov_wasDerivedFrom) */
-                    provQueries["prov_wasDerivedFrom"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_wasDerivedFrom \n"+
-                                    "WHERE { \n"+
-                                        "?derived_data       prov:wasDerivedFrom ?primary_data . \n"+
-                                        "?derived_data       dcterms:identifier  ?pid . \n"+
-                                        "?primary_data       dcterms:identifier  ?prov_wasDerivedFrom . \n"+
-                                        "} \n"+
-                                     "]]>";
-
-                    /* result: pidValue, generatedValue (prov_generated) */
-                    provQueries["prov_generated"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_generated \n"+
-                                    "WHERE { \n"+
-                                        "?result         prov:wasGeneratedBy       ?activity . \n"+
-                                        "?activity       prov:qualifiedAssociation ?association . \n"+
-                                        "?association    prov:hadPlan              ?program . \n"+
-                                        "?result         dcterms:identifier        ?prov_generated . \n"+
-                                        "?program        dcterms:identifier        ?pid . \n"+
-                                        "} \n"+
-                                     "]]>";
-
-                    /* result: pidValue, wasInformedByValue (prov_wasInformedBy) */
-                    provQueries["prov_wasInformedBy"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_wasInformedBy \n"+
-                                    "WHERE { \n"+
-                                        "?activity               prov:wasInformedBy  ?previousActivity . \n"+
-                                        "?activity               dcterms:identifier  ?pid . \n"+
-                                        "?previousActivity       dcterms:identifier  ?prov_wasInformedBy . \n"+
-                                        "} \n"+
-                                     "]]> \n"
-
-                    /* result: pidValue, usedValue (prov_used) */
-                    provQueries["prov_used"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_used \n"+
-                                    "WHERE { \n"+
-                                        "?activity       prov:used                 ?data . \n"+
-                                        "?activity       prov:qualifiedAssociation ?association . \n"+
-                                        "?association    prov:hadPlan              ?program . \n"+
-                                        "?program        dcterms:identifier        ?pid . \n"+
-                                        "?data           dcterms:identifier        ?prov_used . \n"+
-                                        "} \n"+
-                                     "]]> \n"
-
-                    /* result: pidValue, programPidValue (prov_generatesByProgram) */
-                    provQueries["prov_generatedByProgram"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_generatedByProgram \n"+
-                                    "WHERE { \n"+
-                                        "?derived_data prov:wasGeneratedBy ?execution . \n"+
-                                        "?execution prov:qualifiedAssociation ?association . \n"+
-                                        "?association prov:hadPlan ?program . \n"+
-                                        "?program dcterms:identifier ?prov_generatedByProgram . \n"+
-                                        "?derived_data dcterms:identifier ?pid . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-
-                    /* result: pidValue, executionPidValue */
-                    provQueries["prov_generatedByExecution"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_generatedByExecution \n"+
-                                    "WHERE { \n"+
-                                        "?derived_data prov:wasGeneratedBy ?execution . \n"+
-                                        "?execution dcterms:identifier ?prov_generatedByExecution . \n"+
-                                        "?derived_data dcterms:identifier ?pid . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-
-                    /* result: pidValue, pid (prov_generatedByProgram) */
-                    provQueries["prov_generatedByUser"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_generatedByUser \n"+
-                                    "WHERE { \n"+
-                                        "?derived_data prov:wasGeneratedBy ?execution . \n"+
-                                        "?execution prov:qualifiedAssociation ?association . \n"+
-                                        "?association prov:agent ?prov_generatedByUser . \n"+
-                                        "?derived_data dcterms:identifier ?pid . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-                    /* results: pidValue, programPidValue (prov_usedByProgram) */
-                    provQueries["prov_usedByProgram"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_usedByProgram \n"+
-                                    "WHERE { \n"+
-                                        "?execution prov:used ?primary_data . \n"+
-                                        "?execution prov:qualifiedAssociation ?association . \n"+
-                                        "?association prov:hadPlan ?program . \n"+
-                                        "?program dcterms:identifier ?prov_usedByProgram . \n"+
-                                        "?primary_data dcterms:identifier ?pid . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-                    /* results: pidValue, executionIdValue (prov_usedByExecution) */
-                    provQueries["prov_usedByExecution"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_usedByExecution \n"+
-                                    "WHERE { \n"+
-                                        "?execution prov:used ?primary_data . \n"+
-                                        "?primary_data dcterms:identifier ?pid . \n"+
-                                        "?execution dcterms:identifier ?prov_usedByExecution . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-
-                    /* results: pidValue, pid (prov_usedByUser) */
-                    provQueries["prov_usedByUser"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_usedByUser \n"+
-                                    "WHERE { \n"+
-                                        "?execution prov:used ?primary_data . \n"+
-                                        "?execution prov:qualifiedAssociation ?association . \n"+
-                                        "?association prov:agent ?prov_usedByUser . \n"+
-                                        "?primary_data dcterms:identifier ?pid . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-                    /* results: pidValue, executionIdValue (prov_wasExecutedByExecution) */
-                    provQueries["prov_wasExecutedByExecution"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_wasExecutedByExecution \n"+
-                                    "WHERE { \n"+
-                                        "?execution prov:qualifiedAssociation ?association . \n"+
-                                        "?association prov:hadPlan ?program . \n"+
-                                        "?execution dcterms:identifier ?prov_wasExecutedByExecution . \n"+
-                                        "?program dcterms:identifier ?pid . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-
-                    /* results: pidValue, pid (prov_wasExecutedByUser) */
-                    provQueries["prov_wasExecutedByUser"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_wasExecutedByUser \n"+
-                                    "WHERE { \n"+
-                                        "?execution prov:qualifiedAssociation ?association . \n"+
-                                        "?association prov:hadPlan ?program . \n"+
-                                        "?association prov:agent ?prov_wasExecutedByUser . \n"+
-                                        "?program dcterms:identifier ?pid . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-
-                    /* results: pidValue, derivedDataPidValue (prov_hasDerivations) */
-                    provQueries["prov_hasDerivations"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "PREFIX cito:    <http://purl.org/spar/cito/> \n"+
-                                    "SELECT ?pid ?prov_hasDerivations \n"+
-                                    "WHERE { \n"+
-                                        "?derived_data prov:wasDerivedFrom ?source_data . \n"+
-                                        "?source_data dcterms:identifier ?pid . \n"+
-                                        "?derived_data dcterms:identifier ?prov_hasDerivations . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-
-                    /* results: pidValue, pid (prov_instanceOfClass) */
-                    provQueries["prov_instanceOfClass"] = "<![CDATA[ \n"+
-                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
-                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
-                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
-                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
-                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
-                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
-                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
-                                    "SELECT ?pid ?prov_instanceOfClass \n"+
-                                    "WHERE { \n"+
-                                        "?subject rdf:type ?prov_instanceOfClass . \n"+
-                                        "?subject dcterms:identifier ?pid . \n"+
-                                    "} \n"+
-                                  "]]> \n"
-
-					// These are the provenance fields that are currently searched for in the provenance queries, but
-					// not all of these fields are displayed by any view.
-                    this.provFields = ["prov_wasDerivedFrom", "prov_generated", "prov_wasInformedBy", "prov_used",
-                                      "prov_generatedByProgram", "prov_generatedByExecution", "prov_generatedByUser",
-                                      "prov_usedByProgram", "prov_usedByExecution", "prov_usedByUser", "prov_wasExecutedByExecution",
-                                      "prov_wasExecutedByUser", "prov_hasDerivations", "prov_instanceOfClass" ];
-
-                    // Process each SPARQL query
-                    var keys = Object.keys(provQueries);
-                    this.queriesToRun = keys.length;
-                    /* Run queries for all provenance fields.
-                       Each query may have multiple solutions and  each solution will trigger a callback
-                       to the 'onResult' function. When each query has completed, the 'onDone' function
-                       is called for that query.
-                    */
-					
-					//var myDataPackageGraph = rdf.graph();
-					//this.rdf.parse(this.objectXML, myDataPackageGraph, this.url(), 'application/rdf+xml');
-                    //var eq = rdf.SPARQLToQuery(provQueries['prov_wasDerivedFrom'], false, myDataPackageGraph);
-                    var eq = rdf.SPARQLToQuery(provQueries['prov_wasDerivedFrom'], false, this.dataPackageGraph);
-					
-					this.onResult = _.bind(this.onResult, this);
-					this.onDone   = _.bind(this.onDone, this);
-					
-                    for (var iquery = 0; iquery < keys.length; iquery++) {
-                      var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, this.dataPackageGraph);
-                      //var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, myDataPackageGraph);
-                      this.dataPackageGraph.query(eq, this.onResult, this.url(), this.onDone)
-                    }
                 } catch (error) {
                     console.log(error);
+
                 }
-            },
-			
-            /* This callback is called for every query solution of the SPARQL queries. One
-               query may result in multple queries solutions and calls to this function. 
-			   Each query result returns two pids, i.e. pid: 1234 prov_generated: 5678,
-			   which corresponds to the RDF triple '5678 wasGeneratedBy 1234', or the
-			   DataONE solr document for pid '1234', with the field prov_generated: 5678. */
-            onResult: function(result) {
-				
-			  // The return values have to be extracted from the result. 
-              function getValue(name) {
-                var res = result[name];
-                if (res) return res;
-                else return " ";
-              }
-              /* console.log(result); */
-              var memberPid = getValue("?pid");
-              var resval;
-              var provFieldResult;
-			  var provFieldValues;
-              // If there is a solution for this query, assign the
-              // prov field to the member with id = '?pid'
-              if(getValue("?pid")) {
-                var memberModel = null;
-			  	var provFieldValues;
-				// TODO: check if prov field was found
-                for (var iFld = 0; iFld < this.provFields.length; iFld++) {
-                    resval = "?" + this.provFields[iFld];
-					// The pid corresding to the object of the RDF triple, with the predicate
-					// of 'prov_generated', 'prov_used', etc.
-                    provFieldResult = getValue(resval);
-                    if(provFieldResult != " ") {
-			  			console.log("pid: " + memberPid + ", " + this.provFields[iFld] + ": " + getValue(resval));
-                      // Find the Datapacakge member for the result 'pid' and add the result
-                      // prov_* value to it.
-					  memberModel = this.get(memberPid);
-					  if (typeof memberModel !== 'undefined') {
-						  // Get the existing values for this prov field in the package member
-					  	provFieldValues = memberModel.get(this.provFields[iFld]);
-						if(typeof provFieldValues == "undefined")
-							 provFieldValues = [scimetaID];
-						else if(Array.isArray(provFieldValues) && !_.contains(provFieldValues, provFieldResult))
-							provFieldValues.push(provFieldResult);
-							
-						provFieldValues = _.uniq(provFieldValues);
-						// Add the current prov valid (a pid) to the current value in the member
-						memberModel.set(this.provFields[iFld], provFieldValues);
-						this.add(memberModel, { merge: true });
-                      }
-                   }
-                }
-              } else {
-                  console.log("No solution for query: " + this.provFields[iFld]);
-              }
+
+                return models;
             },
 
-            /* This callback is called when a query has finished. */
-            onDone: function() {
-              if(this.queriesToRun > 1) {
-				  console.log("queriesToRun: " + this.queriesToRun);
-                this.queriesToRun--;
-              } else {
-                console.log("All prov queries have completed.");
-                // Signal that all prov queries have finished
-				this.provenanceFlag = "complete";
-                this.trigger("queryComplete");
-              }
-            },
-			
             /*
              * Use the DataONEObject parseSysMeta() function
              */
@@ -853,13 +477,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	return DataONEObject.parseSysMeta.call(this, arguments[0]);
             },
 
-
             /*
     		 * Overwrite the Backbone.Collection.sync() function to set custom options
     		 */
     		save: function(options){
     			if(!options) var options = {};
-
+    			
+    			this.packageModel.set("uploadStatus", "p");
+    			
     			//Get the system metadata first if we haven't retrieved it yet
     			if(!this.packageModel.get("sysMetaXML")){
     				var collection = this;
@@ -879,51 +504,53 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			}
 
     			//Sort the models in the collection so the metadata is saved first
-    			var metadataModels  = this.where({ type: "Metadata" });
-    			var dataModels      = _.difference(this.models, metadataModels);
-    			var sortedModels    = _.union(metadataModels, dataModels);
+    			var metadataModels   = this.where({ type: "Metadata" });
+    			var dataModels       = _.difference(this.models, metadataModels);
+    			var sortedModels     = _.union(metadataModels, dataModels);
 				var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
-    			var modelsToBeSaved = _.difference(_.union(_.filter(sortedModels, function(m){
-										return (m.get("uploadStatus") == "q" || m.get("uploadStatus") == "e")
-										}), modelsInProgress));
-
+				var modelsToBeSaved  = _.filter(sortedModels, function(m){ 
+											//Models should be saved if they are in the save queue, had an error saving earlier,
+											//or they are Science Metadata model that is NOT already in progress
+											return (m.get("uploadStatus") == "q" || 
+													//m.get("uploadStatus") == "e" || 
+													(m.get("type") == "Metadata" && 
+															m.get("uploadStatus") != "p" && 
+															m.get("uploadStatus") != "c" &&
+															m.get("uploadStatus") != "e" ))
+									    });
+				
     			//First quickly validate all the models before attempting to save any
     			var allValid = _.every(modelsToBeSaved, function(m) {
     				return m.isValid();
     			});
-
-    			//If at least once model to be saved is invalid, cancel the save.
-    			if(!allValid){
-    				this.trigger("cancelSave");
+    			
+                // If at least once model to be saved is invalid, 
+                // or the metadata failed to save, cancel the save.
+                if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
+                         return model.get("uploadStatus");
+                    } ), "e") ) {
+                    this.packageModel.set("changed", false);
+                    this.trigger("cancelSave");
     				return;
     			}
-
-    			var failedSave = false;
-
+    			
     			//First save all the models of the collection, if needed
     			_.each(modelsToBeSaved, function(model){
-    				//Don't save any more models when one has failed
-    				if(failedSave) return;
-
-    				//If this model is in progress or in the queue
-					this.listenToOnce(model, "cancelSave", function(){
-						failedSave = true;
-						sortedModels = [];
-					});
-
 					//If the model is saved successfully, start this save function again
+    				this.stopListening(model, "successSaving", this.save);
 					this.listenToOnce(model, "successSaving", this.save);
+					
+					//If the model fails to save, start this save function
+					this.stopListening(model, "errorSaving", this.save);
+					this.listenToOnce(model, "errorSaving", this.save);
 
 					//Save the model and watch for fails
 					model.save();
 
 					//Add it to the list of models in progress
 					modelsInProgress.push(model);
-
+    				
     			}, this);
-
-    			if(failedSave)
-    				return;
 
     			//If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
     			if(modelsInProgress.length) return;
@@ -981,6 +608,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 				var checksum = md5(mapXML);
 				this.packageModel.set("checksum", checksum);
 				this.packageModel.set("checksumAlgorithm", "MD5");
+				
+				//Set the file name based on the id
+				this.packageModel.set("fileName", "resourceMap_" + this.packageModel.get("id") + ".xml");
 
     			//Create the system metadata
     			var sysMetaXML = this.packageModel.serializeSysMeta();
@@ -994,7 +624,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 				var collection = this;
 				var requestSettings = {
-						url: MetacatUI.appModel.get("objectServiceUrl"),
+						url: this.packageModel.isNew()? this.url() : this.url({ update: true }),
 						type: requestType,
 						cache: false,
 						contentType: false,
@@ -1010,12 +640,28 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             collection.packageModel.fetch({merge: true});
                             // Reset the content changes status
                             collection.packageModel.set("hasContentChanges", false);
+                            
+                            //Reset the upload status for all members
+                            _.each(collection.where({ uploadStatus: "c" }), function(m){
+                            	m.set("uploadStatus", m.defaults().uploadStatus);
+                            });
+                            
+                            //Reset the upload status for the package
+                            collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
 						},
 						error: function(data){
 							console.log("error udpating object");
 
 							//Reset the id back to its original state
 							collection.packageModel.resetID();
+							
+							//Reset the upload status for all members
+                            _.each(collection.where({ uploadStatus: "c" }), function(m){
+                            	m.set("uploadStatus", m.defaults().uploadStatus);
+                            });
+                            
+                            //Reset the upload status for the package
+                            collection.packageModel.set("uploadStatus", "e");
 
 							collection.trigger("error", data.responseText);
 						}
@@ -1340,8 +986,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 	return;
 
                 this.sort();
-                console.log("DataPackage is complete. All " + this.length + " models have been synced and added.");
                 this.trigger("complete", this);
+
+                console.log("DataPackage is complete. All " + this.length + " models have been synced and added.");
             },
 
             /*
@@ -1494,7 +1141,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         objectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
                         this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
     	            }, this);
-
+    	            
     			    //Change all the resource map identifier literal node in the RDF graph
     				if ( typeof idStatement != "undefined" ) {
                         try {
@@ -1778,6 +1425,28 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              */
             getQueue: function(){
             	return this.filter(function(m){ return m.get("uploadStatus") == "q" || m.get("uploadStatus") == "p" });
+            },
+            
+            handleAdd: function(dataONEObject){
+            	var metadataModel = this.find(function(m){ return m.get("type") == "Metadata" });
+            	
+            	// Append to or create a new documents list
+                if ( ! Array.isArray(metadataModel.get("documents")) ) {
+                	metadataModel.set("documents", [dataONEObject.id]);
+                    
+                } else {
+                	metadataModel.get("documents").push(dataONEObject.id);
+                }
+                
+                // Create an EML Entity for this DataONE Object
+                if(metadataModel.type == "EML"){                	
+                	metadataModel.createEntity(dataONEObject);
+	            }
+
+                metadataModel.set("uploadStatus", "q");
+                                
+                this.packageModel.set("changed", true);
+                this.packageModel.trigger("change:changed");
             },
 
             /*
