@@ -936,10 +936,26 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 						this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
 						this.addProvRel(this.packageModel, thisPid,   "prov_generated", memberPid);
 						this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+						// If data nodes already exist in this prov chart, then add them to the program.
+						_.each(view.sources, function(model){
+							if(model.get("type") == "data") {
+								var dataPid = model.get("id");
+								view.addProvRel(view.packageModel, dataPid, "prov_usedByProgram", thisPid);
+								view.addProvRel(view.packageModel, thisPid,   "prov_used", dataPid);
+							}
+						});
 					} else {
+						// Prov for a data node is being added
 						this.addProvRel(this.packageModel, memberPid, "prov_wasDerivedFrom", thisPid);
 						this.setMemberAttr(this.packageModel, thisPid, "type", "data");
 						this.addProvRel(this.packageModel, thisPid, "prov_hasDerivations", memberPid);
+						// If a program already exists in this prov chart, then connect this data node to
+						// the program as input.
+						_.each(view.programs, function(thisProgram) {
+							var programPid = thisProgram.get("id");
+							view.addProvRel(view.packageModel, thisPid, "prov_usedByProgram", programPid);
+							view.addProvRel(view.packageModel, programPid,   "prov_used", thisPid);
+						});
 					}
 				} else {
 					// This is a derivations chart
@@ -951,13 +967,28 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 						this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
 						this.addProvRel(this.packageModel, thisPid,   "prov_used", memberPid);
 						this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+						// If data nodes already exist in this prov chart, then add them to the program.
+						_.each(view.derivations, function(model){
+							if(model.get("type") == "data") {
+								var dataPid = model.get("id");
+								view.addProvRel(view.packageModel, dataPid, "prov_generatedByProgram", thisPid);
+								view.addProvRel(view.packageModel, thisPid,   "prov_generated", dataPid);
+							}
+						});
 					} else {
+						// Prov for a data node is being added
 						this.addProvRel(this.packageModel, thisPid, "prov_wasDerivedFrom", memberPid);
 						this.setMemberAttr(this.packageModel, thisPid, "type", "data")
 						this.addProvRel(this.packageModel, memberPid, "prov_hasDerivations", thisPid);
+						// If a program already exists in this prov chart, then connect this data node to
+						// the program as output.
+						_.each(view.programs, function(thisProgram) {
+							var programPid = thisProgram.get("id");
+							view.addProvRel(view.packageModel, thisPid, "prov_generatedByProgram", programPid);
+							view.addProvRel(view.packageModel, programPid,   "prov_generated", thisPid);
+						});
 					}
 				}
-				
 			}
 			
 			this.packageModel.trigger("redrawProvCharts");
