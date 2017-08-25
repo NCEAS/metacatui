@@ -20,6 +20,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.editModeOn    = options.editModeOn    || false;
 			this.editorType    = options.editorType    || null;
 
+			this.subviews = new Array()
 			this.selectProvEntityView = null;
 			this.type = null;
 			// Does this chart need to be re-rendered after prov relationships have been updated?
@@ -834,8 +835,22 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				label = "Choose from: ";
 			}
 			
+			// Check if a ProvEntitySelectView was left open previously for this
+			// prov chart and close it if yes.
+			_.each(this.subviews, function(thisView, i) {
+				// Check if this is a ProvChartView
+				if(thisView.className.indexOf("prov-entity-select") !== -1) {
+					console.log("found orphaned ProvEntitySelectView" + thisView.cid);
+					thisView.onClose();
+				}
+			});
+			
+			this.subviews = _.filter(this.subviews, function(item) {
+ 				return item.className !== "prov-entity-select";
+			});
+				
 			this.selectProvEntityView = new ProvEntitySelect({
-				parentView    : this,
+				parentView    : this.parentView,
 				title 		  : title,
 				selectLabel   : label,
 				selectEntityType : selectEntityType , // Can be either "data" or "program"
@@ -845,8 +860,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				displayRows   : Math.min(10, this.packageModel.get("members").length)
 			});
 			this.$el.append(this.selectProvEntityView.render());
+			this.subviews.push(this.selectProvEntityView);
+
 			// Display the modal and wait for completion.
-			$('#selectModal').modal('show');
+			this.$('#selectModal').modal('show');
 		},
 		
 		// Read selected values from a ProvEntitySelectView which is a modal dialog
@@ -876,8 +893,21 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			// this type to the prov of the current package member. The entityType
 			// is either "program" or "data".
 			var entityType = this.selectProvEntityView.selectEntityType;
+			
 			// Remove the selection modal
-			this.selectProvEntityView.onClose();
+			_.each(this.subviews, function(thisView, i) {
+				// Check if this is a ProvChartView
+				if(thisView.className.indexOf("prov-entity-select") !== -1) {
+					console.log("closing ProvEntitySelectView" + thisView.cid);
+					thisView.onClose();
+				}
+			});
+			
+			this.subviews = _.filter(this.subviews, function(item) {
+				return item.className !== "prov-entity-select";
+			});
+			// Remove the selection modal
+			//this.selectProvEntityView.onClose();
 			//Backbone.View.prototype.remove.call(this.selectedProvEntityView);
 			this.selectProvEntityView = null;
 			
