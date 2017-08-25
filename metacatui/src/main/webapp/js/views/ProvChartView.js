@@ -279,19 +279,52 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			// For non-editor nodes, set mouseenter and mouseleave event handlers to 
 			// display a delete icon that can be clicked to delete the node from the prov chart.
-			view.$(".node").not(".editor").hover(
+			view.$('.node:not(.editor)').hover(
+				// mouseenter action
+				// This could either be a nice, simple data node (a div) or a program node (an svg polygon).
   				function(e) {
-				    $(e.target).find("i.icon-remove").removeClass("hide");
-				    $(e.target).find("i.icon-remove").addClass("show");
-					$(e.target).find("i.icon-remove").on("click", function(evt){
-					});
-  				}, 
+					console.log("I'm in!")
+					// The cursor entered in the 'polygon' element, navigate to the group element that
+					// holds the delete icon, so that we can turn it on.
+					var classList = $(e.target).attr('class');
+					if(classList.toLowerCase().indexOf("program") > 0) {
+						console.log("it's a program!");
+						var parentNode = $(e.target).parent();
+						var gNode = $(parentNode).find("g[class*='icon-remove-sign']");
+						var classStr = $(gNode).attr("class");
+						$(gNode).attr("class", classStr.replace("hide", "show"));
+						$(gNode).on("click", function(evt){
+							console.log("Clicked to delete program!");
+						});
+					} else {
+						// Setup a data node for delete
+				    	$(e.target).find("i.icon-remove-sign").removeClass("hide");
+				    	$(e.target).find("i.icon-remove-sign").addClass("show");
+						$(e.target).find("i.icon-remove-sign").on("click", function(evt){
+							console.log("Clicked it!");
+							// Stop propagation of of the click event so that parent elements don't receive it.
+							// This will prevent the node popover from displaying for this node when the delete icon is clicked.
+							evt.stopPropagation();
+							view.removeProv(evt.target.parentNode.getAttribute("data-id"), evt.target.parentNode.getAttribute("class"));
+						});
+					}
+				},
+				// mouseleave action
 				function(e) {
-				    $(e.target).find("i.icon-remove").removeClass("show");
-				    $(e.target).find("i.icon-remove").addClass("hide");
+					var classList = $(e.target).attr('class');
+					if(classList.toLowerCase().indexOf("program") > 0) {
+						console.log("Exiting program!");
+						var parentNode = $(e.target).parent();
+						var gNode = $(parentNode).find("g[class*='icon-remove-sign']");
+						var classStr = $(gNode).attr("class");
+						$(gNode).attr("class", classStr.replace("show", "hide"));
+					} else {
+						console.log("I'm out");
+						$(e.target).find("i.icon-remove-sign").removeClass("show");
+						$(e.target).find("i.icon-remove-sign").addClass("hide");
+					}
   				}
 			);
-			
 			return this;
 		},
 		
@@ -343,8 +376,13 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if(provEntity.get("type") != "program"){
 				//Create a DOM element to represent the node	
 				var nodeEl = $(document.createElement("div")).css("top", top);;
-			}
-			else{
+				// Add a delete icon to the node if editing is on
+				if(this.editModeOn) {
+					var deleteIcon = $(document.createElement("i")).attr("class", "data icon-remove-sign hide");
+					$(nodeEl).append(deleteIcon);
+				}
+			} else {
+				type="program";
 				//Create an SVG drawing for the program arrow shape
 				var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
 					nodeEl = $(document.createElementNS("http://www.w3.org/2000/svg", "polygon"))
@@ -366,8 +404,20 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 						.attr("class", "popover-this program-icon pointer");
 				
 				//Glue it all together
-				$(g).append(iconEl);
+				$(g).append(iconEl);			
 				$(svg).append(nodeEl, g);
+
+				// Add a delete icon to the node if editing is on
+				if(this.editModeOn) {
+				    var gdel = $(document.createElementNS("http://www.w3.org/2000/svg", "g"))
+							.attr("transform", "translate(35,30)")
+							.attr("class", "program icon-remove-sign pointer hide");
+					var deleteIcon = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+							.text("\u{F057}")
+							.attr("class", "icon icon-foo pointer");
+					$(gdel).append(deleteIcon);
+					$(svg).append(gdel);
+				}
 			}
 
 			//Add classes via .attr() so it works for SVG, too
@@ -380,19 +430,13 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			//Display images in the prov chart node
 			if(type == "image"){
 				$(nodeEl).css("background-image", "url('" + provEntity.get("url") + "')");
-			}
+			} 
 			//Create an icon inside the node for other format types
-			else{
+			else {
 				var iconEl = $(document.createElement("i"))
 							 .addClass(icon + " icon");
 				//Put the icon in the node
 				$(nodeEl).append(iconEl);		
-			}
-			
-			// Add a delete icon to the node if editing is on
-			if(this.editModeOn) {
-				var deleteIcon = $(document.createElement("i")).attr("class", "icon-remove hide");
-				$(nodeEl).append(deleteIcon);
 			}
 		
 			//The placement and title of the popover depends on what type of chart this is
@@ -596,38 +640,36 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				//svg.setAttribute("class", "editor");
 				$(svg).attr("width", this.nodeHeight + "px").attr("height", this.nodeHeight + "px").css("top", top);
 				
-				//Create the code icon
-				//var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
-				//			.text("\u{f067}")
-				//			.attr("class", "icon icon-foo program-icon pointer");
-							
 				//Create the plus icon
-				var iconEl = document.createElement("i");
-				$(iconEl).addClass(" icon icon-plus");
+				var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+							.text("\u{f067}")
+							//.attr("class", "icon icon-foo program-icon pointer");
+							.attr("class", "icon icon-foo pointer");
+
 				
 				//Create a group element to contain the icon
 				var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-				$(g).attr("transform", "translate(18,43)")
+				$(g).attr("transform", "translate(25,30)")
 				//$(g).attr("class", "program-icon pointer ");
-				$(g).attr("class", " pointer ");
+				$(g).attr("class", " program editor pointer ");
 				
 				//Add classes via .attr() so it works for SVG, too
 				var currentClasses = $(nodeEl).attr("class") || "";
-				$(nodeEl).attr("class", currentClasses + " " + type + " editor node pointer " + isCollapsed);
+				$(nodeEl).attr("class", currentClasses + " " + type + " node editor pointer " + isCollapsed);
 				$(nodeEl).attr("tabindex", 0);
 				$(nodeEl).attr("data-id", id);
 				
-				// Display select box to this editor node if it is clicked.
-				//$(nodeEl).click(this.selectProvEntities);
-				
-				//var iconEl = $(document.createElement("i"))
-				//		 .addClass(icon + " icon");
-				//		 	//Put the icon in the node
-				//$(nodeEl).append(iconEl);
+				//Create a group element to contain the text "Add"
+				var addEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+										.text("Add");
+				var gAdd = document.createElementNS("http://www.w3.org/2000/svg", "g");
+				$(gAdd).attr("transform", "translate(18,45)")
+				$(gAdd).attr("class", " program editor pointer ");
+				$(gAdd).append(addEl);
 				
 				//Glue it all together
 				$(g).append(iconEl);
-				$(svg).append(nodeEl, g);	
+				$(svg).append(nodeEl, g, gAdd);	
 			}
 			
 			if(svg != null) {
