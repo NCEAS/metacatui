@@ -8,7 +8,7 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 	var ProvEntitySelectView = Backbone.View.extend({
 		initialize: function(options){
 			if((typeof options === "undefined") || !options) var options = {};
-			this.parentView    = options.parentView    || null;		
+			this.parentView    = options.parentView    || null;				// This 'parentView' is really ghe grandparent, i.e. metadataview	
 			this.title 		   = options.title         || "Add provenance";
 			this.selectLabel   = options.selectLabel   || "Choose from the files in this dataset";
 			this.selectEntityType  = options.selectEntityType || "data";
@@ -41,10 +41,33 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 			members = _.filter(members, function(item) {
 					return item.get("id") != view.context.get("id");
 			});	
-			// Don't display metadata in the selection view
+			
+		    // Don't include metadata package members	
 			members = _.filter(members, function(item) {
 					return item.get("formatType") != "METADATA";
 			});	
+			
+			if(this.selectEntityType == "program") {
+				// If a program is being selected, display in the list if
+				// first it is a program type, or if the type isn't defined, or
+				// if it is not data.
+				members = _.filter(members, function(item) {
+					if(view.parentView.isSoftware(item)) return true;
+					if(typeof item.get("formatId") === "undefined") return true;
+					if(item.get("formatId") === null) return true;
+					if(!view.parentView.isData(item)) return true;
+					return false;
+				});	
+			} else if (this.selectEntityType == "data") {
+			// Don't display metadata in the selection view
+				members = _.filter(members, function(item) {
+					if(view.parentView.isData(item)) return true;
+					if(typeof item.get("formatId") === "undefined") return true;
+					if(item.get("formatId") === null) return true;
+					if(!view.parentView.isSoftware(item)) return true;
+					return false;
+				});	
+			}
 			
 			// Set the number of items to display in the select list
 			if(this.displayRows == 0) this.displayRows == Math.min(10, members.length);
@@ -75,7 +98,7 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 		},
 		
 		onClose: function() {			
-			console.log("closing ProvEntitySelectionView");
+			console.log("ProvEntitySelectView: closing ProvEntitySelectionView");
 			this.remove();			
 			this.unbind();
 		}
