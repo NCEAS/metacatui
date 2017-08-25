@@ -498,6 +498,7 @@ define(['jquery',
 					// Check each prov chart to see if it has been marked for re-rendering and
 					// redraw it if it has been.
 					viewRef.listenToOnce(packageModel, "redrawProvCharts", viewRef.redrawProvCharts);
+					packageModel.once("change:isAuthorized", viewRef.redrawProvCharts, viewRef);
 					// Create a provenance editor for just the topmost package, if the user is authorized.
 					// It was necessary to wait until the package details were available, as the provenance
 					// editor requires them. We need :
@@ -515,6 +516,7 @@ define(['jquery',
 						console.log("Prov status changed, defering drawing prov charts.");
 						viewRef.drawProvCharts(packageModel);
 						viewRef.listenToOnce(packageModel, "redrawProvCharts", viewRef.redrawProvCharts);
+						packageModel.once("change:isAuthorized", viewRef.redrawProvCharts, viewRef);
 
 						// Create a provenance editor for just the topmost package, if the user is authorized.
 						// It was necessary to wait until the package details were available, as the provenance
@@ -1000,15 +1002,14 @@ define(['jquery',
 			// If the user is authorized to edit the provenance for this package and 
 			// the top most package is being rendered, then turn on editing, so that
 			// edit icons are displayed.
-			//TODO: reenable auth check when sign in sets it again (maybe DataPackage is modified now instaed?)
-			//if(packageModel.get("isAuthorized")) {
-			var isAuthorized = true;
+			//var isAuthorized = true;
 			var editModeOn = false; 
-			isAuthorized ? editModeOn = true : editModeOn = false;
-			console.log("edit mode on: " + editModeOn);
-
+			packageModel.get("isAuthorized") ? editModeOn = true : editModeOn = false;
+			//TODO: turn off authorized
+			//editModeOn = true; 
+			console.log("prov edit mode on: " + editModeOn);
+			
 			var view = this;
-
 			//Draw two flow charts to represent the sources and derivations at a package level
 			var packageSources     = packageModel.get("sourcePackages"),
 				packageDerivations = packageModel.get("derivationPackages");
@@ -1147,7 +1148,7 @@ define(['jquery',
  			});
 			
 			_.each(this.packageModels, function(packageModel){
-				console.log("Checking packageMode: " + packageModel.get("id"));
+				console.log("Checking packageModel: " + packageModel.get("id"));
 				if(packageModel.get("provenanceFlag") == "complete") {
 					console.log("redrawing prov chart for packageModel", packageModel.get("id"));
 					view.drawProvCharts(packageModel);
