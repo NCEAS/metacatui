@@ -32,6 +32,26 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             //A DataONEObject representing the resource map itself
             packageModel: null,
+			
+			queriesToRun: 0,
+			
+			// All provenance sources, for this or external packages
+			sources: [],
+			
+			// All provenance derivation, for this or external packages.
+			derivations: [],
+			
+			// Have provenance relationships been obtained for this package?
+			provenanceFlag: null,
+			
+			// Packages that have one or more source links to this package
+			sourcePackages: [],
+			
+			// Packages that have one or more derivation links to this package
+			derivationPackages: [],
+			sourceDocs: [],
+			derivationDocs: [],
+			relatedModels: [], 
 
             // The science data identifiers associated with this
             // data package (from cito:documents), mapped to the science metadata
@@ -426,7 +446,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 					// All models must be syned before provenance relationships can be parsed, as the provenance
 					// info is stored in the models, which are fetched and created one at a time.
-					this.on("complete", this.parseProv, this);
+					//this.on("complete", this.parseProv, this);
 
                     //Retrieve the model for each member
                     _.each(memberPIDs, function(pid){
@@ -760,8 +780,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             },
 			
             /* This callback is called for every query solution of the SPARQL queries. One
-               query may result in multple queries solutions and calls to this function. */
+               query may result in multple queries solutions and calls to this function. 
+			   Each query result returns two pids, i.e. pid: 1234 prov_generated: 5678,
+			   which corresponds to the RDF triple '5678 wasGeneratedBy 1234', or the
+			   DataONE solr document for pid '1234', with the field prov_generated: 5678. */
             onResult: function(result) {
+				
+			  // The return values have to be extracted from the result. 
               function getValue(name) {
                 var res = result[name];
                 if (res) return res;
@@ -780,21 +805,24 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 				// TODO: check if prov field was found
                 for (var iFld = 0; iFld < this.provFields.length; iFld++) {
                     resval = "?" + this.provFields[iFld];
+					// The pid corresding to the object of the RDF triple, with the predicate
+					// of 'prov_generated', 'prov_used', etc.
                     provFieldResult = getValue(resval);
                     if(provFieldResult != " ") {
 			  			console.log("pid: " + memberPid + ", " + this.provFields[iFld] + ": " + getValue(resval));
-                      // Find the model for the result 'pid' and add the result
+                      // Find the Datapacakge member for the result 'pid' and add the result
                       // prov_* value to it.
 					  memberModel = this.get(memberPid);
 					  if (typeof memberModel !== 'undefined') {
+						  // Get the existing values for this prov field in the package member
 					  	provFieldValues = memberModel.get(this.provFields[iFld]);
-						// Store the isDocumentedBy relationship
 						if(typeof provFieldValues == "undefined")
 							 provFieldValues = [scimetaID];
 						else if(Array.isArray(provFieldValues) && !_.contains(provFieldValues, provFieldResult))
 							provFieldValues.push(provFieldResult);
 							
 						provFieldValues = _.uniq(provFieldValues);
+						// Add the current prov valid (a pid) to the current value in the member
 						memberModel.set(this.provFields[iFld], provFieldValues);
 						this.add(memberModel, { merge: true });
                       }
@@ -807,12 +835,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             /* This callback is called when a query has finished. */
             onDone: function() {
-              if(this.queriesToRun > 0) {
+              if(this.queriesToRun > 1) {
+				  console.log("queriesToRun: " + this.queriesToRun);
                 this.queriesToRun--;
               } else {
                 console.log("All prov queries have completed.");
                 // Signal that all prov queries have finished
-                this.trigger("queryDone");
+				this.provenanceFlag = "complete";
+                this.trigger("queryComplete");
               }
             },
 			
