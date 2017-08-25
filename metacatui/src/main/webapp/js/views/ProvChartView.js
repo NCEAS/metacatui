@@ -262,7 +262,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			var nodeMin = 1;
 			var nodeMax = 23; // Max number of 'uniqueNoden' css classes defined (in metacatui-common.css)
 			var i = view.getRandomInt(nodeMin, nodeMin+5);
-			_.each(view.$(".node").not(".editor"), function(thisNode){
+			_.each(view.$('.node:not(.editor)'), function(thisNode){
 				//Don't use the unique class on images since they will look a lot different anyway by their image
 				if(!$(thisNode).first().hasClass("image")){
 					var className = "uniqueNode" + i;
@@ -627,9 +627,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				//Create the plus icon
 				var iconEl = document.createElement("i");
 				$(iconEl).addClass(" icon icon-plus");
-						
+				
 				//Put the icon in the node
 				$(nodeEl).append(iconEl);
+				$(nodeEl).append("Add");
 			} else {
 				//Create an SVG drawing for the program arrow shape
 				svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -873,6 +874,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			var values = [];
 			var myClasses = null;
 			var isProgram = false;
+			var view = this;
 
 			// Read values from the selection list modal dialog
 			selectedValues  = this.selectProvEntityView.readSelected();
@@ -1034,23 +1036,86 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			}
 		},
 		
+		// A delete icon has been clicked for a prov node, so remove the prov relationships that this node represents.
+		// The pid and the type ("program" or "data") are needed in order to remove the appropriate prov relationships.
+		removeProv: function(pid, classNames) {
+			var memberPid = this.context.get("id");
+
+			var entityType = null;
+			// Is this a program node or a data node?
+			(_.contains(classNames, "program")) ? entityType = "program" : entityType = "data"
+			// Is this a source prov chart or derivations
+			if(this.editorType == "sources") {
+				// This is a sources chart
+				if(entityType == "program") {
+					// source fields: prov_generatedByExecution, prov_generatedByProgram, prov_used, 
+					// prov_wasDerivedFrom, prov_wasInformedBy
+					this.removeProvRel(this.packageModel, memberPid, "prov_generatedByProgram", pid);
+					// Remove 'prov_instanceOfClass' if no relations from this pid any longer
+					//this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
+					this.removeProvRel(this.packageModel, pid, "prov_generated", memberPid);
+					// Remove 'type: program' if no more prov relations from this pid
+					//this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+				} else {
+					this.removeProvRel(this.packageModel, memberPid, "prov_wasDerivedFrom", pid);
+					//this.setMemberAttr(this.packageModel, thisPid, "type", "data");
+					this.removeProvRel(this.packageModel, pid, "prov_hasDerivations", memberPid);
+					// If there is a program present in this chart, then remove the prov relationship between
+					// the node and the current package member and the relationship between the node and the program
+					// (Currently only one program per prov chart).
+					var view = this;
+					_.each(view.programs, function(thisProgram) {
+						var progPid = thisProgram.get("id");
+						view.removeProvRel(view.packageModel, pid, "prov_usedByProgram", progPid);
+						view.removeProvRel(view.packageModel, progPid, "prov_used", pid);
+					});
+				}
+			} else {
+				// This is a derivations chart
+				// derivation fields: prov_usedByExecution, prov_usedByProgram, prov_hasDerivations,
+				// prov_generated
+				if(entityType == "program") {
+					//var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == thisPid});
+					this.removeProvRel(this.packageModel, memberPid, "prov_usedByProgram", pid);
+					this.removeProvRel(this.packageModel, pid, "prov_used", memberPid);
+				} else {
+					this.removeProvRel(this.packageModel, pid, "prov_wasDerivedFrom", memberPid);
+					this.removeProvRel(this.packageModel, memberPid, "prov_hasDerivations", pid);
+					var view = this;
+					_.each(view.programs, function(thisProgram) {
+						var progPid = thisProgram.get("id");
+						view.removeProvRel(view.packageModel, pid, "prov_generatedByProgram", progPid);
+						view.removeProvRel(view.packageModel, progPid, "prov_generated", pid);
+					});
+				}
+			}
+			this.packageModel.trigger("redrawProvCharts");
+		},
+		
+		// Remove a provenance relationship from a package member and rerender the prov charts.
 		removeProvRel: function(packageModel, subjectId, predicate, object) {
 			var subjectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == subjectId});
 			var objectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == object});
+			
 			// Is the predicate a source or destination field
 			var isSource = subjectMember.isSourceField(predicate)
 			var isDerivation = subjectMember.isDerivationField(predicate)
 			// If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
 			// such as the field 'prov_instanceOfClass'
 			if (!isSource && !isDerivation) {
-				subjectMember.set(predicate) = null;
+				subjectMember.set(predicate, null);
+			} else if (isSource) {
+				// Also populate the 'sources' accumulated attribute
+				subjectMember.set("provSources", _.reject(subjectMember.get("provSources"), objectMember));
+				subjectMember.set(predicate, _.reject(subjectMember.get(predicate), objectMember));
 			} else {
-				subjectMember.set(predicate) = _.filter(subjectMember.get(predicate), function(item) {
-						return item.get("id") != object
-				});
-			};
+				// Its a derivation field
+				// Also populate the 'derivations' accumulator field
+				subjectMember.set("provDerivations", _.reject(subjectMember.get("provDerivations"), objectMember));
+				subjectMember.set(predicate, _.reject(subjectMember.get(predicate), objectMember));
+			}
 		},
-		
+			
 		// Locate a package member give a pid, and set the supplied attribute with the value;
 		setMemberAttr: function(packageModel, pid, attr, value) {
 			var thisMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == pid});
