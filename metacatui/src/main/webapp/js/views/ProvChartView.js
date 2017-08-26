@@ -261,54 +261,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				}
 			});
 			
-			// For non-editor nodes, set mouseenter and mouseleave event handlers to 
-			// display a delete icon that can be clicked to delete the node from the prov chart.
-			view.$('.node:not(.editor)').hover(
-				// mouseenter action
-				// This could either be a nice, simple data node (a div) or a program node (an svg polygon).
-  				function(e) {
-					console.log("I'm in!")
-					// The cursor entered in the 'polygon' element, navigate to the group element that
-					// holds the delete icon, so that we can turn it on.
-					var classList = $(e.target).attr('class');
-					if(classList.toLowerCase().indexOf("program") > 0) {
-						console.log("it's a program!");
-						var parentNode = $(e.target).parent();
-						var gNode = $(parentNode).find("g[class*='icon-remove-sign']");
-						var classStr = $(gNode).attr("class");
-						$(gNode).attr("class", classStr.replace("hide", "show"));
-						$(gNode).on("click", function(evt){
-							console.log("Clicked to delete program!");
-						});
-					} else {
-						// Setup a data node for delete
-				    	$(e.target).find("i.icon-remove-sign").removeClass("hide");
-				    	$(e.target).find("i.icon-remove-sign").addClass("show");
-						$(e.target).find("i.icon-remove-sign").on("click", function(evt){
-							console.log("Clicked it!");
-							// Stop propagation of of the click event so that parent elements don't receive it.
-							// This will prevent the node popover from displaying for this node when the delete icon is clicked.
-							evt.stopPropagation();
-							view.removeProv(evt.target.parentNode.getAttribute("data-id"), evt.target.parentNode.getAttribute("class"));
-						});
-					}
-				},
-				// mouseleave action
-				function(e) {
-					var classList = $(e.target).attr('class');
-					if(classList.toLowerCase().indexOf("program") > 0) {
-						console.log("Exiting program!");
-						var parentNode = $(e.target).parent();
-						var gNode = $(parentNode).find("g[class*='icon-remove-sign']");
-						var classStr = $(gNode).attr("class");
-						$(gNode).attr("class", classStr.replace("show", "hide"));
-					} else {
-						console.log("I'm out");
-						$(e.target).find("i.icon-remove-sign").removeClass("show");
-						$(e.target).find("i.icon-remove-sign").addClass("hide");
-					}
-  				}
-			);
 			return this;
 		},
 		
@@ -364,6 +316,29 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				if(this.editModeOn) {
 					var deleteIcon = $(document.createElement("i")).attr("class", "data icon-remove-sign hide");
 					$(nodeEl).append(deleteIcon);
+					
+					$(nodeEl).hover(
+						// mouseenter action
+						// This could either be a nice, simple data node (a div) or a program node (an svg polygon).
+						function(e) {
+							// The cursor entered in the 'polygon' element, navigate to the group element that
+							// holds the delete icon, so that we can turn it on.
+							// Setup a data node for delete
+							$(e.target).find("i.icon-remove-sign").removeClass("hide");
+							$(e.target).find("i.icon-remove-sign").addClass("show");
+							$(e.target).find("i.icon-remove-sign").on("click", function(evt){
+								// Stop propagation of of the click event so that parent elements don't receive it.
+								// This will prevent the node popover from displaying for this node when the delete icon is clicked.
+								evt.stopPropagation();
+								view.removeProv(evt.target.parentNode.getAttribute("data-id"), evt.target.parentNode.getAttribute("class"));
+							});
+						},
+						// mouseleave action
+						function(e) {
+							$(e.target).find("i.icon-remove-sign").removeClass("show");
+							$(e.target).find("i.icon-remove-sign").addClass("hide");
+						}
+					);	
 				}
 			} else {
 				type="program";
@@ -394,13 +369,40 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				// Add a delete icon to the node if editing is on
 				if(this.editModeOn) {
 				    var gdel = $(document.createElementNS("http://www.w3.org/2000/svg", "g"))
-							.attr("transform", "translate(35,30)")
+							.attr("transform", "translate(35,25)")
 							.attr("class", "program icon-remove-sign pointer hide");
 					var deleteIcon = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
 							.text("\u{F057}")
+							.attr("fill", "#FF0000") // put this in the css file 
 							.attr("class", "icon icon-foo pointer");
 					$(gdel).append(deleteIcon);
 					$(svg).append(gdel);
+					
+					$(svg).hover(
+						// mouseenter action
+						// This could either be a nice, simple data node (a div) or a program node (an svg polygon).
+						function(e) {
+							// The cursor entered in the 'polygon' element, navigate to the group element that
+							// holds the delete icon, so that we can turn it on.
+							var gNode = $(e.target).find("g[class*='icon-remove-sign']");
+							var classStr = $(gNode).attr("class");
+							$(gNode).attr("class", classStr.replace("hide", "show"));
+							$(gNode).on("click", function(evt){
+								// Stop propagation of of the click event so that parent elements don't receive it.
+								// This will prevent the node popover from displaying for this node when the delete icon is clicked.
+								evt.stopPropagation();	
+								var dataId = $(evt.target).parent().parent().find("polygon").attr("data-id");
+								var nodeClass = $(evt.target).parent().parent().find("polygon").attr("class");
+								view.removeProv(dataId, nodeClass);
+							});
+						},
+						// mouseleave action
+						function(e) {
+							var gNode = $(e.target).find("g[class*='icon-remove-sign']");
+							var classStr = $(gNode).attr("class");
+							$(gNode).attr("class", classStr.replace("show", "hide"));
+						}
+					);
 				}
 			}
 
