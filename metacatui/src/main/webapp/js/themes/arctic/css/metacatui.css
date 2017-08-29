@@ -1283,6 +1283,7 @@ MDQ items
 	}
 	.prov-chart .node{
 		color: #1f254f;
+		stroke: #1f254f;
 	}
     
    #article-container.hasProvLeft, 
