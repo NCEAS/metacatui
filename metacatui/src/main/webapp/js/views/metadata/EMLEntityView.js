@@ -28,7 +28,8 @@ define(['underscore', 'jquery', 'backbone',
             
             /* Events this view listens to */
             events: {
-            	"change .input" : "updateModel",
+            	"change input" : "updateModel",
+            	"change textarea" : "updateModel",
             	"click .nav-tabs a" : "showTab",
             	"click .attribute-menu-item" : "showAttribute",
             	"mouseover .attribute-menu-item .remove" : "previewAttrRemove",
@@ -180,7 +181,8 @@ define(['underscore', 'jquery', 'backbone',
             
             addNewAttribute: function(){
             	var newAttrModel = new EMLAttribute({
-            			parentModel: this.model
+            			parentModel: this.model,
+                        xmlID: DataONEObject.generateId()
             		}),
             		newAttrView  = new EMLAttributeView({ 
             			isNew: true,
@@ -260,6 +262,8 @@ define(['underscore', 'jquery', 'backbone',
             		menuItem.remove();
 	            	this.$(".eml-attribute[data-attribute-id='" + attrModel.cid + "']").remove();
 	            	$(".tooltip").remove();
+	            	
+	            	this.model.trickleUpChange();
             	}
             },
             
@@ -348,21 +352,38 @@ define(['underscore', 'jquery', 'backbone',
             	removeBtn.parents(".attribute-menu-item").toggleClass("remove-preview");            	
             },
             
+            /*
+             * Show the entity overview or attributes tab
+             * depending on the click target
+             */
             showTab: function(e){
             	e.preventDefault();
             	
+            	//Get hte clicked link
        		  	var link = $(e.target);
        		  	
-       		  	link.tab('show');
+       		  	//Remove the active class from all links and add it to the new active link
+       		  	this.$(".nav-tabs li").removeClass("active");
+       		  	link.parent("li").addClass("active");
+       		  	
+       		  	//Hide all the panes and show the correct one
+       		  	this.$(".tab-pane").hide();
+       		  	this.$(link.attr("href")).show();
 
             },
             
+            /*
+             * Show the entity in a modal dialog
+             */
             show: function(){
             	
             	this.$el.modal('show');    
             	
             },
             
+            /*
+             * Hide the entity modal dialog
+             */
             hide: function(){
             	this.$el.modal('hide');
             }

@@ -54,6 +54,9 @@ a:hover{
 .success{
 	color: green;
 }
+.icon.warning{
+	color: #ffbc00;
+}
 .list-group-item.success {
     background-color: #dff0d8;
 }
@@ -559,6 +562,11 @@ img.icon{
 .prov-chart .node.program{
 	fill: #FFFFFF;
 }
+.prov-chart polygon.program.editor.node{
+	stroke: grey;
+	stroke-width: 1px;
+	stroke-dasharray: 2px,2px;
+}
 .prov-chart .programs svg{
 	position: absolute;
 }
@@ -591,6 +599,25 @@ img.icon{
 .prov-chart .node.previous{
 	border-width: 3px;
 }
+.prov-chart .icon-remove-sign.hide{
+	display: none;
+}
+.prov-chart .data.icon-remove-sign.show{
+	position:absolute;
+	display: block;
+	top: 5px;
+	height: 5px;
+	width: 5px;
+	right: 5px;
+	color: #ff0000;
+}
+.prov-chart .program.icon-remove-sign.show{
+	position:absolute;
+	display: block;
+	font-size:25px;
+	color: #ff0000;
+}
+
 .prov-chart .connecter{
 	border-top-width: 1px;
 	border-top-style: solid;
@@ -679,21 +706,34 @@ img.icon{
 .prov-chart .node.editor{
 	border-color: #333;
     border-style: dashed;
+	text-align: center;
+	line-height: 16px;
+	font-size: 14px;
+	color:#C0C0C0;
+}
+.prov-chart i.icon.icon-plus{
+	color:#C0C0C0;
 }
 .prov-chart.editor.empty .prov-pointer{
 	-webkit-filter: saturate(0);
     filter: saturate(0);
 }
+/*
 .node .editor.icon {
     margin-left: 3px;
 }
+*/
 .prov-chart .program.node.active{
 	stroke: #00eb89;
 	stroke-width: 2px;
 	transition: stroke 200ms; 
 }
-.program-icon{
+.prov-chart .program-icon{
 	font-size: 25px;
+}
+/* Program editor node text */
+.prov-chart .editor text {
+    fill: #C0C0C0;
 }
 /********* The Prov Chart colors *******/		
 .prov-chart .node.uniqueNode1,
@@ -951,7 +991,7 @@ img.icon{
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .gutters .entitydetails{
 	width: 60%; /* IE fallback */
-	width: calc(100% - 219px); /* 100% - prov-chart width - (padding + borders)*/
+	width: calc(100% - 220px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;	
 	margin-left: 105px;
 	box-sizing: border-box;
@@ -3169,6 +3209,9 @@ input.subtle:focus
 /*******************************************
 Editor View
 ******************************************/
+.Editor #Footer{
+	display: none;
+}
 .Editor #Navbar{
 	padding-bottom: 0px;
 }
@@ -3226,17 +3269,18 @@ ul.side-nav-items {
     position: fixed;
     background-color: #EEE;
     height: 100%;
-    width: 140px;
+    max-width: 160px;
+    min-width: 160px;
     margin-left: 0px;
     border-right: 1px solid #DDD;
 }
 .side-nav + .metadata-container{
-	margin-left: 14.893617021276595%;
+	margin-left: 160px;
 	padding-left: 20px;
 }
 .Editor #Footer {
-    left: 14.893617021276595%;
-    width: 85.1%;
+    left: 160px;
+    width: calc(100% - 160px);
     margin-left: 0px;
     margin-bottom: 0px;
 }
@@ -3270,6 +3314,7 @@ ul.side-nav-items {
 .data-package-item td {
     vertical-align: middle;
     white-space: nowrap;
+    position: relative;
 }
 
 .data-package-item td.name div {
@@ -3308,7 +3353,7 @@ ul.side-nav-items {
 /* Editor package table column 5 */
 .data-package-item td:last-of-type {
     text-align: right;
-    padding-right: 20px;
+    padding-right: 10px;
     padding-left: 0px;
     width: 100px;
 }
@@ -3318,15 +3363,63 @@ ul.side-nav-items {
 .data-package-item td button {
     text-align: center;
     vertical-align: middle;
-    width: 9em;
+    width: 8em;
     padding-top: .5em;
 }
-
+.data-package-item td button .icon{
+	margin-left: 0px;
+}
 .data-package-item .icon{
     margin-right: 10px;
     width: 1.4em;
 }
+.data-package-item.loading .edit.icon,
+.data-package-item.loading .edit.icon:hover{
+	cursor: default;
+	color: #999;
+}
+.data-package-item.error-saving .disable-layer{
+	width: 70px;
+}
 
+/* Editor package table status column */
+.data-package-item .status{
+	width: 60px;
+}
+.data-package-item .progress{
+	margin: 0px;
+}
+.data-package-item .progress-striped .bar{
+	background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.15)), color-stop(0.75, rgba(255, 255, 255, 0.15)), color-stop(0.75, transparent), to(transparent));
+    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+    background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+    background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+    -webkit-background-size: 40px 40px;
+    -moz-background-size: 40px 40px;
+    -o-background-size: 40px 40px;
+    background-size: 40px 40px;
+}
+.data-package-item .status .icon{
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.data-package-item .status{
+	text-align: center;
+}
+.status-tooltip div{
+	white-space: normal;
+}
+.status-tooltip.error h6{
+	color: red;
+}
+.status-tooltip.error div{
+	color: white;
+}
+.data-package-item.loading{
+	opacity: .6;
+}
 
 .Editor #data-package-table ul li a span {
     margin-left: .3em;
@@ -3393,10 +3486,11 @@ textarea.xlarge{
     
 } 
 .Editor .disable-layer{
-	background-color: rgba(0,0,0,.6);
+	background-color: rgba(255, 255, 255, 0.6);
     height: 100%;
     width: 100%;
     position: absolute;
+    top: 0px;
     z-index: 2;
 }
 .Editor .dropdown-menu li a i {
@@ -3651,6 +3745,11 @@ textarea.xlarge{
     margin-top: 2em;
     margin-bottom: 1em;
 }
+.eml-party .phone{
+	font-size: .8em;
+    padding: 5px;
+    height: 3em;
+}
 
 /* ---- Keywords ---- */
 .metadata-container .keywords .span2{
@@ -3743,6 +3842,11 @@ textarea.xlarge{
 	color: white;
 	z-index: 1;
 }
+.root-taxonomic-classification > .remove {
+    top: 10px;
+    right: 18px;
+    color: #999999;
+}
 .remove-preview,
 .locations-table .eml-geocoverage.remove-preview{
 	opacity: .3;
@@ -3807,7 +3911,8 @@ textarea.xlarge{
 .locations-table textarea.error{
 	border-color: red;
 }
-.eml-geocoverage.error {
+.eml-geocoverage.error,
+.locations-table .eml-geocoverage.error:nth-child(odd) {
     background-color: rgba(251, 188, 188, 0.35);
 }
 

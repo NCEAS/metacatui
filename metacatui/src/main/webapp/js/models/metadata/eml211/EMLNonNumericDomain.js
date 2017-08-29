@@ -16,7 +16,6 @@ define(["jquery", "underscore", "backbone",
             /* Attributes of an EMLNonNumericDomain object */
             defaults: {
                 /* Attributes from EML, extends attributes from EMLMeasurementScale */
-                xmlID: null, // the id of the nonNumericDomain element
                 measurementScale: null, // the name of this measurement scale
                 nonNumericDomain: [] // One or more of enumeratedDomain, textDomain, references
             },
@@ -76,6 +75,14 @@ define(["jquery", "underscore", "backbone",
                         "node of 'measurementScale', 'nominal', or 'ordinal'.");
                 }
 
+                // If measurementScale is present, add it
+                if ( rootNodeName == "measurementscale" ) {
+                    attributes.measurementScale = $objectDOM.children().first()[0].localName;
+                    $objectDOM = $objectDOM.children().first();
+                } else {
+                    attributes.measurementScale = $objectDOM.localName;
+                }
+
                 nonNumericDomainNodeList = $objectDOM.find("nonnumericdomain");
 
                 if ( nonNumericDomainNodeList && nonNumericDomainNodeList.length > 0 ) {
@@ -115,11 +122,6 @@ define(["jquery", "underscore", "backbone",
 
                 }
 
-                // Add the XML id
-                if ( $objectDOM.attr("id") ) {
-                    attributes.xmlID = $objectDOM.attr("id");
-                }
-
                 // Add in the textDomain content if present
                 // TODO
 
@@ -141,10 +143,20 @@ define(["jquery", "underscore", "backbone",
             parseTextDomain: function(domain) {
                 var domainObject = {};
                 domainObject.textDomain = {};
+                var xmlID;
                 var definition;
                 var patterns = [];
                 var source;
 
+                // Add the XML id attribute
+                if ( $(domain).attr("id") ) {
+                    xmlID = $(domain).attr("id");
+                } else {
+                    // Generate an id if it's not found
+                    xmlID = DataONEObject.generateId();
+                }
+                domainObject.textDomain.xmlID = xmlID;
+                
                 // Add the definition
                 definition = $(domain).children("definition").text();
                 domainObject.textDomain.definition = definition;
@@ -164,36 +176,41 @@ define(["jquery", "underscore", "backbone",
 
             /* Parse the nonNumericDomain/enumeratedDomain fragment
              * returning an object with an enumeratedDomain attribute, like:
-             * {
-             *     enumeratedDomain: {
-             *         codeDefinition: [
-             *             {
-             *                 code: "Some code", // required
-             *                 definition: "Some definition", // required
-             *                 source: "Some source"
-             *             } // repeatable
-             *         ]
+             * var emlCitation = {};
+             * var nonNumericDomain = [
+             *     {
+             *         enumeratedDomain: {
+             *             codeDefinition: [
+             *                 {
+             *                     code: "Some code", // required
+             *                     definition: "Some definition", // required
+             *                     source: "Some source"
+             *                 } // repeatable
+             *             ]
+             *         }
+             *     }, // or
+             *     {
+             *         enumeratedDomain: {
+             *             externalCodeSet: [
+             *                 {
+             *                     codesetName: "Some code", // required
+             *                     citation: [emlCitation], // one of citation or codesetURL
+             *                     codesetURL: ["Some URL"] // is required, both repeatable
+             *                 } // repeatable
+             *             ]
+             *         }
+             *     }, // or
+             *     {
+             *         enumeratedDomain: {
+             *             entityCodeList: {
+             *                 entityReference: "Some reference", // required
+             *                 valueAttributeReference: "Some attr reference", // required
+             *                 definitionAttributeReference: "Some definition attr reference", // required
+             *                 orderAttributeReference: "Some order attr reference"
+             *             }
+             *         }
              *     }
-             * }
-             * or
-             * {
-             *     enumeratedDomain: {
-             *         externalCodeSet: [
-             *             codesetName: "Some code", // required
-             *             citation: [EMLCitation], // one of citation or codesetURL
-             *             codesetURL: ["Some URL"] // is required, both repeatable
-             *         ]
-             *     }
-             * }
-             * or
-             * {
-             *     entityCodeList: {
-             *         entityReference: "Some reference", // required
-             *         valueAttributeReference: "Some attr reference", // required
-             *         definitionAttributeReference: "Some definition attr reference", // required
-             *         orderAttributeReference: "Some order attr reference"
-             *     }
-             * }
+             * ]
              */
             parseEnumeratedDomain: function(domain) {
                 var domainObject = {};
@@ -201,7 +218,17 @@ define(["jquery", "underscore", "backbone",
                 var codeDefinition = {};
                 var externalCodeSet = {};
                 var entityCodeList = {};
+                var xmlID;
 
+                // Add the XML id attribute
+                if ( $(domain).attr("id") ) {
+                    xmlID = $(domain).attr("id");
+                } else {
+                    // Generate an id if it's not found
+                    xmlID = DataONEObject.generateId();
+                }
+                domainObject.enumeratedDomain.xmlID = xmlID;
+                
                 // Add the codeDefinitions if present
                 var codeDefinitions = $(domain).children("codedefinition");
 
@@ -220,33 +247,6 @@ define(["jquery", "underscore", "backbone",
                 }
                 return domainObject;
             },
-            
-            updateEnumeratedDomain: function(code, def, index){
-            	var nonNumDomain = this.get("nonNumericDomain")[0];
-            	
-            	if(!nonNumDomain || !nonNumDomain.enumeratedDomain){
-            		this.set("nonNumericDomain", [{
-			    				enumeratedDomain: {
-			    					codeDefinition: [{
-			        					code: code,
-			        					definition: def
-			    					}]
-			    				}
-			    			}]);
-            	}
-            	else if(index > -1 && typeof nonNumDomain.enumeratedDomain.codeDefinition[index] == "object"){
-            		nonNumDomain.enumeratedDomain.codeDefinition[index].code = code;
-            		nonNumDomain.enumeratedDomain.codeDefinition[index].definition = def;
-            		this.trigger("change:nonNumericDomain");
-            	}
-            	else{
-            		nonNumDomain.enumeratedDomain.codeDefinition.push({
-            			code: code,
-            			definition: def
-            		});
-            		this.trigger("change:nonNumericDomain");
-            	}
-            },
 
             /* Serialize the model to XML */
             serialize: function() {
@@ -260,23 +260,267 @@ define(["jquery", "underscore", "backbone",
             },
 
             /* Copy the original XML DOM and update it with new values from the model */
-            updateDOM: function() {
+            updateDOM: function(objectDOM) {
                 var objectDOM;
+                var xmlID; // The id of the textDomain or enumeratedDomain fragment
+                var nonNumericDomainNode;
+                var domainType; // Either textDomain or enumeratedDomain
+                var $domainInDOM; // The jQuery object of the text or enumerated domain from the DOM
+                var nodeToInsertAfter;
+                var domainNode; // Either a textDomain or enumeratedDomain node
+                var definitionNode;
+                var patternNode;
+                var patterns;
+                var sourceNode;
+                var enumeratedDomainNode;
+                var codeDefinitions;
+                var codeDefinitionNode;
+                var codeNode;
+                
+                var type = this.get("measurementScale");
+                if ( typeof type === "undefined") {
+                    console.warn("Defaulting to an nominal measurementScale.");
+                    type = "nominal";
+                }
+                if ( ! objectDOM ) {
+                    objectDOM = this.get("objectDOM");
+                }
+                var objectXML = this.get("objectXML");
 
-                if ( this.get("objectDOM") ) {
-                    objectDOM = this.get("objectDOM").cloneNode(true);
+                // If present, use the cached DOM
+                if ( objectDOM ) {
+                    objectDOM = objectDOM.cloneNode(true);
+
+                // otherwise, use the cached XML
+                } else if ( objectXML ){
+                    objectDOM = $(objectXML)[0].cloneNode(true);
+
+                // This is new, create it
                 } else {
-                    objectDOM = document.createElement(/*this.el*/);
+                    objectDOM = document.createElement(type);
+
                 }
 
-                // TODO: Populate the DOM with model values
+                if ( this.get("nonNumericDomain").length ) {
+
+                    // Update each nonNumericDomain in the DOM
+                    _.each(this.get("nonNumericDomain"), function(domain) {
+                        
+                        // Is this a textDomain or enumeratedDomain?
+                        if ( typeof domain.textDomain === "object" ) {
+                            domainType = "textDomain";
+                            xmlID = domain.textDomain.xmlID;
+                            
+                        } else if ( typeof domain.enumeratedDomain === "object" ) {
+                            domainType = "enumeratedDomain";
+                            xmlID = domain.enumeratedDomain.xmlID;
+                        } else {
+                            console.log("Unrecognized NonNumericDomain type. Skipping.");
+                            // TODO: Handle references here
+                        }
+                        
+                        // Update the existing DOM node by id
+                        if ( xmlID ) {
+                            $domainInDOM = $(objectDOM).find("#" + xmlID);
+                            
+                            if ( $domainInDOM.length ) {
+                                if ( domainType === "textDomain" ) {
+                                    $domainInDOM.children("definition").text(domain.textDomain.definition);
+                                    // Remove existing patterns
+                                    $domainInDOM.children("pattern").remove();
+                                    
+                                    // Add any new patterns
+                                    if ( domain.textDomain.pattern && domain.textDomain.pattern.length ) {
+                                        patterns = Array.from(domain.textDomain.pattern).reverse();
+                                        _.each(patterns, function(pattern) {
+                                            // Prepend before the sourced element if present
+                                            patternNode = document.createElement("pattern");
+                                            $(patternNode).text(pattern);
+                                            if ( $domainInDOM.children("sourced").length ) {
+                                                $domainInDOM.children("sourced").before(patternNode);
+                                            } else {
+                                                $domainInDOM.append(patternNode);
+                                            }
+                                        });
+                                    } else {
+                                        // Remove patterns in the DOM not present in the textDomain
+                                        $domainInDOM.children("pattern").remove();
+                                    }
+                                    
+                                    // Update any new source
+                                    if ( domain.textDomain.source ) {
+                                        if ( $domainInDOM.children("sourced").length ) {
+                                            $domainInDOM.children("sourced").text(domain.textDomain.source);
+                                        } else {
+                                            // 
+                                            var src = document.createElement("sourced");
+                                            src.textContent = domain.textDomain.source;
+                                            $domainInDOM.children("textDomain").append(src);
+                                        }
+                                    } else {
+                                        // Remove the source in the DOM not present in the textDomain
+                                        // TODO: Uncomment this when we support "source" in the UI
+                                        // $domainInDOM.children("source").remove();
+
+                                    }
+                                    
+                                } else if ( domainType === "enumeratedDomain") {
+                                    // TODO
+                                }
+                            }
+                        // Otherwise append to the DOM
+                        } else {
+                            
+                            // Add the nonNumericDomain element
+                            nonNumericDomainNode = document.createElement("nonnumericdomain");
+                            
+                            if ( domainType === "textDomain" ) {
+                                
+                                // Add the definiton element
+                                domainNode = document.createElement("textdomain");
+                                if ( domain.textDomain.definition ) {
+                                    definitionNode = document.createElement("definition");
+                                    $(definitionNode).text(domain.textDomain.definition);
+                                    $(domainNode).append(definitionNode);
+                                }
+                                
+                                // Add the pattern element(s)
+                                if ( domain.textDomain.pattern.length ) {
+                                    _.each(domain.textDomain.pattern, function(pattern) {
+                                        patternNode = document.createElement("pattern");
+                                        $(patternNode).text(pattern);
+                                        $(domainNode).append(patternNode);
+                                    }, this);
+                                }
+
+                                // Add the source element
+                                if ( domain.textDomain.source ) {
+                                    sourceNode = document.createElement("sourced"); // Accommodate parseHTML() with "d"
+                                    $(sourceNode).text(domain.textDomain.source);
+                                    $(domainNode).append(sourceNode);
+                                }
+                                
+                            } else if ( domainType === "enumeratedDomain" ) {
+                                domainNode = document.createElement("enumerateddomain");
+                                
+                                if ( domain.enumeratedDomain.codeDefinition.length ) {
+                                    
+                                    // Add each codeDefinition
+                                    _.each(domain.enumeratedDomain.codeDefinition, function(codeDef) {
+                                        
+                                        // Add the required code element
+                                        if ( codeDef.code ) {
+                                            codeDefinitionNode = document.createElement("codedefinition");
+                                            codeNode = document.createElement("code");
+                                            $(codeNode).text(codeDef.code);
+                                            $(codeDefinitionNode).append(codeNode);
+                                        }
+                                        
+                                        // Add the required definition element
+                                        if ( codeDef.definition ) {
+                                            definitionNode = document.createElement("definition");
+                                            $(definitionNode).text(codeDef.definition);
+                                            $(codeDefinitionNode).append(definitionNode);
+                                        }
+
+                                        // Add the optional source element
+                                        if ( codeDef.source ) {
+                                            sourceNode = document.createElement("sourced"); // Accommodate parseHTML() with "d"
+                                            $(sourceNode).text(codeDef.source);
+                                            $(codeDefinitionNode).append(sourceNode);
+                                        }
+                                        $(domainNode).append(codeDefinitionNode);
+                                        
+                                    }, this);
+                                    
+                                } else if ( domain.enumeratedDomain.externalCodeSet ) {
+                                    // TODO Handle externalCodeSet
+                                    
+                                } else if ( domain.enumeratedDomain.entityCodeList ) {
+                                    // TODO Handle entityCodeList
+                                }
+                                
+                            } else {
+                                console.log("The domainType: " + domainType + " is not recognized.");
+                            }
+                            $(nonNumericDomainNode).append(domainNode);
+                            $(objectDOM).append(nonNumericDomainNode);
+                        }
+                    }, this);
+
+                } else {
+                    // We have no content, so can't create a valid domain
+                    console.log("In EMLNonNumericDomain.updateDOM(),\n" +
+                        "references are not handled yet. Returning undefined.");
+                    // TODO: handle references here
+                    return undefined;
+                }
+                return objectDOM;
             },
 
-            formatXML: function(xmlString){
-                return DataONEObject.prototype.formatXML.call(this, xmlString);
+            /*
+             * Update the codeDefinitionList in the  first enumeratedDomain
+             * found in the nonNumericDomain array.
+             * TODO: Refactor this to support externalCodeSet and entityCodeList
+             * TODO: Support the source field
+             * TODO: Support repeatable enumeratedDomains
+             * var nonNumericDomain = [
+             *     {
+             *         enumeratedDomain: {
+             *             codeDefinition: [
+             *                 {
+             *                     code: "Some code", // required
+             *                     definition: "Some definition", // required
+             *                     source: "Some source"
+             *                 } // repeatable
+             *             ]
+             *         }
+             *     }
+             * ]
+             */
+            updateEnumeratedDomain: function(code, definition, index) {
+                var nonNumericDomain = this.get("nonNumericDomain");
+                var enumeratedDomain = {};
+                var codeDefinitions;
+                
+                // Create from scratch
+                if ( ! nonNumericDomain.length ) {
+                    nonNumericDomain.push({
+                        enumeratedDomain: {
+                            codeDefinition: [
+                                {
+                                    code: code,
+                                    definition: definition
+                                }
+                            ]
+                        }
+                    })
+                // Update existing
+                } else {
+                    enumeratedDomain = this.get("nonNumericDomain")[0].enumeratedDomain;
+                    if ( typeof enumeratedDomain !== "undefined" ) {
+                        codeDefinitions = enumeratedDomain.codeDefinition;
+                        if ( codeDefinitions.length >= index ) {
+                            codeDefinitions[index] = {
+                                code: code,
+                                definition: definition
+                            }
+                        } else {
+                            codeDefinitions.push({
+                                code: code,
+                                definition: definition
+                            });
+                        }
+                        
+                    }
+                }
             },
-
-            /**/
+            
+            /*
+             * Get the DOM node preceding the given nodeName
+             * to find what position in the EML document
+             * the named node should be appended
+             */
             getEMLPosition: function(objectDOM, nodeName) {
                 // TODO: set the node order
                 var nodeOrder = ["enumerateddomain", "textdomain"];
@@ -285,14 +529,14 @@ define(["jquery", "underscore", "backbone",
 
                 // Append to the bottom if not found
                 if ( position == -1 ) {
-                    return $(objectDOM).children().last();
+                    return $(objectDOM).children().last()[0];
                 }
 
                 // Otherwise, go through each node in the node list and find the
                 // position where this node will be inserted after
                 for ( var i = position - 1; i >= 0; i-- ) {
                     if ( $(objectDOM).find(nodeOrder[i]).length ) {
-                        return $(objectDOM).find(nodeOrder[i].last());
+                        return $(objectDOM).find(nodeOrder[i]).last()[0];
                     }
                 }
             },

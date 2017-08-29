@@ -70,6 +70,7 @@ define([
 
                 // Listen for  add events because models are being merged
                 this.listenTo(this.dataPackage, 'add', this.addOne);
+                this.listenTo(this.dataPackage, "fileAdded", this.addOne);
 
                 // Render the current set of models in the DataPackage
                 this.addAll();
@@ -84,6 +85,10 @@ define([
             	if(!item) return false;
             	
                 console.log("DataPackageView.addOne called for " + item.id);
+                
+                //Don't add duplicate rows
+                if(this.$(".data-package-item[data-id='" + item.id + "']").length) 
+                	return;
                 
                 var dataItemView, scimetaParent, parentRow, delayed_models;                
                 

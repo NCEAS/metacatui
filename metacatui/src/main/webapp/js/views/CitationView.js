@@ -65,6 +65,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
  			}		 
 			//Create the citation from the metadata doc if we have one
 			else if (this.metadata) {
+				
+				//If this object is in progress of saving, don't RErender this view.
+				if(this.metadata.get("uploadStatus") == "p" && this.$el.children().length)
+					return;
+					
 				//Clear the element
 				this.$el.html("");
 				

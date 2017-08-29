@@ -495,6 +495,10 @@ define(['jquery',
 			    //Show the provenance trace for this package
 				if(packageModel.get("provenanceFlag") == "complete") {
 					viewRef.drawProvCharts(packageModel);
+					// Check each prov chart to see if it has been marked for re-rendering and
+					// redraw it if it has been.
+					viewRef.listenToOnce(packageModel, "redrawProvCharts", viewRef.redrawProvCharts);
+					packageModel.once("change:isAuthorized", viewRef.redrawProvCharts, viewRef);
 					// Create a provenance editor for just the topmost package, if the user is authorized.
 					// It was necessary to wait until the package details were available, as the provenance
 					// editor requires them. We need :
@@ -511,6 +515,9 @@ define(['jquery',
 					viewRef.listenToOnce(packageModel, "change:provenanceFlag", function() {
 						console.log("Prov status changed, defering drawing prov charts.");
 						viewRef.drawProvCharts(packageModel);
+						viewRef.listenToOnce(packageModel, "redrawProvCharts", viewRef.redrawProvCharts);
+						packageModel.once("change:isAuthorized", viewRef.redrawProvCharts, viewRef);
+
 						// Create a provenance editor for just the topmost package, if the user is authorized.
 						// It was necessary to wait until the package details were available, as the provenance
 						// editor requires them. We need :
@@ -995,15 +1002,14 @@ define(['jquery',
 			// If the user is authorized to edit the provenance for this package and 
 			// the top most package is being rendered, then turn on editing, so that
 			// edit icons are displayed.
-			//TODO: reenable auth check when sign in sets it again (maybe DataPackage is modified now instaed?)
-			//if(packageModel.get("isAuthorized")) {
-			var isAuthorized = true;
+			//var isAuthorized = true;
 			var editModeOn = false; 
-			isAuthorized ? editModeOn = true : editModeOn = false;
-			console.log("edit mode on: " + editModeOn);
-
+			packageModel.get("isAuthorized") ? editModeOn = true : editModeOn = false;
+			//TODO: turn off authorized
+			//editModeOn = true; 
+			console.log("prov edit mode on: " + editModeOn);
+			
 			var view = this;
-
 			//Draw two flow charts to represent the sources and derivations at a package level
 			var packageSources     = packageModel.get("sourcePackages"),
 				packageDerivations = packageModel.get("derivationPackages");
@@ -1116,6 +1122,43 @@ define(['jquery',
 			}
 		},
 		
+		/* Step through all prov charts and re-render each one that has been
+		   marked for re-rendering.
+		*/
+		redrawProvCharts: function() {
+			var view = this;
+			
+			console.log("redrawProvCharts called.");
+
+			_.each(this.subviews, function(thisView, i) {
+				
+				console.log("checking view: " + thisView.className);
+				// Check if this is a ProvChartView
+				if(thisView.className.indexOf("prov-chart") !== -1) {
+					console.log("found prov chart " + thisView.cid);
+					// Check if this ProvChartView is marked for re-rendering
+					// Erase the current ProvChartView
+					thisView.onClose();
+				}
+			});
+			
+			// Remove prov charts from the array of subviews.
+			this.subviews = _.filter(this.subviews, function(item) {
+	  			return item.className.indexOf("prov-chart") == -1; 
+ 			});
+			
+			_.each(this.packageModels, function(packageModel){
+				console.log("Checking packageModel: " + packageModel.get("id"));
+				if(packageModel.get("provenanceFlag") == "complete") {
+					console.log("redrawing prov chart for packageModel", packageModel.get("id"));
+					view.drawProvCharts(packageModel);
+					// Check each prov chart to see if it has been marked for re-rendering and
+					// redraw it if it has been.
+					view.listenToOnce(packageModel, "redrawProvCharts", view.redrawProvCharts);
+				}
+			});
+		},
+		
 		/*
 		 * param dataObject - a SolrResult representing the data object returned from the index
 		 * returns - true if this data object is an image, false if it is other
@@ -1135,7 +1178,70 @@ define(['jquery',
 			else return true;
 
 		},
-
+		
+		isData: function(dataObject) {
+			var dataIds =  ["application/atom+xml",
+							"application/mathematica",
+							"application/msword",
+							"application/netcdf",
+							"application/octet-stream",
+							"application/pdf",
+							"application/postscript",
+							"application/rdf+xml",
+							"application/rtf",
+							"application/vnd.google-earth.kml+xml",
+							"application/vnd.ms-excel",
+							"application/vnd.ms-excel.sheet.binary.macroEnabled.12",
+							"application/vnd.ms-powerpoint",
+							"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+							"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+							"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+							"application/x-bzip2",
+							"application/x-fasta",
+							"application/x-gzip",
+							"application/x-rar-compressed",
+							"application/x-tar",
+							"application/xhtml+xml",
+							"application/xml",
+							"application/zip",
+							"audio/mpeg",
+							"audio/x-ms-wma",
+							"audio/x-wav",
+							"image/bmp",
+							"image/jp2",
+							"image/jpeg",
+							"image/png",
+							"image/svg+xml",
+							"image/tiff",
+							"text/anvl",
+							"text/csv",
+							"text/html",
+							"text/n3",
+							"text/plain",
+							"text/tab-separated-values",
+							"text/turtle",
+							"text/xml",
+							"video/avi",
+							"video/mp4",
+							"video/mpeg",
+							"video/quicktime",
+							"video/x-ms-wmv"];
+			//Does this data object match one of these IDs?
+			if(_.indexOf(dataIds, dataObject.get('formatId')) == -1) return false;
+			else return true;
+		},
+		
+		isSoftware: function(dataObject){
+			//The list of formatIds that are images
+			var softwareIds =  ["text/x-python",
+								"text/x-rsrc",
+								"text/x-matlab",
+								"text/x-sas",
+								"application/R"];
+			//Does this data object match one of these IDs?
+			if(_.indexOf(softwareIds, dataObject.get('formatId')) == -1) return false;
+			else return true;
+		},
 		/*
 		 * param dataObject - a SolrResult representing the data object returned from the index
 		 * returns - true if this data object is a pdf, false if it is other
@@ -1362,6 +1468,9 @@ define(['jquery',
 
 				//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
 				_.each(packageMembers, function(solrResult, i){
+					//Don't display any info about nested packages
+					if(solrResult.type == "Package") return;
+					
 					var objID = solrResult.get("id");
 
 					if(objID == viewRef.pid) 

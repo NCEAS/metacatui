@@ -14,16 +14,20 @@
 <!-- Files column -->
 
 <td class="name" title="Click to rename" <% if(type == "Metadata"){ %> data-category="title" <% } %> >
-    <div contenteditable="true">
-        <% if (typeof title != "undefined" && title && title.length) { %>
-            <%= title %>
-        <% } else if ( typeof fileName != "undefined" && fileName) { %>
-            <%= fileName %>
-        <% } else if(type == "Metadata"){ %>
-            Untitled dataset: Add a descriptive title for your dataset <span class="required-icon"></span>
-        <% } else { %>
-            <%= id %>
-        <% } %>
+    <% if(uploadStatus != "l" && uploadStatus != "p"){ %>
+    	<div contenteditable="true">
+    <% } else { %>
+    	<div>
+    <% } %>
+	        <% if (typeof title != "undefined" && title && title.length) { %>
+	            <%= title %>
+	        <% } else if ( typeof fileName != "undefined" && fileName) { %>
+	            <%= fileName %>
+	        <% } else if(type == "Metadata"){ %>
+	            Untitled dataset: Add a descriptive title for your dataset <span class="required-icon"></span>
+	        <% } else { %>
+	            <%= id %>
+	        <% } %>
     </div>
 </td>
 
@@ -36,20 +40,34 @@
 
 <% } %>
 <!-- Type column -->
-<% if (type ) { %>
+<% if (type && type != "Metadata") { %>
     <td><%= type %></td>
 <% } else { %>
     <td></td>
 
 <% } %>
 <!-- Guide or Status column -->
-<!--td></td-->
+<td class="status">		
+	<%  if( uploadStatus == "p" ){ %>
+		<div class="progress progress-striped active">
+			<div class="bar" style="width: <%=uploadProgress%>%;"></div>
+		</div>
+	<% } else if( uploadStatus == "c" ) { %>
+		<i class="icon icon-ok-circle success icon-large"></i>
+	<% } else if( uploadStatus == "e" ) { %>
+		<i class="icon icon-exclamation-sign danger error icon-large"></i>
+	<% } else if( uploadStatus == "q" && type != "Metadata"){ %>
+		<i class="icon icon-circle-blank warning icon-large"></i>
+	<% } else if( uploadStatus == "l" && type != "Metadata"){ %>
+		<i class="icon icon-circle-blank icon-large"></i>
+	<% } %>
+</td>
 <!-- Button column -->
-<td>
+<td class="controls">
         <% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
     		<input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
             <button type="button" class="addFiles btn btn-primary" title="Add Files">
-                <i class="icon-large icon-plus icon-on-left"></i>
+                <i class="icon icon-large icon-plus icon-on-left"></i>
                 <span>Add Files</span>
             </button>
 

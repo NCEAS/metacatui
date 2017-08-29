@@ -835,7 +835,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
  				return item.className !== "prov-entity-select";
 			});
 				
+<<<<<<< HEAD
 			this.selectProvEntityView = new ProvEntitySelectView({
+=======
+			this.selectProvEntityView = new ProvEntitySelect({
+>>>>>>> branch 'METACATUI_2_1_BRANCH' of https://github.com/NCEAS/metacatui.git
 				parentView    : this.parentView,
 				title 		  : title,
 				selectLabel   : label,
@@ -845,7 +849,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				// Number of ows in the select list
 				displayRows   : Math.min(10, this.packageModel.get("members").length)
 			});
+<<<<<<< HEAD
 			this.$el.append(this.selectProvEntityView.render().el);
+=======
+			this.$el.append(this.selectProvEntityView.render());
+>>>>>>> branch 'METACATUI_2_1_BRANCH' of https://github.com/NCEAS/metacatui.git
 			this.subviews.push(this.selectProvEntityView);
 
 			// Display the modal and wait for completion.

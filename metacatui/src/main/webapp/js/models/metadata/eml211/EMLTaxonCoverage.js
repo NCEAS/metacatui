@@ -72,6 +72,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					return model.parseTaxonomicClassification(tc); 
 				})
 			};
+			
+			if(Array.isArray(modelJSON.taxonomicClassification) && !modelJSON.taxonomicClassification.length)
+				modelJSON.taxonomicClassification = {};
 
 			return modelJSON;
 		},
@@ -150,6 +153,42 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 			
 			return finishedEl;
+		},
+		
+		/* Validate this model */
+		validate: function(){
+			var errors = {};
+			
+			if(!this.get("generalTaxonomicCoverage"))
+				errors.generalTaxonomicCoverage = "Provide a description of the taxonomic coverage.";
+			
+			if( !this.get("taxonomicClassification").length )
+				errors.taxonomicClassification = "Provide at least one complete taxonomic classification.";
+			else{
+				//Every taxonomic classification should be valid
+				if(!_.every(this.get("taxonomicClassification"), this.isClassificationValid, this))
+					errors.taxonomicClassification = "Every classification row should have a rank and value.";
+			}
+			
+			if(Object.keys(errors).length)
+				return errors;
+			
+		},
+		
+		isEmpty: function(){
+			return (!this.get("generalTaxonomicCoverage") && !this.get("taxonomicClassification").length)
+		},
+		
+		isClassificationValid: function(taxonomicClassification){
+			if( ! Object.keys(taxonomicClassification).length )
+				return true;
+			else if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue)
+				return false;
+			
+			if(taxonomicClassification.taxonomicClassification)
+				return this.isClassificationValid(taxonomicClassification.taxonomicClassification);
+			else
+				return true;
 		},
 
 		trickleUpChange: function(){
