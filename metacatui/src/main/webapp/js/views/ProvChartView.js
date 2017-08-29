@@ -99,7 +99,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			"click .expand-control"   : "expandNodes",
 			"click .collapse-control" : "collapseNodes",
 			"click .preview"          : "previewData",
-			//"click .editor"		      : "selectProvEntities",
+			"click .editor"		      : "selectProvEntities",
 			"click #selectDone"       : "getSelectedProvEntities",
 		},
 		
@@ -235,11 +235,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//Lastly, add the title
 			this.$el.prepend($(document.createElement("h3")).addClass("title").text(this.title));
-						
-			// Display a prov entity selection box when an edit node is clicked.
-			this.$(".editor").click(function(e) {
-				view.selectProvEntities(e);
-			});
 			
 			// Render the non-editor prov nodes so that the each have a unique style.
 			var nodeMin = 1;
@@ -385,22 +380,28 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 							// The cursor entered in the 'polygon' element, navigate to the group element that
 							// holds the delete icon, so that we can turn it on.
 							var gNode = $(e.target).find("g[class*='icon-remove-sign']");
-							var classStr = $(gNode).attr("class");
-							$(gNode).attr("class", classStr.replace("hide", "show"));
-							$(gNode).on("click", function(evt){
-								// Stop propagation of of the click event so that parent elements don't receive it.
-								// This will prevent the node popover from displaying for this node when the delete icon is clicked.
-								evt.stopPropagation();	
-								var dataId = $(evt.target).parent().parent().find("polygon").attr("data-id");
-								var nodeClass = $(evt.target).parent().parent().find("polygon").attr("class");
-								view.removeProv(dataId, nodeClass);
-							});
+							
+							if(gNode.length){
+								var classStr = $(gNode).attr("class");
+								$(gNode).attr("class", classStr.replace("hide", "show"));
+								$(gNode).on("click", function(evt){
+									// Stop propagation of of the click event so that parent elements don't receive it.
+									// This will prevent the node popover from displaying for this node when the delete icon is clicked.
+									evt.stopPropagation();	
+									var dataId = $(evt.target).parent().parent().find("polygon").attr("data-id");
+									var nodeClass = $(evt.target).parent().parent().find("polygon").attr("class");
+									view.removeProv(dataId, nodeClass);
+								});
+							}
 						},
 						// mouseleave action
 						function(e) {
 							var gNode = $(e.target).find("g[class*='icon-remove-sign']");
-							var classStr = $(gNode).attr("class");
-							$(gNode).attr("class", classStr.replace("show", "hide"));
+							
+							if(gNode.length){
+								var classStr = $(gNode).attr("class");
+								$(gNode).attr("class", classStr.replace("show", "hide"));
+							}
 						}
 					);
 				}
