@@ -34,13 +34,15 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 			if(!members) return false;
 			if(this.displayRows == 0) this.displayRows == Math.min(10, members.length);
 			
-			return this.$el.html(this.template({
+			this.$el.html(this.template({
 				title         : this.title,
 				selectLabel   : this.selectLabel,
 				selectMode    : this.selectMode,
 				members       : members,
 				displayRows   : this.displayRows
 			}));
+			
+			return this;
 		},
 		
 		readSelected: function() {

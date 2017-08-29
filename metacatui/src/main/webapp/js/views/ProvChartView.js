@@ -1,5 +1,5 @@
 define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEntitySelectView", "views/ProvStatementView"], 				
-	function($, _, Backbone, CitationView, ProvEntitySelect, ProvStatement) {
+	function($, _, Backbone, CitationView, ProvEntitySelectView, ProvStatement) {
 	'use strict';
 
 	
@@ -702,7 +702,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		// members that will be associated with the current member (that belongs to this)
 		// metadata detail section), by a provenance relationship.
 		selectProvEntities: function(e) {
-			this.selectProvEntityView = new ProvEntitySelect({
+			this.selectProvEntityView = new ProvEntitySelectView({
 				parentView    : this,
 				title 		  : "Add provenance",
 				selectLabel   : "Choose from sources",
@@ -710,7 +710,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				packageModel  : this.packageModel,
 				displayRows   : Math.min(10, this.packageModel.get("members").length)
 			});
-			this.$el.append(this.selectProvEntityView.render());
+			this.$el.append(this.selectProvEntityView.render().el);
 			// Display the modal and wait for completion.
 			$('#selectModal').modal('show');
 		},
