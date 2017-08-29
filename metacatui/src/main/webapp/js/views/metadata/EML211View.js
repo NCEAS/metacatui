@@ -1088,7 +1088,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		modelValues = this.model.get(category),
 				textRow; // Holds the DOM for each field
 	    	
-	    	if(typeof appendNew == "undefined")
+	    	if(typeof appendNew === "undefined")
 	    		var appendNew = true;
 	    	
 	    	//Format as an array
