@@ -249,6 +249,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
                 
                 var memberPIDs = [],
                 	members = [],
+                	currentMembers = this.get("members"),
                 	model = this;
                 
                 // Get system metadata for each member to eval the formatId
@@ -259,9 +260,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
                                        
                     if ( memberPID ){
                     	memberPIDs.push(memberPID);
-                    	members.push(new SolrResult({
-                    		id: decodeURIComponent(memberPID)
-                    	}));
+                    	
+                    	//Get the current model from the member list, if it exists
+                    	var existingModel = _.find(currentMembers, function(m){
+                    		return m.get("id") == decodeURIComponent(memberPID);
+                    	});
+                    	
+                    	//Add the existing model to the new member list
+                    	if(existingModel){
+                    		members.push(existingModel);
+                    	}
+                    	//Or create a new SolrResult model
+                    	else{
+                    		members.push(new SolrResult({
+                    			id: decodeURIComponent(memberPID)
+                    		}));
+                    	}
                     }
                     
                 }, this);
