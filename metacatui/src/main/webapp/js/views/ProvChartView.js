@@ -20,8 +20,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.editModeOn    = options.editModeOn    || false;
 			this.editorType    = options.editorType    || null;
 
+			this.subviews = new Array()
 			this.selectProvEntityView = null;
 			this.type = null;
+			// Does this chart need to be re-rendered after prov relationships have been updated?
+			this.rerender = false;
 			//For Sources charts
 			if((!this.derivations && this.sources) || (this.editModeOn && this.editorType == "sources")) {
 				console.log("***** provchart: configuring sources for member " + this.context.get("id") + ", type: " + this.context.get("type"));
@@ -70,22 +73,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				this.numSources      = 0;
 			}
 			
-			//For empty editor charts
-			//if(this.editor && !this.provEntities){
-			//	this.type = options.editorType || null;
-			//	this.sources = [];
-			//	this.derivations = [];
-			//	this.programs = [];
-			//	this.provEntities = [];
-			//	this.numDerivations = 0;
-			//	this.numSources = 0;
-			//	this.numProvEntities = 0;
-			//	this.className += " editor empty";
-			//}
-			if(this.editModeOn) {
-				this.className += " editor ";
-			}
-			
 			//Add the chart type to the class list
 			this.className = this.className + " " + this.type	;
 			
@@ -101,7 +88,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//The default height of the chart when all nodes are visible/expanded
 			this.height = (this.numProvEntities * this.nodeHeight);
-
+			
 		},
 		
 		tagName: "aside",
@@ -112,7 +99,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			"click .expand-control"   : "expandNodes",
 			"click .collapse-control" : "collapseNodes",
 			"click .preview"          : "previewData",
-			"click .editorNode"       : "selectProvEntities",
+			//"click .editor"		      : "selectProvEntities",
 			"click #selectDone"       : "getSelectedProvEntities",
 		},
 		
@@ -168,16 +155,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 						//Find the program position
 						view.$(".programs").append(view.createNode(entity, programPosition, metadata));
 					}
-					else
+					else {
 						view.$el.append(view.createNode(entity, position, metadata));						
+						// Sources and Derivation charts have a pointer for each node
+						view.$el.append(view.createConnecter(position));
+					}
 				}
-				
-				//Derivation charts have a pointer for each node
-				if(view.type == "derivations")
-					view.$el.append(view.createConnecter(position));
-				
-				//Source charts have a connector for each node and one pointer
-				if(view.type == "sources")	view.$el.append(view.createConnecter(position));
 				
 				//Bump the position for non-programs only
 				if(entity.get("type") == "program")
@@ -204,6 +187,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				// Draw a data node editor
 				this.$el.append(this.createEditorNode("data", this.context.get("id"), position));
 				position++;
+				
 				if(this.editorType == "sources") this.numSources++;
 				if(this.editorType == "derivations") this.numDerivations++;
 			}
@@ -252,6 +236,31 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			//Lastly, add the title
 			this.$el.prepend($(document.createElement("h3")).addClass("title").text(this.title));
 						
+			// Display a prov entity selection box when an edit node is clicked.
+			this.$(".editor").click(function(e) {
+				view.selectProvEntities(e);
+			});
+			
+			// Render the non-editor prov nodes so that the each have a unique style.
+			var nodeMin = 1;
+			var nodeMax = 23; // Max number of 'uniqueNoden' css classes defined (in metacatui-common.css)
+			var i = view.getRandomInt(nodeMin, nodeMin+5);
+			_.each(view.$('.node:not(.editor)'), function(thisNode){
+				//Don't use the unique class on images since they will look a lot different anyway by their image
+				if(!$(thisNode).first().hasClass("image")){
+					var className = "uniqueNode" + i;
+					//Add the unique class and up the iterator
+					if($(thisNode).prop("tagName") != "polygon")
+						$(thisNode).addClass(className);
+					else
+						$(thisNode).attr("class", $(thisNode).attr("class") + " " + className);
+						
+					// Increment the node counter, but not past the max value, which is the number of
+					// unique css classes that are defined.
+					(i == nodeMax) ? i = nodeMin : i++;
+				}
+			});
+			
 			return this;
 		},
 		
@@ -303,8 +312,36 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if(provEntity.get("type") != "program"){
 				//Create a DOM element to represent the node	
 				var nodeEl = $(document.createElement("div")).css("top", top);;
-			}
-			else{
+				// Add a delete icon to the node if editing is on
+				if(this.editModeOn) {
+					var deleteIcon = $(document.createElement("i")).attr("class", "data icon-remove-sign hide");
+					$(nodeEl).append(deleteIcon);
+					
+					$(nodeEl).hover(
+						// mouseenter action
+						// This could either be a nice, simple data node (a div) or a program node (an svg polygon).
+						function(e) {
+							// The cursor entered in the 'polygon' element, navigate to the group element that
+							// holds the delete icon, so that we can turn it on.
+							// Setup a data node for delete
+							$(e.target).find("i.icon-remove-sign").removeClass("hide");
+							$(e.target).find("i.icon-remove-sign").addClass("show");
+							$(e.target).find("i.icon-remove-sign").on("click", function(evt){
+								// Stop propagation of of the click event so that parent elements don't receive it.
+								// This will prevent the node popover from displaying for this node when the delete icon is clicked.
+								evt.stopPropagation();
+								view.removeProv(evt.target.parentNode.getAttribute("data-id"), evt.target.parentNode.getAttribute("class"));
+							});
+						},
+						// mouseleave action
+						function(e) {
+							$(e.target).find("i.icon-remove-sign").removeClass("show");
+							$(e.target).find("i.icon-remove-sign").addClass("hide");
+						}
+					);	
+				}
+			} else {
+				type="program";
 				//Create an SVG drawing for the program arrow shape
 				var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
 					nodeEl = $(document.createElementNS("http://www.w3.org/2000/svg", "polygon"))
@@ -326,11 +363,49 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 						.attr("class", "popover-this program-icon pointer");
 				
 				//Glue it all together
-				$(g).append(iconEl);
+				$(g).append(iconEl);			
 				$(svg).append(nodeEl, g);
-				
+
+				// Add a delete icon to the node if editing is on
+				if(this.editModeOn) {
+				    var gdel = $(document.createElementNS("http://www.w3.org/2000/svg", "g"))
+							.attr("transform", "translate(35,25)")
+							.attr("class", "program icon-remove-sign pointer hide");
+					var deleteIcon = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+							.text("\u{F057}")
+							.attr("fill", "#FF0000") // put this in the css file 
+							.attr("class", "icon icon-foo pointer");
+					$(gdel).append(deleteIcon);
+					$(svg).append(gdel);
+					
+					$(svg).hover(
+						// mouseenter action
+						// This could either be a nice, simple data node (a div) or a program node (an svg polygon).
+						function(e) {
+							// The cursor entered in the 'polygon' element, navigate to the group element that
+							// holds the delete icon, so that we can turn it on.
+							var gNode = $(e.target).find("g[class*='icon-remove-sign']");
+							var classStr = $(gNode).attr("class");
+							$(gNode).attr("class", classStr.replace("hide", "show"));
+							$(gNode).on("click", function(evt){
+								// Stop propagation of of the click event so that parent elements don't receive it.
+								// This will prevent the node popover from displaying for this node when the delete icon is clicked.
+								evt.stopPropagation();	
+								var dataId = $(evt.target).parent().parent().find("polygon").attr("data-id");
+								var nodeClass = $(evt.target).parent().parent().find("polygon").attr("class");
+								view.removeProv(dataId, nodeClass);
+							});
+						},
+						// mouseleave action
+						function(e) {
+							var gNode = $(e.target).find("g[class*='icon-remove-sign']");
+							var classStr = $(gNode).attr("class");
+							$(gNode).attr("class", classStr.replace("show", "hide"));
+						}
+					);
+				}
 			}
-			
+
 			//Add classes via .attr() so it works for SVG, too
 			var currentClasses = $(nodeEl).attr("class") || "";
 			$(nodeEl).attr("class", currentClasses + " " + type + " node pointer popover-this " + isCollapsed)
@@ -341,9 +416,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			//Display images in the prov chart node
 			if(type == "image"){
 				$(nodeEl).css("background-image", "url('" + provEntity.get("url") + "')");
-			}
+			} 
 			//Create an icon inside the node for other format types
-			else{
+			else {
 				var iconEl = $(document.createElement("i"))
 							 .addClass(icon + " icon");
 				//Put the icon in the node
@@ -529,48 +604,59 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				$(nodeEl).css("top", top);
 				//Add classes via .attr() so it works for SVG, too
 				var currentClasses = $(nodeEl).attr("class") || "";
-				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editorNode " + isCollapsed);
+				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editor " + isCollapsed);
 				$(nodeEl).attr("tabindex", 0);
 				//Reference the id of the data object
 				$(nodeEl).attr("data-id", id);
 						 
 				//Create the plus icon
 				var iconEl = document.createElement("i");
-				$(iconEl).addClass("editor icon icon-plus");
-						
+				$(iconEl).addClass(" icon icon-plus");
+				
 				//Put the icon in the node
 				$(nodeEl).append(iconEl);
+				$(nodeEl).append("Add");
 			} else {
 				//Create an SVG drawing for the program arrow shape
 				svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 				nodeEl = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
 				$(nodeEl).attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20");
-				$(nodeEl).attr("fill", "#FFFFFF");
 
 				//Set a viewBox, height, width, and top position
 				svg.setAttribute("viewBox", "0 0 " + this.nodeHeight + " " + this.nodeHeight);
-				//svg.setAttribute("class", "popover-this");
+				//svg.setAttribute("class", "editor");
 				$(svg).attr("width", this.nodeHeight + "px").attr("height", this.nodeHeight + "px").css("top", top);
 				
-				//Create the code icon
-				//`var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
-				//			.text("\u{F121}")
-				//			.attr("class", "icon icon-foo program-icon pointer editor");
+				//Create the plus icon
+				var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+							.text("\u{f067}")
+							//.attr("class", "icon icon-foo program-icon pointer");
+							.attr("class", "icon icon-foo pointer");
+
 				
 				//Create a group element to contain the icon
 				var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-				//$(g).attr("transform", "translate(18,43)")
-				$(g).attr("class", "editor icon icon-plus");
-						
+				$(g).attr("transform", "translate(25,30)")
+				//$(g).attr("class", "program-icon pointer ");
+				$(g).attr("class", " program editor pointer ");
+				
 				//Add classes via .attr() so it works for SVG, too
 				var currentClasses = $(nodeEl).attr("class") || "";
-				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editorNode " + isCollapsed);
+				$(nodeEl).attr("class", currentClasses + " " + type + " node editor pointer " + isCollapsed);
 				$(nodeEl).attr("tabindex", 0);
 				$(nodeEl).attr("data-id", id);
 				
+				//Create a group element to contain the text "Add"
+				var addEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+										.text("Add");
+				var gAdd = document.createElementNS("http://www.w3.org/2000/svg", "g");
+				$(gAdd).attr("transform", "translate(18,45)")
+				$(gAdd).attr("class", " program editor pointer ");
+				$(gAdd).append(addEl);
+				
 				//Glue it all together
-				//$(g).append(iconEl);
-				$(svg).append(nodeEl, g);
+				$(g).append(iconEl);
+				$(svg).append(nodeEl, g, gAdd);	
 			}
 			
 			if(svg != null) {
@@ -702,33 +788,324 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		// members that will be associated with the current member (that belongs to this)
 		// metadata detail section), by a provenance relationship.
 		selectProvEntities: function(e) {
+			// TODO: determine if this select was called from a program edit icon or a
+			// data edit icon.
+			var title = null;
+			var label = "Choose files in this dataset: ";
+			var selectEntityType = "data";
+			var isProgram = false;
+			var thisClass = null;
+			var myClasses = Array.from(e.currentTarget.classList.values());
+			if(myClasses.includes("program")) {
+				isProgram = true; 
+				selectEntityType = "program";
+			}
+			console.log("selecting entities");
+			
+			// Set the selection box labels according to the edit icon that was clicked,
+			// and the ProvChart that it was clicked in.
+			if(this.editorType == "sources") {
+				if(isProgram) {
+					title = "Add the program that generated " + this.context.get("fileName");
+				} else {
+					title = "Add source data to " + this.context.get("fileName");
+				}
+			} else if(this.editorType == "derivations") {
+				if(isProgram) {
+					title = "Add the program that read " + this.context.get("fileName");
+				} else {
+					title = "Add derived data to " + this.context.get("fileName");
+				}	
+			} else {
+				title = "Add data to " + this.context.get("fileName");
+				label = "Choose from: ";
+			}
+			
+			// Check if a ProvEntitySelectView was left open previously for this
+			// prov chart and close it if yes.
+			_.each(this.subviews, function(thisView, i) {
+				// Check if this is a ProvChartView
+				if(thisView.className.indexOf("prov-entity-select") !== -1) {
+					console.log("found orphaned ProvEntitySelectView" + thisView.cid);
+					thisView.onClose();
+				}
+			});
+			
+			this.subviews = _.filter(this.subviews, function(item) {
+ 				return item.className !== "prov-entity-select";
+			});
+				
 			this.selectProvEntityView = new ProvEntitySelectView({
-				parentView    : this,
-				title 		  : "Add provenance",
-				selectLabel   : "Choose from sources",
-				selectMode    : "multiple",
+				parentView    : this.parentView,
+				title 		  : title,
+				selectLabel   : label,
+				selectEntityType : selectEntityType , // Can be either "data" or "program"
 				packageModel  : this.packageModel,
+				context       : this.context,
+				// Number of ows in the select list
 				displayRows   : Math.min(10, this.packageModel.get("members").length)
 			});
 			this.$el.append(this.selectProvEntityView.render().el);
+			this.subviews.push(this.selectProvEntityView);
+
 			// Display the modal and wait for completion.
-			$('#selectModal').modal('show');
+			this.$('#selectModal').modal('show');
 		},
 		
-		getSelectedProvEntities: function() {
-			var values = null;
-			values = this.selectProvEntityView.readSelected();
-			console.log("entities selected: " + values);
-			$('#selectModal').modal('toggle');
-			this.selectProvEntityView.remove();
-			this.selectProvEntityView.unbind();
+		// Read selected values from a ProvEntitySelectView which is a modal dialog
+		// that displays a selection list of package members to add to a prov chart.
+		getSelectedProvEntities: function(e) {
+			var selectedValues = null;
+			var values = [];
+			var myClasses = null;
+			var isProgram = false;
+			var view = this;
+
+			// Read values from the selection list modal dialog
+			selectedValues  = this.selectProvEntityView.readSelected();
+			console.log("entities selected: " + selectedValues);
+			// Return if no values were selected.
+			if(selectedValues == null || selectedValues.length == 0) {
+			    $('#selectModal').modal('hide');
+				this.selectProvEntityView.onClose();	
+				this.selectProvEntityView = null;
+				return false;
+			}	
+			
+			// Hide the selection modal dialog
+			$('#selectModal').modal('hide');
+
+			// Get the entity type ("program" or "data") from the selection view. This
+			// is the entity type of the prov icon that was clicked in order to add
+			// this type to the prov of the current package member. The entityType
+			// is either "program" or "data".
+			var entityType = this.selectProvEntityView.selectEntityType;
+			
+			// Remove the selection modal
+			_.each(this.subviews, function(thisView, i) {
+				// Check if this is a ProvChartView
+				if(thisView.className.indexOf("prov-entity-select") !== -1) {
+					console.log("closing ProvEntitySelectView" + thisView.cid);
+					thisView.onClose();
+				}
+			});
+			
+			this.subviews = _.filter(this.subviews, function(item) {
+				return item.className !== "prov-entity-select";
+			});
+			// Remove the selection modal
+			//this.selectProvEntityView.onClose();
+			//Backbone.View.prototype.remove.call(this.selectedProvEntityView);
 			this.selectProvEntityView = null;
+			
+			// Return if no values were selected.
+			if(selectedValues.length == 0) return false;
+			// If a single value was returned, then put it into an array so 
+			// so the loop can be used.
+			if(typeof selectedValues == "string") {
+				values[0] = selectedValues;
+			} else {
+				values = selectedValues;
+			}
+				
+			var memberPid = this.context.get("id");
+			// Loop through selected values, adding the proper relationships between the selected
+			// value and the current package member.
+			for (var i = 0; i < values.length; i++) { 
+    			var thisPid = values[i];
+				console.log("searching for pid: " + thisPid);
+				if(this.editorType == "sources") {
+					// This is a sources chart
+					if(entityType == "program") {
+						// source fields: prov_generatedByExecution, prov_generatedByProgram, prov_used, 
+						// prov_wasDerivedFrom, prov_wasInformedBy
+						this.addProvRel(this.packageModel, memberPid, "prov_generatedByProgram", thisPid);
+						this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
+						this.addProvRel(this.packageModel, thisPid,   "prov_generated", memberPid);
+						this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+						// If data nodes already exist in this prov chart, then add them to the program.
+						_.each(view.sources, function(model){
+							if(model.get("type") == "data") {
+								var dataPid = model.get("id");
+								view.addProvRel(view.packageModel, dataPid, "prov_usedByProgram", thisPid);
+								view.addProvRel(view.packageModel, thisPid,   "prov_used", dataPid);
+							}
+						});
+					} else {
+						// Prov for a data node is being added
+						this.addProvRel(this.packageModel, memberPid, "prov_wasDerivedFrom", thisPid);
+						this.setMemberAttr(this.packageModel, thisPid, "type", "data");
+						this.addProvRel(this.packageModel, thisPid, "prov_hasDerivations", memberPid);
+						// If a program already exists in this prov chart, then connect this data node to
+						// the program as input.
+						_.each(view.programs, function(thisProgram) {
+							var programPid = thisProgram.get("id");
+							view.addProvRel(view.packageModel, thisPid, "prov_usedByProgram", programPid);
+							view.addProvRel(view.packageModel, programPid,   "prov_used", thisPid);
+						});
+					}
+				} else {
+					// This is a derivations chart
+					// derivation fields: prov_usedByExecution, prov_usedByProgram, prov_hasDerivations,
+					// prov_generated
+					if(entityType == "program") {
+			    		//var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == thisPid});
+						this.addProvRel(this.packageModel, memberPid, "prov_usedByProgram", thisPid);
+						this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
+						this.addProvRel(this.packageModel, thisPid,   "prov_used", memberPid);
+						this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+						// If data nodes already exist in this prov chart, then add them to the program.
+						_.each(view.derivations, function(model){
+							if(model.get("type") == "data") {
+								var dataPid = model.get("id");
+								view.addProvRel(view.packageModel, dataPid, "prov_generatedByProgram", thisPid);
+								view.addProvRel(view.packageModel, thisPid,   "prov_generated", dataPid);
+							}
+						});
+					} else {
+						// Prov for a data node is being added
+						this.addProvRel(this.packageModel, thisPid, "prov_wasDerivedFrom", memberPid);
+						this.setMemberAttr(this.packageModel, thisPid, "type", "data")
+						this.addProvRel(this.packageModel, memberPid, "prov_hasDerivations", thisPid);
+						// If a program already exists in this prov chart, then connect this data node to
+						// the program as output.
+						_.each(view.programs, function(thisProgram) {
+							var programPid = thisProgram.get("id");
+							view.addProvRel(view.packageModel, thisPid, "prov_generatedByProgram", programPid);
+							view.addProvRel(view.packageModel, programPid,   "prov_generated", thisPid);
+						});
+					}
+				}
+			}
+			
+			this.packageModel.trigger("redrawProvCharts");
 		},
 			
 		onClose: function() {			
-			this.remove();			
-		}
+			//var provEntitiesToAdd = getProvEntities();
+			// Erase the current ProvChartView
+			this.remove();
+			this.unbind();
+		},
 		
+		getRandomInt: function(min, max) {
+  			min = Math.ceil(min);
+  			max = Math.floor(max);
+  			return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+		}, 
+		
+		// Add provenance relationships to a package member. Most of the provenance relationships store arrays of package
+		// members and not pids (prov_used, prov_generatedByProgram, etc), however, some of them store just strings (prov_instanceOfClass)
+		// Set the predicate attribute of the 'subject' package member to the 'object' package member, thereby establishing a 
+		// provenance relationship between the two.
+		addProvRel: function(packageModel, subjectId, predicate, object) {
+			var subjectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == subjectId});
+			var objectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == object});
+			
+			// Is the predicate a source or destination field
+			var isSource = subjectMember.isSourceField(predicate)
+			var isDerivation = subjectMember.isDerivationField(predicate)
+			// If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
+			// such as the field 'prov_instanceOfClass'
+			if (!isSource && !isDerivation) {
+				subjectMember.set(predicate, object);
+			} else if (isSource) {
+				// Also populate the 'sources' accumulated attribute
+				subjectMember.set("provSources", _.union(subjectMember.get("provSources"), [objectMember]));
+				subjectMember.set(predicate, _.union(subjectMember.get(predicate), [objectMember]));
+			} else {
+				// Its a derivation field
+				// Also populate the 'derivations' accumulator field
+				subjectMember.set("provDerivations", _.union(subjectMember.get("provDerivations"), [objectMember]));
+				subjectMember.set(predicate, _.union(subjectMember.get(predicate), [objectMember]));
+			}
+		},
+		
+		// A delete icon has been clicked for a prov node, so remove the prov relationships that this node represents.
+		// The pid and the type ("program" or "data") are needed in order to remove the appropriate prov relationships.
+		removeProv: function(pid, classNames) {
+			var memberPid = this.context.get("id");
+
+			var entityType = null;
+			// Is this a program node or a data node?
+			(_.contains(classNames, "program")) ? entityType = "program" : entityType = "data"
+			// Is this a source prov chart or derivations
+			if(this.editorType == "sources") {
+				// This is a sources chart
+				if(entityType == "program") {
+					// source fields: prov_generatedByExecution, prov_generatedByProgram, prov_used, 
+					// prov_wasDerivedFrom, prov_wasInformedBy
+					this.removeProvRel(this.packageModel, memberPid, "prov_generatedByProgram", pid);
+					// Remove 'prov_instanceOfClass' if no relations from this pid any longer
+					//this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
+					this.removeProvRel(this.packageModel, pid, "prov_generated", memberPid);
+					// Remove 'type: program' if no more prov relations from this pid
+					//this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+				} else {
+					this.removeProvRel(this.packageModel, memberPid, "prov_wasDerivedFrom", pid);
+					//this.setMemberAttr(this.packageModel, thisPid, "type", "data");
+					this.removeProvRel(this.packageModel, pid, "prov_hasDerivations", memberPid);
+					// If there is a program present in this chart, then remove the prov relationship between
+					// the node and the current package member and the relationship between the node and the program
+					// (Currently only one program per prov chart).
+					var view = this;
+					_.each(view.programs, function(thisProgram) {
+						var progPid = thisProgram.get("id");
+						view.removeProvRel(view.packageModel, pid, "prov_usedByProgram", progPid);
+						view.removeProvRel(view.packageModel, progPid, "prov_used", pid);
+					});
+				}
+			} else {
+				// This is a derivations chart
+				// derivation fields: prov_usedByExecution, prov_usedByProgram, prov_hasDerivations,
+				// prov_generated
+				if(entityType == "program") {
+					//var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == thisPid});
+					this.removeProvRel(this.packageModel, memberPid, "prov_usedByProgram", pid);
+					this.removeProvRel(this.packageModel, pid, "prov_used", memberPid);
+				} else {
+					this.removeProvRel(this.packageModel, pid, "prov_wasDerivedFrom", memberPid);
+					this.removeProvRel(this.packageModel, memberPid, "prov_hasDerivations", pid);
+					var view = this;
+					_.each(view.programs, function(thisProgram) {
+						var progPid = thisProgram.get("id");
+						view.removeProvRel(view.packageModel, pid, "prov_generatedByProgram", progPid);
+						view.removeProvRel(view.packageModel, progPid, "prov_generated", pid);
+					});
+				}
+			}
+			this.packageModel.trigger("redrawProvCharts");
+		},
+		
+		// Remove a provenance relationship from a package member and rerender the prov charts.
+		removeProvRel: function(packageModel, subjectId, predicate, object) {
+			var subjectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == subjectId});
+			var objectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == object});
+			
+			// Is the predicate a source or destination field
+			var isSource = subjectMember.isSourceField(predicate)
+			var isDerivation = subjectMember.isDerivationField(predicate)
+			// If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
+			// such as the field 'prov_instanceOfClass'
+			if (!isSource && !isDerivation) {
+				subjectMember.set(predicate, null);
+			} else if (isSource) {
+				// Also populate the 'sources' accumulated attribute
+				subjectMember.set("provSources", _.reject(subjectMember.get("provSources"), objectMember));
+				subjectMember.set(predicate, _.reject(subjectMember.get(predicate), objectMember));
+			} else {
+				// Its a derivation field
+				// Also populate the 'derivations' accumulator field
+				subjectMember.set("provDerivations", _.reject(subjectMember.get("provDerivations"), objectMember));
+				subjectMember.set(predicate, _.reject(subjectMember.get(predicate), objectMember));
+			}
+		},
+			
+		// Locate a package member give a pid, and set the supplied attribute with the value;
+		setMemberAttr: function(packageModel, pid, attr, value) {
+			var thisMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == pid});
+			thisMember.set(attr, value);
+		}
 	});
 	
 	return ProvChartView;
