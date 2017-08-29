@@ -236,8 +236,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			//Lastly, add the title
 			this.$el.prepend($(document.createElement("h3")).addClass("title").text(this.title));
 			
-			if(this.numPrograms && this.editModeOn)
-				$(".program.node.editor").click(this.selectProvEntities);
+			if(this.editModeOn)
+				this.$(".program.editor").click(function(e){
+					view.selectProvEntities(e);
+				});
 			
 			// Render the non-editor prov nodes so that the each have a unique style.
 			var nodeMin = 1;
