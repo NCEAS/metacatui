@@ -236,6 +236,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			//Lastly, add the title
 			this.$el.prepend($(document.createElement("h3")).addClass("title").text(this.title));
 			
+			if(this.numPrograms && this.editModeOn)
+				$(".program.node.editor").click(this.selectProvEntities);
+			
 			// Render the non-editor prov nodes so that the each have a unique style.
 			var nodeMin = 1;
 			var nodeMax = 23; // Max number of 'uniqueNoden' css classes defined (in metacatui-common.css)
@@ -372,7 +375,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 							.attr("class", "icon icon-foo pointer");
 					$(gdel).append(deleteIcon);
 					$(svg).append(gdel);
-					
+										
 					$(svg).hover(
 						// mouseenter action
 						// This could either be a nice, simple data node (a div) or a program node (an svg polygon).
