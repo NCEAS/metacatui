@@ -452,7 +452,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						}
 					}
 	           	}, this);
-	           	
+				   
+				// Serialize pubDate
+				// This one is special because it has a default behavior, unlike 
+				// the others: When no pubDate is set, it should be set to
+				// the current year
+				var pubDate 	= this.get('pubDate'),
+					pubDateEl 	= document.createElement('pubdate');
+
+				console.log('pubDate is ', pubDate);
+				datasetNode.find('pubdate').remove();
+
+				if (pubDate != null && pubDate.length > 0) {
+					$(pubDateEl).text(pubDate);
+				} else {
+					$(pubDateEl).text((new Date).getFullYear());
+				}
+
+				this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
+
 	           	// Serialize the parts of EML that are eml-text modules
 	           	var textFields = ["abstract"];
 	           	_.each(textFields, function(field){
@@ -956,7 +974,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	if(!this.get("title").length){           		
             		errors.title = "A title is required";            		
             	}
-            	
+				
+				// Validate the publication date
+				if (this.get("pubDate") != null) {
+					if (!this.isValidYearDate(this.get("pubDate"))) {
+						errors["pubDate"] = ["The value entered for publication date, '"
+							+ this.get("pubDate") + 
+							"' is not a valid value for this field. Enter with a year (e.g. 2017) or a date in the format YYYY-MM-DD."]
+					}
+				}
+
             	//Validate the EMLParty models
             	var partyTypes = ["associatedParty", "contact", "creator", "metadataProvider", "publisher"];
             	_.each(partyTypes, function(type){
@@ -1063,7 +1090,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		this.trigger("valid");
             		return;
             	}
-            },
+			},
+			
+			/* Returns a boolean for whether the argument 'value' is a valid
+			value for EML's yearDate type which is used in a few places.
+			
+			Note that this method considers a zero-length String to be valid 
+			because the EML211.serialize() method will properly handle a null 
+			or zero-length String by serializing out the current year. */
+			isValidYearDate: function(value) {
+				return (value === "" || /^\d{4}$/.test(value) || /^\d{4}-\d{2}-\d{2}$/.test(value));
+			},
             
             /*
              * Sends an AJAX request to fetch the system metadata for this EML object.

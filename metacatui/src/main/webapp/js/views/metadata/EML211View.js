@@ -41,6 +41,8 @@ define(['underscore', 'jquery', 'backbone',
         	"mouseover .basic-text-row .remove" : "previewTextRemove",
         	"mouseout .basic-text-row .remove"  : "previewTextRemove",
 			
+			"focusout .pubDate input"        : "showPubDateValidation",
+			
 			"change .temporal-coverage"    : "updateTemporalCoverage",
 			"focusout .temporal-coverage"  : "showTemporalCoverageValidation",
 
@@ -182,7 +184,22 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Append the empty layout
 	    	var overviewEl = this.$container.find(".overview");
 	    	$(overviewEl).html(this.overviewTemplate());
-	    	
+			
+			// pubDate
+			// BDM: This isn't a createBasicText call because that helper 
+			// assumes multiple values for the category
+			// TODO: Consider a re-factor of createBasicText
+			var pubDateEl = $(document.createElement('div')).addClass('basic-text-row'),
+				pubDateInput = $(document.createElement('input'))
+									.attr('type', 'text')
+									.attr('data-category', 'pubDate')
+									.attr('placeholder', 'Specify a custom publication date. If not set, will be set to today\'s date.')
+									.addClass('basic-text')
+									.val(this.model.get('pubDate'));
+
+			pubDateEl.append(pubDateInput);
+			$(overviewEl).find('.pubDate').append(pubDateEl);
+
 	    	//Abstract
 	    	_.each(this.model.get("abstract"), function(abs){
 		    	var abstractEl = this.createEMLText(abs, edit, "abstract");
@@ -1136,6 +1153,7 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 	    
 	    updateBasicText: function(e){
+			console.log('updateBasicTExt')
 	    	if(!e) return false;
 	    	
 	    	//Get the category, new value, and model
@@ -1159,11 +1177,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	//Update the model if the current value is a string
 	    	else if(typeof currentValue == "string"){
-	    		model.set(category, [currentValue, value]);
+	    		model.set(category, value);
 	    		model.trigger("change");
 	    	}
-	    	else if(!currentValue)
-	    		model.set(category, [value]);
+	    	else if(!currentValue) {
+				model.set(category, value);
+				model.trigger("change");
+			}
 	    	
     		//Add another blank text input
 	    	if($(e.target).is(".new") && value != ''){
@@ -1216,7 +1236,36 @@ define(['underscore', 'jquery', 'backbone',
 	    		
 	    	}, this);
 	    },
-	    
+		
+		/* Event handler for showing validation messaging for the pubDate input
+		which has to conform to the EML yearDate type (YYYY or YYYY-MM-DD) */
+		showPubDateValidation: function(e) {
+			var container = $(e.target).parents(".pubDate").first(),
+				input = $(e.target),
+				value = input.val(),
+				errors = [];
+
+			// Remove existing error borders and notifications
+			$(input).removeClass("error");
+			$(container).prev('.notification').remove();
+
+			if (value != "" && value.length > 0) {
+				if (!(/^\d{4}$/.test(value) || /^\d{4}-\d{2}-\d{2}$/.test(value))) {
+					errors.push("The value entered for publication date, '" +
+						value +
+						"' is not a valid value for this field. Enter either a year (e.g. 2017) or a date in the format YYYY-MM-DD.");
+					
+						input.addClass("error")
+				}
+			}
+
+			if (errors.length > 0) {
+				container.before($(document.createElement("p"))
+											.addClass("error notification")
+											.text(errors[0]));
+			}	
+		},
+
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
 		// each root-level taxonomicClassification
 		createTaxonomicCoverage: function(coverage) {
