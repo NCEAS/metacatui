@@ -41,6 +41,7 @@ define(['underscore', 'jquery', 'backbone',
         	"mouseover .basic-text-row .remove" : "previewTextRemove",
         	"mouseout .basic-text-row .remove"  : "previewTextRemove",
 			
+			"change .pubDate input" : "updatePubDate",
 			"focusout .pubDate input"        : "showPubDateValidation",
 			
 			"change .temporal-coverage"    : "updateTemporalCoverage",
@@ -189,12 +190,9 @@ define(['underscore', 'jquery', 'backbone',
 			// BDM: This isn't a createBasicText call because that helper 
 			// assumes multiple values for the category
 			// TODO: Consider a re-factor of createBasicText
-			var pubDateEl = $(document.createElement('div')).addClass('basic-text-row'),
+			var pubDateEl = $(document.createElement('div')),
 				pubDateInput = $(document.createElement('input'))
 									.attr('type', 'text')
-									.attr('data-category', 'pubDate')
-									.attr('placeholder', 'Specify a custom publication date. If not set, will be set to today\'s date.')
-									.addClass('basic-text')
 									.val(this.model.get('pubDate'));
 
 			pubDateEl.append(pubDateInput);
@@ -1153,7 +1151,6 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 	    
 	    updateBasicText: function(e){
-			console.log('updateBasicTExt')
 	    	if(!e) return false;
 	    	
 	    	//Get the category, new value, and model
@@ -1177,12 +1174,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	//Update the model if the current value is a string
 	    	else if(typeof currentValue == "string"){
-	    		model.set(category, value);
+	    		model.set(category, [currentValue, value]);
 	    		model.trigger("change");
 	    	}
 	    	else if(!currentValue) {
-				model.set(category, value);
-				model.trigger("change");
+				model.set(category, [value]);
 			}
 	    	
     		//Add another blank text input
@@ -1191,6 +1187,20 @@ define(['underscore', 'jquery', 'backbone',
 				this.addBasicText(e);
 	    	}
 
+			// Trigger a change on the entire package
+			MetacatUI.rootDataPackage.packageModel.set("changed", true);	    	
+		},
+		
+		/* One-off handler for updating pubDate on the model when the form 
+		input changes. Fairly similar but just a pared down version of
+		updateBasicText. */
+		updatePubDate: function(e){
+	    	if(!e) return false;
+	    	
+			this.model.set('pubDate', $(e.target).val().trim());
+			this.model.trigger("change");
+
+			console.log(this.model.get('pubDate'));
 			// Trigger a change on the entire package
 			MetacatUI.rootDataPackage.packageModel.set("changed", true);	    	
 	    },
