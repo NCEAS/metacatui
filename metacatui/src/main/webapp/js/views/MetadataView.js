@@ -207,7 +207,7 @@ define(['jquery',
 
 			// Check for a view service in this appModel
 			if((appModel.get('viewServiceUrl') !== undefined) && (appModel.get('viewServiceUrl')))
-				var endpoint = appModel.get('viewServiceUrl') + pid;
+				var endpoint = appModel.get('viewServiceUrl') + encodeURIComponent(pid);
 
 			if(endpoint && (typeof endpoint !== "undefined")){
 				var viewRef = this;
@@ -639,9 +639,10 @@ define(['jquery',
 						//Parse text for older versions of Metacat (v2.4.3 and earlier)
 						if(parseText){
 							var labelEl = $(georegion).find('label:contains("' + direction + '")');
-							if(labelEl){
+							if(labelEl.length){
 								var coordinate = $(labelEl).next().html();
-								if(coordinate.indexOf("&nbsp;") > -1) coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
+								if(typeof coordinate != "undefined" && coordinate.indexOf("&nbsp;") > -1)
+									coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
 							}
 						}
 						else{
@@ -1183,7 +1184,7 @@ define(['jquery',
 
 				if(metadataModel.get("id") != viewRef.pid){
 					var requestSettings = {
-						url: appModel.get("viewServiceUrl") + metadataModel.get("id"),
+						url: appModel.get("viewServiceUrl") + encodeURIComponent(metadataModel.get("id")),
 						success: function(parsedMetadata, response, xhr){
 							_.each(packageModel.get("members"), function(solrResult, i){
 								var entityName = "";
