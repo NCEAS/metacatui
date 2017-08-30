@@ -460,7 +460,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				var pubDate 	= this.get('pubDate'),
 					pubDateEl 	= document.createElement('pubdate');
 
-				console.log('pubDate is ', pubDate);
 				datasetNode.find('pubdate').remove();
 
 				if (pubDate != null && pubDate.length > 0) {
