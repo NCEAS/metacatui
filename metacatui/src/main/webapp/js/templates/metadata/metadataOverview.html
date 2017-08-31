@@ -1,10 +1,5 @@
 <h2>Overview</h2>
 
-<div class="pubDate">
-	<h5>Publication Date</h5>
-	<p class="subtle">Specify a custom publication date for this dataset. If not set, will be set to today's date. The value should either by a four digit year (e.g. 2017) or a full date in the form YYYY-MM-DD.</p>
-</div>
-
 <div class="abstract">
 	<h5>Abstract <i class="required-icon hidden" data-category="abstract"></i></h5>
 	<p class="subtle">Short summary of the purpose and content of this data set. </p>
@@ -25,10 +20,17 @@
 	
 </div>
 
-<div class="altids basic-text-container" data-category="alternateIdentifier">
-	<h5>Alternate Identifiers <i class="required-icon hidden" data-category="alternateIdentifier"></i></h5>
-	<p class="subtle">If available, provide pertinent information that can identify and locate the data set within your site's data management system.</p>
-	<p class="notification" data-category="alternateIdentifier"></p>
+<div data-category="funding">
+	<h5>Funding <i class="required-icon hidden" data-category="funding"></i></h5>
+	<p class="subtle">Search for an NSF award by keyword OR enter any other funding information.</p>
+	<p class="notification" data-category="funding"></p>
+	<div class="funding-container"></div>
+</div>
+
+<div class="pubDate">
+	<h5>Publication Date</h5>
+	<p class="notification" data-category="pubDate"></p>
+	<p class="subtle">Specify a custom publication date for this dataset. If not set, will be set to today's date. The value should either by a four digit year (e.g. 2017) or a full date in the form YYYY-MM-DD.</p>
 </div>
 
 <div class="usage">
@@ -58,9 +60,8 @@
 	</div>
 </div>
 
-<div data-category="funding">
-	<h5>Funding <i class="required-icon hidden" data-category="funding"></i></h5>
-	<p class="subtle">Search for an NSF award by keyword OR enter any other funding information.</p>
-	<p class="notification" data-category="funding"></p>
-	<div class="funding-container"></div>
+<div class="altids basic-text-container" data-category="alternateIdentifier">
+	<h5>Alternate Identifiers <i class="required-icon hidden" data-category="alternateIdentifier"></i></h5>
+	<p class="subtle">If available, provide pertinent information that can identify and locate the data set within your site's data management system.</p>
+	<p class="notification" data-category="alternateIdentifier"></p>
 </div>
