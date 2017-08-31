@@ -41,7 +41,7 @@ define(['underscore', 'jquery', 'backbone',
         	"mouseover .basic-text-row .remove" : "previewTextRemove",
         	"mouseout .basic-text-row .remove"  : "previewTextRemove",
 			
-			"change .pubDate input" : "updatePubDate",
+			"change .pubDate input"          : "updatePubDate",
 			"focusout .pubDate input"        : "showPubDateValidation",
 			
 			"change .temporal-coverage"    : "updateTemporalCoverage",
@@ -190,13 +190,7 @@ define(['underscore', 'jquery', 'backbone',
 			// BDM: This isn't a createBasicText call because that helper 
 			// assumes multiple values for the category
 			// TODO: Consider a re-factor of createBasicText
-			var pubDateEl = $(document.createElement('div')),
-				pubDateInput = $(document.createElement('input'))
-									.attr('type', 'text')
-									.val(this.model.get('pubDate'));
-
-			pubDateEl.append(pubDateInput);
-			$(overviewEl).find('.pubDate').append(pubDateEl);
+			var pubDateInput = $(overviewEl).find("input.pubDate").val(this.model.get("pubDate"));
 
 	    	//Abstract
 	    	_.each(this.model.get("abstract"), function(abs){
@@ -1252,12 +1246,13 @@ define(['underscore', 'jquery', 'backbone',
 		showPubDateValidation: function(e) {
 			var container = $(e.target).parents(".pubDate").first(),
 				input = $(e.target),
+				messageEl = $(container).find('.notification'),
 				value = input.val(),
 				errors = [];
 
 			// Remove existing error borders and notifications
-			$(input).removeClass("error");
-			$(container).prev('.notification').remove();
+			input.removeClass("error");
+			messageEl.removeClass("error");
 
 			if (value != "" && value.length > 0) {
 				if (!(/^\d{4}$/.test(value) || /^\d{4}-\d{2}-\d{2}$/.test(value))) {
@@ -1270,9 +1265,7 @@ define(['underscore', 'jquery', 'backbone',
 			}
 
 			if (errors.length > 0) {
-				container.before($(document.createElement("p"))
-											.addClass("error notification")
-											.text(errors[0]));
+				messageEl.text(errors[0]).addClass("error");
 			}	
 		},
 
