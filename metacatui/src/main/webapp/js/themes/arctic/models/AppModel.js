@@ -57,7 +57,7 @@ define(['jquery', 'underscore', 'backbone'],
 			d1Service: '/d1/mn/v2',
 			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
-			//d1LogServiceUrl: null,
+			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -135,8 +135,8 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
-					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
-
+					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
+				
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
 				
