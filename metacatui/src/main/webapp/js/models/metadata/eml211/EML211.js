@@ -50,7 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            onlineDist: [], // array of EMLOnlineDist objects
 		            offlineDist: [], // array of EMLOfflineDist objects
 		            geoCoverage : [], //an array for EMLGeoCoverages
-		            temporalCoverage : null, //One EMLTempCoverage model
+		            temporalCoverage : [], //an array of EMLTempCoverage models
 		            taxonCoverage : [], //an array of EMLTaxonCoverages
 		            purpose: [],
 		            entities: [], //An array of EMLEntities
@@ -284,10 +284,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				taxon    = $(thisNode).children("taxonomiccoverage");
             			
             			if(temporal.length){
-            				modelJSON.temporalCoverage = new EMLTemporalCoverage({ 
-        						objectDOM: temporal[0],
-        						parentModel: model
-                			});
+            				modelJSON.temporalCoverage = [];
+            				
+            				_.each(temporal, function(t){
+            					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ 
+            						objectDOM: t,
+            						parentModel: model
+                    			}));
+            				});
             			}
             						
             			if(geo.length){
@@ -597,22 +601,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				}
 				
 	        	//Serialize the temporal coverage
-				var existingTemporalCoverage = datasetNode.find("temporalcoverage");
-                if ( this.get("temporalCoverage") ) {
-                	if(existingTemporalCoverage.length)
-                		existingTemporalCoverage.replaceWith(this.get("temporalCoverage").updateDOM());
-                	else{
-                		var insertAfter = this.getEMLPosition(eml, "temporalCoverage");
-                		
-                		if(!insertAfter)
-                			datasetNode.find("coverage").append(this.get("temporalCoverage").updateDOM());
-                		else
-                			insertAfter.after(this.get("temporalCoverage").updateDOM());
-                	}
-                }
-                else
-                	existingTemporalCoverage.remove();
-                
+				var existingTemporalCoverages = datasetNode.find("temporalcoverage");
+            		
+            	//Update the DOM of each model
+				_.each(this.get("temporalCoverage"), function(temporalCoverage, position){
+					
+					//Update the existing temporalCoverage node if it exists
+					if(existingTemporalCoverages.length-1 >= position){
+						$(existingTemporalCoverages[position]).replaceWith(temporalCoverage.updateDOM());
+					}
+					//Or, append new nodes
+					else{
+						datasetNode.find('coverage').append(temporalCoverage.updateDOM());	
+					}
+				});	 
+				
+				//Remove existing taxon coverage nodes that don't have an accompanying model
+				this.removeExtraNodes(existingTemporalCoverages, this.get("temporalCoverage"));
+            
                 if(datasetNode.find("coverage").children().length == 0)
                 	datasetNode.find("coverage").remove();
                 

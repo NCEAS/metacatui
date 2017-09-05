@@ -560,15 +560,28 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Dates section of the page
          */
 	    renderDates: function(){
-            var model = this.model.get('temporalCoverage') || new EMLTemporalCoverage();
-			var html = this.datesTemplate({
-				beginDate: model.get('beginDate'),
-				beginTime: model.get('beginTime'),
-				endDate: model.get('endDate'),
-				endTime: model.get('endTime')
-			});
-            	
-	    	this.$(".section.dates").html(html);
+	    	
+	    	//Add a header
+	    	this.$(".section.dates").html( $(document.createElement("h2")).text("Dates") );
+	    	
+            var models = this.model.get('temporalCoverage');
+            
+            //Create a new EML Temporal Coverage model if there isn't one already
+            if( !models.length ){
+            	models.push(new EMLTemporalCoverage({ parentModel: this.model }));
+            }
+            
+            _.each(models, function(model){
+    			var html = this.datesTemplate({
+    				beginDate: model.get('beginDate'),
+    				beginTime: model.get('beginTime'),
+    				endDate: model.get('endDate'),
+    				endTime: model.get('endTime')
+    			});
+                	
+    	    	this.$(".section.dates").append(html);
+            }, this);
+
 	    },
 	    
 	    /*
@@ -1364,7 +1377,8 @@ define(['underscore', 'jquery', 'backbone',
         	// 'type' attribute on the input element to determine whether this is a
         	// calendarDate or a time that's being updated
         	var category = $(e.target).attr("data-category"),
-	        	model = this.model.get("temporalCoverage"),
+        		position = this.$(".temporal-coverage-container").index( $(e.target).parents(".temporal-coverage-container") ),
+	        	model = position > -1 ? this.model.get("temporalCoverage")[position] : null,
 	        	value = $(e.target).val().trim();
 
         	// We can't update anything without a category
@@ -1379,7 +1393,10 @@ define(['underscore', 'jquery', 'backbone',
 	        	});
 
 	        	// Add the newly-created model to the array
-	        	this.model.set("temporalCoverage", model);
+        		if( Array.isArray(this.model.get("temporalCoverage")) )
+        			this.model.get("temporalCoverage").push(model);
+        		else
+        			this.model.set("temporalCoverage", [model]);
 			}
 
 			//If the value hasn't changed, exit
@@ -1396,86 +1413,25 @@ define(['underscore', 'jquery', 'backbone',
         },
 
 		showTemporalCoverageValidation: function(e) {
-			var container = $(e.target).parents('.temporal-coverage').first(),
-			    inputs = $(container).find('input'),
-				errors = [],
-				values = {};
-
-			// Collect the values of all inputs to simplify validation
-			_.each(inputs, function(input) {
-				var category = $(input).attr('data-category');
-
-				if (!category) {
-					return {} ;
+			var dateEls = this.$(".temporal-coverage-container");
+			
+			dateEls.find(".notification").empty();
+			dateEls.find(".error").removeClass("error");
+			
+			//Validate each temporal coverage model
+			_.each(this.model.get("temporalCoverage"), function(temporalCoverage, i){
+				
+				if( !temporalCoverage.isValid() ){
+					var errors = temporalCoverage.validationError;
+					
+					_.mapObject(errors, function(errorMsg, category){
+						$(dateEls[i]).find(".notification").addClass("error").append(errorMsg + " ");
+						$(dateEls[i]).find("[data-category='" + category + "']").addClass("error");
+					}, this);
 				}
-
-				values[category] = $(input).val();
-			});
-
-			// Remove existing error borders and notifications
-			$(inputs).removeClass("error");
-			$(container).prev('.notification').remove();
-
-			if (values.beginDate == '') {
-				if (values.beginTime == '') {
-					$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
-				} else {
-					$(inputs).filter('input[data-category="beginDate"]').addClass("error");
-					errors.push('You must set a Date if you set a Time.');
-				}
-			} else {
-				$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
-			}
-
-			if (values.endDate == '') {
-				if (values.endTime == '') {
-					$(inputs).filter('input[data-category="endDate"]').removeClass("error");
-				} else {
-					$(inputs).filter('input[data-category="endDate"]').addClass("error");
-					errors.push('You must set a Date if you set a Time.');
-				}
-			} else {
-				$(inputs).filter('input[data-category="endDate"]').removeClass("error");
-			}
-
-			if (values.endDate != '') {
-				if (values.beginDate != '') {
-					$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
-				} else {
-					$(inputs).filter('input[data-category="beginDate"]').addClass("error");
-					errors.push('You must set a Begin Date if you set an End Time.');
-				}
-			} else {
-				$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
-			}
-
-			if (values.beginTime != '') {
-				if(values.beginTime.split(':').length < 3) {
-					$(inputs).filter('input[data-category="beginTime"]').addClass("error");
-					errors.push("Time must follow ISO 8601 format: e.g., HH:MM:SSZ, HH:MM:SS.SSS+08:00");
-				} else {
-					$(inputs).filter('input[data-category="beginTime"]').removeClass("error");
-				}
-			} else {
-				$(inputs).filter('input[data-category="beginTime"]').removeClass("error");
-			}
-
-			if (values.endTime != '') {
-				if(values.endTime.split(':').length < 3) {
-					$(inputs).filter('input[data-category="endTime"]').addClass("error");
-					errors.push("Time must follow ISO 8601 format: e.g., HH:MM:SSZ, HH:MM:SS.SSS+08:00");
-				} else {
-					$(inputs).filter('input[data-category="endTime"]').removeClass("error");
-				}
-			} else {
-				$(inputs).filter('input[data-category="endTime"]').removeClass("error");
-			}
-
-			if (errors.length > 0) {
-				container.before($(document.createElement("p"))
-											.addClass("error notification")
-											.text(errors[0]));
-			}			
+					
+			}, this);
+		
 		},
 		
 		/* Update the underlying model and DOM for an EML TaxonomicCoverage
