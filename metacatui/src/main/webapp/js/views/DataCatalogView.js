@@ -520,8 +520,8 @@ define(['jquery',
 						
 			//Specify which facets to retrieve
 			if(gmaps){ //If we have Google Maps enabled
-				var geohashes = ["geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9"]
-			    this.searchResults.facet = _.union(this.searchResults.facet, geohashes);
+				var geohashLevel = "geohash_" + mapModel.determineGeohashLevel(this.map.zoom); 
+				this.searchResults.facet.push(geohashLevel);
 			}
 			
 			//Run the query
