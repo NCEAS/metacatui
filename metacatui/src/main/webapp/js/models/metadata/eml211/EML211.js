@@ -391,9 +391,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                                 parse: true
                             });
             			} else {
-            				entityModel = new EMLEntity({
+            				entityModel = new EMLOtherEntity({
                 				objectDOM: thisNode,
                 				parentModel: model
+                                entityType: "application/octet-stream"
                 			}, {
                 				parse: true
                 			});
