@@ -42,6 +42,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 		
 		//Some dated used for query creation
 		firstPossibleUpload: "2000-01-01T00:00:00Z", //The first possible date that an object could be uploaded (based on DataONE dates)
+		firstPossibleDataONEDownload: "2012-07-01T00:00:00Z", //The first possible download date from the DataONE CN
 		firstPossibleDate: "1800-01-01T00:00:00Z",   //The first possible date that data could have been collected in (based on DataONE dates)
 		
 		initialize: function(){
@@ -105,9 +106,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 		getFirstBeginDate: function(){
 			var model = this;
 			
+			var now = new Date();			
+			
 			//Get the earliest temporal data coverage year
 			var query = this.get('query') + 
-						"+beginDate:[" + this.firstPossibleDate + "%20TO%20NOW]" //Use date filter to weed out badly formatted data 
+						"+beginDate:[" + this.firstPossibleDate + "%20TO%20" + now.toISOString() + "]" //Use date filter to weed out badly formatted data 
 						"+-obsoletedBy:*";
 			
 			var otherParams = "&rows=1" +
@@ -169,9 +172,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 		getLastEndDate: function(){
 			var model = this;
 			
+			var now = new Date();
+			
 			//Get the latest temporal data coverage year
 			var query = this.get('query') + 
-						"+endDate:[" + this.firstPossibleDate + "%20TO%20NOW]" + //Use date filter to weed out badly formatted data 
+						"+endDate:[" + this.firstPossibleDate + "%20TO%20" + now.toISOString() + "]" + //Use date filter to weed out badly formatted data 
 						"+-obsoletedBy:*";
 			var otherParams = "&rows=1" +
 							  "&fl=endDate" +
@@ -331,10 +336,12 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			var model = this;
 			
+			var now = new Date();
+			
 			//Get the earliest upload date	
 			var query =  "q=" + this.get('query') +
 								"+formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
-								"+dateUploaded:[" + this.firstPossibleUpload + "%20TO%20NOW]" + //Weeds out badly formatted dates
+								"+dateUploaded:[" + this.firstPossibleUpload + "%20TO%20" + now.toISOString() + "]" + //Weeds out badly formatted dates
 								"+-obsoletes:*"+    //Only count one version of a revision chain
 								"&fl=dateUploaded" +
 								"&rows=1" +
@@ -376,7 +383,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 										  "&facet.limit=-1" +
 										  "&facet.range=dateUploaded" +
 										  "&facet.range.start=" + model.get('firstUpload') +
-										  "&facet.range.end=NOW" +
+										  "&facet.range.end=" + now.toISOString() +
 										  "&facet.range.gap=%2B1MONTH" +
 										  "&wt=json";
 				
@@ -422,6 +429,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				firstYear = this.get('firstBeginDate')? this.get('firstBeginDate').getUTCFullYear() : new Date().getUTCFullYear(),
 				totalYears = lastYear - firstYear,
 				today = new Date().getUTCFullYear(),
+				now   = new Date(),
 				yearsFromToday = { fromBeginning: today - firstYear, 
 								   fromEnd: today - lastYear
 								  };
@@ -451,27 +459,54 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 				if(binSize == 1){
 					//Querying for just the current year needs to be treated a bit differently and won't be caught in our for loop 
 					if((yearsAgo == 0) && (lastYear == today)){
-						fullFacetQuery += "&facet.query={!key=" + lastYear + "}(beginDate:[*%20TO%20NOW%2B1YEARS/YEAR]%20endDate:[NOW-0YEARS/YEAR%20TO%20*])";
+						var oneYearFromNow = new Date();
+						oneYearFromNow.setFullYear( oneYearFromNow.getFullYear() + 1 );
+						
+						var now = new Date();
+						
+						fullFacetQuery += "&facet.query={!key=" + lastYear + "}(beginDate:[*%20TO%20" + oneYearFromNow.toISOString() + "/YEAR]%20endDate:[" + now.toISOString() + "/YEAR%20TO%20*])";
 					}
 					else{
 						key = today - yearsAgo;
-						fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + (yearsAgo-1) +"YEARS/YEAR]%20endDate:[NOW-" + yearsAgo + "YEARS/YEAR%20TO%20*])";
+						
+						var beginDateLimit = new Date();
+						beginDateLimit.setFullYear( beginDateLimit.getFullYear() - (yearsAgo-1) );
+						
+						var endDateLimit = new Date();
+						endDateLimit.setFullYear( endDateLimit.getFullYear() - yearsAgo );
+						
+						fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20" + beginDateLimit.toISOString() + "/YEAR]%20endDate:[" + endDateLimit.toISOString() + "/YEAR%20TO%20*])";
 					}
 				}
 				else if (yearsAgo <= binSize){
 					key = (today - yearsAgo) + "-" + lastYear;
-					fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + yearsFromToday.fromEnd +"YEARS/YEAR]%20endDate:[NOW-" + yearsAgo + "YEARS/YEAR%20TO%20*])";
+					
+					var beginDateLimit = new Date();
+					beginDateLimit.setFullYear( beginDateLimit.getFullYear() - yearsFromToday.fromEnd );
+					
+					var endDateLimit = new Date();
+					endDateLimit.setFullYear( endDateLimit.getFullYear() - yearsAgo );
+					
+					fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20" + beginDateLimit.toISOString() +"/YEAR]%20endDate:[" + endDateLimit.toISOString() + "/YEAR%20TO%20*])";
 				}
 				else{
 					key = (today - yearsAgo) + "-" + (today - yearsAgo + binSize-1);
-					fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20NOW-" + (yearsAgo - binSize-1) +"YEARS/YEAR]%20endDate:[NOW-" + yearsAgo + "YEARS/YEAR%20TO%20*])";
+					
+					var beginDateLimit = new Date();
+					beginDateLimit.setFullYear( beginDateLimit.getFullYear() - (yearsAgo - binSize-1) );
+					
+					var endDateLimit = new Date();
+					endDateLimit.setFullYear( endDateLimit.getFullYear() - yearsAgo );
+					
+					fullFacetQuery += "&facet.query={!key=" + key + "}(beginDate:[*%20TO%20" + beginDateLimit.toISOString() + "/YEAR]%20endDate:[" + endDateLimit.toISOString() + "/YEAR%20TO%20*])";
 				}				
 			}
 			
+			var now = new Date();
 			
 			//The full query			
 			var query = "q=" + this.get('query') +
-			  "+beginDate:[" + this.firstPossibleDate + "%20TO%20NOW]" + //Use date filter to weed out badly formatted data 
+			  "+beginDate:[" + this.firstPossibleDate + "%20TO%20" + now.toISOString() + "]" + //Use date filter to weed out badly formatted data 
 			  "+-obsoletedBy:*" +
 			  "&rows=0" +
 			  "&facet=true" +
@@ -597,7 +632,17 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			logSearch.set("event", "read");
 			logSearch.set("formatType", ["METADATA", "DATA"]);
 			logSearch.set("facetRanges", ["dateLogged"]);
-			logSearch.set("facets", ["formatType", "pid"]);
+			logSearch.set("facets", ["formatType"]);
+			
+			var today = new Date();
+			today.setDate(today.getUTCDay() + 1);
+			today.setHours(0);
+			today.setMinutes(0);
+			today.setSeconds(0);
+			today.setMilliseconds(0);
+			
+			logSearch.set("facetRangeStart", this.firstPossibleDataONEDownload);
+			logSearch.set("facetRangeEnd", today.toISOString());
 			
 			var searchModel = this.get("searchModel");
 			if(searchModel && searchModel.get("dataSource")){
