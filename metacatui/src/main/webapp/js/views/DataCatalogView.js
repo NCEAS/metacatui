@@ -518,9 +518,9 @@ define(['jquery',
 			var query = this.searchModel.getQuery();
 						
 			//Specify which facets to retrieve
-			if(gmaps){ //If we have Google Maps enabled
-				var geohashes = ["geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9"]
-			    this.searchResults.facet = _.union(this.searchResults.facet, geohashes);
+			if(gmaps && this.map){ //If we have Google Maps enabled
+				var geohashLevel = "geohash_" + MetacatUI.mapModel.determineGeohashLevel(this.map.zoom); 
+				this.searchResults.facet.push(geohashLevel);
 			}
 			
 			//Run the query

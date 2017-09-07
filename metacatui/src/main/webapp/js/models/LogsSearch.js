@@ -45,8 +45,15 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 				}],
 				facets: [],
 				facetRanges: [],
-				facetRangeStart: "NOW-20YEARS",
-				facetRangeEnd: "NOW",
+				facetRangeStart: function(){
+					var twentyYrsAgo = new Date();
+					twentyYrsAgo.setFullYear( twentyYrsAgo.getFullYear() - 20 );
+					return twentyYrsAgo.toISOString();
+				}(),
+				facetRangeEnd: function(){
+					var now = new Date();
+					return now.toISOString();
+				}(),
 				facetRangeGap: "%2B1MONTH",
 				facetMinCount: "1"
 			}

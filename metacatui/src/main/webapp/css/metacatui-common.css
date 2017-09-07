@@ -961,6 +961,13 @@ img.icon{
 }
 .entitydetails.hasProvLeft{
 	margin-left: 0px;
+	width: calc(100% - 305px);
+    display: inline-block;
+}
+.entitydetails.hasProvRight{
+	margin-right: 0px;
+    width: calc(100% - 305px);
+    display: inline-block;
 }
 .entitydetails.hasProvLeft .thumbnail.pdf{
 	margin-left: 60px;
