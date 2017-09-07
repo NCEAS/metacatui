@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLTemporalCoverage', 
         'models/metadata/eml211/EMLDistribution', 
         'models/metadata/eml211/EMLEntity',
+        'models/metadata/eml211/EMLDataTable',
         'models/metadata/eml211/EMLOtherEntity',
         'models/metadata/eml211/EMLParty', 
         'models/metadata/eml211/EMLProject',
@@ -16,7 +17,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		'models/metadata/eml211/EMLMethods'], 
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject, 
     		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, 
-    		EMLDistribution, EMLEntity, EMLOtherEntity, EMLParty, EMLProject, EMLText, EMLMethods) {
+    		EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty, 
+            EMLProject, EMLText, EMLMethods) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -381,17 +383,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 			}, {
                 				parse: true
                 			});
-            			}
-            			else{
-            				entityModel = new EMLEntity({
+                        } else if ( thisNode.localName == "datatable") {
+                            entityModel = new EMLDataTable({
+                                objectDOM: thisNode,
+                                parentModel: model
+                            }, {
+                                parse: true
+                            });
+            			} else {
+            				entityModel = new EMLOtherEntity({
                 				objectDOM: thisNode,
                 				parentModel: model
+                                entityType: "application/octet-stream"
                 			}, {
                 				parse: true
                 			});
             			}
             			
-            			modelJSON["entities"].push(entityModel);            			
+            			modelJSON["entities"].push(entityModel);
             		}
             		else{
             			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
