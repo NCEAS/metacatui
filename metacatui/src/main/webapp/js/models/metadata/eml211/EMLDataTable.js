@@ -18,7 +18,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
     
                         /* Attributes from EML */
                         caseSensitive: null, // The case sensitivity of the table records
-                        numberOfrecords: null // the number of records in the table
+                        numberOfrecords: null, // the number of records in the table
         
                         /* Attributes not from EML */
                         nodeOrder: [ // The order of the top level XML element nodes
