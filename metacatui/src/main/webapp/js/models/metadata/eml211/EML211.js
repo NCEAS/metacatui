@@ -694,17 +694,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());	  
 	        	
 	        	//Get the existing taxon coverage nodes from the EML
-				var existingEntities = datasetNode.find("otherEntity");
+				var existingEntities = datasetNode.find("otherEntity, dataTable");
 				
 	        	//Serialize the entities
-	        	_.each(this.get("entities"), function(entity, position){					
+	        	_.each(this.get("entities"), function(entity, position) {
 
 					//Update the existing node if it exists
-					if(existingEntities.length-1 >= position){
+					if(existingEntities.length - 1 >= position) {
 						$(existingEntities[position]).replaceWith(entity.updateDOM());
 					}
 					//Or, append new nodes
-					else{
+					else {
 						this.getEMLPosition(eml, "otherentity").after(entity.updateDOM());	
 					}
 	        		
