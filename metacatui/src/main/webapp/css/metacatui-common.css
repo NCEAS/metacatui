@@ -244,6 +244,9 @@ header .citation {
 .btn.download.complete.btn-primary{
 	color: white;
 }
+.downloading.icon-spin.hidden{
+	display: none;
+}
 
 /****************************************** 
 ** Notifications and Alerts ***
@@ -463,6 +466,7 @@ img.icon{
 }
 .result-row .tooltip{
 	z-index: 99999;
+	min-width: 100px;
 }
 .result-row .info-icons .label {
   background-color: #FFF;
@@ -477,6 +481,10 @@ img.icon{
 }
 .result-row .tooltip-inner{
 	font-size: 1.2em;
+}
+.result-row .download-icon-placeholder{
+	width: 16px;
+	display: inline-block;
 }
 /****************************************** 
 ** Provenance flow-charts ***

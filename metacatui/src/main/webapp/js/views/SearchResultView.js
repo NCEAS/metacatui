@@ -120,55 +120,89 @@ define(['jquery', 'underscore', 'backbone', 'moment', 'models/SolrResult', 'mode
 		},
 		
 		download: function(e){				
-			if(appUserModel.get("loggedIn") && !this.model.get("isPublic")){
-				if(e){
-					e.preventDefault();
-					var packageId = $(e.target).attr("data-id") || this.model.get("resourceMap");
-				}
-				else
-					var packageId = this.model.get("resourceMap");
+			if(e){
+				e.preventDefault();
 				
-				var fileName = this.model.get("fileName") || this.model.get("title");
+				var button = e.target.tagName == "A" ? $(e.target) : $(e.target).parents("a.download");
+				var packageId = button.length? (button.attr("data-id") || this.model.get("resourceMap")) : this.model.get("resourceMap");
+			}
+			else
+				var packageId = this.model.get("resourceMap");
+			
+			var fileName = this.model.get("fileName") || this.model.get("title");
+			
+			//Disable the downlod button
+			button.prop("disabled", true);
+			button.find(".icon").hide();
+			button.find(".downloading").css("display", "inline-block");
+			
+			//Download the entire package if there is one
+			if(packageId){
 				
-				//Download the entire package if there is one
-				if(packageId){
+				//If there is more than one resource map, download all of them
+				if(Array.isArray(packageId)){
 					
-					//If there is more than one resource map, download all of them
-					if(Array.isArray(packageId)){
-						for(var i = 0; i<packageId.length; i++){
-							var pkgFileName = fileName || "Dataset_" + (i+1); 
-							
-							//Take off the file extension part of the file name
-							if(pkgFileName.lastIndexOf(".") > 0)
-								pkgFileName = pkgFileName.substring(0, pkgFileName.lastIndexOf("."));
-								
-							var packageModel = new Package({ 
-								id: packageId[i],
-								fileName: pkgFileName + ".zip"
-							});
-							packageModel.downloadWithCredentials();
-						}
-					}
-					else{							
-						//Take off the file extension part of the file name
-						if(fileName.lastIndexOf(".") > 0)
-							fileName = fileName.substring(0, fileName.lastIndexOf("."));
+					var numDownloadsComplete = 0;
+					
+					for(var i = 0; i<packageId.length; i++){
+						var pkgFileName = fileName || "Dataset_" + (i+1); 
 						
-						//Create a model to represent the package
+						//Take off the file extension part of the file name
+						if(pkgFileName.lastIndexOf(".") > 0)
+							pkgFileName = pkgFileName.substring(0, pkgFileName.lastIndexOf("."));
+							
 						var packageModel = new Package({ 
-							id: packageId,
-							fileName: fileName + ".zip"
+							id: packageId[i],
+							fileName: pkgFileName + ".zip"
 						});
+												
+						this.listenTo(packageModel, "downloadComplete", function(){
+							numDownloadsComplete++;
+							
+							if(numDownloadsComplete == packageId.length){
+								//Enable the downlod button
+								button.prop("disabled", false);
+								button.find(".icon").css("display", "inline-block");
+								button.find(".downloading").hide();
+							}
+						});
+						
 						packageModel.downloadWithCredentials();
 					}
 				}
-				//Otherwise just download this solo object
-				else{
-					this.model.downloadWithCredentials();
+				else{							
+					//Take off the file extension part of the file name
+					if(fileName.lastIndexOf(".") > 0)
+						fileName = fileName.substring(0, fileName.lastIndexOf("."));
+					
+					//Create a model to represent the package
+					var packageModel = new Package({ 
+						id: packageId,
+						fileName: fileName + ".zip"
+					});
+					
+					this.listenTo(packageModel, "downloadComplete", function(){
+						
+						//Enable the downlod button
+						button.prop("disabled", false);
+						button.find(".icon").css("display", "inline-block");
+						button.find(".downloading").hide();
+					});
+					
+					packageModel.downloadWithCredentials();
 				}
 			}
-			else
-				return true;			
+			//Otherwise just download this solo object
+			else{
+				this.listenTo(this.model, "downloadComplete", function(){
+					
+					//Enable the downlod button
+					$(e.target).prop("disabled", false);
+
+				});
+				
+				this.model.downloadWithCredentials();
+			}			
 		},
 		
 		getOpenURLCOinS: function(){
