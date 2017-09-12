@@ -36,9 +36,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "drop"                 : "addFiles",          // Drag & drop, adds the files into the collection
                 "click .removeFiles"   : "handleRemove",      // Edit dropdown, remove sci{data,meta} from collection
                 "click .cancel"        : "handleCancel",      // Cancel a file load
-                "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
-                "mouseover .remove"    : "previewRemove",
-                "mouseout  .remove"    : "previewRemove"
+                "change: percentLoaded": "updateLoadProgress" // Update the file read progress bar
+               // "mouseover .remove"    : "previewRemove",
+               // "mouseout  .remove"    : "previewRemove"
             },
             
             /* Initialize the object - post constructor */

@@ -72,7 +72,15 @@
             </button>
 
         <% } else { %>
-            <i class="icon-large icon icon-pencil edit pointer" title="Edit metadata about this file"></i>
-            <i class="icon-large icon icon-remove remove removeFiles" title="Remove file"></i>
+
+            <div class="btn-group">
+			  <button class="btn edit">Describe</button>
+			  <button class="btn dropdown-toggle" data-toggle="dropdown">
+			    <span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu">
+			    <li><a href="" class="remove removeFiles" title="Remove this file">Remove</a></li>
+			  </ul>
+			</div>
         <% } %>
 </td>
