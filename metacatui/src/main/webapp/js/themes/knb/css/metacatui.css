@@ -1140,6 +1140,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-left: 20px;
 	margin-top: 30px;
 }
+.member-list .group {
+    min-width: 100px;
+}
  
   /* The universal color for data */
 svg .data,
