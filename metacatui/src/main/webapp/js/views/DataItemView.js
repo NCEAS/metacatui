@@ -49,6 +49,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Render the template into the DOM */
             render: function(model) {
+            	console.log("Rendering " + this.model.get("fileName"));
+            	
             	//Prevent duplicate listeners
             	this.stopListening();
             	
@@ -64,15 +66,48 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 if(Array.isArray(attributes.title))
                 	attributes.title  = attributes.title[0];
                 
-                //Get the number of attributes for this item
+                //Set some defaults
                 attributes.numAttributes = 0;
-                var parentEML = MetacatUI.rootDataPackage.where({
-                    	id: this.model.get("isDocumentedBy")[0]
-                	});
-                if(parentEML.type == "EML"){
-                	var entity = parentEML.getEntity(this.model);
-                	if(entity)
-                		attributes.numAttributes = entity.get("attributeList").length;
+                attributes.hasAttributeChanges = false;
+                attributes.entityIsValid = false;
+                		
+                //Get the number of attributes for this item
+                if(this.model.type != "EML"){
+                		                
+	                //Get the parent EML model
+	                var parentEML = MetacatUI.rootDataPackage.where({
+	                    	id: this.model.get("isDocumentedBy")[0]
+	                	});
+	                
+	                if( Array.isArray(parentEML) )
+	                	parentEML = parentEML[0];
+	                
+	                //If we found a parent EML model
+	                if(parentEML && parentEML.type == "EML"){
+	                	//Find the EMLEntity model for this data item
+	                	var entity = parentEML.getEntity(this.model);
+	                	
+	                	//If we found an EMLEntity model
+	                	if(entity){
+	                		//Get the number of attributes for this entity
+	                		attributes.numAttributes = entity.get("attributeList").length;
+	                		attributes.hasAttributeChanges = this.hasAttributeChanges;
+	                		attributes.entityIsValid = entity.isValid();
+	                		
+	                		//If there are no attributes now, rerender when one is added
+	                		if(attributes.numAttributes == 0){
+	                			this.listenTo(entity, "change:attributeList", this.handleAttributeChanges);
+	                		}
+	                	}
+	                	else{
+	                		//Rerender when an entity is added
+	                		this.listenTo(this.model, "change:entities", this.render);
+	                	}
+	                }
+	                else{
+	                	//When the package is complete, rerender
+	                	this.listenTo(MetacatUI.rootDataPackage, "add:EML", this.render);
+	                }
                 }
                 
                 this.$el.html( this.template(attributes) );
@@ -114,7 +149,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	this.$el.removeClass("loading");
                 }
                 else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" ) && attributes.numAttributes == 0){
-            		this.$(".status .icon").tooltip({
+            		
+                	this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
@@ -123,6 +159,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	});
             		
             		this.$el.removeClass("loading");
+            		
             	}
                 else if(this.model.get("uploadStatus") == "c"){
 
@@ -444,6 +481,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
                 
+            },
+            
+            /*
+             * When the attributes for this 
+             */
+            handleAttributeChanges: function(){
+            	this.hasAttributeChanges = true;
+            	
+            	
+            	this.render();
             },
             
             /* 

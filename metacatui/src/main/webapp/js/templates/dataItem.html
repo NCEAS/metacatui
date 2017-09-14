@@ -54,6 +54,10 @@
 		</div>
 	<% } else if( (!uploadStatus || uploadStatus == "c") && type != "Metadata" && numAttributes == 0 ) { %>
 		<i class="icon icon-circle-blank warning icon-large"></i>
+	<% } else if( type != "Metadata" && numAttributes > 0 && hasAttributeChanges && entityIsValid ) { %>
+		<i class="icon icon-ok-circle success icon-large"></i>
+	<% } else if( type != "Metadata" && !entityIsValid ) { %>
+		<i class="icon icon-remove-circle danger icon-large"></i>
 	<% } else if( uploadStatus == "c" ) { %>
 		<i class="icon icon-ok-circle success icon-large"></i>
 	<% } else if( uploadStatus == "e" ) { %>
@@ -81,7 +85,7 @@
             <% if( (!uploadStatus || uploadStatus == "c") && type != "Metadata" && numAttributes == 0 ){ %>
 			  <button class="btn edit warning">Describe</button>
 			 <% } else { %>
-			 	<button class="btn edit warning">Describe</button>
+			 	<button class="btn edit">Describe</button>
 			 <% } %>
 			  <button class="btn dropdown-toggle" data-toggle="dropdown">
 			    <span class="caret"></span>

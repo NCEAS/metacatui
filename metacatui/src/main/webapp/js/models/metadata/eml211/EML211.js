@@ -58,7 +58,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            entities: [], //An array of EMLEntities
 		            pubplace: null,
 		            methods: null, // An EMLMethods objects
-		            project: null // An EMLProject object
+		            project: null, // An EMLProject object
+		            units: []
         		});
         	},
 

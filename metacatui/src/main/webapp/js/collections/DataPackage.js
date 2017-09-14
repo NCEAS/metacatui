@@ -393,12 +393,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // Get the isDocumentedBy relationships
                     documentsStatements = this.dataPackageGraph.statementsMatching(
                         undefined, CITO("documents"), undefined, undefined);
+                    
+                    var sciMetaPids = [];
 
                     _.each(documentsStatements, function(documentsStatement) {
 
                           // Extract and URI-decode the metadata pid
                           scimetaID = decodeURIComponent(
                                 _.last(documentsStatement.subject.value.split("/")));
+                          
+                          sciMetaPids.push(scimetaID);
 
                           // Extract and URI-decode the data pid
                           scidataID = decodeURIComponent(
@@ -426,6 +430,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 	                      	  dataObj.set("isDocumentedBy", isDocBy);
                           }
                     }, this);
+                    
+                    //Put the science metadata pids first
+                    memberPIDs = _.difference(memberPIDs, sciMetaPids);
+                    _.each(_.uniq(sciMetaPids), function(id){ memberPIDs.unshift(id); });
 
                     //Retrieve the model for each member
                     _.each(memberPIDs, function(pid){
@@ -452,11 +460,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                                 			//Trigger a replace event so other parts of the app know when a model has been replaced with a different type
                                 			oldModel.trigger("replace", newModel);
+                                			
+                                			if(newModel.type == "EML")
+                                				collection.trigger("add:EML");
                                 		});
                                 }
                                 else{
                                 	newModel.set("synced", true);
                                 	collection.add(newModel, { replace: true });
+                                	
+                                	if(newModel.type == "EML")
+                        				collection.trigger("add:EML");
                                 }
                         	});
 
