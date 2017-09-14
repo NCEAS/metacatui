@@ -1232,7 +1232,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		//Matches of the checksum or identifier are definite matches
             		if( e.get("xmlID") == dataONEObj.getXMLSafeID() )
             			return true;
-            		else if( e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObj.get("checksumAlgorithm").toUpperCase() == "MD5")
+            		else if( e.get("physicalMD5Checksum") && (e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObj.get("checksumAlgorithm").toUpperCase() == "MD5"))
             			return true;
             		else if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
             			return true;

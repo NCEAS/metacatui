@@ -188,7 +188,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     this.get("attributeList").splice(index, attribute);
                 }
                 
-                console.log("change:attributeList for " + this.cid + " " + this.get("entityName"));
                 this.trigger("change:attributeList");
             },
 
