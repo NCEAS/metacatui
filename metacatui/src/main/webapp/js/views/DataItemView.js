@@ -113,6 +113,17 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	});
                 	this.$el.removeClass("loading");
                 }
+                else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" ) && attributes.numAttributes == 0){
+            		this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>This file needs to be described - Click 'Describe'</div>",
+                		container: "body"
+                	});
+            		
+            		this.$el.removeClass("loading");
+            	}
                 else if(this.model.get("uploadStatus") == "c"){
 
             		this.$(".status .icon").tooltip({
@@ -162,17 +173,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	                	
                 	this.$el.addClass("loading");
                 }
-                else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" ) && attributes.numAttributes == 0){
-            		this.$(".status .icon").tooltip({
-                		placement: "top",
-                		trigger: "hover",
-                		html: true,
-                		title: "<div class='status-tooltip'>This file needs to be described - Click 'Describe'</div>",
-                		container: "body"
-                	});
-            		
-            		this.$el.removeClass("loading");
-            	}
                 else{
                 	this.$el.removeClass("loading");
                 }
