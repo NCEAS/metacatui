@@ -36,9 +36,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "drop"                 : "addFiles",          // Drag & drop, adds the files into the collection
                 "click .removeFiles"   : "handleRemove",      // Edit dropdown, remove sci{data,meta} from collection
                 "click .cancel"        : "handleCancel",      // Cancel a file load
-                "change: percentLoaded": "updateLoadProgress" // Update the file read progress bar
-               // "mouseover .remove"    : "previewRemove",
-               // "mouseout  .remove"    : "previewRemove"
+                "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
+                "mouseover .remove"    : "previewRemove",
+                "mouseout  .remove"    : "previewRemove"
             },
             
             /* Initialize the object - post constructor */
@@ -63,6 +63,17 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 //Format the title
                 if(Array.isArray(attributes.title))
                 	attributes.title  = attributes.title[0];
+                
+                //Get the number of attributes for this item
+                attributes.numAttributes = 0;
+                var parentEML = MetacatUI.rootDataPackage.where({
+                    	id: this.model.get("isDocumentedBy")[0]
+                	});
+                if(parentEML.type == "EML"){
+                	var entity = parentEML.getEntity(this.model);
+                	if(entity)
+                		attributes.numAttributes = entity.get("attributeList").length;
+                }
                 
                 this.$el.html( this.template(attributes) );
                 this.$el.find(".dropdown-toggle").dropdown();
@@ -93,23 +104,25 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	this.$el.removeClass("loading");
                 }
                 else if(this.model.get("uploadStatus") == "q"){
-                	this.$(".status .icon").tooltip({
+                	this.$(".status .progress").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
-                		title: "<div class='status-tooltip'>Ready to Submit</div>",
+                		title: "<div class='status-tooltip'>Starting Upload</div>",
                 		container: "body"
                 	});
                 	this.$el.removeClass("loading");
                 }
                 else if(this.model.get("uploadStatus") == "c"){
-                	this.$(".status .icon").tooltip({
+
+            		this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
                 		title: "<div class='status-tooltip'>Upload complete</div>",
                 		container: "body"
                 	});
+
                 	this.$el.removeClass("loading");
                 }
                 else if(this.model.get("uploadStatus") == "l"){
@@ -149,6 +162,17 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	                	
                 	this.$el.addClass("loading");
                 }
+                else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" ) && attributes.numAttributes == 0){
+            		this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>This file needs to be described - Click 'Describe'</div>",
+                		container: "body"
+                	});
+            		
+            		this.$el.removeClass("loading");
+            	}
                 else{
                 	this.$el.removeClass("loading");
                 }

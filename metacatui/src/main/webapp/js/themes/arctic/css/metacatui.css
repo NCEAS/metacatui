@@ -565,17 +565,19 @@ footer .logos a:hover, a:focus{
     box-sizing: border-box;
     text-align: center;
 }
-
-.Editor .dropdown-menu li a:hover {
-    color: #19B36A;
-}
 .data-package-item .btn.edit:hover,
 .data-package-item .btn.edit:focus{
 	background-color: white;
     border-color: #CCC;
 }
+.data-package-item .btn-group .btn:hover,
 .data-package-item .btn-group .dropdown-toggle:hover{
 	background-color: white;
+	border-color: #CCC;
+	color: #146660;
+}
+.data-package-item .dropdown-menu a{
+	color: #146660;
 }
 #data-package-table td:last-of-type ul li{
 	background-color: #FFF;	

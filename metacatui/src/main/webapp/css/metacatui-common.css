@@ -3350,6 +3350,10 @@ ul.side-nav-items {
 .data-package-item .btn-group .btn{
 	background-color: white;
 }
+.data-package-item .btn.warning {
+    background-color: #FFF;
+    color: #ffbc00;
+}
 .data-package-item .dropdown-menu{
 	border-color: #CCC;
     border-width: 1px;
@@ -3367,7 +3371,16 @@ ul.side-nav-items {
 .data-package-item button{
 	border-color: #CCC;
 }
-
+.data-package-item.remove-preview {
+	opacity: 1;
+}
+.data-package-item.remove-preview .name,
+.data-package-item.remove-preview .status,
+.data-package-item.remove-preview .size,
+.data-package-item.remove-preview .type,
+.data-package-item.remove-preview .type-icon{
+	opacity: .3;
+}
 /* Editor package table status column */
 .data-package-item .status{
 	width: 60px;
@@ -3776,7 +3789,6 @@ textarea.xlarge{
 }
 
 /* ---- Remove icons in the Editor ---- */
-.data-package-item .remove,
 .metadata-container .remove{
 	color: #cecece;
 }
