@@ -167,7 +167,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
-                		title: "<div class='status-tooltip'>Upload complete</div>",
+                		title: "<div class='status-tooltip'>Complete</div>",
                 		container: "body"
                 	});
 
