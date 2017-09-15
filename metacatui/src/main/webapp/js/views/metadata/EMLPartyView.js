@@ -44,7 +44,12 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		//Take multiple given names and combine into one given name.
         		//TODO: Support multiple given names as an array
         		if (Array.isArray(name.givenName)) {
-					fullGivenName = _.map(name.givenName, function(name) { return name.trim(); }).join(' ');
+					fullGivenName = _.map(name.givenName, function(name) {
+							if(typeof name != "undefined" && name)
+								return name.trim();
+							else
+								return "";
+						}).join(' ');
 				}
         		
         		//Get the address object
