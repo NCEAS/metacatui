@@ -947,9 +947,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		row.removeClass("new");
 				row.append(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
 	    		this.addKeyword();
-	    	} else {
-				console.log('not new');
-			}
+	    	}
 	    },
 	    
 	    /*

@@ -49,7 +49,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Render the template into the DOM */
             render: function(model) {
-            	console.log("Rendering " + this.model.get("fileName"));
             	
             	//Prevent duplicate listeners
             	this.stopListening();
@@ -241,7 +240,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Close the view and remove it from the DOM */
             onClose: function(){
-                console.log('DataItemView: onClose()');
                 this.remove(); // remove for the DOM, stop listening           
                 this.off();    // remove callbacks, prevent zombies         
                                 
@@ -265,7 +263,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Update the folder name based on the scimeta title */
             updateName: function(e) {
-                var enteredText = $(e.target).text().trim();
+                
+                var enteredText = this.cleanInput($(e.target).text().trim());
             	
                 // Set the title if this item is metadata or set the file name
                 // if its not
@@ -589,6 +588,37 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                         
                     }
                 }
+            },
+            
+            cleanInput: function(input){
+            	// 1. remove line breaks / Mso classes
+				var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g; 
+				var output = input.replace(stringStripper, ' ');
+				
+				// 2. strip Word generated HTML comments
+				var commentSripper = new RegExp('<!--(.*?)-->','g');
+				var output = output.replace(commentSripper, '');
+				var tagStripper = new RegExp('<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>','gi');
+				
+				// 3. remove tags leave content if any
+				output = output.replace(tagStripper, '');
+				
+				// 4. Remove everything in between and including tags '<style(.)style(.)>'
+				var badTags = ['style', 'script','applet','embed','noframes','noscript'];
+				
+				for (var i=0; i< badTags.length; i++) {
+				  tagStripper = new RegExp('<'+badTags[i]+'.*?'+badTags[i]+'(.*?)>', 'gi');
+				  output = output.replace(tagStripper, '');
+				}
+				
+				// 5. remove attributes ' style="..."'
+				var badAttributes = ['style', 'start'];
+				for (var i=0; i< badAttributes.length; i++) {
+				  var attributeStripper = new RegExp(' ' + badAttributes[i] + '="(.*?)"','gi');
+				  output = output.replace(attributeStripper, '');
+				}
+				
+				return output;
             },
             
             /*
