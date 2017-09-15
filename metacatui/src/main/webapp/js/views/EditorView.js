@@ -483,8 +483,19 @@ define(['underscore',
 
             this.toggleControls();
 
-        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000, {remove: true});
-
+            var message = $(document.createElement("div")).append(
+            		$(document.createElement("span")).text("Your changes have been saved. "),
+            		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+        	
+            MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
+            
+            //Rerender the CitationView
+            var citationView = _.where(this.subviews, { type: "Citation" });
+            if(citationView.length){
+	            citationView[0].createTitleLink = true;
+	            citationView[0].render();
+            }
+            
             // Reset the state to clean
             MetacatUI.rootDataPackage.packageModel.set("changed", false);
             this.model.set("hasContentChanges", false);
