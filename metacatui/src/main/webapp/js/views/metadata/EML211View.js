@@ -211,13 +211,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
 	    	_.each(this.model.get("keywordSets"), function(keywordSetModel){
 	    		_.each(keywordSetModel.get("keywords"), function(keyword){
-		    		this.addKeyword(keyword, keywordSetModel);	    			
+		    		this.addKeyword(keyword, keywordSetModel.get("thesaurus"));	    			
 	    		}, this);
 	    	}, this);
 	    	
-	    	//Add an empty row for adding a new keyword
-	    	this.addKeyword();	  
-	    		    	
+	    	//Add a new keyword row
+	    	this.addKeyword();
+	    		    		    	
 	    	//Alternate Ids
 		    var altIdsEls = this.createBasicTextFields("alternateIdentifier", "Add a new alternate identifier");
 		    $(overviewEl).find(".altids").append(altIdsEls);
@@ -794,7 +794,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(e.target).parents(".funding-row").toggleClass("remove-preview");
 	    },
 	    
-	    addKeyword: function(keyword, model){
+	    addKeyword: function(keyword, thesaurus){
 	    	if(typeof keyword != "string" || !keyword){
 	    		var keyword = "";
 	    		
@@ -804,33 +804,33 @@ define(['underscore', 'jquery', 'backbone',
 	    		else if(this.$(".keyword.new").length > 1)
 	    			return;
 	    	}
-	    	
-	    	if(!model) var model = new EMLKeywordSet({ parentModel: this.model });
-	    	
-	    	var thesaurus    = model.get("thesaurus"),
-	    		row          = $(document.createElement("div")).addClass("row-fluid keyword-row").data({ model: model }),
-	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").val(keyword),
+	    		    	
+	    	//Create the keyword row HTML
+	    	var	row          = $(document.createElement("div")).addClass("row-fluid keyword-row"),
+	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").attr("placeholder", "Add one new keyword"),
     			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
 			    				$(document.createElement("option")).val("None").text("None")).append(
 			    				$(document.createElement("option")).val("GCMD").text("GCMD")),
 				removeButton;
 	    	
-	    	if(thesaurus && thesaurus.indexOf("GCMD") > -1)
-    			thesInput.val("GCMD");
-	    	
-	    	if(!keyword) {
-				row.addClass("new");
-				keywordInput.attr("placeholder", "Add one new keyword");
-			}
-	    		
-			// Start adding children to the row
+			// Piece together the inputs
 			row.append(keywordInput, thesInput);
-
-			// Add a remove button unless this is the .new keyword
-			if(keyword) {
+	    		
+			//Select GCMD in the select menu
+    		if(thesaurus && thesaurus.indexOf("GCMD") > -1)
+        		thesInput.val("GCMD");
+	    	
+	    	if(!keyword)
+				row.addClass("new");
+	    	else{
+    			
+    			//Set the keyword value on the text input
+    			keywordInput.val(keyword);
+    			
+    			// Add a remove button unless this is the .new keyword
 				row.append(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
-			}
-
+	    	}
+	    	
 	    	this.$(".keywords").append(row);
 	    },
 
@@ -894,59 +894,46 @@ define(['underscore', 'jquery', 'backbone',
 	    
 	    //TODO: Comma and semi-colon seperate keywords
 	    updateKeywords: function(e){
-	    	if(!e) return;
 	    	
-	    	var row        = $(e.target).parent(".keyword-row"),
-	    		keyword    = row.find("input").val(),
-	    		thesaurus  = row.find("select").val(),
-	    		model      = row.data("model"),
-	    		allKeywords = [];
+	    	var keywordSets = this.model.get("keywordSets"),
+	    		newKeywordSets = [];
 	    	
-	    	if(keyword.length == 0 && thesaurus === 'None') return;
-
-	    	//If the thesaurus has changed or if there is no model
-	    	if(!model || (thesaurus != model.get("thesaurus") && model.get("keywords").length > 2)){
+	    	//Get all the keywords in the view
+	    	_.each(this.$(".keyword-row"), function(thisRow){
+	    		var thesaurus = $(thisRow).find("select").val(),
+	    			keyword   = $(thisRow).find("input").val();
 	    		
-	    		//Remove the keyword from the model that has a changed thesaurus
-	    		if(model)
-	    			model.set("keywords", _.without(model.get("keywords"), keyword));	    		
+	    		if(!keyword) return;
 	    		
-	    		//Create a new EMLKeywordSet model
-	    		model = new EMLKeywordSet({ parentModel: this.model });
+	    		var keywordSet = _.find(newKeywordSets, function(keywordSet){
+		    		return keywordSet.get("thesaurus") == thesaurus;
+		    	});
 	    		
-	    		//This is the only keyword in the new model
-	    		allKeywords = [keyword];
+	    		if(typeof keywordSet != "undefined"){
+		    		keywordSet.get("keywords").push(keyword);
+		    	}
+		    	else{
+		    		newKeywordSets.push(new EMLKeywordSet({ 
+			    			parentModel: this.model,
+			    			keywords: [keyword],
+			    			thesaurus: thesaurus
+		    			}));
+		    	}
 	    		
-	    		//Update the keywordSets array in the EML211 model
-    			this.model.get("keywordSets").push(model);
-    			
-    			//Update the model attached to the DOM
-    			row.data({ model: model });
-    			
-	    	}	    	
-	    	//If the thesaurus hasn't changed, then find all the keywords that belong in this model
-	    	else{
-		    	//Get all the keywords in the model
-		    	_.each(this.$(".keyword-row"), function(thisRow){
-		    		if($(thisRow).data("model") == model){
-			    		allKeywords.push($(thisRow).find("input").val());	    			
-		    		}
-		    	}, this);
-		    	
-		    	//Make sure this model is set on the EML211 model
-		    	if(!_.contains(this.model.get("keywordSets"), model))
-		    		this.model.get("keywordSets").push(model);
-	    	}
+	    	}, this);
 	    	
-	    	//Update the model with the new keywords and thesaurus
-	    	model.set("keywords",  allKeywords);
-	    	model.set("thesaurus", thesaurus);
+	    	//Update the EML model
+	    	this.model.set("keywordSets", newKeywordSets);
 	    	
-	    	//Add a new row when the user has added a new keyword just now
-	    	if(row.is(".new")){
-	    		row.removeClass("new");
-				row.append(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
-	    		this.addKeyword();
+	    	if(e){
+		    	var row = $(e.target).parent(".keyword-row");
+	
+		    	//Add a new row when the user has added a new keyword just now
+		    	if(row.is(".new")){
+		    		row.removeClass("new");
+					row.append(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
+		    		this.addKeyword();
+		    	}
 	    	}
 	    },
 	    
