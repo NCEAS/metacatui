@@ -69,6 +69,7 @@ define(['underscore', 'jquery', 'backbone',
         	"keyup .funding.new"             : "addFunding",
         	"mouseover .funding-row .remove" : "previewFundingRemove",        	
         	"mouseout .funding-row .remove"  : "previewFundingRemove",
+        	"keyup .funding.error"           : "handleFundingTyping",
         	
         	"keyup .eml-party.new" : "handlePersonTyping",
         	
@@ -792,6 +793,20 @@ define(['underscore', 'jquery', 'backbone',
 	    
 	    previewFundingRemove: function(e){
 	    	$(e.target).parents(".funding-row").toggleClass("remove-preview");
+	    },
+	    
+	    handleFundingTyping: function(e){
+	    	var fundingInput = $(e.target);
+	    	
+	    	//If the funding value is at least one character
+	    	if(fundingInput.val().length > 0){
+	    		//Get rid of the error styling in this row
+	    		fundingInput.parent(".funding-row").children().removeClass("error");
+	    		
+	    		//If this was the only funding input with an error, we can safely remove the error message
+	    		if( !this.$("input.funding.error").length )
+	    			this.$("[data-category='funding'] .notification").removeClass("error").text("");
+	    	}
 	    },
 	    
 	    addKeyword: function(keyword, thesaurus){
