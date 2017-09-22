@@ -12,38 +12,39 @@ define(["jquery", "underscore", "backbone",
         var EMLAttribute = Backbone.Model.extend({
 
             /* Attributes of an EML attribute object */
-            defaults: {
-
-                /* Attributes from EML */
-                xmlID: null, // The XML id of the attribute
-                attributeName: null,
-                attributeLabel: [], // Zero or more human readable labels
-                attributeDefinition: null,
-                storageType: [], // Zero or more storage types
-                typeSystem: [], // Zero or more system types for storage type
-                measurementScale: null, // An EML{Non}NumericDomain or EMLDateTimeDomain object
-                missingValueCode: [], // Zero or more {code: value, definition: value} objects
-                accuracy: null, // An EMLAccuracy object
-                coverage: null, // an EMLCoverage object
-                methods: [], // Zero or more EMLMethods objects
-                references: null, // A reference to another EMLAttribute by id (needs work)
-
-                /* Attributes not from EML */
-                type: "attribute", // The element type in the DOM
-                parentModel: null, // The parent model this attribute belongs to
-                objectXML: null, // The serialized XML of this EML attribute
-                objectDOM: null,  // The DOM of this EML attribute
-                nodeOrder: [ // The order of the top level XML element nodes
-                    "attributeName",
-                    "attributeLabel",
-                    "attributeDefinition",
-                    "storageType",
-                    "measurementScale",
-                    "missingValueCode",
-                    "accuracy",
-                    "coverage",
-                    "methods"
-                ]
+            defaults: function(){
+            	return {
+	                /* Attributes from EML */
+	                xmlID: null, // The XML id of the attribute
+	                attributeName: null,
+	                attributeLabel: [], // Zero or more human readable labels
+	                attributeDefinition: null,
+	                storageType: [], // Zero or more storage types
+	                typeSystem: [], // Zero or more system types for storage type
+	                measurementScale: null, // An EML{Non}NumericDomain or EMLDateTimeDomain object
+	                missingValueCode: [], // Zero or more {code: value, definition: value} objects
+	                accuracy: null, // An EMLAccuracy object
+	                coverage: null, // an EMLCoverage object
+	                methods: [], // Zero or more EMLMethods objects
+	                references: null, // A reference to another EMLAttribute by id (needs work)
+	
+	                /* Attributes not from EML */
+	                type: "attribute", // The element type in the DOM
+	                parentModel: null, // The parent model this attribute belongs to
+	                objectXML: null, // The serialized XML of this EML attribute
+	                objectDOM: null,  // The DOM of this EML attribute
+	                nodeOrder: [ // The order of the top level XML element nodes
+	                    "attributeName",
+	                    "attributeLabel",
+	                    "attributeDefinition",
+	                    "storageType",
+	                    "measurementScale",
+	                    "missingValueCode",
+	                    "accuracy",
+	                    "coverage",
+	                    "methods"
+	                ]
+            	}
             },
 
             /*
