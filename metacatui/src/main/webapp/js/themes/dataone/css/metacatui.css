@@ -1728,6 +1728,17 @@ svg .packages,
 .profile .packages{
 	color: #FF6633;
 	fill: #FF6633;
+	stroke: #FF6633;
+}
+
+.profile .quick-stats .packages{
+	stroke: #1C6E84;
+}
+.profile .quick-stats .circle-badge .count{
+	fill: #1C6E84;
+}
+.profile .updates-chart{
+	min-width: 650px;
 }
 
 .profile .bar-label.packages{
@@ -1736,6 +1747,7 @@ svg .packages,
 .profile .download-chart .bar-chart .bar.packages,
 .profile .download-chart .bar-chart text.packages{
 	fill: #32887F;
+	stroke: #1C6E84;
 }
   /* Donut charts */  
   #metadata-chart,

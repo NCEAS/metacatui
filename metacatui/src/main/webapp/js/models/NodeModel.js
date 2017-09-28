@@ -161,6 +161,13 @@ define(['jquery', 'underscore', 'backbone'],
 					thisModel.trigger("change:currentMemberNode");
 				}
 			});
+		},
+		
+		/*
+		 * Returns true if the given nodeId is a Coordinating Node
+		 */
+		isCN: function(nodeId){
+			return _.findWhere(this.get("coordinators"), { identifier: nodeId });
 		}
 				
 	});

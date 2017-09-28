@@ -886,10 +886,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	    max-width: 960px;
   }
   
-  .profile .stripe{
-    	min-height: 350px;
-  }
-  
   .profile h1{
 	width: 900px;
 	line-height: 90px;
@@ -903,7 +899,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     background-color: #146660;
 }
   
-.profile .charts-container .stripe:nth-child(even){
+.profile .charts-container .stripe:nth-child(odd){
 	background-image: url("../img/sos.png");
 }
   
@@ -950,6 +946,7 @@ svg .packages,
 .profile .packages{
 	color: #146660;
 	fill: #146660;
+	stroke: #146660;
 }
 .profile .bar-label.packages{
 	fill: inherit;

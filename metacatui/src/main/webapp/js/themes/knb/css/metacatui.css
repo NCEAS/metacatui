@@ -1097,10 +1097,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	padding: 20px;
   }
   
-  .profile .stripe{
-    	min-height: 350px;
-  }
-  
   .profile h1{
     margin: 20px auto;
 	width: 900px;
@@ -1115,7 +1111,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     background-color: #0E69A1;
 }
   
-.profile .charts-container .stripe:nth-child(even){
+.profile .charts-container .stripe:nth-child(odd){
 	background-image: url("../img/sos.png");
 }
   
@@ -1162,6 +1158,7 @@ svg .packages,
 .profile .packages{
 	color: #0E69A1;
 	fill: #0E69A1;
+	stroke: #0E69A1;
 }
 .profile .bar-label.packages{
 	fill: inherit;

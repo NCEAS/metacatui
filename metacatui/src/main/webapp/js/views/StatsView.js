@@ -30,17 +30,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
 			if(d3){
-				this.listenTo(statsModel, 'change:dataUploadDates',       this.drawUploadChart);
+				//this.listenTo(statsModel, 'change:dataUploadDates',       this.drawUploadChart);
 				this.listenTo(statsModel, 'change:temporalCoverage',      this.drawCoverageChart);				
 				this.listenTo(statsModel, 'change:metadataDownloadDates', this.drawDownloadsChart);
 				this.listenTo(statsModel, 'change:dataDownloadDates',     this.drawDownloadsChart);
-				this.listenTo(statsModel, 'change:downloadDates',     this.drawDownloadsChart);
+				this.listenTo(statsModel, 'change:downloadDates',         this.drawDownloadsChart);
+				this.listenTo(statsModel, "change:dataUpdateDates",       this.drawUpdatesChart);
+				this.listenTo(statsModel, "change:firstUpload",           this.drawFirstUpload);
+				this.listenTo(statsModel, "change:totalSize",             this.drawTotalSize);	
+				this.listenTo(statsModel, 'change:dataCount', 	          this.drawTotalCount);			
+				this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
+				this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
+			
+				//this.listenTo(statsModel, 'change:dataUploads', 	  this.drawUploadTitle);
 			}
 			
-			this.listenTo(statsModel, 'change:dataUploads', 	  this.drawUploadTitle);
-			this.listenTo(statsModel, 'change:downloads', 	  this.drawDownloadTitle);
-			this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
-			this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
+			this.listenTo(statsModel, 'change:downloads', 	      this.drawDownloadTitle);
 			this.listenTo(statsModel, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
 			
 			// mdq
@@ -177,6 +182,42 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.$('.format-charts-metadata').html(donut.render().el); 
 		},
 		
+		drawFirstUpload: function(){
+			
+			var className = "";
+			
+			if( !statsModel.get("firstUpload") ){
+				var chartData = [{ 
+				              	  count: "N/A", 
+				              	  className: "packages no-activity"
+	                			}];
+			}
+			else{
+				var firstUpload = new Date(statsModel.get("firstUpload")),
+					readableDate = firstUpload.toDateString();
+			
+				readableDate = readableDate.substring(readableDate.indexOf(" ") + 1);
+			
+				var chartData = [{ 
+				              	  count: readableDate, 
+				              	  className: "packages"
+	                			}];	
+			}
+			
+			//Create the circle badge
+			var dateBadge = new CircleBadge({
+				id: "first-upload-badge",
+				data: chartData,
+				className: "chart-title",
+				title: "first upload",
+				titlePlacement: "inside",
+				useGlobalR: true,
+				globalR: 100
+			});			
+			
+			this.$("#first-upload").html(dateBadge.render().el);
+		},
+		
 		//drawUploadChart will get the upload stats from the stats model and draw a time series cumulative chart
 		drawUploadChart: function(){
 			//Get the width of the chart by using the parent container width
@@ -308,6 +349,154 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				globalR: 60
 			});
 			this.$('#uploads-title').prepend(uploadChartTitle.render().el);
+		},
+		
+		/*
+		 * drawTotalCount - draws a simple count of total metadata files/datasets
+		 */
+		drawTotalCount: function(){
+			
+			var className = "";
+			
+			if( !statsModel.get("metadataCount") && !statsModel.get("dataCount") )
+				className += " no-activity";
+			
+			var chartData = [{ 
+	                    	  count: statsModel.get("metadataCount"), 
+	                    	  className: "packages" + className
+			                }];
+			
+			//Create the circle badge
+			var countBadge = new CircleBadge({
+				id: "total-datasets-title",
+				data: chartData,
+				title: "datasets",
+				titlePlacement: "inside",
+				className: "chart-title",
+				useGlobalR: true,
+				globalR: 100
+			});
+			
+			this.$('#total-datasets').prepend(countBadge.render().el);
+		},
+		
+		/*
+		 * drawTotalSize draws a CircleBadgeView with the total file size of 
+		 * all current metadata and data files
+		 */
+		drawTotalSize: function(){
+			
+			if( !statsModel.get("totalSize") ){
+				var chartData = [{ 
+              	  				  count: "0 bytes", 
+				              	  className: "packages no-activity"
+	                			}];
+	
+			}
+			else{				
+				var chartData = [{ 
+		                    	  count: this.bytesToSize( statsModel.get("totalSize") ), 
+		                    	  className: "packages"
+				                }];				
+			}
+			
+			//Create the circle badge
+			var countBadge = new CircleBadge({
+				id: "total-size-title",
+				data: chartData,
+				className: "chart-title",
+				title: "of content",
+				titlePlacement: "inside",
+				useGlobalR: true,
+				globalR: 100
+			});
+			
+			this.$('#total-size').prepend(countBadge.render().el);
+		},
+		
+		/*
+		 * drawUpdatesChart - draws a line chart representing the latest updates over time
+		 */
+		drawUpdatesChart: function(){
+			//Get the width of the chart by using the parent container width
+			var parentEl = this.$('.updates-chart');
+			var width = parentEl.width() || null;
+			
+			//If there was no first upload, draw a blank chart and exit
+			if(!statsModel.get('firstUpdate')){
+				
+				var lineChartView = new LineChart(
+						{	  id: "updates-chart",
+						 	yLabel: "files updated",
+						 frequency: 0,
+						 cumulative: false,
+						 	 width: width
+						});
+				
+				this.$('.updates-chart').html(lineChartView.render().el);
+					
+				return;
+			}
+				
+			//Set the frequency of our points
+			var frequency = 12;
+									
+			//Check which line we should draw first since the scale will be based off the first line
+			if(statsModel.get("metadataCount") > statsModel.get("dataCount") ){
+				
+				//If there isn't a lot of point to graph, draw points more frequently on the line
+				if(statsModel.get("metadataUpdateDates").length < 40) frequency = 1;
+				
+				//Create the line chart and draw the metadata line
+				var lineChartView = new LineChart(
+						{	  data: statsModel.get('metadataUpdateDates'),
+			  formatFromSolrFacets: true,
+						cumulative: false,
+								id: "updates-chart",
+						 className: "metadata",
+						 	yLabel: "files updated",
+						labelValue: "Metadata: ",
+						// frequency: frequency, 
+							radius: 2,
+							width: width,
+						    labelDate: "M-y"
+						});
+				
+				this.$('.updates-chart').html(lineChartView.render().el);
+			
+				//Only draw the data file line if there was at least one uploaded
+				if(statsModel.get("dataCount")){
+					//Add a line to our chart for data uploads
+					lineChartView.className = "data";
+					lineChartView.labelValue ="Data: ";
+					lineChartView.addLine(statsModel.get('dataUpdateDates'));
+				}
+			}
+			else{
+					var lineChartView = new LineChart(
+							{	  data: statsModel.get('dataUpdateDates'),
+				  formatFromSolrFacets: true,
+							cumulative: false,
+									id: "updates-chart",
+							 className: "data",
+							 	yLabel: "files updated",
+							labelValue: "Data: ",
+						//	 frequency: frequency, 
+								radius: 2,
+								 width: width,
+						    labelDate: "M-y"
+							 });
+					
+					this.$('.updates-chart').html(lineChartView.render().el);
+
+					//If no metadata files were uploaded, we don't want to draw the data file line
+					if(statsModel.get("metadataCount")){
+						//Add a line to our chart for metadata uploads
+						lineChartView.className = "metadata";
+						lineChartView.labelValue = "Metadata: ";
+						lineChartView.addLine(statsModel.get('metadataUpdateDates'));
+					}
+				}
 		},
 		
 		/*
@@ -561,6 +750,41 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var barChart = new BarChart(options);
 			parentEl.html(barChart.render().el);
 			
+		},
+		
+		/**
+		 * Convert number of bytes into human readable format
+		 *
+		 * @param integer bytes     Number of bytes to convert
+		 * @param integer precision Number of digits after the decimal separator
+		 * @return string
+		 */
+		bytesToSize: function(bytes, precision){
+		    var kilobyte = 1024;
+		    var megabyte = kilobyte * 1024;
+		    var gigabyte = megabyte * 1024;
+		    var terabyte = gigabyte * 1024;
+
+		    if(typeof bytes === "undefined") var bytes = this.get("size");
+
+		    if ((bytes >= 0) && (bytes < kilobyte)) {
+		        return bytes + ' B';
+
+		    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+		        return (bytes / kilobyte).toFixed(precision) + ' KB';
+
+		    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+		        return (bytes / megabyte).toFixed(precision) + ' MB';
+
+		    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+		        return (bytes / gigabyte).toFixed(precision) + ' GB';
+
+		    } else if (bytes >= terabyte) {
+		        return (bytes / terabyte).toFixed(precision) + ' TB';
+
+		    } else {
+		        return bytes + ' B';
+		    }
 		},
 		
 		onClose: function () {			

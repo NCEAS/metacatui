@@ -449,7 +449,7 @@
   	display: none;
   }
   
-.profile .charts-container .stripe:nth-child(even){
+.profile .charts-container .stripe:nth-child(odd){
 	background-image: url("../img/sos.png");
 }
   
@@ -496,6 +496,7 @@ svg .packages,
 .profile .packages{
 	color: #5EB3D7;
 	fill: #5EB3D7;
+	stroke: #5EB3D7;
 }
 .profile .bar-label.packages{
 	fill: inherit;
