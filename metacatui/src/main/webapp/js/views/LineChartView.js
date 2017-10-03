@@ -44,8 +44,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.frequency = options.frequency || 1; 	//Use 0 to not add any points
 			if(!options.data) this.frequency = 0; //If no data is provided, do not draw any points (otherwise, one point at 0,0 will be drawn)
 			this.yLabel	   = options.yLabel	   || "";
-			this.labelValue	 = options.labelValue  || "Value: ";
-			this.labelWidth  = options.labelWidth  || 130;
+			this.labelValue	 = options.labelValue  || "";
+			this.labelWidth  = options.labelWidth  || (this.labelValue.length * 7) + (this.yLabel.length * 7) + 60;
 			this.radius	   = options.radius    || 6;
 			this.width 	   = options.width 	   || 650;
 			this.height    = options.height    || 250;

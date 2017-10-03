@@ -36,7 +36,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.listenTo(statsModel, 'change:dataDownloadDates',     this.drawDownloadsChart);
 				this.listenTo(statsModel, 'change:downloadDates',         this.drawDownloadsChart);
 				this.listenTo(statsModel, "change:dataUpdateDates",       this.drawUpdatesChart);
-				this.listenTo(statsModel, "change:firstUpload",           this.drawFirstUpload);
 				this.listenTo(statsModel, "change:totalSize",             this.drawTotalSize);	
 				this.listenTo(statsModel, 'change:dataCount', 	          this.drawTotalCount);			
 				this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
@@ -208,7 +207,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var dateBadge = new CircleBadge({
 				id: "first-upload-badge",
 				data: chartData,
-				className: "chart-title",
 				title: "first upload",
 				titlePlacement: "inside",
 				useGlobalR: true,
@@ -372,9 +370,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				data: chartData,
 				title: "datasets",
 				titlePlacement: "inside",
-				className: "chart-title",
 				useGlobalR: true,
-				globalR: 100
+				globalR: 100,
+				height: 220
 			});
 			
 			this.$('#total-datasets').prepend(countBadge.render().el);
@@ -401,26 +399,23 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 			
 			//Create the circle badge
-			var countBadge = new CircleBadge({
+			var sizeBadge = new CircleBadge({
 				id: "total-size-title",
 				data: chartData,
-				className: "chart-title",
 				title: "of content",
 				titlePlacement: "inside",
 				useGlobalR: true,
-				globalR: 100
+				globalR: 100,
+				height: 220
 			});
 			
-			this.$('#total-size').prepend(countBadge.render().el);
+			this.$('#total-size').prepend(sizeBadge.render().el);
 		},
 		
 		/*
 		 * drawUpdatesChart - draws a line chart representing the latest updates over time
 		 */
 		drawUpdatesChart: function(){
-			//Get the width of the chart by using the parent container width
-			var parentEl = this.$('.updates-chart');
-			var width = parentEl.width() || null;
 			
 			//If there was no first upload, draw a blank chart and exit
 			if(!statsModel.get('firstUpdate')){
@@ -430,73 +425,60 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 						 	yLabel: "files updated",
 						 frequency: 0,
 						 cumulative: false,
-						 	 width: width
+						 	 width: this.$('.metadata-updates-chart').width()
 						});
 				
-				this.$('.updates-chart').html(lineChartView.render().el);
+				this.$('.metadata-updates-chart').html(lineChartView.render().el);
 					
 				return;
 			}
 				
 			//Set the frequency of our points
 			var frequency = 12;
-									
-			//Check which line we should draw first since the scale will be based off the first line
-			if(statsModel.get("metadataCount") > statsModel.get("dataCount") ){
-				
-				//If there isn't a lot of point to graph, draw points more frequently on the line
-				if(statsModel.get("metadataUpdateDates").length < 40) frequency = 1;
-				
-				//Create the line chart and draw the metadata line
-				var lineChartView = new LineChart(
-						{	  data: statsModel.get('metadataUpdateDates'),
+													
+			//If there isn't a lot of points to graph, draw points more frequently on the line
+			if(statsModel.get("metadataUpdateDates").length < 40) frequency = 1;
+			
+			//Create the line chart for metadata updates
+			var metadataLineChart = new LineChart(
+					{	  data: statsModel.get('metadataUpdateDates'),
+		  formatFromSolrFacets: true,
+					cumulative: false,
+							id: "updates-chart",
+					 className: "metadata",
+					 	yLabel: "metadata files updated",
+					// frequency: frequency, 
+						radius: 2,
+						width: this.$('.metadata-updates-chart').width(),
+					    labelDate: "M-y"
+					});
+			
+			this.$('.metadata-updates-chart').html(metadataLineChart.render().el);
+
+			//Only draw the data updates chart if there was at least one uploaded
+			if(statsModel.get("dataCount")){
+				//Create the line chart for data updates
+				var dataLineChart = new LineChart(
+						{	  data: statsModel.get('dataUpdateDates'),
 			  formatFromSolrFacets: true,
 						cumulative: false,
 								id: "updates-chart",
-						 className: "metadata",
-						 	yLabel: "files updated",
-						labelValue: "Metadata: ",
+						 className: "data",
+						 	yLabel: "data files updated",
 						// frequency: frequency, 
 							radius: 2,
-							width: width,
+							width: this.$('.data-updates-chart').width(),
 						    labelDate: "M-y"
 						});
 				
-				this.$('.updates-chart').html(lineChartView.render().el);
+				this.$('.data-updates-chart').html(dataLineChart.render().el);
 			
-				//Only draw the data file line if there was at least one uploaded
-				if(statsModel.get("dataCount")){
-					//Add a line to our chart for data uploads
-					lineChartView.className = "data";
-					lineChartView.labelValue ="Data: ";
-					lineChartView.addLine(statsModel.get('dataUpdateDates'));
-				}
+				//Add a line to our chart for data uploads
+				//lineChartView.className = "data";
+			//	lineChartView.labelValue ="Data: ";
+				//lineChartView.addLine(statsModel.get('dataUpdateDates'));
 			}
-			else{
-					var lineChartView = new LineChart(
-							{	  data: statsModel.get('dataUpdateDates'),
-				  formatFromSolrFacets: true,
-							cumulative: false,
-									id: "updates-chart",
-							 className: "data",
-							 	yLabel: "files updated",
-							labelValue: "Data: ",
-						//	 frequency: frequency, 
-								radius: 2,
-								 width: width,
-						    labelDate: "M-y"
-							 });
-					
-					this.$('.updates-chart').html(lineChartView.render().el);
-
-					//If no metadata files were uploaded, we don't want to draw the data file line
-					if(statsModel.get("metadataCount")){
-						//Add a line to our chart for metadata uploads
-						lineChartView.className = "metadata";
-						lineChartView.labelValue = "Metadata: ";
-						lineChartView.addLine(statsModel.get('metadataUpdateDates'));
-					}
-				}
+			
 		},
 		
 		/*

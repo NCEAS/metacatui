@@ -33,6 +33,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.className  = options.className    || "";
 			this.margin	    = options.margin	   || 20;
 			this.titlePlacement = options.titlePlacement || null;
+			this.height     = options.height       || null;
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -123,6 +124,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			//Select the SVG element
 			var svg = d3.select(this.el)
 						.attr("class", "circle-badge " + this.className); 
+			
+			if(this.height)
+				svg.attr("height", this.height);
 			
 			//Draw the circles
 			var circle = svg.selectAll("circle")

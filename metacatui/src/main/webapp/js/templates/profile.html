@@ -5,11 +5,27 @@
 		<p><%=description%></p>
 	<% } %>
 	<section class="stripe quick-stats">
-		<section class="charts">
-			<div id="total-datasets" class="span4 packages badge-container">
+		<section class="charts row-fluid">
+			<div class="span6 packages badge-container">
+				<div id="total-datasets" class="span6"></div>
+				<div class="span6">
+					<p>
+						The total number of publicly-available metadata records. 
+						Only the latest version of each metadata record is counted. 
+						A "dataset" here is defined by a single metadata record which
+						may be packaged with one or more data files.
+					</p>
+				</div>
 			</div>
-			<div id="total-size" class="span4 packages badge-container"></div>
-			<div id="first-upload" class="span3 packages badge-container">
+			<div class="span6 packages badge-container">
+				<div id="total-size" class="span6"></div>
+				<div class="span6">
+					<p>
+						The sum of all publicly-available metadata and data files
+						in this repository. Only the latest version of each file is 
+						included.
+					</p>
+				</div>
 			</div>
 		</section>
 	</section>
@@ -30,12 +46,14 @@
 	</section>
 	<section class="stripe">
 		<section class="charts">
-			<section class="chart-title updates">
+			<section class="updates">
 				<h3>Latest Updates</h3>
 				<p>When datasets were last updated, separated by content type (science metadata or data).</p>
 			</section>
-			<div class="updates-chart chart"></div>
-			<div class="clear"></div>
+			<section class="row-fluid">
+				<div class="metadata-updates-chart  span6"></div>
+				<div class="data-updates-chart  span6"></div>
+			</section>
 		</section>
 	</section>
 	<!--  <section class="stripe" id="quality-chart">

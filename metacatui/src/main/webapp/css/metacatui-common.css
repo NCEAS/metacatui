@@ -2442,6 +2442,9 @@ address.email-container:before{
     padding-bottom: 20px;
     padding-top: 20px;
 }
+.profile .packages p {
+    color: #333;
+}
 .temporal-coverage-chart{
 	width: calc(100% - 300px);
 }
