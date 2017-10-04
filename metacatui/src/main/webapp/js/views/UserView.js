@@ -369,7 +369,10 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				view.$("#total-upload-container").text(appView.commaSeparateNumber(statsModel.get("totalUploads")));
 			});
 			statsModel.once("change:downloads", function(){
-				view.$("#total-download-container").text(appView.commaSeparateNumber(this.get("downloads")));
+				if( !this.get("downloads") )
+					view.$("#total-download-wrapper, section.downloads").hide();
+				else
+					view.$("#total-download-container").text(appView.commaSeparateNumber(this.get("downloads")));
 			});
 			
 			//Create a base query for the statistics
@@ -470,8 +473,18 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			
 			// Get the first upload or first operational date
 			if(this.model.get("type") == "node"){
-				var node = _.findWhere(nodeModel.get("members"), {identifier: "urn:node:" + this.model.get("username") }),
-					firstUpload = node.memberSince? new Date(node.memberSince.substring(0, node.memberSince.indexOf("T"))) : new Date();				
+				
+				//Get the member node object
+				var node = _.findWhere(nodeModel.get("members"), {identifier: "urn:node:" + this.model.get("username") });
+				
+				//If there is no memberSince date, then hide this statistic and exit
+				if( !node.memberSince ){
+					this.$("#first-upload-container, #first-upload-year-container").hide();
+					return;
+				}
+				else{
+					var firstUpload = node.memberSince? new Date(node.memberSince.substring(0, node.memberSince.indexOf("T"))) : new Date();
+				}
 			}
 			else{
 				var	firstUpload = new Date(statsModel.get("firstUpload"));
