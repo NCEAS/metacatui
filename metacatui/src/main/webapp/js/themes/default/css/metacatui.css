@@ -1472,7 +1472,7 @@ li.ui-menu-item > a:hover,
 	}
    .mapMode #results-container {
 	  width: 40%;
-	  width: calc(100% - 33% - 229px);
+	  width: calc(66.66% - 227px);
 	  overflow-x: hidden;
 	  overflow-y: scroll;
 	  -webkit-transform: translate3d(0,0,1);
