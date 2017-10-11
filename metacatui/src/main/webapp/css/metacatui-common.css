@@ -3480,6 +3480,9 @@ textarea.xlarge{
 .Editor .dropdown-menu li a i {
     vertical-align: middle;
 }
+#editor-body .alert {
+    position: relative;
+}
 .Editor #Content > .alert-container{
 	position: fixed;
     left: 0px;

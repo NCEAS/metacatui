@@ -553,7 +553,7 @@ define(['underscore',
 				  "<li>The content was removed because it was invalid.</li>" +
 			  "</ul>";
 			this.hideLoading();
-			MetacatUI.appView.showAlert(msg, "alert-error", this.$el, null, {remove: true});
+			MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
 
 		},
 
