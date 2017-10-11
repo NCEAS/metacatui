@@ -549,13 +549,13 @@ footer .logos a:hover, a:focus{
     
 /* EDITOR 
 ----------------------- */
-.Editor .dropdown-menu li {
+.Editor #data-package-table .dropdown-menu li {
     float: left;
     position: relative;
     width: 100%;
 }
    
-.Editor .dropdown-menu li a {
+.Editor #data-package-table .dropdown-menu li a {
     background-color: #1F254F;
     background-image: none;
     color: #FFF;
@@ -596,6 +596,9 @@ footer .logos a:hover, a:focus{
 }
 .attribute-menu-item .remove{
 	background-color: rgba(49, 61, 129, .6);
+}
+.eml-party .party-menu .dropdown-menu>li>a:hover {
+    color: #12238e;
 }
     
 /* MAPS 

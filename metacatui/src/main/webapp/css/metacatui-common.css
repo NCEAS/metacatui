@@ -3515,6 +3515,10 @@ textarea.xlarge{
 	padding: 0px;
 	height: auto;
 }
+.checkbox .disabled,
+.checkbox .disabled + .text{
+	opacity: .5;
+}
 .Editor input.error,
 .Editor select.error,
 .Editor textarea.error{
@@ -3734,6 +3738,59 @@ textarea.xlarge{
     padding: 5px;
     height: 3em;
 }
+.subtle-btn-group button,
+.subtle-btn-group button:hover {
+    border-width: 0px;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    background-color: transparent;
+}
+.subtle-btn-group .icon-ellipsis-vertical {
+    font-size: 1.2em;
+}
+.subtle-btn-group .dropdown-toggle:hover,
+.subtle-btn-group .dropdown-toggle:focus {
+    background-color: #DDD;
+    border-width: 0px;
+}
+.eml-party .party-menu {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+.eml-party.new .party-menu{
+	display: none;
+}
+.eml-party .party-menu .dropdown-menu {
+    margin-left: -142px;
+    width: 160px;
+    background-color: #FFF;
+    border: 1px solid #CCC;
+    box-shadow: 8px 6px 24px -1px #ccc;
+    -moz-box-shadow: 8px 6px 24px -1px #ccc;
+    -webkit-box-shadow: 8px 6px 24px -1px #ccc;
+}
+.eml-party .party-menu .dropdown-menu li {
+    border-bottom: 1px solid #ccc;
+}
+.eml-party .party-menu .dropdown-menu li:hover{
+	background-color: rgba(255, 255, 255, 0.57);
+}
+.eml-party .party-menu .dropdown-menu>li>a:hover {
+    background-color: transparent;
+    background-image: none;
+}
+.eml-party .party-menu .remove,
+.eml-party .party-menu .remove:hover,
+.eml-party .party-menu .remove a,
+.eml-party .party-menu .remove a:hover {
+    font-size: inherit;
+    position: relative;
+    margin: 0px;
+    color: red;
+    max-width: 100%;
+}
 
 /* ---- Keywords ---- */
 .metadata-container .keywords .span2{
@@ -3803,10 +3860,6 @@ textarea.xlarge{
 .Editor .remove:hover{
 	cursor: pointer;
 	color: #FF0000;
-}
-.metadata-container .eml-party .remove{
-	right: 10px;
-    top: 5px;
 }
 
 .taxonomic-coverage-row .remove{

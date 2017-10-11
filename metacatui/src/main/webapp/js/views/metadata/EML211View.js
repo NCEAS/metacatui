@@ -13,6 +13,7 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EMLTemporalCoverage',
 		'models/metadata/eml211/EMLMethods',
         'text!templates/metadata/eml.html',
+        'text!templates/metadata/EMLPartyCopyMenu.html',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
         'text!templates/metadata/locationsSection.html',
@@ -21,7 +22,7 @@ define(['underscore', 'jquery', 'backbone',
 		'text!templates/metadata/taxonomicClassificationRow.html'], 
 	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView,
 			EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
-			EMLTemporalCoverage, EMLMethods, Template, OverviewTemplate,
+			EMLTemporalCoverage, EMLMethods, Template, EMLPartyCopyMenuTemplate, OverviewTemplate,
 			 DatesTemplate, LocationsTemplate, 
 			 TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
     
@@ -70,14 +71,16 @@ define(['underscore', 'jquery', 'backbone',
         	"mouseover .funding-row .remove" : "previewFundingRemove",        	
         	"mouseout .funding-row .remove"  : "previewFundingRemove",
         	"keyup .funding.error"           : "handleFundingTyping",
-        	
-        	"keyup .eml-party.new" : "handlePersonTyping",
-        	
+        	        	
 			"click .side-nav-item"           : "switchSection",
-			
-        	"change #new-party-menu"         : "chooseNewPersonType",
         	
-			"click  .remove"			     : "handleRemove"
+			"keyup .eml-party.new"     : "handlePersonTyping",
+        	"change #new-party-menu"   : "chooseNewPersonType",
+        	"click .eml-party .copy"   : "showCopyPersonMenu",
+        	"click #copy-party-save"   : "copyPerson",
+        	"click .eml-party .remove" : "removePerson",
+        	
+			"click  .remove" : "handleRemove"
         },
                 
         /* A list of the subviews */
@@ -100,6 +103,7 @@ define(['underscore', 'jquery', 'backbone',
         taxonomicCoverageTemplate: _.template(TaxonomicCoverageTemplate),
 		taxonomicClassificationTableTemplate: _.template(TaxonomicClassificationTable),
         taxonomicClassificationRowTemplate: _.template(TaxonomicClassificationRow),
+        copyPersonMenuTemplate: _.template(EMLPartyCopyMenuTemplate),
         
         initialize: function(options) {
             
@@ -253,13 +257,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	var emptyTypes = [];
 	    	
 	    	this.partyTypeMap = {
-	    			"collaboratingPrincipalInvestigator" : "Collborating-Principal Investigators",
+	    			"collaboratingPrincipalInvestigator" : "Collaborating-Principal Investigators",
 	    			"coPrincipalInvestigator" : "Co-Principal Investigators",
 	    			"principalInvestigator" : "Principal Investigators",
 	    			"creator" : "Dataset Creators (Authors/Owners/Originators)",
 	    			"contact" : "Contacts",
 	    			"metadataProvider" : "Metadata Provider",
-	    			"custodianSteward" : "Custodian/Steward",
+	    			"custodianSteward" : "Custodians/Stewards",
 	    			"publisher" : "Publisher",
 	    			"user" : "Users"
 	    	}
@@ -427,15 +431,35 @@ define(['underscore', 'jquery', 'backbone',
 		    	if(!partyType || typeof partyType != "string")
 		    		var partyType = emlParty.get("role") || emlParty.get("type");
 	    	}
+	    	    	
+    		
+	    	//Find the container section for this party type
+	    	var container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
 	    	
+	    	//See if this view already exists
+	    	if( !isNew && container.length && emlParty ){
+	    		var partyView;
+	    		
+	    		_.each(container.find(".eml-party"), function(singlePartyEl){
+	    			
+	    			//If this EMLPartyView element is for the current model, then get the View
+	    			if( $(singlePartyEl).data("model") == emlParty )
+	    				partyView = $(singlePartyEl).data("view");
+	    		});
+	    		
+	    		//If a partyView was found, just rerender it and exit
+	    		if(partyView){
+	    			partyView.render();
+	    			return;
+	    		}
+	    	}
+	    	
+	    	//If there still is no partyView found, create a new one
 	    	var partyView = new EMLPartyView({
     			model: emlParty,
     			edit: this.edit,
     			isNew: isNew
-    		});	    	
-    		
-	    	//Find the container section for this party type
-	    	var container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
+	    	});	
 	    	
 	    	//If this person type is not on the page yet, add it
 	    	if(!container.length){
@@ -450,9 +474,6 @@ define(['underscore', 'jquery', 'backbone',
 	    			container.find(".new").before(partyView.render().el);
 	    		else
 	    			container.append(partyView.render().el);
-				
-				// Add in a remove button
-				$(container).find("div.eml-party").append(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
 	    	}
 
 	    },
@@ -467,9 +488,6 @@ define(['underscore', 'jquery', 'backbone',
     			
     		if(this.$("[data-attribute='" + partyType + "'] .eml-party.new").length > 1) return;
     		
-			// Add in a remove button
-			$(container).append(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
-
 			//Render a new person
 			if(partyType != "publisher")
 				this.renderPerson(null, partyType);
@@ -529,7 +547,7 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 	    
 	    /*
-	     * Gets the party type chosen by the user and adds that section to the view
+	     * addNewPersonType - Adds a header and container to the People section for the given party type/role,
 	     */
 	    addNewPersonType: function(partyType){	    	
 	    	if(!partyType) return;
@@ -539,22 +557,176 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	// Add a new header for the party type
 	    	var header = $(document.createElement("h4")).text(this.partyTypeMap[partyType]);
-			$(partyContainer).append(header);
+			$(partyTypeContainer).append(header);
 	    	
 	    	//Remove this type from the dropdown menu
 	    	this.$("#new-party-menu").find("[value='" + partyType + "']").remove();
 
 	    	//Add the new party container
-	    	var partyContainer = $(document.createElement("div"))
+	    	var partyRow = $(document.createElement("div"))
 									.attr("data-attribute", partyType)
 									.addClass("row-striped");
-	    	partyTypeContainer.append(partyContainer);
+	    	partyTypeContainer.append(partyRow);
 	    	
 			// Add in the new party type container just before the dropdown
 			this.$("#new-party-menu").before(partyTypeContainer);
 
 	    	//Add a blank form to the new person type section
 	    	this.renderPerson(null, partyType);
+	    },
+	    
+	    /*
+	     * showCopyPersonMenu: Displays a modal window to the user with a list of roles that they can
+	     * copy this person to
+	     */
+	    showCopyPersonMenu: function(e){
+	    	
+	    	//Get the EMLParty to copy
+	    	var partyToCopy = $(e.target).parents(".eml-party").data("model"),
+	    		menu = this.$("#copy-person-menu");
+	    	
+	    	//Check if the modal window menu has been created already
+	    	if( !menu.length ){
+	    		
+	    		//Create the modal window menu from the template
+	    		menu = $(this.copyPersonMenuTemplate());
+	    		
+	    		//Add to the DOM
+		    	this.$el.append(menu);	
+		    	
+		    	//Initialize the modal
+		    	menu.modal();
+	    	}
+	    	else{
+	    		//Reset all the checkboxes
+	    		menu.find("input:checked").prop("checked", false);
+	    		menu.find(".disabled")
+	    			.prop("disabled", false)
+	    			.removeClass("disabled")
+	    			.parent(".checkbox")
+	    			.attr("title", "");
+	    	}
+	    	
+	    	//Disable the roles this person is already in
+	    	var currentRole = partyToCopy.get("role") || partyToCopy.get("type") || "";
+	    	menu.find("input[value='" + currentRole + "']")
+	    		.prop("disabled", "disabled")
+	    		.addClass("disabled")
+	    		.parent(".checkbox")
+	    		.attr("title", "This person is already in the " + this.partyTypeMap[currentRole] + " list.");
+	    	
+	    	//If there is already one publisher, disable that option
+	    	if( this.model.get("publisher").length ){
+	    		var publisherName = this.model.get("publisher")[0].get("individualName") ?  
+	    							this.model.get("publisher")[0].get("individualName").givenName + " " +
+	    							this.model.get("publisher")[0].get("individualName").surName :
+	    							this.model.get("publisher")[0].get("organizationName") ||
+	    							this.model.get("publisher")[0].get("positionName") ||
+	    							"Someone";
+	    		
+	    		menu.find("input[value='publisher']")
+		    		.prop("disabled", "disabled")
+		    		.addClass("disabled")
+		    		.parent(".checkbox")
+		    		.attr("title", publisherName + " is already listed as the publisher. (There can be only one).");
+
+	    	}
+	    	
+	    	//Attach the EMLParty to the menu DOMs
+	    	menu.data({
+	    		EMLParty: partyToCopy
+	    	});
+	    	
+	    	//Show the modal window menu now
+	    	menu.modal("show");
+	    },
+	    
+	    /*
+	     * copyPerson: Gets the selected checkboxes from the copy person menu and copies the EMLParty
+	     * to those new roles
+	     */
+	    copyPerson: function(){
+	    	
+	    	//Get all the checked boxes
+	    	var checkedBoxes = this.$("#copy-person-menu input:checked"),
+	    	//Get the EMLParty to copy
+	    		partyToCopy  = this.$("#copy-person-menu").data("EMLParty");
+	    	
+	    	//For each selected role,
+	    	_.each(checkedBoxes, function(checkedBox){
+	    		
+	    		//Get the roles
+	    		var role = $(checkedBox).val(),
+	    			isAssocParty = _.contains(partyToCopy.get("roleOptions"), role);
+	    		
+	    		//If this are no associated parties yet...
+	    		if( isAssocParty ){
+	    			
+		    		//If there are no parties in this role yet, 
+	    			// then add this person type to the view	    			
+	    			if( !this.model.get("associatedParty").length )
+	    				this.addNewPersonType(role);
+	    			else if( !_.find(this.model.get("associatedParty"), function(p){
+	    				return  p.get("role") == role;
+	    			}) ){
+	    				this.addNewPersonType(role);
+	    			}
+	    			
+	    			//Create all the attributes for the new person. We're only changing the role
+	    			var options = partyToCopy.toJSON();
+	    			options.type = "associatedParty";
+	    			options.role = role;
+	    			
+	    			//Create a new EMLParty model
+    				var newPerson = new EMLParty(options);
+    				
+    				//Add this new EMLParty to the EML model
+	    			this.model.get("associatedParty").push(newPerson);
+
+	    			//Render this new person
+		    		this.renderPerson(newPerson, role);
+	    		}
+	    		//If this person type is not an associated party...
+	    		else{
+		    		//If there are no parties in this role yet, 
+	    			// then add this person type to the view	    			
+	    			if( !this.model.get(role).length )
+		    			this.addNewPersonType(role);
+	    			
+	    			//Create all the attributes for the new person. We're only changing the type
+	    			var options = partyToCopy.toJSON();
+	    			options.type = role;
+	    			
+	    			//Create a new EMLParty model
+    				var newPerson = new EMLParty(options);
+    				
+    				//Add this new EMLParty to the EML model
+	    			this.model.get(role).push(newPerson);
+
+	    			//Render this new person
+		    		this.renderPerson(newPerson, role);
+	    		}
+	    		
+	    	}, this);	    	
+	    },
+	    
+	    removePerson: function(e){
+	    	e.preventDefault();
+	    	
+	    	//Get the party view el, view, and model
+	    	var partyEl = $(e.target).parents(".eml-party"),
+	    		partyView = partyEl.data("view"),
+	    		partyToRemove = partyEl.data("model");
+	    	
+	    	//If there is no model found, we have nothing to do, so exit
+	    	if(!partyToRemove) return false;
+	    	
+	    	//Call removeParty on the EML211 model to remove this EMLParty
+	    	this.model.removeParty(partyToRemove);
+	    	
+	    	//Let the EMLPartyView remove itself
+	    	partyView.remove();
+	    	
 	    },
 	    
 	    /*
@@ -1207,7 +1379,6 @@ define(['underscore', 'jquery', 'backbone',
 			this.model.set('pubDate', $(e.target).val().trim());
 			this.model.trigger("change");
 
-			console.log(this.model.get('pubDate'));
 			// Trigger a change on the entire package
 			MetacatUI.rootDataPackage.packageModel.set("changed", true);	    	
 	    },
@@ -1801,7 +1972,6 @@ define(['underscore', 'jquery', 'backbone',
 			$("#metadata-container input").change();
 			$("#metadata-container textarea").change();
 			$("#metadata-container select").change();
-			console.log("changes fired");
         },
         
 		/* Creates "Remove" buttons for removing non-required sections

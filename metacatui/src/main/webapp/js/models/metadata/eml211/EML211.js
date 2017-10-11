@@ -1292,6 +1292,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 
             },
             
+            /*
+             * removeParty - removes the given EMLParty model from this EML211 model's attributes
+             */
+            removeParty: function(partyModel){
+            	//The list of attributes this EMLParty might be stored in
+            	var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+            	
+            	// Iterate over each possible attribute
+            	_.each(possibleAttr, function(attr){
+            	
+            		if( _.contains(this.get(attr), partyModel) ){
+            			this.set( attr, _.without(this.get(attr), partyModel) );
+            		}
+            			
+            	}, this);
+            },
+            
             createUnits: function(){
             	var units = new Units();
             	units.fetch();
