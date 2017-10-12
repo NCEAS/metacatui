@@ -3199,6 +3199,11 @@ Editor View
 	height: 15px;
 	margin-bottom: 5px;
 }
+.editor-view {
+    margin: 0px;
+    width: 100%;
+    max-width: 100%;
+}
 .Editor #Content {
     padding-top: 70px;
     max-width: 100%;

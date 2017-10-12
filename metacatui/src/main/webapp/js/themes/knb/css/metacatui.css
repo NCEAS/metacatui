@@ -173,7 +173,13 @@
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
+
     
+/* Editor 
+-------------------------------------------------- */  
+.Editor #Content {
+    padding-top: 0px;
+}   
     
 /* MDQ 
 -------------------------------------------------- */ 
