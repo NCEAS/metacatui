@@ -544,6 +544,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                          return model.get("uploadStatus");
                     } ), "e") ) {
                     this.packageModel.set("changed", false);
+                    this.packageModel.set("uploadStatus", "q");
                     this.trigger("cancelSave");
     				return;
     			}
