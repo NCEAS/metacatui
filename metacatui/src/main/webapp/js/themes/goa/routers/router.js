@@ -20,7 +20,8 @@ function ($, _, Backbone) {
 			'signout'                   : 'logout',    		// logout the user
 			'signin'					: "renderSignIn",
 			"signinldaperror"			: "renderLdapSignInError",
-			'share(/*pid)'       		: 'renderEditor'  // registry page
+			'share(/*pid)'       		: 'renderEditor',  // registry page
+			'submit(/*pid)'       		: 'renderEditor'  // registry page
 		},
 		
 		helpPages: {

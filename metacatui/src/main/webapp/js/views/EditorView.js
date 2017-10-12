@@ -479,7 +479,7 @@ define(['underscore',
         	if(savedObject.type != "DataPackage") return;
 
         	//Change the URL to the new id
-        	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });
+        	MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
 
             this.toggleControls();
 
@@ -572,7 +572,7 @@ define(['underscore',
 					view.model = null;
 
 					//Update the URL
-					MetacatUI.uiRouter.navigate("#share/" + view.pid, { trigger: false, replace: true });
+					MetacatUI.uiRouter.navigate("#submit/" + view.pid, { trigger: false, replace: true });
 
 					//Render the new model
 					view.render();

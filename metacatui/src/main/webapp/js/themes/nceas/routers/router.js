@@ -15,7 +15,8 @@ function ($, _, Backbone) {
 			'signup'          			: 'renderLdap',     // use ldapweb for registration
 			"signinldaperror"			: "renderLdapSignInError",
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
-			'share(/*pid)'       		: 'renderEditor'  // metadata Editor
+			'share(/*pid)'       		: 'renderEditor',  // metadata Editor
+			'submit(/*pid)'       		: 'renderEditor'  // metadata Editor
 		},
 		
 		initialize: function(){

@@ -66,7 +66,7 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsUrl: null
 		},
 				
-		defaultView: "share",
+		defaultView: "submit",
 		
 		initialize: function() {
 

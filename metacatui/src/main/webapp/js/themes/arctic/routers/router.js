@@ -19,6 +19,7 @@ function ($, _, Backbone) {
 			'signin'					: 'renderTokenSignIn',
 			"signinsuccess"             : "renderSignInSuccess",
 			'share(/*pid)'              : 'renderEditor', // registry page
+			'submit(/*pid)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)'           : 'renderAPI'       // API page
 		},
@@ -260,7 +261,7 @@ function ($, _, Backbone) {
           package identifier will be queried and then rendered.
         */
 		renderEditor: function (pid) {
-			this.routeHistory.push("share");
+			this.routeHistory.push("submit");
 			
 			if( ! MetacatUI.appView.editorView ){
 				require(['views/EditorView'], function(EditorView) {
