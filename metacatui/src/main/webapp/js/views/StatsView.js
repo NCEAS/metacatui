@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.listenTo(statsModel, 'change:downloadDates',         this.drawDownloadsChart);
 				this.listenTo(statsModel, "change:dataUpdateDates",       this.drawUpdatesChart);
 				this.listenTo(statsModel, "change:totalSize",             this.drawTotalSize);	
-				this.listenTo(statsModel, 'change:metadatadataCount', 	  this.drawTotalCount);			
+				this.listenTo(statsModel, 'change:metadataCount', 	  this.drawTotalCount);			
 				this.listenTo(statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 				this.listenTo(statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			
