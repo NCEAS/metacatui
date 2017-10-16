@@ -12,6 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			
 			metadataCount: 0,
 			dataCount: 0,
+			totalCount: 0,
 			metadataFormatIDs: [], //Uses same structure as Solr facet counts: ["text/csv", 5]
 			dataFormatIDs: [], //Uses same structure as Solr facet counts: ["text/csv", 5]
 			
@@ -21,6 +22,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			dataUploads: null,
 			metadataUploadDates: null,
 			dataUploadDates: null,
+			
+			//Number of updates to content for each time period
+			firstUpdate: 0,
+			dataUpdateDates: null,
+			metadataUpdateDates: null,
 			
 			downloads: 0,
 			metadataDownloads: null,
@@ -91,12 +97,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			this.listenToOnce(this, 'change:lastEndDate', this.getCollectionYearFacets);
 			this.listenToOnce(this, 'change:dataCount', this.getDataFormatIDs);
 			this.listenToOnce(this, 'change:metadataCount', this.getMetadataFormatIDs);
+			this.listenToOnce(this, 'change:firstUpload', this.getUpdateDates);
 			
 			
 			this.getFirstBeginDate();
+			this.getFirstUpload();
+			
 			this.getFormatTypes();
-			this.getUploads();
+			
 			this.getDownloadDates();
+			
 			this.getMdqStatsTotal();
 			//this.getDataDownloadDates();
 			//this.getMetadataDownloadDates();
@@ -229,6 +239,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						 	  "&group=true" +
 							  "&group.field=formatType" +
 							  "&group.limit=0" +
+							  "&stats=true" +
+							  "&stats.field=size" +
 							  "&sort=formatType%20desc" +			
 							  "&wt=json";
 
@@ -258,6 +270,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						//Store falsey data
 						model.set('dataCount', 0);
 						model.set('metadataCount', 0);
+						model.set("totalCount", 0);
+						model.trigger("change:totalCount");
 						model.set('metadataFormatIDs', ["", 0]);
 						model.set('dataFormatIDs', ["", 0]);
 						
@@ -268,6 +282,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						model.set('metadataCount', formats[0].doclist.numFound);
 						model.set('dataCount', formats[1].doclist.numFound);
 					}	
+					
+					//Get the total size of all the files in the index
+					var totalSize = data.stats.stats_fields.size.sum;
+					model.set("totalSize", totalSize);
 				}
 			}
 			
@@ -329,10 +347,191 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			}
 		},
 		
+		/*
+		 * getUpdateDates will get the number of newest-version science metadata and data 
+		 * objects uploaded in each month
+		 */
+		getUpdateDates: function(){
+						
+			//If the node model hasn't been retrieved yet, then wait - because we need to know 
+			//if the first update date should be based on the DataONE time frame (started in 2012)
+			//or a metacat timeframe (as early as 2001)
+			if( !MetacatUI.nodeModel.get("coordinators").length ){
+				this.listenToOnce(MetacatUI.nodeModel, "change:coordinators", this.getUpdateDates);
+				return;
+			}
+			
+			// If there has never been an update, there are no dates to get
+			if( !this.get("firstUpload") ){
+				this.set('firstUpdate', null);
+
+				this.set("metadataUpdateDates", []);
+				this.set("dataUpdateDates", []);
+				
+				return;
+			}
+			
+			var model = this;
+			
+			var now = new Date();
+			
+			var dataQuery =  "q=" + model.get('query') +
+			  "+-obsoletedBy:*+formatType:DATA";
+			
+			var metadataQuery =  "q=" + model.get('query') +
+			  "+-obsoletedBy:*+formatType:METADATA";
+			  
+			var firstPossibleUpdate = MetacatUI.nodeModel.isCN(MetacatUI.nodeModel.get("currentMemberNode"))?
+					this.firstPossibleDataONEDate : model.get("firstUpload");
+			
+			var facets =  "&rows=1" +
+						  "&sort=dateUploaded+asc" +
+						  "&facet=true" +
+						  "&facet.missing=true" + //Include months that have 0 uploads
+						  "&facet.limit=-1" +
+						  "&facet.range=dateUploaded" +
+						  "&facet.range.start=" + firstPossibleUpdate +
+						  "&facet.range.end=" + now.toISOString() +
+						  "&facet.range.gap=%2B1MONTH" +
+						  "&wt=json";
+			
+			//Run the query
+			var requestSettings = {
+				url: MetacatUI.appModel.get('queryServiceUrl') + metadataQuery + facets, 
+				dataType: "json",
+				type: "GET",
+				success: function(data, textStatus, xhr) {
+							
+					if( !data.response.numFound ){
+						model.set('firstUpdate', null);
+
+						model.set("metadataUpdateDates", []);		
+						
+					}
+					else{
+						// Save the earliest dateUploaded and total found in our model
+						model.set('firstUpdate', data.response.docs[0].dateUploaded);
+						
+						//Remove all the empty facet counts at the beginning of the array
+						var updateDates = data.facet_counts.facet_ranges.dateUploaded.counts;
+						
+						while(updateDates[1] == 0){
+							
+							updateDates.splice(0, 2);
+							
+						}
+												
+						//Save the dateUploaded facets for metadata objects
+						model.set("metadataUpdateDates", updateDates);								
+					}
+					
+					var requestSettings = {
+						url: MetacatUI.appModel.get('queryServiceUrl') + dataQuery + facets, 
+						type: 'GET',
+						dataType: "json",
+						success: function(data, textStatus, xhr) {
+							if( !data.response.numFound ){
+								model.set("dataUpdateDates", []);
+							}
+							else{
+								
+								// Save the earliest dateUploaded and total found in our model
+								if(data.response.docs[0].dateUploaded < model.set("firstUpdate"))
+									model.set('firstUpdate', data.response.docs[0].dateUploaded);
+									
+								//Remove all the empty facet counts at the beginning of the array
+								var updateDates = data.facet_counts.facet_ranges.dateUploaded.counts;
+								
+								while(updateDates[1] == 0){
+									
+									updateDates.splice(0, 2);
+									
+								}
+								
+								//Save the dateUploaded facets for data objects
+								model.set("dataUpdateDates", updateDates);
+							}
+						}
+					}
+					
+					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+				}
+			}
+
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+
+		},
+		
+				/*
+		 * Gets the earliest dateUploaded from the solr index
+		 */
+		getFirstUpload: function(){
+			//If the node model hasn't been retrieved yet, then wait - because we need to know 
+			//if the first update date should be based on the DataONE time frame (started in 2012)
+			//or a metacat timeframe (as early as 2001)
+			if( !MetacatUI.nodeModel.get("coordinators").length ){
+				this.listenToOnce(MetacatUI.nodeModel, "change:coordinators", this.getFirstUpload);
+				return;
+			}
+			
+			var now = new Date(),
+				model = this,
+				firstPossibleUpload = MetacatUI.nodeModel.isCN(MetacatUI.appModel.get("nodeId") || MetacatUI.nodeModel.get("currentMemberNode"))?
+						this.firstPossibleDataONEDate : this.firstPossibleUpload;
+			
+			//Get the earliest upload date	
+			var query =  "q=" + this.get('query') +
+							"+formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
+							"+dateUploaded:[" + firstPossibleUpload + "%20TO%20" + now.toISOString() + "]" + //Weeds out badly formatted dates
+							"+-obsoletes:*"+    //Only count one version of a revision chain
+							"&fl=dateUploaded" +
+							"&rows=1" +
+							"&sort=dateUploaded+asc" +
+							"&wt=json";
+			
+			//Run the query
+			var requestSettings = {
+				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
+				type: "GET",
+				dataType: "json",
+				success: function(data, textStatus, xhr) {
+					if(!data.response.numFound){
+						//Save some falsey values if none are found
+						model.set('totalUploads', 0);
+						model.trigger("change:totalUploads");
+						
+						model.set('firstUpload', null);
+						
+						model.set("dataUploads", 0);
+						model.set("metadataUploads", 0);
+						model.set('metadataUploadDates', []);
+						model.set('dataUploadDates', []);
+					}
+					else{
+						// Save the earliest dateUploaded and total found in our model
+						model.set('firstUpload', data.response.docs[0].dateUploaded);
+						model.set('totalUploads', data.response.numFound);
+						
+						//model.getUploadDates();
+					}
+				}
+			}
+			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+			
+		},
+		
 		/**
 		 * getUploads will get the files uploaded statistics
 		 */
 		getUploads: function() {
+			
+			if( !this.get("firstUpload") ){
+				this.set('totalUploads', 0);
+				this.trigger("change:totalUploads");
+				
+				return;
+			}
 			
 			var model = this;
 			
@@ -555,7 +754,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 		 */
 		
 		getDataDownloadDates: function(){
-			if(!MetacatUI.appModel.get("d1LogServiceUrl")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl")){
+				this.set("downloads", 0);
+				this.trigger("change:downloads");
+				return;
+			}
 			
 			var model = this;
 				
@@ -589,7 +792,12 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 		},
 
 		getMetadataDownloadDates: function(){
-			if(!MetacatUI.appModel.get("d1LogServiceUrl")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl")){
+				this.set("downloads", 0);
+				this.trigger("change:downloads");
+				
+				return;
+			}
 			
 			var model = this;
 				
@@ -624,7 +832,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 		},
 		
 		getDownloadDates: function(){
-			if(!MetacatUI.appModel.get("d1LogServiceUrl")) return;
+			if(!MetacatUI.appModel.get("d1LogServiceUrl")){
+				this.set("downloads", 0);
+				this.trigger("change:downloads");
+				return;
+			}
 			
 			var model = this;
 				

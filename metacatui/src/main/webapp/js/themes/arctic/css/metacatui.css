@@ -1003,6 +1003,7 @@ svg .packages,
 .profile .packages{
 	color: #146660;
 	fill: #146660;
+	stroke: #146660;
 }
 .profile .bar-label.packages{
 	fill: inherit;

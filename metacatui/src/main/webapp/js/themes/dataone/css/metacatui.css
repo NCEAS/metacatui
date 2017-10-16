@@ -1728,6 +1728,7 @@ svg .packages,
 .profile .packages{
 	color: #FF6633;
 	fill: #FF6633;
+	stroke: #FF6633;
 }
 
 .profile .bar-label.packages{

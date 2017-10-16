@@ -2420,6 +2420,13 @@ address.email-container:before{
     stroke: #CCC;
     fill: #CCC;
 }
+.profile .circle-badge circle.no-activity{
+	stroke: #CCC;
+	fill: transparent;
+}
+.profile .circle-badge text.no-activity{
+	fill: #CCC;
+}
 .profile .chart-title{
 	float: left;
 }
@@ -2430,14 +2437,22 @@ address.email-container:before{
 }
 .profile .stripe{
 	clear: both;
+	min-height: 200px;
+}
+.profile .chart-title{
+	height: 100%;
 }
 .profile .chart-title.uploads{
 	width: 100%;
 }
+.profile .quick-stats,
+.profile .quick-stats .badge-container{
+	height: 280px;
+}s
 .profile .downloads .chart-title,
 .profile .uploads .chart-title{
 	width: 100%;
-	min-width: 300px;
+	min-width: 250px;
 }
 .profile #downloads-title,
 .profile #uploads-title{
@@ -2455,9 +2470,25 @@ address.email-container:before{
     padding-bottom: 20px;
     padding-top: 20px;
 }
+.profile .packages p {
+    color: #333;
+}
+.no-activity .profile .packages p{
+	color: inherit;
+}
 .temporal-coverage-chart{
 	width: calc(100% - 300px);
 }
+.profile .circle-badge circle{
+	fill: transparent;
+}
+.profile .quick-stats .circle-badge .count{
+	font-size: 27px;
+}
+.profile .quick-stats .circle-badge .title{
+	font-size: 18px;
+}
+
 /**** Bar Charts ******/
 .bar-chart .bar-label.bg{
 	fill: rgba(0,0,0,0.8);
@@ -3131,6 +3162,7 @@ input.subtle:focus
 .jump-width-input{
 	transition: width 1000s;
 }
+.nav
 .input-submit{
 	margin-left: 10px;
     height: 1em;
