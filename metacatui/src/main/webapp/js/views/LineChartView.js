@@ -48,7 +48,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.labelWidth  = options.labelWidth  || (this.labelValue.length * 7) + (this.yLabel.length * 7) + 60;
 			this.radius	   = options.radius    || 6;
 			this.width 	   = options.width 	   || 650;
-			this.height    = options.height    || 250;
+			this.height    = options.height    || 300;
 			this.formatFromSolrFacets = options.formatFromSolrFacets || false;
 			this.cumulative = options.cumulative || false;
 
@@ -112,7 +112,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			if(!this.data) return this;
 			
-			var margin = {top: 20, right: 50, bottom: 30, left: 80};
+			var margin = {top: 20, right: 50, bottom: 50, left: 80};
 			this.margin = margin;
 			this.width  = this.width - margin.left - margin.right;
 			this.height = this.height - margin.top - margin.bottom;
@@ -184,6 +184,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  svg.append("g")
 		      .attr("class", "y axis")
 		      .call(yAxis);
+		  
+		  svg.selectAll(".x.axis .tick text")
+		     .style("text-anchor", 'end')
+		     .attr("dx", "-.8em")
+		     .attr("dy", ".15em")
+		     .attr("transform", "rotate(-65)");
 		  
 		  /*
 			* ========================================================================
