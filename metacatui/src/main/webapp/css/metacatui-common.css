@@ -2445,6 +2445,9 @@ address.email-container:before{
 .profile .packages p {
     color: #333;
 }
+.no-activity .profile .packages p {
+    color: inherit;
+}
 .temporal-coverage-chart{
 	width: calc(100% - 300px);
 }
