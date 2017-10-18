@@ -8,20 +8,27 @@ function ($, _, Backbone) {
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''                          : 'navigateToDefault',         // the default route
-			'about(/:anchorId)'         : 'renderAbout',        // about page anchors
+			''                          : 'renderIndex',    // the default route
+			'about(/:anchorId)'         : 'renderAbout',    // about page
 			'help(/:page)(/:anchorId)'  : 'renderHelp',
+			'tools(/:anchorId)'         : 'renderTools',    // tools page
 			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'view/*pid'                 : 'renderMetadata',     // metadata page
+			'data/my-data'              : 'renderMyData',
+			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
-			'my-account'                   : 'renderUserSettings',
-			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
+			//'my-account'                   : 'renderUserSettings',
+			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
+			'logout'                    : 'logout',    		// logout the user
+			'signout'                   : 'logout',    		// logout the user
+			'signin'                    : 'renderTokenSignIn',    		// logout the user
+			"signinsuccess"             : "renderSignInSuccess",
+			"signinldaperror"			: "renderLdapSignInError",
+			'signup'          			: 'renderTokenSignIn',     // use ldapweb for registration
+			'share(/:stage/*pid)'       : 'renderRegistry', // registry page
 			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
-			'logout'                    : 'logout',          // logout the user
-			'signout'                   : 'logout',          // logout the user
-			'signin'					: 'renderTokenSignIn',
+			'api(/:anchorId)'           : 'renderAPI'       // API page
 		},
 
 		helpPages: {
@@ -31,8 +38,6 @@ function ($, _, Backbone) {
 
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
-
-			//Track the history of hashes
 			this.on("route", this.trackHash);
 		},
 
@@ -66,21 +71,17 @@ function ($, _, Backbone) {
 			this.navigate(_.last(this.hashHistory), {replace: true});
 		},
 
-		renderMdqRun: function (suiteId, pid) {
-			this.routeHistory.push("quality");
+		renderIndex: function (param) {
+			this.routeHistory.push("index");
 
-			if (!appView.mdqRunView) {
-				require(["views/MdqRunView"], function(MdqRunView) {
-					appView.mdqRunView = new MdqRunView();
-					appView.mdqRunView.suiteId = suiteId;
-					appView.mdqRunView.pid = pid;
-					appView.showView(appView.mdqRunView);
+			if(!appView.indexView){
+				require(["views/IndexView"], function(IndexView){
+					appView.indexView = new IndexView();
+					appView.showView(appView.indexView);
 				});
-			} else {
-				appView.mdqRunView.suiteId = suiteId;
-				appView.mdqRunView.pid = pid;
-				appView.showView(appView.mdqRunView);
 			}
+			else
+				appView.showView(appView.indexView);
 		},
 
 		renderText: function(options){
@@ -122,42 +123,44 @@ function ($, _, Backbone) {
 			this.renderText(options);
 		},
 
-		renderData: function (mode, query, page) {
-			this.routeHistory.push("data");
+		renderAPI: function (anchorId) {
+			this.routeHistory.push("api");
+			appModel.set('anchorId', anchorId);
+			var options = {
+					pageName: "api",
+					anchorId: anchorId
+				}
 
-			///Check for a page URL parameter
-			if((typeof page === "undefined") || !page)
-				appModel.set("page", 0);
-			else if(page == 0)
-				appModel.set('page', 0);
-			else
-				appModel.set('page', page-1);
+			this.renderText(options);
+		},
 
-			//Check for a query URL parameter
-			if((typeof query !== "undefined") && query){
-				var customQuery = appSearchModel.get('additionalCriteria');
-				customQuery.push(query);
-				appSearchModel.set('additionalCriteria', customQuery);
-			}
+		renderMdqRun: function (suiteId, pid) {
+			this.routeHistory.push("quality");
 
-			if(!appView.dataCatalogView){
-				require(['views/DataCatalogView'], function(DataCatalogView){
-					appView.dataCatalogView = new DataCatalogView();
-
-					//Check for a search mode URL parameter
-					if((typeof mode !== "undefined") && mode)
-						appView.dataCatalogView.mode = mode;
-
-					appView.showView(appView.dataCatalogView);
+			if (!appView.mdqRunView) {
+				require(["views/MdqRunView"], function(MdqRunView) {
+					appView.mdqRunView = new MdqRunView();
+					appView.mdqRunView.suiteId = suiteId;
+					appView.mdqRunView.pid = pid;
+					appView.showView(appView.mdqRunView);
 				});
+			} else {
+				appView.mdqRunView.suiteId = suiteId;
+				appView.mdqRunView.pid = pid;
+				appView.showView(appView.mdqRunView);
 			}
-			else{
-				//Check for a search mode URL parameter
-				if((typeof mode !== "undefined") && mode)
-					appView.dataCatalogView.mode = mode;
+		},
 
-				appView.showView(appView.dataCatalogView);
-			}
+		renderTools: function (anchorId) {
+			this.routeHistory.push("tools");
+			appModel.set('anchorId', anchorId);
+
+			var options = {
+					pageName: "tools",
+					anchorId: anchorId
+				}
+
+			this.renderText(options);
 		},
 
 		renderMyData: function(page){
@@ -198,13 +201,51 @@ function ($, _, Backbone) {
 			}
 		},
 
+		renderData: function (mode, query, page) {
+			this.routeHistory.push("data");
+
+			///Check for a page URL parameter
+			if((typeof page === "undefined") || !page)
+				appModel.set("page", 0);
+			else if(page == 0)
+				appModel.set('page', 0);
+			else
+				appModel.set('page', page-1);
+
+			//Check for a query URL parameter
+			if((typeof query !== "undefined") && query){
+				var customQuery = appSearchModel.get('additionalCriteria');
+				customQuery.push(query);
+				appSearchModel.set('additionalCriteria', customQuery);
+			}
+
+			if(!appView.dataCatalogView){
+				require(['views/DataCatalogView'], function(DataCatalogView){
+					appView.dataCatalogView = new DataCatalogView();
+
+					//Check for a search mode URL parameter
+					if((typeof mode !== "undefined") && mode)
+						appView.dataCatalogView.mode = mode;
+
+					appView.showView(appView.dataCatalogView);
+				});
+			}
+			else{
+				//Check for a search mode URL parameter
+				if((typeof mode !== "undefined") && mode)
+					appView.dataCatalogView.mode = mode;
+
+				appView.showView(appView.dataCatalogView);
+			}
+		},
+
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			appModel.set('lastPid', appModel.get("pid"));
-			
+
 			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
 			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
-
+			
 			var seriesId;
 
 			//Check for a seriesId
@@ -292,6 +333,39 @@ function ($, _, Backbone) {
 			}
 		},
 
+		renderRegistry: function (stage, pid) {
+			this.routeHistory.push("registry");
+
+			if(!appView.registryView){
+				require(['views/RegistryView'], function(RegistryView){
+					appView.registryView = new RegistryView();
+					appView.registryView.stage = stage;
+					appView.registryView.pid = pid;
+					appView.showView(appView.registryView);
+				});
+			}
+			else{
+				appView.registryView.stage = stage;
+				appView.registryView.pid = pid;
+				appView.showView(appView.registryView);
+			}
+		},
+
+		renderLdap: function (stage) {
+			this.routeHistory.push("ldap");
+
+			if(!appView.ldapView){
+				require(["views/LdapView"], function(LdapView){
+					appView.ldapView = new LdapView();
+					appView.ldapView.stage = stage;
+					appView.showView(appView.ldapView);
+				});
+			}else{
+				appView.ldapView.stage = stage;
+				appView.showView(appView.ldapView);
+			}
+		},
+
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
@@ -305,23 +379,45 @@ function ($, _, Backbone) {
 				});
 			}
 			else{
-				if(appView.currentView.onClose)
+				if(appView.currentView && appView.currentView.onClose)
 					appView.currentView.onClose();
 				appUserModel.logout();
 			}
 		},
-
+		
 		renderTokenSignIn: function(){
 			this.routeHistory.push("signin");
 
 			if(!appView.signInView){
-				require(["views/SignInView"], function(SignInView){
+				require(['views/SignInView'], function(SignInView){
 					appView.signInView = new SignInView({ el: "#Content", fullPage: true });
 					appView.showView(appView.signInView);
 				});
 			}
-			else
+			else{
 				appView.showView(appView.signInView);
+			}
+		},
+
+		renderSignInSuccess: function(){
+			$("body").html("Sign-in successful.");
+			setTimeout(window.close, 1000);
+		},
+		
+		renderLdapSignInError: function(){
+			this.routeHistory.push("signinldaperror");
+			
+			if(!appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					appView.signInView = new SignInView({ el: "#Content"});
+					appView.signInView.ldapError = true;
+					appView.showView(appView.signInView);
+				});
+			}
+			else{
+				appView.signInView.ldapError = true;
+				appView.showView(appView.signInView);
+			}
 		},
 
 		renderExternal: function(url) {

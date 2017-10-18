@@ -54,7 +54,7 @@ define(['jquery', 'underscore', 'backbone'],
 			queryServiceUrl: null,
 			metaServiceUrl: null,
 			registryServiceUrl: null,
-			//ldapwebServiceUrl: null,
+			ldapwebServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
@@ -98,7 +98,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
-			//this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
+			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 
 			//Add a ? character to the end of the Solr queries when we are appending JSONP parameters (which use ?'s)

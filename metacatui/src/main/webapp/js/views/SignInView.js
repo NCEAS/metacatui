@@ -16,10 +16,20 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 		
 		ldapError: false,
 		
+		/* Set to true if this SignInView is the only thing on the page */
+		fullPage: false,
+		
+		/* Set to true if this SignInView is in a modal window */
+		inPlace: false,
+		
+		/*A message to display at the top of the view */
+		topMessage: "",
+		
 		initialize: function(options){
 			if(typeof options !== "undefined"){
 				this.inPlace = options.inPlace;
 				this.topMessage = options.topMessage;
+				this.fullPage = options.fullPage;
 			}
 		},
 		
@@ -88,7 +98,7 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 			else{	
 				
 				//If it's a full-page sign-in view, then empty it first
-				if(this.el == appView.el){
+				if(this.el == appView.el || this.fullPage){
 					this.$el.empty();
 					var container = document.createElement("div");
 					container.className = "container login";

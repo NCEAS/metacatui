@@ -313,7 +313,7 @@ function ($, _, Backbone) {
 
 			if(!appView.signInView){
 				require(['views/SignInView'], function(SignInView){
-					appView.signInView = new SignInView({ el: "#Content"});
+					appView.signInView = new SignInView({ el: "#Content", fullPage: true });
 					appView.showView(appView.signInView);
 				});
 			}
