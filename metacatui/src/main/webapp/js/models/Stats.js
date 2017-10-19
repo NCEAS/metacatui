@@ -255,12 +255,14 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 					
 					if(formats.length == 1){	//Only one format type was found				
 						if(formats[0].groupValue == "METADATA"){ //That one format type is metadata
-							model.set('metadataCount', formats[0].doclist.numFound);
 							model.set('dataCount', 0);
+							model.trigger("change:dataCount");
+							model.set('metadataCount', formats[0].doclist.numFound);
 							model.set('dataFormatIDs', ["", 0]);
 						}else{
 							model.set('dataCount', formats[0].doclist.numFound);
 							model.set('metadataCount', 0);
+							model.trigger("change:metadataCount");
 							model.set('metadataFormatIDs', ["", 0]);
 						}					
 					}	
@@ -269,9 +271,14 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 						
 						//Store falsey data
 						model.set('dataCount', 0);
-						model.set('metadataCount', 0);
+						model.trigger("change:dataCount");
+						
 						model.set("totalCount", 0);
 						model.trigger("change:totalCount");
+						
+						model.set('metadataCount', 0);
+						model.trigger("change:metadataCount");
+						
 						model.set('metadataFormatIDs', ["", 0]);
 						model.set('dataFormatIDs', ["", 0]);
 						

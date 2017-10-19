@@ -1865,6 +1865,13 @@ svg .title{
 	fill: #445200;
 }
 
+.no-activity .donut > g:first-child .donut-arc,
+.no-activity .donut > g .donut-arc-label,
+.no-activity .donut > g .donut-title-text,
+.no-activity .donut > g .donut-title-count{
+	fill: #CCC;
+}
+
 
 .donut.default .donut-labels{
 	visibility: hidden;
