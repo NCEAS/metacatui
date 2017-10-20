@@ -280,7 +280,7 @@ define(['underscore',
 	            		view.emlView.resizeTOC();
 	            	}
             	});
-            $packageTableContainer.css("height", "200px");
+            $packageTableContainer.css("height", "500px");
 
             var table = this.dataPackageView.$el;
             this.listenTo(this.dataPackageView, "addOne", function(){

@@ -43,8 +43,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Initialize the object - post constructor */
             initialize: function(options) {
+            	if(typeof options == "undefined") var options = {};
+            	
+                this.model = options.model || new DataONEObject();
                 this.id = this.model.get("id");
-                
+
             },
             
             /* Render the template into the DOM */

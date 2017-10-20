@@ -90,6 +90,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
         	},
         	
             initialize: function(attrs, options) {
+            	if(typeof attrs == "undefined") var attrs = {};
+            	if(typeof options == "undefined") var options = {};
+            	
                 this.on("change:size", this.bytesToSize);
                 if(attrs.size)
                     this.bytesToSize();

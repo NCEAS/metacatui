@@ -3320,6 +3320,20 @@ ul.side-nav-items {
 .data-package-item.remove-preview .type-icon{
 	opacity: .3;
 }
+.data-package-item.message-row td{
+	padding-top: 150px;
+}
+.data-package-item.message-row:hover td{
+	background-color: #FFF;
+}
+.data-package-item.message-row h2{
+	font-size: 2.1em;
+}
+.data-package-item.message-row button{
+	font-size: 1.2em;
+	margin-top: 10px;
+	display: block;
+}
 /* Editor package table status column */
 .data-package-item .status{
 	width: 60px;
