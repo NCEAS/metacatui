@@ -24,7 +24,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             /* Events this view listens to */
             events: {
                 "focusout .name"       : "updateName",
-                "click    .name"       : "emptyName",
+                //"click    .name"       : "emptyName",
                 /* "click .rename"     : "rename", */
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
@@ -282,7 +282,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     // Don't set the title if it hasn't changed or is empty
                     if (enteredText !== "" && 
                         currentTitle !== enteredText &&
-                        enteredText !== "Untitled dataset: Add a descriptive title for your dataset") {
+                        enteredText !== "Untitled dataset") {
                         // Set the new title, upgrading any title attributes
                         // that aren't Arrays into Arrays
                         if ((Array.isArray(title) && title.length < 2) || typeof title == "string") {
@@ -666,7 +666,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             hideSaving: function(){
             	this.$("button").prop("disabled", false);
             	this.$(".disable-layer").remove();
-            	this.$(".name > div").prop("contenteditable", true);
+            	
+            	//Make the name cell editable again
+            	if(this.model.get("type") != "Metadata")
+            		this.$(".name > div").prop("contenteditable", true);
+            	
             	this.$el.removeClass("error-saving");
             },
             

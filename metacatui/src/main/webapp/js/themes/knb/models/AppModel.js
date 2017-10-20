@@ -48,7 +48,8 @@ define(['jquery', 'underscore', 'backbone'],
 				samplingDescription: false,
 				studyExtentDescription: false,
 				taxonCoverage: false,
-				temporalCoverage: true
+				temporalCoverage: true,
+				title: true
 			},
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),

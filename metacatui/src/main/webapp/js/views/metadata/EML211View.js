@@ -191,12 +191,10 @@ define(['underscore', 'jquery', 'backbone',
 	    	var overviewEl = this.$container.find(".overview");
 	    	$(overviewEl).html(this.overviewTemplate());
 			
-			// pubDate
-			// BDM: This isn't a createBasicText call because that helper 
-			// assumes multiple values for the category
-			// TODO: Consider a re-factor of createBasicText
-			var pubDateInput = $(overviewEl).find("input.pubDate").val(this.model.get("pubDate"));
-
+			//Title
+		    var titleEl = this.createBasicTextFields("title", "Example: Greater Yellowstone Rivers from 1:126,700 U.S. Forest Service Visitor Maps (1961-1983)", false);
+		    $(overviewEl).find(".title-container").append(titleEl);
+			
 	    	//Abstract
 	    	_.each(this.model.get("abstract"), function(abs){
 		    	var abstractEl = this.createEMLText(abs, edit, "abstract");
@@ -236,6 +234,13 @@ define(['underscore', 'jquery', 'backbone',
 		    	
 		    //Funding
 		    this.renderFunding();
+		    
+			// pubDate
+			// BDM: This isn't a createBasicText call because that helper 
+			// assumes multiple values for the category
+			// TODO: Consider a re-factor of createBasicText
+			var pubDateInput = $(overviewEl).find("input.pubDate").val(this.model.get("pubDate"));
+
 			
 			//Initialize all the tooltips
 			this.$(".tooltip-this").tooltip();
@@ -1276,15 +1281,12 @@ define(['underscore', 'jquery', 'backbone',
 	    /*
 	     * Creates and returns an array of basic text input field for editing
 	     */
-	    createBasicTextFields: function(category, placeholder, appendNew){
+	    createBasicTextFields: function(category, placeholder){
 	    	
 	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
 	    		modelValues = this.model.get(category),
 				textRow; // Holds the DOM for each field
-	    	
-	    	if(typeof appendNew === "undefined")
-	    		var appendNew = true;
-	    	
+
 	    	//Format as an array
 	    	if(!Array.isArray(modelValues) && modelValues) modelValues = [modelValues];
 	    	
@@ -1301,7 +1303,7 @@ define(['underscore', 'jquery', 'backbone',
 		    		textContainer.append(textRow);
 		    		
 		    		//At the end, append an empty input for the user to add a new one
-		    		if(i+1 == allModelValues.length && appendNew) {
+		    		if(i+1 == allModelValues.length && category != "title") {
 						var newRow = $($(document.createElement("div")).addClass("basic-text-row"));
 						newRow.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
 						textContainer.append(newRow);
@@ -1349,19 +1351,20 @@ define(['underscore', 'jquery', 'backbone',
 	    		var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
 	    		currentValue[position] = value;
 	    		model.set(category, currentValue);
-	    		model.trigger("change");
+	    		model.trigger("change:" + category);
 	    	}
 	    	//Update the model if the current value is a string
 	    	else if(typeof currentValue == "string"){
 	    		model.set(category, [currentValue, value]);
-	    		model.trigger("change");
+	    		model.trigger("change:" + category);
 	    	}
 	    	else if(!currentValue) {
 				model.set(category, [value]);
+				model.trigger("change:" + category);
 			}
 	    	
     		//Add another blank text input
-	    	if($(e.target).is(".new") && value != ''){
+	    	if($(e.target).is(".new") && value != '' && category != "title"){
 				$(e.target).removeClass("new");
 				this.addBasicText(e);
 	    	}
@@ -1390,10 +1393,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	var category = $(e.target).attr("data-category"),
 	    		allBasicTexts = $(".basic-text.new[data-category='" + category + "']");
     
-	    	//Only show one new keyword row at a time
+	    	//Only show one new row at a time
     		if((allBasicTexts.length == 1) && !allBasicTexts.val())
     			return;
     		else if(allBasicTexts.length > 1)
+    			return;
+    		//We are only supporting one title right now
+    		else if(category == "title")
     			return;
     		
 	    	//Add another blank text input
@@ -1407,7 +1413,7 @@ define(['underscore', 'jquery', 'backbone',
 			
 	    	$(e.target).parent().after(newRow);
 	    	
-			$(e.target).after(this.createRemoveButton(null, 'alternateIdentifier', '.basic-text-row', "div.text-container"));
+			$(e.target).after(this.createRemoveButton(null, category, '.basic-text-row', "div.text-container"));
 	    },
 	    
 	    previewTextRemove: function(e){
