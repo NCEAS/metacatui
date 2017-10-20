@@ -889,11 +889,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       float: right;
     }
     
-    #signupPopup {
-    	max-width: 350px;
-	    min-width: 350px;
-	}
-    
     .dropdown-header {
 		display: block;
 		padding: 3px 20px;
@@ -1171,6 +1166,9 @@ svg .packages,
 .profile .packages{
 	color: #0E69A1;
 	fill: #0E69A1;
+}
+.profile .quick-stats circle{
+	stroke: #0E69A1;
 }
 .profile .bar-label.packages{
 	fill: inherit;

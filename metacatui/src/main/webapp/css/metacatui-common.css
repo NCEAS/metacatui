@@ -1290,132 +1290,11 @@ img.icon{
 /****************************************** 
 ************ Popup Login **************
 ******************************************/	
-.fancybox-inline{
-	background-color: #FFF;
-	padding: 20px;
-	display: none;
-}
-.fancybox-inline h2 {
-    font-size: 1.2em;
-    text-align: center;
-}
-.fancybox-inline h3.subtitle{
-	font-size: 1em;
-    font-weight: lighter;
-    line-height: 1.5em;
-    font-style: italic;
-}
-.fancybox-inline h4{
-    font-size: 1em;
-}
-.fancybox-inline > form .input-group, .fancybox-inline form .btn {
-    max-width: 296px;
-    left: 22%;
-    position: relative;
-}
-.fancybox-inline > form input{
-	width: 90%;
-	width: calc(100% - 20px);
-	margin-bottom: 5px;
-}
-.fancybox-inline > form select{
-	width: calc(100% - 6px);
-	margin-bottom: 5px;
-}
-.fancybox-inline > form input.btn{
-	width: 95%;
-	width: calc(100% - 5px);
-	margin-top: 20px;
-}
-.fancybox-inline .divider-text{
-	position: absolute;
-    top: 50%;
-    left: 40%;
-    background-color: white;
-    padding: 5px;
-    color: #AAA;
-}
+
 .nav.list-group > .list-group-item img.icon{
 	width: 32px;
 	height: auto;
 	padding: 16px;
-}
-.fancybox-inline .notification {
-  min-height: 150px;
-}
-.fancybox-inline {
-    min-width: 550px;
-    padding: 5px;
-}
-.fancybox-inline h3{
-	font-size: .9em;
-	font-weight: normal;
-	margin-top: 0px;
-    line-height: 1.1em;
-}
-.fancybox-inline .well ul{
-	font-size: .9em;
-	list-style: none;
-	margin-left: 0px;
-}
-.fancybox-inline .well ul li{
-    border-bottom: 1px solid #DDD;
-    padding: 3px;
-    font-size: .9em;
-}
-.fancybox-inline > .row-fluid > .span7{
-	border-left: 1px solid #DDD;
-    padding-left: 20px;
-}
-.fancybox-inline .btn.ldap{
-	width: 220px;
-    left: 0;
-}
-.orcid-signin a > span{
-    padding: 11px;
-    display: inline-block;
-    height: 1.5em;
-    color: #8FAF10;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-left-width: 0px;
-    border: 1px solid #aacf14;
-    border-left-width: 0px;
-}
-.orcid-signin a {
-    padding: 0px;
-    border-radius: 4px;
-    padding-left: 0px;
-}
-.fancybox-inline .signin{
-	display: inline-block;
-	width: auto;
-	padding: 0px;
-	margin-bottom: 10px;
-}
-.fancybox-inline .orcid-signin a:hover,
-.fancybox-inline .orcid-signin a:hover > img{
-	background-color: #aacf14;
-	    cursor: pointer;
-	  transition: all 500ms;
-	
-}
-.fancybox-inline .orcid-signin a:hover > span{
-	color: white;
-}
-.fancybox-inline .well{
-	border-color: #CCC;
-}
-.fancybox-inline .span12 .well .btn{
-	width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-    margin-bottom: 20px;
-}
-.fancybox-inline .remember{
-	height: 1.2em;
-	overflow: hidden;
 }
 .scroll-y{
 	overflow-y: scroll;
@@ -1431,25 +1310,8 @@ img.icon{
 	margin-right: 10px;
 	margin-left: 30%;
 }
-.orcid-signin img {
-    height: 1.5em;
-    background-color: #FFF;
-    padding: 11px;
-    border-radius: 4px;
-    border: 1px solid #aacf14;
-    display: inline-block;
-    margin-right: -4px;
-    margin-top: -1px;
-    border-bottom-right-radius: 0px;
-    border-top-right-radius: 0px;
-    border-right-width: 0px;
-}
 #signInPopup .orcid-signin {
     margin-top: 10%;
-}
-.fancybox-inline > .row-fluid > .span6:first-child {
-    border-right: 1px solid #CCC;
-    min-height: 265px;
 }
 .modal.container{
 	padding: 20px 20px 40px 20px;
@@ -1457,6 +1319,37 @@ img.icon{
 .modal .container{
 	width: auto;
 	margin-bottom: 20px;
+}
+.sign-in.modal .close {
+    font-size: 2em;
+}
+/** The ORCID Sign In button **/
+.orcid-btn{
+	border: 1px solid #aacf14;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	background-color: #FFF;
+	padding: 15px 20px;
+	color: #aacf14;
+	text-decoration: none;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	display: inline-block;
+	font-weight: bold;
+}
+.orcid-btn img {
+    height: 1.5em;
+    margin-right: 5px;
+}
+.orcid-btn:hover{
+	background-color: #aacf14;
+	transition: all 500ms;
+	text-decoration: none;	
+}
+.orcid-btn:hover > span{
+	color: #FFF;
+	text-decoration: none;
 }
 /****************************************** 
 ** The Metadata and MetadataIndex View **
