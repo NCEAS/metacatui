@@ -1425,10 +1425,20 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	_.each( Object.keys(requiredFields), function(field){
 	    		
-	    		if(requiredFields[field])
-	    			this.$(".required-icon[data-category='" + field + "']").show();
+	    		if(requiredFields[field]){
+	    			var reqEl = this.$(".required-icon[data-category='" + field + "']");
+	    			
+	    			//Show the required icon for this category/field
+	    			reqEl.show();
+	    			
+	    			//Show the required icon for the section
+	    			var sectionName = reqEl.parents(".section[data-section]").attr("data-section");	    			
+	    			this.$(".required-icon[data-section='" + sectionName + "']").show();
+	    		}
 	    		
 	    	}, this);
+	    	
+	    	
 	    },
 		
 		/* Event handler for showing validation messaging for the pubDate input
