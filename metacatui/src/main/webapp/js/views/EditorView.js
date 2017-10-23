@@ -772,6 +772,7 @@ define(['underscore',
 			this.$(".error").removeClass("error");
 			$(".alert-container").remove();
 			
+			
 			var errors = this.model.validationError;
 			
 			_.each(errors, function(errorMsg, category){

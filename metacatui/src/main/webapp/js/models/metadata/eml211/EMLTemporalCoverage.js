@@ -187,7 +187,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		trickleUpChange: function(){
-			MetacatUI.rootDataPackage.packageModel.set("changed", true);
+			if(_.contains(MetacatUI.rootDataPackage.models, this.get("parentModel")))
+				MetacatUI.rootDataPackage.packageModel.set("changed", true);
+		},
+		
+		mergeIntoParent: function(){
+			if(this.get("parentModel") && this.get("parentModel").type == "EML" && !_.contains(this.get("parentModel").get("temporalCoverage"), this))
+				this.get("parentModel").get("temporalCoverage").push(this);
 		},
 		
 		formatXML: function(xmlString){

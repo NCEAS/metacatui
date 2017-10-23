@@ -3,6 +3,7 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/EMLGeoCoverageView',
         'views/metadata/EMLPartyView',
 		'views/metadata/EMLMethodsView',
+		'views/metadata/EMLTempCoverageView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLGeoCoverage',
         'models/metadata/eml211/EMLKeywordSet',
@@ -20,7 +21,7 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/taxonomicCoverage.html',
 		'text!templates/metadata/taxonomicClassificationTable.html', 
 		'text!templates/metadata/taxonomicClassificationRow.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView,
+	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView, EMLTempCoverageView,
 			EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
 			EMLTemporalCoverage, EMLMethods, Template, EMLPartyCopyMenuTemplate, OverviewTemplate,
 			 DatesTemplate, LocationsTemplate, 
@@ -45,9 +46,6 @@ define(['underscore', 'jquery', 'backbone',
 			"change .pubDate input"          : "updatePubDate",
 			"focusout .pubDate input"        : "showPubDateValidation",
 			
-			"change .temporal-coverage"    : "updateTemporalCoverage",
-			"focusout .temporal-coverage"  : "showTemporalCoverageValidation",
-
 			"keyup .eml-geocoverage.new"        : "updateLocations",
 			"click .eml-geocoverage.new .coord" : "updateLocations",
 			
@@ -741,24 +739,32 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Add a header
 	    	this.$(".section.dates").html( $(document.createElement("h2")).text("Dates") );
-	    	
-            var models = this.model.get('temporalCoverage');
-            
-            //Create a new EML Temporal Coverage model if there isn't one already
-            if( !models.length ){
-            	models.push(new EMLTemporalCoverage({ parentModel: this.model }));
-            }
-            
-            _.each(models, function(model){
-    			var html = this.datesTemplate({
-    				beginDate: model.get('beginDate'),
-    				beginTime: model.get('beginTime'),
-    				endDate: model.get('endDate'),
-    				endTime: model.get('endTime')
-    			});
+	    	            
+            _.each(this.model.get('temporalCoverage'), function(model){
+            	
+            	var tempCovView = new EMLTempCoverageView({
+            		model: model,
+            		isNew: false,
+            		edit: this.edit
+            	});
+            	
+            	tempCovView.render();
                 	
-    	    	this.$(".section.dates").append(html);
+    	    	this.$(".section.dates").append(tempCovView.el);
+    	    	
             }, this);
+            
+            if( !this.model.get('temporalCoverage').length ){
+            	var tempCovView = new EMLTempCoverageView({
+            		isNew: true,
+            		edit: this.edit,
+            		model: new EMLTemporalCoverage({ parentModel: this.model })
+            	});
+            	
+            	tempCovView.render();
+                	
+    	    	this.$(".section.dates").append(tempCovView.el);
+            }
 
 	    },
 	    
@@ -1554,73 +1560,6 @@ define(['underscore', 'jquery', 'backbone',
 			return finishedEl;
 		},
 
-        // Update an EMLTemporalCoverage instance
-        updateTemporalCoverage: function (e) {
-        	if (!e) return false;
-
-        	// Grab the values we need to update the underlying EMLTemporalCoverage
-        	// model. Notice that we use the 'data-category' attribute on the parent
-        	// div to figure out if this is the begin or end date and that use the
-        	// 'type' attribute on the input element to determine whether this is a
-        	// calendarDate or a time that's being updated
-        	var category = $(e.target).attr("data-category"),
-        		position = this.$(".temporal-coverage-container").index( $(e.target).parents(".temporal-coverage-container") ),
-	        	model = position > -1 ? this.model.get("temporalCoverage")[position] : null,
-	        	value = $(e.target).val().trim();
-
-        	// We can't update anything without a category
-        	if (!category) return false;
-
-        	// If this datetime isn't paired with an existing
-        	// EMLTemporalCoverage instance, create one. Otherwise, mutate
-        	// the existing one
-        	if (!model) {
-        		model = new EMLTemporalCoverage({
-	        		parentModel: this.model
-	        	});
-
-	        	// Add the newly-created model to the array
-        		if( Array.isArray(this.model.get("temporalCoverage")) )
-        			this.model.get("temporalCoverage").push(model);
-        		else
-        			this.model.set("temporalCoverage", [model]);
-			}
-
-			//If the value hasn't changed, exit
-			if (value == model.get(category)) {
-				return;
-			}
-				
-			// Set the new value
-			model.set(category, value);
-
-        	// Trigger the tricking up of this change for which part of the
-        	// temporal coverage is set by category
-        	MetacatUI.rootDataPackage.packageModel.set("changed", true);
-        },
-
-		showTemporalCoverageValidation: function(e) {
-			var dateEls = this.$(".temporal-coverage-container");
-			
-			dateEls.find(".notification").empty();
-			dateEls.find(".error").removeClass("error");
-			
-			//Validate each temporal coverage model
-			_.each(this.model.get("temporalCoverage"), function(temporalCoverage, i){
-				
-				if( !temporalCoverage.isValid() ){
-					var errors = temporalCoverage.validationError;
-					
-					_.mapObject(errors, function(errorMsg, category){
-						$(dateEls[i]).find(".notification").addClass("error").append(errorMsg + " ");
-						$(dateEls[i]).find("[data-category='" + category + "']").addClass("error");
-					}, this);
-				}
-					
-			}, this);
-		
-		},
-		
 		/* Update the underlying model and DOM for an EML TaxonomicCoverage
 		section. This method handles updating the underlying TaxonomicCoverage
 		models when the user changes form fields as well as inserting new

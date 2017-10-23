@@ -998,6 +998,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 							"' is not a valid value for this field. Enter with a year (e.g. 2017) or a date in the format YYYY-MM-DD."]
 					}
 				}
+				
+				// Validate the temporal coverage
+				if ( this.get("temporalCoverage").length ) {
+					_.each(this.get("temporalCoverage"), function(temporalCoverage){
+						if( !temporalCoverage.isValid() ){
+							if( !errors.temporalCoverage )
+								errors.temporalCoverage = [temporalCoverage.validationError];
+							else
+								errors.temporalCoverage.push(temporalCoverage.validationError);
+						}
+					});
+				}
 
             	//Validate the EMLParty models
             	var partyTypes = ["associatedParty", "contact", "creator", "metadataProvider", "publisher"];
@@ -1069,7 +1081,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 				errors.samplingDescription = "Provide a sampling description.";
                 		}
                 		else if(key == "temporalCoverage"){
-                			if(!this.get("temporalCoverage"))
+                			if(!this.get("temporalCoverage").length)
                 				errors.temporalCoverage = "Provide the date(s) for this data set.";
                 		}
                 		else if(key == "taxonCoverage"){
