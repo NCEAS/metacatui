@@ -97,8 +97,12 @@ define(['underscore', 'jquery', 'backbone',
             },
             
             postRender: function(){
+            	//Determine which category to select
+            	//Interval measurement scales will be displayed as ratio
+            	var selectedCategory = this.model.get("measurementScale") == "interval" ? "ratio" : this.model.get("measurementScale");
+            	
             	//Set the category
-    			this.$(".category[value='" + this.model.get("measurementScale") + "']").prop("checked", true);
+    			this.$(".category[value='" + selectedCategory + "']").prop("checked", true);
         		this.switchCategory();
         		
         		this.renderUnitDropdown();
